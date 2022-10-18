@@ -69,8 +69,9 @@ boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo
   const PathWithLaneId & path, const Pose & current_pose, const double current_vel,
   const size_t current_seg_idx, const RouteHandler & route_handler)
 {
-  // search distance
-  const double search_distance = 3.0 * current_vel + intersection_search_distance_;
+  // base search distance
+  const double base_search_distance =
+    intersection_search_time_ * current_vel + intersection_search_distance_;
 
   // unique lane ids
   std::vector<lanelet::Id> unique_lane_ids;
@@ -87,6 +88,7 @@ boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo
   std::queue<TurnSignalInfo> signal_queue;
   for (const auto & lane_id : unique_lane_ids) {
     const auto lane = route_handler.getLaneletsFromId(lane_id);
+    const double search_distance = lane.attributeOr("turn_signal_distance", base_search_distance);
 
     // lane front and back point
     const geometry_msgs::msg::Point lane_front_point =
@@ -122,7 +124,7 @@ boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo
     const std::string lane_attribute = lane.attributeOr("turn_direction", std::string("none"));
     if (
       (lane_attribute == "right" || lane_attribute == "left") &&
-      dist_to_front_point < lane.attributeOr("turn_signal_distance", search_distance)) {
+      dist_to_front_point < search_distance) {
       // update map if necessary
       if (desired_start_point_map_.find(lane_id) == desired_start_point_map_.end()) {
         desired_start_point_map_.emplace(lane_id, current_pose.position);
@@ -327,7 +329,7 @@ geometry_msgs::msg::Point TurnSignalDecider::get_required_end_point(
   for (size_t i = 0; i < resampled_centerline.size(); ++i) {
     const double yaw = tf2::getYaw(resampled_centerline.at(i).orientation);
     const double yaw_diff = tier4_autoware_utils::normalizeRadian(yaw - terminal_yaw);
-    if (std::fabs(yaw_diff) < tier4_autoware_utils::deg2rad(15)) {
+    if (std::fabs(yaw_diff) < tier4_autoware_utils::deg2rad(intersection_angle_threshold_deg_)) {
       return resampled_centerline.at(i).position;
     }
   }

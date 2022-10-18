@@ -396,7 +396,7 @@ BehaviorModuleOutput PullOverModule::plan()
       // if using arc_path and finishing current_path, get next path
       // enough time for turn signal
       const bool has_passed_enough_time = (clock_->now() - *last_approved_time_).seconds() >
-                                          planner_data_->parameters.turn_light_on_threshold_time;
+                                          planner_data_->parameters.turn_signal_search_time;
 
       if (hasFinishedCurrentPath() && has_passed_enough_time) {
         incrementPathIndex();
@@ -593,7 +593,7 @@ PathWithLaneId PullOverModule::getReferencePath() const
 
   // slow down for turn signal, insert stop point to stop_pose
   reference_path = util::setDecelerationVelocityForTurnSignal(
-    reference_path, stop_pose, planner_data_->parameters.turn_light_on_threshold_time);
+    reference_path, stop_pose, planner_data_->parameters.turn_signal_search_time);
 
   // slow down before the search area.
   if (stop_pose != search_start_pose) {

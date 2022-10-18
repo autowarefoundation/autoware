@@ -198,9 +198,11 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const auto base_link2front = common_parameter.base_link2front;
   const auto vehicle_width = common_parameter.vehicle_width;
   const auto shift_to_outside = vehicle_width / 2;
-  const auto tl_on_threshold_lat = common_parameter.turn_light_on_threshold_dis_lat;
-  const auto tl_on_threshold_long = common_parameter.turn_light_on_threshold_dis_long;
-  const auto prev_sec = common_parameter.turn_light_on_threshold_time;
+  const auto turn_signal_shift_length_threshold =
+    common_parameter.turn_signal_shift_length_threshold;
+  const auto turn_signal_minimum_search_distance =
+    common_parameter.turn_signal_minimum_search_distance;
+  const auto turn_signal_search_time = common_parameter.turn_signal_search_time;
   constexpr double epsilon = 1e-6;
   const auto arc_position_current_pose = lanelet::utils::getArcCoordinates(current_lanes, pose);
 
@@ -277,10 +279,12 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
       right_start_point_is_in_lane != right_end_point_is_in_lane);
   });
 
-  if (time_to_shift_start < prev_sec || distance_to_shift_start < tl_on_threshold_long) {
-    if (diff > tl_on_threshold_lat && cross_line) {
+  if (
+    time_to_shift_start < turn_signal_search_time ||
+    distance_to_shift_start < turn_signal_minimum_search_distance) {
+    if (diff > turn_signal_shift_length_threshold && cross_line) {
       turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-    } else if (diff < -tl_on_threshold_lat && cross_line) {
+    } else if (diff < -turn_signal_shift_length_threshold && cross_line) {
       turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
     }
   }

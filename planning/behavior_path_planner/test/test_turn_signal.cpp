@@ -70,7 +70,7 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
 {
   PathWithLaneId path = generateStraightSamplePathWithLaneId(0.0f, 1.0f, 70u);
   TurnSignalDecider turn_signal_decider;
-  turn_signal_decider.setParameters(1.0, 30.0);
+  turn_signal_decider.setParameters(1.0, 30.0, 3.0, 15.0);
 
   TurnSignalInfo intersection_signal_info;
   intersection_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
@@ -191,7 +191,7 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
 {
   PathWithLaneId path = generateStraightSamplePathWithLaneId(0.0f, 1.0f, 70u);
   TurnSignalDecider turn_signal_decider;
-  turn_signal_decider.setParameters(1.0, 30.0);
+  turn_signal_decider.setParameters(1.0, 30.0, 3.0, 15.0);
 
   TurnSignalInfo intersection_signal_info;
   intersection_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
@@ -282,7 +282,7 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
 {
   PathWithLaneId path = generateStraightSamplePathWithLaneId(0.0f, 1.0f, 70u);
   TurnSignalDecider turn_signal_decider;
-  turn_signal_decider.setParameters(1.0, 30.0);
+  turn_signal_decider.setParameters(1.0, 30.0, 3.0, 15.0);
 
   TurnSignalInfo intersection_signal_info;
   intersection_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;

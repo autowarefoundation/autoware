@@ -73,10 +73,14 @@ public:
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
     const TurnSignalInfo & intersection_signal_info, const TurnSignalInfo & behavior_signal_info);
 
-  void setParameters(const double base_link2front, const double intersection_search_distance)
+  void setParameters(
+    const double base_link2front, const double intersection_search_distance,
+    const double intersection_search_time, const double intersection_angle_threshold_deg)
   {
     base_link2front_ = base_link2front;
     intersection_search_distance_ = intersection_search_distance;
+    intersection_search_time_ = intersection_search_time;
+    intersection_angle_threshold_deg_ = intersection_angle_threshold_deg;
   }
 
   std::pair<bool, bool> getIntersectionTurnSignalFlag();
@@ -103,6 +107,8 @@ private:
 
   // data
   double intersection_search_distance_{0.0};
+  double intersection_search_time_{0.0};
+  double intersection_angle_threshold_deg_{0.0};
   double base_link2front_{0.0};
   std::map<lanelet::Id, geometry_msgs::msg::Point> desired_start_point_map_;
   mutable bool intersection_turn_signal_ = false;

@@ -15,7 +15,13 @@
     drivable_area_margin: 6.0
 
     refine_goal_search_radius_range: 7.5
-    intersection_search_distance: 30.0
+
+    # parameters for turn signal decider
+    turn_signal_intersection_search_distance: 30.0
+    turn_signal_intersection_angle_threshold_deg: 15.0
+    turn_signal_minimum_search_distance: 10.0
+    turn_signal_search_time: 3.0
+    turn_signal_shift_length_threshold: 0.3
 
     path_interval: 2.0
 

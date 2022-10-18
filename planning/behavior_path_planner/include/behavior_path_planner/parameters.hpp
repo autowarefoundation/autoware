@@ -35,9 +35,12 @@ struct BehaviorPathPlannerParameters
   double drivable_area_margin;
 
   double refine_goal_search_radius_range;
-  double turn_light_on_threshold_dis_lat;
-  double turn_light_on_threshold_dis_long;
-  double turn_light_on_threshold_time;
+
+  double turn_signal_intersection_search_distance;
+  double turn_signal_intersection_angle_threshold_deg;
+  double turn_signal_search_time;
+  double turn_signal_minimum_search_distance;
+  double turn_signal_shift_length_threshold;
 
   double path_interval;
 
