@@ -70,6 +70,7 @@ public:
   {
     return iter == pointcloud_cache_.end();
   }
+  unsigned int pointcloud_cache_size() const { return param_.pointcloud_cache_size(); }
 
 private:
   void enqueue(const sensor_msgs::msg::PointCloud2 & msg, const Eigen::Affine3f & affine);

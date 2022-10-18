@@ -65,14 +65,19 @@ bool PointCloudDensification::enqueuePointCloud(
 {
   const auto header = pointcloud_msg.header;
 
-  auto transform_world2current =
-    getTransform(tf_buffer, header.frame_id, param_.world_frame_id(), header.stamp);
-  if (!transform_world2current) {
-    return false;
-  }
-  auto affine_world2current = transformToEigen(transform_world2current.get());
+  if (param_.pointcloud_cache_size() > 1) {
+    auto transform_world2current =
+      getTransform(tf_buffer, header.frame_id, param_.world_frame_id(), header.stamp);
+    if (!transform_world2current) {
+      return false;
+    }
+    auto affine_world2current = transformToEigen(transform_world2current.get());
 
-  enqueue(pointcloud_msg, affine_world2current);
+    enqueue(pointcloud_msg, affine_world2current);
+  } else {
+    enqueue(pointcloud_msg, Eigen::Affine3f::Identity());
+  }
+
   dequeue();
 
   return true;

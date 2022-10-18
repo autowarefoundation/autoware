@@ -68,7 +68,9 @@ std::size_t VoxelGenerator::pointsToVoxels(
        pc_cache_iter++) {
     auto pc_msg = pc_cache_iter->pointcloud_msg;
     auto affine_past2current =
-      pd_ptr_->getAffineWorldToCurrent() * pc_cache_iter->affine_past2world;
+      pd_ptr_->pointcloud_cache_size() > 1
+        ? pd_ptr_->getAffineWorldToCurrent() * pc_cache_iter->affine_past2world
+        : Eigen::Affine3f::Identity();
     float timelag = static_cast<float>(
       pd_ptr_->getCurrentTimestamp() - rclcpp::Time(pc_msg.header.stamp).seconds());
 
