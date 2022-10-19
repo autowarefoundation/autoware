@@ -1,3 +1,2 @@
-libs
-*.o
-*.so
+artifacts/**/*.jpg
+data/

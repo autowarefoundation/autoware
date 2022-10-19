@@ -22,14 +22,20 @@ set(tvm_runtime_DIR ${tvm_vendor_DIR})
 find_package(tvm_runtime CONFIG REQUIRED)
 find_package(PCL 1.10 REQUIRED)
 
-# Get target backend
-set(${PROJECT_NAME}_BACKEND llvm CACHE STRING "${PROJECT_NAME} neural network backend")
+# Used in "extras" template file
+set(${PROJECT_NAME}_BUILT FALSE)
 
-# Test if files exist. The result is set in baidu_cnn_FOUND
-autoware_check_neural_network(baidu_cnn "${${PROJECT_NAME}_BACKEND}")
-if(baidu_cnn_FOUND)
+# Gather neural network information.
+set(${PROJECT_NAME}_BACKEND llvm CACHE STRING "${PROJECT_NAME} neural network backend")
+set(MODEL_NAME baidu_cnn)
+
+# Get neural network.
+set(NN_DEPENDENCY "")
+get_neural_network(${MODEL_NAME} ${${PROJECT_NAME}_BACKEND} NN_DEPENDENCY)
+if(NOT NN_DEPENDENCY STREQUAL "")
   # Library
   ament_auto_add_library(${PROJECT_NAME} SHARED
+    data/models/${MODEL_NAME}/inference_engine_tvm_config.hpp
     include/lidar_apollo_segmentation_tvm/lidar_apollo_segmentation_tvm.hpp
     include/lidar_apollo_segmentation_tvm/cluster2d.hpp
     include/lidar_apollo_segmentation_tvm/disjoint_set.hpp
@@ -43,15 +49,18 @@ if(baidu_cnn_FOUND)
     src/feature_map.cpp
     src/log_table.cpp
   )
+  add_dependencies(${PROJECT_NAME} ${NN_DEPENDENCY})
 
   target_compile_options(${PROJECT_NAME} PRIVATE "-Wno-sign-conversion" "-Wno-conversion")
-
-  target_compile_definitions(${PROJECT_NAME} PRIVATE NETWORKS_BACKEND=${${PROJECT_NAME}_BACKEND})
 
   # Set includes as "SYSTEM" to avoid compiler errors on their headers.
   target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     "${PCL_INCLUDE_DIRS}"
     "${tvm_vendor_INCLUDE_DIRS}"
+  )
+
+  target_include_directories(${PROJECT_NAME} PRIVATE
+    data/models
   )
 
   target_link_libraries(${PROJECT_NAME}
@@ -69,8 +78,10 @@ if(baidu_cnn_FOUND)
   endif()
 
   ament_export_include_directories(${PCL_INCLUDE_DIRS})
-  ament_auto_package()
+  set(${PROJECT_NAME}_BUILT TRUE)
 else()
   message(WARNING "Neural network not found, skipping package.")
-  ament_auto_package()
 endif()
+
+list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake.in")
+ament_auto_package()

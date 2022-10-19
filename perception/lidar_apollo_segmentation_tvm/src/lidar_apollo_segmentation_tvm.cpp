@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <baidu_cnn/inference_engine_tvm_config.hpp>
 #include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/feature_map.hpp>
 #include <lidar_apollo_segmentation_tvm/lidar_apollo_segmentation_tvm.hpp>
-#include <tvm_utility/model_zoo.hpp>
 #include <tvm_utility/pipeline.hpp>
 
 #include <memory>
@@ -120,7 +120,7 @@ ApolloLidarSegmentation::ApolloLidarSegmentation(
   pcl_pointcloud_ptr_(new pcl::PointCloud<pcl::PointXYZI>),
   PreP(std::make_shared<PrePT>(
     config, range, use_intensity_feature, use_constant_feature, min_height, max_height)),
-  IE(std::make_shared<IET>(config)),
+  IE(std::make_shared<IET>(config, "lidar_apollo_segmentation_tvm")),
   PostP(std::make_shared<PostPT>(
     config, pcl_pointcloud_ptr_, range, objectness_thresh, score_threshold, height_thresh,
     min_pts_num)),

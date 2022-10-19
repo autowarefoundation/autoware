@@ -7,7 +7,7 @@
 #### Neural network
 
 This package will not build without a neural network for its inference.
-The network is provided by the neural_networks_provider package.
+The network is provided by the cmake function exported by the tvm_utility package.
 See its design page for more information on how to enable downloading pre-compiled networks (by setting the `DOWNLOAD_ARTIFACTS` cmake variable), or how to handle user-compiled networks.
 
 #### Backend
@@ -23,6 +23,10 @@ The paragraph of interest goes up to, but excluding, the "MinBox Builder" paragr
 This package instead relies on further processing by a dedicated shape estimator.
 
 Note: the parameters described in the original design have been modified and are out of date.
+
+### Inputs / Outputs / API
+
+The package exports a boolean `lidar_apollo_segmentation_tvm_BUILT` cmake variable.
 
 ## Reference
 

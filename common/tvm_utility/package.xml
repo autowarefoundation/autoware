@@ -20,20 +20,18 @@
   <name>tvm_utility</name>
   <version>1.0.0</version>
   <description>
-    A set of utility functions to help build an machine learning pipeline using
+    A set of utility functions to help build a machine learning pipeline using
     TVM as the inference engine.
   </description>
   <maintainer email="ambroise.vincent@arm.com">Ambroise Vincent</maintainer>
   <license>Apache License 2.0</license>
 
   <build_depend>autoware_cmake</build_depend>
-  <build_depend>tvm_vendor</build_depend>
 
   <depend>ament_index_cpp</depend>
   <depend>libopenblas-dev</depend>
   <depend>libopencv-dev</depend>
-  <depend>neural_networks_provider</depend>
-  <depend>sensor_msgs</depend>
+  <depend>tvm_vendor</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

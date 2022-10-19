@@ -15,36 +15,19 @@
 cmake_minimum_required(VERSION 3.14)
 project(tvm_utility)
 
+include("${PROJECT_NAME}-extras.cmake")
+
 find_package(autoware_cmake REQUIRED)
 autoware_package()
-
-# Configure
-
-set(tvm_utility_NETWORKS_DIR ${neural_networks_provider_NETWORKS_DIR})
-configure_file(tvm_utility-extras.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/tvm_utility-extras.cmake @ONLY)
-
-foreach(network_name ${neural_networks_provider_NAMES})
-  list(APPEND MODEL_INCLUDES_LIST
-    "#define INCLUDE <${network_name}/NETWORKS_BACKEND/inference_engine_tvm_config.hpp>"
-    "#include INCLUDE"
-    "#undef INCLUDE"
-  )
-endforeach()
-list(JOIN MODEL_INCLUDES_LIST "\n" GENERATED_MODEL_INCLUDES)
-configure_file(model_zoo.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/tvm_utility/model_zoo.hpp)
 
 # Library
 
 set(TVM_UTILITY_NODE_LIB_HEADERS
   "include/${PROJECT_NAME}/pipeline.hpp"
-  "${CMAKE_CURRENT_BINARY_DIR}/include/tvm_utility/model_zoo.hpp"
 )
 
 ament_auto_add_library(${PROJECT_NAME} SHARED ${TVM_UTILITY_NODE_LIB_HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-
-ament_export_include_directories(${tvm_utility_NETWORKS_DIR})
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ DESTINATION include)
 
 if(BUILD_TESTING)
   # Get target backend
@@ -53,10 +36,8 @@ if(BUILD_TESTING)
   # compile each folder inside test/ as a test case
   find_package(ament_cmake_gtest REQUIRED)
   find_package(OpenCV REQUIRED)
-  find_package(tvm_vendor REQUIRED)
   set(tvm_runtime_DIR ${tvm_vendor_DIR})
   find_package(tvm_runtime CONFIG REQUIRED)
-  include(${CMAKE_CURRENT_BINARY_DIR}/tvm_utility-extras.cmake)
 
   set(TEST_ARTIFACTS "${CMAKE_CURRENT_LIST_DIR}/artifacts")
   file(GLOB TEST_CASES test/*)
@@ -67,10 +48,11 @@ if(BUILD_TESTING)
     # the folder name becomes the test case name
     file(RELATIVE_PATH TEST_CASE_NAME ${CMAKE_CURRENT_LIST_DIR}/test ${TEST_FOLDER})
 
-    # Test if files exist. The result is set in ${TEST_CASE_NAME}_FOUND
-    autoware_check_neural_network(${TEST_CASE_NAME} "${${PROJECT_NAME}_BACKEND}")
+    # Get neural network.
+    set(NN_DEPENDENCY "")
+    get_neural_network(${TEST_CASE_NAME} ${${PROJECT_NAME}_BACKEND} NN_DEPENDENCY)
 
-    if(${TEST_CASE_NAME}_FOUND)
+    if(NOT NN_DEPENDENCY STREQUAL "")
       if(TEST_CASE_NAME STREQUAL "yolo_v2_tiny" AND
           NOT EXISTS ${TEST_ARTIFACTS}/yolo_v2_tiny/test_image_0.jpg)
         message(WARNING "Missing image artifact for yolo_v2_tiny, skipping test")
@@ -82,7 +64,8 @@ if(BUILD_TESTING)
       ament_target_dependencies(${TEST_CASE_NAME}
         "ament_index_cpp"
         "tvm_vendor"
-        "sensor_msgs")
+      )
+      add_dependencies(${TEST_CASE_NAME} ${NN_DEPENDENCY})
 
       target_link_libraries("${TEST_CASE_NAME}"
         "${OpenCV_LIBRARIES}"
@@ -91,13 +74,10 @@ if(BUILD_TESTING)
 
       target_include_directories("${TEST_CASE_NAME}" SYSTEM PUBLIC
         "${OpenCV_INCLUDE_DIRS}"
-        "${tvm_vendor_INCLUDE_DIRS}"
+        "${tvm_utility_FOUND_INCLUDE_DIRS}"
+        "data/models"
         "include"
-        "${CMAKE_CURRENT_BINARY_DIR}/include"
-        "${tvm_utility_NETWORKS_DIR}"
       )
-
-      target_compile_definitions(${TEST_CASE_NAME} PRIVATE NETWORKS_BACKEND=${${PROJECT_NAME}_BACKEND})
 
       # Install test-specific files
       if(IS_DIRECTORY ${TEST_ARTIFACTS}/${TEST_CASE_NAME})
@@ -113,5 +93,5 @@ if(BUILD_TESTING)
   endforeach()
 endif()
 
-list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS "${CMAKE_CURRENT_BINARY_DIR}/tvm_utility-extras.cmake")
+list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake")
 ament_auto_package()
