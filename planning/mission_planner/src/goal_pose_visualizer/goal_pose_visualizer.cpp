@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mission_planner/goal_pose_visualizer.hpp"
+#include "goal_pose_visualizer.hpp"
 
 namespace mission_planner
 {

@@ -1,0 +1,3 @@
+<library path="mission_planner_lanelet2_plugins">
+  <class type="mission_planner::lanelet2::DefaultPlanner" base_class_type="mission_planner::PlannerPlugin"/>
+</library>

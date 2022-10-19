@@ -10,23 +10,41 @@ Therefore, the output topic is only published when the goal pose or check points
 The core implementation does not depend on a map format.
 In current Autoware.universe, only Lanelet2 map format is supported.
 
-## Inputs / Outputs
+## Interfaces
 
-### input
+### Parameters
 
-| Name                 | Type                                 | Description                                |
-| -------------------- | ------------------------------------ | ------------------------------------------ |
-| `~input/vector_map`  | autoware_auto_mapping_msgs/HADMapBin | vector map of Lanelet2                     |
-| `~input/goal_pose`   | geometry_msgs/PoseStamped            | goal pose                                  |
-| `~input/checkpoints` | geometry_msgs/PoseStamped            | checkpoint to follow while heading to goal |
+| Name                      | Type   | Description                       |
+| ------------------------- | ------ | --------------------------------- |
+| `map_frame`               | string | The frame name for map            |
+| `arrival_check_angle_deg` | double | Angle threshold for goal check    |
+| `arrival_check_distance`  | double | Distance threshold for goal check |
+| `arrival_check_duration`  | double | Duration threshold for goal check |
 
-### output
+### Services
 
-| Name            | Type                                    | Description                 |
-| --------------- | --------------------------------------- | --------------------------- |
-| `~output/route` | autoware_auto_planning_msgs/HADMapRoute | route from ego pose to goal |
+| Name                                 | Type                                        | Description                       |
+| ------------------------------------ | ------------------------------------------- | --------------------------------- |
+| `/planning/routing/clear_route`      | autoware_adapi_v1_msgs::srv::ClearRoute     | route clear request               |
+| `/planning/routing/set_route_points` | autoware_adapi_v1_msgs::srv::SetRoutePoints | route request with pose waypoints |
+| `/planning/routing/set_route`        | autoware_planning_msgs::srv::SetRoute       | route request with HAD map format |
 
-`tier4_planning_msgs/Route` consists of route sections and goal pose.
+### Subscriptions
+
+| Name                  | Type                                 | Description                 |
+| --------------------- | ------------------------------------ | --------------------------- |
+| `input/vector_map`    | autoware_auto_mapping_msgs/HADMapBin | vector map of Lanelet2      |
+| `input/modified_goal` | geometry_msgs/PoseStamped            | goal pose for arrival check |
+
+### Publications
+
+| Name                            | Type                                    | Description            |
+| ------------------------------- | --------------------------------------- | ---------------------- |
+| `/planning/routing/route_state` | autoware_adapi_v1_msgs::msg::RouteState | route state            |
+| `/planning/routing/route`       | autoware_auto_planning_msgs/HADMapRoute | route                  |
+| `debug/route_marker`            | visualization_msgs::msg::MarkerArray    | route marker for debug |
+
+## Route section
 
 ![route_sections](./media/route_sections.svg)
 
@@ -69,30 +87,6 @@ endif
 stop
 @enduml
 ```
-
-Note that during the goal callback, previously memorized check points are removed, and only current ego pose and goal pose are memorized as check points.
-
-```plantuml
-@startuml
-title check point callback
-start
-
-if (size of check points >= 2?) then (yes)
-else (no)
-  stop
-endif
-
-:memorize check point;
-
-:plan route;
-
-:publish route;
-
-stop
-@enduml
-```
-
-Note that at least two check points must be already memorized, which are start and goal pose, before the check point callback.
 
 ### Route Planner
 

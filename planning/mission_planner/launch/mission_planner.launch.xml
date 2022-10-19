@@ -1,17 +1,15 @@
 <launch>
-  <arg name="goal_topic_name" default="/planning/mission_planning/goal"/>
-  <arg name="checkpoint_topic_name" default="/planning/mission_planning/checkpoint"/>
-  <arg name="route_topic_name" default="/planning/mission_planning/route"/>
+  <arg name="modified_goal_topic_name" default="/planning/scenario_planning/modified_goal"/>
   <arg name="map_topic_name" default="/map/vector_map"/>
   <arg name="visualization_topic_name" default="/planning/mission_planning/route_marker"/>
 
   <node pkg="mission_planner" exec="mission_planner" name="mission_planner" output="screen">
     <param name="map_frame" value="map"/>
-    <param name="base_link_frame" value="base_link"/>
+    <param name="arrival_check_angle_deg" value="45.0"/>
+    <param name="arrival_check_distance" value="1.0"/>
+    <param name="arrival_check_duration" value="1.0"/>
+    <remap from="input/modified_goal" to="$(var modified_goal_topic_name)"/>
     <remap from="input/vector_map" to="$(var map_topic_name)"/>
-    <remap from="input/goal_pose" to="$(var goal_topic_name)"/>
-    <remap from="input/checkpoint" to="$(var checkpoint_topic_name)"/>
-    <remap from="output/route" to="$(var route_topic_name)"/>
     <remap from="debug/route_marker" to="$(var visualization_topic_name)"/>
   </node>
 </launch>
