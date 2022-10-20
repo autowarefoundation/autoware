@@ -215,7 +215,7 @@ Point transformFromMap2Grid(const TransformStamped & geom_tf_map2grid, const Poi
 {
   Point geom_pt = tier4_autoware_utils::createPoint(p.x(), p.y(), 0);
   Point transformed_geom_pt;
-  // from map coordinate to occupancy grid corrdinate
+  // from map coordinate to occupancy grid coordinate
   tf2::doTransform(geom_pt, transformed_geom_pt, geom_tf_map2grid);
   return transformed_geom_pt;
 }
@@ -281,7 +281,7 @@ void generateOccupiedImage(
           toCVPoint(transformed_geom_pt, width, height, occupancy_grid.info.resolution));
       }
       cv_polygons.push_back(cv_polygon);
-      // clear previously addeed points
+      // clear previously added points
       cv_polygon.clear();
     }
   }
@@ -293,7 +293,7 @@ void generateOccupiedImage(
           toCVPoint(transformed_geom_pt, width, height, occupancy_grid.info.resolution));
       }
       cv_polygons.push_back(cv_polygon);
-      // clear previously addeed points
+      // clear previously added points
       cv_polygon.clear();
     }
   }

@@ -70,7 +70,7 @@ bool8_t MPC::calculateMPC(
   trajectory_follower::MPCTrajectory mpc_resampled_ref_traj;
   const float64_t mpc_start_time = mpc_data.nearest_time + m_param.input_delay;
   const float64_t prediction_dt =
-    getPredictionDeletaTime(mpc_start_time, reference_trajectory, current_pose);
+    getPredictionDeltaTime(mpc_start_time, reference_trajectory, current_pose);
   if (!resampleMPCTrajectoryByTime(
         mpc_start_time, prediction_dt, reference_trajectory, &mpc_resampled_ref_traj)) {
     RCLCPP_WARN_THROTTLE(m_logger, *m_clock, 1000 /*ms*/, "trajectory resampling failed.");
@@ -230,7 +230,7 @@ void MPC::setReferenceTrajectory(
   /* add end point with vel=0 on traj for mpc prediction */
   {
     auto & t = mpc_traj_smoothed;
-    const float64_t t_ext = 100.0;  // extra time to prevent mpc calcul failure due to short time
+    const float64_t t_ext = 100.0;  // extra time to prevent mpc calc failure due to short time
     const float64_t t_end = t.relative_time.back() + t_ext;
     const float64_t v_end = 0.0;
     t.vx.back() = v_end;  // set for end point
@@ -780,7 +780,7 @@ void MPC::addSteerWeightF(const float64_t prediction_dt, Eigen::MatrixXd * f_ptr
   f(0, 1) += (2.0 * m_raw_steer_cmd_prev * steer_acc_r_cp1) * 0.5;
 }
 
-float64_t MPC::getPredictionDeletaTime(
+float64_t MPC::getPredictionDeltaTime(
   const float64_t start_time, const trajectory_follower::MPCTrajectory & input,
   const geometry_msgs::msg::Pose & current_pose) const
 {
@@ -811,7 +811,7 @@ float64_t MPC::getPredictionDeletaTime(
     return input.relative_time.back() - t_ext;
   }();
 
-  // Calculate deleta time for min_prediction_length
+  // Calculate delta time for min_prediction_length
   const float64_t dt =
     (target_time - start_time) / static_cast<float64_t>(m_param.prediction_horizon - 1);
 

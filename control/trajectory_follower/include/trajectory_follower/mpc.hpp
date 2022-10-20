@@ -227,16 +227,16 @@ private:
    * @param [in] reference_trajectory used for linearization around reference trajectory
    */
   MPCMatrix generateMPCMatrix(
-    const trajectory_follower::MPCTrajectory & reference_trajectory, const float64_t predition_dt);
+    const trajectory_follower::MPCTrajectory & reference_trajectory, const float64_t prediction_dt);
   /**
    * @brief generate MPC matrix with trajectory and vehicle model
    * @param [in] mpc_matrix parameters matrix to use for optimization
    * @param [in] x0 initial state vector
-   * @param [in] precition_dt predition deleta time
+   * @param [in] prediction_dt prediction delta time
    * @param [out] Uex optimized input vector
    */
   bool8_t executeOptimization(
-    const MPCMatrix & mpc_matrix, const Eigen::VectorXd & x0, const float64_t predition_dt,
+    const MPCMatrix & mpc_matrix, const Eigen::VectorXd & x0, const float64_t prediction_dt,
     Eigen::VectorXd * Uex);
   /**
    * @brief resample trajectory with mpc resampling time
@@ -255,17 +255,17 @@ private:
    * @brief get prediction delta time of mpc.
    * If trajectory length is shorter than min_prediction length, adjust delta time.
    */
-  float64_t getPredictionDeletaTime(
+  float64_t getPredictionDeltaTime(
     const float64_t start_time, const trajectory_follower::MPCTrajectory & input,
     const geometry_msgs::msg::Pose & current_pose) const;
   /**
    * @brief add weights related to lateral_jerk, steering_rate, steering_acc into R
    */
-  void addSteerWeightR(const float64_t predition_dt, Eigen::MatrixXd * R) const;
+  void addSteerWeightR(const float64_t prediction_dt, Eigen::MatrixXd * R) const;
   /**
    * @brief add weights related to lateral_jerk, steering_rate, steering_acc into f
    */
-  void addSteerWeightF(const float64_t predition_dt, Eigen::MatrixXd * f) const;
+  void addSteerWeightF(const float64_t prediction_dt, Eigen::MatrixXd * f) const;
   /**
    * @brief check if the matrix has invalid value
    */

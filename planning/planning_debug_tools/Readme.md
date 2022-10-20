@@ -157,7 +157,7 @@ The old version of the trajectory analyzer. It is written in Python and more fle
 ## For other use case (experimental)
 
 To see behavior velocity planner's internal plath with lane id
-add below example value to behavior velocity analayzer and set `is_publish_debug_path: true`
+add below example value to behavior velocity analyzer and set `is_publish_debug_path: true`
 
 ```lua
 crosswalk ='/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path_with_lane_id/crosswalk/debug_info'

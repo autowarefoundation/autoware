@@ -270,8 +270,8 @@ searched for in certain range of the shoulder lane.
 | backward_goal_search_length | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
 | goal_search_interval        | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 2.0            |
 | longitudinal_margin         | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
-| max_lateral_offset          | [m]  | double | maximum offset of goal search in the latearl direction                                                                                                                                                                   | 3.0            |
-| lateral_offset_interval     | [m]  | double | distance interval of goal search in the latearl direction                                                                                                                                                                | 3.0            |
+| max_lateral_offset          | [m]  | double | maximum offset of goal search in the lateral direction                                                                                                                                                                   | 3.0            |
+| lateral_offset_interval     | [m]  | double | distance interval of goal search in the lateral direction                                                                                                                                                                | 3.0            |
 
 #### **Path Generation**
 

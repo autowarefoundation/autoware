@@ -304,10 +304,10 @@ std::tuple<lanelet::ConstLanelets, lanelet::ConstLanelets> getObjectiveLanelets(
 
   // retrieve a stopline associated with a traffic light
   bool has_traffic_light = false;
-  if (const auto tl_regelems = assigned_lanelet.regulatoryElementsAs<lanelet::TrafficLight>();
-      tl_regelems.size() != 0) {
-    const auto tl_regelem = tl_regelems.front();
-    const auto stop_line_opt = tl_regelem->stopLine();
+  if (const auto tl_reg_elems = assigned_lanelet.regulatoryElementsAs<lanelet::TrafficLight>();
+      tl_reg_elems.size() != 0) {
+    const auto tl_reg_elem = tl_reg_elems.front();
+    const auto stop_line_opt = tl_reg_elem->stopLine();
     if (!!stop_line_opt) has_traffic_light = true;
   }
 
@@ -626,8 +626,8 @@ bool isTrafficLightArrowActivated(
 {
   const auto & turn_direction = lane.attributeOr("turn_direction", "else");
   std::optional<int> tl_id = std::nullopt;
-  for (auto && tl_regelem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
-    tl_id = tl_regelem->id();
+  for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
+    tl_id = tl_reg_elem->id();
     break;
   }
   if (!tl_id) {

@@ -366,11 +366,11 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   const Pose Cr = calcOffsetPose(arc_end_pose, 0, -R_E_r, 0);
   const double d_Cr_Einit = calcDistance2d(Cr, start_pose);
 
-  const Point Cr_goalcoords = inverseTransformPoint(Cr.position, arc_end_pose);
-  const Point self_point_goalcoords = inverseTransformPoint(start_pose.position, arc_end_pose);
+  const Point Cr_goal_coords = inverseTransformPoint(Cr.position, arc_end_pose);
+  const Point self_point_goal_coords = inverseTransformPoint(start_pose.position, arc_end_pose);
 
   const double alpha =
-    M_PI_2 - psi + std::asin((self_point_goalcoords.y - Cr_goalcoords.y) / d_Cr_Einit);
+    M_PI_2 - psi + std::asin((self_point_goal_coords.y - Cr_goal_coords.y) / d_Cr_Einit);
 
   const double R_E_l =
     (std::pow(d_Cr_Einit, 2) - std::pow(R_E_r, 2)) / (2 * (R_E_r + d_Cr_Einit * std::cos(alpha)));
@@ -494,9 +494,9 @@ PathPointWithLaneId GeometricParallelParking::generateArcPathPoint(
   const bool is_forward)
 {
   // get pose in center_pose coords
-  Pose pose_centercoords;
-  pose_centercoords.position.x = radius * std::cos(yaw);
-  pose_centercoords.position.y = radius * std::sin(yaw);
+  Pose pose_center_coords;
+  pose_center_coords.position.x = radius * std::cos(yaw);
+  pose_center_coords.position.y = radius * std::sin(yaw);
 
   // set orientation
   tf2::Quaternion quat;
@@ -505,11 +505,11 @@ PathPointWithLaneId GeometricParallelParking::generateArcPathPoint(
   } else {
     quat.setRPY(0, 0, normalizeRadian(yaw + M_PI_2));
   }
-  pose_centercoords.orientation = tf2::toMsg(quat);
+  pose_center_coords.orientation = tf2::toMsg(quat);
 
   // get pose in map coords
   PathPointWithLaneId p{};
-  p.point.pose = transformPose(pose_centercoords, center);
+  p.point.pose = transformPose(pose_center_coords, center);
 
   return p;
 }
