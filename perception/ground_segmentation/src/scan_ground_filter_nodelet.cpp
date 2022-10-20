@@ -314,9 +314,7 @@ void ScanGroundFilterComponent::classifyPointCloudGridScan(
         continue;
       }
 
-      if (
-        !initialized_first_gnd_grid && global_slope_p < -global_slope_max_angle_rad_ &&
-        p->orig_point->z < -non_ground_height_threshold_local) {
+      if (!initialized_first_gnd_grid) {
         prev_p = p;
         continue;
       }
