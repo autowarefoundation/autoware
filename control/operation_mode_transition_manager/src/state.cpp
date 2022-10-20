@@ -31,7 +31,7 @@ EngageStateBase::EngageStateBase(const State state, rclcpp::Node * node)
 : logger_(node->get_logger()), clock_(node->get_clock()), state_(state)
 {
   // TODO(Horibe): move to manager.
-  srv_mode_change_client_ = node->create_client<ControlModeRequest>("control_mode_request");
+  srv_mode_change_client_ = node->create_client<ControlModeCommand>("control_mode_request");
 }
 
 State EngageStateBase::defaultUpdateOnManual()
@@ -57,11 +57,11 @@ bool EngageStateBase::sendAutonomousModeRequest()
 {
   bool success = true;
 
-  auto request = std::make_shared<ControlModeRequest::Request>();
-  request->mode.header.stamp = clock_->now();
-  request->mode.data = ControlMode::AUTO;
+  auto request = std::make_shared<ControlModeCommand::Request>();
+  request->stamp = clock_->now();
+  request->mode = ControlModeCommand::Request::AUTONOMOUS;
 
-  const auto callback = [&](rclcpp::Client<ControlModeRequest>::SharedFuture future) {
+  const auto callback = [&](rclcpp::Client<ControlModeCommand>::SharedFuture future) {
     success = future.get()->success;
     if (!success) {
       RCLCPP_WARN(logger_, "Autonomous mode change was rejected.");

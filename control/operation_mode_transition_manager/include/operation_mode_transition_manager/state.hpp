@@ -19,10 +19,10 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_auto_vehicle_msgs/srv/control_mode_command.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_system_msgs/msg/operation_mode.hpp>
 #include <tier4_system_msgs/srv/operation_mode_request.hpp>
-#include <tier4_vehicle_msgs/srv/control_mode_request.hpp>
 
 #include <memory>
 
@@ -41,7 +41,7 @@ public:
   void setParam(const StableCheckParam & param) { stable_check_param_ = param; }
 
 protected:
-  rclcpp::Client<ControlModeRequest>::SharedPtr srv_mode_change_client_;
+  rclcpp::Client<ControlModeCommand>::SharedPtr srv_mode_change_client_;
 
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;

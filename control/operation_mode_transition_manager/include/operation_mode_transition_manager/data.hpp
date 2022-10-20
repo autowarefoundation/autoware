@@ -23,13 +23,11 @@
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_vehicle_msgs/msg/control_mode_report.hpp>
-#include <autoware_auto_vehicle_msgs/srv/autonomy_mode_change.hpp>
+#include <autoware_auto_vehicle_msgs/srv/control_mode_command.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_system_msgs/msg/is_autonomous_available.hpp>
 #include <tier4_system_msgs/msg/operation_mode.hpp>
 #include <tier4_system_msgs/srv/operation_mode_request.hpp>
-#include <tier4_vehicle_msgs/msg/control_mode.hpp>
-#include <tier4_vehicle_msgs/srv/control_mode_request.hpp>
 
 #include <string>
 
@@ -41,12 +39,11 @@ using nav_msgs::msg::Odometry;
 using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_vehicle_msgs::msg::ControlModeReport;
+using autoware_auto_vehicle_msgs::srv::ControlModeCommand;
 using operation_mode_transition_manager::msg::OperationModeTransitionManagerDebug;
 using tier4_system_msgs::msg::IsAutonomousAvailable;
 using tier4_system_msgs::msg::OperationMode;
 using tier4_system_msgs::srv::OperationModeRequest;
-using tier4_vehicle_msgs::msg::ControlMode;
-using tier4_vehicle_msgs::srv::ControlModeRequest;
 
 enum class State {
   STOP = 0,

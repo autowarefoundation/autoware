@@ -109,7 +109,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   sub_trajectory_ = create_subscription<Trajectory>(
     "input/trajectory", QoS{1}, std::bind(&SimplePlanningSimulator::on_trajectory, this, _1));
 
-  srv_mode_req_ = create_service<tier4_vehicle_msgs::srv::ControlModeRequest>(
+  srv_mode_req_ = create_service<ControlModeCommand>(
     "input/control_mode_request",
     std::bind(&SimplePlanningSimulator::on_control_mode_request, this, _1, _2));
 
@@ -179,7 +179,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   }
 
   // control mode
-  current_control_mode_.data = ControlMode::AUTO;
+  current_control_mode_.mode = ControlModeReport::AUTONOMOUS;
   current_manual_gear_cmd_.command = GearCommand::DRIVE;
 }
 
@@ -260,7 +260,7 @@ void SimplePlanningSimulator::on_timer()
   {
     const float64_t dt = delta_time_.get_dt(get_clock()->now());
 
-    if (current_control_mode_.data == ControlMode::AUTO) {
+    if (current_control_mode_.mode == ControlModeReport::AUTONOMOUS) {
       vehicle_model_ptr_->setGear(current_gear_cmd_.command);
       set_input(current_ackermann_cmd_);
     } else {
@@ -385,11 +385,20 @@ void SimplePlanningSimulator::on_engage(const Engage::ConstSharedPtr msg)
 }
 
 void SimplePlanningSimulator::on_control_mode_request(
-  const ControlModeRequest::Request::SharedPtr request,
-  const ControlModeRequest::Response::SharedPtr response)
+  const ControlModeCommand::Request::SharedPtr request,
+  const ControlModeCommand::Response::SharedPtr response)
 {
-  current_control_mode_ = request->mode;
-  response->success = true;
+  const auto m = request->mode;
+  if (m == ControlModeCommand::Request::MANUAL) {
+    current_control_mode_.mode = ControlModeReport::MANUAL;
+    response->success = true;
+  } else if (m == ControlModeCommand::Request::AUTONOMOUS) {
+    current_control_mode_.mode = ControlModeReport::AUTONOMOUS;
+    response->success = true;
+  } else {  // not supported
+    response->success = false;
+    RCLCPP_ERROR(this->get_logger(), "Requested mode not supported");
+  }
   return;
 }
 
@@ -542,14 +551,8 @@ void SimplePlanningSimulator::publish_acceleration()
 
 void SimplePlanningSimulator::publish_control_mode_report()
 {
-  ControlModeReport msg;
-  msg.stamp = get_clock()->now();
-  if (current_control_mode_.data == ControlMode::AUTO) {
-    msg.mode = ControlModeReport::AUTONOMOUS;
-  } else {
-    msg.mode = ControlModeReport::MANUAL;
-  }
-  pub_control_mode_report_->publish(msg);
+  current_control_mode_.stamp = get_clock()->now();
+  pub_control_mode_report_->publish(current_control_mode_);
 }
 
 void SimplePlanningSimulator::publish_gear_report()
