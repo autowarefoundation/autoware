@@ -488,7 +488,7 @@ Developers can see what is going on in each process by visualizing all the avoid
 
 ![fig1](./image/avoidance_design/avoidance-debug-marker.png)
 
-The debug marker can be enable via `avoidance.param.yaml`. Simply set the `publish_debug_marker` to `true`, restart `rviz2` and add the marker `planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/markers/MarkerArray`.
+To enable the debug marker, execute `ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner avoidance.publish_debug_marker true` (no restart is needed) or simply set the `publish_debug_marker` to `true` in the `avoidance.param.yaml` for permanent effect (restart is needed). Then add the marker `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance` in `rviz2`.
 
 ### Echoing debug message to find out why the objects were ignored
 
@@ -502,7 +502,7 @@ To print the debug message, just run the following
 ros2 topic echo /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance_debug_message_array
 ```
 
-### Showing drivable area boundary
+### Visualizing drivable area boundary
 
 Sometimes, the developers might get a different result between two maps that may look identical during visual inspection.
 
@@ -515,3 +515,11 @@ To debug the issue, the drivable area boundary can be visualized.
 ![drivable_area_boundary_marker2](./image/avoidance_design/drivable_area_boundary_marker_example2.png)
 
 The boundary can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/drivable_area_boundary`
+
+### Visualizing drivable area
+
+The drivable area can be visualize by adding the drivable area plugin
+
+![drivable_area_plugin](./image/drivable_area_plugin.png)
+
+and then add `/planning/scenario_planning/lane_driving/behavior_planning/path` as the topic.

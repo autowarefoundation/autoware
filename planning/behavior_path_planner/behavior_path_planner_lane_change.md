@@ -419,8 +419,6 @@ The following parameters are configurable in `lane_change.param.yaml`.
 
 ## Debug Marker & Visualization
 
-The debug marker can be enable via `lane_change.param.yaml`. Simply set the `publish_debug_marker` to `true`, restart `rviz2` and add the marker `planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/markers/MarkerArray`.
+To enable the debug marker, execute `ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner lane_change.publish_debug_marker true` (no restart is needed) or simply set the `publish_debug_marker` to `true` in the `lane_change.param.yaml` for permanent effect (restart is needed). Then add the marker `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/lanechange` in `rviz2`.
 
 ![debug](./image/lane_change/lane_change-debug.png)
-
-## Limitations
