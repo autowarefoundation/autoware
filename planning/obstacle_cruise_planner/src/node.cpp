@@ -224,7 +224,7 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     "~/output/clear_velocity_limit", rclcpp::QoS{1}.transient_local());
   debug_calculation_time_pub_ = create_publisher<Float32Stamped>("~/debug/calculation_time", 1);
   debug_cruise_wall_marker_pub_ =
-    create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/cruise_wall_marker", 1);
+    create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/cruise/virtual_wall", 1);
   debug_stop_wall_marker_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
   debug_marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
