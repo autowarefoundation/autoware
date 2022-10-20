@@ -94,8 +94,8 @@ bool8_t MPC::calculateMPC(
   /* set control command */
   {
     ctrl_cmd.steering_tire_angle = static_cast<float>(u_filtered);
-    ctrl_cmd.steering_tire_rotation_rate =
-      static_cast<float>((u_filtered - current_steer.steering_tire_angle) / prediction_dt);
+    ctrl_cmd.steering_tire_rotation_rate = static_cast<float>(calcDesiredSteeringRate(
+      mpc_matrix, x0, Uex, u_filtered, current_steer.steering_tire_angle, prediction_dt));
   }
 
   storeSteerCmd(u_filtered);
@@ -816,6 +816,29 @@ float64_t MPC::getPredictionDeltaTime(
     (target_time - start_time) / static_cast<float64_t>(m_param.prediction_horizon - 1);
 
   return std::max(dt, m_param.prediction_dt);
+}
+
+float64_t MPC::calcDesiredSteeringRate(
+  const MPCMatrix & mpc_matrix, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+  const float64_t u_filtered, const float current_steer, const float64_t predict_dt) const
+{
+  if (m_vehicle_model_type != "kinematics") {
+    // not supported yet. Use old implementation.
+    return (u_filtered - current_steer) / predict_dt;
+  }
+
+  // calculate predicted states to get the steering motion
+  const auto & m = mpc_matrix;
+  const Eigen::MatrixXd Xex = m.Aex * x0 + m.Bex * Uex + m.Wex;
+
+  const size_t STEER_IDX = 2;  // for kinematics model
+
+  const auto steer_0 = x0(STEER_IDX, 0);
+  const auto steer_1 = Xex(STEER_IDX, 0);
+
+  const auto steer_rate = (steer_1 - steer_0) / predict_dt;
+
+  return steer_rate;
 }
 
 bool8_t MPC::isValid(const MPCMatrix & m) const

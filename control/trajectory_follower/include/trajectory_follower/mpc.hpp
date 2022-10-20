@@ -266,6 +266,14 @@ private:
    * @brief add weights related to lateral_jerk, steering_rate, steering_acc into f
    */
   void addSteerWeightF(const float64_t prediction_dt, Eigen::MatrixXd * f) const;
+
+  /**
+   * @brief calculate desired steering rate.
+   */
+  float64_t calcDesiredSteeringRate(
+    const MPCMatrix & m, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
+    const float64_t u_filtered, const float current_steer, const float64_t predict_dt) const;
+
   /**
    * @brief check if the matrix has invalid value
    */
