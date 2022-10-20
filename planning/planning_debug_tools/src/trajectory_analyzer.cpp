@@ -21,16 +21,18 @@ TrajectoryAnalyzerNode::TrajectoryAnalyzerNode(const rclcpp::NodeOptions & optio
 {
   using TopicNames = std::vector<std::string>;
   const auto path_topics = declare_parameter<TopicNames>("path_topics", TopicNames{});
-  const auto path_wlid_topics = declare_parameter<TopicNames>("path_wlid_topics", TopicNames{});
+  const auto path_with_lane_id_topics =
+    declare_parameter<TopicNames>("path_with_lane_id_topics", TopicNames{});
   const auto trajectory_topics = declare_parameter<TopicNames>("trajectory_topics", TopicNames{});
 
   for (const auto & s : path_topics) {
     path_analyzers_.push_back(std::make_shared<TrajectoryAnalyzer<Path>>(this, s));
     RCLCPP_INFO(get_logger(), "path_topics: %s", s.c_str());
   }
-  for (const auto & s : path_wlid_topics) {
-    path_wlid_analyzers_.push_back(std::make_shared<TrajectoryAnalyzer<PathWithLaneId>>(this, s));
-    RCLCPP_INFO(get_logger(), "path_wlid_topics: %s", s.c_str());
+  for (const auto & s : path_with_lane_id_topics) {
+    path_with_lane_id_analyzers_.push_back(
+      std::make_shared<TrajectoryAnalyzer<PathWithLaneId>>(this, s));
+    RCLCPP_INFO(get_logger(), "path_with_lane_id_topics: %s", s.c_str());
   }
 
   for (const auto & s : trajectory_topics) {
@@ -48,7 +50,7 @@ void TrajectoryAnalyzerNode::onEgoKinematics(const Odometry::ConstSharedPtr msg)
   for (auto & a : path_analyzers_) {
     a->setKinematics(msg);
   }
-  for (auto & a : path_wlid_analyzers_) {
+  for (auto & a : path_with_lane_id_analyzers_) {
     a->setKinematics(msg);
   }
   for (auto & a : trajectory_analyzers_) {

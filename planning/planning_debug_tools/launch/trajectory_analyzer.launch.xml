@@ -1,7 +1,7 @@
 <launch>
   <node pkg="planning_debug_tools" exec="trajectory_analyzer_exe" name="trajectory_analyzer" output="screen">
     <param name="path_topics" value="[/planning/scenario_planning/lane_driving/behavior_planning/path]"/>
-    <param name="path_wlid_topics" value="[/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id]"/>
+    <param name="path_with_lane_id_topics" value="[/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id]"/>
     <param
       name="trajectory_topics"
       value="[/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/trajectory,

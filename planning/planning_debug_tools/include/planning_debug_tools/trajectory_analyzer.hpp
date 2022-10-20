@@ -116,7 +116,7 @@ private:
   void onEgoKinematics(const Odometry::ConstSharedPtr msg);
 
   std::vector<std::shared_ptr<TrajectoryAnalyzer<Path>>> path_analyzers_;
-  std::vector<std::shared_ptr<TrajectoryAnalyzer<PathWithLaneId>>> path_wlid_analyzers_;
+  std::vector<std::shared_ptr<TrajectoryAnalyzer<PathWithLaneId>>> path_with_lane_id_analyzers_;
   std::vector<std::shared_ptr<TrajectoryAnalyzer<Trajectory>>> trajectory_analyzers_;
 };
 
