@@ -100,3 +100,13 @@ gpu_monitor:
 | gpu_usage_error    | float | %(1e-2) |  1.00   | Generates error when GPU usage reaches a specified value or higher.          |
 | memory_usage_warn  | float | %(1e-2) |  0.90   | Generates warning when GPU memory usage reaches a specified value or higher. |
 | memory_usage_error | float | %(1e-2) |  1.00   | Generates error when GPU memory usage reaches a specified value or higher.   |
+
+## <u>Voltage Monitor</u>
+
+voltage_monitor:
+
+| Name               |  Type  | Unit | Default | Notes                                                                           |
+| :----------------- | :----: | :--: | :-----: | :------------------------------------------------------------------------------ |
+| cmos_battery_warn  | float  | volt |   2.9   | Generates warning when voltage of CMOS Battery is lower.                        |
+| cmos_battery_error | float  | volt |   2.7   | Generates error when voltage of CMOS Battery is lower.                          |
+| cmos_battery_label | string | n/a  |   ""    | voltage string in sensors command outputs. if emtpy no voltage will be checked. |

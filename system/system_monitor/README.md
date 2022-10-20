@@ -13,6 +13,7 @@ This package provides the following nodes for monitoring system:
 - NTP Monitor
 - Process Monitor
 - GPU Monitor
+- Voltage Monitor
 
 ### Supported architecture
 
@@ -50,6 +51,7 @@ Every topic is published in 1 minute interval.
 - [NTP Monitor](docs/topics_ntp_monitor.md)
 - [Process Monitor](docs/topics_process_monitor.md)
 - [GPU Monitor](docs/topics_gpu_monitor.md)
+- [Voltage Monitor](docs/topics_voltage_monitor.md)
 
 [Usage] ✓：Supported, -：Not supported
 
@@ -83,6 +85,7 @@ Every topic is published in 1 minute interval.
 |                 | GPU Memory Usage             |   ✓   |      -       |      -       |                                                                                                                                                                                                 |
 |                 | GPU Thermal Throttling       |   ✓   |      -       |      -       |                                                                                                                                                                                                 |
 |                 | GPU Frequency                |   ✓   |      ✓       |      -       | For Intel platform, monitor whether current GPU clock is supported by the GPU.                                                                                                                  |
+| Voltage Monitor | CMOS Battery Staus           |   ✓   |      -       |      -       | Battery Health for RTC and BIOS -                                                                                                                                                               |
 
 ## ROS parameters
 
@@ -182,6 +185,85 @@ Currently GPU monitor for intel platform only supports NVIDIA GPU whose informat
 
 Also you need to install CUDA libraries.
 For installation instructions for CUDA 10.0, see [NVIDIA CUDA Installation Guide for Linux](https://docs.nvidia.com/cuda/archive/10.0/cuda-installation-guide-linux/index.html).
+
+## <u>Voltage monitor for CMOS Battery</u>
+
+Some platforms have built-in batteries for the RTC and CMOS. This node determines the battery status from the result of executing cat /proc/driver/rtc.
+Also, if lm-sensors is installed, it is possible to use the results.
+However, the return value of sensors varies depending on the chipset, so it is necessary to set a string to extract the corresponding voltage.
+It is also necessary to set the voltage for warning and error.
+For example, if you want a warning when the voltage is less than 2.9V and an error when it is less than 2.7V.
+The execution result of sensors on the chipset nct6106 is as follows, and "in7:" is the voltage of the CMOS battery.
+
+```txt
+$ sensors
+pch_cannonlake-virtual-0
+Adapter: Virtual device
+temp1:        +42.0°C
+
+nct6106-isa-0a10
+Adapter: ISA adapter
+in0:           728.00 mV (min =  +0.00 V, max =  +1.74 V)
+in1:             1.01 V  (min =  +0.00 V, max =  +2.04 V)
+in2:             3.34 V  (min =  +0.00 V, max =  +4.08 V)
+in3:             3.34 V  (min =  +0.00 V, max =  +4.08 V)
+in4:             1.07 V  (min =  +0.00 V, max =  +2.04 V)
+in5:             1.05 V  (min =  +0.00 V, max =  +2.04 V)
+in6:             1.67 V  (min =  +0.00 V, max =  +2.04 V)
+in7:             3.06 V  (min =  +0.00 V, max =  +4.08 V)
+in8:             2.10 V  (min =  +0.00 V, max =  +4.08 V)
+fan1:          2789 RPM  (min =    0 RPM)
+fan2:             0 RPM  (min =    0 RPM)
+```
+
+The setting value of voltage_monitor.param.yaml is as follows.
+
+```yaml
+/**:
+  ros__parameters:
+    cmos_battery_warn: 2.90
+    cmos_battery_error: 2.70
+    cmos_battery_label: "in7:"
+```
+
+The above values of 2.7V and 2.90V are hypothetical. Depending on the motherboard and chipset, the value may vary. However, if the voltage of the lithium battery drops below 2.7V, it is recommended to replace it.
+In the above example, the message output to the topic /diagnostics is as follows.
+If the voltage < 2.9V then:
+
+```txt
+  name: /autoware/system/resource_monitoring/voltage/cmos_battery
+  message: Warning
+  hardware_id: ''
+  values:
+  - key: 'voltage_monitor: CMOS Battery Status'
+    value: Low Battery
+```
+
+If the voltage < 2.7V then:
+
+```txt
+  name: /autoware/system/resource_monitoring/voltage/cmos_battery
+  message: Warning
+  hardware_id: ''
+  values:
+  - key: 'voltage_monitor: CMOS Battery Status'
+    value: Battery Died
+```
+
+If neither, then:
+
+```txt
+  name: /autoware/system/resource_monitoring/voltage/cmos_battery
+  message: OK
+  hardware_id: ''
+  values:
+  - key: 'voltage_monitor: CMOS Battery Status'
+    value: OK
+```
+
+If the CMOS battery voltage drops less than voltage_error or voltage_warn,It will be a warning.
+If the battery runs out, the RTC will stop working when the power is turned off. However, since the vehicle can run, it is not an error. The vehicle will stop when an error occurs, but there is no need to stop immediately.
+It can be determined by the value of "Low Battery" or "Battery Died".
 
 ## UML diagrams
 

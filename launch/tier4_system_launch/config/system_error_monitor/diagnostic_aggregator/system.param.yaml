@@ -171,3 +171,13 @@
                   path: tasks_summary
                   contains: [": Tasks Summary"]
                   timeout: 3.0
+
+            hardware:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: voltage
+              analyzers:
+                cmos_battery:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: cmos_battery
+                  contains: [": CMOS Battery Status"]
+                  timeout: 3.0

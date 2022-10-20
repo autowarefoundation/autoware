@@ -6,6 +6,7 @@
   <arg name="ntp_monitor_config_file" default="$(find-pkg-share system_monitor)/config/ntp_monitor.param.yaml"/>
   <arg name="process_monitor_config_file" default="$(find-pkg-share system_monitor)/config/process_monitor.param.yaml"/>
   <arg name="gpu_monitor_config_file" default="$(find-pkg-share system_monitor)/config/gpu_monitor.param.yaml"/>
+  <arg name="voltage_monitor_config_file" default="$(find-pkg-share system_monitor)/config/voltage_monitor.param.yaml"/>
 
   <group>
     <node pkg="system_monitor" exec="cpu_monitor" name="cpu_monitor" output="log" respawn="true">
@@ -28,6 +29,9 @@
     </node>
     <node pkg="system_monitor" exec="gpu_monitor" name="gpu_monitor" output="log" respawn="true">
       <param from="$(var gpu_monitor_config_file)"/>
+    </node>
+    <node pkg="system_monitor" exec="voltage_monitor" name="voltage_monitor" output="log" respawn="true">
+      <param from="$(var voltage_monitor_config_file)"/>
     </node>
   </group>
 </launch>
