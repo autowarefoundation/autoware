@@ -65,8 +65,6 @@ void ObjectLaneletFilterNode::mapCallback(
 void ObjectLaneletFilterNode::objectCallback(
   const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_msg)
 {
-  using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
-
   // Guard
   if (object_pub_->get_subscription_count() < 1) return;
 
@@ -93,15 +91,7 @@ void ObjectLaneletFilterNode::objectCallback(
   for (const auto & object : transformed_objects.objects) {
     const auto & footprint = object.shape.footprint;
     const auto & label = object.classification.front().label;
-    if (
-      (label == Label::UNKNOWN && filter_target_.UNKNOWN) ||
-      (label == Label::CAR && filter_target_.CAR) ||
-      (label == Label::TRUCK && filter_target_.TRUCK) ||
-      (label == Label::BUS && filter_target_.BUS) ||
-      (label == Label::TRAILER && filter_target_.TRAILER) ||
-      (label == Label::MOTORCYCLE && filter_target_.MOTORCYCLE) ||
-      (label == Label::BICYCLE && filter_target_.BICYCLE) ||
-      (label == Label::PEDESTRIAN && filter_target_.PEDESTRIAN)) {
+    if (filter_target_.isTarget(label)) {
       Polygon2d polygon;
       for (const auto & point : footprint.points) {
         const geometry_msgs::msg::Point32 point_transformed =

@@ -17,6 +17,8 @@
 #include <perception_utils/perception_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+#include <boost/geometry.hpp>
+
 #include <pcl/filters/crop_hull.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
@@ -68,8 +70,9 @@ inline pcl::PointCloud<pcl::PointXYZ>::Ptr toXYZ(
 
 namespace obstacle_pointcloud_based_validator
 {
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+namespace bg = boost::geometry;
 using Shape = autoware_auto_perception_msgs::msg::Shape;
+using Polygon2d = tier4_autoware_utils::Polygon2d;
 
 ObstaclePointCloudBasedValidator::ObstaclePointCloudBasedValidator(
   const rclcpp::NodeOptions & node_options)
@@ -116,7 +119,7 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
   pcl::PointCloud<pcl::PointXY>::Ptr obstacle_pointcloud(new pcl::PointCloud<pcl::PointXY>);
   pcl::fromROSMsg(*input_obstacle_pointcloud, *obstacle_pointcloud);
   if (obstacle_pointcloud->empty()) {
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5, "cannot receieve pointcloud");
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5, "cannot receive pointcloud");
     // objects_pub_->publish(*input_objects);
     return;
   }
@@ -150,10 +153,8 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
     // Filter object that have few pointcloud in them.
     const auto num = getPointCloudNumWithinPolygon(transformed_object, neighbor_pointcloud);
     if (num) {
-      if (min_pointcloud_num_ <= num.value())
-        output.objects.push_back(object);
-      else
-        removed_objects.objects.push_back(object);
+      (min_pointcloud_num_ <= num.value()) ? output.objects.push_back(object)
+                                           : removed_objects.objects.push_back(object);
     } else {
       output.objects.push_back(object);
     }
@@ -171,22 +172,27 @@ std::optional<size_t> ObstaclePointCloudBasedValidator::getPointCloudNumWithinPo
   const autoware_auto_perception_msgs::msg::DetectedObject & object,
   const pcl::PointCloud<pcl::PointXY>::Ptr pointcloud)
 {
-  pcl::PointCloud<pcl::PointXY>::Ptr polygon(new pcl::PointCloud<pcl::PointXY>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cropped_pointcloud(new pcl::PointCloud<pcl::PointXYZ>);
   std::vector<pcl::Vertices> vertices_array;
   pcl::Vertices vertices;
 
-  toPolygon2d(object, polygon);
-  if (polygon->empty()) return std::nullopt;
+  Polygon2d poly2d =
+    tier4_autoware_utils::toPolygon2d(object.kinematics.pose_with_covariance.pose, object.shape);
+  if (bg::is_empty(poly2d)) return std::nullopt;
 
-  for (size_t i = 0; i < polygon->size(); ++i) vertices.vertices.push_back(i);
-  vertices_array.push_back(vertices);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr poly3d(new pcl::PointCloud<pcl::PointXYZ>);
+
+  for (size_t i = 0; i < poly2d.outer().size(); ++i) {
+    vertices.vertices.emplace_back(i);
+    vertices_array.emplace_back(vertices);
+    poly3d->emplace_back(poly2d.outer().at(i).x(), poly2d.outer().at(i).y(), 0.0);
+  }
 
   pcl::CropHull<pcl::PointXYZ> cropper;  // don't be implemented PointXY by PCL
   cropper.setInputCloud(toXYZ(pointcloud));
   cropper.setDim(2);
   cropper.setHullIndices(vertices_array);
-  cropper.setHullCloud(toXYZ(polygon));
+  cropper.setHullCloud(poly3d);
   cropper.setCropOutside(true);
   cropper.filter(*cropped_pointcloud);
 
@@ -194,62 +200,10 @@ std::optional<size_t> ObstaclePointCloudBasedValidator::getPointCloudNumWithinPo
   return cropped_pointcloud->size();
 }
 
-void ObstaclePointCloudBasedValidator::toPolygon2d(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object,
-  const pcl::PointCloud<pcl::PointXY>::Ptr & polygon)
-{
-  if (object.shape.type == Shape::BOUNDING_BOX) {
-    const auto & pose = object.kinematics.pose_with_covariance.pose;
-    double yaw = tf2::getYaw(pose.orientation);
-    Eigen::Matrix2d rotation;
-    rotation << std::cos(yaw), -std::sin(yaw), std::sin(yaw), std::cos(yaw);
-    Eigen::Vector2d offset0, offset1, offset2, offset3;
-    offset0 = rotation *
-              Eigen::Vector2d(object.shape.dimensions.x * 0.5f, object.shape.dimensions.y * 0.5f);
-    offset1 = rotation *
-              Eigen::Vector2d(object.shape.dimensions.x * 0.5f, -object.shape.dimensions.y * 0.5f);
-    offset2 = rotation *
-              Eigen::Vector2d(-object.shape.dimensions.x * 0.5f, -object.shape.dimensions.y * 0.5f);
-    offset3 = rotation *
-              Eigen::Vector2d(-object.shape.dimensions.x * 0.5f, object.shape.dimensions.y * 0.5f);
-    polygon->push_back(
-      pcl::PointXY(toPCL(pose.position.x + offset0.x(), pose.position.y + offset0.y())));
-    polygon->push_back(
-      pcl::PointXY(toPCL(pose.position.x + offset1.x(), pose.position.y + offset1.y())));
-    polygon->push_back(
-      pcl::PointXY(toPCL(pose.position.x + offset2.x(), pose.position.y + offset2.y())));
-    polygon->push_back(
-      pcl::PointXY(toPCL(pose.position.x + offset3.x(), pose.position.y + offset3.y())));
-  } else if (object.shape.type == Shape::CYLINDER) {
-    const auto & center = object.kinematics.pose_with_covariance.pose.position;
-    const auto & radius = object.shape.dimensions.x * 0.5;
-    constexpr int n = 6;
-    for (int i = 0; i < n; ++i) {
-      Eigen::Vector2d point;
-      point.x() = std::cos(
-                    (static_cast<double>(i) / static_cast<double>(n)) * 2.0 * M_PI +
-                    M_PI / static_cast<double>(n)) *
-                    radius +
-                  center.x;
-      point.y() = std::sin(
-                    (static_cast<double>(i) / static_cast<double>(n)) * 2.0 * M_PI +
-                    M_PI / static_cast<double>(n)) *
-                    radius +
-                  center.y;
-      polygon->push_back(toPCL(point.x(), point.y()));
-    }
-  } else if (object.shape.type == Shape::POLYGON) {
-    RCLCPP_WARN_THROTTLE(
-      this->get_logger(), *this->get_clock(), 5000, "POLYGON type is not supported");
-  }
-}
-
 std::optional<float> ObstaclePointCloudBasedValidator::getMaxRadius(
   const autoware_auto_perception_msgs::msg::DetectedObject & object)
 {
-  if (object.shape.type == Shape::BOUNDING_BOX) {
-    return std::hypot(object.shape.dimensions.x * 0.5f, object.shape.dimensions.y * 0.5f);
-  } else if (object.shape.type == Shape::CYLINDER) {
+  if (object.shape.type == Shape::BOUNDING_BOX || object.shape.type == Shape::CYLINDER) {
     return std::hypot(object.shape.dimensions.x * 0.5f, object.shape.dimensions.y * 0.5f);
   } else if (object.shape.type == Shape::POLYGON) {
     float max_dist = 0.0;

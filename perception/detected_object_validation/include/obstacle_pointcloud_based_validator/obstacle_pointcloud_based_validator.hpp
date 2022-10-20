@@ -63,9 +63,6 @@ private:
   std::optional<size_t> getPointCloudNumWithinPolygon(
     const autoware_auto_perception_msgs::msg::DetectedObject & object,
     const pcl::PointCloud<pcl::PointXY>::Ptr pointcloud);
-  void toPolygon2d(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    const pcl::PointCloud<pcl::PointXY>::Ptr & polygon);
   std::optional<float> getMaxRadius(
     const autoware_auto_perception_msgs::msg::DetectedObject & object);
 };

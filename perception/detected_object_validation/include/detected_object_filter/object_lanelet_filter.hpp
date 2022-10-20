@@ -15,6 +15,8 @@
 #ifndef DETECTED_OBJECT_FILTER__OBJECT_LANELET_FILTER_HPP_
 #define DETECTED_OBJECT_FILTER__OBJECT_LANELET_FILTER_HPP_
 
+#include "utils/utils.hpp"
+
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -34,18 +36,6 @@ using tier4_autoware_utils::LinearRing2d;
 using tier4_autoware_utils::MultiPoint2d;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
-
-struct Filter_target_label
-{
-  bool UNKNOWN;
-  bool CAR;
-  bool TRUCK;
-  bool BUS;
-  bool TRAILER;
-  bool MOTORCYCLE;
-  bool BICYCLE;
-  bool PEDESTRIAN;
-};
 
 class ObjectLaneletFilterNode : public rclcpp::Node
 {
@@ -67,7 +57,7 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
-  Filter_target_label filter_target_;
+  utils::FilterTargetLabel filter_target_;
 
   LinearRing2d getConvexHull(const autoware_auto_perception_msgs::msg::DetectedObjects &);
   lanelet::ConstLanelets getIntersectedLanelets(

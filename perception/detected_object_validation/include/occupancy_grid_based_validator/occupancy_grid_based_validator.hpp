@@ -62,9 +62,6 @@ private:
   std::optional<cv::Mat> getMask(
     const nav_msgs::msg::OccupancyGrid & occupancy_grid,
     const autoware_auto_perception_msgs::msg::DetectedObject & object, cv::Mat mask);
-  void toPolygon2d(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    std::vector<cv::Point2f> & vertices);
   void showDebugImage(
     const nav_msgs::msg::OccupancyGrid & ros_occ_grid,
     const autoware_auto_perception_msgs::msg::DetectedObjects & objects, const cv::Mat & occ_grid);
