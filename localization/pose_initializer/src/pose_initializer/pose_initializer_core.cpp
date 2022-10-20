@@ -16,6 +16,7 @@
 
 #include "copy_vector_to_array.hpp"
 #include "gnss_module.hpp"
+#include "localization_trigger_module.hpp"
 #include "ndt_module.hpp"
 #include "stop_check_module.hpp"
 
@@ -38,12 +39,14 @@ PoseInitializer::PoseInitializer() : Node("pose_initializer")
   }
   if (declare_parameter<bool>("ndt_enabled")) {
     ndt_ = std::make_unique<NdtModule>(this);
+    localization_trigger_ = std::make_unique<LocalizationTriggerModule>(this);
   }
   if (declare_parameter<bool>("stop_check_enabled")) {
     // Add 1.0 sec margin for twist buffer.
     stop_check_duration_ = declare_parameter<double>("stop_check_duration");
     stop_check_ = std::make_unique<StopCheckModule>(this, stop_check_duration_ + 1.0);
   }
+
   change_state(State::Message::UNINITIALIZED);
 }
 
@@ -70,12 +73,18 @@ void PoseInitializer::on_initialize(
   }
   try {
     change_state(State::Message::INITIALIZING);
+    if (localization_trigger_) {
+      localization_trigger_->deactivate();
+    }
     auto pose = req->pose.empty() ? get_gnss_pose() : req->pose.front();
     if (ndt_) {
       pose = ndt_->align_pose(pose);
     }
     pose.pose.covariance = output_pose_covariance_;
     pub_reset_->publish(pose);
+    if (localization_trigger_) {
+      localization_trigger_->activate();
+    }
     res->status.success = true;
     change_state(State::Message::INITIALIZED);
   } catch (const ServiceException & error) {

@@ -20,6 +20,7 @@
 #include <kalman_filter/kalman_filter.hpp>
 #include <kalman_filter/time_delay_kalman_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
@@ -148,6 +149,8 @@ private:
   rclcpp::TimerBase::SharedPtr timer_control_;
   //!< @brief last predict time
   std::shared_ptr<const rclcpp::Time> last_predict_time_;
+  //!< @brief trigger_node service
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_trigger_node_;
 
   //!< @brief timer to send transform
   rclcpp::TimerBase::SharedPtr timer_tf_;
@@ -199,7 +202,7 @@ private:
   double proc_cov_vx_d_;        //!< @brief  discrete process noise in d_vx=0
   double proc_cov_wz_d_;        //!< @brief  discrete process noise in d_wz=0
 
-  bool is_initialized_;
+  bool is_activated_;
 
   /* for model prediction */
   std::queue<TwistInfo> current_twist_info_queue_;    //!< @brief current measured pose
@@ -288,7 +291,17 @@ private:
    */
   void showCurrentX();
 
+  /**
+   * @brief update simple1DFilter
+   */
   void updateSimple1DFilters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
+
+  /**
+   * @brief trigger node
+   */
+  void serviceTriggerNode(
+    const std_srvs::srv::SetBool::Request::SharedPtr req,
+    std_srvs::srv::SetBool::Response::SharedPtr res);
 
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 

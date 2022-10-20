@@ -22,5 +22,7 @@
     <param name="gnss_pose_timeout" value="3.0"/>
     <remap from="gnss_pose_cov" to="/sensing/gnss/pose_with_covariance"/>
     <remap from="pose_reset" to="/initialpose3d"/>
+    <remap from="ekf_trigger_node" to="/localization/pose_estimator/trigger_node"/>
+    <remap from="ndt_trigger_node" to="/localization/pose_twist_fusion_filter/trigger_node"/>
   </node>
 </launch>

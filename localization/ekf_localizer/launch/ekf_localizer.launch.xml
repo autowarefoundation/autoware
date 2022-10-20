@@ -6,6 +6,7 @@
   <arg name="extend_state_step" default="50"/>
 
   <arg name="input_initial_pose_name" default="initialpose3d"/>
+  <arg name="input_trigger_node_service_name" default="trigger_node" description="trigger node service"/>
 
   <!-- for Pose measurement -->
   <arg name="input_pose_with_cov_name" default="in_pose_with_covariance"/>
@@ -40,6 +41,7 @@
     <remap from="in_twist_with_covariance" to="$(var input_twist_with_cov_name)"/>
 
     <remap from="initialpose" to="$(var input_initial_pose_name)"/>
+    <remap from="trigger_node_srv" to="$(var input_trigger_node_service_name)"/>
 
     <param name="pose_frame_id" value="map"/>
 

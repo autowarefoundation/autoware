@@ -12,6 +12,7 @@ ament_auto_add_executable(pose_initializer_node
   src/pose_initializer/gnss_module.cpp
   src/pose_initializer/ndt_module.cpp
   src/pose_initializer/stop_check_module.cpp
+  src/pose_initializer/localization_trigger_module.cpp
 )
 ament_auto_add_executable(map_height_fitter
   src/map_height_fitter/map_height_fitter_node.cpp
