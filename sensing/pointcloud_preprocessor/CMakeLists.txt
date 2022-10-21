@@ -37,6 +37,7 @@ ament_target_dependencies(pointcloud_preprocessor_filter_base
   sensor_msgs
   tf2_ros
   tier4_autoware_utils
+  pcl_ros
 )
 
 ament_auto_add_library(pointcloud_preprocessor_filter SHARED
