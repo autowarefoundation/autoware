@@ -48,6 +48,7 @@ class ObjectAssociationMergerNode : public rclcpp::Node
 {
 public:
   explicit ObjectAssociationMergerNode(const rclcpp::NodeOptions & node_options);
+  enum class PriorityMode : int { Object0 = 0, Object1 = 1, Confidence = 2 };
 
 private:
   void objectsCallback(
@@ -68,6 +69,8 @@ private:
   Sync sync_;
   std::unique_ptr<DataAssociation> data_association_;
   std::string base_link_frame_id_;  // associated with the base_link frame
+
+  PriorityMode priority_mode_;
   bool remove_overlapped_unknown_objects_;
   struct
   {

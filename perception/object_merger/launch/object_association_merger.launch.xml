@@ -3,6 +3,7 @@
   <arg name="input/object0" default="object0"/>
   <arg name="input/object1" default="object1"/>
   <arg name="output/object" default="merged_object"/>
+  <arg name="priority_mode" default="2" description="0: Object0, 1: Object1, 2: Confidence"/>
   <arg name="data_association_matrix_path" default="$(find-pkg-share object_merger)/config/data_association_matrix.param.yaml"/>
   <arg name="distance_threshold_list_path" default="$(find-pkg-share object_merger)/config/overlapped_judge.param.yaml"/>
 
@@ -12,6 +13,7 @@
     <remap from="output/object" to="$(var output/object)"/>
     <param from="$(var data_association_matrix_path)"/>
     <param from="$(var distance_threshold_list_path)"/>
+    <param name="priority_mode" value="$(var priority_mode)"/>
     <param name="generalized_iou_threshold" value="-0.6"/>
     <param name="precision_threshold_to_judge_overlapped" value="0.4"/>
   </node>

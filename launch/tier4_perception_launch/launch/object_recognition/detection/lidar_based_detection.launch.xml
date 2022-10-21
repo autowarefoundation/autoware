@@ -93,6 +93,7 @@
         <arg name="input/objects" value="labeled_clusters"/>
         <arg name="output/objects" value="objects_with_feature"/>
         <arg name="use_vehicle_reference_yaw" value="true"/>
+        <arg name="use_vehicle_reference_shape_size" value="false"/>
       </include>
     </group>
 

@@ -45,6 +45,7 @@ ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_option
   bool use_corrector = declare_parameter("use_corrector", true);
   bool use_filter = declare_parameter("use_filter", true);
   use_vehicle_reference_yaw_ = declare_parameter("use_vehicle_reference_yaw", true);
+  use_vehicle_reference_shape_size_ = declare_parameter("use_vehicle_reference_shape_size", true);
   bool use_boost_bbox_optimizer = declare_parameter("use_boost_bbox_optimizer", false);
   RCLCPP_INFO(this->get_logger(), "using boost shape estimation : %d", use_boost_bbox_optimizer);
   estimator_ =
@@ -83,13 +84,17 @@ void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstShared
     autoware_auto_perception_msgs::msg::Shape shape;
     geometry_msgs::msg::Pose pose;
     boost::optional<ReferenceYawInfo> ref_yaw_info = boost::none;
+    boost::optional<ReferenceShapeSizeInfo> ref_shape_size_info = boost::none;
     if (use_vehicle_reference_yaw_ && is_vehicle) {
       ref_yaw_info = ReferenceYawInfo{
         static_cast<float>(tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation)),
         tier4_autoware_utils::deg2rad(10)};
     }
-    const bool estimated_success =
-      estimator_->estimateShapeAndPose(label, *cluster, ref_yaw_info, shape, pose);
+    if (use_vehicle_reference_shape_size_ && is_vehicle) {
+      ref_shape_size_info = ReferenceShapeSizeInfo{object.shape, ReferenceShapeSizeInfo::Mode::Min};
+    }
+    const bool estimated_success = estimator_->estimateShapeAndPose(
+      label, *cluster, ref_yaw_info, ref_shape_size_info, shape, pose);
 
     // If the shape estimation fails, ignore it.
     if (!estimated_success) {

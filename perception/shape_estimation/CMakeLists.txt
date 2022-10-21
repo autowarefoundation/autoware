@@ -10,7 +10,6 @@ find_package(pcl_conversions REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-
 set(SHAPE_ESTIMATION_DEPENDENCIES
   PCL
   OpenCV
@@ -27,9 +26,6 @@ ament_auto_add_library(shape_estimation_lib SHARED
   lib/filter/truck_filter.cpp
   lib/filter/no_filter.cpp
   lib/filter/utils.cpp
-  lib/corrector/car_corrector.cpp
-  lib/corrector/bus_corrector.cpp
-  lib/corrector/truck_corrector.cpp
   lib/corrector/no_corrector.cpp
   lib/corrector/utils.cpp
 )
@@ -38,8 +34,8 @@ ament_target_dependencies(shape_estimation_lib ${SHAPE_ESTIMATION_DEPENDENCIES})
 
 target_include_directories(shape_estimation_lib
   SYSTEM PUBLIC
-    "${PCL_INCLUDE_DIRS}"
-    "${EIGEN3_INCLUDE_DIR}"
+  "${PCL_INCLUDE_DIRS}"
+  "${EIGEN3_INCLUDE_DIR}"
 )
 
 ament_auto_add_library(shape_estimation_node SHARED
@@ -47,11 +43,11 @@ ament_auto_add_library(shape_estimation_node SHARED
 )
 
 target_include_directories(shape_estimation_node
-    PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+  PUBLIC
+  $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 ament_target_dependencies(shape_estimation_node ${SHAPE_ESTIMATION_DEPENDENCIES})

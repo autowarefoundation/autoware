@@ -15,30 +15,25 @@
 #ifndef SHAPE_ESTIMATION__CORRECTOR__CAR_CORRECTOR_HPP_
 #define SHAPE_ESTIMATION__CORRECTOR__CAR_CORRECTOR_HPP_
 
-#include "shape_estimation/corrector/corrector_interface.hpp"
+#include "shape_estimation/corrector/vehicle_corrector.hpp"
 #include "utils.hpp"
 
-class CarCorrector : public ShapeEstimationCorrectorInterface
+class CarCorrector : public VehicleCorrector
 {
-private:
-  utils::CorrectionParameters params_;
-  bool use_reference_yaw_;
-
 public:
-  explicit CarCorrector(bool use_reference_yaw = false) : use_reference_yaw_(use_reference_yaw)
+  explicit CarCorrector(const bool use_reference_yaw = false) : VehicleCorrector(use_reference_yaw)
   {
-    params_.min_width = 1.2;
-    params_.max_width = 2.5;
-    params_.avg_width = (params_.min_width + params_.max_width) * 0.5;
-    params_.min_length = 3.0;
-    params_.max_length = 5.8;
-    params_.avg_length = (params_.min_length + params_.max_length) * 0.5;
+    corrector_utils::CorrectionBBParameters params;
+    params.min_width = 1.2;
+    params.max_width = 2.5;
+    params.default_width = (params.min_width + params.max_width) * 0.5;
+    params.min_length = 3.0;
+    params.max_length = 5.8;
+    params.default_length = (params.min_length + params.max_length) * 0.5;
+    setParams(params);
   }
 
   ~CarCorrector() = default;
-
-  bool correct(
-    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override;
 };
 
 #endif  // SHAPE_ESTIMATION__CORRECTOR__CAR_CORRECTOR_HPP_

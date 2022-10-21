@@ -63,6 +63,18 @@ boost::optional<ReferenceYawInfo> getReferenceYawInfo(const uint8_t label, const
     return boost::none;
   }
 }
+
+boost::optional<ReferenceShapeSizeInfo> getReferenceShapeSizeInfo(
+  const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape)
+{
+  const bool is_vehicle =
+    Label::CAR == label || Label::TRUCK == label || Label::BUS == label || Label::TRAILER == label;
+  if (is_vehicle) {
+    return ReferenceShapeSizeInfo{shape, ReferenceShapeSizeInfo::Mode::Min};
+  } else {
+    return boost::none;
+  }
+}
 }  // namespace
 
 void TrackerHandler::onTrackedObjects(
@@ -304,6 +316,7 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
         label, divided_cluster,
         getReferenceYawInfo(
           label, tf2::getYaw(target_object.kinematics.pose_with_covariance.pose.orientation)),
+        getReferenceShapeSizeInfo(label, target_object.shape),
         highest_iou_object_in_current_iter.object.shape,
         highest_iou_object_in_current_iter.object.kinematics.pose_with_covariance.pose);
       if (!is_shape_estimated) {
@@ -390,7 +403,8 @@ void DetectionByTracker::mergeOverSegmentedObjects(
       label, pcl_merged_cluster,
       getReferenceYawInfo(
         label, tf2::getYaw(tracked_object.kinematics.pose_with_covariance.pose.orientation)),
-      feature_object.object.shape, feature_object.object.kinematics.pose_with_covariance.pose);
+      getReferenceShapeSizeInfo(label, tracked_object.shape), feature_object.object.shape,
+      feature_object.object.kinematics.pose_with_covariance.pose);
     if (!is_shape_estimated) {
       out_no_found_tracked_objects.objects.push_back(tracked_object);
       continue;
