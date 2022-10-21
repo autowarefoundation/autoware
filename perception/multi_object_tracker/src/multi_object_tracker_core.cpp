@@ -56,76 +56,6 @@ boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
   }
 }
 
-inline float getVelocity(const autoware_auto_perception_msgs::msg::TrackedObject & object)
-{
-  return std::hypot(
-    object.kinematics.twist_with_covariance.twist.linear.x,
-    object.kinematics.twist_with_covariance.twist.linear.y);
-}
-
-inline geometry_msgs::msg::Pose getPose(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object)
-{
-  return object.kinematics.pose_with_covariance.pose;
-}
-
-float getXYSquareDistance(
-  const geometry_msgs::msg::Transform & self_transform,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object)
-{
-  const auto object_pos = getPose(object).position;
-  const float x = self_transform.translation.x - object_pos.x;
-  const float y = self_transform.translation.y - object_pos.y;
-  return x * x + y * y;
-}
-
-/**
- * @brief If the tracker is stable at a low speed and has a vehicle type, it will keep
- * tracking for a longer time to deal with detection lost due to occlusion, etc.
- * @param tracker The tracker to be determined.
- * @param time Target time to determine.
- * @param self_transform Position of the vehicle at the target time.
- * @return Result of deciding whether to leave tracker or not.
- */
-bool isSpecificAlivePattern(
-  const std::shared_ptr<const Tracker> & tracker, const rclcpp::Time & time,
-  const geometry_msgs::msg::Transform & self_transform)
-{
-  autoware_auto_perception_msgs::msg::TrackedObject object;
-  tracker->getTrackedObject(time, object);
-
-  constexpr float min_detection_rate = 0.2;
-  constexpr int min_measurement_count = 5;
-  constexpr float max_elapsed_time = 10.0;
-  constexpr float max_velocity = 1.0;
-  constexpr float max_distance = 100.0;
-
-  const std::uint8_t label = tracker->getHighestProbLabel();
-
-  const float detection_rate =
-    tracker->getTotalMeasurementCount() /
-    (tracker->getTotalNoMeasurementCount() + tracker->getTotalMeasurementCount());
-
-  const bool big_vehicle = utils::isLargeVehicleLabel(label);
-
-  const bool slow_velocity = getVelocity(object) < max_velocity;
-
-  const bool high_confidence =
-    (min_detection_rate < detection_rate ||
-     min_measurement_count < tracker->getTotalMeasurementCount());
-
-  const bool not_too_far =
-    getXYSquareDistance(self_transform, object) < max_distance * max_distance;
-
-  const bool within_max_survival_period =
-    tracker->getElapsedTimeFromLastUpdate(time) < max_elapsed_time;
-
-  const bool is_specific_alive_pattern =
-    high_confidence && big_vehicle && within_max_survival_period && not_too_far && slow_velocity;
-
-  return is_specific_alive_pattern;
-}
-
 }  // namespace
 
 MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
@@ -294,7 +224,7 @@ void MultiObjectTracker::onTimer()
 
 void MultiObjectTracker::checkTrackerLifeCycle(
   std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time,
-  const geometry_msgs::msg::Transform & self_transform)
+  [[maybe_unused]] const geometry_msgs::msg::Transform & self_transform)
 {
   /* params */
   constexpr float max_elapsed_time = 1.0;
@@ -302,8 +232,7 @@ void MultiObjectTracker::checkTrackerLifeCycle(
   /* delete tracker */
   for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
     const bool is_old = max_elapsed_time < (*itr)->getElapsedTimeFromLastUpdate(time);
-    const bool is_specific_alive_pattern = isSpecificAlivePattern(*itr, time, self_transform);
-    if (is_old && !is_specific_alive_pattern) {
+    if (is_old) {
       auto erase_itr = itr;
       --itr;
       list_tracker.erase(erase_itr);
