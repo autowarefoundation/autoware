@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="publish_rate" default="10.0"/>
+  <arg name="enable_delay_compensation" default="true"/>
   <arg name="tier4_perception_launch_param_path" default="$(find-pkg-share tier4_perception_launch)/config"/>
 
   <group>
