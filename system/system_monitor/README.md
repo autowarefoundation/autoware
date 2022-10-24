@@ -85,7 +85,7 @@ Every topic is published in 1 minute interval.
 |                 | GPU Memory Usage             |   ✓   |      -       |      -       |                                                                                                                                                                                                 |
 |                 | GPU Thermal Throttling       |   ✓   |      -       |      -       |                                                                                                                                                                                                 |
 |                 | GPU Frequency                |   ✓   |      ✓       |      -       | For Intel platform, monitor whether current GPU clock is supported by the GPU.                                                                                                                  |
-| Voltage Monitor | CMOS Battery Staus           |   ✓   |      -       |      -       | Battery Health for RTC and BIOS -                                                                                                                                                               |
+| Voltage Monitor | CMOS Battery Status          |   ✓   |      -       |      -       | Battery Health for RTC and BIOS -                                                                                                                                                               |
 
 ## ROS parameters
 

@@ -109,4 +109,4 @@ voltage_monitor:
 | :----------------- | :----: | :--: | :-----: | :------------------------------------------------------------------------------ |
 | cmos_battery_warn  | float  | volt |   2.9   | Generates warning when voltage of CMOS Battery is lower.                        |
 | cmos_battery_error | float  | volt |   2.7   | Generates error when voltage of CMOS Battery is lower.                          |
-| cmos_battery_label | string | n/a  |   ""    | voltage string in sensors command outputs. if emtpy no voltage will be checked. |
+| cmos_battery_label | string | n/a  |   ""    | voltage string in sensors command outputs. if empty no voltage will be checked. |

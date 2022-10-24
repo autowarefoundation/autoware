@@ -13,7 +13,7 @@
 // limitations under the License.
 /**
  * @file tegra_gpu_monitor.h
- * @brief Tegra TGPU monitor class
+ * @brief Tegra GPU monitor class
  */
 
 #ifndef SYSTEM_MONITOR__GPU_MONITOR__TEGRA_GPU_MONITOR_HPP_

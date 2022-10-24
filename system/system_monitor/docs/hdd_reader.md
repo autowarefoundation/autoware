@@ -54,5 +54,7 @@ For details please see the documents below.<br>
 
 ## Operation confirmed drives
 
+<!-- cspell: ignore MZVLB1T0HALR -->
+
 - SAMSUNG MZVLB1T0HALR (SSD)
 - Western Digital My Passport (Portable HDD)

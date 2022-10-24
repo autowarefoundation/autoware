@@ -14,6 +14,8 @@
 
 <b>[values]</b>
 
+<!-- cspell: ignore MZVLB1T0HBLR, S4EMNF0M820682 -->
+
 | key                    | value (example)              |
 | ---------------------- | ---------------------------- |
 | HDD [0-9]: status      | OK / hot / critical hot      |

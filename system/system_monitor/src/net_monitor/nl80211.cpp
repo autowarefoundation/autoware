@@ -30,6 +30,7 @@ NL80211::NL80211() : bitrate_(0.0), initialized_(false), socket_(nullptr), id_(-
 static struct nla_policy stats_policy[NL80211_STA_INFO_MAX + 1];
 static struct nla_policy rate_policy[NL80211_RATE_INFO_MAX + 1];
 
+// cspell: ignore ghdr
 static int callback(struct nl_msg * msg, void * arg)
 {
   int ret;

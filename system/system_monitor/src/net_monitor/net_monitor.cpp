@@ -90,6 +90,7 @@ void NetMonitor::shutdown_nl80211() { nl80211_.shutdown(); }
 
 void NetMonitor::onTimer() { updateNetworkInfoList(); }
 
+// cspell: ignore ifas, ifrm, ifrc
 void NetMonitor::updateNetworkInfoList()
 {
   net_info_list_.clear();

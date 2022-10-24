@@ -47,7 +47,7 @@ protected:
   char hostname_[HOST_NAME_MAX + 1];  //!< @brief host name
 
   /**
-   * @brief check CMOS Battey
+   * @brief check CMOS battery
    * @param [out] stat diagnostic message passed directly to diagnostic publish calls
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
@@ -55,7 +55,7 @@ protected:
   void checkVoltage(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
   /**
-   * @brief check CMOS Battey
+   * @brief check CMOS battery
    * @param [out] stat diagnostic message passed directly to diagnostic publish calls
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.

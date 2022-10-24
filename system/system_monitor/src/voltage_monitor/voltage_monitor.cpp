@@ -127,7 +127,7 @@ void VoltageMonitor::checkVoltage(diagnostic_updater::DiagnosticStatusWrapper & 
       break;
     }
   }
-  stat.add("CMOS battey voltage", fmt::format("{}", voltage));
+  stat.add("CMOS battery voltage", fmt::format("{}", voltage));
   if (voltage < voltage_error_) {
     stat.summary(DiagStatus::WARN, "Battery Died");
   } else if (voltage < voltage_warn_) {
@@ -189,10 +189,10 @@ void VoltageMonitor::checkBatteryStatus(diagnostic_updater::DiagnosticStatusWrap
   }
 
   if (status) {
-    stat.add("CMOS battey status", std::string("OK"));
+    stat.add("CMOS battery status", std::string("OK"));
     stat.summary(DiagStatus::OK, "OK");
   } else {
-    stat.add("CMOS battey status", std::string("Battery Dead"));
+    stat.add("CMOS battery status", std::string("Battery Dead"));
     stat.summary(DiagStatus::WARN, "Battery Dead");
   }
 

@@ -24,11 +24,11 @@
 
 <b>[summary]</b>
 
-| level | message         |
-| ----- | --------------- |
-| OK    | OK              |
-| WARN  | high load       |
-| ERROR | very high Lload |
+| level | message        |
+| ----- | -------------- |
+| OK    | OK             |
+| WARN  | high load      |
+| ERROR | very high load |
 
 <b>[values]</b>
 

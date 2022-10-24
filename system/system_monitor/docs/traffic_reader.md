@@ -2,7 +2,7 @@
 
 ## Name
 
-traffic_reader - monitoring netwok traffic by process
+traffic_reader - monitoring network traffic by process
 
 ## Synopsis
 
@@ -10,7 +10,7 @@ traffic_reader [OPTION]
 
 ## Description
 
-Monitoring netwok traffic by process.<br>
+Monitoring network traffic by process.<br>
 This runs as a daemon process and listens to a TCP/IP port (7636 by default).
 
 **Options:**<br>
