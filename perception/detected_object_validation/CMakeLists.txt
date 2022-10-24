@@ -57,10 +57,12 @@ target_link_libraries(obstacle_pointcloud_based_validator
 
 ament_auto_add_library(object_lanelet_filter SHARED
   src/object_lanelet_filter.cpp
+  src/utils.cpp
 )
 
 ament_auto_add_library(object_position_filter SHARED
   src/object_position_filter.cpp
+  src/utils.cpp
 )
 
 rclcpp_components_register_node(obstacle_pointcloud_based_validator

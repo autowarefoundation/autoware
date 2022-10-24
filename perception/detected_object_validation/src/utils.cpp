@@ -14,7 +14,7 @@
 
 #include "utils/utils.hpp"
 
-#include <autoware_auto_perception_msgs/msg/ObjectClassification.hpp>
+#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 
 namespace utils
 {
