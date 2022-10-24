@@ -15,6 +15,7 @@
 #ifndef TRAJECTORY_FOLLOWER__PID_LONGITUDINAL_CONTROLLER_HPP_
 #define TRAJECTORY_FOLLOWER__PID_LONGITUDINAL_CONTROLLER_HPP_
 
+#include "diagnostic_updater/diagnostic_updater.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "motion_common/motion_common.hpp"
@@ -203,6 +204,18 @@ private:
   trajectory_follower::DebugValues m_debug_values;
 
   std::shared_ptr<rclcpp::Time> m_last_running_time{std::make_shared<rclcpp::Time>(node_->now())};
+
+  // Diagnostic
+
+  diagnostic_updater::Updater diagnostic_updater_;
+  struct DiagnosticData
+  {
+    float64_t trans_deviation{0.0};  // translation deviation between nearest point and current_pose
+    float64_t rot_deviation{0.0};    // rotation deviation between nearest point and current_pose
+  };
+  DiagnosticData m_diagnostic_data;
+  void setupDiagnosticUpdater();
+  void checkControlState(diagnostic_updater::DiagnosticStatusWrapper & stat);
 
   /**
    * @brief set current and previous velocity with received message
