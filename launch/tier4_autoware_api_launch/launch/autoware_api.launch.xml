@@ -1,6 +1,5 @@
 <launch>
   <arg name="respawn_rosbridge" default="true"/>
-  <arg name="launch_image_base64_converter" default="false"/>
   <arg name="launch_path_distance_calculator" default="false"/>
   <arg name="launch_default_ad_api" default="true"/>
   <arg name="launch_rviz_adaptors" default="true"/>
@@ -34,7 +33,6 @@
   <group>
     <push-ros-namespace namespace="autoware_api/utils"/>
     <include file="$(find-pkg-share path_distance_calculator)/launch/path_distance_calculator.launch.xml" if="$(var launch_path_distance_calculator)"/>
-    <include file="$(find-pkg-share image_base64_converter)/launch/image_base64_converter.launch.xml" if="$(var launch_image_base64_converter)"/>
   </group>
 
   <!-- rosbridge -->
