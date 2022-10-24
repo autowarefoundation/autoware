@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__SHIFT_PULL_OVER_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__SHIFT_PULL_OVER_HPP_
 
-#include "behavior_path_planner/scene_module/pull_over/pull_over_path.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_planner_base.hpp"
 #include "behavior_path_planner/scene_module/utils/occupancy_grid_based_collision_detector.hpp"
 
@@ -36,25 +35,32 @@ public:
   ShiftPullOver(
     rclcpp::Node & node, const PullOverParameters & parameters,
     const LaneDepartureChecker & lane_departure_checker,
-    const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map);
+    const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
 
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::SHIFT; };
   boost::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
-  std::vector<PullOverPath> generatePullOverPaths(
-    const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
-    const Pose & goal_pose) const;
-  std::vector<PullOverPath> selectValidPaths(
-    const std::vector<PullOverPath> & paths, const lanelet::ConstLanelets & road_lanes,
-    const lanelet::ConstLanelets & shoulder_lanes, const bool is_in_goal_route_section,
-    const Pose & goal_pose) const;
-  bool hasEnoughDistance(
-    const PullOverPath & path, const lanelet::ConstLanelets & road_lanes,
-    const bool is_in_goal_route_section, const Pose & goal_pose) const;
-
 protected:
+  PathWithLaneId generateRoadLaneReferencePath(
+    const lanelet::ConstLanelets & road_lanes, const Pose & shift_end_pose,
+    const double pull_over_distance) const;
+  PathWithLaneId generateShoulderLaneReferencePath(
+    const lanelet::ConstLanelets & shoulder_lanes, const Pose & shift_start_pose,
+    const Pose & goal_pose, const double shoulder_center_to_goal_distance) const;
+  boost::optional<PullOverPath> generatePullOverPath(
+    const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
+    const Pose & shift_end_pose, const Pose & goal_pose, const double lateral_jerk,
+    const double road_center_to_goal_distance, const double shoulder_center_to_goal_distance,
+    const double shoulder_left_bound_to_goal_distance) const;
+  bool hasEnoughDistance(
+    const PathWithLaneId & path, const lanelet::ConstLanelets & road_lanes, const Pose & start_pose,
+    const Pose & goal_pose, const double pull_over_distance) const;
+  bool isSafePath(const PathWithLaneId & path) const;
+
   LaneDepartureChecker lane_departure_checker_{};
   std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_{};
+
+  static constexpr double resample_interval_{1.0};
 };
 }  // namespace behavior_path_planner
 

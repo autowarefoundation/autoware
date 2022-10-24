@@ -18,7 +18,6 @@
 #include "behavior_path_planner/scene_module/pull_over/geometric_pull_over.hpp"
 #include "behavior_path_planner/scene_module/pull_over/goal_searcher.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_parameters.hpp"
-#include "behavior_path_planner/scene_module/pull_over/pull_over_path.hpp"
 #include "behavior_path_planner/scene_module/pull_over/shift_pull_over.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/utils/geometric_parallel_parking.hpp"

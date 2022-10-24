@@ -43,12 +43,8 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 
 // TODO(sugahara) move to util
-PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2);
+PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 lanelet::ConstLanelets getPullOverLanes(const RouteHandler & route_handler);
-bool hasEnoughDistanceToParkingStart(
-  const PathWithLaneId & path, const Pose & current_pose, const Pose & start_pose,
-  const double current_vel, const double maximum_deceleration, const double decide_path_distance,
-  const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold);
 PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside);
@@ -63,7 +59,7 @@ MarkerArray createPosesMarkerArray(
 MarkerArray createTextsMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
 MarkerArray createGoalCandidatesMarkerArray(
-  std::vector<GoalCandidate> goal_candidates, const std_msgs::msg::ColorRGBA & color);
+  std::vector<GoalCandidate> & goal_candidates, const std_msgs::msg::ColorRGBA & color);
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner
 

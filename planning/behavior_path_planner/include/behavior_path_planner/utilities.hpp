@@ -335,9 +335,10 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
 
 PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path);
 
-double getDistanceToShoulderBoundary(
+double getSignedDistanceFromShoulderLeftBoundary(
   const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose);
-double getDistanceToRightBoundary(const lanelet::ConstLanelets & lanelets, const Pose & pose);
+double getSignedDistanceFromRightBoundary(
+  const lanelet::ConstLanelets & lanelets, const Pose & pose);
 
 // misc
 

@@ -18,7 +18,6 @@
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_parameters.hpp"
-#include "behavior_path_planner/scene_module/pull_over/pull_over_path.hpp"
 #include "behavior_path_planner/util/create_vehicle_footprint.hpp"
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -40,6 +39,14 @@ enum class PullOverPlannerType {
   SHIFT,
   ARC_FORWARD,
   ARC_BACKWARD,
+};
+
+struct PullOverPath
+{
+  PathWithLaneId path{};
+  std::vector<PathWithLaneId> partial_paths{};
+  Pose start_pose{};
+  Pose end_pose{};
 };
 
 class PullOverPlannerBase

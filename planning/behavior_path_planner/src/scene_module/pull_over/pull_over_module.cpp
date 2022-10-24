@@ -255,7 +255,7 @@ Pose PullOverModule::calcRefinedGoal() const
   const Pose center_pose =
     lanelet::utils::getClosestCenterPose(closest_shoulder_lanelet, goal_pose.position);
 
-  const double distance_to_left_bound = util::getDistanceToShoulderBoundary(
+  const double distance_to_left_bound = util::getSignedDistanceFromShoulderLeftBoundary(
     planner_data_->route_handler->getShoulderLanelets(), center_pose);
   const double offset_from_center_line = distance_to_left_bound +
                                          planner_data_->parameters.vehicle_width / 2 +
@@ -686,8 +686,8 @@ double PullOverModule::calcMinimumShiftPathDistance() const
   const double distance_before_pull_over = parameters_.before_pull_over_straight_distance;
   const auto & route_handler = planner_data_->route_handler;
 
-  double distance_to_left_bound =
-    util::getDistanceToShoulderBoundary(route_handler->getShoulderLanelets(), current_pose);
+  double distance_to_left_bound = util::getSignedDistanceFromShoulderLeftBoundary(
+    route_handler->getShoulderLanelets(), current_pose);
   double offset_from_center_line = distance_to_left_bound +
                                    planner_data_->parameters.vehicle_width / 2 +
                                    parameters_.margin_from_boundary;

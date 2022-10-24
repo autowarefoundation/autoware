@@ -1478,7 +1478,7 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
   return stop_point;
 }
 
-double getDistanceToShoulderBoundary(
+double getSignedDistanceFromShoulderLeftBoundary(
   const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose)
 {
   lanelet::ConstLanelet closest_shoulder_lanelet;
@@ -1499,13 +1499,14 @@ double getDistanceToShoulderBoundary(
   return arc_coordinates.distance;
 }
 
-double getDistanceToRightBoundary(const lanelet::ConstLanelets & lanelets, const Pose & pose)
+double getSignedDistanceFromRightBoundary(
+  const lanelet::ConstLanelets & lanelets, const Pose & pose)
 {
-  lanelet::ConstLanelet closest_shoulder_lanelet;
+  lanelet::ConstLanelet closest_lanelet;
   lanelet::ArcCoordinates arc_coordinates;
-  if (lanelet::utils::query::getClosestLanelet(lanelets, pose, &closest_shoulder_lanelet)) {
+  if (lanelet::utils::query::getClosestLanelet(lanelets, pose, &closest_lanelet)) {
     const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(pose.position);
-    const auto & right_line_2d = lanelet::utils::to2D(closest_shoulder_lanelet.rightBound3d());
+    const auto & right_line_2d = lanelet::utils::to2D(closest_lanelet.rightBound3d());
     arc_coordinates = lanelet::geometry::toArcCoordinates(
       right_line_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
   } else {

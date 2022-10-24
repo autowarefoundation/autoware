@@ -28,7 +28,7 @@ namespace behavior_path_planner
 ShiftPullOver::ShiftPullOver(
   rclcpp::Node & node, const PullOverParameters & parameters,
   const LaneDepartureChecker & lane_departure_checker,
-  const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map)
+  const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
 : PullOverPlannerBase{node, parameters},
   lane_departure_checker_{lane_departure_checker},
   occupancy_grid_map_{occupancy_grid_map}
@@ -38,6 +38,11 @@ ShiftPullOver::ShiftPullOver(
 boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
+  const double after_pull_over_straight_distance = parameters_.after_pull_over_straight_distance;
+  const double min_jerk = parameters_.minimum_lateral_jerk;
+  const double max_jerk = parameters_.maximum_lateral_jerk;
+  const int pull_over_sampling_num = parameters_.pull_over_sampling_num;
+  const double jerk_resolution = std::abs(max_jerk - min_jerk) / pull_over_sampling_num;
 
   const auto road_lanes = util::getExtendedCurrentLanes(planner_data_);
   const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler);
@@ -45,311 +50,271 @@ boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
     return {};
   }
 
-  lanelet::ConstLanelets lanes;
-  lanes.insert(lanes.end(), road_lanes.begin(), road_lanes.end());
-  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
+  const auto goal_shoulder_arc_coords =
+    lanelet::utils::getArcCoordinates(shoulder_lanes, goal_pose);
 
-  // generate candidate paths
-  const auto pull_over_paths = generatePullOverPaths(road_lanes, shoulder_lanes, goal_pose);
-  if (pull_over_paths.empty()) {
-    return {};
+  // calculate the pose whose longitudinal position is shift end
+  // and whose lateral position is center line
+  const auto shift_end_shoulder_center_pose = std::invoke([&]() {
+    const double s_start = std::max(
+      goal_shoulder_arc_coords.length - after_pull_over_straight_distance, 0.0);  // shift end
+    const double s_end = s_start + std::numeric_limits<double>::epsilon();
+    const auto shoulder_lane_path =
+      route_handler->getCenterLinePath(shoulder_lanes, s_start, s_end, true);
+    return shoulder_lane_path.points.front().point.pose;
+  });
+
+  // calculate shift end pose
+  const double shoulder_left_bound_to_center_distance =
+    util::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, shift_end_shoulder_center_pose);
+  const double shoulder_left_bound_to_goal_distance =
+    util::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, goal_pose);
+  const double shoulder_center_to_goal_distance =
+    -shoulder_left_bound_to_center_distance + shoulder_left_bound_to_goal_distance;
+  const auto shift_end_pose = tier4_autoware_utils::calcOffsetPose(
+    shift_end_shoulder_center_pose, 0, shoulder_center_to_goal_distance, 0);
+
+  // calculate lateral distances
+  lanelet::ConstLanelet goal_closest_road_lane{};
+  lanelet::utils::query::getClosestLanelet(road_lanes, goal_pose, &goal_closest_road_lane);
+  const auto road_center_pose =
+    lanelet::utils::getClosestCenterPose(goal_closest_road_lane, goal_pose.position);
+  const double shoulder_left_bound_to_road_center =
+    util::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, road_center_pose);
+  const double road_center_to_goal_distance =
+    -shoulder_left_bound_to_road_center + shoulder_left_bound_to_goal_distance;
+
+  for (double lateral_jerk = min_jerk; lateral_jerk <= max_jerk; lateral_jerk += jerk_resolution) {
+    const auto pull_over_path = generatePullOverPath(
+      road_lanes, shoulder_lanes, shift_end_pose, goal_pose, lateral_jerk,
+      road_center_to_goal_distance, shoulder_center_to_goal_distance,
+      shoulder_left_bound_to_goal_distance);
+    if (!pull_over_path) continue;
+    return *pull_over_path;
   }
 
-  // select valid paths which have enough distance and no lane departure
-  const auto valid_paths = selectValidPaths(
-    pull_over_paths, road_lanes, shoulder_lanes,
-    route_handler->isInGoalRouteSection(road_lanes.back()), goal_pose);
-  if (valid_paths.empty()) {
-    return {};
-  }
-
-  // select safe path
-  for (const auto & path : valid_paths) {
-    if (parameters_.use_occupancy_grid || !occupancy_grid_map_) {
-      const bool check_out_of_range = false;
-      if (occupancy_grid_map_->hasObstacleOnPath(path.shifted_path.path, check_out_of_range)) {
-        continue;
-      }
-    }
-
-    if (parameters_.use_object_recognition) {
-      if (util::checkCollisionBetweenPathFootprintsAndObjects(
-            vehicle_footprint_, path.shifted_path.path, *(planner_data_->dynamic_object),
-            parameters_.object_recognition_collision_check_margin)) {
-        continue;
-      }
-    }
-
-    // found safe path
-    return path;
-  }
-
-  // not found safe path
   return {};
 }
 
-std::vector<PullOverPath> ShiftPullOver::generatePullOverPaths(
-  const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
-  const Pose & goal_pose) const
+PathWithLaneId ShiftPullOver::generateRoadLaneReferencePath(
+  const lanelet::ConstLanelets & road_lanes, const Pose & shift_end_pose,
+  const double pull_over_distance) const
 {
-  // rename parameter
   const auto & route_handler = planner_data_->route_handler;
-  const auto & common_parameters = planner_data_->parameters;
   const Pose & current_pose = planner_data_->self_pose->pose;
-  const double backward_path_length = common_parameters.backward_path_length;
+  const double backward_path_length = planner_data_->parameters.backward_path_length;
   const double pull_over_velocity = parameters_.pull_over_velocity;
-  const double after_pull_over_straight_distance = parameters_.after_pull_over_straight_distance;
-  const double minimum_lateral_jerk = parameters_.minimum_lateral_jerk;
-  const double maximum_lateral_jerk = parameters_.maximum_lateral_jerk;
   const double deceleration_interval = parameters_.deceleration_interval;
-  const int pull_over_sampling_num = parameters_.pull_over_sampling_num;
-  const double jerk_resolution =
-    std::abs(maximum_lateral_jerk - minimum_lateral_jerk) / pull_over_sampling_num;
 
-  // calc lateral offset from road lane center line to shoulder target line.
-  lanelet::ConstLanelet goal_closest_road_lane;
-  lanelet::utils::query::getClosestLanelet(road_lanes, goal_pose, &goal_closest_road_lane);
-  const auto closest_center_pose =
-    lanelet::utils::getClosestCenterPose(goal_closest_road_lane, goal_pose.position);
-  const double distance_from_shoulder_left_bound =
-    util::getDistanceToShoulderBoundary(shoulder_lanes, closest_center_pose);
-  const double margin_from_boundary =
-    std::abs(util::getDistanceToShoulderBoundary(shoulder_lanes, goal_pose));
-  const double offset_from_road_line_center =
-    distance_from_shoulder_left_bound + margin_from_boundary;
+  const auto current_road_arc_coords = lanelet::utils::getArcCoordinates(road_lanes, current_pose);
+  const double s_start = current_road_arc_coords.length - backward_path_length;
+  const auto shift_end_road_arc_coords =
+    lanelet::utils::getArcCoordinates(road_lanes, shift_end_pose);
+  double s_end = shift_end_road_arc_coords.length - pull_over_distance;
+  s_end = std::max(s_end, s_start + std::numeric_limits<double>::epsilon());
+  auto road_lane_reference_path = route_handler->getCenterLinePath(road_lanes, s_start, s_end);
+  // resample road straight path and shift source path respectively
+  road_lane_reference_path =
+    util::resamplePathWithSpline(road_lane_reference_path, resample_interval_);
 
-  // shift end point in shoulder lane
-  const auto shift_end_point = std::invoke([&]() {
-    const auto arc_position_goal = lanelet::utils::getArcCoordinates(shoulder_lanes, goal_pose);
-    const double s_start =
-      std::max(arc_position_goal.length - after_pull_over_straight_distance, 0.0);
-    const double s_end = s_start + std::numeric_limits<double>::epsilon();
-    const auto path = route_handler->getCenterLinePath(shoulder_lanes, s_start, s_end, true);
-    return path.points.front();
-  });
-
-  std::vector<PullOverPath> candidate_paths;
-  for (double lateral_jerk = minimum_lateral_jerk; lateral_jerk <= maximum_lateral_jerk;
-       lateral_jerk += jerk_resolution) {
-    PathShifter path_shifter;
-    ShiftedPath shifted_path;
-    PullOverPath candidate_path;
-
-    const double pull_over_distance = path_shifter.calcLongitudinalDistFromJerk(
-      std::abs(offset_from_road_line_center), lateral_jerk, pull_over_velocity);
-
-    // calculate straight distance before pull over
-    const double straight_distance = std::invoke([&]() {
-      const auto arc_position_goal = lanelet::utils::getArcCoordinates(road_lanes, goal_pose);
-      const auto arc_position_pose = lanelet::utils::getArcCoordinates(road_lanes, current_pose);
-      return arc_position_goal.length - after_pull_over_straight_distance - pull_over_distance -
-             arc_position_pose.length;
-    });
-
-    PathWithLaneId road_lane_reference_path;
-    {
-      const auto arc_position = lanelet::utils::getArcCoordinates(road_lanes, current_pose);
-      const auto arc_position_ref2_front =
-        lanelet::utils::getArcCoordinates(road_lanes, shift_end_point.point.pose);
-      const double s_start = arc_position.length - backward_path_length;
-      const double s_end = arc_position_ref2_front.length - pull_over_distance;
-      road_lane_reference_path = route_handler->getCenterLinePath(road_lanes, s_start, s_end);
-      // decelerate velocity linearly to minimum pull over velocity
-      // ( or accelerate if original velocity is lower than minimum velocity )
-      for (auto & point : road_lane_reference_path.points) {
-        const auto arclength =
-          lanelet::utils::getArcCoordinates(road_lanes, point.point.pose).length;
-        const double distance_to_pull_over_start = std::max(0.0, s_end - arclength);
-        point.point.longitudinal_velocity_mps = std::min(
-          point.point.longitudinal_velocity_mps,
-          static_cast<float>(
-            (distance_to_pull_over_start / deceleration_interval) *
-              (point.point.longitudinal_velocity_mps - pull_over_velocity) +
-            pull_over_velocity));
-      }
-    }
-    // resample road straight path and shift source path respectively
-    constexpr double resample_interval{1.0};
-    road_lane_reference_path =
-      util::resamplePathWithSpline(road_lane_reference_path, resample_interval);
-
-    if (road_lane_reference_path.points.empty()) {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("behavior_path_planner").get_child("pull_over").get_child("util"),
-        "reference path is empty!! something wrong...");
-      continue;
-    }
-
-    PathWithLaneId target_lane_reference_path;
-    {
-      const lanelet::ArcCoordinates pull_over_start_arc_position =
-        lanelet::utils::getArcCoordinates(
-          shoulder_lanes, road_lane_reference_path.points.back().point.pose);
-      const double s_start = pull_over_start_arc_position.length;
-      const auto arc_position_goal = lanelet::utils::getArcCoordinates(shoulder_lanes, goal_pose);
-      const double s_end = arc_position_goal.length;
-      target_lane_reference_path = route_handler->getCenterLinePath(shoulder_lanes, s_start, s_end);
-      // distance between shoulder lane's left boundary and shoulder lane center
-      const double distance_shoulder_to_left_bound =
-        util::getDistanceToShoulderBoundary(shoulder_lanes, shift_end_point.point.pose);
-
-      // distance between shoulder lane center and target line
-      const double distance_shoulder_to_target =
-        distance_shoulder_to_left_bound + margin_from_boundary;
-
-      // Apply shifting shoulder lane to adjust to target line
-      const double offset = -distance_shoulder_to_target;
-      for (size_t i = 0; i < target_lane_reference_path.points.size(); ++i) {
-        {
-          auto & p = target_lane_reference_path.points.at(i).point.pose;
-          p = tier4_autoware_utils::calcOffsetPose(p, 0, offset, 0);
-        }
-      }
-    }
-    path_shifter.setPath(
-      util::resamplePathWithSpline(target_lane_reference_path, resample_interval));
-
-    ShiftLine shift_line;
-    {
-      shift_line.start = road_lane_reference_path.points.back().point.pose;
-      shift_line.end = shift_end_point.point.pose;
-
-      // distance between shoulder lane's left boundary and current lane center
-      const double distance_road_to_left_boundary = util::getDistanceToShoulderBoundary(
-        shoulder_lanes, road_lane_reference_path.points.back().point.pose);
-      // distance between shoulder lane's left boundary and current lane center
-      const double distance_road_to_target = distance_road_to_left_boundary + margin_from_boundary;
-
-      shift_line.end_shift_length = distance_road_to_target;
-      path_shifter.addShiftLine(shift_line);
-    }
-
-    // offset front side from reference path
-    const bool offset_back = false;
-    if (!path_shifter.generate(&shifted_path, offset_back)) {
-      continue;
-    }
-
-    const auto shift_end_idx =
-      motion_utils::findNearestIndex(shifted_path.path.points, shift_end_point.point.pose);
-    const auto goal_idx = motion_utils::findNearestIndex(shifted_path.path.points, goal_pose);
-    if (shift_end_idx && goal_idx) {
-      // get target shoulder lane
-      lanelet::ConstLanelet target_shoulder_lanelet;
-      lanelet::utils::query::getClosestLanelet(
-        shoulder_lanes, shifted_path.path.points.back().point.pose, &target_shoulder_lanelet);
-
-      for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
-        auto & point = shifted_path.path.points.at(i);
-
-        // add road lane_ids if not found
-        for (const auto id : road_lane_reference_path.points.back().lane_ids) {
-          if (std::find(point.lane_ids.begin(), point.lane_ids.end(), id) == point.lane_ids.end()) {
-            point.lane_ids.push_back(id);
-          }
-        }
-
-        // add shoulder lane_id if not found
-        if (
-          std::find(point.lane_ids.begin(), point.lane_ids.end(), target_shoulder_lanelet.id()) ==
-          point.lane_ids.end()) {
-          point.lane_ids.push_back(target_shoulder_lanelet.id());
-        }
-
-        // set velocity
-        if (i < *shift_end_idx) {
-          // set velocity during shift
-          point.point.longitudinal_velocity_mps = std::min(
-            point.point.longitudinal_velocity_mps,
-            road_lane_reference_path.points.back().point.longitudinal_velocity_mps);
-          continue;
-        } else if (i >= *goal_idx) {
-          // set velocity after goal
-          point.point.longitudinal_velocity_mps = 0.0;
-          continue;
-        }
-        point.point.longitudinal_velocity_mps = pull_over_velocity;
-      }
-
-      candidate_path.straight_path = road_lane_reference_path;
-      candidate_path.path =
-        pull_over_utils::combineReferencePath(road_lane_reference_path, shifted_path.path);
-      // shift path is connected to one, so partial_paths have only one
-      candidate_path.partial_paths.push_back(
-        pull_over_utils::combineReferencePath(road_lane_reference_path, shifted_path.path));
-      candidate_path.shifted_path = shifted_path;
-      shift_line.start_idx = path_shifter.getShiftLines().front().start_idx;
-      shift_line.end_idx = path_shifter.getShiftLines().front().end_idx;
-      candidate_path.start_pose = path_shifter.getShiftLines().front().start;
-      candidate_path.end_pose = path_shifter.getShiftLines().front().end;
-      candidate_path.shifted_path.shift_length = shifted_path.shift_length;
-      candidate_path.shift_line = shift_line;
-      candidate_path.preparation_length = straight_distance;
-      candidate_path.pull_over_length = pull_over_distance;
-    } else {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("behavior_path_planner").get_child("pull_over").get_child("util"),
-        "lane change end idx not found on target path.");
-      continue;
-    }
-
-    candidate_paths.push_back(candidate_path);
+  // decelerate velocity linearly to minimum pull over velocity
+  // (or keep original velocity if it is lower than pull over velocity)
+  for (auto & point : road_lane_reference_path.points) {
+    const auto arclength = lanelet::utils::getArcCoordinates(road_lanes, point.point.pose).length;
+    const double distance_to_pull_over_start = std::max(0.0, s_end - arclength);
+    const auto decelerated_velocity = static_cast<float>(
+      distance_to_pull_over_start / deceleration_interval *
+        (point.point.longitudinal_velocity_mps - pull_over_velocity) +
+      pull_over_velocity);
+    point.point.longitudinal_velocity_mps =
+      std::min(point.point.longitudinal_velocity_mps, decelerated_velocity);
   }
-
-  return candidate_paths;
+  return road_lane_reference_path;
 }
 
-std::vector<PullOverPath> ShiftPullOver::selectValidPaths(
-  const std::vector<PullOverPath> & paths, const lanelet::ConstLanelets & road_lanes,
-  const lanelet::ConstLanelets & shoulder_lanes, const bool is_in_goal_route_section,
-  const Pose & goal_pose) const
+PathWithLaneId ShiftPullOver::generateShoulderLaneReferencePath(
+  const lanelet::ConstLanelets & shoulder_lanes, const Pose & shift_start_pose,
+  const Pose & goal_pose, const double shoulder_center_to_goal_distance) const
 {
-  // combine road and shoulder lanes
-  lanelet::ConstLanelets lanes = road_lanes;
-  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
+  const auto & route_handler = planner_data_->route_handler;
 
-  std::vector<PullOverPath> available_paths;
-  for (const auto & path : paths) {
-    if (!hasEnoughDistance(path, road_lanes, is_in_goal_route_section, goal_pose)) {
-      continue;
-    }
+  const auto shift_start_shoulder_arc_coords =
+    lanelet::utils::getArcCoordinates(shoulder_lanes, shift_start_pose);
+  const double s_start = shift_start_shoulder_arc_coords.length;
+  const auto goal_shoulder_arc_coords =
+    lanelet::utils::getArcCoordinates(shoulder_lanes, goal_pose);
+  const double s_end = goal_shoulder_arc_coords.length;
+  auto shoulder_lane_reference_path =
+    route_handler->getCenterLinePath(shoulder_lanes, s_start, s_end);
+  // offset to goal line
+  for (auto & p : shoulder_lane_reference_path.points) {
+    p.point.pose =
+      tier4_autoware_utils::calcOffsetPose(p.point.pose, 0, shoulder_center_to_goal_distance, 0);
+  }
+  shoulder_lane_reference_path =
+    util::resamplePathWithSpline(shoulder_lane_reference_path, resample_interval_);
 
-    if (lane_departure_checker_.checkPathWillLeaveLane(lanes, path.shifted_path.path)) {
-      continue;
-    }
+  return shoulder_lane_reference_path;
+}
 
-    available_paths.push_back(path);
+boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
+  const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
+  const Pose & shift_end_pose, const Pose & goal_pose, const double lateral_jerk,
+  const double road_center_to_goal_distance, const double shoulder_center_to_goal_distance,
+  const double shoulder_left_bound_to_goal_distance) const
+{
+  const double pull_over_velocity = parameters_.pull_over_velocity;
+
+  // generate road lane reference path and get shift start pose
+  const double pull_over_distance = PathShifter::calcLongitudinalDistFromJerk(
+    road_center_to_goal_distance, lateral_jerk, pull_over_velocity);
+  const auto road_lane_reference_path =
+    generateRoadLaneReferencePath(road_lanes, shift_end_pose, pull_over_distance);
+  if (road_lane_reference_path.points.empty()) return {};
+  const auto shift_start_pose = road_lane_reference_path.points.back().point.pose;
+
+  // generate Shoulder lane reference path and set it path_shifter
+  const auto shoulder_lane_reference_path = generateShoulderLaneReferencePath(
+    shoulder_lanes, shift_start_pose, goal_pose, shoulder_center_to_goal_distance);
+  if (shoulder_lane_reference_path.points.empty()) return {};
+  PathShifter path_shifter{};
+  path_shifter.setPath(shoulder_lane_reference_path);
+
+  // generate shift_line and set it to path_sifter
+  ShiftLine shift_line{};
+  {
+    shift_line.start = shift_start_pose;
+    shift_line.end = shift_end_pose;
+    const double shoulder_left_bound_to_shift_start_distance =
+      util::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, shift_start_pose);
+    const double goal_to_shift_start_distance =
+      shoulder_left_bound_to_shift_start_distance - shoulder_left_bound_to_goal_distance;
+    shift_line.end_shift_length = goal_to_shift_start_distance;
+    path_shifter.addShiftLine(shift_line);
   }
 
-  return available_paths;
+  // offset front side from reference path
+  ShiftedPath shifted_path{};
+  const bool offset_back = false;
+  if (!path_shifter.generate(&shifted_path, offset_back)) return {};
+
+  // check lane departure with road and shoulder lanes
+  lanelet::ConstLanelets lanes = road_lanes;
+  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
+  if (lane_departure_checker_.checkPathWillLeaveLane(lanes, shifted_path.path)) return {};
+
+  // check collision
+  if (!isSafePath(shifted_path.path)) return {};
+
+  // set lane_id and velocity to shifted_path
+  const auto goal_idx = motion_utils::findNearestIndex(shifted_path.path.points, goal_pose);
+  lanelet::ConstLanelet target_shoulder_lanelet{};
+  lanelet::utils::query::getClosestLanelet(
+    shoulder_lanes, shifted_path.path.points.back().point.pose, &target_shoulder_lanelet);
+  for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
+    auto & point = shifted_path.path.points.at(i);
+    // add road lane_ids if not found
+    for (const auto id : road_lane_reference_path.points.back().lane_ids) {
+      if (std::find(point.lane_ids.begin(), point.lane_ids.end(), id) == point.lane_ids.end()) {
+        point.lane_ids.push_back(id);
+      }
+    }
+    // add shoulder lane_id if not found
+    if (
+      std::find(point.lane_ids.begin(), point.lane_ids.end(), target_shoulder_lanelet.id()) ==
+      point.lane_ids.end()) {
+      point.lane_ids.push_back(target_shoulder_lanelet.id());
+    }
+    // set velocity
+    if (i >= *goal_idx) {
+      // set velocity after goal
+      point.point.longitudinal_velocity_mps = 0.0;
+    } else {
+      point.point.longitudinal_velocity_mps = pull_over_velocity;
+    }
+  }
+
+  PullOverPath pull_over_path{};
+  pull_over_path.path =
+    pull_over_utils::combineReferencePath(road_lane_reference_path, shifted_path.path);
+  // shift path is connected to one, so partial_paths have only one
+  pull_over_path.partial_paths.push_back(pull_over_path.path);
+  pull_over_path.start_pose = path_shifter.getShiftLines().front().start;
+  pull_over_path.end_pose = path_shifter.getShiftLines().front().end;
+
+  // check enough distance
+  if (!hasEnoughDistance(
+        pull_over_path.path, road_lanes, pull_over_path.start_pose, goal_pose,
+        pull_over_distance)) {
+    return {};
+  }
+
+  return pull_over_path;
 }
 
 bool ShiftPullOver::hasEnoughDistance(
-  const PullOverPath & path, const lanelet::ConstLanelets & road_lanes,
-  const bool is_in_goal_route_section, const Pose & goal_pose) const
+  const PathWithLaneId & path, const lanelet::ConstLanelets & road_lanes, const Pose & start_pose,
+  const Pose & goal_pose, const double pull_over_distance) const
 {
   const auto & current_pose = planner_data_->self_pose->pose;
+  const auto & common_params = planner_data_->parameters;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
 
-  if (!pull_over_utils::hasEnoughDistanceToParkingStart(
-        path.path, current_pose, path.start_pose, current_vel, parameters_.maximum_deceleration,
-        parameters_.decide_path_distance, planner_data_->parameters.ego_nearest_dist_threshold,
-        planner_data_->parameters.ego_nearest_yaw_threshold)) {
+  const size_t ego_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, current_pose, common_params.ego_nearest_dist_threshold,
+    common_params.ego_nearest_yaw_threshold);
+  const size_t start_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, start_pose, common_params.ego_nearest_dist_threshold,
+    common_params.ego_nearest_yaw_threshold);
+  const double dist_to_start_pose = motion_utils::calcSignedArcLength(
+    path.points, current_pose.position, ego_segment_idx, start_pose.position, start_segment_idx);
+
+  // once stopped, it cannot start again if start_pose is close.
+  // so need enough distance to restart
+  constexpr double eps_vel = 0.01;
+  // dist to restart should be less than decide_path_distance.
+  // otherwise, the goal would change immediately after departure.
+  const double dist_to_restart = parameters_.decide_path_distance / 2;
+  if (std::abs(current_vel) < eps_vel && dist_to_start_pose < dist_to_restart) {
+    return false;
+  }
+  const double current_to_stop_distance =
+    std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
+  if (dist_to_start_pose < current_to_stop_distance) {
     return false;
   }
 
-  const double pull_over_prepare_distance = path.preparation_length;
-  const double pull_over_distance = path.pull_over_length;
-  const double pull_over_total_distance = pull_over_prepare_distance + pull_over_distance;
-
-  if (pull_over_total_distance > util::getDistanceToEndOfLane(current_pose, road_lanes)) {
+  const double road_lane_dist_to_goal = dist_to_start_pose + pull_over_distance;
+  if (road_lane_dist_to_goal > util::getDistanceToEndOfLane(current_pose, road_lanes)) {
     return false;
   }
 
+  const bool is_in_goal_route_section =
+    planner_data_->route_handler->isInGoalRouteSection(road_lanes.back());
   if (
     is_in_goal_route_section &&
-    pull_over_total_distance > util::getSignedDistance(current_pose, goal_pose, road_lanes)) {
+    road_lane_dist_to_goal > util::getSignedDistance(current_pose, goal_pose, road_lanes)) {
     return false;
+  }
+
+  return true;
+}
+
+bool ShiftPullOver::isSafePath(const PathWithLaneId & path) const
+{
+  if (parameters_.use_occupancy_grid || !occupancy_grid_map_) {
+    const bool check_out_of_range = false;
+    if (occupancy_grid_map_->hasObstacleOnPath(path, check_out_of_range)) {
+      return false;
+    }
+  }
+
+  if (parameters_.use_object_recognition) {
+    if (util::checkCollisionBetweenPathFootprintsAndObjects(
+          vehicle_footprint_, path, *(planner_data_->dynamic_object),
+          parameters_.object_recognition_collision_check_margin)) {
+      return false;
+    }
   }
 
   return true;
