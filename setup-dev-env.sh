@@ -27,6 +27,10 @@ while [ "$1" != "" ]; do
         # Disable installation of 'cuda-drivers' in the role 'cuda'.
         option_no_cuda_drivers=true
         ;;
+    --no-dev)
+        # Disable installation dev packages .
+        option_no_dev=true
+        ;;
     *)
         args+=("$1")
         ;;
@@ -77,6 +81,14 @@ if [ "$option_no_cuda_drivers" = "true" ]; then
     ansible_args+=("--extra-vars" "install_cuda_drivers=false")
 fi
 
+# Check installation of dev package
+if [ "$option_no_dev" = "true" ]; then
+    ansible_args+=("--extra-vars" "install_devel=false")
+    ansible_args+=("--extra-vars" "installation_type=ros-base")
+else
+    ansible_args+=("--extra-vars" "install_devel=true")
+fi
+
 # Load env
 source "$SCRIPT_DIR/amd64.env"
 if [ "$(uname -m)" = "aarch64" ]; then
@@ -102,7 +114,7 @@ if ! (command -v git >/dev/null 2>&1); then
 fi
 
 # Install pipx for ansible
-if ! (python3 -m pipx >/dev/null 2>&1); then
+if ! (python3 -m pipx --version >/dev/null 2>&1); then
     sudo apt-get -y update
     sudo apt-get -y install python3-pip python3-venv
     python3 -m pip install --user pipx

@@ -28,7 +28,7 @@ sudo apt-get install -y nvidia-docker2
 sudo systemctl restart docker
 
 # At this point, a working setup can be tested by running a base CUDA container:
-sudo docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
 
 # This should result in a console output shown below:
 # +-----------------------------------------------------------------------------+

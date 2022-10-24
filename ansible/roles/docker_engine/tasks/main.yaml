@@ -20,12 +20,20 @@
       - lsb-release
     update_cache: true
 
-# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# sudo mkdir -p /etc/apt/keyrings
+- name: Create the directory for keyrings
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/apt/keyrings
+    mode: 0755
+
+# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 - name: Authorize Docker GPG key
   become: true
   ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
-    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+    keyring: /etc/apt/keyrings/docker.gpg
 
 - name: Save result of 'dpkg --print-architecture'
   ansible.builtin.command: dpkg --print-architecture
@@ -42,11 +50,11 @@
   register: lsb_release_is
   changed_when: false
 
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 - name: Add Docker apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb [arch={{ deb_architecture.stdout }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/{{ lsb_release_is.stdout | lower }} {{ lsb_release_cs.stdout }} stable
+    repo: deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ lsb_release_is.stdout | lower }} {{ lsb_release_cs.stdout }} stable
     filename: docker
     state: present
     update_cache: true
