@@ -36,6 +36,14 @@
       </include>
     </group>
 
+    <!-- Component State Monitor -->
+    <group>
+      <include file="$(find-pkg-share component_state_monitor)/launch/component_state_monitor.launch.py">
+        <arg name="mode" value="$(var run_mode)"/>
+        <arg name="file" value="$(find-pkg-share component_state_monitor)/config/topics.yaml"/>
+      </include>
+    </group>
+
     <!-- Error Monitor -->
     <group>
       <let name="config_file" value="$(var tier4_system_launch_param_path)/system_error_monitor/system_error_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
