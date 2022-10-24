@@ -262,11 +262,11 @@ tier4_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToObjec
       .probability(in_obstacle.score));
   if (in_obstacle.meta_type == MetaType::META_PEDESTRIAN) {
     resulting_object.object.classification.front().label = ObjectClassification::PEDESTRIAN;
-  } else if (in_obstacle.meta_type == MetaType::META_NONMOT) {
+  } else if (in_obstacle.meta_type == MetaType::META_NON_MOT) {
     resulting_object.object.classification.front().label = ObjectClassification::MOTORCYCLE;
-  } else if (in_obstacle.meta_type == MetaType::META_SMALLMOT) {
+  } else if (in_obstacle.meta_type == MetaType::META_SMALL_MOT) {
     resulting_object.object.classification.front().label = ObjectClassification::CAR;
-  } else if (in_obstacle.meta_type == MetaType::META_BIGMOT) {
+  } else if (in_obstacle.meta_type == MetaType::META_BIG_MOT) {
     resulting_object.object.classification.front().label = ObjectClassification::BUS;
   } else {
     // resulting_object.object.classification.front().label = ObjectClassification::PEDESTRIAN;

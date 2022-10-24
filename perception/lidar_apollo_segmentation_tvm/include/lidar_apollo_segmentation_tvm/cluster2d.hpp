@@ -44,9 +44,9 @@ using autoware::common::types::float32_t;
 /// \brief Internal obstacle classification categories.
 enum class MetaType {
   META_UNKNOWN,
-  META_SMALLMOT,
-  META_BIGMOT,
-  META_NONMOT,
+  META_SMALL_MOT,
+  META_BIG_MOT,
+  META_NON_MOT,
   META_PEDESTRIAN,
   MAX_META_TYPE
 };
