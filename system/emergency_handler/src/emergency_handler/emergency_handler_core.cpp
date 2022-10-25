@@ -45,11 +45,6 @@ EmergencyHandler::EmergencyHandler() : Node("emergency_handler")
   sub_control_mode_ = create_subscription<autoware_auto_vehicle_msgs::msg::ControlModeReport>(
     "~/input/control_mode", rclcpp::QoS{1}, std::bind(&EmergencyHandler::onControlMode, this, _1));
 
-  // Heartbeat
-  heartbeat_hazard_status_ = std::make_shared<
-    HeaderlessHeartbeatChecker<autoware_auto_system_msgs::msg::HazardStatusStamped>>(
-    *this, "~/input/hazard_status", param_.timeout_hazard_status);
-
   // Publisher
   pub_control_command_ = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
     "~/output/control_command", rclcpp::QoS{1});
@@ -76,6 +71,7 @@ void EmergencyHandler::onHazardStatusStamped(
   const autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr msg)
 {
   hazard_status_stamped_ = msg;
+  stamp_hazard_status_ = this->now();
 }
 
 void EmergencyHandler::onPrevControlCommand(
@@ -178,7 +174,9 @@ void EmergencyHandler::onTimer()
   if (!isDataReady()) {
     return;
   }
-  if (heartbeat_hazard_status_->isTimeout()) {
+  const bool is_hazard_status_timeout =
+    (this->now() - stamp_hazard_status_).seconds() > param_.timeout_hazard_status;
+  if (is_hazard_status_timeout) {
     RCLCPP_WARN_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
       "heartbeat_hazard_status is timeout");
