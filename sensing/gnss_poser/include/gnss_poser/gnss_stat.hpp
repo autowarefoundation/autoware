@@ -14,6 +14,8 @@
 #ifndef GNSS_POSER__GNSS_STAT_HPP_
 #define GNSS_POSER__GNSS_STAT_HPP_
 
+#include <string>
+
 namespace gnss_poser
 {
 enum class CoordinateSystem {
@@ -30,6 +32,7 @@ struct GNSSStat
   : coordinate_system(CoordinateSystem::MGRS),
     northup(true),
     zone(0),
+    mgrs_zone(""),
     x(0),
     y(0),
     z(0),
@@ -42,6 +45,7 @@ struct GNSSStat
   CoordinateSystem coordinate_system;
   bool northup;
   int zone;
+  std::string mgrs_zone;
   double x;
   double y;
   double z;

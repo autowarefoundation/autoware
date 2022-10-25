@@ -143,7 +143,7 @@ GNSSStat UTM2MGRS(
     std::string mgrs_code;
     GeographicLib::MGRS::Forward(
       utm.zone, utm.northup, utm.x, utm.y, utm.latitude, static_cast<int>(precision), mgrs_code);
-    mgrs.zone = std::stod(mgrs_code.substr(0, GZD_ID_size));
+    mgrs.mgrs_zone = std::string(mgrs_code.substr(0, GZD_ID_size));
     mgrs.x = std::stod(mgrs_code.substr(GZD_ID_size, static_cast<int>(precision))) *
              std::pow(
                10, static_cast<int>(MGRSPrecision::_1_METER) -
