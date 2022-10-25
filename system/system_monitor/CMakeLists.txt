@@ -151,7 +151,7 @@ rclcpp_components_register_node(cpu_monitor_lib
 )
 
 rclcpp_components_register_node(hdd_monitor_lib
-  PLUGIN "HDDMonitor"
+  PLUGIN "HddMonitor"
   EXECUTABLE hdd_monitor
 )
 

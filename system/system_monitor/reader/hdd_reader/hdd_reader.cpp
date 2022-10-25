@@ -52,22 +52,12 @@
 constexpr int PORT = 7635;
 
 /**
- * @brief HDD information
- */
-struct HDD_Info
-{
-  std::string model_;   //!< @brief Model number
-  std::string serial_;  //!< @brief Serial number
-  int temperature_;     //!< @brief Temperature
-};
-
-/**
  * @brief ATA PASS-THROUGH (12) command
  * @note For details please see the document below.
  * - ATA Command Pass-Through
  *   https://www.t10.org/ftp/t10/document.04/04-262r8.pdf
  */
-struct ATAPassThrough12
+struct AtaPassThrough12
 {
   uint8_t operation_code_;      //!< @brief OPERATION CODE (A1h)
   uint8_t reserved0_ : 1;       //!< @brief Reserved
@@ -123,7 +113,7 @@ struct AttributeEntry
  * - SMART Attribute Overview
  *   http://www.t13.org/Documents/UploadedDocuments/docs2005/e05171r0-ACS-SMARTAttributes_Overview.pdf
  */
-struct SMARTData
+struct SmartData
 {
   // Offset 0..361 X Vendor specific
   uint16_t smart_structure_version_;    //!< @brief SMART structure version
@@ -190,10 +180,10 @@ void swap_char(std::string & str, size_t size)
  * - ATA Command Set - 4  (ACS-4)
  *   http://www.t13.org/Documents/UploadedDocuments/docs2016/di529r14-ATAATAPI_Command_Set_-_4.pdf
  */
-int get_ata_identify(int fd, HDDInfo * info)
+int get_ata_identify(int fd, HddInfo * info)
 {
   sg_io_hdr_t hdr{};
-  ATAPassThrough12 ata{};
+  AtaPassThrough12 ata{};
   unsigned char data[512]{};  // 256 words
 
   // Create a command descriptor block(CDB)
@@ -249,11 +239,11 @@ int get_ata_identify(int fd, HDDInfo * info)
  * - SMART Attribute Annex
  *   http://www.t13.org/documents/uploadeddocuments/docs2005/e05148r0-acs-smartattributesannex.pdf
  */
-int get_ata_SMARTData(int fd, HDDInfo * info, const HDDDevice & device)
+int get_ata_smart_data(int fd, HddInfo * info, const HddDevice & device)
 {
   sg_io_hdr_t hdr{};
-  ATAPassThrough12 ata{};
-  SMARTData data{};
+  AtaPassThrough12 ata{};
+  SmartData data{};
 
   // Create a command descriptor block(CDB)
   ata.operation_code_ = 0xA1;  // ATA PASS-THROUGH (12) command
@@ -323,7 +313,7 @@ int get_ata_SMARTData(int fd, HDDInfo * info, const HDDDevice & device)
  * - NVM Express 1.2b
  *   https://www.nvmexpress.org/wp-content/uploads/NVM_Express_1_2b_Gold_20160603.pdf
  */
-int get_nvme_identify(int fd, HDDInfo * info)
+int get_nvme_identify(int fd, HddInfo * info)
 {
   nvme_admin_cmd cmd{};
   char data[4096]{};  // Fixed size for Identify command
@@ -361,7 +351,7 @@ int get_nvme_identify(int fd, HDDInfo * info)
  * - NVM Express 1.2b
  *   https://www.nvmexpress.org/wp-content/uploads/NVM_Express_1_2b_Gold_20160603.pdf
  */
-int get_nvme_SMARTData(int fd, HDDInfo * info)
+int get_nvme_smart_data(int fd, HddInfo * info)
 {
   nvme_admin_cmd cmd{};
   unsigned char data[144]{};  // 36 Dword (get byte 0 to 143)
@@ -415,8 +405,8 @@ int get_nvme_SMARTData(int fd, HDDInfo * info)
  */
 int get_hdd_info(boost::archive::text_iarchive & ia, boost::archive::text_oarchive & oa)
 {
-  std::vector<HDDDevice> hdd_devices;
-  HDDInfoList list;
+  std::vector<HddDevice> hdd_devices;
+  HddInfoList list;
 
   try {
     ia & hdd_devices;
@@ -426,7 +416,7 @@ int get_hdd_info(boost::archive::text_iarchive & ia, boost::archive::text_oarchi
   }
 
   for (auto & hdd_device : hdd_devices) {
-    HDDInfo info{};
+    HddInfo info{};
 
     // Open a file
     int fd = open(hdd_device.name_.c_str(), O_RDONLY);
@@ -447,7 +437,7 @@ int get_hdd_info(boost::archive::text_iarchive & ia, boost::archive::text_oarchi
         continue;
       }
       // Get SMART DATA for ATA drive
-      info.error_code_ = get_ata_SMARTData(fd, &info, hdd_device);
+      info.error_code_ = get_ata_smart_data(fd, &info, hdd_device);
       if (info.error_code_ != 0) {
         syslog(LOG_ERR, "Failed to get SMART LOG for ATA drive. %s\n", strerror(info.error_code_));
         close(fd);
@@ -462,7 +452,7 @@ int get_hdd_info(boost::archive::text_iarchive & ia, boost::archive::text_oarchi
         continue;
       }
       // Get SMART / Health Information for NVMe drive
-      info.error_code_ = get_nvme_SMARTData(fd, &info);
+      info.error_code_ = get_nvme_smart_data(fd, &info);
       if (info.error_code_ != 0) {
         syslog(
           LOG_ERR, "Failed to get SMART / Health Information for NVMe drive. %s\n",
@@ -619,10 +609,10 @@ void run(int port)
     boost::archive::text_oarchive oa(oss);
 
     switch (request_id) {
-      case HDDReaderRequestID::GetHDDInfo:
+      case HddReaderRequestId::GetHddInfo:
         ret = get_hdd_info(ia, oa);
         break;
-      case HDDReaderRequestID::UnmountDevice:
+      case HddReaderRequestId::UnmountDevice:
         ret = unmount_device_with_lazy(ia, oa);
         break;
       default:

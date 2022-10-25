@@ -40,7 +40,7 @@ def launch_setup(context, *args, **kwargs):
         hdd_monitor_config = yaml.safe_load(f)["/**"]["ros__parameters"]
     hdd_monitor = ComposableNode(
         package="system_monitor",
-        plugin="HDDMonitor",
+        plugin="HddMonitor",
         name="hdd_monitor",
         parameters=[
             hdd_monitor_config,

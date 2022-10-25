@@ -31,15 +31,15 @@
 /**
  * @brief Enumeration of Request ID to hdd_reader
  */
-enum HDDReaderRequestID {
-  GetHDDInfo,
+enum HddReaderRequestId {
+  GetHddInfo,
   UnmountDevice,
 };
 
 /**
  * @brief HDD device
  */
-struct HDDDevice
+struct HddDevice
 {
   std::string name_;                     //!< @brief Device name
   uint8_t temp_attribute_id_;            //!< @brief S.M.A.R.T attribute ID of temperature
@@ -69,7 +69,7 @@ struct HDDDevice
 /**
  * @brief HDD information
  */
-struct HDDInfo
+struct HddInfo
 {
   int error_code_;      //!< @brief error code, 0 on success, otherwise error
   std::string model_;   //!< @brief Model number
@@ -133,6 +133,6 @@ struct UnmountDeviceInfo
 /**
  * @brief HDD information list
  */
-typedef std::map<std::string, HDDInfo> HDDInfoList;
+typedef std::map<std::string, HddInfo> HddInfoList;
 
 #endif  // HDD_READER__HDD_READER_HPP_

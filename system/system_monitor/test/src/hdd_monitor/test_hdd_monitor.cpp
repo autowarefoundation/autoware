@@ -33,13 +33,13 @@ using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
 
 char ** argv_;
 
-class TestHDDMonitor : public HDDMonitor
+class TestHddMonitor : public HddMonitor
 {
-  friend class HDDMonitorTestSuite;
+  friend class HddMonitorTestSuite;
 
 public:
-  TestHDDMonitor(const std::string & node_name, const rclcpp::NodeOptions & options)
-  : HDDMonitor(node_name, options)
+  TestHddMonitor(const std::string & node_name, const rclcpp::NodeOptions & options)
+  : HddMonitor(node_name, options)
   {
   }
 
@@ -48,11 +48,11 @@ public:
     array_ = *diag_msg;
   }
 
-  void addHDDParams(
+  void addHddParams(
     const std::string & name, float temp_warn, float temp_error, float usage_warn,
     float usage_error)
   {
-    HDDParam param;
+    HddParam param;
     param.temp_warn_ = temp_warn;
     param.temp_error_ = temp_error;
     param.usage_warn_ = usage_warn;
@@ -60,7 +60,7 @@ public:
     hdd_params_[name] = param;
   }
 
-  void changeHDDParams(float temp_warn, float temp_error, float usage_warn, float usage_error)
+  void changeHddParams(float temp_warn, float temp_error, float usage_warn, float usage_error)
   {
     for (auto itr = hdd_params_.begin(); itr != hdd_params_.end(); ++itr) {
       itr->second.temp_warn_ = temp_warn;
@@ -70,7 +70,7 @@ public:
     }
   }
 
-  void removeHDDParams(const std::string & name)
+  void removeHddParams(const std::string & name)
   {
     for (auto itr = hdd_params_.begin(); itr != hdd_params_.end(); ++itr) {
       if (itr->first == name) {
@@ -80,7 +80,7 @@ public:
     }
   }
 
-  void clearHDDParams() { hdd_params_.clear(); }
+  void clearHddParams() { hdd_params_.clear(); }
 
   void update() { updater_.force_update(); }
 
@@ -105,10 +105,10 @@ private:
   const std::string prefix_ = std::string(this->get_name()) + ": ";
 };
 
-class HDDMonitorTestSuite : public ::testing::Test
+class HddMonitorTestSuite : public ::testing::Test
 {
 public:
-  HDDMonitorTestSuite()
+  HddMonitorTestSuite()
   {
     // Get directory of executable
     const fs::path exe_path(argv_[0]);
@@ -118,7 +118,7 @@ public:
   }
 
 protected:
-  std::unique_ptr<TestHDDMonitor> monitor_;
+  std::unique_ptr<TestHddMonitor> monitor_;
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr sub_;
   std::string exe_dir_;
   std::string df_;
@@ -128,9 +128,9 @@ protected:
     using std::placeholders::_1;
     rclcpp::init(0, nullptr);
     rclcpp::NodeOptions node_options;
-    monitor_ = std::make_unique<TestHDDMonitor>("test_hdd_monitor", node_options);
+    monitor_ = std::make_unique<TestHddMonitor>("test_hdd_monitor", node_options);
     sub_ = monitor_->create_subscription<diagnostic_msgs::msg::DiagnosticArray>(
-      "/diagnostics", 1000, std::bind(&TestHDDMonitor::diagCallback, monitor_.get(), _1));
+      "/diagnostics", 1000, std::bind(&TestHddMonitor::diagCallback, monitor_.get(), _1));
     // Remove dummy executable if exists
     if (fs::exists(df_)) {
       fs::remove(df_);
@@ -245,8 +245,8 @@ void * hdd_reader(void * args)
   ret = 0;
   std::ostringstream oss;
   boost::archive::text_oarchive oa(oss);
-  HDDInfoList list;
-  HDDInfo info = {0};
+  HddInfoList list;
+  HddInfo info = {0};
 
   switch (*mode) {
     case Normal:
@@ -313,7 +313,7 @@ void * hdd_reader(void * args)
   return nullptr;
 }
 
-TEST_F(HDDMonitorTestSuite, tempNormalTest)
+TEST_F(HddMonitorTestSuite, tempNormalTest)
 {
   pthread_t th;
   ThreadTestMode mode = Normal;
@@ -337,7 +337,7 @@ TEST_F(HDDMonitorTestSuite, tempNormalTest)
   ASSERT_EQ(status.level, DiagStatus::OK);
 }
 
-TEST_F(HDDMonitorTestSuite, tempWarnTest)
+TEST_F(HddMonitorTestSuite, tempWarnTest)
 {
   pthread_t th;
   ThreadTestMode mode = Hot;
@@ -361,7 +361,7 @@ TEST_F(HDDMonitorTestSuite, tempWarnTest)
   ASSERT_EQ(status.level, DiagStatus::WARN);
 }
 
-TEST_F(HDDMonitorTestSuite, tempErrorTest)
+TEST_F(HddMonitorTestSuite, tempErrorTest)
 {
   pthread_t th;
   ThreadTestMode mode = CriticalHot;
@@ -385,7 +385,7 @@ TEST_F(HDDMonitorTestSuite, tempErrorTest)
   ASSERT_EQ(status.level, DiagStatus::ERROR);
 }
 
-TEST_F(HDDMonitorTestSuite, tempReturnsErrorTest)
+TEST_F(HddMonitorTestSuite, tempReturnsErrorTest)
 {
   pthread_t th;
   ThreadTestMode mode = ReturnsError;
@@ -412,7 +412,7 @@ TEST_F(HDDMonitorTestSuite, tempReturnsErrorTest)
   ASSERT_STREQ(value.c_str(), strerror(EACCES));
 }
 
-TEST_F(HDDMonitorTestSuite, tempRecvTimeoutTest)
+TEST_F(HddMonitorTestSuite, tempRecvTimeoutTest)
 {
   pthread_t th;
   ThreadTestMode mode = RecvTimeout;
@@ -443,7 +443,7 @@ TEST_F(HDDMonitorTestSuite, tempRecvTimeoutTest)
   ASSERT_STREQ(value.c_str(), strerror(EWOULDBLOCK));
 }
 
-TEST_F(HDDMonitorTestSuite, tempRecvNoDataTest)
+TEST_F(HddMonitorTestSuite, tempRecvNoDataTest)
 {
   pthread_t th;
   ThreadTestMode mode = RecvNoData;
@@ -470,7 +470,7 @@ TEST_F(HDDMonitorTestSuite, tempRecvNoDataTest)
   ASSERT_STREQ(value.c_str(), "No data received");
 }
 
-TEST_F(HDDMonitorTestSuite, tempFormatErrorTest)
+TEST_F(HddMonitorTestSuite, tempFormatErrorTest)
 {
   pthread_t th;
   ThreadTestMode mode = FormatError;
@@ -497,7 +497,7 @@ TEST_F(HDDMonitorTestSuite, tempFormatErrorTest)
   ASSERT_STREQ(value.c_str(), "input stream error");
 }
 
-TEST_F(HDDMonitorTestSuite, tempConnectErrorTest)
+TEST_F(HddMonitorTestSuite, tempConnectErrorTest)
 {
   // Publish topic
   monitor_->update();
@@ -516,10 +516,10 @@ TEST_F(HDDMonitorTestSuite, tempConnectErrorTest)
   ASSERT_STREQ(value.c_str(), strerror(ECONNREFUSED));
 }
 
-TEST_F(HDDMonitorTestSuite, tempInvalidDiskParameterTest)
+TEST_F(HddMonitorTestSuite, tempInvalidDiskParameterTest)
 {
   // Clear list
-  monitor_->clearHDDParams();
+  monitor_->clearHddParams();
 
   // Publish topic
   monitor_->update();
@@ -535,10 +535,10 @@ TEST_F(HDDMonitorTestSuite, tempInvalidDiskParameterTest)
   ASSERT_STREQ(status.message.c_str(), "invalid disk parameter");
 }
 
-TEST_F(HDDMonitorTestSuite, tempNoSuchDeviceTest)
+TEST_F(HddMonitorTestSuite, tempNoSuchDeviceTest)
 {
   // Add test file to list
-  monitor_->addHDDParams("/dev/sdx", 55.0, 77.0, 0.95, 0.99);
+  monitor_->addHddParams("/dev/sdx", 55.0, 77.0, 0.95, 0.99);
 
   pthread_t th;
   ThreadTestMode mode = Normal;
@@ -565,10 +565,10 @@ TEST_F(HDDMonitorTestSuite, tempNoSuchDeviceTest)
   ASSERT_STREQ(value.c_str(), strerror(ENOENT));
 
   // Remove test fie from list
-  monitor_->removeHDDParams("/dev/sdx");
+  monitor_->removeHddParams("/dev/sdx");
 }
 
-TEST_F(HDDMonitorTestSuite, usageWarnTest)
+TEST_F(HddMonitorTestSuite, usageWarnTest)
 {
   // Verify normal behavior
   {
@@ -589,7 +589,7 @@ TEST_F(HDDMonitorTestSuite, usageWarnTest)
   // Verify warning
   {
     // Change warning level
-    monitor_->changeHDDParams(55.0, 77.0, 0.00, 0.99);
+    monitor_->changeHddParams(55.0, 77.0, 0.00, 0.99);
 
     // Publish topic
     monitor_->update();
@@ -607,7 +607,7 @@ TEST_F(HDDMonitorTestSuite, usageWarnTest)
   // Verify normal behavior
   {
     // Change back to normal
-    monitor_->changeHDDParams(55.0, 77.0, 0.95, 0.99);
+    monitor_->changeHddParams(55.0, 77.0, 0.95, 0.99);
 
     // Publish topic
     monitor_->update();
@@ -623,7 +623,7 @@ TEST_F(HDDMonitorTestSuite, usageWarnTest)
   }
 }
 
-TEST_F(HDDMonitorTestSuite, usageErrorTest)
+TEST_F(HddMonitorTestSuite, usageErrorTest)
 {
   // Verify normal behavior
   {
@@ -644,7 +644,7 @@ TEST_F(HDDMonitorTestSuite, usageErrorTest)
   // Verify warning
   {
     // Change error level
-    monitor_->changeHDDParams(55.0, 77.0, 0.95, 0.00);
+    monitor_->changeHddParams(55.0, 77.0, 0.95, 0.00);
 
     // Publish topic
     monitor_->update();
@@ -662,7 +662,7 @@ TEST_F(HDDMonitorTestSuite, usageErrorTest)
   // Verify normal behavior
   {
     // Change back to normal
-    monitor_->changeHDDParams(55.0, 77.0, 0.95, 0.99);
+    monitor_->changeHddParams(55.0, 77.0, 0.95, 0.99);
 
     // Publish topic
     monitor_->update();
@@ -678,7 +678,7 @@ TEST_F(HDDMonitorTestSuite, usageErrorTest)
   }
 }
 
-TEST_F(HDDMonitorTestSuite, usageDfErrorTest)
+TEST_F(HddMonitorTestSuite, usageDfErrorTest)
 {
   // Symlink df1 to df
   fs::create_symlink(exe_dir_ + "/df1", df_);

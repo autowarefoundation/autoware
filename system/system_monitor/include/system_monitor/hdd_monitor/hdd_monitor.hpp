@@ -31,7 +31,7 @@
 /**
  * @brief error and warning temperature levels
  */
-struct HDDParam
+struct HddParam
 {
   std::string part_device_;                 //!< @brief partition device
   std::string disk_device_;                 //!< @brief disk device
@@ -53,7 +53,7 @@ struct HDDParam
     total_data_written_attribute_id_;     //!< @brief S.M.A.R.T attribute ID of total data written
   uint8_t recovered_error_attribute_id_;  //!< @brief S.M.A.R.T attribute ID of recovered error
 
-  HDDParam()
+  HddParam()
   : temp_warn_(55.0),
     temp_error_(70.0),
     power_on_hours_warn_(3000000),
@@ -90,17 +90,17 @@ struct SysfsDevStat
 /**
  * @brief statistics of HDD
  */
-struct HDDStat
+struct HddStat
 {
-  std::string device_;           //!< @brief device
-  std::string error_str_;        //!< @brief error string
-  float read_data_rate_MBs_;     //!< @brief data rate of read (MB/s)
-  float write_data_rate_MBs_;    //!< @brief data rate of write (MB/s)
-  float read_iops_;              //!< @brief IOPS of read
-  float write_iops_;             //!< @brief IOPS of write
-  SysfsDevStat last_sfdevstat_;  //!< @brief last statistics of sysfs device
+  std::string device_;                //!< @brief device
+  std::string error_str_;             //!< @brief error string
+  float read_data_rate_MBs_;          //!< @brief data rate of read (MB/s)
+  float write_data_rate_MBs_;         //!< @brief data rate of write (MB/s)
+  float read_iops_;                   //!< @brief IOPS of read
+  float write_iops_;                  //!< @brief IOPS of write
+  SysfsDevStat last_sysfs_dev_stat_;  //!< @brief last statistics of sysfs device
 
-  HDDStat() : read_data_rate_MBs_(0.0), write_data_rate_MBs_(0.0), read_iops_(0.0), write_iops_(0.0)
+  HddStat() : read_data_rate_MBs_(0.0), write_data_rate_MBs_(0.0), read_iops_(0.0), write_iops_(0.0)
   {
   }
 };
@@ -108,7 +108,7 @@ struct HDDStat
 /**
  * @brief SMART information items to check
  */
-enum class HDDSMARTInfoItem : uint32_t {
+enum class HddSmartInfoItem : uint32_t {
   TEMPERATURE = 0,
   POWER_ON_HOURS = 1,
   TOTAL_DATA_WRITTEN = 2,
@@ -119,7 +119,7 @@ enum class HDDSMARTInfoItem : uint32_t {
 /**
  * @brief HDD statistics items to check
  */
-enum class HDDStatItem : uint32_t {
+enum class HddStatItem : uint32_t {
   READ_DATA_RATE = 0,
   WRITE_DATA_RATE = 1,
   READ_IOPS = 2,
@@ -127,14 +127,14 @@ enum class HDDStatItem : uint32_t {
   SIZE
 };
 
-class HDDMonitor : public rclcpp::Node
+class HddMonitor : public rclcpp::Node
 {
 public:
   /**
    * @brief constructor
    * @param [in] options Options associated with this node.
    */
-  explicit HDDMonitor(const rclcpp::NodeOptions & options);
+  explicit HddMonitor(const rclcpp::NodeOptions & options);
 
 protected:
   using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
@@ -145,7 +145,7 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkSMARTTemperature(
+  void checkSmartTemperature(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
@@ -154,7 +154,7 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkSMARTPowerOnHours(
+  void checkSmartPowerOnHours(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
@@ -163,7 +163,7 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkSMARTTotalDataWritten(
+  void checkSmartTotalDataWritten(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
@@ -172,7 +172,7 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkSMARTRecoveredError(
+  void checkSmartRecoveredError(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
@@ -182,9 +182,9 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkSMART(
+  void checkSmart(
     diagnostic_updater::DiagnosticStatusWrapper & stat,
-    HDDSMARTInfoItem item);  // NOLINT(runtime/references)
+    HddSmartInfoItem item);  // NOLINT(runtime/references)
 
   /**
    * @brief check HDD usage
@@ -219,7 +219,7 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkReadIOPS(
+  void checkReadIops(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
@@ -228,7 +228,7 @@ protected:
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
    * to pass diagnostic message updated in this function to diagnostic publish calls.
    */
-  void checkWriteIOPS(
+  void checkWriteIops(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
@@ -240,7 +240,7 @@ protected:
    */
   void checkStatistics(
     diagnostic_updater::DiagnosticStatusWrapper & stat,
-    HDDStatItem item);  // NOLINT(runtime/references)
+    HddStatItem item);  // NOLINT(runtime/references)
 
   /**
    * @brief check HDD connection
@@ -261,7 +261,7 @@ protected:
   /**
    * @brief get HDD parameters
    */
-  void getHDDParams();
+  void getHddParams();
 
   /**
    * @brief get device name from mount point
@@ -278,17 +278,17 @@ protected:
   /**
    * @brief update HDD information list
    */
-  void updateHDDInfoList();
+  void updateHddInfoList();
 
   /**
    * @brief start HDD transfer measurement
    */
-  void startHDDTransferMeasurement();
+  void startHddTransferMeasurement();
 
   /**
    * @brief update HDD statistics
    */
-  void updateHDDStatistics();
+  void updateHddStatistics();
 
   /**
    * @brief get increment value of sysfs device stats per second
@@ -303,15 +303,15 @@ protected:
   /**
    * @brief read stats for current whole device using /sys/block/ directory
    * @param [in] device device name
-   * @param [out] sfdevstat statistics of sysfs device
+   * @param [out] sysfs_dev_stat statistics of sysfs device
    * @return result of success or failure
    */
-  int readSysfsDeviceStat(const std::string & device, SysfsDevStat & sfdevstat);
+  int readSysfsDeviceStat(const std::string & device, SysfsDevStat & sysfs_dev_stat);
 
   /**
    * @brief update HDD connections
    */
-  void updateHDDConnections();
+  void updateHddConnections();
 
   /**
    * @brief unmount device
@@ -321,26 +321,26 @@ protected:
   int unmountDevice(std::string & device);
 
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
-  rclcpp::TimerBase::SharedPtr timer_;   //!< @brief timer to get HDD information from HDDReader
+  rclcpp::TimerBase::SharedPtr timer_;   //!< @brief timer to get HDD information from HddReader
 
   char hostname_[HOST_NAME_MAX + 1];  //!< @brief host name
 
   int hdd_reader_port_;                         //!< @brief port number to connect to hdd_reader
-  std::map<std::string, HDDParam> hdd_params_;  //!< @brief list of error and warning levels
+  std::map<std::string, HddParam> hdd_params_;  //!< @brief list of error and warning levels
   std::map<std::string, bool>
     hdd_connected_flags_;  //!< @brief list of flag whether HDD is connected
   std::map<std::string, uint32_t>
     initial_recovered_errors_;                //!< @brief list of initial recovered error count
-  std::map<std::string, HDDStat> hdd_stats_;  //!< @brief list of HDD statistics
+  std::map<std::string, HddStat> hdd_stats_;  //!< @brief list of HDD statistics
   //!< @brief diagnostic of connection
   diagnostic_updater::DiagnosticStatusWrapper connect_diag_;
-  HDDInfoList hdd_info_list_;               //!< @brief list of HDD information
+  HddInfoList hdd_info_list_;               //!< @brief list of HDD information
   rclcpp::Time last_hdd_stat_update_time_;  //!< @brief last HDD statistics update time
 
   /**
    * @brief HDD SMART status messages
    */
-  const std::map<int, const char *> smart_dicts_[static_cast<uint32_t>(HDDSMARTInfoItem::SIZE)] = {
+  const std::map<int, const char *> smart_dicts_[static_cast<uint32_t>(HddSmartInfoItem::SIZE)] = {
     // temperature
     {{DiagStatus::OK, "OK"}, {DiagStatus::WARN, "hot"}, {DiagStatus::ERROR, "critical hot"}},
     // power on hours
@@ -364,7 +364,7 @@ protected:
   /**
    * @brief HDD statistics status messages
    */
-  const std::map<int, const char *> stat_dicts_[static_cast<uint32_t>(HDDStatItem::SIZE)] = {
+  const std::map<int, const char *> stat_dicts_[static_cast<uint32_t>(HddStatItem::SIZE)] = {
     // data rate of read
     {{DiagStatus::OK, "OK"},
      {DiagStatus::WARN, "high data rate of read"},
