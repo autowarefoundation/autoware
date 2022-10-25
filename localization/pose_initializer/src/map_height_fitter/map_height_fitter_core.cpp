@@ -45,19 +45,30 @@ void MapHeightFitter::on_map(const sensor_msgs::msg::PointCloud2::ConstSharedPtr
 
 double MapHeightFitter::get_ground_height(const tf2::Vector3 & point) const
 {
-  constexpr double radius = 1.0 * 1.0;
   const double x = point.getX();
   const double y = point.getY();
 
+  // find distance d to closest point
+  double min_dist2 = INFINITY;
+  for (const auto & p : map_cloud_->points) {
+    const double dx = x - p.x;
+    const double dy = y - p.y;
+    const double sd = (dx * dx) + (dy * dy);
+    min_dist2 = std::min(min_dist2, sd);
+  }
+
+  // find lowest height within radius (d+1.0)
+  const double radius2 = std::pow(std::sqrt(min_dist2) + 1.0, 2.0);
   double height = INFINITY;
   for (const auto & p : map_cloud_->points) {
     const double dx = x - p.x;
     const double dy = y - p.y;
     const double sd = (dx * dx) + (dy * dy);
-    if (sd < radius) {
+    if (sd < radius2) {
       height = std::min(height, static_cast<double>(p.z));
     }
   }
+
   return std::isfinite(height) ? height : point.getZ();
 }
 
