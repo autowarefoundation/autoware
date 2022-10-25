@@ -29,10 +29,10 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 
 struct LaneFollowingParameters
 {
-  bool expand_drivable_area;
-  double right_bound_offset;
-  double left_bound_offset;
   double lane_change_prepare_duration;
+  // drivable area expansion
+  double drivable_area_right_bound_offset;
+  double drivable_area_left_bound_offset;
 };
 
 class LaneFollowingModule : public SceneModuleInterface

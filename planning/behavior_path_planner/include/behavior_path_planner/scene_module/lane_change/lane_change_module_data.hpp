@@ -41,6 +41,9 @@ struct LaneChangeParameters
   bool use_predicted_path_outside_lanelet;
   bool use_all_predicted_path;
   bool publish_debug_marker;
+  // drivable area expansion
+  double drivable_area_right_bound_offset;
+  double drivable_area_left_bound_offset;
 };
 
 struct LaneChangeStatus

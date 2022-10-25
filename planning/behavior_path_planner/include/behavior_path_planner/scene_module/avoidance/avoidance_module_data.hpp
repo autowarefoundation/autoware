@@ -156,6 +156,10 @@ struct AvoidanceParameters
   bool avoid_motorcycle{false};  // avoidance is performed for type object motorbike
   bool avoid_pedestrian{false};  // avoidance is performed for type object pedestrian
 
+  // drivable area expansion
+  double drivable_area_right_bound_offset;
+  double drivable_area_left_bound_offset;
+
   // debug
   bool publish_debug_marker = false;
   bool print_debug_info = false;

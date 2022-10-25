@@ -184,8 +184,11 @@ BehaviorModuleOutput PullOutModule::plan()
   } else {
     path = status_.backward_path;
   }
+  const auto expanded_lanes = util::expandLanelets(
+    status_.lanes, parameters_.drivable_area_left_bound_offset,
+    parameters_.drivable_area_right_bound_offset);
   path.drivable_area = util::generateDrivableArea(
-    path, status_.lanes, planner_data_->parameters.drivable_area_resolution,
+    path, expanded_lanes, planner_data_->parameters.drivable_area_resolution,
     planner_data_->parameters.vehicle_length, planner_data_);
 
   output.path = std::make_shared<PathWithLaneId>(path);
@@ -276,6 +279,10 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
   const auto pull_out_lanes = pull_out_utils::getPullOutLanes(current_lanes, planner_data_);
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
+
+  lanes = util::expandLanelets(
+    lanes, parameters_.drivable_area_left_bound_offset,
+    parameters_.drivable_area_right_bound_offset);
 
   auto candidate_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
   candidate_path.drivable_area = util::generateDrivableArea(

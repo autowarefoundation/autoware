@@ -1775,6 +1775,10 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
       });
   }
 
+  extended_lanelets = util::expandLanelets(
+    extended_lanelets, parameters_->drivable_area_left_bound_offset,
+    parameters_->drivable_area_right_bound_offset, {"road_border"});
+
   {
     const auto & p = planner_data_->parameters;
     shifted_path->path.drivable_area = util::generateDrivableArea(

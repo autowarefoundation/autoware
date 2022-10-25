@@ -121,6 +121,17 @@ def launch_setup(context, *args, **kwargs):
     with open(pull_out_param_path, "r") as f:
         pull_out_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    drivable_area_expansion_param_path = os.path.join(
+        LaunchConfiguration("tier4_planning_launch_param_path").perform(context),
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_path_planner",
+        "drivable_area_expansion.param.yaml",
+    )
+    with open(drivable_area_expansion_param_path, "r") as f:
+        drivable_area_expansion_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     behavior_path_planner_param_path = os.path.join(
         LaunchConfiguration("tier4_planning_launch_param_path").perform(context),
         "scenario_planning",
@@ -156,6 +167,7 @@ def launch_setup(context, *args, **kwargs):
             lane_following_param,
             pull_over_param,
             pull_out_param,
+            drivable_area_expansion_param,
             behavior_path_planner_param,
             vehicle_info_param,
             {

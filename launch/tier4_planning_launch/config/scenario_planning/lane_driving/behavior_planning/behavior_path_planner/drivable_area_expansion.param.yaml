@@ -1,0 +1,20 @@
+/**:
+  ros__parameters:
+    avoidance:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+    lane_change:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+    lane_following:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+    pull_out:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+    pull_over:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+    side_shift:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
