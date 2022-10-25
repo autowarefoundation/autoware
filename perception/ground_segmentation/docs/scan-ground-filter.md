@@ -58,6 +58,8 @@ The input_frame is set as parameter but it must be fixed as base_link for the cu
 
 ## (Optional) References/External links
 
+<!-- cspell: ignore Shen Liang -->
+
 The elevation grid idea is referred from "Shen Z, Liang H, Lin L, Wang Z, Huang W, Yu J. Fast Ground Segmentation for 3D LiDAR Point Cloud Based on Jump-Convolution-Process. Remote Sensing. 2021; 13(16):3239. <https://doi.org/10.3390/rs13163239>"
 
 ## (Optional) Future extensions / Unimplemented parts

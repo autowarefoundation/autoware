@@ -57,7 +57,7 @@ bool NonMaximumSuppression::isTargetPairObject(
 Eigen::MatrixXd NonMaximumSuppression::generateIoUMatrix(
   const std::vector<DetectedObject> & input_objects)
 {
-  // NOTE(yukke42): row = target objects to be suppressed, col = source objects to be compared
+  // NOTE: row = target objects to be suppressed, col = source objects to be compared
   Eigen::MatrixXd triangular_matrix =
     Eigen::MatrixXd::Zero(input_objects.size(), input_objects.size());
   for (std::size_t target_i = 0; target_i < input_objects.size(); ++target_i) {
@@ -71,7 +71,7 @@ Eigen::MatrixXd NonMaximumSuppression::generateIoUMatrix(
       if (params_.nms_type_ == NMS_TYPE::IoU_BEV) {
         const double iou = perception_utils::get2dIoU(target_obj, source_obj);
         triangular_matrix(target_i, source_i) = iou;
-        // NOTE(yukke42): If the target object has any objects with iou > iou_threshold, it
+        // NOTE: If the target object has any objects with iou > iou_threshold, it
         // will be suppressed regardless of later results.
         if (iou > params_.iou_threshold_) {
           break;

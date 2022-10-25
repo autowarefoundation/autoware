@@ -97,8 +97,8 @@ TEST(perception_utils, test_get2dGeneralizedIoU)
   // TODO(Shin-kyoto):
   // get2dGeneralizedIoU uses outer points of each polygon.
   // But these points contain an sampling error of outer line,
-  // so get2dGeneralizedIoU icludes an error of about 0.03.
-  // Threfore, in this test, epsilon is set to 0.04.
+  // so get2dGeneralizedIoU includes an error of about 0.03.
+  // Therefore, in this test, epsilon is set to 0.04.
   constexpr double epsilon_giou = 4 * 1e-02;
   const double quart_circle = 0.16237976320958225;
 

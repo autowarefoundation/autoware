@@ -22,8 +22,8 @@
        3.0,     1.0, 1.0,   1.0,  1.0,     3.0,       3.0,     2.0,       #BICYCLE
        2.0,     1.0, 1.0,   1.0,  1.0,     3.0,       3.0,     2.0]       #PEDESTRIAN
     max_area_matrix:
-      # NOTE(yukke42): The size of truck is 12 m length x 3 m width.
-      # NOTE(yukke42): The size of trailer is 20 m length x 3 m width.
+      # NOTE: The size of truck is 12 m length x 3 m width.
+      # NOTE: The size of trailer is 20 m length x 3 m width.
       #UNKNOWN,  CAR,      TRUCK,    BUS,      TRAILER,   MOTORBIKE, BICYCLE,  PEDESTRIAN
         [100.00,   100.00,   100.00,   100.00,   100.00,    100.00,    100.00,   100.00,   #UNKNOWN
           12.10,    12.10,    36.00,    60.00,    60.00,  10000.00,  10000.00, 10000.00,   #CAR

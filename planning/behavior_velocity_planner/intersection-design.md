@@ -29,8 +29,8 @@ Objects that satisfy all of the following conditions are considered as target ob
     - To deal with objects that is in the area not covered by the lanelets in the intersection.
 - The posture of object is **the same direction as the attention lane** (threshold = `detection_area_angle_threshold`).
   - The orientation of the target is recalculated in this module according to the `orientation_reliable` and the sign of the velocity of the target.
-- Not being **in the neighbouring lanes of the ego vehicle**.
-  - neighbouring lanes include the ego lane of the vehicle and the adjacent lanes of it with turn_direction as the ego lane.
+- Not being **in the neighboring lanes of the ego vehicle**.
+  - neighboring lanes include the ego lane of the vehicle and the adjacent lanes of it with turn_direction as the ego lane.
 
 #### How to Define Attention Lanes
 
