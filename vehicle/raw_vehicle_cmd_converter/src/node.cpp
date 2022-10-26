@@ -15,6 +15,7 @@
 #include "raw_vehicle_cmd_converter/node.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -40,20 +41,19 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
   // for steering steer controller
   use_steer_ff_ = declare_parameter("use_steer_ff", true);
   use_steer_fb_ = declare_parameter("use_steer_fb", true);
-  ff_map_initialized_ = true;
   if (convert_accel_cmd_) {
     if (!accel_map_.readAccelMapFromCSV(csv_path_accel_map)) {
-      ff_map_initialized_ = false;
+      throw std::invalid_argument("Accel map is invalid.");
     }
   }
   if (convert_brake_cmd_) {
     if (!brake_map_.readBrakeMapFromCSV(csv_path_brake_map)) {
-      ff_map_initialized_ = false;
+      throw std::invalid_argument("Brake map is invalid.");
     }
   }
   if (convert_steer_cmd_) {
     if (!steer_map_.readSteerMapFromCSV(csv_path_steer_map)) {
-      ff_map_initialized_ = false;
+      throw std::invalid_argument("Steer map is invalid.");
     }
     const auto kp_steer{declare_parameter("steer_pid.kp", 150.0)};
     const auto ki_steer{declare_parameter("steer_pid.ki", 15.0)};
@@ -88,10 +88,6 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
 
 void RawVehicleCommandConverterNode::publishActuationCmd()
 {
-  if (!ff_map_initialized_) {
-    RCLCPP_WARN_EXPRESSION(get_logger(), is_debugging_, "ff map is not initialized");
-    return;
-  }
   if (!current_twist_ptr_ || !control_cmd_ptr_ || !current_steer_ptr_) {
     RCLCPP_WARN_EXPRESSION(
       get_logger(), is_debugging_, "some pointers are null: %s, %s, %s",
@@ -148,25 +144,17 @@ double RawVehicleCommandConverterNode::calculateSteer(
   double dt = (current_time - prev_time_steer_calculation_).seconds();
   if (std::abs(dt) > 1.0) {
     RCLCPP_WARN_EXPRESSION(get_logger(), is_debugging_, "ignore old topic");
-    dt = 0.0;
+    dt = 0.1;  // set ordinaray delta time instead
   }
   prev_time_steer_calculation_ = current_time;
   // feed-forward
   if (use_steer_ff_) {
-    if (!ff_map_initialized_) {
-      RCLCPP_WARN_EXPRESSION(get_logger(), is_debugging_, "FF map is not initialized!");
-    } else {
-      steer_map_.getSteer(steer_rate, *current_steer_ptr_, ff_value);
-    }
+    steer_map_.getSteer(steer_rate, *current_steer_ptr_, ff_value);
   }
-  // feedback
+  // feed-back
   if (use_steer_fb_) {
-    if (!steer_pid_.getInitialized()) {
-      RCLCPP_WARN_EXPRESSION(get_logger(), is_debugging_, "FF map is not initialized!");
-    } else {
-      fb_value = steer_pid_.calculateFB(
-        steering, dt, vel, *current_steer_ptr_, pid_contributions, pid_errors);
-    }
+    fb_value =
+      steer_pid_.calculateFB(steering, dt, vel, *current_steer_ptr_, pid_contributions, pid_errors);
   }
   steering_output = ff_value + fb_value;
   // for steer debugging

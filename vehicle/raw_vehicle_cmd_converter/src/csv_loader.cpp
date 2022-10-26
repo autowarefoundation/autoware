@@ -14,6 +14,8 @@
 
 #include "raw_vehicle_cmd_converter/csv_loader.hpp"
 
+#include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -49,6 +51,44 @@ bool CSVLoader::readCSV(Table & result, const char delim)
   return true;
 }
 
+bool CSVLoader::validateMap(const Map & map, const bool is_row_decent, const bool is_col_decent)
+{
+  std::pair<size_t, size_t> invalid_index_pair;
+  bool is_invalid = false;
+  // validate interpolation
+  for (size_t i = 1; i < map.size(); i++) {
+    const auto & vec = map.at(i);
+    const auto & prev_vec = map.at(i - 1);
+    // validate row data
+    for (size_t j = 1; j < vec.size(); j++) {
+      // validate col
+      if (vec.at(j) < prev_vec.at(j) && is_col_decent) {
+        invalid_index_pair = std::make_pair(i, j);
+        is_invalid = true;
+      }
+      if (vec.at(j) > prev_vec.at(j) && !is_col_decent) {
+        invalid_index_pair = std::make_pair(i, j);
+        is_invalid = true;
+      }
+      // validate row
+      if (vec.at(j) < vec.at(j - 1) && is_row_decent) {
+        invalid_index_pair = std::make_pair(i, j);
+        is_invalid = true;
+      }
+      if (vec.at(j) > vec.at(j - 1) && !is_row_decent) {
+        invalid_index_pair = std::make_pair(i, j);
+        is_invalid = true;
+      }
+    }
+  }
+  if (is_invalid) {
+    std::cerr << "index around (i,j) is invalid ( " << invalid_index_pair.first << ", "
+              << invalid_index_pair.second << " )" << std::endl;
+    return false;
+  }
+  return true;
+}
+
 bool CSVLoader::validateData(const Table & table, const std::string & csv_path)
 {
   if (table[0].size() < 2) {
@@ -56,7 +96,9 @@ bool CSVLoader::validateData(const Table & table, const std::string & csv_path)
               << std::endl;
     return false;
   }
+  // validate map size
   for (size_t i = 1; i < table.size(); i++) {
+    // validate row size
     if (table[0].size() != table[i].size()) {
       std::cerr << "Cannot read " << csv_path.c_str()
                 << ". Each row should have a same number of columns" << std::endl;
@@ -100,10 +142,10 @@ std::vector<double> CSVLoader::getColumnIndex(const Table & table)
 double CSVLoader::clampValue(
   const double val, const std::vector<double> & ranges, const std::string & name)
 {
-  const double max_value = ranges.back();
-  const double min_value = ranges.front();
+  const double max_value = *std::max_element(ranges.begin(), ranges.end());
+  const double min_value = *std::min_element(ranges.begin(), ranges.end());
   if (val < min_value || max_value < val) {
-    std::cerr << "Input" << name << ": " << val << " is out off range. use closest value."
+    std::cerr << "Input " << name << ": " << val << " is out of range. use closest value."
               << std::endl;
     return std::min(std::max(val, min_value), max_value);
   }

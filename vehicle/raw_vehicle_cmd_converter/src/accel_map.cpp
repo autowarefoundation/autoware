@@ -38,6 +38,9 @@ bool AccelMap::readAccelMapFromCSV(const std::string & csv_path)
   vel_index_ = CSVLoader::getRowIndex(table);
   throttle_index_ = CSVLoader::getColumnIndex(table);
   accel_map_ = CSVLoader::getMap(table);
+  if (!CSVLoader::validateMap(accel_map_, false, true)) {
+    return false;
+  }
   return true;
 }
 
@@ -45,12 +48,10 @@ bool AccelMap::getThrottle(const double acc, double vel, double & throttle) cons
 {
   std::vector<double> interpolated_acc_vec;
   const double clamped_vel = CSVLoader::clampValue(vel, vel_index_, "throttle: vel");
-
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
   for (std::vector<double> accelerations : accel_map_) {
     interpolated_acc_vec.push_back(interpolation::lerp(vel_index_, accelerations, clamped_vel));
   }
-
   // calculate throttle
   // When the desired acceleration is smaller than the throttle area, return false => brake sequence
   // When the desired acceleration is greater than the throttle area, return max throttle
@@ -61,7 +62,6 @@ bool AccelMap::getThrottle(const double acc, double vel, double & throttle) cons
     return true;
   }
   throttle = interpolation::lerp(interpolated_acc_vec, throttle_index_, acc);
-
   return true;
 }
 
