@@ -109,8 +109,10 @@ ManualController::ManualController(QWidget * parent) : rviz_common::Panel(parent
 
 void ManualController::update()
 {
+  if (!raw_node_) return;
   AckermannControlCommand ackermann;
   {
+    ackermann.stamp = raw_node_->get_clock()->now();
     ackermann.lateral.steering_tire_angle = steering_angle_;
     ackermann.longitudinal.speed = cruise_velocity_;
     if (current_acceleration_) {
