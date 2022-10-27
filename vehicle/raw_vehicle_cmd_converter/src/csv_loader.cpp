@@ -62,11 +62,11 @@ bool CSVLoader::validateMap(const Map & map, const bool is_row_decent, const boo
     // validate row data
     for (size_t j = 1; j < vec.size(); j++) {
       // validate col
-      if (vec.at(j) < prev_vec.at(j) && is_col_decent) {
+      if (vec.at(j) <= prev_vec.at(j) && is_col_decent) {
         invalid_index_pair = std::make_pair(i, j);
         is_invalid = true;
       }
-      if (vec.at(j) > prev_vec.at(j) && !is_col_decent) {
+      if (vec.at(j) >= prev_vec.at(j) && !is_col_decent) {
         invalid_index_pair = std::make_pair(i, j);
         is_invalid = true;
       }
