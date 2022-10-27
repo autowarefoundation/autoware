@@ -13,6 +13,7 @@
     max_accel: 5.0
     min_accel: -5.0
     max_data_count: 100
+    precision: 3
     update_method: "update_offset_each_cell" # or "update_offset_each_cell", "update_offset_total"
     update_suggest_thresh: 0.7 # threshold of rmse rate that update suggest flag becomes true. ( rmse_rate: [rmse of update map] / [rmse of original map] )
     progress_file_output: false # flag to output log file

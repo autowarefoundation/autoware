@@ -46,6 +46,7 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
   max_data_count_ = this->declare_parameter<int>("max_data_count", 200);
   pedal_accel_graph_output_ = this->declare_parameter<bool>("pedal_accel_graph_output", false);
   progress_file_output_ = this->declare_parameter<bool>("progress_file_output", false);
+  precision_ = this->declare_parameter<int>("precision", 3);
   const auto get_pitch_method_str =
     this->declare_parameter<std::string>("get_pitch_method", std::string("tf"));
   if (get_pitch_method_str == std::string("tf")) {
@@ -651,7 +652,7 @@ int AccelBrakeMapCalibrator::nearestVelSearch()
 
 void AccelBrakeMapCalibrator::takeConsistencyOfAccelMap()
 {
-  const double bit = 1e-03;
+  const double bit = std::pow(1e-01, precision_);
   for (std::size_t ped_idx = 0; ped_idx < update_accel_map_value_.size() - 1; ped_idx++) {
     for (std::size_t vel_idx = 0; vel_idx < update_accel_map_value_.at(0).size() - 1; vel_idx++) {
       const double current_acc = update_accel_map_value_.at(ped_idx).at(vel_idx);
@@ -673,7 +674,7 @@ void AccelBrakeMapCalibrator::takeConsistencyOfAccelMap()
 
 void AccelBrakeMapCalibrator::takeConsistencyOfBrakeMap()
 {
-  const double bit = 1e-03;
+  const double bit = std::pow(1e-01, precision_);
   for (std::size_t ped_idx = 0; ped_idx < update_brake_map_value_.size() - 1; ped_idx++) {
     for (std::size_t vel_idx = 0; vel_idx < update_brake_map_value_.at(0).size() - 1; vel_idx++) {
       const double current_acc = update_brake_map_value_.at(ped_idx).at(vel_idx);
@@ -1389,7 +1390,7 @@ bool AccelBrakeMapCalibrator::writeMapToCSV(
   for (std::size_t p = 0; p < pedal_index.size(); p++) {
     csv_file << pedal_index.at(p) << ",";
     for (std::size_t v = 0; v < vel_index.size(); v++) {
-      csv_file << std::setprecision(3) << value_map.at(p).at(v);
+      csv_file << std::fixed << std::setprecision(precision_) << value_map.at(p).at(v);
       if (v != vel_index.size() - 1) {
         csv_file << ",";
       }

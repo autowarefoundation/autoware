@@ -139,6 +139,7 @@ private:
   double max_accel_;
   double min_accel_;
   double pedal_to_accel_delay_;
+  int precision_;
   std::string csv_calibrated_map_dir_;
   std::string output_accel_file_;
   std::string output_brake_file_;
