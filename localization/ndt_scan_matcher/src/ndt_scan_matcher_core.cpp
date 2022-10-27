@@ -82,7 +82,7 @@ bool validate_local_optimal_solution_oscillation(
 NDTScanMatcher::NDTScanMatcher()
 : Node("ndt_scan_matcher"),
   tf2_broadcaster_(*this),
-  ndt_implement_type_(NDTImplementType::PCL_GENERIC),
+  ndt_ptr_(new NormalDistributionsTransform),
   base_frame_("base_link"),
   ndt_base_frame_("ndt_base_link"),
   map_frame_("map"),
@@ -94,39 +94,10 @@ NDTScanMatcher::NDTScanMatcher()
   initial_pose_distance_tolerance_m_(10.0),
   inversion_vector_threshold_(-0.9),
   oscillation_threshold_(10),
-  regularization_enabled_(declare_parameter("regularization_enabled", false)),
-  regularization_scale_factor_(declare_parameter("regularization_scale_factor", 0.01))
+  regularization_enabled_(declare_parameter("regularization_enabled", false))
 {
   key_value_stdmap_["state"] = "Initializing";
   is_activated_ = false;
-
-  int ndt_implement_type_tmp = this->declare_parameter("ndt_implement_type", 0);
-  ndt_implement_type_ = static_cast<NDTImplementType>(ndt_implement_type_tmp);
-
-  RCLCPP_INFO(get_logger(), "NDT Implement Type is %d", ndt_implement_type_tmp);
-  try {
-    ndt_ptr_ = get_ndt<PointSource, PointTarget>(ndt_implement_type_);
-  } catch (std::exception & e) {
-    RCLCPP_ERROR(get_logger(), "%s", e.what());
-    return;
-  }
-
-  if (ndt_implement_type_ == NDTImplementType::OMP) {
-    using T = NormalDistributionsTransformOMP<PointSource, PointTarget>;
-
-    // FIXME(IshitaTakeshi) Not sure if this is safe
-    std::shared_ptr<T> ndt_omp_ptr = std::dynamic_pointer_cast<T>(ndt_ptr_);
-    int search_method = static_cast<int>(omp_params_.search_method);
-    search_method = this->declare_parameter("omp_neighborhood_search_method", search_method);
-    omp_params_.search_method = static_cast<pclomp::NeighborSearchMethod>(search_method);
-    // TODO(Tier IV): check search_method is valid value.
-    ndt_omp_ptr->setNeighborhoodSearchMethod(omp_params_.search_method);
-
-    omp_params_.num_threads = this->declare_parameter("omp_num_threads", omp_params_.num_threads);
-    omp_params_.num_threads = std::max(omp_params_.num_threads, 1);
-    ndt_omp_ptr->setNumThreads(omp_params_.num_threads);
-    ndt_ptr_ = ndt_omp_ptr;
-  }
 
   int points_queue_size = this->declare_parameter("input_sensor_points_queue_size", 0);
   points_queue_size = std::max(points_queue_size, 0);
@@ -138,35 +109,30 @@ NDTScanMatcher::NDTScanMatcher()
   ndt_base_frame_ = this->declare_parameter("ndt_base_frame", ndt_base_frame_);
   RCLCPP_INFO(get_logger(), "ndt_base_frame_id: %s", ndt_base_frame_.c_str());
 
-  double trans_epsilon = ndt_ptr_->getTransformationEpsilon();
-  double step_size = ndt_ptr_->getStepSize();
-  double resolution = ndt_ptr_->getResolution();
-  int max_iterations = ndt_ptr_->getMaximumIterations();
-  trans_epsilon = this->declare_parameter("trans_epsilon", trans_epsilon);
-  step_size = this->declare_parameter("step_size", step_size);
-  resolution = this->declare_parameter("resolution", resolution);
-  max_iterations = this->declare_parameter("max_iterations", max_iterations);
-  ndt_ptr_->setTransformationEpsilon(trans_epsilon);
-  ndt_ptr_->setStepSize(step_size);
-  ndt_ptr_->setResolution(resolution);
-  ndt_ptr_->setMaximumIterations(max_iterations);
-  ndt_ptr_->setRegularizationScaleFactor(regularization_scale_factor_);
+  ndt_params_.trans_epsilon = this->declare_parameter<double>("trans_epsilon");
+  ndt_params_.step_size = this->declare_parameter<double>("step_size");
+  ndt_params_.resolution = this->declare_parameter<double>("resolution");
+  ndt_params_.max_iterations = this->declare_parameter<int>("max_iterations");
+  int search_method = this->declare_parameter<int>("neighborhood_search_method");
+  ndt_params_.search_method = static_cast<pclomp::NeighborSearchMethod>(search_method);
+  ndt_params_.num_threads = this->declare_parameter<int>("num_threads");
+  ndt_params_.num_threads = std::max(ndt_params_.num_threads, 1);
+
+  ndt_ptr_->setTransformationEpsilon(ndt_params_.trans_epsilon);
+  ndt_ptr_->setStepSize(ndt_params_.step_size);
+  ndt_ptr_->setResolution(ndt_params_.resolution);
+  ndt_ptr_->setMaximumIterations(ndt_params_.max_iterations);
+  ndt_ptr_->setRegularizationScaleFactor(ndt_params_.regularization_scale_factor);
+  ndt_ptr_->setNeighborhoodSearchMethod(ndt_params_.search_method);
+  ndt_ptr_->setNumThreads(ndt_params_.num_threads);
 
   RCLCPP_INFO(
     get_logger(), "trans_epsilon: %lf, step_size: %lf, resolution: %lf, max_iterations: %d",
-    trans_epsilon, step_size, resolution, max_iterations);
+    ndt_params_.trans_epsilon, ndt_params_.step_size, ndt_params_.resolution,
+    ndt_params_.max_iterations);
 
   int converged_param_type_tmp = this->declare_parameter("converged_param_type", 0);
   converged_param_type_ = static_cast<ConvergedParamType>(converged_param_type_tmp);
-  if (
-    ndt_implement_type_ != NDTImplementType::OMP &&
-    converged_param_type_ == ConvergedParamType::NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD) {
-    RCLCPP_ERROR(
-      get_logger(),
-      "ConvergedParamType::NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD is only available when "
-      "NDTImplementType::OMP is selected.");
-    return;
-  }
 
   converged_param_transform_probability_ = this->declare_parameter(
     "converged_param_transform_probability", converged_param_transform_probability_);
@@ -395,29 +361,14 @@ void NDTScanMatcher::callback_regularization_pose(
 void NDTScanMatcher::callback_map_points(
   sensor_msgs::msg::PointCloud2::ConstSharedPtr map_points_msg_ptr)
 {
-  const auto trans_epsilon = ndt_ptr_->getTransformationEpsilon();
-  const auto step_size = ndt_ptr_->getStepSize();
-  const auto resolution = ndt_ptr_->getResolution();
-  const auto max_iterations = ndt_ptr_->getMaximumIterations();
-
-  using NDTBase = NormalDistributionsTransformBase<PointSource, PointTarget>;
-  std::shared_ptr<NDTBase> new_ndt_ptr = get_ndt<PointSource, PointTarget>(ndt_implement_type_);
-
-  if (ndt_implement_type_ == NDTImplementType::OMP) {
-    using T = NormalDistributionsTransformOMP<PointSource, PointTarget>;
-
-    // FIXME(IshitaTakeshi) Not sure if this is safe
-    std::shared_ptr<T> ndt_omp_ptr = std::dynamic_pointer_cast<T>(ndt_ptr_);
-    ndt_omp_ptr->setNeighborhoodSearchMethod(omp_params_.search_method);
-    ndt_omp_ptr->setNumThreads(omp_params_.num_threads);
-    new_ndt_ptr = ndt_omp_ptr;
-  }
-
-  new_ndt_ptr->setTransformationEpsilon(trans_epsilon);
-  new_ndt_ptr->setStepSize(step_size);
-  new_ndt_ptr->setResolution(resolution);
-  new_ndt_ptr->setMaximumIterations(max_iterations);
-  new_ndt_ptr->setRegularizationScaleFactor(regularization_scale_factor_);
+  std::shared_ptr<NormalDistributionsTransform> new_ndt_ptr(new NormalDistributionsTransform);
+  new_ndt_ptr->setTransformationEpsilon(ndt_params_.trans_epsilon);
+  new_ndt_ptr->setStepSize(ndt_params_.step_size);
+  new_ndt_ptr->setResolution(ndt_params_.resolution);
+  new_ndt_ptr->setMaximumIterations(ndt_params_.max_iterations);
+  new_ndt_ptr->setRegularizationScaleFactor(ndt_params_.regularization_scale_factor);
+  new_ndt_ptr->setNeighborhoodSearchMethod(ndt_params_.search_method);
+  new_ndt_ptr->setNumThreads(ndt_params_.num_threads);
 
   pcl::shared_ptr<pcl::PointCloud<PointTarget>> map_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*map_points_msg_ptr, *map_points_ptr);
@@ -469,8 +420,7 @@ void NDTScanMatcher::callback_sensor_points(
   initial_pose_array_lock.unlock();
 
   // if regularization is enabled and available, set pose to NDT for regularization
-  if (regularization_enabled_ && (ndt_implement_type_ == NDTImplementType::OMP))
-    add_regularization_pose(sensor_ros_time);
+  if (regularization_enabled_) add_regularization_pose(sensor_ros_time);
 
   if (ndt_ptr_->getInputTarget() == nullptr) {
     RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1, "No MAP!");
@@ -592,7 +542,7 @@ NdtResult NDTScanMatcher::align(const geometry_msgs::msg::Pose & initial_pose_ms
 }
 
 geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_carlo(
-  const std::shared_ptr<NormalDistributionsTransformBase<PointSource, PointTarget>> & ndt_ptr,
+  const std::shared_ptr<NormalDistributionsTransform> & ndt_ptr,
   const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_with_cov)
 {
   if (ndt_ptr->getInputTarget() == nullptr || ndt_ptr->getInputSource() == nullptr) {

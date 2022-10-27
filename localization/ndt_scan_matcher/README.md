@@ -56,14 +56,16 @@ One optional function is regularization. Please see the regularization chapter i
 | --------------------------------------- | ------ | ----------------------------------------------------------------------------------------------- |
 | `base_frame`                            | string | Vehicle reference frame                                                                         |
 | `input_sensor_points_queue_size`        | int    | Subscriber queue size                                                                           |
-| `ndt_implement_type`                    | int    | NDT implementation type (0=PCL_GENERIC, 1=PCL_MODIFIED, 2=OMP)                                  |
 | `trans_epsilon`                         | double | The maximum difference between two consecutive transformations in order to consider convergence |
 | `step_size`                             | double | The newton line search maximum step length                                                      |
 | `resolution`                            | double | The ND voxel grid resolution [m]                                                                |
 | `max_iterations`                        | int    | The number of iterations required to calculate alignment                                        |
+| `converged_param_type`                  | int    | The type of indicators for scan matching score (0: TP, 1: NVTL)                                 |
 | `converged_param_transform_probability` | double | Threshold for deciding whether to trust the estimation result                                   |
-| `omp_neighborhood_search_method`        | int    | neighborhood search method in OMP (0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1)                  |
-| `omp_num_threads`                       | int    | Number of threads used for parallel computing                                                   |
+| `neighborhood_search_method`            | int    | neighborhood search method (0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1)                         |
+| `num_threads`                           | int    | Number of threads used for parallel computing                                                   |
+
+(TP: Transform Probability, NVTL: Nearest Voxel Transform Probability)
 
 ## Regularization
 
@@ -110,7 +112,6 @@ $$
 
 Regularization is disabled by default.
 If you wish to use it, please edit the following parameters to enable it.
-Regularization is only available for `NDT_OMP` and not for other NDT implementation types (`PCL_GENERIC`, `PCL_MODIFIED`).
 
 #### Where is regularization available
 

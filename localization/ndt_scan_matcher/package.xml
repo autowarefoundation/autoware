@@ -17,10 +17,9 @@
   <depend>diagnostic_msgs</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
+  <depend>libpcl-all-dev</depend>
   <depend>nav_msgs</depend>
-  <depend>ndt</depend>
   <depend>ndt_omp</depend>
-  <depend>ndt_pcl_modified</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>

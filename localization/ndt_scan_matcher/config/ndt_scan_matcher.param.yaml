@@ -7,10 +7,6 @@
     # Subscriber queue size
     input_sensor_points_queue_size: 1
 
-    # NDT implementation type
-    # 0=PCL_GENERIC, 1=PCL_MODIFIED, 2=OMP
-    ndt_implement_type: 2
-
     # The maximum difference between two consecutive
     # transformations in order to consider convergence
     trans_epsilon: 0.01
@@ -26,7 +22,6 @@
 
     # Converged param type
     # 0=TRANSFORM_PROBABILITY, 1=NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD
-    # NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD is only available when NDTImplementType::OMP is selected
     converged_param_type: 1
 
     # If converged_param_type is 0
@@ -46,12 +41,12 @@
     # Tolerance of distance difference between two initial poses used for linear interpolation. [m]
     initial_pose_distance_tolerance_m: 10.0
 
-    # neighborhood search method in OMP
+    # neighborhood search method
     # 0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1
-    omp_neighborhood_search_method: 0
+    neighborhood_search_method: 0
 
     # Number of threads used for parallel computing
-    omp_num_threads: 4
+    num_threads: 4
 
     # The covariance of output pose
     # Do note that this covariance matrix is empirically derived
