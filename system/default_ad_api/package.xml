@@ -18,8 +18,10 @@
   <depend>autoware_planning_msgs</depend>
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
+  <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>tier4_control_msgs</depend>
 
   <exec_depend>python3-flask</exec_depend>
 

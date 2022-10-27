@@ -17,21 +17,21 @@
 
 #include <rclcpp/qos.hpp>
 
-#include <autoware_ad_api_msgs/msg/motion_state.hpp>
-#include <autoware_ad_api_msgs/srv/accept_start.hpp>
+#include <autoware_adapi_v1_msgs/msg/motion_state.hpp>
+#include <autoware_adapi_v1_msgs/srv/accept_start.hpp>
 
 namespace autoware_ad_api::motion
 {
 
 struct AcceptStart
 {
-  using Service = autoware_ad_api_msgs::srv::AcceptStart;
+  using Service = autoware_adapi_v1_msgs::srv::AcceptStart;
   static constexpr char name[] = "/api/motion/accept_start";
 };
 
 struct State
 {
-  using Message = autoware_ad_api_msgs::msg::MotionState;
+  using Message = autoware_adapi_v1_msgs::msg::MotionState;
   static constexpr char name[] = "/api/motion/state";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;

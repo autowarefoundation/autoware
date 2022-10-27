@@ -95,6 +95,9 @@ public:
 #endif
   }
 
+  /// Check if the service is ready.
+  bool service_is_ready() const { return client_->service_is_ready(); }
+
 private:
   RCLCPP_DISABLE_COPY(Client)
   typename WrapType::SharedPtr client_;
