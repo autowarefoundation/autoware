@@ -20,8 +20,7 @@ common/kalman_filter/** koji.minoda@tier4.jp takeshi.ishita@tier4.jp yukihiro.sa
 common/motion_common/** christopherj.ho@gmail.com
 common/motion_testing/** christopherj.ho@gmail.com
 common/motion_utils/** satoshi.ota@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
-common/neural_networks_provider/** ambroise.vincent@arm.com
-common/osqp_interface/** maxime.clement@tier4.jp
+common/osqp_interface/** fumiya.watanabe@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp
 common/path_distance_calculator/** isamu.takagi@tier4.jp
 common/perception_utils/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp takayuki.murooka@tier4.jp yusuke.muramatsu@tier4.jp
 common/polar_grid/** yukihiro.saito@tier4.jp
@@ -70,13 +69,13 @@ launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp
 launch/tier4_simulator_launch/** keisuke.shima@tier4.jp
 launch/tier4_system_launch/** fumihito.ito@tier4.jp kenji.miyake@tier4.jp
 launch/tier4_vehicle_launch/** yukihiro.saito@tier4.jp
-localization/ekf_localizer/** koji.minoda@tier4.jp takamasa.horibe@tier4.jp yamato.ando@tier4.jp
+localization/ekf_localizer/** koji.minoda@tier4.jp takamasa.horibe@tier4.jp takeshi.ishita@tier4.jp yamato.ando@tier4.jp
 localization/gyro_odometer/** yamato.ando@tier4.jp
 localization/initial_pose_button_panel/** yamato.ando@tier4.jp
 localization/localization_error_monitor/** yamato.ando@tier4.jp
 localization/ndt/** yamato.ando@tier4.jp
 localization/ndt_pcl_modified/** yamato.ando@tier4.jp
-localization/ndt_scan_matcher/** yamato.ando@tier4.jp
+localization/ndt_scan_matcher/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp yamato.ando@tier4.jp
 localization/pose2twist/** yamato.ando@tier4.jp
 localization/pose_initializer/** isamu.takagi@tier4.jp yamato.ando@tier4.jp
 localization/stop_filter/** koji.minoda@tier4.jp yamato.ando@tier4.jp
@@ -92,7 +91,7 @@ perception/detection_by_tracker/** yukihiro.saito@tier4.jp
 perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp taichi.higashide@tier4.jp
 perception/euclidean_cluster/** yukihiro.saito@tier4.jp
 perception/front_vehicle_velocity_estimator/** satoshi.tanaka@tier4.jp
-perception/ground_segmentation/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
+perception/ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 perception/heatmap_visualizer/** kotaro.uetake@tier4.jp
 perception/image_projection_based_fusion/** yukihiro.saito@tier4.jp yusuke.muramatsu@tier4.jp
 perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp
@@ -119,7 +118,7 @@ planning/costmap_generator/** kenji.miyake@tier4.jp
 planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp
 planning/freespace_planner/** takamasa.horibe@tier4.jp
 planning/freespace_planning_algorithms/** takamasa.horibe@tier4.jp
-planning/mission_planner/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp
+planning/mission_planner/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp
 planning/obstacle_avoidance_planner/** takayuki.murooka@tier4.jp
 planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
@@ -139,7 +138,7 @@ sensing/image_diagnostics/** dai.nguyen@tier4.jp
 sensing/image_transport_decompressor/** yukihiro.saito@tier4.jp
 sensing/imu_corrector/** yamato.ando@tier4.jp
 sensing/livox/livox_tag_filter/** kenji.miyake@tier4.jp
-sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
+sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
 sensing/tier4_pcl_extensions/** ryu.yamamoto@tier4.jp
 sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp
 simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp
@@ -147,6 +146,7 @@ simulator/fault_injection/** keisuke.shima@tier4.jp
 simulator/simple_planning_simulator/** takamasa.horibe@tier4.jp
 system/ad_service_state_monitor/** kenji.miyake@tier4.jp
 system/bluetooth_monitor/** fumihito.ito@tier4.jp
+system/component_state_monitor/** isamu.takagi@tier4.jp
 system/default_ad_api/** isamu.takagi@tier4.jp
 system/default_ad_api_helpers/ad_api_adaptors/** isamu.takagi@tier4.jp
 system/default_ad_api_helpers/automatic_pose_initializer/** isamu.takagi@tier4.jp
