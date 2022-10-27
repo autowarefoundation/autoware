@@ -19,6 +19,8 @@
 #include "behavior_path_planner/scene_module/utils/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/scene_module/utils/occupancy_grid_based_collision_detector.hpp"
 
+#include <lane_departure_checker/lane_departure_checker.hpp>
+
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <memory>
@@ -26,12 +28,14 @@
 
 namespace behavior_path_planner
 {
+using lane_departure_checker::LaneDepartureChecker;
 class GeometricPullOver : public PullOverPlannerBase
 {
 public:
   GeometricPullOver(
     rclcpp::Node & node, const PullOverParameters & parameters,
     const ParallelParkingParameters & parallel_parking_parameters,
+    const LaneDepartureChecker & lane_departure_checker,
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
     const bool is_forward);
 
@@ -57,6 +61,7 @@ public:
 
 protected:
   ParallelParkingParameters parallel_parking_parameters_;
+  LaneDepartureChecker lane_departure_checker_{};
   std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_;
   bool is_forward_{true};
 

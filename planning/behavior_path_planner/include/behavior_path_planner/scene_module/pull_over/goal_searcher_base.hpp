@@ -56,8 +56,7 @@ public:
     planner_data_ = planner_data;
   }
 
-  virtual std::vector<GoalCandidate> search(
-    const Pose & original_goal_pose, const lanelet::ConstLanelets & pull_over_lanes) = 0;
+  virtual std::vector<GoalCandidate> search(const Pose & original_goal_pose) = 0;
 
 protected:
   PullOverParameters parameters_;

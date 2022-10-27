@@ -23,6 +23,7 @@
 
 namespace behavior_path_planner
 {
+using lane_departure_checker::LaneDepartureChecker;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::inverseTransformPose;
 
@@ -35,10 +36,13 @@ GoalSearcher::GoalSearcher(
 {
 }
 
-std::vector<GoalCandidate> GoalSearcher::search(
-  const Pose & original_goal_pose, const lanelet::ConstLanelets & pull_over_lanes)
+std::vector<GoalCandidate> GoalSearcher::search(const Pose & original_goal_pose)
 {
   std::vector<GoalCandidate> goal_candidates{};
+
+  const auto pull_over_lanes = pull_over_utils::getPullOverLanes(*(planner_data_->route_handler));
+  auto lanes = util::getExtendedCurrentLanes(planner_data_);
+  lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
   const auto shoulder_lane_objects =
     util::filterObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
@@ -53,6 +57,13 @@ std::vector<GoalCandidate> GoalSearcher::search(
          dy += parameters_.lateral_offset_interval) {
       lateral_offset = dy;
       search_pose = calcOffsetPose(original_goal_pose, dx, -dy, 0);
+
+      const auto & transformed_vehicle_footprint =
+        transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(search_pose));
+      if (LaneDepartureChecker::isOutOfLane(lanes, transformed_vehicle_footprint)) {
+        continue;
+      }
+
       if (checkCollision(search_pose)) {
         continue;
       }

@@ -28,10 +28,12 @@ namespace behavior_path_planner
 GeometricPullOver::GeometricPullOver(
   rclcpp::Node & node, const PullOverParameters & parameters,
   const ParallelParkingParameters & parallel_parking_parameters,
+  const LaneDepartureChecker & lane_departure_checker,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
   const bool is_forward)
 : PullOverPlannerBase{node, parameters},
   parallel_parking_parameters_{parallel_parking_parameters},
+  lane_departure_checker_{lane_departure_checker},
   occupancy_grid_map_{occupancy_grid_map},
   is_forward_{is_forward}
 {
@@ -41,11 +43,14 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
 
+  // prepare road nad shoulder lanes
   const auto road_lanes = util::getExtendedCurrentLanes(planner_data_);
   const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler);
   if (road_lanes.empty() || shoulder_lanes.empty()) {
     return {};
   }
+  auto lanes = road_lanes;
+  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
 
   // todo: set param only once
   planner_.setData(planner_data_, parallel_parking_parameters_);
@@ -55,8 +60,12 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
     return {};
   }
 
-  // collision check
   const auto arc_path = planner_.getArcPath();
+
+  // check lane departure with road and shoulder lanes
+  if (lane_departure_checker_.checkPathWillLeaveLane(lanes, arc_path)) return {};
+
+  // collision check
   if (parameters_.use_occupancy_grid || !occupancy_grid_map_) {
     const bool check_out_of_range = false;
     if (occupancy_grid_map_->hasObstacleOnPath(arc_path, check_out_of_range)) {

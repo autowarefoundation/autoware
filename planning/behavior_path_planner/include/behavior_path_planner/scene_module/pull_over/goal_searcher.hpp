@@ -21,10 +21,10 @@
 #include <memory>
 #include <vector>
 
-using tier4_autoware_utils::LinearRing2d;
-
 namespace behavior_path_planner
 {
+using tier4_autoware_utils::LinearRing2d;
+
 class GoalSearcher : public GoalSearcherBase
 {
 public:
@@ -32,8 +32,7 @@ public:
     const PullOverParameters & parameters, const LinearRing2d & vehicle_footprint,
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
 
-  std::vector<GoalCandidate> search(
-    const Pose & original_goal_pose, const lanelet::ConstLanelets & pull_over_lanes) override;
+  std::vector<GoalCandidate> search(const Pose & original_goal_pose) override;
   bool checkCollision(const Pose & pose) const;
   bool checkCollisionWithLongitudinalDistance(
     const Pose & ego_pose, const PredictedObjects & dynamic_objects) const;
