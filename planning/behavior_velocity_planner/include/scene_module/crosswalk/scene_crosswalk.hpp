@@ -115,6 +115,8 @@ private:
 
   std::vector<CollisionPoint> getCollisionPoints(
     const PathWithLaneId & ego_path, const PredictedObject & object,
+    const boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double>> &
+      attention_area,
     const std::pair<double, double> & crosswalk_attention_range);
 
   std::pair<double, double> getAttentionRange(const PathWithLaneId & ego_path);
