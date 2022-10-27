@@ -328,7 +328,7 @@ void RTCManagerPanel::onRTCStatus(const CooperateStatusArray::ConstSharedPtr msg
     std::max(min_display_size, std::min(msg->statuses.size(), max_display_size)));
   int cnt = 0;
   for (auto status : msg->statuses) {
-    if (static_cast<size_t>(cnt) > max_display_size) return;
+    if (static_cast<size_t>(cnt) >= max_display_size) return;
     // uuid
     {
       std::stringstream uuid;
