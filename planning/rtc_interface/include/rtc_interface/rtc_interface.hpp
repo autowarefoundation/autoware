@@ -55,6 +55,8 @@ public:
   void clearCooperateStatus();
   bool isActivated(const UUID & uuid);
   bool isRegistered(const UUID & uuid);
+  void lockCommandUpdate();
+  void unlockCommandUpdate();
 
 private:
   void onCooperateCommandService(
@@ -62,7 +64,11 @@ private:
     const CooperateCommands::Response::SharedPtr responses);
   void onAutoModeService(
     const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response);
+  std::vector<CooperateResponse> validateCooperateCommands(
+    const std::vector<CooperateCommand> & commands);
+  void updateCooperateCommandStatus(const std::vector<CooperateCommand> & commands);
   rclcpp::Logger getLogger() const;
+  bool isLocked() const;
 
   rclcpp::Publisher<CooperateStatusArray>::SharedPtr pub_statuses_;
   rclcpp::Service<CooperateCommands>::SharedPtr srv_commands_;
@@ -73,7 +79,9 @@ private:
   rclcpp::Logger logger_;
   Module module_;
   CooperateStatusArray registered_status_;
+  std::vector<CooperateCommand> stored_commands_;
   bool is_auto_mode_;
+  bool is_locked_;
 
   std::string cooperate_status_namespace_ = "/planning/cooperate_status";
   std::string cooperate_commands_namespace_ = "/planning/cooperate_commands";

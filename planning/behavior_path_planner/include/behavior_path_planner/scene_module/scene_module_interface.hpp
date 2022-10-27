@@ -234,6 +234,22 @@ public:
   }
   bool isWaitingApproval() const { return is_waiting_approval_; }
 
+  virtual void lockRTCCommand()
+  {
+    if (!rtc_interface_ptr_) {
+      return;
+    }
+    rtc_interface_ptr_->lockCommandUpdate();
+  }
+
+  virtual void unlockRTCCommand()
+  {
+    if (!rtc_interface_ptr_) {
+      return;
+    }
+    rtc_interface_ptr_->unlockCommandUpdate();
+  }
+
 private:
   std::string name_;
   rclcpp::Logger logger_;

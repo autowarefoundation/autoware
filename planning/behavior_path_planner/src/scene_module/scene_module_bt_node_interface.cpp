@@ -51,6 +51,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
 
   const bool is_waiting_approval = !scene_module_->isActivated();
   if (is_waiting_approval && !is_lane_following) {
+    scene_module_->lockRTCCommand();
     try {
       // NOTE: Since BehaviorTreeCpp has an issue to shadow the exception reason thrown
       // in the TreeNode, catch and display it here until the issue is fixed.
@@ -66,12 +67,14 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
         scene_module_->getLogger(), "behavior module has failed with exception: " << e.what());
       // std::exit(EXIT_FAILURE);  // TODO(Horibe) do appropriate handing
     }
+    scene_module_->unlockRTCCommand();
     return BT::NodeStatus::SUCCESS;
   }
 
   while (rclcpp::ok()) {
     // NOTE: Since BehaviorTreeCpp has an issue to shadow the exception reason thrown
     // in the TreeNode, catch and display it here until the issue is fixed.
+    scene_module_->lockRTCCommand();
     try {
       auto res = setOutput<BehaviorModuleOutput>("output", scene_module_->run());
       if (!res) {
@@ -97,6 +100,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
       break;
     }
 
+    scene_module_->unlockRTCCommand();
     setStatusRunningAndYield();
   }
 

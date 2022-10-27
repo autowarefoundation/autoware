@@ -69,7 +69,9 @@ Module getModuleType(const std::string & module_name)
 namespace rtc_interface
 {
 RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name)
-: logger_{node->get_logger().get_child("RTCInterface[" + name + "]")}, is_auto_mode_{false}
+: logger_{node->get_logger().get_child("RTCInterface[" + name + "]")},
+  is_auto_mode_{false},
+  is_locked_{false}
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -105,11 +107,47 @@ void RTCInterface::onCooperateCommandService(
   const CooperateCommands::Response::SharedPtr responses)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  for (const auto & command : request->commands) {
+
+  responses->responses = validateCooperateCommands(request->commands);
+
+  if (isLocked()) {
+    stored_commands_ = request->commands;
+    return;
+  }
+
+  updateCooperateCommandStatus(request->commands);
+}
+
+std::vector<CooperateResponse> RTCInterface::validateCooperateCommands(
+  const std::vector<CooperateCommand> & commands)
+{
+  std::vector<CooperateResponse> responses;
+
+  for (const auto & command : commands) {
     CooperateResponse response;
     response.uuid = command.uuid;
     response.module = command.module;
 
+    const auto itr = std::find_if(
+      registered_status_.statuses.begin(), registered_status_.statuses.end(),
+      [command](auto & s) { return s.uuid == command.uuid; });
+    if (itr != registered_status_.statuses.end()) {
+      response.success = true;
+    } else {
+      RCLCPP_WARN_STREAM(
+        getLogger(), "[validateCooperateCommands] uuid : " << to_string(command.uuid)
+                                                           << " is not found." << std::endl);
+      response.success = false;
+    }
+    responses.push_back(response);
+  }
+
+  return responses;
+}
+
+void RTCInterface::updateCooperateCommandStatus(const std::vector<CooperateCommand> & commands)
+{
+  for (const auto & command : commands) {
     const auto itr = std::find_if(
       registered_status_.statuses.begin(), registered_status_.statuses.end(),
       [command](auto & s) { return s.uuid == command.uuid; });
@@ -119,14 +157,7 @@ void RTCInterface::onCooperateCommandService(
       itr->command_status = command.command;
       itr->auto_mode = false;
       is_auto_mode_ = false;
-      response.success = true;
-    } else {
-      RCLCPP_WARN_STREAM(
-        getLogger(), "[onCooperateCommandService] uuid : " << to_string(command.uuid)
-                                                           << " is not found." << std::endl);
-      response.success = false;
     }
-    responses->responses.push_back(response);
   }
 }
 
@@ -227,6 +258,16 @@ bool RTCInterface::isRegistered(const UUID & uuid)
   return itr != registered_status_.statuses.end();
 }
 
+void RTCInterface::lockCommandUpdate() { is_locked_ = true; }
+
+void RTCInterface::unlockCommandUpdate()
+{
+  is_locked_ = false;
+  updateCooperateCommandStatus(stored_commands_);
+}
+
 rclcpp::Logger RTCInterface::getLogger() const { return logger_; }
+
+bool RTCInterface::isLocked() const { return is_locked_; }
 
 }  // namespace rtc_interface

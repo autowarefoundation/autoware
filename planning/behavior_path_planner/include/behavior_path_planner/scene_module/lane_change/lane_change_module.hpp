@@ -73,6 +73,18 @@ public:
     return false;
   }
 
+  void lockRTCCommand() override
+  {
+    rtc_interface_left_.lockCommandUpdate();
+    rtc_interface_right_.lockCommandUpdate();
+  }
+
+  void unlockRTCCommand() override
+  {
+    rtc_interface_left_.unlockCommandUpdate();
+    rtc_interface_right_.unlockCommandUpdate();
+  }
+
 private:
   std::shared_ptr<LaneChangeParameters> parameters_;
   LaneChangeStatus status_;
