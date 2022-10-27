@@ -411,35 +411,32 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
     (2 * R_E_l * (R_E_l + R_E_r)));
   theta_l = is_forward ? theta_l : -theta_l;
 
-  // get closest lanes
-  lanelet::Lanelet closest_road_lanelet;
-  lanelet::utils::query::getClosestLanelet(road_lanes, goal_pose, &closest_road_lanelet);
-  lanelet::Lanelet closest_shoulder_lanelet;
-  lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &closest_shoulder_lanelet);
-
   PathWithLaneId path_turn_left =
     generateArcPath(Cl, R_E_l, -M_PI_2, normalizeRadian(-M_PI_2 + theta_l), is_forward, is_forward);
-  for (auto & p : path_turn_left.points) {
-    p.lane_ids.push_back(closest_road_lanelet.id());
-    p.lane_ids.push_back(closest_shoulder_lanelet.id());
-  }
   path_turn_left.header = planner_data_->route_handler->getRouteHeader();
 
   PathWithLaneId path_turn_right = generateArcPath(
     Cr, R_E_r, normalizeRadian(psi + M_PI_2 + theta_l), M_PI_2, !is_forward, is_forward);
-  for (auto & p : path_turn_right.points) {
-    p.lane_ids.push_back(closest_road_lanelet.id());
-    p.lane_ids.push_back(closest_shoulder_lanelet.id());
-  }
   path_turn_right.header = planner_data_->route_handler->getRouteHeader();
+
+  auto setLaneIds = [lanes](PathPointWithLaneId & p) {
+    for (const auto & lane : lanes) {
+      p.lane_ids.push_back(lane.id());
+    }
+  };
+  auto setLaneIdsToPath = [setLaneIds](PathWithLaneId & path) {
+    for (auto & p : path.points) {
+      setLaneIds(p);
+    }
+  };
+  setLaneIdsToPath(path_turn_left);
+  setLaneIdsToPath(path_turn_right);
 
   // Need to add straight path to last right_turning for parking in parallel
   if (std::abs(end_pose_offset) > 0) {
     PathPointWithLaneId straight_point{};
-    lanelet::ConstLanelet goal_lane;
-    lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &goal_lane);
     straight_point.point.pose = goal_pose;
-    straight_point.lane_ids.push_back(goal_lane.id());
+    setLaneIds(straight_point);
     path_turn_right.points.push_back(straight_point);
   }
 
