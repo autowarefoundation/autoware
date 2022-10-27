@@ -4,6 +4,9 @@ project(pointcloud_preprocessor)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+# Suppress CGAL warning
+set(CGAL_DATA_DIR ".")
+
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
