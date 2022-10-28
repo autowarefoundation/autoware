@@ -7,32 +7,32 @@ repositories:
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: c9a964e24af0c6edc050d2b2ee01e6e110cbfdbd
+    version: ee7384951bd02ddc5ed49151ad760034d2ad02bc
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: ba4d3cc3f729ebedc16aba7d745bcc54fd935e61
+    version: 5944d420a01d81504f15dfd5323fa68a8d372208
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: 062fdea5059eaf196a2d0fd531e4433efd1502e4
+    version: 0272977f1842c35b8a2401706ce8d35cc7aafb30
   core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
-    version: c8a5d2001da052137c08cdf9e8d75c1975f99b84
+    version: bd162589a837a2c1ecea943f80c035109e1ae594
   # universe
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: 4be6931c811422f16d95c1460c046f2540d1f628
+    version: e009b13f371ebcd54990ec676a13ef192862b2aa
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
-    version: 050fa514074be9e55a772ff9776cea5cfa04a403
+    version: faf403a5522a56751930813a171ff80397775ea6
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
-    version: 0309ffb99c474b4867fc8fb8ecb0d6f81e5decc9
+    version: b4ab4360d875c473e4540f47a0e19ea0d146c44d
   universe/external/grid_map:
     type: git
     url: https://github.com/ANYbotics/grid_map.git
@@ -57,7 +57,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: 5a770252eaa4a50144fbdf8ce98bd02a7ce4e180
+    version: 61492f1d7ab7a71290e979a730d3283540335f65
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
@@ -88,7 +88,7 @@ repositories:
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
-    version: 592e09c6785c515231f32ae4f153561b4f7b92b7
+    version: e868133ea4ea7231d9c5e841f4b220b7dd9ceed4
   # param
   param/autoware_individual_params:
     type: git
