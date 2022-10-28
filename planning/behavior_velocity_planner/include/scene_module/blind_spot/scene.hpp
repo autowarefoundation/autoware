@@ -198,7 +198,7 @@ private:
    * @param lane_id lane id of objective lanelet
    * @return end point of lanelet
    */
-  boost::optional<geometry_msgs::msg::Point> getStartPointFromLaneLet(const int lane_id) const;
+  boost::optional<geometry_msgs::msg::Pose> getStartPointFromLaneLet(const int lane_id) const;
 
   /**
    * @brief get straight lanelets in intersection

@@ -251,7 +251,7 @@ bool BlindSpotModule::generateStopLine(
     stop_idx_ip =
       std::max(first_idx_conflicting_lane_opt.get() - 1 - margin_idx_dist - base2front_idx_dist, 0);
   } else {
-    boost::optional<geometry_msgs::msg::Point> intersection_enter_point_opt =
+    boost::optional<geometry_msgs::msg::Pose> intersection_enter_point_opt =
       getStartPointFromLaneLet(lane_id_);
     if (!intersection_enter_point_opt) {
       RCLCPP_DEBUG(logger_, "No intersection enter point found.");
@@ -259,7 +259,7 @@ bool BlindSpotModule::generateStopLine(
     }
 
     geometry_msgs::msg::Pose intersection_enter_pose;
-    intersection_enter_pose.position = intersection_enter_point_opt.get();
+    intersection_enter_pose = intersection_enter_point_opt.get();
     const auto stop_idx_ip_opt =
       motion_utils::findNearestIndex(path_ip.points, intersection_enter_pose, 10.0, M_PI_4);
     if (stop_idx_ip_opt) {
@@ -458,6 +458,7 @@ boost::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
   lanelet::ConstLanelets blind_spot_lanelets;
   /* get lane ids until intersection */
   for (const auto & point : path.points) {
+    bool found_intersection_lane = false;
     for (const auto lane_id : point.lane_ids) {
       // make lane_ids unique
       if (std::find(lane_ids.begin(), lane_ids.end(), lane_id) == lane_ids.end()) {
@@ -465,42 +466,23 @@ boost::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
       }
 
       if (lane_id == lane_id_) {
+        found_intersection_lane = true;
         break;
       }
     }
+    if (found_intersection_lane) break;
   }
 
-  /* reverse lane ids */
-  std::reverse(lane_ids.begin(), lane_ids.end());
-
-  /* add intersection lanelet */
-  const auto first_lanelet = lanelet_map_ptr->laneletLayer.get(lane_ids.front());
-  const auto first_half_lanelet = generateHalfLanelet(first_lanelet);
-  blind_spot_lanelets.push_back(first_half_lanelet);
-
-  if (lane_ids.size() > 1) {
-    for (size_t i = 0; i < lane_ids.size() - 1; ++i) {
-      const auto prev_lanelet = lanelet_map_ptr->laneletLayer.get(lane_ids.at(i));
-      const auto next_lanelet = lanelet_map_ptr->laneletLayer.get(lane_ids.at(i + 1));
-      /* end if next lanelet does not follow prev lanelet */
-      if (!lanelet::geometry::follows(prev_lanelet.invert(), next_lanelet.invert())) {
-        break;
-      }
-      const auto half_lanelet = generateHalfLanelet(next_lanelet);
-      blind_spot_lanelets.push_back(half_lanelet);
-    }
-    /* reset order of lanelets */
-    std::reverse(blind_spot_lanelets.begin(), blind_spot_lanelets.end());
+  for (size_t i = 0; i < lane_ids.size(); ++i) {
+    const auto half_lanelet =
+      generateHalfLanelet(lanelet_map_ptr->laneletLayer.get(lane_ids.at(i)));
+    blind_spot_lanelets.push_back(half_lanelet);
   }
 
   const auto current_arc =
     lanelet::utils::getArcCoordinates(blind_spot_lanelets, path.points[closest_idx].point.pose);
   const auto stop_line_arc = lanelet::utils::getArcCoordinates(blind_spot_lanelets, stop_line_pose);
-  const auto total_length = lanelet::utils::getLaneletLength3d(blind_spot_lanelets);
-  const auto intersection_length =
-    lanelet::utils::getLaneletLength3d(lanelet_map_ptr->laneletLayer.get(lane_id_));
-  const auto detection_area_start_length =
-    total_length - intersection_length - planner_param_.backward_length;
+  const auto detection_area_start_length = stop_line_arc.length - planner_param_.backward_length;
   if (
     detection_area_start_length < current_arc.length && current_arc.length < stop_line_arc.length) {
     const auto conflict_area = lanelet::utils::getPolygonFromArcLength(
@@ -565,7 +547,7 @@ bool BlindSpotModule::isTargetObjectType(
   return false;
 }
 
-boost::optional<geometry_msgs::msg::Point> BlindSpotModule::getStartPointFromLaneLet(
+boost::optional<geometry_msgs::msg::Pose> BlindSpotModule::getStartPointFromLaneLet(
   const int lane_id) const
 {
   lanelet::ConstLanelet lanelet =
@@ -578,8 +560,14 @@ boost::optional<geometry_msgs::msg::Point> BlindSpotModule::getStartPointFromLan
   start_point.x = p.x();
   start_point.y = p.y();
   start_point.z = p.z();
+  const double yaw = lanelet::utils::getLaneletAngle(lanelet, start_point);
+  geometry_msgs::msg::Pose start_pose;
+  start_pose.position = start_point;
+  tf2::Quaternion quat;
+  quat.setRPY(0, 0, yaw);
+  start_pose.orientation = tf2::toMsg(quat);
 
-  return start_point;
+  return start_pose;
 }
 
 lanelet::ConstLanelets BlindSpotModule::getStraightLanelets(
