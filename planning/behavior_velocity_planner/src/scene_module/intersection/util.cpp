@@ -91,6 +91,7 @@ bool getDuplicatedPointIdx(
   return false;
 }
 
+// TODO(Mamoru Sobue): return optional, not -1
 int getFirstPointInsidePolygons(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::vector<lanelet::CompoundPolygon3d> & polygons)

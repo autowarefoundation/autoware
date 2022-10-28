@@ -91,9 +91,9 @@ bool IntersectionModule::modifyPathVelocity(
   /* get lanelet map */
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
-
   const auto & assigned_lanelet =
     planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id_);
+  const std::string turn_direction = assigned_lanelet.attributeOr("turn_direction", "else");
 
   /* get detection area*/
   /* dynamically change detection area based on tl_arrow_solid_on */
@@ -102,15 +102,10 @@ bool IntersectionModule::modifyPathVelocity(
   auto && [detection_lanelets, conflicting_lanelets] = util::getObjectiveLanelets(
     lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
     tl_arrow_solid_on);
-  if (detection_lanelets.empty()) {
-    RCLCPP_DEBUG(logger_, "no detection area. skip computation.");
-    setSafe(true);
-    setDistance(std::numeric_limits<double>::lowest());
-    return true;
-  }
   const std::vector<lanelet::CompoundPolygon3d> detection_area =
     util::getPolygon3dFromLanelets(detection_lanelets, planner_param_.detection_area_length);
-
+  const std::vector<lanelet::CompoundPolygon3d> conflicting_area =
+    util::getPolygon3dFromLanelets(conflicting_lanelets);
   debug_data_.detection_area = detection_area;
 
   /* get intersection area */
@@ -127,10 +122,15 @@ bool IntersectionModule::modifyPathVelocity(
 
   /* set stop-line and stop-judgement-line for base_link */
   util::StopLineIdx stop_line_idxs;
+  // if straight, need to care stuck vehicle ahead of the lane using conflicting_lane
+  const auto & attention_area = (turn_direction.compare("straight") == 0 && detection_area.empty())
+                                  ? conflicting_area
+                                  : detection_area;
   if (!util::generateStopLine(
-        lane_id_, detection_area, planner_data_, planner_param_.stop_line_margin,
+        lane_id_, attention_area, planner_data_, planner_param_.stop_line_margin,
         planner_param_.keep_detection_line_margin, path, *path, &stop_line_idxs,
         logger_.get_child("util"))) {
+    // returns here if path is not intersecting with attention_area
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     setSafe(true);
