@@ -37,7 +37,7 @@ namespace
 {
 const std::size_t MAX_POINT_IN_VOXEL_SIZE = 32;  // the same as max_point_in_voxel_size_ in config
 const std::size_t WARPS_PER_BLOCK = 4;
-const std::size_t ENCODER_IN_FEATURE_SIZE = 11;  // same as encoder_in_feature_size_ in config.hpp
+const std::size_t ENCODER_IN_FEATURE_SIZE = 12;  // same as encoder_in_feature_size_ in config.hpp
 
 std::size_t divup(const std::size_t a, const std::size_t b)
 {
@@ -70,7 +70,7 @@ __global__ void generateFeatures_kernel(
   if (pillar_idx >= num_voxels) return;
 
   // load src
-  const int POINT_FEATURE_SIZE = 6;
+  const int POINT_FEATURE_SIZE = 7;
   __shared__ float pillarSM[WARPS_PER_BLOCK][MAX_POINT_IN_VOXEL_SIZE][POINT_FEATURE_SIZE];
   __shared__ float3 pillarSumSM[WARPS_PER_BLOCK];
   __shared__ int3 cordsSM[WARPS_PER_BLOCK];
@@ -129,14 +129,15 @@ __global__ void generateFeatures_kernel(
     pillarOutSM[pillar_idx_inBlock][point_idx][3] = pillarSM[pillar_idx_inBlock][point_idx][3];
     pillarOutSM[pillar_idx_inBlock][point_idx][4] = pillarSM[pillar_idx_inBlock][point_idx][4];
     pillarOutSM[pillar_idx_inBlock][point_idx][5] = pillarSM[pillar_idx_inBlock][point_idx][5];
+    pillarOutSM[pillar_idx_inBlock][point_idx][6] = pillarSM[pillar_idx_inBlock][point_idx][6];
 
     // change index
-    pillarOutSM[pillar_idx_inBlock][point_idx][6] = mean.x;
-    pillarOutSM[pillar_idx_inBlock][point_idx][7] = mean.y;
-    pillarOutSM[pillar_idx_inBlock][point_idx][8] = mean.z;
+    pillarOutSM[pillar_idx_inBlock][point_idx][7] = mean.x;
+    pillarOutSM[pillar_idx_inBlock][point_idx][8] = mean.y;
+    pillarOutSM[pillar_idx_inBlock][point_idx][9] = mean.z;
 
-    pillarOutSM[pillar_idx_inBlock][point_idx][9] = center.x;
-    pillarOutSM[pillar_idx_inBlock][point_idx][10] = center.y;
+    pillarOutSM[pillar_idx_inBlock][point_idx][10] = center.x;
+    pillarOutSM[pillar_idx_inBlock][point_idx][11] = center.y;
 
   } else {
     pillarOutSM[pillar_idx_inBlock][point_idx][0] = 0;
@@ -152,6 +153,7 @@ __global__ void generateFeatures_kernel(
     pillarOutSM[pillar_idx_inBlock][point_idx][8] = 0;
     pillarOutSM[pillar_idx_inBlock][point_idx][9] = 0;
     pillarOutSM[pillar_idx_inBlock][point_idx][10] = 0;
+    pillarOutSM[pillar_idx_inBlock][point_idx][11] = 0;
   }
 
   __syncthreads();

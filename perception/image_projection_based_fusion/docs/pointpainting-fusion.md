@@ -74,7 +74,7 @@ Example:
 
 ## References/External links
 
-[1] Vora, Sourabh, et al. "Pointpainting: Sequential fusion for 3d object detection." Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2020.
+[1] Vora, Sourabh, et al. "PointPainting: Sequential fusion for 3d object detection." Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2020.
 
 [2] CVPR'20 Workshop on Scalability in Autonomous Driving] Waymo Open Dataset Challenge: <https://youtu.be/9g9GsI33ol8?t=535>
 Ding, Zhuangzhuang, et al. "1st Place Solution for Waymo Open Dataset Challenge--3D Detection and Domain Adaptation." arXiv preprint arXiv:2006.15505 (2020).
