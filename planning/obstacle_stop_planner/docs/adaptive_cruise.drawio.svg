@@ -1,181 +1,174 @@
-<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="523px" height="135px" viewBox="-0.5 -0.5 523 135" content="&lt;mxfile&gt;&lt;diagram id=&quot;v_OAqW4BTlY1sjh6r_Rb&quot; name=&quot;Page-1&quot;&gt;7Vrbcqs2FP0az7QPx8PFXPzoOHHOQy+eSaenferIIBtNBCJCxM75+kpCMhfhxHFMctKazMSwBVvSWktb0oaRO093txTkya8khnjkWPFu5F6PHCfwXf5fGJ4qw8SZVIYNRXFlsmrDHfoOK6OtrSWKYaFslYkRghnK28aIZBmMWMsGKCXb9m1rguOWIQcbaBjuIoBN6zcUs6Syhk5Q279CtEl0zbY/rUpSoG9WPSkSEJNtw+TejNw5JYRVZ+luDrHAro3L4kDpvmEUZuyYB6zbB/rX+rd1OVv+XS7/gNcP9+kX5eUR4FJ1WDWWPWkEeLtzcZruNoLhcYE2WTFmFGRFTigDDJFsHAH6jztyrxKWYn6vzU9zgjIG6c0jb1+hbAWj5B7OCSaUWzKSccdXj5AyxBH/BawgXpICCY+8eEUYI2njhhnmVfMCRnJuBeoqgqIa4VwDbPGLNUb5n43zr6oFa4Sxrn/kuJY8uN1EU0PDK4e7hkmhewtJChl94reo0olXPaGUbk/C6nrb0I0SR9KQzETpAyilbvaOazL5ieLzgBj+7zzO+bFY7Hk0SOuh9jCPgf9xRDovE8mf4NFPIL5NEIN3OYhEyZaz2mYOFHkVEtdoB2ODNg6bPRN/JpyLRWtYvBFOuw1n4Blw6mjfhNM+B5yuAefNhsgeJSjigHax5d1kbRApLNB3sJI3CERAybi05TRl96m3K/IUxbF4uBpHsi/e1ci77oCuxlDvwKKkzGJBYDUKSMYOR7C3URW2mQpN4QdOD1PBGZiaGEz9tKC8qzVZP1/Y6rBltenSi5JmnAoGossz6Pp9VTAgx5S1FOBFmJTxhbI2ZXaHsqltxkJ7KM78I+aWLJ6JVXONTYOpw9NH5QfGxlr6RWAaHfd6JgFtoxDzBcpj230fGKoGqcAG7n4nsk2dtouClDSC6qnmIrrrqLs2CL22IwboBjLDkeRm3+3j6ApeRVeEQVGgqI8xvXERFv7EAmFdjsVS7QpE9xs5BJ4dK5xvXx6yBFBm1izNDfc/uixs1+2waZ1LFtZgspieZRT3a8LqYz20xB8viUGRyChpq4slYDwmZ9LiWJ+D8UmbKDcYT5vH5DQBdP061nQoAeh8wkUApwiA96YrgNMY7zpyrHAwxo/Y3V8YP8S463vnYbzraEjGj0kDvHHuP3IOP3WJ8Olk4XmnycKY+71Je0oZTCRmcuMSFo7fEnRpc0+c+ruOHGuwLYF+d3IJC++3PvDD88jC9oNx6LxHWDBTMzHi9GWRSM0wkf0kdaom/0+maoRdvUusRfemzI3jdbLYeofXkKVOKrQSN88o8NjEjTNc4ualKeDY4crbIseFavD0Q2d2pxOQnRN39Y7XHcLDDdrXJXs+guIPozPs0GlPT6Nz/+lBveIbDzdVhwahNynk3rNIQHe9j8ifM+iq4Go7zwRhU3hniMOu3R3crhGHbe323Bl0x8y93XEaY0DjC6enc2q705c51Zvtc3Pq9qXTfMwUCC0m/YeS6IIvFV8zfoOX7+oyfrYRv98SmIn1ViJWWUcuwCxUiPoSQgXt4mGQyQbsNVY7mutWrqiusopekg1MIsQExCsYcUyE24Tj1vQalVQS1LqdVyQMSDaVk1oAXQ3HscKjquuTi9x/b42HHYm75qt1OxjoxZ/blz/8sSQOG3PjsxqfxSCXiwnHmtMSFfKEt5USjKXDlMQlloKPifzJiOjhltD7QgvcB6n4VCZbFXnVnU4lQEJCct123WyUFUIDohsr0dLGK++76vYlBlnWaMfYdH4ZUOfZkOnd1n5EmV8/2GHPjsyZvHpE8cv6O81qMVh/7Ore/As=&lt;/diagram&gt;&lt;/mxfile&gt;">
-    <defs/>
-    <g>
-        <rect x="0" y="21" width="89" height="40" fill="none" stroke="none" transform="translate(44.5,0)scale(-1,1)translate(-44.5,0)" pointer-events="all"/>
-        <path d="M 88.93 37.63 C 88.88 37.34 88.78 36.99 88.61 36.53 L 71.91 21.05 L 38.31 21.05 C 37.53 21 37.11 21.43 36.74 21.93 L 25.52 35.06 L 0.96 39.83 C 0.62 40.18 0.28 40.52 0 41.42 L 0.05 51.28 C 0.58 52.86 0.95 52.65 1.36 52.88 L 6.09 52.88 C 6.09 39.47 23.2 39.51 23.2 52.88 L 66.82 52.88 C 66.82 39.44 83.79 39.46 83.79 52.88 L 87.67 52.88 C 88.32 52.81 88.69 52.14 89 51.35 L 88.93 37.63 Z M 52.87 37 L 29.6 37 C 28.71 36.59 28.59 35.97 28.96 35.22 L 37.33 25.57 C 37.52 25.39 37.67 25.13 37.99 25.19 L 52.87 25.19 L 52.87 37 Z M 76.97 37 L 55.63 37 L 55.63 25.18 L 68.15 25.18 C 68.47 25.12 68.62 25.38 68.81 25.56 L 75.98 33.99 C 76.65 35.17 77.98 36.76 76.97 37 Z M 14.6 44.78 C 10.76 44.78 7.65 48.41 7.65 52.89 C 7.65 57.37 10.75 61 14.6 61 C 18.44 61 21.55 57.37 21.55 52.89 C 21.55 48.41 18.43 44.78 14.6 44.78 Z M 14.6 56.3 C 12.98 56.3 11.66 54.77 11.66 52.88 C 11.66 50.99 12.97 49.46 14.6 49.46 C 16.21 49.46 17.52 50.99 17.52 52.88 C 17.52 54.77 16.21 56.3 14.6 56.3 Z M 75.3 44.78 C 71.47 44.78 68.35 48.41 68.35 52.89 C 68.35 57.37 71.46 61 75.3 61 C 79.14 61 82.24 57.37 82.24 52.89 C 82.24 48.41 79.13 44.78 75.3 44.78 Z M 75.3 56.3 C 73.68 56.3 72.37 54.77 72.37 52.88 C 72.37 50.99 73.68 49.46 75.3 49.46 C 76.92 49.46 78.23 50.99 78.23 52.88 C 78.23 54.77 76.92 56.3 75.3 56.3 Z" fill="#000000" stroke="none" transform="translate(44.5,0)scale(-1,1)translate(-44.5,0)" pointer-events="all"/>
-        <rect x="431" y="21" width="89" height="40" fill="none" stroke="none" transform="translate(475.5,0)scale(-1,1)translate(-475.5,0)" pointer-events="all"/>
-        <path d="M 519.93 37.63 C 519.88 37.34 519.78 36.99 519.61 36.53 L 502.91 21.05 L 469.31 21.05 C 468.53 21 468.11 21.43 467.74 21.93 L 456.52 35.06 L 431.96 39.83 C 431.62 40.18 431.28 40.52 431 41.42 L 431.05 51.28 C 431.58 52.86 431.95 52.65 432.36 52.88 L 437.09 52.88 C 437.09 39.47 454.2 39.51 454.2 52.88 L 497.82 52.88 C 497.82 39.44 514.79 39.46 514.79 52.88 L 518.67 52.88 C 519.32 52.81 519.69 52.14 520 51.35 L 519.93 37.63 Z M 483.87 37 L 460.6 37 C 459.71 36.59 459.59 35.97 459.96 35.22 L 468.33 25.57 C 468.52 25.39 468.67 25.13 468.99 25.19 L 483.87 25.19 L 483.87 37 Z M 507.97 37 L 486.63 37 L 486.63 25.18 L 499.15 25.18 C 499.47 25.12 499.62 25.38 499.81 25.56 L 506.98 33.99 C 507.65 35.17 508.98 36.76 507.97 37 Z M 445.6 44.78 C 441.76 44.78 438.65 48.41 438.65 52.89 C 438.65 57.37 441.75 61 445.6 61 C 449.44 61 452.55 57.37 452.55 52.89 C 452.55 48.41 449.43 44.78 445.6 44.78 Z M 445.6 56.3 C 443.98 56.3 442.66 54.77 442.66 52.88 C 442.66 50.99 443.97 49.46 445.6 49.46 C 447.21 49.46 448.52 50.99 448.52 52.88 C 448.52 54.77 447.21 56.3 445.6 56.3 Z M 506.3 44.78 C 502.47 44.78 499.35 48.41 499.35 52.89 C 499.35 57.37 502.46 61 506.3 61 C 510.14 61 513.24 57.37 513.24 52.89 C 513.24 48.41 510.13 44.78 506.3 44.78 Z M 506.3 56.3 C 504.68 56.3 503.37 54.77 503.37 52.88 C 503.37 50.99 504.68 49.46 506.3 49.46 C 507.92 49.46 509.23 50.99 509.23 52.88 C 509.23 54.77 507.92 56.3 506.3 56.3 Z" fill="#ccccff" stroke="none" transform="translate(475.5,0)scale(-1,1)translate(-475.5,0)" pointer-events="all"/>
-        <ellipse cx="431" cy="53" rx="5" ry="5" fill="#ff0000" stroke="#1a1a1a" pointer-events="all"/>
-        <rect x="3" y="61" width="72" height="17" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 70px; margin-left: 39px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                Ego vehicle
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="39" y="73" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    Ego vehicle
-                </text>
-            </switch>
-        </g>
-        <rect x="435" y="0" width="87" height="17" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 9px; margin-left: 479px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                (Front vehicle)
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="479" y="12" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    (Front vehicle)
-                </text>
-            </switch>
-        </g>
-        <rect x="365" y="64" width="117" height="17" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 73px; margin-left: 424px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                Obstacle Pointcloud
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="424" y="76" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    Obstacle Pointcloud
-                </text>
-            </switch>
-        </g>
-        <path d="M 423 65 L 431 58" fill="none" stroke="#1a1a1a" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 94.37 53 L 424.63 53" fill="none" stroke="#666666" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 89.12 53 L 96.12 49.5 L 94.37 53 L 96.12 56.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 429.88 53 L 422.88 56.5 L 424.63 53 L 422.88 49.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 89 11 L 89 82" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
-        <path d="M 193 10 L 193 81" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
-        <path d="M 320 10 L 320 81" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
-        <path d="M 326.37 28 L 424.63 28" fill="none" stroke="#666666" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 321.12 28 L 328.12 24.5 L 326.37 28 L 328.12 31.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 429.88 28 L 422.88 31.5 L 424.63 28 L 422.88 24.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 431 7 L 431 78" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
-        <path d="M 199.37 41 L 424.63 40.83" fill="none" stroke="#666666" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 194.12 41 L 201.12 37.49 L 199.37 41 L 201.12 44.49 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
-        <path d="M 429.88 40.83 L 422.88 44.34 L 424.63 40.83 L 422.88 37.34 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="206" y="53" width="92" height="11" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 59px; margin-left: 252px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 6px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                distance to obstacle pointcloud
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="252" y="60" fill="#000000" font-family="Helvetica" font-size="6px" text-anchor="middle">
-                    distance to obstacle pointcloud
-                </text>
-            </switch>
-        </g>
-        <path d="M 156.57 96 L 211 42" fill="none" stroke="#1a1a1a" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 341 92 L 379 28.5" fill="none" stroke="#1a1a1a" stroke-miterlimit="10" pointer-events="stroke"/>
-        <rect x="271" y="96" width="121" height="17" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 105px; margin-left: 332px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                Emergency Distance
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="332" y="108" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    Emergency Distance
-                </text>
-            </switch>
-        </g>
-        <rect x="94" y="96" width="108" height="17" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 105px; margin-left: 148px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                Standard Distance
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="148" y="108" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    Standard Distance
-                </text>
-            </switch>
-        </g>
-        <rect x="44" y="111" width="177" height="17" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 120px; margin-left: 133px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 6px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                <font style="font-size: 5px">
-                                    When the distance to obstacle pointcloud is shorter than standard distance,
-                                    <br/>
-                                    target velocity becomes higher than current velocity and vice versa
-                                </font>
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="133" y="121" fill="#000000" font-family="Helvetica" font-size="6px" text-anchor="middle">
-                    When the distance to obstacle pointcloud is shorter than s...
-                </text>
-            </switch>
-        </g>
-        <rect x="247" y="110" width="182" height="24" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 122px; margin-left: 338px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 6px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-                                <font style="font-size: 5px">
-                                    When the distance to obstacle pointcloud is shorter than emergency distance,
-                                    <br/>
-                                    Adaptive Cruise Controller modules does not works and
-                                    <br/>
-                                    a stop point is inserted by Obstacle Stop Planner module.
-                                    <br/>
-                                </font>
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="338" y="124" fill="#000000" font-family="Helvetica" font-size="6px" text-anchor="middle">
-                    When the distance to obstacle pointcloud is shorter than eme...
-                </text>
-            </switch>
-        </g>
+<svg
+  host="65bd71144e"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="523px"
+  height="135px"
+  viewBox="-0.5 -0.5 523 135"
+  content="&lt;mxfile&gt;&lt;diagram id=&quot;v_OAqW4BTlY1sjh6r_Rb&quot; name=&quot;Page-1&quot;&gt;7Vrbcqs2FP0az7QPx8PFXPzoOHHOQy+eSaenferIIBtNBCJCxM75+kpCMhfhxHFMctKazMSwBVvSWktb0oaRO093txTkya8khnjkWPFu5F6PHCfwXf5fGJ4qw8SZVIYNRXFlsmrDHfoOK6OtrSWKYaFslYkRghnK28aIZBmMWMsGKCXb9m1rguOWIQcbaBjuIoBN6zcUs6Syhk5Q279CtEl0zbY/rUpSoG9WPSkSEJNtw+TejNw5JYRVZ+luDrHAro3L4kDpvmEUZuyYB6zbB/rX+rd1OVv+XS7/gNcP9+kX5eUR4FJ1WDWWPWkEeLtzcZruNoLhcYE2WTFmFGRFTigDDJFsHAH6jztyrxKWYn6vzU9zgjIG6c0jb1+hbAWj5B7OCSaUWzKSccdXj5AyxBH/BawgXpICCY+8eEUYI2njhhnmVfMCRnJuBeoqgqIa4VwDbPGLNUb5n43zr6oFa4Sxrn/kuJY8uN1EU0PDK4e7hkmhewtJChl94reo0olXPaGUbk/C6nrb0I0SR9KQzETpAyilbvaOazL5ieLzgBj+7zzO+bFY7Hk0SOuh9jCPgf9xRDovE8mf4NFPIL5NEIN3OYhEyZaz2mYOFHkVEtdoB2ODNg6bPRN/JpyLRWtYvBFOuw1n4Blw6mjfhNM+B5yuAefNhsgeJSjigHax5d1kbRApLNB3sJI3CERAybi05TRl96m3K/IUxbF4uBpHsi/e1ci77oCuxlDvwKKkzGJBYDUKSMYOR7C3URW2mQpN4QdOD1PBGZiaGEz9tKC8qzVZP1/Y6rBltenSi5JmnAoGossz6Pp9VTAgx5S1FOBFmJTxhbI2ZXaHsqltxkJ7KM78I+aWLJ6JVXONTYOpw9NH5QfGxlr6RWAaHfd6JgFtoxDzBcpj230fGKoGqcAG7n4nsk2dtouClDSC6qnmIrrrqLs2CL22IwboBjLDkeRm3+3j6ApeRVeEQVGgqI8xvXERFv7EAmFdjsVS7QpE9xs5BJ4dK5xvXx6yBFBm1izNDfc/uixs1+2waZ1LFtZgspieZRT3a8LqYz20xB8viUGRyChpq4slYDwmZ9LiWJ+D8UmbKDcYT5vH5DQBdP061nQoAeh8wkUApwiA96YrgNMY7zpyrHAwxo/Y3V8YP8S463vnYbzraEjGj0kDvHHuP3IOP3WJ8Olk4XmnycKY+71Je0oZTCRmcuMSFo7fEnRpc0+c+ruOHGuwLYF+d3IJC++3PvDD88jC9oNx6LxHWDBTMzHi9GWRSM0wkf0kdaom/0+maoRdvUusRfemzI3jdbLYeofXkKVOKrQSN88o8NjEjTNc4ualKeDY4crbIseFavD0Q2d2pxOQnRN39Y7XHcLDDdrXJXs+guIPozPs0GlPT6Nz/+lBveIbDzdVhwahNynk3rNIQHe9j8ifM+iq4Go7zwRhU3hniMOu3R3crhGHbe323Bl0x8y93XEaY0DjC6enc2q705c51Zvtc3Pq9qXTfMwUCC0m/YeS6IIvFV8zfoOX7+oyfrYRv98SmIn1ViJWWUcuwCxUiPoSQgXt4mGQyQbsNVY7mutWrqiusopekg1MIsQExCsYcUyE24Tj1vQalVQS1LqdVyQMSDaVk1oAXQ3HscKjquuTi9x/b42HHYm75qt1OxjoxZ/blz/8sSQOG3PjsxqfxSCXiwnHmtMSFfKEt5USjKXDlMQlloKPifzJiOjhltD7QgvcB6n4VCZbFXnVnU4lQEJCct123WyUFUIDohsr0dLGK++76vYlBlnWaMfYdH4ZUOfZkOnd1n5EmV8/2GHPjsyZvHpE8cv6O81qMVh/7Ore/As=&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <rect x="0" y="21" width="89" height="40" fill="none" stroke="none" transform="translate(44.5,0)scale(-1,1)translate(-44.5,0)" pointer-events="all"/>
+    <path
+      d="M 88.93 37.63 C 88.88 37.34 88.78 36.99 88.61 36.53 L 71.91 21.05 L 38.31 21.05 C 37.53 21 37.11 21.43 36.74 21.93 L 25.52 35.06 L 0.96 39.83 C 0.62 40.18 0.28 40.52 0 41.42 L 0.05 51.28 C 0.58 52.86 0.95 52.65 1.36 52.88 L 6.09 52.88 C 6.09 39.47 23.2 39.51 23.2 52.88 L 66.82 52.88 C 66.82 39.44 83.79 39.46 83.79 52.88 L 87.67 52.88 C 88.32 52.81 88.69 52.14 89 51.35 L 88.93 37.63 Z M 52.87 37 L 29.6 37 C 28.71 36.59 28.59 35.97 28.96 35.22 L 37.33 25.57 C 37.52 25.39 37.67 25.13 37.99 25.19 L 52.87 25.19 L 52.87 37 Z M 76.97 37 L 55.63 37 L 55.63 25.18 L 68.15 25.18 C 68.47 25.12 68.62 25.38 68.81 25.56 L 75.98 33.99 C 76.65 35.17 77.98 36.76 76.97 37 Z M 14.6 44.78 C 10.76 44.78 7.65 48.41 7.65 52.89 C 7.65 57.37 10.75 61 14.6 61 C 18.44 61 21.55 57.37 21.55 52.89 C 21.55 48.41 18.43 44.78 14.6 44.78 Z M 14.6 56.3 C 12.98 56.3 11.66 54.77 11.66 52.88 C 11.66 50.99 12.97 49.46 14.6 49.46 C 16.21 49.46 17.52 50.99 17.52 52.88 C 17.52 54.77 16.21 56.3 14.6 56.3 Z M 75.3 44.78 C 71.47 44.78 68.35 48.41 68.35 52.89 C 68.35 57.37 71.46 61 75.3 61 C 79.14 61 82.24 57.37 82.24 52.89 C 82.24 48.41 79.13 44.78 75.3 44.78 Z M 75.3 56.3 C 73.68 56.3 72.37 54.77 72.37 52.88 C 72.37 50.99 73.68 49.46 75.3 49.46 C 76.92 49.46 78.23 50.99 78.23 52.88 C 78.23 54.77 76.92 56.3 75.3 56.3 Z"
+      fill="#000000"
+      stroke="none"
+      transform="translate(44.5,0)scale(-1,1)translate(-44.5,0)"
+      pointer-events="all"
+    />
+    <rect x="431" y="21" width="89" height="40" fill="none" stroke="none" transform="translate(475.5,0)scale(-1,1)translate(-475.5,0)" pointer-events="all"/>
+    <path
+      d="M 519.93 37.63 C 519.88 37.34 519.78 36.99 519.61 36.53 L 502.91 21.05 L 469.31 21.05 C 468.53 21 468.11 21.43 467.74 21.93 L 456.52 35.06 L 431.96 39.83 C 431.62 40.18 431.28 40.52 431 41.42 L 431.05 51.28 C 431.58 52.86 431.95 52.65 432.36 52.88 L 437.09 52.88 C 437.09 39.47 454.2 39.51 454.2 52.88 L 497.82 52.88 C 497.82 39.44 514.79 39.46 514.79 52.88 L 518.67 52.88 C 519.32 52.81 519.69 52.14 520 51.35 L 519.93 37.63 Z M 483.87 37 L 460.6 37 C 459.71 36.59 459.59 35.97 459.96 35.22 L 468.33 25.57 C 468.52 25.39 468.67 25.13 468.99 25.19 L 483.87 25.19 L 483.87 37 Z M 507.97 37 L 486.63 37 L 486.63 25.18 L 499.15 25.18 C 499.47 25.12 499.62 25.38 499.81 25.56 L 506.98 33.99 C 507.65 35.17 508.98 36.76 507.97 37 Z M 445.6 44.78 C 441.76 44.78 438.65 48.41 438.65 52.89 C 438.65 57.37 441.75 61 445.6 61 C 449.44 61 452.55 57.37 452.55 52.89 C 452.55 48.41 449.43 44.78 445.6 44.78 Z M 445.6 56.3 C 443.98 56.3 442.66 54.77 442.66 52.88 C 442.66 50.99 443.97 49.46 445.6 49.46 C 447.21 49.46 448.52 50.99 448.52 52.88 C 448.52 54.77 447.21 56.3 445.6 56.3 Z M 506.3 44.78 C 502.47 44.78 499.35 48.41 499.35 52.89 C 499.35 57.37 502.46 61 506.3 61 C 510.14 61 513.24 57.37 513.24 52.89 C 513.24 48.41 510.13 44.78 506.3 44.78 Z M 506.3 56.3 C 504.68 56.3 503.37 54.77 503.37 52.88 C 503.37 50.99 504.68 49.46 506.3 49.46 C 507.92 49.46 509.23 50.99 509.23 52.88 C 509.23 54.77 507.92 56.3 506.3 56.3 Z"
+      fill="#ccccff"
+      stroke="none"
+      transform="translate(475.5,0)scale(-1,1)translate(-475.5,0)"
+      pointer-events="all"
+    />
+    <ellipse cx="431" cy="53" rx="5" ry="5" fill="#ff0000" stroke="#1a1a1a" pointer-events="all"/>
+    <rect x="3" y="61" width="72" height="17" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 70px; margin-left: 39px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">Ego vehicle</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="39" y="73" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Ego vehicle</text>
+      </switch>
     </g>
-    <switch>
-        <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
-        <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
-            <text text-anchor="middle" font-size="10px" x="50%" y="100%">
-                Viewer does not support full SVG 1.1
-            </text>
-        </a>
-    </switch>
+    <rect x="435" y="0" width="87" height="17" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 9px; margin-left: 479px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">(Front vehicle)</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="479" y="12" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">(Front vehicle)</text>
+      </switch>
+    </g>
+    <rect x="365" y="64" width="117" height="17" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 73px; margin-left: 424px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">Obstacle Pointcloud</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="424" y="76" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Obstacle Pointcloud</text>
+      </switch>
+    </g>
+    <path d="M 423 65 L 431 58" fill="none" stroke="#1a1a1a" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 94.37 53 L 424.63 53" fill="none" stroke="#666666" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 89.12 53 L 96.12 49.5 L 94.37 53 L 96.12 56.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 429.88 53 L 422.88 56.5 L 424.63 53 L 422.88 49.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 89 11 L 89 82" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
+    <path d="M 193 10 L 193 81" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
+    <path d="M 320 10 L 320 81" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
+    <path d="M 326.37 28 L 424.63 28" fill="none" stroke="#666666" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 321.12 28 L 328.12 24.5 L 326.37 28 L 328.12 31.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 429.88 28 L 422.88 31.5 L 424.63 28 L 422.88 24.5 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 431 7 L 431 78" fill="none" stroke="#808080" stroke-miterlimit="10" stroke-dasharray="1 1" pointer-events="stroke"/>
+    <path d="M 199.37 41 L 424.63 40.83" fill="none" stroke="#666666" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 194.12 41 L 201.12 37.49 L 199.37 41 L 201.12 44.49 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 429.88 40.83 L 422.88 44.34 L 424.63 40.83 L 422.88 37.34 Z" fill="#666666" stroke="#666666" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="206" y="53" width="92" height="11" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 59px; margin-left: 252px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 6px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
+                distance to obstacle pointcloud
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="252" y="60" fill="#000000" font-family="Helvetica" font-size="6px" text-anchor="middle">distance to obstacle pointcloud</text>
+      </switch>
+    </g>
+    <path d="M 156.57 96 L 211 42" fill="none" stroke="#1a1a1a" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 341 92 L 379 28.5" fill="none" stroke="#1a1a1a" stroke-miterlimit="10" pointer-events="stroke"/>
+    <rect x="271" y="96" width="121" height="17" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 105px; margin-left: 332px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">Emergency Distance</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="332" y="108" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Emergency Distance</text>
+      </switch>
+    </g>
+    <rect x="94" y="96" width="108" height="17" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 105px; margin-left: 148px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">Standard Distance</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="148" y="108" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Standard Distance</text>
+      </switch>
+    </g>
+    <rect x="44" y="111" width="177" height="17" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 120px; margin-left: 133px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 6px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
+                <font style="font-size: 5px">
+                  When the distance to obstacle pointcloud is shorter than standard distance,
+                  <br/>
+                  target velocity becomes higher than current velocity and vice versa
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="133" y="121" fill="#000000" font-family="Helvetica" font-size="6px" text-anchor="middle">When the distance to obstacle pointcloud is shorter than s...</text>
+      </switch>
+    </g>
+    <rect x="247" y="110" width="182" height="24" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 122px; margin-left: 338px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 6px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: nowrap; ">
+                <font style="font-size: 5px">
+                  When the distance to obstacle pointcloud is shorter than emergency distance,
+                  <br/>
+                  Adaptive Cruise Controller modules does not works and
+                  <br/>
+                  a stop point is inserted by Obstacle Stop Planner module.
+                  <br/>
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="338" y="124" fill="#000000" font-family="Helvetica" font-size="6px" text-anchor="middle">When the distance to obstacle pointcloud is shorter than eme...</text>
+      </switch>
+    </g>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Viewer does not support full SVG 1.1</text>
+    </a>
+  </switch>
 </svg>

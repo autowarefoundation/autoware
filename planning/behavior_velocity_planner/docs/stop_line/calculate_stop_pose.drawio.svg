@@ -1,89 +1,99 @@
-<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="761px" height="161px" viewBox="-0.5 -0.5 761 161" content="&lt;mxfile&gt;&lt;diagram id=&quot;jj6aBUbKK2MEb10H1mRq&quot; name=&quot;Page-1&quot;&gt;3VpLk6M2EP41PobSG+m488jmkFRt1Ryye2SMbJNgy4Xx2M6vjzASD4E9BGMWxwcXaolG6q/7U6thhp/Xx69JsF39oUIZzxAIjzP8MkMICa7/M8EpF1AAc8EyicJcVBG8Rf9IIwRGuo9CuasNTJWK02hbF87VZiPnaU0WJIk61IctVFx/6jZYyobgbR7ETemfUZiucimnoJT/JqPlyj4ZAtOzDuxgI9itglAdKiL8OsPPiVJpfrU+Pss4s521S37frxd6i4klcpN2uQHlN3wE8d6szcwrPdnFyk34JbOZbm3URgufVuk61i2oLxdRHD+rWCXnsXjB53I+1/Jdmqi/ZaXnnVOi7WN7rNmwljTnbJaxU/tkbmaBicE5SJbSDGO5SIY1tMxCv0q1lmly0gMOJUYWolUFHitLZByk0Ucd48C4yrJQVzzhm4r0hBGwXo2NHuPUxOq1KvLlmLuqmDiKMHMUIUdRboOGIn1RWXYpOkPeDj++EX55jNLvlesf+hp41LResgUB2ziZRie4aRNtMim0fQcjvyfYn3rNcGCTDmDHsebQDOTDKkrl2zY4A3LQLF4HPthtc2JdREcZNokAnH/X0P6QSSqPV5G0JkKOiYhpV5CGLUhDcBnUmhmv2Iw+qM1cCqHjmYw9qMkwdWwGx7OZfysPb/QDv1u2zRo/qj0lEZ9b/4mJWZOJxaSYGDPfwQ33o2KCRU1RoXh4KuY/Yd9t9xFz1xUvuZ7i2UQOdvUn0fQnG0ETcSjtB54QPoW+wAD7BNXdK+8FnBOAGSS0n7NRBjy7uxSOizzk+O5wLicelJaL3d5G5YhbmdXxcEajTnqKR0yZIHxQozHhGI2PaLRbD+ID7ghDZA3WJjWah9OieTdG+h7hKHcUMUfRcCQOuxzYpxhbHDrJNRgxtrocfKeSbXWLLlv0rEYXnlR0+c6hHQvsUdIvwDhCnkBcYAQ5h5g4+T5iHmGN3uGDzxZQqm6jjf1mmipJV2qpNkH8WkqfErXfhFl0ndEtx/yu1Na41F8yTU+myB3sU1V3vkYltQjLngm4zTo/dZRbz2XACXl8N1psKdOoxWIns9ns5HItzROq0GniSq9Z2tBAlRONKIij5UY351qt1PKnjAajeRB/MR3rKAzjSwRcd4gBqLVRQWxNW2gz0t2ych9uteWBcWOiJNeST7sUPIaPJb9JxLhrofrW+HJx1yzJESfIhzq3IcxROGC0NatVRbRtc/0szmLrPdFXy+zqPEo7icY3G6Ozk/9tOGLnvFqkmaOEY7OwVECzSNS6yofa+kEyVV5MVKpjQ2V3/QLpfd4jYDEmMl3qL12SUOAJLmqJKCbkeiqqG99kEuk5Z7CcZWGwW52N3ZnqpvX6DbrJBSce75leFm/Bizocvxd1Wsp+KC+YCOQYCY9zUf6c3Q96hIDy17Muix1nwILdzRlwA/uBTgs2j6Et5fvFArV/oRGyd0ZZ4QgO6i2eMXxGw7gTiKiT7VtSI+oBoI/ElCHsY2AxvPRBxQXn6IPpXV+yX8bMQfmFPVWxbOyRndAsIuLz96KoJeyH2DVxl/fv43yf9Hk8tO6XzZPBz+JPlPGnj4WOCUAhFNAJCoI1vWoKpdQXPvR7EygFHkQcaE0IUr1m5zGQ6W6ChE8xJoK4NaHe9Kqb5Wdz+fDy20P8+i8=&lt;/diagram&gt;&lt;/mxfile&gt;">
-    <defs/>
-    <g>
-        <path d="M 279.82 78.09 L 290.1 75.98" fill="none" stroke="#b85450" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 10 115 L 160.01 105.32" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <ellipse cx="165" cy="105" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <ellipse cx="5" cy="115" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <ellipse cx="295" cy="75" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <path d="M 299.19 72.27 L 381.46 18.54" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 390 15 L 510 5" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <ellipse cx="385" cy="15" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <ellipse cx="515" cy="5" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <ellipse cx="635" cy="45" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <path d="M 520 5 L 631.46 41.46" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <ellipse cx="755" cy="65" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
-        <path d="M 640 45 L 750 65" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 222.5 140 L 222.5 115 L 240 115 L 240 96.37" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 240 91.12 L 243.5 98.12 L 240 96.37 L 236.5 98.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="170" y="140" width="105" height="20" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 103px; height: 1px; padding-top: 150px; margin-left: 171px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                offset segment
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="223" y="154" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    offset segment
-                </text>
-            </switch>
-        </g>
-        <path d="M 332.5 130 L 332.5 110 L 270 110 L 270 96.37" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 270 91.12 L 273.5 98.12 L 270 96.37 L 266.5 98.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
-        <rect x="280" y="130" width="105" height="20" fill="none" stroke="none" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 103px; height: 1px; padding-top: 140px; margin-left: 281px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                offset point
-                                <br/>
-                                = stop pose
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="333" y="144" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    offset point...
-                </text>
-            </switch>
-        </g>
-        <rect x="160" y="50" width="105" height="20" fill="none" stroke="none" transform="rotate(-15,212.5,60)" pointer-events="all"/>
-        <g transform="translate(-0.5 -0.5)rotate(-15 212.5 60)">
-            <switch>
-                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 103px; height: 1px; padding-top: 60px; margin-left: 161px;">
-                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
-                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                offset from segment start
-                            </div>
-                        </div>
-                    </div>
-                </foreignObject>
-                <text x="213" y="64" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    offset from segme...
-                </text>
-            </switch>
-        </g>
-        <path d="M 169.89 103.44 L 162 78" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
-        <path d="M 269.89 81.44 L 262 56" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
-        <path d="M 275 80 L 294.55 75.26" fill="none" stroke="#d6b656" stroke-width="5" stroke-miterlimit="10" pointer-events="stroke"/>
-        <path d="M 302.57 73.32 L 293.17 81.25 L 294.55 75.26 L 290.58 70.56 Z" fill="#d6b656" stroke="#d6b656" stroke-width="5" stroke-miterlimit="10" pointer-events="all"/>
-        <ellipse cx="270" cy="80" rx="10" ry="10" fill="#d6b656" stroke="#d6b656" pointer-events="all"/>
-        <path d="M 169.87 103.85 L 260.27 82.32" fill="none" stroke="#b85450" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/>
+<svg
+  host="65bd71144e"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="761px"
+  height="161px"
+  viewBox="-0.5 -0.5 761 161"
+  content="&lt;mxfile&gt;&lt;diagram id=&quot;jj6aBUbKK2MEb10H1mRq&quot; name=&quot;Page-1&quot;&gt;3VpLk6M2EP41PobSG+m488jmkFRt1Ryye2SMbJNgy4Xx2M6vjzASD4E9BGMWxwcXaolG6q/7U6thhp/Xx69JsF39oUIZzxAIjzP8MkMICa7/M8EpF1AAc8EyicJcVBG8Rf9IIwRGuo9CuasNTJWK02hbF87VZiPnaU0WJIk61IctVFx/6jZYyobgbR7ETemfUZiucimnoJT/JqPlyj4ZAtOzDuxgI9itglAdKiL8OsPPiVJpfrU+Pss4s521S37frxd6i4klcpN2uQHlN3wE8d6szcwrPdnFyk34JbOZbm3URgufVuk61i2oLxdRHD+rWCXnsXjB53I+1/Jdmqi/ZaXnnVOi7WN7rNmwljTnbJaxU/tkbmaBicE5SJbSDGO5SIY1tMxCv0q1lmly0gMOJUYWolUFHitLZByk0Ucd48C4yrJQVzzhm4r0hBGwXo2NHuPUxOq1KvLlmLuqmDiKMHMUIUdRboOGIn1RWXYpOkPeDj++EX55jNLvlesf+hp41LResgUB2ziZRie4aRNtMim0fQcjvyfYn3rNcGCTDmDHsebQDOTDKkrl2zY4A3LQLF4HPthtc2JdREcZNokAnH/X0P6QSSqPV5G0JkKOiYhpV5CGLUhDcBnUmhmv2Iw+qM1cCqHjmYw9qMkwdWwGx7OZfysPb/QDv1u2zRo/qj0lEZ9b/4mJWZOJxaSYGDPfwQ33o2KCRU1RoXh4KuY/Yd9t9xFz1xUvuZ7i2UQOdvUn0fQnG0ETcSjtB54QPoW+wAD7BNXdK+8FnBOAGSS0n7NRBjy7uxSOizzk+O5wLicelJaL3d5G5YhbmdXxcEajTnqKR0yZIHxQozHhGI2PaLRbD+ID7ghDZA3WJjWah9OieTdG+h7hKHcUMUfRcCQOuxzYpxhbHDrJNRgxtrocfKeSbXWLLlv0rEYXnlR0+c6hHQvsUdIvwDhCnkBcYAQ5h5g4+T5iHmGN3uGDzxZQqm6jjf1mmipJV2qpNkH8WkqfErXfhFl0ndEtx/yu1Na41F8yTU+myB3sU1V3vkYltQjLngm4zTo/dZRbz2XACXl8N1psKdOoxWIns9ns5HItzROq0GniSq9Z2tBAlRONKIij5UY351qt1PKnjAajeRB/MR3rKAzjSwRcd4gBqLVRQWxNW2gz0t2ych9uteWBcWOiJNeST7sUPIaPJb9JxLhrofrW+HJx1yzJESfIhzq3IcxROGC0NatVRbRtc/0szmLrPdFXy+zqPEo7icY3G6Ozk/9tOGLnvFqkmaOEY7OwVECzSNS6yofa+kEyVV5MVKpjQ2V3/QLpfd4jYDEmMl3qL12SUOAJLmqJKCbkeiqqG99kEuk5Z7CcZWGwW52N3ZnqpvX6DbrJBSce75leFm/Bizocvxd1Wsp+KC+YCOQYCY9zUf6c3Q96hIDy17Muix1nwILdzRlwA/uBTgs2j6Et5fvFArV/oRGyd0ZZ4QgO6i2eMXxGw7gTiKiT7VtSI+oBoI/ElCHsY2AxvPRBxQXn6IPpXV+yX8bMQfmFPVWxbOyRndAsIuLz96KoJeyH2DVxl/fv43yf9Hk8tO6XzZPBz+JPlPGnj4WOCUAhFNAJCoI1vWoKpdQXPvR7EygFHkQcaE0IUr1m5zGQ6W6ChE8xJoK4NaHe9Kqb5Wdz+fDy20P8+i8=&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <path d="M 279.82 78.09 L 290.1 75.98" fill="none" stroke="#b85450" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 10 115 L 160.01 105.32" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <ellipse cx="165" cy="105" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="5" cy="115" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="295" cy="75" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <path d="M 299.19 72.27 L 381.46 18.54" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 390 15 L 510 5" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <ellipse cx="385" cy="15" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="515" cy="5" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="635" cy="45" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <path d="M 520 5 L 631.46 41.46" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <ellipse cx="755" cy="65" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <path d="M 640 45 L 750 65" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 222.5 140 L 222.5 115 L 240 115 L 240 96.37" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 240 91.12 L 243.5 98.12 L 240 96.37 L 236.5 98.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="170" y="140" width="105" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 103px; height: 1px; padding-top: 150px; margin-left: 171px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                offset segment
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="223" y="154" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">offset segment</text>
+      </switch>
     </g>
-    <switch>
-        <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
-        <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
-            <text text-anchor="middle" font-size="10px" x="50%" y="100%">
-                Viewer does not support full SVG 1.1
-            </text>
-        </a>
-    </switch>
+    <path d="M 332.5 130 L 332.5 110 L 270 110 L 270 96.37" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 270 91.12 L 273.5 98.12 L 270 96.37 L 266.5 98.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="280" y="130" width="105" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 103px; height: 1px; padding-top: 140px; margin-left: 281px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                offset point
+                <br/>
+                = stop pose
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="333" y="144" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">offset point...</text>
+      </switch>
+    </g>
+    <rect x="160" y="50" width="105" height="20" fill="none" stroke="none" transform="rotate(-15,212.5,60)" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)rotate(-15 212.5 60)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 103px; height: 1px; padding-top: 60px; margin-left: 161px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                offset from segment start
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="213" y="64" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">offset from segme...</text>
+      </switch>
+    </g>
+    <path d="M 169.89 103.44 L 162 78" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 269.89 81.44 L 262 56" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 275 80 L 294.55 75.26" fill="none" stroke="#d6b656" stroke-width="5" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 302.57 73.32 L 293.17 81.25 L 294.55 75.26 L 290.58 70.56 Z" fill="#d6b656" stroke="#d6b656" stroke-width="5" stroke-miterlimit="10" pointer-events="all"/>
+    <ellipse cx="270" cy="80" rx="10" ry="10" fill="#d6b656" stroke="#d6b656" pointer-events="all"/>
+    <path d="M 169.87 103.85 L 260.27 82.32" fill="none" stroke="#b85450" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Viewer does not support full SVG 1.1</text>
+    </a>
+  </switch>
 </svg>

@@ -79,4 +79,12 @@ repos:
         args: [--quiet]
         exclude: .cu
 
-exclude: .svg
+  - repo: local
+    hooks:
+      - id: prettier-svg
+        name: prettier svg
+        description: Apply Prettier with plugin-xml to svg.
+        entry: prettier --write --list-different --ignore-unknown --print-width 200 --xml-self-closing-space false --xml-whitespace-sensitivity ignore
+        language: node
+        files: .svg$
+        additional_dependencies: [prettier@2.7.1, "@prettier/plugin-xml@2.2.0"]

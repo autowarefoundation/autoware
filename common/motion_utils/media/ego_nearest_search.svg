@@ -1,3 +1,280 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="957px" height="472px" viewBox="-0.5 -0.5 957 472" content="&lt;mxfile host=&quot;Electron&quot; modified=&quot;2022-08-15T04:23:17.706Z&quot; agent=&quot;5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/13.0.1 Chrome/80.0.3987.163 Electron/8.2.1 Safari/537.36&quot; etag=&quot;hdvt5EoOSeSXZq3sAR4b&quot; version=&quot;13.0.1&quot; type=&quot;device&quot;&gt;&lt;diagram id=&quot;FmUAXtwAyzemAjJw8FDx&quot; name=&quot;Page-1&quot;&gt;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&lt;/diagram&gt;&lt;/mxfile&gt;"><defs/><g><rect x="805" y="105" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" transform="rotate(-186,830,120)" pointer-events="all"/><path d="M 238 239.35 L 238 427 Q 238 437 248 437 L 448 437 Q 458 437 458 427 L 458 387 Q 458 377 458 367 L 458 327 Q 458 317 448 317 L 18 317" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 238 230.35 L 242.5 239.35 L 233.5 239.35 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/><ellipse cx="238" cy="333.33" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/><rect x="862" y="110" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 120px; margin-left: 863px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div></div></div></foreignObject><text x="882" y="124" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text></switch></g><ellipse cx="211" cy="98" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" pointer-events="all"/><path d="M 254.38 44.51 Q 276 57 284 80 Q 292 103 278.04 127.42" fill="none" stroke="#3333ff" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 250.92 42.51 L 255.38 42.78 L 253.38 46.24 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/><path d="M 276.55 130.03 L 276.8 125.56 L 278.04 127.42 L 280.28 127.55 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 75px; margin-left: 277px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 9px; font-family: Helvetica; color: #3333FF; line-height: 1.2; pointer-events: all; background-color: #ffffff; white-space: nowrap; ">2 * yaw<br style="font-size: 9px" />threshold</div></div></div></foreignObject><text x="277" y="77" fill="#3333FF" font-family="Helvetica" font-size="9px" text-anchor="middle">2 * yaw...</text></switch></g><path d="M 188 107 L 518 107 Q 528 107 528 117 L 528 187 Q 528 197 518 197 L 458 197 Q 448 197 440.19 190.75 L 355.81 123.25 Q 348 117 338 117 L 20.35 117" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 11.35 117 L 20.35 112.5 L 20.35 121.5 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/><ellipse cx="33" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><path d="M 8 107 L 28 107" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/><ellipse cx="183" cy="107" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/><path d="M 38 107 L 178 107" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/><ellipse cx="263" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="343" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="423" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="493" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="528" cy="139" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="408" cy="165" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="523" cy="196" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="465" cy="197" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="193" cy="117" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="111" cy="117" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="272" cy="117" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="356" cy="124" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="45" cy="118" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><rect x="148" y="84.67" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 95px; margin-left: 149px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div></div></div></foreignObject><text x="168" y="98" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text></switch></g><ellipse cx="103" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><path d="M 580.35 113 L 828 113 Q 838 113 848 113 L 859 113 Q 869 113 868.5 103.01 L 868.25 98.01 Q 868 93 858 93 L 853 93 Q 848 93 838 93 L 818 93" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 571.35 113 L 580.35 108.5 L 580.35 117.5 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/><ellipse cx="59" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="149" cy="318" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="251" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="238" cy="250" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="359" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="458" cy="338" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="459" cy="420" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="245" cy="437" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="361" cy="437" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><rect x="206" y="313" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" transform="rotate(-96,231,328)" pointer-events="all"/><path d="M 934.65 317 L 691 317 Q 681 317 681 327 L 681 452 Q 681 462 691 462 L 835 462 Q 845 462 845 452 L 845 318 Q 845 308 835 308 L 578 308" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 943.65 317 L 934.65 321.5 L 934.65 312.5 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/><rect x="248" y="323.33" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 333px; margin-left: 249px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div></div></div></foreignObject><text x="268" y="337" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text></switch></g><ellipse cx="853" cy="113" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/><ellipse cx="837" cy="93" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="788" cy="113" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="728" cy="113" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="665" cy="113" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="597" cy="308" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="609" cy="112" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="657" cy="308" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="790" cy="308" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="845" cy="331" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="845" cy="382" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="729" cy="462" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="802" cy="462" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="845" cy="432" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="681" cy="429" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="681" cy="368" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="706" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="776" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="836" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><ellipse cx="897" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/><rect x="677" y="283" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 293px; margin-left: 678px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div></div></div></foreignObject><text x="697" y="297" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text></switch></g><ellipse cx="719" cy="308" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/><path d="M 221 302.53 L 237 313.53 L 221 324.53 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" transform="rotate(-96.3,229,313.53)" pointer-events="all"/><rect x="711" y="299.67" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" pointer-events="all"/><path d="M 742 303.67 L 758 314.67 L 742 325.67 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" pointer-events="all"/><rect x="196" y="82.67" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" transform="rotate(-15,221,97.67)" pointer-events="all"/><path d="M 227 82.67 L 243 93.67 L 227 104.67 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" transform="rotate(-15,235,93.67)" pointer-events="all"/><path d="M 808 111 L 824 122 L 808 133 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" transform="rotate(-185.7,816,122)" pointer-events="all"/><path d="M 234 344 L 168.54 289.89" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><path d="M 234 344 L 273.82 271.02" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><ellipse cx="229" cy="340" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" transform="rotate(-84.5,229,340)" pointer-events="all"/><path d="M 843 118 L 788.42 182.89" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><path d="M 843 118 L 768.63 77.79" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><ellipse cx="838" cy="122" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" transform="rotate(-175,838,122)" pointer-events="all"/><path d="M 720 316 L 784.4 260.64" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><path d="M 720 316 L 785.64 367.59" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><ellipse cx="725" cy="312" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" transform="rotate(15,725,312)" pointer-events="all"/><path d="M 206 102 L 255.08 33.02" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><path d="M 204.38 98.21 L 169.87 17.43" fill="none" stroke="#3333ff" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 205.56 100.97 L 202.15 98.08 L 204.38 98.21 L 205.83 96.51 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/><path d="M 168.69 14.67 L 172.1 17.56 L 169.87 17.43 L 168.42 19.13 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 48px; margin-left: 184px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 9px; font-family: Helvetica; color: #3333FF; line-height: 1.2; pointer-events: all; background-color: #ffffff; white-space: nowrap; ">distance<br style="font-size: 9px" />threshold</div></div></div></foreignObject><text x="184" y="51" fill="#3333FF" font-family="Helvetica" font-size="9px" text-anchor="middle">distance...</text></switch></g><path d="M 206 102 L 283.96 136" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/><rect x="17" y="3" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 13px; margin-left: 18px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">1.</div></div></div></foreignObject><text x="37" y="20" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">1.</text></switch></g><rect x="580" y="3" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 13px; margin-left: 581px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">2.</div></div></div></foreignObject><text x="600" y="20" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">2.</text></switch></g><rect x="17" y="225" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 235px; margin-left: 18px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">3.</div></div></div></foreignObject><text x="37" y="242" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">3.</text></switch></g><rect x="580" y="225" width="40" height="20" fill="none" stroke="none" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 235px; margin-left: 581px;"><div style="box-sizing: border-box; font-size: 0; text-align: center; "><div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">4.</div></div></div></foreignObject><text x="600" y="242" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">4.</text></switch></g></g><switch><g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/><a transform="translate(0,-5)" xlink:href="https://desk.draw.io/support/solutions/articles/16000042487" target="_blank"><text text-anchor="middle" font-size="10px" x="50%" y="100%">Viewer does not support full SVG 1.1</text></a></switch></svg>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="957px"
+  height="472px"
+  viewBox="-0.5 -0.5 957 472"
+  content="&lt;mxfile host=&quot;Electron&quot; modified=&quot;2022-08-15T04:23:17.706Z&quot; agent=&quot;5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/13.0.1 Chrome/80.0.3987.163 Electron/8.2.1 Safari/537.36&quot; etag=&quot;hdvt5EoOSeSXZq3sAR4b&quot; version=&quot;13.0.1&quot; type=&quot;device&quot;&gt;&lt;diagram id=&quot;FmUAXtwAyzemAjJw8FDx&quot; name=&quot;Page-1&quot;&gt;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&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <rect x="805" y="105" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" transform="rotate(-186,830,120)" pointer-events="all"/>
+    <path
+      d="M 238 239.35 L 238 427 Q 238 437 248 437 L 448 437 Q 458 437 458 427 L 458 387 Q 458 377 458 367 L 458 327 Q 458 317 448 317 L 18 317"
+      fill="none"
+      stroke="#97d077"
+      stroke-width="3"
+      stroke-miterlimit="10"
+      pointer-events="stroke"
+    />
+    <path d="M 238 230.35 L 242.5 239.35 L 233.5 239.35 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/>
+    <ellipse cx="238" cy="333.33" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/>
+    <rect x="862" y="110" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 120px; margin-left: 863px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="882" y="124" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text>
+      </switch>
+    </g>
+    <ellipse cx="211" cy="98" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" pointer-events="all"/>
+    <path d="M 254.38 44.51 Q 276 57 284 80 Q 292 103 278.04 127.42" fill="none" stroke="#3333ff" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 250.92 42.51 L 255.38 42.78 L 253.38 46.24 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 276.55 130.03 L 276.8 125.56 L 278.04 127.42 L 280.28 127.55 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 75px; margin-left: 277px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 9px; font-family: Helvetica; color: #3333FF; line-height: 1.2; pointer-events: all; background-color: #ffffff; white-space: nowrap; ">
+                2 * yaw
+                <br style="font-size: 9px"/>
+                threshold
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="277" y="77" fill="#3333FF" font-family="Helvetica" font-size="9px" text-anchor="middle">2 * yaw...</text>
+      </switch>
+    </g>
+    <path
+      d="M 188 107 L 518 107 Q 528 107 528 117 L 528 187 Q 528 197 518 197 L 458 197 Q 448 197 440.19 190.75 L 355.81 123.25 Q 348 117 338 117 L 20.35 117"
+      fill="none"
+      stroke="#97d077"
+      stroke-width="3"
+      stroke-miterlimit="10"
+      pointer-events="stroke"
+    />
+    <path d="M 11.35 117 L 20.35 112.5 L 20.35 121.5 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/>
+    <ellipse cx="33" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <path d="M 8 107 L 28 107" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/>
+    <ellipse cx="183" cy="107" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/>
+    <path d="M 38 107 L 178 107" fill="none" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="stroke"/>
+    <ellipse cx="263" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="343" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="423" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="493" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="528" cy="139" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="408" cy="165" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="523" cy="196" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="465" cy="197" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="193" cy="117" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="111" cy="117" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="272" cy="117" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="356" cy="124" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="45" cy="118" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <rect x="148" y="84.67" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 95px; margin-left: 149px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="168" y="98" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text>
+      </switch>
+    </g>
+    <ellipse cx="103" cy="107" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <path
+      d="M 580.35 113 L 828 113 Q 838 113 848 113 L 859 113 Q 869 113 868.5 103.01 L 868.25 98.01 Q 868 93 858 93 L 853 93 Q 848 93 838 93 L 818 93"
+      fill="none"
+      stroke="#97d077"
+      stroke-width="3"
+      stroke-miterlimit="10"
+      pointer-events="stroke"
+    />
+    <path d="M 571.35 113 L 580.35 108.5 L 580.35 117.5 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/>
+    <ellipse cx="59" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="149" cy="318" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="251" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="238" cy="250" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="359" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="458" cy="338" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="459" cy="420" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="245" cy="437" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="361" cy="437" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <rect x="206" y="313" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" transform="rotate(-96,231,328)" pointer-events="all"/>
+    <path
+      d="M 934.65 317 L 691 317 Q 681 317 681 327 L 681 452 Q 681 462 691 462 L 835 462 Q 845 462 845 452 L 845 318 Q 845 308 835 308 L 578 308"
+      fill="none"
+      stroke="#97d077"
+      stroke-width="3"
+      stroke-miterlimit="10"
+      pointer-events="stroke"
+    />
+    <path d="M 943.65 317 L 934.65 321.5 L 934.65 312.5 Z" fill="#97d077" stroke="#97d077" stroke-width="3" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="248" y="323.33" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 333px; margin-left: 249px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="268" y="337" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text>
+      </switch>
+    </g>
+    <ellipse cx="853" cy="113" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/>
+    <ellipse cx="837" cy="93" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="788" cy="113" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="728" cy="113" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="665" cy="113" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="597" cy="308" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="609" cy="112" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="657" cy="308" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="790" cy="308" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="845" cy="331" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="845" cy="382" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="729" cy="462" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="802" cy="462" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="845" cy="432" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="681" cy="429" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="681" cy="368" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="706" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="776" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="836" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <ellipse cx="897" cy="317" rx="5" ry="5" fill="#b9ff92" stroke="#000000" pointer-events="all"/>
+    <rect x="677" y="283" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 293px; margin-left: 678px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #FF3333; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">nearest</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="697" y="297" fill="#FF3333" font-family="Helvetica" font-size="12px" text-anchor="middle">nearest</text>
+      </switch>
+    </g>
+    <ellipse cx="719" cy="308" rx="5" ry="5" fill="#ff3333" stroke="#b85450" pointer-events="all"/>
+    <path d="M 221 302.53 L 237 313.53 L 221 324.53 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" transform="rotate(-96.3,229,313.53)" pointer-events="all"/>
+    <rect x="711" y="299.67" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" pointer-events="all"/>
+    <path d="M 742 303.67 L 758 314.67 L 742 325.67 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="196" y="82.67" width="50" height="30" fill-opacity="0.5" fill="#f5f5f5" stroke="#000000" stroke-opacity="0.5" transform="rotate(-15,221,97.67)" pointer-events="all"/>
+    <path d="M 227 82.67 L 243 93.67 L 227 104.67 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" transform="rotate(-15,235,93.67)" pointer-events="all"/>
+    <path d="M 808 111 L 824 122 L 808 133 Z" fill="none" stroke="#000000" stroke-opacity="0.5" stroke-miterlimit="10" transform="rotate(-185.7,816,122)" pointer-events="all"/>
+    <path d="M 234 344 L 168.54 289.89" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 234 344 L 273.82 271.02" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <ellipse cx="229" cy="340" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" transform="rotate(-84.5,229,340)" pointer-events="all"/>
+    <path d="M 843 118 L 788.42 182.89" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 843 118 L 768.63 77.79" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <ellipse cx="838" cy="122" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" transform="rotate(-175,838,122)" pointer-events="all"/>
+    <path d="M 720 316 L 784.4 260.64" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 720 316 L 785.64 367.59" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <ellipse cx="725" cy="312" rx="95" ry="95" fill="none" stroke="#3333ff" stroke-dasharray="3 3" transform="rotate(15,725,312)" pointer-events="all"/>
+    <path d="M 206 102 L 255.08 33.02" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 204.38 98.21 L 169.87 17.43" fill="none" stroke="#3333ff" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 205.56 100.97 L 202.15 98.08 L 204.38 98.21 L 205.83 96.51 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 168.69 14.67 L 172.1 17.56 L 169.87 17.43 L 168.42 19.13 Z" fill="#3333ff" stroke="#3333ff" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 48px; margin-left: 184px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 9px; font-family: Helvetica; color: #3333FF; line-height: 1.2; pointer-events: all; background-color: #ffffff; white-space: nowrap; ">
+                distance
+                <br style="font-size: 9px"/>
+                threshold
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="184" y="51" fill="#3333FF" font-family="Helvetica" font-size="9px" text-anchor="middle">distance...</text>
+      </switch>
+    </g>
+    <path d="M 206 102 L 283.96 136" fill="none" stroke="#3333ff" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <rect x="17" y="3" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 13px; margin-left: 18px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">1.</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="37" y="20" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">1.</text>
+      </switch>
+    </g>
+    <rect x="580" y="3" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 13px; margin-left: 581px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">2.</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="600" y="20" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">2.</text>
+      </switch>
+    </g>
+    <rect x="17" y="225" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 235px; margin-left: 18px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">3.</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="37" y="242" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">3.</text>
+      </switch>
+    </g>
+    <rect x="580" y="225" width="40" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 38px; height: 1px; padding-top: 235px; margin-left: 581px;"
+          >
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 23px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">4.</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="600" y="242" fill="#000000" font-family="Helvetica" font-size="23px" text-anchor="middle">4.</text>
+      </switch>
+    </g>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://desk.draw.io/support/solutions/articles/16000042487" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Viewer does not support full SVG 1.1</text>
+    </a>
+  </switch>
+</svg>
