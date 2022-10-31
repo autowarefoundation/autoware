@@ -635,13 +635,8 @@ void BehaviorPathPlannerNode::run()
       turn_signal.command = TurnIndicatorsCommand::DISABLE;
       hazard_signal.command = output.turn_signal_info.hazard_signal.command;
     } else {
-      const auto & current_pose = planner_data->self_pose->pose;
-      const double & current_vel = planner_data->self_odometry->twist.twist.linear.x;
-      const size_t ego_seg_idx = findEgoSegmentIndex(path->points);
-
-      turn_signal = turn_signal_decider_.getTurnSignal(
-        *path, current_pose, current_vel, ego_seg_idx, *(planner_data->route_handler),
-        output.turn_signal_info);
+      turn_signal =
+        turn_signal_decider_.getTurnSignal(planner_data, *path, output.turn_signal_info);
       hazard_signal.command = HazardLightsCommand::DISABLE;
     }
     turn_signal.stamp = get_clock()->now();

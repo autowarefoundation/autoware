@@ -2619,13 +2619,13 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
   }
 
   if (ego_front_to_shift_start > 0.0) {
-    turn_signal_info.desired_start_point = getEgoPosition();
+    turn_signal_info.desired_start_point = planner_data_->self_pose->pose;
   } else {
-    turn_signal_info.desired_start_point = blinker_start_pose.position;
+    turn_signal_info.desired_start_point = blinker_start_pose;
   }
-  turn_signal_info.desired_end_point = blinker_end_pose.position;
-  turn_signal_info.required_start_point = blinker_start_pose.position;
-  turn_signal_info.required_end_point = blinker_end_pose.position;
+  turn_signal_info.desired_end_point = blinker_end_pose;
+  turn_signal_info.required_start_point = blinker_start_pose;
+  turn_signal_info.required_end_point = blinker_end_pose;
 
   return turn_signal_info;
 }

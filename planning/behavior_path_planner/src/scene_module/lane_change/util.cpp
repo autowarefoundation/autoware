@@ -602,19 +602,19 @@ TurnSignalInfo calc_turn_signal_info(
         for (auto itr = prepare_path.points.crbegin(); itr != prepare_path.points.crend(); ++itr) {
           time += duration;
           if (time >= turn_signal_start_duration) {
-            return itr->point.pose.position;
+            return itr->point.pose;
           }
         }
       }
-      return prepare_path.points.front().point.pose.position;
+      return prepare_path.points.front().point.pose;
     });
 
-  turn_signal_info.required_start_point = shift_line.start.position;
+  turn_signal_info.required_start_point = shift_line.start;
   turn_signal_info.required_end_point = std::invoke([&lane_changing_path]() {
     const auto mid_path_idx = lane_changing_path.path.points.size() / 2;
-    return lane_changing_path.path.points.at(mid_path_idx).point.pose.position;
+    return lane_changing_path.path.points.at(mid_path_idx).point.pose;
   });
-  turn_signal_info.desired_end_point = shift_line.end.position;
+  turn_signal_info.desired_end_point = shift_line.end;
   return turn_signal_info;
 }
 

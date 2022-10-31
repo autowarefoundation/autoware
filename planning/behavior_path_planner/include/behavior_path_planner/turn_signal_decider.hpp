@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__TURN_SIGNAL_DECIDER_HPP_
 #define BEHAVIOR_PATH_PLANNER__TURN_SIGNAL_DECIDER_HPP_
 
+#include <behavior_path_planner/data_manager.hpp>
 #include <route_handler/route_handler.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -34,6 +35,7 @@ namespace behavior_path_planner
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using route_handler::RouteHandler;
 
@@ -49,10 +51,10 @@ struct TurnSignalInfo
   TurnIndicatorsCommand turn_signal;
   HazardLightsCommand hazard_signal;
 
-  geometry_msgs::msg::Point desired_start_point;
-  geometry_msgs::msg::Point desired_end_point;
-  geometry_msgs::msg::Point required_start_point;
-  geometry_msgs::msg::Point required_end_point;
+  geometry_msgs::msg::Pose desired_start_point;
+  geometry_msgs::msg::Pose desired_end_point;
+  geometry_msgs::msg::Pose required_start_point;
+  geometry_msgs::msg::Pose required_end_point;
 };
 
 const std::map<std::string, uint8_t> signal_map = {
@@ -65,13 +67,13 @@ class TurnSignalDecider
 {
 public:
   TurnIndicatorsCommand getTurnSignal(
-    const PathWithLaneId & path, const Pose & current_pose, const double current_vel,
-    const size_t current_seg_idx, const RouteHandler & route_handler,
+    const std::shared_ptr<const PlannerData> & planner_data, const PathWithLaneId & path,
     const TurnSignalInfo & turn_signal_info);
 
   TurnIndicatorsCommand resolve_turn_signal(
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
-    const TurnSignalInfo & intersection_signal_info, const TurnSignalInfo & behavior_signal_info);
+    const TurnSignalInfo & intersection_signal_info, const TurnSignalInfo & behavior_signal_info,
+    const double nearest_dist_threshold, const double nearest_yaw_threshold);
 
   void setParameters(
     const double base_link2front, const double intersection_search_distance,
@@ -89,9 +91,10 @@ public:
 private:
   boost::optional<TurnSignalInfo> getIntersectionTurnSignalInfo(
     const PathWithLaneId & path, const Pose & current_pose, const double current_vel,
-    const size_t current_seg_idx, const RouteHandler & route_handler);
+    const size_t current_seg_idx, const RouteHandler & route_handler,
+    const double nearest_dist_threshold, const double nearest_yaw_threshold);
 
-  geometry_msgs::msg::Point get_required_end_point(const lanelet::ConstLineString3d & centerline);
+  geometry_msgs::msg::Pose get_required_end_point(const lanelet::ConstLineString3d & centerline);
 
   bool use_prior_turn_signal(
     const double dist_to_prior_required_start, const double dist_to_prior_required_end,
@@ -99,18 +102,21 @@ private:
 
   void set_intersection_info(
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
-    const TurnSignalInfo & intersection_turn_signal_info);
+    const TurnSignalInfo & intersection_turn_signal_info, const double nearest_dist_threshold,
+    const double nearest_yaw_threshold);
   void initialize_intersection_info();
+
+  geometry_msgs::msg::Quaternion calc_orientation(const Point & src_point, const Point & dst_point);
 
   rclcpp::Logger logger_{
     rclcpp::get_logger("behavior_path_planner").get_child("turn_signal_decider")};
 
   // data
+  double base_link2front_{0.0};
   double intersection_search_distance_{0.0};
   double intersection_search_time_{0.0};
   double intersection_angle_threshold_deg_{0.0};
-  double base_link2front_{0.0};
-  std::map<lanelet::Id, geometry_msgs::msg::Point> desired_start_point_map_;
+  std::map<lanelet::Id, geometry_msgs::msg::Pose> desired_start_point_map_;
   mutable bool intersection_turn_signal_ = false;
   mutable bool approaching_intersection_turn_signal_ = false;
   mutable double intersection_distance_ = std::numeric_limits<double>::max();

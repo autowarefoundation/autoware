@@ -789,12 +789,11 @@ TurnSignalInfo PullOverModule::calcTurnSignalInfo() const
   {
     // ego decelerates so that current pose is the point `turn_light_on_threshold_time` seconds
     // before starting pull_over
-    turn_signal.desired_start_point = last_approved_pose_ && status_.has_decided_path
-                                        ? last_approved_pose_->position
-                                        : current_pose.position;
-    turn_signal.desired_end_point = end_pose.position;
-    turn_signal.required_start_point = start_pose.position;
-    turn_signal.required_end_point = end_pose.position;
+    turn_signal.desired_start_point =
+      last_approved_pose_ && status_.has_decided_path ? *last_approved_pose_ : current_pose;
+    turn_signal.desired_end_point = end_pose;
+    turn_signal.required_start_point = start_pose;
+    turn_signal.required_end_point = end_pose;
   }
 
   return turn_signal;

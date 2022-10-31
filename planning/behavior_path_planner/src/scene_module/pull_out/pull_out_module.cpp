@@ -623,11 +623,11 @@ TurnSignalInfo PullOutModule::calcTurnSignalInfo() const
   if (!status_.back_finished) {
     turn_signal.hazard_signal.command = HazardLightsCommand::ENABLE;
     const auto back_start_pose = isWaitingApproval() ? current_pose : *last_approved_pose_;
-    turn_signal.desired_start_point = back_start_pose.position;
-    turn_signal.required_start_point = back_start_pose.position;
+    turn_signal.desired_start_point = back_start_pose;
+    turn_signal.required_start_point = back_start_pose;
     // pull_out start_pose is same to backward driving end_pose
-    turn_signal.required_end_point = status_.pull_out_path.start_pose.position;
-    turn_signal.desired_end_point = status_.pull_out_path.start_pose.position;
+    turn_signal.required_end_point = status_.pull_out_path.start_pose;
+    turn_signal.desired_end_point = status_.pull_out_path.start_pose;
     return turn_signal;
   }
 
@@ -642,10 +642,10 @@ TurnSignalInfo PullOutModule::calcTurnSignalInfo() const
     turn_signal.turn_signal.command = TurnIndicatorsCommand::DISABLE;
   }
 
-  turn_signal.desired_start_point = status_.pull_out_path.start_pose.position;
-  turn_signal.required_start_point = status_.pull_out_path.start_pose.position;
-  turn_signal.required_end_point = status_.pull_out_path.end_pose.position;
-  turn_signal.desired_end_point = status_.pull_out_path.end_pose.position;
+  turn_signal.desired_start_point = status_.pull_out_path.start_pose;
+  turn_signal.required_start_point = status_.pull_out_path.start_pose;
+  turn_signal.required_end_point = status_.pull_out_path.end_pose;
+  turn_signal.desired_end_point = status_.pull_out_path.end_pose;
 
   return turn_signal;
 }

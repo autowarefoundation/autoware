@@ -29,6 +29,10 @@ using behavior_path_planner::TurnSignalInfo;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Twist;
 using tier4_autoware_utils::createPoint;
+using tier4_autoware_utils::createQuaternionFromYaw;
+
+constexpr double nearest_dist_threshold = 5.0;
+constexpr double nearest_yaw_threshold = M_PI / 3.0;
 
 namespace
 {
@@ -74,17 +78,25 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
 
   TurnSignalInfo intersection_signal_info;
   intersection_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-  intersection_signal_info.desired_start_point = createPoint(0.0, 0.0, 0.0);
-  intersection_signal_info.desired_end_point = createPoint(65.0, 0.0, 0.0);
-  intersection_signal_info.required_start_point = createPoint(35.0, 0.0, 0.0);
-  intersection_signal_info.required_end_point = createPoint(48.0, 0.0, 0.0);
+  intersection_signal_info.desired_start_point.position = createPoint(0.0, 0.0, 0.0);
+  intersection_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.desired_end_point.position = createPoint(65.0, 0.0, 0.0);
+  intersection_signal_info.desired_end_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.required_start_point.position = createPoint(35.0, 0.0, 0.0);
+  intersection_signal_info.required_start_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.required_end_point.position = createPoint(48.0, 0.0, 0.0);
+  intersection_signal_info.required_end_point.orientation = createQuaternionFromYaw(0.0);
 
   TurnSignalInfo behavior_signal_info;
   behavior_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-  behavior_signal_info.desired_start_point = createPoint(5.0, 0.0, 0.0);
-  behavior_signal_info.desired_end_point = createPoint(70.0, 0.0, 0.0);
-  behavior_signal_info.required_start_point = createPoint(45.0, 0.0, 0.0);
-  behavior_signal_info.required_end_point = createPoint(50.0, 0.0, 0.0);
+  behavior_signal_info.desired_start_point.position = createPoint(5.0, 0.0, 0.0);
+  behavior_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.desired_end_point.position = createPoint(70.0, 0.0, 0.0);
+  behavior_signal_info.desired_end_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.required_start_point.position = createPoint(45.0, 0.0, 0.0);
+  behavior_signal_info.required_start_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.required_end_point.position = createPoint(50.0, 0.0, 0.0);
+  behavior_signal_info.required_end_point.orientation = createQuaternionFromYaw(0.0);
 
   // current pose on the behavior desired start
   {
@@ -92,7 +104,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -102,7 +115,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -112,7 +126,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -122,7 +137,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -132,7 +148,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -142,7 +159,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -152,7 +170,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -162,7 +181,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -172,7 +192,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -182,7 +203,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition1)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 }
@@ -195,17 +217,25 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
 
   TurnSignalInfo intersection_signal_info;
   intersection_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-  intersection_signal_info.desired_start_point = createPoint(0.0, 0.0, 0.0);
-  intersection_signal_info.desired_end_point = createPoint(65.0, 0.0, 0.0);
-  intersection_signal_info.required_start_point = createPoint(35.0, 0.0, 0.0);
-  intersection_signal_info.required_end_point = createPoint(50.0, 0.0, 0.0);
+  intersection_signal_info.desired_start_point.position = createPoint(0.0, 0.0, 0.0);
+  intersection_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.desired_end_point.position = createPoint(65.0, 0.0, 0.0);
+  intersection_signal_info.desired_end_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.required_start_point.position = createPoint(35.0, 0.0, 0.0);
+  intersection_signal_info.required_start_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.required_end_point.position = createPoint(50.0, 0.0, 0.0);
+  intersection_signal_info.required_end_point.orientation = createQuaternionFromYaw(0.0);
 
   TurnSignalInfo behavior_signal_info;
   behavior_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-  behavior_signal_info.desired_start_point = createPoint(5.0, 0.0, 0.0);
-  behavior_signal_info.desired_end_point = createPoint(70.0, 0.0, 0.0);
-  behavior_signal_info.required_start_point = createPoint(40.0, 0.0, 0.0);
-  behavior_signal_info.required_end_point = createPoint(45.0, 0.0, 0.0);
+  behavior_signal_info.desired_start_point.position = createPoint(5.0, 0.0, 0.0);
+  behavior_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.desired_end_point.position = createPoint(70.0, 0.0, 0.0);
+  behavior_signal_info.desired_end_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.required_start_point.position = createPoint(40.0, 0.0, 0.0);
+  behavior_signal_info.required_start_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.required_end_point.position = createPoint(45.0, 0.0, 0.0);
+  behavior_signal_info.required_end_point.orientation = createQuaternionFromYaw(0.0);
 
   // current pose on the behavior desired start
   {
@@ -213,7 +243,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -223,7 +254,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -233,7 +265,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -243,7 +276,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -253,7 +287,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -263,7 +298,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -273,7 +309,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition2)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 }
@@ -286,17 +323,26 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
 
   TurnSignalInfo intersection_signal_info;
   intersection_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-  intersection_signal_info.desired_start_point = createPoint(0.0, 0.0, 0.0);
-  intersection_signal_info.desired_end_point = createPoint(65.0, 0.0, 0.0);
-  intersection_signal_info.required_start_point = createPoint(35.0, 0.0, 0.0);
-  intersection_signal_info.required_end_point = createPoint(50.0, 0.0, 0.0);
+  intersection_signal_info.desired_start_point.position = createPoint(0.0, 0.0, 0.0);
+  intersection_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.desired_end_point.position = createPoint(65.0, 0.0, 0.0);
+  intersection_signal_info.desired_end_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.required_start_point.position = createPoint(35.0, 0.0, 0.0);
+  intersection_signal_info.required_start_point.orientation = createQuaternionFromYaw(0.0);
+  intersection_signal_info.required_end_point.position = createPoint(50.0, 0.0, 0.0);
+  intersection_signal_info.required_end_point.orientation = createQuaternionFromYaw(0.0);
 
   TurnSignalInfo behavior_signal_info;
   behavior_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-  behavior_signal_info.desired_start_point = createPoint(5.0, 0.0, 0.0);
-  behavior_signal_info.desired_end_point = createPoint(70.0, 0.0, 0.0);
-  behavior_signal_info.required_start_point = createPoint(30.0, 0.0, 0.0);
-  behavior_signal_info.required_end_point = createPoint(45.0, 0.0, 0.0);
+  behavior_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+  behavior_signal_info.desired_start_point.position = createPoint(5.0, 0.0, 0.0);
+  behavior_signal_info.desired_start_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.desired_end_point.position = createPoint(70.0, 0.0, 0.0);
+  behavior_signal_info.desired_end_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.required_start_point.position = createPoint(30.0, 0.0, 0.0);
+  behavior_signal_info.required_start_point.orientation = createQuaternionFromYaw(0.0);
+  behavior_signal_info.required_end_point.position = createPoint(45.0, 0.0, 0.0);
+  behavior_signal_info.required_end_point.orientation = createQuaternionFromYaw(0.0);
 
   // current pose on the behavior desired start
   {
@@ -304,7 +350,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -314,7 +361,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -324,7 +372,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -334,7 +383,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_RIGHT);
   }
 
@@ -344,7 +394,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -354,7 +405,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -364,7 +416,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -374,7 +427,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -384,7 +438,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 
@@ -394,7 +449,8 @@ TEST(BehaviorPathPlanningTurnSignal, Condition3)
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.points, current_pose, 3.0, 1.0);
     const auto result_signal = turn_signal_decider.resolve_turn_signal(
-      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info);
+      path, current_pose, current_seg_idx, intersection_signal_info, behavior_signal_info,
+      nearest_dist_threshold, nearest_yaw_threshold);
     EXPECT_EQ(result_signal.command, TurnIndicatorsCommand::ENABLE_LEFT);
   }
 }
