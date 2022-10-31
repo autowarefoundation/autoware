@@ -73,8 +73,6 @@ localization/ekf_localizer/** koji.minoda@tier4.jp takamasa.horibe@tier4.jp take
 localization/gyro_odometer/** yamato.ando@tier4.jp
 localization/initial_pose_button_panel/** yamato.ando@tier4.jp
 localization/localization_error_monitor/** yamato.ando@tier4.jp
-localization/ndt/** yamato.ando@tier4.jp
-localization/ndt_pcl_modified/** yamato.ando@tier4.jp
 localization/ndt_scan_matcher/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp yamato.ando@tier4.jp
 localization/pose2twist/** yamato.ando@tier4.jp
 localization/pose_initializer/** isamu.takagi@tier4.jp yamato.ando@tier4.jp
