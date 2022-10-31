@@ -131,6 +131,7 @@ If the target object is inside the road or crosswalk, this module outputs one or
 | `prediction_time_horizon`                   | double | predict time duration for predicted path [s]                                                                 |
 | `prediction_sampling_delta_time`            | double | sampling time for points in predicted path [s]                                                               |
 | `min_velocity_for_map_based_prediction`     | double | apply map-based prediction to the objects with higher velocity than this value                               |
+| `min_crosswalk_user_velocity`               | double | minimum velocity use in path prediction for crosswalk users                                                  |
 | `dist_threshold_for_searching_lanelet`      | double | The threshold of the angle used when searching for the lane to which the object belongs [rad]                |
 | `delta_yaw_threshold_for_searching_lanelet` | double | The threshold of the distance used when searching for the lane to which the object belongs [m]               |
 | `sigma_lateral_offset`                      | double | Standard deviation for lateral position of objects [m]                                                       |

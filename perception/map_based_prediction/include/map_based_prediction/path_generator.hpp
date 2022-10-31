@@ -58,7 +58,7 @@ class PathGenerator
 public:
   PathGenerator(
     const double time_horizon, const double sampling_time_interval,
-    const double min_velocity_for_map_based_prediction);
+    const double min_crosswalk_user_velocity);
 
   PredictedPath generatePathForNonVehicleObject(const TrackedObject & object);
 
@@ -79,7 +79,7 @@ private:
   // Parameters
   double time_horizon_;
   double sampling_time_interval_;
-  double min_velocity_for_map_based_prediction_;
+  double min_crosswalk_user_velocity_;
 
   // Member functions
   PredictedPath generateStraightPath(const TrackedObject & object) const;
