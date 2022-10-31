@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     # -- Node Configurations --
-    planning_algorithm: "astar"
+    planning_algorithm: "astar"  # options: astar, rrtstar
     waypoints_velocity: 5.0
     update_rate: 10.0
     th_arrived_distance_m: 1.0
