@@ -31,6 +31,7 @@
 
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
+#include <Eigen/Dense>
 #include <motion_utils/motion_utils.hpp>
 
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
@@ -166,10 +167,14 @@ private:
   BrakeMap new_brake_map_;
   std::vector<double> part_original_accel_mse_que_;
   std::vector<double> full_original_accel_mse_que_;
+  // std::vector<double> full_original_accel_esm_que_;
+  std::vector<double> full_original_accel_l1_que_;
+  std::vector<double> full_original_accel_sq_l1_que_;
   std::vector<double> new_accel_mse_que_;
   std::size_t full_mse_que_size_ = 100000;
   std::size_t part_mse_que_size_ = 3000;
   double full_original_accel_rmse_ = 0.0;
+  double full_original_accel_error_l1norm_ = 0.0;
   double part_original_accel_rmse_ = 0.0;
   double new_accel_rmse_ = 0.0;
   double update_suggest_thresh_;
@@ -213,6 +218,9 @@ private:
   void executeUpdate(
     const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
     const int brake_pedal_index, const int brake_vel_index);
+  bool updateFourCellAroundOffset(
+    const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
+    const int brake_pedal_index, const int brake_vel_index, const double measured_acc);
   bool updateEachValOffset(
     const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
     const int brake_pedal_index, const int brake_vel_index, const double measured_acc,
@@ -252,6 +260,9 @@ private:
     const double throttle, const double brake, const double vel, AccelMap & accel_map,
     BrakeMap & brake_map);
   double calculateAccelSquaredError(
+    const double throttle, const double brake, const double vel, AccelMap & accel_map,
+    BrakeMap & brake_map);
+  double calculateAccelErrorL1Norm(
     const double throttle, const double brake, const double vel, AccelMap & accel_map,
     BrakeMap & brake_map);
   std::vector<double> getMapColumnFromUnifiedIndex(
@@ -322,6 +333,7 @@ private:
   enum UPDATE_METHOD {
     UPDATE_OFFSET_EACH_CELL = 0,
     UPDATE_OFFSET_TOTAL = 1,
+    UPDATE_OFFSET_FOUR_CELL_AROUND = 2,
   };
 
 public:

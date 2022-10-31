@@ -68,7 +68,9 @@ class CalcUtils:
         return y
 
     @staticmethod
-    def create_2d_map(x, y, data, color_factor, x_index_list, x_thresh, y_index_list, y_thresh):
+    def create_2d_map(
+        x, y, data, color_factor, x_index_list, x_thresh, y_index_list, y_thresh, calibration_method
+    ):
 
         if x.shape != y.shape or y.shape != data.shape:
             print("Error: the shape of x, y, data must be same")
@@ -79,6 +81,10 @@ class CalcUtils:
         y_num = len(y_index_list)
         data_list = get_map_list(y_num, x_num)
         full_data_list = get_map_list(y_num, x_num)
+
+        if calibration_method == "four_cell":
+            x_thresh = np.abs(x_index_list[1] - x_index_list[0]) / 2
+            y_thresh = np.abs(y_index_list[1] - y_index_list[0]) / 2
 
         for i in range(0, data_size):
             x_index = None

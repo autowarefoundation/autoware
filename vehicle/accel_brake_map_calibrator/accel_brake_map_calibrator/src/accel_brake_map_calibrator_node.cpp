@@ -71,6 +71,8 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
     update_method_ = UPDATE_METHOD::UPDATE_OFFSET_EACH_CELL;
   } else if (update_method_str == std::string("update_offset_total")) {
     update_method_ = UPDATE_METHOD::UPDATE_OFFSET_TOTAL;
+  } else if (update_method_str == std::string("update_offset_four_cell_around")) {
+    update_method_ = UPDATE_METHOD::UPDATE_OFFSET_FOUR_CELL_AROUND;
   } else {
     RCLCPP_ERROR_STREAM(
       rclcpp::get_logger("accel_brake_map_calibrator"),
@@ -78,7 +80,6 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
         << " is wrong. (available method: update_offset_each_cell, update_offset_total");
     return;
   }
-
   // initializer
 
   // QoS setup
@@ -254,6 +255,7 @@ void AccelBrakeMapCalibrator::timerCallback()
 {
   update_count_++;
   auto & clk = *this->get_clock();
+
   RCLCPP_DEBUG_STREAM_THROTTLE(
     rclcpp::get_logger("accel_brake_map_calibrator"), clk, 5000,
     "map updating... count: " << update_success_count_ << " / " << update_count_ << "\n\t"
@@ -366,6 +368,7 @@ void AccelBrakeMapCalibrator::timerCallback()
     too_large_jerk_count_++;
     return;
   }
+
   // pedal check
   if (
     delayed_accel_pedal_ptr_->data > std::numeric_limits<double>::epsilon() &&
@@ -598,11 +601,34 @@ bool AccelBrakeMapCalibrator::indexValueSearch(
   const std::vector<double> value_index, const double value, const double value_thresh,
   int * searched_index)
 {
-  for (std::size_t i = 0; i < value_index.size(); i++) {
-    const double diff_value = std::fabs(value_index.at(i) - value);
-    if (diff_value <= value_thresh) {
-      *searched_index = i;
-      return true;
+  if (update_method_ == UPDATE_METHOD::UPDATE_OFFSET_FOUR_CELL_AROUND) {
+    /*  return lower left index.
+    +-------+   +:grid
+    |    *  |   *:given data
+    |       |   o:index to return
+    o-------+
+    */
+    if (value < 0) {
+      std::cerr << "error : invalid value." << std::endl;
+      return false;
+    }
+    double old_diff_value = -999;  // TODO(Hirano)
+    for (std::size_t i = 0; i < value_index.size(); i++) {
+      const double diff_value = value_index.at(i) - value;
+      if (diff_value <= 0 && old_diff_value < diff_value) {
+        *searched_index = i;
+        old_diff_value = diff_value;
+      } else {
+        return true;
+      }
+    }
+  } else {
+    for (std::size_t i = 0; i < value_index.size(); i++) {
+      const double diff_value = std::fabs(value_index.at(i) - value);
+      if (diff_value <= value_thresh) {
+        *searched_index = i;
+        return true;
+      }
     }
   }
   return false;
@@ -749,10 +775,18 @@ bool AccelBrakeMapCalibrator::updateAccelBrakeMap()
     // copy accel map value to brake map value
     update_brake_map_value_.at(accel_pedal_index).at(accel_vel_index) =
       update_accel_map_value_.at(accel_pedal_index).at(accel_vel_index);
+    if (update_method_ == UPDATE_METHOD::UPDATE_OFFSET_FOUR_CELL_AROUND) {
+      update_brake_map_value_.at(accel_pedal_index).at(accel_vel_index + 1) =
+        update_accel_map_value_.at(accel_pedal_index).at(accel_vel_index + 1);
+    }
   } else if (!accel_mode && brake_pedal_index == 0) {
     // copy brake map value to accel map value
     update_accel_map_value_.at(brake_pedal_index).at(brake_vel_index) =
       update_brake_map_value_.at(brake_pedal_index).at(brake_vel_index);
+    if (update_method_ == UPDATE_METHOD::UPDATE_OFFSET_FOUR_CELL_AROUND) {
+      update_accel_map_value_.at(brake_pedal_index).at(brake_vel_index + 1) =
+        update_brake_map_value_.at(brake_pedal_index).at(brake_vel_index + 1);
+    }
   }
 
   // take consistency of map
@@ -780,6 +814,10 @@ void AccelBrakeMapCalibrator::executeUpdate(
       measured_acc, map_acc);
   } else if (update_method_ == UPDATE_METHOD::UPDATE_OFFSET_TOTAL) {
     updateTotalMapOffset(measured_acc, map_acc);
+  } else if (update_method_ == UPDATE_METHOD::UPDATE_OFFSET_FOUR_CELL_AROUND) {
+    updateFourCellAroundOffset(
+      accel_mode, accel_pedal_index, accel_vel_index, brake_pedal_index, brake_vel_index,
+      measured_acc);
   }
 
   // add accel data to map
@@ -789,6 +827,100 @@ void AccelBrakeMapCalibrator::executeUpdate(
              : map_value_data_.at(getUnifiedIndexFromAccelBrakeIndex(false, brake_pedal_index))
                  .at(brake_vel_index)
                  .emplace_back(measured_acc);
+}
+
+bool AccelBrakeMapCalibrator::updateFourCellAroundOffset(
+  const bool accel_mode, const int accel_pedal_index, const int accel_vel_index,
+  const int brake_pedal_index, const int brake_vel_index, const double measured_acc)
+{
+  // pre-defined
+  static std::vector<std::vector<double>> accel_map_offset_vec_(
+    accel_map_value_.size(), std::vector<double>(accel_map_value_.at(0).size(), map_offset_));
+  static std::vector<std::vector<double>> brake_map_offset_vec_(
+    brake_map_value_.size(), std::vector<double>(accel_map_value_.at(0).size(), map_offset_));
+  static std::vector<std::vector<Eigen::MatrixXd>> accel_covariance_mat_(
+    accel_map_value_.size() - 1,
+    std::vector<Eigen::MatrixXd>(
+      accel_map_value_.at(0).size() - 1, Eigen::MatrixXd::Identity(4, 4) * covariance_));
+  static std::vector<std::vector<Eigen::MatrixXd>> brake_covariance_mat_(
+    brake_map_value_.size() - 1,
+    std::vector<Eigen::MatrixXd>(
+      accel_map_value_.at(0).size() - 1, Eigen::MatrixXd::Identity(4, 4) * covariance_));
+
+  auto & update_map_value = accel_mode ? update_accel_map_value_ : update_brake_map_value_;
+  const auto & map_value = accel_mode ? accel_map_value_ : brake_map_value_;
+  const auto & pedal_index = accel_mode ? accel_pedal_index : brake_pedal_index;
+  const auto & pedal_index_ = accel_mode ? accel_pedal_index_ : brake_pedal_index_;
+  const auto & vel_index = accel_mode ? accel_vel_index : brake_vel_index;
+  const auto & vel_index_ = accel_mode ? accel_vel_index_ : brake_vel_index_;
+  const auto & delayed_pedal =
+    accel_mode ? delayed_accel_pedal_ptr_->data : delayed_brake_pedal_ptr_->data;
+  auto & map_offset_vec = accel_mode ? accel_map_offset_vec_ : brake_map_offset_vec_;
+  auto & covariance_mat = accel_mode ? accel_covariance_mat_ : brake_covariance_mat_;
+
+  const double zll = update_map_value.at(pedal_index + 0).at(vel_index + 0);
+  const double zhl = update_map_value.at(pedal_index + 1).at(vel_index + 0);
+  const double zlh = update_map_value.at(pedal_index + 0).at(vel_index + 1);
+  const double zhh = update_map_value.at(pedal_index + 1).at(vel_index + 1);
+
+  const double xl = pedal_index_.at(pedal_index + 0);
+  const double xh = pedal_index_.at(pedal_index + 1);
+  const double rx = (delayed_pedal - xl) / (xh - xl);
+  const double yl = vel_index_.at(vel_index + 0);
+  const double yh = vel_index_.at(vel_index + 1);
+  const double ry = (twist_ptr_->twist.linear.x - yl) / (yh - yl);
+
+  Eigen::Vector4d phi(4);
+  phi << (1 - rx) * (1 - ry), rx * (1 - ry), (1 - rx) * ry, rx * ry;
+
+  Eigen::Vector4d theta(4);
+  theta << zll, zhl, zlh, zhh;
+
+  const int vel_idx_l = vel_index + 0;
+  const int vel_idx_h = vel_index + 1;
+  const int ped_idx_l = pedal_index + 0;
+  const int ped_idx_h = pedal_index + 1;
+
+  Eigen::VectorXd map_offset(4);
+  map_offset(0) = map_offset_vec.at(ped_idx_l).at(vel_idx_l);
+  map_offset(1) = map_offset_vec.at(ped_idx_h).at(vel_idx_l);
+  map_offset(2) = map_offset_vec.at(ped_idx_l).at(vel_idx_h);
+  map_offset(3) = map_offset_vec.at(ped_idx_h).at(vel_idx_h);
+
+  Eigen::MatrixXd covariance = covariance_mat.at(ped_idx_l).at(vel_idx_l);
+
+  /* calculate adaptive map offset */
+  Eigen::MatrixXd G(4, 4);
+  Eigen::RowVectorXd phiT(4);
+  phiT = phi.transpose();
+  double rk = phiT * covariance * phi;
+
+  G = covariance * phi / (forgetting_factor_ + rk);
+  double beta = rk > 0 ? (forgetting_factor_ - (1 - forgetting_factor_) / rk) : 1;
+  covariance = covariance - covariance * phi * phiT * covariance / (1 / beta + rk);  // anti-windup
+  double eta_hat = phiT * theta;
+
+  const double error_map_offset = measured_acc - eta_hat;
+  map_offset = map_offset + G * error_map_offset;
+
+  /* input calculated result and update map */
+  map_offset_vec.at(ped_idx_l).at(vel_idx_l) = map_offset(0);
+  map_offset_vec.at(ped_idx_h).at(vel_idx_l) = map_offset(1);
+  map_offset_vec.at(ped_idx_l).at(vel_idx_h) = map_offset(2);
+  map_offset_vec.at(ped_idx_h).at(vel_idx_h) = map_offset(3);
+
+  covariance_mat.at(ped_idx_l).at(vel_idx_l) = covariance;
+
+  update_map_value.at(pedal_index + 0).at(vel_index + 0) =
+    map_value.at(pedal_index + 0).at(vel_index + 0) + map_offset(0);
+  update_map_value.at(pedal_index + 1).at(vel_index + 0) =
+    map_value.at(pedal_index + 1).at(vel_index + 0) + map_offset(1);
+  update_map_value.at(pedal_index + 0).at(vel_index + 1) =
+    map_value.at(pedal_index + 0).at(vel_index + 1) + map_offset(2);
+  update_map_value.at(pedal_index + 1).at(vel_index + 1) =
+    map_value.at(pedal_index + 1).at(vel_index + 1) + map_offset(3);
+
+  return true;
 }
 
 bool AccelBrakeMapCalibrator::updateEachValOffset(
@@ -923,6 +1055,22 @@ void AccelBrakeMapCalibrator::executeEvaluation()
     accel_map_, brake_map_);
   pushDataToVec(full_orig_accel_sq_error, full_mse_que_size_, &full_original_accel_mse_que_);
   full_original_accel_rmse_ = getAverage(full_original_accel_mse_que_);
+  // std::cerr << "rmse : " << sqrt(full_original_accel_rmse_) << std::endl;
+
+  const double full_orig_accel_l1_error = calculateAccelErrorL1Norm(
+    delayed_accel_pedal_ptr_->data, delayed_brake_pedal_ptr_->data, twist_ptr_->twist.linear.x,
+    accel_map_, brake_map_);
+  const double full_orig_accel_sq_l1_error = full_orig_accel_l1_error * full_orig_accel_l1_error;
+  pushDataToVec(full_orig_accel_l1_error, full_mse_que_size_, &full_original_accel_l1_que_);
+  pushDataToVec(full_orig_accel_sq_l1_error, full_mse_que_size_, &full_original_accel_sq_l1_que_);
+  full_original_accel_error_l1norm_ = getAverage(full_original_accel_l1_que_);
+
+  /*calculate l1norm_covariance*/
+  // const double full_original_accel_error_sql1_ = getAverage(full_original_accel_sq_l1_que_);
+  // std::cerr << "error_l1norm : " << full_original_accel_error_l1norm_ << std::endl;
+  // std::cerr << "error_l1_cov : " <<
+  // full_original_accel_error_sql1_-full_original_accel_error_l1norm_*full_original_accel_error_l1norm_
+  // << std::endl;
 
   const double part_orig_accel_sq_error = calculateAccelSquaredError(
     delayed_accel_pedal_ptr_->data, delayed_brake_pedal_ptr_->data, twist_ptr_->twist.linear.x,
@@ -961,6 +1109,16 @@ double AccelBrakeMapCalibrator::calculateAccelSquaredError(
   const double measured_acc = acceleration_ - getPitchCompensatedAcceleration();
   const double dif_acc = measured_acc - estimated_acc;
   return dif_acc * dif_acc;
+}
+
+double AccelBrakeMapCalibrator::calculateAccelErrorL1Norm(
+  const double throttle, const double brake, const double vel, AccelMap & accel_map,
+  BrakeMap & brake_map)
+{
+  const double estimated_acc = calculateEstimatedAcc(throttle, brake, vel, accel_map, brake_map);
+  const double measured_acc = acceleration_ - getPitchCompensatedAcceleration();
+  const double dif_acc = measured_acc - estimated_acc;
+  return abs(dif_acc);
 }
 
 void AccelBrakeMapCalibrator::pushDataToQue(
