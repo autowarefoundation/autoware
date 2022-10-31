@@ -59,7 +59,7 @@ private:
   int64_t module_id_;
 
   [[nodiscard]] boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
-    const PathWithLaneId & ego_path) const;
+    const PathWithLaneId & ego_path, bool & exist_stopline_in_map) const;
 
   enum class State { APPROACH, STOP, SURPASSED };
 

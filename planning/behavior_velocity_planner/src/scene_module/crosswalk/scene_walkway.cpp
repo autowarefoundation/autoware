@@ -42,11 +42,12 @@ WalkwayModule::WalkwayModule(
 }
 
 boost::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
-  const PathWithLaneId & ego_path) const
+  const PathWithLaneId & ego_path, bool & exist_stopline_in_map) const
 {
   const auto & ego_pos = planner_data_->current_pose.pose.position;
 
   const auto stop_line = getStopLineFromMap(module_id_, planner_data_, "crosswalk_id");
+  exist_stopline_in_map = static_cast<bool>(stop_line);
   if (stop_line) {
     const auto intersects = getLinestringIntersects(
       ego_path, lanelet::utils::to2D(stop_line.get()).basicLineString(), ego_pos, 2);
@@ -95,13 +96,15 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
   }
 
   if (state_ == State::APPROACH) {
-    const auto p_stop_line = getStopLine(input);
+    bool exist_stopline_in_map;
+    const auto p_stop_line = getStopLine(input, exist_stopline_in_map);
     if (!p_stop_line) {
       return false;
     }
 
     const auto & p_stop = p_stop_line.get().second;
-    const auto margin = planner_param_.stop_line_distance + base_link2front;
+    const auto stop_line_distance = exist_stopline_in_map ? 0.0 : planner_param_.stop_line_distance;
+    const auto margin = stop_line_distance + base_link2front;
     const auto stop_pose = calcLongitudinalOffsetPose(input.points, p_stop, -margin);
 
     if (!stop_pose) {
