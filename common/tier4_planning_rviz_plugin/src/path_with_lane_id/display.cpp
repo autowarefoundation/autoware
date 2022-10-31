@@ -281,10 +281,10 @@ void AutowarePathWithLaneIdDisplay::processMessage(
         node->setPosition(position);
 
         rviz_rendering::MovableText * text = velocity_texts_.at(point_idx);
-        double vel = e.point.longitudinal_velocity_mps;
-        text->setCaption(
-          std::to_string(static_cast<int>(std::floor(vel))) + "." +
-          std::to_string(static_cast<int>(std::floor(vel * 100))));
+        const double vel = e.point.longitudinal_velocity_mps;
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(2) << vel;
+        text->setCaption(ss.str());
         text->setCharacterHeight(property_velocity_text_scale_->getFloat());
         text->setVisible(true);
       } else {
