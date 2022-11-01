@@ -24,7 +24,7 @@ sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
 sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
 sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 sudo apt-get update
-cuda_version=11-4
+cuda_version=11-6
 sudo apt install cuda-${cuda_version} --no-install-recommends
 ```
 
