@@ -138,6 +138,12 @@ public:
     CSC_Matrix P, CSC_Matrix A, const std::vector<float64_t> & q, const std::vector<float64_t> & l,
     const std::vector<float64_t> & u);
 
+  // Setter functions for warm start
+  bool setWarmStart(
+    const std::vector<double> & primal_variables, const std::vector<double> & dual_variables);
+  bool setPrimalVariables(const std::vector<double> & primal_variables);
+  bool setDualVariables(const std::vector<double> & dual_variables);
+
   // Updates problem parameters while keeping solution in memory.
   //
   // Args:
@@ -161,6 +167,10 @@ public:
   void updateRhoInterval(const int rho_interval);
   void updateRho(const double rho);
   void updateAlpha(const double alpha);
+  void updateScaling(const int scaling);
+  void updatePolish(const bool polish);
+  void updatePolishRefinementIteration(const int polish_refine_iter);
+  void updateCheckTermination(const int check_termination);
 
   /// \brief Get the number of iteration taken to solve the problem
   inline int64_t getTakenIter() const { return static_cast<int64_t>(m_latest_work_info.iter); }

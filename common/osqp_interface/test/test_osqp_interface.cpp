@@ -131,5 +131,36 @@ TEST(TestOsqpInterface, BasicQp)
     result = osqp.optimize();
     check_result(result);
   }
+
+  // add warm startup
+  {
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result;
+    // Dummy initial problem with csc matrix
+    CSC_Matrix P_ini_csc = calCSCMatrixTrapezoidal(Eigen::MatrixXd::Zero(2, 2));
+    CSC_Matrix A_ini_csc = calCSCMatrix(Eigen::MatrixXd::Zero(4, 2));
+    std::vector<float64_t> q_ini(2, 0.0);
+    std::vector<float64_t> l_ini(4, 0.0);
+    std::vector<float64_t> u_ini(4, 0.0);
+    autoware::common::osqp::OSQPInterface osqp(P_ini_csc, A_ini_csc, q_ini, l_ini, u_ini, 1e-6);
+    osqp.optimize();
+
+    // Redefine problem before optimization
+    CSC_Matrix P_csc = calCSCMatrixTrapezoidal(P);
+    CSC_Matrix A_csc = calCSCMatrix(A);
+    osqp.initializeProblem(P_csc, A_csc, q, l, u);
+    result = osqp.optimize();
+    check_result(result);
+
+    osqp.updateCheckTermination(1);
+    const auto primal_val = std::get<0>(result);
+    const auto dual_val = std::get<1>(result);
+    for (size_t i = 0; i < primal_val.size(); ++i) {
+      std::cerr << primal_val.at(i) << std::endl;
+    }
+    osqp.setWarmStart(primal_val, dual_val);
+    result = osqp.optimize();
+    check_result(result);
+    EXPECT_EQ(osqp.getTakenIter(), 1);
+  }
 }
 }  // namespace

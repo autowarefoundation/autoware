@@ -208,6 +208,78 @@ void OSQPInterface::updateAlpha(const double alpha)
   }
 }
 
+void OSQPInterface::updateScaling(const int scaling) { m_settings->scaling = scaling; }
+
+void OSQPInterface::updatePolish(const bool polish)
+{
+  m_settings->polish = polish;
+  if (m_work_initialized) {
+    osqp_update_polish(m_work.get(), polish);
+  }
+}
+
+void OSQPInterface::updatePolishRefinementIteration(const int polish_refine_iter)
+{
+  if (polish_refine_iter < 0) {
+    std::cerr << "Polish refinement iterations must be positive" << std::endl;
+    return;
+  }
+
+  m_settings->polish_refine_iter = polish_refine_iter;
+  if (m_work_initialized) {
+    osqp_update_polish_refine_iter(m_work.get(), polish_refine_iter);
+  }
+}
+
+void OSQPInterface::updateCheckTermination(const int check_termination)
+{
+  if (check_termination < 0) {
+    std::cerr << "Check termination must be positive" << std::endl;
+    return;
+  }
+
+  m_settings->check_termination = check_termination;
+  if (m_work_initialized) {
+    osqp_update_check_termination(m_work.get(), check_termination);
+  }
+}
+
+bool OSQPInterface::setWarmStart(
+  const std::vector<double> & primal_variables, const std::vector<double> & dual_variables)
+{
+  return setPrimalVariables(primal_variables) && setDualVariables(dual_variables);
+}
+
+bool OSQPInterface::setPrimalVariables(const std::vector<double> & primal_variables)
+{
+  if (!m_work_initialized) {
+    return false;
+  }
+
+  const auto result = osqp_warm_start_x(m_work.get(), primal_variables.data());
+  if (result != 0) {
+    std::cerr << "Failed to set primal variables for warm start" << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool OSQPInterface::setDualVariables(const std::vector<double> & dual_variables)
+{
+  if (!m_work_initialized) {
+    return false;
+  }
+
+  const auto result = osqp_warm_start_y(m_work.get(), dual_variables.data());
+  if (result != 0) {
+    std::cerr << "Failed to set dual variables for warm start" << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
 int64_t OSQPInterface::initializeProblem(
   const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
   const std::vector<float64_t> & l, const std::vector<float64_t> & u)
