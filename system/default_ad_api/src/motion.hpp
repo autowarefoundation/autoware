@@ -43,14 +43,18 @@ private:
   Sub<control_interface::IsPaused> sub_is_paused_;
   Sub<control_interface::IsStartRequested> sub_is_start_requested_;
 
-  enum class State { Pausing, Paused, Resuming, Resumed, Moving };
+  enum class State { Unknown, Pausing, Paused, Starting, Resuming, Resumed, Moving };
   State state_;
+  std::optional<bool> is_paused_;
+  std::optional<bool> is_start_requested_;
 
   double stop_check_duration_;
   bool require_accept_start_;
-  bool waiting_for_set_pause_;
+  bool is_calling_set_pause_;
 
-  void change_state(const State state, const bool init = false);
+  void update_state();
+  void change_state(const State state);
+  void change_pause(bool pause);
   void on_timer();
   void on_is_paused(const control_interface::IsPaused::Message::ConstSharedPtr msg);
   void on_is_start_requested(
