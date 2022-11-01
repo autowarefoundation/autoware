@@ -28,16 +28,21 @@
 
 namespace
 {
-template <typename T>
-void update_param(
-  const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
+template <class T>
+bool update_param(
+  const std::vector<rclcpp::Parameter> & params, const std::string & name, T & value)
 {
-  auto it = std::find_if(
-    parameters.cbegin(), parameters.cend(),
-    [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
-  if (it != parameters.cend()) {
-    value = it->template get_value<T>();
+  const auto itr = std::find_if(
+    params.cbegin(), params.cend(),
+    [&name](const rclcpp::Parameter & p) { return p.get_name() == name; });
+
+  // Not found
+  if (itr == params.cend()) {
+    return false;
   }
+
+  value = itr->template get_value<T>();
+  return true;
 }
 }  // namespace
 
@@ -229,14 +234,23 @@ rcl_interfaces::msg::SetParametersResult ObstacleCollisionCheckerNode::paramCall
   result.successful = true;
   result.reason = "success";
 
-  Param param;
   try {
-    update_param(parameters, "delay_time", param.delay_time);
-    update_param(parameters, "footprint_margin", param.footprint_margin);
-    update_param(parameters, "max_deceleration", param.max_deceleration);
-    update_param(parameters, "resample_interval", param.resample_interval);
-    update_param(parameters, "search_radius", param.search_radius);
-    param_ = param;
+    // Node Parameter
+    {
+      auto & p = node_param_;
+
+      // Update params
+      update_param(parameters, "update_rate", p.update_rate);
+    }
+
+    auto & p = param_;
+
+    update_param(parameters, "delay_time", p.delay_time);
+    update_param(parameters, "footprint_margin", p.footprint_margin);
+    update_param(parameters, "max_deceleration", p.max_deceleration);
+    update_param(parameters, "resample_interval", p.resample_interval);
+    update_param(parameters, "search_radius", p.search_radius);
+
     if (obstacle_collision_checker_) {
       obstacle_collision_checker_->setParam(param_);
     }
