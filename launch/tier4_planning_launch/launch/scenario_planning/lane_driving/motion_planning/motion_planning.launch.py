@@ -87,6 +87,40 @@ def launch_setup(context, *args, **kwargs):
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
 
+    # obstacle velocity limiter
+    obstacle_velocity_limiter_param_path = os.path.join(
+        LaunchConfiguration("tier4_planning_launch_param_path").perform(context),
+        "scenario_planning",
+        "lane_driving",
+        "motion_planning",
+        "obstacle_velocity_limiter",
+        "obstacle_velocity_limiter.param.yaml",
+    )
+    with open(obstacle_velocity_limiter_param_path, "r") as f:
+        obstacle_velocity_limiter_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    obstacle_velocity_limiter_component = ComposableNode(
+        package="obstacle_velocity_limiter",
+        plugin="obstacle_velocity_limiter::ObstacleVelocityLimiterNode",
+        name="obstacle_velocity_limiter",
+        namespace="",
+        remappings=[
+            ("~/input/trajectory", "obstacle_avoidance_planner/trajectory"),
+            ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/dynamic_obstacles", "/perception/object_recognition/objects"),
+            ("~/input/occupancy_grid", "/perception/occupancy_grid_map/map"),
+            ("~/input/obstacle_pointcloud", "/perception/obstacle_segmentation/pointcloud"),
+            ("~/input/map", "/map/vector_map"),
+            ("~/output/debug_markers", "debug_markers"),
+            ("~/output/trajectory", "obstacle_velocity_limiter/trajectory"),
+        ],
+        parameters=[
+            obstacle_velocity_limiter_param,
+            vehicle_info_param,
+            {"obstacles.dynamic_source": "static_only"},
+        ],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
     # surround obstacle checker
     surround_obstacle_checker_param_path = os.path.join(
         LaunchConfiguration("tier4_planning_launch_param_path").perform(context),
@@ -167,7 +201,7 @@ def launch_setup(context, *args, **kwargs):
             ),
             ("~/input/objects", "/perception/object_recognition/objects"),
             ("~/input/odometry", "/localization/kinematic_state"),
-            ("~/input/trajectory", "obstacle_avoidance_planner/trajectory"),
+            ("~/input/trajectory", "obstacle_velocity_limiter/trajectory"),
         ],
         parameters=[
             nearest_search_param,
@@ -197,7 +231,7 @@ def launch_setup(context, *args, **kwargs):
         name="obstacle_cruise_planner",
         namespace="",
         remappings=[
-            ("~/input/trajectory", "obstacle_avoidance_planner/trajectory"),
+            ("~/input/trajectory", "obstacle_velocity_limiter/trajectory"),
             ("~/input/odometry", "/localization/kinematic_state"),
             ("~/input/acceleration", "/localization/acceleration"),
             ("~/input/objects", "/perception/object_recognition/objects"),
@@ -220,7 +254,7 @@ def launch_setup(context, *args, **kwargs):
         name="obstacle_cruise_planner_relay",
         namespace="",
         parameters=[
-            {"input_topic": "obstacle_avoidance_planner/trajectory"},
+            {"input_topic": "obstacle_velocity_limiter/trajectory"},
             {"output_topic": "/planning/scenario_planning/lane_driving/trajectory"},
             {"type": "autoware_auto_planning_msgs/msg/Trajectory"},
         ],
@@ -234,6 +268,7 @@ def launch_setup(context, *args, **kwargs):
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=[
             obstacle_avoidance_planner_component,
+            obstacle_velocity_limiter_component,
         ],
     )
 

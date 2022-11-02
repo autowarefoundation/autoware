@@ -35,8 +35,8 @@ using LineString2d = boost::geometry::model::linestring<Point2d>;
 using LinearRing2d = boost::geometry::model::ring<Point2d>;
 using Polygon2d = boost::geometry::model::polygon<Point2d>;
 using MultiPoint2d = boost::geometry::model::multi_point<Point2d>;
-using MultiLineString2d = boost::geometry::model::multi_linestring<Point2d>;
-using MultiPolygon2d = boost::geometry::model::multi_polygon<Point2d>;
+using MultiLineString2d = boost::geometry::model::multi_linestring<LineString2d>;
+using MultiPolygon2d = boost::geometry::model::multi_polygon<Polygon2d>;
 
 // 3D
 struct Point3d;
@@ -46,8 +46,8 @@ using LineString3d = boost::geometry::model::linestring<Point3d>;
 using LinearRing3d = boost::geometry::model::ring<Point3d>;
 using Polygon3d = boost::geometry::model::polygon<Point3d>;
 using MultiPoint3d = boost::geometry::model::multi_point<Point3d>;
-using MultiLineString3d = boost::geometry::model::multi_linestring<Point3d>;
-using MultiPolygon3d = boost::geometry::model::multi_polygon<Point3d>;
+using MultiLineString3d = boost::geometry::model::multi_linestring<LineString3d>;
+using MultiPolygon3d = boost::geometry::model::multi_polygon<Polygon3d>;
 
 struct Point2d : public Eigen::Vector2d
 {

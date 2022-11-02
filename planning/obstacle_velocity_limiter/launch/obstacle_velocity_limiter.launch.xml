@@ -1,0 +1,27 @@
+<launch>
+  <!-- input/output -->
+  <arg name="input_trajectory" default="/planning/scenario_planning/scenario_selector/trajectory"/>
+  <arg name="input_dynamic_obstacles" default="/perception/object_recognition/objects"/>
+  <arg name="input_occupancy_grid" default="/perception/occupancy_grid_map/map"/>
+  <arg name="input_obstacle_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="input_odometry" default="/localization/kinematic_state"/>
+  <arg name="input_map" default="/map/vector_map"/>
+  <arg name="output_trajectory" default="~/output/trajectory"/>
+  <arg name="output_debug_markers" default="~/output/debug_markers"/>
+
+  <arg name="param_path" default="$(find-pkg-share obstacle_velocity_limiter)/config/default_obstacle_velocity_limiter.param.yaml"/>
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
+
+  <node pkg="obstacle_velocity_limiter" exec="obstacle_velocity_limiter" name="obstacle_velocity_limiter" output="screen">
+    <param from="$(var param_path)"/>
+    <param from="$(var vehicle_info_param_file)"/>
+    <remap from="~/input/occupancy_grid" to="$(var input_occupancy_grid)"/>
+    <remap from="~/input/obstacle_pointcloud" to="$(var input_obstacle_pointcloud)"/>
+    <remap from="~/input/trajectory" to="$(var input_trajectory)"/>
+    <remap from="~/input/dynamic_obstacles" to="$(var input_dynamic_obstacles)"/>
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/map" to="$(var input_map)"/>
+    <remap from="~/output/trajectory" to="$(var output_trajectory)"/>
+    <remap from="~/output/debug_markers" to="$(var output_debug_markers)"/>
+  </node>
+</launch>
