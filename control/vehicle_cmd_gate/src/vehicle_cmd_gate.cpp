@@ -412,7 +412,8 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
   // Check pause
   pause_->update(filtered_commands.control);
   if (pause_->is_paused()) {
-    filtered_commands.control = createStopControlCmd();
+    filtered_commands.control.longitudinal.speed = 0.0;
+    filtered_commands.control.longitudinal.acceleration = stop_hold_acceleration_;
   }
 
   // Apply limit filtering
