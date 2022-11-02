@@ -98,3 +98,72 @@ TEST(object_classification, test_getHighestProbClassification)
     EXPECT_NEAR(classification.probability, 0.8, epsilon);
   }
 }
+
+TEST(object_classification, test_fromString)
+{
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using perception_utils::toLabel;
+  using perception_utils::toObjectClassification;
+  using perception_utils::toObjectClassifications;
+
+  // toLabel
+  {
+    EXPECT_EQ(toLabel("UNKNOWN"), ObjectClassification::UNKNOWN);
+    EXPECT_EQ(toLabel("CAR"), ObjectClassification::CAR);
+    EXPECT_EQ(toLabel("TRUCK"), ObjectClassification::TRUCK);
+    EXPECT_EQ(toLabel("BUS"), ObjectClassification::BUS);
+    EXPECT_EQ(toLabel("TRAILER"), ObjectClassification::TRAILER);
+    EXPECT_EQ(toLabel("MOTORCYCLE"), ObjectClassification::MOTORCYCLE);
+    EXPECT_EQ(toLabel("BICYCLE"), ObjectClassification::BICYCLE);
+    EXPECT_EQ(toLabel("PEDESTRIAN"), ObjectClassification::PEDESTRIAN);
+    EXPECT_THROW(toLabel(""), std::runtime_error);
+  }
+
+  // Classification
+  {
+    auto classification = toObjectClassification("CAR", 0.7);
+    EXPECT_EQ(classification.label, ObjectClassification::CAR);
+    EXPECT_NEAR(classification.probability, 0.7, epsilon);
+  }
+  // Classifications
+  {
+    auto classifications = toObjectClassifications("CAR", 0.7);
+    EXPECT_EQ(classifications.at(0).label, ObjectClassification::CAR);
+    EXPECT_NEAR(classifications.at(0).probability, 0.7, epsilon);
+  }
+}
+
+TEST(object_classification, test_convertLabelToString)
+{
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using perception_utils::convertLabelToString;
+
+  // from label
+  {
+    EXPECT_EQ(convertLabelToString(ObjectClassification::UNKNOWN), "UNKNOWN");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::CAR), "CAR");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::TRUCK), "TRUCK");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::BUS), "BUS");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::TRAILER), "TRAILER");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::MOTORCYCLE), "MOTORCYCLE");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::BICYCLE), "BICYCLE");
+    EXPECT_EQ(convertLabelToString(ObjectClassification::PEDESTRIAN), "PEDESTRIAN");
+  }
+
+  // from ObjectClassification
+  {
+    auto classification = createObjectClassification(ObjectClassification::CAR, 0.8);
+
+    EXPECT_EQ(convertLabelToString(classification), "CAR");
+  }
+
+  // from ObjectClassifications
+  {
+    std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classifications;
+    classifications.push_back(createObjectClassification(ObjectClassification::CAR, 0.5));
+    classifications.push_back(createObjectClassification(ObjectClassification::TRUCK, 0.8));
+    classifications.push_back(createObjectClassification(ObjectClassification::BUS, 0.7));
+
+    EXPECT_EQ(convertLabelToString(classifications), "TRUCK");
+  }
+}

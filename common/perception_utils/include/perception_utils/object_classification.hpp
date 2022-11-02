@@ -17,6 +17,7 @@
 
 #include "autoware_auto_perception_msgs/msg/object_classification.hpp"
 
+#include <string>
 #include <vector>
 
 namespace perception_utils
@@ -92,6 +93,82 @@ inline bool isLargeVehicle(const std::vector<ObjectClassification> & object_clas
   auto highest_prob_label = getHighestProbLabel(object_classifications);
   return isLargeVehicle(highest_prob_label);
 }
+
+inline uint8_t toLabel(const std::string & class_name)
+{
+  if (class_name == "UNKNOWN") {
+    return ObjectClassification::UNKNOWN;
+  } else if (class_name == "CAR") {
+    return ObjectClassification::CAR;
+  } else if (class_name == "TRUCK") {
+    return ObjectClassification::TRUCK;
+  } else if (class_name == "BUS") {
+    return ObjectClassification::BUS;
+  } else if (class_name == "TRAILER") {
+    return ObjectClassification::TRAILER;
+  } else if (class_name == "MOTORCYCLE") {
+    return ObjectClassification::MOTORCYCLE;
+  } else if (class_name == "BICYCLE") {
+    return ObjectClassification::BICYCLE;
+  } else if (class_name == "PEDESTRIAN") {
+    return ObjectClassification::PEDESTRIAN;
+  } else {
+    throw std::runtime_error("Invalid Classification label.");
+  }
+}
+
+inline ObjectClassification toObjectClassification(
+  const std::string & class_name, float probability)
+{
+  ObjectClassification classification;
+  classification.label = toLabel(class_name);
+  classification.probability = probability;
+  return classification;
+}
+
+inline std::vector<ObjectClassification> toObjectClassifications(
+  const std::string & class_name, float probability)
+{
+  std::vector<ObjectClassification> classifications;
+  classifications.push_back(toObjectClassification(class_name, probability));
+  return classifications;
+}
+
+inline std::string convertLabelToString(const uint8_t label)
+{
+  if (label == ObjectClassification::UNKNOWN) {
+    return "UNKNOWN";
+  } else if (label == ObjectClassification::CAR) {
+    return "CAR";
+  } else if (label == ObjectClassification::TRUCK) {
+    return "TRUCK";
+  } else if (label == ObjectClassification::BUS) {
+    return "BUS";
+  } else if (label == ObjectClassification::TRAILER) {
+    return "TRAILER";
+  } else if (label == ObjectClassification::MOTORCYCLE) {
+    return "MOTORCYCLE";
+  } else if (label == ObjectClassification::BICYCLE) {
+    return "BICYCLE";
+  } else if (label == ObjectClassification::PEDESTRIAN) {
+    return "PEDESTRIAN";
+  } else {
+    return "UNKNOWN";
+  }
+}
+
+inline std::string convertLabelToString(const ObjectClassification object_classification)
+{
+  return convertLabelToString(object_classification.label);
+}
+
+inline std::string convertLabelToString(
+  const std::vector<ObjectClassification> object_classifications)
+{
+  auto highest_prob_label = getHighestProbLabel(object_classifications);
+  return convertLabelToString(highest_prob_label);
+}
+
 }  // namespace perception_utils
 
 #endif  // PERCEPTION_UTILS__OBJECT_CLASSIFICATION_HPP_
