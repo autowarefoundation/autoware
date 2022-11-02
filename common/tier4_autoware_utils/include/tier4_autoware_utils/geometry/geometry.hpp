@@ -23,6 +23,7 @@
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 #include "tier4_autoware_utils/math/constants.hpp"
 #include "tier4_autoware_utils/math/normalization.hpp"
+#include "tier4_autoware_utils/ros/msg_covariance.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -34,6 +35,9 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/twist_with_covariance.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 
 #include <tf2/utils.h>
 
@@ -731,6 +735,38 @@ geometry_msgs::msg::Pose calcInterpolatedPose(
 
   return output_pose;
 }
+
+inline geometry_msgs::msg::Vector3 createVector3(const double x, double y, double z)
+{
+  return geometry_msgs::build<geometry_msgs::msg::Vector3>().x(x).y(y).z(z);
+}
+
+inline geometry_msgs::msg::Twist createTwist(
+  const geometry_msgs::msg::Vector3 & velocity, geometry_msgs::msg::Vector3 & angular)
+{
+  return geometry_msgs::build<geometry_msgs::msg::Twist>().linear(velocity).angular(angular);
+}
+
+inline double calcNorm(const geometry_msgs::msg::Vector3 & v) { return std::hypot(v.x, v.y, v.z); }
+
+/**
+ * @brief Judge whether twist covariance is valid.
+ *
+ * @param twist_with_covariance source twist with covariance
+ * @return If all element of covariance is 0, return false.
+ */
+//
+inline bool isTwistCovarianceValid(
+  const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance)
+{
+  for (const auto & c : twist_with_covariance.covariance) {
+    if (c != 0.0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace tier4_autoware_utils
 
 #endif  // TIER4_AUTOWARE_UTILS__GEOMETRY__GEOMETRY_HPP_

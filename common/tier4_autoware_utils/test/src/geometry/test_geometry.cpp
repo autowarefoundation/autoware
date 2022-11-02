@@ -1637,3 +1637,55 @@ TEST(geometry, calcInterpolatedPose_with_Spherical_Interpolation)
     }
   }
 }
+
+TEST(geometry, getTwist)
+{
+  using tier4_autoware_utils::createVector3;
+
+  geometry_msgs::msg::Vector3 velocity = createVector3(1.0, 2.0, 3.0);
+  geometry_msgs::msg::Vector3 angular = createVector3(0.1, 0.2, 0.3);
+
+  geometry_msgs::msg::Twist twist = geometry_msgs::build<geometry_msgs::msg::Twist>()
+                                      .linear(createVector3(1.0, 2.0, 3.0))
+                                      .angular(createVector3(0.1, 0.2, 0.3));
+
+  geometry_msgs::msg::TwistWithCovariance twist_with_covariance;
+  twist_with_covariance.twist = geometry_msgs::build<geometry_msgs::msg::Twist>()
+                                  .linear(createVector3(1.0, 2.0, 3.0))
+                                  .angular(createVector3(0.1, 0.2, 0.3));
+
+  // getTwist
+  {
+    auto t_out = tier4_autoware_utils::createTwist(velocity, angular);
+    EXPECT_DOUBLE_EQ(t_out.linear.x, twist.linear.x);
+    EXPECT_DOUBLE_EQ(t_out.linear.y, twist.linear.y);
+    EXPECT_DOUBLE_EQ(t_out.linear.z, twist.linear.z);
+    EXPECT_DOUBLE_EQ(t_out.angular.x, twist.angular.x);
+    EXPECT_DOUBLE_EQ(t_out.angular.y, twist.angular.y);
+    EXPECT_DOUBLE_EQ(t_out.angular.z, twist.angular.z);
+  }
+}
+
+TEST(geometry, getTwistNorm)
+{
+  using tier4_autoware_utils::createVector3;
+  geometry_msgs::msg::TwistWithCovariance twist_with_covariance;
+  twist_with_covariance.twist = geometry_msgs::build<geometry_msgs::msg::Twist>()
+                                  .linear(createVector3(3.0, 4.0, 0.0))
+                                  .angular(createVector3(0.1, 0.2, 0.3));
+  EXPECT_NEAR(tier4_autoware_utils::calcNorm(twist_with_covariance.twist.linear), 5.0, epsilon);
+}
+
+TEST(geometry, isTwistCovarianceValid)
+{
+  using tier4_autoware_utils::createVector3;
+  geometry_msgs::msg::TwistWithCovariance twist_with_covariance;
+  twist_with_covariance.twist = geometry_msgs::build<geometry_msgs::msg::Twist>()
+                                  .linear(createVector3(1.0, 2.0, 3.0))
+                                  .angular(createVector3(0.1, 0.2, 0.3));
+
+  EXPECT_EQ(tier4_autoware_utils::isTwistCovarianceValid(twist_with_covariance), false);
+
+  twist_with_covariance.covariance.at(0) = 1.0;
+  EXPECT_EQ(tier4_autoware_utils::isTwistCovarianceValid(twist_with_covariance), true);
+}
