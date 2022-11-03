@@ -1001,7 +1001,7 @@ bool ObstacleAvoidancePlanner::checkReplan(const PlannerData & planner_data)
     return true;
   }
 
-  if (isPathGoalChanged(planner_data)) {
+  if (isPathGoalChanged(p)) {
     RCLCPP_INFO(get_logger(), "Replan with resetting optimization since path goal was changed.");
     resetPrevOptimization();
     return true;
@@ -1077,7 +1077,7 @@ bool ObstacleAvoidancePlanner::isPathGoalChanged(const PlannerData & planner_dat
 {
   const auto & p = planner_data;
 
-  if (prev_path_points_ptr_) {
+  if (!prev_path_points_ptr_) {
     return false;
   }
 
