@@ -1066,7 +1066,7 @@ inline boost::optional<size_t> insertStopPoint(
   }
 
   for (size_t i = *stop_idx; i < points_with_twist.size(); ++i) {
-    points_with_twist.at(i).longitudinal_velocity_mps = 0.0;
+    tier4_autoware_utils::setLongitudinalVelocity(0.0, points_with_twist.at(i));
   }
 
   return stop_idx;
@@ -1099,7 +1099,7 @@ inline boost::optional<size_t> insertStopPoint(
   }
 
   for (size_t i = *stop_idx; i < points_with_twist.size(); ++i) {
-    points_with_twist.at(i).longitudinal_velocity_mps = 0.0;
+    tier4_autoware_utils::setLongitudinalVelocity(0.0, points_with_twist.at(i));
   }
 
   return stop_idx;
