@@ -95,6 +95,23 @@ TEST(interpolation_utils, validateKeys)
 
   const std::vector<double> back_out_query_keys{0.0, 1.0, 2.0, 4.0};
   EXPECT_THROW(validateKeys(base_keys, back_out_query_keys), std::invalid_argument);
+
+  {  // validated key check in normal case
+    const std::vector<double> normal_query_keys{0.5, 1.5, 3.0};
+    const auto validated_query_keys = validateKeys(base_keys, normal_query_keys);
+    for (size_t i = 0; i < normal_query_keys.size(); ++i) {
+      EXPECT_EQ(normal_query_keys.at(i), validated_query_keys.at(i));
+    }
+  }
+
+  {  // validated key check in case slightly out of range
+    constexpr double slightly_out_of_range_epsilon = 1e-6;
+    const std::vector<double> slightly_out_of_range__query_keys{
+      0.0 - slightly_out_of_range_epsilon, 3.0 + slightly_out_of_range_epsilon};
+    const auto validated_query_keys = validateKeys(base_keys, slightly_out_of_range__query_keys);
+    EXPECT_NEAR(validated_query_keys.at(0), 0.0, 1e-10);
+    EXPECT_NEAR(validated_query_keys.at(1), 3.0, 1e-10);
+  }
 }
 
 TEST(interpolation_utils, validateKeysAndValues)

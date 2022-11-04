@@ -15,6 +15,7 @@
 #ifndef INTERPOLATION__INTERPOLATION_UTILS_HPP_
 #define INTERPOLATION__INTERPOLATION_UTILS_HPP_
 
+#include <algorithm>
 #include <array>
 #include <stdexcept>
 #include <vector>
@@ -51,7 +52,7 @@ inline bool isNotDecreasing(const std::vector<double> & x)
   return true;
 }
 
-inline void validateKeys(
+inline std::vector<double> validateKeys(
   const std::vector<double> & base_keys, const std::vector<double> & query_keys)
 {
   // when vectors are empty
@@ -71,9 +72,20 @@ inline void validateKeys(
   }
 
   // when query_keys is out of base_keys (This function does not allow exterior division.)
-  if (query_keys.front() < base_keys.front() || base_keys.back() < query_keys.back()) {
+  constexpr double epsilon = 1e-3;
+  if (
+    query_keys.front() < base_keys.front() - epsilon ||
+    base_keys.back() + epsilon < query_keys.back()) {
     throw std::invalid_argument("query_keys is out of base_keys");
   }
+
+  // NOTE: Due to calculation error of double, a query key may be slightly out of base keys.
+  //       Therefore, query keys are cropped here.
+  auto validated_query_keys = query_keys;
+  validated_query_keys.front() = std::max(validated_query_keys.front(), base_keys.front());
+  validated_query_keys.back() = std::min(validated_query_keys.back(), base_keys.back());
+
+  return validated_query_keys;
 }
 
 template <class T>

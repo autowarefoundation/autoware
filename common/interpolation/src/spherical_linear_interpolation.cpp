@@ -34,13 +34,13 @@ std::vector<geometry_msgs::msg::Quaternion> slerp(
   const std::vector<double> & query_keys)
 {
   // throw exception for invalid arguments
-  interpolation_utils::validateKeys(base_keys, query_keys);
+  const auto validated_query_keys = interpolation_utils::validateKeys(base_keys, query_keys);
   interpolation_utils::validateKeysAndValues(base_keys, base_values);
 
   // calculate linear interpolation
   std::vector<geometry_msgs::msg::Quaternion> query_values;
   size_t key_index = 0;
-  for (const auto query_key : query_keys) {
+  for (const auto query_key : validated_query_keys) {
     while (base_keys.at(key_index + 1) < query_key) {
       ++key_index;
     }
