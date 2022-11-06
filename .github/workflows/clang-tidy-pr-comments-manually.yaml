@@ -1,15 +1,13 @@
-name: clang-tidy-pr-comments
+name: clang-tidy-pr-comments-manually
 
 on:
-  workflow_run:
-    workflows:
-      - build-and-test-differential
-    types:
-      - completed
-
+  workflow_dispatch:
+    inputs:
+      workflow_run_id_or_url:
+        description: The target workflow run ID or URL of the build-and-test-differential workflow
+        required: true
 jobs:
-  clang-tidy-pr-comments:
-    if: ${{ github.event.workflow_run.event == 'pull_request' && contains(fromJson('["success", "failure"]'), github.event.workflow_run.conclusion) }}
+  clang-tidy-pr-comments-manually:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -17,7 +15,8 @@ jobs:
 
       - name: Download analysis results
         run: |
-          gh run download ${{ github.event.workflow_run.id }} -D /tmp || true
+          workflow_run_id=$(echo "${{ inputs.workflow_run_id_or_url }}" | sed -e "s|.*runs/||" -e "s|/jobs.*||")
+          gh run download "$workflow_run_id" -D /tmp || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
