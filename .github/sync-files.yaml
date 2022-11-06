@@ -83,6 +83,8 @@
     - source: .github/workflows/check-build-depends.yaml
       pre-commands: |
         sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
+    - source: .github/workflows/clang-tidy-pr-comments.yaml
+    - source: .github/workflows/clang-tidy-pr-comments-manually.yaml
     - source: .github/workflows/update-codeowners-from-packages.yaml
     - source: codecov.yaml
 
