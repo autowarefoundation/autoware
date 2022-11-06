@@ -411,9 +411,9 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
   const double left_offset = std::max(
     *itr.second + (*itr.first > threshold ? margin : 0.0),
     parameters_.drivable_area_left_bound_offset);
-  const double right_offset = std::min(
+  const double right_offset = -std::min(
     *itr.first - (*itr.first < -threshold ? margin : 0.0),
-    parameters_.drivable_area_right_bound_offset);
+    -parameters_.drivable_area_right_bound_offset);
 
   const auto extended_lanelets = util::expandLanelets(current_lanelets_, left_offset, right_offset);
 
