@@ -71,7 +71,7 @@ This module is activated when there is traffic light in ego lane.
 | `tl_state_timeout`          | double | [s] time out for detected traffic light result. |
 | `external_tl_state_timeout` | double | [s] time out for external traffic input         |
 | `yellow_lamp_period`        | double | [s] time for yellow lamp                        |
-| `enable_pass_judge`         | bool   | [-] weather to use pass judge                   |
+| `enable_pass_judge`         | bool   | [-] whether to use pass judge                   |
 
 #### Flowchart
 
