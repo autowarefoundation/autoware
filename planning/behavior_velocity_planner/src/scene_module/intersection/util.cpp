@@ -79,7 +79,7 @@ std::optional<std::pair<size_t, size_t>> findLaneIdInterval(
 {
   bool found = false;
   size_t start = 0;
-  size_t end = p.points.size() - 1;
+  size_t end = p.points.size() > 0 ? p.points.size() - 1 : 0;
   for (size_t i = 0; i < p.points.size(); ++i) {
     if (hasLaneId(p.points.at(i), lane_id)) {
       if (!found) {
@@ -93,7 +93,7 @@ std::optional<std::pair<size_t, size_t>> findLaneIdInterval(
       break;
     }
   }
-  start = std::max<size_t>(0, start - 1);  // the idx of last point before the interval
+  start = start > 0 ? start - 1 : 0;  // the idx of last point before the interval
   return found ? std::make_optional(std::make_pair(start, end)) : std::nullopt;
 }
 
