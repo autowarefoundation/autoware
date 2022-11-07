@@ -50,7 +50,9 @@ namespace pure_pursuit
 namespace planning_utils
 {
 constexpr double ERROR = 1e-6;
-
+double calcArcLengthFromWayPoint(
+  const autoware_auto_planning_msgs::msg::Trajectory & input_path, const size_t src_idx,
+  const size_t dst_idx);
 double calcCurvature(
   const geometry_msgs::msg::Point & target, const geometry_msgs::msg::Pose & curr_pose);
 double calcDistance2D(const geometry_msgs::msg::Point & p, const geometry_msgs::msg::Point & q);

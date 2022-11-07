@@ -7,6 +7,7 @@
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <license>Apache License 2.0</license>
 
+  <author email="berkay@leodrive.ai">Berkay Karaman</author>
   <author email="kenji.miyake@tier4.jp">Kenji Miyake</author>
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
 
@@ -16,7 +17,12 @@
 
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
+  <depend>boost</depend>
   <depend>geometry_msgs</depend>
+  <depend>libboost-dev</depend>
+  <depend>motion_common</depend>
+  <depend>motion_utils</depend>
+  <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>

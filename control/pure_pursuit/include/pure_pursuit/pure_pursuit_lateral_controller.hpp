@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2020-2022 Tier IV, Inc., Leo Drive Teknoloji A.Ş.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "trajectory_follower/lateral_controller_base.hpp"
 
+#include <motion_utils/resample/resample.hpp>
+#include <motion_utils/trajectory/tmp_conversion.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
+
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -53,9 +57,18 @@ using autoware::motion::control::trajectory_follower::InputData;
 using autoware::motion::control::trajectory_follower::LateralControllerBase;
 using autoware::motion::control::trajectory_follower::LateralOutput;
 using autoware_auto_control_msgs::msg::AckermannLateralCommand;
+using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 
 namespace pure_pursuit
 {
+
+struct PpOutput
+{
+  double curvature;
+  double velocity;
+};
+
 struct Param
 {
   // Global Parameters
@@ -67,6 +80,9 @@ struct Param
   double min_lookahead_distance;
   double reverse_min_lookahead_distance;  // min_lookahead_distance in reverse gear
   double converged_steer_rad_;
+  double prediction_ds;
+  double prediction_distance_length;  // Total distance of prediction trajectory
+  double resampling_ds;
 };
 
 struct DebugData
@@ -82,15 +98,24 @@ public:
 private:
   rclcpp::Node::SharedPtr node_;
   tier4_autoware_utils::SelfPoseListener self_pose_listener_;
-
+  boost::optional<std::vector<TrajectoryPoint>> output_tp_array_;
+  autoware_auto_planning_msgs::msg::Trajectory::SharedPtr trajectory_resampled_;
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory_;
   nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_;
   autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr current_steering_;
+  boost::optional<AckermannLateralCommand> prev_cmd_;
+
+  // Predicted Trajectory publish
+  rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr
+    pub_predicted_trajectory_;
 
   bool isDataReady();
 
   void onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
+
   void onCurrentOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+
+  void setResampledTrajectory();
 
   // TF
   tf2_ros::Buffer tf_buffer_;
@@ -106,6 +131,7 @@ private:
    * @brief compute control command for path follow with a constant control period
    */
   boost::optional<LateralOutput> run() override;
+
   AckermannLateralCommand generateCtrlCmdMsg(const double target_curvature);
 
   /**
@@ -114,13 +140,30 @@ private:
   void setInputData(InputData const & input_data) override;
 
   // Parameter
-  Param param_;
+  Param param_{};
 
   // Algorithm
   std::unique_ptr<PurePursuit> pure_pursuit_;
 
-  boost::optional<double> calcTargetCurvature();
-  boost::optional<autoware_auto_planning_msgs::msg::TrajectoryPoint> calcTargetPoint() const;
+  boost::optional<PpOutput> calcTargetCurvature(
+    bool is_control_output, geometry_msgs::msg::Pose pose);
+
+  boost::optional<autoware_auto_planning_msgs::msg::TrajectoryPoint> calcTargetPoint(
+    geometry_msgs::msg::Pose pose) const;
+
+  /**
+   * @brief It takes current pose, control command, and delta distance. Then it calculates next pose
+   * of vehicle.
+   */
+
+  TrajectoryPoint calcNextPose(
+    const double ds, TrajectoryPoint & point, AckermannLateralCommand cmd) const;
+
+  boost::optional<Trajectory> generatePredictedTrajectory();
+
+  boost::optional<AckermannLateralCommand> generateOutputControlCmd();
+
+  bool calcIsSteerConverged(const AckermannLateralCommand & cmd);
 
   // Debug
   mutable DebugData debug_data_;
