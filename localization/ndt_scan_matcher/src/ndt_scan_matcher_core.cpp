@@ -117,6 +117,8 @@ NDTScanMatcher::NDTScanMatcher()
   ndt_params_.search_method = static_cast<pclomp::NeighborSearchMethod>(search_method);
   ndt_params_.num_threads = this->declare_parameter<int>("num_threads");
   ndt_params_.num_threads = std::max(ndt_params_.num_threads, 1);
+  ndt_params_.regularization_scale_factor =
+    this->declare_parameter<float>("regularization_scale_factor");
 
   ndt_ptr_->setTransformationEpsilon(ndt_params_.trans_epsilon);
   ndt_ptr_->setStepSize(ndt_params_.step_size);
