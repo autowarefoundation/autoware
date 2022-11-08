@@ -102,6 +102,14 @@ private:
   // control state
   enum class ControlState { DRIVE = 0, STOPPING, STOPPED, EMERGENCY };
   ControlState m_control_state{ControlState::STOPPED};
+  std::string toStr(const ControlState s)
+  {
+    if (s == ControlState::DRIVE) return "DRIVE";
+    if (s == ControlState::STOPPING) return "STOPPING";
+    if (s == ControlState::STOPPED) return "STOPPED";
+    if (s == ControlState::EMERGENCY) return "EMERGENCY";
+    return "UNDEFINED";
+  };
 
   // control period
   float64_t m_longitudinal_ctrl_period;
@@ -255,21 +263,17 @@ private:
 
   /**
    * @brief update control state according to the current situation
-   * @param [in] current_control_state current control state
    * @param [in] control_data control data
    */
-  ControlState updateControlState(
-    const ControlState current_control_state, const ControlData & control_data);
+  void updateControlState(const ControlData & control_data);
 
   /**
    * @brief calculate control command based on the current control state
-   * @param [in] current_control_state current control state
    * @param [in] current_pose current ego pose
    * @param [in] control_data control data
    */
   Motion calcCtrlCmd(
-    const ControlState & current_control_state, const geometry_msgs::msg::Pose & current_pose,
-    const ControlData & control_data);
+    const geometry_msgs::msg::Pose & current_pose, const ControlData & control_data);
 
   /**
    * @brief publish control command
