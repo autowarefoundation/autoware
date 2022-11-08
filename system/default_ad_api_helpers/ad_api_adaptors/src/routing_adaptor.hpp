@@ -35,11 +35,20 @@ private:
   using PoseStamped = geometry_msgs::msg::PoseStamped;
   using SetRoutePoints = autoware_ad_api::routing::SetRoutePoints;
   using ClearRoute = autoware_ad_api::routing::ClearRoute;
-  SetRoutePoints::Service::Request::SharedPtr route_points_;
+  using RouteState = autoware_ad_api::routing::RouteState;
   component_interface_utils::Client<SetRoutePoints>::SharedPtr cli_route_;
   component_interface_utils::Client<ClearRoute>::SharedPtr cli_clear_;
+  component_interface_utils::Subscription<RouteState>::SharedPtr sub_state_;
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_goal_;
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_waypoint_;
+  rclcpp::TimerBase::SharedPtr timer_;
+
+  bool calling_service_ = false;
+  int request_timing_control_ = 0;
+  SetRoutePoints::Service::Request::SharedPtr route_;
+  RouteState::Message::_state_type state_;
+
+  void on_timer();
   void on_goal(const PoseStamped::ConstSharedPtr pose);
   void on_waypoint(const PoseStamped::ConstSharedPtr pose);
 };
