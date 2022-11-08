@@ -14,7 +14,6 @@
 
 #include "trajectory_follower/longitudinal_controller_utils.hpp"
 
-#include "motion_common/motion_common.hpp"
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "tf2/LinearMath/Quaternion.h"
 
@@ -66,8 +65,7 @@ float64_t calcStopDistance(
   const Pose & current_pose, const Trajectory & traj, const float64_t max_dist,
   const float64_t max_yaw)
 {
-  const std::experimental::optional<size_t> stop_idx_opt =
-    trajectory_common::searchZeroVelocityIndex(traj.points);
+  const auto stop_idx_opt = motion_utils::searchZeroVelocityIndex(traj.points);
 
   const size_t end_idx = stop_idx_opt ? *stop_idx_opt : traj.points.size() - 1;
   const size_t seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
@@ -142,7 +140,7 @@ Pose calcPoseAfterTimeDelay(
   const Pose & current_pose, const float64_t delay_time, const float64_t current_vel)
 {
   // simple linear prediction
-  const float64_t yaw = ::motion::motion_common::to_angle(current_pose.orientation);
+  const float64_t yaw = tf2::getYaw(current_pose.orientation);
   const float64_t running_distance = delay_time * current_vel;
   const float64_t dx = running_distance * std::cos(yaw);
   const float64_t dy = running_distance * std::sin(yaw);

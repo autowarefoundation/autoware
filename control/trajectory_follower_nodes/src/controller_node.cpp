@@ -14,10 +14,7 @@
 
 #include "trajectory_follower_nodes/controller_node.hpp"
 
-#include "motion_common/motion_common.hpp"
-#include "motion_common/trajectory_common.hpp"
 #include "pure_pursuit/pure_pursuit_lateral_controller.hpp"
-#include "time_utils/time_utils.hpp"
 #include "trajectory_follower/mpc_lateral_controller.hpp"
 #include "trajectory_follower/pid_longitudinal_controller.hpp"
 

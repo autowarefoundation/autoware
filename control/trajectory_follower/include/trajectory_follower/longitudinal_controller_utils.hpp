@@ -19,8 +19,7 @@
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "geometry/common_2d.hpp"
-#include "motion_common/motion_common.hpp"
-#include "motion_common/trajectory_common.hpp"
+#include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 #include "trajectory_follower/visibility_control.hpp"
@@ -50,8 +49,6 @@ using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Quaternion;
-namespace motion_common = ::motion::motion_common;
-namespace trajectory_common = ::autoware::motion::motion_common;
 
 /**
  * @brief check if trajectory is invalid or not
@@ -117,27 +114,26 @@ TRAJECTORY_FOLLOWER_PUBLIC TrajectoryPoint lerpTrajectoryPoint(
 
   const float64_t len_to_interpolated =
     motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, pose.position);
-  const float64_t len_segment =
-    trajectory_common::calcSignedArcLength(points, seg_idx, seg_idx + 1);
+  const float64_t len_segment = motion_utils::calcSignedArcLength(points, seg_idx, seg_idx + 1);
   const float64_t interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);
 
   {
     const size_t i = seg_idx;
 
-    interpolated_point.pose.position.x = motion_common::interpolate(
+    interpolated_point.pose.position.x = interpolation::lerp(
       points.at(i).pose.position.x, points.at(i + 1).pose.position.x, interpolate_ratio);
-    interpolated_point.pose.position.y = motion_common::interpolate(
+    interpolated_point.pose.position.y = interpolation::lerp(
       points.at(i).pose.position.y, points.at(i + 1).pose.position.y, interpolate_ratio);
     interpolated_point.pose.orientation = lerpOrientation(
       points.at(i).pose.orientation, points.at(i + 1).pose.orientation, interpolate_ratio);
-    interpolated_point.longitudinal_velocity_mps = motion_common::interpolate(
+    interpolated_point.longitudinal_velocity_mps = interpolation::lerp(
       points.at(i).longitudinal_velocity_mps, points.at(i + 1).longitudinal_velocity_mps,
       interpolate_ratio);
-    interpolated_point.lateral_velocity_mps = motion_common::interpolate(
+    interpolated_point.lateral_velocity_mps = interpolation::lerp(
       points.at(i).lateral_velocity_mps, points.at(i + 1).lateral_velocity_mps, interpolate_ratio);
-    interpolated_point.acceleration_mps2 = motion_common::interpolate(
+    interpolated_point.acceleration_mps2 = interpolation::lerp(
       points.at(i).acceleration_mps2, points.at(i + 1).acceleration_mps2, interpolate_ratio);
-    interpolated_point.heading_rate_rps = motion_common::interpolate(
+    interpolated_point.heading_rate_rps = interpolation::lerp(
       points.at(i).heading_rate_rps, points.at(i + 1).heading_rate_rps, interpolate_ratio);
   }
 

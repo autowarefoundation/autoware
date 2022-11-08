@@ -15,6 +15,7 @@
 #include "trajectory_follower/mpc_utils.hpp"
 
 #include "motion_utils/motion_utils.hpp"
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -56,7 +57,7 @@ float64_t calcLateralError(
 {
   const float64_t err_x = ego_pose.position.x - ref_pose.position.x;
   const float64_t err_y = ego_pose.position.y - ref_pose.position.y;
-  const float64_t ref_yaw = ::motion::motion_common::to_angle(ref_pose.orientation);
+  const float64_t ref_yaw = tf2::getYaw(ref_pose.orientation);
   const float64_t lat_err = -std::sin(ref_yaw) * err_x + std::cos(ref_yaw) * err_y;
   return lat_err;
 }
@@ -232,7 +233,7 @@ bool8_t convertToMPCTrajectory(
     const float64_t x = p.pose.position.x;
     const float64_t y = p.pose.position.y;
     const float64_t z = 0.0;
-    const float64_t yaw = ::motion::motion_common::to_angle(p.pose.orientation);
+    const float64_t yaw = tf2::getYaw(p.pose.orientation);
     const float64_t vx = p.longitudinal_velocity_mps;
     const float64_t k = 0.0;
     const float64_t t = 0.0;
@@ -252,7 +253,7 @@ bool8_t convertToAutowareTrajectory(
     p.pose.position.x = static_cast<Real>(input.x.at(i));
     p.pose.position.y = static_cast<Real>(input.y.at(i));
     p.pose.position.z = static_cast<Real>(input.z.at(i));
-    p.pose.orientation = ::motion::motion_common::from_angle(input.yaw.at(i));
+    p.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(input.yaw.at(i));
     p.longitudinal_velocity_mps =
       static_cast<decltype(p.longitudinal_velocity_mps)>(input.vx.at(i));
     output.points.push_back(p);

@@ -17,8 +17,6 @@
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
-#include "motion_common/motion_common.hpp"
-#include "motion_common/trajectory_common.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
@@ -61,7 +59,6 @@ namespace trajectory_follower_nodes
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
-namespace motion_common = ::autoware::motion::motion_common;
 
 /// \classController
 /// \brief The node class used for generating longitudinal control commands (velocity/acceleration)

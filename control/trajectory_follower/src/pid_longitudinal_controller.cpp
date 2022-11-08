@@ -14,10 +14,8 @@
 
 #include "trajectory_follower/pid_longitudinal_controller.hpp"
 
-#include "motion_common/motion_common.hpp"
-#include "motion_common/trajectory_common.hpp"
+#include "motion_utils/motion_utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
-#include "time_utils/time_utils.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -732,7 +730,7 @@ float64_t PidLongitudinalController::calcFilteredAcc(
   const float64_t raw_acc, const ControlData & control_data)
 {
   using trajectory_follower::DebugValues;
-  const float64_t acc_max_filtered = ::motion::motion_common::clamp(raw_acc, m_min_acc, m_max_acc);
+  const float64_t acc_max_filtered = std::clamp(raw_acc, m_min_acc, m_max_acc);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_ACC_LIMITED, acc_max_filtered);
 
   // store ctrl cmd without slope filter
@@ -798,7 +796,7 @@ PidLongitudinalController::Motion PidLongitudinalController::keepBrakeBeforeStop
     return output_motion;
   }
   // const auto stop_idx = motion_utils::searchZeroVelocityIndex(traj.points);
-  const auto stop_idx = motion_common::searchZeroVelocityIndex(traj.points);
+  const auto stop_idx = motion_utils::searchZeroVelocityIndex(traj.points);
   if (!stop_idx) {
     return output_motion;
   }

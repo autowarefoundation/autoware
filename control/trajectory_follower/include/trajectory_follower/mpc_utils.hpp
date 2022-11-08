@@ -21,7 +21,6 @@
 #include "helper_functions/angle_utils.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
-#include "motion_common/motion_common.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 
