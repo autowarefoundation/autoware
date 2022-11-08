@@ -208,6 +208,7 @@ void RTCInterface::updateCooperateStatus(
 void RTCInterface::removeCooperateStatus(const UUID & uuid)
 {
   std::lock_guard<std::mutex> lock(mutex_);
+  removeStoredCommand(uuid);
   // Find registered status which has same uuid and erase it
   const auto itr = std::find_if(
     registered_status_.statuses.begin(), registered_status_.statuses.end(),
@@ -223,10 +224,23 @@ void RTCInterface::removeCooperateStatus(const UUID & uuid)
     "[removeCooperateStatus] uuid : " << to_string(uuid) << " is not found." << std::endl);
 }
 
+void RTCInterface::removeStoredCommand(const UUID & uuid)
+{
+  // Find stored command which has same uuid and erase it
+  const auto itr = std::find_if(
+    stored_commands_.begin(), stored_commands_.end(), [uuid](auto & s) { return s.uuid == uuid; });
+
+  if (itr != stored_commands_.end()) {
+    stored_commands_.erase(itr);
+    return;
+  }
+}
+
 void RTCInterface::clearCooperateStatus()
 {
   std::lock_guard<std::mutex> lock(mutex_);
   registered_status_.statuses.clear();
+  stored_commands_.clear();
 }
 
 bool RTCInterface::isActivated(const UUID & uuid)

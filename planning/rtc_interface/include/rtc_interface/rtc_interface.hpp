@@ -67,6 +67,7 @@ private:
   std::vector<CooperateResponse> validateCooperateCommands(
     const std::vector<CooperateCommand> & commands);
   void updateCooperateCommandStatus(const std::vector<CooperateCommand> & commands);
+  void removeStoredCommand(const UUID & uuid);
   rclcpp::Logger getLogger() const;
   bool isLocked() const;
 
