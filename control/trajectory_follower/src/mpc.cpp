@@ -43,7 +43,7 @@ bool8_t MPC::calculateMPC(
   const float64_t current_velocity, const geometry_msgs::msg::Pose & current_pose,
   autoware_auto_control_msgs::msg::AckermannLateralCommand & ctrl_cmd,
   autoware_auto_planning_msgs::msg::Trajectory & predicted_traj,
-  autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic & diagnostic)
+  tier4_debug_msgs::msg::Float32MultiArrayStamped & diagnostic)
 {
   /* recalculate velocity from ego-velocity with dynamics */
   trajectory_follower::MPCTrajectory reference_trajectory =
@@ -133,9 +133,9 @@ bool8_t MPC::calculateMPC(
   const float64_t steer_cmd = ctrl_cmd.steering_tire_angle;
   const float64_t wb = m_vehicle_model_ptr->getWheelbase();
 
-  typedef decltype(diagnostic.diag_array.data)::value_type DiagnosticValueType;
+  typedef decltype(diagnostic.data)::value_type DiagnosticValueType;
   auto append_diag_data = [&](const auto & val) -> void {
-    diagnostic.diag_array.data.push_back(static_cast<DiagnosticValueType>(val));
+    diagnostic.data.push_back(static_cast<DiagnosticValueType>(val));
   };
   // [0] final steering command (MPC + LPF)
   append_diag_data(steer_cmd);

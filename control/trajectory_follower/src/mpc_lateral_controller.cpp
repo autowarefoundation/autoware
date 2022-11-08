@@ -155,9 +155,8 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
 
   m_pub_predicted_traj = node_->create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
     "~/output/predicted_trajectory", 1);
-  m_pub_diagnostic =
-    node_->create_publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>(
-      "~/output/lateral_diagnostic", 1);
+  m_pub_debug_values = node_->create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
+    "~/output/lateral_diagnostic", 1);
 
   // TODO(Frederik.Beaujean) ctor is too long, should factor out parameter declarations
   declareMPCparameters();
@@ -183,7 +182,7 @@ boost::optional<LateralOutput> MpcLateralController::run()
 
   autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd;
   autoware_auto_planning_msgs::msg::Trajectory predicted_traj;
-  autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic diagnostic;
+  tier4_debug_msgs::msg::Float32MultiArrayStamped debug_values;
 
   if (!m_is_ctrl_cmd_prev_initialized) {
     m_ctrl_cmd_prev = getInitialControlCommand();
@@ -192,10 +191,10 @@ boost::optional<LateralOutput> MpcLateralController::run()
 
   const bool8_t is_mpc_solved = m_mpc.calculateMPC(
     *m_current_steering_ptr, m_current_kinematic_state_ptr->twist.twist.linear.x,
-    m_current_kinematic_state_ptr->pose.pose, ctrl_cmd, predicted_traj, diagnostic);
+    m_current_kinematic_state_ptr->pose.pose, ctrl_cmd, predicted_traj, debug_values);
 
   publishPredictedTraj(predicted_traj);
-  publishDiagnostic(diagnostic);
+  publishDebugValues(debug_values);
 
   const auto createLateralOutput = [this](const auto & cmd) {
     LateralOutput output;
@@ -391,12 +390,11 @@ void MpcLateralController::publishPredictedTraj(
   m_pub_predicted_traj->publish(predicted_traj);
 }
 
-void MpcLateralController::publishDiagnostic(
-  autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic & diagnostic) const
+void MpcLateralController::publishDebugValues(
+  tier4_debug_msgs::msg::Float32MultiArrayStamped & debug_values) const
 {
-  diagnostic.diag_header.data_stamp = node_->now();
-  diagnostic.diag_header.name = std::string("linear-MPC lateral controller");
-  m_pub_diagnostic->publish(diagnostic);
+  debug_values.stamp = node_->now();
+  m_pub_debug_values->publish(debug_values);
 }
 
 void MpcLateralController::declareMPCparameters()
