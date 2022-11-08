@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    # Node
+    update_rate: 10.0
+
+    # Core
+    delay_time: 0.03 # delay time of vehicle [s]
+    footprint_margin: 0.0 # margin for footprint [m]
+    max_deceleration: 1.5 # max deceleration [m/ss]
+    resample_interval: 0.3 # interval distance to resample point cloud [m]
+    search_radius: 5.0 # search distance from trajectory to point cloud [m]
