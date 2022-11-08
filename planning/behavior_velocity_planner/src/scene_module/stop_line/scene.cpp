@@ -64,7 +64,6 @@ bool StopLineModule::modifyPathVelocity(
 
   const auto stop_point_idx = stop_point->first;
   auto stop_pose = stop_point->second;
-  stop_pose.position.z = (stop_line_[0].z() + stop_line_[1].z()) / 2.0;
 
   /**
    * @brief : calculate signed arc length consider stop margin from stop line
