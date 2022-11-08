@@ -66,17 +66,6 @@ enum class ConvergedParamType {
   NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD = 1
 };
 
-struct NDTParams
-{
-  double trans_epsilon;
-  double step_size;
-  double resolution;
-  int max_iterations;
-  pclomp::NeighborSearchMethod search_method;
-  int num_threads;
-  float regularization_scale_factor;
-};
-
 class NDTScanMatcher : public rclcpp::Node
 {
   using PointSource = pcl::PointXYZ;
@@ -195,8 +184,6 @@ private:
     initial_pose_msg_ptr_array_;
   std::mutex ndt_ptr_mtx_;
   std::mutex initial_pose_array_mtx_;
-
-  NDTParams ndt_params_;
 
   std::thread diagnostic_thread_;
   std::map<std::string, std::string> key_value_stdmap_;
