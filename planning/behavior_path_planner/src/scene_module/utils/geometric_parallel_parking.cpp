@@ -482,9 +482,12 @@ PathWithLaneId GeometricParallelParking::generateArcPath(
 
   // insert the last point exactly
   const auto p = generateArcPathPoint(center, radius, end_yaw, is_left_turn, is_forward);
-  path.points.push_back(p);
+  constexpr double min_dist = 0.01;
+  if (path.points.empty() || calcDistance2d(path.points.back(), p) > min_dist) {
+    path.points.push_back(p);
+  }
 
-  return removeOverlappingPoints(path);
+  return path;
 }
 
 PathPointWithLaneId GeometricParallelParking::generateArcPathPoint(
