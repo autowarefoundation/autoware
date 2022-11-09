@@ -56,6 +56,7 @@ void VoxelBasedCompareMapFilterComponent::filter(
   PointCloud2 & output)
 {
   std::scoped_lock lock(mutex_);
+  stop_watch_ptr_->toc("processing_time", true);
   if (voxel_map_ptr_ == NULL) {
     output = *input;
     return;
@@ -224,6 +225,16 @@ void VoxelBasedCompareMapFilterComponent::filter(
   }
   pcl::toROSMsg(*pcl_output, output);
   output.header = input->header;
+
+  // add processing time for debug
+  if (debug_publisher_) {
+    const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+    const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/cyclic_time_ms", cyclic_time_ms);
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/processing_time_ms", processing_time_ms);
+  }
 }
 
 bool VoxelBasedCompareMapFilterComponent::is_in_voxel(
@@ -247,7 +258,6 @@ bool VoxelBasedCompareMapFilterComponent::is_in_voxel(
 
 void VoxelBasedCompareMapFilterComponent::input_target_callback(const PointCloud2ConstPtr map)
 {
-  stop_watch_ptr_->toc("processing_time", true);
   pcl::PointCloud<pcl::PointXYZ> map_pcl;
   pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
   const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
@@ -260,16 +270,6 @@ void VoxelBasedCompareMapFilterComponent::input_target_callback(const PointCloud
   voxel_grid_.setInputCloud(map_pcl_ptr);
   voxel_grid_.setSaveLeafLayout(true);
   voxel_grid_.filter(*voxel_map_ptr_);
-
-  // add processing time for debug
-  if (debug_publisher_) {
-    const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
-    const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
-    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
-      "debug/cyclic_time_ms", cyclic_time_ms);
-    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
-      "debug/processing_time_ms", processing_time_ms);
-  }
 }
 
 rcl_interfaces::msg::SetParametersResult VoxelBasedCompareMapFilterComponent::paramCallback(
