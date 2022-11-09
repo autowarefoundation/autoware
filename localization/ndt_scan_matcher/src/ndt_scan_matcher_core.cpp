@@ -168,9 +168,6 @@ NDTScanMatcher::NDTScanMatcher()
     "ekf_pose_with_covariance", 100,
     std::bind(&NDTScanMatcher::callback_initial_pose, this, std::placeholders::_1),
     initial_pose_sub_opt);
-  map_points_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-    "pointcloud_map", rclcpp::QoS{1}.transient_local(),
-    std::bind(&NDTScanMatcher::callback_map_points, this, std::placeholders::_1), main_sub_opt);
   sensor_points_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "points_raw", rclcpp::SensorDataQoS().keep_last(points_queue_size),
     std::bind(&NDTScanMatcher::callback_sensor_points, this, std::placeholders::_1), main_sub_opt);
@@ -227,6 +224,7 @@ NDTScanMatcher::NDTScanMatcher()
   diagnostic_thread_.detach();
 
   tf2_listener_module_ = std::make_shared<Tf2ListenerModule>(this);
+  map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, main_callback_group);
 }
 
 void NDTScanMatcher::timer_diagnostic()
@@ -352,26 +350,6 @@ void NDTScanMatcher::callback_regularization_pose(
   geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr)
 {
   regularization_pose_msg_ptr_array_.push_back(pose_conv_msg_ptr);
-}
-
-void NDTScanMatcher::callback_map_points(
-  sensor_msgs::msg::PointCloud2::ConstSharedPtr map_points_msg_ptr)
-{
-  std::shared_ptr<NormalDistributionsTransform> new_ndt_ptr(new NormalDistributionsTransform);
-  new_ndt_ptr->setParams(ndt_ptr_->getParams());
-
-  pcl::shared_ptr<pcl::PointCloud<PointTarget>> map_points_ptr(new pcl::PointCloud<PointTarget>);
-  pcl::fromROSMsg(*map_points_msg_ptr, *map_points_ptr);
-  new_ndt_ptr->setInputTarget(map_points_ptr);
-  // create Thread
-  // detach
-  auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();
-  new_ndt_ptr->align(*output_cloud);
-
-  // swap
-  ndt_ptr_mtx_.lock();
-  ndt_ptr_ = new_ndt_ptr;
-  ndt_ptr_mtx_.unlock();
 }
 
 void NDTScanMatcher::callback_sensor_points(
