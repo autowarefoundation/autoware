@@ -25,7 +25,7 @@ common/path_distance_calculator/** isamu.takagi@tier4.jp
 common/perception_utils/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp takayuki.murooka@tier4.jp yusuke.muramatsu@tier4.jp
 common/polar_grid/** yukihiro.saito@tier4.jp
 common/rtc_manager_rviz_plugin/** taiki.tanaka@tier4.jp
-common/signal_processing/** takayuki.murooka@tier4.jp
+common/signal_processing/** ali.boyali@tier4.jp takayuki.murooka@tier4.jp
 common/tier4_api_utils/** isamu.takagi@tier4.jp
 common/tier4_autoware_utils/** kenji.miyake@tier4.jp takamasa.horibe@tier4.jp
 common/tier4_calibration_rviz_plugin/** tomoya.kimura@tier4.jp
@@ -44,7 +44,6 @@ common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp
 common/time_utils/** christopherj.ho@gmail.com
 common/trtexec_vendor/** daisuke.nishimatsu@tier4.jp
 common/tvm_utility/** ambroise.vincent@arm.com
-common/vehicle_constants_manager/** mfc@leodrive.ai
 common/web_controller/** yukihiro.saito@tier4.jp
 control/control_performance_analysis/** ali.boyali@tier4.jp berkay@leodrive.ai
 control/external_cmd_selector/** kenji.miyake@tier4.jp
@@ -78,7 +77,7 @@ localization/pose2twist/** yamato.ando@tier4.jp
 localization/pose_initializer/** isamu.takagi@tier4.jp yamato.ando@tier4.jp
 localization/stop_filter/** koji.minoda@tier4.jp yamato.ando@tier4.jp
 localization/twist2accel/** koji.minoda@tier4.jp yamato.ando@tier4.jp
-map/map_loader/** kenji.miyake@tier4.jp ryohsuke.mitsudome@tier4.jp
+map/map_loader/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp
 map/map_tf_generator/** azumi.suzuki@tier4.jp
 map/util/lanelet2_map_preprocessor/** ryohsuke.mitsudome@tier4.jp
 perception/compare_map_segmentation/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
@@ -121,6 +120,7 @@ planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp
 planning/obstacle_avoidance_planner/** takayuki.murooka@tier4.jp
 planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
 planning/obstacle_stop_planner/** satoshi.ota@tier4.jp
+planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp
 planning/planning_debug_tools/** taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
 planning/planning_error_monitor/** yutaka.shimizu@tier4.jp
 planning/planning_evaluator/** maxime.clement@tier4.jp
