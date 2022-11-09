@@ -1389,7 +1389,7 @@ void MPTOptimizer::calcBounds(
         if (prev_trajs && !prev_trajs->mpt_ref_points.empty()) {
           return prev_trajs->mpt_ref_points.front().p;
         }
-        return current_ego_pose_.position;
+        return ref_points.at(i).p;
       }();
 
       geometry_msgs::msg::Pose ref_pose;
