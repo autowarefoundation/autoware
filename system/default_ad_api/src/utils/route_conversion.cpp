@@ -20,11 +20,11 @@ namespace
 {
 
 using ApiPrimitive = autoware_adapi_v1_msgs::msg::RoutePrimitive;
-using MapPrimitive = autoware_planning_msgs::msg::VectorMapPrimitive;
+using MapPrimitive = autoware_planning_msgs::msg::LaneletPrimitive;
 using HadPrimitive = autoware_auto_mapping_msgs::msg::MapPrimitive;
 using ApiSegment = autoware_adapi_v1_msgs::msg::RouteSegment;
+using MapSegment = autoware_planning_msgs::msg::LaneletSegment;
 using HadSegment = autoware_auto_mapping_msgs::msg::HADMapSegment;
-using MapSegment = autoware_planning_msgs::msg::VectorMapSegment;
 
 template <class RetT, class ArgT>
 RetT convert(const ArgT & arg);

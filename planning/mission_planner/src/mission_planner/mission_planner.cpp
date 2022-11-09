@@ -28,10 +28,10 @@ namespace
 
 using autoware_auto_mapping_msgs::msg::HADMapSegment;
 using autoware_auto_mapping_msgs::msg::MapPrimitive;
-using autoware_planning_msgs::msg::VectorMapPrimitive;
-using autoware_planning_msgs::msg::VectorMapSegment;
+using autoware_planning_msgs::msg::LaneletPrimitive;
+using autoware_planning_msgs::msg::LaneletSegment;
 
-MapPrimitive convert(const VectorMapPrimitive & p)
+MapPrimitive convert(const LaneletPrimitive & p)
 {
   MapPrimitive primitive;
   primitive.id = p.id;
@@ -39,7 +39,7 @@ MapPrimitive convert(const VectorMapPrimitive & p)
   return primitive;
 }
 
-HADMapSegment convert(const VectorMapSegment & s)
+HADMapSegment convert(const LaneletSegment & s)
 {
   HADMapSegment segment;
   segment.preferred_primitive_id = s.preferred_primitive.id;
