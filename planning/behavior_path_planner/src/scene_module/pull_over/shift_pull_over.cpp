@@ -121,7 +121,8 @@ PathWithLaneId ShiftPullOver::generateRoadLaneReferencePath(
   // (or keep original velocity if it is lower than pull over velocity)
   for (auto & point : road_lane_reference_path.points) {
     const auto arclength = lanelet::utils::getArcCoordinates(road_lanes, point.point.pose).length;
-    const double distance_to_pull_over_start = std::max(0.0, s_end - arclength);
+    const double distance_to_pull_over_start =
+      std::clamp(s_end - arclength, 0.0, deceleration_interval);
     const auto decelerated_velocity = static_cast<float>(
       distance_to_pull_over_start / deceleration_interval *
         (point.point.longitudinal_velocity_mps - pull_over_velocity) +

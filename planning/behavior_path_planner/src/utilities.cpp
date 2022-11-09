@@ -1918,44 +1918,6 @@ PathWithLaneId setDecelerationVelocity(
   return reference_path;
 }
 
-PathWithLaneId setDecelerationVelocity(
-  const RouteHandler & route_handler, const PathWithLaneId & input,
-  const lanelet::ConstLanelets & lanelet_sequence, const double distance_after_pullover,
-  const double pullover_distance_min, const double distance_before_pull_over,
-  const double deceleration_interval, Pose goal_pose)
-{
-  auto reference_path = input;
-  const auto pullover_buffer =
-    distance_after_pullover + pullover_distance_min + distance_before_pull_over;
-  const auto arclength_goal_pose =
-    lanelet::utils::getArcCoordinates(lanelet_sequence, goal_pose).length;
-  const auto arclength_pull_over_start = arclength_goal_pose - pullover_buffer;
-  const auto arclength_path_front =
-    lanelet::utils::getArcCoordinates(lanelet_sequence, reference_path.points.front().point.pose)
-      .length;
-
-  if (
-    route_handler.isDeadEndLanelet(lanelet_sequence.back()) &&
-    pullover_distance_min > std::numeric_limits<double>::epsilon()) {
-    for (auto & point : reference_path.points) {
-      const auto arclength =
-        lanelet::utils::getArcCoordinates(lanelet_sequence, point.point.pose).length;
-      const double distance_to_pull_over_start =
-        std::max(0.0, arclength_pull_over_start - arclength);
-      point.point.longitudinal_velocity_mps = std::min(
-        point.point.longitudinal_velocity_mps,
-        static_cast<float>(distance_to_pull_over_start / deceleration_interval) *
-          point.point.longitudinal_velocity_mps);
-    }
-  }
-
-  double distance_to_pull_over_start =
-    std::max(0.0, arclength_pull_over_start - arclength_path_front);
-  const auto stop_point = util::insertStopPoint(distance_to_pull_over_start, &reference_path);
-
-  return reference_path;
-}
-
 // TODO(murooka) remove calcSignedArcLength using findNearestSegmentIndex inside the
 // function
 PathWithLaneId setDecelerationVelocity(
@@ -1980,7 +1942,8 @@ PathWithLaneId setDecelerationVelocity(
 
   const auto stop_point_length =
     motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) + buffer;
-  if (target_velocity == 0.0 && stop_point_length > 0) {
+  constexpr double eps{0.01};
+  if (std::abs(target_velocity) < eps && stop_point_length > 0.0) {
     const auto stop_point = util::insertStopPoint(stop_point_length, &reference_path);
   }
 
@@ -2065,15 +2028,13 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
     current_lane, current_pose, common_parameters.backward_path_length,
     common_parameters.forward_path_length);
 
-  // Add next_lanes
-  for (const auto & next_lane : route_handler->getNextLanelets(current_lanes.back())) {
-    current_lanes.push_back(next_lane);
-  }
+  // Add next lane
+  const auto next_lanes = route_handler->getNextLanelets(current_lanes.back());
+  current_lanes.push_back(next_lanes.front());
 
-  // Add previous lanes
-  for (const auto & prev_lane : route_handler->getPreviousLanelets(current_lanes.front())) {
-    current_lanes.insert(current_lanes.begin(), prev_lane);
-  }
+  // Add previous lane
+  const auto prev_lanes = route_handler->getPreviousLanelets(current_lanes.front());
+  current_lanes.insert(current_lanes.begin(), prev_lanes.front());
 
   return current_lanes;
 }
