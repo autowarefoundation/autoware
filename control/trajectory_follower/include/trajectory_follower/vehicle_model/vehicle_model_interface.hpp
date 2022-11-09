@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_
 #define TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_
 
-#include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "trajectory_follower/visibility_control.hpp"
 
@@ -27,7 +26,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
+
 /**
  * Vehicle model class
  * @brief calculate model-related values
@@ -35,12 +34,12 @@ using autoware::common::types::float64_t;
 class TRAJECTORY_FOLLOWER_PUBLIC VehicleModelInterface
 {
 protected:
-  const int64_t m_dim_x;  //!< @brief dimension of state x
-  const int64_t m_dim_u;  //!< @brief dimension of input u
-  const int64_t m_dim_y;  //!< @brief dimension of output y
-  float64_t m_velocity;   //!< @brief vehicle velocity [m/s]
-  float64_t m_curvature;  //!< @brief curvature on the linearized point on path
-  float64_t m_wheelbase;  //!< @brief wheelbase of the vehicle [m]
+  const int m_dim_x;   //!< @brief dimension of state x
+  const int m_dim_u;   //!< @brief dimension of input u
+  const int m_dim_y;   //!< @brief dimension of output y
+  double m_velocity;   //!< @brief vehicle velocity [m/s]
+  double m_curvature;  //!< @brief curvature on the linearized point on path
+  double m_wheelbase;  //!< @brief wheelbase of the vehicle [m]
 
 public:
   /**
@@ -50,7 +49,7 @@ public:
    * @param [in] dim_y dimension of output y
    * @param [in] wheelbase wheelbase of the vehicle [m]
    */
-  VehicleModelInterface(int64_t dim_x, int64_t dim_u, int64_t dim_y, float64_t wheelbase);
+  VehicleModelInterface(int dim_x, int dim_u, int dim_y, double wheelbase);
 
   /**
    * @brief destructor
@@ -61,37 +60,37 @@ public:
    * @brief get state x dimension
    * @return state dimension
    */
-  int64_t getDimX();
+  int getDimX();
 
   /**
    * @brief get input u dimension
    * @return input dimension
    */
-  int64_t getDimU();
+  int getDimU();
 
   /**
    * @brief get output y dimension
    * @return output dimension
    */
-  int64_t getDimY();
+  int getDimY();
 
   /**
    * @brief get wheelbase of the vehicle
    * @return wheelbase value [m]
    */
-  float64_t getWheelbase();
+  double getWheelbase();
 
   /**
    * @brief set velocity
    * @param [in] velocity vehicle velocity
    */
-  void setVelocity(const float64_t velocity);
+  void setVelocity(const double velocity);
 
   /**
    * @brief set curvature
    * @param [in] curvature curvature on the linearized point on path
    */
-  void setCurvature(const float64_t curvature);
+  void setCurvature(const double curvature);
 
   /**
    * @brief calculate discrete model matrix of x_k+1 = a_d * xk + b_d * uk + w_d, yk = c_d * xk
@@ -103,7 +102,7 @@ public:
    */
   virtual void calculateDiscreteMatrix(
     Eigen::MatrixXd & a_d, Eigen::MatrixXd & b_d, Eigen::MatrixXd & c_d, Eigen::MatrixXd & w_d,
-    const float64_t dt) = 0;
+    const double dt) = 0;
 
   /**
    * @brief calculate reference input

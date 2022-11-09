@@ -81,7 +81,7 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
   // Timer
   {
     const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      std::chrono::duration<float64_t>(ctrl_period));
+      std::chrono::duration<double>(ctrl_period));
     timer_control_ = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&Controller::callbackTimerControl, this));
   }

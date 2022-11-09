@@ -34,50 +34,49 @@ namespace MPCUtils
 {
 using autoware::common::geometry::distance_2d;
 
-geometry_msgs::msg::Quaternion getQuaternionFromYaw(const float64_t & yaw)
+geometry_msgs::msg::Quaternion getQuaternionFromYaw(const double & yaw)
 {
   tf2::Quaternion q;
   q.setRPY(0, 0, yaw);
   return tf2::toMsg(q);
 }
 
-void convertEulerAngleToMonotonic(std::vector<float64_t> * a)
+void convertEulerAngleToMonotonic(std::vector<double> * a)
 {
   if (!a) {
     return;
   }
-  for (uint64_t i = 1; i < a->size(); ++i) {
-    const float64_t da = a->at(i) - a->at(i - 1);
+  for (uint i = 1; i < a->size(); ++i) {
+    const double da = a->at(i) - a->at(i - 1);
     a->at(i) = a->at(i - 1) + autoware::common::helper_functions::wrap_angle(da);
   }
 }
 
-float64_t calcLateralError(
+double calcLateralError(
   const geometry_msgs::msg::Pose & ego_pose, const geometry_msgs::msg::Pose & ref_pose)
 {
-  const float64_t err_x = ego_pose.position.x - ref_pose.position.x;
-  const float64_t err_y = ego_pose.position.y - ref_pose.position.y;
-  const float64_t ref_yaw = tf2::getYaw(ref_pose.orientation);
-  const float64_t lat_err = -std::sin(ref_yaw) * err_x + std::cos(ref_yaw) * err_y;
+  const double err_x = ego_pose.position.x - ref_pose.position.x;
+  const double err_y = ego_pose.position.y - ref_pose.position.y;
+  const double ref_yaw = tf2::getYaw(ref_pose.orientation);
+  const double lat_err = -std::sin(ref_yaw) * err_x + std::cos(ref_yaw) * err_y;
   return lat_err;
 }
 
-void calcMPCTrajectoryArclength(
-  const MPCTrajectory & trajectory, std::vector<float64_t> * arclength)
+void calcMPCTrajectoryArclength(const MPCTrajectory & trajectory, std::vector<double> * arclength)
 {
-  float64_t dist = 0.0;
+  double dist = 0.0;
   arclength->clear();
   arclength->push_back(dist);
-  for (uint64_t i = 1; i < trajectory.size(); ++i) {
-    const float64_t dx = trajectory.x.at(i) - trajectory.x.at(i - 1);
-    const float64_t dy = trajectory.y.at(i) - trajectory.y.at(i - 1);
+  for (uint i = 1; i < trajectory.size(); ++i) {
+    const double dx = trajectory.x.at(i) - trajectory.x.at(i - 1);
+    const double dy = trajectory.y.at(i) - trajectory.y.at(i - 1);
     dist += std::sqrt(dx * dx + dy * dy);
     arclength->push_back(dist);
   }
 }
 
-bool8_t resampleMPCTrajectoryByDistance(
-  const MPCTrajectory & input, const float64_t resample_interval_dist, MPCTrajectory * output)
+bool resampleMPCTrajectoryByDistance(
+  const MPCTrajectory & input, const double resample_interval_dist, MPCTrajectory * output)
 {
   if (!output) {
     return false;
@@ -86,19 +85,19 @@ bool8_t resampleMPCTrajectoryByDistance(
     *output = input;
     return true;
   }
-  std::vector<float64_t> input_arclength;
+  std::vector<double> input_arclength;
   calcMPCTrajectoryArclength(input, &input_arclength);
 
   if (input_arclength.empty()) {
     return false;
   }
 
-  std::vector<float64_t> output_arclength;
-  for (float64_t s = 0; s < input_arclength.back(); s += resample_interval_dist) {
+  std::vector<double> output_arclength;
+  for (double s = 0; s < input_arclength.back(); s += resample_interval_dist) {
     output_arclength.push_back(s);
   }
 
-  std::vector<float64_t> input_yaw = input.yaw;
+  std::vector<double> input_yaw = input.yaw;
   convertEulerAngleToMonotonic(&input_yaw);
 
   output->x = interpolation::spline(input_arclength, input.x, output_arclength);
@@ -114,9 +113,9 @@ bool8_t resampleMPCTrajectoryByDistance(
   return true;
 }
 
-bool8_t linearInterpMPCTrajectory(
-  const std::vector<float64_t> & in_index, const MPCTrajectory & in_traj,
-  const std::vector<float64_t> & out_index, MPCTrajectory * out_traj)
+bool linearInterpMPCTrajectory(
+  const std::vector<double> & in_index, const MPCTrajectory & in_traj,
+  const std::vector<double> & out_index, MPCTrajectory * out_traj)
 {
   if (!out_traj) {
     return false;
@@ -127,7 +126,7 @@ bool8_t linearInterpMPCTrajectory(
     return true;
   }
 
-  std::vector<float64_t> in_traj_yaw = in_traj.yaw;
+  std::vector<double> in_traj_yaw = in_traj.yaw;
   convertEulerAngleToMonotonic(&in_traj_yaw);
 
   if (
@@ -162,9 +161,9 @@ void calcTrajectoryYawFromXY(MPCTrajectory * traj, const bool is_forward_shift)
   }
 
   // interpolate yaw
-  for (int64_t i = 1; i < static_cast<int64_t>(traj->yaw.size()) - 1; ++i) {
-    const float64_t dx = traj->x[static_cast<size_t>(i + 1)] - traj->x[static_cast<size_t>(i - 1)];
-    const float64_t dy = traj->y[static_cast<size_t>(i + 1)] - traj->y[static_cast<size_t>(i - 1)];
+  for (int i = 1; i < static_cast<int>(traj->yaw.size()) - 1; ++i) {
+    const double dx = traj->x[static_cast<size_t>(i + 1)] - traj->x[static_cast<size_t>(i - 1)];
+    const double dy = traj->y[static_cast<size_t>(i + 1)] - traj->y[static_cast<size_t>(i - 1)];
     traj->yaw[static_cast<size_t>(i)] =
       is_forward_shift ? std::atan2(dy, dx) : std::atan2(dy, dx) + M_PI;
   }
@@ -174,7 +173,7 @@ void calcTrajectoryYawFromXY(MPCTrajectory * traj, const bool is_forward_shift)
   }
 }
 
-bool8_t calcTrajectoryCurvature(
+bool calcTrajectoryCurvature(
   const size_t curvature_smoothing_num_traj, const size_t curvature_smoothing_num_ref_steer,
   MPCTrajectory * traj)
 {
@@ -187,15 +186,15 @@ bool8_t calcTrajectoryCurvature(
   return true;
 }
 
-std::vector<float64_t> calcTrajectoryCurvature(
+std::vector<double> calcTrajectoryCurvature(
   const size_t curvature_smoothing_num, const MPCTrajectory & traj)
 {
-  std::vector<float64_t> curvature_vec(traj.x.size());
+  std::vector<double> curvature_vec(traj.x.size());
 
   /* calculate curvature by circle fitting from three points */
   geometry_msgs::msg::Point p1, p2, p3;
   const size_t max_smoothing_num =
-    static_cast<size_t>(std::floor(0.5 * (static_cast<float64_t>(traj.x.size() - 1))));
+    static_cast<size_t>(std::floor(0.5 * (static_cast<double>(traj.x.size() - 1))));
   const size_t L = std::min(curvature_smoothing_num, max_smoothing_num);
   for (size_t i = L; i < traj.x.size() - L; ++i) {
     const size_t curr_idx = i;
@@ -207,11 +206,10 @@ std::vector<float64_t> calcTrajectoryCurvature(
     p1.y = traj.y[prev_idx];
     p2.y = traj.y[curr_idx];
     p3.y = traj.y[next_idx];
-    const float64_t den = std::max(
-      distance_2d<float64_t>(p1, p2) * distance_2d<float64_t>(p2, p3) *
-        distance_2d<float64_t>(p3, p1),
-      std::numeric_limits<float64_t>::epsilon());
-    const float64_t curvature =
+    const double den = std::max(
+      distance_2d<double>(p1, p2) * distance_2d<double>(p2, p3) * distance_2d<double>(p3, p1),
+      std::numeric_limits<double>::epsilon());
+    const double curvature =
       2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
     curvature_vec.at(curr_idx) = curvature;
   }
@@ -225,25 +223,25 @@ std::vector<float64_t> calcTrajectoryCurvature(
   return curvature_vec;
 }
 
-bool8_t convertToMPCTrajectory(
+bool convertToMPCTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input, MPCTrajectory & output)
 {
   output.clear();
   for (const autoware_auto_planning_msgs::msg::TrajectoryPoint & p : input.points) {
-    const float64_t x = p.pose.position.x;
-    const float64_t y = p.pose.position.y;
-    const float64_t z = 0.0;
-    const float64_t yaw = tf2::getYaw(p.pose.orientation);
-    const float64_t vx = p.longitudinal_velocity_mps;
-    const float64_t k = 0.0;
-    const float64_t t = 0.0;
+    const double x = p.pose.position.x;
+    const double y = p.pose.position.y;
+    const double z = 0.0;
+    const double yaw = tf2::getYaw(p.pose.orientation);
+    const double vx = p.longitudinal_velocity_mps;
+    const double k = 0.0;
+    const double t = 0.0;
     output.push_back(x, y, z, yaw, vx, k, k, t);
   }
   calcMPCTrajectoryTime(output);
   return true;
 }
 
-bool8_t convertToAutowareTrajectory(
+bool convertToAutowareTrajectory(
   const MPCTrajectory & input, autoware_auto_planning_msgs::msg::Trajectory & output)
 {
   output.points.clear();
@@ -261,17 +259,17 @@ bool8_t convertToAutowareTrajectory(
   return true;
 }
 
-bool8_t calcMPCTrajectoryTime(MPCTrajectory & traj)
+bool calcMPCTrajectoryTime(MPCTrajectory & traj)
 {
-  float64_t t = 0.0;
+  double t = 0.0;
   traj.relative_time.clear();
   traj.relative_time.push_back(t);
   for (size_t i = 0; i < traj.x.size() - 1; ++i) {
-    const float64_t dx = traj.x.at(i + 1) - traj.x.at(i);
-    const float64_t dy = traj.y.at(i + 1) - traj.y.at(i);
-    const float64_t dz = traj.z.at(i + 1) - traj.z.at(i);
-    const float64_t dist = std::sqrt(dx * dx + dy * dy + dz * dz);
-    const float64_t v = std::max(std::fabs(traj.vx.at(i)), 0.1);
+    const double dx = traj.x.at(i + 1) - traj.x.at(i);
+    const double dy = traj.y.at(i + 1) - traj.y.at(i);
+    const double dz = traj.z.at(i + 1) - traj.z.at(i);
+    const double dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+    const double v = std::max(std::fabs(traj.vx.at(i)), 0.1);
     t += (dist / v);
     traj.relative_time.push_back(t);
   }
@@ -279,29 +277,27 @@ bool8_t calcMPCTrajectoryTime(MPCTrajectory & traj)
 }
 
 void dynamicSmoothingVelocity(
-  const size_t start_idx, const float64_t start_vel, const float64_t acc_lim, const float64_t tau,
+  const size_t start_idx, const double start_vel, const double acc_lim, const double tau,
   MPCTrajectory & traj)
 {
-  float64_t curr_v = start_vel;
+  double curr_v = start_vel;
   traj.vx.at(start_idx) = start_vel;
 
   for (size_t i = start_idx + 1; i < traj.size(); ++i) {
-    const float64_t ds =
-      std::hypot(traj.x.at(i) - traj.x.at(i - 1), traj.y.at(i) - traj.y.at(i - 1));
-    const float64_t dt =
-      ds / std::max(std::fabs(curr_v), std::numeric_limits<float64_t>::epsilon());
-    const float64_t a = tau / std::max(tau + dt, std::numeric_limits<float64_t>::epsilon());
-    const float64_t updated_v = a * curr_v + (1.0 - a) * traj.vx.at(i);
-    const float64_t dv = std::max(-acc_lim * dt, std::min(acc_lim * dt, updated_v - curr_v));
+    const double ds = std::hypot(traj.x.at(i) - traj.x.at(i - 1), traj.y.at(i) - traj.y.at(i - 1));
+    const double dt = ds / std::max(std::fabs(curr_v), std::numeric_limits<double>::epsilon());
+    const double a = tau / std::max(tau + dt, std::numeric_limits<double>::epsilon());
+    const double updated_v = a * curr_v + (1.0 - a) * traj.vx.at(i);
+    const double dv = std::max(-acc_lim * dt, std::min(acc_lim * dt, updated_v - curr_v));
     curr_v = curr_v + dv;
     traj.vx.at(i) = curr_v;
   }
   calcMPCTrajectoryTime(traj);
 }
 
-bool8_t calcNearestPoseInterp(
+bool calcNearestPoseInterp(
   const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose,
-  geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, float64_t * nearest_time,
+  geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, double * nearest_time,
   const double max_dist, const double max_yaw, const rclcpp::Logger & logger, rclcpp::Clock & clock)
 {
   if (traj.empty() || !nearest_pose || !nearest_index || !nearest_time) {
@@ -330,25 +326,25 @@ bool8_t calcNearestPoseInterp(
 
   auto calcSquaredDist =
     [](const geometry_msgs::msg::Pose & p, const MPCTrajectory & t, const size_t idx) {
-      const float64_t dx = p.position.x - t.x[idx];
-      const float64_t dy = p.position.y - t.y[idx];
+      const double dx = p.position.x - t.x[idx];
+      const double dy = p.position.y - t.y[idx];
       return dx * dx + dy * dy;
     };
 
   /* get second nearest index = next to nearest_index */
   const size_t next = static_cast<size_t>(
-    std::min(static_cast<int64_t>(*nearest_index) + 1, static_cast<int64_t>(traj_size) - 1));
+    std::min(static_cast<int>(*nearest_index) + 1, static_cast<int>(traj_size) - 1));
   const size_t prev =
-    static_cast<size_t>(std::max(static_cast<int64_t>(*nearest_index) - 1, int64_t(0)));
-  const float64_t dist_to_next = calcSquaredDist(self_pose, traj, next);
-  const float64_t dist_to_prev = calcSquaredDist(self_pose, traj, prev);
+    static_cast<size_t>(std::max(static_cast<int>(*nearest_index) - 1, static_cast<int>(0)));
+  const double dist_to_next = calcSquaredDist(self_pose, traj, next);
+  const double dist_to_prev = calcSquaredDist(self_pose, traj, prev);
   const size_t second_nearest_index = (dist_to_next < dist_to_prev) ? next : prev;
 
-  const float64_t a_sq = calcSquaredDist(self_pose, traj, *nearest_index);
-  const float64_t b_sq = calcSquaredDist(self_pose, traj, second_nearest_index);
-  const float64_t dx3 = traj.x[*nearest_index] - traj.x[second_nearest_index];
-  const float64_t dy3 = traj.y[*nearest_index] - traj.y[second_nearest_index];
-  const float64_t c_sq = dx3 * dx3 + dy3 * dy3;
+  const double a_sq = calcSquaredDist(self_pose, traj, *nearest_index);
+  const double b_sq = calcSquaredDist(self_pose, traj, second_nearest_index);
+  const double dx3 = traj.x[*nearest_index] - traj.x[second_nearest_index];
+  const double dy3 = traj.y[*nearest_index] - traj.y[second_nearest_index];
+  const double c_sq = dx3 * dx3 + dy3 * dy3;
 
   /* if distance between two points are too close */
   if (c_sq < 1.0E-5) {
@@ -360,14 +356,14 @@ bool8_t calcNearestPoseInterp(
   }
 
   /* linear interpolation */
-  const float64_t alpha = std::max(std::min(0.5 * (c_sq - a_sq + b_sq) / c_sq, 1.0), 0.0);
+  const double alpha = std::max(std::min(0.5 * (c_sq - a_sq + b_sq) / c_sq, 1.0), 0.0);
   nearest_pose->position.x =
     alpha * traj.x[*nearest_index] + (1 - alpha) * traj.x[second_nearest_index];
   nearest_pose->position.y =
     alpha * traj.y[*nearest_index] + (1 - alpha) * traj.y[second_nearest_index];
-  const float64_t tmp_yaw_err = autoware::common::helper_functions::wrap_angle(
+  const double tmp_yaw_err = autoware::common::helper_functions::wrap_angle(
     traj.yaw[*nearest_index] - traj.yaw[second_nearest_index]);
-  const float64_t nearest_yaw = autoware::common::helper_functions::wrap_angle(
+  const double nearest_yaw = autoware::common::helper_functions::wrap_angle(
     traj.yaw[second_nearest_index] + alpha * tmp_yaw_err);
   nearest_pose->orientation = getQuaternionFromYaw(nearest_yaw);
   *nearest_time = alpha * traj.relative_time[*nearest_index] +
@@ -375,21 +371,20 @@ bool8_t calcNearestPoseInterp(
   return true;
 }
 
-float64_t calcStopDistance(
-  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int64_t origin)
+double calcStopDistance(
+  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int origin)
 {
   constexpr float zero_velocity = std::numeric_limits<float>::epsilon();
   const float origin_velocity =
     current_trajectory.points.at(static_cast<size_t>(origin)).longitudinal_velocity_mps;
-  float64_t stop_dist = 0.0;
+  double stop_dist = 0.0;
 
   // search forward
   if (std::fabs(origin_velocity) > zero_velocity) {
-    for (int64_t i = origin + 1; i < static_cast<int64_t>(current_trajectory.points.size()) - 1;
-         ++i) {
+    for (int i = origin + 1; i < static_cast<int>(current_trajectory.points.size()) - 1; ++i) {
       const auto & p0 = current_trajectory.points.at(static_cast<size_t>(i));
       const auto & p1 = current_trajectory.points.at(static_cast<size_t>(i - 1));
-      stop_dist += distance_2d<float64_t>(p0, p1);
+      stop_dist += distance_2d<double>(p0, p1);
       if (std::fabs(p0.longitudinal_velocity_mps) < zero_velocity) {
         break;
       }
@@ -398,13 +393,13 @@ float64_t calcStopDistance(
   }
 
   // search backward
-  for (int64_t i = origin - 1; 0 < i; --i) {
+  for (int i = origin - 1; 0 < i; --i) {
     const auto & p0 = current_trajectory.points.at(static_cast<size_t>(i));
     const auto & p1 = current_trajectory.points.at(static_cast<size_t>(i + 1));
     if (std::fabs(p0.longitudinal_velocity_mps) > zero_velocity) {
       break;
     }
-    stop_dist -= distance_2d<float64_t>(p0, p1);
+    stop_dist -= distance_2d<double>(p0, p1);
   }
   return stop_dist;
 }

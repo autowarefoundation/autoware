@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__LONGITUDINAL_CONTROLLER_UTILS_HPP_
 #define TRAJECTORY_FOLLOWER__LONGITUDINAL_CONTROLLER_UTILS_HPP_
 
-#include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "geometry/common_2d.hpp"
@@ -42,8 +41,7 @@ namespace trajectory_follower
 {
 namespace longitudinal_utils
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::Point;
@@ -53,19 +51,18 @@ using geometry_msgs::msg::Quaternion;
 /**
  * @brief check if trajectory is invalid or not
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t isValidTrajectory(const Trajectory & traj);
+TRAJECTORY_FOLLOWER_PUBLIC bool isValidTrajectory(const Trajectory & traj);
 
 /**
  * @brief calculate distance to stopline from current vehicle position where velocity is 0
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t calcStopDistance(
-  const Pose & current_pose, const Trajectory & traj, const float64_t max_dist,
-  const float64_t max_yaw);
+TRAJECTORY_FOLLOWER_PUBLIC double calcStopDistance(
+  const Pose & current_pose, const Trajectory & traj, const double max_dist, const double max_yaw);
 
 /**
  * @brief calculate pitch angle from estimated current pose
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t getPitchByPose(const Quaternion & quaternion);
+TRAJECTORY_FOLLOWER_PUBLIC double getPitchByPose(const Quaternion & quaternion);
 
 /**
  * @brief calculate pitch angle from trajectory on map
@@ -74,21 +71,21 @@ TRAJECTORY_FOLLOWER_PUBLIC float64_t getPitchByPose(const Quaternion & quaternio
  * @param [in] closest_idx nearest index to current vehicle position
  * @param [in] wheel_base length of wheel base
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t
-getPitchByTraj(const Trajectory & trajectory, const size_t closest_idx, const float64_t wheel_base);
+TRAJECTORY_FOLLOWER_PUBLIC double getPitchByTraj(
+  const Trajectory & trajectory, const size_t closest_idx, const double wheel_base);
 
 /**
  * @brief calculate elevation angle
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t
-calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to);
+TRAJECTORY_FOLLOWER_PUBLIC double calcElevationAngle(
+  const TrajectoryPoint & p_from, const TrajectoryPoint & p_to);
 
 /**
  * @brief calculate vehicle pose after time delay by moving the vehicle at current velocity for
  * delayed time
  */
 TRAJECTORY_FOLLOWER_PUBLIC Pose calcPoseAfterTimeDelay(
-  const Pose & current_pose, const float64_t delay_time, const float64_t current_vel);
+  const Pose & current_pose, const double delay_time, const double current_vel);
 
 /**
  * @brief apply linear interpolation to orientation
@@ -97,7 +94,7 @@ TRAJECTORY_FOLLOWER_PUBLIC Pose calcPoseAfterTimeDelay(
  * @param [in] ratio ratio between o_from and o_to for interpolation
  */
 TRAJECTORY_FOLLOWER_PUBLIC Quaternion
-lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const float64_t ratio);
+lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const double ratio);
 
 /**
  * @brief apply linear interpolation to trajectory point that is nearest to a certain point
@@ -106,16 +103,16 @@ lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const float6
  */
 template <class T>
 TRAJECTORY_FOLLOWER_PUBLIC TrajectoryPoint lerpTrajectoryPoint(
-  const T & points, const Pose & pose, const float64_t max_dist, const float64_t max_yaw)
+  const T & points, const Pose & pose, const double max_dist, const double max_yaw)
 {
   TrajectoryPoint interpolated_point;
   const size_t seg_idx =
     motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(points, pose, max_dist, max_yaw);
 
-  const float64_t len_to_interpolated =
+  const double len_to_interpolated =
     motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, pose.position);
-  const float64_t len_segment = motion_utils::calcSignedArcLength(points, seg_idx, seg_idx + 1);
-  const float64_t interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);
+  const double len_segment = motion_utils::calcSignedArcLength(points, seg_idx, seg_idx + 1);
+  const double interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);
 
   {
     const size_t i = seg_idx;
@@ -147,8 +144,8 @@ TRAJECTORY_FOLLOWER_PUBLIC TrajectoryPoint lerpTrajectoryPoint(
  * @param [in] dt time between current and previous one
  * @param [in] lim_val limitation value for differential
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t applyDiffLimitFilter(
-  const float64_t input_val, const float64_t prev_val, const float64_t dt, const float64_t lim_val);
+TRAJECTORY_FOLLOWER_PUBLIC double applyDiffLimitFilter(
+  const double input_val, const double prev_val, const double dt, const double lim_val);
 
 /**
  * @brief limit variable whose differential is within a certain value
@@ -158,9 +155,9 @@ TRAJECTORY_FOLLOWER_PUBLIC float64_t applyDiffLimitFilter(
  * @param [in] max_val maximum value for differential
  * @param [in] min_val minimum value for differential
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t applyDiffLimitFilter(
-  const float64_t input_val, const float64_t prev_val, const float64_t dt, const float64_t max_val,
-  const float64_t min_val);
+TRAJECTORY_FOLLOWER_PUBLIC double applyDiffLimitFilter(
+  const double input_val, const double prev_val, const double dt, const double max_val,
+  const double min_val);
 }  // namespace longitudinal_utils
 }  // namespace trajectory_follower
 }  // namespace control

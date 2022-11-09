@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__LOWPASS_FILTER_HPP_
 #define TRAJECTORY_FOLLOWER__LOWPASS_FILTER_HPP_
 
-#include "common/types.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include <algorithm>
@@ -31,8 +30,6 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
 
 /**
  * @brief Simple filter with gain on the first derivative of the value
@@ -40,8 +37,8 @@ using autoware::common::types::float64_t;
 class LowpassFilter1d
 {
 private:
-  float64_t m_x;     //!< @brief current filtered value
-  float64_t m_gain;  //!< @brief gain value of first-order low-pass filter
+  double m_x;     //!< @brief current filtered value
+  double m_gain;  //!< @brief gain value of first-order low-pass filter
 
 public:
   /**
@@ -49,26 +46,26 @@ public:
    * @param [in] x initial value
    * @param [in] gain first-order gain
    */
-  LowpassFilter1d(const float64_t x, const float64_t gain) : m_x(x), m_gain(gain) {}
+  LowpassFilter1d(const double x, const double gain) : m_x(x), m_gain(gain) {}
 
   /**
    * @brief set the current value of the filter
    * @param [in] x new value
    */
-  void reset(const float64_t x) { m_x = x; }
+  void reset(const double x) { m_x = x; }
 
   /**
    * @brief get the current value of the filter
    */
-  float64_t getValue() const { return m_x; }
+  double getValue() const { return m_x; }
 
   /**
    * @brief filter a new value
    * @param [in] u new value
    */
-  float64_t filter(const float64_t u)
+  double filter(const double u)
   {
-    const float64_t ret = m_gain * m_x + (1.0 - m_gain) * u;
+    const double ret = m_gain * m_x + (1.0 - m_gain) * u;
     m_x = ret;
     return ret;
   }
@@ -81,16 +78,16 @@ public:
 class TRAJECTORY_FOLLOWER_PUBLIC Butterworth2dFilter
 {
 private:
-  float64_t m_y1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_y2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_u1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_u2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_a0;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_a1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_a2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_b0;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_b1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  float64_t m_b2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_y1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_y2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_u1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_u2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_a0;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_a1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_a2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_b0;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_b1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double m_b2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
 
 public:
   /**
@@ -98,7 +95,7 @@ public:
    * @param [in] dt sampling time
    * @param [in] f_cutoff_hz cutoff frequency [Hz]
    */
-  explicit Butterworth2dFilter(float64_t dt = 0.01, float64_t f_cutoff_hz = 5.0);
+  explicit Butterworth2dFilter(double dt = 0.01, double f_cutoff_hz = 5.0);
 
   /**
    * @brief destructor
@@ -110,21 +107,21 @@ public:
    * @param [in] dt sampling time
    * @param [in] f_cutoff_hz cutoff frequency [Hz]
    */
-  void initialize(const float64_t & dt, const float64_t & f_cutoff_hz);
+  void initialize(const double & dt, const double & f_cutoff_hz);
 
   /**
    * @brief filtering (call this function at each sampling time with input)
    * @param [in] u scalar input for filter
    * @return filtered scalar value
    */
-  float64_t filter(const float64_t & u);
+  double filter(const double & u);
 
   /**
    * @brief filtering for time-series data
    * @param [in] t time-series data for input vector
    * @param [out] u object vector
    */
-  void filt_vector(const std::vector<float64_t> & t, std::vector<float64_t> & u) const;
+  void filt_vector(const std::vector<double> & t, std::vector<double> & u) const;
 
   /**
    * @brief filtering for time-series data from both forward-backward direction for zero phase delay
@@ -132,14 +129,14 @@ public:
    * @param [out] u object vector
    */
   void filtfilt_vector(
-    const std::vector<float64_t> & t,
-    std::vector<float64_t> & u) const;  // filtering forward and backward direction
+    const std::vector<double> & t,
+    std::vector<double> & u) const;  // filtering forward and backward direction
 
   /**
    * @brief get filter coefficients
    * @param [out] coeffs coefficients of filter [a0, a1, a2, b0, b1, b2].
    */
-  void getCoefficients(std::vector<float64_t> & coeffs) const;
+  void getCoefficients(std::vector<double> & coeffs) const;
 };
 
 /**
@@ -152,7 +149,7 @@ namespace MoveAverageFilter
  * @param [in] num index distance for moving average filter
  * @param [out] u object vector
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t filt_vector(const int64_t num, std::vector<float64_t> & u);
+TRAJECTORY_FOLLOWER_PUBLIC bool filt_vector(const int num, std::vector<double> & u);
 }  // namespace MoveAverageFilter
 }  // namespace trajectory_follower
 }  // namespace control

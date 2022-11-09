@@ -20,7 +20,6 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_auto_common</depend>
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_geometry</depend>
   <depend>autoware_auto_planning_msgs</depend>

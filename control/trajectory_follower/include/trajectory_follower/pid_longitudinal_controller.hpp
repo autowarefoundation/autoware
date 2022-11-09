@@ -52,8 +52,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
 /// \class PidLongitudinalController
@@ -66,21 +65,21 @@ public:
 private:
   struct Motion
   {
-    float64_t vel{0.0};
-    float64_t acc{0.0};
+    double vel{0.0};
+    double acc{0.0};
   };
 
   enum class Shift { Forward = 0, Reverse };
 
   struct ControlData
   {
-    bool8_t is_far_from_trajectory{false};
+    bool is_far_from_trajectory{false};
     size_t nearest_idx{0};  // nearest_idx = 0 when nearest_idx is not found with findNearestIdx
     Motion current_motion{};
     Shift shift{Shift::Forward};  // shift is used only to calculate the sign of pitch compensation
-    float64_t stop_dist{0.0};  // signed distance that is positive when car is before the stopline
-    float64_t slope_angle{0.0};
-    float64_t dt{0.0};
+    double stop_dist{0.0};  // signed distance that is positive when car is before the stopline
+    double slope_angle{0.0};
+    double dt{0.0};
   };
   rclcpp::Node * node_;
   // ros variables
@@ -97,7 +96,7 @@ private:
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr m_trajectory_ptr{nullptr};
 
   // vehicle info
-  float64_t m_wheel_base;
+  double m_wheel_base;
 
   // control state
   enum class ControlState { DRIVE = 0, STOPPING, STOPPED, EMERGENCY };
@@ -112,43 +111,43 @@ private:
   };
 
   // control period
-  float64_t m_longitudinal_ctrl_period;
+  double m_longitudinal_ctrl_period;
 
   // delay compensation
-  float64_t m_delay_compensation_time;
+  double m_delay_compensation_time;
 
   // enable flags
-  bool8_t m_enable_smooth_stop;
-  bool8_t m_enable_overshoot_emergency;
-  bool8_t m_enable_slope_compensation;
-  bool8_t m_enable_large_tracking_error_emergency;
-  bool8_t m_enable_keep_stopped_until_steer_convergence;
+  bool m_enable_smooth_stop;
+  bool m_enable_overshoot_emergency;
+  bool m_enable_slope_compensation;
+  bool m_enable_large_tracking_error_emergency;
+  bool m_enable_keep_stopped_until_steer_convergence;
 
   // smooth stop transition
   struct StateTransitionParams
   {
     // drive
-    float64_t drive_state_stop_dist;
-    float64_t drive_state_offset_stop_dist;
+    double drive_state_stop_dist;
+    double drive_state_offset_stop_dist;
     // stopping
-    float64_t stopping_state_stop_dist;
+    double stopping_state_stop_dist;
     // stop
-    float64_t stopped_state_entry_duration_time;
-    float64_t stopped_state_entry_vel;
-    float64_t stopped_state_entry_acc;
+    double stopped_state_entry_duration_time;
+    double stopped_state_entry_vel;
+    double stopped_state_entry_acc;
     // emergency
-    float64_t emergency_state_overshoot_stop_dist;
-    float64_t emergency_state_traj_trans_dev;
-    float64_t emergency_state_traj_rot_dev;
+    double emergency_state_overshoot_stop_dist;
+    double emergency_state_traj_trans_dev;
+    double emergency_state_traj_rot_dev;
   };
   StateTransitionParams m_state_transition_params;
 
   // drive
   trajectory_follower::PIDController m_pid_vel;
   std::shared_ptr<trajectory_follower::LowpassFilter1d> m_lpf_vel_error{nullptr};
-  float64_t m_current_vel_threshold_pid_integrate;
-  bool8_t m_enable_brake_keeping_before_stop;
-  float64_t m_brake_keeping_acc;
+  double m_current_vel_threshold_pid_integrate;
+  bool m_enable_brake_keeping_before_stop;
+  double m_brake_keeping_acc;
 
   // smooth stop
   trajectory_follower::SmoothStop m_smooth_stop;
@@ -156,34 +155,34 @@ private:
   // stop
   struct StoppedStateParams
   {
-    float64_t vel;
-    float64_t acc;
-    float64_t jerk;
+    double vel;
+    double acc;
+    double jerk;
   };
   StoppedStateParams m_stopped_state_params;
 
   // emergency
   struct EmergencyStateParams
   {
-    float64_t vel;
-    float64_t acc;
-    float64_t jerk;
+    double vel;
+    double acc;
+    double jerk;
   };
   EmergencyStateParams m_emergency_state_params;
 
   // acceleration limit
-  float64_t m_max_acc;
-  float64_t m_min_acc;
+  double m_max_acc;
+  double m_min_acc;
 
   // jerk limit
-  float64_t m_max_jerk;
-  float64_t m_min_jerk;
+  double m_max_jerk;
+  double m_min_jerk;
 
   // slope compensation
-  bool8_t m_use_traj_for_pitch;
+  bool m_use_traj_for_pitch;
   std::shared_ptr<trajectory_follower::LowpassFilter1d> m_lpf_pitch{nullptr};
-  float64_t m_max_pitch_rad;
-  float64_t m_min_pitch_rad;
+  double m_max_pitch_rad;
+  double m_min_pitch_rad;
 
   // ego nearest index search
   double m_ego_nearest_dist_threshold;
@@ -201,7 +200,7 @@ private:
   // diff limit
   Motion m_prev_ctrl_cmd{};      // with slope compensation
   Motion m_prev_raw_ctrl_cmd{};  // without slope compensation
-  std::vector<std::pair<rclcpp::Time, float64_t>> m_vel_hist;
+  std::vector<std::pair<rclcpp::Time, double>> m_vel_hist;
 
   // debug values
   trajectory_follower::DebugValues m_debug_values;
@@ -213,8 +212,8 @@ private:
   diagnostic_updater::Updater diagnostic_updater_;
   struct DiagnosticData
   {
-    float64_t trans_deviation{0.0};  // translation deviation between nearest point and current_pose
-    float64_t rot_deviation{0.0};    // rotation deviation between nearest point and current_pose
+    double trans_deviation{0.0};  // translation deviation between nearest point and current_pose
+    double rot_deviation{0.0};    // rotation deviation between nearest point and current_pose
   };
   DiagnosticData m_diagnostic_data;
   void setupDiagnosticUpdater();
@@ -259,7 +258,7 @@ private:
    * @brief calculate control command in emergency state
    * @param [in] dt time between previous and current one
    */
-  Motion calcEmergencyCtrlCmd(const float64_t dt) const;
+  Motion calcEmergencyCtrlCmd(const double dt) const;
 
   /**
    * @brief update control state according to the current situation
@@ -281,7 +280,7 @@ private:
    * @param [in] current_vel current velocity of the vehicle
    */
   autoware_auto_control_msgs::msg::LongitudinalCommand createCtrlCmdMsg(
-    const Motion & ctrl_cmd, const float64_t & current_vel);
+    const Motion & ctrl_cmd, const double & current_vel);
 
   /**
    * @brief publish debug data
@@ -293,7 +292,7 @@ private:
   /**
    * @brief calculate time between current and previous one
    */
-  float64_t getDt();
+  double getDt();
 
   /**
    * @brief calculate current velocity and acceleration
@@ -312,13 +311,13 @@ private:
    * @param [in] raw_acc acceleration before filtered
    * @param [in] control_data data for control calculation
    */
-  float64_t calcFilteredAcc(const float64_t raw_acc, const ControlData & control_data);
+  double calcFilteredAcc(const double raw_acc, const ControlData & control_data);
 
   /**
    * @brief store acceleration command before slope compensation
    * @param [in] accel command before slope compensation
    */
-  void storeAccelCmd(const float64_t accel);
+  void storeAccelCmd(const double accel);
 
   /**
    * @brief add acceleration to compensate for slope
@@ -326,8 +325,7 @@ private:
    * @param [in] pitch pitch angle (upward is negative)
    * @param [in] shift direction that vehicle move (forward or backward)
    */
-  float64_t applySlopeCompensation(
-    const float64_t acc, const float64_t pitch, const Shift shift) const;
+  double applySlopeCompensation(const double acc, const double pitch, const Shift shift) const;
 
   /**
    * @brief keep target motion acceleration negative before stop
@@ -353,8 +351,8 @@ private:
    * @param [in] current_motion current velocity and acceleration of the vehicle
    * @param [in] delay_compensation_time predicted time delay
    */
-  float64_t predictedVelocityInTargetPoint(
-    const Motion current_motion, const float64_t delay_compensation_time) const;
+  double predictedVelocityInTargetPoint(
+    const Motion current_motion, const double delay_compensation_time) const;
 
   /**
    * @brief calculate velocity feedback with feed forward and pid controller
@@ -363,8 +361,8 @@ private:
    * @param [in] dt time step to use
    * @param [in] current_vel current velocity of the vehicle
    */
-  float64_t applyVelocityFeedback(
-    const Motion target_motion, const float64_t dt, const float64_t current_vel);
+  double applyVelocityFeedback(
+    const Motion target_motion, const double dt, const double current_vel);
 
   /**
    * @brief update variables for debugging about pitch
@@ -372,8 +370,7 @@ private:
    * @param [in] traj_pitch current trajectory pitch
    * @param [in] raw_pitch current raw pitch of the vehicle (unfiltered)
    */
-  void updatePitchDebugValues(
-    const float64_t pitch, const float64_t traj_pitch, const float64_t raw_pitch);
+  void updatePitchDebugValues(const double pitch, const double traj_pitch, const double raw_pitch);
 
   /**
    * @brief update variables for velocity and acceleration

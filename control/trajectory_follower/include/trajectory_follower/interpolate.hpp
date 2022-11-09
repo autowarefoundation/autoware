@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__INTERPOLATE_HPP_
 #define TRAJECTORY_FOLLOWER__INTERPOLATE_HPP_
 
-#include "common/types.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include <cmath>
@@ -30,8 +29,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 /**
  * @brief linearly interpolate the given values assuming a base indexing and a new desired indexing
  * @param [in] base_index indexes for each base value
@@ -39,9 +37,9 @@ using autoware::common::types::float64_t;
  * @param [in] return_index desired interpolated indexes
  * @param [out] return_value resulting interpolated values
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t linearInterpolate(
-  const std::vector<float64_t> & base_index, const std::vector<float64_t> & base_value,
-  const std::vector<float64_t> & return_index, std::vector<float64_t> & return_value);
+TRAJECTORY_FOLLOWER_PUBLIC bool linearInterpolate(
+  const std::vector<double> & base_index, const std::vector<double> & base_value,
+  const std::vector<double> & return_index, std::vector<double> & return_value);
 /**
  * @brief linearly interpolate the given values assuming a base indexing and a new desired index
  * @param [in] base_index indexes for each base value
@@ -49,9 +47,9 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t linearInterpolate(
  * @param [in] return_index desired interpolated index
  * @param [out] return_value resulting interpolated value
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t linearInterpolate(
-  const std::vector<float64_t> & base_index, const std::vector<float64_t> & base_value,
-  const float64_t & return_index, float64_t & return_value);
+TRAJECTORY_FOLLOWER_PUBLIC bool linearInterpolate(
+  const std::vector<double> & base_index, const std::vector<double> & base_value,
+  const double & return_index, double & return_value);
 }  // namespace trajectory_follower
 }  // namespace control
 }  // namespace motion

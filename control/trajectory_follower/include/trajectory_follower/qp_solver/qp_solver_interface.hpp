@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__QP_SOLVER__QP_SOLVER_INTERFACE_HPP_
 #define TRAJECTORY_FOLLOWER__QP_SOLVER__QP_SOLVER_INTERFACE_HPP_
 
-#include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/LU"
@@ -29,7 +28,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::bool8_t;
+
 /// Interface for solvers of Quadratic Programming (QP) problems
 class TRAJECTORY_FOLLOWER_PUBLIC QPSolverInterface
 {
@@ -51,7 +50,7 @@ public:
    * @param [out] u optimal variable vector
    * @return ture if the problem was solved
    */
-  virtual bool8_t solve(
+  virtual bool solve(
     const Eigen::MatrixXd & h_mat, const Eigen::MatrixXd & f_vec, const Eigen::MatrixXd & a,
     const Eigen::VectorXd & lb, const Eigen::VectorXd & ub, const Eigen::VectorXd & lb_a,
     const Eigen::VectorXd & ub_a, Eigen::VectorXd & u) = 0;

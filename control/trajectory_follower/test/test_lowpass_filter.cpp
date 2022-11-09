@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "trajectory_follower/lowpass_filter.hpp"
 
 #include <vector>
 
-using autoware::common::types::float64_t;
-
 TEST(TestLowpassFilter, LowpassFilter1d)
 {
   using autoware::motion::control::trajectory_follower::LowpassFilter1d;
 
-  const float64_t epsilon = 1e-6;
+  const double epsilon = 1e-6;
   LowpassFilter1d lowpass_filter_1d(0.0, 0.1);
 
   // initial state
@@ -47,14 +44,14 @@ TEST(TestLowpassFilter, MoveAverageFilter)
   namespace MoveAverageFilter = autoware::motion::control::trajectory_follower::MoveAverageFilter;
 
   {  // Fail case: window size higher than the vector size
-    const int64_t window_size = 5;
-    std::vector<float64_t> vec = {1.0, 2.0, 3.0, 4.0};
+    const int window_size = 5;
+    std::vector<double> vec = {1.0, 2.0, 3.0, 4.0};
     EXPECT_FALSE(MoveAverageFilter::filt_vector(window_size, vec));
   }  // namespace autoware::motion::control::trajectory_follower::MoveAverageFilter;
   {
-    const int64_t window_size = 0;
-    const std::vector<float64_t> original_vec = {1.0, 3.0, 4.0, 6.0};
-    std::vector<float64_t> filtered_vec = original_vec;
+    const int window_size = 0;
+    const std::vector<double> original_vec = {1.0, 3.0, 4.0, 6.0};
+    std::vector<double> filtered_vec = original_vec;
     EXPECT_TRUE(MoveAverageFilter::filt_vector(window_size, filtered_vec));
     ASSERT_EQ(filtered_vec.size(), original_vec.size());
     for (size_t i = 0; i < filtered_vec.size(); ++i) {
@@ -62,9 +59,9 @@ TEST(TestLowpassFilter, MoveAverageFilter)
     }
   }
   {
-    const int64_t window_size = 1;
-    const std::vector<float64_t> original_vec = {1.0, 3.0, 4.0, 6.0};
-    std::vector<float64_t> filtered_vec = original_vec;
+    const int window_size = 1;
+    const std::vector<double> original_vec = {1.0, 3.0, 4.0, 6.0};
+    std::vector<double> filtered_vec = original_vec;
     EXPECT_TRUE(MoveAverageFilter::filt_vector(window_size, filtered_vec));
     ASSERT_EQ(filtered_vec.size(), original_vec.size());
     EXPECT_EQ(filtered_vec[0], original_vec[0]);
@@ -73,9 +70,9 @@ TEST(TestLowpassFilter, MoveAverageFilter)
     EXPECT_EQ(filtered_vec[3], original_vec[3]);
   }
   {
-    const int64_t window_size = 2;
-    const std::vector<float64_t> original_vec = {1.0, 3.0, 4.0, 6.0, 7.0, 10.0};
-    std::vector<float64_t> filtered_vec = original_vec;
+    const int window_size = 2;
+    const std::vector<double> original_vec = {1.0, 3.0, 4.0, 6.0, 7.0, 10.0};
+    std::vector<double> filtered_vec = original_vec;
     EXPECT_TRUE(MoveAverageFilter::filt_vector(window_size, filtered_vec));
     ASSERT_EQ(filtered_vec.size(), original_vec.size());
     EXPECT_EQ(filtered_vec[0], original_vec[0]);
@@ -89,15 +86,15 @@ TEST(TestLowpassFilter, MoveAverageFilter)
 TEST(TestLowpassFilter, Butterworth2dFilter)
 {
   using autoware::motion::control::trajectory_follower::Butterworth2dFilter;
-  const float64_t dt = 1.0;
-  const float64_t cutoff_hz = 1.0;
+  const double dt = 1.0;
+  const double cutoff_hz = 1.0;
   Butterworth2dFilter filter(dt, cutoff_hz);
-  for (float64_t i = 1.0; i < 10.0; ++i) {
+  for (double i = 1.0; i < 10.0; ++i) {
     EXPECT_LT(filter.filter(i), i);
   }
 
-  const std::vector<float64_t> original_vec = {1.0, 2.0, 3.0, 4.0};
-  std::vector<float64_t> filtered_vec;
+  const std::vector<double> original_vec = {1.0, 2.0, 3.0, 4.0};
+  std::vector<double> filtered_vec;
   filter.filt_vector(original_vec, filtered_vec);
   ASSERT_EQ(filtered_vec.size(), original_vec.size());
   EXPECT_EQ(filtered_vec[0], original_vec[0]);
@@ -109,7 +106,7 @@ TEST(TestLowpassFilter, Butterworth2dFilter)
   filter.filtfilt_vector(original_vec, filtered_vec);
   ASSERT_EQ(filtered_vec.size(), original_vec.size());
 
-  std::vector<float64_t> coefficients;
+  std::vector<double> coefficients;
   filter.getCoefficients(coefficients);
   EXPECT_EQ(coefficients.size(), size_t(6));
 }

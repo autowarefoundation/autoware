@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__DEBUG_VALUES_HPP_
 #define TRAJECTORY_FOLLOWER__DEBUG_VALUES_HPP_
 
-#include "common/types.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include <array>
@@ -28,7 +27,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
+
 /// Debug Values used for debugging or controller tuning
 class TRAJECTORY_FOLLOWER_PUBLIC DebugValues
 {
@@ -77,13 +76,13 @@ public:
    * @brief get all the debug values as an std::array
    * @return array of all debug values
    */
-  std::array<float64_t, static_cast<size_t>(TYPE::SIZE)> getValues() const { return m_values; }
+  std::array<double, static_cast<size_t>(TYPE::SIZE)> getValues() const { return m_values; }
   /**
    * @brief set the given type to the given value
    * @param [in] type TYPE of the value
    * @param [in] value value to set
    */
-  void setValues(const TYPE type, const float64_t value)
+  void setValues(const TYPE type, const double value)
   {
     m_values.at(static_cast<size_t>(type)) = value;
   }
@@ -92,10 +91,10 @@ public:
    * @param [in] type index of the type
    * @param [in] value value to set
    */
-  void setValues(const size_t type, const float64_t value) { m_values.at(type) = value; }
+  void setValues(const size_t type, const double value) { m_values.at(type) = value; }
 
 private:
-  std::array<float64_t, static_cast<size_t>(TYPE::SIZE)> m_values;
+  std::array<double, static_cast<size_t>(TYPE::SIZE)> m_values;
 };
 }  // namespace trajectory_follower
 }  // namespace control

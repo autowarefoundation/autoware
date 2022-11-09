@@ -31,7 +31,7 @@ using FakeNodeFixture = autoware::tools::testing::FakeTestNode;
 
 inline void waitForMessage(
   const std::shared_ptr<rclcpp::Node> & node, FakeNodeFixture * fixture, const bool & received_flag,
-  const std::chrono::duration<int64_t> max_wait_time = std::chrono::seconds{10LL},
+  const std::chrono::duration<int> max_wait_time = std::chrono::seconds{10LL},
   const bool fail_on_timeout = true)
 {
   const auto dt{std::chrono::milliseconds{100LL}};

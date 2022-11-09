@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__MPC_TRAJECTORY_HPP_
 #define TRAJECTORY_FOLLOWER__MPC_TRAJECTORY_HPP_
 
-#include "common/types.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
@@ -32,7 +31,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
+
 /**
  * Trajectory class for mpc follower
  * @brief calculate control command to follow reference waypoints
@@ -40,21 +39,21 @@ using autoware::common::types::float64_t;
 class TRAJECTORY_FOLLOWER_PUBLIC MPCTrajectory
 {
 public:
-  std::vector<float64_t> x;              //!< @brief x position x vector
-  std::vector<float64_t> y;              //!< @brief y position y vector
-  std::vector<float64_t> z;              //!< @brief z position z vector
-  std::vector<float64_t> yaw;            //!< @brief yaw pose yaw vector
-  std::vector<float64_t> vx;             //!< @brief vx velocity vx vector
-  std::vector<float64_t> k;              //!< @brief k curvature k vector
-  std::vector<float64_t> smooth_k;       //!< @brief k smoothed-curvature k vector
-  std::vector<float64_t> relative_time;  //!< @brief relative_time duration time from start point
+  std::vector<double> x;              //!< @brief x position x vector
+  std::vector<double> y;              //!< @brief y position y vector
+  std::vector<double> z;              //!< @brief z position z vector
+  std::vector<double> yaw;            //!< @brief yaw pose yaw vector
+  std::vector<double> vx;             //!< @brief vx velocity vx vector
+  std::vector<double> k;              //!< @brief k curvature k vector
+  std::vector<double> smooth_k;       //!< @brief k smoothed-curvature k vector
+  std::vector<double> relative_time;  //!< @brief relative_time duration time from start point
 
   /**
    * @brief push_back for all values
    */
   void push_back(
-    const float64_t & xp, const float64_t & yp, const float64_t & zp, const float64_t & yawp,
-    const float64_t & vxp, const float64_t & kp, const float64_t & smooth_kp, const float64_t & tp);
+    const double & xp, const double & yp, const double & zp, const double & yawp,
+    const double & vxp, const double & kp, const double & smooth_kp, const double & tp);
   /**
    * @brief clear for all values
    */

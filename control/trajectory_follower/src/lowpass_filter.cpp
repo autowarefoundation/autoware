@@ -24,14 +24,14 @@ namespace control
 {
 namespace trajectory_follower
 {
-Butterworth2dFilter::Butterworth2dFilter(float64_t dt, float64_t f_cutoff_hz)
+Butterworth2dFilter::Butterworth2dFilter(double dt, double f_cutoff_hz)
 {
   initialize(dt, f_cutoff_hz);
 }
 
 Butterworth2dFilter::~Butterworth2dFilter() {}
 
-void Butterworth2dFilter::initialize(const float64_t & dt, const float64_t & f_cutoff_hz)
+void Butterworth2dFilter::initialize(const double & dt, const double & f_cutoff_hz)
 {
   m_y1 = 0.0;
   m_y2 = 0.0;
@@ -39,8 +39,8 @@ void Butterworth2dFilter::initialize(const float64_t & dt, const float64_t & f_c
   m_u1 = 0.0;
 
   /* 2d butterworth lowpass filter with bi-linear transformation */
-  float64_t wc = 2.0 * M_PI * f_cutoff_hz;
-  float64_t n = 2 / dt;
+  double wc = 2.0 * M_PI * f_cutoff_hz;
+  double n = 2 / dt;
   m_a0 = n * n + sqrt(2) * wc * n + wc * wc;
   m_a1 = 2 * wc * wc - 2 * n * n;
   m_a2 = n * n - sqrt(2) * wc * n + wc * wc;
@@ -49,9 +49,9 @@ void Butterworth2dFilter::initialize(const float64_t & dt, const float64_t & f_c
   m_b2 = m_b0;
 }
 
-float64_t Butterworth2dFilter::filter(const float64_t & u0)
+double Butterworth2dFilter::filter(const double & u0)
 {
-  float64_t y0 = (m_b2 * m_u2 + m_b1 * m_u1 + m_b0 * u0 - m_a2 * m_y2 - m_a1 * m_y1) / m_a0;
+  double y0 = (m_b2 * m_u2 + m_b1 * m_u1 + m_b0 * u0 - m_a2 * m_y2 - m_a1 * m_y1) / m_a0;
   m_y2 = m_y1;
   m_y1 = y0;
   m_u2 = m_u1;
@@ -59,16 +59,15 @@ float64_t Butterworth2dFilter::filter(const float64_t & u0)
   return y0;
 }
 
-void Butterworth2dFilter::filt_vector(
-  const std::vector<float64_t> & t, std::vector<float64_t> & u) const
+void Butterworth2dFilter::filt_vector(const std::vector<double> & t, std::vector<double> & u) const
 {
   u.resize(t.size());
-  float64_t y1 = t.at(0);
-  float64_t y2 = t.at(0);
-  float64_t u2 = t.at(0);
-  float64_t u1 = t.at(0);
-  float64_t y0 = 0.0;
-  float64_t u0 = 0.0;
+  double y1 = t.at(0);
+  double y2 = t.at(0);
+  double u2 = t.at(0);
+  double u1 = t.at(0);
+  double y0 = 0.0;
+  double u0 = 0.0;
   for (size_t i = 0; i < t.size(); ++i) {
     u0 = t.at(i);
     y0 = (m_b2 * u2 + m_b1 * u1 + m_b0 * u0 - m_a2 * y2 - m_a1 * y1) / m_a0;
@@ -82,10 +81,10 @@ void Butterworth2dFilter::filt_vector(
 
 // filtering forward and backward direction
 void Butterworth2dFilter::filtfilt_vector(
-  const std::vector<float64_t> & t, std::vector<float64_t> & u) const
+  const std::vector<double> & t, std::vector<double> & u) const
 {
-  std::vector<float64_t> t_fwd(t);
-  std::vector<float64_t> t_rev(t);
+  std::vector<double> t_fwd(t);
+  std::vector<double> t_rev(t);
 
   // forward filtering
   filt_vector(t, t_fwd);
@@ -102,7 +101,7 @@ void Butterworth2dFilter::filtfilt_vector(
   }
 }
 
-void Butterworth2dFilter::getCoefficients(std::vector<float64_t> & coeffs) const
+void Butterworth2dFilter::getCoefficients(std::vector<double> & coeffs) const
 {
   coeffs.clear();
   coeffs.push_back(m_a0);
@@ -115,25 +114,25 @@ void Butterworth2dFilter::getCoefficients(std::vector<float64_t> & coeffs) const
 
 namespace MoveAverageFilter
 {
-bool8_t filt_vector(const int64_t num, std::vector<float64_t> & u)
+bool filt_vector(const int num, std::vector<double> & u)
 {
-  if (static_cast<int64_t>(u.size()) < num) {
+  if (static_cast<int>(u.size()) < num) {
     return false;
   }
-  std::vector<float64_t> filtered_u(u);
-  for (int64_t i = 0; i < static_cast<int64_t>(u.size()); ++i) {
-    float64_t tmp = 0.0;
-    int64_t num_tmp = 0;
-    float64_t count = 0;
+  std::vector<double> filtered_u(u);
+  for (int i = 0; i < static_cast<int>(u.size()); ++i) {
+    double tmp = 0.0;
+    int num_tmp = 0;
+    double count = 0;
     if (i - num < 0) {
       num_tmp = i;
-    } else if (i + num > static_cast<int64_t>(u.size()) - 1) {
-      num_tmp = static_cast<int64_t>(u.size()) - i - 1;
+    } else if (i + num > static_cast<int>(u.size()) - 1) {
+      num_tmp = static_cast<int>(u.size()) - i - 1;
     } else {
       num_tmp = num;
     }
 
-    for (int64_t j = -num_tmp; j <= num_tmp; ++j) {
+    for (int j = -num_tmp; j <= num_tmp; ++j) {
       tmp += u[static_cast<size_t>(i + j)];
       ++count;
     }

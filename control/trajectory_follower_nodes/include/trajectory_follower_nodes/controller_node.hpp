@@ -56,8 +56,7 @@ using trajectory_follower::LateralOutput;
 using trajectory_follower::LongitudinalOutput;
 namespace trajectory_follower_nodes
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
 /// \classController

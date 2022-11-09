@@ -23,7 +23,7 @@ namespace control
 namespace trajectory_follower
 {
 QPSolverEigenLeastSquareLLT::QPSolverEigenLeastSquareLLT() {}
-bool8_t QPSolverEigenLeastSquareLLT::solve(
+bool QPSolverEigenLeastSquareLLT::solve(
   const Eigen::MatrixXd & h_mat, const Eigen::MatrixXd & f_vec, const Eigen::MatrixXd & /*a*/,
   const Eigen::VectorXd & /*lb*/, const Eigen::VectorXd & /*ub*/, const Eigen::VectorXd & /*lb_a*/,
   const Eigen::VectorXd & /*ub_a*/, Eigen::VectorXd & u)

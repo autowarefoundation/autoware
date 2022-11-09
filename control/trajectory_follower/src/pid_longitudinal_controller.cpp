@@ -43,103 +43,101 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   m_wheel_base = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo().wheel_base_m;
 
   // parameters for delay compensation
-  m_delay_compensation_time =
-    node_->declare_parameter<float64_t>("delay_compensation_time");  // [s]
+  m_delay_compensation_time = node_->declare_parameter<double>("delay_compensation_time");  // [s]
 
   // parameters to enable functions
-  m_enable_smooth_stop = node_->declare_parameter<bool8_t>("enable_smooth_stop");
-  m_enable_overshoot_emergency = node_->declare_parameter<bool8_t>("enable_overshoot_emergency");
+  m_enable_smooth_stop = node_->declare_parameter<bool>("enable_smooth_stop");
+  m_enable_overshoot_emergency = node_->declare_parameter<bool>("enable_overshoot_emergency");
   m_enable_large_tracking_error_emergency =
-    node_->declare_parameter<bool8_t>("enable_large_tracking_error_emergency");
-  m_enable_slope_compensation = node_->declare_parameter<bool8_t>("enable_slope_compensation");
+    node_->declare_parameter<bool>("enable_large_tracking_error_emergency");
+  m_enable_slope_compensation = node_->declare_parameter<bool>("enable_slope_compensation");
   m_enable_keep_stopped_until_steer_convergence =
-    node_->declare_parameter<bool8_t>("enable_keep_stopped_until_steer_convergence");
+    node_->declare_parameter<bool>("enable_keep_stopped_until_steer_convergence");
 
   // parameters for state transition
   {
     auto & p = m_state_transition_params;
     // drive
-    p.drive_state_stop_dist = node_->declare_parameter<float64_t>("drive_state_stop_dist");  // [m]
+    p.drive_state_stop_dist = node_->declare_parameter<double>("drive_state_stop_dist");  // [m]
     p.drive_state_offset_stop_dist =
-      node_->declare_parameter<float64_t>("drive_state_offset_stop_dist");  // [m]
+      node_->declare_parameter<double>("drive_state_offset_stop_dist");  // [m]
     // stopping
     p.stopping_state_stop_dist =
-      node_->declare_parameter<float64_t>("stopping_state_stop_dist");  // [m]
+      node_->declare_parameter<double>("stopping_state_stop_dist");  // [m]
     p.stopped_state_entry_duration_time =
-      node_->declare_parameter<float64_t>("stopped_state_entry_duration_time");  // [s]
+      node_->declare_parameter<double>("stopped_state_entry_duration_time");  // [s]
     // stop
     p.stopped_state_entry_vel =
-      node_->declare_parameter<float64_t>("stopped_state_entry_vel");  // [m/s]
+      node_->declare_parameter<double>("stopped_state_entry_vel");  // [m/s]
     p.stopped_state_entry_acc =
-      node_->declare_parameter<float64_t>("stopped_state_entry_acc");  // [m/s²]
+      node_->declare_parameter<double>("stopped_state_entry_acc");  // [m/s²]
 
     // emergency
     p.emergency_state_overshoot_stop_dist =
-      node_->declare_parameter<float64_t>("emergency_state_overshoot_stop_dist");  // [m]
+      node_->declare_parameter<double>("emergency_state_overshoot_stop_dist");  // [m]
     p.emergency_state_traj_trans_dev =
-      node_->declare_parameter<float64_t>("emergency_state_traj_trans_dev");  // [m]
+      node_->declare_parameter<double>("emergency_state_traj_trans_dev");  // [m]
     p.emergency_state_traj_rot_dev =
-      node_->declare_parameter<float64_t>("emergency_state_traj_rot_dev");  // [m]
+      node_->declare_parameter<double>("emergency_state_traj_rot_dev");  // [m]
   }
 
   // parameters for drive state
   {
     // initialize PID gain
-    const float64_t kp{node_->declare_parameter<float64_t>("kp")};
-    const float64_t ki{node_->declare_parameter<float64_t>("ki")};
-    const float64_t kd{node_->declare_parameter<float64_t>("kd")};
+    const double kp{node_->declare_parameter<double>("kp")};
+    const double ki{node_->declare_parameter<double>("ki")};
+    const double kd{node_->declare_parameter<double>("kd")};
     m_pid_vel.setGains(kp, ki, kd);
 
     // initialize PID limits
-    const float64_t max_pid{node_->declare_parameter<float64_t>("max_out")};     // [m/s^2]
-    const float64_t min_pid{node_->declare_parameter<float64_t>("min_out")};     // [m/s^2]
-    const float64_t max_p{node_->declare_parameter<float64_t>("max_p_effort")};  // [m/s^2]
-    const float64_t min_p{node_->declare_parameter<float64_t>("min_p_effort")};  // [m/s^2]
-    const float64_t max_i{node_->declare_parameter<float64_t>("max_i_effort")};  // [m/s^2]
-    const float64_t min_i{node_->declare_parameter<float64_t>("min_i_effort")};  // [m/s^2]
-    const float64_t max_d{node_->declare_parameter<float64_t>("max_d_effort")};  // [m/s^2]
-    const float64_t min_d{node_->declare_parameter<float64_t>("min_d_effort")};  // [m/s^2]
+    const double max_pid{node_->declare_parameter<double>("max_out")};     // [m/s^2]
+    const double min_pid{node_->declare_parameter<double>("min_out")};     // [m/s^2]
+    const double max_p{node_->declare_parameter<double>("max_p_effort")};  // [m/s^2]
+    const double min_p{node_->declare_parameter<double>("min_p_effort")};  // [m/s^2]
+    const double max_i{node_->declare_parameter<double>("max_i_effort")};  // [m/s^2]
+    const double min_i{node_->declare_parameter<double>("min_i_effort")};  // [m/s^2]
+    const double max_d{node_->declare_parameter<double>("max_d_effort")};  // [m/s^2]
+    const double min_d{node_->declare_parameter<double>("min_d_effort")};  // [m/s^2]
     m_pid_vel.setLimits(max_pid, min_pid, max_p, min_p, max_i, min_i, max_d, min_d);
 
     // set lowpass filter for vel error and pitch
-    const float64_t lpf_vel_error_gain{node_->declare_parameter<float64_t>("lpf_vel_error_gain")};
+    const double lpf_vel_error_gain{node_->declare_parameter<double>("lpf_vel_error_gain")};
     m_lpf_vel_error =
       std::make_shared<trajectory_follower::LowpassFilter1d>(0.0, lpf_vel_error_gain);
 
     m_current_vel_threshold_pid_integrate =
-      node_->declare_parameter<float64_t>("current_vel_threshold_pid_integration");  // [m/s]
+      node_->declare_parameter<double>("current_vel_threshold_pid_integration");  // [m/s]
 
     m_enable_brake_keeping_before_stop =
-      node_->declare_parameter<bool8_t>("enable_brake_keeping_before_stop");         // [-]
-    m_brake_keeping_acc = node_->declare_parameter<float64_t>("brake_keeping_acc");  // [m/s^2]
+      node_->declare_parameter<bool>("enable_brake_keeping_before_stop");         // [-]
+    m_brake_keeping_acc = node_->declare_parameter<double>("brake_keeping_acc");  // [m/s^2]
   }
 
   // parameters for smooth stop state
   {
-    const float64_t max_strong_acc{
-      node_->declare_parameter<float64_t>("smooth_stop_max_strong_acc")};  // [m/s^2]
-    const float64_t min_strong_acc{
-      node_->declare_parameter<float64_t>("smooth_stop_min_strong_acc")};  // [m/s^2]
-    const float64_t weak_acc{
-      node_->declare_parameter<float64_t>("smooth_stop_weak_acc")};  // [m/s^2]
-    const float64_t weak_stop_acc{
-      node_->declare_parameter<float64_t>("smooth_stop_weak_stop_acc")};  // [m/s^2]
-    const float64_t strong_stop_acc{
-      node_->declare_parameter<float64_t>("smooth_stop_strong_stop_acc")};  // [m/s^2]
+    const double max_strong_acc{
+      node_->declare_parameter<double>("smooth_stop_max_strong_acc")};  // [m/s^2]
+    const double min_strong_acc{
+      node_->declare_parameter<double>("smooth_stop_min_strong_acc")};                // [m/s^2]
+    const double weak_acc{node_->declare_parameter<double>("smooth_stop_weak_acc")};  // [m/s^2]
+    const double weak_stop_acc{
+      node_->declare_parameter<double>("smooth_stop_weak_stop_acc")};  // [m/s^2]
+    const double strong_stop_acc{
+      node_->declare_parameter<double>("smooth_stop_strong_stop_acc")};  // [m/s^2]
 
-    const float64_t max_fast_vel{
-      node_->declare_parameter<float64_t>("smooth_stop_max_fast_vel")};  // [m/s]
-    const float64_t min_running_vel{
-      node_->declare_parameter<float64_t>("smooth_stop_min_running_vel")};  // [m/s]
-    const float64_t min_running_acc{
-      node_->declare_parameter<float64_t>("smooth_stop_min_running_acc")};  // [m/s^2]
-    const float64_t weak_stop_time{
-      node_->declare_parameter<float64_t>("smooth_stop_weak_stop_time")};  // [s]
+    const double max_fast_vel{
+      node_->declare_parameter<double>("smooth_stop_max_fast_vel")};  // [m/s]
+    const double min_running_vel{
+      node_->declare_parameter<double>("smooth_stop_min_running_vel")};  // [m/s]
+    const double min_running_acc{
+      node_->declare_parameter<double>("smooth_stop_min_running_acc")};  // [m/s^2]
+    const double weak_stop_time{
+      node_->declare_parameter<double>("smooth_stop_weak_stop_time")};  // [s]
 
-    const float64_t weak_stop_dist{
-      node_->declare_parameter<float64_t>("smooth_stop_weak_stop_dist")};  // [m]
-    const float64_t strong_stop_dist{
-      node_->declare_parameter<float64_t>("smooth_stop_strong_stop_dist")};  // [m]
+    const double weak_stop_dist{
+      node_->declare_parameter<double>("smooth_stop_weak_stop_dist")};  // [m]
+    const double strong_stop_dist{
+      node_->declare_parameter<double>("smooth_stop_strong_stop_dist")};  // [m]
 
     m_smooth_stop.setParams(
       max_strong_acc, min_strong_acc, weak_acc, weak_stop_acc, strong_stop_acc, max_fast_vel,
@@ -149,33 +147,33 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   // parameters for stop state
   {
     auto & p = m_stopped_state_params;
-    p.vel = node_->declare_parameter<float64_t>("stopped_vel");    // [m/s]
-    p.acc = node_->declare_parameter<float64_t>("stopped_acc");    // [m/s^2]
-    p.jerk = node_->declare_parameter<float64_t>("stopped_jerk");  // [m/s^3]
+    p.vel = node_->declare_parameter<double>("stopped_vel");    // [m/s]
+    p.acc = node_->declare_parameter<double>("stopped_acc");    // [m/s^2]
+    p.jerk = node_->declare_parameter<double>("stopped_jerk");  // [m/s^3]
   }
 
   // parameters for emergency state
   {
     auto & p = m_emergency_state_params;
-    p.vel = node_->declare_parameter<float64_t>("emergency_vel");    // [m/s]
-    p.acc = node_->declare_parameter<float64_t>("emergency_acc");    // [m/s^2]
-    p.jerk = node_->declare_parameter<float64_t>("emergency_jerk");  // [m/s^3]
+    p.vel = node_->declare_parameter<double>("emergency_vel");    // [m/s]
+    p.acc = node_->declare_parameter<double>("emergency_acc");    // [m/s^2]
+    p.jerk = node_->declare_parameter<double>("emergency_jerk");  // [m/s^3]
   }
 
   // parameters for acceleration limit
-  m_max_acc = node_->declare_parameter<float64_t>("max_acc");  // [m/s^2]
-  m_min_acc = node_->declare_parameter<float64_t>("min_acc");  // [m/s^2]
+  m_max_acc = node_->declare_parameter<double>("max_acc");  // [m/s^2]
+  m_min_acc = node_->declare_parameter<double>("min_acc");  // [m/s^2]
 
   // parameters for jerk limit
-  m_max_jerk = node_->declare_parameter<float64_t>("max_jerk");  // [m/s^3]
-  m_min_jerk = node_->declare_parameter<float64_t>("min_jerk");  // [m/s^3]
+  m_max_jerk = node_->declare_parameter<double>("max_jerk");  // [m/s^3]
+  m_min_jerk = node_->declare_parameter<double>("min_jerk");  // [m/s^3]
 
   // parameters for slope compensation
-  m_use_traj_for_pitch = node_->declare_parameter<bool8_t>("use_trajectory_for_pitch_calculation");
-  const float64_t lpf_pitch_gain{node_->declare_parameter<float64_t>("lpf_pitch_gain")};
+  m_use_traj_for_pitch = node_->declare_parameter<bool>("use_trajectory_for_pitch_calculation");
+  const double lpf_pitch_gain{node_->declare_parameter<double>("lpf_pitch_gain")};
   m_lpf_pitch = std::make_shared<trajectory_follower::LowpassFilter1d>(0.0, lpf_pitch_gain);
-  m_max_pitch_rad = node_->declare_parameter<float64_t>("max_pitch_rad");  // [rad]
-  m_min_pitch_rad = node_->declare_parameter<float64_t>("min_pitch_rad");  // [rad]
+  m_max_pitch_rad = node_->declare_parameter<double>("max_pitch_rad");  // [rad]
+  m_min_pitch_rad = node_->declare_parameter<double>("min_pitch_rad");  // [rad]
 
   // ego nearest index search
   m_ego_nearest_dist_threshold =
@@ -243,7 +241,7 @@ void PidLongitudinalController::setTrajectory(
 rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallback(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  auto update_param = [&](const std::string & name, float64_t & v) {
+  auto update_param = [&](const std::string & name, double & v) {
     auto it = std::find_if(
       parameters.cbegin(), parameters.cend(),
       [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
@@ -272,22 +270,22 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
 
   // drive state
   {
-    float64_t kp{node_->get_parameter("kp").as_double()};
-    float64_t ki{node_->get_parameter("ki").as_double()};
-    float64_t kd{node_->get_parameter("kd").as_double()};
+    double kp{node_->get_parameter("kp").as_double()};
+    double ki{node_->get_parameter("ki").as_double()};
+    double kd{node_->get_parameter("kd").as_double()};
     update_param("kp", kp);
     update_param("ki", ki);
     update_param("kd", kd);
     m_pid_vel.setGains(kp, ki, kd);
 
-    float64_t max_pid{node_->get_parameter("max_out").as_double()};
-    float64_t min_pid{node_->get_parameter("min_out").as_double()};
-    float64_t max_p{node_->get_parameter("max_p_effort").as_double()};
-    float64_t min_p{node_->get_parameter("min_p_effort").as_double()};
-    float64_t max_i{node_->get_parameter("max_i_effort").as_double()};
-    float64_t min_i{node_->get_parameter("min_i_effort").as_double()};
-    float64_t max_d{node_->get_parameter("max_d_effort").as_double()};
-    float64_t min_d{node_->get_parameter("min_d_effort").as_double()};
+    double max_pid{node_->get_parameter("max_out").as_double()};
+    double min_pid{node_->get_parameter("min_out").as_double()};
+    double max_p{node_->get_parameter("max_p_effort").as_double()};
+    double min_p{node_->get_parameter("min_p_effort").as_double()};
+    double max_i{node_->get_parameter("max_i_effort").as_double()};
+    double min_i{node_->get_parameter("min_i_effort").as_double()};
+    double max_d{node_->get_parameter("max_d_effort").as_double()};
+    double min_d{node_->get_parameter("min_d_effort").as_double()};
     update_param("max_out", max_pid);
     update_param("min_out", min_pid);
     update_param("max_p_effort", max_p);
@@ -303,17 +301,17 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
 
   // stopping state
   {
-    float64_t max_strong_acc{node_->get_parameter("smooth_stop_max_strong_acc").as_double()};
-    float64_t min_strong_acc{node_->get_parameter("smooth_stop_min_strong_acc").as_double()};
-    float64_t weak_acc{node_->get_parameter("smooth_stop_weak_acc").as_double()};
-    float64_t weak_stop_acc{node_->get_parameter("smooth_stop_weak_stop_acc").as_double()};
-    float64_t strong_stop_acc{node_->get_parameter("smooth_stop_strong_stop_acc").as_double()};
-    float64_t max_fast_vel{node_->get_parameter("smooth_stop_max_fast_vel").as_double()};
-    float64_t min_running_vel{node_->get_parameter("smooth_stop_min_running_vel").as_double()};
-    float64_t min_running_acc{node_->get_parameter("smooth_stop_min_running_acc").as_double()};
-    float64_t weak_stop_time{node_->get_parameter("smooth_stop_weak_stop_time").as_double()};
-    float64_t weak_stop_dist{node_->get_parameter("smooth_stop_weak_stop_dist").as_double()};
-    float64_t strong_stop_dist{node_->get_parameter("smooth_stop_strong_stop_dist").as_double()};
+    double max_strong_acc{node_->get_parameter("smooth_stop_max_strong_acc").as_double()};
+    double min_strong_acc{node_->get_parameter("smooth_stop_min_strong_acc").as_double()};
+    double weak_acc{node_->get_parameter("smooth_stop_weak_acc").as_double()};
+    double weak_stop_acc{node_->get_parameter("smooth_stop_weak_stop_acc").as_double()};
+    double strong_stop_acc{node_->get_parameter("smooth_stop_strong_stop_acc").as_double()};
+    double max_fast_vel{node_->get_parameter("smooth_stop_max_fast_vel").as_double()};
+    double min_running_vel{node_->get_parameter("smooth_stop_min_running_vel").as_double()};
+    double min_running_acc{node_->get_parameter("smooth_stop_min_running_acc").as_double()};
+    double weak_stop_time{node_->get_parameter("smooth_stop_weak_stop_time").as_double()};
+    double weak_stop_dist{node_->get_parameter("smooth_stop_weak_stop_dist").as_double()};
+    double strong_stop_dist{node_->get_parameter("smooth_stop_strong_stop_dist").as_double()};
     update_param("smooth_stop_max_strong_acc", max_strong_acc);
     update_param("smooth_stop_min_strong_acc", min_strong_acc);
     update_param("smooth_stop_weak_acc", weak_acc);
@@ -457,9 +455,9 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
     current_pose, *m_trajectory_ptr, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
 
   // pitch
-  const float64_t raw_pitch =
+  const double raw_pitch =
     trajectory_follower::longitudinal_utils::getPitchByPose(current_pose.orientation);
-  const float64_t traj_pitch = trajectory_follower::longitudinal_utils::getPitchByTraj(
+  const double traj_pitch = trajectory_follower::longitudinal_utils::getPitchByTraj(
     *m_trajectory_ptr, control_data.nearest_idx, m_wheel_base);
   control_data.slope_angle = m_use_traj_for_pitch ? traj_pitch : m_lpf_pitch->filter(raw_pitch);
   updatePitchDebugValues(control_data.slope_angle, traj_pitch, raw_pitch);
@@ -468,13 +466,13 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
 }
 
 PidLongitudinalController::Motion PidLongitudinalController::calcEmergencyCtrlCmd(
-  const float64_t dt) const
+  const double dt) const
 {
   // These accelerations are without slope compensation
   const auto & p = m_emergency_state_params;
-  const float64_t vel = trajectory_follower::longitudinal_utils::applyDiffLimitFilter(
+  const double vel = trajectory_follower::longitudinal_utils::applyDiffLimitFilter(
     p.vel, m_prev_raw_ctrl_cmd.vel, dt, p.acc);
-  const float64_t acc = trajectory_follower::longitudinal_utils::applyDiffLimitFilter(
+  const double acc = trajectory_follower::longitudinal_utils::applyDiffLimitFilter(
     p.acc, m_prev_raw_ctrl_cmd.acc, dt, p.jerk);
 
   RCLCPP_ERROR_THROTTLE(
@@ -486,39 +484,39 @@ PidLongitudinalController::Motion PidLongitudinalController::calcEmergencyCtrlCm
 
 void PidLongitudinalController::updateControlState(const ControlData & control_data)
 {
-  const float64_t current_vel = control_data.current_motion.vel;
-  const float64_t current_acc = control_data.current_motion.acc;
-  const float64_t stop_dist = control_data.stop_dist;
+  const double current_vel = control_data.current_motion.vel;
+  const double current_acc = control_data.current_motion.acc;
+  const double stop_dist = control_data.stop_dist;
 
   // flags for state transition
   const auto & p = m_state_transition_params;
 
-  const bool8_t departure_condition_from_stopping =
+  const bool departure_condition_from_stopping =
     stop_dist > p.drive_state_stop_dist + p.drive_state_offset_stop_dist;
-  const bool8_t departure_condition_from_stopped = stop_dist > p.drive_state_stop_dist;
+  const bool departure_condition_from_stopped = stop_dist > p.drive_state_stop_dist;
 
-  const bool8_t keep_stopped_condition =
+  const bool keep_stopped_condition =
     m_enable_keep_stopped_until_steer_convergence && !lateral_sync_data_.is_steer_converged;
 
-  const bool8_t stopping_condition = stop_dist < p.stopping_state_stop_dist;
+  const bool stopping_condition = stop_dist < p.stopping_state_stop_dist;
   if (
     std::fabs(current_vel) > p.stopped_state_entry_vel ||
     std::fabs(current_acc) > p.stopped_state_entry_acc) {
     m_last_running_time = std::make_shared<rclcpp::Time>(node_->now());
   }
-  const bool8_t stopped_condition =
+  const bool stopped_condition =
     m_last_running_time
       ? (node_->now() - *m_last_running_time).seconds() > p.stopped_state_entry_duration_time
       : false;
 
   static constexpr double vel_epsilon =
     1e-3;  // NOTE: the same velocity threshold as motion_utils::searchZeroVelocity
-  const float64_t current_vel_cmd =
+  const double current_vel_cmd =
     std::fabs(m_trajectory_ptr->points.at(control_data.nearest_idx).longitudinal_velocity_mps);
-  const bool8_t emergency_condition = m_enable_overshoot_emergency &&
-                                      stop_dist < -p.emergency_state_overshoot_stop_dist &&
-                                      current_vel_cmd < vel_epsilon;
-  const bool8_t has_nonzero_target_vel = std::abs(current_vel_cmd) > 1.0e-5;
+  const bool emergency_condition = m_enable_overshoot_emergency &&
+                                   stop_dist < -p.emergency_state_overshoot_stop_dist &&
+                                   current_vel_cmd < vel_epsilon;
+  const bool has_nonzero_target_vel = std::abs(current_vel_cmd) > 1.0e-5;
 
   const auto changeState = [this](const auto s) {
     if (s != m_control_state) {
@@ -544,9 +542,9 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     if (m_enable_smooth_stop) {
       if (stopping_condition) {
         // predictions after input time delay
-        const float64_t pred_vel_in_target =
+        const double pred_vel_in_target =
           predictedVelocityInTargetPoint(control_data.current_motion, m_delay_compensation_time);
-        const float64_t pred_stop_dist =
+        const double pred_stop_dist =
           control_data.stop_dist -
           0.5 * (pred_vel_in_target + current_vel) * m_delay_compensation_time;
         m_smooth_stop.init(pred_vel_in_target, pred_stop_dist);
@@ -621,8 +619,8 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
   const geometry_msgs::msg::Pose & current_pose, const ControlData & control_data)
 {
   const size_t nearest_idx = control_data.nearest_idx;
-  const float64_t current_vel = control_data.current_motion.vel;
-  const float64_t current_acc = control_data.current_motion.acc;
+  const double current_vel = control_data.current_motion.vel;
+  const double current_acc = control_data.current_motion.acc;
 
   // velocity and acceleration command
   Motion raw_ctrl_cmd{};
@@ -638,7 +636,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
 
     target_motion = keepBrakeBeforeStop(*m_trajectory_ptr, target_motion, nearest_idx);
 
-    const float64_t pred_vel_in_target =
+    const double pred_vel_in_target =
       predictedVelocityInTargetPoint(control_data.current_motion, m_delay_compensation_time);
     m_debug_values.setValues(
       trajectory_follower::DebugValues::TYPE::PREDICTED_VEL, pred_vel_in_target);
@@ -676,7 +674,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
   m_prev_raw_ctrl_cmd = raw_ctrl_cmd;
 
   // apply slope compensation and filter acceleration and jerk
-  const float64_t filtered_acc_cmd = calcFilteredAcc(raw_ctrl_cmd.acc, control_data);
+  const double filtered_acc_cmd = calcFilteredAcc(raw_ctrl_cmd.acc, control_data);
   const Motion filtered_ctrl_cmd{raw_ctrl_cmd.vel, filtered_acc_cmd};
 
   // update debug visualization
@@ -687,7 +685,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
 
 // Do not use nearest_idx here
 autoware_auto_control_msgs::msg::LongitudinalCommand PidLongitudinalController::createCtrlCmdMsg(
-  const Motion & ctrl_cmd, const float64_t & current_vel)
+  const Motion & ctrl_cmd, const double & current_vel)
 {
   // publish control command
   autoware_auto_control_msgs::msg::LongitudinalCommand cmd{};
@@ -713,10 +711,9 @@ void PidLongitudinalController::publishDebugData(
   // set debug values
   m_debug_values.setValues(DebugValues::TYPE::DT, control_data.dt);
   m_debug_values.setValues(DebugValues::TYPE::CALCULATED_ACC, control_data.current_motion.acc);
-  m_debug_values.setValues(DebugValues::TYPE::SHIFT, static_cast<float64_t>(control_data.shift));
+  m_debug_values.setValues(DebugValues::TYPE::SHIFT, static_cast<double>(control_data.shift));
   m_debug_values.setValues(DebugValues::TYPE::STOP_DIST, control_data.stop_dist);
-  m_debug_values.setValues(
-    DebugValues::TYPE::CONTROL_STATE, static_cast<float64_t>(m_control_state));
+  m_debug_values.setValues(DebugValues::TYPE::CONTROL_STATE, static_cast<double>(m_control_state));
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_PUBLISHED, ctrl_cmd.acc);
 
   // publish debug values
@@ -735,9 +732,9 @@ void PidLongitudinalController::publishDebugData(
   m_pub_slope->publish(slope_msg);
 }
 
-float64_t PidLongitudinalController::getDt()
+double PidLongitudinalController::getDt()
 {
-  float64_t dt;
+  double dt;
   if (!m_prev_control_time) {
     dt = m_longitudinal_ctrl_period;
     m_prev_control_time = std::make_shared<rclcpp::Time>(node_->now());
@@ -745,17 +742,17 @@ float64_t PidLongitudinalController::getDt()
     dt = (node_->now() - *m_prev_control_time).seconds();
     *m_prev_control_time = node_->now();
   }
-  const float64_t max_dt = m_longitudinal_ctrl_period * 2.0;
-  const float64_t min_dt = m_longitudinal_ctrl_period * 0.5;
+  const double max_dt = m_longitudinal_ctrl_period * 2.0;
+  const double min_dt = m_longitudinal_ctrl_period * 0.5;
   return std::max(std::min(dt, max_dt), min_dt);
 }
 
 enum PidLongitudinalController::Shift PidLongitudinalController::getCurrentShift(
   const size_t nearest_idx) const
 {
-  constexpr float64_t epsilon = 1e-5;
+  constexpr double epsilon = 1e-5;
 
-  const float64_t target_vel = m_trajectory_ptr->points.at(nearest_idx).longitudinal_velocity_mps;
+  const double target_vel = m_trajectory_ptr->points.at(nearest_idx).longitudinal_velocity_mps;
 
   if (target_vel > epsilon) {
     return Shift::Forward;
@@ -766,29 +763,29 @@ enum PidLongitudinalController::Shift PidLongitudinalController::getCurrentShift
   return m_prev_shift;
 }
 
-float64_t PidLongitudinalController::calcFilteredAcc(
-  const float64_t raw_acc, const ControlData & control_data)
+double PidLongitudinalController::calcFilteredAcc(
+  const double raw_acc, const ControlData & control_data)
 {
   using trajectory_follower::DebugValues;
-  const float64_t acc_max_filtered = std::clamp(raw_acc, m_min_acc, m_max_acc);
+  const double acc_max_filtered = std::clamp(raw_acc, m_min_acc, m_max_acc);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_ACC_LIMITED, acc_max_filtered);
 
   // store ctrl cmd without slope filter
   storeAccelCmd(acc_max_filtered);
 
-  const float64_t acc_slope_filtered =
+  const double acc_slope_filtered =
     applySlopeCompensation(acc_max_filtered, control_data.slope_angle, control_data.shift);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_SLOPE_APPLIED, acc_slope_filtered);
 
   // This jerk filter must be applied after slope compensation
-  const float64_t acc_jerk_filtered = trajectory_follower::longitudinal_utils::applyDiffLimitFilter(
+  const double acc_jerk_filtered = trajectory_follower::longitudinal_utils::applyDiffLimitFilter(
     acc_slope_filtered, m_prev_ctrl_cmd.acc, control_data.dt, m_max_jerk, m_min_jerk);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_JERK_LIMITED, acc_jerk_filtered);
 
   return acc_jerk_filtered;
 }
 
-void PidLongitudinalController::storeAccelCmd(const float64_t accel)
+void PidLongitudinalController::storeAccelCmd(const double accel)
 {
   if (m_control_state == ControlState::DRIVE) {
     // convert format
@@ -812,17 +809,17 @@ void PidLongitudinalController::storeAccelCmd(const float64_t accel)
   }
 }
 
-float64_t PidLongitudinalController::applySlopeCompensation(
-  const float64_t input_acc, const float64_t pitch, const Shift shift) const
+double PidLongitudinalController::applySlopeCompensation(
+  const double input_acc, const double pitch, const Shift shift) const
 {
   if (!m_enable_slope_compensation) {
     return input_acc;
   }
-  const float64_t pitch_limited = std::min(std::max(pitch, m_min_pitch_rad), m_max_pitch_rad);
+  const double pitch_limited = std::min(std::max(pitch, m_min_pitch_rad), m_max_pitch_rad);
 
   // Acceleration command is always positive independent of direction (= shift) when car is running
-  float64_t sign = (shift == Shift::Forward) ? -1 : (shift == Shift::Reverse ? 1 : 0);
-  float64_t compensated_acc = input_acc + sign * 9.81 * std::sin(pitch_limited);
+  double sign = (shift == Shift::Forward) ? -1 : (shift == Shift::Reverse ? 1 : 0);
+  double compensated_acc = input_acc + sign * 9.81 * std::sin(pitch_limited);
   return compensated_acc;
 }
 
@@ -841,7 +838,7 @@ PidLongitudinalController::Motion PidLongitudinalController::keepBrakeBeforeStop
     return output_motion;
   }
 
-  float64_t min_acc_before_stop = std::numeric_limits<float64_t>::max();
+  double min_acc_before_stop = std::numeric_limits<double>::max();
   size_t min_acc_idx = std::numeric_limits<size_t>::max();
   for (int i = static_cast<int>(*stop_idx); i >= 0; --i) {
     const auto ui = static_cast<size_t>(i);
@@ -852,7 +849,7 @@ PidLongitudinalController::Motion PidLongitudinalController::keepBrakeBeforeStop
     min_acc_idx = ui;
   }
 
-  const float64_t brake_keeping_acc = std::max(m_brake_keeping_acc, min_acc_before_stop);
+  const double brake_keeping_acc = std::max(m_brake_keeping_acc, min_acc_before_stop);
   if (nearest_idx >= min_acc_idx && target_motion.acc > brake_keeping_acc) {
     output_motion.acc = brake_keeping_acc;
   }
@@ -874,24 +871,24 @@ PidLongitudinalController::calcInterpolatedTargetValue(
     traj.points, pose, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
 }
 
-float64_t PidLongitudinalController::predictedVelocityInTargetPoint(
-  const Motion current_motion, const float64_t delay_compensation_time) const
+double PidLongitudinalController::predictedVelocityInTargetPoint(
+  const Motion current_motion, const double delay_compensation_time) const
 {
-  const float64_t current_vel = current_motion.vel;
-  const float64_t current_acc = current_motion.acc;
+  const double current_vel = current_motion.vel;
+  const double current_acc = current_motion.acc;
 
   if (std::fabs(current_vel) < 1e-01) {  // when velocity is low, no prediction
     return current_vel;
   }
 
-  const float64_t current_vel_abs = std::fabs(current_vel);
+  const double current_vel_abs = std::fabs(current_vel);
   if (m_ctrl_cmd_vec.size() == 0) {
-    const float64_t pred_vel = current_vel + current_acc * delay_compensation_time;
+    const double pred_vel = current_vel + current_acc * delay_compensation_time;
     // avoid to change sign of current_vel and pred_vel
     return pred_vel > 0 ? std::copysign(pred_vel, current_vel) : 0.0;
   }
 
-  float64_t pred_vel = current_vel_abs;
+  double pred_vel = current_vel_abs;
 
   const auto past_delay_time =
     node_->now() - rclcpp::Duration::from_seconds(delay_compensation_time);
@@ -899,22 +896,22 @@ float64_t PidLongitudinalController::predictedVelocityInTargetPoint(
     if ((node_->now() - m_ctrl_cmd_vec.at(i).stamp).seconds() < m_delay_compensation_time) {
       if (i == 0) {
         // size of m_ctrl_cmd_vec is less than m_delay_compensation_time
-        pred_vel = current_vel_abs + static_cast<float64_t>(m_ctrl_cmd_vec.at(i).acceleration) *
-                                       delay_compensation_time;
+        pred_vel = current_vel_abs +
+                   static_cast<double>(m_ctrl_cmd_vec.at(i).acceleration) * delay_compensation_time;
         return pred_vel > 0 ? std::copysign(pred_vel, current_vel) : 0.0;
       }
       // add velocity to accel * dt
-      const float64_t acc = m_ctrl_cmd_vec.at(i - 1).acceleration;
+      const double acc = m_ctrl_cmd_vec.at(i - 1).acceleration;
       const auto curr_time_i = rclcpp::Time(m_ctrl_cmd_vec.at(i).stamp);
-      const float64_t time_to_next_acc = std::min(
+      const double time_to_next_acc = std::min(
         (curr_time_i - rclcpp::Time(m_ctrl_cmd_vec.at(i - 1).stamp)).seconds(),
         (curr_time_i - past_delay_time).seconds());
       pred_vel += acc * time_to_next_acc;
     }
   }
 
-  const float64_t last_acc = m_ctrl_cmd_vec.at(m_ctrl_cmd_vec.size() - 1).acceleration;
-  const float64_t time_to_current =
+  const double last_acc = m_ctrl_cmd_vec.at(m_ctrl_cmd_vec.size() - 1).acceleration;
+  const double time_to_current =
     (node_->now() - m_ctrl_cmd_vec.at(m_ctrl_cmd_vec.size() - 1).stamp).seconds();
   pred_vel += last_acc * time_to_current;
 
@@ -922,19 +919,19 @@ float64_t PidLongitudinalController::predictedVelocityInTargetPoint(
   return pred_vel > 0 ? std::copysign(pred_vel, current_vel) : 0.0;
 }
 
-float64_t PidLongitudinalController::applyVelocityFeedback(
-  const Motion target_motion, const float64_t dt, const float64_t current_vel)
+double PidLongitudinalController::applyVelocityFeedback(
+  const Motion target_motion, const double dt, const double current_vel)
 {
   using trajectory_follower::DebugValues;
-  const float64_t current_vel_abs = std::fabs(current_vel);
-  const float64_t target_vel_abs = std::fabs(target_motion.vel);
-  const bool8_t enable_integration = (current_vel_abs > m_current_vel_threshold_pid_integrate);
-  const float64_t error_vel_filtered = m_lpf_vel_error->filter(target_vel_abs - current_vel_abs);
+  const double current_vel_abs = std::fabs(current_vel);
+  const double target_vel_abs = std::fabs(target_motion.vel);
+  const bool enable_integration = (current_vel_abs > m_current_vel_threshold_pid_integrate);
+  const double error_vel_filtered = m_lpf_vel_error->filter(target_vel_abs - current_vel_abs);
 
-  std::vector<float64_t> pid_contributions(3);
-  const float64_t pid_acc =
+  std::vector<double> pid_contributions(3);
+  const double pid_acc =
     m_pid_vel.calculate(error_vel_filtered, dt, enable_integration, pid_contributions);
-  const float64_t feedback_acc = target_motion.acc + pid_acc;
+  const double feedback_acc = target_motion.acc + pid_acc;
 
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_PID_APPLIED, feedback_acc);
   m_debug_values.setValues(DebugValues::TYPE::ERROR_VEL_FILTERED, error_vel_filtered);
@@ -949,10 +946,10 @@ float64_t PidLongitudinalController::applyVelocityFeedback(
 }
 
 void PidLongitudinalController::updatePitchDebugValues(
-  const float64_t pitch, const float64_t traj_pitch, const float64_t raw_pitch)
+  const double pitch, const double traj_pitch, const double raw_pitch)
 {
   using trajectory_follower::DebugValues;
-  const float64_t to_degrees = (180.0 / static_cast<float64_t>(autoware::common::types::PI));
+  const double to_degrees = (180.0 / static_cast<double>(M_PI));
   m_debug_values.setValues(DebugValues::TYPE::PITCH_LPF_RAD, pitch);
   m_debug_values.setValues(DebugValues::TYPE::PITCH_LPF_DEG, pitch * to_degrees);
   m_debug_values.setValues(DebugValues::TYPE::PITCH_RAW_RAD, raw_pitch);
@@ -966,7 +963,7 @@ void PidLongitudinalController::updateDebugVelAcc(
   const ControlData & control_data)
 {
   using trajectory_follower::DebugValues;
-  const float64_t current_vel = control_data.current_motion.vel;
+  const double current_vel = control_data.current_motion.vel;
 
   const auto interpolated_point = calcInterpolatedTargetValue(*m_trajectory_ptr, current_pose);
 

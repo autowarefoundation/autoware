@@ -61,16 +61,15 @@ bool isValidTrajectory(const Trajectory & traj)
   return true;
 }
 
-float64_t calcStopDistance(
-  const Pose & current_pose, const Trajectory & traj, const float64_t max_dist,
-  const float64_t max_yaw)
+double calcStopDistance(
+  const Pose & current_pose, const Trajectory & traj, const double max_dist, const double max_yaw)
 {
   const auto stop_idx_opt = motion_utils::searchZeroVelocityIndex(traj.points);
 
   const size_t end_idx = stop_idx_opt ? *stop_idx_opt : traj.points.size() - 1;
   const size_t seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     traj.points, current_pose, max_dist, max_yaw);
-  const float64_t signed_length_on_traj = motion_utils::calcSignedArcLength(
+  const double signed_length_on_traj = motion_utils::calcSignedArcLength(
     traj.points, current_pose.position, seg_idx, traj.points.at(end_idx).pose.position,
     std::min(end_idx, traj.points.size() - 2));
 
@@ -80,9 +79,9 @@ float64_t calcStopDistance(
   return signed_length_on_traj;
 }
 
-float64_t getPitchByPose(const Quaternion & quaternion_msg)
+double getPitchByPose(const Quaternion & quaternion_msg)
 {
-  float64_t roll, pitch, yaw;
+  double roll, pitch, yaw;
   tf2::Quaternion quaternion;
   tf2::fromMsg(quaternion_msg, quaternion);
   tf2::Matrix3x3{quaternion}.getRPY(roll, pitch, yaw);
@@ -90,8 +89,8 @@ float64_t getPitchByPose(const Quaternion & quaternion_msg)
   return pitch;
 }
 
-float64_t getPitchByTraj(
-  const Trajectory & trajectory, const size_t nearest_idx, const float64_t wheel_base)
+double getPitchByTraj(
+  const Trajectory & trajectory, const size_t nearest_idx, const double wheel_base)
 {
   using autoware::common::geometry::distance_2d;
   // cannot calculate pitch
@@ -100,8 +99,8 @@ float64_t getPitchByTraj(
   }
 
   for (size_t i = nearest_idx + 1; i < trajectory.points.size(); ++i) {
-    const float64_t dist =
-      distance_2d<float64_t>(trajectory.points.at(nearest_idx), trajectory.points.at(i));
+    const double dist =
+      distance_2d<double>(trajectory.points.at(nearest_idx), trajectory.points.at(i));
     if (dist > wheel_base) {
       // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
       return calcElevationAngle(trajectory.points.at(nearest_idx), trajectory.points.at(i));
@@ -110,8 +109,7 @@ float64_t getPitchByTraj(
 
   // close to goal
   for (size_t i = trajectory.points.size() - 1; i > 0; --i) {
-    const float64_t dist =
-      distance_2d<float64_t>(trajectory.points.back(), trajectory.points.at(i));
+    const double dist = distance_2d<double>(trajectory.points.back(), trajectory.points.at(i));
 
     if (dist > wheel_base) {
       // calculate pitch from trajectory
@@ -124,26 +122,26 @@ float64_t getPitchByTraj(
   return calcElevationAngle(trajectory.points.at(0), trajectory.points.back());
 }
 
-float64_t calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to)
+double calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to)
 {
-  const float64_t dx = p_from.pose.position.x - p_to.pose.position.x;
-  const float64_t dy = p_from.pose.position.y - p_to.pose.position.y;
-  const float64_t dz = p_from.pose.position.z - p_to.pose.position.z;
+  const double dx = p_from.pose.position.x - p_to.pose.position.x;
+  const double dy = p_from.pose.position.y - p_to.pose.position.y;
+  const double dz = p_from.pose.position.z - p_to.pose.position.z;
 
-  const float64_t dxy = std::max(std::hypot(dx, dy), std::numeric_limits<float64_t>::epsilon());
-  const float64_t pitch = std::atan2(dz, dxy);
+  const double dxy = std::max(std::hypot(dx, dy), std::numeric_limits<double>::epsilon());
+  const double pitch = std::atan2(dz, dxy);
 
   return pitch;
 }
 
 Pose calcPoseAfterTimeDelay(
-  const Pose & current_pose, const float64_t delay_time, const float64_t current_vel)
+  const Pose & current_pose, const double delay_time, const double current_vel)
 {
   // simple linear prediction
-  const float64_t yaw = tf2::getYaw(current_pose.orientation);
-  const float64_t running_distance = delay_time * current_vel;
-  const float64_t dx = running_distance * std::cos(yaw);
-  const float64_t dy = running_distance * std::sin(yaw);
+  const double yaw = tf2::getYaw(current_pose.orientation);
+  const double running_distance = delay_time * current_vel;
+  const double dx = running_distance * std::cos(yaw);
+  const double dy = running_distance * std::sin(yaw);
 
   auto pred_pose = current_pose;
   pred_pose.position.x += dx;
@@ -151,13 +149,12 @@ Pose calcPoseAfterTimeDelay(
   return pred_pose;
 }
 
-float64_t lerp(const float64_t v_from, const float64_t v_to, const float64_t ratio)
+double lerp(const double v_from, const double v_to, const double ratio)
 {
   return v_from + (v_to - v_from) * ratio;
 }
 
-Quaternion lerpOrientation(
-  const Quaternion & o_from, const Quaternion & o_to, const float64_t ratio)
+Quaternion lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const double ratio)
 {
   tf2::Quaternion q_from, q_to;
   tf2::fromMsg(o_from, q_from);
@@ -167,21 +164,21 @@ Quaternion lerpOrientation(
   return tf2::toMsg(q_interpolated);
 }
 
-float64_t applyDiffLimitFilter(
-  const float64_t input_val, const float64_t prev_val, const float64_t dt, const float64_t max_val,
-  const float64_t min_val)
+double applyDiffLimitFilter(
+  const double input_val, const double prev_val, const double dt, const double max_val,
+  const double min_val)
 {
-  const float64_t diff_raw = (input_val - prev_val) / dt;
-  const float64_t diff = std::min(std::max(diff_raw, min_val), max_val);
-  const float64_t filtered_val = prev_val + diff * dt;
+  const double diff_raw = (input_val - prev_val) / dt;
+  const double diff = std::min(std::max(diff_raw, min_val), max_val);
+  const double filtered_val = prev_val + diff * dt;
   return filtered_val;
 }
 
-float64_t applyDiffLimitFilter(
-  const float64_t input_val, const float64_t prev_val, const float64_t dt, const float64_t lim_val)
+double applyDiffLimitFilter(
+  const double input_val, const double prev_val, const double dt, const double lim_val)
 {
-  const float64_t max_val = std::fabs(lim_val);
-  const float64_t min_val = -max_val;
+  const double max_val = std::fabs(lim_val);
+  const double min_val = -max_val;
   return applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val);
 }
 }  // namespace longitudinal_utils

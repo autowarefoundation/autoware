@@ -30,12 +30,12 @@ namespace control
 {
 namespace trajectory_follower
 {
-void SmoothStop::init(const float64_t pred_vel_in_target, const float64_t pred_stop_dist)
+void SmoothStop::init(const double pred_vel_in_target, const double pred_stop_dist)
 {
   m_weak_acc_time = rclcpp::Clock{RCL_ROS_TIME}.now();
 
   // when distance to stopline is near the car
-  if (pred_stop_dist < std::numeric_limits<float64_t>::epsilon()) {
+  if (pred_stop_dist < std::numeric_limits<double>::epsilon()) {
     m_strong_acc = m_params.min_strong_acc;
     return;
   }
@@ -45,10 +45,9 @@ void SmoothStop::init(const float64_t pred_vel_in_target, const float64_t pred_s
 }
 
 void SmoothStop::setParams(
-  float64_t max_strong_acc, float64_t min_strong_acc, float64_t weak_acc, float64_t weak_stop_acc,
-  float64_t strong_stop_acc, float64_t min_fast_vel, float64_t min_running_vel,
-  float64_t min_running_acc, float64_t weak_stop_time, float64_t weak_stop_dist,
-  float64_t strong_stop_dist)
+  double max_strong_acc, double min_strong_acc, double weak_acc, double weak_stop_acc,
+  double strong_stop_acc, double min_fast_vel, double min_running_vel, double min_running_acc,
+  double weak_stop_time, double weak_stop_dist, double strong_stop_dist)
 {
   m_params.max_strong_acc = max_strong_acc;
   m_params.min_strong_acc = min_strong_acc;
@@ -67,28 +66,28 @@ void SmoothStop::setParams(
   m_is_set_params = true;
 }
 
-std::experimental::optional<float64_t> SmoothStop::calcTimeToStop(
-  const std::vector<std::pair<rclcpp::Time, float64_t>> & vel_hist) const
+std::experimental::optional<double> SmoothStop::calcTimeToStop(
+  const std::vector<std::pair<rclcpp::Time, double>> & vel_hist) const
 {
   if (!m_is_set_params) {
     throw std::runtime_error("Trying to calculate uninitialized SmoothStop");
   }
 
   // return when vel_hist is empty
-  const float64_t vel_hist_size = static_cast<float64_t>(vel_hist.size());
+  const double vel_hist_size = static_cast<double>(vel_hist.size());
   if (vel_hist_size == 0.0) {
     return {};
   }
 
   // calculate some variables for fitting
   const rclcpp::Time current_ros_time = rclcpp::Clock{RCL_ROS_TIME}.now();
-  float64_t mean_t = 0.0;
-  float64_t mean_v = 0.0;
-  float64_t sum_tv = 0.0;
-  float64_t sum_tt = 0.0;
+  double mean_t = 0.0;
+  double mean_v = 0.0;
+  double sum_tv = 0.0;
+  double sum_tt = 0.0;
   for (const auto & vel : vel_hist) {
-    const float64_t t = (vel.first - current_ros_time).seconds();
-    const float64_t v = vel.second;
+    const double t = (vel.first - current_ros_time).seconds();
+    const double v = vel.second;
 
     mean_t += t / vel_hist_size;
     mean_v += v / vel_hist_size;
@@ -98,24 +97,22 @@ std::experimental::optional<float64_t> SmoothStop::calcTimeToStop(
 
   // return when gradient a (of v = at + b) cannot be calculated.
   // See the following calculation of a
-  if (
-    std::abs(vel_hist_size * mean_t * mean_t - sum_tt) <
-    std::numeric_limits<float64_t>::epsilon()) {
+  if (std::abs(vel_hist_size * mean_t * mean_t - sum_tt) < std::numeric_limits<double>::epsilon()) {
     return {};
   }
 
   // calculate coefficients of linear function (v = at + b)
-  const float64_t a =
+  const double a =
     (vel_hist_size * mean_t * mean_v - sum_tv) / (vel_hist_size * mean_t * mean_t - sum_tt);
-  const float64_t b = mean_v - a * mean_t;
+  const double b = mean_v - a * mean_t;
 
   // return when v is independent of time (v = b)
-  if (std::abs(a) < std::numeric_limits<float64_t>::epsilon()) {
+  if (std::abs(a) < std::numeric_limits<double>::epsilon()) {
     return {};
   }
 
   // calculate time to stop by substituting v = 0 for v = at + b
-  const float64_t time_to_stop = -b / a;
+  const double time_to_stop = -b / a;
   if (time_to_stop > 0) {
     return time_to_stop;
   }
@@ -123,9 +120,9 @@ std::experimental::optional<float64_t> SmoothStop::calcTimeToStop(
   return {};
 }
 
-float64_t SmoothStop::calculate(
-  const float64_t stop_dist, const float64_t current_vel, const float64_t current_acc,
-  const std::vector<std::pair<rclcpp::Time, float64_t>> & vel_hist, const float64_t delay_time)
+double SmoothStop::calculate(
+  const double stop_dist, const double current_vel, const double current_acc,
+  const std::vector<std::pair<rclcpp::Time, double>> & vel_hist, const double delay_time)
 {
   if (!m_is_set_params) {
     throw std::runtime_error("Trying to calculate uninitialized SmoothStop");
@@ -135,9 +132,9 @@ float64_t SmoothStop::calculate(
   const auto time_to_stop = calcTimeToStop(vel_hist);
 
   // calculate some flags
-  const bool8_t is_fast_vel = std::abs(current_vel) > m_params.min_fast_vel;
-  const bool8_t is_running = std::abs(current_vel) > m_params.min_running_vel ||
-                             std::abs(current_acc) > m_params.min_running_acc;
+  const bool is_fast_vel = std::abs(current_vel) > m_params.min_fast_vel;
+  const bool is_running = std::abs(current_vel) > m_params.min_running_vel ||
+                          std::abs(current_acc) > m_params.min_running_acc;
 
   // when exceeding the stopline (stop_dist is negative in these cases.)
   if (stop_dist < m_params.strong_stop_dist) {  // when exceeding the stopline much

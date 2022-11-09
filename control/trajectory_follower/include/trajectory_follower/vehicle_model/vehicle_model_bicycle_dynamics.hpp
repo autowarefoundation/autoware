@@ -47,7 +47,6 @@
 #ifndef TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_DYNAMICS_HPP_
 #define TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_DYNAMICS_HPP_
 
-#include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
 #include "trajectory_follower/vehicle_model/vehicle_model_interface.hpp"
@@ -61,7 +60,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
+
 /**
  * Vehicle model class of bicycle dynamics
  * @brief calculate model-related values
@@ -80,8 +79,8 @@ public:
    * @param [in] cr rear cornering power [N/rad]
    */
   DynamicsBicycleModel(
-    const float64_t wheelbase, const float64_t mass_fl, const float64_t mass_fr,
-    const float64_t mass_rl, const float64_t mass_rr, const float64_t cf, const float64_t cr);
+    const double wheelbase, const double mass_fl, const double mass_fr, const double mass_rl,
+    const double mass_rr, const double cf, const double cr);
 
   /**
    * @brief destructor
@@ -98,7 +97,7 @@ public:
    */
   void calculateDiscreteMatrix(
     Eigen::MatrixXd & a_d, Eigen::MatrixXd & b_d, Eigen::MatrixXd & w_d, Eigen::MatrixXd & c_d,
-    const float64_t dt) override;
+    const double dt) override;
 
   /**
    * @brief calculate reference input
@@ -107,12 +106,12 @@ public:
   void calculateReferenceInput(Eigen::MatrixXd & u_ref) override;
 
 private:
-  float64_t m_lf;    //!< @brief length from center of mass to front wheel [m]
-  float64_t m_lr;    //!< @brief length from center of mass to rear wheel [m]
-  float64_t m_mass;  //!< @brief total mass of vehicle [kg]
-  float64_t m_iz;    //!< @brief moment of inertia [kg * m2]
-  float64_t m_cf;    //!< @brief front cornering power [N/rad]
-  float64_t m_cr;    //!< @brief rear cornering power [N/rad]
+  double m_lf;    //!< @brief length from center of mass to front wheel [m]
+  double m_lr;    //!< @brief length from center of mass to rear wheel [m]
+  double m_mass;  //!< @brief total mass of vehicle [kg]
+  double m_iz;    //!< @brief moment of inertia [kg * m2]
+  double m_cf;    //!< @brief front cornering power [N/rad]
+  double m_cr;    //!< @brief rear cornering power [N/rad]
 };
 }  // namespace trajectory_follower
 }  // namespace control

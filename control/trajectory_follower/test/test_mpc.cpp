@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "trajectory_follower/mpc.hpp"
 #include "trajectory_follower/qp_solver/qp_solver_osqp.hpp"
@@ -38,8 +37,7 @@
 
 namespace
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 typedef autoware_auto_planning_msgs::msg::Trajectory Trajectory;
 typedef autoware_auto_planning_msgs::msg::TrajectoryPoint TrajectoryPoint;
@@ -59,33 +57,33 @@ protected:
   SteeringReport neutral_steer;
   Pose pose_zero;
   PoseStamped::SharedPtr pose_zero_ptr;
-  float64_t default_velocity = 1.0;
+  double default_velocity = 1.0;
   rclcpp::Logger logger = rclcpp::get_logger("mpc_test_logger");
   // Vehicle model parameters
-  float64_t wheelbase = 2.7;
-  float64_t steer_limit = 1.0;
-  float64_t steer_tau = 0.1;
-  float64_t mass_fl = 600.0;
-  float64_t mass_fr = 600.0;
-  float64_t mass_rl = 600.0;
-  float64_t mass_rr = 600.0;
-  float64_t cf = 155494.663;
-  float64_t cr = 155494.663;
+  double wheelbase = 2.7;
+  double steer_limit = 1.0;
+  double steer_tau = 0.1;
+  double mass_fl = 600.0;
+  double mass_fr = 600.0;
+  double mass_rl = 600.0;
+  double mass_rr = 600.0;
+  double cf = 155494.663;
+  double cr = 155494.663;
   // Filters parameter
-  float64_t steering_lpf_cutoff_hz = 3.0;
-  float64_t error_deriv_lpf_cutoff_hz = 5.0;
+  double steering_lpf_cutoff_hz = 3.0;
+  double error_deriv_lpf_cutoff_hz = 5.0;
   // Test Parameters
-  float64_t admissible_position_error = 5.0;
-  float64_t admissible_yaw_error_rad = M_PI_2;
-  float64_t steer_lim = 0.610865;      // 35 degrees
-  float64_t steer_rate_lim = 2.61799;  // 150 degrees
-  float64_t ctrl_period = 0.03;
-  float64_t traj_resample_dist = 0.1;
-  int64_t path_filter_moving_ave_num = 35;
-  int64_t curvature_smoothing_num_traj = 1;
-  int64_t curvature_smoothing_num_ref_steer = 35;
-  bool8_t enable_path_smoothing = true;
-  bool8_t use_steer_prediction = true;
+  double admissible_position_error = 5.0;
+  double admissible_yaw_error_rad = M_PI_2;
+  double steer_lim = 0.610865;      // 35 degrees
+  double steer_rate_lim = 2.61799;  // 150 degrees
+  double ctrl_period = 0.03;
+  double traj_resample_dist = 0.1;
+  int path_filter_moving_ave_num = 35;
+  int curvature_smoothing_num_traj = 1;
+  int curvature_smoothing_num_ref_steer = 35;
+  bool enable_path_smoothing = true;
+  bool use_steer_prediction = true;
 
   void SetUp() override
   {

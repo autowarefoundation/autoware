@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__MPC_LATERAL_CONTROLLER_HPP_
 #define TRAJECTORY_FOLLOWER__MPC_LATERAL_CONTROLLER_HPP_
 
-#include "common/types.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
@@ -58,8 +57,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
 class TRAJECTORY_FOLLOWER_PUBLIC MpcLateralController : public LateralControllerBase
@@ -88,23 +86,23 @@ private:
 
   /* parameters for path smoothing */
   //!< @brief flag for path smoothing
-  bool8_t m_enable_path_smoothing;
+  bool m_enable_path_smoothing;
   //!< @brief param of moving average filter for path smoothing
-  int64_t m_path_filter_moving_ave_num;
+  int m_path_filter_moving_ave_num;
   //!< @brief point-to-point index distance for curvature calculation for trajectory  //NOLINT
-  int64_t m_curvature_smoothing_num_traj;
+  int m_curvature_smoothing_num_traj;
   //!< @brief point-to-point index distance for curvature calculation for reference steer command
   //!< //NOLINT
-  int64_t m_curvature_smoothing_num_ref_steer;
+  int m_curvature_smoothing_num_ref_steer;
   //!< @brief path resampling interval [m]
-  float64_t m_traj_resample_dist;
+  double m_traj_resample_dist;
 
   /* parameters for stop state */
-  float64_t m_stop_state_entry_ego_speed;
-  float64_t m_stop_state_entry_target_speed;
-  float64_t m_converged_steer_rad;
-  float64_t m_new_traj_duration_time;  // check trajectory shape change
-  float64_t m_new_traj_end_dist;       // check trajectory shape change
+  double m_stop_state_entry_ego_speed;
+  double m_stop_state_entry_target_speed;
+  double m_converged_steer_rad;
+  double m_new_traj_duration_time;  // check trajectory shape change
+  double m_new_traj_end_dist;       // check trajectory shape change
   bool m_keep_steer_control_until_converged;
 
   // trajectory buffer for detecting new trajectory
@@ -121,10 +119,10 @@ private:
   autoware_auto_planning_msgs::msg::Trajectory::SharedPtr m_current_trajectory_ptr;
 
   //!< @brief mpc filtered output in previous period
-  float64_t m_steer_cmd_prev = 0.0;
+  double m_steer_cmd_prev = 0.0;
 
   //!< @brief flag of m_ctrl_cmd_prev initialization
-  bool8_t m_is_ctrl_cmd_prev_initialized = false;
+  bool m_is_ctrl_cmd_prev_initialized = false;
   //!< @brief previous control command
   autoware_auto_control_msgs::msg::AckermannLateralCommand m_ctrl_cmd_prev;
 
@@ -136,7 +134,7 @@ private:
   double m_ego_nearest_yaw_threshold;
 
   //!< initialize timer to work in real, simulation, and replay
-  void initTimer(float64_t period_s);
+  void initTimer(double period_s);
   /**
    * @brief compute control command for path follow with a constant control period
    */
@@ -155,7 +153,7 @@ private:
   /**
    * @brief check if the received data is valid.
    */
-  bool8_t checkData() const;
+  bool checkData() const;
 
   /**
    * @brief create control command
@@ -189,14 +187,14 @@ private:
   /**
    * @brief check ego car is in stopped state
    */
-  bool8_t isStoppedState() const;
+  bool isStoppedState() const;
 
   /**
    * @brief check if the trajectory has valid value
    */
-  bool8_t isValidTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & traj) const;
+  bool isValidTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & traj) const;
 
-  bool8_t isTrajectoryShapeChanged() const;
+  bool isTrajectoryShapeChanged() const;
 
   bool isSteerConverged(const autoware_auto_control_msgs::msg::AckermannLateralCommand & cmd) const;
 

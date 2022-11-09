@@ -23,8 +23,8 @@ namespace control
 namespace trajectory_follower
 {
 void MPCTrajectory::push_back(
-  const float64_t & xp, const float64_t & yp, const float64_t & zp, const float64_t & yawp,
-  const float64_t & vxp, const float64_t & kp, const float64_t & smooth_kp, const float64_t & tp)
+  const double & xp, const double & yp, const double & zp, const double & yawp, const double & vxp,
+  const double & kp, const double & smooth_kp, const double & tp)
 {
   x.push_back(xp);
   y.push_back(yp);

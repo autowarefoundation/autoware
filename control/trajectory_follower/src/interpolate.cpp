@@ -32,7 +32,7 @@ namespace trajectory_follower
 {
 namespace
 {
-bool8_t isIncrease(const std::vector<float64_t> & x)
+bool isIncrease(const std::vector<double> & x)
 {
   for (size_t i = 0; i < x.size() - 1; ++i) {
     if (x.at(i) > x.at(i + 1)) {
@@ -42,9 +42,9 @@ bool8_t isIncrease(const std::vector<float64_t> & x)
   return true;
 }
 
-bool8_t isValidInput(
-  const std::vector<float64_t> & base_index, const std::vector<float64_t> & base_value,
-  const std::vector<float64_t> & return_index)
+bool isValidInput(
+  const std::vector<double> & base_index, const std::vector<double> & base_value,
+  const std::vector<double> & return_index)
 {
   if (base_index.empty() || base_value.empty() || return_index.empty()) {
     std::cerr << "mpc bad index : some vector is empty. base_index: " << base_index.size()
@@ -79,9 +79,9 @@ bool8_t isValidInput(
 }
 }  // namespace
 
-bool8_t linearInterpolate(
-  const std::vector<float64_t> & base_index, const std::vector<float64_t> & base_value,
-  const std::vector<float64_t> & return_index, std::vector<float64_t> & return_value)
+bool linearInterpolate(
+  const std::vector<double> & base_index, const std::vector<double> & base_value,
+  const std::vector<double> & return_index, std::vector<double> & return_value)
 {
   // check if inputs are valid
   if (!isValidInput(base_index, base_value, return_index)) {
@@ -111,11 +111,11 @@ bool8_t linearInterpolate(
       continue;
     }
 
-    const float64_t dist_base_idx = base_index.at(i) - base_index.at(i - 1);
-    const float64_t dist_to_forward = base_index.at(i) - idx;
-    const float64_t dist_to_backward = idx - base_index.at(i - 1);
+    const double dist_base_idx = base_index.at(i) - base_index.at(i - 1);
+    const double dist_to_forward = base_index.at(i) - idx;
+    const double dist_to_backward = idx - base_index.at(i - 1);
 
-    const float64_t value =
+    const double value =
       (dist_to_backward * base_value.at(i) + dist_to_forward * base_value.at(i - 1)) /
       dist_base_idx;
     return_value.push_back(value);
@@ -123,14 +123,14 @@ bool8_t linearInterpolate(
   return true;
 }
 
-bool8_t linearInterpolate(
-  const std::vector<float64_t> & base_index, const std::vector<float64_t> & base_value,
-  const float64_t & return_index, float64_t & return_value)
+bool linearInterpolate(
+  const std::vector<double> & base_index, const std::vector<double> & base_value,
+  const double & return_index, double & return_value)
 {
-  std::vector<float64_t> return_index_v;
+  std::vector<double> return_index_v;
   return_index_v.push_back(return_index);
 
-  std::vector<float64_t> return_value_v;
+  std::vector<double> return_value_v;
   if (!linearInterpolate(base_index, base_value, return_index_v, return_value_v)) {
     return false;
   }

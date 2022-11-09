@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "trajectory_follower/interpolate.hpp"
 
 #include <vector>
 
-using autoware::common::types::float64_t;
 TEST(TestInterpolate, Nominal)
 {
   using autoware::motion::control::trajectory_follower::linearInterpolate;
 
   // Simple case
   {
-    std::vector<float64_t> original_indexes = {1.0, 2.0, 3.0};
-    std::vector<float64_t> original_values = {1.0, 2.0, 3.0};
-    std::vector<float64_t> target_indexes = {1.5, 2.5};
-    std::vector<float64_t> target_values;
+    std::vector<double> original_indexes = {1.0, 2.0, 3.0};
+    std::vector<double> original_values = {1.0, 2.0, 3.0};
+    std::vector<double> target_indexes = {1.5, 2.5};
+    std::vector<double> target_values;
 
     ASSERT_TRUE(
       linearInterpolate(original_indexes, original_values, target_indexes, target_values));
@@ -39,10 +37,10 @@ TEST(TestInterpolate, Nominal)
   }
   // Non regular indexes
   {
-    std::vector<float64_t> original_indexes = {1.0, 1.5, 3.0};
-    std::vector<float64_t> original_values = {1.0, 2.0, 3.5};
-    std::vector<float64_t> target_indexes = {1.25, 2.5, 3.0};
-    std::vector<float64_t> target_values;
+    std::vector<double> original_indexes = {1.0, 1.5, 3.0};
+    std::vector<double> original_values = {1.0, 2.0, 3.5};
+    std::vector<double> target_indexes = {1.25, 2.5, 3.0};
+    std::vector<double> target_values;
 
     ASSERT_TRUE(
       linearInterpolate(original_indexes, original_values, target_indexes, target_values));
@@ -53,10 +51,10 @@ TEST(TestInterpolate, Nominal)
   }
   // Single index query
   {
-    std::vector<float64_t> original_indexes = {1.0, 1.5, 3.0};
-    std::vector<float64_t> original_values = {1.0, 2.0, 3.5};
-    float64_t target_index = 1.25;
-    float64_t target_value;
+    std::vector<double> original_indexes = {1.0, 1.5, 3.0};
+    std::vector<double> original_values = {1.0, 2.0, 3.5};
+    double target_index = 1.25;
+    double target_value;
 
     ASSERT_TRUE(linearInterpolate(original_indexes, original_values, target_index, target_value));
     EXPECT_EQ(target_value, 1.5);
@@ -66,7 +64,7 @@ TEST(TestInterpolate, Failure)
 {
   using autoware::motion::control::trajectory_follower::linearInterpolate;
 
-  std::vector<float64_t> target_values;
+  std::vector<double> target_values;
 
   // Non increasing indexes
   ASSERT_FALSE(

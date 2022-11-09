@@ -15,7 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER__MPC_UTILS_HPP_
 #define TRAJECTORY_FOLLOWER__MPC_UTILS_HPP_
 
-#include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "geometry/common_2d.hpp"
 #include "helper_functions/angle_utils.hpp"
@@ -53,27 +52,25 @@ namespace trajectory_follower
 {
 namespace MPCUtils
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
+
 /**
  * @brief convert from yaw to ros-Quaternion
  * @param [in] yaw input yaw angle
  * @return quaternion
  */
-TRAJECTORY_FOLLOWER_PUBLIC geometry_msgs::msg::Quaternion getQuaternionFromYaw(
-  const float64_t & yaw);
+TRAJECTORY_FOLLOWER_PUBLIC geometry_msgs::msg::Quaternion getQuaternionFromYaw(const double & yaw);
 /**
  * @brief convert Euler angle vector including +-2pi to 0 jump to continuous series data
  * @param [inout] a input angle vector
  */
-TRAJECTORY_FOLLOWER_PUBLIC void convertEulerAngleToMonotonic(std::vector<float64_t> * a);
+TRAJECTORY_FOLLOWER_PUBLIC void convertEulerAngleToMonotonic(std::vector<double> * a);
 /**
  * @brief calculate the lateral error of the given pose relative to the given reference pose
  * @param [in] ego_pose pose to check for error
  * @param [in] ref_pose reference pose
  * @return lateral distance between the two poses
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t calcLateralError(
+TRAJECTORY_FOLLOWER_PUBLIC double calcLateralError(
   const geometry_msgs::msg::Pose & ego_pose, const geometry_msgs::msg::Pose & ref_pose);
 /**
  * @brief convert the given Trajectory msg to a MPCTrajectory object
@@ -81,7 +78,7 @@ TRAJECTORY_FOLLOWER_PUBLIC float64_t calcLateralError(
  * @param [out] output resulting MPCTrajectory
  * @return true if the conversion was successful
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t convertToMPCTrajectory(
+TRAJECTORY_FOLLOWER_PUBLIC bool convertToMPCTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input, MPCTrajectory & output);
 /**
  * @brief convert the given MPCTrajectory to a Trajectory msg
@@ -89,7 +86,7 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t convertToMPCTrajectory(
  * @param [out] output resulting Trajectory msg
  * @return true if the conversion was successful
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t convertToAutowareTrajectory(
+TRAJECTORY_FOLLOWER_PUBLIC bool convertToAutowareTrajectory(
   const MPCTrajectory & input, autoware_auto_planning_msgs::msg::Trajectory & output);
 /**
  * @brief calculate the arc length at each point of the given trajectory
@@ -97,15 +94,15 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t convertToAutowareTrajectory(
  * @param [out] arclength the cummulative arc length at each point of the trajectory
  */
 TRAJECTORY_FOLLOWER_PUBLIC void calcMPCTrajectoryArclength(
-  const MPCTrajectory & trajectory, std::vector<float64_t> * arclength);
+  const MPCTrajectory & trajectory, std::vector<double> * arclength);
 /**
  * @brief resample the given trajectory with the given fixed interval
  * @param [in] input trajectory to resample
  * @param [in] resample_interval_dist the desired distance between two successive trajectory points
  * @param [out] output the resampled trajectory
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t resampleMPCTrajectoryByDistance(
-  const MPCTrajectory & input, const float64_t resample_interval_dist, MPCTrajectory * output);
+TRAJECTORY_FOLLOWER_PUBLIC bool resampleMPCTrajectoryByDistance(
+  const MPCTrajectory & input, const double resample_interval_dist, MPCTrajectory * output);
 /**
  * @brief linearly interpolate the given trajectory assuming a base indexing and a new desired
  * indexing
@@ -114,15 +111,15 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t resampleMPCTrajectoryByDistance(
  * @param [in] out_index desired interpolated indexes
  * @param [out] out_traj resulting interpolated MPCTrajectory
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t linearInterpMPCTrajectory(
-  const std::vector<float64_t> & in_index, const MPCTrajectory & in_traj,
-  const std::vector<float64_t> & out_index, MPCTrajectory * out_traj);
+TRAJECTORY_FOLLOWER_PUBLIC bool linearInterpMPCTrajectory(
+  const std::vector<double> & in_index, const MPCTrajectory & in_traj,
+  const std::vector<double> & out_index, MPCTrajectory * out_traj);
 /**
  * @brief fill the relative_time field of the given MPCTrajectory
  * @param [in] traj MPCTrajectory for which to fill in the relative_time
  * @return true if the calculation was successful
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcMPCTrajectoryTime(MPCTrajectory & traj);
+TRAJECTORY_FOLLOWER_PUBLIC bool calcMPCTrajectoryTime(MPCTrajectory & traj);
 /**
  * @brief recalculate the velocity field (vx) of the MPCTrajectory with dynamic smoothing
  * @param [in] start_idx index of the trajectory point from which to start smoothing
@@ -132,7 +129,7 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcMPCTrajectoryTime(MPCTrajectory & traj);
  * @param [inout] traj MPCTrajectory for which to calculate the smoothed velocity
  */
 TRAJECTORY_FOLLOWER_PUBLIC void dynamicSmoothingVelocity(
-  const size_t start_idx, const float64_t start_vel, const float64_t acc_lim, const float64_t tau,
+  const size_t start_idx, const double start_vel, const double acc_lim, const double tau,
   MPCTrajectory & traj);
 /**
  * @brief calculate yaw angle in MPCTrajectory from xy vector
@@ -149,7 +146,7 @@ TRAJECTORY_FOLLOWER_PUBLIC void calcTrajectoryYawFromXY(
  * calculation
  * @param [inout] traj object trajectory
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcTrajectoryCurvature(
+TRAJECTORY_FOLLOWER_PUBLIC bool calcTrajectoryCurvature(
   const size_t curvature_smoothing_num_traj, const size_t curvature_smoothing_num_ref_steer,
   MPCTrajectory * traj);
 /**
@@ -159,7 +156,7 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcTrajectoryCurvature(
  * @param [in] traj input trajectory
  * @return vector of curvatures at each point of the given trajectory
  */
-TRAJECTORY_FOLLOWER_PUBLIC std::vector<float64_t> calcTrajectoryCurvature(
+TRAJECTORY_FOLLOWER_PUBLIC std::vector<double> calcTrajectoryCurvature(
   const size_t curvature_smoothing_num, const MPCTrajectory & traj);
 /**
  * @brief calculate nearest pose on MPCTrajectory with linear interpolation
@@ -172,16 +169,16 @@ TRAJECTORY_FOLLOWER_PUBLIC std::vector<float64_t> calcTrajectoryCurvature(
  * @param [in] clock to throttle log output
  * @return false when nearest pose couldn't find for some reasons
  */
-TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcNearestPoseInterp(
+TRAJECTORY_FOLLOWER_PUBLIC bool calcNearestPoseInterp(
   const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose,
-  geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, float64_t * nearest_time,
+  geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, double * nearest_time,
   const double max_dist, const double max_yaw, const rclcpp::Logger & logger,
   rclcpp::Clock & clock);
 // /**
 //  * @brief calculate distance to stopped point
 //  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t calcStopDistance(
-  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int64_t origin);
+TRAJECTORY_FOLLOWER_PUBLIC double calcStopDistance(
+  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int origin);
 }  // namespace MPCUtils
 }  // namespace trajectory_follower
 }  // namespace control
