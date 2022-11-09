@@ -293,7 +293,7 @@ bool getStopLineIndexFromMap(
   const LineString2d extended_stop_line =
     planning_utils::extendLine(p_start, p_end, planner_data->stop_line_extend_length);
 
-  for (size_t i = lane_interval_start; i <= lane_interval_end; i++) {
+  for (size_t i = lane_interval_start; i < lane_interval_end; i++) {
     const auto & p_front = path.points.at(i).point.pose.position;
     const auto & p_back = path.points.at(i + 1).point.pose.position;
 
