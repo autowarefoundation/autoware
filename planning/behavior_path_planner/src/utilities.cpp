@@ -2030,11 +2030,15 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 
   // Add next lane
   const auto next_lanes = route_handler->getNextLanelets(current_lanes.back());
-  current_lanes.push_back(next_lanes.front());
+  if (!next_lanes.empty()) {
+    current_lanes.push_back(next_lanes.front());
+  }
 
   // Add previous lane
   const auto prev_lanes = route_handler->getPreviousLanelets(current_lanes.front());
-  current_lanes.insert(current_lanes.begin(), prev_lanes.front());
+  if (!prev_lanes.empty()) {
+    current_lanes.insert(current_lanes.begin(), prev_lanes.front());
+  }
 
   return current_lanes;
 }
