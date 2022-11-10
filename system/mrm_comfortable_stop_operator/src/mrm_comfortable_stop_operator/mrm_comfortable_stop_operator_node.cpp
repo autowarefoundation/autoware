@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2022 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "emergency_handler/emergency_handler_core.hpp"
+#include "mrm_comfortable_stop_operator/mrm_comfortable_stop_operator_core.hpp"
 
 #include <rclcpp/rclcpp.hpp>
-
-#include <memory>
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto node = std::make_shared<EmergencyHandler>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
+  auto node = std::make_shared<MrmComfortableStopOperator>();
+  rclcpp::spin(node);
   rclcpp::shutdown();
 
   return 0;

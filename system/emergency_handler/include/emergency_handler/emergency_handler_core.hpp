@@ -20,12 +20,14 @@
 #include <string>
 
 // Autoware
+#include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
-#include <autoware_auto_system_msgs/msg/emergency_state.hpp>
 #include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
 #include <autoware_auto_vehicle_msgs/msg/control_mode_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <tier4_system_msgs/msg/mrm_behavior_status.hpp>
+#include <tier4_system_msgs/srv/operate_mrm.hpp>
 
 // ROS2 core
 #include <rclcpp/create_timer.hpp>
@@ -46,6 +48,7 @@ struct Param
   double timeout_takeover_request;
   bool use_takeover_request;
   bool use_parking_after_stopped;
+  bool use_comfortable_stop;
   HazardLampPolicy turning_hazard_on{};
 };
 
@@ -63,11 +66,17 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::ControlModeReport>::SharedPtr
     sub_control_mode_;
+  rclcpp::Subscription<tier4_system_msgs::msg::MrmBehaviorStatus>::SharedPtr
+    sub_mrm_comfortable_stop_status_;
+  rclcpp::Subscription<tier4_system_msgs::msg::MrmBehaviorStatus>::SharedPtr
+    sub_mrm_emergency_stop_status_;
 
   autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr hazard_status_stamped_;
   autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr prev_control_command_;
   nav_msgs::msg::Odometry::ConstSharedPtr odom_;
   autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr control_mode_;
+  tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_comfortable_stop_status_;
+  tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr mrm_emergency_stop_status_;
 
   void onHazardStatusStamped(
     const autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr msg);
@@ -75,6 +84,10 @@ private:
     const autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr msg);
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
   void onControlMode(const autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg);
+  void onMrmComfortableStopStatus(
+    const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg);
+  void onMrmEmergencyStopStatus(
+    const tier4_system_msgs::msg::MrmBehaviorStatus::ConstSharedPtr msg);
 
   // Publisher
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
@@ -85,11 +98,29 @@ private:
   rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr
     pub_hazard_cmd_;
   rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr pub_gear_cmd_;
-  rclcpp::Publisher<autoware_auto_system_msgs::msg::EmergencyState>::SharedPtr pub_emergency_state_;
 
   autoware_auto_vehicle_msgs::msg::HazardLightsCommand createHazardCmdMsg();
   autoware_auto_vehicle_msgs::msg::GearCommand createGearCmdMsg();
   void publishControlCommands();
+
+  rclcpp::Publisher<autoware_adapi_v1_msgs::msg::MrmState>::SharedPtr pub_mrm_state_;
+
+  autoware_adapi_v1_msgs::msg::MrmState mrm_state_;
+  void publishMrmState();
+
+  // Clients
+  rclcpp::CallbackGroup::SharedPtr client_mrm_comfortable_stop_group_;
+  rclcpp::Client<tier4_system_msgs::srv::OperateMrm>::SharedPtr client_mrm_comfortable_stop_;
+  rclcpp::CallbackGroup::SharedPtr client_mrm_emergency_stop_group_;
+  rclcpp::Client<tier4_system_msgs::srv::OperateMrm>::SharedPtr client_mrm_emergency_stop_;
+
+  void callMrmBehavior(
+    const autoware_adapi_v1_msgs::msg::MrmState::_behavior_type & mrm_behavior) const;
+  void cancelMrmBehavior(
+    const autoware_adapi_v1_msgs::msg::MrmState::_behavior_type & mrm_behavior) const;
+  void logMrmCallingResult(
+    const tier4_system_msgs::srv::OperateMrm::Response & result, const std::string & behavior,
+    bool is_call) const;
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;
@@ -104,15 +135,14 @@ private:
   rclcpp::Time stamp_hazard_status_;
 
   // Algorithm
-  autoware_auto_system_msgs::msg::EmergencyState::_state_type emergency_state_{
-    autoware_auto_system_msgs::msg::EmergencyState::NORMAL};
   rclcpp::Time takeover_requested_time_;
-
+  bool is_takeover_request_ = false;
   void transitionTo(const int new_state);
-  void updateEmergencyState();
+  void updateMrmState();
+  void operateMrm();
+  autoware_adapi_v1_msgs::msg::MrmState::_behavior_type getCurrentMrmBehavior();
   bool isStopped();
   bool isEmergency(const autoware_auto_system_msgs::msg::HazardStatus & hazard_status);
-  autoware_auto_control_msgs::msg::AckermannControlCommand selectAlternativeControlCommand();
 };
 
 #endif  // EMERGENCY_HANDLER__EMERGENCY_HANDLER_CORE_HPP_

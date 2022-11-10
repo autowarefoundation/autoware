@@ -70,8 +70,6 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     this->create_publisher<OperationModeState>("output/operation_mode", durable_qos);
 
   // Subscriber
-  emergency_state_sub_ = this->create_subscription<EmergencyState>(
-    "input/emergency_state", 1, std::bind(&VehicleCmdGate::onEmergencyState, this, _1));
   external_emergency_stop_heartbeat_sub_ = this->create_subscription<Heartbeat>(
     "input/external_emergency_stop_heartbeat", 1,
     std::bind(&VehicleCmdGate::onExternalEmergencyStopHeartbeat, this, _1));
@@ -84,6 +82,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   operation_mode_sub_ = this->create_subscription<OperationModeState>(
     "input/operation_mode", rclcpp::QoS(1).transient_local(),
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ = *msg; });
+  mrm_state_sub_ = this->create_subscription<MrmState>(
+    "input/mrm_state", 1, std::bind(&VehicleCmdGate::onMrmState, this, _1));
 
   // Subscriber for auto
   auto_control_cmd_sub_ = this->create_subscription<AckermannControlCommand>(
@@ -546,14 +546,6 @@ AckermannControlCommand VehicleCmdGate::createEmergencyStopControlCmd() const
   return cmd;
 }
 
-void VehicleCmdGate::onEmergencyState(EmergencyState::ConstSharedPtr msg)
-{
-  is_system_emergency_ = (msg->state == EmergencyState::MRM_OPERATING) ||
-                         (msg->state == EmergencyState::MRM_SUCCEEDED) ||
-                         (msg->state == EmergencyState::MRM_FAILED);
-  emergency_state_heartbeat_received_time_ = std::make_shared<rclcpp::Time>(this->now());
-}
-
 void VehicleCmdGate::onExternalEmergencyStopHeartbeat(
   [[maybe_unused]] Heartbeat::ConstSharedPtr msg)
 {
@@ -585,6 +577,15 @@ void VehicleCmdGate::onEngageService(
 void VehicleCmdGate::onSteering(SteeringReport::ConstSharedPtr msg)
 {
   current_steer_ = msg->steering_tire_angle;
+}
+
+void VehicleCmdGate::onMrmState(MrmState::ConstSharedPtr msg)
+{
+  is_system_emergency_ =
+    (msg->state == MrmState::MRM_OPERATING || msg->state == MrmState::MRM_SUCCEEDED ||
+     msg->state == MrmState::MRM_FAILED) &&
+    (msg->behavior == MrmState::EMERGENCY_STOP);
+  emergency_state_heartbeat_received_time_ = std::make_shared<rclcpp::Time>(this->now());
 }
 
 double VehicleCmdGate::getDt()

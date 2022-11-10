@@ -26,6 +26,7 @@
     <remap from="input/emergency/control_cmd" to="/system/emergency/control_cmd"/>
     <remap from="input/emergency/hazard_lights_cmd" to="/system/emergency/hazard_lights_cmd"/>
     <remap from="input/emergency/gear_cmd" to="/system/emergency/gear_cmd"/>
+    <remap from="input/mrm_state" to="/system/fail_safe/mrm_state"/>
 
     <remap from="output/vehicle_cmd_emergency" to="/control/command/emergency_cmd"/>
     <remap from="output/control_cmd" to="/control/command/control_cmd"/>

@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>emergency_handler</name>
+  <name>mrm_emergency_stop_operator</name>
   <version>0.1.0</version>
-  <description>The emergency_handler ROS2 package</description>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
+  <description>The MRM emergency stop operator package</description>
   <maintainer email="makoto.kurihara@tier4.jp">Makoto Kurihara</maintainer>
   <license>Apache License 2.0</license>
 
@@ -14,10 +13,8 @@
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_control_msgs</depend>
-  <depend>autoware_auto_system_msgs</depend>
-  <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tier4_system_msgs</depend>

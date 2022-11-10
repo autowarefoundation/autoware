@@ -7,6 +7,7 @@
     timeout_takeover_request: 10.0
     use_takeover_request: false
     use_parking_after_stopped: false
+    use_comfortable_stop: false
 
     # setting whether to turn hazard lamp on for each situation
     turning_hazard_on:
