@@ -18,7 +18,7 @@
 #define FMT_HEADER_ONLY
 
 #include "ndt_scan_matcher/map_module.hpp"
-#include "ndt_scan_matcher/particle.hpp"
+#include "ndt_scan_matcher/pose_initialization_module.hpp"
 #include "ndt_scan_matcher/tf2_listener_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -31,7 +31,6 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
 #include <tier4_debug_msgs/msg/int32_stamped.hpp>
-#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <fmt/format.h>
@@ -162,6 +161,7 @@ private:
   tf2_ros::TransformBroadcaster tf2_broadcaster_;
 
   std::shared_ptr<NormalDistributionsTransform> ndt_ptr_;
+  std::shared_ptr<std::map<std::string, std::string>> state_ptr_;
 
   Eigen::Matrix4f base_to_sensor_matrix_;
   std::string base_frame_;
@@ -185,7 +185,6 @@ private:
   std::mutex initial_pose_array_mtx_;
 
   std::thread diagnostic_thread_;
-  std::map<std::string, std::string> key_value_stdmap_;
 
   // variables for regularization
   const bool regularization_enabled_;
@@ -195,6 +194,7 @@ private:
   bool is_activated_;
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
   std::unique_ptr<MapModule> map_module_;
+  std::unique_ptr<PoseInitializationModule> pose_init_module_;
 };
 
 #endif  // NDT_SCAN_MATCHER__NDT_SCAN_MATCHER_CORE_HPP_

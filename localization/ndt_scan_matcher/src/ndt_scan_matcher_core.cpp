@@ -14,14 +14,12 @@
 
 #include "ndt_scan_matcher/ndt_scan_matcher_core.hpp"
 
-#include "ndt_scan_matcher/debug.hpp"
 #include "ndt_scan_matcher/matrix_type.hpp"
 #include "ndt_scan_matcher/particle.hpp"
 #include "ndt_scan_matcher/pose_array_interpolator.hpp"
 #include "ndt_scan_matcher/util_func.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -83,6 +81,7 @@ NDTScanMatcher::NDTScanMatcher()
 : Node("ndt_scan_matcher"),
   tf2_broadcaster_(*this),
   ndt_ptr_(new NormalDistributionsTransform),
+  state_ptr_(new std::map<std::string, std::string>),
   base_frame_("base_link"),
   ndt_base_frame_("ndt_base_link"),
   map_frame_("map"),
@@ -96,7 +95,7 @@ NDTScanMatcher::NDTScanMatcher()
   oscillation_threshold_(10),
   regularization_enabled_(declare_parameter("regularization_enabled", false))
 {
-  key_value_stdmap_["state"] = "Initializing";
+  (*state_ptr_)["state"] = "Initializing";
   is_activated_ = false;
 
   int points_queue_size = this->declare_parameter("input_sensor_points_queue_size", 0);
@@ -135,9 +134,6 @@ NDTScanMatcher::NDTScanMatcher()
   converged_param_nearest_voxel_transformation_likelihood_ = this->declare_parameter(
     "converged_param_nearest_voxel_transformation_likelihood",
     converged_param_nearest_voxel_transformation_likelihood_);
-
-  initial_estimate_particles_num_ =
-    this->declare_parameter("initial_estimate_particles_num", initial_estimate_particles_num_);
 
   initial_pose_timeout_sec_ =
     this->declare_parameter("initial_pose_timeout_sec", initial_pose_timeout_sec_);
@@ -202,18 +198,9 @@ NDTScanMatcher::NDTScanMatcher()
     this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
       "initial_to_result_distance_new", 10);
   ndt_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("ndt_marker", 10);
-  ndt_monte_carlo_initial_pose_marker_pub_ =
-    this->create_publisher<visualization_msgs::msg::MarkerArray>(
-      "monte_carlo_initial_pose_marker", 10);
-
   diagnostics_pub_ =
     this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
 
-  service_ = this->create_service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>(
-    "ndt_align_srv",
-    std::bind(
-      &NDTScanMatcher::service_ndt_align, this, std::placeholders::_1, std::placeholders::_2),
-    rclcpp::ServicesQoS().get_rmw_qos_profile(), main_callback_group);
   service_trigger_node_ = this->create_service<std_srvs::srv::SetBool>(
     "trigger_node_srv",
     std::bind(
@@ -225,6 +212,9 @@ NDTScanMatcher::NDTScanMatcher()
 
   tf2_listener_module_ = std::make_shared<Tf2ListenerModule>(this);
   map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, main_callback_group);
+  pose_init_module_ = std::make_unique<PoseInitializationModule>(
+    this, &ndt_ptr_mtx_, ndt_ptr_, tf2_listener_module_, map_frame_, main_callback_group,
+    state_ptr_);
 }
 
 void NDTScanMatcher::timer_diagnostic()
@@ -235,7 +225,7 @@ void NDTScanMatcher::timer_diagnostic()
     diag_status_msg.name = "ndt_scan_matcher";
     diag_status_msg.hardware_id = "";
 
-    for (const auto & key_value : key_value_stdmap_) {
+    for (const auto & key_value : (*state_ptr_)) {
       diagnostic_msgs::msg::KeyValue key_value_msg;
       key_value_msg.key = key_value.first;
       key_value_msg.value = key_value.second;
@@ -244,26 +234,26 @@ void NDTScanMatcher::timer_diagnostic()
 
     diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
     diag_status_msg.message = "";
-    if (key_value_stdmap_.count("state") && key_value_stdmap_["state"] == "Initializing") {
+    if (state_ptr_->count("state") && (*state_ptr_)["state"] == "Initializing") {
       diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
       diag_status_msg.message += "Initializing State. ";
     }
     if (
-      key_value_stdmap_.count("skipping_publish_num") &&
-      std::stoi(key_value_stdmap_["skipping_publish_num"]) > 1) {
+      state_ptr_->count("skipping_publish_num") &&
+      std::stoi((*state_ptr_)["skipping_publish_num"]) > 1) {
       diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
       diag_status_msg.message += "skipping_publish_num > 1. ";
     }
     if (
-      key_value_stdmap_.count("skipping_publish_num") &&
-      std::stoi(key_value_stdmap_["skipping_publish_num"]) >= 5) {
+      state_ptr_->count("skipping_publish_num") &&
+      std::stoi((*state_ptr_)["skipping_publish_num"]) >= 5) {
       diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
       diag_status_msg.message += "skipping_publish_num exceed limit. ";
     }
     // Ignore local optimal solution
     if (
-      key_value_stdmap_.count("is_local_optimal_solution_oscillation") &&
-      std::stoi(key_value_stdmap_["is_local_optimal_solution_oscillation"])) {
+      state_ptr_->count("is_local_optimal_solution_oscillation") &&
+      std::stoi((*state_ptr_)["is_local_optimal_solution_oscillation"])) {
       diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
       diag_status_msg.message = "local optimal solution oscillation occurred";
     }
@@ -276,40 +266,6 @@ void NDTScanMatcher::timer_diagnostic()
 
     rate.sleep();
   }
-}
-
-void NDTScanMatcher::service_ndt_align(
-  const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
-  tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res)
-{
-  // get TF from pose_frame to map_frame
-  auto TF_pose_to_map_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
-  tf2_listener_module_->get_transform(
-    this->now(), map_frame_, req->pose_with_covariance.header.frame_id, TF_pose_to_map_ptr);
-
-  // transform pose_frame to map_frame
-  const auto mapTF_initial_pose_msg = transform(req->pose_with_covariance, *TF_pose_to_map_ptr);
-
-  if (ndt_ptr_->getInputTarget() == nullptr) {
-    res->success = false;
-    RCLCPP_WARN(get_logger(), "No InputTarget");
-    return;
-  }
-
-  if (ndt_ptr_->getInputSource() == nullptr) {
-    res->success = false;
-    RCLCPP_WARN(get_logger(), "No InputSource");
-    return;
-  }
-
-  // mutex Map
-  std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);
-
-  key_value_stdmap_["state"] = "Aligning";
-  res->pose_with_covariance = align_using_monte_carlo(ndt_ptr_, mapTF_initial_pose_msg);
-  key_value_stdmap_["state"] = "Sleeping";
-  res->success = true;
-  res->pose_with_covariance.pose.covariance = req->pose_with_covariance.pose.covariance;
 }
 
 void NDTScanMatcher::callback_initial_pose(
@@ -396,13 +352,13 @@ void NDTScanMatcher::callback_sensor_points(
   }
 
   // perform ndt scan matching
-  key_value_stdmap_["state"] = "Aligning";
+  (*state_ptr_)["state"] = "Aligning";
   const Eigen::Matrix4f initial_pose_matrix =
     pose_to_matrix4f(interpolator.get_current_pose().pose.pose);
   auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();
   ndt_ptr_->align(*output_cloud, initial_pose_matrix);
   const pclomp::NdtResult ndt_result = ndt_ptr_->getResult();
-  key_value_stdmap_["state"] = "Sleeping";
+  (*state_ptr_)["state"] = "Sleeping";
 
   const auto exe_end_time = std::chrono::system_clock::now();
   const double exe_time =
@@ -467,15 +423,15 @@ void NDTScanMatcher::callback_sensor_points(
     *sensor_points_baselinkTF_ptr, *sensor_points_mapTF_ptr, ndt_result.pose);
   publish_point_cloud(sensor_ros_time, map_frame_, sensor_points_mapTF_ptr);
 
-  key_value_stdmap_["transform_probability"] = std::to_string(ndt_result.transform_probability);
-  key_value_stdmap_["nearest_voxel_transformation_likelihood"] =
+  (*state_ptr_)["transform_probability"] = std::to_string(ndt_result.transform_probability);
+  (*state_ptr_)["nearest_voxel_transformation_likelihood"] =
     std::to_string(ndt_result.nearest_voxel_transformation_likelihood);
-  key_value_stdmap_["iteration_num"] = std::to_string(ndt_result.iteration_num);
-  key_value_stdmap_["skipping_publish_num"] = std::to_string(skipping_publish_num);
+  (*state_ptr_)["iteration_num"] = std::to_string(ndt_result.iteration_num);
+  (*state_ptr_)["skipping_publish_num"] = std::to_string(skipping_publish_num);
   if (is_local_optimal_solution_oscillation) {
-    key_value_stdmap_["is_local_optimal_solution_oscillation"] = "1";
+    (*state_ptr_)["is_local_optimal_solution_oscillation"] = "1";
   } else {
-    key_value_stdmap_["is_local_optimal_solution_oscillation"] = "0";
+    (*state_ptr_)["is_local_optimal_solution_oscillation"] = "0";
   }
 }
 
@@ -493,54 +449,6 @@ void NDTScanMatcher::transform_sensor_measurement(
     pose_to_matrix4f(target_to_source_pose_stamped.pose);
   pcl::transformPointCloud(
     *sensor_points_input_ptr, *sensor_points_output_ptr, base_to_sensor_matrix);
-}
-
-geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_carlo(
-  const std::shared_ptr<NormalDistributionsTransform> & ndt_ptr,
-  const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_with_cov)
-{
-  if (ndt_ptr->getInputTarget() == nullptr || ndt_ptr->getInputSource() == nullptr) {
-    RCLCPP_WARN(get_logger(), "No Map or Sensor PointCloud");
-    return geometry_msgs::msg::PoseWithCovarianceStamped();
-  }
-
-  // generateParticle
-  const auto initial_poses =
-    create_random_pose_array(initial_pose_with_cov, initial_estimate_particles_num_);
-
-  std::vector<Particle> particle_array;
-  auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();
-
-  for (unsigned int i = 0; i < initial_poses.size(); i++) {
-    const auto & initial_pose = initial_poses[i];
-    const Eigen::Matrix4f initial_pose_matrix = pose_to_matrix4f(initial_pose);
-    ndt_ptr->align(*output_cloud, initial_pose_matrix);
-    const pclomp::NdtResult ndt_result = ndt_ptr->getResult();
-
-    Particle particle(
-      initial_pose, matrix4f_to_pose(ndt_result.pose), ndt_result.transform_probability,
-      ndt_result.iteration_num);
-    particle_array.push_back(particle);
-    const auto marker_array = make_debug_markers(
-      this->now(), map_frame_, tier4_autoware_utils::createMarkerScale(0.3, 0.1, 0.1), particle, i);
-    ndt_monte_carlo_initial_pose_marker_pub_->publish(marker_array);
-
-    auto sensor_points_mapTF_ptr = std::make_shared<pcl::PointCloud<PointSource>>();
-    pcl::transformPointCloud(*ndt_ptr->getInputSource(), *sensor_points_mapTF_ptr, ndt_result.pose);
-    publish_point_cloud(initial_pose_with_cov.header.stamp, map_frame_, sensor_points_mapTF_ptr);
-  }
-
-  auto best_particle_ptr = std::max_element(
-    std::begin(particle_array), std::end(particle_array),
-    [](const Particle & lhs, const Particle & rhs) { return lhs.score < rhs.score; });
-
-  geometry_msgs::msg::PoseWithCovarianceStamped result_pose_with_cov_msg;
-  result_pose_with_cov_msg.header.stamp = initial_pose_with_cov.header.stamp;
-  result_pose_with_cov_msg.header.frame_id = map_frame_;
-  result_pose_with_cov_msg.pose.pose = best_particle_ptr->result_pose;
-  // ndt_pose_with_covariance_pub_->publish(result_pose_with_cov_msg);
-
-  return result_pose_with_cov_msg;
 }
 
 void NDTScanMatcher::publish_tf(
@@ -722,7 +630,7 @@ void NDTScanMatcher::service_trigger_node(
     std::lock_guard<std::mutex> initial_pose_array_lock(initial_pose_array_mtx_);
     initial_pose_msg_ptr_array_.clear();
   } else {
-    key_value_stdmap_["state"] = "Initializing";
+    (*state_ptr_)["state"] = "Initializing";
   }
   res->success = true;
   return;
