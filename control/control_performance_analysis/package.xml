@@ -23,7 +23,6 @@
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>libboost-dev</depend>
-  <depend>motion_common</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>

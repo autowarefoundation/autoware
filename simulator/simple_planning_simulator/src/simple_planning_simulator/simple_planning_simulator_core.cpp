@@ -16,14 +16,13 @@
 
 #include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
 #include "common/types.hpp"
-#include "motion_common/motion_common.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
-#include "tier4_autoware_utils/ros/msg_covariance.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/utils.h>
 
 #include <algorithm>
 #include <chrono>
@@ -52,7 +51,8 @@ nav_msgs::msg::Odometry to_odometry(const std::shared_ptr<SimModelInterface> veh
   nav_msgs::msg::Odometry odometry;
   odometry.pose.pose.position.x = vehicle_model_ptr->getX();
   odometry.pose.pose.position.y = vehicle_model_ptr->getY();
-  odometry.pose.pose.orientation = motion::motion_common::from_angle(vehicle_model_ptr->getYaw());
+  odometry.pose.pose.orientation =
+    tier4_autoware_utils::createQuaternionFromYaw(vehicle_model_ptr->getYaw());
   odometry.twist.twist.linear.x = vehicle_model_ptr->getVx();
   odometry.twist.twist.angular.z = vehicle_model_ptr->getWz();
 
@@ -410,9 +410,9 @@ void SimplePlanningSimulator::add_measurement_noise(
   odom.pose.pose.position.y += (*n.pos_dist_)(*n.rand_engine_);
   const auto velocity_noise = (*n.vel_dist_)(*n.rand_engine_);
   odom.twist.twist.linear.x += velocity_noise;
-  float32_t yaw = motion::motion_common::to_angle(odom.pose.pose.orientation);
+  float32_t yaw = tf2::getYaw(odom.pose.pose.orientation);
   yaw += static_cast<float>((*n.rpy_dist_)(*n.rand_engine_));
-  odom.pose.pose.orientation = motion::motion_common::from_angle(yaw);
+  odom.pose.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
 
   vel.longitudinal_velocity += static_cast<float32_t>(velocity_noise);
 
@@ -435,7 +435,7 @@ void SimplePlanningSimulator::set_initial_state(const Pose & pose, const Twist &
 {
   const float64_t x = pose.position.x;
   const float64_t y = pose.position.y;
-  const float64_t yaw = ::motion::motion_common::to_angle(pose.orientation);
+  const float64_t yaw = tf2::getYaw(pose.orientation);
   const float64_t vx = twist.linear.x;
   const float64_t steer = 0.0;
   const float64_t accx = 0.0;

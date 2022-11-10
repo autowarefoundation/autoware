@@ -14,6 +14,8 @@
 
 #include "control_performance_analysis/control_performance_analysis_core.hpp"
 
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <memory>

@@ -17,7 +17,6 @@
   <depend>autoware_auto_tf2</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>motion_common</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

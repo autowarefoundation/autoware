@@ -14,7 +14,6 @@
 
 #include "motion_velocity_smoother/smoother/smoother_base.hpp"
 
-#include "motion_common/motion_common.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "motion_velocity_smoother/resample.hpp"

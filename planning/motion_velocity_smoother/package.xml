@@ -22,7 +22,6 @@
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
   <depend>libboost-dev</depend>
-  <depend>motion_common</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>osqp_interface</depend>

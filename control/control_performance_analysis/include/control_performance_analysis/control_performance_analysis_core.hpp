@@ -19,7 +19,6 @@
 #include "control_performance_analysis/msg/driving_monitor_stamped.hpp"
 #include "control_performance_analysis/msg/error_stamped.hpp"
 #include "control_performance_analysis/msg/float_stamped.hpp"
-#include "motion_common/motion_common.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
 #include <eigen3/Eigen/Core>
