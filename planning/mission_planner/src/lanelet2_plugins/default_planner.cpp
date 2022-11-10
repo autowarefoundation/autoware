@@ -110,15 +110,21 @@ void DefaultPlanner::initialize(rclcpp::Node * node)
 {
   is_graph_ready_ = false;
   node_ = node;
-  map_subscriber_ = node_->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  map_subscriber_ = node_->create_subscription<HADMapBin>(
     "input/vector_map", rclcpp::QoS{10}.transient_local(),
     std::bind(&DefaultPlanner::map_callback, this, std::placeholders::_1));
 }
 
+void DefaultPlanner::initialize(rclcpp::Node * node, const HADMapBin::ConstSharedPtr msg)
+{
+  is_graph_ready_ = false;
+  node_ = node;
+  map_callback(msg);
+}
+
 bool DefaultPlanner::ready() const { return is_graph_ready_; }
 
-void DefaultPlanner::map_callback(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+void DefaultPlanner::map_callback(const HADMapBin::ConstSharedPtr msg)
 {
   route_handler_.setMap(*msg);
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
@@ -246,7 +252,7 @@ PlannerPlugin::HADMapRoute DefaultPlanner::plan(const RoutePoints & points)
     logger, "start planning route with check points: " << std::endl
                                                        << log_ss.str());
 
-  autoware_auto_planning_msgs::msg::HADMapRoute route_msg;
+  HADMapRoute route_msg;
   RouteSections route_sections;
 
   if (!is_goal_valid(points.back())) {

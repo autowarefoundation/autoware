@@ -36,6 +36,7 @@ class DefaultPlanner : public mission_planner::PlannerPlugin
 {
 public:
   void initialize(rclcpp::Node * node) override;
+  void initialize(rclcpp::Node * node, const HADMapBin::ConstSharedPtr msg) override;
   bool ready() const override;
   HADMapRoute plan(const RoutePoints & points) override;
   MarkerArray visualize(const HADMapRoute & route) const override;
@@ -52,9 +53,9 @@ private:
   route_handler::RouteHandler route_handler_;
 
   rclcpp::Node * node_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_subscriber_;
+  rclcpp::Subscription<HADMapBin>::SharedPtr map_subscriber_;
 
-  void map_callback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  void map_callback(const HADMapBin::ConstSharedPtr msg);
   bool is_goal_valid(const geometry_msgs::msg::Pose & goal) const;
   Pose refine_goal_height(const Pose & goal, const RouteSections & route_sections);
 };
