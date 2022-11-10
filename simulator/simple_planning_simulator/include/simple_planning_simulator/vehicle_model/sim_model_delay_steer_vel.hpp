@@ -43,9 +43,9 @@ public:
    * @param [in] steer_time_constant time constant for 1D model of steering dynamics
    */
   SimModelDelaySteerVel(
-    float64_t vx_lim, float64_t steer_lim, float64_t vx_rate_lim, float64_t steer_rate_lim,
-    float64_t wheelbase, float64_t dt, float64_t vx_delay, float64_t vx_time_constant,
-    float64_t steer_delay, float64_t steer_time_constant);
+    double vx_lim, double steer_lim, double vx_rate_lim, double steer_rate_lim, double wheelbase,
+    double dt, double vx_delay, double vx_time_constant, double steer_delay,
+    double steer_time_constant);
 
   /**
    * @brief destructor
@@ -53,7 +53,7 @@ public:
   ~SimModelDelaySteerVel() = default;
 
 private:
-  const float64_t MIN_TIME_CONSTANT;  //!< @brief minimum time constant
+  const double MIN_TIME_CONSTANT;  //!< @brief minimum time constant
 
   enum IDX {
     X = 0,
@@ -67,74 +67,74 @@ private:
     STEER_DES,
   };
 
-  const float64_t vx_lim_;          //!< @brief velocity limit
-  const float64_t vx_rate_lim_;     //!< @brief acceleration limit
-  const float64_t steer_lim_;       //!< @brief steering limit [rad]
-  const float64_t steer_rate_lim_;  //!< @brief steering angular velocity limit [rad/s]
-  const float64_t wheelbase_;       //!< @brief vehicle wheelbase length [m]
-  float64_t prev_vx_ = 0.0;
-  float64_t current_ax_ = 0.0;
+  const double vx_lim_;          //!< @brief velocity limit
+  const double vx_rate_lim_;     //!< @brief acceleration limit
+  const double steer_lim_;       //!< @brief steering limit [rad]
+  const double steer_rate_lim_;  //!< @brief steering angular velocity limit [rad/s]
+  const double wheelbase_;       //!< @brief vehicle wheelbase length [m]
+  double prev_vx_ = 0.0;
+  double current_ax_ = 0.0;
 
-  std::deque<float64_t> vx_input_queue_;     //!< @brief buffer for velocity command
-  std::deque<float64_t> steer_input_queue_;  //!< @brief buffer for angular velocity command
-  const float64_t vx_delay_;                 //!< @brief time delay for velocity command [s]
-  const float64_t vx_time_constant_;
+  std::deque<double> vx_input_queue_;     //!< @brief buffer for velocity command
+  std::deque<double> steer_input_queue_;  //!< @brief buffer for angular velocity command
+  const double vx_delay_;                 //!< @brief time delay for velocity command [s]
+  const double vx_time_constant_;
   //!< @brief time constant for 1D model of velocity dynamics
-  const float64_t steer_delay_;  //!< @brief time delay for angular-velocity command [s]
-  const float64_t
+  const double steer_delay_;  //!< @brief time delay for angular-velocity command [s]
+  const double
     steer_time_constant_;  //!< @brief time constant for 1D model of angular-velocity dynamics
 
   /**
    * @brief set queue buffer for input command
    * @param [in] dt delta time
    */
-  void initializeInputQueue(const float64_t & dt);
+  void initializeInputQueue(const double & dt);
 
   /**
    * @brief get vehicle position x
    */
-  float64_t getX() override;
+  double getX() override;
 
   /**
    * @brief get vehicle position y
    */
-  float64_t getY() override;
+  double getY() override;
 
   /**
    * @brief get vehicle angle yaw
    */
-  float64_t getYaw() override;
+  double getYaw() override;
 
   /**
    * @brief get vehicle longitudinal velocity
    */
-  float64_t getVx() override;
+  double getVx() override;
 
   /**
    * @brief get vehicle lateral velocity
    */
-  float64_t getVy() override;
+  double getVy() override;
 
   /**
    * @brief get vehicle longitudinal acceleration
    */
-  float64_t getAx() override;
+  double getAx() override;
 
   /**
    * @brief get vehicle angular-velocity wz
    */
-  float64_t getWz() override;
+  double getWz() override;
 
   /**
    * @brief get vehicle steering angle
    */
-  float64_t getSteer() override;
+  double getSteer() override;
 
   /**
    * @brief update vehicle states
    * @param [in] dt delta time [s]
    */
-  void update(const float64_t & dt) override;
+  void update(const double & dt) override;
 
   /**
    * @brief calculate derivative of states with delay steering model

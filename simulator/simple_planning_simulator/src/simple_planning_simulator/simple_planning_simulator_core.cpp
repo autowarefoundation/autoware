@@ -15,7 +15,6 @@
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
 #include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
-#include "common/types.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
@@ -40,9 +39,9 @@ autoware_auto_vehicle_msgs::msg::VelocityReport to_velocity_report(
   const std::shared_ptr<SimModelInterface> vehicle_model_ptr)
 {
   autoware_auto_vehicle_msgs::msg::VelocityReport velocity;
-  velocity.longitudinal_velocity = static_cast<float32_t>(vehicle_model_ptr->getVx());
+  velocity.longitudinal_velocity = static_cast<double>(vehicle_model_ptr->getVx());
   velocity.lateral_velocity = 0.0F;
-  velocity.heading_rate = static_cast<float32_t>(vehicle_model_ptr->getWz());
+  velocity.heading_rate = static_cast<double>(vehicle_model_ptr->getWz());
   return velocity;
 }
 
@@ -63,7 +62,7 @@ autoware_auto_vehicle_msgs::msg::SteeringReport to_steering_report(
   const std::shared_ptr<SimModelInterface> vehicle_model_ptr)
 {
   autoware_auto_vehicle_msgs::msg::SteeringReport steer;
-  steer.steering_tire_angle = static_cast<float32_t>(vehicle_model_ptr->getSteer());
+  steer.steering_tire_angle = static_cast<double>(vehicle_model_ptr->getSteer());
   return steer;
 }
 
@@ -165,10 +164,10 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     std::random_device seed;
     auto & m = measurement_noise_;
     m.rand_engine_ = std::make_shared<std::mt19937>(seed());
-    float64_t pos_noise_stddev = declare_parameter("pos_noise_stddev", 1e-2);
-    float64_t vel_noise_stddev = declare_parameter("vel_noise_stddev", 1e-2);
-    float64_t rpy_noise_stddev = declare_parameter("rpy_noise_stddev", 1e-4);
-    float64_t steer_noise_stddev = declare_parameter("steer_noise_stddev", 1e-4);
+    double pos_noise_stddev = declare_parameter("pos_noise_stddev", 1e-2);
+    double vel_noise_stddev = declare_parameter("vel_noise_stddev", 1e-2);
+    double rpy_noise_stddev = declare_parameter("rpy_noise_stddev", 1e-4);
+    double steer_noise_stddev = declare_parameter("steer_noise_stddev", 1e-4);
     m.pos_dist_ = std::make_shared<std::normal_distribution<>>(0.0, pos_noise_stddev);
     m.vel_dist_ = std::make_shared<std::normal_distribution<>>(0.0, vel_noise_stddev);
     m.rpy_dist_ = std::make_shared<std::normal_distribution<>>(0.0, rpy_noise_stddev);
@@ -189,18 +188,18 @@ void SimplePlanningSimulator::initialize_vehicle_model()
 
   RCLCPP_INFO(this->get_logger(), "vehicle_model_type = %s", vehicle_model_type_str.c_str());
 
-  const float64_t vel_lim = declare_parameter("vel_lim", 50.0);
-  const float64_t vel_rate_lim = declare_parameter("vel_rate_lim", 7.0);
-  const float64_t steer_lim = declare_parameter("steer_lim", 1.0);
-  const float64_t steer_rate_lim = declare_parameter("steer_rate_lim", 5.0);
-  const float64_t acc_time_delay = declare_parameter("acc_time_delay", 0.1);
-  const float64_t acc_time_constant = declare_parameter("acc_time_constant", 0.1);
-  const float64_t vel_time_delay = declare_parameter("vel_time_delay", 0.25);
-  const float64_t vel_time_constant = declare_parameter("vel_time_constant", 0.5);
-  const float64_t steer_time_delay = declare_parameter("steer_time_delay", 0.24);
-  const float64_t steer_time_constant = declare_parameter("steer_time_constant", 0.27);
+  const double vel_lim = declare_parameter("vel_lim", 50.0);
+  const double vel_rate_lim = declare_parameter("vel_rate_lim", 7.0);
+  const double steer_lim = declare_parameter("steer_lim", 1.0);
+  const double steer_rate_lim = declare_parameter("steer_rate_lim", 5.0);
+  const double acc_time_delay = declare_parameter("acc_time_delay", 0.1);
+  const double acc_time_constant = declare_parameter("acc_time_constant", 0.1);
+  const double vel_time_delay = declare_parameter("vel_time_delay", 0.25);
+  const double vel_time_constant = declare_parameter("vel_time_constant", 0.5);
+  const double steer_time_delay = declare_parameter("steer_time_delay", 0.24);
+  const double steer_time_constant = declare_parameter("steer_time_constant", 0.27);
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
-  const float64_t wheelbase = vehicle_info.wheel_base_m;
+  const double wheelbase = vehicle_info.wheel_base_m;
 
   if (vehicle_model_type_str == "IDEAL_STEER_VEL") {
     vehicle_model_type_ = VehicleModelType::IDEAL_STEER_VEL;
@@ -258,7 +257,7 @@ void SimplePlanningSimulator::on_timer()
 
   // update vehicle dynamics
   {
-    const float64_t dt = delta_time_.get_dt(get_clock()->now());
+    const double dt = delta_time_.get_dt(get_clock()->now());
 
     if (current_control_mode_.mode == ControlModeReport::AUTONOMOUS) {
       vehicle_model_ptr_->setGear(current_gear_cmd_.command);
@@ -410,13 +409,13 @@ void SimplePlanningSimulator::add_measurement_noise(
   odom.pose.pose.position.y += (*n.pos_dist_)(*n.rand_engine_);
   const auto velocity_noise = (*n.vel_dist_)(*n.rand_engine_);
   odom.twist.twist.linear.x += velocity_noise;
-  float32_t yaw = tf2::getYaw(odom.pose.pose.orientation);
+  double yaw = tf2::getYaw(odom.pose.pose.orientation);
   yaw += static_cast<float>((*n.rpy_dist_)(*n.rand_engine_));
   odom.pose.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
 
-  vel.longitudinal_velocity += static_cast<float32_t>(velocity_noise);
+  vel.longitudinal_velocity += static_cast<double>(velocity_noise);
 
-  steer.steering_tire_angle += static_cast<float32_t>((*n.steer_dist_)(*n.rand_engine_));
+  steer.steering_tire_angle += static_cast<double>((*n.steer_dist_)(*n.rand_engine_));
 }
 
 void SimplePlanningSimulator::set_initial_state_with_transform(
@@ -433,12 +432,12 @@ void SimplePlanningSimulator::set_initial_state_with_transform(
 
 void SimplePlanningSimulator::set_initial_state(const Pose & pose, const Twist & twist)
 {
-  const float64_t x = pose.position.x;
-  const float64_t y = pose.position.y;
-  const float64_t yaw = tf2::getYaw(pose.orientation);
-  const float64_t vx = twist.linear.x;
-  const float64_t steer = 0.0;
-  const float64_t accx = 0.0;
+  const double x = pose.position.x;
+  const double y = pose.position.y;
+  const double yaw = tf2::getYaw(pose.orientation);
+  const double vx = twist.linear.x;
+  const double steer = 0.0;
+  const double accx = 0.0;
 
   Eigen::VectorXd state(vehicle_model_ptr_->getDimX());
 

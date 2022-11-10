@@ -15,7 +15,6 @@
 #ifndef SIMPLE_PLANNING_SIMULATOR__SIMPLE_PLANNING_SIMULATOR_CORE_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__SIMPLE_PLANNING_SIMULATOR_CORE_HPP_
 
-#include "common/types.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
 #include "simple_planning_simulator/visibility_control.hpp"
@@ -58,9 +57,6 @@ namespace simulation
 {
 namespace simple_planning_simulator
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float32_t;
-using autoware::common::types::float64_t;
 
 using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_geometry_msgs::msg::Complex32;
@@ -90,13 +86,13 @@ class DeltaTime
 {
 public:
   DeltaTime() : prev_updated_time_ptr_(nullptr) {}
-  float64_t get_dt(const rclcpp::Time & now)
+  double get_dt(const rclcpp::Time & now)
   {
     if (prev_updated_time_ptr_ == nullptr) {
       prev_updated_time_ptr_ = std::make_shared<rclcpp::Time>(now);
       return 0.0;
     }
-    const float64_t dt = (now - *prev_updated_time_ptr_).seconds();
+    const double dt = (now - *prev_updated_time_ptr_).seconds();
     *prev_updated_time_ptr_ = now;
     return dt;
   }
@@ -181,15 +177,15 @@ private:
   std::string origin_frame_id_;     //!< @brief map frame_id
 
   /* flags */
-  bool8_t is_initialized_;         //!< @brief flag to check the initial position is set
-  bool8_t add_measurement_noise_;  //!< @brief flag to add measurement noise
+  bool is_initialized_;         //!< @brief flag to check the initial position is set
+  bool add_measurement_noise_;  //!< @brief flag to add measurement noise
 
   DeltaTime delta_time_;  //!< @brief to calculate delta time
 
   MeasurementNoiseGenerator measurement_noise_;  //!< @brief for measurement noise
 
-  float64_t x_stddev_;  //!< @brief x standard deviation for dummy covariance in map coordinate
-  float64_t y_stddev_;  //!< @brief y standard deviation for dummy covariance in map coordinate
+  double x_stddev_;  //!< @brief x standard deviation for dummy covariance in map coordinate
+  double y_stddev_;  //!< @brief y standard deviation for dummy covariance in map coordinate
 
   /* vehicle model */
   enum class VehicleModelType {

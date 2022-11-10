@@ -20,7 +20,7 @@ SimModelInterface::SimModelInterface(int dim_x, int dim_u) : dim_x_(dim_x), dim_
   input_ = Eigen::VectorXd::Zero(dim_u_);
 }
 
-void SimModelInterface::updateRungeKutta(const float64_t & dt, const Eigen::VectorXd & input)
+void SimModelInterface::updateRungeKutta(const double & dt, const Eigen::VectorXd & input)
 {
   Eigen::VectorXd k1 = calcModel(state_, input);
   Eigen::VectorXd k2 = calcModel(state_ + k1 * 0.5 * dt, input);
@@ -29,7 +29,7 @@ void SimModelInterface::updateRungeKutta(const float64_t & dt, const Eigen::Vect
 
   state_ += 1.0 / 6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4) * dt;
 }
-void SimModelInterface::updateEuler(const float64_t & dt, const Eigen::VectorXd & input)
+void SimModelInterface::updateEuler(const double & dt, const Eigen::VectorXd & input)
 {
   state_ += calcModel(state_, input) * dt;
 }

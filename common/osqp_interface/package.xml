@@ -14,7 +14,6 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_auto_common</depend>
   <depend>eigen</depend>
   <depend>osqp_vendor</depend>
   <depend>rclcpp</depend>

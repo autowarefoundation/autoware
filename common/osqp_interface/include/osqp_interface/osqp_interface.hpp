@@ -15,7 +15,6 @@
 #ifndef OSQP_INTERFACE__OSQP_INTERFACE_HPP_
 #define OSQP_INTERFACE__OSQP_INTERFACE_HPP_
 
-#include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "osqp/osqp.h"
 #include "osqp_interface/csc_matrix_conv.hpp"
@@ -36,8 +35,6 @@ namespace common
 namespace osqp
 {
 constexpr c_float INF = 1e30;
-using autoware::common::types::bool8_t;
-using autoware::common::types::float64_t;
 
 /**
  * Implementation of a native C++ interface for the OSQP solver.
@@ -54,19 +51,19 @@ private:
   // Number of parameters to optimize
   int64_t m_param_n;
   // Flag to check if the current work exists
-  bool8_t m_work_initialized = false;
+  bool m_work_initialized = false;
   // Exitflag
   int64_t m_exitflag;
 
   // Runs the solver on the stored problem.
-  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> solve();
+  std::tuple<std::vector<double>, std::vector<double>, int64_t, int64_t, int64_t> solve();
 
   static void OSQPWorkspaceDeleter(OSQPWorkspace * ptr) noexcept;
 
 public:
   /// \brief Constructor without problem formulation
   explicit OSQPInterface(
-    const c_float eps_abs = std::numeric_limits<c_float>::epsilon(), const bool8_t polish = true);
+    const c_float eps_abs = std::numeric_limits<c_float>::epsilon(), const bool polish = true);
   /// \brief Constructor with problem setup
   /// \param P: (n,n) matrix defining relations between parameters.
   /// \param A: (m,n) matrix defining parameter constraints relative to the lower and upper bound.
@@ -75,11 +72,11 @@ public:
   /// \param u: (m) vector defining the upper bound problem constraint.
   /// \param eps_abs: Absolute convergence tolerance.
   OSQPInterface(
-    const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
-    const std::vector<float64_t> & l, const std::vector<float64_t> & u, const c_float eps_abs);
+    const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
+    const std::vector<double> & l, const std::vector<double> & u, const c_float eps_abs);
   OSQPInterface(
-    const CSC_Matrix & P, const CSC_Matrix & A, const std::vector<float64_t> & q,
-    const std::vector<float64_t> & l, const std::vector<float64_t> & u, const c_float eps_abs);
+    const CSC_Matrix & P, const CSC_Matrix & A, const std::vector<double> & q,
+    const std::vector<double> & l, const std::vector<double> & u, const c_float eps_abs);
   ~OSQPInterface();
 
   /****************
@@ -97,13 +94,13 @@ public:
   /// \details   2. Initialize the interface and set up the problem.
   /// \details        osqp_interface = OSQPInterface(P, A, q, l, u, 1e-6);
   /// \details   3. Call the optimization function.
-  /// \details        std::tuple<std::vector<float64_t>, std::vector<float64_t>> result;
+  /// \details        std::tuple<std::vector<double>, std::vector<double>> result;
   /// \details        result = osqp_interface.optimize();
   /// \details   4. Access the optimized parameters.
   /// \details        std::vector<float> param = std::get<0>(result);
-  /// \details        float64_t x_0 = param[0];
-  /// \details        float64_t x_1 = param[1];
-  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> optimize();
+  /// \details        double x_0 = param[0];
+  /// \details        double x_1 = param[1];
+  std::tuple<std::vector<double>, std::vector<double>, int64_t, int64_t, int64_t> optimize();
 
   /// \brief Solves convex quadratic programs (QPs) using the OSQP solver.
   /// \return The function returns a tuple containing the solution as two float vectors.
@@ -115,15 +112,15 @@ public:
   /// \details   2. Initialize the interface.
   /// \details        osqp_interface = OSQPInterface(1e-6);
   /// \details   3. Call the optimization function with the problem formulation.
-  /// \details        std::tuple<std::vector<float64_t>, std::vector<float64_t>> result;
+  /// \details        std::tuple<std::vector<double>, std::vector<double>> result;
   /// \details        result = osqp_interface.optimize(P, A, q, l, u, 1e-6);
   /// \details   4. Access the optimized parameters.
   /// \details        std::vector<float> param = std::get<0>(result);
-  /// \details        float64_t x_0 = param[0];
-  /// \details        float64_t x_1 = param[1];
-  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> optimize(
-    const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
-    const std::vector<float64_t> & l, const std::vector<float64_t> & u);
+  /// \details        double x_0 = param[0];
+  /// \details        double x_1 = param[1];
+  std::tuple<std::vector<double>, std::vector<double>, int64_t, int64_t, int64_t> optimize(
+    const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
+    const std::vector<double> & l, const std::vector<double> & u);
 
   /// \brief Converts the input data and sets up the workspace object.
   /// \param P (n,n) matrix defining relations between parameters.
@@ -132,11 +129,11 @@ public:
   /// \param l (m) vector defining the lower bound problem constraint.
   /// \param u (m) vector defining the upper bound problem constraint.
   int64_t initializeProblem(
-    const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
-    const std::vector<float64_t> & l, const std::vector<float64_t> & u);
+    const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<double> & q,
+    const std::vector<double> & l, const std::vector<double> & u);
   int64_t initializeProblem(
-    CSC_Matrix P, CSC_Matrix A, const std::vector<float64_t> & q, const std::vector<float64_t> & l,
-    const std::vector<float64_t> & u);
+    CSC_Matrix P, CSC_Matrix A, const std::vector<double> & q, const std::vector<double> & l,
+    const std::vector<double> & u);
 
   // Setter functions for warm start
   bool setWarmStart(
@@ -187,9 +184,9 @@ public:
     return static_cast<int64_t>(m_latest_work_info.status_polish);
   }
   /// \brief Get the runtime of the latest problem solved
-  inline float64_t getRunTime() const { return m_latest_work_info.run_time; }
+  inline double getRunTime() const { return m_latest_work_info.run_time; }
   /// \brief Get the objective value the latest problem solved
-  inline float64_t getObjVal() const { return m_latest_work_info.obj_val; }
+  inline double getObjVal() const { return m_latest_work_info.obj_val; }
   /// \brief Returns flag asserting interface condition (Healthy condition: 0).
   inline int64_t getExitFlag() const { return m_exitflag; }
 
