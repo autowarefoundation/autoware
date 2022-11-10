@@ -34,6 +34,7 @@
 
 #include <tf2_ros/transform_listener.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -220,6 +221,11 @@ private:
 
   /** \brief Parameter service callback */
   rcl_interfaces::msg::SetParametersResult onParameter(const std::vector<rclcpp::Parameter> & p);
+
+  // debugger
+  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_{
+    nullptr};
+  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_ptr_{nullptr};
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

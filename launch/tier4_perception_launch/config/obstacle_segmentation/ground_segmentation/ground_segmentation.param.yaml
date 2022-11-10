@@ -11,8 +11,8 @@
         max_x: 100.0
         min_y: -50.0
         max_y: 50.0
-        max_z: 10.7  # recommended 2.5 for non elevation_grid_mode
-        min_z: -8.7 # recommended 0.0 for non elevation_grid_mode
+        max_z: 2.5  # recommended 2.5 for non elevation_grid_mode
+        min_z: -2.5 # recommended 0.0 for non elevation_grid_mode
         negative: False
 
     common_ground_filter:
