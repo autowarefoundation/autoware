@@ -1,5 +1,6 @@
 /**:
   ros__parameters:
+    transition_timeout: 3.0
     frequency_hz: 10.0
     engage_acceptable_limits:
       allow_autonomous_in_stopped: true  # no check if the velocity is zero, always allowed.

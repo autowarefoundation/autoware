@@ -66,7 +66,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   engage_pub_ = this->create_publisher<EngageMsg>("output/engage", durable_qos);
   pub_external_emergency_ =
     this->create_publisher<Emergency>("output/external_emergency", durable_qos);
-  operation_mode_pub_ = this->create_publisher<OperationMode>("output/operation_mode", durable_qos);
+  operation_mode_pub_ =
+    this->create_publisher<OperationModeState>("output/operation_mode", durable_qos);
 
   // Subscriber
   emergency_state_sub_ = this->create_subscription<EmergencyState>(
@@ -80,10 +81,9 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     "input/engage", 1, std::bind(&VehicleCmdGate::onEngage, this, _1));
   steer_sub_ = this->create_subscription<SteeringReport>(
     "input/steering", 1, std::bind(&VehicleCmdGate::onSteering, this, _1));
-  operation_mode_sub_ = this->create_subscription<tier4_system_msgs::msg::OperationMode>(
-    "input/operation_mode", 1, [this](const tier4_system_msgs::msg::OperationMode::SharedPtr msg) {
-      current_operation_mode_ = *msg;
-    });
+  operation_mode_sub_ = this->create_subscription<OperationModeState>(
+    "input/operation_mode", rclcpp::QoS(1).transient_local(),
+    [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ = *msg; });
 
   // Subscriber for auto
   auto_control_cmd_sub_ = this->create_subscription<AckermannControlCommand>(
@@ -164,6 +164,7 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
 
   // Set default value
   current_gate_mode_.data = GateMode::AUTO;
+  current_operation_mode_.mode = OperationModeState::STOP;
 
   // Service
   srv_engage_ = create_service<tier4_external_api_msgs::srv::Engage>(
@@ -497,11 +498,10 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
 {
   AckermannControlCommand out = in;
   const double dt = getDt();
-
-  const auto mode = current_operation_mode_.mode;
+  const auto mode = current_operation_mode_;
 
   // Apply transition_filter when transiting from MANUAL to AUTO.
-  if (mode == OperationMode::TRANSITION_TO_AUTO) {
+  if (mode.is_in_transition) {
     filter_on_transition_.filterAll(dt, current_steer_, out);
   } else {
     filter_.filterAll(dt, current_steer_, out);

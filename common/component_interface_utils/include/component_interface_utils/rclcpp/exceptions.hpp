@@ -17,22 +17,23 @@
 
 #include <autoware_adapi_v1_msgs/msg/response_status.hpp>
 
-#include <stdexcept>
+#include <exception>
 #include <string>
 
 namespace component_interface_utils
 {
 
-class ServiceException : public std::runtime_error
+class ServiceException : public std::exception
 {
 public:
   using ResponseStatus = autoware_adapi_v1_msgs::msg::ResponseStatus;
   using ResponseStatusCode = ResponseStatus::_code_type;
 
-  ServiceException(ResponseStatusCode code, const std::string & message)
-  : std::runtime_error(message)
+  ServiceException(ResponseStatusCode code, const std::string & message, bool success = false)
   {
+    success_ = success;
     code_ = code;
+    message_ = message;
   }
 
   template <class T>
@@ -40,7 +41,7 @@ public:
   {
     status.success = false;
     status.code = code_;
-    status.message = what();
+    status.message = message_;
   }
 
   ResponseStatus status() const
@@ -48,19 +49,21 @@ public:
     ResponseStatus status;
     status.success = false;
     status.code = code_;
-    status.message = what();
+    status.message = message_;
     return status;
   }
 
 private:
+  bool success_;
   ResponseStatusCode code_;
+  std::string message_;
 };
 
 class ServiceUnready : public ServiceException
 {
 public:
   explicit ServiceUnready(const std::string & message)
-  : ServiceException(ResponseStatus::SERVICE_UNREADY, message)
+  : ServiceException(ResponseStatus::SERVICE_UNREADY, message, false)
   {
   }
 };
@@ -69,7 +72,7 @@ class ServiceTimeout : public ServiceException
 {
 public:
   explicit ServiceTimeout(const std::string & message)
-  : ServiceException(ResponseStatus::SERVICE_TIMEOUT, message)
+  : ServiceException(ResponseStatus::SERVICE_TIMEOUT, message, false)
   {
   }
 };
@@ -78,7 +81,25 @@ class TransformError : public ServiceException
 {
 public:
   explicit TransformError(const std::string & message)
-  : ServiceException(ResponseStatus::TRANSFORM_ERROR, message)
+  : ServiceException(ResponseStatus::TRANSFORM_ERROR, message, false)
+  {
+  }
+};
+
+class ParameterError : public ServiceException
+{
+public:
+  explicit ParameterError(const std::string & message)
+  : ServiceException(ResponseStatus::PARAMETER_ERROR, message, false)
+  {
+  }
+};
+
+class NoEffectWarning : public ServiceException
+{
+public:
+  explicit NoEffectWarning(const std::string & message)
+  : ServiceException(ResponseStatus::NO_EFFECT, message, true)
   {
   }
 };

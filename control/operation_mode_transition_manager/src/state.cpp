@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "operation_mode_transition_manager/state.hpp"
+#include "state.hpp"
 
-#include "motion_utils/motion_utils.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include <motion_utils/motion_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -27,135 +27,58 @@ using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcYawDeviation;
 
-EngageStateBase::EngageStateBase(const State state, rclcpp::Node * node)
-: logger_(node->get_logger()), clock_(node->get_clock()), state_(state)
+AutonomousMode::AutonomousMode(rclcpp::Node * node)
+: logger_(node->get_logger()), clock_(node->get_clock())
 {
-  // TODO(Horibe): move to manager.
-  srv_mode_change_client_ = node->create_client<ControlModeCommand>("control_mode_request");
-}
+  vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*node).getVehicleInfo();
 
-State EngageStateBase::defaultUpdateOnManual()
-{
-  const bool all_engage_requirements_are_satisfied = data_->is_auto_available;
-  const bool is_engage_requested = isAuto(data_->requested_state);
+  sub_control_cmd_ = node->create_subscription<AckermannControlCommand>(
+    "control_cmd", 1,
+    [this](const AckermannControlCommand::SharedPtr msg) { control_cmd_ = *msg; });
 
-  // manual to manual: change state directly
-  if (!is_engage_requested) {
-    return isManual(data_->requested_state) ? data_->requested_state : getCurrentState();
+  sub_kinematics_ = node->create_subscription<Odometry>(
+    "kinematics", 1, [this](const Odometry::SharedPtr msg) { kinematics_ = *msg; });
+
+  sub_trajectory_ = node->create_subscription<Trajectory>(
+    "trajectory", 1, [this](const Trajectory::SharedPtr msg) { trajectory_ = *msg; });
+
+  // params for mode change available
+  {
+    auto & p = engage_acceptable_param_;
+    p.allow_autonomous_in_stopped =
+      node->declare_parameter<bool>("engage_acceptable_limits.allow_autonomous_in_stopped");
+    p.dist_threshold = node->declare_parameter<double>("engage_acceptable_limits.dist_threshold");
+    p.speed_upper_threshold =
+      node->declare_parameter<double>("engage_acceptable_limits.speed_upper_threshold");
+    p.speed_lower_threshold =
+      node->declare_parameter<double>("engage_acceptable_limits.speed_lower_threshold");
+    p.yaw_threshold = node->declare_parameter<double>("engage_acceptable_limits.yaw_threshold");
+    p.acc_threshold = node->declare_parameter<double>("engage_acceptable_limits.acc_threshold");
+    p.lateral_acc_threshold =
+      node->declare_parameter<double>("engage_acceptable_limits.lateral_acc_threshold");
+    p.lateral_acc_diff_threshold =
+      node->declare_parameter<double>("engage_acceptable_limits.lateral_acc_diff_threshold");
   }
 
-  // manual to auto: control_more_request will be sent in TRANSITION_TO_AUTO state.
-  if (all_engage_requirements_are_satisfied) {
-    return State::TRANSITION_TO_AUTO;
-  } else {
-    RCLCPP_WARN(logger_, "engage requirements are not satisfied. Engage prohibited.");
-    return getCurrentState();
-  }
-}
-
-bool EngageStateBase::sendAutonomousModeRequest()
-{
-  bool success = true;
-
-  auto request = std::make_shared<ControlModeCommand::Request>();
-  request->stamp = clock_->now();
-  request->mode = ControlModeCommand::Request::AUTONOMOUS;
-
-  const auto callback = [&](rclcpp::Client<ControlModeCommand>::SharedFuture future) {
-    success = future.get()->success;
-    if (!success) {
-      RCLCPP_WARN(logger_, "Autonomous mode change was rejected.");
-    }
-  };
-
-  srv_mode_change_client_->async_send_request(request, callback);
-
-  // TODO(Horibe): handle request failure. Now, only timeout check is running in Transition state.
-  // auto future = srv_mode_change_client_->async_send_request(request, callback);
-  // rclcpp::spin_until_future_complete(node_, future);
-
-  return success;
-}
-
-bool TransitionToAutoState::checkVehicleOverride()
-{
-  const auto mode = data_->current_control_mode.mode;
-
-  if (mode == ControlModeReport::AUTONOMOUS) {
-    is_vehicle_mode_change_done_ = true;
-  }
-
-  if (is_vehicle_mode_change_done_) {
-    if (mode != ControlModeReport::AUTONOMOUS) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool TransitionToAutoState::checkTransitionTimeout() const
-{
-  if (data_->current_control_mode.mode == ControlModeReport::AUTONOMOUS) {
-    return false;
-  }
-
-  constexpr auto timeout_thr = 3.0;
-  if ((clock_->now() - transition_requested_time_).seconds() > timeout_thr) {
-    return true;
-  }
-  return false;
-}
-
-State TransitionToAutoState::update()
-{
-  // return to Manual soon if requested.
-  const bool is_disengage_requested = isManual(data_->requested_state);
-  if (is_disengage_requested) {
-    return data_->requested_state;
-  }
-
-  // return to Manual when vehicle control_mode is set to Manual after Auto transition is done.
-  if (checkVehicleOverride()) {
-    data_->requested_state = State::MANUAL_DIRECT;
-    return State::MANUAL_DIRECT;
-  }
-
-  if (checkTransitionTimeout()) {
-    RCLCPP_WARN(logger_, "time out for ControlMode change. Return to MANUAL state.");
-    data_->requested_state = State::MANUAL_DIRECT;
-    return State::MANUAL_DIRECT;
-  }
-
-  // waiting transition of vehicle_cmd_gate
-  if (data_->current_gate_operation_mode.mode != OperationMode::TRANSITION_TO_AUTO) {
-    RCLCPP_INFO(logger_, "transition check: gate operation_mode is still NOT TransitionToAuto");
-    return getCurrentState();
-  }
-
-  // send Autonomous mode request to vehicle
-  // NOTE: this should be done after gate_operation_mode is set to TRANSITION_TO_AUTO. Otherwise
-  // control_cmd with nominal filter will be sent to vehicle.
-  if (!is_control_mode_request_send_) {
-    sendAutonomousModeRequest();
-    is_control_mode_request_send_ = true;
-  }
-
-  // waiting transition of vehicle
-  if (data_->current_control_mode.mode != ControlModeReport::AUTONOMOUS) {
-    RCLCPP_INFO(logger_, "transition check: vehicle control_mode is still NOT Autonomous");
-    return getCurrentState();
-  }
-
-  const bool is_system_stable = checkSystemStable();
-
-  if (is_system_stable) {
-    return State::AUTONOMOUS;
-  } else {
-    return getCurrentState();
+  // params for mode change completed
+  {
+    auto & p = stable_check_param_;
+    p.duration = node->declare_parameter<double>("stable_check.duration");
+    p.dist_threshold = node->declare_parameter<double>("stable_check.dist_threshold");
+    p.speed_upper_threshold = node->declare_parameter<double>("stable_check.speed_upper_threshold");
+    p.speed_lower_threshold = node->declare_parameter<double>("stable_check.speed_lower_threshold");
+    p.yaw_threshold = node->declare_parameter<double>("stable_check.yaw_threshold");
   }
 }
 
-bool TransitionToAutoState::checkSystemStable()
+void AutonomousMode::update(bool transition)
+{
+  if (!transition) {
+    stable_start_time_.reset();
+  }
+}
+
+bool AutonomousMode::isModeChangeCompleted()
 {
   constexpr auto dist_max = 5.0;
   constexpr auto yaw_max = M_PI_4;
@@ -165,29 +88,29 @@ bool TransitionToAutoState::checkSystemStable()
     return false;
   };
 
-  if (data_->trajectory.points.size() < 2) {
+  if (trajectory_.points.size() < 2) {
     RCLCPP_INFO(logger_, "Not stable yet: trajectory size must be > 2");
     return unstable();
   }
 
   const auto closest_idx =
-    findNearestIndex(data_->trajectory.points, data_->kinematics.pose.pose, dist_max, yaw_max);
+    findNearestIndex(trajectory_.points, kinematics_.pose.pose, dist_max, yaw_max);
   if (!closest_idx) {
     RCLCPP_INFO(logger_, "Not stable yet: closest point not found");
     return unstable();
   }
 
-  const auto closest_point = data_->trajectory.points.at(*closest_idx);
+  const auto closest_point = trajectory_.points.at(*closest_idx);
 
   // check for lateral deviation
-  const auto dist_deviation = calcDistance2d(closest_point.pose, data_->kinematics.pose.pose);
+  const auto dist_deviation = calcDistance2d(closest_point.pose, kinematics_.pose.pose);
   if (dist_deviation > stable_check_param_.dist_threshold) {
     RCLCPP_INFO(logger_, "Not stable yet: distance deviation is too large: %f", dist_deviation);
     return unstable();
   }
 
   // check for yaw deviation
-  const auto yaw_deviation = calcYawDeviation(closest_point.pose, data_->kinematics.pose.pose);
+  const auto yaw_deviation = calcYawDeviation(closest_point.pose, kinematics_.pose.pose);
   if (yaw_deviation > stable_check_param_.yaw_threshold) {
     RCLCPP_INFO(logger_, "Not stable yet: yaw deviation is too large: %f", yaw_deviation);
     return unstable();
@@ -195,7 +118,7 @@ bool TransitionToAutoState::checkSystemStable()
 
   // check for speed deviation
   const auto speed_deviation =
-    data_->kinematics.twist.twist.linear.x - closest_point.longitudinal_velocity_mps;
+    kinematics_.twist.twist.linear.x - closest_point.longitudinal_velocity_mps;
   if (speed_deviation > stable_check_param_.speed_upper_threshold) {
     RCLCPP_INFO(logger_, "Not stable yet: ego speed is too high: %f", speed_deviation);
     return unstable();
@@ -214,26 +137,136 @@ bool TransitionToAutoState::checkSystemStable()
   const double stable_time = (clock_->now() - *stable_start_time_).seconds();
   const bool is_system_stable = stable_time > stable_check_param_.duration;
   RCLCPP_INFO(logger_, "Now stable: now duration: %f", stable_time);
-
   return is_system_stable;
 }
 
-State AutonomousState::update()
+bool AutonomousMode::hasDangerAcceleration()
 {
-  // check current mode
-  if (data_->current_control_mode.mode == ControlModeReport::MANUAL) {
-    data_->requested_state = State::MANUAL_DIRECT;
-    return State::MANUAL_DIRECT;
+  debug_info_.target_control_acceleration = control_cmd_.longitudinal.acceleration;
+
+  const bool is_stopping = std::abs(kinematics_.twist.twist.linear.x) < 0.01;
+  if (is_stopping) {
+    return false;  // any acceleration is ok when stopped
   }
 
-  // check request mode
-  bool is_disengage_requested = isManual(data_->requested_state);
+  const bool has_large_acc =
+    std::abs(control_cmd_.longitudinal.acceleration) > engage_acceptable_param_.acc_threshold;
+  return has_large_acc;
+}
 
-  if (is_disengage_requested) {
-    return data_->requested_state;
-  } else {
-    return getCurrentState();
+std::pair<bool, bool> AutonomousMode::hasDangerLateralAcceleration()
+{
+  const auto wheelbase = vehicle_info_.wheel_base_m;
+  const auto curr_vx = kinematics_.twist.twist.linear.x;
+  const auto curr_wz = kinematics_.twist.twist.angular.z;
+
+  // Calculate angular velocity from kinematics model.
+  // Use current_vx to focus on the steering behavior.
+  const auto target_wz = curr_vx * std::tan(control_cmd_.lateral.steering_tire_angle) / wheelbase;
+
+  const auto curr_lat_acc = curr_vx * curr_wz;
+  const auto target_lat_acc = curr_vx * target_wz;
+
+  const bool has_large_lat_acc =
+    std::abs(curr_lat_acc) > engage_acceptable_param_.lateral_acc_threshold;
+  const bool has_large_lat_acc_diff =
+    std::abs(curr_lat_acc - target_lat_acc) > engage_acceptable_param_.lateral_acc_diff_threshold;
+
+  debug_info_.lateral_acceleration = curr_lat_acc;
+  debug_info_.lateral_acceleration_deviation = curr_lat_acc - target_lat_acc;
+
+  return {has_large_lat_acc, has_large_lat_acc_diff};
+}
+
+bool AutonomousMode::isModeChangeAvailable()
+{
+  constexpr auto dist_max = 100.0;
+  constexpr auto yaw_max = M_PI_4;
+
+  const auto current_speed = kinematics_.twist.twist.linear.x;
+  const auto target_control_speed = control_cmd_.longitudinal.speed;
+  const auto & param = engage_acceptable_param_;
+
+  if (trajectory_.points.size() < 2) {
+    RCLCPP_WARN_SKIPFIRST_THROTTLE(
+      logger_, *clock_, 5000, "Engage unavailable: trajectory size must be > 2");
+    debug_info_ = DebugInfo{};  // all false
+    return false;
   }
+
+  const auto closest_idx =
+    findNearestIndex(trajectory_.points, kinematics_.pose.pose, dist_max, yaw_max);
+  if (!closest_idx) {
+    RCLCPP_INFO(logger_, "Engage unavailable: closest point not found");
+    debug_info_ = DebugInfo{};  // all false
+    return false;               // closest trajectory point not found.
+  }
+  const auto closest_point = trajectory_.points.at(*closest_idx);
+  const auto target_planning_speed = closest_point.longitudinal_velocity_mps;
+  debug_info_.trajectory_available_ok = true;
+
+  // No engagement is lateral control error is large
+  const auto lateral_deviation = calcDistance2d(closest_point.pose, kinematics_.pose.pose);
+  const bool lateral_deviation_ok = lateral_deviation < param.dist_threshold;
+
+  // No engagement is yaw control error is large
+  const auto yaw_deviation = calcYawDeviation(closest_point.pose, kinematics_.pose.pose);
+  const bool yaw_deviation_ok = yaw_deviation < param.yaw_threshold;
+
+  // No engagement if speed control error is large
+  const auto speed_deviation = current_speed - target_planning_speed;
+  const bool speed_upper_deviation_ok = speed_deviation <= param.speed_upper_threshold;
+  const bool speed_lower_deviation_ok = speed_deviation >= param.speed_lower_threshold;
+
+  // No engagement if the vehicle is moving but the target speed is zero.
+  const bool stop_ok = !(std::abs(current_speed) > 0.1 && std::abs(target_control_speed) < 0.01);
+
+  // No engagement if the large acceleration is commanded.
+  const bool large_acceleration_ok = !hasDangerAcceleration();
+
+  // No engagement if the lateral acceleration is over threshold
+  const auto [has_large_lat_acc, has_large_lat_acc_diff] = hasDangerLateralAcceleration();
+  const auto large_lateral_acceleration_ok = !has_large_lat_acc;
+  const auto large_lateral_acceleration_diff_ok = !has_large_lat_acc_diff;
+
+  // No engagement if a stop is expected within a certain period of time
+  // TODO(Horibe): write me
+  // ...
+
+  const bool is_all_ok = lateral_deviation_ok && yaw_deviation_ok && speed_upper_deviation_ok &&
+                         speed_lower_deviation_ok && stop_ok && large_acceleration_ok &&
+                         large_lateral_acceleration_ok && large_lateral_acceleration_diff_ok;
+
+  // set for debug info
+  {
+    debug_info_.is_all_ok = is_all_ok;
+    debug_info_.lateral_deviation_ok = lateral_deviation_ok;
+    debug_info_.yaw_deviation_ok = yaw_deviation_ok;
+    debug_info_.speed_upper_deviation_ok = speed_upper_deviation_ok;
+    debug_info_.speed_lower_deviation_ok = speed_lower_deviation_ok;
+    debug_info_.stop_ok = stop_ok;
+    debug_info_.large_acceleration_ok = large_acceleration_ok;
+    debug_info_.large_lateral_acceleration_ok = large_lateral_acceleration_ok;
+    debug_info_.large_lateral_acceleration_diff_ok = large_lateral_acceleration_diff_ok;
+
+    debug_info_.current_speed = current_speed;
+    debug_info_.target_control_speed = target_control_speed;
+    debug_info_.target_planning_speed = target_planning_speed;
+
+    debug_info_.lateral_deviation = lateral_deviation;
+    debug_info_.yaw_deviation = yaw_deviation;
+    debug_info_.speed_deviation = speed_deviation;
+  }
+
+  // Engagement is ready if the vehicle is stopped.
+  // (this is checked in the end to calculate some debug values.)
+  if (param.allow_autonomous_in_stopped && std::abs(current_speed) < 0.01) {
+    debug_info_.is_all_ok = true;
+    debug_info_.engage_allowed_for_stopped_vehicle = true;
+    return true;
+  }
+
+  return is_all_ok;
 }
 
 }  // namespace operation_mode_transition_manager

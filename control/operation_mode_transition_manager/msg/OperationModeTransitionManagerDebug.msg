@@ -1,7 +1,7 @@
 builtin_interfaces/Time stamp
 
 # states
-string requested_state
+string previous_state
 string current_state
 
 # flags for engage permission
