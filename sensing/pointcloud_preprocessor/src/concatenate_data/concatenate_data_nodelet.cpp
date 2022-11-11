@@ -51,7 +51,9 @@
 
 #include "pointcloud_preprocessor/concatenate_data/concatenate_data_nodelet.hpp"
 
+#include <common/types.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -326,36 +328,19 @@ void PointCloudConcatenateDataSynchronizerComponent::convertToXYZICloud(
   const sensor_msgs::msg::PointCloud2::SharedPtr & input_ptr,
   sensor_msgs::msg::PointCloud2::SharedPtr & output_ptr)
 {
-  output_ptr->header = input_ptr->header;
-  PointCloud2Modifier<PointXYZI> output_modifier{*output_ptr, input_ptr->header.frame_id};
-  output_modifier.reserve(input_ptr->width);
+  point_cloud_msg_wrapper::PointCloud2Modifier<autoware::common::types::PointXYZI> output_modifier{
+    *output_ptr, input_ptr->header.frame_id};
 
-  bool has_intensity = std::any_of(
-    input_ptr->fields.begin(), input_ptr->fields.end(),
-    [](auto & field) { return field.name == "intensity"; });
-
-  sensor_msgs::PointCloud2Iterator<float> it_x(*input_ptr, "x");
-  sensor_msgs::PointCloud2Iterator<float> it_y(*input_ptr, "y");
-  sensor_msgs::PointCloud2Iterator<float> it_z(*input_ptr, "z");
-
-  if (has_intensity) {
-    sensor_msgs::PointCloud2Iterator<float> it_i(*input_ptr, "intensity");
-    for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z, ++it_i) {
-      PointXYZI point;
-      point.x = *it_x;
-      point.y = *it_y;
-      point.z = *it_z;
-      point.intensity = *it_i;
-      output_modifier.push_back(std::move(point));
+  if (point_cloud_msg_wrapper::PointCloud2View<
+        autoware::common::types::PointXYZI>::can_be_created_from(*input_ptr)) {
+    point_cloud_msg_wrapper::PointCloud2View<autoware::common::types::PointXYZI> view{*input_ptr};
+    for (const auto & point : view) {
+      output_modifier.push_back({point.x, point.y, point.z, point.intensity});
     }
   } else {
-    for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z) {
-      PointXYZI point;
-      point.x = *it_x;
-      point.y = *it_y;
-      point.z = *it_z;
-      point.intensity = 0.0f;
-      output_modifier.push_back(std::move(point));
+    point_cloud_msg_wrapper::PointCloud2View<autoware::common::types::PointXYZ> view{*input_ptr};
+    for (const auto & point : view) {
+      output_modifier.push_back({point.x, point.y, point.z, 0.0f});
     }
   }
 }

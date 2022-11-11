@@ -15,9 +15,11 @@
 #ifndef POINTCLOUD_PREPROCESSOR__UTILITY__UTILITIES_HPP_
 #define POINTCLOUD_PREPROCESSOR__UTILITY__UTILITIES_HPP_
 
+#include <common/types.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
+
 #include <geometry_msgs/msg/polygon.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_2_algorithms.h>

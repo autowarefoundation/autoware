@@ -14,6 +14,9 @@
 
 #include "pointcloud_preprocessor/distortion_corrector/distortion_corrector.hpp"
 
+#include <common/types.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
+
 #include <deque>
 #include <string>
 #include <utility>
@@ -175,28 +178,22 @@ bool DistortionCorrectorComponent::undistortPointCloud(
     return false;
   }
 
-  auto time_stamp_field_it = std::find_if(
-    std::cbegin(points.fields), std::cend(points.fields),
-    [this](const sensor_msgs::msg::PointField & field) {
-      return field.name == time_stamp_field_name_;
-    });
-  if (time_stamp_field_it == points.fields.cend()) {
+  if (!point_cloud_msg_wrapper::PointCloud2View<
+        autoware::common::types::PointXYZTimestamp>::can_be_created_from(points)) {
     RCLCPP_WARN_STREAM_THROTTLE(
       get_logger(), *get_clock(), 10000 /* ms */,
       "Required field time stamp doesn't exist in the point cloud.");
     return false;
   }
 
-  sensor_msgs::PointCloud2Iterator<float> it_x(points, "x");
-  sensor_msgs::PointCloud2Iterator<float> it_y(points, "y");
-  sensor_msgs::PointCloud2Iterator<float> it_z(points, "z");
-  sensor_msgs::PointCloud2ConstIterator<double> it_time_stamp(points, time_stamp_field_name_);
+  point_cloud_msg_wrapper::PointCloud2Modifier<autoware::common::types::PointXYZTimestamp> modifier{
+    points};
 
   float theta{0.0f};
   float x{0.0f};
   float y{0.0f};
-  double prev_time_stamp_sec{*it_time_stamp};
-  const double first_point_time_stamp_sec{*it_time_stamp};
+  double prev_time_stamp_sec{modifier.begin()->time_stamp};
+  const double first_point_time_stamp_sec{modifier.begin()->time_stamp};
 
   auto twist_it = std::lower_bound(
     std::begin(twist_queue_), std::end(twist_queue_), first_point_time_stamp_sec,
@@ -217,17 +214,17 @@ bool DistortionCorrectorComponent::undistortPointCloud(
   }
 
   const tf2::Transform tf2_base_link_to_sensor_inv{tf2_base_link_to_sensor.inverse()};
-  for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z, ++it_time_stamp) {
+  for (auto & point : modifier) {
     for (;
          (twist_it != std::end(twist_queue_) - 1 &&
-          *it_time_stamp > rclcpp::Time(twist_it->header.stamp).seconds());
+          point.time_stamp > rclcpp::Time(twist_it->header.stamp).seconds());
          ++twist_it) {
     }
 
     float v{static_cast<float>(twist_it->twist.linear.x)};
     float w{static_cast<float>(twist_it->twist.angular.z)};
 
-    if (std::abs(*it_time_stamp - rclcpp::Time(twist_it->header.stamp).seconds()) > 0.1) {
+    if (std::abs(point.time_stamp - rclcpp::Time(twist_it->header.stamp).seconds()) > 0.1) {
       RCLCPP_WARN_STREAM_THROTTLE(
         get_logger(), *get_clock(), 10000 /* ms */,
         "twist time_stamp is too late. Could not interpolate.");
@@ -238,10 +235,10 @@ bool DistortionCorrectorComponent::undistortPointCloud(
     if (use_imu_ && !angular_velocity_queue_.empty()) {
       for (;
            (imu_it != std::end(angular_velocity_queue_) - 1 &&
-            *it_time_stamp > rclcpp::Time(imu_it->header.stamp).seconds());
+            point.time_stamp > rclcpp::Time(imu_it->header.stamp).seconds());
            ++imu_it) {
       }
-      if (std::abs(*it_time_stamp - rclcpp::Time(imu_it->header.stamp).seconds()) > 0.1) {
+      if (std::abs(point.time_stamp - rclcpp::Time(imu_it->header.stamp).seconds()) > 0.1) {
         RCLCPP_WARN_STREAM_THROTTLE(
           get_logger(), *get_clock(), 10000 /* ms */,
           "imu time_stamp is too late. Could not interpolate.");
@@ -250,9 +247,9 @@ bool DistortionCorrectorComponent::undistortPointCloud(
       }
     }
 
-    const float time_offset = static_cast<float>(*it_time_stamp - prev_time_stamp_sec);
+    const float time_offset = static_cast<float>(point.time_stamp - prev_time_stamp_sec);
 
-    const tf2::Vector3 sensorTF_point{*it_x, *it_y, *it_z};
+    const tf2::Vector3 sensorTF_point{point.x, point.y, point.z};
 
     const tf2::Vector3 base_linkTF_point{tf2_base_link_to_sensor_inv * sensorTF_point};
 
@@ -271,11 +268,11 @@ bool DistortionCorrectorComponent::undistortPointCloud(
 
     const tf2::Vector3 sensorTF_trans_point{tf2_base_link_to_sensor * base_linkTF_trans_point};
 
-    *it_x = sensorTF_trans_point.getX();
-    *it_y = sensorTF_trans_point.getY();
-    *it_z = sensorTF_trans_point.getZ();
+    point.x = sensorTF_trans_point.getX();
+    point.y = sensorTF_trans_point.getY();
+    point.z = sensorTF_trans_point.getZ();
 
-    prev_time_stamp_sec = *it_time_stamp;
+    prev_time_stamp_sec = point.time_stamp;
   }
   return true;
 }

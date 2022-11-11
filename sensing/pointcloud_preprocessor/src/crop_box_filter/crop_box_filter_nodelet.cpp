@@ -51,8 +51,6 @@
 
 #include "pointcloud_preprocessor/crop_box_filter/crop_box_filter_nodelet.hpp"
 
-#include <sensor_msgs/point_cloud2_iterator.hpp>
-
 #include <vector>
 
 namespace pointcloud_preprocessor
