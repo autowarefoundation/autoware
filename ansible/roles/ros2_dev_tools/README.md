@@ -11,30 +11,21 @@ None.
 ```bash
 # Taken from https://docs.ros.org/en/humble/Installation/Ubuntu-Development-Setup.html
 sudo apt update && sudo apt install -y \
-  build-essential \
-  cmake \
-  git \
-  python3-colcon-common-extensions \
-  python3-flake8 \
   python3-flake8-docstrings \
   python3-pip \
-  python3-pytest \
   python3-pytest-cov \
-  python3-rosdep \
-  python3-setuptools \
-  python3-vcstool \
-  wget
+  ros-dev-tools
 
 sudo apt install -y \
-   python3-flake8-blind-except
-   python3-flake8-builtins
-   python3-flake8-class-newline
-   python3-flake8-comprehensions
-   python3-flake8-deprecated
-   python3-flake8-import-order
-   python3-flake8-quotes
-   python3-pytest-repeat
-   python3-pytest-rerunfailures
+  python3-flake8-blind-except \
+  python3-flake8-builtins \
+  python3-flake8-class-newline \
+  python3-flake8-comprehensions \
+  python3-flake8-deprecated \
+  python3-flake8-import-order \
+  python3-flake8-quotes \
+  python3-pytest-repeat \
+  python3-pytest-rerunfailures
 
 # Initialize rosdep
 sudo rosdep init
