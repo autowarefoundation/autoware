@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TVM_UTILITY__PIPELINE_HPP_
+#define TVM_UTILITY__PIPELINE_HPP_
+
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <common/types.hpp>
 
 #include <tvm_vendor/dlpack/dlpack.h>
 #include <tvm_vendor/tvm/runtime/c_runtime_api.h>
@@ -26,11 +30,21 @@
 #include <utility>
 #include <vector>
 
-#ifndef TVM_UTILITY__PIPELINE_HPP_
-#define TVM_UTILITY__PIPELINE_HPP_
+using autoware::common::types::char8_t;
 
 namespace tvm_utility
 {
+
+/**
+ * @brief Possible version status for a neural network.
+ */
+enum class Version {
+  OK,
+  Unknown,
+  Untested,
+  Unsupported,
+};
+
 namespace pipeline
 {
 
@@ -176,6 +190,7 @@ using NetworkNode = std::pair<std::string, std::vector<int64_t>>;
 typedef struct
 {
   // Network info
+  std::array<char8_t, 3> modelzoo_version;
   std::string network_name;
   std::string network_backend;
 
@@ -294,12 +309,37 @@ public:
     return output_;
   }
 
+  /**
+   * @brief Get version information from the config structure and check if there is a mismatch
+   *        between the supported version(s) and the actual version.
+   * @param[in] version_from Earliest supported model version.
+   * @return The version status.
+   */
+  Version version_check(const std::array<char8_t, 3> & version_from) const
+  {
+    auto x{config_.modelzoo_version[0]};
+    auto y{config_.modelzoo_version[1]};
+    Version ret{Version::OK};
+
+    if (x == 0) {
+      ret = Version::Unknown;
+    } else if (x > version_up_to[0] || (x == version_up_to[0] && y > version_up_to[1])) {
+      ret = Version::Untested;
+    } else if (x < version_from[0] || (x == version_from[0] && y < version_from[1])) {
+      ret = Version::Unsupported;
+    }
+
+    return ret;
+  }
+
 private:
   InferenceEngineTVMConfig config_;
   TVMArrayContainerVector output_;
   tvm::runtime::PackedFunc set_input;
   tvm::runtime::PackedFunc execute;
   tvm::runtime::PackedFunc get_output;
+  // Latest supported model version.
+  const std::array<char8_t, 3> version_up_to{2, 1, 0};
 };
 
 }  // namespace pipeline

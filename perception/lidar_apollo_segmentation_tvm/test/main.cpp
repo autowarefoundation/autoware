@@ -44,6 +44,9 @@ void test_segmentation(bool use_intensity_feature, bool use_constant_feature, bo
     range, score_threshold, use_intensity_feature, use_constant_feature, z_offset, min_height,
     max_height, objectness_thresh, min_pts_num, height_thresh);
 
+  auto version_status = segmentation.version_check();
+  EXPECT_NE(version_status, tvm_utility::Version::Unsupported);
+
   std::random_device rd;
   std::mt19937 gen(42);
   std::uniform_real_distribution<float32_t> dis(-50.0, 50.0);

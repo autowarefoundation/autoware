@@ -19,6 +19,7 @@
 #include <tvm_utility/pipeline.hpp>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 using autoware::common::types::bool8_t;
@@ -191,6 +192,13 @@ std::shared_ptr<const DetectedObjectsWithFeature> ApolloLidarSegmentation::detec
   }
 
   return output;
+}
+
+const std::string & ApolloLidarSegmentation::network_name() const { return config.network_name; }
+
+tvm_utility::Version ApolloLidarSegmentation::version_check() const
+{
+  return IE->version_check(model_version_from);
 }
 }  // namespace lidar_apollo_segmentation_tvm
 }  // namespace perception

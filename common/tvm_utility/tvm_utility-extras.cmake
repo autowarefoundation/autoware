@@ -14,7 +14,7 @@
 
 # Get user-provided variables
 set(DOWNLOAD_ARTIFACTS OFF CACHE BOOL "enable artifacts download")
-set(MODELZOO_VERSION "1.3.0-20220902" CACHE STRING "targeted ModelZoo version")
+set(MODELZOO_VERSION "2.1.0-20221102" CACHE STRING "targeted ModelZoo version")
 
 #
 # Download the selected neural network if it is not already present on disk.

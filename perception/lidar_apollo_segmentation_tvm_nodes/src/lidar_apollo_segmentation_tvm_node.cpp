@@ -15,6 +15,7 @@
 #include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/lidar_apollo_segmentation_tvm.hpp>
 #include <lidar_apollo_segmentation_tvm_nodes/lidar_apollo_segmentation_tvm_node.hpp>
+#include <rclcpp/logging.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
 #include <memory>
@@ -50,6 +51,21 @@ ApolloLidarSegmentationNode::ApolloLidarSegmentationNode(const rclcpp::NodeOptio
     declare_parameter("min_pts_num", rclcpp::ParameterValue{3}).get<int32_t>(),
     declare_parameter("height_thresh", rclcpp::ParameterValue{0.5}).get<float32_t>())}
 {
+  // Log unexpected versions of the neural network.
+  auto version_status = m_detector_ptr->version_check();
+  if (version_status != tvm_utility::Version::OK) {
+    auto network_name = m_detector_ptr->network_name();
+    if (version_status == tvm_utility::Version::Unknown) {
+      RCLCPP_INFO(
+        get_logger(), "The '%s' network doesn't provide a version number.", network_name.c_str());
+    } else if (version_status == tvm_utility::Version::Untested) {
+      RCLCPP_WARN(
+        get_logger(), "The version of the '%s' network is untested.", network_name.c_str());
+    } else if (version_status == tvm_utility::Version::Unsupported) {
+      RCLCPP_ERROR(
+        get_logger(), "The version of the '%s' network is unsupported.", network_name.c_str());
+    }
+  }
 }
 
 void ApolloLidarSegmentationNode::pointCloudCallback(

@@ -1,4 +1,4 @@
-// Copyright 2021 Arm Limited and Contributors.
+// Copyright 2021-2022 Arm Limited and Contributors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -244,6 +244,9 @@ TEST(PipelineExamples, SimplePipeline)
   PostPT PostP{config};
 
   tvm_utility::pipeline::Pipeline<PrePT, IET, PostPT> pipeline(PreP, IE, PostP);
+
+  auto version_status = IE.version_check({2, 0, 0});
+  EXPECT_NE(version_status, tvm_utility::Version::Unsupported);
 
   // Push data input the pipeline and get the output
   auto output = pipeline.schedule(IMAGE_FILENAME);

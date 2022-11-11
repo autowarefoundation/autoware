@@ -30,6 +30,14 @@ int main() {
 }
 ```
 
+#### Version checking
+
+The `InferenceEngineTVM::version_check` function can be used to check the version of the neural network in use against the range of earliest to latest supported versions.
+
+The `InferenceEngineTVM` class holds the latest supported version, which needs to be updated when the targeted version changes; after having tested the effect of the version change on the packages dependent on this one.
+
+The earliest supported version depends on each package making use of the inference, and so should be defined (and maintained) in those packages.
+
 #### Models
 
 Dependent packages are expected to use the `get_neural_network` cmake function from this package in order to get the compiled TVM models.
