@@ -231,7 +231,7 @@ bool AnalyticalJerkConstrainedSmoother::apply(
   return true;
 }
 
-boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::resampleTrajectory(
+TrajectoryPoints AnalyticalJerkConstrainedSmoother::resampleTrajectory(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
   [[maybe_unused]] const geometry_msgs::msg::Pose & current_pose,
   [[maybe_unused]] const double nearest_dist_threshold,
@@ -240,7 +240,7 @@ boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::resampleTra
   TrajectoryPoints output;
   if (input.empty()) {
     RCLCPP_WARN(logger_, "Input trajectory is empty");
-    return {};
+    return input;
   }
 
   const double ds = 1.0 / static_cast<double>(smoother_param_.resample.num_resample);
@@ -274,7 +274,7 @@ boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::resampleTra
 
   output.push_back(input.back());
 
-  return boost::optional<TrajectoryPoints>(output);
+  return output;
 }
 
 boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilter(

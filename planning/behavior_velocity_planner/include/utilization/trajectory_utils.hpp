@@ -108,21 +108,20 @@ inline bool smoothPath(
     *traj_lateral_acc_filtered, v0, current_pose, planner_data->ego_nearest_dist_threshold,
     planner_data->ego_nearest_yaw_threshold);
   const size_t traj_resampled_closest = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    *traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
+    traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
     planner_data->ego_nearest_yaw_threshold);
   std::vector<TrajectoryPoints> debug_trajectories;
   // Clip trajectory from closest point
   TrajectoryPoints clipped;
   TrajectoryPoints traj_smoothed;
   clipped.insert(
-    clipped.end(), traj_resampled->begin() + traj_resampled_closest, traj_resampled->end());
+    clipped.end(), traj_resampled.begin() + traj_resampled_closest, traj_resampled.end());
   if (!smoother->apply(v0, a0, clipped, traj_smoothed, debug_trajectories)) {
     std::cerr << "[behavior_velocity][trajectory_utils]: failed to smooth" << std::endl;
     return false;
   }
   traj_smoothed.insert(
-    traj_smoothed.begin(), traj_resampled->begin(),
-    traj_resampled->begin() + traj_resampled_closest);
+    traj_smoothed.begin(), traj_resampled.begin(), traj_resampled.begin() + traj_resampled_closest);
 
   out_path = convertTrajectoryPointsToPath(traj_smoothed);
   return true;

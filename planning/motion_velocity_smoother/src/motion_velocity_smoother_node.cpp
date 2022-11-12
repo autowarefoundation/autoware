@@ -401,14 +401,10 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
     output, current_odometry_ptr_->twist.twist.linear.x, current_pose_ptr_->pose,
     node_param_.ego_nearest_dist_threshold, node_param_.ego_nearest_yaw_threshold,
     node_param_.post_resample_param, false);
-  if (!output_resampled) {
-    RCLCPP_WARN(get_logger(), "Failed to get the resampled output trajectory");
-    return;
-  }
 
   // Set 0 at the end of the trajectory
-  if (!output_resampled->empty()) {
-    output_resampled->back().longitudinal_velocity_mps = 0.0;
+  if (!output_resampled.empty()) {
+    output_resampled.back().longitudinal_velocity_mps = 0.0;
   }
 
   // update previous step infomation
@@ -417,11 +413,11 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
   // for reverse velocity
   // NOTE: this process must be in the end of the process
   if (is_reverse_) {
-    flipVelocity(*output_resampled);
+    flipVelocity(output_resampled);
   }
 
   // publish message
-  publishTrajectory(*output_resampled);
+  publishTrajectory(output_resampled);
 
   // publish debug message
   publishStopDistance(output);
@@ -523,24 +519,21 @@ bool MotionVelocitySmootherNode::smoothVelocity(
     *traj_steering_rate_limited, current_odometry_ptr_->twist.twist.linear.x,
     current_pose_ptr_->pose, node_param_.ego_nearest_dist_threshold,
     node_param_.ego_nearest_yaw_threshold);
-  if (!traj_resampled) {
-    RCLCPP_WARN(get_logger(), "Fail to do resampling before the optimization");
-    return false;
-  }
-  const size_t traj_resampled_closest = findNearestIndexFromEgo(*traj_resampled);
+
+  const size_t traj_resampled_closest = findNearestIndexFromEgo(traj_resampled);
 
   // Set 0[m/s] in the terminal point
-  if (!traj_resampled->empty()) {
-    traj_resampled->back().longitudinal_velocity_mps = 0.0;
+  if (!traj_resampled.empty()) {
+    traj_resampled.back().longitudinal_velocity_mps = 0.0;
   }
 
   // Publish Closest Resample Trajectory Velocity
-  publishClosestVelocity(*traj_resampled, current_pose_ptr_->pose, debug_closest_max_velocity_);
+  publishClosestVelocity(traj_resampled, current_pose_ptr_->pose, debug_closest_max_velocity_);
 
   // Clip trajectory from closest point
   TrajectoryPoints clipped;
   clipped.insert(
-    clipped.end(), traj_resampled->begin() + traj_resampled_closest, traj_resampled->end());
+    clipped.end(), traj_resampled.begin() + traj_resampled_closest, traj_resampled.end());
 
   std::vector<TrajectoryPoints> debug_trajectories;
   if (!smoother_->apply(
@@ -552,8 +545,7 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   overwriteStopPoint(clipped, traj_smoothed);
 
   traj_smoothed.insert(
-    traj_smoothed.begin(), traj_resampled->begin(),
-    traj_resampled->begin() + traj_resampled_closest);
+    traj_smoothed.begin(), traj_resampled.begin(), traj_resampled.begin() + traj_resampled_closest);
 
   // For the endpoint of the trajectory
   if (!traj_smoothed.empty()) {
@@ -575,7 +567,7 @@ bool MotionVelocitySmootherNode::smoothVelocity(
       pub_trajectory_latacc_filtered_->publish(toTrajectoryMsg(tmp));
     }
     {
-      auto tmp = *traj_resampled;
+      auto tmp = traj_resampled;
       if (is_reverse_) flipVelocity(tmp);
       pub_trajectory_resampled_->publish(toTrajectoryMsg(tmp));
     }
@@ -588,8 +580,8 @@ bool MotionVelocitySmootherNode::smoothVelocity(
     if (!debug_trajectories.empty()) {
       for (auto & debug_trajectory : debug_trajectories) {
         debug_trajectory.insert(
-          debug_trajectory.begin(), traj_resampled->begin(),
-          traj_resampled->begin() + traj_resampled_closest);
+          debug_trajectory.begin(), traj_resampled.begin(),
+          traj_resampled.begin() + traj_resampled_closest);
         for (size_t i = 0; i < traj_resampled_closest; ++i) {
           debug_trajectory.at(i).longitudinal_velocity_mps =
             debug_trajectory.at(traj_resampled_closest).longitudinal_velocity_mps;

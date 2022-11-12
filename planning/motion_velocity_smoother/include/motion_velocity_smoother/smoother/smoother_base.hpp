@@ -65,7 +65,7 @@ public:
     const double initial_vel, const double initial_acc, const TrajectoryPoints & input,
     TrajectoryPoints & output, std::vector<TrajectoryPoints> & debug_trajectories) = 0;
 
-  virtual boost::optional<TrajectoryPoints> resampleTrajectory(
+  virtual TrajectoryPoints resampleTrajectory(
     const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
     const double nearest_dist_threshold, const double nearest_yaw_threshold) const = 0;
 

@@ -218,7 +218,7 @@ bool L2PseudoJerkSmoother::apply(
   return true;
 }
 
-boost::optional<TrajectoryPoints> L2PseudoJerkSmoother::resampleTrajectory(
+TrajectoryPoints L2PseudoJerkSmoother::resampleTrajectory(
   const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
   const double nearest_dist_threshold, const double nearest_yaw_threshold) const
 {

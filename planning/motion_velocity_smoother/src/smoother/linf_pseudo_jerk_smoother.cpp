@@ -230,7 +230,7 @@ bool LinfPseudoJerkSmoother::apply(
   return true;
 }
 
-boost::optional<TrajectoryPoints> LinfPseudoJerkSmoother::resampleTrajectory(
+TrajectoryPoints LinfPseudoJerkSmoother::resampleTrajectory(
   const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
   const double nearest_dist_threshold, const double nearest_yaw_threshold) const
 {

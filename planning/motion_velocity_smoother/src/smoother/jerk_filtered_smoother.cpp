@@ -24,6 +24,8 @@
 #include <numeric>
 #include <vector>
 
+#define VERBOSE_TRAJECTORY_VELOCITY false
+
 namespace motion_velocity_smoother
 {
 JerkFilteredSmoother::JerkFilteredSmoother(rclcpp::Node & node) : SmootherBase(node)
@@ -71,8 +73,6 @@ bool JerkFilteredSmoother::apply(
     return true;
   }
 
-  bool TMP_SHOW_DEBUG_INFO = false;
-
   const auto ts = std::chrono::system_clock::now();
 
   const double a_max = base_param_.max_accel;
@@ -93,28 +93,29 @@ bool JerkFilteredSmoother::apply(
   const auto filtered =
     mergeFilteredTrajectory(v0, a0, a_min, j_min, forward_filtered, backward_filtered);
 
-  // Set debug trajectories
-  debug_trajectories.resize(3);
-  debug_trajectories[0] = forward_filtered;
-  debug_trajectories[1] = backward_filtered;
-  debug_trajectories[2] = filtered;
-
   // Resample TrajectoryPoints for Optimization
   // TODO(planning/control team) deal with overlapped lanes with the same direction
   const auto initial_traj_pose = filtered.front().pose;
-  auto opt_resampled_trajectory = resampling::resampleTrajectory(
-    filtered, v0, initial_traj_pose, std::numeric_limits<double>::max(),
-    std::numeric_limits<double>::max(), base_param_.resample_param);
 
-  if (!opt_resampled_trajectory) {
-    RCLCPP_WARN(logger_, "Resample failed!");
-    return false;
-  }
+  const auto resample = [&](const auto & trajectory) {
+    return resampling::resampleTrajectory(
+      trajectory, v0, initial_traj_pose, std::numeric_limits<double>::max(),
+      std::numeric_limits<double>::max(), base_param_.resample_param);
+  };
+
+  auto opt_resampled_trajectory = resample(filtered);
+
+  // Set debug trajectories
+  debug_trajectories.resize(3);
+  debug_trajectories[0] = resample(forward_filtered);
+  debug_trajectories[1] = resample(backward_filtered);
+  debug_trajectories[2] = resample(filtered);
+
   // Ensure terminal velocity is zero
-  opt_resampled_trajectory->back().longitudinal_velocity_mps = 0.0;
+  opt_resampled_trajectory.back().longitudinal_velocity_mps = 0.0;
 
   // If Resampled Size is too small, we don't do optimization
-  if (opt_resampled_trajectory->size() == 1) {
+  if (opt_resampled_trajectory.size() == 1) {
     // No need to do optimization
     output.front().longitudinal_velocity_mps = v0;
     output.front().acceleration_mps2 = a0;
@@ -127,7 +128,7 @@ bool JerkFilteredSmoother::apply(
   // to avoid getting 0 as a stop point, search zero velocity index from 1.
   // the size of the resampled trajectory must not be less than 2.
   const auto zero_vel_id = motion_utils::searchZeroVelocityIndex(
-    *opt_resampled_trajectory, 1, opt_resampled_trajectory->size());
+    opt_resampled_trajectory, 1, opt_resampled_trajectory.size());
 
   if (!zero_vel_id) {
     RCLCPP_WARN(logger_, "opt_resampled_trajectory must have stop point.");
@@ -137,14 +138,14 @@ bool JerkFilteredSmoother::apply(
   // Clip trajectory from 0 to zero_vel_id (the size becomes zero_vel_id_ + 1)
   const size_t N = *zero_vel_id + 1;
 
-  output = *opt_resampled_trajectory;
+  output = opt_resampled_trajectory;
 
   const std::vector<double> interval_dist_arr =
-    trajectory_utils::calcTrajectoryIntervalDistance(*opt_resampled_trajectory);
+    trajectory_utils::calcTrajectoryIntervalDistance(opt_resampled_trajectory);
 
   std::vector<double> v_max_arr(N, 0.0);
   for (size_t i = 0; i < N; ++i) {
-    v_max_arr.at(i) = opt_resampled_trajectory->at(i).longitudinal_velocity_mps;
+    v_max_arr.at(i) = opt_resampled_trajectory.at(i).longitudinal_velocity_mps;
   }
 
   /*
@@ -306,44 +307,29 @@ bool JerkFilteredSmoother::apply(
 
   qp_solver_.logUnsolvedStatus("[motion_velocity_smoother]");
 
-  if (TMP_SHOW_DEBUG_INFO) {
-    // jerk calculation
-    std::vector<double> p_jerk, jerk_converted, jerk_ideal;
-    for (size_t i = 0; i < input.size() - 1; ++i) {
-      double v_ref0 = filtered.at(i).longitudinal_velocity_mps;
-      double v0 = output.at(i).longitudinal_velocity_mps;
-      double a0 = output.at(i).acceleration_mps2;
-      double a1 = output.at(i + 1).acceleration_mps2;
-      double ds = interval_dist_arr.at(i);
-      p_jerk.push_back((a1 - a0) / ds);
-      jerk_converted.push_back((a1 - a0) / ds * v_ref0);
-      jerk_ideal.push_back((a1 - a0) / ds * v0);
-    }
-    p_jerk.push_back(0.0);
-    jerk_converted.push_back(0.0);
-    jerk_ideal.push_back(0.0);
+  const int status_polish = std::get<2>(result);
+  if (status_polish != 1) {
+    const auto msg = status_polish == 0    ? "unperformed"
+                     : status_polish == -1 ? "unsuccessful"
+                                           : "unknown";
+    RCLCPP_WARN(logger_, "osqp polish process failed : %s. The result may be inaccurate", msg);
+  }
 
-    // print
-    size_t i = 0;
-    auto getVx = [&i](const TrajectoryPoints & trajectory) {
-      return trajectory.at(i).longitudinal_velocity_mps;
-    };
-    auto getAx = [&i](const TrajectoryPoints & trajectory) {
-      return trajectory.at(i).acceleration_mps2;
-    };
-    printf("v0 = %.3f, a0 = %.3f\n", v0, a0);
-    for (; i < input.size(); ++i) {
-      double gamma = optval.at(IDX_GAMMA0 + i);
-      printf(
-        "i = %lu, input: %.3f, filt_f: (%.3f, %.3f), filt_b: (%.3f, %.3f), filt_fb: (%.3f, %.3f), "
-        "opt: (%.3f, %f), p_jerk = %.3f, p_jerk*v_ref: %.3f (min: %.3f, mac: %.3f), p_jerk*v_opt "
-        "(to "
-        "check): %.3f, gamma: %.3f\n",
-        i, getVx(input), getVx(forward_filtered), getAx(forward_filtered), getVx(backward_filtered),
-        getAx(backward_filtered), getVx(filtered), getAx(filtered), getVx(output), getAx(output),
-        p_jerk.at(i), jerk_converted.at(i), j_min, j_max, jerk_ideal.at(i), gamma);
+  if (VERBOSE_TRAJECTORY_VELOCITY) {
+    const auto s_output = trajectory_utils::calcArclengthArray(output);
+
+    std::cerr << "\n\n" << std::endl;
+    for (size_t i = 0; i < N; ++i) {
+      const auto v_opt = output.at(i).longitudinal_velocity_mps;
+      const auto a_opt = output.at(i).acceleration_mps2;
+      const auto ds = i < interval_dist_arr.size() ? interval_dist_arr.at(i) : 0.0;
+      const auto v_rs = i < opt_resampled_trajectory.size()
+                          ? opt_resampled_trajectory.at(i).longitudinal_velocity_mps
+                          : 0.0;
+      RCLCPP_INFO(
+        logger_, "i =  %4lu | s: %5f | ds: %5f | rs: %9f | op_v: %10f | op_a: %10f |", i,
+        s_output.at(i), ds, v_rs, v_opt, a_opt);
     }
-    printf("\n");
   }
 
   return true;
@@ -467,7 +453,7 @@ TrajectoryPoints JerkFilteredSmoother::mergeFilteredTrajectory(
   return merged;
 }
 
-boost::optional<TrajectoryPoints> JerkFilteredSmoother::resampleTrajectory(
+TrajectoryPoints JerkFilteredSmoother::resampleTrajectory(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
   const geometry_msgs::msg::Pose & current_pose, const double nearest_dist_threshold,
   const double nearest_yaw_threshold) const
