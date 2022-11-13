@@ -138,12 +138,13 @@ After the optimization, a resampling called `post resampling` is performed befor
 
 ### Curve parameters
 
-| Name                          | Type     | Description                                                            | Default value |
-| :---------------------------- | :------- | :--------------------------------------------------------------------- | :------------ |
-| `max_lateral_accel`           | `double` | Max lateral acceleration limit [m/ss]                                  | 0.5           |
-| `min_curve_velocity`          | `double` | Min velocity at lateral acceleration limit [m/ss]                      | 2.74          |
-| `decel_distance_before_curve` | `double` | Distance to slowdown before a curve for lateral acceleration limit [m] | 3.5           |
-| `decel_distance_after_curve`  | `double` | Distance to slowdown after a curve for lateral acceleration limit [m]  | 2.0           |
+| Name                                   | Type     | Description                                                                                                                                                                                                  | Default value |
+| :------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| `max_lateral_accel`                    | `double` | Max lateral acceleration limit [m/ss]                                                                                                                                                                        | 0.5           |
+| `min_curve_velocity`                   | `double` | Min velocity at lateral acceleration limit [m/ss]                                                                                                                                                            | 2.74          |
+| `decel_distance_before_curve`          | `double` | Distance to slowdown before a curve for lateral acceleration limit [m]                                                                                                                                       | 3.5           |
+| `decel_distance_after_curve`           | `double` | Distance to slowdown after a curve for lateral acceleration limit [m]                                                                                                                                        | 2.0           |
+| `min_decel_for_lateral_acc_lim_filter` | `double` | Deceleration limit to avoid sudden braking by the lateral acceleration filter [m/ss]. Strong limitation degrades the deceleration response to the appearance of sharp curves due to obstacle avoidance, etc. | -2.5          |
 
 ### Engage & replan parameters
 

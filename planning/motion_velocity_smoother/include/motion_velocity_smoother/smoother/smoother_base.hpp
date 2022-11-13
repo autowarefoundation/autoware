@@ -45,8 +45,10 @@ public:
     double stop_decel;  // deceleration at a stop point [m/s2] <= 0
     double max_jerk;
     double min_jerk;
-    double max_lateral_accel;            // max lateral acceleration [m/ss] > 0
-    double min_curve_velocity;           // min velocity at curve [m/s]
+    double max_lateral_accel;                     // max lateral acceleration [m/ss] > 0
+    double min_decel_for_lateral_acc_lim_filter;  // deceleration limit applied in the lateral
+                                                  // acceleration filter to avoid sudden braking.
+    double min_curve_velocity;                    // min velocity at curve [m/s]
     double decel_distance_before_curve;  // distance before slow down for lateral acc at a curve
     double decel_distance_after_curve;   // distance after slow down for lateral acc at a curve
     double max_steering_angle_rate;      // max steering angle rate [degree/s]

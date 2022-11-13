@@ -37,6 +37,8 @@ SmootherBase::SmootherBase(rclcpp::Node & node)
   p.max_jerk = node.declare_parameter("normal.max_jerk", 0.3);
   p.min_jerk = node.declare_parameter("normal.min_jerk", -0.1);
   p.max_lateral_accel = node.declare_parameter("max_lateral_accel", 0.2);
+  p.min_decel_for_lateral_acc_lim_filter =
+    node.declare_parameter("min_decel_for_lateral_acc_lim_filter", -2.5);
   p.sample_ds = node.declare_parameter("resample_ds", 0.5);
   p.curvature_threshold = node.declare_parameter("curvature_threshold", 0.2);
   p.max_steering_angle_rate = node.declare_parameter("max_steering_angle_rate", 5.0);
@@ -106,10 +108,10 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
   const double max_lateral_accel_abs = std::fabs(base_param_.max_lateral_accel);
 
   const auto latacc_min_vel_arr =
-    enable_smooth_limit
-      ? trajectory_utils::calcVelocityProfileWithConstantJerkAndAccelerationLimit(
-          output, v0, a0, base_param_.min_jerk, base_param_.max_accel, base_param_.min_decel)
-      : std::vector<double>{};
+    enable_smooth_limit ? trajectory_utils::calcVelocityProfileWithConstantJerkAndAccelerationLimit(
+                            output, v0, a0, base_param_.min_jerk, base_param_.max_accel,
+                            base_param_.min_decel_for_lateral_acc_lim_filter)
+                        : std::vector<double>{};
 
   for (size_t i = 0; i < output.size(); ++i) {
     double curvature = 0.0;
