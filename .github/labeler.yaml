@@ -1,0 +1,42 @@
+ci:
+  - .github/**/*
+  - "*.json"
+  - "*.yaml"
+  - "*.cfg"
+  - .clang-format
+  - .gitignore
+  - .prettierignore
+document:
+  - docs/**/*
+  - "**/*.txt"
+  - "**/*.md"
+  - "**/*.rst"
+  - "**/*.jpg"
+  - "**/*.png"
+  - "**/*.svg"
+common:
+  - common/**/*
+control:
+  - control/**/*
+evaluator:
+  - evaluator/**/*
+launch:
+  - launch/**/*
+localization:
+  - localization/**/*
+map:
+  - map/**/*
+perception:
+  - perception/**/*
+planning:
+  - planning/**/*
+sensing:
+  - sensing/**/*
+simulator:
+  - simulator/**/*
+system:
+  - system/**/*
+tools:
+  - tools/**/*
+vehicle:
+  - vehicle/**/*
