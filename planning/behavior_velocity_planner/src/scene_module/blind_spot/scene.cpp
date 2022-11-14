@@ -391,7 +391,7 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
         to_bg2d(object.kinematics.initial_pose_with_covariance.pose.position),
         lanelet::utils::to2D(areas_opt.get().detection_area));
       bool exist_in_conflict_area = isPredictedPathInArea(object, areas_opt.get().conflict_area);
-      if (exist_in_detection_area && exist_in_conflict_area) {
+      if (exist_in_detection_area || exist_in_conflict_area) {
         obstacle_detected = true;
         debug_data_.conflicting_targets.objects.push_back(object);
       }
@@ -406,17 +406,15 @@ bool BlindSpotModule::isPredictedPathInArea(
   const autoware_auto_perception_msgs::msg::PredictedObject & object,
   const lanelet::CompoundPolygon3d & area) const
 {
-  bool exist_in_conflict_area = false;
-  for (const auto & predicted_path : object.kinematics.predicted_paths) {
-    for (const auto & predicted_point : predicted_path.path) {
-      exist_in_conflict_area =
-        bg::within(to_bg2d(predicted_point.position), lanelet::utils::to2D(area));
-      if (exist_in_conflict_area) {
-        return true;
-      }
-    }
-  }
-  return false;
+  const auto area_2d = lanelet::utils::to2D(area);
+  // NOTE: iterating all paths including those of low confidence
+  return std::any_of(
+    object.kinematics.predicted_paths.begin(), object.kinematics.predicted_paths.end(),
+    [&area_2d](const auto & path) {
+      return std::any_of(path.path.begin(), path.path.end(), [&area_2d](const auto & point) {
+        return bg::within(to_bg2d(point.position), area_2d);
+      });
+    });
 }
 
 lanelet::ConstLanelet BlindSpotModule::generateHalfLanelet(
