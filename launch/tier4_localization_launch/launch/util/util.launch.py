@@ -16,6 +16,7 @@ import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import OpaqueFunction
 from launch.conditions import LaunchConfigurationNotEquals
+from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
@@ -71,10 +72,16 @@ def launch_setup(context, *args, **kwargs):
         random_downsample_component,
     ]
 
+    target_container = (
+        "/sensing/lidar/top/pointcloud_preprocessor/pointcloud_container"
+        if UnlessCondition(LaunchConfiguration("use_pointcloud_container")).evaluate(context)
+        else LaunchConfiguration("pointcloud_container_name")
+    )
+
     load_composable_nodes = LoadComposableNodes(
-        condition=LaunchConfigurationNotEquals("container", ""),
+        condition=LaunchConfigurationNotEquals(target_container, ""),
         composable_node_descriptions=composable_nodes,
-        target_container=LaunchConfiguration("container"),
+        target_container=target_container,
     )
 
     return [load_composable_nodes]
@@ -117,11 +124,13 @@ def generate_launch_description():
         "path to the parameter file of random_downsample_filter",
     )
     add_launch_arg("use_intra_process", "true", "use ROS2 component container communication")
+    add_launch_arg("use_pointcloud_container", "True", "use pointcloud container")
     add_launch_arg(
-        "container",
-        "/sensing/lidar/top/pointcloud_preprocessor/velodyne_node_container",
+        "pointcloud_container_name",
+        "/pointcloud_container",
         "container name",
     )
+
     add_launch_arg(
         "output/pointcloud",
         "downsample/pointcloud",
