@@ -108,11 +108,6 @@ lanelet::ConstLanelets getPullOutLanes(
     return shoulder_lanes;
   }
 
-  // Get pull out lanes
-  lanelet::ConstLanelet current_lane;
-  lanelet::utils::query::getClosestLanelet(
-    current_lanes, planner_data->self_pose->pose, &current_lane);
-
   if (route_handler->getPullOutStartLane(
         route_handler->getShoulderLanelets(), current_pose, planner_data->parameters.vehicle_width,
         &shoulder_lane)) {
