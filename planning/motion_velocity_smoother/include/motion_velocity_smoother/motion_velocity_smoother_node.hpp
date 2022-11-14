@@ -79,12 +79,12 @@ private:
 
   PoseStamped::ConstSharedPtr current_pose_ptr_;   // current vehicle pose
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
-  Trajectory::ConstSharedPtr base_traj_raw_ptr_;   // current base_waypoints
-  double external_velocity_limit_;                 // current external_velocity_limit
-  double max_velocity_with_deceleration_;          // maximum velocity with deceleration
-                                                   // for external velocity limit
-  double external_velocity_limit_dist_{0.0};       // distance to set external velocity limit
-  double wheelbase_;                               // wheelbase
+  VelocityLimit::ConstSharedPtr external_velocity_limit_ptr_{
+    nullptr};                                     // external velocity limit message
+  Trajectory::ConstSharedPtr base_traj_raw_ptr_;  // current base_waypoints
+  double max_velocity_with_deceleration_;         // maximum velocity with deceleration
+                                                  // for external velocity limit
+  double wheelbase_;                              // wheelbase
 
   TrajectoryPoints prev_output_;  // previously published trajectory
 
@@ -132,6 +132,14 @@ private:
     AlgorithmType algorithm_type;  // Option : JerkFiltered, Linf, L2
   } node_param_{};
 
+  struct ExternalVelocityLimit
+  {
+    double velocity{0.0};  // current external_velocity_limit
+    double dist{0.0};      // distance to set external velocity limit
+  };
+  ExternalVelocityLimit
+    external_velocity_limit_;  // velocity and distance constraint  of external velocity limit
+
   std::shared_ptr<SmootherBase> smoother_;
 
   bool publish_debug_trajs_;  // publish planned trajectories
@@ -152,6 +160,8 @@ private:
 
   void onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg);
 
+  void calcExternalVelocityLimit();
+
   // publish methods
   void publishTrajectory(const TrajectoryPoints & traj) const;
 
@@ -169,15 +179,14 @@ private:
 
   AlgorithmType getAlgorithmType(const std::string & algorithm_name) const;
 
-  TrajectoryPoints calcTrajectoryVelocity(const TrajectoryPoints & input) const;
+  TrajectoryPoints calcTrajectoryVelocity(const TrajectoryPoints & traj_input) const;
 
   bool smoothVelocity(
     const TrajectoryPoints & input, const size_t input_closest,
     TrajectoryPoints & traj_smoothed) const;
 
   std::pair<Motion, InitializeType> calcInitialMotion(
-    const TrajectoryPoints & input_traj, const size_t input_closest,
-    const TrajectoryPoints & prev_traj) const;
+    const TrajectoryPoints & input_traj, const size_t input_closest) const;
 
   void applyExternalVelocityLimit(TrajectoryPoints & traj) const;
 
