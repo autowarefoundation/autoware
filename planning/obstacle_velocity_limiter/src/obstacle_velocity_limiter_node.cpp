@@ -23,7 +23,7 @@
 #include "obstacle_velocity_limiter/types.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
-#include <motion_common/trajectory_common.hpp>
+#include <motion_utils/motion_utils.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/qos.hpp>
@@ -177,8 +177,7 @@ void ObstacleVelocityLimiterNode::onTrajectory(const Trajectory::ConstSharedPtr 
       get_logger(), *get_clock(), rcutils_duration_value_t(1000), "Waiting for current pose");
     return;
   }
-  const auto ego_idx =
-    autoware::motion::motion_common::findNearestIndex(msg->points, current_pose_ptr->pose);
+  const auto ego_idx = motion_utils::findNearestIndex(msg->points, current_pose_ptr->pose);
   if (!validInputs(ego_idx)) return;
   auto original_traj = *msg;
   if (preprocessing_params_.calculate_steering_angles)
@@ -235,8 +234,7 @@ void ObstacleVelocityLimiterNode::onTrajectory(const Trajectory::ConstSharedPtr 
   }
 }
 
-bool ObstacleVelocityLimiterNode::validInputs(
-  const std::experimental::fundamentals_v1::optional<size_t> & ego_idx)
+bool ObstacleVelocityLimiterNode::validInputs(const boost::optional<size_t> & ego_idx)
 {
   constexpr auto one_sec = rcutils_duration_value_t(1000);
   if (!occupancy_grid_ptr_)
