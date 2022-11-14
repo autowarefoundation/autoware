@@ -20,7 +20,7 @@
 
   <group if="$(var scenario_simulation)">
     <include file="$(find-pkg-share fault_injection)/launch/fault_injection.launch.xml">
-      <arg name="config_file" value="$(var tier4_simulator_launch_param_path)/config/fault_injection.param.yaml"/>
+      <arg name="config_file" value="$(var tier4_simulator_launch_param_path)/fault_injection.param.yaml"/>
     </include>
   </group>
 
