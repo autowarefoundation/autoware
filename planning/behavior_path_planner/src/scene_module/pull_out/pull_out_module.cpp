@@ -435,10 +435,6 @@ void PullOutModule::updatePullOutStatus()
   status_.current_lanes = util::getExtendedCurrentLanes(planner_data_);
   status_.pull_out_lanes = pull_out_utils::getPullOutLanes(status_.current_lanes, planner_data_);
 
-  // Get pull_out lanes
-  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(status_.current_lanes, planner_data_);
-  status_.pull_out_lanes = pull_out_lanes;
-
   // combine road and shoulder lanes
   status_.lanes = status_.current_lanes;
   status_.lanes.insert(
