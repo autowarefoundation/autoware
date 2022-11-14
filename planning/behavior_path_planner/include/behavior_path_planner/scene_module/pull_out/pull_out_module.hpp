@@ -80,6 +80,11 @@ public:
   void setParameters(const PullOutParameters & parameters) { parameters_ = parameters; }
   void resetStatus();
 
+  void acceptVisitor(
+    [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
+  {
+  }
+
 private:
   PullOutParameters parameters_;
   vehicle_info_util::VehicleInfo vehicle_info_;

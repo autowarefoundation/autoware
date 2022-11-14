@@ -23,6 +23,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
+#include "tier4_planning_msgs/msg/lane_change_debug_msg.hpp"
+#include "tier4_planning_msgs/msg/lane_change_debug_msg_array.hpp"
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <tf2/utils.h>
@@ -37,6 +40,8 @@ namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using marker_utils::CollisionCheckDebug;
+using tier4_planning_msgs::msg::LaneChangeDebugMsg;
+using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
 class LaneChangeModule : public SceneModuleInterface
 {
@@ -55,6 +60,10 @@ public:
   CandidateOutput planCandidate() const override;
   void onEntry() override;
   void onExit() override;
+
+  std::shared_ptr<LaneChangeDebugMsgArray> get_debug_msg_array() const;
+  void acceptVisitor(
+    [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
 
   void publishRTCStatus() override
   {
@@ -89,6 +98,7 @@ private:
   std::shared_ptr<LaneChangeParameters> parameters_;
   LaneChangeStatus status_;
   PathShifter path_shifter_;
+  mutable LaneChangeDebugMsgArray lane_change_debug_msg_array_;
 
   double lane_change_lane_length_{200.0};
   double check_distance_{100.0};

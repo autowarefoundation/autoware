@@ -2350,6 +2350,7 @@ bool hasEnoughDistance(
 
   const auto rear_vehicle_velocity =
     (is_obj_in_front) ? ego_current_twist.linear : object_current_twist.linear;
+  debug.object_twist.linear = (is_obj_in_front) ? front_vehicle_velocity : rear_vehicle_velocity;
 
   const auto front_vehicle_accel = param.expected_front_deceleration;
   const auto rear_vehicle_accel = param.expected_rear_deceleration;

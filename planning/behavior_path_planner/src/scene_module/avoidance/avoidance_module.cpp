@@ -17,6 +17,7 @@
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_utils.hpp"
 #include "behavior_path_planner/scene_module/avoidance/debug.hpp"
+#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -24,6 +25,8 @@
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
+#include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
+#include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -306,8 +309,6 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
   // debug
   {
     updateAvoidanceDebugData(avoidance_debug_msg_array);
-    debug_avoidance_msg_array_ptr_ =
-      std::make_shared<AvoidanceDebugMsgArray>(debug_data_.avoidance_debug_msg_array);
     debug.farthest_linestring_from_overhang =
       std::make_shared<lanelet::ConstLineStrings3d>(debug_linestring);
     debug.current_lanelets = std::make_shared<lanelet::ConstLanelets>(current_lanes);
@@ -2527,7 +2528,6 @@ void AvoidanceModule::initVariables()
   left_shift_array_.clear();
   right_shift_array_.clear();
 
-  debug_avoidance_msg_array_ptr_.reset();
   debug_data_ = DebugData();
   debug_marker_.markers.clear();
   registered_raw_shift_lines_ = {};
@@ -2726,4 +2726,21 @@ void AvoidanceModule::updateAvoidanceDebugData(
   }
 }
 
+std::shared_ptr<AvoidanceDebugMsgArray> AvoidanceModule::get_debug_msg_array() const
+{
+  debug_data_.avoidance_debug_msg_array.header.stamp = clock_->now();
+  return std::make_shared<AvoidanceDebugMsgArray>(debug_data_.avoidance_debug_msg_array);
+}
+
+void AvoidanceModule::acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const
+{
+  if (visitor) {
+    visitor->visitAvoidanceModule(this);
+  }
+}
+
+void SceneModuleVisitor::visitAvoidanceModule(const AvoidanceModule * module) const
+{
+  avoidance_visitor_ = module->get_debug_msg_array();
+}
 }  // namespace behavior_path_planner

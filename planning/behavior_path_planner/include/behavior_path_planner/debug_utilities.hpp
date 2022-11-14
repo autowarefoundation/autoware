@@ -52,6 +52,7 @@ struct CollisionCheckDebug
   std::size_t lane_id{0};
   Pose current_pose{};
   Twist current_twist{};
+  Twist object_twist{};
   Pose expected_ego_pose{};
   Pose expected_obj_pose{};
   Pose relative_to_ego{};

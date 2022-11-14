@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <behavior_path_planner/steering_factor_interface.hpp>
@@ -225,13 +226,6 @@ public:
 
   std::shared_ptr<const PlannerData> planner_data_;
 
-  AvoidanceDebugMsgArray::SharedPtr getAvoidanceDebugMsgArray()
-  {
-    if (debug_avoidance_msg_array_ptr_) {
-      debug_avoidance_msg_array_ptr_->header.stamp = clock_->now();
-    }
-    return debug_avoidance_msg_array_ptr_;
-  }
   bool isWaitingApproval() const { return is_waiting_approval_; }
 
   virtual void lockRTCCommand()
@@ -249,6 +243,7 @@ public:
     }
     rtc_interface_ptr_->unlockCommandUpdate();
   }
+  virtual void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const = 0;
 
 private:
   std::string name_;
@@ -257,7 +252,6 @@ private:
 protected:
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
-  mutable AvoidanceDebugMsgArray::SharedPtr debug_avoidance_msg_array_ptr_{};
   mutable MarkerArray debug_marker_;
 
   std::shared_ptr<RTCInterface> rtc_interface_ptr_;

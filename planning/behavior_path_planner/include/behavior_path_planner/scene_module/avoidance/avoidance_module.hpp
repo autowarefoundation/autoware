@@ -17,6 +17,7 @@
 
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -25,6 +26,7 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
+#include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
 #include <memory>
 #include <string>
@@ -49,6 +51,7 @@ public:
   void onEntry() override;
   void onExit() override;
   void updateData() override;
+  void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
 
   void publishRTCStatus() override
   {
@@ -78,6 +81,7 @@ public:
     rtc_interface_left_.unlockCommandUpdate();
     rtc_interface_right_.unlockCommandUpdate();
   }
+  std::shared_ptr<AvoidanceDebugMsgArray> get_debug_msg_array() const;
 
 private:
   struct RegisteredShiftLine
@@ -283,6 +287,7 @@ private:
 
   // debug
   mutable DebugData debug_data_;
+  mutable std::shared_ptr<AvoidanceDebugMsgArray> debug_msg_ptr_;
   void setDebugData(const PathShifter & shifter, const DebugData & debug);
   void updateAvoidanceDebugData(std::vector<AvoidanceDebugMsg> & avoidance_debug_msg_array) const;
   mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_line_;

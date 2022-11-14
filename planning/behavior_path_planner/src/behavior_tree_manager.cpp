@@ -16,6 +16,7 @@
 
 #include "behavior_path_planner/scene_module/scene_module_bt_node_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <algorithm>
@@ -114,22 +115,6 @@ BehaviorTreeManager::getModulesStatus()
   return modules_status_;
 }
 
-AvoidanceDebugMsgArray BehaviorTreeManager::getAvoidanceDebugMsgArray()
-{
-  const auto avoidance_module = std::find_if(
-    scene_modules_.begin(), scene_modules_.end(),
-    [](const std::shared_ptr<SceneModuleInterface> & module_ptr) {
-      return module_ptr->name() == "Avoidance";
-    });
-  if (avoidance_module != scene_modules_.end()) {
-    const auto & ptr = avoidance_module->get()->getAvoidanceDebugMsgArray();
-    if (ptr) {
-      return *ptr;
-    }
-  }
-  return AvoidanceDebugMsgArray();
-}
-
 BT::NodeStatus BehaviorTreeManager::checkForceApproval(const std::string & name)
 {
   const auto & approval = current_planner_data_->approval.is_force_approved;
@@ -158,4 +143,12 @@ void BehaviorTreeManager::resetGrootMonitor()
   }
 }
 
+std::shared_ptr<SceneModuleVisitor> BehaviorTreeManager::getAllSceneModuleDebugMsgData()
+{
+  scene_module_visitor_ptr_ = std::make_shared<SceneModuleVisitor>();
+  for (const auto & module : scene_modules_) {
+    module->acceptVisitor(scene_module_visitor_ptr_);
+  }
+  return scene_module_visitor_ptr_;
+}
 }  // namespace behavior_path_planner

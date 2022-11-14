@@ -70,6 +70,11 @@ public:
 
   void setParameters(const SideShiftParameters & parameters);
 
+  void acceptVisitor(
+    [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
+  {
+  }
+
 private:
   rclcpp::Subscription<LateralOffset>::SharedPtr lateral_offset_subscriber_;
 
