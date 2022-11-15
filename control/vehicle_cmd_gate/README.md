@@ -66,4 +66,6 @@
 
 ## Assumptions / Known limits
 
-TBD.
+The parameter `use_external_emergency_stop` (true by default) enables an emergency stop request from external modules.
+This feature requires a `~/input/external_emergency_stop_heartbeat` topic for health monitoring of the external module, and the vehicle_cmd_gate module will not start without the topic.
+The `use_external_emergency_stop` parameter must be false when the "external emergency stop" function is not used.

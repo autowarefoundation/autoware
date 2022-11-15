@@ -224,6 +224,13 @@ bool VehicleCmdGate::isDataReady()
     }
   }
 
+  if (use_external_emergency_stop_) {
+    if (!external_emergency_stop_heartbeat_received_time_) {
+      RCLCPP_WARN(get_logger(), "external_emergency_stop_heartbeat_received_time_ is false");
+      return false;
+    }
+  }
+
   return true;
 }
 
