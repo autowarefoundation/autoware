@@ -344,6 +344,13 @@ void MotionVelocitySmootherNode::calcExternalVelocityLimit()
         // TODO(mkuri) If v0 < external_velocity_limit_ptr_->max_velocity <
         // max_velocity_with_deceleration_ meets, stronger jerk than expected may be applied to
         // external velocity limit.
+        if (v0 < external_velocity_limit_ptr_->max_velocity) {
+          RCLCPP_WARN(
+            get_logger(),
+            "Stronger jerk than expected may be applied to external velocity limit in this "
+            "condition.");
+        }
+
         double stop_dist = 0.0;
         std::map<double, double> jerk_profile;
         if (!trajectory_utils::calcStopDistWithJerkConstraints(
