@@ -100,7 +100,9 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
   pp.baselink_to_front = vehicle_info.max_longitudinal_offset_m;
-  pp.half_vehicle_width = 0.5 * vehicle_info.vehicle_width_m;
+  pp.wheel_tread = vehicle_info.wheel_tread_m;
+  pp.right_overhang = vehicle_info.right_overhang_m;
+  pp.left_overhang = vehicle_info.left_overhang_m;
 }
 
 void OcclusionSpotModuleManager::launchNewModules(

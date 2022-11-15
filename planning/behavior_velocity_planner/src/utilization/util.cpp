@@ -60,9 +60,10 @@ bool createDetectionAreaPolygons(
    */
   const double min_len = da_range.min_longitudinal_distance;
   const double max_len = da_range.max_longitudinal_distance;
-  const double min_dst = da_range.min_lateral_distance;
   const double max_dst = da_range.max_lateral_distance;
   const double interval = da_range.interval;
+  const double offset_left = (da_range.wheel_tread / 2.0) + da_range.left_overhang;
+  const double offset_right = (da_range.wheel_tread / 2.0) + da_range.right_overhang;
 
   //! max index is the last index of path point
   const size_t max_index = static_cast<size_t>(path.points.size() - 1);
@@ -95,10 +96,10 @@ bool createDetectionAreaPolygons(
   double dist_sum = 0.0;
   double length = 0;
   // initial point of detection area polygon
-  LineString2d left_inner_bound = {calculateOffsetPoint2d(p0.pose, min_len, min_dst)};
-  LineString2d left_outer_bound = {calculateOffsetPoint2d(p0.pose, min_len, min_dst + eps)};
-  LineString2d right_inner_bound = {calculateOffsetPoint2d(p0.pose, min_len, -min_dst)};
-  LineString2d right_outer_bound = {calculateOffsetPoint2d(p0.pose, min_len, -min_dst - eps)};
+  LineString2d left_inner_bound = {calculateOffsetPoint2d(p0.pose, min_len, offset_left)};
+  LineString2d left_outer_bound = {calculateOffsetPoint2d(p0.pose, min_len, offset_left + eps)};
+  LineString2d right_inner_bound = {calculateOffsetPoint2d(p0.pose, min_len, -offset_right)};
+  LineString2d right_outer_bound = {calculateOffsetPoint2d(p0.pose, min_len, -offset_right - eps)};
   for (size_t s = first_idx; s <= max_index; s++) {
     const auto p1 = path.points.at(s).point;
     const double ds = calcDistance2d(p0, p1);
@@ -109,18 +110,24 @@ bool createDetectionAreaPolygons(
     const double v = std::max(v_average, min_velocity);
     const double dt = ds / v;
     ttc += dt;
+
     // for offset calculation
-    const double max_lateral_distance = std::min(max_dst, min_dst + ttc * obstacle_vel_mps + eps);
+    const double max_lateral_distance_right =
+      std::min(max_dst, offset_right + ttc * obstacle_vel_mps + eps);
+    const double max_lateral_distance_left =
+      std::min(max_dst, offset_left + ttc * obstacle_vel_mps + eps);
+
     // left bound
     if (da_range.use_left) {
-      left_inner_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, min_dst));
-      left_outer_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, max_lateral_distance));
+      left_inner_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, offset_left));
+      left_outer_bound.emplace_back(
+        calculateOffsetPoint2d(p1.pose, min_len, max_lateral_distance_left));
     }
     // right bound
     if (da_range.use_right) {
-      right_inner_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, -min_dst));
+      right_inner_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, -offset_right));
       right_outer_bound.emplace_back(
-        calculateOffsetPoint2d(p1.pose, min_len, -max_lateral_distance));
+        calculateOffsetPoint2d(p1.pose, min_len, -max_lateral_distance_right));
     }
     // replace previous point with next point
     p0 = p1;

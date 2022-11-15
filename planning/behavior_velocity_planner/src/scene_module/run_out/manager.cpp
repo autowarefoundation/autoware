@@ -30,6 +30,9 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.base_to_front = vehicle_info.wheel_base_m + vehicle_info.front_overhang_m;
     p.base_to_rear = vehicle_info.rear_overhang_m;
     p.width = vehicle_info.vehicle_width_m;
+    p.wheel_tread = vehicle_info.wheel_tread_m;
+    p.right_overhang = vehicle_info.right_overhang_m;
+    p.left_overhang = vehicle_info.left_overhang_m;
   }
 
   const std::string ns(getModuleName());

@@ -380,21 +380,22 @@ visualization_msgs::msg::MarkerArray getRectanglesMarkerArray(
       createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(r, g, b, 1.0));
     marker.lifetime = rclcpp::Duration::from_seconds(1.5);
 
-    const double half_width = vehicle_param.width / 2.0;
+    const double base_to_right = (vehicle_param.wheel_tread / 2.0) + vehicle_param.right_overhang;
+    const double base_to_left = (vehicle_param.wheel_tread / 2.0) + vehicle_param.left_overhang;
     const double base_to_front = vehicle_param.length - vehicle_param.rear_overhang;
     const double base_to_rear = vehicle_param.rear_overhang;
 
     marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, -half_width, 0.0)
+      tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, -base_to_right, 0.0)
         .position);
     marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, half_width, 0.0)
+      tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, base_to_left, 0.0)
         .position);
     marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, half_width, 0.0)
+      tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, base_to_left, 0.0)
         .position);
     marker.points.push_back(
-      tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, -half_width, 0.0)
+      tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, -base_to_right, 0.0)
         .position);
     marker.points.push_back(marker.points.front());
 

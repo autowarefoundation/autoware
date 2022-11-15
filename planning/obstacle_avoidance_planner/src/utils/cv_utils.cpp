@@ -412,18 +412,24 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
   const cv::Mat & road_clearance_map, const nav_msgs::msg::MapMetaData & map_info,
   const VehicleParam & vehicle_param)
 {
-  const double half_width = vehicle_param.width / 2.0;
+  const double base_to_right = (vehicle_param.wheel_tread / 2.0) + vehicle_param.right_overhang;
+  const double base_to_left = (vehicle_param.wheel_tread / 2.0) + vehicle_param.left_overhang;
+
   const double base_to_front = vehicle_param.length - vehicle_param.rear_overhang;
   const double base_to_rear = vehicle_param.rear_overhang;
 
   const auto top_left_pos =
-    tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, -half_width, 0.0).position;
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, -base_to_left, 0.0)
+      .position;
   const auto top_right_pos =
-    tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, half_width, 0.0).position;
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, base_to_right, 0.0)
+      .position;
   const auto bottom_right_pos =
-    tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, half_width, 0.0).position;
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, base_to_right, 0.0)
+      .position;
   const auto bottom_left_pos =
-    tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, -half_width, 0.0).position;
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, -base_to_left, 0.0)
+      .position;
 
   constexpr double epsilon = 1e-8;
   const bool out_top_left =

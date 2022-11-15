@@ -156,7 +156,9 @@ Polygons2d RunOutModule::createDetectionAreaPolygon(const PathWithLaneId & smoot
     p.vehicle_param.base_to_front - p.detection_area.margin_behind;
   da_range.max_longitudinal_distance =
     *stop_dist + p.run_out.stop_margin + p.detection_area.margin_ahead;
-  da_range.min_lateral_distance = p.vehicle_param.width / 2.0;
+  da_range.wheel_tread = p.vehicle_param.wheel_tread;
+  da_range.right_overhang = p.vehicle_param.right_overhang;
+  da_range.left_overhang = p.vehicle_param.left_overhang;
   da_range.max_lateral_distance = obstacle_vel_mps * p.dynamic_obstacle.max_prediction_time;
   Polygons2d detection_area_poly;
   const size_t ego_seg_idx = findEgoSegmentIndex(smoothed_path.points);
@@ -298,12 +300,16 @@ std::vector<geometry_msgs::msg::Point> RunOutModule::createVehiclePolygon(
 {
   const float base_to_rear = planner_param_.vehicle_param.base_to_rear;
   const float base_to_front = planner_param_.vehicle_param.base_to_front;
-  const float half_width = planner_param_.vehicle_param.width / 2.0;
+  const double base_to_right =
+    (planner_param_.vehicle_param.wheel_tread / 2.0) + planner_param_.vehicle_param.right_overhang;
+  const double base_to_left =
+    (planner_param_.vehicle_param.wheel_tread / 2.0) + planner_param_.vehicle_param.left_overhang;
 
-  const auto p1 = tier4_autoware_utils::calcOffsetPose(base_pose, base_to_front, half_width, 0.0);
-  const auto p2 = tier4_autoware_utils::calcOffsetPose(base_pose, base_to_front, -half_width, 0.0);
-  const auto p3 = tier4_autoware_utils::calcOffsetPose(base_pose, -base_to_rear, -half_width, 0.0);
-  const auto p4 = tier4_autoware_utils::calcOffsetPose(base_pose, -base_to_rear, half_width, 0.0);
+  using tier4_autoware_utils::calcOffsetPose;
+  const auto p1 = calcOffsetPose(base_pose, base_to_front, base_to_left, 0.0);
+  const auto p2 = calcOffsetPose(base_pose, base_to_front, -base_to_right, 0.0);
+  const auto p3 = calcOffsetPose(base_pose, -base_to_rear, -base_to_right, 0.0);
+  const auto p4 = calcOffsetPose(base_pose, -base_to_rear, base_to_left, 0.0);
 
   std::vector<geometry_msgs::msg::Point> vehicle_poly;
   vehicle_poly.push_back(p1.position);

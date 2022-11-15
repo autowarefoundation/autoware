@@ -62,6 +62,9 @@ struct VehicleParam
   float base_to_front;
   float base_to_rear;
   float width;
+  float wheel_tread;
+  double right_overhang;
+  double left_overhang;
 };
 
 struct DetectionArea

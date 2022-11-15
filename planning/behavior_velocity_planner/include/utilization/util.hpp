@@ -67,8 +67,10 @@ struct DetectionRange
   double interval;
   double min_longitudinal_distance;
   double max_longitudinal_distance;
-  double min_lateral_distance;
   double max_lateral_distance;
+  double wheel_tread;
+  double right_overhang;
+  double left_overhang;
 };
 struct PointWithSearchRangeIndex
 {
