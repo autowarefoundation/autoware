@@ -120,7 +120,6 @@ private:
   const float32_t score_threshold_;
   const float32_t height_thresh_;
   const int32_t min_pts_num_;
-  const std::shared_ptr<float32_t> inferred_data;
   const pcl::PointCloud<pcl::PointXYZI>::ConstPtr pc_ptr_;
   const std::shared_ptr<Cluster2D> cluster2d_;
 };

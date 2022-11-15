@@ -282,7 +282,7 @@ public:
     for (auto & output_config : config.network_outputs) {
       output_.push_back(TVMArrayContainer(
         output_config.second, config.tvm_dtype_code, config.tvm_dtype_bits, config.tvm_dtype_lanes,
-        kDLCPU, 0));
+        config.tvm_device_type, config.tvm_device_id));
     }
   }
 
