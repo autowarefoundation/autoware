@@ -4,12 +4,14 @@
     url: https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh
     dest: /tmp/script.sh
     mode: 0764
+
 - name: Setup
   become: true
   environment:
     os: "{{ ansible_distribution }}"
     dist: "{{ ansible_distribution_release }}"
   ansible.builtin.script: /tmp/script.sh
+
 - name: Install Git LFS
   become: true
   ansible.builtin.apt:
