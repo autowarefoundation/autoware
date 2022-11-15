@@ -10,5 +10,4 @@ None.
 
 ```bash
 sudo apt install git-lfs
-git lfs install
 ```
