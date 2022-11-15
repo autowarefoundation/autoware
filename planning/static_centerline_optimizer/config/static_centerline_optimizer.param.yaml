@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    marker_color: ["FF0000", "00FF00", "0000FF"]
+    marker_color_dist_thresh : [0.1, 0.2, 0.3]

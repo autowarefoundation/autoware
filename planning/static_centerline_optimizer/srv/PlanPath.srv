@@ -1,0 +1,5 @@
+uint32 map_id
+uint32[] route
+---
+static_centerline_optimizer/PointsWithLaneId[] points_with_lane_ids
+string message

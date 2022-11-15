@@ -1,0 +1,397 @@
+Panels:
+  - Class: rviz_common/Displays
+    Help Height: 0
+    Name: Displays
+    Property Tree Widget:
+      Expanded: ~
+      Splitter Ratio: 0.550000011920929
+    Tree Height: 388
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Tool Properties
+    Expanded:
+      - /2D Dummy Car1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: tier4_localization_rviz_plugin/InitialPoseButtonPanel
+    Name: InitialPoseButtonPanel
+  - Class: rviz_common/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+  - Class: rviz_plugins::AutowareStatePanel
+    Name: AutowareStatePanel
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_common/Group
+      Displays:
+        - Class: rviz_default_plugins/TF
+          Enabled: false
+          Frame Timeout: 15
+          Frames:
+            All Enabled: true
+          Marker Scale: 1
+          Name: TF
+          Show Arrows: true
+          Show Axes: true
+          Show Names: true
+          Tree:
+            {}
+          Update Interval: 0
+          Value: false
+        - Alpha: 0.5
+          Cell Size: 1
+          Class: rviz_default_plugins/Grid
+          Color: 160; 160; 164
+          Enabled: false
+          Line Style:
+            Line Width: 0.029999999329447746
+            Value: Lines
+          Name: Grid
+          Normal Cell Count: 0
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Plane: XY
+          Plane Cell Count: 10
+          Reference Frame: <Fixed Frame>
+          Value: false
+      Enabled: false
+      Name: System
+    - Class: rviz_common/Group
+      Displays:
+        - Alpha: 0.20000000298023224
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 28.71826171875
+            Min Value: -7.4224700927734375
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz_default_plugins/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: FlatColor
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 237
+          Min Color: 211; 215; 207
+          Min Intensity: 0
+          Name: PointCloudMap
+          Position Transformer: XYZ
+          Selectable: false
+          Size (Pixels): 1
+          Size (m): 0.019999999552965164
+          Style: Points
+          Topic:
+            Depth: 5
+            Durability Policy: Transient Local
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /map/pointcloud_map
+          Use Fixed Frame: true
+          Use rainbow: false
+          Value: true
+        - Class: rviz_default_plugins/MarkerArray
+          Enabled: true
+          Name: Lanelet2VectorMap
+          Namespaces:
+            center_lane_line: true
+            center_line_arrows: true
+            crosswalk_lanelets: true
+            lane_start_bound: false
+            lanelet direction: true
+            lanelet_id: false
+            left_lane_bound: true
+            parking_lots: true
+            parking_space: true
+            pedestrian_marking: true
+            right_lane_bound: true
+            road_lanelets: false
+            stop_lines: true
+            traffic_light: true
+            traffic_light_id: false
+            traffic_light_triangle: true
+            walkway_lanelets: true
+          Topic:
+            Depth: 5
+            Durability Policy: Transient Local
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /map/vector_map_marker
+          Value: true
+      Enabled: true
+      Name: Map
+    - Class: rviz_plugins/PathWithLaneIdFootprint
+      Enabled: true
+      Name: Raw Centerline
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /static_centerline_optimizer/input_centerline
+      Value: true
+      View LaneId:
+        Scale: 0.10000000149011612
+        Value: true
+      View PathWithLaneId Footprint:
+        Alpha: 0.5
+        Color: 230; 230; 50
+        Rear Overhang: 1.0299999713897705
+        Value: true
+        Vehicle Length: 4.769999980926514
+        Vehicle Width: 1.8300000429153442
+    - Class: rviz_plugins/TrajectoryFootprint
+      Enabled: true
+      Name: Optimized Centerline
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /static_centerline_optimizer/output_centerline
+      Value: true
+      View Trajectory Footprint:
+        Alpha: 0.5
+        Color: 239; 41; 41
+        Rear Overhang: 1.0299999713897705
+        Value: true
+        Vehicle Length: 4.769999980926514
+        Vehicle Width: 1.8300000429153442
+      View Trajectory Point:
+        Alpha: 1
+        Color: 0; 60; 255
+        Offset: 0
+        Radius: 0.10000000149011612
+        Value: false
+    - Alpha: 0.3499999940395355
+      Class: rviz_plugins/DrivableArea
+      Color Scheme: map
+      Draw Behind: true
+      Enabled: true
+      Name: DrivableArea
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /static_centerline_optimizer/debug/raw_centerline
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /static_centerline_optimizer/debug/raw_centerline_updates
+      Use Timestamp: false
+      Value: true
+    - Class: rviz_common/Group
+      Displays:
+        - Class: rviz_plugins/PathFootprint
+          Enabled: false
+          Name: Raw Centerline (Path type)
+          Topic:
+            Depth: 5
+            Durability Policy: Transient Local
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /static_centerline_optimizer/debug/raw_centerline
+          Value: false
+          View Path Footprint:
+            Alpha: 1
+            Color: 230; 230; 50
+            Rear Overhang: 1.0299999713897705
+            Value: true
+            Vehicle Length: 4.769999980926514
+            Vehicle Width: 1.8300000429153442
+        - Class: rviz_default_plugins/MarkerArray
+          Enabled: true
+          Name: MarkerArray
+          Namespaces:
+            {}
+          Topic:
+            Depth: 5
+            Durability Policy: Transient Local
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /static_centerline_optimizer/debug/unsafe_footprints
+          Value: true
+      Enabled: false
+      Name: debug
+  Enabled: true
+  Global Options:
+    Background Color: 10; 10; 10
+    Fixed Frame: map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+    - Class: rviz_default_plugins/SetInitialPose
+      Covariance x: 0.25
+      Covariance y: 0.25
+      Covariance yaw: 0.06853891909122467
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /initialpose
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /planning/mission_planning/goal
+    - Acceleration: 0
+      Class: rviz_plugins/PedestrianInitialPoseTool
+      Interactive: false
+      Max velocity: 33.29999923706055
+      Min velocity: -33.29999923706055
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+      Target Frame: <Fixed Frame>
+      Theta std deviation: 0.0872664600610733
+      Velocity: 0
+      X std deviation: 0.029999999329447746
+      Y std deviation: 0.029999999329447746
+      Z position: 1
+      Z std deviation: 0.029999999329447746
+    - Acceleration: 0
+      Class: rviz_plugins/CarInitialPoseTool
+      H vehicle height: 2
+      Interactive: false
+      L vehicle length: 4
+      Max velocity: 33.29999923706055
+      Min velocity: -33.29999923706055
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+      Target Frame: <Fixed Frame>
+      Theta std deviation: 0.0872664600610733
+      Velocity: 8
+      W vehicle width: 1.7999999523162842
+      X std deviation: 0.029999999329447746
+      Y std deviation: 0.029999999329447746
+      Z position: 0
+      Z std deviation: 0.029999999329447746
+    - Acceleration: 0
+      Class: rviz_plugins/BusInitialPoseTool
+      H vehicle height: 3.5
+      Interactive: false
+      L vehicle length: 10.5
+      Max velocity: 33.29999923706055
+      Min velocity: -33.29999923706055
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+      Target Frame: <Fixed Frame>
+      Theta std deviation: 0.0872664600610733
+      Velocity: 0
+      W vehicle width: 2.5
+      X std deviation: 0.029999999329447746
+      Y std deviation: 0.029999999329447746
+      Z position: 0
+      Z std deviation: 0.029999999329447746
+    - Class: rviz_plugins/MissionCheckpointTool
+      Pose Topic: /planning/mission_planning/checkpoint
+      Theta std deviation: 0.2617993950843811
+      X std deviation: 0.5
+      Y std deviation: 0.5
+      Z position: 0
+    - Class: rviz_plugins/DeleteAllObjectsTool
+      Pose Topic: /simulation/dummy_perception_publisher/object_info
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Angle: 0
+      Class: rviz_default_plugins/TopDownOrtho
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Scale: 10
+      Target Frame: viewer
+      Value: TopDownOrtho (rviz_default_plugins)
+      X: 0
+      Y: 0
+    Saved:
+      - Class: rviz_default_plugins/ThirdPersonFollower
+        Distance: 18
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Focal Point:
+          X: 0
+          Y: 0
+          Z: 0
+        Focal Shape Fixed Size: true
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: ThirdPersonFollower
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 0.20000000298023224
+        Target Frame: base_link
+        Value: ThirdPersonFollower (rviz)
+        Yaw: 3.141592025756836
+      - Angle: 0
+        Class: rviz_default_plugins/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Invert Z Axis: false
+        Name: TopDownOrtho
+        Near Clip Distance: 0.009999999776482582
+        Scale: 10
+        Target Frame: viewer
+        Value: TopDownOrtho (rviz)
+        X: 0
+        Y: 0
+Window Geometry:
+  AutowareStatePanel:
+    collapsed: false
+  Displays:
+    collapsed: false
+  Height: 1043
+  Hide Left Dock: false
+  Hide Right Dock: false
+  InitialPoseButtonPanel:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000019200000359fc020000000efb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000001c1000000c900fffffffc0000020400000192000000c10100001cfa000000000100000002fb0000000a0056006900650077007301000000000000033c0000010000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000000ffffffff0000009d00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610100000682000000eb0000000000000000fb0000000a0049006d0061006700650100000505000002680000000000000000fb0000002c0049006e0069007400690061006c0050006f007300650042007500740074006f006e00500061006e0065006c000000068f000000de0000007700fffffffb0000002c0049006e0069007400690061006c0050006f007300650042007500740074006f006e00500061006e0065006c000000068f000000de0000000000000000fb00000030005200650063006f0067006e006900740069006f006e0052006500730075006c0074004f006e0049006d00610067006500000001d3000000af0000000000000000fb00000024004100750074006f00770061007200650053007400610074006500500061006e0065006c000000029b000000fb000000f300ffffff000000010000015f000006fffc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000e7a0000005afc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000005afc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000005e80000035900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1920
+  X: 0
+  Y: 0

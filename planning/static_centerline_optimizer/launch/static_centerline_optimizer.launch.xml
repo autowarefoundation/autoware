@@ -1,0 +1,70 @@
+<launch>
+  <!-- mandatory arguments for planning-->
+  <arg name="vehicle_model"/>
+
+  <!-- flag -->
+  <arg name="run_background" default="false"/>
+  <arg name="rviz" default="true"/>
+
+  <!-- mandatory arguments when run_background is true -->
+  <arg name="lanelet2_input_file_path" default=""/>
+  <arg name="lanelet2_output_file_path" default="/tmp/lanelet2_map.osm"/>
+  <arg name="start_lanelet_id" default=""/>
+  <arg name="end_lanelet_id" default=""/>
+
+  <!-- topic -->
+  <arg name="lanelet2_map_topic" default="/map/vector_map"/>
+  <arg name="lanelet2_map_marker_topic" default="/map/vector_map_marker"/>
+  <!-- param -->
+  <arg name="map_loader_param" default="$(find-pkg-share map_loader)/config/lanelet2_map_loader.param.yaml"/>
+  <arg
+    name="obstacle_avoidance_planner_param"
+    default="$(find-pkg-share planning_launch)/config/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"
+  />
+
+  <!-- Global parameters (for PathFootprint in tier4_planning_rviz_plugin) -->
+  <!-- Do not add "group" in order to propagate global parameters -->
+  <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py">
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+  </include>
+
+  <!-- generate tf from "viewer" to "map" -->
+  <node pkg="map_tf_generator" exec="vector_map_tf_generator" name="vector_map_tf_generator">
+    <remap from="vector_map" to="$(var lanelet2_map_topic)"/>
+
+    <param name="map_frame" value="map"/>
+    <param name="viewer_frame" value="viewer"/>
+  </node>
+
+  <!-- visualize map -->
+  <node pkg="map_loader" exec="lanelet2_map_visualization" name="lanelet2_map_visualization">
+    <remap from="input/lanelet2_map" to="$(var lanelet2_map_topic)"/>
+    <remap from="output/lanelet2_map_marker" to="$(var lanelet2_map_marker_topic)"/>
+  </node>
+
+  <!-- optimize path -->
+  <node pkg="static_centerline_optimizer" exec="main" name="static_centerline_optimizer">
+    <remap from="lanelet2_map_topic" to="$(var lanelet2_map_topic)"/>
+    <remap from="input_centerline" to="~/input_centerline"/>
+    <remap from="output_centerline" to="~/output_centerline"/>
+    <remap from="debug/raw_centerline" to="~/debug/raw_centerline"/>
+    <remap from="debug/unsafe_footprints" to="~/debug/unsafe_footprints"/>
+
+    <param name="run_background" value="$(var run_background)"/>
+    <param name="lanelet2_input_file_path" value="$(var lanelet2_input_file_path)"/>
+    <param name="lanelet2_output_file_path" value="$(var lanelet2_output_file_path)"/>
+    <param name="start_lanelet_id" value="$(var start_lanelet_id)"/>
+    <param name="end_lanelet_id" value="$(var end_lanelet_id)"/>
+    <!-- common param -->
+    <param from="$(find-pkg-share planning_launch)/config/scenario_planning/common/common.param.yaml"/>
+    <param from="$(find-pkg-share planning_launch)/config/scenario_planning/common/nearest_search.param.yaml"/>
+    <!-- component param -->
+    <param from="$(var map_loader_param)"/>
+    <param from="$(var obstacle_avoidance_planner_param)"/>
+    <!-- node param -->
+    <param from="$(find-pkg-share static_centerline_optimizer)/config/static_centerline_optimizer.param.yaml"/>
+  </node>
+
+  <!-- rviz -->
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share static_centerline_optimizer)/rviz/static_centerline_optimizer.rviz" if="$(var rviz)"/>
+</launch>

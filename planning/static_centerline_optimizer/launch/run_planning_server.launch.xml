@@ -1,0 +1,12 @@
+<launch>
+  <!-- mandatory arguments for planning-->
+  <arg name="vehicle_model"/>
+
+  <include file="$(find-pkg-share static_centerline_optimizer)/launch/static_centerline_optimizer.launch.xml">
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+    <arg name="run_background" value="true"/>
+  </include>
+
+  <!-- local server to connect path optimizer and cloud software -->
+  <node pkg="static_centerline_optimizer" exec="app.py" name="static_centerline_optimizer_http_server" output="screen"/>
+</launch>
