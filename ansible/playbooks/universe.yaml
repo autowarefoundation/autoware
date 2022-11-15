@@ -39,3 +39,4 @@
       when: rosdistro != 'rolling'
     - role: autoware.dev_env.tensorrt
       when: prompt_install_nvidia == 'y'
+    - role: autoware.dev_env.git_lfs
