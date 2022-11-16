@@ -33,6 +33,9 @@ IncludeCategories:
   - Regex: .*_msgs/.*
     Priority: 3
     CaseSensitive: true
+  - Regex: .*_srvs/.*
+    Priority: 3
+    CaseSensitive: true
   # Other Package headers
   - Regex: <.*>
     Priority: 2
