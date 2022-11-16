@@ -185,7 +185,11 @@ bool ExternalCmdSelector::onSelectExternalCommandService(
   return true;
 }
 
-void ExternalCmdSelector::onTimer() { pub_current_selector_mode_->publish(current_selector_mode_); }
+void ExternalCmdSelector::onTimer()
+{
+  pub_current_selector_mode_->publish(current_selector_mode_);
+  updater_.force_update();
+}
 
 ExternalCmdSelector::InternalGearShift ExternalCmdSelector::convert(
   const ExternalGearShift & command)
