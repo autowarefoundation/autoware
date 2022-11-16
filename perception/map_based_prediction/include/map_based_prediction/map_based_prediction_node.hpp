@@ -173,9 +173,6 @@ private:
   Maneuver predictObjectManeuver(
     const TrackedObject & object, const LaneletData & current_lanelet,
     const double object_detected_time);
-  void addValidPath(
-    const lanelet::routing::LaneletPaths & candidate_paths,
-    lanelet::routing::LaneletPaths & valid_paths);
   geometry_msgs::msg::Pose compensateTimeDelay(
     const geometry_msgs::msg::Pose & delayed_pose, const geometry_msgs::msg::Twist & twist,
     const double dt) const;
