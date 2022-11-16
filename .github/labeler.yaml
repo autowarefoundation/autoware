@@ -6,9 +6,8 @@ ci:
   - .clang-format
   - .gitignore
   - .prettierignore
-document:
+documentation:
   - docs/**/*
-  - "**/*.txt"
   - "**/*.md"
   - "**/*.rst"
   - "**/*.jpg"
