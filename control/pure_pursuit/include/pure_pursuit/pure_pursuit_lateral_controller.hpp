@@ -47,6 +47,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
 
 #include <boost/optional.hpp>  // To be replaced by std::optional in C++17
 
@@ -76,13 +77,18 @@ struct Param
   double max_steering_angle;  // [rad]
 
   // Algorithm Parameters
-  double lookahead_distance_ratio;
+  double ld_velocity_ratio;
+  double ld_lateral_error_ratio;
+  double ld_curvature_ratio;
   double min_lookahead_distance;
+  double max_lookahead_distance;
   double reverse_min_lookahead_distance;  // min_lookahead_distance in reverse gear
   double converged_steer_rad_;
   double prediction_ds;
   double prediction_distance_length;  // Total distance of prediction trajectory
   double resampling_ds;
+  double curvature_calculation_distance;
+  double long_ld_lateral_error_threshold;
 };
 
 struct DebugData
@@ -105,6 +111,9 @@ private:
   autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr current_steering_;
   boost::optional<AckermannLateralCommand> prev_cmd_;
 
+  // Debug Publisher
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_marker_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_values_;
   // Predicted Trajectory publish
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr
     pub_predicted_trajectory_;
@@ -121,9 +130,6 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
   geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
-
-  // Debug Publisher
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_marker_;
 
   void publishDebugMarker() const;
 
@@ -148,9 +154,6 @@ private:
   boost::optional<PpOutput> calcTargetCurvature(
     bool is_control_output, geometry_msgs::msg::Pose pose);
 
-  boost::optional<autoware_auto_planning_msgs::msg::TrajectoryPoint> calcTargetPoint(
-    geometry_msgs::msg::Pose pose) const;
-
   /**
    * @brief It takes current pose, control command, and delta distance. Then it calculates next pose
    * of vehicle.
@@ -164,6 +167,12 @@ private:
   boost::optional<AckermannLateralCommand> generateOutputControlCmd();
 
   bool calcIsSteerConverged(const AckermannLateralCommand & cmd);
+
+  double calcLookaheadDistance(
+    const double lateral_error, const double curvature, const double velocity, const double min_ld,
+    const bool is_control_cmd);
+
+  double calcCurvature(const size_t closest_idx);
 
   // Debug
   mutable DebugData debug_data_;
