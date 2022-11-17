@@ -16,7 +16,6 @@
 #define INTERFACE_HPP_
 
 #include <autoware_ad_api_specs/interface.hpp>
-#include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 // This file should be included after messages.

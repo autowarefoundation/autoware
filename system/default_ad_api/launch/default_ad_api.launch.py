@@ -18,22 +18,23 @@ from launch_ros.actions import Node
 from launch_ros.descriptions import ComposableNode
 
 
-def _create_api_node(node_name, class_name, **kwargs):
+def create_api_node(node_name, class_name, **kwargs):
     return ComposableNode(
         namespace="default_ad_api/node",
         name=node_name,
         package="default_ad_api",
         plugin="default_ad_api::" + class_name,
-        **kwargs
+        **kwargs,
     )
 
 
 def generate_launch_description():
     components = [
-        _create_api_node("interface", "InterfaceNode"),
-        _create_api_node("localization", "LocalizationNode"),
-        _create_api_node("motion", "MotionNode", parameters=[{"require_accept_start": False}]),
-        _create_api_node("routing", "RoutingNode"),
+        create_api_node("interface", "InterfaceNode"),
+        create_api_node("localization", "LocalizationNode"),
+        create_api_node("motion", "MotionNode", parameters=[{"require_accept_start": False}]),
+        create_api_node("operation_mode", "OperationModeNode"),
+        create_api_node("routing", "RoutingNode"),
     ]
     container = ComposableNodeContainer(
         namespace="default_ad_api",

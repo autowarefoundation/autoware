@@ -8,6 +8,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/interface.cpp
   src/localization.cpp
   src/motion.cpp
+  src/operation_mode.cpp
   src/routing.cpp
   src/utils/route_conversion.cpp
 )
@@ -16,6 +17,7 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
   "default_ad_api::InterfaceNode"
   "default_ad_api::LocalizationNode"
   "default_ad_api::MotionNode"
+  "default_ad_api::OperationModeNode"
   "default_ad_api::RoutingNode"
 )
 

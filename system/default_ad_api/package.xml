@@ -22,6 +22,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tier4_control_msgs</depend>
+  <depend>tier4_system_msgs</depend>
 
   <exec_depend>python3-flask</exec_depend>
 

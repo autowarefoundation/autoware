@@ -17,7 +17,6 @@
 
 #include <autoware_ad_api_specs/localization.hpp>
 #include <component_interface_specs/localization.hpp>
-#include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 // This file should be included after messages.
