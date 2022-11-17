@@ -27,6 +27,7 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/update-codeowners-from-packages@v1
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          global-codeowners: "@autowarefoundation/autoware-global-codeowners"
           pr-labels: |
             bot
             update-codeowners-from-packages
