@@ -89,6 +89,8 @@ struct Param
   double resampling_ds;
   double curvature_calculation_distance;
   double long_ld_lateral_error_threshold;
+  bool enable_path_smoothing;
+  int path_filter_moving_ave_num;
 };
 
 struct DebugData
@@ -173,6 +175,8 @@ private:
     const bool is_control_cmd);
 
   double calcCurvature(const size_t closest_idx);
+
+  void averageFilterTrajectory(autoware_auto_planning_msgs::msg::Trajectory & u);
 
   // Debug
   mutable DebugData debug_data_;

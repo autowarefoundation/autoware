@@ -83,6 +83,9 @@ PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node & node)
   param_.resampling_ds = node_->declare_parameter<double>("resampling_ds", 0.1);
   param_.curvature_calculation_distance =
     node_->declare_parameter<double>("curvature_calculation_distance", 4.0);
+  param_.enable_path_smoothing = node_->declare_parameter<bool>("enable_path_smoothing", true);
+  param_.path_filter_moving_ave_num =
+    node_->declare_parameter<int64_t>("path_filter_moving_ave_num", 25);
 
   // Debug Publishers
   pub_debug_marker_ =
@@ -240,6 +243,58 @@ double PurePursuitLateralController::calcCurvature(const size_t closest_idx)
   return current_curvature;
 }
 
+void PurePursuitLateralController::averageFilterTrajectory(
+  autoware_auto_planning_msgs::msg::Trajectory & u)
+{
+  if (static_cast<int>(u.points.size()) <= 2 * param_.path_filter_moving_ave_num) {
+    RCLCPP_ERROR(node_->get_logger(), "Cannot smooth path! Trajectory size is too low!");
+    return;
+  }
+
+  autoware_auto_planning_msgs::msg::Trajectory filtered_trajectory(u);
+
+  for (int64_t i = 0; i < static_cast<int64_t>(u.points.size()); ++i) {
+    TrajectoryPoint tmp{};
+    int64_t num_tmp = param_.path_filter_moving_ave_num;
+    int64_t count = 0;
+    double yaw = 0.0;
+    if (i - num_tmp < 0) {
+      num_tmp = i;
+    }
+    if (i + num_tmp > static_cast<int64_t>(u.points.size()) - 1) {
+      num_tmp = static_cast<int64_t>(u.points.size()) - i - 1;
+    }
+    for (int64_t j = -num_tmp; j <= num_tmp; ++j) {
+      const auto & p = u.points.at(static_cast<size_t>(i + j));
+
+      tmp.pose.position.x += p.pose.position.x;
+      tmp.pose.position.y += p.pose.position.y;
+      tmp.pose.position.z += p.pose.position.z;
+      tmp.longitudinal_velocity_mps += p.longitudinal_velocity_mps;
+      tmp.acceleration_mps2 += p.acceleration_mps2;
+      tmp.front_wheel_angle_rad += p.front_wheel_angle_rad;
+      tmp.heading_rate_rps += p.heading_rate_rps;
+      yaw += tf2::getYaw(p.pose.orientation);
+      tmp.lateral_velocity_mps += p.lateral_velocity_mps;
+      tmp.rear_wheel_angle_rad += p.rear_wheel_angle_rad;
+      ++count;
+    }
+    auto & p = filtered_trajectory.points.at(static_cast<size_t>(i));
+
+    p.pose.position.x = tmp.pose.position.x / count;
+    p.pose.position.y = tmp.pose.position.y / count;
+    p.pose.position.z = tmp.pose.position.z / count;
+    p.longitudinal_velocity_mps = tmp.longitudinal_velocity_mps / count;
+    p.acceleration_mps2 = tmp.acceleration_mps2 / count;
+    p.front_wheel_angle_rad = tmp.front_wheel_angle_rad / count;
+    p.heading_rate_rps = tmp.heading_rate_rps / count;
+    p.lateral_velocity_mps = tmp.lateral_velocity_mps / count;
+    p.rear_wheel_angle_rad = tmp.rear_wheel_angle_rad / count;
+    p.pose.orientation = pure_pursuit::planning_utils::getQuaternionFromYaw(yaw / count);
+  }
+  trajectory_resampled_ = std::make_shared<Trajectory>(filtered_trajectory);
+}
+
 boost::optional<Trajectory> PurePursuitLateralController::generatePredictedTrajectory()
 {
   const auto closest_idx_result =
@@ -320,12 +375,14 @@ boost::optional<LateralOutput> PurePursuitLateralController::run()
   if (!output_tp_array_ || !trajectory_resampled_) {
     return boost::none;
   }
+  if (param_.enable_path_smoothing) {
+    averageFilterTrajectory(*trajectory_resampled_);
+  }
   const auto cmd_msg = generateOutputControlCmd();
   if (!cmd_msg) {
     RCLCPP_ERROR(node_->get_logger(), "Failed to generate control command.");
     return boost::none;
   }
-
   LateralOutput output;
   output.control_cmd = *cmd_msg;
   output.sync_data.is_steer_converged = calcIsSteerConverged(*cmd_msg);
