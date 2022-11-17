@@ -17,12 +17,12 @@
 
 #include <rclcpp/create_timer.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/trigger.hpp>
 
 #include <autoware_auto_system_msgs/msg/autoware_state.hpp>
 #include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
 #include <autoware_auto_vehicle_msgs/msg/control_mode_report.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <tier4_control_msgs/msg/gate_mode.hpp>
 
 #include <boost/optional.hpp>

@@ -21,7 +21,6 @@
 #include <kalman_filter/kalman_filter.hpp>
 #include <kalman_filter/time_delay_kalman_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/set_bool.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
@@ -32,6 +31,7 @@
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 #include <tier4_debug_msgs/msg/float64_multi_array_stamped.hpp>
 #include <tier4_debug_msgs/msg/float64_stamped.hpp>
 

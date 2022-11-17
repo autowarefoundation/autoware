@@ -20,7 +20,6 @@
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/trigger.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
@@ -33,6 +32,7 @@
 #include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <tier4_control_msgs/msg/gate_mode.hpp>
 #include <tier4_debug_msgs/msg/bool_stamped.hpp>
 #include <tier4_external_api_msgs/msg/emergency.hpp>

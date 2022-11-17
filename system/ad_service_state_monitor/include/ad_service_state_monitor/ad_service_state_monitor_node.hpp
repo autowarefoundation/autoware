@@ -21,7 +21,6 @@
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/trigger.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
@@ -31,6 +30,7 @@
 #include <autoware_auto_vehicle_msgs/msg/engage.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <tf2_ros/buffer.h>

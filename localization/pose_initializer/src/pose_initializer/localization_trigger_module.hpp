@@ -16,6 +16,7 @@
 #define POSE_INITIALIZER__LOCALIZATION_TRIGGER_MODULE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
+
 #include <std_srvs/srv/set_bool.hpp>
 
 class LocalizationTriggerModule
