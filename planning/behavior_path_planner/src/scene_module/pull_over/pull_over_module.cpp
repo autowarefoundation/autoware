@@ -446,7 +446,7 @@ BehaviorModuleOutput PullOverModule::plan()
       status_.lanes, parameters_.drivable_area_left_bound_offset,
       parameters_.drivable_area_right_bound_offset);
     path.drivable_area = util::generateDrivableArea(
-      path, status_.lanes, p.drivable_area_resolution, p.vehicle_length, planner_data_);
+      path, lane, p.drivable_area_resolution, p.vehicle_length, planner_data_);
   }
 
   BehaviorModuleOutput output;
