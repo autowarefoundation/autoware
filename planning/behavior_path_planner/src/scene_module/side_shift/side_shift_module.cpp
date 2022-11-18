@@ -415,12 +415,13 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
     *itr.first - (*itr.first < -threshold ? margin : 0.0),
     -parameters_.drivable_area_right_bound_offset);
 
-  const auto extended_lanelets = util::expandLanelets(current_lanelets_, left_offset, right_offset);
+  const auto drivable_lanes = util::generateDrivableLanes(current_lanelets_);
+  const auto expanded_lanes = util::expandLanelets(drivable_lanes, left_offset, right_offset);
 
   {
     const auto & p = planner_data_->parameters;
     path->path.drivable_area = util::generateDrivableArea(
-      path->path, extended_lanelets, p.drivable_area_resolution, p.vehicle_length, planner_data_);
+      path->path, expanded_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data_);
   }
 }
 

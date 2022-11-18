@@ -38,7 +38,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
 
   // combine road lane and shoulder lane
   const auto road_lanes = util::getExtendedCurrentLanes(planner_data_);
-  const auto shoulder_lanes = getPullOutLanes(road_lanes, planner_data_);
+  const auto shoulder_lanes = getPullOutLanes(planner_data_);
   auto lanes = road_lanes;
   lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
 

@@ -170,17 +170,16 @@ BehaviorModuleOutput LaneChangeModule::plan()
   // Generate drivable area
   {
     const auto & common_parameters = planner_data_->parameters;
-    lanelet::ConstLanelets lanes;
-    lanes.reserve(status_.current_lanes.size() + status_.lane_change_lanes.size());
-    lanes.insert(lanes.end(), status_.current_lanes.begin(), status_.current_lanes.end());
-    lanes.insert(lanes.end(), status_.lane_change_lanes.begin(), status_.lane_change_lanes.end());
-    lanes = util::expandLanelets(
-      lanes, parameters_->drivable_area_left_bound_offset,
+    const auto & route_handler = planner_data_->route_handler;
+    const auto drivable_lanes = lane_change_utils::generateDrivableLanes(
+      *route_handler, status_.current_lanes, status_.lane_change_lanes);
+    const auto expanded_lanes = util::expandLanelets(
+      drivable_lanes, parameters_->drivable_area_left_bound_offset,
       parameters_->drivable_area_right_bound_offset);
 
     const double & resolution = common_parameters.drivable_area_resolution;
     path.drivable_area = util::generateDrivableArea(
-      path, lanes, resolution, common_parameters.vehicle_length, planner_data_);
+      path, expanded_lanes, resolution, common_parameters.vehicle_length, planner_data_);
   }
 
   if (isAbortConditionSatisfied()) {
@@ -329,12 +328,13 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
     *route_handler, reference_path, current_lanes, parameters_->lane_change_prepare_duration,
     lane_change_buffer);
 
-  const auto current_extended_lanes = util::expandLanelets(
-    current_lanes, parameters_->drivable_area_left_bound_offset,
+  const auto drivable_lanes = util::generateDrivableLanes(current_lanes);
+  const auto expanded_lanes = util::expandLanelets(
+    drivable_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset);
 
   reference_path.drivable_area = util::generateDrivableArea(
-    reference_path, current_extended_lanes, common_parameters.drivable_area_resolution,
+    reference_path, expanded_lanes, common_parameters.drivable_area_resolution,
     common_parameters.vehicle_length, planner_data_);
 
   return reference_path;

@@ -1791,24 +1791,52 @@ double AvoidanceModule::getLeftShiftBound() const
 // two lanes since which way to avoid is not obvious
 void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) const
 {
+  const auto has_same_lane =
+    [](const lanelet::ConstLanelets lanes, const lanelet::ConstLanelet & lane) {
+      if (lanes.empty()) return false;
+      const auto has_same = [&](const auto & ll) { return ll.id() == lane.id(); };
+      return std::find_if(lanes.begin(), lanes.end(), has_same) != lanes.end();
+    };
+
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_lanes = avoidance_data_.current_lanelets;
-  lanelet::ConstLanelets extended_lanelets = current_lanes;
+  const auto & enable_opposite = parameters_->enable_avoidance_over_opposite_direction;
+  std::vector<DrivableLanes> drivable_lanes;
 
   for (const auto & current_lane : current_lanes) {
+    DrivableLanes current_drivable_lanes;
+    current_drivable_lanes.left_lane = current_lane;
+    current_drivable_lanes.right_lane = current_lane;
+
     if (!parameters_->enable_avoidance_over_same_direction) {
-      break;
+      drivable_lanes.push_back(current_drivable_lanes);
+      continue;
     }
 
-    const auto extend_from_current_lane = std::invoke(
-      [this, &route_handler](const lanelet::ConstLanelet & lane) {
-        const auto enable_opposite = parameters_->enable_avoidance_over_opposite_direction;
-        return route_handler->getAllSharedLineStringLanelets(lane, true, true, enable_opposite);
-      },
-      current_lane);
-    extended_lanelets.reserve(extended_lanelets.size() + extend_from_current_lane.size());
-    extended_lanelets.insert(
-      extended_lanelets.end(), extend_from_current_lane.begin(), extend_from_current_lane.end());
+    // get left side lane
+    const lanelet::ConstLanelets all_left_lanelets =
+      route_handler->getAllLeftSharedLinestringLanelets(current_lane, enable_opposite);
+    if (!all_left_lanelets.empty()) {
+      current_drivable_lanes.left_lane = all_left_lanelets.back();  // leftmost lanelet
+
+      for (int i = all_left_lanelets.size() - 2; i >= 0; --i) {
+        current_drivable_lanes.middle_lanes.push_back(all_left_lanelets.at(i));
+      }
+    }
+
+    // get right side lane
+    const lanelet::ConstLanelets all_right_lanelets =
+      route_handler->getAllRightSharedLinestringLanelets(current_lane, enable_opposite);
+    if (!all_right_lanelets.empty()) {
+      current_drivable_lanes.right_lane = all_right_lanelets.back();  // rightmost lanelet
+      if (current_drivable_lanes.left_lane.id() != current_lane.id()) {
+        current_drivable_lanes.middle_lanes.push_back(current_lane);
+      }
+
+      for (size_t i = 0; i < all_right_lanelets.size() - 1; ++i) {
+        current_drivable_lanes.middle_lanes.push_back(all_right_lanelets.at(i));
+      }
+    }
 
     // 2. when there are multiple turning lanes whose previous lanelet is the same in
     // intersection
@@ -1837,31 +1865,43 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
 
     // 2.1 look for neighbour lane, where end line of the lane is connected to end line of the
     // original lane
-    std::copy_if(
-      next_lanes_from_intersection.begin(), next_lanes_from_intersection.end(),
-      std::back_inserter(extended_lanelets),
-      [&current_lane](const lanelet::ConstLanelet & neighbor_lane) {
-        const auto & next_left_back_point_2d = neighbor_lane.leftBound2d().back().basicPoint();
-        const auto & next_right_back_point_2d = neighbor_lane.rightBound2d().back().basicPoint();
+    for (const auto & next_lane : next_lanes_from_intersection) {
+      if (current_lane.id() == next_lane.id()) {
+        continue;
+      }
+      constexpr double epsilon = 1e-5;
+      const auto & next_left_back_point_2d = next_lane.leftBound2d().back().basicPoint();
+      const auto & next_right_back_point_2d = next_lane.rightBound2d().back().basicPoint();
+      const auto & orig_left_back_point_2d = current_lane.leftBound2d().back().basicPoint();
+      const auto & orig_right_back_point_2d = current_lane.rightBound2d().back().basicPoint();
 
-        const auto & orig_left_back_point_2d = current_lane.leftBound2d().back().basicPoint();
-        const auto & orig_right_back_point_2d = current_lane.rightBound2d().back().basicPoint();
-        constexpr double epsilon = 1e-5;
-        const bool is_neighbour_lane =
-          (next_left_back_point_2d - orig_right_back_point_2d).norm() < epsilon ||
-          (next_right_back_point_2d - orig_left_back_point_2d).norm() < epsilon;
-        return (current_lane.id() != neighbor_lane.id() && is_neighbour_lane);
-      });
+      if ((next_right_back_point_2d - orig_left_back_point_2d).norm() < epsilon) {
+        current_drivable_lanes.left_lane = next_lane;
+        if (
+          current_drivable_lanes.right_lane.id() != current_lane.id() &&
+          !has_same_lane(current_drivable_lanes.middle_lanes, current_lane)) {
+          current_drivable_lanes.middle_lanes.push_back(current_lane);
+        }
+      } else if (
+        (next_left_back_point_2d - orig_right_back_point_2d).norm() < epsilon &&
+        !has_same_lane(current_drivable_lanes.middle_lanes, current_lane)) {
+        current_drivable_lanes.right_lane = next_lane;
+        if (current_drivable_lanes.left_lane.id() != current_lane.id()) {
+          current_drivable_lanes.middle_lanes.push_back(current_lane);
+        }
+      }
+    }
+    drivable_lanes.push_back(current_drivable_lanes);
   }
 
-  extended_lanelets = util::expandLanelets(
-    extended_lanelets, parameters_->drivable_area_left_bound_offset,
+  drivable_lanes = util::expandLanelets(
+    drivable_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset, {"road_border"});
 
   {
     const auto & p = planner_data_->parameters;
     shifted_path->path.drivable_area = util::generateDrivableArea(
-      shifted_path->path, extended_lanelets, p.drivable_area_resolution, p.vehicle_length,
+      shifted_path->path, drivable_lanes, p.drivable_area_resolution, p.vehicle_length,
       planner_data_);
   }
 }

@@ -627,4 +627,36 @@ void get_turn_signal_info(
   turn_signal_info->desired_end_point = lane_change_path.turn_signal_info.desired_end_point;
 }
 
+std::vector<DrivableLanes> generateDrivableLanes(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & lane_change_lanes)
+{
+  std::vector<DrivableLanes> drivable_lanes(current_lanes.size());
+  for (size_t i = 0; i < current_lanes.size(); ++i) {
+    const auto & current_lane = current_lanes.at(i);
+    drivable_lanes.at(i).left_lane = current_lane;
+    drivable_lanes.at(i).right_lane = current_lane;
+
+    const auto left_lane = route_handler.getLeftLanelet(current_lane);
+    const auto right_lane = route_handler.getRightLanelet(current_lane);
+    if (!left_lane && !right_lane) {
+      continue;
+    }
+
+    for (const auto & lc_lane : lane_change_lanes) {
+      if (left_lane && lc_lane.id() == left_lane->id()) {
+        drivable_lanes.at(i).left_lane = lc_lane;
+        break;
+      }
+
+      if (right_lane && lc_lane.id() == right_lane->id()) {
+        drivable_lanes.at(i).right_lane = lc_lane;
+        break;
+      }
+    }
+  }
+
+  return drivable_lanes;
+}
+
 }  // namespace behavior_path_planner::lane_change_utils

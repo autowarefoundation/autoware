@@ -276,6 +276,15 @@ PredictedObjects filterObjectsByVelocity(
   const PredictedObjects & objects, double min_v, double max_v);
 
 // drivable area generation
+lanelet::ConstLanelets transformToLanelets(const DrivableLanes & drivable_lanes);
+lanelet::ConstLanelets transformToLanelets(const std::vector<DrivableLanes> & drivable_lanes);
+boost::optional<lanelet::ConstLanelet> getRightLanelet(
+  const lanelet::ConstLanelet & current_lane, const lanelet::ConstLanelets & shoulder_lanes);
+boost::optional<lanelet::ConstLanelet> getLeftLanelet(
+  const lanelet::ConstLanelet & current_lane, const lanelet::ConstLanelets & shoulder_lanes);
+std::vector<DrivableLanes> generateDrivableLanes(const lanelet::ConstLanelets & current_lanes);
+std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
+  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & shoulder_lanes);
 
 void occupancyGridToImage(const OccupancyGrid & occupancy_grid, cv::Mat * cv_image);
 
@@ -285,7 +294,7 @@ cv::Point toCVPoint(
   const Point & geom_point, const double width_m, const double height_m, const double resolution);
 
 OccupancyGrid generateDrivableArea(
-  const PathWithLaneId & path, const lanelet::ConstLanelets & lanes, const double resolution,
+  const PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double resolution,
   const double vehicle_length, const std::shared_ptr<const PlannerData> planner_data);
 
 lanelet::ConstLineStrings3d getDrivableAreaForAllSharedLinestringLanelets(
@@ -293,14 +302,14 @@ lanelet::ConstLineStrings3d getDrivableAreaForAllSharedLinestringLanelets(
 
 /**
  * @brief Expand the borders of the given lanelets
- * @param [in] lanelets lanelets to expand
+ * @param [in] drivable_lanes lanelets to expand
  * @param [in] left_bound_offset [m] expansion distance of the left bound
  * @param [in] right_bound_offset [m] expansion distance of the right bound
  * @param [in] types_to_skip linestring types that will not be expanded
  * @return expanded lanelets
  */
-lanelet::ConstLanelets expandLanelets(
-  const lanelet::ConstLanelets & lanelets, const double left_bound_offset,
+std::vector<DrivableLanes> expandLanelets(
+  const std::vector<DrivableLanes> & drivable_lanes, const double left_bound_offset,
   const double right_bound_offset, const std::vector<std::string> & types_to_skip = {});
 
 // goal management

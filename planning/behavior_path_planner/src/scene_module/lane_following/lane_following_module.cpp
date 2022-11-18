@@ -93,8 +93,9 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   }
 
   // For current_lanes with desired length
-  lanelet::ConstLanelets current_lanes = planner_data_->route_handler->getLaneletSequence(
+  const auto current_lanes = planner_data_->route_handler->getLaneletSequence(
     current_lane, current_pose, p.backward_path_length, p.forward_path_length);
+  const auto drivable_lanes = util::generateDrivableLanes(current_lanes);
 
   if (current_lanes.empty()) {
     return reference_path;
@@ -136,12 +137,12 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
       lane_change_buffer);
   }
 
-  current_lanes = util::expandLanelets(
-    current_lanes, parameters_.drivable_area_left_bound_offset,
+  const auto expanded_lanes = util::expandLanelets(
+    drivable_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
 
   reference_path.drivable_area = util::generateDrivableArea(
-    reference_path, current_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data_);
+    reference_path, expanded_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data_);
 
   return reference_path;
 }

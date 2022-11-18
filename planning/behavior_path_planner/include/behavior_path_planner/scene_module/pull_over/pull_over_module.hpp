@@ -59,7 +59,7 @@ struct PUllOverStatus
   std::shared_ptr<PathWithLaneId> prev_stop_path{nullptr};
   lanelet::ConstLanelets current_lanes{};
   lanelet::ConstLanelets pull_over_lanes{};
-  lanelet::ConstLanelets lanes{};  // current + pull_over
+  std::vector<DrivableLanes> lanes{};  // current + pull_over
   bool has_decided_path{false};
   bool is_safe{false};
   bool prev_is_safe{false};

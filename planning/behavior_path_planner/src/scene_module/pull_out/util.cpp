@@ -94,28 +94,22 @@ Pose getBackedPose(
 }
 
 // getShoulderLanesOnCurrentPose
-lanelet::ConstLanelets getPullOutLanes(
-  const lanelet::ConstLanelets & current_lanes,
-  const std::shared_ptr<const PlannerData> & planner_data)
+lanelet::ConstLanelets getPullOutLanes(const std::shared_ptr<const PlannerData> & planner_data)
 {
   const double pull_out_lane_length = 200.0;
-  lanelet::ConstLanelets shoulder_lanes;
+  const double & vehicle_width = planner_data->parameters.vehicle_width;
   const auto & route_handler = planner_data->route_handler;
   const auto current_pose = planner_data->self_pose->pose;
-  lanelet::ConstLanelet shoulder_lane;
 
-  if (current_lanes.empty()) {
-    return shoulder_lanes;
-  }
-
+  lanelet::ConstLanelet current_shoulder_lane;
+  lanelet::ConstLanelets shoulder_lanes;
   if (route_handler->getPullOutStartLane(
-        route_handler->getShoulderLanelets(), current_pose, planner_data->parameters.vehicle_width,
-        &shoulder_lane)) {
+        route_handler->getShoulderLanelets(), current_pose, vehicle_width,
+        &current_shoulder_lane)) {
     shoulder_lanes = route_handler->getShoulderLaneletSequence(
-      shoulder_lane, current_pose, pull_out_lane_length, pull_out_lane_length);
+      current_shoulder_lane, current_pose, pull_out_lane_length, pull_out_lane_length);
   }
 
   return shoulder_lanes;
 }
-
 }  // namespace behavior_path_planner::pull_out_utils

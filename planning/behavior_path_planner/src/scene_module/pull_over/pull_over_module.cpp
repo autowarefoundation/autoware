@@ -349,11 +349,8 @@ BehaviorModuleOutput PullOverModule::plan()
 
   status_.current_lanes = util::getExtendedCurrentLanes(planner_data_);
   status_.pull_over_lanes = pull_over_utils::getPullOverLanes(*(planner_data_->route_handler));
-  status_.lanes = lanelet::ConstLanelets{};
-  status_.lanes.insert(
-    status_.lanes.end(), status_.current_lanes.begin(), status_.current_lanes.end());
-  status_.lanes.insert(
-    status_.lanes.end(), status_.pull_over_lanes.begin(), status_.pull_over_lanes.end());
+  status_.lanes =
+    util::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_over_lanes);
 
   // Check if it needs to decide path
   if (status_.is_safe) {
@@ -613,8 +610,9 @@ PathWithLaneId PullOverModule::getReferencePath() const
     reference_path, parameters_.pull_over_velocity, search_start_pose,
     -calcMinimumShiftPathDistance(), parameters_.deceleration_interval);
 
+  const auto drivable_lanes = util::generateDrivableLanes(status_.current_lanes);
   const auto lanes = util::expandLanelets(
-    status_.current_lanes, parameters_.drivable_area_left_bound_offset,
+    drivable_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
 
   reference_path.drivable_area = util::generateDrivableArea(
@@ -661,8 +659,9 @@ PathWithLaneId PullOverModule::generateStopPath() const
     }
   }
 
+  const auto drivable_lanes = util::generateDrivableLanes(status_.current_lanes);
   const auto lanes = util::expandLanelets(
-    status_.current_lanes, parameters_.drivable_area_left_bound_offset,
+    drivable_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
 
   stop_path.drivable_area = util::generateDrivableArea(

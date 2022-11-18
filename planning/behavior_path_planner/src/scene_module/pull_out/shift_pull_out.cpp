@@ -42,14 +42,14 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
   const auto & common_parameters = planner_data_->parameters;
   const auto & dynamic_objects = planner_data_->dynamic_object;
   const auto & road_lanes = util::getExtendedCurrentLanes(planner_data_);
-  const auto & shoulder_lanes = getPullOutLanes(road_lanes, planner_data_);
+  const auto & shoulder_lanes = getPullOutLanes(planner_data_);
   if (shoulder_lanes.empty()) {
     return boost::none;
   }
 
-  lanelet::ConstLanelets lanes;
-  lanes.insert(lanes.end(), road_lanes.begin(), road_lanes.end());
-  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
+  const auto drivable_lanes =
+    util::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
+  const auto lanes = util::transformToLanelets(drivable_lanes);
 
   // find candidate paths
   auto pull_out_paths = calcPullOutPaths(
@@ -93,7 +93,7 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
     // Generate drivable area
     const double resolution = common_parameters.drivable_area_resolution;
     shift_path.drivable_area = util::generateDrivableArea(
-      shift_path, lanes, resolution, common_parameters.vehicle_length, planner_data_);
+      shift_path, drivable_lanes, resolution, common_parameters.vehicle_length, planner_data_);
 
     shift_path.header = planner_data_->route_handler->getRouteHeader();
 

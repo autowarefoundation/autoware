@@ -123,7 +123,7 @@ bool PullOutModule::isExecutionRequested() const
 
   // Check if ego is not out of lanes
   const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
-  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(current_lanes, planner_data_);
+  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(planner_data_);
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
   if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
@@ -184,6 +184,7 @@ BehaviorModuleOutput PullOutModule::plan()
   } else {
     path = status_.backward_path;
   }
+
   const auto expanded_lanes = util::expandLanelets(
     status_.lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
@@ -276,17 +277,17 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
 
   BehaviorModuleOutput output;
   const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
-  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(current_lanes, planner_data_);
-  auto lanes = current_lanes;
-  lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
+  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(planner_data_);
+  const auto drivable_lanes =
+    util::generateDrivableLanesWithShoulderLanes(current_lanes, pull_out_lanes);
 
-  lanes = util::expandLanelets(
-    lanes, parameters_.drivable_area_left_bound_offset,
+  const auto expanded_lanes = util::expandLanelets(
+    drivable_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
 
   auto candidate_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
   candidate_path.drivable_area = util::generateDrivableArea(
-    candidate_path, lanes, planner_data_->parameters.drivable_area_resolution,
+    candidate_path, expanded_lanes, planner_data_->parameters.drivable_area_resolution,
     planner_data_->parameters.vehicle_length, planner_data_);
   auto stop_path = candidate_path;
   for (auto & p : stop_path.points) {
@@ -433,12 +434,11 @@ void PullOutModule::updatePullOutStatus()
   const auto & goal_pose = planner_data_->route_handler->getGoalPose();
 
   status_.current_lanes = util::getExtendedCurrentLanes(planner_data_);
-  status_.pull_out_lanes = pull_out_utils::getPullOutLanes(status_.current_lanes, planner_data_);
+  status_.pull_out_lanes = pull_out_utils::getPullOutLanes(planner_data_);
 
   // combine road and shoulder lanes
-  status_.lanes = status_.current_lanes;
-  status_.lanes.insert(
-    status_.lanes.end(), status_.pull_out_lanes.begin(), status_.pull_out_lanes.end());
+  status_.lanes =
+    util::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_out_lanes);
 
   // search pull out start candidates backward
   std::vector<Pose> start_pose_candidates;

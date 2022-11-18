@@ -84,8 +84,9 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, setGoal)
 
 TEST(BehaviorPathPlanningUtilitiesBehaviorTest, expandLanelets)
 {
+  using behavior_path_planner::DrivableLanes;
   using behavior_path_planner::util::expandLanelets;
-  lanelet::ConstLanelets original_lanelets;
+  std::vector<DrivableLanes> original_lanelets;
   {  // empty list of lanelets, empty output
     const auto expanded_lanelets = expandLanelets(original_lanelets, 0.0, 0.0);
     ASSERT_TRUE(expanded_lanelets.empty());
@@ -101,19 +102,34 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, expandLanelets)
   lanelet.rightBound().push_back(lanelet::Point3d(lanelet::Id(), 1.0, 1.0));
   lanelet.rightBound().push_back(lanelet::Point3d(lanelet::Id(), 1.0, 2.0));
   lanelet.rightBound().push_back(lanelet::Point3d(lanelet::Id(), 1.0, 3.0));
-  original_lanelets.push_back(lanelet);
+  DrivableLanes drivable_lane;
+  drivable_lane.left_lane = lanelet;
+  drivable_lane.right_lane = lanelet;
+  original_lanelets.push_back(drivable_lane);
   {  // no offsets, unchanged output
     const auto expanded_lanelets = expandLanelets(original_lanelets, left_bound, right_bound);
     ASSERT_EQ(expanded_lanelets.size(), original_lanelets.size());
-    ASSERT_EQ(expanded_lanelets[0].leftBound().size(), original_lanelets[0].leftBound().size());
-    ASSERT_EQ(expanded_lanelets[0].rightBound().size(), original_lanelets[0].rightBound().size());
-    for (size_t i = 0; i < expanded_lanelets[0].leftBound().size(); ++i) {
-      ASSERT_EQ(expanded_lanelets[0].leftBound()[i].x(), original_lanelets[0].leftBound()[i].x());
-      ASSERT_EQ(expanded_lanelets[0].leftBound()[i].y(), original_lanelets[0].leftBound()[i].y());
+    ASSERT_EQ(
+      expanded_lanelets[0].left_lane.leftBound().size(),
+      original_lanelets[0].left_lane.leftBound().size());
+    ASSERT_EQ(
+      expanded_lanelets[0].right_lane.rightBound().size(),
+      original_lanelets[0].right_lane.rightBound().size());
+    for (size_t i = 0; i < expanded_lanelets[0].left_lane.leftBound().size(); ++i) {
+      ASSERT_EQ(
+        expanded_lanelets[0].left_lane.leftBound()[i].x(),
+        original_lanelets[0].left_lane.leftBound()[i].x());
+      ASSERT_EQ(
+        expanded_lanelets[0].left_lane.leftBound()[i].y(),
+        original_lanelets[0].left_lane.leftBound()[i].y());
     }
-    for (size_t i = 0; i < expanded_lanelets[0].rightBound().size(); ++i) {
-      ASSERT_EQ(expanded_lanelets[0].rightBound()[i].x(), original_lanelets[0].rightBound()[i].x());
-      ASSERT_EQ(expanded_lanelets[0].rightBound()[i].y(), original_lanelets[0].rightBound()[i].y());
+    for (size_t i = 0; i < expanded_lanelets[0].right_lane.rightBound().size(); ++i) {
+      ASSERT_EQ(
+        expanded_lanelets[0].right_lane.rightBound()[i].x(),
+        original_lanelets[0].right_lane.rightBound()[i].x());
+      ASSERT_EQ(
+        expanded_lanelets[0].right_lane.rightBound()[i].y(),
+        original_lanelets[0].right_lane.rightBound()[i].y());
     }
   }
   left_bound = 0.5;
@@ -123,9 +139,10 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, expandLanelets)
       expandLanelets(original_lanelets, left_bound, right_bound, {"road_border"});
     ASSERT_EQ(expanded_lanelets.size(), original_lanelets.size());
     const auto l_dist = lanelet::geometry::distance2d(
-      expanded_lanelets[0].leftBound2d(), original_lanelets[0].leftBound2d());
+      expanded_lanelets[0].left_lane.leftBound2d(), original_lanelets[0].left_lane.leftBound2d());
     const auto r_dist = lanelet::geometry::distance2d(
-      expanded_lanelets[0].rightBound2d(), original_lanelets[0].rightBound2d());
+      expanded_lanelets[0].right_lane.rightBound2d(),
+      original_lanelets[0].right_lane.rightBound2d());
     EXPECT_NEAR(l_dist, 0.0, 1E-03);
     EXPECT_NEAR(r_dist, 0.0, 1E-03);
   }
@@ -133,9 +150,10 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, expandLanelets)
     const auto expanded_lanelets = expandLanelets(original_lanelets, left_bound, right_bound);
     ASSERT_EQ(expanded_lanelets.size(), original_lanelets.size());
     const auto l_dist = lanelet::geometry::distance2d(
-      expanded_lanelets[0].leftBound2d(), original_lanelets[0].leftBound2d());
+      expanded_lanelets[0].left_lane.leftBound2d(), original_lanelets[0].left_lane.leftBound2d());
     const auto r_dist = lanelet::geometry::distance2d(
-      expanded_lanelets[0].rightBound2d(), original_lanelets[0].rightBound2d());
+      expanded_lanelets[0].right_lane.rightBound2d(),
+      original_lanelets[0].right_lane.rightBound2d());
     EXPECT_NEAR(l_dist, left_bound, 1E-03);
     EXPECT_NEAR(r_dist, right_bound, 1E-03);
   }

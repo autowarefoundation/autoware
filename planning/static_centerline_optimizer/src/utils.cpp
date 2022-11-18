@@ -94,8 +94,9 @@ PathWithLaneId get_path_with_lane_id(
   // generate drivable area and store it in path with lane id
   constexpr double drivable_area_resolution = 0.1;
   constexpr double vehicle_length = 0.0;
+  const auto drivable_lanes = behavior_path_planner::util::generateDrivableLanes(lanelets);
   path_with_lane_id.drivable_area = behavior_path_planner::util::generateDrivableArea(
-    path_with_lane_id, lanelets, drivable_area_resolution, vehicle_length, planner_data);
+    path_with_lane_id, drivable_lanes, drivable_area_resolution, vehicle_length, planner_data);
 
   return path_with_lane_id;
 }
