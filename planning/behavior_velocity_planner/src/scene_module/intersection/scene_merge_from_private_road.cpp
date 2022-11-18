@@ -75,22 +75,25 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   }
   const auto detection_area =
     util::getPolygon3dFromLanelets(detection_lanelets, planner_param_.detection_area_length);
+  const std::vector<lanelet::CompoundPolygon3d> conflicting_area =
+    util::getPolygon3dFromLanelets(conflicting_lanelets);
   debug_data_.detection_area = detection_area;
 
   /* set stop-line and stop-judgement-line for base_link */
-  util::StopLineIdx stop_line_idxs;
   const auto private_path =
     extractPathNearExitOfPrivateRoad(*path, planner_data_->vehicle_info_.vehicle_length_m);
-  if (!util::generateStopLine(
-        lane_id_, detection_area, planner_data_, planner_param_.stop_line_margin,
-        0.0 /* unnecessary in merge_from_private */, path, private_path, &stop_line_idxs,
-        logger_.get_child("util"))) {
+  const auto [stuck_line_idx_opt, stop_lines_idx_opt] = util::generateStopLine(
+    lane_id_, detection_area, conflicting_area, planner_data_, planner_param_.stop_line_margin,
+    0.0 /* unnecessary in merge_from_private */, false /* same */, path, *path,
+    logger_.get_child("util"), clock_);
+  if (!stop_lines_idx_opt.has_value()) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     return false;
   }
 
-  const int stop_line_idx = stop_line_idxs.stop_line_idx;
-  if (stop_line_idx <= 0) {
+  const auto & stop_lines_idx = stop_lines_idx_opt.value();
+  const size_t stop_line_idx = stop_lines_idx.stop_line;
+  if (stop_line_idx == 0) {
     RCLCPP_DEBUG(logger_, "stop line is at path[0], ignore planning.");
     return true;
   }
@@ -98,10 +101,8 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   debug_data_.virtual_wall_pose = planning_utils::getAheadPose(
     stop_line_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
   debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
-  const int first_idx_inside_lane = stop_line_idxs.first_idx_inside_lane;
-  if (first_idx_inside_lane != -1) {
-    debug_data_.first_collision_point = path->points.at(first_idx_inside_lane).point.pose.position;
-  }
+  const size_t first_inside_lane_idx = stop_lines_idx.first_inside_lane;
+  debug_data_.first_collision_point = path->points.at(first_inside_lane_idx).point.pose.position;
 
   /* set stop speed */
   if (state_machine_.getState() == StateMachine::State::STOP) {

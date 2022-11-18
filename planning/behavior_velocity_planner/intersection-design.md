@@ -60,6 +60,7 @@ The following process is performed for the attention targets to determine whethe
    2. calculate the passing area of the target object $A_{target}$ at $t_s$ - `collision_start_margin_time` ~ $t_e$ + `collision_end_margin_time` for each predicted path (\*1).
    3. check if $A_{ego}$ and $A_{target}$ regions are overlapped (has collision).
 4. when a collision is detected, the module inserts a stop velocity in front of the intersection. Note that there is a time margin for the stop release (\*2).
+5. If ego is over the `pass_judge_line`, collision checking is not processed to avoid sudden braking. However if ego velocity is lower than the threshold `keep_detection_vel_thr` then this module continues collision checking.
 
 (\*1) The parameters `collision_start_margin_time` and `collision_end_margin_time` can be interpreted as follows:
 
@@ -102,6 +103,7 @@ As a related case, if the object in front of the ego vehicle is turning the same
 | `intersection/min_predicted_path_confidence`  | double | [-] minimum confidence value of predicted path to use for collision detection                  |
 | `merge_from_private_road/stop_duration_sec`   | double | [s] duration to stop                                                                           |
 | `assumed_front_car_decel: 1.0`                | double | [m/s^2] deceleration of front car used to check if it could stop in the stuck area at the exit |
+| `keep_detection_vel_threshold`                | double | [m/s] the threshold for ego vehicle for keeping detection after passing `pass_judge_line`      |
 
 ### How To Tune Parameters
 
