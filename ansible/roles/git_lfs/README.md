@@ -9,5 +9,6 @@ None.
 ## Manual Installation
 
 ```bash
+sudo apt install git-lfs
 git lfs install
 ```
