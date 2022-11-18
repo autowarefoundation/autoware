@@ -17,6 +17,7 @@
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
+#include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
@@ -28,6 +29,35 @@
 
 namespace behavior_path_planner
 {
+
+using tier4_autoware_utils::calcDistance2d;
+using tier4_autoware_utils::calcOffsetPose;
+using tier4_autoware_utils::createQuaternionFromRPY;
+using tier4_autoware_utils::pose2transform;
+
+namespace
+{
+
+geometry_msgs::msg::Point32 createPoint32(const double x, const double y, const double z)
+{
+  geometry_msgs::msg::Point32 p;
+  p.x = x;
+  p.y = y;
+  p.z = z;
+  return p;
+}
+
+geometry_msgs::msg::Polygon toMsg(const tier4_autoware_utils::Polygon2d & polygon, const double z)
+{
+  geometry_msgs::msg::Polygon ret;
+  for (const auto & p : polygon.outer()) {
+    ret.points.push_back(createPoint32(p.x(), p.y(), z));
+  }
+  return ret;
+}
+
+}  // namespace
+
 bool isOnRight(const ObjectData & obj) { return obj.lateral < 0.0; }
 
 double calcShiftLength(
@@ -136,6 +166,24 @@ void fillLongitudinalAndLengthByClosestFootprint(
   return;
 }
 
+void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
+  const PathWithLaneId & path, const Point & ego_pos, ObjectData & obj)
+{
+  const double distance = motion_utils::calcSignedArcLength(
+    path.points, ego_pos, obj.object.kinematics.initial_pose_with_covariance.pose.position);
+  double min_distance = distance;
+  double max_distance = distance;
+  for (const auto & p : obj.envelope_poly.outer()) {
+    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
+    min_distance = std::min(min_distance, arc_length);
+    max_distance = std::max(max_distance, arc_length);
+  }
+  obj.longitudinal = min_distance;
+  obj.length = max_distance - min_distance;
+  return;
+}
+
 double calcOverhangDistance(
   const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose)
 {
@@ -145,6 +193,34 @@ double calcOverhangDistance(
   util::calcObjectPolygon(object_data.object, &object_poly);
 
   for (const auto & p : object_poly.outer()) {
+    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    const auto lateral = tier4_autoware_utils::calcLateralDeviation(base_pose, point);
+
+    const auto & overhang_pose_on_right = [&overhang_pose, &largest_overhang, &point, &lateral]() {
+      if (lateral > largest_overhang) {
+        overhang_pose = point;
+      }
+      return std::max(largest_overhang, lateral);
+    };
+
+    const auto & overhang_pose_on_left = [&overhang_pose, &largest_overhang, &point, &lateral]() {
+      if (lateral < largest_overhang) {
+        overhang_pose = point;
+      }
+      return std::min(largest_overhang, lateral);
+    };
+
+    largest_overhang = isOnRight(object_data) ? overhang_pose_on_right() : overhang_pose_on_left();
+  }
+  return largest_overhang;
+}
+
+double calcEnvelopeOverhangDistance(
+  const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose)
+{
+  double largest_overhang = isOnRight(object_data) ? -100.0 : 100.0;  // large number
+
+  for (const auto & p : object_data.envelope_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
     const auto lateral = tier4_autoware_utils::calcLateralDeviation(base_pose, point);
 
@@ -204,6 +280,64 @@ std::vector<std::string> getUuidStr(const ObjectDataArray & objs)
     uuids.push_back(getUuidStr(o));
   }
   return uuids;
+}
+
+Polygon2d createEnvelopePolygon(
+  const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer)
+{
+  namespace bg = boost::geometry;
+  using tier4_autoware_utils::Point2d;
+  using tier4_autoware_utils::Polygon2d;
+  using Box = bg::model::box<Point2d>;
+
+  Polygon2d object_polygon{};
+  util::calcObjectPolygon(object_data.object, &object_polygon);
+
+  const auto toPolygon2d = [](const geometry_msgs::msg::Polygon & polygon) {
+    Polygon2d ret{};
+
+    for (const auto & p : polygon.points) {
+      ret.outer().push_back(Point2d(p.x, p.y));
+    }
+
+    return ret;
+  };
+
+  Pose pose_2d = closest_pose;
+  pose_2d.orientation = createQuaternionFromRPY(0.0, 0.0, tf2::getYaw(closest_pose.orientation));
+
+  TransformStamped geometry_tf{};
+  geometry_tf.transform = pose2transform(pose_2d);
+
+  tf2::Transform tf;
+  tf2::fromMsg(geometry_tf.transform, tf);
+  TransformStamped inverse_geometry_tf{};
+  inverse_geometry_tf.transform = tf2::toMsg(tf.inverse());
+
+  geometry_msgs::msg::Polygon out_ros_polygon{};
+  tf2::doTransform(
+    toMsg(object_polygon, closest_pose.position.z), out_ros_polygon, inverse_geometry_tf);
+
+  const auto envelope_box = bg::return_envelope<Box>(toPolygon2d(out_ros_polygon));
+
+  Polygon2d envelope_poly{};
+  bg::convert(envelope_box, envelope_poly);
+
+  geometry_msgs::msg::Polygon envelope_ros_polygon{};
+  tf2::doTransform(
+    toMsg(envelope_poly, closest_pose.position.z), envelope_ros_polygon, geometry_tf);
+
+  std::vector<Polygon2d> offset_polygons{};
+  bg::strategy::buffer::distance_symmetric<double> distance_strategy(envelope_buffer);
+  bg::strategy::buffer::join_miter join_strategy;
+  bg::strategy::buffer::end_flat end_strategy;
+  bg::strategy::buffer::side_straight side_strategy;
+  bg::strategy::buffer::point_circle point_strategy;
+  bg::buffer(
+    toPolygon2d(envelope_ros_polygon), offset_polygons, distance_strategy, side_strategy,
+    join_strategy, end_strategy, point_strategy);
+
+  return offset_polygons.front();
 }
 
 }  // namespace behavior_path_planner

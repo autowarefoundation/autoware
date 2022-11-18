@@ -50,7 +50,13 @@ void fillLongitudinalAndLengthByClosestFootprint(
   const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos,
   ObjectData & obj);
 
+void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
+  const PathWithLaneId & path, const Point & ego_pos, ObjectData & obj);
+
 double calcOverhangDistance(
+  const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose);
+
+double calcEnvelopeOverhangDistance(
   const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose);
 
 void setEndData(
@@ -64,6 +70,9 @@ void setStartData(
 std::string getUuidStr(const ObjectData & obj);
 
 std::vector<std::string> getUuidStr(const ObjectDataArray & objs);
+
+Polygon2d createEnvelopePolygon(
+  const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer);
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_

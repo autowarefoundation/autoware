@@ -47,7 +47,10 @@ MarkerArray createAvoidLineMarkerArray(
   const AvoidLineArray & shift_points, std::string && ns, const float & r, const float & g,
   const float & b, const double & w);
 
-MarkerArray createAvoidanceObjectsMarkerArray(
+MarkerArray createTargetObjectsMarkerArray(
+  const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
+
+MarkerArray createOtherObjectsMarkerArray(
   const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
 
 MarkerArray makeOverhangToRoadShoulderMarkerArray(

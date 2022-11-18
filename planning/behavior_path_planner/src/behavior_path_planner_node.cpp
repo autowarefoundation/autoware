@@ -274,8 +274,10 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 
   p.threshold_distance_object_is_on_center = dp("threshold_distance_object_is_on_center", 1.0);
   p.threshold_speed_object_is_stopped = dp("threshold_speed_object_is_stopped", 1.0);
+  p.threshold_time_object_is_moving = dp("threshold_time_object_is_moving", 1.0);
   p.object_check_forward_distance = dp("object_check_forward_distance", 150.0);
   p.object_check_backward_distance = dp("object_check_backward_distance", 2.0);
+  p.object_envelope_buffer = dp("object_envelope_buffer", 0.1);
   p.lateral_collision_margin = dp("lateral_collision_margin", 2.0);
   p.lateral_collision_safety_buffer = dp("lateral_collision_safety_buffer", 0.5);
 

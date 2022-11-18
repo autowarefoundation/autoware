@@ -192,6 +192,15 @@ private:
     }
   }
 
+  /**
+   * object pre-process
+   */
+  void fillAvoidanceTargetObjects(AvoidancePlanningData & data, DebugData & debug) const;
+  void fillObjectEnvelopePolygon(const Pose & closest_pose, ObjectData & object_data) const;
+  void fillObjectMovingTime(ObjectData & object_data) const;
+  void compensateDetectionLost(
+    ObjectDataArray & target_objects, ObjectDataArray & other_objects) const;
+
   // data used in previous planning
   ShiftedPath prev_output_;
   ShiftedPath prev_linear_shift_path_;  // used for shift point check
@@ -209,13 +218,9 @@ private:
   // -- for pre-processing --
   void initVariables();
   AvoidancePlanningData calcAvoidancePlanningData(DebugData & debug) const;
-  ObjectDataArray calcAvoidanceTargetObjects(
-    const lanelet::ConstLanelets & lanelets, const PathWithLaneId & reference_path,
-    DebugData & debug) const;
 
   ObjectDataArray registered_objects_;
   void updateRegisteredObject(const ObjectDataArray & objects);
-  void CompensateDetectionLost(ObjectDataArray & objects) const;
 
   // -- for shift point generation --
   AvoidLineArray calcShiftLines(AvoidLineArray & current_raw_shift_lines, DebugData & debug) const;
@@ -288,7 +293,8 @@ private:
   // debug
   mutable DebugData debug_data_;
   mutable std::shared_ptr<AvoidanceDebugMsgArray> debug_msg_ptr_;
-  void setDebugData(const PathShifter & shifter, const DebugData & debug);
+  void setDebugData(
+    const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug) const;
   void updateAvoidanceDebugData(std::vector<AvoidanceDebugMsg> & avoidance_debug_msg_array) const;
   mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_line_;
   mutable rclcpp::Time debug_avoidance_initializer_for_shift_line_time_;
@@ -318,6 +324,11 @@ private:
   double getCurrentBaseShift() const { return path_shifter_.getBaseOffset(); }
   double getCurrentShift() const;
   double getCurrentLinearShift() const;
+
+  /**
+   * avoidance module misc data
+   */
+  mutable ObjectDataArray stopped_objects_;
 };
 
 }  // namespace behavior_path_planner
