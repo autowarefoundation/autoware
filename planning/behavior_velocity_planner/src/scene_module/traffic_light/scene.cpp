@@ -489,8 +489,9 @@ autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopP
   if (debug_data_.highest_confidence_traffic_light_point != std::nullopt) {
     stop_factor.stop_factor_points = std::vector<geometry_msgs::msg::Point>{
       debug_data_.highest_confidence_traffic_light_point.value()};
-    planning_utils::appendStopReason(stop_factor, stop_reason);
   }
+  planning_utils::appendStopReason(stop_factor, stop_reason);
+
   return modified_path;
 }
 
