@@ -262,7 +262,8 @@ void MultiObjectTracker::sanitizeTracker(
         continue;
       }
 
-      const auto iou = perception_utils::get2dIoU(object1, object2);
+      const double min_union_iou_area = 1e-2;
+      const auto iou = perception_utils::get2dIoU(object1, object2, min_union_iou_area);
       const auto & label1 = (*itr1)->getHighestProbLabel();
       const auto & label2 = (*itr2)->getHighestProbLabel();
       bool should_delete_tracker1 = false;

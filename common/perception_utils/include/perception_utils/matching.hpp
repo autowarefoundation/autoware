@@ -63,7 +63,7 @@ inline double getUnionArea(const Polygon2d & source_polygon, const Polygon2d & t
 }
 
 template <class T1, class T2>
-double get2dIoU(const T1 source_object, const T2 target_object)
+double get2dIoU(const T1 source_object, const T2 target_object, const double min_union_area = 0.01)
 {
   const auto source_polygon = tier4_autoware_utils::toPolygon2d(source_object);
   const auto target_polygon = tier4_autoware_utils::toPolygon2d(target_object);
@@ -72,7 +72,8 @@ double get2dIoU(const T1 source_object, const T2 target_object)
   if (intersection_area == 0.0) return 0.0;
   const double union_area = getUnionArea(source_polygon, target_polygon);
 
-  const double iou = union_area < 0.01 ? 0.0 : std::min(1.0, intersection_area / union_area);
+  const double iou =
+    union_area < min_union_area ? 0.0 : std::min(1.0, intersection_area / union_area);
   return iou;
 }
 

@@ -154,7 +154,8 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         // 2d iou gate
         if (passed_gate) {
           const double min_iou = min_iou_matrix_(object1_label, object0_label);
-          const double iou = perception_utils::get2dIoU(object0, object1);
+          const double min_union_iou_area = 1e-2;
+          const double iou = perception_utils::get2dIoU(object0, object1, min_union_iou_area);
           if (iou < min_iou) passed_gate = false;
         }
 
