@@ -631,6 +631,7 @@ std::vector<DrivableLanes> generateDrivableLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & lane_change_lanes)
 {
+  size_t current_lc_idx = 0;
   std::vector<DrivableLanes> drivable_lanes(current_lanes.size());
   for (size_t i = 0; i < current_lanes.size(); ++i) {
     const auto & current_lane = current_lanes.at(i);
@@ -643,17 +644,28 @@ std::vector<DrivableLanes> generateDrivableLanes(
       continue;
     }
 
-    for (const auto & lc_lane : lane_change_lanes) {
+    for (size_t lc_idx = current_lc_idx; lc_idx < lane_change_lanes.size(); ++lc_idx) {
+      const auto & lc_lane = lane_change_lanes.at(lc_idx);
       if (left_lane && lc_lane.id() == left_lane->id()) {
         drivable_lanes.at(i).left_lane = lc_lane;
+        current_lc_idx = lc_idx;
         break;
       }
 
       if (right_lane && lc_lane.id() == right_lane->id()) {
         drivable_lanes.at(i).right_lane = lc_lane;
+        current_lc_idx = lc_idx;
         break;
       }
     }
+  }
+
+  for (size_t i = current_lc_idx + 1; i < lane_change_lanes.size(); ++i) {
+    const auto & lc_lane = lane_change_lanes.at(i);
+    DrivableLanes drivable_lane;
+    drivable_lane.left_lane = lc_lane;
+    drivable_lane.right_lane = lc_lane;
+    drivable_lanes.push_back(drivable_lane);
   }
 
   return drivable_lanes;
