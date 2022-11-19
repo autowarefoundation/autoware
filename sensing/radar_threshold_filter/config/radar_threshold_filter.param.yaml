@@ -1,0 +1,18 @@
+/**:
+  ros__parameters:
+    node_params:
+      is_amplitude_filter: true
+      amplitude_min: -10.0
+      amplitude_max: 100.0
+
+      is_range_filter: false
+      range_min: 20.0
+      range_max: 300.0
+
+      is_azimuth_filter: true
+      azimuth_min: -1.2
+      azimuth_max: 1.2
+
+      is_z_filter: false
+      z_min: -2.0
+      z_max: 5.0
