@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="launch_system_monitor" default="true" description="launch system monitor"/>
   <arg name="run_mode" default="online" description="options: online, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
   <arg name="tier4_system_launch_param_path" default="$(find-pkg-share tier4_system_launch)/config" description="tier4_system_launch parameter path"/>
@@ -10,7 +11,7 @@
     <push-ros-namespace namespace="/system"/>
 
     <!-- System Monitor -->
-    <group>
+    <group if="$(var launch_system_monitor)">
       <push-ros-namespace namespace="system_monitor"/>
       <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch.py">
         <arg name="cpu_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/cpu_monitor.param.yaml"/>
