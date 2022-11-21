@@ -48,17 +48,18 @@ void remove_polygon_cgal_from_cloud(
 {
   pcl::PointCloud<pcl::PointXYZ> pcl_output;
 
-  point_cloud_msg_wrapper::PointCloud2View<autoware::common::types::PointXYZ> view{cloud_in};
-  for (const auto & point : view) {
+  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(cloud_in, "x"), iter_y(cloud_in, "y"),
+       iter_z(cloud_in, "z");
+       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
     // check if the point is inside the polygon
     if (
       CGAL::bounded_side_2(
-        polyline_polygon.begin(), polyline_polygon.end(), PointCgal(point.x, point.y), K()) ==
+        polyline_polygon.begin(), polyline_polygon.end(), PointCgal(*iter_x, *iter_y), K()) ==
       CGAL::ON_UNBOUNDED_SIDE) {
       pcl::PointXYZ p;
-      p.x = point.x;
-      p.y = point.y;
-      p.z = point.z;
+      p.x = *iter_x;
+      p.y = *iter_y;
+      p.z = *iter_z;
       pcl_output.emplace_back(p);
     }
   }
@@ -95,10 +96,11 @@ void remove_polygon_cgal_from_cloud(
   }
 
   pcl::PointCloud<pcl::PointXYZ> filtered_cloud;
-  point_cloud_msg_wrapper::PointCloud2View<autoware::common::types::PointXYZ> view{cloud_in};
-  for (const auto & point : view) {
+  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(cloud_in, "x"), iter_y(cloud_in, "y"),
+       iter_z(cloud_in, "z");
+       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
     // if the point is inside the polygon, skip inserting and check the next point
-    pcl::PointXYZ p(point.x, point.y, point.z);
+    pcl::PointXYZ p(*iter_x, *iter_y, *iter_z);
     if (point_within_cgal_polys(p, polyline_polygons)) {
       continue;
     }

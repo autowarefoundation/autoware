@@ -72,6 +72,7 @@
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <tier4_debug_msgs/msg/int32_stamped.hpp>
 #include <tier4_debug_msgs/msg/string_stamped.hpp>
 

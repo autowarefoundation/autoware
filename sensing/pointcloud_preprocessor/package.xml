@@ -18,7 +18,6 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_auto_common</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_point_types</depend>
   <depend>cgal</depend>

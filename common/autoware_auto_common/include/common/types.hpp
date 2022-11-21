@@ -109,46 +109,6 @@ struct COMMON_PUBLIC PointXYZI
   }
 };
 
-struct COMMON_PUBLIC PointXYZ
-{
-  float32_t x{0.0F};
-  float32_t y{0.0F};
-  float32_t z{0.0F};
-  friend bool operator==(const PointXYZ & p1, const PointXYZ & p2) noexcept
-  {
-    return helper_functions::comparisons::rel_eq(
-             p1.x, p2.x, std::numeric_limits<float32_t>::epsilon()) &&
-
-           helper_functions::comparisons::rel_eq(
-             p1.y, p2.y, std::numeric_limits<float32_t>::epsilon()) &&
-
-           helper_functions::comparisons::rel_eq(
-             p1.z, p2.z, std::numeric_limits<float32_t>::epsilon());
-  }
-};
-
-struct COMMON_PUBLIC PointXYZTimestamp
-{
-  float32_t x{0.0F};
-  float32_t y{0.0F};
-  float32_t z{0.0F};
-  float32_t time_stamp{0.0F};
-  friend bool operator==(const PointXYZTimestamp & p1, const PointXYZTimestamp & p2) noexcept
-  {
-    return helper_functions::comparisons::rel_eq(
-             p1.x, p2.x, std::numeric_limits<float32_t>::epsilon()) &&
-
-           helper_functions::comparisons::rel_eq(
-             p1.y, p2.y, std::numeric_limits<float32_t>::epsilon()) &&
-
-           helper_functions::comparisons::rel_eq(
-             p1.z, p2.z, std::numeric_limits<float32_t>::epsilon()) &&
-
-           helper_functions::comparisons::rel_eq(
-             p1.time_stamp, p2.time_stamp, std::numeric_limits<float32_t>::epsilon());
-  }
-};
-
 using PointBlock = std::vector<PointXYZIF>;
 using PointPtrBlock = std::vector<const PointXYZIF *>;
 /// \brief Stores basic configuration information, does some simple validity checking
