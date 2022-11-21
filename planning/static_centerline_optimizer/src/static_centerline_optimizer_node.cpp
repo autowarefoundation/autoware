@@ -150,6 +150,26 @@ std::array<double, 3> convertHexStringToDecimal(const std::string & hex_str_colo
 
   return std::array<double, 3>{r / 255.0, g / 255.0, b / 255.0};
 }
+
+std::vector<unsigned int> check_lanelet_connection(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & route_lanelets)
+{
+  std::vector<unsigned int> unconnected_lane_ids;
+
+  for (size_t i = 0; i < route_lanelets.size() - 1; ++i) {
+    const auto next_lanelets = route_handler.getNextLanelets(route_lanelets.at(i));
+
+    const bool is_connected =
+      std::find_if(next_lanelets.begin(), next_lanelets.end(), [&](const auto & next_lanelet) {
+        return next_lanelet.id() == route_lanelets.at(i + 1).id();
+      }) != next_lanelets.end();
+    if (!is_connected) {
+      unconnected_lane_ids.push_back(route_lanelets.at(i).id());
+    }
+  }
+
+  return unconnected_lane_ids;
+}
 }  // namespace
 
 StaticCenterlineOptimizerNode::StaticCenterlineOptimizerNode(
@@ -205,9 +225,9 @@ void StaticCenterlineOptimizerNode::run()
   // process
   load_map(lanelet2_input_file_path);
   const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
-  plan_path(route_lane_ids);
-  evaluate(route_lane_ids);
-  save_map(lanelet2_output_file_path, route_lane_ids);
+  const auto optimized_traj_points = plan_path(route_lane_ids);
+  evaluate(route_lane_ids, optimized_traj_points);
+  save_map(lanelet2_output_file_path, route_lane_ids, optimized_traj_points);
 }
 
 void StaticCenterlineOptimizerNode::load_map(const std::string & lanelet2_input_file_path)
@@ -249,7 +269,7 @@ void StaticCenterlineOptimizerNode::on_load_map(
 {
   const std::string tmp_lanelet2_input_file_path = "/tmp/input_lanelet2_map.osm";
 
-  // save map file
+  // save map file temporarily since load map's input must be a file
   std::ofstream map_writer;
   map_writer.open(tmp_lanelet2_input_file_path, std::ios::out);
   map_writer << request->map;
@@ -258,12 +278,21 @@ void StaticCenterlineOptimizerNode::on_load_map(
   // load map from the saved map file
   load_map(tmp_lanelet2_input_file_path);
 
-  response->success = map_bin_ptr_ ? true : false;
+  if (map_bin_ptr_) {
+    return;
+  }
+
+  response->message = "InvalidMapFormat";
 }
 
 std::vector<unsigned int> StaticCenterlineOptimizerNode::plan_route(
   const int start_lanelet_id, const int end_lanelet_id)
 {
+  if (!map_bin_ptr_ || !route_handler_ptr_) {
+    RCLCPP_ERROR(get_logger(), "Map or route handler is not ready. Return empty lane ids.");
+    return std::vector<unsigned int>{};
+  }
+
   // calculate check points (= start and goal pose)
   const auto check_points = [&]() {
     const auto start_center_pose = utils::get_center_pose(*route_handler_ptr_, start_lanelet_id);
@@ -299,6 +328,12 @@ std::vector<unsigned int> StaticCenterlineOptimizerNode::plan_route(
 void StaticCenterlineOptimizerNode::on_plan_route(
   const PlanRoute::Request::SharedPtr request, const PlanRoute::Response::SharedPtr response)
 {
+  if (!map_bin_ptr_ || !route_handler_ptr_) {
+    response->message = "MapNotFound";
+    RCLCPP_ERROR(get_logger(), "Map is not ready.");
+    return;
+  }
+
   const int start_lanelet_id = request->start_lane_id;
   const int end_lanelet_id = request->end_lane_id;
 
@@ -306,27 +341,29 @@ void StaticCenterlineOptimizerNode::on_plan_route(
   const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
 
-  if (!route_handler_ptr_) {
-    response->message = "route_has_not_been_planned";
-    return;
-  }
-
   // extract lane ids
   std::vector<unsigned int> lane_ids;
   for (const auto & lanelet : route_lanelets) {
     lane_ids.push_back(lanelet.id());
   }
 
+  // check calculation result
+  if (lane_ids.empty()) {
+    response->message = "RouteNotFound";
+    RCLCPP_ERROR(get_logger(), "Route planning failed.");
+    return;
+  }
+
   // set response
   response->lane_ids = lane_ids;
-  response->message = "";
 }
 
-StaticCenterlineOptimizerNode::PlanPathResult StaticCenterlineOptimizerNode::plan_path(
+std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
   const std::vector<unsigned int> & route_lane_ids)
 {
   if (!route_handler_ptr_) {
-    return PlanPathResult::ROUTE_IS_NOT_READY;
+    RCLCPP_ERROR(get_logger(), "Route handler is not ready. Return empty trajectory.");
+    return std::vector<TrajectoryPoint>{};
   }
 
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
@@ -357,40 +394,59 @@ StaticCenterlineOptimizerNode::PlanPathResult StaticCenterlineOptimizerNode::pla
   const auto optimized_traj =
     successive_path_optimizer.pathCallback(std::make_shared<Path>(raw_path));
   pub_optimized_centerline_->publish(optimized_traj);
-  optimized_traj_points_ = motion_utils::convertToTrajectoryPointArray(optimized_traj);
+  const auto optimized_traj_points = motion_utils::convertToTrajectoryPointArray(optimized_traj);
 
   RCLCPP_INFO(get_logger(), "Optimized trajectory and published.");
 
-  return PlanPathResult::SUCCESS;
+  return optimized_traj_points;
 }
 
 void StaticCenterlineOptimizerNode::on_plan_path(
   const PlanPath::Request::SharedPtr request, const PlanPath::Response::SharedPtr response)
 {
+  if (!route_handler_ptr_) {
+    response->message = "MapNotFound";
+    RCLCPP_ERROR(get_logger(), "Route handler is not ready.");
+    return;
+  }
+
+  // get lanelets from route lane ids
   const auto route_lane_ids = request->route;
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
 
+  // check if input route lanelets are connected to each other.
+  const auto unconnected_lane_ids = check_lanelet_connection(*route_handler_ptr_, route_lanelets);
+  if (!unconnected_lane_ids.empty()) {
+    response->message = "LaneletsNotConnected";
+    response->unconnected_lane_ids = unconnected_lane_ids;
+    RCLCPP_ERROR(get_logger(), "Lanelets are not connected.");
+    return;
+  }
+
   // plan path
-  const auto result = plan_path(route_lane_ids);
-  if (result == PlanPathResult::ROUTE_IS_NOT_READY) {
-    response->message = "route_is_not_ready";
+  const auto optimized_traj_points = plan_path(route_lane_ids);
+
+  // check calculation result
+  if (optimized_traj_points.empty()) {
+    response->message = "PathNotFound";
+    RCLCPP_ERROR(get_logger(), "Path planning failed.");
     return;
   }
 
   // create output data
-  auto target_traj_point = optimized_traj_points_.cbegin();
+  auto target_traj_point = optimized_traj_points.cbegin();
   bool is_end_lanelet = false;
   for (const auto & lanelet : route_lanelets) {
     std::vector<geometry_msgs::msg::Point> current_lanelet_points;
 
     // check if target point is inside the lanelet
-    while (!lanelet::geometry::inside(
-      lanelet, convertToLaneletPoint(target_traj_point->pose.position))) {
+    while (
+      lanelet::geometry::inside(lanelet, convertToLaneletPoint(target_traj_point->pose.position))) {
       // memorize points inside the lanelet
       current_lanelet_points.push_back(target_traj_point->pose.position);
       target_traj_point++;
 
-      if (target_traj_point == optimized_traj_points_.cend()) {
+      if (target_traj_point == optimized_traj_points.cend()) {
         is_end_lanelet = true;
         break;
       }
@@ -413,7 +469,9 @@ void StaticCenterlineOptimizerNode::on_plan_path(
   response->message = "";
 }
 
-void StaticCenterlineOptimizerNode::evaluate(const std::vector<unsigned int> & route_lane_ids)
+void StaticCenterlineOptimizerNode::evaluate(
+  const std::vector<unsigned int> & route_lane_ids,
+  const std::vector<TrajectoryPoint> & optimized_traj_points)
 {
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
 
@@ -444,8 +502,8 @@ void StaticCenterlineOptimizerNode::evaluate(const std::vector<unsigned int> & r
   // calculate the distance between footprint and right/left bounds
   MarkerArray marker_array;
   double min_dist = std::numeric_limits<double>::max();
-  for (size_t i = 0; i < optimized_traj_points_.size(); ++i) {
-    const auto & traj_point = optimized_traj_points_.at(i);
+  for (size_t i = 0; i < optimized_traj_points.size(); ++i) {
+    const auto & traj_point = optimized_traj_points.at(i);
 
     const auto footprint_poly = create_vehicle_footprint(traj_point.pose, vehicle_info_);
 
@@ -481,7 +539,8 @@ void StaticCenterlineOptimizerNode::evaluate(const std::vector<unsigned int> & r
 }
 
 void StaticCenterlineOptimizerNode::save_map(
-  const std::string & lanelet2_output_file_path, const std::vector<unsigned int> & route_lane_ids)
+  const std::string & lanelet2_output_file_path, const std::vector<unsigned int> & route_lane_ids,
+  const std::vector<TrajectoryPoint> & optimized_traj_points)
 {
   if (!route_handler_ptr_) {
     return;
@@ -490,7 +549,7 @@ void StaticCenterlineOptimizerNode::save_map(
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
 
   // update centerline in map
-  utils::update_centerline(*route_handler_ptr_, route_lanelets, optimized_traj_points_);
+  utils::update_centerline(*route_handler_ptr_, route_lanelets, optimized_traj_points);
   RCLCPP_INFO(get_logger(), "Updated centerline in map.");
 
   // save map with modified center line

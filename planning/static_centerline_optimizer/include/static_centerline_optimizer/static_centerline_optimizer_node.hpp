@@ -35,11 +35,6 @@ using static_centerline_optimizer::srv::PlanRoute;
 class StaticCenterlineOptimizerNode : public rclcpp::Node
 {
 public:
-  enum class PlanPathResult {
-    SUCCESS = 0,
-    ROUTE_IS_NOT_READY = 1,
-  };
-
   explicit StaticCenterlineOptimizerNode(const rclcpp::NodeOptions & node_options);
   void run();
 
@@ -55,18 +50,19 @@ private:
     const PlanRoute::Request::SharedPtr request, const PlanRoute::Response::SharedPtr response);
 
   // plan path
+  std::vector<TrajectoryPoint> plan_path(const std::vector<unsigned int> & route_lane_ids);
   void on_plan_path(
     const PlanPath::Request::SharedPtr request, const PlanPath::Response::SharedPtr response);
-  PlanPathResult plan_path(const std::vector<unsigned int> & route_lane_ids);
-  void evaluate(const std::vector<unsigned int> & route_lane_ids);
 
+  void evaluate(
+    const std::vector<unsigned int> & route_lane_ids,
+    const std::vector<TrajectoryPoint> & optimized_traj_points);
   void save_map(
-    const std::string & lanelet2_output_file_path,
-    const std::vector<unsigned int> & route_lane_ids);
+    const std::string & lanelet2_output_file_path, const std::vector<unsigned int> & route_lane_ids,
+    const std::vector<TrajectoryPoint> & optimized_traj_points);
 
   HADMapBin::ConstSharedPtr map_bin_ptr_{nullptr};
   std::shared_ptr<RouteHandler> route_handler_ptr_{nullptr};
-  std::vector<TrajectoryPoint> optimized_traj_points_{};
 
   // publisher
   rclcpp::Publisher<HADMapBin>::SharedPtr pub_map_bin_{nullptr};
