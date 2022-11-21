@@ -25,7 +25,6 @@
 namespace pointcloud_preprocessor
 {
 using autoware_point_types::PointXYZI;
-using autoware_point_types::PointXYZIRADRT;
 using point_cloud_msg_wrapper::PointCloud2Modifier;
 
 class RingOutlierFilterComponent : public pointcloud_preprocessor::Filter
