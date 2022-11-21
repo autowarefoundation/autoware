@@ -1829,11 +1829,11 @@ std::vector<DrivableLanes> expandLanelets(
       expanded_lanes.left_lane =
         lanelet::utils::getExpandedLanelet(lanes.left_lane, l_offset, r_offset);
       expanded_lanes.right_lane =
-        lanelet::utils::getExpandedLanelet(lanes.left_lane, l_offset, r_offset);
+        lanelet::utils::getExpandedLanelet(lanes.right_lane, l_offset, r_offset);
     } else {
       expanded_lanes.left_lane = lanelet::utils::getExpandedLanelet(lanes.left_lane, l_offset, 0.0);
       expanded_lanes.right_lane =
-        lanelet::utils::getExpandedLanelet(lanes.left_lane, 0.0, r_offset);
+        lanelet::utils::getExpandedLanelet(lanes.right_lane, 0.0, r_offset);
     }
     expanded_lanes.middle_lanes = lanes.middle_lanes;
     expanded_drivable_lanes.push_back(expanded_lanes);
