@@ -1815,7 +1815,7 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
 
     // get left side lane
     const lanelet::ConstLanelets all_left_lanelets =
-      route_handler->getAllLeftSharedLinestringLanelets(current_lane, enable_opposite);
+      route_handler->getAllLeftSharedLinestringLanelets(current_lane, enable_opposite, true);
     if (!all_left_lanelets.empty()) {
       current_drivable_lanes.left_lane = all_left_lanelets.back();  // leftmost lanelet
 
@@ -1826,7 +1826,7 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
 
     // get right side lane
     const lanelet::ConstLanelets all_right_lanelets =
-      route_handler->getAllRightSharedLinestringLanelets(current_lane, enable_opposite);
+      route_handler->getAllRightSharedLinestringLanelets(current_lane, enable_opposite, true);
     if (!all_right_lanelets.empty()) {
       current_drivable_lanes.right_lane = all_right_lanelets.back();  // rightmost lanelet
       if (current_drivable_lanes.left_lane.id() != current_lane.id()) {
