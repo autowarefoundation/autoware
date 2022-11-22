@@ -86,6 +86,7 @@
     - source: .github/workflows/clang-tidy-pr-comments.yaml
     - source: .github/workflows/clang-tidy-pr-comments-manually.yaml
     - source: .github/workflows/update-codeowners-from-packages.yaml
+    - source: .pre-commit-config.yaml
     - source: codecov.yaml
 
 - repository: autowarefoundation/autoware-documentation
