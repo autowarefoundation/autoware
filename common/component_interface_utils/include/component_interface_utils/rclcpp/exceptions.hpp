@@ -39,7 +39,7 @@ public:
   template <class T>
   void set(T & status) const
   {
-    status.success = false;
+    status.success = success_;
     status.code = code_;
     status.message = message_;
   }
@@ -47,7 +47,7 @@ public:
   ResponseStatus status() const
   {
     ResponseStatus status;
-    status.success = false;
+    status.success = success_;
     status.code = code_;
     status.message = message_;
     return status;
