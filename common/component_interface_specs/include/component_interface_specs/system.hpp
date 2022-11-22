@@ -17,12 +17,22 @@
 
 #include <rclcpp/qos.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <tier4_system_msgs/srv/change_autoware_control.hpp>
 #include <tier4_system_msgs/srv/change_operation_mode.hpp>
 
 namespace system_interface
 {
+
+struct MrmState
+{
+  using Message = autoware_adapi_v1_msgs::msg::MrmState;
+  static constexpr char name[] = "/system/fail_safe/mrm_state";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
+};
 
 struct ChangeAutowareControl
 {
