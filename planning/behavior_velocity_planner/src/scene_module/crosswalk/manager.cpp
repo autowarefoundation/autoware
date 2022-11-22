@@ -110,6 +110,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     node.declare_parameter(ns + ".stop_object_velocity_threshold", 0.5 / 3.6);
   cp.min_object_velocity = node.declare_parameter(ns + ".min_object_velocity", 5.0 / 3.6);
   cp.max_yield_timeout = node.declare_parameter(ns + ".max_yield_timeout", 3.0);
+  cp.ego_yield_query_stop_duration =
+    node.declare_parameter(ns + ".ego_yield_query_stop_duration", 0.1);
 
   // param for input data
   cp.external_input_timeout = node.declare_parameter(ns + ".external_input_timeout", 1.0);

@@ -81,6 +81,7 @@ public:
     double stop_object_velocity;
     double min_object_velocity;
     double max_yield_timeout;
+    double ego_yield_query_stop_duration;
     // param for input data
     double external_input_timeout;
     double tl_state_timeout;

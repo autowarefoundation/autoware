@@ -93,6 +93,7 @@ Also see algorithm section.
 | `stop_object_velocity_threshold` | double | [m/s] velocity threshold for the module to judge whether the objects is stopped                                                                    |
 | `min_object_velocity`            | double | [m/s] minimum object velocity (compare the estimated velocity by perception module with this parameter and adopt the larger one to calculate TTV.) |
 | `max_yield_timeout`              | double | [s] if the pedestrian does not move for X seconds after stopping before the crosswalk, the module judge that ego is able to pass first.            |
+| `ego_yield_query_stop_duration`  | double | [s] the amount of time which ego should be stopping to query whether it yields or not.                                                             |
 
 #### Parameters for input data
 

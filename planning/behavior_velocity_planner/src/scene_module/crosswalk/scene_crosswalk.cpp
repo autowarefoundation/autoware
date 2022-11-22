@@ -403,7 +403,9 @@ boost::optional<geometry_msgs::msg::Point> CrosswalkModule::findNearestStopPoint
         dist_ego2cp - base_link2front < planner_param_.stop_position_threshold ||
         p_stop_line.get().first - base_link2front < planner_param_.stop_position_threshold;
 
-      const auto is_yielding_now = planner_data_->isVehicleStopped(0.1) && reached_stop_point;
+      const auto is_yielding_now =
+        planner_data_->isVehicleStopped(planner_param_.ego_yield_query_stop_duration) &&
+        reached_stop_point;
       if (!is_yielding_now) {
         continue;
       }

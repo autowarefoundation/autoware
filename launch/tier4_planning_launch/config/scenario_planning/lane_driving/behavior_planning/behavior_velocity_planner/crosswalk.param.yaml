@@ -26,6 +26,7 @@
       stop_object_velocity_threshold: 0.28 # [m/s] velocity threshold for the module to judge whether the objects is stopped (0.28 m/s = 1.0 kmph)
       min_object_velocity: 1.39 # [m/s] minimum object velocity (compare the estimated velocity by perception module with this parameter and adopt the larger one to calculate TTV. 1.39 m/s = 5.0 kmph)
       max_yield_timeout: 3.0 # [s] if the pedestrian does not move for X seconds after stopping before the crosswalk, the module judge that ego is able to pass first.
+      ego_yield_query_stop_duration: 0.1 # [s] the amount of time which ego should be stopping to query whether it yields or not
 
       # param for input data
       tl_state_timeout: 3.0 # [s] timeout threshold for traffic light signal
