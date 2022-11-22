@@ -892,7 +892,8 @@ lanelet::Lanelets RouteHandler::getRightOppositeLanelets(
 }
 
 lanelet::ConstLanelets RouteHandler::getAllLeftSharedLinestringLanelets(
-  const lanelet::ConstLanelet & lane, const bool & include_opposite) const noexcept
+  const lanelet::ConstLanelet & lane, const bool & include_opposite,
+  const bool & invert_opposite) const noexcept
 {
   lanelet::ConstLanelets linestring_shared;
   auto lanelet_at_left = getLeftLanelet(lane);
@@ -907,10 +908,18 @@ lanelet::ConstLanelets RouteHandler::getAllLeftSharedLinestringLanelets(
   }
 
   if (!lanelet_at_left_opposite.empty() && include_opposite) {
-    linestring_shared.push_back(lanelet_at_left_opposite.front());
+    if (invert_opposite) {
+      linestring_shared.push_back(lanelet_at_left_opposite.front().invert());
+    } else {
+      linestring_shared.push_back(lanelet_at_left_opposite.front());
+    }
     auto lanelet_at_right = getRightLanelet(lanelet_at_left_opposite.front());
     while (lanelet_at_right) {
-      linestring_shared.push_back(lanelet_at_right.get());
+      if (invert_opposite) {
+        linestring_shared.push_back(lanelet_at_right.get().invert());
+      } else {
+        linestring_shared.push_back(lanelet_at_right.get());
+      }
       lanelet_at_right = getRightLanelet(lanelet_at_right.get());
     }
   }
@@ -918,7 +927,8 @@ lanelet::ConstLanelets RouteHandler::getAllLeftSharedLinestringLanelets(
 }
 
 lanelet::ConstLanelets RouteHandler::getAllRightSharedLinestringLanelets(
-  const lanelet::ConstLanelet & lane, const bool & include_opposite) const noexcept
+  const lanelet::ConstLanelet & lane, const bool & include_opposite,
+  const bool & invert_opposite) const noexcept
 {
   lanelet::ConstLanelets linestring_shared;
   auto lanelet_at_right = getRightLanelet(lane);
@@ -933,10 +943,18 @@ lanelet::ConstLanelets RouteHandler::getAllRightSharedLinestringLanelets(
   }
 
   if (!lanelet_at_right_opposite.empty() && include_opposite) {
-    linestring_shared.push_back(lanelet_at_right_opposite.front());
+    if (invert_opposite) {
+      linestring_shared.push_back(lanelet_at_right_opposite.front().invert());
+    } else {
+      linestring_shared.push_back(lanelet_at_right_opposite.front());
+    }
     auto lanelet_at_left = getLeftLanelet(lanelet_at_right_opposite.front());
     while (lanelet_at_left) {
-      linestring_shared.push_back(lanelet_at_left.get());
+      if (invert_opposite) {
+        linestring_shared.push_back(lanelet_at_left.get().invert());
+      } else {
+        linestring_shared.push_back(lanelet_at_left.get());
+      }
       lanelet_at_left = getLeftLanelet(lanelet_at_left.get());
     }
   }
@@ -944,20 +962,20 @@ lanelet::ConstLanelets RouteHandler::getAllRightSharedLinestringLanelets(
 }
 
 lanelet::ConstLanelets RouteHandler::getAllSharedLineStringLanelets(
-  const lanelet::ConstLanelet & current_lane, bool is_right, bool is_left,
-  bool is_opposite) const noexcept
+  const lanelet::ConstLanelet & current_lane, bool is_right, bool is_left, bool is_opposite,
+  const bool & invert_opposite) const noexcept
 {
   lanelet::ConstLanelets shared{current_lane};
 
   if (is_right) {
     const lanelet::ConstLanelets all_right_lanelets =
-      getAllRightSharedLinestringLanelets(current_lane, is_opposite);
+      getAllRightSharedLinestringLanelets(current_lane, is_opposite, invert_opposite);
     shared.insert(shared.end(), all_right_lanelets.begin(), all_right_lanelets.end());
   }
 
   if (is_left) {
     const lanelet::ConstLanelets all_left_lanelets =
-      getAllLeftSharedLinestringLanelets(current_lane, is_opposite);
+      getAllLeftSharedLinestringLanelets(current_lane, is_opposite, invert_opposite);
     shared.insert(shared.end(), all_left_lanelets.begin(), all_left_lanelets.end());
   }
 
