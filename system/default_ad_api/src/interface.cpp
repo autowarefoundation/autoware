@@ -20,8 +20,8 @@ namespace default_ad_api
 InterfaceNode::InterfaceNode(const rclcpp::NodeOptions & options) : Node("interface", options)
 {
   const auto on_interface_version = [](auto, auto res) {
-    res->major = 0;
-    res->minor = 1;
+    res->major = 1;
+    res->minor = 0;
     res->patch = 0;
   };
 
