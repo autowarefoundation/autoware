@@ -4,7 +4,9 @@
   <name>tier4_localization_rviz_plugin</name>
   <version>0.1.0</version>
   <description>The tier4_localization_rviz_plugin package</description>
-  <maintainer email="isamu.takagi@tier4.jp">Isamu Takagi</maintainer>
+  <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
+  <maintainer email="makoto.yabuta@tier4.jp">yabuta</maintainer>
+  <maintainer email="kahhooi.tan@tier4.jp">Kah Hooi Tan</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
