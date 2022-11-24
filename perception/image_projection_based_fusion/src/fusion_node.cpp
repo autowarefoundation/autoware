@@ -23,6 +23,8 @@
 
 #include <boost/optional.hpp>
 
+#include <cmath>
+
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -41,6 +43,7 @@ FusionNode<Msg, ObjType>::FusionNode(
   const std::string & node_name, const rclcpp::NodeOptions & options)
 : Node(node_name, options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
+  // set rois_number
   rois_number_ = static_cast<std::size_t>(declare_parameter("rois_number", 1));
   if (rois_number_ < 1) {
     RCLCPP_WARN(
@@ -53,9 +56,16 @@ FusionNode<Msg, ObjType>::FusionNode(
     rois_number_ = 8;
   }
 
-  // subscribers
-  sub_.subscribe(this, "input", rclcpp::QoS(1).get_rmw_qos_profile());
+  // Set parameters
+  match_threshold_ms_ = declare_parameter<double>("match_threshold_ms");
+  timeout_ms_ = declare_parameter<double>("timeout_ms");
 
+  input_offset_ms_ = declare_parameter("input_offset_ms", std::vector<double>{});
+  if (!input_offset_ms_.empty() && rois_number_ != input_offset_ms_.size()) {
+    throw std::runtime_error("The number of offsets does not match the number of topics.");
+  }
+
+  // sub camera info
   camera_info_subs_.resize(rois_number_);
   for (std::size_t roi_i = 0; roi_i < rois_number_; ++roi_i) {
     std::function<void(const sensor_msgs::msg::CameraInfo::ConstSharedPtr msg)> fnc =
@@ -64,74 +74,46 @@ FusionNode<Msg, ObjType>::FusionNode(
       "input/camera_info" + std::to_string(roi_i), rclcpp::QoS{1}.best_effort(), fnc);
   }
 
+  // sub rois
   rois_subs_.resize(rois_number_);
+  roi_stdmap_.resize(rois_number_);
+  is_fused_.resize(rois_number_, false);
   for (std::size_t roi_i = 0; roi_i < rois_number_; ++roi_i) {
-    rois_subs_.at(roi_i) =
-      std::make_shared<message_filters::Subscriber<DetectedObjectsWithFeature>>(
-        this, "input/rois" + std::to_string(roi_i), rclcpp::QoS{1}.get_rmw_qos_profile());
+    std::function<void(const DetectedObjectsWithFeature::ConstSharedPtr msg)> roi_callback =
+      std::bind(&FusionNode::roiCallback, this, std::placeholders::_1, roi_i);
+    rois_subs_.at(roi_i) = this->create_subscription<DetectedObjectsWithFeature>(
+      "input/rois" + std::to_string(roi_i), rclcpp::QoS{1}.best_effort(), roi_callback);
   }
 
-  // add dummy callback to enable passthrough filter
-  rois_subs_.at(0)->registerCallback(
-    std::bind(&FusionNode::dummyCallback, this, std::placeholders::_1));
-  switch (rois_number_) {
-    case 1:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), passthrough_, passthrough_, passthrough_,
-        passthrough_, passthrough_, passthrough_, passthrough_);
-      break;
-    case 2:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), passthrough_, passthrough_,
-        passthrough_, passthrough_, passthrough_, passthrough_);
-      break;
-    case 3:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), *rois_subs_.at(2), passthrough_,
-        passthrough_, passthrough_, passthrough_, passthrough_);
-      break;
-    case 4:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), *rois_subs_.at(2),
-        *rois_subs_.at(3), passthrough_, passthrough_, passthrough_, passthrough_);
-      break;
-    case 5:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), *rois_subs_.at(2),
-        *rois_subs_.at(3), *rois_subs_.at(4), passthrough_, passthrough_, passthrough_);
-      break;
-    case 6:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), *rois_subs_.at(2),
-        *rois_subs_.at(3), *rois_subs_.at(4), *rois_subs_.at(5), passthrough_, passthrough_);
-      break;
-    case 7:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), *rois_subs_.at(2),
-        *rois_subs_.at(3), *rois_subs_.at(4), *rois_subs_.at(5), *rois_subs_.at(6), passthrough_);
-      break;
-    case 8:
-      sync_ptr_ = std::make_shared<Sync>(
-        SyncPolicy(10), sub_, *rois_subs_.at(0), *rois_subs_.at(1), *rois_subs_.at(2),
-        *rois_subs_.at(3), *rois_subs_.at(4), *rois_subs_.at(5), *rois_subs_.at(6),
-        *rois_subs_.at(7));
-    default:
-      return;
-  }
-
-  sync_ptr_->registerCallback(std::bind(
-    &FusionNode::fusionCallback, this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6,
-    std::placeholders::_7, std::placeholders::_8, std::placeholders::_9));
+  // subscribers
+  std::function<void(const typename Msg::ConstSharedPtr msg)> sub_callback =
+    std::bind(&FusionNode::subCallback, this, std::placeholders::_1);
+  sub_ = this->create_subscription<Msg>("input", rclcpp::QoS(1).best_effort(), sub_callback);
 
   // publisher
   pub_ptr_ = this->create_publisher<Msg>("output", rclcpp::QoS{1});
+
+  // Set timer
+  const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double, std::milli>(timeout_ms_));
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&FusionNode::timer_callback, this));
 
   // debugger
   if (declare_parameter("debug_mode", false)) {
     std::size_t image_buffer_size =
       static_cast<std::size_t>(declare_parameter("image_buffer_size", 15));
     debugger_ = std::make_shared<Debugger>(this, rois_number_, image_buffer_size);
+  }
+
+  // initialize debug tool
+  {
+    using tier4_autoware_utils::DebugPublisher;
+    using tier4_autoware_utils::StopWatch;
+    stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
+    debug_publisher_ = std::make_unique<DebugPublisher>(this, "fusion_node");
+    stop_watch_ptr_->tic("cyclic_time");
+    stop_watch_ptr_->tic("processing_time");
   }
 
   filter_scope_minx_ = declare_parameter("filter_scope_minx", -100);
@@ -157,73 +139,232 @@ void FusionNode<Msg, Obj>::preprocess(Msg & ouput_msg __attribute__((unused)))
 }
 
 template <class Msg, class Obj>
-void FusionNode<Msg, Obj>::fusionCallback(
-  typename Msg::ConstSharedPtr input_msg, DetectedObjectsWithFeature::ConstSharedPtr input_roi0_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi1_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi2_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi3_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi4_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi5_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi6_msg,
-  DetectedObjectsWithFeature::ConstSharedPtr input_roi7_msg)
+void FusionNode<Msg, Obj>::subCallback(const typename Msg::ConstSharedPtr input_msg)
 {
-  Msg output_msg = *input_msg;
+  std::lock_guard<std::mutex> lock(mutex_);
+  auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double>(timeout_ms_));
+  try {
+    setPeriod(period.count());
+  } catch (rclcpp::exceptions::RCLError & ex) {
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "%s", ex.what());
+  }
+  timer_->reset();
 
-  preprocess(output_msg);
+  stop_watch_ptr_->toc("processing_time", true);
 
-  for (std::size_t image_id = 0; image_id < rois_subs_.size(); ++image_id) {
-    DetectedObjectsWithFeature::ConstSharedPtr input_roi_msg;
-    switch (image_id) {
-      case 0:
-        input_roi_msg = input_roi0_msg;
-        break;
-      case 1:
-        input_roi_msg = input_roi1_msg;
-        break;
-      case 2:
-        input_roi_msg = input_roi2_msg;
-        break;
-      case 3:
-        input_roi_msg = input_roi3_msg;
-        break;
-      case 4:
-        input_roi_msg = input_roi4_msg;
-        break;
-      case 5:
-        input_roi_msg = input_roi5_msg;
-        break;
-      case 6:
-        input_roi_msg = input_roi6_msg;
-        break;
-      case 7:
-        input_roi_msg = input_roi7_msg;
-        break;
-      default:
-        RCLCPP_ERROR(this->get_logger(), "invalid image id. id is %zu", image_id);
-        return;
-    }
+  typename Msg::SharedPtr output_msg = std::make_shared<Msg>(*input_msg);
 
-    if (camera_info_map_.find(image_id) == camera_info_map_.end()) {
-      RCLCPP_WARN(this->get_logger(), "no camera info. id is %zu", image_id);
+  preprocess(*output_msg);
+
+  int64_t timestamp_nsec =
+    (*output_msg).header.stamp.sec * (int64_t)1e9 + (*output_msg).header.stamp.nanosec;
+
+  // if matching rois exist, fuseonsingle
+  for (std::size_t roi_i = 0; roi_i < rois_number_; ++roi_i) {
+    if (camera_info_map_.find(roi_i) == camera_info_map_.end()) {
+      RCLCPP_WARN(this->get_logger(), "no camera info. id is %zu", roi_i);
       continue;
     }
-    if (debugger_) {
-      debugger_->clear();
-    }
 
-    fuseOnSingleImage(
-      *input_msg, image_id, *input_roi_msg, camera_info_map_.at(image_id), output_msg);
+    if ((roi_stdmap_.at(roi_i)).size() > 0) {
+      int64_t min_interval = 1e9;
+      int64_t matched_stamp = -1;
+      std::list<int64_t> outdate_stamps;
+
+      for (const auto & [k, v] : roi_stdmap_.at(roi_i)) {
+        int64_t newstamp = timestamp_nsec + input_offset_ms_.at(roi_i) * (int64_t)1e6;
+        int64_t interval = abs(int64_t(k) - newstamp);
+
+        if (interval <= min_interval && interval <= match_threshold_ms_ * (int64_t)1e6) {
+          min_interval = interval;
+          matched_stamp = k;
+        } else if (int64_t(k) < newstamp && interval > match_threshold_ms_ * (int64_t)1e6) {
+          outdate_stamps.push_back(int64_t(k));
+        }
+      }
+
+      // remove outdated stamps
+      for (auto stamp : outdate_stamps) {
+        (roi_stdmap_.at(roi_i)).erase(stamp);
+      }
+
+      // fuseonSingle
+      if (matched_stamp != -1) {
+        if (debugger_) {
+          debugger_->clear();
+        }
+
+        fuseOnSingleImage(
+          *input_msg, roi_i, *((roi_stdmap_.at(roi_i))[matched_stamp]), camera_info_map_.at(roi_i),
+          *output_msg);
+        (roi_stdmap_.at(roi_i)).erase(matched_stamp);
+        is_fused_.at(roi_i) = true;
+
+        // add timestamp interval for debug
+        if (debug_publisher_) {
+          double timestamp_interval_ms = (matched_stamp - timestamp_nsec) / 1e6;
+          debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+            "debug/roi" + std::to_string(roi_i) + "/timestamp_interval_ms", timestamp_interval_ms);
+          debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+            "debug/roi" + std::to_string(roi_i) + "/timestamp_interval_offset_ms",
+            timestamp_interval_ms - input_offset_ms_.at(roi_i));
+        }
+      }
+    }
   }
 
-  postprocess(output_msg);
+  // if all camera fused, postprocess; else, publish the old Msg(if exists) and cache the current
+  // Msg
+  if (std::count(is_fused_.begin(), is_fused_.end(), true) == static_cast<int>(rois_number_)) {
+    timer_->cancel();
+    postprocess(*output_msg);
+    publish(*output_msg);
+    std::fill(is_fused_.begin(), is_fused_.end(), false);
 
-  publish(output_msg);
+    // add processing time for debug
+    if (debug_publisher_) {
+      const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+      const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
+      debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+        "debug/cyclic_time_ms", cyclic_time_ms);
+      debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+        "debug/processing_time_ms", processing_time_ms);
+    }
+  } else {
+    if (sub_stdpair_.second != nullptr) {
+      timer_->cancel();
+      postprocess(*(sub_stdpair_.second));
+      publish(*(sub_stdpair_.second));
+      std::fill(is_fused_.begin(), is_fused_.end(), false);
+
+      // add processing time for debug
+      if (debug_publisher_) {
+        const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+        const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
+        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+          "debug/cyclic_time_ms", cyclic_time_ms);
+        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+          "debug/processing_time_ms", processing_time_ms);
+      }
+    }
+
+    sub_stdpair_.first = int64_t(timestamp_nsec);
+    sub_stdpair_.second = output_msg;
+  }
+}
+
+template <class Msg, class Obj>
+void FusionNode<Msg, Obj>::roiCallback(
+  const DetectedObjectsWithFeature::ConstSharedPtr input_roi_msg, const std::size_t roi_i)
+{
+  int64_t timestamp_nsec =
+    (*input_roi_msg).header.stamp.sec * (int64_t)1e9 + (*input_roi_msg).header.stamp.nanosec;
+
+  // if cached Msg exist, try to match
+  if (sub_stdpair_.second != nullptr) {
+    int64_t newstamp = sub_stdpair_.first + input_offset_ms_.at(roi_i) * (int64_t)1e6;
+    int64_t interval = abs(timestamp_nsec - newstamp);
+
+    if (interval < match_threshold_ms_ * (int64_t)1e6 && is_fused_.at(roi_i) == false) {
+      if (camera_info_map_.find(roi_i) == camera_info_map_.end()) {
+        RCLCPP_WARN(this->get_logger(), "no camera info. id is %zu", roi_i);
+        (roi_stdmap_.at(roi_i))[timestamp_nsec] = input_roi_msg;
+        return;
+      }
+      if (debugger_) {
+        debugger_->clear();
+      }
+
+      fuseOnSingleImage(
+        *(sub_stdpair_.second), roi_i, *input_roi_msg, camera_info_map_.at(roi_i),
+        *(sub_stdpair_.second));
+      is_fused_.at(roi_i) = true;
+
+      if (debug_publisher_) {
+        double timestamp_interval_ms = (timestamp_nsec - sub_stdpair_.first) / 1e6;
+        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+          "debug/roi" + std::to_string(roi_i) + "/timestamp_interval_ms", timestamp_interval_ms);
+        debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+          "debug/roi" + std::to_string(roi_i) + "/timestamp_interval_offset_ms",
+          timestamp_interval_ms - input_offset_ms_.at(roi_i));
+      }
+
+      if (std::count(is_fused_.begin(), is_fused_.end(), true) == static_cast<int>(rois_number_)) {
+        timer_->cancel();
+        postprocess(*(sub_stdpair_.second));
+        publish(*(sub_stdpair_.second));
+        std::fill(is_fused_.begin(), is_fused_.end(), false);
+        sub_stdpair_.second = nullptr;
+
+        // add processing time for debug
+        if (debug_publisher_) {
+          const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+          debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+            "debug/cyclic_time_ms", cyclic_time_ms);
+        }
+      }
+      return;
+    }
+  }
+  // store roi msg if not matched
+  (roi_stdmap_.at(roi_i))[timestamp_nsec] = input_roi_msg;
 }
 
 template <class Msg, class Obj>
 void FusionNode<Msg, Obj>::postprocess(Msg & output_msg __attribute__((unused)))
 {
   // do nothing by default
+}
+
+template <class Msg, class Obj>
+void FusionNode<Msg, Obj>::timer_callback()
+{
+  using std::chrono_literals::operator""ms;
+  timer_->cancel();
+  if (mutex_.try_lock()) {
+    // timeout, postprocess cached msg
+    if (sub_stdpair_.second != nullptr) {
+      postprocess(*(sub_stdpair_.second));
+      publish(*(sub_stdpair_.second));
+    }
+    std::fill(is_fused_.begin(), is_fused_.end(), false);
+    sub_stdpair_.second = nullptr;
+
+    // add processing time for debug
+    if (debug_publisher_) {
+      const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+      debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+        "debug/cyclic_time_ms", cyclic_time_ms);
+    }
+
+    mutex_.unlock();
+  } else {
+    try {
+      std::chrono::nanoseconds period = 10ms;
+      setPeriod(period.count());
+    } catch (rclcpp::exceptions::RCLError & ex) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "%s", ex.what());
+    }
+    timer_->reset();
+  }
+}
+
+template <class Msg, class Obj>
+void FusionNode<Msg, Obj>::setPeriod(const int64_t new_period)
+{
+  if (!timer_) {
+    return;
+  }
+  int64_t old_period = 0;
+  rcl_ret_t ret = rcl_timer_get_period(timer_->get_timer_handle().get(), &old_period);
+  if (ret != RCL_RET_OK) {
+    rclcpp::exceptions::throw_from_rcl_error(ret, "Couldn't get old period");
+  }
+  ret = rcl_timer_exchange_period(timer_->get_timer_handle().get(), new_period, &old_period);
+  if (ret != RCL_RET_OK) {
+    rclcpp::exceptions::throw_from_rcl_error(ret, "Couldn't exchange_period");
+  }
 }
 
 template <class Msg, class Obj>

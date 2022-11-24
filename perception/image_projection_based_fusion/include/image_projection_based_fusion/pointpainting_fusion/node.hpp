@@ -38,7 +38,7 @@ public:
   explicit PointPaintingFusionNode(const rclcpp::NodeOptions & options);
 
 protected:
-  void preprocess(sensor_msgs::msg::PointCloud2 & painted_pointcloud_msg) override;
+  void preprocess(sensor_msgs::msg::PointCloud2 & pointcloud_msg) override;
 
   void fuseOnSingleImage(
     const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const std::size_t image_id,
@@ -49,6 +49,8 @@ protected:
   void postprocess(sensor_msgs::msg::PointCloud2 & painted_pointcloud_msg) override;
 
   rclcpp::Publisher<DetectedObjects>::SharedPtr obj_pub_ptr_;
+
+  std::vector<double> tan_h_;  // horizontal field of view
 
   float score_threshold_{0.0};
   std::vector<std::string> class_names_;
@@ -61,7 +63,5 @@ protected:
 
   bool out_of_scope(const DetectedObjects & obj);
 };
-
 }  // namespace image_projection_based_fusion
-
 #endif  // IMAGE_PROJECTION_BASED_FUSION__POINTPAINTING_FUSION__NODE_HPP_

@@ -18,6 +18,7 @@
   <arg name="input/camera_info7" default="/camera_info7"/>
   <arg name="input/clusters" default="clusters"/>
   <arg name="output/clusters" default="labeled_clusters"/>
+  <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
 
   <!-- for eval variable-->
   <arg name="input_rois_number" default="$(var input/rois_number)"/>
@@ -72,6 +73,7 @@
       <param name="use_iou_y" value="false"/>
       <param name="iou_threshold" value="0.35"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
+      <param from="$(var sync_param_path)"/>
       <remap from="input" to="$(var input/clusters)"/>
       <remap from="output" to="$(var output/clusters)"/>
 

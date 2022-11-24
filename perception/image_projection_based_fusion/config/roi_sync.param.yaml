@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    input_offset_ms: [61.67, 111.67, 45.0, 28.33, 78.33, 95.0]
+    timeout_ms: 70.0
+    match_threshold_ms: 50.0
