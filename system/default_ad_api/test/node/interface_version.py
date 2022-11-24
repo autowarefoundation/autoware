@@ -28,9 +28,9 @@ future = client.call_async(request)
 rclpy.spin_until_future_complete(node, future)
 response = future.result()
 
-if response.major != 0:
+if response.major != 1:
     exit(1)
-if response.minor != 1:
+if response.minor != 0:
     exit(1)
 if response.patch != 0:
     exit(1)
