@@ -124,8 +124,8 @@ void OperationModeTransitionManager::changeOperationMode(std::optional<Operation
     throw component_interface_utils::NoEffectWarning("Autoware already controls the vehicle.");
   }
 
-  // TODO(Takagi, Isamu): overwrite transition between operation modes
-  if (transition_) {
+  // TODO(Takagi, Isamu): Consider mode change request during transition.
+  if (transition_ && request_mode != OperationMode::STOP) {
     throw component_interface_utils::ServiceException(
       ServiceResponse::ERROR_IN_TRANSITION, "The mode transition is in progress.");
   }
@@ -150,12 +150,13 @@ void OperationModeTransitionManager::cancelTransition()
 {
   const auto & previous = transition_->previous;
   if (previous) {
+    compatibility_transition_ = now();
     current_mode_ = previous.value();
   } else {
+    compatibility_transition_ = std::nullopt;
     changeControlMode(ControlModeCommand::Request::MANUAL);
   }
   transition_.reset();
-  compatibility_transition_ = std::nullopt;
 }
 
 void OperationModeTransitionManager::processTransition()
@@ -211,7 +212,7 @@ void OperationModeTransitionManager::onTimer()
 
   // Check sync timeout to the compatible interface.
   if (compatibility_transition_) {
-    if (transition_timeout_ < (now() - compatibility_transition_.value()).seconds()) {
+    if (compatibility_timeout_ < (now() - compatibility_transition_.value()).seconds()) {
       compatibility_transition_ = std::nullopt;
     }
   }
@@ -224,8 +225,10 @@ void OperationModeTransitionManager::onTimer()
   }
 
   // Reset sync timeout when it is completed.
-  if (current_mode_ == compatibility_.get_mode()) {
-    compatibility_transition_ = std::nullopt;
+  if (compatibility_transition_) {
+    if (current_mode_ == compatibility_.get_mode()) {
+      compatibility_transition_ = std::nullopt;
+    }
   }
 
   if (transition_) {

@@ -71,6 +71,7 @@ private:
 
   std::optional<OperationModeStateAPI::Message> prev_state_;
 
+  static constexpr double compatibility_timeout_ = 1.0;
   Compatibility compatibility_;
   std::optional<rclcpp::Time> compatibility_transition_;
 };
