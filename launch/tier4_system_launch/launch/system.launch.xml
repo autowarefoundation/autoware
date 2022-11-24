@@ -24,24 +24,11 @@
       </include>
     </group>
 
-    <!-- State Monitor -->
-    <group>
-      <let name="config_file" value="$(var tier4_system_launch_param_path)/ad_service_state_monitor/ad_service_state_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-      <let
-        name="config_file"
-        value="$(var tier4_system_launch_param_path)/ad_service_state_monitor/ad_service_state_monitor.planning_simulation.param.yaml"
-        if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"
-      />
-      <include file="$(find-pkg-share ad_service_state_monitor)/launch/ad_service_state_monitor.launch.xml">
-        <arg name="config_file" value="$(var config_file)"/>
-      </include>
-    </group>
-
     <!-- Component State Monitor -->
     <group>
       <include file="$(find-pkg-share component_state_monitor)/launch/component_state_monitor.launch.py">
         <arg name="mode" value="$(var run_mode)"/>
-        <arg name="file" value="$(find-pkg-share component_state_monitor)/config/topics.yaml"/>
+        <arg name="file" value="$(var tier4_system_launch_param_path)/component_state_monitor/topics.yaml"/>
       </include>
     </group>
 

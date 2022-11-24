@@ -12,9 +12,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/operation_mode.cpp
   src/routing.cpp
   src/utils/route_conversion.cpp
+  src/compatibility/autoware_state.cpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME}
+  "default_ad_api::AutowareStateNode"
   "default_ad_api::FailSafeNode"
   "default_ad_api::InterfaceNode"
   "default_ad_api::LocalizationNode"

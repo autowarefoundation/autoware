@@ -29,15 +29,39 @@ RoutingNode::RoutingNode(const rclcpp::NodeOptions & options) : Node("routing", 
   adaptor.init_pub(pub_route_);
   adaptor.init_sub(sub_state_, this, &RoutingNode::on_state);
   adaptor.init_sub(sub_route_, this, &RoutingNode::on_route);
+  adaptor.init_cli(cli_clear_route_, group_cli_);
+  adaptor.init_srv(srv_clear_route_, this, &RoutingNode::on_clear_route);
   adaptor.init_cli(cli_set_route_, group_cli_);
   adaptor.init_srv(srv_set_route_, this, &RoutingNode::on_set_route);
   adaptor.relay_service(cli_set_route_points_, srv_set_route_points_, group_cli_);
-  adaptor.relay_service(cli_clear_route_, srv_clear_route_, group_cli_);
+
+  adaptor.init_cli(cli_operation_mode_, group_cli_);
+  adaptor.init_sub(sub_operation_mode_, this, &RoutingNode::on_operation_mode);
+}
+
+void RoutingNode::change_stop_mode()
+{
+  using OperationModeRequest = system_interface::ChangeOperationMode::Service::Request;
+  if (is_auto_mode) {
+    const auto req = std::make_shared<OperationModeRequest>();
+    req->mode = OperationModeRequest::STOP;
+    cli_operation_mode_->async_send_request(req);
+  }
+}
+
+void RoutingNode::on_operation_mode(const OperationModeState::Message::ConstSharedPtr msg)
+{
+  is_auto_mode = msg->mode == OperationModeState::Message::AUTONOMOUS;
 }
 
 void RoutingNode::on_state(const State::Message::ConstSharedPtr msg)
 {
   pub_state_->publish(*msg);
+
+  // Change operation mode to stop when the vehicle arrives.
+  if (msg->state == State::Message::ARRIVED) {
+    change_stop_mode();
+  }
 
   // TODO(Takagi, Isamu): Remove when the mission planner supports an empty route.
   if (msg->state == State::Message::UNSET) {
@@ -48,6 +72,14 @@ void RoutingNode::on_state(const State::Message::ConstSharedPtr msg)
 void RoutingNode::on_route(const Route::Message::ConstSharedPtr msg)
 {
   pub_route_->publish(conversion::convert_route(*msg));
+}
+
+void RoutingNode::on_clear_route(
+  const autoware_ad_api::routing::ClearRoute::Service::Request::SharedPtr req,
+  const autoware_ad_api::routing::ClearRoute::Service::Response::SharedPtr res)
+{
+  change_stop_mode();
+  *res = *cli_clear_route_->call(req);
 }
 
 void RoutingNode::on_set_route(
