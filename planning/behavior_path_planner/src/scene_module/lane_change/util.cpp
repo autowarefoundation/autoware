@@ -286,6 +286,7 @@ bool selectSafePath(
   const LaneChangeParameters & ros_parameters, LaneChangePath * selected_path,
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data)
 {
+  debug_data.clear();
   for (const auto & path : paths) {
     const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       path.path.points, current_pose, common_parameters.ego_nearest_dist_threshold,
@@ -597,6 +598,39 @@ PathWithLaneId getLaneChangePathLaneChangingSegment(
   }
 
   return lane_changing_segment;
+}
+
+bool isEgoWithinOriginalLane(
+  const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
+  const BehaviorPathPlannerParameters & common_param)
+{
+  const auto lane_length = lanelet::utils::getLaneletLength2d(current_lanes);
+  const auto lane_poly = lanelet::utils::getPolygonFromArcLength(current_lanes, 0, lane_length);
+  const auto vehicle_poly =
+    util::getVehiclePolygon(current_pose, common_param.vehicle_width, common_param.base_link2front);
+  return boost::geometry::within(
+    lanelet::utils::to2D(vehicle_poly).basicPolygon(),
+    lanelet::utils::to2D(lane_poly).basicPolygon());
+}
+
+bool isEgoDistanceNearToCenterline(
+  const lanelet::ConstLanelet & closest_lanelet, const Pose & current_pose,
+  const LaneChangeParameters & lane_change_param)
+{
+  const auto centerline2d = lanelet::utils::to2D(closest_lanelet.centerline()).basicLineString();
+  lanelet::BasicPoint2d vehicle_pose2d(current_pose.position.x, current_pose.position.y);
+  const double distance = lanelet::geometry::distance2d(centerline2d, vehicle_pose2d);
+  return distance < lane_change_param.abort_lane_change_distance_thresh;
+}
+
+bool isEgoHeadingAngleLessThanThreshold(
+  const lanelet::ConstLanelet & closest_lanelet, const Pose & current_pose,
+  const LaneChangeParameters & lane_change_param)
+{
+  const double lane_angle = lanelet::utils::getLaneletAngle(closest_lanelet, current_pose.position);
+  const double vehicle_yaw = tf2::getYaw(current_pose.orientation);
+  const double yaw_diff = tier4_autoware_utils::normalizeRadian(lane_angle - vehicle_yaw);
+  return std::abs(yaw_diff) < lane_change_param.abort_lane_change_angle_thresh;
 }
 
 TurnSignalInfo calc_turn_signal_info(
