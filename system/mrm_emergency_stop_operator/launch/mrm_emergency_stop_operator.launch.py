@@ -12,30 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from ament_index_python.packages import get_package_share_directory
 import launch
+from launch.actions import DeclareLaunchArgument
+from launch.actions import OpaqueFunction
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
+from launch_ros.substitutions import FindPackageShare
 import yaml
 
 
-def generate_launch_description():
-    param_path = os.path.join(
-        get_package_share_directory("mrm_emergency_stop_operator"),
-        "config/mrm_emergency_stop_operator.config.yaml",
-    )
-
-    with open(param_path, "r") as f:
-        param = yaml.safe_load(f)["/**"]["ros__parameters"]
+def launch_setup(context, *args, **kwargs):
+    config_file_path = LaunchConfiguration("config_file").perform(context)
+    with open(config_file_path, "r") as f:
+        params = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     component = ComposableNode(
         package="mrm_emergency_stop_operator",
         plugin="mrm_emergency_stop_operator::MrmEmergencyStopOperator",
         name="mrm_emergency_stop_operator",
         parameters=[
-            param,
+            params,
         ],
         remappings=[
             ("~/input/mrm/emergency_stop/operate", "/system/mrm/emergency_stop/operate"),
@@ -56,8 +53,19 @@ def generate_launch_description():
         output="screen",
     )
 
-    return launch.LaunchDescription(
-        [
-            container,
-        ]
-    )
+    return [container]
+
+
+def generate_launch_description():
+    launch_arguments = [
+        DeclareLaunchArgument(
+            "config_file",
+            default_value=[
+                FindPackageShare("mrm_emergency_stop_operator"),
+                "/config/mrm_emergency_stop_operator.param.yaml",
+            ],
+            description="path to the parameter file of mrm_emergency_stop_operator",
+        )
+    ]
+
+    return launch.LaunchDescription(launch_arguments + [OpaqueFunction(function=launch_setup)])

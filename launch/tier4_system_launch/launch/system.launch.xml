@@ -56,11 +56,17 @@
     </group>
 
     <!-- MRM Operator -->
-    <include file="$(find-pkg-share mrm_comfortable_stop_operator)/launch/mrm_comfortable_stop_operator.launch.py">
-      <arg name="config_file" value="$(find-pkg-share mrm_comfortable_stop_operator)/config/mrm_comfortable_stop_operator.param.yaml"/>
-    </include>
-    <include file="$(find-pkg-share mrm_emergency_stop_operator)/launch/mrm_emergency_stop_operator.launch.py">
-      <arg name="config_file" value="$(find-pkg-share mrm_emergency_stop_operator)/config/mrm_emergency_stop_operator.param.yaml"/>
-    </include>
+    <group>
+      <let name="config_file" value="$(var tier4_system_launch_param_path)/mrm_comfortable_stop_operator/mrm_comfortable_stop_operator.param.yaml"/>
+      <include file="$(find-pkg-share mrm_comfortable_stop_operator)/launch/mrm_comfortable_stop_operator.launch.py">
+        <arg name="config_file" value="$(var config_file)"/>
+      </include>
+    </group>
+    <group>
+      <let name="config_file" value="$(var tier4_system_launch_param_path)/mrm_emergency_stop_operator/mrm_emergency_stop_operator.param.yaml"/>
+      <include file="$(find-pkg-share mrm_emergency_stop_operator)/launch/mrm_emergency_stop_operator.launch.py">
+        <arg name="config_file" value="$(var config_file)"/>
+      </include>
+    </group>
   </group>
 </launch>
