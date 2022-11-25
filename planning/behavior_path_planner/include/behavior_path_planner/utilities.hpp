@@ -456,7 +456,8 @@ bool isLongitudinalDistanceEnough(
 bool hasEnoughDistance(
   const Pose & expected_ego_pose, const Twist & ego_current_twist,
   const Pose & expected_object_pose, const Twist & object_current_twist,
-  const BehaviorPathPlannerParameters & param, CollisionCheckDebug & debug);
+  const BehaviorPathPlannerParameters & param, const double front_decel, const double rear_decel,
+  CollisionCheckDebug & debug);
 
 bool isLateralDistanceEnough(
   const double & relative_lateral_distance, const double & lateral_distance_threshold);
@@ -464,17 +465,17 @@ bool isLateralDistanceEnough(
 bool isSafeInLaneletCollisionCheck(
   const Pose & ego_current_pose, const Twist & ego_current_twist,
   const PredictedPath & ego_predicted_path, const VehicleInfo & ego_info,
-  const double & check_start_time, const double & check_end_time,
-  const double & check_time_resolution, const PredictedObject & target_object,
-  const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters,
-  CollisionCheckDebug & debug);
+  const double check_start_time, const double check_end_time, const double check_time_resolution,
+  const PredictedObject & target_object, const PredictedPath & target_object_path,
+  const BehaviorPathPlannerParameters & common_parameters, const double front_decel,
+  const double rear_decel, CollisionCheckDebug & debug);
 
 bool isSafeInFreeSpaceCollisionCheck(
   const Pose & ego_current_pose, const Twist & ego_current_twist,
   const PredictedPath & ego_predicted_path, const VehicleInfo & ego_info,
-  const double & check_start_time, const double & check_end_time,
-  const double & check_time_resolution, const PredictedObject & target_object,
-  const BehaviorPathPlannerParameters & common_parameters, CollisionCheckDebug & debug);
+  const double check_start_time, const double check_end_time, const double check_time_resolution,
+  const PredictedObject & target_object, const BehaviorPathPlannerParameters & common_parameters,
+  const double front_decel, const double rear_decel, CollisionCheckDebug & debug);
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_

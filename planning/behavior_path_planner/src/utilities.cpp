@@ -2512,7 +2512,8 @@ bool isLongitudinalDistanceEnough(
 bool hasEnoughDistance(
   const Pose & expected_ego_pose, const Twist & ego_current_twist,
   const Pose & expected_object_pose, const Twist & object_current_twist,
-  const BehaviorPathPlannerParameters & param, CollisionCheckDebug & debug)
+  const BehaviorPathPlannerParameters & param, const double front_decel, const double rear_decel,
+  CollisionCheckDebug & debug)
 {
   const auto front_vehicle_pose =
     projectCurrentPoseToTarget(expected_ego_pose, expected_object_pose);
@@ -2533,16 +2534,12 @@ bool hasEnoughDistance(
     (is_obj_in_front) ? ego_current_twist.linear : object_current_twist.linear;
   debug.object_twist.linear = (is_obj_in_front) ? front_vehicle_velocity : rear_vehicle_velocity;
 
-  const auto front_vehicle_accel = param.expected_front_deceleration;
-  const auto rear_vehicle_accel = param.expected_rear_deceleration;
-
   const auto front_vehicle_stop_threshold = frontVehicleStopDistance(
-    util::l2Norm(front_vehicle_velocity), front_vehicle_accel,
-    std::fabs(front_vehicle_pose.position.x));
+    util::l2Norm(front_vehicle_velocity), front_decel, std::fabs(front_vehicle_pose.position.x));
 
   const auto rear_vehicle_stop_threshold = std::max(
     rearVehicleStopDistance(
-      util::l2Norm(rear_vehicle_velocity), rear_vehicle_accel, param.rear_vehicle_reaction_time,
+      util::l2Norm(rear_vehicle_velocity), rear_decel, param.rear_vehicle_reaction_time,
       param.rear_vehicle_safety_time_margin),
     param.longitudinal_distance_min_threshold);
 
@@ -2558,10 +2555,10 @@ bool isLateralDistanceEnough(
 bool isSafeInLaneletCollisionCheck(
   const Pose & ego_current_pose, const Twist & ego_current_twist,
   const PredictedPath & ego_predicted_path, const VehicleInfo & ego_info,
-  const double & check_start_time, const double & check_end_time,
-  const double & check_time_resolution, const PredictedObject & target_object,
-  const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters,
-  CollisionCheckDebug & debug)
+  const double check_start_time, const double check_end_time, const double check_time_resolution,
+  const PredictedObject & target_object, const PredictedPath & target_object_path,
+  const BehaviorPathPlannerParameters & common_parameters, const double front_decel,
+  const double rear_decel, CollisionCheckDebug & debug)
 {
   const auto lerp_path_reserve = (check_end_time - check_start_time) / check_time_resolution;
   if (lerp_path_reserve > 1e-3) {
@@ -2597,7 +2594,7 @@ bool isSafeInLaneletCollisionCheck(
     const auto & object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
     if (!util::hasEnoughDistance(
           expected_ego_pose, ego_current_twist, expected_obj_pose, object_twist, common_parameters,
-          debug)) {
+          front_decel, rear_decel, debug)) {
       debug.failed_reason = "not_enough_longitudinal";
       return false;
     }
@@ -2608,9 +2605,9 @@ bool isSafeInLaneletCollisionCheck(
 bool isSafeInFreeSpaceCollisionCheck(
   const Pose & ego_current_pose, const Twist & ego_current_twist,
   const PredictedPath & ego_predicted_path, const VehicleInfo & ego_info,
-  const double & check_start_time, const double & check_end_time,
-  const double & check_time_resolution, const PredictedObject & target_object,
-  const BehaviorPathPlannerParameters & common_parameters, CollisionCheckDebug & debug)
+  const double check_start_time, const double check_end_time, const double check_time_resolution,
+  const PredictedObject & target_object, const BehaviorPathPlannerParameters & common_parameters,
+  const double front_decel, const double rear_decel, CollisionCheckDebug & debug)
 {
   tier4_autoware_utils::Polygon2d obj_polygon;
   if (!util::calcObjectPolygon(target_object, &obj_polygon)) {
@@ -2641,7 +2638,7 @@ bool isSafeInFreeSpaceCollisionCheck(
     if (!util::hasEnoughDistance(
           expected_ego_pose, ego_current_twist,
           target_object.kinematics.initial_pose_with_covariance.pose, object_twist,
-          common_parameters, debug)) {
+          common_parameters, front_decel, rear_decel, debug)) {
       debug.failed_reason = "not_enough_longitudinal";
       return false;
     }
