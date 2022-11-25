@@ -53,26 +53,26 @@ PullOverModule::PullOverModule(
   goal_pose_pub_ =
     node.create_publisher<PoseStamped>("/planning/scenario_planning/modified_goal", 1);
 
-  LaneDepartureChecker lane_departure_checker_{};
-  lane_departure_checker_.setVehicleInfo(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
+  LaneDepartureChecker lane_departure_checker{};
+  lane_departure_checker.setVehicleInfo(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
 
   occupancy_grid_map_ = std::make_shared<OccupancyGridBasedCollisionDetector>();
 
   // set enabled planner
   if (parameters_.enable_shift_parking) {
     pull_over_planners_.push_back(std::make_shared<ShiftPullOver>(
-      node, parameters, lane_departure_checker_, occupancy_grid_map_));
+      node, parameters, lane_departure_checker, occupancy_grid_map_));
   }
   if (parameters_.enable_arc_forward_parking) {
     constexpr bool is_forward = true;
     pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-      node, parameters, getGeometricPullOverParameters(), lane_departure_checker_,
+      node, parameters, getGeometricPullOverParameters(), lane_departure_checker,
       occupancy_grid_map_, is_forward));
   }
   if (parameters_.enable_arc_backward_parking) {
     constexpr bool is_forward = false;
     pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-      node, parameters, getGeometricPullOverParameters(), lane_departure_checker_,
+      node, parameters, getGeometricPullOverParameters(), lane_departure_checker,
       occupancy_grid_map_, is_forward));
   }
 

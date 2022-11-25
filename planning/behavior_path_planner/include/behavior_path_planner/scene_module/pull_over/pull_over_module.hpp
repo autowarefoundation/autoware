@@ -117,7 +117,6 @@ private:
   GeometricParallelParking parallel_parking_planner_;
   ParallelParkingParameters parallel_parking_parameters_;
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_;
-  std::shared_ptr<LaneDepartureChecker> lane_departure_checker_;
   tier4_autoware_utils::LinearRing2d vehicle_footprint_;
   std::unique_ptr<rclcpp::Time> last_received_time_;
   std::unique_ptr<rclcpp::Time> last_approved_time_;
