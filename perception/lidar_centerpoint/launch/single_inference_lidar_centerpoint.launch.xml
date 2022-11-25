@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
+  <arg name="model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>
+  <arg name="model_param_path" default="$(find-pkg-share lidar_centerpoint)/config/$(var model_name).param.yaml"/>
+  <arg name="class_remapper_param_path" default="$(find-pkg-share lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
+  <arg name="score_threshold" default="0.35"/>
+  <arg name="yaw_norm_threshold" default="0.0"/>
+  <arg name="has_twist" default="false"/>
+  <arg name="pcd_path" default="test.pcd"/>
+  <arg name="detections_path" default="test.ply"/>
+
+  <node pkg="lidar_centerpoint" exec="single_inference_lidar_centerpoint_node" name="lidar_centerpoint" output="screen">
+    <param name="score_threshold" value="$(var score_threshold)"/>
+    <param name="yaw_norm_threshold" value="$(var yaw_norm_threshold)"/>
+    <param name="densification_world_frame_id" value="map"/>
+    <param name="densification_num_past_frames" value="0"/>
+    <param name="trt_precision" value="fp16"/>
+    <param name="has_twist" value="$(var has_twist)"/>
+    <param name="encoder_onnx_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"/>
+    <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
+    <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
+    <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
+    <param from="$(var model_param_path)"/>
+    <param from="$(var class_remapper_param_path)"/>
+
+    <param name="pcd_path" value="$(var pcd_path)"/>
+    <param name="detections_path" value="$(var detections_path)"/>
+  </node>
+
+  <node pkg="lidar_centerpoint" exec="lidar_centerpoint_visualizer.py" name="lidar_centerpoint_visualizer" output="screen">
+    <param name="pcd_path" value="$(var pcd_path)"/>
+    <param name="detections_path" value="$(var detections_path)"/>
+  </node>
+</launch>

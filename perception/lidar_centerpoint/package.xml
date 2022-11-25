@@ -8,12 +8,14 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_auto_perception_msgs</depend>
   <depend>pcl_ros</depend>
   <depend>perception_utils</depend>
+  <depend>python3-open3d-pip</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2_eigen</depend>
