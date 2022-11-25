@@ -301,6 +301,14 @@ Finally minimum longitudinal distance for `d_rear` is added to compensate for ob
 std::max(longitudinal_distance_min_threshold, d_rear) < d_front + d_inter
 ```
 
+##### Collision check in prepare phase
+
+The ego vehicle may need to secure ample inter-vehicle distance ahead of the target vehicle before attempting a lane change. The flag `enable_collision_check_at_prepare_phase` can be enabled to gain this behavior. The following image illustrates the differences between the `false` and `true` cases.
+
+![enable collision check at prepare phase](./image/lane_change/lane_change-enable_collision_check_at_prepare_phase.png)
+
+The parameter `prepare_phase_ignore_target_speed_thresh` can be configured to ignore the prepare phase collision check for targets whose speeds are less than a specific threshold, such as stationary or very slow-moving objects.
+
 #### If the lane is blocked and multiple lane changes
 
 When driving on the public road with other vehicles, there exist scenarios where lane changes cannot be executed. Suppose the candidate path is evaluated as unsafe, for example, due to incoming vehicles in the adjacent lane. In that case, the ego vehicle can't change lanes, and it is impossible to reach the goal. Therefore, the ego vehicle must stop earlier at a certain distance and wait for the adjacent lane to be evaluated as safe. The minimum stopping distance computation is as follows.
@@ -370,18 +378,19 @@ The following parameters are configurable in `behavior_path_planner.param.yaml`.
 
 The following parameters are configurable in `lane_change.param.yaml`.
 
-| Name                              | Unit    | Type    | Description                                                                             | Default value |
-| :-------------------------------- | ------- | ------- | --------------------------------------------------------------------------------------- | ------------- |
-| `lane_change_prepare_duration`    | [m]     | double  | The preparation time for the ego vehicle to be ready to perform lane change.            | 4.0           |
-| `lane_changing_duration`          | [m]     | double  | The total time that is taken to complete the lane-changing task.                        | 8.0           |
-| `lane_change_finish_judge_buffer` | [m]     | double  | The additional buffer used to confirm lane change process completion                    | 3.0           |
-| `minimum_lane_change_velocity`    | [m/s]   | double  | Minimum speed during lane changing process.                                             | 5.6           |
-| `prediction_time_resolution`      | [s]     | double  | Time resolution for object's path interpolation and collision check.                    | 0.5           |
-| `maximum_deceleration`            | [m/s^2] | double  | Ego vehicle maximum deceleration when performing lane change.                           | 1.0           |
-| `lane_change_sampling_num`        | [-]     | int     | Number of possible lane-changing trajectories that are being influenced by deceleration | 10            |
-| `enable_abort_lane_change`        | [-]     | boolean | Enable abort lane change. (\*1)                                                         | false         |
-| `use_all_predicted_path`          | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                  | false         |
-| `lane_change_search_distance`     | [m]     | double  | The turn signal activation distance during the lane change preparation phase.           | 30.0          |
+| Name                                       | Unit    | Type    | Description                                                                                                                                                | Default value |
+| :----------------------------------------- | ------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `lane_change_prepare_duration`             | [m]     | double  | The preparation time for the ego vehicle to be ready to perform lane change.                                                                               | 4.0           |
+| `lane_changing_duration`                   | [m]     | double  | The total time that is taken to complete the lane-changing task.                                                                                           | 8.0           |
+| `lane_change_finish_judge_buffer`          | [m]     | double  | The additional buffer used to confirm lane change process completion                                                                                       | 3.0           |
+| `minimum_lane_change_velocity`             | [m/s]   | double  | Minimum speed during lane changing process.                                                                                                                | 5.6           |
+| `prediction_time_resolution`               | [s]     | double  | Time resolution for object's path interpolation and collision check.                                                                                       | 0.5           |
+| `maximum_deceleration`                     | [m/s^2] | double  | Ego vehicle maximum deceleration when performing lane change.                                                                                              | 1.0           |
+| `lane_change_sampling_num`                 | [-]     | int     | Number of possible lane-changing trajectories that are being influenced by deceleration                                                                    | 10            |
+| `use_all_predicted_path`                   | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                     | false         |
+| `lane_change_search_distance`              | [m]     | double  | The turn signal activation distance during the lane change preparation phase.                                                                              | 30.0          |
+| `enable_collision_check_at_prepare_phase`  | [-]     | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                   | false         |
+| `prepare_phase_ignore_target_speed_thresh` | [m/s]   | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true` | 0.1           |
 
 ### Collision checks during lane change
 

@@ -25,25 +25,26 @@ namespace behavior_path_planner
 {
 struct LaneChangeParameters
 {
-  double lane_change_prepare_duration;
-  double lane_changing_duration;
-  double minimum_lane_change_prepare_distance;
-  double lane_change_finish_judge_buffer;
-  double minimum_lane_change_velocity;
-  double prediction_time_resolution;
-  double maximum_deceleration;
-  int lane_change_sampling_num;
-  double abort_lane_change_velocity_thresh;
-  double abort_lane_change_angle_thresh;
-  double abort_lane_change_distance_thresh;
-  bool enable_abort_lane_change;
-  bool enable_collision_check_at_prepare_phase;
-  bool use_predicted_path_outside_lanelet;
-  bool use_all_predicted_path;
-  bool publish_debug_marker;
+  double lane_change_prepare_duration{2.0};
+  double lane_changing_duration{4.0};
+  double minimum_lane_change_prepare_distance{4.0};
+  double lane_change_finish_judge_buffer{3.0};
+  double minimum_lane_change_velocity{5.6};
+  double prediction_time_resolution{0.5};
+  double maximum_deceleration{1.0};
+  int lane_change_sampling_num{10};
+  double abort_lane_change_velocity_thresh{0.5};
+  double abort_lane_change_angle_thresh{0.174533};
+  double abort_lane_change_distance_thresh{0.3};
+  double prepare_phase_ignore_target_speed_thresh{0.1};
+  bool enable_abort_lane_change{true};
+  bool enable_collision_check_at_prepare_phase{true};
+  bool use_predicted_path_outside_lanelet{false};
+  bool use_all_predicted_path{false};
+  bool publish_debug_marker{false};
   // drivable area expansion
-  double drivable_area_right_bound_offset;
-  double drivable_area_left_bound_offset;
+  double drivable_area_right_bound_offset{0.0};
+  double drivable_area_left_bound_offset{0.0};
 };
 
 struct LaneChangeStatus

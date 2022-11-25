@@ -27,9 +27,9 @@
 
     visualize_drivable_area_for_shared_linestrings_lanelet: true
 
-    lateral_distance_max_threshold: 5.0
+    lateral_distance_max_threshold: 2.0
     longitudinal_distance_min_threshold: 3.0
-    expected_front_deceleration: -1.0
+    expected_front_deceleration: -0.5
     expected_rear_deceleration: -1.0
     rear_vehicle_reaction_time: 2.0
     rear_vehicle_safety_time_margin: 2.0

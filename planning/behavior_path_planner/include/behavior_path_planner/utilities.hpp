@@ -198,6 +198,9 @@ bool lerpByTimeStamp(const PredictedPath & path, const double t, Pose * lerped_p
 
 bool calcObjectPolygon(const PredictedObject & object, Polygon2d * object_polygon);
 
+bool calcObjectPolygon(
+  const Shape & object_shape, const Pose & object_pose, Polygon2d * object_polygon);
+
 PredictedPath resamplePredictedPath(
   const PredictedPath & input_path, const double resolution, const double duration);
 
@@ -425,13 +428,13 @@ std::vector<PredictedPath> getPredictedPathFromObj(
 Pose projectCurrentPoseToTarget(const Pose & desired_object, const Pose & target_object);
 
 bool getEgoExpectedPoseAndConvertToPolygon(
-  const Pose & current_pose, const PredictedPath & pred_path, Pose & expected_pose,
+  const Pose & current_pose, const PredictedPath & pred_path,
   tier4_autoware_utils::Polygon2d & ego_polygon, const double & check_current_time,
-  const VehicleInfo & ego_info);
+  const VehicleInfo & ego_info, Pose & expected_pose, std::string & failed_reason);
 
 bool getObjectExpectedPoseAndConvertToPolygon(
-  const PredictedPath & pred_path, const PredictedObject & object, Pose & expected_pose,
-  Polygon2d & obj_polygon, const double & check_current_time);
+  const PredictedPath & pred_path, const PredictedObject & object, Polygon2d & obj_polygon,
+  const double & check_current_time, Pose & expected_pose, std::string & failed_reason);
 
 bool isObjectFront(const Pose & ego_pose, const Pose & obj_pose);
 

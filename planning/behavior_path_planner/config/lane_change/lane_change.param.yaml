@@ -12,8 +12,9 @@
       abort_lane_change_velocity_thresh: 0.5
       abort_lane_change_angle_thresh: 10.0      # [deg]
       abort_lane_change_distance_thresh: 0.3    # [m]
+      prepare_phase_ignore_target_speed_thresh: 0.1 # [m/s]
       enable_abort_lane_change: true
-      enable_collision_check_at_prepare_phase: true
+      enable_collision_check_at_prepare_phase: false
       use_predicted_path_outside_lanelet: true
       use_all_predicted_path: true
       publish_debug_marker: false
