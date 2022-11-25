@@ -57,6 +57,23 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   const bool use_lerp_for_z = true);
 
 /**
+ * @brief A resampling function for a path(poses). Note that in a default setting, position xy are
+ *        resampled by spline interpolation, position z are resampled by linear interpolation, and
+ *        orientation of the resampled path are calculated by a forward difference method
+ *        based on the interpolated position x and y.
+ * @param input_path input path(poses) to resample
+ * @param resample_interval resampling interval
+ * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
+ *        y. Otherwise, it uses spline interpolation
+ * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
+ *        Otherwise, it uses spline interpolation
+ * @return resampled path(poses)
+ */
+std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
+  const std::vector<geometry_msgs::msg::Pose> & points, const double resampled_interval,
+  const bool use_lerp_for_xy = false, const bool use_lerp_for_z = true);
+
+/**
  * @brief A resampling function for a path with lane id. Note that in a default setting, position xy
  *        are resampled by spline interpolation, position z are resampled by linear interpolation,
  *        longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is
