@@ -4,20 +4,6 @@ project(radar_tracks_msgs_converter)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-## Compile options
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-endif()
-
-include_directories(
-  include
-)
-
 ## Targets
 ament_auto_add_library(radar_tracks_msgs_converter_node_component SHARED
   src/radar_tracks_msgs_converter_node/radar_tracks_msgs_converter_node.cpp
