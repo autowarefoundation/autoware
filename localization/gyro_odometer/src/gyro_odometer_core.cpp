@@ -89,17 +89,17 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
     return;
   }
 
-  geometry_msgs::msg::TransformStamped::SharedPtr tf_base2imu_ptr =
+  geometry_msgs::msg::TransformStamped::SharedPtr tf_imu2base_ptr =
     std::make_shared<geometry_msgs::msg::TransformStamped>();
-  getTransform(output_frame_, imu_msg_ptr_->header.frame_id, tf_base2imu_ptr);
+  getTransform(output_frame_, imu_msg_ptr_->header.frame_id, tf_imu2base_ptr);
 
   geometry_msgs::msg::Vector3Stamped angular_velocity;
   angular_velocity.header = imu_msg_ptr_->header;
   angular_velocity.vector = imu_msg_ptr_->angular_velocity;
 
   geometry_msgs::msg::Vector3Stamped transformed_angular_velocity;
-  transformed_angular_velocity.header = tf_base2imu_ptr->header;
-  tf2::doTransform(angular_velocity, transformed_angular_velocity, *tf_base2imu_ptr);
+  transformed_angular_velocity.header = tf_imu2base_ptr->header;
+  tf2::doTransform(angular_velocity, transformed_angular_velocity, *tf_imu2base_ptr);
 
   // TODO(YamatoAndo) move code
   geometry_msgs::msg::TwistStamped twist;
