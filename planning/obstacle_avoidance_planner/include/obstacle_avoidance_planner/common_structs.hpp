@@ -206,6 +206,7 @@ struct TrajectoryParam
   double acceleration_for_non_deceleration_range;
   int num_fix_points_for_extending;
   double max_dist_for_extending_end_point;
+  double non_fixed_trajectory_length;
 
   double ego_nearest_dist_threshold;
   double ego_nearest_yaw_threshold;
