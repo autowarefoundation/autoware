@@ -49,9 +49,18 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   const double backward_length = 50.0;
   const lanelet::ConstLanelets current_lanes = util::calcLaneAroundPose(
     planner_data->route_handler, current_pose, forward_length, backward_length);
+
+  if (current_lanes.empty()) {
+    return turn_signal_info.turn_signal;
+  }
+
   const PathWithLaneId extended_path = util::getCenterLinePath(
     route_handler, current_lanes, current_pose, backward_length, forward_length,
     planner_data->parameters);
+
+  if (extended_path.points.empty()) {
+    return turn_signal_info.turn_signal;
+  }
 
   // Closest ego segment
   const size_t ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
