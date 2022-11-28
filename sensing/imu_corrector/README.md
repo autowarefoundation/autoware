@@ -37,14 +37,15 @@ We also assume that $n\sim\mathcal{N}(0, \sigma^2)$.
 
 ### Core Parameters
 
-| Name                         | Type   | Description                           |
-| ---------------------------- | ------ | ------------------------------------- |
-| `angular_velocity_offset_x`  | double | roll rate offset [rad/s]              |
-| `angular_velocity_offset_y`  | double | pitch rate offset [rad/s]             |
-| `angular_velocity_offset_z`  | double | yaw rate offset [rad/s]               |
-| `angular_velocity_stddev_xx` | double | roll rate standard deviation [rad/s]  |
-| `angular_velocity_stddev_yy` | double | pitch rate standard deviation [rad/s] |
-| `angular_velocity_stddev_zz` | double | yaw rate standard deviation [rad/s]   |
+| Name                         | Type   | Description                                      |
+| ---------------------------- | ------ | ------------------------------------------------ |
+| `angular_velocity_offset_x`  | double | roll rate offset in imu_link [rad/s]             |
+| `angular_velocity_offset_y`  | double | pitch rate offset imu_link [rad/s]               |
+| `angular_velocity_offset_z`  | double | yaw rate offset imu_link [rad/s]                 |
+| `angular_velocity_stddev_xx` | double | roll rate standard deviation imu_link [rad/s]    |
+| `angular_velocity_stddev_yy` | double | pitch rate standard deviation imu_link [rad/s]   |
+| `angular_velocity_stddev_zz` | double | yaw rate standard deviation imu_link [rad/s]     |
+| `acceleration_stddev`        | double | acceleration standard deviation imu_link [m/s^2] |
 
 ## Assumptions / Known limits
 

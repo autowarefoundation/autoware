@@ -14,14 +14,25 @@
 #ifndef IMU_CORRECTOR__IMU_CORRECTOR_CORE_HPP_
 #define IMU_CORRECTOR__IMU_CORRECTOR_CORE_HPP_
 
+#include "tier4_autoware_utils/ros/transform_listener.hpp"
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/imu.hpp>
+
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
+#include <memory>
+#include <string>
 
 namespace imu_corrector
 {
 class ImuCorrector : public rclcpp::Node
 {
+  using COV_IDX = tier4_autoware_utils::xyz_covariance_index::XYZ_COV_IDX;
+
 public:
   explicit ImuCorrector(const rclcpp::NodeOptions & node_options);
 
@@ -32,13 +43,19 @@ private:
 
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
 
-  double angular_velocity_offset_x_;
-  double angular_velocity_offset_y_;
-  double angular_velocity_offset_z_;
+  double angular_velocity_offset_x_imu_link_;
+  double angular_velocity_offset_y_imu_link_;
+  double angular_velocity_offset_z_imu_link_;
 
-  double angular_velocity_stddev_xx_;
-  double angular_velocity_stddev_yy_;
-  double angular_velocity_stddev_zz_;
+  double angular_velocity_stddev_xx_imu_link_;
+  double angular_velocity_stddev_yy_imu_link_;
+  double angular_velocity_stddev_zz_imu_link_;
+
+  double accel_stddev_imu_link_;
+
+  std::shared_ptr<tier4_autoware_utils::TransformListener> transform_listener_;
+
+  std::string output_frame_;
 };
 }  // namespace imu_corrector
 
