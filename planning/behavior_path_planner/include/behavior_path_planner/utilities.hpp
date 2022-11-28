@@ -404,6 +404,9 @@ std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & class
 
 lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> & planner_data);
 
+lanelet::ConstLanelets extendLanes(
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
+
 lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data);
 
@@ -476,6 +479,8 @@ bool isSafeInFreeSpaceCollisionCheck(
   const double check_start_time, const double check_end_time, const double check_time_resolution,
   const PredictedObject & target_object, const BehaviorPathPlannerParameters & common_parameters,
   const double front_decel, const double rear_decel, CollisionCheckDebug & debug);
+
+bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_threshold);
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_

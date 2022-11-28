@@ -20,6 +20,7 @@
 #include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
+#include "lane_departure_checker/lane_departure_checker.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -43,6 +44,7 @@ namespace behavior_path_planner
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using lane_departure_checker::LaneDepartureChecker;
 using marker_utils::CollisionCheckDebug;
 using tier4_planning_msgs::msg::LaneChangeDebugMsg;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
@@ -103,6 +105,7 @@ private:
   LaneChangeStatus status_;
   PathShifter path_shifter_;
   mutable LaneChangeDebugMsgArray lane_change_debug_msg_array_;
+  LaneDepartureChecker lane_departure_checker_;
 
   double lane_change_lane_length_{200.0};
   double check_distance_{100.0};
@@ -169,6 +172,7 @@ private:
   void updateSteeringFactorPtr(
     const CandidateOutput & output, const LaneChangePath & selected_path) const;
   bool isSafe() const;
+  bool isValidPath(const PathWithLaneId & path) const;
   bool isNearEndOfLane() const;
   bool isCurrentSpeedLow() const;
   bool isAbortConditionSatisfied() const;
