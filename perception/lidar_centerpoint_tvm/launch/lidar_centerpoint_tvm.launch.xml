@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input/pointcloud" default="/sensing/lidar/concatenated/pointcloud"/>
+  <arg name="output/objects" default="objects"/>
+  <!-- using the following topics for testing-->
+  <!-- <arg name="input/pointcloud" default="/sensing/lidar/top/rectified/pointcloud"/>
+  <arg name="output/objects" default="/perception/object_recognition/detection/objects"/> -->
+  <arg name="model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
+  <arg name="model_param_path" default="$(find-pkg-share lidar_centerpoint_tvm)/config/$(var model_name).param.yaml"/>
+  <arg name="score_threshold" default="0.35"/>
+  <arg name="yaw_norm_threshold" default="0.0"/>
+  <arg name="has_twist" default="false"/>
+
+  <node pkg="lidar_centerpoint_tvm" exec="lidar_centerpoint_tvm_node" name="lidar_centerpoint_tvm" output="screen">
+    <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
+    <remap from="~/output/objects" to="$(var output/objects)"/>
+    <param name="score_threshold" value="$(var score_threshold)"/>
+    <param name="yaw_norm_threshold" value="$(var yaw_norm_threshold)"/>
+    <param name="densification_world_frame_id" value="map"/>
+    <param name="densification_num_past_frames" value="1"/>
+    <param name="has_twist" value="$(var has_twist)"/>
+    <param from="$(var model_param_path)"/>
+  </node>
+</launch>

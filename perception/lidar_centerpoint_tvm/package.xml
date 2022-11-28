@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE xml>
+<package format="3">
+  <name>lidar_centerpoint_tvm</name>
+  <version>0.1.0</version>
+  <description>lidar_centerpoint_tvm</description>
+  <maintainer email="carl.liu@autocore.ai">Liu Zhengfei</maintainer>
+  <maintainer email="xinyu.wang@tier4.jp">Xinyu Wang</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <build_depend>autoware_cmake</build_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>pcl_ros</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tvm_utility</depend>
+  <depend>tvm_vendor</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
