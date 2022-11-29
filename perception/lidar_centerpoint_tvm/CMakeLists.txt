@@ -74,4 +74,5 @@ if((NOT NN_DEPENDENCY_ENCODER STREQUAL "") AND (NOT NN_DEPENDENCY_BACKBONE STREQ
   )
 else()
   message(WARNING "Neural network not found, skipping package.")
+  ament_auto_package()
 endif()
