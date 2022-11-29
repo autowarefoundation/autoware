@@ -4,7 +4,19 @@
 
 It is a package for traffic light detection using MobileNetV2 and SSDLite.
 
-The trained model is based on [pytorch-ssd](https://github.com/qfgaohao/pytorch-ssd).
+## Training Information
+
+### Pretrained Model
+
+The model is based on [pytorch-ssd](https://github.com/qfgaohao/pytorch-ssd) and the pretrained model could be downloaded from [here](https://storage.googleapis.com/models-hao/mb2-ssd-lite-mp-0_686.pth).
+
+### Training Data
+
+The model was fine-tuned on 1750 TierIV internal images of Japanese traffic lights.
+
+### Trained Onnx model
+
+- <https://drive.google.com/uc?id=1USFDPRH9JrVdGoqt27qHjRgittwc0kcO>
 
 ## Inner-workings / Algorithms
 
@@ -47,10 +59,6 @@ Based on the camera image and the global ROI array detected by `map_based_detect
 | `approximate_sync` | bool   | false                          | Flag for whether to ues approximate sync policy                      |
 
 ## Assumptions / Known limits
-
-## Onnx model
-
-- <https://drive.google.com/uc?id=1USFDPRH9JrVdGoqt27qHjRgittwc0kcO>
 
 ## Reference repositories
 
