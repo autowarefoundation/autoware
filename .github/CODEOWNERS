@@ -116,7 +116,7 @@ planning/freespace_planner/** takamasa.horibe@tier4.jp @autowarefoundation/autow
 planning/freespace_planning_algorithms/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/mission_planner/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/obstacle_avoidance_planner/** takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/obstacle_avoidance_planner/** kosuke.takeuchi@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_stop_planner/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp @autowarefoundation/autoware-global-codeowners
