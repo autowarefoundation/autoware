@@ -6,6 +6,9 @@
   <description>The obstacle_stop_planner package</description>
 
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
 
   <license>Apache License 2.0</license>
 
