@@ -244,14 +244,11 @@ VirtualTrafficLightModule::VirtualTrafficLightModule(
   logger_ = logger_.get_child((map_data_.instrument_type + "_" + map_data_.instrument_id).c_str());
 }
 
-bool VirtualTrafficLightModule::modifyPathVelocity(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  tier4_planning_msgs::msg::StopReason * stop_reason)
+bool VirtualTrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   // Initialize
   setInfrastructureCommand({});
-  *stop_reason = planning_utils::initializeStopReason(
-    tier4_planning_msgs::msg::StopReason::VIRTUAL_TRAFFIC_LIGHT);
+  *stop_reason = planning_utils::initializeStopReason(StopReason::VIRTUAL_TRAFFIC_LIGHT);
   module_data_ = {};
 
   // Copy data

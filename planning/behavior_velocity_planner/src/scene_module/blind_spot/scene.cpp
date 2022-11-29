@@ -64,6 +64,7 @@ BlindSpotModule::BlindSpotModule(
   is_over_pass_judge_line_(false)
 {
   planner_param_ = planner_param;
+
   const auto & assigned_lanelet =
     planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
   const std::string turn_direction = assigned_lanelet.attributeOr("turn_direction", "else");
@@ -76,13 +77,10 @@ BlindSpotModule::BlindSpotModule(
     !(assigned_lanelet.regulatoryElementsAs<const lanelet::TrafficLight>().empty());
 }
 
-bool BlindSpotModule::modifyPathVelocity(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  tier4_planning_msgs::msg::StopReason * stop_reason)
+bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   debug_data_ = DebugData();
-  *stop_reason =
-    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::BLIND_SPOT);
+  *stop_reason = planning_utils::initializeStopReason(StopReason::BLIND_SPOT);
 
   const auto input_path = *path;
   debug_data_.path_raw = input_path;

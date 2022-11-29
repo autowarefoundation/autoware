@@ -37,8 +37,6 @@ using PathIndexWithPose = std::pair<size_t, geometry_msgs::msg::Pose>;  // front
 using PathIndexWithPoint2d = std::pair<size_t, Point2d>;                // front index, point2d
 using PathIndexWithOffset = std::pair<size_t, double>;                  // front index, offset
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using tier4_planning_msgs::msg::StopFactor;
-using tier4_planning_msgs::msg::StopReason;
 
 class DetectionAreaModule : public SceneModuleInterface
 {

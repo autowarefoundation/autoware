@@ -47,11 +47,14 @@
 namespace behavior_velocity_planner
 {
 
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using builtin_interfaces::msg::Time;
 using rtc_interface::RTCInterface;
 using tier4_autoware_utils::DebugPublisher;
 using tier4_autoware_utils::StopWatch;
 using tier4_debug_msgs::msg::Float64Stamped;
+using tier4_planning_msgs::msg::StopFactor;
+using tier4_planning_msgs::msg::StopReason;
 using unique_identifier_msgs::msg::UUID;
 
 class SceneModuleInterface
@@ -68,9 +71,8 @@ public:
   }
   virtual ~SceneModuleInterface() = default;
 
-  virtual bool modifyPathVelocity(
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-    tier4_planning_msgs::msg::StopReason * stop_reason) = 0;
+  virtual bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) = 0;
+
   virtual visualization_msgs::msg::MarkerArray createDebugMarkerArray() = 0;
   virtual visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() = 0;
 

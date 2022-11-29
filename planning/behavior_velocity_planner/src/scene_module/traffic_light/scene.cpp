@@ -202,17 +202,14 @@ TrafficLightModule::TrafficLightModule(
   planner_param_ = planner_param;
 }
 
-bool TrafficLightModule::modifyPathVelocity(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  tier4_planning_msgs::msg::StopReason * stop_reason)
+bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   looking_tl_state_ = initializeTrafficSignal(path->header.stamp);
   debug_data_ = DebugData();
   debug_data_.base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   first_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
   first_ref_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
-  *stop_reason =
-    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::TRAFFIC_LIGHT);
+  *stop_reason = planning_utils::initializeStopReason(StopReason::TRAFFIC_LIGHT);
 
   const auto input_path = *path;
 

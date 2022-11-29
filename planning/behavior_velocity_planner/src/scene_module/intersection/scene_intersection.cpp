@@ -58,6 +58,7 @@ IntersectionModule::IntersectionModule(
 : SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id), is_go_out_(false)
 {
   planner_param_ = planner_param;
+
   const auto & assigned_lanelet =
     planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
   turn_direction_ = assigned_lanelet.attributeOr("turn_direction", "else");
@@ -66,9 +67,7 @@ IntersectionModule::IntersectionModule(
   state_machine_.setMarginTime(planner_param_.state_transit_margin_time);
 }
 
-bool IntersectionModule::modifyPathVelocity(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  tier4_planning_msgs::msg::StopReason * stop_reason)
+bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   RCLCPP_DEBUG(logger_, "===== plan start =====");
 
@@ -80,8 +79,7 @@ bool IntersectionModule::modifyPathVelocity(
   debug_data_ = DebugData();
   debug_data_.path_raw = *path;
 
-  *stop_reason =
-    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::INTERSECTION);
+  *stop_reason = planning_utils::initializeStopReason(StopReason::INTERSECTION);
 
   RCLCPP_DEBUG(
     logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());

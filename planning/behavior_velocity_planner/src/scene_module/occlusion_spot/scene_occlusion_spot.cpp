@@ -78,8 +78,7 @@ OcclusionSpotModule::OcclusionSpotModule(
 }
 
 bool OcclusionSpotModule::modifyPathVelocity(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  [[maybe_unused]] tier4_planning_msgs::msg::StopReason * stop_reason)
+  PathWithLaneId * path, [[maybe_unused]] StopReason * stop_reason)
 {
   if (param_.is_show_processing_time) stop_watch_.tic("total_processing_time");
   debug_data_.resetData();

@@ -43,13 +43,10 @@ MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
   state_machine_.setState(StateMachine::State::STOP);
 }
 
-bool MergeFromPrivateRoadModule::modifyPathVelocity(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  tier4_planning_msgs::msg::StopReason * stop_reason)
+bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   debug_data_ = DebugData();
-  *stop_reason = planning_utils::initializeStopReason(
-    tier4_planning_msgs::msg::StopReason::MERGE_FROM_PRIVATE_ROAD);
+  *stop_reason = planning_utils::initializeStopReason(StopReason::MERGE_FROM_PRIVATE_ROAD);
 
   const auto input_path = *path;
   debug_data_.path_raw = input_path;
