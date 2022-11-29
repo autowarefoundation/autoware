@@ -85,7 +85,7 @@ perception/detected_object_validation/** yukihiro.saito@tier4.jp @autowarefounda
 perception/detection_by_tracker/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp taichi.higashide@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/euclidean_cluster/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/front_vehicle_velocity_estimator/** satoshi.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/front_vehicle_velocity_estimator/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/heatmap_visualizer/** kotaro.uetake@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/image_projection_based_fusion/** yukihiro.saito@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -93,14 +93,15 @@ perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp @autowa
 perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
 perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
 perception/lidar_centerpoint/** yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/lidar_centerpoint_tvm/** carl.liu@autocore.ai xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/map_based_prediction/** yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/multi_object_tracker/** jilada.eccleston@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/object_merger/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/object_range_splitter/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/probabilistic_occupancy_grid_map/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/shape_estimation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_classifier/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -117,7 +118,7 @@ planning/mission_planner/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp ta
 planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_avoidance_planner/** takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/obstacle_stop_planner/** satoshi.ota@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/obstacle_stop_planner/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/planning_debug_tools/** taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/planning_error_monitor/** yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -136,7 +137,7 @@ sensing/image_transport_decompressor/** yukihiro.saito@tier4.jp @autowarefoundat
 sensing/imu_corrector/** yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/livox/livox_tag_filter/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-sensing/radar_threshold_filter/** satoshi.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
+sensing/radar_threshold_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/tier4_pcl_extensions/** ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
