@@ -582,13 +582,23 @@ void ObstacleStopPlannerNode::insertVelocity(
       const auto end_insert_point_with_idx = getBackwardInsertPointFromBasePoint(
         index_with_dist_remain.get().first, output, -index_with_dist_remain.get().second);
 
+      const auto slow_down_velocity =
+        slow_down_param_.min_slow_down_velocity +
+        (slow_down_param_.max_slow_down_velocity - slow_down_param_.min_slow_down_velocity) *
+          std::max(planner_data.lateral_deviation - vehicle_info.vehicle_width_m / 2, 0.0) /
+          slow_down_param_.lateral_margin;
+
+      const auto target_velocity = slow_down_param_.consider_constraints
+                                     ? slow_down_param_.slow_down_velocity
+                                     : slow_down_velocity;
+
       SlowDownSection slow_down_section{};
       slow_down_section.slow_down_start_idx = 0;
       slow_down_section.start_point = output.front();
       slow_down_section.slow_down_end_idx = end_insert_point_with_idx.get().first;
       slow_down_section.end_point = end_insert_point_with_idx.get().second;
-      slow_down_section.velocity = set_velocity_limit_ ? std::numeric_limits<double>::max()
-                                                       : slow_down_param_.slow_down_velocity;
+      slow_down_section.velocity =
+        set_velocity_limit_ ? std::numeric_limits<double>::max() : target_velocity;
 
       insertSlowDownSection(slow_down_section, output);
     } else if (no_hunting_slowdown_point) {

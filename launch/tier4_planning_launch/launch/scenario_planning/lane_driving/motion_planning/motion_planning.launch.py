@@ -209,7 +209,6 @@ def launch_setup(context, *args, **kwargs):
             obstacle_stop_planner_param,
             obstacle_stop_planner_acc_param,
             vehicle_info_param,
-            {"enable_slow_down": False},
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
