@@ -300,7 +300,7 @@ void MotionVelocitySmootherNode::calcExternalVelocityLimit()
   }
 
   // on the first time, apply directly
-  if (prev_output_.empty() || !prev_closest_point_) {
+  if (prev_output_.empty() || !current_closest_point_from_prev_output_) {
     external_velocity_limit_.velocity = external_velocity_limit_ptr_->max_velocity;
     pub_velocity_limit_->publish(*external_velocity_limit_ptr_);
     return;
@@ -316,8 +316,8 @@ void MotionVelocitySmootherNode::calcExternalVelocityLimit()
   if (
     std::fabs((external_velocity_limit_.velocity - external_velocity_limit_ptr_->max_velocity)) >
     eps) {
-    const double v0 = prev_closest_point_->longitudinal_velocity_mps;
-    const double a0 = prev_closest_point_->acceleration_mps2;
+    const double v0 = current_closest_point_from_prev_output_->longitudinal_velocity_mps;
+    const double a0 = current_closest_point_from_prev_output_->acceleration_mps2;
 
     if (isEngageStatus(v0)) {
       max_velocity_with_deceleration_ = external_velocity_limit_ptr_->max_velocity;
@@ -409,7 +409,7 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
       node_param_.ego_nearest_yaw_threshold);
     const auto closest_point = trajectory_utils::calcInterpolatedTrajectoryPoint(
       prev_output_, current_pose_ptr_->pose, current_seg_idx);
-    prev_closest_point_ = closest_point;
+    current_closest_point_from_prev_output_ = closest_point;
   }
 
   // calculate distance to insert external velocity limit
@@ -706,7 +706,7 @@ MotionVelocitySmootherNode::calcInitialMotion(
   InitializeType type{};
 
   // first time
-  if (!prev_closest_point_) {
+  if (!current_closest_point_from_prev_output_) {
     initial_motion.vel = vehicle_speed;
     initial_motion.acc = 0.0;
     type = InitializeType::INIT;
@@ -714,12 +714,12 @@ MotionVelocitySmootherNode::calcInitialMotion(
   }
 
   // when velocity tracking deviation is large
-  const double desired_vel{prev_closest_point_->longitudinal_velocity_mps};
+  const double desired_vel{current_closest_point_from_prev_output_->longitudinal_velocity_mps};
   const double vel_error{vehicle_speed - std::fabs(desired_vel)};
   if (std::fabs(vel_error) > node_param_.replan_vel_deviation) {
     type = InitializeType::LARGE_DEVIATION_REPLAN;
     initial_motion.vel = vehicle_speed;  // use current vehicle speed
-    initial_motion.acc = prev_closest_point_->acceleration_mps2;
+    initial_motion.acc = current_closest_point_from_prev_output_->acceleration_mps2;
     RCLCPP_DEBUG(
       get_logger(),
       "calcInitialMotion : Large deviation error for speed control. Use current speed for "
@@ -760,10 +760,10 @@ MotionVelocitySmootherNode::calcInitialMotion(
     }
   }
 
-  // normal update: use closest in prev_output
+  // normal update: use closest in current_closest_point_from_prev_output
   type = InitializeType::NORMAL;
-  initial_motion.vel = prev_closest_point_->longitudinal_velocity_mps;
-  initial_motion.acc = prev_closest_point_->acceleration_mps2;
+  initial_motion.vel = current_closest_point_from_prev_output_->longitudinal_velocity_mps;
+  initial_motion.acc = current_closest_point_from_prev_output_->acceleration_mps2;
   RCLCPP_DEBUG(
     get_logger(),
     "calcInitialMotion : normal update. v0 = %f, a0 = %f, vehicle_speed = %f, target_vel = %f",
@@ -942,6 +942,12 @@ void MotionVelocitySmootherNode::publishClosestState(const TrajectoryPoints & tr
 void MotionVelocitySmootherNode::updatePrevValues(const TrajectoryPoints & final_result)
 {
   prev_output_ = final_result;
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    final_result, current_pose_ptr_->pose, node_param_.ego_nearest_dist_threshold,
+    node_param_.ego_nearest_yaw_threshold);
+  const auto closest_point = trajectory_utils::calcInterpolatedTrajectoryPoint(
+    final_result, current_pose_ptr_->pose, current_seg_idx);
+  prev_closest_point_ = closest_point;
 }
 
 MotionVelocitySmootherNode::AlgorithmType MotionVelocitySmootherNode::getAlgorithmType(

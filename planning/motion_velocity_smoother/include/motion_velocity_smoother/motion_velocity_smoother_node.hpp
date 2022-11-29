@@ -90,6 +90,7 @@ private:
 
   // previous trajectory point closest to ego vehicle
   boost::optional<TrajectoryPoint> prev_closest_point_{};
+  boost::optional<TrajectoryPoint> current_closest_point_from_prev_output_{};
 
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
 
