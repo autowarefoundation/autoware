@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>The obstacle_avoidance_planner package</description>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>

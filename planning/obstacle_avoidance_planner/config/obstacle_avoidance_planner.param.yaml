@@ -39,6 +39,7 @@
       num_fix_points_for_extending: 50 # number of fixing points when extending
       max_dist_for_extending_end_point: 0.0001 # minimum delta dist thres for extending last point [m]
 
+      enable_clipping_fixed_traj: false
       non_fixed_trajectory_length: 5.0 # length of the trajectory merging optimized mpt trajectory to original(not optimized) trajectory
 
     object:  # avoiding object

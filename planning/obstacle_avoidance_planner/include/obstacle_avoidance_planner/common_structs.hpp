@@ -210,6 +210,7 @@ struct TrajectoryParam
 
   double ego_nearest_dist_threshold;
   double ego_nearest_yaw_threshold;
+  bool enable_clipping_fixed_traj;
 };
 
 struct MPTParam

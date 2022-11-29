@@ -318,6 +318,9 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     traj_param_.non_fixed_trajectory_length =
       declare_parameter<double>("common.non_fixed_trajectory_length");
 
+    traj_param_.enable_clipping_fixed_traj =
+      declare_parameter<bool>("common.enable_clipping_fixed_traj");
+
     // object
     traj_param_.max_avoiding_ego_velocity_ms =
       declare_parameter<double>("object.max_avoiding_ego_velocity_ms");
