@@ -58,6 +58,8 @@ private:
 
   yolo::Config yolo_config_;
 
+  int gpu_device_id_;
+
   std::vector<std::string> labels_;
   std::unique_ptr<float[]> out_scores_;
   std::unique_ptr<float[]> out_boxes_;

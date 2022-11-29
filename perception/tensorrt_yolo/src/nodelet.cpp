@@ -51,7 +51,7 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
   std::string calib_image_directory = declare_parameter("calib_image_directory", "");
   std::string calib_cache_file = declare_parameter("calib_cache_file", "");
   std::string mode = declare_parameter("mode", "FP32");
-  int gpu_device_id = declare_parameter("gpu_id", 0);
+  gpu_device_id_ = declare_parameter("gpu_id", 0);
   yolo_config_.num_anchors = declare_parameter("num_anchors", 3);
   auto anchors = declare_parameter(
     "anchors", std::vector<double>{
@@ -67,7 +67,7 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
   yolo_config_.use_darknet_layer = declare_parameter("use_darknet_layer", true);
   yolo_config_.ignore_thresh = declare_parameter("ignore_thresh", 0.5);
 
-  if (!yolo::set_cuda_device(gpu_device_id)) {
+  if (!yolo::set_cuda_device(gpu_device_id_)) {
     RCLCPP_ERROR(this->get_logger(), "Given GPU not exist or suitable");
   }
 
@@ -133,6 +133,11 @@ void TensorrtYoloNodelet::callback(const sensor_msgs::msg::Image::ConstSharedPtr
   using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
   tier4_perception_msgs::msg::DetectedObjectsWithFeature out_objects;
+
+  if (!yolo::set_cuda_device(gpu_device_id_)) {
+    RCLCPP_ERROR(this->get_logger(), "Given GPU not exist or suitable");
+    return;
+  }
 
   cv_bridge::CvImagePtr in_image_ptr;
   try {
