@@ -2745,11 +2745,14 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
   }
 
   TurnSignalInfo turn_signal_info{};
-
-  if (segment_shift_length > 0.0) {
-    turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+  if (parameters_->turn_signal_on_swerving) {
+    if (segment_shift_length > 0.0) {
+      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+    } else {
+      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+    }
   } else {
-    turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+    turn_signal_info.turn_signal.command = TurnIndicatorsCommand::DISABLE;
   }
 
   if (ego_front_to_shift_start > 0.0) {

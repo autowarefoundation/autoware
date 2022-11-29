@@ -329,6 +329,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 
   p.avoidance_execution_lateral_threshold = dp("avoidance_execution_lateral_threshold", 0.499);
 
+  p.turn_signal_on_swerving = dp("turn_signal_on_swerving", true);
+
   return p;
 }
 
