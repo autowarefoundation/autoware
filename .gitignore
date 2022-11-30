@@ -20,3 +20,6 @@ log/
 
 # rviz Screen Capture
 capture/
+
+# CodeChecker
+.codechecker/
