@@ -7,6 +7,13 @@
         Install NVIDIA libraries? [y/N]
       private: false
   pre_tasks:
+    - name: Verify OS
+      ansible.builtin.shell: |
+        if ! cat /etc/os-release | grep 'VERSION_ID="20.04"'; then
+          echo 'Please use "Ubuntu 20.04".'
+          exit 1
+        fi
+
     - name: Print args
       ansible.builtin.debug:
         msg:
@@ -15,6 +22,7 @@
           - cuda_version: "{{ cuda_version }}"
           - cudnn_version: "{{ cudnn_version }}"
           - tensorrt_version: "{{ tensorrt_version }}"
+
     - name: Show a warning if the NVIDIA libraries will not be installed
       ansible.builtin.pause:
         seconds: 10

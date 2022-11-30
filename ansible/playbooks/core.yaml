@@ -1,6 +1,13 @@
 - hosts: localhost
   connection: local
   pre_tasks:
+    - name: Verify OS
+      ansible.builtin.shell: |
+        if ! cat /etc/os-release | grep 'VERSION_ID="20.04"'; then
+          echo 'Please use "Ubuntu 20.04".'
+          exit 1
+        fi
+
     - name: Print args
       ansible.builtin.debug:
         msg:
