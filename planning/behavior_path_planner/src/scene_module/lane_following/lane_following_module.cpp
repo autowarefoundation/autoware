@@ -65,7 +65,7 @@ void LaneFollowingModule::onEntry()
 void LaneFollowingModule::onExit()
 {
   initParam();
-  current_state_ = BT::NodeStatus::IDLE;
+  current_state_ = BT::NodeStatus::SUCCESS;
   RCLCPP_DEBUG(getLogger(), "LANE_FOLLOWING onExit");
 }
 

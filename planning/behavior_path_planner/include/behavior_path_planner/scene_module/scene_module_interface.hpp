@@ -87,7 +87,7 @@ public:
     clock_{node.get_clock()},
     uuid_(generateUUID()),
     is_waiting_approval_{false},
-    current_state_{BT::NodeStatus::IDLE}
+    current_state_{BT::NodeStatus::SUCCESS}
   {
     std::string module_ns;
     module_ns.resize(name.size());

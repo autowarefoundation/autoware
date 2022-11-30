@@ -63,7 +63,7 @@ void SideShiftModule::onExit()
   // write me...
   initVariables();
 
-  current_state_ = BT::NodeStatus::IDLE;
+  current_state_ = BT::NodeStatus::SUCCESS;
 }
 
 void SideShiftModule::setParameters(const SideShiftParameters & parameters)

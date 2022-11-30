@@ -184,7 +184,6 @@ void PullOverModule::onExit()
   steering_factor_interface_ptr_->clearSteeringFactors();
 
   // A child node must never return IDLE
-  // https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/include/behaviortree_cpp_v3/basic_types.h#L34
   current_state_ = BT::NodeStatus::SUCCESS;
 }
 

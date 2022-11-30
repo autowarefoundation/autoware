@@ -31,7 +31,7 @@ struct SceneModuleStatus
   bool is_requested{false};
   bool is_execution_ready{false};
   bool is_waiting_approval{false};
-  BT::NodeStatus status{BT::NodeStatus::IDLE};
+  BT::NodeStatus status{BT::NodeStatus::SUCCESS};
 };
 
 class SceneModuleBTNodeInterface : public BT::CoroActionNode
