@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>tensorrt_yolox</name>
+  <version>0.0.1</version>
+  <description>tensorrt library implementation for yolox</description>
+
+  <author email="daisuke.nishimatsu@tier4.jp">Daisuke Nishimatsu</author>
+  <maintainer email="daisuke.nishimatsu@tier4.jp">Daisuke Nishimatsu</maintainer>
+  <maintainer email="manato.hirabayashi@tier4.jp">Manato Hirabayashi</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>cudnn_cmake_module</buildtool_depend>
+  <buildtool_depend>tensorrt_cmake_module</buildtool_depend>
+
+  <buildtool_export_depend>cudnn_cmake_module</buildtool_export_depend>
+  <buildtool_export_depend>tensorrt_cmake_module</buildtool_export_depend>
+
+  <build_depend>autoware_cmake</build_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>cuda_utils</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>libopencv-dev</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tensorrt_common</depend>
+  <depend>tier4_perception_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
