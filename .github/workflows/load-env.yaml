@@ -2,6 +2,11 @@ name: load-env
 
 on:
   workflow_call:
+    outputs:
+      base-image:
+        value: ${{ jobs.load-env.outputs.base-image }}
+      rosdistro:
+        value: ${{ jobs.load-env.outputs.rosdistro }}
 
 jobs:
   load-env:
