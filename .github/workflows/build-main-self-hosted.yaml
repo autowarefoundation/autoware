@@ -9,7 +9,7 @@ jobs:
   load-env:
     runs-on: ubuntu-latest
     outputs:
-      base-image: ${{ steps.set-env.outputs.base_image }}
+      base-image: ${{ steps.set-env.outputs.base-image }}
       rosdistro: ${{ steps.set-env.outputs.rosdistro }}
     steps:
       - name: Check out repository
@@ -23,6 +23,7 @@ jobs:
           fi
 
       - name: Set env
+        id: set-env
         run: |
           echo "base-image=${{ env.base_image }}" >> $GITHUB_OUTPUT
           echo "rosdistro=${{ env.rosdistro }}" >> $GITHUB_OUTPUT
