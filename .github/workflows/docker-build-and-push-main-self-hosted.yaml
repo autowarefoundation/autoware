@@ -33,11 +33,11 @@ jobs:
         run: |
           sudo chown -R $USER:$USER ${{ github.workspace }}
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
-
       - name: Check out repository
         uses: actions/checkout@v3
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
       - name: Load env
         run: |
