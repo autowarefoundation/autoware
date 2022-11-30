@@ -9,6 +9,8 @@ None.
 ## Manual Installation
 
 ```bash
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+
 sudo apt update && sudo apt install -y \
-  ros-galactic-plotjuggler-ros
+  ros-$rosdistro-plotjuggler-ros
 ```

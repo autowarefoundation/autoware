@@ -30,6 +30,8 @@ For Universe, the `rosdistro` variable can also be found in:
 [../../playbooks/universe.yaml](../../playbooks/universe.yaml)
 
 ```bash
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
+
 # Taken from: https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html
 
 # You will need to add the ROS 2 apt repository to your system. First, make sure that the Ubuntu Universe repository is enabled by checking the output of this command.
@@ -55,7 +57,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo apt update
 
 # Desktop Install
-rosdistro=galactic
 installation_type=desktop
 sudo apt install ros-${rosdistro}-${installation_type}
 
