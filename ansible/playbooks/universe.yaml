@@ -8,11 +8,9 @@
       private: false
   pre_tasks:
     - name: Verify OS
-      ansible.builtin.shell: |
-        if ! cat /etc/os-release | grep 'VERSION_ID="20.04"'; then
-          echo 'Please use "Ubuntu 20.04".'
-          exit 1
-        fi
+      ansible.builtin.fail:
+        msg: Only Ubuntu 20.04 is supported for this branch. Please refer to https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/.
+      when: ansible_distribution_version != '20.04'
 
     - name: Print args
       ansible.builtin.debug:
