@@ -28,13 +28,11 @@ jobs:
             setup-args: --no-cuda-drivers
             additional-tag-suffix: -cuda
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-        with:
-          ref: ""
-
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
+
+      - name: Check out repository
+        uses: actions/checkout@v3
 
       - name: Load env
         run: |
