@@ -1,0 +1,25 @@
+name: docker-build-and-push-rolling
+
+on:
+  push:
+    tags:
+      - v*
+      - "[0-9]+.[0-9]+*"
+  schedule:
+    - cron: 0 0 1,15 * *
+  workflow_dispatch:
+
+jobs:
+  docker-build-and-push-rolling:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'docker-build-and-push-main.yaml',
+              ref: 'rolling',
+            })

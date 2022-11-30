@@ -1,0 +1,21 @@
+name: build-rolling
+
+on:
+  schedule:
+    - cron: 0 12 * * *
+  workflow_dispatch:
+
+jobs:
+  build-rolling:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'build-main.yaml',
+              ref: 'rolling',
+            })
