@@ -20,11 +20,11 @@ namespace
 {
 
 using ApiPrimitive = autoware_adapi_v1_msgs::msg::RoutePrimitive;
-using MapPrimitive = autoware_planning_msgs::msg::LaneletPrimitive;
-using HadPrimitive = autoware_auto_mapping_msgs::msg::MapPrimitive;
+using LaneletPrimitive = autoware_planning_msgs::msg::LaneletPrimitive;
+using HadPrimitive = autoware_planning_msgs::msg::LaneletPrimitive;
 using ApiSegment = autoware_adapi_v1_msgs::msg::RouteSegment;
 using MapSegment = autoware_planning_msgs::msg::LaneletSegment;
-using HadSegment = autoware_auto_mapping_msgs::msg::HADMapSegment;
+using HadSegment = autoware_planning_msgs::msg::LaneletSegment;
 
 template <class RetT, class ArgT>
 RetT convert(const ArgT & arg);
@@ -50,9 +50,9 @@ ApiPrimitive convert(const HadPrimitive & had)
 }
 
 template <>
-MapPrimitive convert(const ApiPrimitive & api)
+LaneletPrimitive convert(const ApiPrimitive & api)
 {
-  MapPrimitive map;
+  LaneletPrimitive map;
   map.id = api.id;
   map.primitive_type = api.type;
   return map;
@@ -64,7 +64,7 @@ ApiSegment convert(const HadSegment & had)
   ApiSegment api;
   api.alternatives = convert_vector<ApiPrimitive>(had.primitives);
   for (auto iter = api.alternatives.begin(); iter != api.alternatives.end(); ++iter) {
-    if (iter->id == had.preferred_primitive_id) {
+    if (iter->id == had.preferred_primitive.id) {
       api.preferred = *iter;
       api.alternatives.erase(iter);
       break;
@@ -77,8 +77,8 @@ template <>
 MapSegment convert(const ApiSegment & api)
 {
   MapSegment map;
-  map.preferred_primitive = convert<MapPrimitive>(api.preferred);
-  map.primitives = convert_vector<MapPrimitive>(api.alternatives);
+  map.preferred_primitive = convert<LaneletPrimitive>(api.preferred);
+  map.primitives = convert_vector<LaneletPrimitive>(api.alternatives);
   return map;
 }
 

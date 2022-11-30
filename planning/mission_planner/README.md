@@ -41,20 +41,20 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 | Name                            | Type                                    | Description            |
 | ------------------------------- | --------------------------------------- | ---------------------- |
 | `/planning/routing/route_state` | autoware_adapi_v1_msgs::msg::RouteState | route state            |
-| `/planning/routing/route`       | autoware_auto_planning_msgs/HADMapRoute | route                  |
+| `/planning/routing/route`       | autoware_planning_msgs/LaneletRoute     | route                  |
 | `debug/route_marker`            | visualization_msgs::msg::MarkerArray    | route marker for debug |
 
 ## Route section
 
 ![route_sections](./media/route_sections.svg)
 
-Route section, whose type is `autoware_auto_mapping_msgs/HADMapSegment`, is a "slice" of a road that bundles lane changeable lanes.
-Note that the most atomic unit of route is `autoware_auto_mapping_msgs/MapPrimitive`, which has the unique id of a lane in a vector map and its type.
+Route section, whose type is `autoware_planning_msgs/LaneletSegment`, is a "slice" of a road that bundles lane changeable lanes.
+Note that the most atomic unit of route is `autoware_auto_mapping_msgs/LaneletPrimitive`, which has the unique id of a lane in a vector map and its type.
 Therefore, route message does not contain geometric information about the lane since we did not want to have planning module’s message to have dependency on map data structure.
 
 The ROS message of route section contains following three elements for each route section.
 
-- `preferred_primitive_id`: Preferred lane to follow towards the goal.
+- `preferred_primitive`: Preferred lane to follow towards the goal.
 - `primitives`: All neighbor lanes in the same direction including the preferred lane.
 
 ## Implementation
@@ -133,7 +133,7 @@ To calculate `route_lanelets`,
 3. If the following and previous lanelets of each `candidate_lanelets` are `route_lanelets`, the `candidate_lanelet` is registered as `route_lanelets`
    - This is because even though `candidate_lanelet` (an adjacent lane) is not lane-changeable, we can pass the `candidate_lanelet` without lane change if the following and previous lanelets of the `candidate_lanelet` are `route_lanelets`
 
-`get preferred lanelets` extracts `preferred_primitive_id` from `route_lanelets` with the route handler.
+`get preferred lanelets` extracts `preferred_primitive` from `route_lanelets` with the route handler.
 
 `create route sections` extracts `primitives` from `route_lanelets` for each route section with the route handler, and creates route sections.
 

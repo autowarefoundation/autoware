@@ -26,8 +26,8 @@
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -59,7 +59,7 @@ private:
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
   rclcpp::Subscription<HADMapBin>::SharedPtr sub_lanelet_map_bin_;
-  rclcpp::Subscription<HADMapRoute>::SharedPtr sub_route_;
+  rclcpp::Subscription<LaneletRoute>::SharedPtr sub_route_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_reference_trajectory_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_trajectory_;
 
@@ -69,9 +69,9 @@ private:
   lanelet::LaneletMapPtr lanelet_map_;
   lanelet::traffic_rules::TrafficRulesPtr traffic_rules_;
   lanelet::routing::RoutingGraphPtr routing_graph_;
-  HADMapRoute::ConstSharedPtr route_;
+  LaneletRoute::ConstSharedPtr route_;
   geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr cov_;
-  HADMapRoute::ConstSharedPtr last_route_;
+  LaneletRoute::ConstSharedPtr last_route_;
   lanelet::ConstLanelets route_lanelets_;
   Trajectory::ConstSharedPtr reference_trajectory_;
   Trajectory::ConstSharedPtr predicted_trajectory_;
@@ -79,7 +79,7 @@ private:
   // Callback
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
   void onLaneletMapBin(const HADMapBin::ConstSharedPtr msg);
-  void onRoute(const HADMapRoute::ConstSharedPtr msg);
+  void onRoute(const LaneletRoute::ConstSharedPtr msg);
   void onReferenceTrajectory(const Trajectory::ConstSharedPtr msg);
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr msg);
 

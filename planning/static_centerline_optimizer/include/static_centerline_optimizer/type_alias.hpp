@@ -18,23 +18,23 @@
 
 #include "autoware_auto_mapping_msgs/msg/had_map_bin.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
-#include "autoware_auto_planning_msgs/msg/had_map_route.hpp"
 #include "autoware_auto_planning_msgs/msg/path.hpp"
 #include "autoware_auto_planning_msgs/msg/path_point.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/lanelet_route.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
 namespace static_centerline_optimizer
 {
 using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_planning_msgs::msg::HADMapRoute;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPoint;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::LaneletRoute;
 using route_handler::RouteHandler;
 using tier4_autoware_utils::LinearRing2d;
 using tier4_autoware_utils::LineString2d;

@@ -11,7 +11,7 @@
 | Name                                 | Type                                                     | Description        |
 | ------------------------------------ | -------------------------------------------------------- | ------------------ |
 | `~/input/vector_map`                 | `autoware_auto_mapping_msgs::msg::HADMapBin`             | vector map         |
-| `~/input/route`                      | `autoware_auto_planning_msgs::msg::HADMapRoute`          | route              |
+| `~/input/route`                      | `autoware_planning_msgs::msg::LaneletRoute`              | route              |
 | `~/input/classified/traffic_signals` | `autoware_auto_perception_msgs::msg::TrafficSignalArray` | classified signals |
 
 ### Output

@@ -217,7 +217,7 @@ void ScenarioSelectorNode::onMap(
 }
 
 void ScenarioSelectorNode::onRoute(
-  const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr msg)
+  const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr msg)
 {
   route_ = msg;
   current_scenario_ = tier4_planning_msgs::msg::Scenario::EMPTY;
@@ -371,7 +371,7 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   sub_lanelet_map_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
     "input/lanelet_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&ScenarioSelectorNode::onMap, this, std::placeholders::_1));
-  sub_route_ = this->create_subscription<autoware_auto_planning_msgs::msg::HADMapRoute>(
+  sub_route_ = this->create_subscription<autoware_planning_msgs::msg::LaneletRoute>(
     "input/route", rclcpp::QoS{1}.transient_local(),
     std::bind(&ScenarioSelectorNode::onRoute, this, std::placeholders::_1));
   sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(

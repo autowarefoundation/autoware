@@ -15,6 +15,7 @@
 
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
   <depend>boost</depend>
   <depend>diagnostic_updater</depend>
   <depend>eigen</depend>

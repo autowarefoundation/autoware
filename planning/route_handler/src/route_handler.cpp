@@ -34,13 +34,13 @@
 
 namespace
 {
-using autoware_auto_mapping_msgs::msg::MapPrimitive;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_planning_msgs::msg::LaneletPrimitive;
 using geometry_msgs::msg::Pose;
 using lanelet::utils::to2D;
 
-bool exists(const std::vector<MapPrimitive> & primitives, const int64_t & id)
+bool exists(const std::vector<LaneletPrimitive> & primitives, const int64_t & id)
 {
   for (const auto & p : primitives) {
     if (p.id == id) {
@@ -165,7 +165,7 @@ bool RouteHandler::isRouteLooped(const RouteSections & route_sections)
   return false;
 }
 
-void RouteHandler::setRoute(const HADMapRoute & route_msg)
+void RouteHandler::setRoute(const LaneletRoute & route_msg)
 {
   if (!isRouteLooped(route_msg.segments)) {
     route_msg_ = route_msg;
@@ -304,7 +304,7 @@ void RouteHandler::setLaneletsFromRouteMsg()
       const auto id = primitive.id;
       const auto & llt = lanelet_map_ptr_->laneletLayer.get(id);
       route_lanelets_.push_back(llt);
-      if (id == route_section.preferred_primitive_id) {
+      if (id == route_section.preferred_primitive.id) {
         preferred_lanelets_.push_back(llt);
       }
     }
@@ -381,7 +381,7 @@ lanelet::Id RouteHandler::getGoalLaneId() const
     return lanelet::InvalId;
   }
 
-  return route_msg_.segments.back().preferred_primitive_id;
+  return route_msg_.segments.back().preferred_primitive.id;
 }
 
 bool RouteHandler::getGoalLanelet(lanelet::ConstLanelet * goal_lanelet) const
@@ -1668,12 +1668,12 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
   return true;
 }
 
-std::vector<HADMapSegment> RouteHandler::createMapSegments(
+std::vector<LaneletSegment> RouteHandler::createMapSegments(
   const lanelet::ConstLanelets & path_lanelets) const
 {
   const auto main_path = getMainLanelets(path_lanelets);
 
-  std::vector<HADMapSegment> route_sections;
+  std::vector<LaneletSegment> route_sections;
 
   if (main_path.empty()) {
     return route_sections;
@@ -1681,12 +1681,12 @@ std::vector<HADMapSegment> RouteHandler::createMapSegments(
 
   route_sections.reserve(main_path.size());
   for (const auto & main_llt : main_path) {
-    HADMapSegment route_section_msg;
+    LaneletSegment route_section_msg;
     const lanelet::ConstLanelets route_section_lanelets = getNeighborsWithinRoute(main_llt);
-    route_section_msg.preferred_primitive_id = main_llt.id();
+    route_section_msg.preferred_primitive.id = main_llt.id();
     route_section_msg.primitives.reserve(route_section_lanelets.size());
     for (const auto & section_llt : route_section_lanelets) {
-      MapPrimitive p;
+      LaneletPrimitive p;
       p.id = section_llt.id();
       p.primitive_type = "lane";
       route_section_msg.primitives.push_back(p);

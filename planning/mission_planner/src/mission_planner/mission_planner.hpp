@@ -23,7 +23,7 @@
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -38,7 +38,7 @@ namespace mission_planner
 {
 
 using PoseStamped = geometry_msgs::msg::PoseStamped;
-using HADMapRoute = autoware_auto_planning_msgs::msg::HADMapRoute;
+using LaneletRoute = autoware_planning_msgs::msg::LaneletRoute;
 using MarkerArray = visualization_msgs::msg::MarkerArray;
 using SetRoutePoints = planning_interface::SetRoutePoints;
 using SetRoute = planning_interface::SetRoute;
@@ -67,7 +67,7 @@ private:
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   void change_route();
-  void change_route(const HADMapRoute & route);
+  void change_route(const LaneletRoute & route);
 
   RouteState::Message state_;
   component_interface_utils::Publisher<RouteState>::SharedPtr pub_state_;

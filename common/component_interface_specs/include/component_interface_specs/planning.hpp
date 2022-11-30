@@ -20,7 +20,7 @@
 #include <autoware_adapi_v1_msgs/msg/route_state.hpp>
 #include <autoware_adapi_v1_msgs/srv/clear_route.hpp>
 #include <autoware_adapi_v1_msgs/srv/set_route_points.hpp>
-#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/srv/set_route.hpp>
 
 namespace planning_interface
@@ -55,7 +55,7 @@ struct RouteState
 
 struct Route
 {
-  using Message = autoware_auto_planning_msgs::msg::HADMapRoute;
+  using Message = autoware_planning_msgs::msg::LaneletRoute;
   static constexpr char name[] = "/planning/mission_planning/route";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;

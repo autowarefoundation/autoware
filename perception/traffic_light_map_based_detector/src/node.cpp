@@ -102,7 +102,7 @@ MapBasedDetector::MapBasedDetector(const rclcpp::NodeOptions & node_options)
   camera_info_sub_ = create_subscription<sensor_msgs::msg::CameraInfo>(
     "~/input/camera_info", rclcpp::SensorDataQoS(),
     std::bind(&MapBasedDetector::cameraInfoCallback, this, _1));
-  route_sub_ = create_subscription<autoware_auto_planning_msgs::msg::HADMapRoute>(
+  route_sub_ = create_subscription<autoware_planning_msgs::msg::LaneletRoute>(
     "~/input/route", rclcpp::QoS{1}.transient_local(),
     std::bind(&MapBasedDetector::routeCallback, this, _1));
 
@@ -290,7 +290,7 @@ void MapBasedDetector::mapCallback(
 }
 
 void MapBasedDetector::routeCallback(
-  const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr input_msg)
+  const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr input_msg)
 {
   if (lanelet_map_ptr_ == nullptr) {
     RCLCPP_WARN(get_logger(), "cannot set traffic light in route because don't receive map");

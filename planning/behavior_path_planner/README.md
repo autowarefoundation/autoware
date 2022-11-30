@@ -43,7 +43,7 @@ The following modules are currently supported:
 
 ### input
 
-- /planning/mission_planning/route [`autoware_auto_planning_msgs/HADMapRoute`] : Current route from start to goal.
+- /planning/mission_planning/route [`autoware_planning_msgs/LaneletRoute`] : Current route from start to goal.
 - /map/vector_map [autoware_auto_mapping_msgs/HADMapBin] : Map information.
 - /perception/object_recognition/objects [`autoware_auto_perception_msgs/PredictedObjects`] : dynamic objects from perception module.
 - /perception/occupancy_grid_map/map [nav_msgs/msg/OccupancyGrid] : occupancy grid map from perception module. This is used for only Pull Over module

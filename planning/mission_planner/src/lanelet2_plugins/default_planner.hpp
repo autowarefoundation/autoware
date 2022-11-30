@@ -20,7 +20,7 @@
 #include <route_handler/route_handler.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <lanelet2_routing/RoutingGraph.h>
@@ -38,11 +38,11 @@ public:
   void initialize(rclcpp::Node * node) override;
   void initialize(rclcpp::Node * node, const HADMapBin::ConstSharedPtr msg) override;
   bool ready() const override;
-  HADMapRoute plan(const RoutePoints & points) override;
-  MarkerArray visualize(const HADMapRoute & route) const override;
+  LaneletRoute plan(const RoutePoints & points) override;
+  MarkerArray visualize(const LaneletRoute & route) const override;
 
 private:
-  using RouteSections = std::vector<autoware_auto_mapping_msgs::msg::HADMapSegment>;
+  using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
   using Pose = geometry_msgs::msg::Pose;
   bool is_graph_ready_;
   lanelet::LaneletMapPtr lanelet_map_ptr_;

@@ -21,12 +21,12 @@
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_mapping_msgs/msg/had_map_segment.hpp>
-#include <autoware_auto_mapping_msgs/msg/map_primitive.hpp>
-#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_planning_msgs/msg/lanelet_primitive.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
+#include <autoware_planning_msgs/msg/lanelet_segment.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <lanelet2_routing/Route.h>
@@ -42,15 +42,15 @@
 namespace route_handler
 {
 using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_auto_mapping_msgs::msg::HADMapSegment;
-using autoware_auto_planning_msgs::msg::HADMapRoute;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_planning_msgs::msg::LaneletRoute;
+using autoware_planning_msgs::msg::LaneletSegment;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using std_msgs::msg::Header;
-using RouteSections = std::vector<autoware_auto_mapping_msgs::msg::HADMapSegment>;
+using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
 
 enum class LaneChangeDirection { NONE, LEFT, RIGHT };
 enum class PullOverDirection { NONE, LEFT, RIGHT };
@@ -64,7 +64,7 @@ public:
 
   // non-const methods
   void setMap(const HADMapBin & map_msg);
-  void setRoute(const HADMapRoute & route_msg);
+  void setRoute(const LaneletRoute & route_msg);
   void setRouteLanelets(const lanelet::ConstLanelets & path_lanelets);
 
   // const methods
@@ -85,7 +85,7 @@ public:
   bool planPathLaneletsBetweenCheckpoints(
     const Pose & start_checkpoint, const Pose & goal_checkpoint,
     lanelet::ConstLanelets * path_lanelets) const;
-  std::vector<HADMapSegment> createMapSegments(const lanelet::ConstLanelets & path_lanelets) const;
+  std::vector<LaneletSegment> createMapSegments(const lanelet::ConstLanelets & path_lanelets) const;
   static bool isRouteLooped(const RouteSections & route_sections);
 
   // for goal
@@ -275,7 +275,7 @@ private:
   lanelet::ConstLanelets start_lanelets_;
   lanelet::ConstLanelets goal_lanelets_;
   lanelet::ConstLanelets shoulder_lanelets_;
-  HADMapRoute route_msg_;
+  LaneletRoute route_msg_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("route_handler")};
 

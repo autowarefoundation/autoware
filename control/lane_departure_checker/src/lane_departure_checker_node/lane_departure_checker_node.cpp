@@ -21,7 +21,7 @@
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_segment.hpp>
+#include <autoware_planning_msgs/msg/lanelet_segment.hpp>
 
 #include <map>
 #include <memory>
@@ -33,7 +33,7 @@ using tier4_autoware_utils::rad2deg;
 
 namespace
 {
-using autoware_auto_mapping_msgs::msg::HADMapSegment;
+using autoware_planning_msgs::msg::LaneletSegment;
 
 std::array<geometry_msgs::msg::Point, 3> triangle2points(
   const geometry_msgs::msg::Polygon & triangle)
@@ -54,7 +54,7 @@ std::array<geometry_msgs::msg::Point, 3> triangle2points(
 lanelet::ConstLanelets getRouteLanelets(
   const lanelet::LaneletMapPtr & lanelet_map,
   const lanelet::routing::RoutingGraphPtr & routing_graph,
-  const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr & route_ptr,
+  const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr & route_ptr,
   const double vehicle_length)
 {
   lanelet::ConstLanelets route_lanelets;
@@ -159,7 +159,7 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
   sub_lanelet_map_bin_ = this->create_subscription<HADMapBin>(
     "~/input/lanelet_map_bin", rclcpp::QoS{1}.transient_local(),
     std::bind(&LaneDepartureCheckerNode::onLaneletMapBin, this, _1));
-  sub_route_ = this->create_subscription<HADMapRoute>(
+  sub_route_ = this->create_subscription<LaneletRoute>(
     "~/input/route", rclcpp::QoS{1}.transient_local(),
     std::bind(&LaneDepartureCheckerNode::onRoute, this, _1));
   sub_reference_trajectory_ = this->create_subscription<Trajectory>(
@@ -199,7 +199,7 @@ void LaneDepartureCheckerNode::onLaneletMapBin(const HADMapBin::ConstSharedPtr m
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_, &traffic_rules_, &routing_graph_);
 }
 
-void LaneDepartureCheckerNode::onRoute(const HADMapRoute::ConstSharedPtr msg) { route_ = msg; }
+void LaneDepartureCheckerNode::onRoute(const LaneletRoute::ConstSharedPtr msg) { route_ = msg; }
 
 void LaneDepartureCheckerNode::onReferenceTrajectory(const Trajectory::ConstSharedPtr msg)
 {

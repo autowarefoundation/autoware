@@ -86,7 +86,7 @@ CrosswalkTrafficLightEstimatorNode::CrosswalkTrafficLightEstimatorNode(
   sub_map_ = create_subscription<HADMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&CrosswalkTrafficLightEstimatorNode::onMap, this, _1));
-  sub_route_ = create_subscription<HADMapRoute>(
+  sub_route_ = create_subscription<LaneletRoute>(
     "~/input/route", rclcpp::QoS{1}.transient_local(),
     std::bind(&CrosswalkTrafficLightEstimatorNode::onRoute, this, _1));
   sub_traffic_light_array_ = create_subscription<TrafficSignalArray>(
@@ -118,7 +118,7 @@ void CrosswalkTrafficLightEstimatorNode::onMap(const HADMapBin::ConstSharedPtr m
   RCLCPP_INFO(get_logger(), "[CrosswalkTrafficLightEstimatorNode]: Map is loaded");
 }
 
-void CrosswalkTrafficLightEstimatorNode::onRoute(const HADMapRoute::ConstSharedPtr msg)
+void CrosswalkTrafficLightEstimatorNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
 {
   if (lanelet_map_ptr_ == nullptr) {
     RCLCPP_WARN(get_logger(), "cannot set traffic light in route because don't receive map");
