@@ -24,6 +24,18 @@ double normalizeYaw(const double & yaw)
   return std::atan2(std::sin(yaw), std::cos(yaw));
 }
 
+/*  == Nonlinear model ==
+ *
+ * x_{k+1}   = x_k + vx_k * cos(yaw_k + b_k) * dt
+ * y_{k+1}   = y_k + vx_k * sin(yaw_k + b_k) * dt
+ * yaw_{k+1} = yaw_k + (wz_k) * dt
+ * b_{k+1}   = b_k
+ * vx_{k+1}  = vz_k
+ * wz_{k+1}  = wz_k
+ *
+ * (b_k : yaw_bias_k)
+ */
+
 Vector6d predictNextState(const Vector6d & X_curr, const double dt)
 {
   const double x = X_curr(IDX::X);
@@ -43,7 +55,15 @@ Vector6d predictNextState(const Vector6d & X_curr, const double dt)
   return X_next;
 }
 
-// TODO(TakeshiIshita) show where the equation come from
+/*  == Linearized model ==
+ *
+ * A = [ 1, 0, -vx*sin(yaw+b)*dt, -vx*sin(yaw+b)*dt, cos(yaw+b)*dt,  0]
+ *     [ 0, 1,  vx*cos(yaw+b)*dt,  vx*cos(yaw+b)*dt, sin(yaw+b)*dt,  0]
+ *     [ 0, 0,                 1,                 0,             0, dt]
+ *     [ 0, 0,                 0,                 1,             0,  0]
+ *     [ 0, 0,                 0,                 0,             1,  0]
+ *     [ 0, 0,                 0,                 0,             0,  1]
+ */
 Matrix6d createStateTransitionMatrix(const Vector6d & X_curr, const double dt)
 {
   const double yaw = X_curr(IDX::YAW);

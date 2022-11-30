@@ -151,7 +151,24 @@ void EKFLocalizer::timerCallback()
   /* predict model in EKF */
   stop_watch_.tic();
   DEBUG_INFO(get_logger(), "------------------------- start prediction -------------------------");
-  predictKinematicsModel();
+
+  const Eigen::MatrixXd X_curr = ekf_.getLatestX();
+  DEBUG_PRINT_MAT(X_curr.transpose());
+
+  const Eigen::MatrixXd P_curr = ekf_.getLatestP();
+
+  const double dt = ekf_dt_;
+
+  const Vector6d X_next = predictNextState(X_curr, dt);
+  const Matrix6d A = createStateTransitionMatrix(X_curr, dt);
+  const Matrix6d Q = processNoiseCovariance(proc_cov_yaw_d_, proc_cov_vx_d_, proc_cov_wz_d_);
+
+  ekf_.predictWithDelay(X_next, A, Q);
+
+  // debug
+  const Eigen::MatrixXd X_result = ekf_.getLatestX();
+  DEBUG_PRINT_MAT(X_result.transpose());
+  DEBUG_PRINT_MAT((X_result - X_curr).transpose());
   DEBUG_INFO(get_logger(), "[EKF] predictKinematicsModel calc time = %f [ms]", stop_watch_.toc());
   DEBUG_INFO(get_logger(), "------------------------- end prediction -------------------------\n");
 
@@ -378,52 +395,6 @@ void EKFLocalizer::initEKF()
   P(IDX::WZ, IDX::WZ) = 50.0;    // for wz
 
   ekf_.init(X, P, params_.extend_state_step);
-}
-
-/*
- * predictKinematicsModel
- */
-void EKFLocalizer::predictKinematicsModel()
-{
-  /*  == Nonlinear model ==
-   *
-   * x_{k+1}   = x_k + vx_k * cos(yaw_k + b_k) * dt
-   * y_{k+1}   = y_k + vx_k * sin(yaw_k + b_k) * dt
-   * yaw_{k+1} = yaw_k + (wz_k) * dt
-   * b_{k+1}   = b_k
-   * vx_{k+1}  = vz_k
-   * wz_{k+1}  = wz_k
-   *
-   * (b_k : yaw_bias_k)
-   */
-
-  /*  == Linearized model ==
-   *
-   * A = [ 1, 0, -vx*sin(yaw+b)*dt, -vx*sin(yaw+b)*dt, cos(yaw+b)*dt,  0]
-   *     [ 0, 1,  vx*cos(yaw+b)*dt,  vx*cos(yaw+b)*dt, sin(yaw+b)*dt,  0]
-   *     [ 0, 0,                 1,                 0,             0, dt]
-   *     [ 0, 0,                 0,                 1,             0,  0]
-   *     [ 0, 0,                 0,                 0,             1,  0]
-   *     [ 0, 0,                 0,                 0,             0,  1]
-   */
-
-  const Eigen::MatrixXd X_curr = ekf_.getLatestX();
-  DEBUG_PRINT_MAT(X_curr.transpose());
-
-  const Eigen::MatrixXd P_curr = ekf_.getLatestP();
-
-  const double dt = ekf_dt_;
-
-  const Vector6d X_next = predictNextState(X_curr, dt);
-  const Matrix6d A = createStateTransitionMatrix(X_curr, dt);
-  const Matrix6d Q = processNoiseCovariance(proc_cov_yaw_d_, proc_cov_vx_d_, proc_cov_wz_d_);
-
-  ekf_.predictWithDelay(X_next, A, Q);
-
-  // debug
-  const Eigen::MatrixXd X_result = ekf_.getLatestX();
-  DEBUG_PRINT_MAT(X_result.transpose());
-  DEBUG_PRINT_MAT((X_result - X_curr).transpose());
 }
 
 /*
