@@ -9,6 +9,7 @@ jobs:
     uses: ./.github/workflows/load-env.yaml
 
   vcs-import:
+    needs: load-env
     runs-on: ubuntu-latest
     container: ros:${{ needs.load-env.outputs.rosdistro }}
     steps:

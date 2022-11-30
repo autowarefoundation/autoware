@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/load-env.yaml
 
   update-docker-manifest:
+    needs: load-env
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository

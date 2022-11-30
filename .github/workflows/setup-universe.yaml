@@ -8,6 +8,7 @@ jobs:
     uses: ./.github/workflows/load-env.yaml
 
   setup-universe:
+    needs: load-env
     runs-on: ubuntu-latest
     container: ${{ needs.load-env.outputs.base-image }}
     steps:
