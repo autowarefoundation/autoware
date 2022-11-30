@@ -46,17 +46,22 @@ jobs:
             cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 
+      - name: Get architecture
+        id: get-arch
+        run: |
+          echo "arch=$(dpkg --print-architecture)" >> $GITHUB_OUTPUT
+
       - name: Build 'autoware-universe'
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-universe
           build-args: |
-            *.platform=linux/arm64
+            *.platform=linux/${{ steps.get-arch.outputs.arch }}
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env[format('{0}', matrix.base_image_env)] }}
             *.args.SETUP_ARGS=${{ matrix.setup-args }}
           tag-prefix: ${{ env.rosdistro }}-
-          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-${{ steps.get-arch.outputs.arch }}
 
       - name: Show disk space
         run: |
