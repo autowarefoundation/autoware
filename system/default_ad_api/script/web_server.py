@@ -49,15 +49,15 @@ def convert_dict(msg):
 
 def spin_ros_node():
     global cli
-    rclpy.init(args=sys.argv)
     node = Node("ad_api_default_web_server")
     cli = create_service(node, InterfaceVersion, "/api/interface/version")
     rclpy.spin(node)
 
 
 if __name__ == "__main__":
+    rclpy.init(args=sys.argv, signal_handler_options=rclpy.signals.SignalHandlerOptions.NO)
     thread = Thread(target=spin_ros_node)
     thread.start()
-    app.run(host="localhost", port=8888, debug=True)
+    app.run(host="localhost", port=8888, debug=False)
     rclpy.shutdown()
     thread.join()

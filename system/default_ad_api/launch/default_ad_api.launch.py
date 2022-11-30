@@ -46,6 +46,7 @@ def generate_launch_description():
         composable_node_descriptions=components,
     )
     web_server = Node(
+        namespace="default_ad_api",
         package="default_ad_api",
         name="web_server",
         executable="web_server.py",
