@@ -5,9 +5,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
   vcs-import:
+    needs: load-env
     runs-on: ubuntu-latest
-    container: ros:galactic
+    container: ros:${{ needs.load-env.outputs.rosdistro }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -20,7 +24,7 @@ jobs:
       - name: Register AutonomouStuff repository
         uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@v1
         with:
-          rosdistro: galactic
+          rosdistro: ${{ needs.load-env.outputs.rosdistro }}
 
       - name: Set git config
         uses: autowarefoundation/autoware-github-actions/set-git-config@v1
@@ -40,4 +44,4 @@ jobs:
         run: |
           sudo apt-get -y update
           rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro galactic
+          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro ${{ needs.load-env.outputs.rosdistro }}
