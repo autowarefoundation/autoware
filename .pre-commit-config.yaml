@@ -1,5 +1,5 @@
 ci:
-  autofix_commit_msg: "ci(pre-commit): autofix"
+  autofix_commit_msg: "style(pre-commit): autofix"
   autoupdate_commit_msg: "ci(pre-commit): autoupdate"
 
 repos:
