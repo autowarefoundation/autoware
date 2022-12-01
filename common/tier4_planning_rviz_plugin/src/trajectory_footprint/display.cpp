@@ -44,6 +44,9 @@ AutowareTrajectoryFootprintDisplay::AutowareTrajectoryFootprintDisplay()
   property_rear_overhang_ = new rviz_common::properties::FloatProperty(
     "Rear Overhang", 1.03, "", property_trajectory_footprint_view_, SLOT(updateVehicleInfo()),
     this);
+  property_offset_ = new rviz_common::properties::FloatProperty(
+    "Offset from BaseLink", 0.0, "", property_trajectory_footprint_view_, SLOT(updateVehicleInfo()),
+    this);
   property_vehicle_length_->setMin(0.0);
   property_vehicle_width_->setMin(0.0);
   property_rear_overhang_->setMin(0.0);
@@ -158,6 +161,8 @@ void AutowareTrajectoryFootprintDisplay::processMessage(
     trajectory_point_manual_object_->begin(
       "BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
+    const float offset_from_baselink = property_offset_->getFloat();
+
     for (size_t point_idx = 0; point_idx < msg_ptr->points.size(); point_idx++) {
       const auto & path_point = msg_ptr->points.at(point_idx);
       /*
@@ -169,8 +174,8 @@ void AutowareTrajectoryFootprintDisplay::processMessage(
         color.a = property_trajectory_footprint_alpha_->getFloat();
 
         const auto info = vehicle_footprint_info_;
-        const float top = info->length - info->rear_overhang;
-        const float bottom = -info->rear_overhang;
+        const float top = info->length - info->rear_overhang - offset_from_baselink;
+        const float bottom = -info->rear_overhang + offset_from_baselink;
         const float left = -info->width / 2.0;
         const float right = info->width / 2.0;
 

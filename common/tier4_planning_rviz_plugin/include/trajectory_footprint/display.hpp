@@ -67,6 +67,7 @@ protected:
   rviz_common::properties::FloatProperty * property_vehicle_length_;
   rviz_common::properties::FloatProperty * property_vehicle_width_;
   rviz_common::properties::FloatProperty * property_rear_overhang_;
+  rviz_common::properties::FloatProperty * property_offset_;
 
   Ogre::ManualObject * trajectory_point_manual_object_;
   rviz_common::properties::BoolProperty * property_trajectory_point_view_;
