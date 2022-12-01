@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="rviz_path" default="$(find-pkg-share lidar_centerpoint)/launch/centerpoint_vs_centerpoint-tiny/rviz"/>
+  <arg name="input/pointcloud" default="/sensing/lidar/concatenated/pointcloud"/>
+  <arg name="score_threshold" default="0.35"/>
+  <arg name="rviz_config1" default="$(var rviz_path)/centerpoint_tiny.rviz" description="rviz config"/>
+  <arg name="rviz_config2" default="$(var rviz_path)/centerpoint.rviz" description="rviz config"/>
+
+  <set_parameter name="use_sim_time" value="true"/>
+  <group>
+    <!-- Rviz -->
+    <node pkg="rviz2" exec="rviz2" name="rviz2_centerpoint_tiny" output="screen" args="-d $(var rviz_config1)"/>
+    <node pkg="rviz2" exec="rviz2" name="rviz2_centerpoint" output="screen" args="-d $(var rviz_config2)"/>
+  </group>
+
+  <!-- CenterPoint -->
+  <group>
+    <push-ros-namespace namespace="centerpoint"/>
+    <group>
+      <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="score_threshold" value="$(var score_threshold)"/>
+        <arg name="model_name" value="centerpoint"/>
+        <arg name="model_path" value="$(find-pkg-share lidar_centerpoint)/data"/>
+        <arg name="model_param_path" value="$(find-pkg-share lidar_centerpoint)/config/$(var model_name).param.yaml"/>
+      </include>
+    </group>
+  </group>
+
+  <!-- CenterPoint-tiny -->
+  <group>
+    <push-ros-namespace namespace="centerpoint_tiny"/>
+    <group>
+      <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="score_threshold" value="$(var score_threshold)"/>
+        <arg name="model_name" value="centerpoint_tiny"/>
+        <arg name="model_path" value="$(find-pkg-share lidar_centerpoint)/data"/>
+        <arg name="model_param_path" value="$(find-pkg-share lidar_centerpoint)/config/$(var model_name).param.yaml"/>
+      </include>
+    </group>
+  </group>
+</launch>
