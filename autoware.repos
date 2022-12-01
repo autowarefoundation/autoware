@@ -3,19 +3,19 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: 7ef90563a581fbb32b0c93913d085444525d9565
+    version: galactic
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: ff3e27d03d22a770edd2c15e9c77aa4ea1e9808a
+    version: galactic
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: 0f5c64c7497462ac4e669a8bfb7ef1bd058a588d
+    version: galactic
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: 21b086f8c4dd750bee5472e05718aca43a2f5e22
+    version: galactic
   core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
@@ -24,7 +24,7 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: 35b0dfbd78f5a3f36a4f41e2e45dd9fef4db54d2
+    version: galactic
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -57,7 +57,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: e03384dd01b12bd792b849acf677dd418c88474c
+    version: galactic
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
