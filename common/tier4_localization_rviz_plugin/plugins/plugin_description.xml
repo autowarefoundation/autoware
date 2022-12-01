@@ -5,5 +5,9 @@
     base_class_type="rviz_common::Display">
     <description>Display pose history</description>
   </class>
-
+  <class name="rviz_plugins::PoseHistoryFootprint"
+    type="rviz_plugins::PoseHistoryFootprint"
+    base_class_type="rviz_common::Display">
+    <description>Display footprint of geometry_msgs::Pose</description>
+  </class>
 </library>
