@@ -213,6 +213,8 @@ private:
   void updateRegisteredRawShiftLines();
 
   // -- for state management --
+  bool is_avoidance_maneuver_starts;
+  bool isAvoidanceManeuverRunning();
   bool isAvoidancePlanRunning() const;
 
   // -- for pre-processing --

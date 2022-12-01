@@ -9,6 +9,7 @@
 
       enable_avoidance_over_same_direction: true
       enable_avoidance_over_opposite_direction: true
+      enable_update_path_when_object_is_gone: false
 
       threshold_distance_object_is_on_center: 1.0 # [m]
       threshold_speed_object_is_stopped: 1.0      # [m/s]

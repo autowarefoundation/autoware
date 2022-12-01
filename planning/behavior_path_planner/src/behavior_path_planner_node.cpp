@@ -278,6 +278,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.detection_area_left_expand_dist = dp("detection_area_left_expand_dist", 1.0);
   p.enable_avoidance_over_same_direction = dp("enable_avoidance_over_same_direction", true);
   p.enable_avoidance_over_opposite_direction = dp("enable_avoidance_over_opposite_direction", true);
+  p.enable_update_path_when_object_is_gone = dp("enable_update_path_when_object_is_gone", false);
 
   p.threshold_distance_object_is_on_center = dp("threshold_distance_object_is_on_center", 1.0);
   p.threshold_speed_object_is_stopped = dp("threshold_speed_object_is_stopped", 1.0);

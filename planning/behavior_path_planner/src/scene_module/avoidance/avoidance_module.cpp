@@ -103,7 +103,13 @@ BT::NodeStatus AvoidanceModule::updateState()
   DebugData debug;
   const auto avoid_data = calcAvoidancePlanningData(debug);
   const bool has_avoidance_target = !avoid_data.target_objects.empty();
+
   if (!is_plan_running && !has_avoidance_target) {
+    current_state_ = BT::NodeStatus::SUCCESS;
+  } else if (
+    !has_avoidance_target && parameters_->enable_update_path_when_object_is_gone &&
+    !isAvoidanceManeuverRunning()) {
+    // if dynamic objects are removed on path, change current state to reset path
     current_state_ = BT::NodeStatus::SUCCESS;
   } else {
     current_state_ = BT::NodeStatus::RUNNING;
@@ -120,6 +126,18 @@ bool AvoidanceModule::isAvoidancePlanRunning() const
   const bool has_base_offset = std::abs(path_shifter_.getBaseOffset()) > 0.01;
   const bool has_shift_line = (path_shifter_.getShiftLinesSize() > 0);
   return has_base_offset || has_shift_line;
+}
+bool AvoidanceModule::isAvoidanceManeuverRunning()
+{
+  const auto path_idx = avoidance_data_.ego_closest_path_index;
+
+  for (const auto & al : registered_raw_shift_lines_) {
+    if (path_idx > al.start_idx || is_avoidance_maneuver_starts) {
+      is_avoidance_maneuver_starts = true;
+      return true;
+    }
+  }
+  return false;
 }
 
 AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & debug) const
@@ -2667,6 +2685,7 @@ void AvoidanceModule::initVariables()
   registered_raw_shift_lines_ = {};
   current_raw_shift_lines_ = {};
   original_unique_id = 0;
+  is_avoidance_maneuver_starts = false;
 }
 
 bool AvoidanceModule::isTargetObjectType(const PredictedObject & object) const

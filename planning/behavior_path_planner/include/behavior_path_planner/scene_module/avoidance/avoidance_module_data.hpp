@@ -64,6 +64,9 @@ struct AvoidanceParameters
   // to use this, enable_avoidance_over_same_direction need to be set to true.
   bool enable_avoidance_over_opposite_direction{true};
 
+  // enable update path when if detected objects on planner data is gone.
+  bool enable_update_path_when_object_is_gone{false};
+
   // Vehicles whose distance to the center of the path is
   // less than this will not be considered for avoidance.
   double threshold_distance_object_is_on_center;
