@@ -496,7 +496,12 @@ PathWithLaneId getReferencePathFromTargetLane(
   const ArcCoordinates lane_change_start_arc_position =
     lanelet::utils::getArcCoordinates(target_lanes, lane_changing_start_pose);
   const double & s_start = lane_change_start_arc_position.length;
-  const double s_end = s_start + prepare_distance + lane_changing_distance + forward_path_length;
+  double s_end = s_start + prepare_distance + lane_changing_distance + forward_path_length;
+  if (route_handler.isInGoalRouteSection(target_lanes.back())) {
+    const auto goal_arc_coordinates =
+      lanelet::utils::getArcCoordinates(target_lanes, route_handler.getGoalPose());
+    s_end = std::min(s_end, goal_arc_coordinates.length);
+  }
   return route_handler.getCenterLinePath(target_lanes, s_start, s_end);
 }
 
@@ -511,7 +516,12 @@ PathWithLaneId getReferencePathFromTargetLane(
     lanelet::utils::getArcCoordinates(target_lanes, in_target_end_pose);
 
   const double & s_start = lane_change_start_arc_position.length;
-  const double & s_end = lane_change_end_arc_position.length;
+  double s_end = lane_change_end_arc_position.length;
+  if (route_handler.isInGoalRouteSection(target_lanes.back())) {
+    const auto goal_arc_coordinates =
+      lanelet::utils::getArcCoordinates(target_lanes, route_handler.getGoalPose());
+    s_end = std::min(s_end, goal_arc_coordinates.length);
+  }
   return route_handler.getCenterLinePath(target_lanes, s_start, s_end);
 }
 
