@@ -11,6 +11,7 @@ common/autoware_testing/** adam.dabrowski@robotec.ai @autowarefoundation/autowar
 common/bag_time_manager_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/fake_test_node/** opensource@apex.ai @autowarefoundation/autoware-global-codeowners
 common/global_parameter_loader/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/goal_distance_calculator/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -24,6 +25,7 @@ common/perception_utils/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp takay
 common/polar_grid/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/rtc_manager_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/signal_processing/** ali.boyali@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/tensorrt_common/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_api_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_autoware_utils/** kenji.miyake@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_calibration_rviz_plugin/** tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -59,7 +61,7 @@ evaluator/localization_evaluator/** dominik.jargot@robotec.ai @autowarefoundatio
 launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_control_launch/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_localization_launch/** yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
-launch/tier4_map_launch/** ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
+launch/tier4_map_launch/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_perception_launch/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_planning_launch/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -104,6 +106,7 @@ perception/radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp shunsuke.m
 perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/shape_estimation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/tensorrt_yolox/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_classifier/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_map_based_detector/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -137,6 +140,7 @@ sensing/image_transport_decompressor/** yukihiro.saito@tier4.jp @autowarefoundat
 sensing/imu_corrector/** yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/livox/livox_tag_filter/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+sensing/radar_static_pointcloud_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/radar_threshold_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/tier4_pcl_extensions/** ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
