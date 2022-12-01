@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 project(tensorrt_yolox)
 
+find_package(tensorrt_common)
+if(NOT ${tensorrt_common_FOUND})
+  message(WARNING "The tensorrt_common package is not found. Please check its dependencies.")
+  return()
+endif()
+
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 

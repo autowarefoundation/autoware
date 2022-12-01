@@ -4,9 +4,9 @@ project(tensorrt_common)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-find_package(CUDA REQUIRED)
-find_package(CUDNN REQUIRED)
-find_package(TENSORRT REQUIRED)
+find_package(CUDA)
+find_package(CUDNN)
+find_package(TENSORRT)
 
 if(NOT (${CUDA_FOUND} AND ${CUDNN_FOUND} AND ${TENSORRT_FOUND}))
   message(WARNING "cuda, cudnn, tensorrt libraries are not found")

@@ -4,7 +4,12 @@ project(cuda_utils)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-find_package(CUDA REQUIRED)
+find_package(CUDA)
+
+if(NOT ${CUDA_FOUND})
+  message(WARNING "cuda is not found, so the cuda_utils package won't be built.")
+  return()
+endif()
 
 install(
   DIRECTORY include/${PROJECT_NAME}/
