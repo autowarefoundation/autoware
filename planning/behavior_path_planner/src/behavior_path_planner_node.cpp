@@ -620,19 +620,11 @@ void BehaviorPathPlannerNode::run()
   planner_data_->prev_output_path = path;
   mutex_pd_.unlock();
 
-  PathWithLaneId clipped_path;
-  const auto module_status_ptr_vec = bt_manager_->getModulesStatus();
-  if (skipSmoothGoalConnection(module_status_ptr_vec)) {
-    clipped_path = *path;
-  } else {
-    clipped_path = modifyPathForSmoothGoalConnection(*path);
-  }
+  const size_t target_idx = findEgoIndex(path->points);
+  util::clipPathLength(*path, target_idx, planner_data_->parameters);
 
-  const size_t target_idx = findEgoIndex(clipped_path.points);
-  util::clipPathLength(clipped_path, target_idx, planner_data_->parameters);
-
-  if (!clipped_path.points.empty()) {
-    path_publisher_->publish(clipped_path);
+  if (!path->points.empty()) {
+    path_publisher_->publish(*path);
   } else {
     RCLCPP_ERROR_THROTTLE(
       get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
@@ -730,8 +722,16 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
   RCLCPP_DEBUG(
     get_logger(), "BehaviorTreeManager: output is %s.", bt_output.path ? "FOUND" : "NOT FOUND");
 
+  PathWithLaneId connected_path;
+  const auto module_status_ptr_vec = bt_manager_->getModulesStatus();
+  if (skipSmoothGoalConnection(module_status_ptr_vec)) {
+    connected_path = *path;
+  } else {
+    connected_path = modifyPathForSmoothGoalConnection(*path);
+  }
+
   const auto resampled_path =
-    util::resamplePathWithSpline(*path, planner_data_->parameters.path_interval);
+    util::resamplePathWithSpline(connected_path, planner_data_->parameters.path_interval);
   return std::make_shared<PathWithLaneId>(resampled_path);
 }
 
