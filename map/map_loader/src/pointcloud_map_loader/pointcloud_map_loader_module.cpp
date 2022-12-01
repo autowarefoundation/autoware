@@ -15,7 +15,6 @@
 #include "pointcloud_map_loader_module.hpp"
 
 #include <fmt/format.h>
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
 

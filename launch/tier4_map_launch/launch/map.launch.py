@@ -32,9 +32,14 @@ def launch_setup(context, *args, **kwargs):
     lanelet2_map_loader_param_path = LaunchConfiguration("lanelet2_map_loader_param_path").perform(
         context
     )
+    pointcloud_map_loader_param_path = LaunchConfiguration(
+        "pointcloud_map_loader_param_path"
+    ).perform(context)
 
     with open(lanelet2_map_loader_param_path, "r") as f:
         lanelet2_map_loader_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(pointcloud_map_loader_param_path, "r") as f:
+        pointcloud_map_loader_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     map_hash_generator = Node(
         package="map_loader",
@@ -77,9 +82,14 @@ def launch_setup(context, *args, **kwargs):
         package="map_loader",
         plugin="PointCloudMapLoaderNode",
         name="pointcloud_map_loader",
-        remappings=[("output/pointcloud_map", "pointcloud_map")],
+        remappings=[
+            ("output/pointcloud_map", "pointcloud_map"),
+            ("service/get_partial_pcd_map", "/map/get_partial_pointcloud_map"),
+            ("service/get_differential_pcd_map", "/map/get_differential_pointcloud_map"),
+        ],
         parameters=[
-            {"pcd_paths_or_directory": ["[", LaunchConfiguration("pointcloud_map_path"), "]"]}
+            {"pcd_paths_or_directory": ["[", LaunchConfiguration("pointcloud_map_path"), "]"]},
+            pointcloud_map_loader_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
@@ -148,6 +158,14 @@ def generate_launch_description():
             "/config/lanelet2_map_loader.param.yaml",
         ],
         "path to lanelet2_map_loader param file",
+    ),
+    add_launch_arg(
+        "pointcloud_map_loader_param_path",
+        [
+            FindPackageShare("tier4_map_launch"),
+            "/config/pointcloud_map_loader.param.yaml",
+        ],
+        "path to pointcloud_map_loader param file",
     ),
     add_launch_arg("use_intra_process", "false", "use ROS2 component container communication"),
     add_launch_arg("use_multithread", "false", "use multithread"),

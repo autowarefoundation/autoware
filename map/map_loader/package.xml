@@ -15,11 +15,13 @@
   <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_auto_mapping_msgs</depend>
+  <depend>autoware_map_msgs</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
@@ -28,6 +30,7 @@
   <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
 
+  <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
   <test_depend>ros_testing</test_depend>
