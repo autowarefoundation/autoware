@@ -1,6 +1,6 @@
 # rmw_implementation
 
-This role sets up ROS 2 RMW implementation following [this page](https://docs.ros.org/en/galactic/How-To-Guides/Working-with-multiple-RMW-implementations.html).
+This role sets up ROS 2 RMW implementation following [this page](https://docs.ros.org/en/humble/How-To-Guides/Working-with-multiple-RMW-implementations.html).
 
 ## Inputs
 
@@ -17,7 +17,7 @@ For Universe, the `rosdistro` and `rmw_implementation` variable can also be foun
 ```bash
 wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
 
-# For details: https://docs.ros.org/en/galactic/How-To-Guides/Working-with-multiple-RMW-implementations.html
+# For details: https://docs.ros.org/en/humble/How-To-Guides/Working-with-multiple-RMW-implementations.html
 sudo apt update
 rmw_implementation_dashed=$(eval sed -e "s/_/-/g" <<< "${rmw_implementation}")
 sudo apt install ros-${rosdistro}-${rmw_implementation_dashed}
