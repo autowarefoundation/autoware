@@ -13,18 +13,14 @@ jobs:
       fail-fast: false
       matrix:
         rosdistro:
-          - galactic
           - humble
         container-suffix:
           - ""
           - -cuda
         include:
-          - rosdistro: galactic
-            container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest
-            build-depends-repos: build_depends.repos
           - rosdistro: humble
             container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
-            build-depends-repos: build_depends.humble.repos
+            build-depends-repos: build_depends.repos
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
