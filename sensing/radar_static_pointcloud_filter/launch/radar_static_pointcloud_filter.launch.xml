@@ -1,0 +1,15 @@
+<launch>
+  <arg name="input/radar" default="input/radar"/>
+  <arg name="input/odometry" default="input/odometry"/>
+  <arg name="output/static_radar_scan" default="output/static_radar_scan"/>
+  <arg name="output/dynamic_radar_scan" default="output/dynamic_radar_scan"/>
+  <arg name="doppler_velocity_sd" default="4.0"/>
+
+  <node pkg="radar_static_pointcloud_filter" exec="radar_static_pointcloud_filter_node" name="radar_static_pointcloud_filter" output="screen">
+    <remap from="~/input/radar" to="$(var input/radar)"/>
+    <remap from="~/input/odometry" to="$(var input/odometry)"/>
+    <remap from="~/output/static_radar_scan" to="$(var output/static_radar_scan)"/>
+    <remap from="~/output/dynamic_radar_scan" to="$(var output/dynamic_radar_scan)"/>
+    <param name="doppler_velocity_sd" value="$(var doppler_velocity_sd)"/>
+  </node>
+</launch>

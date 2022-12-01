@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>radar_static_pointcloud_filter</name>
+  <version>0.1.0</version>
+  <description>radar_static_pointcloud_filter</description>
+  <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
+  <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
+  <author email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</author>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>message_filters</depend>
+  <depend>nav_msgs</depend>
+  <depend>radar_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
+
+  <build_depend>autoware_cmake</build_depend>
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
