@@ -37,6 +37,7 @@ namespace marker_utils::avoidance_marker
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::AvoidLineArray;
+using behavior_path_planner::ObjectDataArray;
 using behavior_path_planner::ShiftLineArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;

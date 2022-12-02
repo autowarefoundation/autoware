@@ -191,7 +191,10 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
 void AvoidanceModule::fillAvoidanceTargetObjects(
   AvoidancePlanningData & data, DebugData & debug) const
 {
+  using boost::geometry::return_centroid;
+  using boost::geometry::within;
   using lanelet::geometry::distance2d;
+  using lanelet::geometry::toArcCoordinates;
   using lanelet::utils::getId;
   using lanelet::utils::to2D;
 
@@ -224,7 +227,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   std::vector<AvoidanceDebugMsg> avoidance_debug_msg_array;
   for (const auto & i : lane_filtered_objects_index) {
     const auto & object = planner_data_->dynamic_object->objects.at(i);
-    const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
+    const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
     AvoidanceDebugMsg avoidance_debug_msg;
     const auto avoidance_debug_array_false_and_push_back =
       [&avoidance_debug_msg, &avoidance_debug_msg_array](const std::string & failed_reason) {
@@ -242,11 +245,14 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     object_data.object = object;
     avoidance_debug_msg.object_id = getUuidStr(object_data);
 
-    const auto object_closest_index = findNearestIndex(path_points, object_pos);
+    const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
     const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
 
     // Calc envelop polygon.
     fillObjectEnvelopePolygon(object_closest_pose, object_data);
+
+    // calc object centroid.
+    object_data.centroid = return_centroid<Point2d>(object_data.envelope_poly);
 
     // calc longitudinal distance from ego to closest target object footprint point.
     fillLongitudinalAndLengthByClosestEnvelopeFootprint(data.reference_path, ego_pos, object_data);
@@ -256,7 +262,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     fillObjectMovingTime(object_data);
 
     if (object_data.move_time > parameters_->threshold_time_object_is_moving) {
-      avoidance_debug_array_false_and_push_back("MovingObject");
+      avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::MOVING_OBJECT);
       data.other_objects.push_back(object_data);
       continue;
     }
@@ -281,7 +287,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     }
 
     // Calc lateral deviation from path to target object.
-    object_data.lateral = calcLateralDeviation(object_closest_pose, object_pos);
+    object_data.lateral = calcLateralDeviation(object_closest_pose, object_pose.position);
     avoidance_debug_msg.lateral_distance_from_centerline = object_data.lateral;
 
     // Find the footprint point closest to the path, set to object_data.overhang_distance.
@@ -330,6 +336,89 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
       avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE);
       data.other_objects.push_back(object_data);
       continue;
+    }
+
+    lanelet::ConstLanelet object_closest_lanelet;
+    const auto lanelet_map = rh->getLaneletMapPtr();
+    if (!lanelet::utils::query::getClosestLanelet(
+          lanelet::utils::query::laneletLayer(lanelet_map), object_pose, &object_closest_lanelet)) {
+      continue;
+    }
+
+    lanelet::BasicPoint2d object_centroid(object_data.centroid.x(), object_data.centroid.y());
+
+    /**
+     * Is not object in adjacent lane?
+     *   - Yes -> Is parking object?
+     *     - Yes -> the object is avoidance target.
+     *     - No -> ignore this object.
+     *   - No -> the object is avoidance target no matter whether it is parking object or not.
+     */
+    const auto is_in_ego_lane =
+      within(object_centroid, overhang_lanelet.polygon2d().basicPolygon());
+    if (is_in_ego_lane) {
+      /**
+       * TODO(Satoshi Ota) use intersection area
+       * under the assumption that there is no parking vehicle inside intersection,
+       * ignore all objects that is in the ego lane as not parking objects.
+       */
+      std::string turn_direction = overhang_lanelet.attributeOr("turn_direction", "else");
+      if (turn_direction == "right" || turn_direction == "left" || turn_direction == "straight") {
+        avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::NOT_PARKING_OBJECT);
+        data.other_objects.push_back(object_data);
+        continue;
+      }
+
+      const auto centerline_pose =
+        lanelet::utils::getClosestCenterPose(object_closest_lanelet, object_pose.position);
+      lanelet::BasicPoint3d centerline_point(
+        centerline_pose.position.x, centerline_pose.position.y, centerline_pose.position.z);
+
+      // ============================================ <- most_left_lanelet.leftBound()
+      // y              road shoulder
+      // ^ ------------------------------------------
+      // |   x                                +
+      // +---> --- object closest lanelet --- o ----- <- object_closest_lanelet.centerline()
+      //
+      // --------------------------------------------
+      // +: object position
+      // o: nearest point on centerline
+
+      const auto most_left_road_lanelet = rh->getMostLeftLanelet(object_closest_lanelet);
+      const auto most_left_lanelet_candidates =
+        rh->getLaneletMapPtr()->laneletLayer.findUsages(most_left_road_lanelet.leftBound());
+
+      lanelet::ConstLanelet most_left_lanelet = most_left_road_lanelet;
+
+      for (const auto & ll : most_left_lanelet_candidates) {
+        const lanelet::Attribute sub_type = ll.attribute(lanelet::AttributeName::Subtype);
+        if (sub_type.value() == "road_shoulder") {
+          most_left_lanelet = ll;
+        }
+      }
+
+      const auto center_to_left_boundary =
+        distance2d(to2D(most_left_lanelet.leftBound().basicLineString()), to2D(centerline_point));
+      double object_shiftable_distance = center_to_left_boundary - 0.5 * object.shape.dimensions.y;
+
+      const lanelet::Attribute sub_type =
+        most_left_lanelet.attribute(lanelet::AttributeName::Subtype);
+      if (sub_type.value() != "road_shoulder") {
+        object_shiftable_distance += parameters_->object_check_min_road_shoulder_width;
+      }
+
+      const auto arc_coordinates = toArcCoordinates(
+        to2D(object_closest_lanelet.centerline().basicLineString()), object_centroid);
+      object_data.shiftable_ratio = arc_coordinates.distance / object_shiftable_distance;
+
+      const auto is_parking_object =
+        object_data.shiftable_ratio > parameters_->object_check_shiftable_ratio;
+
+      if (!is_parking_object) {
+        avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::NOT_PARKING_OBJECT);
+        data.other_objects.push_back(object_data);
+        continue;
+      }
     }
 
     object_data.last_seen = clock_->now();
@@ -615,7 +704,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(const ObjectDataArr
     const auto is_object_on_right = isOnRight(o);
     const auto shift_length = getShiftLength(o, is_object_on_right, avoid_margin);
     if (isSameDirectionShift(is_object_on_right, shift_length)) {
-      avoidance_debug_array_false_and_push_back("IgnoreSameDirectionShift");
+      avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::SAME_DIRECTION_SHIFT);
       continue;
     }
 
