@@ -17,27 +17,28 @@
 #ifndef AUTOWARE_STATE_PANEL_HPP_
 #define AUTOWARE_STATE_PANEL_HPP_
 
+#include <QGroupBox>
 #include <QLabel>
+#include <QLayout>
 #include <QPushButton>
 #include <QSpinBox>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 
-#include <autoware_auto_system_msgs/msg/autoware_state.hpp>
+#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
+#include <autoware_adapi_v1_msgs/srv/change_operation_mode.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
-#include <tier4_control_msgs/msg/external_command_selector_mode.hpp>
-#include <tier4_control_msgs/msg/gate_mode.hpp>
 #include <tier4_external_api_msgs/msg/emergency.hpp>
-#include <tier4_external_api_msgs/msg/engage_status.hpp>
-#include <tier4_external_api_msgs/srv/engage.hpp>
 #include <tier4_external_api_msgs/srv/set_emergency.hpp>
-#include <tier4_planning_msgs/msg/approval.hpp>
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 
 namespace rviz_plugins
 {
 class AutowareStatePanel : public rviz_common::Panel
 {
+  using OperationModeState = autoware_adapi_v1_msgs::msg::OperationModeState;
+  using ChangeOperationMode = autoware_adapi_v1_msgs::srv::ChangeOperationMode;
+
   Q_OBJECT
 
 public:
@@ -45,51 +46,63 @@ public:
   void onInitialize() override;
 
 public Q_SLOTS:  // NOLINT for Qt
-  void onClickAutowareEngage();
+  void onClickAutonomous();
+  void onClickStop();
+  void onClickLocal();
+  void onClickRemote();
+  void onClickAutowareControl();
+  void onClickDirectControl();
   void onClickVelocityLimit();
-  void onClickGateMode();
-  void onClickPathChangeApproval();
   void onClickEmergencyButton();
 
 protected:
-  void onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
-  void onSelectorMode(
-    const tier4_control_msgs::msg::ExternalCommandSelectorMode::ConstSharedPtr msg);
-  void onAutowareState(const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr msg);
+  // Layout
+  QGroupBox * makeOperationModeGroup();
+  QGroupBox * makeControlModeGroup();
+
   void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
   void onEmergencyStatus(const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg);
-  void onEngageStatus(const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg);
 
   rclcpp::Node::SharedPtr raw_node_;
-  rclcpp::Subscription<tier4_control_msgs::msg::GateMode>::SharedPtr sub_gate_mode_;
-  rclcpp::Subscription<tier4_control_msgs::msg::ExternalCommandSelectorMode>::SharedPtr
-    sub_selector_mode_;
-  rclcpp::Subscription<autoware_auto_system_msgs::msg::AutowareState>::SharedPtr
-    sub_autoware_state_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearReport>::SharedPtr sub_gear_;
-  rclcpp::Subscription<tier4_external_api_msgs::msg::EngageStatus>::SharedPtr sub_engage_;
 
-  rclcpp::Client<tier4_external_api_msgs::srv::Engage>::SharedPtr client_engage_;
+  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearReport>::SharedPtr sub_gear_;
+
   rclcpp::Client<tier4_external_api_msgs::srv::SetEmergency>::SharedPtr client_emergency_stop_;
   rclcpp::Subscription<tier4_external_api_msgs::msg::Emergency>::SharedPtr sub_emergency_;
 
   rclcpp::Publisher<tier4_planning_msgs::msg::VelocityLimit>::SharedPtr pub_velocity_limit_;
-  rclcpp::Publisher<tier4_control_msgs::msg::GateMode>::SharedPtr pub_gate_mode_;
-  rclcpp::Publisher<tier4_planning_msgs::msg::Approval>::SharedPtr pub_path_change_approval_;
 
-  QLabel * gate_mode_label_ptr_;
-  QLabel * selector_mode_label_ptr_;
-  QLabel * autoware_state_label_ptr_;
-  QLabel * gear_label_ptr_;
-  QLabel * engage_status_label_ptr_;
-  QPushButton * engage_button_ptr_;
+  // Operation Mode
+  //// Gate Mode
+  QLabel * operation_mode_label_ptr_{nullptr};
+  QPushButton * stop_button_ptr_{nullptr};
+  QPushButton * auto_button_ptr_{nullptr};
+  QPushButton * local_button_ptr_{nullptr};
+  QPushButton * remote_button_ptr_{nullptr};
+
+  rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_;
+  rclcpp::Client<ChangeOperationMode>::SharedPtr client_change_to_autonomous_;
+  rclcpp::Client<ChangeOperationMode>::SharedPtr client_change_to_stop_;
+  rclcpp::Client<ChangeOperationMode>::SharedPtr client_change_to_local_;
+  rclcpp::Client<ChangeOperationMode>::SharedPtr client_change_to_remote_;
+
+  //// Control Mode
+  QLabel * control_mode_label_ptr_{nullptr};
+  QPushButton * enable_button_ptr_{nullptr};
+  QPushButton * disable_button_ptr_{nullptr};
+  rclcpp::Client<ChangeOperationMode>::SharedPtr client_enable_autoware_control_;
+  rclcpp::Client<ChangeOperationMode>::SharedPtr client_enable_direct_control_;
+
+  //// Functions
+  void onOperationMode(const OperationModeState::ConstSharedPtr msg);
+  void changeOperationMode(const rclcpp::Client<ChangeOperationMode>::SharedPtr client);
+
   QPushButton * velocity_limit_button_ptr_;
-  QPushButton * gate_mode_button_ptr_;
-  QPushButton * path_change_approval_button_ptr_;
+  QLabel * gear_label_ptr_;
+
   QSpinBox * pub_velocity_limit_input_;
   QPushButton * emergency_button_ptr_;
 
-  bool current_engage_{false};
   bool current_emergency_{false};
 };
 

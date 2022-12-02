@@ -16,6 +16,7 @@
 
 #include "autoware_state_panel.hpp"
 
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QString>
 #include <QVBoxLayout>
@@ -32,33 +33,6 @@ namespace rviz_plugins
 {
 AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(parent)
 {
-  // Gate Mode
-  auto * gate_prefix_label_ptr = new QLabel("GATE: ");
-  gate_prefix_label_ptr->setAlignment(Qt::AlignRight);
-  gate_mode_label_ptr_ = new QLabel("INIT");
-  gate_mode_label_ptr_->setAlignment(Qt::AlignCenter);
-  auto * gate_layout = new QHBoxLayout;
-  gate_layout->addWidget(gate_prefix_label_ptr);
-  gate_layout->addWidget(gate_mode_label_ptr_);
-
-  // Selector Mode
-  auto * selector_prefix_label_ptr = new QLabel("SELECT: ");
-  selector_prefix_label_ptr->setAlignment(Qt::AlignRight);
-  selector_mode_label_ptr_ = new QLabel("INIT");
-  selector_mode_label_ptr_->setAlignment(Qt::AlignCenter);
-  auto * selector_layout = new QHBoxLayout;
-  selector_layout->addWidget(selector_prefix_label_ptr);
-  selector_layout->addWidget(selector_mode_label_ptr_);
-
-  // State
-  auto * state_prefix_label_ptr = new QLabel("STATE: ");
-  state_prefix_label_ptr->setAlignment(Qt::AlignRight);
-  autoware_state_label_ptr_ = new QLabel("INIT");
-  autoware_state_label_ptr_->setAlignment(Qt::AlignCenter);
-  auto * state_layout = new QHBoxLayout;
-  state_layout->addWidget(state_prefix_label_ptr);
-  state_layout->addWidget(autoware_state_label_ptr_);
-
   // Gear
   auto * gear_prefix_label_ptr = new QLabel("GEAR: ");
   gear_prefix_label_ptr->setAlignment(Qt::AlignRight);
@@ -67,27 +41,6 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   auto * gear_layout = new QHBoxLayout;
   gear_layout->addWidget(gear_prefix_label_ptr);
   gear_layout->addWidget(gear_label_ptr_);
-
-  // Engage Status
-  auto * engage_prefix_label_ptr = new QLabel("Engage: ");
-  engage_prefix_label_ptr->setAlignment(Qt::AlignRight);
-  engage_status_label_ptr_ = new QLabel("INIT");
-  engage_status_label_ptr_->setAlignment(Qt::AlignCenter);
-  auto * engage_status_layout = new QHBoxLayout;
-  engage_status_layout->addWidget(engage_prefix_label_ptr);
-  engage_status_layout->addWidget(engage_status_label_ptr_);
-
-  // Autoware Engage Button
-  engage_button_ptr_ = new QPushButton("Engage");
-  connect(engage_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutowareEngage()));
-
-  // Gate Mode Button
-  gate_mode_button_ptr_ = new QPushButton("Gate Mode");
-  connect(gate_mode_button_ptr_, SIGNAL(clicked()), SLOT(onClickGateMode()));
-
-  // Path Change Approval Button
-  path_change_approval_button_ptr_ = new QPushButton("Path Change Approval");
-  connect(path_change_approval_button_ptr_, SIGNAL(clicked()), SLOT(onClickPathChangeApproval()));
 
   // Velocity Limit
   velocity_limit_button_ptr_ = new QPushButton("Send Velocity Limit");
@@ -103,18 +56,10 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
 
   // Layout
   auto * v_layout = new QVBoxLayout;
-  auto * gate_mode_path_change_approval_layout = new QHBoxLayout;
   auto * velocity_limit_layout = new QHBoxLayout();
-  v_layout->addLayout(gate_layout);
-  v_layout->addLayout(selector_layout);
-  v_layout->addLayout(state_layout);
+  v_layout->addWidget(makeOperationModeGroup());
+  v_layout->addWidget(makeControlModeGroup());
   v_layout->addLayout(gear_layout);
-  v_layout->addLayout(engage_status_layout);
-  v_layout->addWidget(engage_button_ptr_);
-  v_layout->addLayout(engage_status_layout);
-  gate_mode_path_change_approval_layout->addWidget(gate_mode_button_ptr_);
-  gate_mode_path_change_approval_layout->addWidget(path_change_approval_button_ptr_);
-  v_layout->addLayout(gate_mode_path_change_approval_layout);
   velocity_limit_layout->addWidget(velocity_limit_button_ptr_);
   velocity_limit_layout->addWidget(pub_velocity_limit_input_);
   velocity_limit_layout->addWidget(new QLabel("  [km/h]"));
@@ -123,120 +68,172 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   setLayout(v_layout);
 }
 
+QGroupBox * AutowareStatePanel::makeOperationModeGroup()
+{
+  auto * group = new QGroupBox("OperationMode");
+  auto * grid = new QGridLayout;
+
+  operation_mode_label_ptr_ = new QLabel("INIT");
+  operation_mode_label_ptr_->setAlignment(Qt::AlignCenter);
+  operation_mode_label_ptr_->setStyleSheet("border:1px solid black;");
+  grid->addWidget(operation_mode_label_ptr_, 0, 0, 0, 1);
+
+  auto_button_ptr_ = new QPushButton("AUTO");
+  auto_button_ptr_->setCheckable(true);
+  connect(auto_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutonomous()));
+  grid->addWidget(auto_button_ptr_, 0, 1);
+
+  stop_button_ptr_ = new QPushButton("STOP");
+  stop_button_ptr_->setCheckable(true);
+  connect(stop_button_ptr_, SIGNAL(clicked()), SLOT(onClickStop()));
+  grid->addWidget(stop_button_ptr_, 0, 2);
+
+  local_button_ptr_ = new QPushButton("LOCAL");
+  local_button_ptr_->setCheckable(true);
+  connect(local_button_ptr_, SIGNAL(clicked()), SLOT(onClickLocal()));
+  grid->addWidget(local_button_ptr_, 1, 1);
+
+  remote_button_ptr_ = new QPushButton("REMOTE");
+  remote_button_ptr_->setCheckable(true);
+  connect(remote_button_ptr_, SIGNAL(clicked()), SLOT(onClickRemote()));
+  grid->addWidget(remote_button_ptr_, 1, 2);
+
+  group->setLayout(grid);
+  return group;
+}
+
+QGroupBox * AutowareStatePanel::makeControlModeGroup()
+{
+  auto * group = new QGroupBox("AutowareControl");
+  auto * grid = new QGridLayout;
+
+  control_mode_label_ptr_ = new QLabel("INIT");
+  control_mode_label_ptr_->setAlignment(Qt::AlignCenter);
+  control_mode_label_ptr_->setStyleSheet("border:1px solid black;");
+  grid->addWidget(control_mode_label_ptr_, 0, 0);
+
+  enable_button_ptr_ = new QPushButton("Enable");
+  enable_button_ptr_->setCheckable(true);
+  connect(enable_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutowareControl()));
+  grid->addWidget(enable_button_ptr_, 0, 1);
+
+  disable_button_ptr_ = new QPushButton("Disable");
+  disable_button_ptr_->setCheckable(true);
+  connect(disable_button_ptr_, SIGNAL(clicked()), SLOT(onClickDirectControl()));
+  grid->addWidget(disable_button_ptr_, 0, 2);
+
+  group->setLayout(grid);
+  return group;
+}
+
 void AutowareStatePanel::onInitialize()
 {
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
-  sub_gate_mode_ = raw_node_->create_subscription<tier4_control_msgs::msg::GateMode>(
-    "/control/current_gate_mode", 10, std::bind(&AutowareStatePanel::onGateMode, this, _1));
+  // Operation Mode
+  sub_operation_mode_ = raw_node_->create_subscription<OperationModeState>(
+    "/api/operation_mode/state", rclcpp::QoS{1}.transient_local(),
+    std::bind(&AutowareStatePanel::onOperationMode, this, _1));
 
-  sub_selector_mode_ =
-    raw_node_->create_subscription<tier4_control_msgs::msg::ExternalCommandSelectorMode>(
-      "/control/external_cmd_selector/current_selector_mode", 10,
-      std::bind(&AutowareStatePanel::onSelectorMode, this, _1));
+  client_change_to_autonomous_ = raw_node_->create_client<ChangeOperationMode>(
+    "/api/operation_mode/change_to_autonomous", rmw_qos_profile_services_default);
 
-  sub_autoware_state_ =
-    raw_node_->create_subscription<autoware_auto_system_msgs::msg::AutowareState>(
-      "/autoware/state", 10, std::bind(&AutowareStatePanel::onAutowareState, this, _1));
+  client_change_to_stop_ = raw_node_->create_client<ChangeOperationMode>(
+    "/api/operation_mode/change_to_stop", rmw_qos_profile_services_default);
+
+  client_change_to_local_ = raw_node_->create_client<ChangeOperationMode>(
+    "/api/operation_mode/change_to_local", rmw_qos_profile_services_default);
+
+  client_change_to_remote_ = raw_node_->create_client<ChangeOperationMode>(
+    "/api/operation_mode/change_to_remote", rmw_qos_profile_services_default);
+
+  client_enable_autoware_control_ = raw_node_->create_client<ChangeOperationMode>(
+    "/api/operation_mode/enable_autoware_control", rmw_qos_profile_services_default);
+
+  client_enable_direct_control_ = raw_node_->create_client<ChangeOperationMode>(
+    "/api/operation_mode/disable_autoware_control", rmw_qos_profile_services_default);
 
   sub_gear_ = raw_node_->create_subscription<autoware_auto_vehicle_msgs::msg::GearReport>(
     "/vehicle/status/gear_status", 10, std::bind(&AutowareStatePanel::onShift, this, _1));
 
-  sub_engage_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::EngageStatus>(
-    "/api/external/get/engage", 10, std::bind(&AutowareStatePanel::onEngageStatus, this, _1));
-
   sub_emergency_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::Emergency>(
     "/api/autoware/get/emergency", 10, std::bind(&AutowareStatePanel::onEmergencyStatus, this, _1));
-
-  client_engage_ = raw_node_->create_client<tier4_external_api_msgs::srv::Engage>(
-    "/api/external/set/engage", rmw_qos_profile_services_default);
 
   client_emergency_stop_ = raw_node_->create_client<tier4_external_api_msgs::srv::SetEmergency>(
     "/api/autoware/set/emergency", rmw_qos_profile_services_default);
 
   pub_velocity_limit_ = raw_node_->create_publisher<tier4_planning_msgs::msg::VelocityLimit>(
     "/planning/scenario_planning/max_velocity_default", rclcpp::QoS{1}.transient_local());
-
-  pub_gate_mode_ = raw_node_->create_publisher<tier4_control_msgs::msg::GateMode>(
-    "/control/gate_mode_cmd", rclcpp::QoS{1}.transient_local());
-
-  pub_path_change_approval_ = raw_node_->create_publisher<tier4_planning_msgs::msg::Approval>(
-    "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/"
-    "path_change_approval",
-    rclcpp::QoS{1}.transient_local());
 }
 
-void AutowareStatePanel::onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
+void AutowareStatePanel::onOperationMode(const OperationModeState::ConstSharedPtr msg)
 {
-  switch (msg->data) {
-    case tier4_control_msgs::msg::GateMode::AUTO:
-      gate_mode_label_ptr_->setText("AUTO");
-      gate_mode_label_ptr_->setStyleSheet("background-color: #00FF00;");
+  auto changeButtonState = [](
+                             QPushButton * button, const bool is_desired_mode_available,
+                             const uint8_t current_mode = OperationModeState::UNKNOWN,
+                             const uint8_t desired_mode = OperationModeState::STOP) {
+    if (is_desired_mode_available && current_mode != desired_mode) {
+      button->setChecked(false);
+      button->setEnabled(true);
+    } else {
+      button->setChecked(true);
+      button->setEnabled(false);
+    }
+  };
+
+  // Operation Mode
+  switch (msg->mode) {
+    case OperationModeState::AUTONOMOUS:
+      operation_mode_label_ptr_->setText("AUTONOMOUS");
+      operation_mode_label_ptr_->setStyleSheet("background-color: #00FF00;");
       break;
 
-    case tier4_control_msgs::msg::GateMode::EXTERNAL:
-      gate_mode_label_ptr_->setText("EXTERNAL");
-      gate_mode_label_ptr_->setStyleSheet("background-color: #FFFF00;");
+    case OperationModeState::LOCAL:
+      operation_mode_label_ptr_->setText("LOCAL");
+      operation_mode_label_ptr_->setStyleSheet("background-color: #FFFF00;");
+      break;
+
+    case OperationModeState::REMOTE:
+      operation_mode_label_ptr_->setText("REMOTE");
+      operation_mode_label_ptr_->setStyleSheet("background-color: #FFFF00;");
+      break;
+
+    case OperationModeState::STOP:
+      operation_mode_label_ptr_->setText("STOP");
+      operation_mode_label_ptr_->setStyleSheet("background-color: #FFA500;");
       break;
 
     default:
-      gate_mode_label_ptr_->setText("UNKNOWN");
-      gate_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
+      operation_mode_label_ptr_->setText("UNKNOWN");
+      operation_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
       break;
   }
-}
 
-void AutowareStatePanel::onSelectorMode(
-  const tier4_control_msgs::msg::ExternalCommandSelectorMode::ConstSharedPtr msg)
-{
-  switch (msg->data) {
-    case tier4_control_msgs::msg::ExternalCommandSelectorMode::REMOTE:
-      selector_mode_label_ptr_->setText("REMOTE");
-      selector_mode_label_ptr_->setStyleSheet("background-color: #00FF00;");
-      break;
-
-    case tier4_control_msgs::msg::ExternalCommandSelectorMode::LOCAL:
-      selector_mode_label_ptr_->setText("LOCAL");
-      selector_mode_label_ptr_->setStyleSheet("background-color: #FFFF00;");
-      break;
-
-    case tier4_control_msgs::msg::ExternalCommandSelectorMode::NONE:
-      selector_mode_label_ptr_->setText("NONE");
-      selector_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
-      break;
-
-    default:
-      selector_mode_label_ptr_->setText("UNKNOWN");
-      selector_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
-      break;
+  if (msg->is_in_transition) {
+    operation_mode_label_ptr_->setText(operation_mode_label_ptr_->text() + "\n(TRANSITION)");
   }
-}
 
-void AutowareStatePanel::onAutowareState(
-  const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr msg)
-{
-  if (msg->state == autoware_auto_system_msgs::msg::AutowareState::INITIALIZING) {
-    autoware_state_label_ptr_->setText("INITIALIZING");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #FFFF00;");
-  } else if (msg->state == autoware_auto_system_msgs::msg::AutowareState::WAITING_FOR_ROUTE) {
-    autoware_state_label_ptr_->setText("WAITING_FOR_ROUTE");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #FFFF00;");
-  } else if (msg->state == autoware_auto_system_msgs::msg::AutowareState::PLANNING) {
-    autoware_state_label_ptr_->setText("PLANNING");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #FFFF00;");
-  } else if (msg->state == autoware_auto_system_msgs::msg::AutowareState::WAITING_FOR_ENGAGE) {
-    autoware_state_label_ptr_->setText("WAITING_FOR_ENGAGE");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #00FFFF;");
-  } else if (msg->state == autoware_auto_system_msgs::msg::AutowareState::DRIVING) {
-    autoware_state_label_ptr_->setText("DRIVING");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #00FF00;");
-  } else if (msg->state == autoware_auto_system_msgs::msg::AutowareState::ARRIVED_GOAL) {
-    autoware_state_label_ptr_->setText("ARRIVED_GOAL");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #FF00FF;");
-  } else if (msg->state == autoware_auto_system_msgs::msg::AutowareState::FINALIZING) {
-    autoware_state_label_ptr_->setText("FINALIZING");
-    autoware_state_label_ptr_->setStyleSheet("background-color: #FFFF00;");
+  // Control Mode
+  if (msg->is_autoware_control_enabled) {
+    control_mode_label_ptr_->setText("Enable");
+    control_mode_label_ptr_->setStyleSheet("background-color: #00FF00;");
+  } else {
+    control_mode_label_ptr_->setText("Disable");
+    control_mode_label_ptr_->setStyleSheet("background-color: #FFFF00;");
   }
+
+  // Button
+  changeButtonState(
+    auto_button_ptr_, msg->is_autonomous_mode_available, msg->mode, OperationModeState::AUTONOMOUS);
+  changeButtonState(
+    stop_button_ptr_, msg->is_stop_mode_available, msg->mode, OperationModeState::STOP);
+  changeButtonState(
+    local_button_ptr_, msg->is_local_mode_available, msg->mode, OperationModeState::LOCAL);
+  changeButtonState(
+    remote_button_ptr_, msg->is_remote_mode_available, msg->mode, OperationModeState::REMOTE);
+
+  changeButtonState(enable_button_ptr_, !msg->is_autoware_control_enabled);
+  changeButtonState(disable_button_ptr_, msg->is_autoware_control_enabled);
 }
 
 void AutowareStatePanel::onShift(
@@ -256,13 +253,6 @@ void AutowareStatePanel::onShift(
       gear_label_ptr_->setText("LOW");
       break;
   }
-}
-
-void AutowareStatePanel::onEngageStatus(
-  const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg)
-{
-  current_engage_ = msg->engage;
-  engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(current_engage_)));
 }
 
 void AutowareStatePanel::onEmergencyStatus(
@@ -285,21 +275,32 @@ void AutowareStatePanel::onClickVelocityLimit()
   pub_velocity_limit_->publish(*velocity_limit);
 }
 
-void AutowareStatePanel::onClickAutowareEngage()
+void AutowareStatePanel::onClickAutonomous() { changeOperationMode(client_change_to_autonomous_); }
+void AutowareStatePanel::onClickStop() { changeOperationMode(client_change_to_stop_); }
+void AutowareStatePanel::onClickLocal() { changeOperationMode(client_change_to_local_); }
+void AutowareStatePanel::onClickRemote() { changeOperationMode(client_change_to_remote_); }
+void AutowareStatePanel::onClickAutowareControl()
 {
-  using tier4_external_api_msgs::srv::Engage;
+  changeOperationMode(client_enable_autoware_control_);
+}
+void AutowareStatePanel::onClickDirectControl()
+{
+  changeOperationMode(client_enable_direct_control_);
+}
 
-  auto req = std::make_shared<Engage::Request>();
-  req->engage = !current_engage_;
+void AutowareStatePanel::changeOperationMode(
+  const rclcpp::Client<ChangeOperationMode>::SharedPtr client)
+{
+  auto req = std::make_shared<ChangeOperationMode::Request>();
 
   RCLCPP_INFO(raw_node_->get_logger(), "client request");
 
-  if (!client_engage_->service_is_ready()) {
+  if (!client->service_is_ready()) {
     RCLCPP_INFO(raw_node_->get_logger(), "client is unavailable");
     return;
   }
 
-  client_engage_->async_send_request(req, [this](rclcpp::Client<Engage>::SharedFuture result) {
+  client->async_send_request(req, [this](rclcpp::Client<ChangeOperationMode>::SharedFuture result) {
     RCLCPP_INFO(
       raw_node_->get_logger(), "Status: %d, %s", result.get()->status.code,
       result.get()->status.message.c_str());
@@ -327,23 +328,7 @@ void AutowareStatePanel::onClickEmergencyButton()
       }
     });
 }
-void AutowareStatePanel::onClickGateMode()
-{
-  const auto data = gate_mode_label_ptr_->text().toStdString() == "AUTO"
-                      ? tier4_control_msgs::msg::GateMode::EXTERNAL
-                      : tier4_control_msgs::msg::GateMode::AUTO;
-  RCLCPP_INFO(raw_node_->get_logger(), "data : %d", data);
-  pub_gate_mode_->publish(
-    tier4_control_msgs::build<tier4_control_msgs::msg::GateMode>().data(data));
-}
 
-void AutowareStatePanel::onClickPathChangeApproval()
-{
-  pub_path_change_approval_->publish(
-    tier4_planning_msgs::build<tier4_planning_msgs::msg::Approval>()
-      .stamp(raw_node_->now())
-      .approval(true));
-}
 }  // namespace rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>
