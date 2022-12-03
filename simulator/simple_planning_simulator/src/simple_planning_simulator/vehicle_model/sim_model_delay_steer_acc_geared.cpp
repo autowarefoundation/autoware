@@ -124,6 +124,7 @@ void SimModelDelaySteerAccGeared::updateStateWithGear(
       state(IDX::X) = prev_state(IDX::X);
       state(IDX::Y) = prev_state(IDX::Y);
       state(IDX::YAW) = prev_state(IDX::YAW);
+      state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
     }
   } else if (gear == GearCommand::REVERSE || gear == GearCommand::REVERSE_2) {
     if (state(IDX::VX) > 0.0) {
@@ -131,18 +132,19 @@ void SimModelDelaySteerAccGeared::updateStateWithGear(
       state(IDX::X) = prev_state(IDX::X);
       state(IDX::Y) = prev_state(IDX::Y);
       state(IDX::YAW) = prev_state(IDX::YAW);
+      state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
     }
   } else if (gear == GearCommand::PARK) {
     state(IDX::VX) = 0.0;
     state(IDX::X) = prev_state(IDX::X);
     state(IDX::Y) = prev_state(IDX::Y);
     state(IDX::YAW) = prev_state(IDX::YAW);
+    state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
   } else {
     state(IDX::VX) = 0.0;
     state(IDX::X) = prev_state(IDX::X);
     state(IDX::Y) = prev_state(IDX::Y);
     state(IDX::YAW) = prev_state(IDX::YAW);
+    state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
   }
-
-  state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
 }
