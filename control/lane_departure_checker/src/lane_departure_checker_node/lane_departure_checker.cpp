@@ -223,7 +223,7 @@ std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
   const auto margin = calcFootprintMargin(covariance, param.footprint_margin_scale);
 
   // Create vehicle footprint in base_link coordinate
-  const auto local_vehicle_footprint = createVehicleFootprint(*vehicle_info_ptr_, margin);
+  const auto local_vehicle_footprint = vehicle_info_ptr_->createFootprint(margin.lat, margin.lon);
 
   // Create vehicle footprint on each TrajectoryPoint
   std::vector<LinearRing2d> vehicle_footprints;
@@ -239,7 +239,7 @@ std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
   const PathWithLaneId & path) const
 {
   // Create vehicle footprint in base_link coordinate
-  const auto local_vehicle_footprint = createVehicleFootprint(*vehicle_info_ptr_);
+  const auto local_vehicle_footprint = vehicle_info_ptr_->createFootprint();
 
   // Create vehicle footprint on each Path point
   std::vector<LinearRing2d> vehicle_footprints;

@@ -60,5 +60,4 @@ VehicleInfo VehicleInfoUtil::getVehicleInfo()
     vehicle_info_.left_overhang_m, vehicle_info_.right_overhang_m, vehicle_info_.vehicle_height_m,
     vehicle_info_.max_steer_angle_rad);
 }
-
 }  // namespace vehicle_info_util

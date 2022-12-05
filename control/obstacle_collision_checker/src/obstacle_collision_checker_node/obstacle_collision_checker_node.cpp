@@ -14,8 +14,6 @@
 
 #include "obstacle_collision_checker/obstacle_collision_checker_node.hpp"
 
-#include "obstacle_collision_checker/util/create_vehicle_footprint.hpp"
-
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

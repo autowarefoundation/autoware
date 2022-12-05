@@ -14,8 +14,6 @@
 
 #include "obstacle_collision_checker/obstacle_collision_checker.hpp"
 
-#include "obstacle_collision_checker/util/create_vehicle_footprint.hpp"
-
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -193,7 +191,7 @@ std::vector<LinearRing2d> ObstacleCollisionChecker::createVehicleFootprints(
   const vehicle_info_util::VehicleInfo & vehicle_info)
 {
   // Create vehicle footprint in base_link coordinate
-  const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info, param.footprint_margin);
+  const auto local_vehicle_footprint = vehicle_info.createFootprint(param.footprint_margin);
 
   // Create vehicle footprint on each TrajectoryPoint
   std::vector<LinearRing2d> vehicle_footprints;

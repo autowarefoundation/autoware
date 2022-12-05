@@ -15,6 +15,8 @@
 #ifndef VEHICLE_INFO_UTIL__VEHICLE_INFO_HPP_
 #define VEHICLE_INFO_UTIL__VEHICLE_INFO_HPP_
 
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 namespace vehicle_info_util
 {
 /// Data class for vehicle info
@@ -44,6 +46,35 @@ struct VehicleInfo
   double max_lateral_offset_m;
   double min_height_offset_m;
   double max_height_offset_m;
+
+  tier4_autoware_utils::LinearRing2d createFootprint(const double margin = 0.0) const
+  {
+    return createFootprint(margin, margin);
+  }
+
+  tier4_autoware_utils::LinearRing2d createFootprint(
+    const double lat_margin, const double lon_margin) const
+  {
+    using tier4_autoware_utils::LinearRing2d;
+    using tier4_autoware_utils::Point2d;
+
+    const double x_front = front_overhang_m + wheel_base_m + lon_margin;
+    const double x_center = wheel_base_m / 2.0;
+    const double x_rear = -(rear_overhang_m + lon_margin);
+    const double y_left = wheel_tread_m / 2.0 + left_overhang_m + lat_margin;
+    const double y_right = -(wheel_tread_m / 2.0 + right_overhang_m + lat_margin);
+
+    LinearRing2d footprint;
+    footprint.push_back(Point2d{x_front, y_left});
+    footprint.push_back(Point2d{x_front, y_right});
+    footprint.push_back(Point2d{x_center, y_right});
+    footprint.push_back(Point2d{x_rear, y_right});
+    footprint.push_back(Point2d{x_rear, y_left});
+    footprint.push_back(Point2d{x_center, y_left});
+    footprint.push_back(Point2d{x_front, y_left});
+
+    return footprint;
+  }
 };
 
 /// Create vehicle info from base parameters
