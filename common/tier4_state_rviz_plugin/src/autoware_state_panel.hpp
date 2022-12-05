@@ -25,12 +25,19 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/localization_initialization_state.hpp>
+#include <autoware_adapi_v1_msgs/msg/motion_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
+#include <autoware_adapi_v1_msgs/msg/route_state.hpp>
+#include <autoware_adapi_v1_msgs/srv/accept_start.hpp>
 #include <autoware_adapi_v1_msgs/srv/change_operation_mode.hpp>
+#include <autoware_adapi_v1_msgs/srv/clear_route.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
 #include <tier4_external_api_msgs/msg/emergency.hpp>
 #include <tier4_external_api_msgs/srv/set_emergency.hpp>
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
+
+#include <memory>
 
 namespace rviz_plugins
 {
@@ -38,6 +45,12 @@ class AutowareStatePanel : public rviz_common::Panel
 {
   using OperationModeState = autoware_adapi_v1_msgs::msg::OperationModeState;
   using ChangeOperationMode = autoware_adapi_v1_msgs::srv::ChangeOperationMode;
+  using RouteState = autoware_adapi_v1_msgs::msg::RouteState;
+  using ClearRoute = autoware_adapi_v1_msgs::srv::ClearRoute;
+  using LocalizationInitializationState =
+    autoware_adapi_v1_msgs::msg::LocalizationInitializationState;
+  using MotionState = autoware_adapi_v1_msgs::msg::MotionState;
+  using AcceptStart = autoware_adapi_v1_msgs::srv::AcceptStart;
 
   Q_OBJECT
 
@@ -52,6 +65,8 @@ public Q_SLOTS:  // NOLINT for Qt
   void onClickRemote();
   void onClickAutowareControl();
   void onClickDirectControl();
+  void onClickClearRoute();
+  void onClickAcceptStart();
   void onClickVelocityLimit();
   void onClickEmergencyButton();
 
@@ -59,6 +74,9 @@ protected:
   // Layout
   QGroupBox * makeOperationModeGroup();
   QGroupBox * makeControlModeGroup();
+  QGroupBox * makeRoutingGroup();
+  QGroupBox * makeLocalizationGroup();
+  QGroupBox * makeMotionGroup();
 
   void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
   void onEmergencyStatus(const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg);
@@ -97,6 +115,30 @@ protected:
   void onOperationMode(const OperationModeState::ConstSharedPtr msg);
   void changeOperationMode(const rclcpp::Client<ChangeOperationMode>::SharedPtr client);
 
+  // Routing
+  QLabel * routing_label_ptr_{nullptr};
+  QPushButton * clear_route_button_ptr_{nullptr};
+
+  rclcpp::Subscription<RouteState>::SharedPtr sub_route_;
+  rclcpp::Client<ClearRoute>::SharedPtr client_clear_route_;
+
+  void onRoute(const RouteState::ConstSharedPtr msg);
+
+  // Localization
+  QLabel * localization_label_ptr_{nullptr};
+  rclcpp::Subscription<LocalizationInitializationState>::SharedPtr sub_localization_;
+
+  void onLocalization(const LocalizationInitializationState::ConstSharedPtr msg);
+
+  // Motion
+  QLabel * motion_label_ptr_{nullptr};
+  QPushButton * accept_start_button_ptr_{nullptr};
+
+  rclcpp::Subscription<MotionState>::SharedPtr sub_motion_;
+  rclcpp::Client<AcceptStart>::SharedPtr client_accept_start_;
+
+  void onMotion(const MotionState::ConstSharedPtr msg);
+
   QPushButton * velocity_limit_button_ptr_;
   QLabel * gear_label_ptr_;
 
@@ -104,6 +146,43 @@ protected:
   QPushButton * emergency_button_ptr_;
 
   bool current_emergency_{false};
+
+  template <typename T>
+  void callServiceWithoutResponse(const typename rclcpp::Client<T>::SharedPtr client)
+  {
+    auto req = std::make_shared<typename T::Request>();
+
+    RCLCPP_INFO(raw_node_->get_logger(), "client request");
+
+    if (!client->service_is_ready()) {
+      RCLCPP_INFO(raw_node_->get_logger(), "client is unavailable");
+      return;
+    }
+
+    client->async_send_request(req, [this](typename rclcpp::Client<T>::SharedFuture result) {
+      RCLCPP_INFO(
+        raw_node_->get_logger(), "Status: %d, %s", result.get()->status.code,
+        result.get()->status.message.c_str());
+    });
+  }
+
+  static void updateLabel(QLabel * label, QString text, QString style_sheet)
+  {
+    label->setText(text);
+    label->setStyleSheet(style_sheet);
+  }
+
+  static void activateButton(QAbstractButton * button)
+  {
+    button->setChecked(false);
+    button->setEnabled(true);
+  }
+
+  static void deactivateButton(QAbstractButton * button)
+  {
+    button->setChecked(true);
+    button->setEnabled(false);
+  }
 };
 
 }  // namespace rviz_plugins
