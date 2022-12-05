@@ -41,6 +41,7 @@ private:
   std::map<std::string, PCDFileMetadata> pcd_metadata_dict_;
 
   std::unique_ptr<PointcloudMapLoaderModule> pcd_map_loader_;
+  std::unique_ptr<PointcloudMapLoaderModule> downsampled_pcd_map_loader_;
   std::unique_ptr<PartialMapLoaderModule> partial_map_loader_;
 
   std::vector<std::string> getPcdPaths(

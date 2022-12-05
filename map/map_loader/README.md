@@ -10,11 +10,16 @@ This package provides the features of loading various maps.
 Currently, it supports the following two types:
 
 - Publish raw pointcloud map
+- Publish downsampled pointcloud map
 - Send partial pointcloud map loading via ROS 2 service
 
 #### Publish raw pointcloud map (ROS 2 topic)
 
 The node publishes the raw pointcloud map loaded from the `.pcd` file(s).
+
+#### Publish downsampled pointcloud map (ROS 2 topic)
+
+The node publishes the downsampled pointcloud map loaded from the `.pcd` file(s). You can specify the downsample resolution by changing the `leaf_size` parameter.
 
 #### Send partial pointcloud map (ROS 2 service)
 
@@ -25,14 +30,17 @@ Please see [the description of `GetPartialPointCloudMap.srv`](https://github.com
 
 ### Parameters
 
-| Name                | Type | Description                                    | Default value |
-| :------------------ | :--- | :--------------------------------------------- | :------------ |
-| enable_whole_load   | bool | A flag to enable raw pointcloud map publishing | true          |
-| enable_partial_load | bool | A flag to enable partial pointcloud map server | true          |
+| Name                          | Type  | Description                                                                       | Default value |
+| :---------------------------- | :---- | :-------------------------------------------------------------------------------- | :------------ |
+| enable_whole_load             | bool  | A flag to enable raw pointcloud map publishing                                    | true          |
+| enable_downsampled_whole_load | bool  | A flag to enable downsampled pointcloud map publishing                            | false         |
+| enable_partial_load           | bool  | A flag to enable partial pointcloud map server                                    | false         |
+| leaf_size                     | float | Downsampling leaf size (only used when enable_downsampled_whole_load is set true) | 3.0           |
 
 ### Interfaces
 
 - `output/pointcloud_map` (sensor_msgs/msg/PointCloud2) : Raw pointcloud map
+- `output/debug/downsampled_pointcloud_map` (sensor_msgs/msg/PointCloud2) : Downsampled pointcloud map
 - `service/get_partial_pcd_map` (autoware_map_msgs/srv/GetPartialPointCloudMap) : Partial pointcloud map
 
 ---
