@@ -58,7 +58,6 @@
       longitudinal_collision_margin_min_distance: 0.0          # [m]
       longitudinal_collision_margin_time: 0.0
 
-      turn_signal_on_swerving: true # turn signal on while swerving
 
       # avoidance is performed for the object type with true
       target_object:

@@ -221,6 +221,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.turn_signal_search_time = declare_parameter("turn_signal_search_time", 3.0);
   p.turn_signal_shift_length_threshold =
     declare_parameter("turn_signal_shift_length_threshold", 0.3);
+  p.turn_signal_on_swerving = declare_parameter("turn_signal_on_swerving", true);
+
   p.path_interval = declare_parameter<double>("path_interval");
   p.visualize_drivable_area_for_shared_linestrings_lanelet =
     declare_parameter("visualize_drivable_area_for_shared_linestrings_lanelet", true);
@@ -331,8 +333,6 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
 
   p.avoidance_execution_lateral_threshold = dp("avoidance_execution_lateral_threshold", 0.499);
-
-  p.turn_signal_on_swerving = dp("turn_signal_on_swerving", true);
 
   return p;
 }

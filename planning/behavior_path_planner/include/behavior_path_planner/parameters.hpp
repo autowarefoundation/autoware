@@ -41,6 +41,7 @@ struct BehaviorPathPlannerParameters
   double turn_signal_search_time;
   double turn_signal_minimum_search_distance;
   double turn_signal_shift_length_threshold;
+  bool turn_signal_on_swerving;
 
   double path_interval;
 

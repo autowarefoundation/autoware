@@ -182,8 +182,6 @@ struct AvoidanceParameters
   // debug
   bool publish_debug_marker = false;
   bool print_debug_info = false;
-
-  bool turn_signal_on_swerving = true;
 };
 
 struct ObjectData  // avoidance target

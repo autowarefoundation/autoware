@@ -18,4 +18,5 @@
     turn_signal_minimum_search_distance: 10.0
     turn_signal_search_time: 3.0
     turn_signal_shift_length_threshold: 0.3
+    turn_signal_on_swerving: true
     path_interval: 2.0
