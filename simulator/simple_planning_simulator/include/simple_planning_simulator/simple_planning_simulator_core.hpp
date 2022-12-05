@@ -42,6 +42,7 @@
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tier4_external_api_msgs/srv/initialize_pose.hpp"
 
@@ -79,6 +80,7 @@ using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::PoseWithCovarianceStamped;
 using geometry_msgs::msg::TransformStamped;
 using geometry_msgs::msg::Twist;
+using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Odometry;
 using tier4_external_api_msgs::srv::InitializePose;
 
@@ -139,6 +141,7 @@ private:
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_ackermann_cmd_;
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_manual_ackermann_cmd_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
+  rclcpp::Subscription<TwistStamped>::SharedPtr sub_init_twist_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
   rclcpp::Subscription<Engage>::SharedPtr sub_engage_;
 
@@ -159,6 +162,8 @@ private:
   tf2_ros::TransformListener tf_listener_;
 
   /* received & published topics */
+  PoseWithCovarianceStamped::ConstSharedPtr initial_pose_;
+  TwistStamped initial_twist_;
   VelocityReport current_velocity_;
   Odometry current_odometry_;
   SteeringReport current_steer_;
@@ -222,6 +227,11 @@ private:
    * @brief set initial pose for simulation with received message
    */
   void on_initialpose(const PoseWithCovarianceStamped::ConstSharedPtr msg);
+
+  /**
+   * @brief set initial twist for simulation with received message
+   */
+  void on_initialtwist(const TwistStamped::ConstSharedPtr msg);
 
   /**
    * @brief set initial pose for simulation with received request

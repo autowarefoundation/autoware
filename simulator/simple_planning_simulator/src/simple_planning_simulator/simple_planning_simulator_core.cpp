@@ -87,6 +87,8 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
 
   sub_init_pose_ = create_subscription<PoseWithCovarianceStamped>(
     "input/initialpose", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialpose, this, _1));
+  sub_init_twist_ = create_subscription<TwistStamped>(
+    "input/initialtwist", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialtwist, this, _1));
   sub_ackermann_cmd_ = create_subscription<AckermannControlCommand>(
     "input/ackermann_control_command", QoS{1},
     [this](const AckermannControlCommand::SharedPtr msg) { current_ackermann_cmd_ = *msg; });
@@ -312,6 +314,19 @@ void SimplePlanningSimulator::on_initialpose(const PoseWithCovarianceStamped::Co
   initial_pose.header = msg->header;
   initial_pose.pose = msg->pose.pose;
   set_initial_state_with_transform(initial_pose, initial_twist);
+
+  initial_pose_ = msg;
+}
+
+void SimplePlanningSimulator::on_initialtwist(const TwistStamped::ConstSharedPtr msg)
+{
+  if (!initial_pose_) return;
+
+  PoseStamped initial_pose;
+  initial_pose.header = initial_pose_->header;
+  initial_pose.pose = initial_pose_->pose.pose;
+  set_initial_state_with_transform(initial_pose, msg->twist);
+  initial_twist_ = *msg;
 }
 
 void SimplePlanningSimulator::on_set_pose(
