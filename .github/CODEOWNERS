@@ -147,7 +147,7 @@ sensing/tier4_pcl_extensions/** ryu.yamamoto@tier4.jp @autowarefoundation/autowa
 sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 simulator/fault_injection/** keisuke.shima@tier4.jp @autowarefoundation/autoware-global-codeowners
-simulator/simple_planning_simulator/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
+simulator/simple_planning_simulator/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/bluetooth_monitor/** fumihito.ito@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/component_state_monitor/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/default_ad_api/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
