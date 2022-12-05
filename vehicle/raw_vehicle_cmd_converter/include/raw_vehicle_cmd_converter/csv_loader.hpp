@@ -32,7 +32,7 @@ public:
 
   bool readCSV(Table & result, const char delim = ',');
   static bool validateData(const Table & table, const std::string & csv_path);
-  static bool validateMap(const Map & map, const bool is_row_decent, const bool is_col_decent);
+  static bool validateMap(const Map & map, const bool is_col_decent);
   static Map getMap(const Table & table);
   static std::vector<double> getRowIndex(const Table & table);
   static std::vector<double> getColumnIndex(const Table & table);
