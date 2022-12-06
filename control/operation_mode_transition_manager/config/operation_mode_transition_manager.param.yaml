@@ -2,6 +2,7 @@
   ros__parameters:
     transition_timeout: 10.0
     frequency_hz: 10.0
+    check_engage_condition: false # set false if you do not want to care about the engage condition.
     engage_acceptable_limits:
       allow_autonomous_in_stopped: true  # no check if the velocity is zero, always allowed.
       dist_threshold: 1.5
