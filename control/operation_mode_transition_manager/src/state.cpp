@@ -83,6 +83,14 @@ bool AutonomousMode::isModeChangeCompleted()
   constexpr auto dist_max = 5.0;
   constexpr auto yaw_max = M_PI_4;
 
+  const auto current_speed = kinematics_.twist.twist.linear.x;
+  const auto & param = engage_acceptable_param_;
+
+  // Engagement completes quickly if the vehicle is stopped.
+  if (param.allow_autonomous_in_stopped && std::abs(current_speed) < 0.01) {
+    return true;
+  }
+
   const auto unstable = [this]() {
     stable_start_time_.reset();
     return false;
