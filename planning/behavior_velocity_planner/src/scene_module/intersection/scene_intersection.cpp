@@ -128,7 +128,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     logger_.get_child("util"), clock_);
   if (!stuck_line_idx_opt.has_value()) {
     // returns here if path is not intersecting with conflicting areas
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
+    RCLCPP_DEBUG_SKIPFIRST_THROTTLE(
       logger_, *clock_, 1000 /* ms */, "setStopLineIdx for stuck line fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     setSafe(true);
