@@ -120,7 +120,8 @@ public:
   explicit PostProcessorYoloV2Tiny(tvm_utility::pipeline::InferenceEngineTVMConfig config)
   : network_output_width(config.network_outputs[0].second[1]),
     network_output_height(config.network_outputs[0].second[2]),
-    network_output_depth(config.network_outputs[0].second[3])
+    network_output_depth(config.network_outputs[0].second[3]),
+    network_datatype_bytes(config.tvm_dtype_bits / 8)
   {
     // Parse human readable names for the classes
     std::ifstream label_file{LABEL_FILENAME};
@@ -164,16 +165,19 @@ public:
     assert(input[0].getArray()->strides == nullptr);
     assert(input[0].getArray()->dtype.bits == sizeof(float) * 8);
 
-    // Get a pointer to the output data
-    float * data_ptr = reinterpret_cast<float *>(
-      reinterpret_cast<uint8_t *>(input[0].getArray()->data) + input[0].getArray()->byte_offset);
+    // Copy the inference data to CPU memory
+    std::vector<float> infer(
+      network_output_width * network_output_height * network_output_depth, 0);
+    TVMArrayCopyToBytes(
+      input[0].getArray(), infer.data(),
+      network_output_width * network_output_height * network_output_depth * network_datatype_bytes);
 
     // Utility function to return data from y given index
-    auto get_output_data = [this, data_ptr, n_classes, n_anchors, n_coords](
+    auto get_output_data = [this, infer, n_classes, n_anchors, n_coords](
                              auto row_i, auto col_j, auto anchor_k, auto offset) {
       auto box_index = (row_i * network_output_height + col_j) * network_output_depth;
       auto index = box_index + anchor_k * (n_classes + n_coords + 1);
-      return data_ptr[index + offset];
+      return infer[index + offset];
     };
 
     // Vector used to check if the result is accurate,
@@ -228,6 +232,7 @@ private:
   int64_t network_output_width;
   int64_t network_output_height;
   int64_t network_output_depth;
+  int64_t network_datatype_bytes;
   std::vector<std::string> labels{};
   std::vector<std::pair<float, float>> anchors{};
 };

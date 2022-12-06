@@ -16,7 +16,6 @@
 #define TVM_UTILITY__PIPELINE_HPP_
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <common/types.hpp>
 
 #include <tvm_vendor/dlpack/dlpack.h>
 #include <tvm_vendor/tvm/runtime/c_runtime_api.h>
@@ -29,8 +28,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-using autoware::common::types::char8_t;
 
 namespace tvm_utility
 {
@@ -190,7 +187,7 @@ using NetworkNode = std::pair<std::string, std::vector<int64_t>>;
 typedef struct
 {
   // Network info
-  std::array<char8_t, 3> modelzoo_version;
+  std::array<char, 3> modelzoo_version;
   std::string network_name;
   std::string network_backend;
 
@@ -315,7 +312,7 @@ public:
    * @param[in] version_from Earliest supported model version.
    * @return The version status.
    */
-  Version version_check(const std::array<char8_t, 3> & version_from) const
+  Version version_check(const std::array<char, 3> & version_from) const
   {
     auto x{config_.modelzoo_version[0]};
     auto y{config_.modelzoo_version[1]};
@@ -339,7 +336,7 @@ private:
   tvm::runtime::PackedFunc execute;
   tvm::runtime::PackedFunc get_output;
   // Latest supported model version.
-  const std::array<char8_t, 3> version_up_to{2, 1, 0};
+  const std::array<char, 3> version_up_to{2, 1, 0};
 };
 
 }  // namespace pipeline
