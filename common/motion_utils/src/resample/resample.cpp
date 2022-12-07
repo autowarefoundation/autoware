@@ -80,7 +80,7 @@ std::vector<geometry_msgs::msg::Point> resamplePointVector(
   return resampled_points;
 }
 
-std::vector<geometry_msgs::msg::Point> resamplePositionVector(
+std::vector<geometry_msgs::msg::Point> resamplePointVector(
   const std::vector<geometry_msgs::msg::Point> & points, const double resample_interval,
   const bool use_lerp_for_xy, const bool use_lerp_for_z)
 {

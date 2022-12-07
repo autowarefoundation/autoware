@@ -69,7 +69,7 @@ std::vector<geometry_msgs::msg::Point> resamplePointVector(
  *        Otherwise, it uses spline interpolation
  * @return resampled path(poses)
  */
-std::vector<geometry_msgs::msg::Point> resamplePositionVector(
+std::vector<geometry_msgs::msg::Point> resamplePointVector(
   const std::vector<geometry_msgs::msg::Point> & points, const double resample_interval,
   const bool use_lerp_for_xy = false, const bool use_lerp_for_z = true);
 
