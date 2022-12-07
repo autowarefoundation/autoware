@@ -128,7 +128,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   // Parameter
   update_period_ = 1.0 / declare_parameter("update_rate", 10.0);
   use_emergency_handling_ = declare_parameter("use_emergency_handling", false);
-  use_external_emergency_stop_ = declare_parameter("use_external_emergency_stop", false);
+  check_external_emergency_heartbeat_ =
+    declare_parameter("check_external_emergency_heartbeat", false);
   system_emergency_heartbeat_timeout_ =
     declare_parameter("system_emergency_heartbeat_timeout", 0.5);
   external_emergency_stop_heartbeat_timeout_ =
@@ -224,7 +225,7 @@ bool VehicleCmdGate::isDataReady()
     }
   }
 
-  if (use_external_emergency_stop_) {
+  if (check_external_emergency_heartbeat_) {
     if (!external_emergency_stop_heartbeat_received_time_) {
       RCLCPP_WARN(get_logger(), "external_emergency_stop_heartbeat_received_time_ is false");
       return false;
@@ -322,7 +323,7 @@ void VehicleCmdGate::onTimer()
   }
 
   // Check external emergency stop heartbeat
-  if (use_external_emergency_stop_) {
+  if (check_external_emergency_heartbeat_) {
     is_external_emergency_stop_heartbeat_timeout_ = isHeartbeatTimeout(
       external_emergency_stop_heartbeat_received_time_, external_emergency_stop_heartbeat_timeout_);
 

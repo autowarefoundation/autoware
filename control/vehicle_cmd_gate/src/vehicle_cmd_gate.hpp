@@ -160,7 +160,7 @@ private:
   // Parameter
   double update_period_;
   bool use_emergency_handling_;
-  bool use_external_emergency_stop_;
+  bool check_external_emergency_heartbeat_;
   double system_emergency_heartbeat_timeout_;
   double external_emergency_stop_heartbeat_timeout_;
   double stop_hold_acceleration_;
