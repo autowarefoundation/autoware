@@ -23,7 +23,6 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <tier4_system_msgs/msg/mode_change_available.hpp>
 
-#include <optional>
 #include <vector>
 
 // This file should be included after messages.
@@ -60,9 +59,6 @@ private:
   LocalizationState localization_state_;
   RoutingState routing_state_;
   OperationModeState operation_mode_state_;
-
-  rclcpp::Time previous_stamp_;
-  std::optional<AutowareState::_state_type> previous_state_;
 
   void on_timer();
   void on_localization(const LocalizationState::ConstSharedPtr msg);

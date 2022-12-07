@@ -15,85 +15,7 @@
 #include "autoware_state.hpp"
 
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
-
-namespace transition
-{
-
-using State = autoware_auto_system_msgs::msg::AutowareState;
-using Value = State::_state_type;
-struct PairHash
-{
-  size_t operator()(const std::pair<Value, Value> & pair) const noexcept
-  {
-    // This hash only works for uint8 pairs.
-    const auto prev = static_cast<size_t>(pair.first);
-    const auto curr = static_cast<size_t>(pair.second);
-    return (prev << 8) | (curr << 0);
-  }
-};
-
-double get_wait_time(const Value state)
-{
-  if (state == State::INITIALIZING) {
-    return 1.0;
-  }
-  if (state == State::PLANNING) {
-    return 3.0;
-  }
-  if (state == State::ARRIVED_GOAL) {
-    return 2.0;
-  }
-  return 0.0;
-}
-
-const double arrived_goal_timeout = get_wait_time(State::ARRIVED_GOAL);
-
-// clang-format off
-std::unordered_map<std::pair<Value, Value>, Value, PairHash> matrix =
-{
-  {{State::INITIALIZING      , State::INITIALIZING      }, State::INITIALIZING      },
-  {{State::INITIALIZING      , State::WAITING_FOR_ROUTE }, State::WAITING_FOR_ROUTE },
-  {{State::INITIALIZING      , State::PLANNING          }, State::WAITING_FOR_ROUTE },
-  {{State::INITIALIZING      , State::WAITING_FOR_ENGAGE}, State::WAITING_FOR_ROUTE },
-  {{State::INITIALIZING      , State::DRIVING           }, State::WAITING_FOR_ROUTE },
-  {{State::INITIALIZING      , State::ARRIVED_GOAL      }, State::WAITING_FOR_ROUTE },
-  {{State::WAITING_FOR_ROUTE , State::INITIALIZING      }, State::WAITING_FOR_ROUTE },
-  {{State::WAITING_FOR_ROUTE , State::WAITING_FOR_ROUTE }, State::WAITING_FOR_ROUTE },
-  {{State::WAITING_FOR_ROUTE , State::PLANNING          }, State::PLANNING          },
-  {{State::WAITING_FOR_ROUTE , State::WAITING_FOR_ENGAGE}, State::PLANNING          },
-  {{State::WAITING_FOR_ROUTE , State::DRIVING           }, State::DRIVING           },
-  {{State::WAITING_FOR_ROUTE , State::ARRIVED_GOAL      }, State::DRIVING           },
-  {{State::PLANNING          , State::INITIALIZING      }, State::PLANNING          },
-  {{State::PLANNING          , State::WAITING_FOR_ROUTE }, State::WAITING_FOR_ROUTE },
-  {{State::PLANNING          , State::PLANNING          }, State::PLANNING          },
-  {{State::PLANNING          , State::WAITING_FOR_ENGAGE}, State::WAITING_FOR_ENGAGE},
-  {{State::PLANNING          , State::DRIVING           }, State::WAITING_FOR_ENGAGE},
-  {{State::PLANNING          , State::ARRIVED_GOAL      }, State::WAITING_FOR_ENGAGE},
-  {{State::WAITING_FOR_ENGAGE, State::INITIALIZING      }, State::WAITING_FOR_ENGAGE},
-  {{State::WAITING_FOR_ENGAGE, State::WAITING_FOR_ROUTE }, State::WAITING_FOR_ROUTE },
-  {{State::WAITING_FOR_ENGAGE, State::PLANNING          }, State::PLANNING          },
-  {{State::WAITING_FOR_ENGAGE, State::WAITING_FOR_ENGAGE}, State::WAITING_FOR_ENGAGE},
-  {{State::WAITING_FOR_ENGAGE, State::DRIVING           }, State::DRIVING           },
-  {{State::WAITING_FOR_ENGAGE, State::ARRIVED_GOAL      }, State::ARRIVED_GOAL      },
-  {{State::DRIVING           , State::INITIALIZING      }, State::DRIVING           },
-  {{State::DRIVING           , State::WAITING_FOR_ROUTE }, State::WAITING_FOR_ROUTE },
-  {{State::DRIVING           , State::PLANNING          }, State::PLANNING          },
-  {{State::DRIVING           , State::WAITING_FOR_ENGAGE}, State::WAITING_FOR_ENGAGE},
-  {{State::DRIVING           , State::DRIVING           }, State::DRIVING           },
-  {{State::DRIVING           , State::ARRIVED_GOAL      }, State::ARRIVED_GOAL      },
-  {{State::ARRIVED_GOAL      , State::INITIALIZING      }, State::ARRIVED_GOAL      },
-  {{State::ARRIVED_GOAL      , State::WAITING_FOR_ROUTE }, State::WAITING_FOR_ROUTE },
-  {{State::ARRIVED_GOAL      , State::PLANNING          }, State::WAITING_FOR_ROUTE },
-  {{State::ARRIVED_GOAL      , State::WAITING_FOR_ENGAGE}, State::WAITING_FOR_ROUTE },
-  {{State::ARRIVED_GOAL      , State::DRIVING           }, State::WAITING_FOR_ROUTE },
-  {{State::ARRIVED_GOAL      , State::ARRIVED_GOAL      }, State::ARRIVED_GOAL      }
-};
-// clang-format on
-
-}  // namespace transition
 
 namespace default_ad_api
 {
@@ -133,9 +55,6 @@ AutowareStateNode::AutowareStateNode(const rclcpp::NodeOptions & options)
   localization_state_.state = LocalizationState::UNKNOWN;
   routing_state_.state = RoutingState::UNKNOWN;
   operation_mode_state_.mode = OperationModeState::UNKNOWN;
-
-  previous_stamp_ = now();
-  previous_state_ = std::nullopt;
 }
 
 void AutowareStateNode::on_localization(const LocalizationState::ConstSharedPtr msg)
@@ -210,38 +129,15 @@ void AutowareStateNode::on_timer()
 
   // Update routing state to reproduce old logic.
   if (routing_state_.state == RoutingState::ARRIVED) {
-    const auto duration = (now() - rclcpp::Time(routing_state_.stamp)).seconds();
-    if (transition::arrived_goal_timeout < duration) {
+    const auto duration = now() - rclcpp::Time(routing_state_.stamp);
+    if (2.0 < duration.seconds()) {
       routing_state_.state = RoutingState::UNSET;
     }
   }
 
-  // Change next state to reproduce old logic.
-  auto current_state = convert_state();
-  if (previous_state_) {
-    const auto pair = std::make_pair(previous_state_.value(), current_state);
-    if (transition::matrix.count(pair)) {
-      current_state = transition::matrix.at(pair);
-    }
-  }
-
-  // Wait state change for sync to reproduce old logic.
-  const auto current_stamp = now();
-  if (previous_state_) {
-    const auto duration = (current_stamp - previous_stamp_).seconds();
-    const auto previous = previous_state_.value();
-    if (duration < transition::get_wait_time(previous)) {
-      current_state = previous;
-    }
-  }
-  if (current_state != previous_state_) {
-    previous_stamp_ = current_stamp;
-    previous_state_ = current_state;
-  }
-
   AutowareState msg;
-  msg.stamp = current_stamp;
-  msg.state = current_state;
+  msg.stamp = now();
+  msg.state = convert_state();
   pub_autoware_state_->publish(msg);
 }
 
