@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <!-- Web Controller -->
-  <executable cmd="python3 -m http.server 8085" cwd="$(find-pkg-share web_controller)/www" name="web_server"/>
-</launch>
