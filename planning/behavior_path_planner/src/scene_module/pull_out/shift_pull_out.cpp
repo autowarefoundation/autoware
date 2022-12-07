@@ -92,8 +92,9 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
 
     // Generate drivable area
     const double resolution = common_parameters.drivable_area_resolution;
+    const auto shorten_lanes = util::cutOverlappedLanes(shift_path, drivable_lanes);
     shift_path.drivable_area = util::generateDrivableArea(
-      shift_path, drivable_lanes, resolution, common_parameters.vehicle_length, planner_data_);
+      shift_path, shorten_lanes, resolution, common_parameters.vehicle_length, planner_data_);
 
     shift_path.header = planner_data_->route_handler->getRouteHeader();
 

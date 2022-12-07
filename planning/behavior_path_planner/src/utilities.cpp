@@ -21,6 +21,8 @@
 #include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_path.hpp"
 
+#include <boost/assign/list_of.hpp>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -1256,6 +1258,81 @@ std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
   }
 
   return drivable_lanes;
+}
+
+size_t getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes)
+{
+  auto overlaps = [](const DrivableLanes & lanes, const DrivableLanes & target_lanes) {
+    const auto lanelets = transformToLanelets(lanes);
+    const auto target_lanelets = transformToLanelets(target_lanes);
+
+    for (const auto & lanelet : lanelets) {
+      for (const auto & target_lanelet : target_lanelets) {
+        if (boost::geometry::overlaps(
+              lanelet.polygon2d().basicPolygon(), target_lanelet.polygon2d().basicPolygon())) {
+          return true;
+        }
+      }
+    }
+
+    // No overlapping
+    return false;
+  };
+
+  if (lanes.size() <= 2) {
+    return lanes.size();
+  }
+
+  size_t overlapped_idx = lanes.size();
+  for (size_t i = 0; i < lanes.size() - 2; ++i) {
+    for (size_t j = i + 2; j < lanes.size(); ++j) {
+      if (overlaps(lanes.at(i), lanes.at(j))) {
+        overlapped_idx = std::min(overlapped_idx, j);
+      }
+    }
+  }
+
+  return overlapped_idx;
+}
+
+std::vector<DrivableLanes> cutOverlappedLanes(
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes)
+{
+  const size_t overlapped_lanelet_id = getOverlappedLaneletId(lanes);
+  if (overlapped_lanelet_id == lanes.size()) {
+    return lanes;
+  }
+
+  const std::vector<DrivableLanes> shorten_lanes{
+    lanes.begin(), lanes.begin() + overlapped_lanelet_id};
+  const std::vector<DrivableLanes> removed_lanes{
+    lanes.begin() + overlapped_lanelet_id, lanes.end()};
+
+  const auto transformed_lanes = util::transformToLanelets(removed_lanes);
+
+  auto isIncluded = [&transformed_lanes](const std::vector<int64_t> & lane_ids) {
+    if (transformed_lanes.empty() || lane_ids.empty()) return false;
+
+    for (const auto & transformed_lane : transformed_lanes) {
+      for (const auto & lane_id : lane_ids) {
+        if (lane_id == transformed_lane.id()) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
+  for (size_t i = 0; i < path.points.size(); ++i) {
+    const auto & lane_ids = path.points.at(i).lane_ids;
+    if (isIncluded(lane_ids)) {
+      path.points.erase(path.points.begin() + i, path.points.end());
+      break;
+    }
+  }
+
+  return shorten_lanes;
 }
 
 // input lanes must be in sequence

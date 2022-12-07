@@ -438,8 +438,9 @@ BehaviorModuleOutput PullOverModule::plan()
   for (size_t i = status_.current_path_idx; i < status_.pull_over_path.partial_paths.size(); ++i) {
     auto & path = status_.pull_over_path.partial_paths.at(i);
     const auto p = planner_data_->parameters;
+    const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
     const auto lane = util::expandLanelets(
-      status_.lanes, parameters_.drivable_area_left_bound_offset,
+      shorten_lanes, parameters_.drivable_area_left_bound_offset,
       parameters_.drivable_area_right_bound_offset);
     path.drivable_area = util::generateDrivableArea(
       path, lane, p.drivable_area_resolution, p.vehicle_length, planner_data_);
@@ -610,8 +611,9 @@ PathWithLaneId PullOverModule::getReferencePath() const
     -calcMinimumShiftPathDistance(), parameters_.deceleration_interval);
 
   const auto drivable_lanes = util::generateDrivableLanes(status_.current_lanes);
+  const auto shorten_lanes = util::cutOverlappedLanes(reference_path, drivable_lanes);
   const auto lanes = util::expandLanelets(
-    drivable_lanes, parameters_.drivable_area_left_bound_offset,
+    shorten_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
 
   reference_path.drivable_area = util::generateDrivableArea(
@@ -659,8 +661,9 @@ PathWithLaneId PullOverModule::generateStopPath() const
   }
 
   const auto drivable_lanes = util::generateDrivableLanes(status_.current_lanes);
+  const auto shorten_lanes = util::cutOverlappedLanes(stop_path, drivable_lanes);
   const auto lanes = util::expandLanelets(
-    drivable_lanes, parameters_.drivable_area_left_bound_offset,
+    shorten_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
 
   stop_path.drivable_area = util::generateDrivableArea(

@@ -185,8 +185,9 @@ BehaviorModuleOutput PullOutModule::plan()
     path = status_.backward_path;
   }
 
+  const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
   const auto expanded_lanes = util::expandLanelets(
-    status_.lanes, parameters_.drivable_area_left_bound_offset,
+    shorten_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
   path.drivable_area = util::generateDrivableArea(
     path, expanded_lanes, planner_data_->parameters.drivable_area_resolution,
