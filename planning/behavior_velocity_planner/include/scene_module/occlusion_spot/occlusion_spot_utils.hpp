@@ -190,8 +190,6 @@ struct DebugData
   std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
   std::vector<PossibleCollisionInfo> possible_collisions;
   std::vector<geometry_msgs::msg::Point> occlusion_points;
-  PathWithLaneId path_raw;
-  PathWithLaneId path_interpolated;
   void resetData()
   {
     close_partition.clear();

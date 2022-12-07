@@ -77,7 +77,6 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   const StateMachine::State current_state = state_machine_.getState();
 
   debug_data_ = DebugData();
-  debug_data_.path_raw = *path;
 
   *stop_reason = planning_utils::initializeStopReason(StopReason::INTERSECTION);
 

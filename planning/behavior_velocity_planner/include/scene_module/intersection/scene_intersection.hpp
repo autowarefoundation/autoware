@@ -46,7 +46,6 @@ public:
   struct DebugData
   {
     bool stop_required;
-    autoware_auto_planning_msgs::msg::PathWithLaneId path_raw;
 
     geometry_msgs::msg::Pose slow_wall_pose;
     geometry_msgs::msg::Pose stop_wall_pose;

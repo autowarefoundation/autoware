@@ -204,18 +204,6 @@ MarkerArray OcclusionSpotModule::createDebugMarkerArray()
       makePolygonMarker(debug_data_.close_partition, "close_partition", module_id_, debug_data_.z),
       &debug_marker_array, now);
   }
-  if (!debug_data_.path_interpolated.points.empty()) {
-    const int64_t virtual_lane_id = 0;
-    appendMarkerArray(
-      debug::createPathMarkerArray(
-        debug_data_.path_raw, "path_raw", virtual_lane_id, now, 0.6, 0.3, 0.3, 0.0, 1.0, 1.0),
-      &debug_marker_array, now);
-    appendMarkerArray(
-      debug::createPathMarkerArray(
-        debug_data_.path_interpolated, "path_interpolated", virtual_lane_id, now, 0.6, 0.3, 0.3,
-        0.0, 1.0, 1.0),
-      &debug_marker_array, now);
-  }
   if (!debug_data_.occlusion_points.empty()) {
     appendMarkerArray(
       debug::createPointsMarkerArray(

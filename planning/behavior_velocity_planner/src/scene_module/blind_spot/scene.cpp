@@ -83,7 +83,6 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   *stop_reason = planning_utils::initializeStopReason(StopReason::BLIND_SPOT);
 
   const auto input_path = *path;
-  debug_data_.path_raw = input_path;
 
   StateMachine::State current_state = state_machine_.getState();
   RCLCPP_DEBUG(
@@ -235,7 +234,6 @@ bool BlindSpotModule::generateStopLine(
   if (!splineInterpolate(*path, interval, path_ip, logger_)) {
     return false;
   }
-  debug_data_.spline_path = path_ip;
 
   /* generate stop point */
   int stop_idx_ip = 0;  // stop point index for interpolated path.

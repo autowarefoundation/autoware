@@ -93,11 +93,6 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
   const auto now = this->clock_->now();
 
   appendMarkerArray(
-    debug::createPathMarkerArray(
-      debug_data_.path_raw, "path_raw", lane_id_, now, 0.6, 0.3, 0.3, 0.0, 1.0, 1.0),
-    &debug_marker_array, now);
-
-  appendMarkerArray(
     createPoseMarkerArray(
       debug_data_.stop_point_pose, state, "stop_point_pose", module_id_, 1.0, 0.0, 0.0),
     &debug_marker_array, now);
@@ -122,11 +117,6 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
   appendMarkerArray(
     debug::createObjectsMarkerArray(
       debug_data_.conflicting_targets, "conflicting_targets", module_id_, now, 0.99, 0.4, 0.0),
-    &debug_marker_array, now);
-
-  appendMarkerArray(
-    debug::createPathMarkerArray(
-      debug_data_.spline_path, "spline", lane_id_, now, 0.3, 0.1, 0.1, 0.5, 0.5, 0.5),
     &debug_marker_array, now);
 
   return debug_marker_array;

@@ -113,11 +113,6 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
   const auto now = this->clock_->now();
 
   appendMarkerArray(
-    debug::createPathMarkerArray(
-      debug_data_.path_raw, "path_raw", lane_id_, now, 0.6, 0.3, 0.3, 0.0, 1.0, 1.0),
-    &debug_marker_array, now);
-
-  appendMarkerArray(
     createLaneletPolygonsMarkerArray(
       debug_data_.detection_area, "detection_area", lane_id_, 0.0, 1.0, 0.0),
     &debug_marker_array);
