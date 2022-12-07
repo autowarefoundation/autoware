@@ -8,7 +8,8 @@ traffic_light_classifier is a package for classifying traffic light labels using
 
 ### cnn_classifier
 
-Traffic light labels are classified by MobileNetV2.
+Traffic light labels are classified by MobileNetV2.  
+Totally 37600 (26300 for training, 6800 for evaluation and 4500 for test) TIER IV internal images of Japanese traffic lights were used for fine-tuning.
 
 ### hsv_classifier
 
