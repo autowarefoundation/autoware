@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
   update-docker-manifest:
+    needs: load-env
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -21,26 +25,26 @@ jobs:
         uses: ./.github/actions/create-main-distro-alias
         with:
           package-name: autoware-universe
-          rosdistro: galactic
+          rosdistro: ${{ needs.load-env.outputs.rosdistro }}
           tag-name: latest
 
       - name: Create alias from 'autoware-universe:{rosdistro}-latest-prebuilt' to 'autoware-universe:latest-prebuilt'
         uses: ./.github/actions/create-main-distro-alias
         with:
           package-name: autoware-universe
-          rosdistro: galactic
+          rosdistro: ${{ needs.load-env.outputs.rosdistro }}
           tag-name: latest-prebuilt
 
       - name: Create alias from 'autoware-universe:{rosdistro}-latest-cuda' to 'autoware-universe:latest-cuda'
         uses: ./.github/actions/create-main-distro-alias
         with:
           package-name: autoware-universe
-          rosdistro: galactic
+          rosdistro: ${{ needs.load-env.outputs.rosdistro }}
           tag-name: latest-cuda
 
       - name: Create alias from 'autoware-universe:{rosdistro}-latest-prebuilt-cuda' to 'autoware-universe:latest-prebuilt-cuda'
         uses: ./.github/actions/create-main-distro-alias
         with:
           package-name: autoware-universe
-          rosdistro: galactic
+          rosdistro: ${{ needs.load-env.outputs.rosdistro }}
           tag-name: latest-prebuilt-cuda

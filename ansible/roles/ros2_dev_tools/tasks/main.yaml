@@ -2,38 +2,22 @@
   become: true
   ansible.builtin.apt:
     name:
-      - build-essential
-      - cmake
-      - git
-      - python3-colcon-common-extensions
       - python3-colcon-mixin
-      - python3-flake8
+      - python3-flake8-docstrings
       - python3-pip
       - python3-pytest-cov
-      - python3-rosdep
-      - python3-setuptools
-      - python3-vcstool
-      - wget
+      - ros-dev-tools
+      - python3-flake8-blind-except
+      - python3-flake8-builtins
+      - python3-flake8-class-newline
+      - python3-flake8-comprehensions
+      - python3-flake8-deprecated
+      - python3-flake8-import-order
+      - python3-flake8-quotes
+      - python3-pytest-repeat
+      - python3-pytest-rerunfailures
     state: latest
     update_cache: true
-
-- name: Install pip packages
-  ansible.builtin.pip:
-    name:
-      - flake8-blind-except
-      - flake8-builtins
-      - flake8-class-newline
-      - flake8-comprehensions
-      - flake8-deprecated
-      - flake8-docstrings
-      - flake8-import-order
-      - flake8-quotes
-      - pytest-repeat
-      - pytest-rerunfailures
-      - pytest
-      - setuptools
-    state: latest
-    executable: pip3
 
 - name: Run 'sudo rosdep init'
   become: true

@@ -17,3 +17,9 @@ log/
 
 # Jetbrains
 .idea/
+
+# rviz Screen Capture
+capture/
+
+# CodeChecker
+.codechecker/

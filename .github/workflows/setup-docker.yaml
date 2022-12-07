@@ -4,9 +4,13 @@ on:
   pull_request:
 
 jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
   setup-docker:
+    needs: load-env
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container: ${{ needs.load-env.outputs.base-image }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v3

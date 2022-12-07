@@ -1,0 +1,37 @@
+name: pre-commit-optional-autoupdate
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  check-secret:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/check-secret.yaml@v1
+    secrets:
+      secret: ${{ secrets.APP_ID }}
+
+  pre-commit-optional-autoupdate:
+    needs: check-secret
+    if: ${{ needs.check-secret.outputs.set == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: generate-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Run pre-commit-autoupdate
+        uses: autowarefoundation/autoware-github-actions/pre-commit-autoupdate@v1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          pre-commit-config: .pre-commit-config-optional.yaml
+          pr-labels: |
+            bot
+            pre-commit-optional-autoupdate
+          pr-branch: pre-commit-optional-autoupdate
+          pr-title: "ci(pre-commit-optional): autoupdate"
+          pr-commit-message: "ci(pre-commit-optional): autoupdate"
+          auto-merge-method: squash

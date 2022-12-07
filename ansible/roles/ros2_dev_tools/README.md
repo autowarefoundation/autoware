@@ -1,6 +1,6 @@
 # ros2_dev_tools
 
-This role installs ROS 2 development tools following [this page](https://docs.ros.org/en/galactic/Installation/Ubuntu-Development-Setup.html).
+This role installs ROS 2 development tools following [this page](https://docs.ros.org/en/humble/Installation/Ubuntu-Development-Setup.html).
 
 ## Inputs
 
@@ -9,34 +9,23 @@ None.
 ## Manual Installation
 
 ```bash
-# Taken from https://docs.ros.org/en/galactic/Installation/Ubuntu-Development-Setup.html
+# Taken from https://docs.ros.org/en/humble/Installation/Ubuntu-Development-Setup.html
 sudo apt update && sudo apt install -y \
-  build-essential \
-  cmake \
-  git \
-  python3-colcon-common-extensions \
-  python3-flake8 \
+  python3-flake8-docstrings \
   python3-pip \
   python3-pytest-cov \
-  python3-rosdep \
-  python3-setuptools \
-  python3-vcstool \
-  wget
+  ros-dev-tools
 
-# Install some pip packages needed for testing
-python3 -m pip install -U \
-  flake8-blind-except \
-  flake8-builtins \
-  flake8-class-newline \
-  flake8-comprehensions \
-  flake8-deprecated \
-  flake8-docstrings \
-  flake8-import-order \
-  flake8-quotes \
-  pytest-repeat \
-  pytest-rerunfailures \
-  pytest \
-  setuptools
+sudo apt install -y \
+  python3-flake8-blind-except \
+  python3-flake8-builtins \
+  python3-flake8-class-newline \
+  python3-flake8-comprehensions \
+  python3-flake8-deprecated \
+  python3-flake8-import-order \
+  python3-flake8-quotes \
+  python3-pytest-repeat \
+  python3-pytest-rerunfailures
 
 # Initialize rosdep
 sudo rosdep init

@@ -33,10 +33,6 @@ repositories:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
     version: tier4/universe
-  universe/external/grid_map:
-    type: git
-    url: https://github.com/ANYbotics/grid_map.git
-    version: ba2f9cb6e62f7ee9c5bac7401391a211e442e459
   universe/external/morai_msgs:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
