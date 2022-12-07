@@ -19,8 +19,8 @@
 
 namespace motion_utils
 {
-std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
-  const std::vector<geometry_msgs::msg::Pose> & points,
+std::vector<geometry_msgs::msg::Point> resamplePointVector(
+  const std::vector<geometry_msgs::msg::Point> & points,
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
   const bool use_lerp_for_z)
 {
@@ -40,17 +40,17 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   z.reserve(points.size());
 
   input_arclength.push_back(0.0);
-  x.push_back(points.front().position.x);
-  y.push_back(points.front().position.y);
-  z.push_back(points.front().position.z);
+  x.push_back(points.front().x);
+  y.push_back(points.front().y);
+  z.push_back(points.front().z);
   for (size_t i = 1; i < points.size(); ++i) {
     const auto & prev_pt = points.at(i - 1);
     const auto & curr_pt = points.at(i);
-    const double ds = tier4_autoware_utils::calcDistance2d(prev_pt.position, curr_pt.position);
+    const double ds = tier4_autoware_utils::calcDistance2d(prev_pt, curr_pt);
     input_arclength.push_back(ds + input_arclength.back());
-    x.push_back(curr_pt.position.x);
-    y.push_back(curr_pt.position.y);
-    z.push_back(curr_pt.position.z);
+    x.push_back(curr_pt.x);
+    y.push_back(curr_pt.y);
+    z.push_back(curr_pt.z);
   }
 
   // Interpolate
@@ -65,15 +65,71 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   const auto interpolated_y = use_lerp_for_xy ? lerp(y) : spline(y);
   const auto interpolated_z = use_lerp_for_z ? lerp(z) : spline(z);
 
-  std::vector<geometry_msgs::msg::Pose> resampled_points;
+  std::vector<geometry_msgs::msg::Point> resampled_points;
   resampled_points.resize(interpolated_x.size());
 
-  // Insert Position, Velocity and Heading Rate
+  // Insert Position
   for (size_t i = 0; i < resampled_points.size(); ++i) {
+    geometry_msgs::msg::Point point;
+    point.x = interpolated_x.at(i);
+    point.y = interpolated_y.at(i);
+    point.z = interpolated_z.at(i);
+    resampled_points.at(i) = point;
+  }
+
+  return resampled_points;
+}
+
+std::vector<geometry_msgs::msg::Point> resamplePositionVector(
+  const std::vector<geometry_msgs::msg::Point> & points, const double resample_interval,
+  const bool use_lerp_for_xy, const bool use_lerp_for_z)
+{
+  const double input_length = motion_utils::calcArcLength(points);
+
+  std::vector<double> resampling_arclength;
+  for (double s = 0.0; s < input_length; s += resample_interval) {
+    resampling_arclength.push_back(s);
+  }
+  if (resampling_arclength.empty()) {
+    std::cerr << "[motion_utils]: resampling arclength is empty" << std::endl;
+    return points;
+  }
+
+  // Insert terminal point
+  if (input_length - resampling_arclength.back() < motion_utils::overlap_threshold) {
+    resampling_arclength.back() = input_length;
+  } else {
+    resampling_arclength.push_back(input_length);
+  }
+
+  return resamplePointVector(points, resampling_arclength, use_lerp_for_xy, use_lerp_for_z);
+}
+
+std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
+  const std::vector<geometry_msgs::msg::Pose> & points,
+  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const bool use_lerp_for_z)
+{
+  // validate arguments
+  if (!resample_utils::validate_arguments(points, resampled_arclength)) {
+    return points;
+  }
+
+  std::vector<geometry_msgs::msg::Point> position(points.size());
+  for (size_t i = 0; i < points.size(); ++i) {
+    position.at(i) = points.at(i).position;
+  }
+  const auto resampled_position =
+    resamplePointVector(position, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+
+  std::vector<geometry_msgs::msg::Pose> resampled_points(resampled_position.size());
+
+  // Insert Position
+  for (size_t i = 0; i < resampled_position.size(); ++i) {
     geometry_msgs::msg::Pose pose;
-    pose.position.x = interpolated_x.at(i);
-    pose.position.y = interpolated_y.at(i);
-    pose.position.z = interpolated_z.at(i);
+    pose.position.x = resampled_position.at(i).x;
+    pose.position.y = resampled_position.at(i).y;
+    pose.position.z = resampled_position.at(i).z;
     resampled_points.at(i) = pose;
   }
 
