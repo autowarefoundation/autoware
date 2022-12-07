@@ -21,6 +21,7 @@
   <exec_depend>awapi_awiv_adapter</exec_depend>
   <exec_depend>default_ad_api</exec_depend>
   <exec_depend>path_distance_calculator</exec_depend>
+  <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>topic_tools</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
