@@ -22,12 +22,6 @@
 #include <string>
 #include <utility>
 
-// clang-format off
-#define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
-#define DEBUG_INFO(...) {if (show_debug_info_) {RCLCPP_INFO(__VA_ARGS__);}}
-#define DEBUG_PRINT_MAT(X) {if (show_debug_info_) {std::cout << #X << ": " << X << std::endl;}}
-
-// clang-format on
 using std::placeholders::_1;
 
 Twist2Accel::Twist2Accel(const std::string & node_name, const rclcpp::NodeOptions & node_options)
