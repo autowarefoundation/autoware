@@ -9,6 +9,8 @@ ament_auto_add_executable(${PROJECT_NAME}
   src/gyro_odometer_core.cpp
 )
 
+target_link_libraries(${PROJECT_NAME} fmt)
+
 ament_auto_package(INSTALL_TO_SHARE
   launch
 )
