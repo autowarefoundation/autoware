@@ -16,12 +16,15 @@
 #define SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
 
 #include "behavior_velocity_planner/planner_data.hpp"
+#include "velocity_factor_interface.hpp"
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <rtc_interface/rtc_interface.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <utilization/util.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
+#include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_debug_msgs/msg/float64_stamped.hpp>
@@ -100,6 +103,9 @@ public:
   bool isSafe() const { return safe_; }
   double getDistance() const { return distance_; }
 
+  void resetVelocityFactor() { velocity_factor_.reset(); }
+  VelocityFactor getVelocityFactor() const { return velocity_factor_.get(); }
+
 protected:
   const int64_t module_id_;
   bool activated_;
@@ -110,6 +116,7 @@ protected:
   std::shared_ptr<const PlannerData> planner_data_;
   boost::optional<tier4_v2x_msgs::msg::InfrastructureCommand> infrastructure_command_;
   boost::optional<int> first_stop_path_point_index_;
+  VelocityFactorInterface velocity_factor_;
 
   void setSafe(const bool safe) { safe_ = safe; }
   void setDistance(const double distance) { distance_ = distance; }
@@ -150,6 +157,8 @@ public:
     }
     pub_virtual_wall_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(
       std::string("~/virtual_wall/") + module_name, 5);
+    pub_velocity_factor_ = node.create_publisher<autoware_adapi_v1_msgs::msg::VelocityFactorArray>(
+      std::string("/planning/velocity_factors/") + module_name, 1);
     pub_stop_reason_ =
       node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
     pub_infrastructure_commands_ =
@@ -188,8 +197,11 @@ protected:
     visualization_msgs::msg::MarkerArray debug_marker_array;
     visualization_msgs::msg::MarkerArray virtual_wall_marker_array;
     tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
+    autoware_adapi_v1_msgs::msg::VelocityFactorArray velocity_factor_array;
     stop_reason_array.header.frame_id = "map";
     stop_reason_array.header.stamp = clock_->now();
+    velocity_factor_array.header.frame_id = "map";
+    velocity_factor_array.header.stamp = clock_->now();
 
     tier4_v2x_msgs::msg::InfrastructureCommandArray infrastructure_command_array;
     infrastructure_command_array.stamp = clock_->now();
@@ -197,9 +209,15 @@ protected:
     first_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
     for (const auto & scene_module : scene_modules_) {
       tier4_planning_msgs::msg::StopReason stop_reason;
+      scene_module->resetVelocityFactor();
       scene_module->setPlannerData(planner_data_);
       scene_module->modifyPathVelocity(path, &stop_reason);
 
+      // The velocity factor must be called after modifyPathVelocity.
+      const auto velocity_factor = scene_module->getVelocityFactor();
+      if (velocity_factor.type != VelocityFactor::UNKNOWN) {
+        velocity_factor_array.factors.emplace_back(velocity_factor);
+      }
       if (stop_reason.reason != "") {
         stop_reason_array.stop_reasons.emplace_back(stop_reason);
       }
@@ -224,6 +242,7 @@ protected:
     if (!stop_reason_array.stop_reasons.empty()) {
       pub_stop_reason_->publish(stop_reason_array);
     }
+    pub_velocity_factor_->publish(velocity_factor_array);
     pub_infrastructure_commands_->publish(infrastructure_command_array);
     pub_debug_->publish(debug_marker_array);
     if (is_publish_debug_path_) {
@@ -311,6 +330,8 @@ protected:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_;
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::PathWithLaneId>::SharedPtr pub_debug_path_;
   rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr pub_stop_reason_;
+  rclcpp::Publisher<autoware_adapi_v1_msgs::msg::VelocityFactorArray>::SharedPtr
+    pub_velocity_factor_;
   rclcpp::Publisher<tier4_v2x_msgs::msg::InfrastructureCommandArray>::SharedPtr
     pub_infrastructure_commands_;
 

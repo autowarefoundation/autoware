@@ -21,6 +21,7 @@
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
+#include "autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "tier4_planning_msgs/msg/stop_reason_array.hpp"
 #include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"
@@ -32,6 +33,8 @@
 #include <memory>
 #include <vector>
 
+using autoware_adapi_v1_msgs::msg::VelocityFactor;
+using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
@@ -50,6 +53,8 @@ public:
   {
     stop_reasons_pub_ =
       node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
+    velocity_factors_pub_ =
+      node.create_publisher<VelocityFactorArray>("/planning/velocity_factors/obstacle_cruise", 1);
     stop_speed_exceeded_pub_ =
       node.create_publisher<StopSpeedExceeded>("~/output/stop_speed_exceeded", 1);
   }
@@ -110,6 +115,7 @@ protected:
 
   // Publishers
   rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reasons_pub_;
+  rclcpp::Publisher<VelocityFactorArray>::SharedPtr velocity_factors_pub_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr stop_speed_exceeded_pub_;
 
   // Vehicle Parameters

@@ -50,6 +50,10 @@ void TrafficLightModuleManager::modifyPathVelocity(
   tl_state.header.stamp = path->header.stamp;
   tl_state.is_module_running = false;
 
+  autoware_adapi_v1_msgs::msg::VelocityFactorArray velocity_factor_array;
+  velocity_factor_array.header.frame_id = "map";
+  velocity_factor_array.header.stamp = clock_->now();
+
   tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
   stop_reason_array.header.frame_id = "map";
   stop_reason_array.header.stamp = path->header.stamp;
@@ -60,9 +64,15 @@ void TrafficLightModuleManager::modifyPathVelocity(
     tier4_planning_msgs::msg::StopReason stop_reason;
     std::shared_ptr<TrafficLightModule> traffic_light_scene_module(
       std::dynamic_pointer_cast<TrafficLightModule>(scene_module));
+    traffic_light_scene_module->resetVelocityFactor();
     traffic_light_scene_module->setPlannerData(planner_data_);
     traffic_light_scene_module->modifyPathVelocity(path, &stop_reason);
 
+    // The velocity factor must be called after modifyPathVelocity.
+    const auto velocity_factor = traffic_light_scene_module->getVelocityFactor();
+    if (velocity_factor.type != VelocityFactor::UNKNOWN) {
+      velocity_factor_array.factors.emplace_back(velocity_factor);
+    }
     if (stop_reason.reason != "") {
       stop_reason_array.stop_reasons.emplace_back(stop_reason);
     }
@@ -91,6 +101,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
   if (!stop_reason_array.stop_reasons.empty()) {
     pub_stop_reason_->publish(stop_reason_array);
   }
+  pub_velocity_factor_->publish(velocity_factor_array);
   pub_debug_->publish(debug_marker_array);
   pub_virtual_wall_->publish(virtual_wall_marker_array);
   pub_tl_state_->publish(tl_state);

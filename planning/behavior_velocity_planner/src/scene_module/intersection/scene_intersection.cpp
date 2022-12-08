@@ -57,6 +57,7 @@ IntersectionModule::IntersectionModule(
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id), is_go_out_(false)
 {
+  velocity_factor_.init(VelocityFactor::INTERSECTION);
   planner_param_ = planner_param;
 
   const auto & assigned_lanelet =
@@ -256,14 +257,21 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     debug_data_.stop_point_pose = path->points.at(stop_line_idx_final).point.pose;
     debug_data_.judge_point_pose = path->points.at(pass_judge_line_idx_final).point.pose;
 
-    /* get stop point and stop factor */
-    tier4_planning_msgs::msg::StopFactor stop_factor;
-    stop_factor.stop_pose = debug_data_.stop_point_pose;
-    const auto stop_factor_conflict = planning_utils::toRosPoints(debug_data_.conflicting_targets);
-    const auto stop_factor_stuck = planning_utils::toRosPoints(debug_data_.stuck_targets);
-    stop_factor.stop_factor_points =
-      planning_utils::concatVector(stop_factor_conflict, stop_factor_stuck);
-    planning_utils::appendStopReason(stop_factor, stop_reason);
+    // Get stop point and stop factor
+    {
+      tier4_planning_msgs::msg::StopFactor stop_factor;
+      stop_factor.stop_pose = debug_data_.stop_point_pose;
+      const auto stop_factor_conflict =
+        planning_utils::toRosPoints(debug_data_.conflicting_targets);
+      const auto stop_factor_stuck = planning_utils::toRosPoints(debug_data_.stuck_targets);
+      stop_factor.stop_factor_points =
+        planning_utils::concatVector(stop_factor_conflict, stop_factor_stuck);
+      planning_utils::appendStopReason(stop_factor, stop_reason);
+
+      const auto & stop_pose = path->points.at(stop_line_idx_final).point.pose;
+      velocity_factor_.set(
+        path->points, planner_data_->current_pose.pose, stop_pose, VelocityFactor::UNKNOWN);
+    }
 
     RCLCPP_DEBUG(logger_, "not activated. stop at the line.");
     RCLCPP_DEBUG(logger_, "===== plan end =====");

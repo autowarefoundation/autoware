@@ -51,6 +51,8 @@ SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
   debug_viz_pub_ = node.create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
+  velocity_factor_pub_ =
+    node.create_publisher<VelocityFactorArray>("/planning/velocity_factors/surround_obstacle", 1);
   vehicle_footprint_pub_ = node.create_publisher<PolygonStamped>("~/debug/footprint", 1);
   vehicle_footprint_offset_pub_ =
     node.create_publisher<PolygonStamped>("~/debug/footprint_offset", 1);
@@ -116,6 +118,8 @@ void SurroundObstacleCheckerDebugNode::publish()
   /* publish stop reason for autoware api */
   const auto stop_reason_msg = makeStopReasonArray();
   stop_reason_pub_->publish(stop_reason_msg);
+  const auto velocity_factor_msg = makeVelocityFactorArray();
+  velocity_factor_pub_->publish(velocity_factor_msg);
 
   /* reset variables */
   stop_pose_ptr_ = nullptr;
@@ -181,6 +185,25 @@ StopReasonArray SurroundObstacleCheckerDebugNode::makeStopReasonArray()
   stop_reason_array.header = header;
   stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
   return stop_reason_array;
+}
+
+VelocityFactorArray SurroundObstacleCheckerDebugNode::makeVelocityFactorArray()
+{
+  VelocityFactorArray velocity_factor_array;
+  velocity_factor_array.header.frame_id = "map";
+  velocity_factor_array.header.stamp = clock_->now();
+
+  if (stop_pose_ptr_) {
+    using distance_type = VelocityFactor::_distance_type;
+    VelocityFactor velocity_factor;
+    velocity_factor.type = VelocityFactor::SURROUNDING_OBSTACLE;
+    velocity_factor.pose = *stop_pose_ptr_;
+    velocity_factor.distance = std::numeric_limits<distance_type>::quiet_NaN();
+    velocity_factor.status = VelocityFactor::UNKNOWN;
+    velocity_factor.detail = std::string();
+    velocity_factor_array.factors.push_back(velocity_factor);
+  }
+  return velocity_factor_array;
 }
 
 Polygon2d SurroundObstacleCheckerDebugNode::createSelfPolygonWithOffset(

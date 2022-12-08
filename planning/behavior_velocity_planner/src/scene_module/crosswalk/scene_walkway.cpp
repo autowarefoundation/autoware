@@ -39,6 +39,7 @@ WalkwayModule::WalkwayModule(
   state_(State::APPROACH),
   planner_param_(planner_param)
 {
+  velocity_factor_.init(VelocityFactor::SIDEWALK);
 }
 
 boost::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
@@ -121,6 +122,8 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     stop_factor.stop_pose = stop_pose.get();
     stop_factor.stop_factor_points.push_back(path_intersects_.front());
     planning_utils::appendStopReason(stop_factor, stop_reason);
+    velocity_factor_.set(
+      path->points, planner_data_->current_pose.pose, stop_pose.get(), VelocityFactor::UNKNOWN);
 
     // use arc length to identify if ego vehicle is in front of walkway stop or not.
     const double signed_arc_dist_to_stop_point =

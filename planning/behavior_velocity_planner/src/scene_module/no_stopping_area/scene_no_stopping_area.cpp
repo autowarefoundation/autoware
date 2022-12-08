@@ -49,6 +49,7 @@ NoStoppingAreaModule::NoStoppingAreaModule(
   no_stopping_area_reg_elem_(no_stopping_area_reg_elem),
   planner_param_(planner_param)
 {
+  velocity_factor_.init(VelocityFactor::NO_STOPPING_AREA);
   state_machine_.setState(StateMachine::State::GO);
   state_machine_.setMarginTime(planner_param_.state_clear_time);
 }
@@ -193,6 +194,9 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
       stop_factor.stop_pose = stop_point->second;
       stop_factor.stop_factor_points = debug_data_.stuck_points;
       planning_utils::appendStopReason(stop_factor, stop_reason);
+      velocity_factor_.set(
+        path->points, planner_data_->current_pose.pose, stop_point->second,
+        VelocityFactor::UNKNOWN);
     }
 
     // Create legacy StopReason

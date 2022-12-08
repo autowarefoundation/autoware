@@ -63,6 +63,8 @@ OcclusionSpotModule::OcclusionSpotModule(
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock), param_(planner_param)
 {
+  velocity_factor_.init(VelocityFactor::UNKNOWN);
+
   if (param_.detection_method == utils::DETECTION_METHOD::OCCUPANCY_GRID) {
     debug_data_.detection_type = "occupancy";
     //! occupancy grid limitation( 100 * 100 )

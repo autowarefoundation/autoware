@@ -46,6 +46,8 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
   virtual_wall_pub_ = node_->create_publisher<MarkerArray>("~/virtual_wall", 1);
   debug_viz_pub_ = node_->create_publisher<MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ = node_->create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
+  velocity_factor_pub_ =
+    node_->create_publisher<VelocityFactorArray>("/planning/velocity_factors/obstacle_stop", 1);
   pub_debug_values_ =
     node_->create_publisher<Float32MultiArrayStamped>("~/obstacle_stop/debug_values", 1);
 }
@@ -149,6 +151,8 @@ void ObstacleStopPlannerDebugNode::publish()
   /* publish stop reason for autoware api */
   const auto stop_reason_msg = makeStopReasonArray();
   stop_reason_pub_->publish(stop_reason_msg);
+  const auto velocity_factor_msg = makeVelocityFactorArray();
+  velocity_factor_pub_->publish(velocity_factor_msg);
 
   // publish debug values
   Float32MultiArrayStamped debug_msg{};
@@ -387,6 +391,25 @@ StopReasonArray ObstacleStopPlannerDebugNode::makeStopReasonArray()
   stop_reason_array.header = header;
   stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
   return stop_reason_array;
+}
+
+VelocityFactorArray ObstacleStopPlannerDebugNode::makeVelocityFactorArray()
+{
+  VelocityFactorArray velocity_factor_array;
+  velocity_factor_array.header.frame_id = "map";
+  velocity_factor_array.header.stamp = node_->now();
+
+  if (stop_pose_ptr_) {
+    using distance_type = VelocityFactor::_distance_type;
+    VelocityFactor velocity_factor;
+    velocity_factor.type = VelocityFactor::ROUTE_OBSTACLE;
+    velocity_factor.pose = *stop_pose_ptr_;
+    velocity_factor.distance = std::numeric_limits<distance_type>::quiet_NaN();
+    velocity_factor.status = VelocityFactor::UNKNOWN;
+    velocity_factor.detail = std::string();
+    velocity_factor_array.factors.push_back(velocity_factor);
+  }
+  return velocity_factor_array;
 }
 
 }  // namespace motion_planning

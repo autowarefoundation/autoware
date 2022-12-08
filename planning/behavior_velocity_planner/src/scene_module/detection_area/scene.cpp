@@ -46,6 +46,7 @@ DetectionAreaModule::DetectionAreaModule(
   state_(State::GO),
   planner_param_(planner_param)
 {
+  velocity_factor_.init(VelocityFactor::USER_DEFINED_DETECTION_AREA);
 }
 
 LineString2d DetectionAreaModule::getStopLineGeometry2d() const
@@ -182,6 +183,8 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
     stop_factor.stop_pose = stop_point->second;
     stop_factor.stop_factor_points = obstacle_points;
     planning_utils::appendStopReason(stop_factor, stop_reason);
+    velocity_factor_.set(
+      path->points, planner_data_->current_pose.pose, stop_point->second, VelocityFactor::UNKNOWN);
   }
 
   // Create legacy StopReason
