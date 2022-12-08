@@ -224,6 +224,10 @@ void EmergencyHandler::callMrmBehavior(
   auto request = std::make_shared<tier4_system_msgs::srv::OperateMrm::Request>();
   request->operate = true;
 
+  if (mrm_behavior == MrmState::NONE) {
+    RCLCPP_WARN(this->get_logger(), "MRM behavior is None. Do nothing.");
+    return;
+  }
   if (mrm_behavior == MrmState::COMFORTABLE_STOP) {
     auto result = client_mrm_comfortable_stop_->async_send_request(request).get();
     if (result->response.success == true) {
@@ -253,6 +257,10 @@ void EmergencyHandler::cancelMrmBehavior(
   auto request = std::make_shared<tier4_system_msgs::srv::OperateMrm::Request>();
   request->operate = false;
 
+  if (mrm_behavior == MrmState::NONE) {
+    // Do nothing
+    return;
+  }
   if (mrm_behavior == MrmState::COMFORTABLE_STOP) {
     auto result = client_mrm_comfortable_stop_->async_send_request(request).get();
     if (result->response.success == true) {
