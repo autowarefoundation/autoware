@@ -886,8 +886,18 @@ PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
   const auto goal = planner_data_->route_handler->getGoalPose();
   const auto goal_lane_id = planner_data_->route_handler->getGoalLaneId();
 
+  Pose refined_goal{};
+  {
+    lanelet::ConstLanelet goal_lanelet;
+    if (planner_data_->route_handler->getGoalLanelet(&goal_lanelet)) {
+      refined_goal = util::refineGoal(goal, goal_lanelet);
+    } else {
+      refined_goal = goal;
+    }
+  }
+
   auto refined_path = util::refinePathForGoal(
-    planner_data_->parameters.refine_goal_search_radius_range, M_PI * 0.5, path, goal,
+    planner_data_->parameters.refine_goal_search_radius_range, M_PI * 0.5, path, refined_goal,
     goal_lane_id);
   refined_path.header.frame_id = "map";
   refined_path.header.stamp = this->now();
