@@ -152,7 +152,6 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     if (planner_data_->isVehicleStopped()) {
       state_ = State::SURPASSED;
     }
-  } else if (state_ == State::SURPASSED) {
   }
 
   return true;
