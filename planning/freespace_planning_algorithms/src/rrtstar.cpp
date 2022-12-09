@@ -150,14 +150,18 @@ void RRTStar::setRRTPath(const std::vector<rrtstar_core::Pose> & waypoints)
     pose.pose = local2global(costmap_, pose_local);
     pose.header = header;
     PlannerWaypoint pw;
-    if (i == waypoints.size() - 1) {
-      pw.is_back = waypoints_.waypoints.at(i - 1).is_back;
-    } else {
+    if (0 == i) {
       const auto & pt_now = waypoints.at(i);
       const auto & pt_next = waypoints.at(i + 1);
       const double inpro =
         cos(pt_now.yaw) * (pt_next.x - pt_now.x) + sin(pt_now.yaw) * (pt_next.y - pt_now.y);
       pw.is_back = (inpro < 0.0);
+    } else {
+      const auto & pt_pre = waypoints.at(i - 1);
+      const auto & pt_now = waypoints.at(i);
+      const double inpro =
+        cos(pt_pre.yaw) * (pt_now.x - pt_pre.x) + sin(pt_pre.yaw) * (pt_now.y - pt_pre.y);
+      pw.is_back = !(inpro > 0.0);
     }
     pw.pose = pose;
     waypoints_.waypoints.push_back(pw);
