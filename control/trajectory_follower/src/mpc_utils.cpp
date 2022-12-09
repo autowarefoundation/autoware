@@ -230,7 +230,7 @@ bool convertToMPCTrajectory(
   for (const autoware_auto_planning_msgs::msg::TrajectoryPoint & p : input.points) {
     const double x = p.pose.position.x;
     const double y = p.pose.position.y;
-    const double z = 0.0;
+    const double z = p.pose.position.z;
     const double yaw = tf2::getYaw(p.pose.orientation);
     const double vx = p.longitudinal_velocity_mps;
     const double k = 0.0;
