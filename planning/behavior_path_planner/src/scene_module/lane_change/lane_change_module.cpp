@@ -143,8 +143,7 @@ BT::NodeStatus LaneChangeModule::updateState()
 
 BehaviorModuleOutput LaneChangeModule::plan()
 {
-  constexpr double resample_interval{1.0};
-  auto path = util::resamplePathWithSpline(status_.lane_change_path.path, resample_interval);
+  auto path = status_.lane_change_path.path;
 
   if (!isValidPath(path)) {
     status_.is_safe = false;
