@@ -83,6 +83,7 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr sub_accel_;
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
     control_cmd_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_marker_pub_;
 
   enum class LateralControllerMode {
     INVALID = 0,
@@ -106,6 +107,7 @@ private:
   LateralControllerMode getLateralControllerMode(const std::string & algorithm_name) const;
   LongitudinalControllerMode getLongitudinalControllerMode(
     const std::string & algorithm_name) const;
+  void publishDebugMarker() const;
 };
 }  // namespace trajectory_follower_nodes
 }  // namespace control

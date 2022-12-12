@@ -77,6 +77,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     "~/input/current_accel", rclcpp::QoS{1}, std::bind(&Controller::onAccel, this, _1));
   control_cmd_pub_ = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
     "~/output/control_cmd", rclcpp::QoS{1}.transient_local());
+  debug_marker_pub_ =
+    create_publisher<visualization_msgs::msg::MarkerArray>("~/output/debug_marker", rclcpp::QoS{1});
 
   // Timer
   {
@@ -168,6 +170,34 @@ void Controller::callbackTimerControl()
   out.lateral = lateral_output_->control_cmd;
   out.longitudinal = longitudinal_output_->control_cmd;
   control_cmd_pub_->publish(out);
+
+  publishDebugMarker();
+}
+
+void Controller::publishDebugMarker() const
+{
+  visualization_msgs::msg::MarkerArray debug_marker_array{};
+
+  // steer converged marker
+  {
+    auto marker = tier4_autoware_utils::createDefaultMarker(
+      "map", this->now(), "steer_converged", 0, visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      tier4_autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
+      tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.99));
+    marker.pose = input_data_.current_odometry_ptr->pose.pose;
+
+    std::stringstream ss;
+    const double current = input_data_.current_steering_ptr->steering_tire_angle;
+    const double cmd = lateral_output_->control_cmd.steering_tire_angle;
+    const double diff = current - cmd;
+    ss << "current:" << current << " cmd:" << cmd << " diff:" << diff
+       << (lateral_output_->sync_data.is_steer_converged ? " (converged)" : " (not converged)");
+    marker.text = ss.str();
+
+    debug_marker_array.markers.push_back(marker);
+  }
+
+  debug_marker_pub_->publish(debug_marker_array);
 }
 
 }  // namespace trajectory_follower_nodes

@@ -234,6 +234,7 @@ bool MpcLateralController::isSteerConverged(
   // wait for a while to propagate the trajectory shape to the output command when the trajectory
   // shape is changed.
   if (!m_has_received_first_trajectory || isTrajectoryShapeChanged()) {
+    RCLCPP_DEBUG(node_->get_logger(), "trajectory shaped is changed");
     return false;
   }
 
