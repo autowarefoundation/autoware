@@ -28,7 +28,7 @@ repositories:
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
-    version: 259627878f2e152cccf781888223ed1444387fcb
+    version: 6270001a641e4b7b5137487bb10318f4aa3eff96
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
@@ -79,7 +79,7 @@ repositories:
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
-    version: 0d1276417b26d9d60be22b96a22c74a41e49e61c
+    version: d9022ee9bbfd958c239b673cfbb230eea50607be
   # vehicle
   vehicle/sample_vehicle_launch:
     type: git
