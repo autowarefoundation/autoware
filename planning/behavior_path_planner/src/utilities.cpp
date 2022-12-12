@@ -2022,13 +2022,11 @@ PathWithLaneId getCenterLinePath(
   const double s_backward = std::max(0., s - backward_path_length);
   double s_forward = s + forward_path_length;
 
-  const double buffer =
-    parameter.backward_length_buffer_for_end_of_lane;  // buffer for min_lane_change_length
   const int num_lane_change =
     std::abs(route_handler.getNumLaneToPreferredLane(lanelet_sequence.back()));
   const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
   const double lane_change_buffer =
-    std::fabs(num_lane_change * (parameter.minimum_lane_change_length + buffer) + optional_length);
+    calcLaneChangeBuffer(parameter, std::abs(num_lane_change), optional_length);
 
   if (route_handler.isDeadEndLanelet(lanelet_sequence.back())) {
     s_forward = std::min(s_forward, lane_length - lane_change_buffer);
@@ -2168,7 +2166,7 @@ PathWithLaneId setDecelerationVelocity(
       const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
       const auto arclength = lanelet::utils::getArcCoordinates(lanelet_sequence, point.point.pose);
       const double distance_to_end =
-        std::max(0.0, lane_length - std::fabs(lane_change_buffer) - arclength.length);
+        std::max(0.0, lane_length - std::abs(lane_change_buffer) - arclength.length);
       point.point.longitudinal_velocity_mps = std::min(
         point.point.longitudinal_velocity_mps,
         static_cast<float>(distance_to_end / lane_change_prepare_duration));
@@ -2776,4 +2774,19 @@ bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_thre
   return true;
 }
 
+double calcTotalLaneChangeDistanceWithBuffer(const BehaviorPathPlannerParameters & common_param)
+{
+  const double minimum_lane_change_distance =
+    common_param.minimum_lane_change_prepare_distance + common_param.minimum_lane_change_length;
+  const double end_of_lane_buffer = common_param.backward_length_buffer_for_end_of_lane;
+  return minimum_lane_change_distance + end_of_lane_buffer;
+}
+
+double calcLaneChangeBuffer(
+  const BehaviorPathPlannerParameters & common_param, const int num_lane_change,
+  const double length_to_intersection)
+{
+  return num_lane_change * calcTotalLaneChangeDistanceWithBuffer(common_param) +
+         length_to_intersection;
+}
 }  // namespace behavior_path_planner::util

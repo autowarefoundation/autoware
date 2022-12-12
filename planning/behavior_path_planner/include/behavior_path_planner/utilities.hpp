@@ -485,6 +485,12 @@ bool isSafeInFreeSpaceCollisionCheck(
   const double front_decel, const double rear_decel, CollisionCheckDebug & debug);
 
 bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_threshold);
+
+double calcTotalLaneChangeDistanceWithBuffer(const BehaviorPathPlannerParameters & common_param);
+
+double calcLaneChangeBuffer(
+  const BehaviorPathPlannerParameters & common_param, const int num_lane_change,
+  const double length_to_intersection);
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_

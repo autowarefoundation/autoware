@@ -27,7 +27,6 @@ struct LaneChangeParameters
 {
   double lane_change_prepare_duration{2.0};
   double lane_changing_duration{4.0};
-  double minimum_lane_change_prepare_distance{4.0};
   double lane_change_finish_judge_buffer{3.0};
   double minimum_lane_change_velocity{5.6};
   double prediction_time_resolution{0.5};

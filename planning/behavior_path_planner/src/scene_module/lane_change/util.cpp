@@ -177,7 +177,7 @@ LaneChangePaths getLaneChangePaths(
   const auto & lane_change_prepare_duration = parameter.lane_change_prepare_duration;
   const auto & lane_changing_duration = parameter.lane_changing_duration;
   const auto & minimum_lane_change_prepare_distance =
-    parameter.minimum_lane_change_prepare_distance;
+    common_parameter.minimum_lane_change_prepare_distance;
   const auto & minimum_lane_change_length = common_parameter.minimum_lane_change_length;
   const auto & minimum_lane_change_velocity = parameter.minimum_lane_change_velocity;
   const auto & maximum_deceleration = parameter.maximum_deceleration;

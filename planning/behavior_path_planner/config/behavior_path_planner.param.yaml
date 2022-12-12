@@ -6,6 +6,7 @@
     backward_length_buffer_for_end_of_pull_over: 5.0
     backward_length_buffer_for_end_of_pull_out: 5.0
     minimum_lane_change_length: 12.0
+    minimum_lane_change_prepare_distance: 2.0 # [m]
     minimum_pull_over_length: 16.0
 
     drivable_area_resolution: 0.1

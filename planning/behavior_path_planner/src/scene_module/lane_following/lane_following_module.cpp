@@ -128,9 +128,8 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
         p, optional_lengths);
     }
 
-    const double buffer = p.backward_length_buffer_for_end_of_lane;
     const double lane_change_buffer =
-      num_lane_change * (p.minimum_lane_change_length + buffer) + optional_lengths;
+      util::calcLaneChangeBuffer(p, num_lane_change, optional_lengths);
 
     reference_path = util::setDecelerationVelocity(
       *route_handler, reference_path, current_lanes, parameters_.lane_change_prepare_duration,
