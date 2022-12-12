@@ -399,7 +399,8 @@ PathWithLaneId trimPathFromSelfPose(
 
   PathWithLaneId output{};
   output.header = input.header;
-  output.drivable_area = input.drivable_area;
+  output.left_bound = input.left_bound;
+  output.right_bound = input.right_bound;
   double dist_sum = 0;
   for (size_t i = nearest_idx; i < input.points.size(); ++i) {
     output.points.push_back(input.points.at(i));

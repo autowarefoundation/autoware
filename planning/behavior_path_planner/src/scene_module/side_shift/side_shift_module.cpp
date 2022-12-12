@@ -421,8 +421,7 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
 
   {
     const auto & p = planner_data_->parameters;
-    path->path.drivable_area = util::generateDrivableArea(
-      path->path, expanded_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data_);
+    util::generateDrivableArea(path->path, expanded_lanes, p.vehicle_length, planner_data_);
   }
 }
 

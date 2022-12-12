@@ -189,9 +189,8 @@ BehaviorModuleOutput PullOutModule::plan()
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset);
-  path.drivable_area = util::generateDrivableArea(
-    path, expanded_lanes, planner_data_->parameters.drivable_area_resolution,
-    planner_data_->parameters.vehicle_length, planner_data_);
+  util::generateDrivableArea(
+    path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
 
   output.path = std::make_shared<PathWithLaneId>(path);
   output.turn_signal_info = calcTurnSignalInfo();
@@ -287,9 +286,8 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
     parameters_.drivable_area_right_bound_offset);
 
   auto candidate_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
-  candidate_path.drivable_area = util::generateDrivableArea(
-    candidate_path, expanded_lanes, planner_data_->parameters.drivable_area_resolution,
-    planner_data_->parameters.vehicle_length, planner_data_);
+  util::generateDrivableArea(
+    candidate_path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
   auto stop_path = candidate_path;
   for (auto & p : stop_path.points) {
     p.point.longitudinal_velocity_mps = 0.0;

@@ -179,6 +179,9 @@ struct AvoidanceParameters
   double drivable_area_right_bound_offset;
   double drivable_area_left_bound_offset;
 
+  // clip left and right bounds for objects
+  bool enable_bound_clipping{false};
+
   // debug
   bool publish_debug_marker = false;
   bool print_debug_info = false;

@@ -963,7 +963,8 @@ PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
       filtered_path.points.push_back(pt);
     }
   }
-  filtered_path.drivable_area = input_path.drivable_area;
+  filtered_path.left_bound = input_path.left_bound;
+  filtered_path.right_bound = input_path.right_bound;
   return filtered_path;
 }
 
@@ -1086,7 +1087,8 @@ bool setGoal(
       output_ptr->points.back().lane_ids = input.points.back().lane_ids;
     }
 
-    output_ptr->drivable_area = input.drivable_area;
+    output_ptr->left_bound = input.left_bound;
+    output_ptr->right_bound = input.right_bound;
     return true;
   } catch (std::out_of_range & ex) {
     RCLCPP_ERROR_STREAM(
@@ -1342,148 +1344,170 @@ std::vector<DrivableLanes> cutOverlappedLanes(
   return shorten_lanes;
 }
 
-// input lanes must be in sequence
-// NOTE: lanes in the path argument is used to calculate the size of the drivable area to cover
-// designated forward and backward length by getPathScope function.
-//       lanes argument is used to determine (= draw) the drivable area.
-//       This is because lanes argument has multiple parallel lanes which makes hard to calculate
-//       the size of the drivable area
-OccupancyGrid generateDrivableArea(
-  const PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double resolution,
-  const double vehicle_length, const std::shared_ptr<const PlannerData> planner_data)
+size_t findNearestSegmentIndex(
+  const std::vector<geometry_msgs::msg::Pose> & points, const geometry_msgs::msg::Pose & pose,
+  const double dist_threshold, const double yaw_threshold)
 {
+  const auto nearest_idx =
+    motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
+  return nearest_idx ? nearest_idx.get()
+                     : motion_utils::findNearestSegmentIndex(points, pose.position);
+}
+
+geometry_msgs::msg::Pose calcLongitudinalOffsetStartPose(
+  const std::vector<geometry_msgs::msg::Pose> & points, const geometry_msgs::msg::Pose & pose,
+  const size_t nearest_segment_idx, const double offset)
+{
+  const double offset_length =
+    motion_utils::calcLongitudinalOffsetToSegment(points, nearest_segment_idx, pose.position);
+  const auto offset_pose =
+    motion_utils::calcLongitudinalOffsetPose(points, nearest_segment_idx, offset_length + offset);
+
+  return offset_pose ? offset_pose.get() : points.at(nearest_segment_idx);
+}
+
+geometry_msgs::msg::Pose calcLongitudinalOffsetGoalPose(
+  const std::vector<geometry_msgs::msg::Pose> & points, const geometry_msgs::msg::Pose & pose,
+  const size_t nearest_segment_idx, const double offset)
+{
+  const double offset_length =
+    motion_utils::calcLongitudinalOffsetToSegment(points, nearest_segment_idx, pose.position);
+  const auto offset_pose =
+    motion_utils::calcLongitudinalOffsetPose(points, nearest_segment_idx, offset_length + offset);
+
+  return offset_pose ? offset_pose.get() : points.at(nearest_segment_idx + 1);
+}
+
+void generateDrivableArea(
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
+  const std::shared_ptr<const PlannerData> planner_data)
+{
+  std::vector<geometry_msgs::msg::Pose> left_bound;
+  std::vector<geometry_msgs::msg::Pose> right_bound;
+
+  // extract data
   const auto transformed_lanes = util::transformToLanelets(lanes);
-  const auto & params = planner_data->parameters;
-  const auto route_handler = planner_data->route_handler;
   const auto current_pose = planner_data->self_pose;
+  const auto route_handler = planner_data->route_handler;
+  const auto & param = planner_data->parameters;
+  const double dist_threshold = std::numeric_limits<double>::max();
+  const double yaw_threshold = param.ego_nearest_yaw_threshold;
+  constexpr double overlap_threshold = 0.01;
 
-  // calculate min/max x and y from lanes in path argument (not from lanes argument)
-  const auto path_scope = drivable_area_utils::getPathScope(
-    path, route_handler, current_pose->pose, params.drivable_lane_forward_length,
-    params.drivable_lane_backward_length, params.drivable_lane_margin,
-    params.ego_nearest_dist_threshold, params.ego_nearest_yaw_threshold);
+  auto addLeftBoundPoints = [&left_bound](const lanelet::ConstLanelet & lane) {
+    for (const auto & lp : lane.leftBound()) {
+      geometry_msgs::msg::Pose current_pose;
+      current_pose.position = lanelet::utils::conversion::toGeomMsgPt(lp);
+      if (left_bound.empty()) {
+        left_bound.push_back(current_pose);
+      } else if (
+        tier4_autoware_utils::calcDistance2d(current_pose, left_bound.back()) > overlap_threshold) {
+        left_bound.push_back(current_pose);
+      }
+    }
+  };
 
-  const double min_x =
-    drivable_area_utils::quantize(path_scope.at(0) - params.drivable_area_margin, resolution);
-  const double min_y =
-    drivable_area_utils::quantize(path_scope.at(1) - params.drivable_area_margin, resolution);
-  const double max_x =
-    drivable_area_utils::quantize(path_scope.at(2) + params.drivable_area_margin, resolution);
-  const double max_y =
-    drivable_area_utils::quantize(path_scope.at(3) + params.drivable_area_margin, resolution);
+  auto addRightBoundPoints = [&right_bound](const lanelet::ConstLanelet & lane) {
+    for (const auto & rp : lane.rightBound()) {
+      geometry_msgs::msg::Pose current_pose;
+      current_pose.position = lanelet::utils::conversion::toGeomMsgPt(rp);
+      if (right_bound.empty()) {
+        right_bound.push_back(current_pose);
+      } else if (
+        tier4_autoware_utils::calcDistance2d(current_pose, right_bound.back()) >
+        overlap_threshold) {
+        right_bound.push_back(current_pose);
+      }
+    }
+  };
 
-  const double width = max_x - min_x;
-  const double height = max_y - min_y;
+  // Insert Position
+  for (const auto & lane : lanes) {
+    addLeftBoundPoints(lane.left_lane);
+    addRightBoundPoints(lane.right_lane);
+  }
 
-  lanelet::ConstLanelets drivable_lanes;
-  {  // add lanes which covers initial and final footprints
-    // 1. add preceding lanes before current pose
-    const auto lanes_before_current_pose = route_handler->getLanesBeforePose(
-      current_pose->pose, params.drivable_lane_backward_length + params.drivable_lane_margin);
-    drivable_lanes.insert(
-      drivable_lanes.end(), lanes_before_current_pose.begin(), lanes_before_current_pose.end());
-
-    // 2. add lanes
-    drivable_lanes.insert(drivable_lanes.end(), transformed_lanes.begin(), transformed_lanes.end());
-
-    // 3. add succeeding lanes after goal
-    if (containsGoal(transformed_lanes, route_handler->getGoalLaneId())) {
-      const auto lanes_after_goal = route_handler->getLanesAfterGoal(vehicle_length);
-      drivable_lanes.insert(drivable_lanes.end(), lanes_after_goal.begin(), lanes_after_goal.end());
+  // Insert points after goal
+  if (containsGoal(transformed_lanes, route_handler->getGoalLaneId())) {
+    const auto lanes_after_goal = route_handler->getLanesAfterGoal(vehicle_length);
+    for (const auto & lane : lanes_after_goal) {
+      addLeftBoundPoints(lane);
+      addRightBoundPoints(lane);
     }
   }
 
-  OccupancyGrid occupancy_grid;
-  PoseStamped grid_origin;
+  // Give Orientation
+  motion_utils::insertOrientation(left_bound, true);
+  motion_utils::insertOrientation(right_bound, true);
 
-  // calculate grid origin
-  {
-    grid_origin.header = current_pose->header;
+  // Get Closest segment for the start point
+  constexpr double front_length = 0.5;
+  const auto front_pose = path.points.empty() ? current_pose->pose : path.points.front().point.pose;
+  const size_t front_left_start_idx =
+    findNearestSegmentIndex(left_bound, front_pose, dist_threshold, yaw_threshold);
+  const size_t front_right_start_idx =
+    findNearestSegmentIndex(right_bound, front_pose, dist_threshold, yaw_threshold);
+  const auto left_start_pose =
+    calcLongitudinalOffsetStartPose(left_bound, front_pose, front_left_start_idx, -front_length);
+  const auto right_start_pose =
+    calcLongitudinalOffsetStartPose(right_bound, front_pose, front_right_start_idx, -front_length);
+  const size_t left_start_idx =
+    findNearestSegmentIndex(left_bound, left_start_pose, dist_threshold, yaw_threshold);
+  const size_t right_start_idx =
+    findNearestSegmentIndex(right_bound, right_start_pose, dist_threshold, yaw_threshold);
 
-    grid_origin.pose.position.x = min_x;
-    grid_origin.pose.position.y = min_y;
-    grid_origin.pose.position.z = current_pose->pose.position.z;
-  }
+  // Get Closest segment for the goal point
+  const auto goal_pose = path.points.empty() ? current_pose->pose : path.points.back().point.pose;
+  const size_t goal_left_start_idx =
+    findNearestSegmentIndex(left_bound, goal_pose, dist_threshold, yaw_threshold);
+  const size_t goal_right_start_idx =
+    findNearestSegmentIndex(right_bound, goal_pose, dist_threshold, yaw_threshold);
+  const auto left_goal_pose =
+    calcLongitudinalOffsetGoalPose(left_bound, goal_pose, goal_left_start_idx, vehicle_length);
+  const auto right_goal_pose =
+    calcLongitudinalOffsetGoalPose(right_bound, goal_pose, goal_right_start_idx, vehicle_length);
+  const size_t left_goal_idx =
+    findNearestSegmentIndex(left_bound, left_goal_pose, dist_threshold, yaw_threshold);
+  const size_t right_goal_idx =
+    findNearestSegmentIndex(right_bound, right_goal_pose, dist_threshold, yaw_threshold);
 
-  // header
-  {
-    occupancy_grid.header.stamp = current_pose->header.stamp;
-    occupancy_grid.header.frame_id = "map";
-  }
+  // Store Data
+  path.left_bound.clear();
+  path.right_bound.clear();
+  path.left_bound.reserve(left_goal_idx - left_start_idx);
+  path.right_bound.reserve(right_goal_idx - right_start_idx);
 
-  // info
-  {
-    const int width_cell = std::round(width / resolution);
-    const int height_cell = std::round(height / resolution);
+  // Insert a start point
+  path.left_bound.push_back(left_start_pose.position);
+  path.right_bound.push_back(right_start_pose.position);
 
-    occupancy_grid.info.map_load_time = occupancy_grid.header.stamp;
-    occupancy_grid.info.resolution = resolution;
-    occupancy_grid.info.width = width_cell;
-    occupancy_grid.info.height = height_cell;
-    occupancy_grid.info.origin = grid_origin.pose;
-  }
-
-  // occupancy_grid.data = image;
-  {
-    constexpr uint8_t free_space = 0;
-    constexpr uint8_t occupied_space = 100;
-    // get transform
-    tf2::Stamped<tf2::Transform> tf_grid2map, tf_map2grid;
-    tf2::fromMsg(grid_origin, tf_grid2map);
-    tf_map2grid.setData(tf_grid2map.inverse());
-    const auto geom_tf_map2grid = tf2::toMsg(tf_map2grid);
-
-    // convert lane polygons into cv type
-    cv::Mat cv_image(
-      occupancy_grid.info.width, occupancy_grid.info.height, CV_8UC1, cv::Scalar(occupied_space));
-    for (const auto & lane : drivable_lanes) {
-      lanelet::BasicPolygon2d lane_poly = lane.polygon2d().basicPolygon();
-
-      if (lane.hasAttribute("intersection_area")) {
-        const std::string area_id = lane.attributeOr("intersection_area", "none");
-        const auto intersection_area =
-          route_handler->getIntersectionAreaById(atoi(area_id.c_str()));
-        const auto poly = lanelet::utils::to2D(intersection_area).basicPolygon();
-        std::vector<lanelet::BasicPolygon2d> lane_polys{};
-        if (boost::geometry::intersection(poly, lane_poly, lane_polys)) {
-          lane_poly = lane_polys.front();
-        }
-      }
-
-      // create drivable area using opencv
-      std::vector<std::vector<cv::Point>> cv_polygons;
-      std::vector<cv::Point> cv_polygon;
-      cv_polygon.reserve(lane_poly.size());
-      for (const auto & p : lane_poly) {
-        const double z = lane.polygon3d().basicPolygon().at(0).z();
-        Point geom_pt = tier4_autoware_utils::createPoint(p.x(), p.y(), z);
-        Point transformed_geom_pt;
-        tf2::doTransform(geom_pt, transformed_geom_pt, geom_tf_map2grid);
-        cv_polygon.push_back(toCVPoint(transformed_geom_pt, width, height, resolution));
-      }
-      if (!cv_polygon.empty()) {
-        cv_polygons.push_back(cv_polygon);
-        // fill in drivable area and copy to occupancy grid
-        cv::fillPoly(cv_image, cv_polygons, cv::Scalar(free_space));
-      }
+  // Insert middle points
+  for (size_t i = left_start_idx + 1; i <= left_goal_idx; ++i) {
+    const auto & next_point = left_bound.at(i).position;
+    const double dist = tier4_autoware_utils::calcDistance2d(path.left_bound.back(), next_point);
+    if (dist > overlap_threshold) {
+      path.left_bound.push_back(next_point);
     }
-
-    // Closing
-    // NOTE: Because of the discretization error, there may be some discontinuity between two
-    // successive lanelets in the drivable area. This issue is dealt with by the erode/dilate
-    // process.
-    constexpr int num_iter = 1;
-    cv::Mat cv_erode, cv_dilate;
-    cv::erode(cv_image, cv_erode, cv::Mat(), cv::Point(-1, -1), num_iter);
-    cv::dilate(cv_erode, cv_dilate, cv::Mat(), cv::Point(-1, -1), num_iter);
-
-    // const auto & cv_image_reshaped = cv_dilate.reshape(1, 1);
-    imageToOccupancyGrid(cv_dilate, &occupancy_grid);
-    occupancy_grid.data[0] = 0;
-    // cv_image_reshaped.copyTo(occupancy_grid.data);
+  }
+  for (size_t i = right_start_idx + 1; i <= right_goal_idx; ++i) {
+    const auto & next_point = right_bound.at(i).position;
+    const double dist = tier4_autoware_utils::calcDistance2d(path.right_bound.back(), next_point);
+    if (dist > overlap_threshold) {
+      path.right_bound.push_back(next_point);
+    }
   }
 
-  return occupancy_grid;
+  // Insert a goal point
+  if (
+    tier4_autoware_utils::calcDistance2d(path.left_bound.back(), left_goal_pose.position) >
+    overlap_threshold) {
+    path.left_bound.push_back(left_goal_pose.position);
+  }
+  if (
+    tier4_autoware_utils::calcDistance2d(path.right_bound.back(), right_goal_pose.position) >
+    overlap_threshold) {
+    path.right_bound.push_back(right_goal_pose.position);
+  }
 }
 
 double getDistanceToEndOfLane(const Pose & current_pose, const lanelet::ConstLanelets & lanelets)
@@ -1642,7 +1666,8 @@ Path convertToPathFromPathWithLaneId(const PathWithLaneId & path_with_lane_id)
 {
   Path path;
   path.header = path_with_lane_id.header;
-  path.drivable_area = path_with_lane_id.drivable_area;
+  path.left_bound = path_with_lane_id.left_bound;
+  path.right_bound = path_with_lane_id.right_bound;
   path.points.reserve(path_with_lane_id.points.size());
   for (const auto & pt_with_lane_id : path_with_lane_id.points) {
     path.points.push_back(pt_with_lane_id.point);
@@ -1838,42 +1863,6 @@ std::vector<Polygon2d> getTargetLaneletPolygons(
   return polygons;
 }
 
-void occupancyGridToImage(const OccupancyGrid & occupancy_grid, cv::Mat * cv_image)
-{
-  const int width = cv_image->cols;
-  const int height = cv_image->rows;
-  for (int x = width - 1; x >= 0; x--) {
-    for (int y = height - 1; y >= 0; y--) {
-      const int idx = (height - 1 - y) + (width - 1 - x) * height;
-      const unsigned char intensity = occupancy_grid.data.at(idx);
-      cv_image->at<unsigned char>(y, x) = intensity;
-    }
-  }
-}
-
-void imageToOccupancyGrid(const cv::Mat & cv_image, OccupancyGrid * occupancy_grid)
-{
-  const int width = cv_image.cols;
-  const int height = cv_image.rows;
-  occupancy_grid->data.clear();
-  occupancy_grid->data.resize(width * height);
-  for (int x = width - 1; x >= 0; x--) {
-    for (int y = height - 1; y >= 0; y--) {
-      const int idx = (height - 1 - y) + (width - 1 - x) * height;
-      const unsigned char intensity = cv_image.at<unsigned char>(y, x);
-      occupancy_grid->data.at(idx) = intensity;
-    }
-  }
-}
-
-cv::Point toCVPoint(
-  const Point & geom_point, const double width_m, const double height_m, const double resolution)
-{
-  return {
-    static_cast<int>((height_m - geom_point.y) / resolution),
-    static_cast<int>((width_m - geom_point.x) / resolution)};
-}
-
 // TODO(Horibe) There is a similar function in route_handler.
 std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   const std::shared_ptr<const PlannerData> & planner_data)
@@ -1908,8 +1897,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
 
   centerline_path->header = route_handler->getRouteHeader();
 
-  centerline_path->drivable_area = util::generateDrivableArea(
-    *centerline_path, drivable_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data);
+  util::generateDrivableArea(*centerline_path, drivable_lanes, p.vehicle_length, planner_data);
 
   return centerline_path;
 }

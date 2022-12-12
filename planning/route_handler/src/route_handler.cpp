@@ -107,7 +107,8 @@ PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
       filtered_path.points.push_back(pt);
     }
   }
-  filtered_path.drivable_area = input_path.drivable_area;
+  filtered_path.left_bound = input_path.left_bound;
+  filtered_path.right_bound = input_path.right_bound;
   return filtered_path;
 }
 

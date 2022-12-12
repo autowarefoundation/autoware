@@ -371,8 +371,6 @@ void CollisionFreeOptimizerNode::resetPlanning()
 {
   RCLCPP_WARN(get_logger(), "[ObstacleAvoidancePlanner] Reset planning");
 
-  costmap_generator_ptr_ = std::make_unique<CostmapGenerator>();
-
   eb_path_optimizer_ptr_ = std::make_unique<EBPathOptimizer>(
     is_showing_debug_info_, traj_param_, eb_param_, vehicle_param_);
 
@@ -391,7 +389,7 @@ void CollisionFreeOptimizerNode::resetPrevOptimization()
 
 Trajectory CollisionFreeOptimizerNode::pathCallback(const Path::ConstSharedPtr path_ptr)
 {
-  if (path_ptr->points.empty() || path_ptr->drivable_area.data.empty()) {
+  if (path_ptr->points.empty()) {
     return Trajectory{};
   }
 
@@ -411,8 +409,6 @@ Trajectory CollisionFreeOptimizerNode::pathCallback(const Path::ConstSharedPtr p
 
   // cv_maps
   const auto predicted_objects = PredictedObjects{}.objects;
-  const CVMaps cv_maps =
-    costmap_generator_ptr_->getMaps(false, *path_ptr, predicted_objects, traj_param_, debug_data_);
 
   const size_t initial_target_index = 3;
   auto target_pose = resampled_path.points.at(initial_target_index).pose;  // TODO(murooka)
@@ -424,8 +420,8 @@ Trajectory CollisionFreeOptimizerNode::pathCallback(const Path::ConstSharedPtr p
                     .pose;
 
     const auto mpt_trajs = mpt_optimizer_ptr_->getModelPredictiveTrajectory(
-      false, resampled_traj_points, resampled_path.points, prev_optimal_trajs_ptr_, cv_maps,
-      target_pose, 0.0, debug_data_);
+      false, resampled_traj_points, resampled_path.points, resampled_path.left_bound,
+      resampled_path.right_bound, prev_optimal_trajs_ptr_, target_pose, 0.0, debug_data_);
     if (!mpt_trajs) {
       break;
     }

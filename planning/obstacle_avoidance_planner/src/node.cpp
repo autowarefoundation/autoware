@@ -16,7 +16,6 @@
 
 #include "interpolation/spline_interpolation_points_2d.hpp"
 #include "motion_utils/motion_utils.hpp"
-#include "obstacle_avoidance_planner/utils/cv_utils.hpp"
 #include "obstacle_avoidance_planner/utils/debug_utils.hpp"
 #include "obstacle_avoidance_planner/utils/utils.hpp"
 #include "rclcpp/time.hpp"
@@ -847,8 +846,6 @@ void ObstacleAvoidancePlanner::resetPlanning()
 {
   RCLCPP_WARN(get_logger(), "[ObstacleAvoidancePlanner] Reset planning");
 
-  costmap_generator_ptr_ = std::make_unique<CostmapGenerator>();
-
   eb_path_optimizer_ptr_ = std::make_unique<EBPathOptimizer>(
     is_showing_debug_info_, traj_param_, eb_param_, vehicle_param_);
 
@@ -869,10 +866,12 @@ void ObstacleAvoidancePlanner::onPath(const Path::SharedPtr path_ptr)
 {
   stop_watch_.tic(__func__);
 
-  if (
-    path_ptr->points.empty() || path_ptr->drivable_area.data.empty() || !current_twist_ptr_ ||
-    !objects_ptr_) {
+  if (path_ptr->points.empty() || !current_twist_ptr_ || !objects_ptr_) {
     return;
+  }
+
+  if (path_ptr->left_bound.empty() || path_ptr->right_bound.empty()) {
+    std::cerr << "Right or left bound is empty" << std::endl;
   }
 
   // create planner data
@@ -956,12 +955,8 @@ std::vector<TrajectoryPoint> ObstacleAvoidancePlanner::generateOptimizedTrajecto
   }
   prev_replanned_time_ptr_ = std::make_unique<rclcpp::Time>(this->now());
 
-  // create clearance maps
-  const CVMaps cv_maps = costmap_generator_ptr_->getMaps(
-    enable_avoidance_, path, planner_data.objects, traj_param_, debug_data_);
-
   // calculate trajectory with EB and MPT
-  auto optimal_trajs = optimizeTrajectory(planner_data, cv_maps);
+  auto optimal_trajs = optimizeTrajectory(planner_data);
 
   // calculate velocity
   // NOTE: Velocity is not considered in optimization.
@@ -969,8 +964,7 @@ std::vector<TrajectoryPoint> ObstacleAvoidancePlanner::generateOptimizedTrajecto
 
   // insert 0 velocity when trajectory is over drivable area
   if (is_stopping_if_outside_drivable_area_) {
-    insertZeroVelocityOutsideDrivableArea(
-      planner_data, optimal_trajs.model_predictive_trajectory, cv_maps);
+    insertZeroVelocityOutsideDrivableArea(planner_data, optimal_trajs.model_predictive_trajectory);
   }
 
   publishDebugDataInOptimization(planner_data, optimal_trajs.model_predictive_trajectory);
@@ -1122,8 +1116,7 @@ bool ObstacleAvoidancePlanner::isEgoNearToPrevTrajectory(const geometry_msgs::ms
   return true;
 }
 
-Trajectories ObstacleAvoidancePlanner::optimizeTrajectory(
-  const PlannerData & planner_data, const CVMaps & cv_maps)
+Trajectories ObstacleAvoidancePlanner::optimizeTrajectory(const PlannerData & planner_data)
 {
   stop_watch_.tic(__func__);
 
@@ -1176,8 +1169,8 @@ Trajectories ObstacleAvoidancePlanner::optimizeTrajectory(
 
   // MPT: optimize trajectory to be kinematically feasible and collision free
   const auto mpt_trajs = mpt_optimizer_ptr_->getModelPredictiveTrajectory(
-    enable_avoidance_, eb_traj.get(), p.path.points, prev_optimal_trajs_ptr_, cv_maps, p.ego_pose,
-    p.ego_vel, debug_data_);
+    enable_avoidance_, eb_traj.get(), p.path.points, p.path.left_bound, p.path.right_bound,
+    prev_optimal_trajs_ptr_, p.ego_pose, p.ego_vel, debug_data_);
   if (!mpt_trajs) {
     return getPrevTrajs(p.path.points);
   }
@@ -1231,17 +1224,13 @@ void ObstacleAvoidancePlanner::calcVelocity(
 }
 
 void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
-  const PlannerData & planner_data, std::vector<TrajectoryPoint> & traj_points,
-  const CVMaps & cv_maps)
+  const PlannerData & planner_data, std::vector<TrajectoryPoint> & traj_points)
 {
   if (traj_points.empty()) {
     return;
   }
 
   stop_watch_.tic(__func__);
-
-  const auto & map_info = cv_maps.map_info;
-  const auto & road_clearance_map = cv_maps.clearance_map;
 
   const size_t nearest_idx = findEgoNearestIndex(traj_points, planner_data.ego_pose);
 
@@ -1258,12 +1247,18 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
     return traj_points.size();
   }();
 
+  const auto left_bound = planner_data.path.left_bound;
+  const auto right_bound = planner_data.path.right_bound;
+  if (left_bound.empty() || right_bound.empty()) {
+    return;
+  }
+
   for (size_t i = nearest_idx; i < end_idx; ++i) {
     const auto & traj_point = traj_points.at(i);
 
     // calculate the first point being outside drivable area
-    const bool is_outside = cv_drivable_area_utils::isOutsideDrivableAreaFromRectangleFootprint(
-      traj_point, road_clearance_map, map_info, vehicle_param_);
+    const bool is_outside = drivable_area_utils::isOutsideDrivableAreaFromRectangleFootprint(
+      traj_point, left_bound, right_bound, vehicle_param_);
 
     // only insert zero velocity to the first point outside drivable area
     if (is_outside) {
@@ -1614,25 +1609,6 @@ void ObstacleAvoidancePlanner::publishDebugDataInMain(const Path & path) const
     const auto debug_extended_non_fixed_traj =
       createTrajectory(debug_data_.extended_non_fixed_traj, path.header);
     debug_extended_non_fixed_traj_pub_->publish(debug_extended_non_fixed_traj);
-  }
-
-  {  // publish clearance map
-    stop_watch_.tic("publishClearanceMap");
-
-    if (is_publishing_area_with_objects_) {  // false
-      debug_area_with_objects_pub_->publish(
-        debug_utils::getDebugCostmap(debug_data_.area_with_objects_map, path.drivable_area));
-    }
-    if (is_publishing_object_clearance_map_) {  // false
-      debug_object_clearance_map_pub_->publish(
-        debug_utils::getDebugCostmap(debug_data_.only_object_clearance_map, path.drivable_area));
-    }
-    if (is_publishing_clearance_map_) {  // true
-      debug_clearance_map_pub_->publish(
-        debug_utils::getDebugCostmap(debug_data_.clearance_map, path.drivable_area));
-    }
-    debug_data_.msg_stream << "    getDebugCostMap * 3:= " << stop_watch_.toc("publishClearanceMap")
-                           << " [ms]\n";
   }
 
   debug_data_.msg_stream << "  " << __func__ << ":= " << stop_watch_.toc(__func__) << " [ms]\n";

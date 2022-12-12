@@ -201,8 +201,9 @@ private:
 
   std::vector<ReferencePoint> getReferencePoints(
     const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
-    const std::unique_ptr<Trajectories> & prev_mpt_points, const bool enable_avoidance,
-    const CVMaps & maps, DebugData & debug_data) const;
+    const std::vector<geometry_msgs::msg::Point> & left_bound,
+    const std::vector<geometry_msgs::msg::Point> & right_bound,
+    const std::unique_ptr<Trajectories> & prev_mpt_points, DebugData & debug_data) const;
 
   void calcPlanningFromEgo(std::vector<ReferencePoint> & ref_points) const;
 
@@ -218,12 +219,11 @@ private:
     const std::unique_ptr<Trajectories> & prev_trajs) const;
 
   void calcBounds(
-    std::vector<ReferencePoint> & ref_points, const bool enable_avoidance, const CVMaps & maps,
-    const std::unique_ptr<Trajectories> & prev_trajs, DebugData & debug_data) const;
+    std::vector<ReferencePoint> & ref_points,
+    const std::vector<geometry_msgs::msg::Point> & left_bound,
+    const std::vector<geometry_msgs::msg::Point> & right_bound, DebugData & debug_data) const;
 
-  void calcVehicleBounds(
-    std::vector<ReferencePoint> & ref_points, const CVMaps & maps, DebugData & debug_data,
-    const bool enable_avoidance) const;
+  void calcVehicleBounds(std::vector<ReferencePoint> & ref_points, DebugData & debug_data) const;
 
   // void calcFixState(
   // std::vector<ReferencePoint> & ref_points,
@@ -269,19 +269,6 @@ private:
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> getMPTFixedPoints(
     const std::vector<ReferencePoint> & ref_points) const;
 
-  BoundsCandidates getBoundsCandidates(
-    const bool enable_avoidance, const geometry_msgs::msg::Pose & avoiding_point,
-    const CVMaps & maps, DebugData & debug_data) const;
-
-  CollisionType getCollisionType(
-    const CVMaps & maps, const bool enable_avoidance,
-    const geometry_msgs::msg::Pose & avoiding_point, const double traversed_dist,
-    const double bound_angle) const;
-
-  boost::optional<double> getClearance(
-    const cv::Mat & clearance_map, const geometry_msgs::msg::Point & map_point,
-    const nav_msgs::msg::MapMetaData & map_info) const;
-
   ObjectiveMatrix getObjectiveMatrix(
     const MPTMatrix & mpt_mat, const ValueMatrix & obj_mat,
     [[maybe_unused]] const std::vector<ReferencePoint> & ref_points, DebugData & debug_data) const;
@@ -299,7 +286,9 @@ public:
     const bool enable_avoidance,
     const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & smoothed_points,
     const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points,
-    const std::unique_ptr<Trajectories> & prev_trajs, const CVMaps & maps,
+    const std::vector<geometry_msgs::msg::Point> & left_bound,
+    const std::vector<geometry_msgs::msg::Point> & right_bound,
+    const std::unique_ptr<Trajectories> & prev_trajs,
     const geometry_msgs::msg::Pose & current_ego_pose, const double current_ego_vel,
     DebugData & debug_data);
 };

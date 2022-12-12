@@ -43,6 +43,7 @@
 #include <tier4_planning_msgs/msg/lane_change_debug_msg_array.hpp>
 #include <tier4_planning_msgs/msg/path_change_module.hpp>
 #include <tier4_planning_msgs/msg/scenario.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 
 #include <memory>
 #include <mutex>
@@ -80,6 +81,7 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 using tier4_planning_msgs::msg::PathChangeModule;
 using tier4_planning_msgs::msg::Scenario;
+using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 
 class BehaviorPathPlannerNode : public rclcpp::Node
@@ -99,6 +101,7 @@ private:
   rclcpp::Publisher<Path>::SharedPtr path_candidate_publisher_;
   rclcpp::Publisher<TurnIndicatorsCommand>::SharedPtr turn_signal_publisher_;
   rclcpp::Publisher<HazardLightsCommand>::SharedPtr hazard_signal_publisher_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr bound_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::shared_ptr<PlannerData> planner_data_;
@@ -183,6 +186,11 @@ private:
    * @brief publish steering factor from intersection
    */
   void publish_steering_factor(const TurnIndicatorsCommand & turn_signal);
+
+  /**
+   * @brief publish left and right bound
+   */
+  void publish_bounds(const PathWithLaneId & path);
 
   /**
    * @brief publish debug messages

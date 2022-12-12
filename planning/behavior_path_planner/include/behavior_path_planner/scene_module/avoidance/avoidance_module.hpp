@@ -275,7 +275,7 @@ private:
 
   // -- path generation --
   ShiftedPath generateAvoidancePath(PathShifter & shifter) const;
-  void generateExtendedDrivableArea(ShiftedPath * shifted_path) const;
+  void generateExtendedDrivableArea(PathWithLaneId & path) const;
 
   // -- velocity planning --
   std::shared_ptr<double> ego_velocity_starting_avoidance_ptr_;

@@ -276,10 +276,8 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset);
-
-  reference_path.drivable_area = util::generateDrivableArea(
-    reference_path, expanded_lanes, common_parameters.drivable_area_resolution,
-    common_parameters.vehicle_length, planner_data_);
+  util::generateDrivableArea(
+    reference_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 
   return reference_path;
 }
@@ -621,10 +619,7 @@ void LaneChangeModule::generateExtendedDrivableArea(PathWithLaneId & path)
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset);
-
-  const double & resolution = common_parameters.drivable_area_resolution;
-  path.drivable_area = util::generateDrivableArea(
-    path, expanded_lanes, resolution, common_parameters.vehicle_length, planner_data_);
+  util::generateDrivableArea(path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 }
 
 void LaneChangeModule::updateOutputTurnSignal(BehaviorModuleOutput & output)

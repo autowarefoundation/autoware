@@ -50,6 +50,9 @@
       min_avoidance_speed_for_acc_prevention: 3.0  # [m/s]
       max_avoidance_acceleration: 0.5  # [m/s2]
 
+      # bound clipping for objects
+      enable_bound_clipping: false
+
       # for debug
       publish_debug_marker: false
       print_debug_info: false

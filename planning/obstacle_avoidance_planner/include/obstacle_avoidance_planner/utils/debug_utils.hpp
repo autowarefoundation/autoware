@@ -42,9 +42,6 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
 
 visualization_msgs::msg::MarkerArray getDebugVisualizationWallMarker(
   DebugData & debug_data, const VehicleParam & vehicle_param);
-
-nav_msgs::msg::OccupancyGrid getDebugCostmap(
-  const cv::Mat & clearance_map, const nav_msgs::msg::OccupancyGrid & occupancy_grid);
 }  // namespace debug_utils
 
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__UTILS__DEBUG_UTILS_HPP_

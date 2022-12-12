@@ -454,7 +454,8 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
     output_path_msg = to_path(*input_path_msg);
     output_path_msg.header.frame_id = "map";
     output_path_msg.header.stamp = this->now();
-    output_path_msg.drivable_area = input_path_msg->drivable_area;
+    output_path_msg.left_bound = input_path_msg->left_bound;
+    output_path_msg.right_bound = input_path_msg->right_bound;
     return output_path_msg;
   }
 
@@ -475,7 +476,8 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
   output_path_msg.header.stamp = this->now();
 
   // TODO(someone): This must be updated in each scene module, but copy from input message for now.
-  output_path_msg.drivable_area = input_path_msg->drivable_area;
+  output_path_msg.left_bound = input_path_msg->left_bound;
+  output_path_msg.right_bound = input_path_msg->right_bound;
 
   return output_path_msg;
 }

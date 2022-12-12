@@ -24,6 +24,7 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <lanelet2_core/geometry/Lanelet.h>

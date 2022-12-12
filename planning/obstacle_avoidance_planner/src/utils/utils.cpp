@@ -601,3 +601,108 @@ void logOSQPSolutionStatus(const int solution_status, const std::string & msg)
   }
 }
 }  // namespace utils
+
+namespace
+{
+geometry_msgs::msg::Point getStartPoint(
+  const std::vector<geometry_msgs::msg::Point> & bound, const geometry_msgs::msg::Point & point)
+{
+  const size_t segment_idx = motion_utils::findNearestSegmentIndex(bound, point);
+  const auto & curr_seg_point = bound.at(segment_idx);
+  const auto & next_seg_point = bound.at(segment_idx);
+  const Eigen::Vector2d first_to_target{point.x - curr_seg_point.x, point.y - curr_seg_point.y};
+  const Eigen::Vector2d first_to_second{
+    next_seg_point.x - curr_seg_point.x, next_seg_point.y - curr_seg_point.y};
+  const double length = first_to_target.dot(first_to_second.normalized());
+
+  if (length < 0.0) {
+    return bound.front();
+  }
+
+  const auto first_point = motion_utils::calcLongitudinalOffsetPoint(bound, segment_idx, length);
+
+  if (first_point) {
+    return *first_point;
+  }
+
+  return bound.front();
+}
+
+bool isOutsideDrivableArea(
+  const geometry_msgs::msg::Point & point,
+  const std::vector<geometry_msgs::msg::Point> & left_bound,
+  const std::vector<geometry_msgs::msg::Point> & right_bound)
+{
+  if (left_bound.empty() || right_bound.empty()) {
+    return false;
+  }
+
+  constexpr double min_dist = 0.1;
+  const auto left_start_point = getStartPoint(left_bound, right_bound.front());
+  const auto right_start_point = getStartPoint(right_bound, left_bound.front());
+
+  // ignore point in front of the front line
+  const std::vector<geometry_msgs::msg::Point> front_bound = {left_start_point, right_start_point};
+  const double lat_dist_to_front_bound = motion_utils::calcLateralOffset(front_bound, point);
+  if (lat_dist_to_front_bound > min_dist) {
+    return false;
+  }
+
+  // left bound check
+  const double lat_dist_to_left_bound = motion_utils::calcLateralOffset(left_bound, point);
+  if (lat_dist_to_left_bound > min_dist) {
+    return true;
+  }
+
+  // right bound check
+  const double lat_dist_to_right_bound = motion_utils::calcLateralOffset(right_bound, point);
+  if (lat_dist_to_right_bound < -min_dist) {
+    return true;
+  }
+
+  return false;
+}
+}  // namespace
+
+namespace drivable_area_utils
+{
+bool isOutsideDrivableAreaFromRectangleFootprint(
+  const autoware_auto_planning_msgs::msg::TrajectoryPoint & traj_point,
+  const std::vector<geometry_msgs::msg::Point> left_bound,
+  const std::vector<geometry_msgs::msg::Point> right_bound, const VehicleParam & vehicle_param)
+{
+  if (left_bound.empty() || right_bound.empty()) {
+    return false;
+  }
+
+  const double base_to_right = (vehicle_param.wheel_tread / 2.0) + vehicle_param.right_overhang;
+  const double base_to_left = (vehicle_param.wheel_tread / 2.0) + vehicle_param.left_overhang;
+
+  const double base_to_front = vehicle_param.length - vehicle_param.rear_overhang;
+  const double base_to_rear = vehicle_param.rear_overhang;
+
+  const auto top_left_pos =
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, -base_to_left, 0.0)
+      .position;
+  const auto top_right_pos =
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, base_to_front, base_to_right, 0.0)
+      .position;
+  const auto bottom_right_pos =
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, base_to_right, 0.0)
+      .position;
+  const auto bottom_left_pos =
+    tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, -base_to_left, 0.0)
+      .position;
+
+  const bool out_top_left = isOutsideDrivableArea(top_left_pos, left_bound, right_bound);
+  const bool out_top_right = isOutsideDrivableArea(top_right_pos, left_bound, right_bound);
+  const bool out_bottom_left = isOutsideDrivableArea(bottom_left_pos, left_bound, right_bound);
+  const bool out_bottom_right = isOutsideDrivableArea(bottom_right_pos, left_bound, right_bound);
+
+  if (out_top_left || out_top_right || out_bottom_left || out_bottom_right) {
+    return true;
+  }
+
+  return false;
+}
+}  // namespace drivable_area_utils

@@ -15,7 +15,6 @@
 #include "obstacle_avoidance_planner/utils/debug_utils.hpp"
 
 #include "obstacle_avoidance_planner/mpt_optimizer.hpp"
-#include "obstacle_avoidance_planner/utils/cv_utils.hpp"
 #include "obstacle_avoidance_planner/utils/utils.hpp"
 #include "tf2/utils.h"
 
@@ -438,9 +437,9 @@ visualization_msgs::msg::MarkerArray getRectanglesNumMarkerArray(
 }
 
 visualization_msgs::msg::MarkerArray getBoundsCandidatesLineMarkerArray(
-  const std::vector<ReferencePoint> & ref_points,
-  std::vector<std::vector<Bounds>> & bounds_candidates, const double r, const double g,
-  const double b, [[maybe_unused]] const double vehicle_width, const size_t sampling_num)
+  const std::vector<ReferencePoint> & ref_points, std::vector<Bounds> & bounds_candidates,
+  const double r, const double g, const double b, [[maybe_unused]] const double vehicle_width,
+  const size_t sampling_num)
 {
   const auto current_time = rclcpp::Clock().now();
   visualization_msgs::msg::MarkerArray msg;
@@ -459,23 +458,19 @@ visualization_msgs::msg::MarkerArray getBoundsCandidatesLineMarkerArray(
     }
 
     const auto & bound_candidates = bounds_candidates.at(i);
-    for (size_t j = 0; j < bound_candidates.size(); ++j) {
-      geometry_msgs::msg::Pose pose;
-      pose.position = ref_points.at(i).p;
-      pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(ref_points.at(i).yaw);
+    geometry_msgs::msg::Pose pose;
+    pose.position = ref_points.at(i).p;
+    pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(ref_points.at(i).yaw);
 
-      // lower bound
-      const double lb_y = bound_candidates.at(j).lower_bound;
-      const auto lb = tier4_autoware_utils::calcOffsetPose(pose, 0.0, lb_y, 0.0).position;
-      marker.points.push_back(lb);
+    // lower bound
+    const double lb_y = bound_candidates.lower_bound;
+    const auto lb = tier4_autoware_utils::calcOffsetPose(pose, 0.0, lb_y, 0.0).position;
+    marker.points.push_back(lb);
 
-      // upper bound
-      const double ub_y = bound_candidates.at(j).upper_bound;
-      const auto ub = tier4_autoware_utils::calcOffsetPose(pose, 0.0, ub_y, 0.0).position;
-      marker.points.push_back(ub);
-
-      msg.markers.push_back(marker);
-    }
+    // upper bound
+    const double ub_y = bound_candidates.upper_bound;
+    const auto ub = tier4_autoware_utils::calcOffsetPose(pose, 0.0, ub_y, 0.0).position;
+    marker.points.push_back(ub);
   }
 
   return msg;
@@ -766,8 +761,8 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
   // bounds candidates
   appendMarkerArray(
     getBoundsCandidatesLineMarkerArray(
-      debug_data.ref_points, debug_data.sequential_bounds_candidates, 0.2, 0.99, 0.99,
-      vehicle_param.width, debug_data.mpt_visualize_sampling_num),
+      debug_data.ref_points, debug_data.bounds_candidates, 0.2, 0.99, 0.99, vehicle_param.width,
+      debug_data.mpt_visualize_sampling_num),
     &vis_marker_array);
 
   // vehicle circle line
@@ -816,20 +811,5 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationWallMarker(
       &vis_marker_array);
   }
   return vis_marker_array;
-}
-
-nav_msgs::msg::OccupancyGrid getDebugCostmap(
-  const cv::Mat & clearance_map, const nav_msgs::msg::OccupancyGrid & occupancy_grid)
-{
-  if (clearance_map.empty()) return nav_msgs::msg::OccupancyGrid();
-
-  cv::Mat tmp;
-  clearance_map.copyTo(tmp);
-  cv::normalize(tmp, tmp, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-  nav_msgs::msg::OccupancyGrid clearance_map_in_og = occupancy_grid;
-  tmp.forEach<unsigned char>([&](const unsigned char & value, const int * position) -> void {
-    cv_utils::putOccupancyGridValue(clearance_map_in_og, position[0], position[1], value);
-  });
-  return clearance_map_in_og;
 }
 }  // namespace debug_utils

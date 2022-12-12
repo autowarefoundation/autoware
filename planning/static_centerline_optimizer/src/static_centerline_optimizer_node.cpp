@@ -45,7 +45,8 @@ Path convert_to_path(const PathWithLaneId & path_with_lane_id)
 {
   Path path;
   path.header = path_with_lane_id.header;
-  path.drivable_area = path_with_lane_id.drivable_area;
+  path.left_bound = path_with_lane_id.left_bound;
+  path.right_bound = path_with_lane_id.right_bound;
   for (const auto & point : path_with_lane_id.points) {
     path.points.push_back(point.point);
   }

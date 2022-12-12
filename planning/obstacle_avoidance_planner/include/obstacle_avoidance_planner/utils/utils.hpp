@@ -354,4 +354,12 @@ namespace utils
 void logOSQPSolutionStatus(const int solution_status, const std::string & msg);
 }  // namespace utils
 
+namespace drivable_area_utils
+{
+bool isOutsideDrivableAreaFromRectangleFootprint(
+  const autoware_auto_planning_msgs::msg::TrajectoryPoint & traj_point,
+  const std::vector<geometry_msgs::msg::Point> left_bound,
+  const std::vector<geometry_msgs::msg::Point> right_bound, const VehicleParam & vehicle_param);
+}
+
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__UTILS__UTILS_HPP_

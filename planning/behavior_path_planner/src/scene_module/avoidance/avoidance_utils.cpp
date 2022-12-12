@@ -342,4 +342,158 @@ Polygon2d createEnvelopePolygon(
   return offset_polygons.front();
 }
 
+void getEdgePoints(
+  const Polygon2d & object_polygon, const double threshold, std::vector<Point> & edge_points)
+{
+  if (object_polygon.outer().size() < 2) {
+    return;
+  }
+
+  const size_t num_points = object_polygon.outer().size();
+  for (size_t i = 0; i < num_points - 1; ++i) {
+    const auto & curr_p = object_polygon.outer().at(i);
+    const auto & next_p = object_polygon.outer().at(i + 1);
+    const auto & prev_p =
+      i == 0 ? object_polygon.outer().at(num_points - 2) : object_polygon.outer().at(i - 1);
+    const Eigen::Vector2d current_to_next(next_p.x() - curr_p.x(), next_p.y() - curr_p.y());
+    const Eigen::Vector2d current_to_prev(prev_p.x() - curr_p.x(), prev_p.y() - curr_p.y());
+    const double inner_val = current_to_next.dot(current_to_prev);
+    if (std::fabs(inner_val) > threshold) {
+      continue;
+    }
+
+    const auto edge_point = tier4_autoware_utils::createPoint(curr_p.x(), curr_p.y(), 0.0);
+    edge_points.push_back(edge_point);
+  }
+}
+
+void sortPolygonPoints(
+  const std::vector<PolygonPoint> & points, std::vector<PolygonPoint> & sorted_points)
+{
+  sorted_points = points;
+  if (points.size() <= 2) {
+    // sort data based on longitudinal distance to the boundary
+    std::sort(
+      sorted_points.begin(), sorted_points.end(),
+      [](const PolygonPoint & a, const PolygonPoint & b) { return a.lon_dist < b.lon_dist; });
+    return;
+  }
+
+  // sort data based on lateral distance to the boundary
+  std::sort(
+    sorted_points.begin(), sorted_points.end(), [](const PolygonPoint & a, const PolygonPoint & b) {
+      return std::fabs(a.lat_dist_to_bound) > std::fabs(b.lat_dist_to_bound);
+    });
+  PolygonPoint first_point;
+  PolygonPoint second_point;
+  if (sorted_points.at(0).lon_dist < sorted_points.at(1).lon_dist) {
+    first_point = sorted_points.at(0);
+    second_point = sorted_points.at(1);
+  } else {
+    first_point = sorted_points.at(1);
+    second_point = sorted_points.at(0);
+  }
+
+  for (size_t i = 2; i < sorted_points.size(); ++i) {
+    const auto & next_point = sorted_points.at(i);
+    if (next_point.lon_dist < first_point.lon_dist) {
+      sorted_points = {next_point, first_point, second_point};
+      return;
+    } else if (second_point.lon_dist < next_point.lon_dist) {
+      sorted_points = {first_point, second_point, next_point};
+      return;
+    }
+  }
+
+  sorted_points = {first_point, second_point};
+}
+
+void getEdgePoints(
+  const std::vector<Point> & bound, const std::vector<Point> & edge_points,
+  const double lat_dist_to_path, std::vector<PolygonPoint> & edge_points_data,
+  size_t & start_segment_idx, size_t & end_segment_idx)
+{
+  for (const auto & edge_point : edge_points) {
+    const size_t segment_idx = motion_utils::findNearestSegmentIndex(bound, edge_point);
+    start_segment_idx = std::min(start_segment_idx, segment_idx);
+    end_segment_idx = std::max(end_segment_idx, segment_idx);
+
+    PolygonPoint edge_point_data;
+    edge_point_data.point = edge_point;
+    edge_point_data.lat_dist_to_bound = motion_utils::calcLateralOffset(bound, edge_point);
+    edge_point_data.lon_dist = motion_utils::calcSignedArcLength(bound, 0, edge_point);
+    if (lat_dist_to_path >= 0.0 && edge_point_data.lat_dist_to_bound > 0.0) {
+      continue;
+    } else if (lat_dist_to_path < 0.0 && edge_point_data.lat_dist_to_bound < 0.0) {
+      continue;
+    }
+
+    edge_points_data.push_back(edge_point_data);
+  }
+}
+
+std::vector<Point> updateBoundary(
+  const std::vector<Point> & original_bound, const std::vector<PolygonPoint> & points,
+  const size_t start_segment_idx, const size_t end_segment_idx)
+{
+  if (start_segment_idx >= end_segment_idx) {
+    return original_bound;
+  }
+
+  std::vector<Point> updated_bound;
+  std::copy(
+    original_bound.begin(), original_bound.begin() + start_segment_idx + 1,
+    std::back_inserter(updated_bound));
+  for (size_t i = 0; i < points.size(); ++i) {
+    updated_bound.push_back(points.at(i).point);
+  }
+  std::copy(
+    original_bound.begin() + end_segment_idx + 1, original_bound.end(),
+    std::back_inserter(updated_bound));
+  return updated_bound;
+}
+
+void generateDrivableArea(
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
+  const std::shared_ptr<const PlannerData> planner_data, const ObjectDataArray & objects,
+  const bool enable_bound_clipping)
+{
+  util::generateDrivableArea(path, lanes, vehicle_length, planner_data);
+  if (objects.empty() || !enable_bound_clipping) {
+    return;
+  }
+
+  path.left_bound = motion_utils::resamplePointVector(path.left_bound, 1.0, true);
+  path.right_bound = motion_utils::resamplePointVector(path.right_bound, 1.0, true);
+
+  for (const auto & object : objects) {
+    const auto & obj_pose = object.object.kinematics.initial_pose_with_covariance.pose;
+    const auto & obj_poly = object.envelope_poly;
+    constexpr double threshold = 0.01;
+
+    // get edge points
+    std::vector<Point> edge_points;
+    getEdgePoints(obj_poly, threshold, edge_points);
+
+    // get boundary
+    const double lat_dist_to_path = motion_utils::calcLateralOffset(path.points, obj_pose.position);
+    auto & bound = lat_dist_to_path < 0.0 ? path.right_bound : path.left_bound;
+
+    size_t start_segment_idx = (bound.size() == 1 ? 0 : (bound.size() - 2));
+    size_t end_segment_idx = 0;
+
+    // get edge points data
+    std::vector<PolygonPoint> edge_points_data;
+    getEdgePoints(
+      bound, edge_points, lat_dist_to_path, edge_points_data, start_segment_idx, end_segment_idx);
+
+    // sort points
+    std::vector<PolygonPoint> sorted_points;
+    sortPolygonPoints(edge_points_data, sorted_points);
+
+    // update boundary
+    bound = updateBoundary(bound, sorted_points, start_segment_idx, end_segment_idx);
+  }
+}
+
 }  // namespace behavior_path_planner

@@ -308,9 +308,8 @@ bool validateFloats(const nav_msgs::msg::OccupancyGrid & msg)
 }
 
 void AutowareDrivableAreaDisplay::processMessage(
-  autoware_auto_planning_msgs::msg::Path::ConstSharedPtr msg)
+  [[maybe_unused]] autoware_auto_planning_msgs::msg::Path::ConstSharedPtr msg)
 {
-  current_map_ = msg->drivable_area;
   loaded_ = true;
   // updated via signal in case ros spinner is in a different thread
   Q_EMIT mapUpdated();

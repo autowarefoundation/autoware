@@ -66,7 +66,6 @@ using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::Vector3;
-using nav_msgs::msg::OccupancyGrid;
 using route_handler::RouteHandler;
 using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Point2d;
@@ -293,16 +292,9 @@ size_t getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
 std::vector<DrivableLanes> cutOverlappedLanes(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes);
 
-void occupancyGridToImage(const OccupancyGrid & occupancy_grid, cv::Mat * cv_image);
-
-void imageToOccupancyGrid(const cv::Mat & cv_image, OccupancyGrid * occupancy_grid);
-
-cv::Point toCVPoint(
-  const Point & geom_point, const double width_m, const double height_m, const double resolution);
-
-OccupancyGrid generateDrivableArea(
-  const PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double resolution,
-  const double vehicle_length, const std::shared_ptr<const PlannerData> planner_data);
+void generateDrivableArea(
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
+  const std::shared_ptr<const PlannerData> planner_data);
 
 lanelet::ConstLineStrings3d getDrivableAreaForAllSharedLinestringLanelets(
   const std::shared_ptr<const PlannerData> & planner_data);
