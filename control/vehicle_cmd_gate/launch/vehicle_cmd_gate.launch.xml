@@ -22,7 +22,6 @@
     <remap from="input/external_emergency_stop_heartbeat" to="/external/selected/heartbeat"/>
     <remap from="input/gate_mode" to="/control/gate_mode_cmd"/>
 
-    <remap from="input/emergency_state" to="/system/emergency/emergency_state"/>
     <remap from="input/emergency/control_cmd" to="/system/emergency/control_cmd"/>
     <remap from="input/emergency/hazard_lights_cmd" to="/system/emergency/hazard_lights_cmd"/>
     <remap from="input/emergency/gear_cmd" to="/system/emergency/gear_cmd"/>
