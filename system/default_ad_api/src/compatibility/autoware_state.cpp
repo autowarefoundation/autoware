@@ -46,8 +46,7 @@ AutowareStateNode::AutowareStateNode(const rclcpp::NodeOptions & options)
   adaptor.init_sub(sub_routing_, this, &AutowareStateNode::on_routing);
   adaptor.init_sub(sub_operation_mode_, this, &AutowareStateNode::on_operation_mode);
 
-  // TODO(Takagi, Isamu): remove default value
-  const auto rate = rclcpp::Rate(declare_parameter("update_rate", 10.0));
+  const auto rate = rclcpp::Rate(declare_parameter<double>("update_rate"));
   timer_ = rclcpp::create_timer(this, get_clock(), rate.period(), [this]() { on_timer(); });
 
   component_states_.resize(module_names.size());

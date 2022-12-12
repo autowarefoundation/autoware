@@ -23,8 +23,8 @@ namespace default_ad_api
 MotionNode::MotionNode(const rclcpp::NodeOptions & options)
 : Node("motion", options), vehicle_stop_checker_(this)
 {
-  stop_check_duration_ = declare_parameter("stop_check_duration", 1.0);
-  require_accept_start_ = declare_parameter("require_accept_start", false);
+  stop_check_duration_ = declare_parameter<double>("stop_check_duration");
+  require_accept_start_ = declare_parameter<bool>("require_accept_start");
   is_calling_set_pause_ = false;
 
   const auto adaptor = component_interface_utils::NodeAdaptor(this);

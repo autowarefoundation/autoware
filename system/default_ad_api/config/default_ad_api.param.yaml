@@ -1,0 +1,8 @@
+/default_ad_api/node/autoware_state:
+  ros__parameters:
+    update_rate: 10.0
+
+/default_ad_api/node/motion:
+  ros__parameters:
+    require_accept_start: false
+    stop_check_duration: 1.0
