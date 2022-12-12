@@ -43,5 +43,5 @@ jobs:
       - name: Run rosdep install
         run: |
           sudo apt-get -y update
-          rosdep update
+          rosdep update --include-eol-distros
           DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro ${{ needs.load-env.outputs.rosdistro }}
