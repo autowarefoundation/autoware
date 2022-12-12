@@ -13,7 +13,7 @@
     <!-- System Monitor -->
     <group if="$(var launch_system_monitor)">
       <push-ros-namespace namespace="system_monitor"/>
-      <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch.py">
+      <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch.xml">
         <arg name="cpu_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/cpu_monitor.param.yaml"/>
         <arg name="hdd_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/hdd_monitor.param.yaml"/>
         <arg name="mem_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/mem_monitor.param.yaml"/>
@@ -21,6 +21,7 @@
         <arg name="ntp_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/ntp_monitor.param.yaml"/>
         <arg name="process_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/process_monitor.param.yaml"/>
         <arg name="gpu_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/gpu_monitor.param.yaml"/>
+        <arg name="voltage_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/voltage_monitor.param.yaml"/>
       </include>
     </group>
 

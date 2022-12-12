@@ -51,7 +51,7 @@
           >
             <div data-drawio-colors="color: #000000; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
-                system_monitor.launch.py
+                system_monitor.launch.xml
                 <br/>
                 <br/>
                 <div style="text-align: left">package: system_monitor</div>
@@ -59,7 +59,7 @@
             </div>
           </div>
         </foreignObject>
-        <text x="820" y="184" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">system_monitor.launch.py...</text>
+        <text x="820" y="184" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">system_monitor.launch.xml...</text>
       </switch>
     </g>
     <rect x="80" y="0" width="160" height="80" fill="#cce5ff" stroke="#36393d" pointer-events="all"/>
