@@ -627,23 +627,6 @@ void BehaviorPathPlannerNode::run()
 
   // update planner data
   planner_data_->prev_output_path = path;
-  mutex_pd_.unlock();
-
-  // publish drivable bounds
-  publish_bounds(*path);
-
-  const size_t target_idx = findEgoIndex(path->points);
-  util::clipPathLength(*path, target_idx, planner_data_->parameters);
-
-  if (!path->points.empty()) {
-    path_publisher_->publish(*path);
-  } else {
-    RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
-  }
-
-  const auto path_candidate = getPathCandidate(output, planner_data);
-  path_candidate_publisher_->publish(util::toPath(*path_candidate));
 
   // for turn signal
   {
@@ -664,6 +647,25 @@ void BehaviorPathPlannerNode::run()
 
     publish_steering_factor(turn_signal);
   }
+
+  // unlock planner data
+  mutex_pd_.unlock();
+
+  // publish drivable bounds
+  publish_bounds(*path);
+
+  const size_t target_idx = findEgoIndex(path->points);
+  util::clipPathLength(*path, target_idx, planner_data_->parameters);
+
+  if (!path->points.empty()) {
+    path_publisher_->publish(*path);
+  } else {
+    RCLCPP_ERROR_THROTTLE(
+      get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
+  }
+
+  const auto path_candidate = getPathCandidate(output, planner_data);
+  path_candidate_publisher_->publish(util::toPath(*path_candidate));
 
   publishSceneModuleDebugMsg();
 
