@@ -628,25 +628,8 @@ void BehaviorPathPlannerNode::run()
   // update planner data
   planner_data_->prev_output_path = path;
 
-  // for turn signal
-  {
-    TurnIndicatorsCommand turn_signal;
-    HazardLightsCommand hazard_signal;
-    if (output.turn_signal_info.hazard_signal.command == HazardLightsCommand::ENABLE) {
-      turn_signal.command = TurnIndicatorsCommand::DISABLE;
-      hazard_signal.command = output.turn_signal_info.hazard_signal.command;
-    } else {
-      turn_signal =
-        turn_signal_decider_.getTurnSignal(planner_data, *path, output.turn_signal_info);
-      hazard_signal.command = HazardLightsCommand::DISABLE;
-    }
-    turn_signal.stamp = get_clock()->now();
-    hazard_signal.stamp = get_clock()->now();
-    turn_signal_publisher_->publish(turn_signal);
-    hazard_signal_publisher_->publish(hazard_signal);
-
-    publish_steering_factor(turn_signal);
-  }
+  // compute turn signal
+  computeTurnSignal(planner_data, *path, output);
 
   // unlock planner data
   mutex_pd_.unlock();
@@ -677,6 +660,27 @@ void BehaviorPathPlannerNode::run()
 
   mutex_bt_.unlock();
   RCLCPP_DEBUG(get_logger(), "----- behavior path planner end -----\n\n");
+}
+
+void BehaviorPathPlannerNode::computeTurnSignal(
+  const std::shared_ptr<PlannerData> planner_data, const PathWithLaneId & path,
+  const BehaviorModuleOutput & output)
+{
+  TurnIndicatorsCommand turn_signal;
+  HazardLightsCommand hazard_signal;
+  if (output.turn_signal_info.hazard_signal.command == HazardLightsCommand::ENABLE) {
+    turn_signal.command = TurnIndicatorsCommand::DISABLE;
+    hazard_signal.command = output.turn_signal_info.hazard_signal.command;
+  } else {
+    turn_signal = turn_signal_decider_.getTurnSignal(planner_data, path, output.turn_signal_info);
+    hazard_signal.command = HazardLightsCommand::DISABLE;
+  }
+  turn_signal.stamp = get_clock()->now();
+  hazard_signal.stamp = get_clock()->now();
+  turn_signal_publisher_->publish(turn_signal);
+  hazard_signal_publisher_->publish(hazard_signal);
+
+  publish_steering_factor(turn_signal);
 }
 
 void BehaviorPathPlannerNode::publish_steering_factor(const TurnIndicatorsCommand & turn_signal)

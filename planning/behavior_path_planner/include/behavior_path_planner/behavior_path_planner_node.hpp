@@ -172,6 +172,13 @@ private:
   bool skipSmoothGoalConnection(
     const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const;
 
+  /**
+   * @brief skip smooth goal connection
+   */
+  void computeTurnSignal(
+    const std::shared_ptr<PlannerData> planner_data, const PathWithLaneId & path,
+    const BehaviorModuleOutput & output);
+
   // debug
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_drivable_area_lanelets_publisher_;
   rclcpp::Publisher<AvoidanceDebugMsgArray>::SharedPtr debug_avoidance_msg_array_publisher_;
