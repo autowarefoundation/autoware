@@ -28,9 +28,6 @@ from nav_msgs.msg import Odometry
 import numpy as np
 import rclpy
 from rclpy.node import Node
-import tf2_ros
-from tf2_ros.buffer import Buffer
-from tf2_ros.transform_listener import TransformListener
 from tier4_planning_msgs.msg import VelocityLimit
 
 parser = argparse.ArgumentParser()
@@ -62,9 +59,6 @@ else:
     PLOT_TYPE = "VEL"
 print("plot type = " + PLOT_TYPE)
 
-PATH_ORIGIN_FRAME = "map"
-SELF_POSE_FRAME = "base_link"
-
 
 class TrajectoryVisualizer(Node):
     def __init__(self):
@@ -83,6 +77,7 @@ class TrajectoryVisualizer(Node):
         # update flag
         self.update_ex_vel_lim = False
         self.update_lat_acc_fil = False
+        self.update_steer_rate_fil = False
         self.update_traj_raw = False
         self.update_traj_resample = False
         self.update_traj_final = False
@@ -90,9 +85,6 @@ class TrajectoryVisualizer(Node):
         self.update_behavior_velocity_planner_path = False
         self.update_traj_ob_avoid = False
         self.update_traj_ob_stop = False
-
-        self.tf_buffer = Buffer(node=self)
-        self.tf_listener = TransformListener(self.tf_buffer, self, spin_thread=True)
 
         self.self_pose = Pose()
         self.self_pose_received = False
@@ -102,6 +94,7 @@ class TrajectoryVisualizer(Node):
 
         self.trajectory_external_velocity_limited = Trajectory()
         self.trajectory_lateral_acc_filtered = Trajectory()
+        self.trajectory_steer_rate_filtered = Trajectory()
         self.trajectory_raw = Trajectory()
         self.trajectory_time_resampled = Trajectory()
         self.trajectory_final = Trajectory()
@@ -112,7 +105,7 @@ class TrajectoryVisualizer(Node):
         self.obstacle_stop_traj = Trajectory()
 
         self.plotted = [False] * 9
-        self.sub_localization_twist = self.create_subscription(
+        self.sub_localization_kinematics = self.create_subscription(
             Odometry, "/localization/kinematic_state", self.CallbackLocalizationTwist, 1
         )
         self.sub_vehicle_twist = self.create_subscription(
@@ -135,6 +128,9 @@ class TrajectoryVisualizer(Node):
         self.sub4 = message_filters.Subscriber(
             self, Trajectory, optimizer_debug + "trajectory_time_resampled"
         )
+        self.sub41 = message_filters.Subscriber(
+            self, Trajectory, optimizer_debug + "trajectory_steering_rate_limited"
+        )
         self.sub5 = message_filters.Subscriber(
             self, Trajectory, "/planning/scenario_planning/trajectory"
         )
@@ -152,7 +148,7 @@ class TrajectoryVisualizer(Node):
         self.sub9 = message_filters.Subscriber(self, Trajectory, lane_driving + "/trajectory")
 
         self.ts1 = message_filters.ApproximateTimeSynchronizer(
-            [self.sub1, self.sub2, self.sub3, self.sub4], 30, 0.5
+            [self.sub1, self.sub2, self.sub3, self.sub4, self.sub41], 30, 0.5
         )
         self.ts1.registerCallback(self.CallbackMotionVelOptTraj)
 
@@ -177,11 +173,10 @@ class TrajectoryVisualizer(Node):
 
         return
 
-    def test(self):
-        self.updatePose("map", "base_link")
-
     def CallbackLocalizationTwist(self, cmd):
         self.localization_vx = cmd.twist.twist.linear.x
+        self.self_pose = cmd.pose.pose
+        self.self_pose_received = True
 
     def CallbackVehicleTwist(self, cmd):
         self.vehicle_vx = cmd.longitudinal_velocity
@@ -189,12 +184,13 @@ class TrajectoryVisualizer(Node):
     def CallbackVelocityLimit(self, cmd):
         self.velocity_limit = cmd.max_velocity
 
-    def CallbackMotionVelOptTraj(self, cmd1, cmd2, cmd3, cmd4):
+    def CallbackMotionVelOptTraj(self, cmd1, cmd2, cmd3, cmd4, cmd5):
         print("CallbackMotionVelOptTraj called")
         self.CallBackTrajExVelLim(cmd1)
         self.CallBackTrajLatAccFiltered(cmd2)
         self.CallBackTrajRaw(cmd3)
         self.CallBackTrajTimeResampled(cmd4)
+        self.CallBackTrajSteerRateFiltered(cmd5)
 
     def CallBackTrajExVelLim(self, cmd):
         self.trajectory_external_velocity_limited = cmd
@@ -203,6 +199,10 @@ class TrajectoryVisualizer(Node):
     def CallBackTrajLatAccFiltered(self, cmd):
         self.trajectory_lateral_acc_filtered = cmd
         self.update_lat_acc_fil = True
+
+    def CallBackTrajSteerRateFiltered(self, cmd):
+        self.trajectory_steer_rate_filtered = cmd
+        self.update_steer_rate_fil = True
 
     def CallBackTrajRaw(self, cmd):
         self.trajectory_raw = cmd
@@ -252,9 +252,12 @@ class TrajectoryVisualizer(Node):
         (self.im6,) = self.ax1.plot(
             [], [], label="4-2: opt external_velocity_limited", marker="", ls="--"
         )
-        (self.im7,) = self.ax1.plot([], [], label="4-3: opt lat_acc_filtered", marker="", ls="--")
-        (self.im8,) = self.ax1.plot([], [], label="4-4: opt time_resampled", marker="", ls="--")
-        (self.im9,) = self.ax1.plot([], [], label="4-5: opt final", marker="", ls="-")
+        (self.im7,) = self.ax1.plot([], [], label="4-3: opt lat_acc_filtered", marker=".", ls="--")
+        (self.im71,) = self.ax1.plot(
+            [], [], label="4-4: opt steer_rate_filtered", marker="", ls="-."
+        )
+        (self.im8,) = self.ax1.plot([], [], label="4-5: opt time_resampled", marker="*", ls="--")
+        (self.im9,) = self.ax1.plot([], [], label="4-6: opt final", marker="", ls="-")
         (self.im10,) = self.ax1.plot(
             [], [], label="localization twist vx", color="r", marker="*", ls=":", markersize=10
         )
@@ -277,6 +280,7 @@ class TrajectoryVisualizer(Node):
             self.im5,
             self.im6,
             self.im7,
+            self.im71,
             self.im8,
             self.im9,
             self.im10,
@@ -285,7 +289,7 @@ class TrajectoryVisualizer(Node):
         )
 
     def plotTrajectoryVelocity(self, data):
-        self.updatePose(PATH_ORIGIN_FRAME, SELF_POSE_FRAME)
+        # self.updatePose(PATH_ORIGIN_FRAME, SELF_POSE_FRAME)
         if self.self_pose_received is False:
             print("plot start but self pose is not received")
             return (
@@ -296,6 +300,7 @@ class TrajectoryVisualizer(Node):
                 self.im5,
                 self.im6,
                 self.im7,
+                self.im71,
                 self.im8,
                 self.im9,
                 self.im10,
@@ -312,6 +317,7 @@ class TrajectoryVisualizer(Node):
         trajectory_raw = self.trajectory_raw
         trajectory_external_velocity_limited = self.trajectory_external_velocity_limited
         trajectory_lateral_acc_filtered = self.trajectory_lateral_acc_filtered
+        trajectory_steer_rate_filtered = self.trajectory_steer_rate_filtered
         trajectory_time_resampled = self.trajectory_time_resampled
         trajectory_final = self.trajectory_final
 
@@ -360,6 +366,12 @@ class TrajectoryVisualizer(Node):
             self.im7.set_data(x, y)
             self.update_lat_acc_fil = False
 
+        if self.update_steer_rate_fil:
+            x = self.CalcArcLength(trajectory_steer_rate_filtered)
+            y = self.ToVelList(trajectory_steer_rate_filtered)
+            self.im71.set_data(x, y)
+            self.update_steer_rate_fil = False
+
         if self.update_traj_resample:
             x = self.CalcArcLength(trajectory_time_resampled)
             y = self.ToVelList(trajectory_time_resampled)
@@ -391,6 +403,7 @@ class TrajectoryVisualizer(Node):
             self.im5,
             self.im6,
             self.im7,
+            self.im71,
             self.im8,
             self.im9,
             self.im10,
@@ -577,7 +590,7 @@ class TrajectoryVisualizer(Node):
 
     def plotTrajectory(self, data):
         print("plot called")
-        self.updatePose(PATH_ORIGIN_FRAME, SELF_POSE_FRAME)
+        # self.updatePose(PATH_ORIGIN_FRAME, SELF_POSE_FRAME)
 
         # copy
         trajectory_raw = self.trajectory_raw
@@ -667,25 +680,6 @@ class TrajectoryVisualizer(Node):
         dx = p1.position.x - p2.position.x
         dy = p1.position.y - p2.position.y
         return dx * dx + dy * dy
-
-    def updatePose(self, from_link, to_link):
-        try:
-            tf = self.tf_buffer.lookup_transform(from_link, to_link, rclpy.time.Time())
-            self.self_pose.position.x = tf.transform.translation.x
-            self.self_pose.position.y = tf.transform.translation.y
-            self.self_pose.position.z = tf.transform.translation.z
-            self.self_pose.orientation.x = tf.transform.rotation.x
-            self.self_pose.orientation.y = tf.transform.rotation.y
-            self.self_pose.orientation.z = tf.transform.rotation.z
-            self.self_pose.orientation.w = tf.transform.rotation.w
-            print("updatePose succeeded")
-            self.self_pose_received = True
-            return
-        except tf2_ros.TransformException:
-            self.get_logger().warn(
-                "lookup transform failed: from {} to {}".format(from_link, to_link)
-            )
-            return
 
     def closeFigure(self):
         plt.close(self.fig)
