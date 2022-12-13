@@ -15,7 +15,11 @@
 #ifndef LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_
 #define LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_
 
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
@@ -41,8 +45,11 @@ bool exists(const std::vector<T> & vectors, const T & item)
   return false;
 }
 
+tier4_autoware_utils::Polygon2d convert_linear_ring_to_polygon(
+  tier4_autoware_utils::LinearRing2d footprint);
 void set_color(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a);
 void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2);
 
+lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets);
 #endif  // LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_

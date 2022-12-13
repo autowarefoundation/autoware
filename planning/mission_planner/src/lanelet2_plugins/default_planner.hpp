@@ -18,6 +18,7 @@
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
+#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
@@ -32,6 +33,11 @@
 namespace mission_planner::lanelet2
 {
 
+struct DefaultPlannerParameters
+{
+  double goal_angle_threshold_deg;
+};
+
 class DefaultPlanner : public mission_planner::PlannerPlugin
 {
 public:
@@ -40,6 +46,8 @@ public:
   bool ready() const override;
   LaneletRoute plan(const RoutePoints & points) override;
   MarkerArray visualize(const LaneletRoute & route) const override;
+  MarkerArray visualize_debug_footprint(tier4_autoware_utils::LinearRing2d goal_footprint_) const;
+  vehicle_info_util::VehicleInfo vehicle_info_;
 
 private:
   using RouteSections = std::vector<autoware_planning_msgs::msg::LaneletSegment>;
@@ -52,11 +60,19 @@ private:
   lanelet::ConstLanelets shoulder_lanelets_;
   route_handler::RouteHandler route_handler_;
 
+  DefaultPlannerParameters param_;
+
   rclcpp::Node * node_;
   rclcpp::Subscription<HADMapBin>::SharedPtr map_subscriber_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_goal_footprint_marker_;
 
   void map_callback(const HADMapBin::ConstSharedPtr msg);
-  bool is_goal_valid(const geometry_msgs::msg::Pose & goal) const;
+  bool check_goal_footprint(
+    const lanelet::ConstLanelet & current_lanelet,
+    const lanelet::ConstLanelet & combined_prev_lanelet,
+    const tier4_autoware_utils::Polygon2d & goal_footprint, double & next_lane_length,
+    const double search_margin = 2.0);
+  bool is_goal_valid(const geometry_msgs::msg::Pose & goal, lanelet::ConstLanelets path_lanelets);
   Pose refine_goal_height(const Pose & goal, const RouteSections & route_sections);
 };
 

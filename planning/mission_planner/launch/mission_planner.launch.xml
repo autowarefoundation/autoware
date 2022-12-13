@@ -8,6 +8,7 @@
     <param name="arrival_check_angle_deg" value="45.0"/>
     <param name="arrival_check_distance" value="1.0"/>
     <param name="arrival_check_duration" value="1.0"/>
+    <param name="goal_angle_threshold_deg" value="45.0"/>
     <remap from="input/modified_goal" to="$(var modified_goal_topic_name)"/>
     <remap from="input/vector_map" to="$(var map_topic_name)"/>
     <remap from="debug/route_marker" to="$(var visualization_topic_name)"/>

@@ -14,12 +14,13 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 
 ### Parameters
 
-| Name                      | Type   | Description                       |
-| ------------------------- | ------ | --------------------------------- |
-| `map_frame`               | string | The frame name for map            |
-| `arrival_check_angle_deg` | double | Angle threshold for goal check    |
-| `arrival_check_distance`  | double | Distance threshold for goal check |
-| `arrival_check_duration`  | double | Duration threshold for goal check |
+| Name                      | Type   | Description                          |
+| ------------------------- | ------ | ------------------------------------ |
+| `map_frame`               | string | The frame name for map               |
+| `arrival_check_angle_deg` | double | Angle threshold for goal check       |
+| `arrival_check_distance`  | double | Distance threshold for goal check    |
+| `arrival_check_duration`  | double | Duration threshold for goal check    |
+| `goal_angle_threshold`    | double | Max goal pose angle for goal approve |
 
 ### Services
 
@@ -38,11 +39,12 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 
 ### Publications
 
-| Name                            | Type                                    | Description            |
-| ------------------------------- | --------------------------------------- | ---------------------- |
-| `/planning/routing/route_state` | autoware_adapi_v1_msgs::msg::RouteState | route state            |
-| `/planning/routing/route`       | autoware_planning_msgs/LaneletRoute     | route                  |
-| `debug/route_marker`            | visualization_msgs::msg::MarkerArray    | route marker for debug |
+| Name                            | Type                                    | Description              |
+| ------------------------------- | --------------------------------------- | ------------------------ |
+| `/planning/routing/route_state` | autoware_adapi_v1_msgs::msg::RouteState | route state              |
+| `/planning/routing/route`       | autoware_planning_msgs/LaneletRoute     | route                    |
+| `debug/route_marker`            | visualization_msgs::msg::MarkerArray    | route marker for debug   |
+| `debug/goal_footprint`          | visualization_msgs::msg::MarkerArray    | goal footprint for debug |
 
 ## Route section
 
@@ -56,6 +58,15 @@ The ROS message of route section contains following three elements for each rout
 
 - `preferred_primitive`: Preferred lane to follow towards the goal.
 - `primitives`: All neighbor lanes in the same direction including the preferred lane.
+
+## Goal Validation
+
+The mission planner has control mechanism to validate the given goal pose and create a route. If goal pose angle between goal pose lanelet and goal pose' yaw is greater than `goal_angle_threshold` parameter, the goal is rejected.
+Another control mechanism is the creation of a footprint of the goal pose according to the dimensions of the vehicle and checking whether this footprint is within the lanelets. If goal footprint exceeds lanelets, then the goal is rejected.
+
+At the image below, there are sample goal pose validation cases.
+
+![goal_footprints](./media/goal_footprints.svg)
 
 ## Implementation
 
