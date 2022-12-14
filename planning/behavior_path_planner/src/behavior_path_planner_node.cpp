@@ -618,7 +618,11 @@ void BehaviorPathPlannerNode::run()
   // update planner data
   planner_data_->self_pose = self_pose_listener_.getCurrentPose();
 
-  const auto planner_data = planner_data_;
+  const auto planner_data = std::make_shared<PlannerData>(*planner_data_);
+
+  // unlock planner data
+  mutex_pd_.unlock();
+
   // run behavior planner
   const auto output = bt_manager_->run(planner_data);
 
@@ -630,9 +634,6 @@ void BehaviorPathPlannerNode::run()
 
   // compute turn signal
   computeTurnSignal(planner_data, *path, output);
-
-  // unlock planner data
-  mutex_pd_.unlock();
 
   // publish drivable bounds
   publish_bounds(*path);
