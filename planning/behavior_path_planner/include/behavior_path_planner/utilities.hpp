@@ -288,7 +288,7 @@ std::vector<DrivableLanes> generateDrivableLanes(const lanelet::ConstLanelets & 
 std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & shoulder_lanes);
 
-size_t getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
+boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
 std::vector<DrivableLanes> cutOverlappedLanes(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes);
 
