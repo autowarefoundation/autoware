@@ -80,7 +80,8 @@ size_t findNearestSegmentIndexFromLateralDistance(
 {
   size_t closest_idx = motion_utils::findNearestSegmentIndex(points, pose.position);
   double min_lateral_dist =
-    motion_utils::calcLongitudinalOffsetToSegment(points, closest_idx, pose.position);
+    std::fabs(motion_utils::calcLateralOffset(points, pose.position, closest_idx));
+
   for (size_t seg_idx = 0; seg_idx < points.size() - 1; ++seg_idx) {
     const double lon_dist =
       motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, pose.position);
@@ -94,6 +95,7 @@ size_t findNearestSegmentIndexFromLateralDistance(
       std::fabs(motion_utils::calcLateralOffset(points, pose.position, seg_idx));
     if (lat_dist < min_lateral_dist) {
       closest_idx = seg_idx;
+      min_lateral_dist = lat_dist;
     }
   }
 
