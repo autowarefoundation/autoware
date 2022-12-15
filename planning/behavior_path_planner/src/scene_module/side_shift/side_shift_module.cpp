@@ -46,7 +46,10 @@ void SideShiftModule::initVariables()
 {
   reference_path_ = std::make_shared<PathWithLaneId>();
   start_pose_reset_request_ = false;
-  lateral_offset_ = 0.0;
+  requested_lateral_offset_ = 0.0;
+  inserted_lateral_offset_ = 0.0;
+  inserted_shift_line_ = ShiftLine{};
+  shift_status_ = SideShiftStatus{};
   prev_output_ = ShiftedPath{};
   prev_shift_line_ = ShiftLine{};
   path_shifter_ = PathShifter{};
@@ -79,7 +82,7 @@ bool SideShiftModule::isExecutionRequested() const
 
   // If the desired offset has a non-zero value, return true as we want to execute the plan.
 
-  const bool has_request = !isAlmostZero(lateral_offset_);
+  const bool has_request = !isAlmostZero(requested_lateral_offset_);
   RCLCPP_DEBUG_STREAM(
     getLogger(), "ESS::isExecutionRequested() : " << std::boolalpha << has_request);
 
@@ -114,7 +117,7 @@ BT::NodeStatus SideShiftModule::updateState()
     const auto last_sp = path_shifter_.getLastShiftLine();
     if (last_sp) {
       const auto length = std::fabs(last_sp.get().end_shift_length);
-      const auto lateral_offset = std::fabs(lateral_offset_);
+      const auto lateral_offset = std::fabs(requested_lateral_offset_);
       const auto offset_diff = lateral_offset - length;
       if (!isAlmostZero(offset_diff)) {
         lateral_offset_change_request_ = true;
@@ -125,7 +128,7 @@ BT::NodeStatus SideShiftModule::updateState()
   }();
 
   const bool no_offset_diff = isOffsetDiffAlmostZero;
-  const bool no_request = isAlmostZero(lateral_offset_);
+  const bool no_request = isAlmostZero(requested_lateral_offset_);
 
   const auto no_shifted_plan = [&]() {
     if (prev_output_.shift_length.empty()) {
@@ -145,6 +148,22 @@ BT::NodeStatus SideShiftModule::updateState()
   if (no_request && no_shifted_plan && no_offset_diff) {
     current_state_ = BT::NodeStatus::SUCCESS;
   } else {
+    const auto & current_lanes = util::getCurrentLanes(planner_data_);
+    const auto & current_pose = planner_data_->self_pose->pose;
+    const auto & inserted_shift_line_start_pose = inserted_shift_line_.start;
+    const auto & inserted_shift_line_end_pose = inserted_shift_line_.end;
+    const double self_to_shift_line_start_arc_length =
+      behavior_path_planner::util::getSignedDistance(
+        current_pose, inserted_shift_line_start_pose, current_lanes);
+    const double self_to_shift_line_end_arc_length = behavior_path_planner::util::getSignedDistance(
+      current_pose, inserted_shift_line_end_pose, current_lanes);
+    if (self_to_shift_line_start_arc_length >= 0) {
+      shift_status_ = SideShiftStatus::BEFORE_SHIFT;
+    } else if (self_to_shift_line_start_arc_length < 0 && self_to_shift_line_end_arc_length > 0) {
+      shift_status_ = SideShiftStatus::SHIFTING;
+    } else {
+      shift_status_ = SideShiftStatus::AFTER_SHIFT;
+    }
     current_state_ = BT::NodeStatus::RUNNING;
   }
 
@@ -179,103 +198,42 @@ void SideShiftModule::updateData()
   path_shifter_.removeBehindShiftLineAndSetBaseOffset(nearest_idx);
 }
 
-bool SideShiftModule::addShiftLine()
+void SideShiftModule::replaceShiftLine()
 {
   auto shift_lines = path_shifter_.getShiftLines();
-
-  const auto calcLongitudinal_to_shift_start = [this](const auto & sp) {
-    return motion_utils::calcSignedArcLength(
-      reference_path_->points, getEgoPose().pose.position, sp.start.position);
-  };
-  const auto calcLongitudinal_to_shift_end = [this](const auto & sp) {
-    return motion_utils::calcSignedArcLength(
-      reference_path_->points, getEgoPose().pose.position, sp.end.position);
-  };
-
-  // remove shift points on a far position.
-  const auto remove_far_iter = std::remove_if(
-    shift_lines.begin(), shift_lines.end(),
-    [this, calcLongitudinal_to_shift_start](const ShiftLine & sp) {
-      const auto dist_to_start = calcLongitudinal_to_shift_start(sp);
-      constexpr double max_remove_threshold_time = 1.0;  // [s]
-      constexpr double max_remove_threshold_dist = 2.0;  // [m]
-      const auto ego_current_speed = planner_data_->self_odometry->twist.twist.linear.x;
-      const auto remove_threshold =
-        std::max(ego_current_speed * max_remove_threshold_time, max_remove_threshold_dist);
-      return (dist_to_start > remove_threshold);
-    });
-
-  shift_lines.erase(remove_far_iter, shift_lines.end());
-
-  // check if the new_shift_lines overlap with existing shift points.
-  const auto new_sp = calcShiftLine();
-  // check if the new_shift_lines is same with lately inserted shift_lines.
-  if (new_sp.end_shift_length == prev_shift_line_.end_shift_length) {
-    return false;
+  if (shift_lines.size() > 0) {
+    shift_lines.clear();
   }
 
-  const auto new_sp_longitudinal_to_shift_start = calcLongitudinal_to_shift_start(new_sp);
-  const auto new_sp_longitudinal_to_shift_end = calcLongitudinal_to_shift_end(new_sp);
-
-  const auto remove_overlap_iter = std::remove_if(
-    shift_lines.begin(), shift_lines.end(),
-    [this, calcLongitudinal_to_shift_start, calcLongitudinal_to_shift_end,
-     new_sp_longitudinal_to_shift_start, new_sp_longitudinal_to_shift_end](const ShiftLine & sp) {
-      const bool check_with_prev_sp = (sp.end_shift_length == prev_shift_line_.end_shift_length);
-      const auto old_sp_longitudinal_to_shift_start = calcLongitudinal_to_shift_start(sp);
-      const auto old_sp_longitudinal_to_shift_end = calcLongitudinal_to_shift_end(sp);
-      const bool sp_overlap_front =
-        ((new_sp_longitudinal_to_shift_start <= old_sp_longitudinal_to_shift_start) &&
-         (old_sp_longitudinal_to_shift_start <= new_sp_longitudinal_to_shift_end));
-      const bool sp_overlap_back =
-        ((new_sp_longitudinal_to_shift_start <= old_sp_longitudinal_to_shift_end) &&
-         (old_sp_longitudinal_to_shift_end <= new_sp_longitudinal_to_shift_end));
-      const bool sp_new_contain_old =
-        ((new_sp_longitudinal_to_shift_start <= old_sp_longitudinal_to_shift_start) &&
-         (old_sp_longitudinal_to_shift_end <= new_sp_longitudinal_to_shift_end));
-      const bool sp_old_contain_new =
-        ((old_sp_longitudinal_to_shift_start <= new_sp_longitudinal_to_shift_start) &&
-         (new_sp_longitudinal_to_shift_end <= old_sp_longitudinal_to_shift_end));
-      const bool overlap_with_new_sp =
-        (sp_overlap_front || sp_overlap_back || sp_new_contain_old || sp_old_contain_new);
-
-      return (overlap_with_new_sp && !check_with_prev_sp);
-    });
-
-  shift_lines.erase(remove_overlap_iter, shift_lines.end());
-
-  // check if the new_shift_line has conflicts with existing shift points.
-  for (const auto & sp : shift_lines) {
-    if (calcLongitudinal_to_shift_start(sp) >= new_sp_longitudinal_to_shift_start) {
-      RCLCPP_WARN(
-        getLogger(),
-        "try to add shift point, but shift point already exists behind the proposed point. "
-        "Ignore the current proposal.");
-      return false;
-    }
-  }
+  const auto new_sl = calcShiftLine();
 
   // if no conflict, then add the new point.
-  shift_lines.push_back(new_sp);
-  const bool new_sp_is_same_with_previous =
-    new_sp.end_shift_length == prev_shift_line_.end_shift_length;
+  shift_lines.push_back(new_sl);
+  const bool new_sl_is_same_with_previous =
+    new_sl.end_shift_length == prev_shift_line_.end_shift_length;
 
-  if (!new_sp_is_same_with_previous) {
-    prev_shift_line_ = new_sp;
+  if (!new_sl_is_same_with_previous) {
+    prev_shift_line_ = new_sl;
   }
 
   // set to path_shifter
   path_shifter_.setShiftLines(shift_lines);
   lateral_offset_change_request_ = false;
+  inserted_lateral_offset_ = requested_lateral_offset_;
+  inserted_shift_line_ = new_sl;
 
-  return true;
+  return;
 }
 
 BehaviorModuleOutput SideShiftModule::plan()
 {
-  // Update shift point
-  if (lateral_offset_change_request_) {
-    addShiftLine();
+  // Replace shift line
+  if (
+    lateral_offset_change_request_ && ((shift_status_ == SideShiftStatus::BEFORE_SHIFT) ||
+                                       (shift_status_ == SideShiftStatus::AFTER_SHIFT))) {
+    replaceShiftLine();
+  } else if (shift_status_ != SideShiftStatus::BEFORE_SHIFT) {
+    RCLCPP_DEBUG(getLogger(), "ego is shifting");
   } else {
     RCLCPP_DEBUG(getLogger(), "change is not requested");
   }
@@ -340,11 +298,11 @@ void SideShiftModule::onLateralOffset(const LateralOffset::ConstSharedPtr latera
   const double new_lateral_offset = lateral_offset_msg->lateral_offset;
 
   RCLCPP_DEBUG(
-    getLogger(), "onLateralOffset start : lateral offset current = %f, new = &%f", lateral_offset_,
-    new_lateral_offset);
+    getLogger(), "onLateralOffset start : lateral offset current = %f, new = &%f",
+    requested_lateral_offset_, new_lateral_offset);
 
   // offset is not changed.
-  if (std::abs(lateral_offset_ - new_lateral_offset) < 1e-4) {
+  if (std::abs(inserted_lateral_offset_ - new_lateral_offset) < 1e-4) {
     return;
   }
 
@@ -355,8 +313,7 @@ void SideShiftModule::onLateralOffset(const LateralOffset::ConstSharedPtr latera
   // new offset is requested.
   if (isReadyForNextRequest(parameters_.shift_request_time_limit)) {
     lateral_offset_change_request_ = true;
-
-    lateral_offset_ = new_lateral_offset;
+    requested_lateral_offset_ = new_lateral_offset;
   }
 }
 
@@ -369,7 +326,7 @@ ShiftLine SideShiftModule::calcShiftLine() const
     std::max(p.min_distance_to_start_shifting, ego_speed * p.time_to_start_shifting);
 
   const double dist_to_end = [&]() {
-    const double shift_length = lateral_offset_ - getClosestShiftLength();
+    const double shift_length = requested_lateral_offset_ - getClosestShiftLength();
     const double jerk_shifting_distance = path_shifter_.calcLongitudinalDistFromJerk(
       shift_length, p.shifting_lateral_jerk, std::max(ego_speed, p.min_shifting_speed));
     const double shifting_distance = std::max(jerk_shifting_distance, p.min_shifting_distance);
@@ -382,7 +339,7 @@ ShiftLine SideShiftModule::calcShiftLine() const
 
   const size_t nearest_idx = findEgoIndex(reference_path_->points);
   ShiftLine shift_line;
-  shift_line.end_shift_length = lateral_offset_;
+  shift_line.end_shift_length = requested_lateral_offset_;
   shift_line.start_idx = util::getIdxByArclength(*reference_path_, nearest_idx, dist_to_start);
   shift_line.start = reference_path_->points.at(shift_line.start_idx).point.pose;
   shift_line.end_idx = util::getIdxByArclength(*reference_path_, nearest_idx, dist_to_end);
