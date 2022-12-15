@@ -36,6 +36,7 @@
 
         /autoware/system/node_alive_monitoring: default
         /autoware/system/emergency_stop_operation: default
+        /autoware/system/service_log_checker: { sf_at: "warn", lf_at: "none", spf_at: "none" }
         # /autoware/system/resource_monitoring: { sf_at: "warn", lf_at: "error", spf_at: "none" }
 
         /autoware/vehicle/node_alive_monitoring: default
@@ -46,5 +47,6 @@
 
         /autoware/system/node_alive_monitoring: default
         /autoware/system/emergency_stop_operation: default
+        /autoware/system/service_log_checker: { sf_at: "warn", lf_at: "none", spf_at: "none" }
 
         /autoware/vehicle/node_alive_monitoring: default

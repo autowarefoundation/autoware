@@ -20,6 +20,12 @@
           contains: [": emergency_stop_operation"]
           timeout: 1.0
 
+        service_log_checker:
+          type: diagnostic_aggregator/GenericAnalyzer
+          path: service_log_checker
+          contains: ["service_log_checker"]
+          timeout: 5.0
+
         resource_monitoring:
           type: diagnostic_aggregator/AnalyzerGroup
           path: resource_monitoring

@@ -25,6 +25,11 @@
       </include>
     </group>
 
+    <!-- Service Log Checker -->
+    <group>
+      <include file="$(find-pkg-share component_interface_tools)/launch/service_log_checker.launch.xml"/>
+    </group>
+
     <!-- Component State Monitor -->
     <group>
       <include file="$(find-pkg-share component_state_monitor)/launch/component_state_monitor.launch.py">

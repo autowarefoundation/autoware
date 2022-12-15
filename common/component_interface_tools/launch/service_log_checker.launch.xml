@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="component_interface_tools" exec="service_log_checker" name="service_log_checker"/>
+</launch>
