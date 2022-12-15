@@ -101,6 +101,15 @@ size_t findNearestSegmentIndexFromLateralDistance(
 
   return closest_idx;
 }
+
+bool checkHasSameLane(
+  const lanelet::ConstLanelets & lanelets, const lanelet::ConstLanelet & target_lane)
+{
+  if (lanelets.empty()) return false;
+
+  const auto has_same = [&](const auto & ll) { return ll.id() == target_lane.id(); };
+  return std::find_if(lanelets.begin(), lanelets.end(), has_same) != lanelets.end();
+}
 }  // namespace
 
 namespace behavior_path_planner::util
@@ -1164,30 +1173,41 @@ void generateDrivableArea(
     addRightBoundPoints(lane.right_lane);
   }
 
-  const auto has_same_lane = [&](const auto & lane) {
-    if (lanes.empty()) return false;
-    const auto has_same = [&](const auto & ll) { return ll.id() == lane.id(); };
-    return std::find_if(transformed_lanes.begin(), transformed_lanes.end(), has_same) !=
-           transformed_lanes.end();
-  };
-
-  const auto has_overlap = [&](const auto & lane) {
-    for (const auto & transformed_lane : transformed_lanes) {
-      if (boost::geometry::intersects(
-            lane.polygon2d().basicPolygon(), transformed_lane.polygon2d().basicPolygon())) {
-        return true;
+  const auto has_overlap =
+    [&](const lanelet::ConstLanelet & lane, const lanelet::Id & ignore_lane_id = lanelet::InvalId) {
+      for (const auto & transformed_lane : transformed_lanes) {
+        if (transformed_lane.id() == ignore_lane_id) {
+          continue;
+        }
+        if (boost::geometry::intersects(
+              lane.polygon2d().basicPolygon(), transformed_lane.polygon2d().basicPolygon())) {
+          return true;
+        }
       }
-    }
-    return false;
-  };
+      return false;
+    };
 
   // Insert points after goal
-  if (containsGoal(transformed_lanes, route_handler->getGoalLaneId())) {
+  lanelet::ConstLanelet goal_lanelet;
+  if (
+    route_handler->getGoalLanelet(&goal_lanelet) &&
+    checkHasSameLane(transformed_lanes, goal_lanelet)) {
     const auto lanes_after_goal = route_handler->getLanesAfterGoal(vehicle_length);
+    const auto next_lanes_after_goal = route_handler->getNextLanelets(goal_lanelet);
     for (const auto & lane : lanes_after_goal) {
-      if (has_same_lane(lane) || has_overlap(lane)) {
+      // If lane is already in the transformed lanes, ignore it
+      if (checkHasSameLane(transformed_lanes, lane)) {
         continue;
       }
+      // Check if overlapped
+      const bool is_overlapped =
+        (checkHasSameLane(next_lanes_after_goal, lane)
+           ? has_overlap(lane, route_handler->getGoalLaneId())
+           : has_overlap(lane));
+      if (is_overlapped) {
+        continue;
+      }
+
       addLeftBoundPoints(lane);
       addRightBoundPoints(lane);
     }
