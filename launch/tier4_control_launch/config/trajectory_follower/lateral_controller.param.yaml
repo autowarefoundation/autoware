@@ -13,6 +13,9 @@
     curvature_smoothing_num_traj: 15        # point-to-point index distance used in curvature calculation (for trajectory): curvature is calculated from three points p(i-num), p(i), p(i+num)
     curvature_smoothing_num_ref_steer: 15   # point-to-point index distance used in curvature calculation (for steer command reference): curvature is calculated from three points p(i-num), p(i), p(i+num)
 
+    # -- trajectory extending --
+    extend_trajectory_for_end_yaw_control: true  # flag of trajectory extending for terminal yaw control
+
     # -- mpc optimization --
     qp_solver_type: "osqp"                       # optimization solver option (unconstraint_fast or osqp)
     mpc_prediction_horizon: 50                   # prediction horizon step

@@ -265,10 +265,9 @@ bool calcMPCTrajectoryTime(MPCTrajectory & traj)
   traj.relative_time.clear();
   traj.relative_time.push_back(t);
   for (size_t i = 0; i < traj.x.size() - 1; ++i) {
-    const double dx = traj.x.at(i + 1) - traj.x.at(i);
-    const double dy = traj.y.at(i + 1) - traj.y.at(i);
-    const double dz = traj.z.at(i + 1) - traj.z.at(i);
-    const double dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+    const double dist = std::hypot(
+      traj.x.at(i + 1) - traj.x.at(i), traj.y.at(i + 1) - traj.y.at(i),
+      traj.z.at(i + 1) - traj.z.at(i));
     const double v = std::max(std::fabs(traj.vx.at(i)), 0.1);
     t += (dist / v);
     traj.relative_time.push_back(t);
@@ -402,6 +401,31 @@ double calcStopDistance(
     stop_dist -= distance_2d<double>(p0, p1);
   }
   return stop_dist;
+}
+
+void extendTrajectoryInYawDirection(
+  const double yaw, const double interval, const bool is_forward_shift, MPCTrajectory & traj)
+{
+  // set terminal yaw
+  traj.yaw.back() = yaw;
+
+  // get terminal pose
+  autoware_auto_planning_msgs::msg::Trajectory autoware_traj;
+  autoware::motion::control::trajectory_follower::MPCUtils::convertToAutowareTrajectory(
+    traj, autoware_traj);
+  auto extended_pose = autoware_traj.points.back().pose;
+
+  constexpr double extend_dist = 10.0;
+  constexpr double extend_vel = 10.0;
+  const double x_offset = is_forward_shift ? interval : -interval;
+  const double dt = interval / extend_vel;
+  const size_t num_extended_point = static_cast<size_t>(extend_dist / interval);
+  for (size_t i = 0; i < num_extended_point; ++i) {
+    extended_pose = tier4_autoware_utils::calcOffsetPose(extended_pose, x_offset, 0.0, 0.0);
+    traj.push_back(
+      extended_pose.position.x, extended_pose.position.y, extended_pose.position.z, traj.yaw.back(),
+      extend_vel, traj.k.back(), traj.smooth_k.back(), traj.relative_time.back() + dt);
+  }
 }
 
 }  // namespace MPCUtils

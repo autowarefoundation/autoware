@@ -180,7 +180,7 @@ void MPC::setReferenceTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & trajectory_msg,
   const double traj_resample_dist, const bool enable_path_smoothing,
   const int path_filter_moving_ave_num, const int curvature_smoothing_num_traj,
-  const int curvature_smoothing_num_ref_steer)
+  const int curvature_smoothing_num_ref_steer, const bool extend_trajectory_for_end_yaw_control)
 {
   trajectory_follower::MPCTrajectory mpc_traj_raw;        // received raw trajectory
   trajectory_follower::MPCTrajectory mpc_traj_resampled;  // resampled trajectory
@@ -215,6 +215,17 @@ void MPC::setReferenceTrajectory(
       RCLCPP_DEBUG(m_logger, "path callback: filtering error. stop filtering.");
       mpc_traj_smoothed = mpc_traj_resampled;
     }
+  }
+
+  /* extend terminal points
+   * Note: The current MPC does not properly take into account the attitude angle at the end of the
+   * path. By extending the end of the path in the attitude direction, the MPC can consider the
+   * attitude angle well, resulting in improved control performance. If the trajectory is
+   * well-defined considering the end point attitude angle, this feature is not necessary.
+   */
+  if (extend_trajectory_for_end_yaw_control) {
+    trajectory_follower::MPCUtils::extendTrajectoryInYawDirection(
+      mpc_traj_raw.yaw.back(), traj_resample_dist, m_is_forward_shift, mpc_traj_smoothed);
   }
 
   /* calculate yaw angle */

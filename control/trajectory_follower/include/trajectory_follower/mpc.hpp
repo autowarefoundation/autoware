@@ -400,7 +400,7 @@ public:
     const autoware_auto_planning_msgs::msg::Trajectory & trajectory_msg,
     const double traj_resample_dist, const bool enable_path_smoothing,
     const int path_filter_moving_ave_num, const int curvature_smoothing_num_traj,
-    const int curvature_smoothing_num_ref_steer);
+    const int curvature_smoothing_num_ref_steer, const bool extend_trajectory_for_end_yaw_control);
   /**
    * @brief set the vehicle model of this MPC
    */

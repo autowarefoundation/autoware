@@ -179,6 +179,21 @@ TRAJECTORY_FOLLOWER_PUBLIC bool calcNearestPoseInterp(
 //  */
 TRAJECTORY_FOLLOWER_PUBLIC double calcStopDistance(
   const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int origin);
+
+/**
+ * @brief extend terminal points
+ * Note: The current MPC does not properly take into account the attitude angle at the end of the
+ * path. By extending the end of the path in the attitude direction, the MPC can consider the
+ * attitude angle well, resulting in improved control performance. If the trajectory is
+ * well-defined considering the end point attitude angle, this feature is not necessary.
+ * @param [in] terminal yaw
+ * @param [in] extend interval
+ * @param [in] flag of forward shift
+ * @param [out] extended trajectory
+ */
+void extendTrajectoryInYawDirection(
+  const double yaw, const double interval, const bool is_forward_shift, MPCTrajectory & traj);
+
 }  // namespace MPCUtils
 }  // namespace trajectory_follower
 }  // namespace control
