@@ -5,8 +5,10 @@
   <arg name="stop_check_enabled"/>
 
   <!-- for gnss and rviz -->
-  <node pkg="pose_initializer" exec="map_height_fitter" name="map_height_fitter">
+  <node pkg="pose_initializer" exec="map_height_fitter" name="map_height_fitter" output="screen">
+    <param from="$(var config_file)"/>
     <remap from="fit_map_height" to="/localization/util/fit_map_height"/>
+    <remap from="client_partial_map_load" to="/map/get_partial_pointcloud_map"/>
     <remap from="pointcloud_map" to="/map/pointcloud_map"/>
   </node>
 
