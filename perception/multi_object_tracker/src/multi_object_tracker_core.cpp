@@ -45,6 +45,13 @@ boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
   const std::string & target_frame_id, const rclcpp::Time & time)
 {
   try {
+    // check if the frames are ready
+    std::string errstr;  // This argument prevents error msg from being displayed in the terminal.
+    if (!tf_buffer.canTransform(
+          target_frame_id, source_frame_id, tf2::TimePointZero, tf2::Duration::zero(), &errstr)) {
+      return boost::none;
+    }
+
     geometry_msgs::msg::TransformStamped self_transform_stamped;
     self_transform_stamped = tf_buffer.lookupTransform(
       /*target*/ target_frame_id, /*src*/ source_frame_id, time,
