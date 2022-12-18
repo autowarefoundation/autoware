@@ -211,11 +211,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter("minimum_lane_change_prepare_distance", 2.0);
 
   p.minimum_pull_over_length = declare_parameter("minimum_pull_over_length", 15.0);
-  p.drivable_area_resolution = declare_parameter<double>("drivable_area_resolution");
-  p.drivable_lane_forward_length = declare_parameter<double>("drivable_lane_forward_length");
-  p.drivable_lane_backward_length = declare_parameter<double>("drivable_lane_backward_length");
-  p.drivable_lane_margin = declare_parameter<double>("drivable_lane_margin");
-  p.drivable_area_margin = declare_parameter<double>("drivable_area_margin");
   p.refine_goal_search_radius_range = declare_parameter("refine_goal_search_radius_range", 7.5);
   p.turn_signal_intersection_search_distance =
     declare_parameter("turn_signal_intersection_search_distance", 30.0);

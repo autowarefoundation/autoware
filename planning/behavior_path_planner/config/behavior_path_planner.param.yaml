@@ -9,12 +9,6 @@
     minimum_lane_change_prepare_distance: 2.0 # [m]
     minimum_pull_over_length: 16.0
 
-    drivable_area_resolution: 0.1
-    drivable_lane_forward_length: 50.0
-    drivable_lane_backward_length:  5.0
-    drivable_lane_margin: 3.0
-    drivable_area_margin: 6.0
-
     refine_goal_search_radius_range: 7.5
 
     # parameters for turn signal decider

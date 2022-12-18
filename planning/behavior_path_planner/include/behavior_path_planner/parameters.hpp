@@ -31,11 +31,6 @@ struct BehaviorPathPlannerParameters
   double minimum_pull_out_length;
   double drivable_area_resolution;
 
-  double drivable_lane_forward_length;
-  double drivable_lane_backward_length;
-  double drivable_lane_margin;
-  double drivable_area_margin;
-
   double refine_goal_search_radius_range;
 
   double turn_signal_intersection_search_distance;
