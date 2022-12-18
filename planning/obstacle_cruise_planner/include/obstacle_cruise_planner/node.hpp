@@ -100,7 +100,8 @@ private:
     const PredictedObject & predicted_object, const Trajectory & traj,
     const bool is_driving_forward);
   void publishVelocityLimit(const boost::optional<VelocityLimit> & vel_limit);
-  void publishDebugData(const DebugData & debug_data) const;
+  void publishDebugMarker(const DebugData & debug_data) const;
+  void publishDebugInfo() const;
   void publishCalculationTime(const double calculation_time) const;
 
   bool isCruiseObstacle(const uint8_t label);
@@ -128,6 +129,8 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_cruise_wall_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_stop_wall_marker_pub_;
+  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_stop_planning_info_pub_;
+  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_cruise_planning_info_pub_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr debug_calculation_time_pub_;
 
   // subscriber
@@ -141,10 +144,9 @@ private:
   tier4_autoware_utils::SelfPoseListener self_pose_listener_;
 
   // data for callback functions
-  PredictedObjects::ConstSharedPtr in_objects_ptr_;
-  geometry_msgs::msg::TwistStamped::SharedPtr current_twist_ptr_;
-
-  geometry_msgs::msg::AccelStamped::SharedPtr current_accel_ptr_;
+  PredictedObjects::ConstSharedPtr in_objects_ptr_{nullptr};
+  geometry_msgs::msg::TwistStamped::SharedPtr current_twist_ptr_{nullptr};
+  geometry_msgs::msg::AccelStamped::SharedPtr current_accel_ptr_{nullptr};
 
   // Vehicle Parameters
   VehicleInfo vehicle_info_;
@@ -160,7 +162,7 @@ private:
     stop_watch_;
 
   // planner
-  std::unique_ptr<PlannerInterface> planner_ptr_;
+  std::unique_ptr<PlannerInterface> planner_ptr_{nullptr};
 
   // previous closest obstacle
   std::shared_ptr<TargetObstacle> prev_closest_obstacle_ptr_{nullptr};
@@ -195,8 +197,11 @@ private:
   bool need_to_clear_vel_limit_{false};
 
   bool is_driving_forward_{true};
+  bool disable_stop_planning_{false};
 
   std::vector<TargetObstacle> prev_target_obstacles_;
+
+  std::shared_ptr<LowpassFilter1d> lpf_acc_ptr_;
 };
 }  // namespace motion_planning
 

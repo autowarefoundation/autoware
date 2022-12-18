@@ -17,6 +17,7 @@
 
 #include "motion_utils/motion_utils.hpp"
 #include "obstacle_cruise_planner/common_structs.hpp"
+#include "obstacle_cruise_planner/stop_planning_debug_info.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
@@ -38,6 +39,7 @@ using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_planning_msgs::msg::StopSpeedExceeded;
 using tier4_planning_msgs::msg::VelocityLimit;
 
@@ -105,6 +107,16 @@ public:
     smoothed_trajectory_ptr_ = traj;
   }
 
+  Float32MultiArrayStamped getStopPlanningDebugMessage(const rclcpp::Time & current_time) const
+  {
+    return stop_planning_debug_info_.convertToMessage(current_time);
+  }
+  virtual Float32MultiArrayStamped getCruisePlanningDebugMessage(
+    [[maybe_unused]] const rclcpp::Time & current_time) const
+  {
+    return Float32MultiArrayStamped{};
+  }
+
 protected:
   // Parameters
   bool is_showing_debug_info_{false};
@@ -122,6 +134,9 @@ protected:
   vehicle_info_util::VehicleInfo vehicle_info_;
 
   EgoNearestParam ego_nearest_param_;
+
+  // debug info
+  StopPlanningDebugInfo stop_planning_debug_info_;
 
   // TODO(shimizu) remove these parameters
   Trajectory::ConstSharedPtr smoothed_trajectory_ptr_;

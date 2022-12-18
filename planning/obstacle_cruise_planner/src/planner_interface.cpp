@@ -106,6 +106,12 @@ double calcMinimumDistanceToStop(
 Trajectory PlannerInterface::generateStopTrajectory(
   const ObstacleCruisePlannerData & planner_data, DebugData & debug_data)
 {
+  stop_planning_debug_info_.reset();
+  stop_planning_debug_info_.set(
+    StopPlanningDebugInfo::TYPE::EGO_VELOCITY, planner_data.current_vel);
+  stop_planning_debug_info_.set(
+    StopPlanningDebugInfo::TYPE::EGO_VELOCITY, planner_data.current_acc);
+
   const double abs_ego_offset = planner_data.is_driving_forward
                                   ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
@@ -235,6 +241,16 @@ Trajectory PlannerInterface::generateStopTrajectory(
       createStopSpeedExceededMsg(planner_data.current_time, will_collide_with_obstacle);
     stop_speed_exceeded_pub_->publish(stop_speed_exceeded_msg);
   }
+
+  // stop_planning_debug_info_.set(StopPlanningDebugInfo::TYPE::STOP_CURRENT_OBSTACLE_DISTANCE, //
+  // TODO(murooka)
+  stop_planning_debug_info_.set(
+    StopPlanningDebugInfo::TYPE::STOP_CURRENT_OBSTACLE_VELOCITY, closest_stop_obstacle->velocity);
+
+  stop_planning_debug_info_.set(
+    StopPlanningDebugInfo::TYPE::STOP_TARGET_OBSTACLE_DISTANCE, feasible_margin_from_obstacle);
+  stop_planning_debug_info_.set(StopPlanningDebugInfo::TYPE::STOP_TARGET_VELOCITY, 0.0);
+  stop_planning_debug_info_.set(StopPlanningDebugInfo::TYPE::STOP_TARGET_ACCELERATION, 0.0);
 
   return output_traj;
 }

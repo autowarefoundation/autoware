@@ -56,15 +56,15 @@ struct ObstacleCruisePlannerData
 struct TargetObstacle
 {
   rclcpp::Time time_stamp;
-  bool orientation_reliable;
   geometry_msgs::msg::Pose pose;
+  bool orientation_reliable;
+  double velocity;
   bool velocity_reliable;
-  float velocity;
-  bool is_classified;
   ObjectClassification classification;
-  Shape shape;
+  std::string uuid;
   std::vector<PredictedPath> predicted_paths;
-  geometry_msgs::msg::Point collision_point;
+  std::vector<geometry_msgs::msg::PointStamped> collision_points;
+  bool has_stopped;
 };
 ```
 

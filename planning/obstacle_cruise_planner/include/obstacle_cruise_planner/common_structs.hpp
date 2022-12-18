@@ -58,7 +58,6 @@ struct TargetObstacle
     pose = object.kinematics.initial_pose_with_covariance.pose;
     velocity_reliable = true;
     velocity = aligned_velocity;
-    is_classified = true;
     classification = object.classification.at(0);
     uuid = toHexString(object.object_id);
 
@@ -72,11 +71,10 @@ struct TargetObstacle
   }
 
   rclcpp::Time time_stamp;
-  bool orientation_reliable;
   geometry_msgs::msg::Pose pose;
+  bool orientation_reliable;
+  double velocity;
   bool velocity_reliable;
-  float velocity;
-  bool is_classified;
   ObjectClassification classification;
   std::string uuid;
   std::vector<PredictedPath> predicted_paths;

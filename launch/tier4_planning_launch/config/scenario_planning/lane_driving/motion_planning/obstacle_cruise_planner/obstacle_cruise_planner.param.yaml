@@ -3,14 +3,17 @@
     common:
       planning_algorithm: "pid_base" # currently supported algorithm is "pid_base"
 
-      is_showing_debug_info: true
+      is_showing_debug_info: false
+      disable_stop_planning: false # true
 
       # longitudinal info
-      idling_time: 1.5 # idling time to detect front vehicle starting deceleration [s]
+      idling_time: 2.0 # idling time to detect front vehicle starting deceleration [s]
       min_ego_accel_for_rss: -1.0 # ego's acceleration to calculate RSS distance [m/ss]
       min_object_accel_for_rss: -1.0 # front obstacle's acceleration to calculate RSS distance [m/ss]
       safe_distance_margin : 6.0 # This is also used as a stop margin [m]
       terminal_safe_distance_margin : 3.0 # Stop margin at the goal. This value cannot exceed safe distance margin. [m]
+
+      lpf_gain_for_accel: 0.2 # gain of low pass filter for ego acceleration [-]
 
       nearest_dist_deviation_threshold: 3.0 # [m] for finding nearest index
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
@@ -25,7 +28,7 @@
         bus: true
         trailer: true
         motorcycle: true
-        bicycle: false
+        bicycle: true
         pedestrian: false
 
       stop_obstacle_type:
@@ -62,7 +65,7 @@
       stop_obstacle_hold_time_threshold : 1.0 # maximum time for holding closest stop obstacle
 
       ignored_outside_obstacle_type:
-        unknown: false
+        unknown: true
         car: false
         truck: false
         bus: false
@@ -72,21 +75,41 @@
         pedestrian: true
 
     pid_based_planner:
-      # use_predicted_obstacle_pose: false
+      use_velocity_limit_based_planner: true
+      error_function_type: quadratic # choose from linear, quadratic
 
-      # PID gains to keep safe distance with the front vehicle
-      kp: 2.5
-      ki: 0.0
-      kd: 2.3
+      velocity_limit_based_planner:
+          # PID gains to keep safe distance with the front vehicle
+          kp: 10.0
+          ki: 0.0
+          kd: 2.0
+
+          output_ratio_during_accel: 0.6 # target acceleration is multiplied with this value while ego accelerates to catch up the front vehicle [-]
+          vel_to_acc_weight: 12.0 # target acceleration is calculated by (target_velocity - current_velocity) * vel_to_acc_weight [-]
+
+          enable_jerk_limit_to_output_acc: false
+
+          disable_target_acceleration: true
+
+      velocity_insertion_based_planner:
+          kp_acc: 6.0
+          ki_acc: 0.0
+          kd_acc: 2.0
+
+          kp_jerk: 20.0
+          ki_jerk: 0.0
+          kd_jerk: 0.0
+
+          output_acc_ratio_during_accel: 0.6 # target acceleration is multiplied with this value while ego accelerates to catch up the front vehicle [-]
+          output_jerk_ratio_during_accel: 1.0 # target acceleration is multiplied with this value while ego accelerates to catch up the front vehicle [-]
+
+          enable_jerk_limit_to_output_acc: true
 
       min_accel_during_cruise: -2.0 # minimum acceleration during cruise to slow down [m/ss]
-
-      output_ratio_during_accel: 0.6 # target acceleration is multiplied with this value while ego accelerates to catch up the front vehicle [-]
-      vel_to_acc_weight: 3.0 # target acceleration is calculated by (target_velocity - current_velocity) * vel_to_acc_weight [-]
-
       min_cruise_target_vel: 0.0 # minimum target velocity during slow down [m/s]
+      time_to_evaluate_rss: 0.0
 
-      lpf_cruise_gain: 0.2
+      lpf_normalized_error_cruise_dist_gain: 0.2
 
     optimization_based_planner:
       dense_resampling_time_interval: 0.2

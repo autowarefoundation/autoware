@@ -10,17 +10,17 @@
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-68.642152" left="1648801093.897904" right="1648801193.801909" top="94.063676"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.10" color="#1ac938"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.12" color="#17becf"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.16" color="#d62728"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.10" color="#1ac938"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.12" color="#17becf"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.16" color="#d62728"/>
         </plot>
        </DockArea>
        <DockArea name="...">
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-1.341975" left="1648801093.897904" right="1648801193.801909" top="1.170411"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.1" color="#f14cc1"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.14" color="#1f77b4"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.1" color="#f14cc1"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.14" color="#1f77b4"/>
         </plot>
        </DockArea>
       </DockSplitter>
@@ -29,17 +29,17 @@
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-0.293676" left="1648801093.897904" right="1648801193.801909" top="12.040726"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.0" color="#ff7f0e"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.11" color="#9467bd"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.13" color="#bcbd22"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.0" color="#ff7f0e"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.11" color="#9467bd"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.13" color="#bcbd22"/>
         </plot>
        </DockArea>
        <DockArea name="...">
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-0.100000" left="1648801093.897904" right="1648801193.801909" top="0.100000"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.15" color="#1ac938"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.2" color="#ff7f0e"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.15" color="#1ac938"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.2" color="#ff7f0e"/>
         </plot>
        </DockArea>
       </DockSplitter>
@@ -56,17 +56,17 @@
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-4.440820" left="1648801040.096838" right="1648801140.095224" top="182.073633"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.3" color="#17becf"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.5" color="#1f77b4"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.9" color="#d62728"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.3" color="#17becf"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.5" color="#1f77b4"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.9" color="#d62728"/>
         </plot>
        </DockArea>
        <DockArea name="...">
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-1.411967" left="1648801040.096838" right="1648801140.095224" top="1.117231"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.1" color="#f14cc1"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.7" color="#1ac938"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.1" color="#f14cc1"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.7" color="#1ac938"/>
         </plot>
        </DockArea>
       </DockSplitter>
@@ -75,9 +75,9 @@
         <plot flip_y="false" mode="TimeSeries" flip_x="false" style="Lines">
          <range bottom="-0.364903" left="1648801040.096838" right="1648801140.095224" top="12.034235"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.0" color="#ff7f0e"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.4" color="#bcbd22"/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/values/data.6" color="#d62728"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.0" color="#ff7f0e"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.4" color="#bcbd22"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner/debug/stop_planning_debug_info/data.6" color="#d62728"/>
         </plot>
        </DockArea>
        <DockArea name="...">

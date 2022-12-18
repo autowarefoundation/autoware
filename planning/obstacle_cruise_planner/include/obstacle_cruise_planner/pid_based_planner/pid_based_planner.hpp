@@ -15,13 +15,12 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
 #define OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
 
-#include "obstacle_cruise_planner/pid_based_planner/debug_values.hpp"
+#include "obstacle_cruise_planner/pid_based_planner/cruise_planning_debug_info.hpp"
 #include "obstacle_cruise_planner/pid_based_planner/pid_controller.hpp"
 #include "obstacle_cruise_planner/planner_interface.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
-#include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
@@ -29,26 +28,25 @@
 #include <memory>
 #include <vector>
 
-using tier4_debug_msgs::msg::Float32MultiArrayStamped;
-
 class PIDBasedPlanner : public PlannerInterface
 {
 public:
   struct CruiseObstacleInfo
   {
     CruiseObstacleInfo(
-      const TargetObstacle & obstacle_arg, const double dist_to_cruise_arg,
-      const double normalized_dist_to_cruise_arg, double dist_to_obstacle_arg)
+      const TargetObstacle & obstacle_arg, const double error_cruise_dist_arg,
+      const double dist_to_obstacle_arg, const double target_dist_to_obstacle_arg)
     : obstacle(obstacle_arg),
-      dist_to_cruise(dist_to_cruise_arg),
-      normalized_dist_to_cruise(normalized_dist_to_cruise_arg),
-      dist_to_obstacle(dist_to_obstacle_arg)
+      error_cruise_dist(error_cruise_dist_arg),
+      dist_to_obstacle(dist_to_obstacle_arg),
+      target_dist_to_obstacle(target_dist_to_obstacle_arg)
     {
     }
+
     TargetObstacle obstacle;
-    double dist_to_cruise;
-    double normalized_dist_to_cruise;
+    double error_cruise_dist;
     double dist_to_obstacle;
+    double target_dist_to_obstacle;
   };
 
   PIDBasedPlanner(
@@ -66,39 +64,83 @@ private:
     const ObstacleCruisePlannerData & planner_data,
     boost::optional<CruiseObstacleInfo> & cruise_obstacle_info);
 
-  void planCruise(
+  Float32MultiArrayStamped getCruisePlanningDebugMessage(
+    const rclcpp::Time & current_time) const override
+  {
+    return cruise_planning_debug_info_.convertToMessage(current_time);
+  }
+
+private:
+  boost::optional<CruiseObstacleInfo> calcObstacleToCruise(
+    const ObstacleCruisePlannerData & planner_data);
+  Trajectory planCruise(
     const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
     const boost::optional<CruiseObstacleInfo> & cruise_obstacle_info, DebugData & debug_data);
-  VelocityLimit doCruise(
-    const ObstacleCruisePlannerData & planner_data, const CruiseObstacleInfo & cruise_obstacle_info,
-    std::vector<TargetObstacle> & debug_obstacles_to_cruise,
-    visualization_msgs::msg::MarkerArray & debug_walls_marker);
 
-  void publishDebugValues(const ObstacleCruisePlannerData & planner_data) const;
+  // velocity limit based planner
+  VelocityLimit doCruiseWithVelocityLimit(
+    const ObstacleCruisePlannerData & planner_data,
+    const CruiseObstacleInfo & cruise_obstacle_info);
+
+  // velocityinsertion based planner
+  Trajectory doCruiseWithTrajectory(
+    const ObstacleCruisePlannerData & planner_data,
+    const CruiseObstacleInfo & cruise_obstacle_info);
+  Trajectory getAccelerationLimitedTrajectory(
+    const Trajectory traj, const geometry_msgs::msg::Pose & start_pose, const double v0,
+    const double a0, const double target_acc, const double target_jerk_ratio) const;
 
   // ROS parameters
   double min_accel_during_cruise_;
-  double vel_to_acc_weight_;
   double min_cruise_target_vel_;
-  // bool use_predicted_obstacle_pose_;
 
-  // pid controller
-  std::unique_ptr<PIDController> pid_controller_;
-  double output_ratio_during_accel_;
+  CruisePlanningDebugInfo cruise_planning_debug_info_;
+
+  struct VelocityLimitBasedPlannerParam
+  {
+    std::unique_ptr<PIDController> pid_vel_controller;
+    double output_ratio_during_accel;
+    double vel_to_acc_weight;
+    bool enable_jerk_limit_to_output_acc{false};
+  };
+  VelocityLimitBasedPlannerParam velocity_limit_based_planner_param_;
+
+  struct VelocityInsertionBasedPlannerParam
+  {
+    std::unique_ptr<PIDController> pid_acc_controller;
+    std::unique_ptr<PIDController> pid_jerk_controller;
+    double output_acc_ratio_during_accel;
+    double output_jerk_ratio_during_accel;
+    bool enable_jerk_limit_to_output_acc{false};
+  };
+  VelocityInsertionBasedPlannerParam velocity_insertion_based_planner_param_;
 
   // stop watch
   tier4_autoware_utils::StopWatch<
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
 
-  // publisher
-  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_values_pub_;
+  boost::optional<double> prev_target_acc_;
 
-  boost::optional<double> prev_target_vel_;
+  // lpf for nodes's input
+  std::shared_ptr<LowpassFilter1d> lpf_dist_to_obstacle_ptr_;
+  std::shared_ptr<LowpassFilter1d> lpf_error_cruise_dist_ptr_;
+  std::shared_ptr<LowpassFilter1d> lpf_obstacle_vel_ptr_;
 
-  DebugValues debug_values_;
+  // lpf for planner's input
+  std::shared_ptr<LowpassFilter1d> lpf_normalized_error_cruise_dist_ptr_;
 
-  std::shared_ptr<LowpassFilter1d> lpf_cruise_ptr_;
+  // lpf for output
+  std::shared_ptr<LowpassFilter1d> lpf_output_acc_ptr_;
+  std::shared_ptr<LowpassFilter1d> lpf_output_jerk_ptr_;
+
+  Trajectory prev_traj_;
+
+  bool use_velocity_limit_based_planner_{true};
+
+  double time_to_evaluate_rss_;
+
+  std::function<double(double)> error_func_;
 };
 
 #endif  // OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
