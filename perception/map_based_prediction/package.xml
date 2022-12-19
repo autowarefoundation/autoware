@@ -5,6 +5,8 @@
   <version>0.1.0</version>
   <description>This package implements a map_based_prediction</description>
   <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
