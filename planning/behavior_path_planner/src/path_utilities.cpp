@@ -55,7 +55,8 @@ std::vector<double> calcPathArcLengthArray(
 /**
  * @brief resamplePathWithSpline
  */
-PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interval)
+PathWithLaneId resamplePathWithSpline(
+  const PathWithLaneId & path, const double interval, const bool keep_input_points)
 {
   if (path.points.size() < 2) {
     return path;
@@ -66,7 +67,7 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
     transformed_path.at(i) = path.points.at(i).point;
   }
 
-  constexpr double epsilon = 0.01;
+  constexpr double epsilon = 0.2;
   const auto has_almost_same_value = [&](const auto & vec, const auto x) {
     if (vec.empty()) return false;
     const auto has_close = [&](const auto v) { return std::abs(v - x) < epsilon; };
@@ -79,6 +80,9 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
   for (size_t i = 0; i < path.points.size(); ++i) {
     const double s = motion_utils::calcSignedArcLength(transformed_path, 0, i);
     for (const auto & lane_id : path.points.at(i).lane_ids) {
+      if (keep_input_points && !has_almost_same_value(s_in, s)) {
+        s_in.push_back(s);
+      }
       if (
         std::find(unique_lane_ids.begin(), unique_lane_ids.end(), lane_id) !=
         unique_lane_ids.end()) {

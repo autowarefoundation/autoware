@@ -817,12 +817,29 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
     connected_path = modifyPathForSmoothGoalConnection(*path);
   }
 
-  const auto resampled_path =
-    util::resamplePathWithSpline(connected_path, planner_data_->parameters.path_interval);
+  const auto resampled_path = util::resamplePathWithSpline(
+    connected_path, planner_data_->parameters.path_interval,
+    keepInputPoints(module_status_ptr_vec));
   return std::make_shared<PathWithLaneId>(resampled_path);
 }
 
 bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
+  const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
+{
+  const auto target_module = "PullOver";
+
+  for (auto & status : statuses) {
+    if (status->is_waiting_approval || status->status == BT::NodeStatus::RUNNING) {
+      if (target_module == status->module_name) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// This is a temporary process until motion planning can take the terminal pose into account
+bool BehaviorPathPlannerNode::keepInputPoints(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
   const auto target_module = "PullOver";
