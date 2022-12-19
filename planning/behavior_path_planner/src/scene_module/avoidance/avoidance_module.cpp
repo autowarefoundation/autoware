@@ -2219,6 +2219,8 @@ BehaviorModuleOutput AvoidanceModule::plan()
 {
   DEBUG_PRINT("AVOIDANCE plan");
 
+  resetPathCandidate();
+
   const auto shift_lines = calcShiftLines(current_raw_shift_lines_, debug_data_);
 
   const auto new_shift_lines = findNewShiftLine(shift_lines, path_shifter_);
@@ -2366,7 +2368,7 @@ BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
     clearWaitingApproval();
     removeCandidateRTCStatus();
   }
-  out.path_candidate = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+  path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
   return out;
 }
 
@@ -2773,6 +2775,7 @@ void AvoidanceModule::initVariables()
 
   debug_data_ = DebugData();
   debug_marker_.markers.clear();
+  resetPathCandidate();
   registered_raw_shift_lines_ = {};
   current_raw_shift_lines_ = {};
   original_unique_id = 0;

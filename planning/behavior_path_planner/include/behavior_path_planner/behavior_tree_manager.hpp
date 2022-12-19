@@ -51,6 +51,10 @@ public:
   BehaviorModuleOutput run(const std::shared_ptr<PlannerData> & data);
   std::vector<std::shared_ptr<SceneModuleStatus>> getModulesStatus();
   std::shared_ptr<SceneModuleVisitor> getAllSceneModuleDebugMsgData();
+  std::vector<std::shared_ptr<SceneModuleInterface>> getSceneModules() const
+  {
+    return scene_modules_;
+  }
 
   AvoidanceDebugMsgArray getAvoidanceDebugMsgArray();
 
@@ -68,6 +72,7 @@ private:
   BT::Blackboard::Ptr blackboard_;
 
   BT::NodeStatus checkForceApproval(const std::string & name);
+  void resetNotRunningModulePathCandidate();
 
   // For Groot monitoring
   std::unique_ptr<BT::PublisherZMQ> groot_monitor_;

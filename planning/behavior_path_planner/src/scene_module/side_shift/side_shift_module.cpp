@@ -53,6 +53,7 @@ void SideShiftModule::initVariables()
   prev_output_ = ShiftedPath{};
   prev_shift_line_ = ShiftLine{};
   path_shifter_ = PathShifter{};
+  resetPathCandidate();
 }
 
 void SideShiftModule::onEntry()
@@ -65,7 +66,6 @@ void SideShiftModule::onExit()
 {
   // write me...
   initVariables();
-
   current_state_ = BT::NodeStatus::SUCCESS;
 }
 
@@ -284,7 +284,7 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
 
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(shifted_path.path);
-  output.path_candidate = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
+  path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
 
   prev_output_ = shifted_path;
 
