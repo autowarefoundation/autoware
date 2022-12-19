@@ -15,6 +15,7 @@
 #include "map_based_prediction/map_based_prediction_node.hpp"
 
 #include <interpolation/linear_interpolation.hpp>
+#include <motion_utils/resample/resample.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
@@ -451,6 +452,9 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
       for (const auto & ref_path : ref_paths) {
         PredictedPath predicted_path =
           path_generator_->generatePathForOnLaneVehicle(transformed_object, ref_path.path);
+        if (predicted_path.path.empty()) {
+          continue;
+        }
         predicted_path.confidence = ref_path.probability;
 
         predicted_paths.push_back(predicted_path);
@@ -1171,8 +1175,7 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
         lanelet::ConstLanelet prev_lanelet = prev_lanelets.front();
         for (const auto & lanelet_p : prev_lanelet.centerline()) {
           geometry_msgs::msg::Pose current_p;
-          current_p.position =
-            tier4_autoware_utils::createPoint(lanelet_p.x(), lanelet_p.y(), lanelet_p.z());
+          current_p.position = lanelet::utils::conversion::toGeomMsgPt(lanelet_p);
           const double lane_yaw = lanelet::utils::getLaneletAngle(prev_lanelet, current_p.position);
           current_p.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
           converted_path.push_back(current_p);
@@ -1183,8 +1186,7 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
     for (const auto & lanelet : path) {
       for (const auto & lanelet_p : lanelet.centerline()) {
         geometry_msgs::msg::Pose current_p;
-        current_p.position =
-          tier4_autoware_utils::createPoint(lanelet_p.x(), lanelet_p.y(), lanelet_p.z());
+        current_p.position = lanelet::utils::conversion::toGeomMsgPt(lanelet_p);
         const double lane_yaw = lanelet::utils::getLaneletAngle(lanelet, current_p.position);
         current_p.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
 
@@ -1202,68 +1204,12 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
     }
 
     // Resample Path
-    const auto resampled_converted_path = resamplePath(converted_path);
+    const auto resampled_converted_path =
+      motion_utils::resamplePoseVector(converted_path, reference_path_resolution_);
     converted_paths.push_back(resampled_converted_path);
   }
 
   return converted_paths;
-}
-
-PosePath MapBasedPredictionNode::resamplePath(const PosePath & base_path) const
-{
-  std::vector<double> base_s(base_path.size());
-  std::vector<double> base_x(base_path.size());
-  std::vector<double> base_y(base_path.size());
-  std::vector<double> base_z(base_path.size());
-  for (size_t i = 0; i < base_path.size(); ++i) {
-    base_x.at(i) = base_path.at(i).position.x;
-    base_y.at(i) = base_path.at(i).position.y;
-    base_z.at(i) = base_path.at(i).position.z;
-    base_s.at(i) = motion_utils::calcSignedArcLength(base_path, 0, i);
-  }
-  const double base_path_len = base_s.back();
-
-  std::vector<double> resampled_s;
-  for (double s = 0.0; s <= base_path_len; s += reference_path_resolution_) {
-    resampled_s.push_back(s);
-  }
-
-  if (resampled_s.empty()) {
-    return base_path;
-  }
-
-  // Insert End Point
-  const double epsilon = 0.01;
-  if (std::fabs(resampled_s.back() - base_path_len) < epsilon) {
-    resampled_s.back() = base_path_len;
-  } else {
-    resampled_s.push_back(base_path_len);
-  }
-
-  if (resampled_s.size() < 2) {
-    return base_path;
-  }
-
-  const auto resampled_x = interpolation::lerp(base_s, base_x, resampled_s);
-  const auto resampled_y = interpolation::lerp(base_s, base_y, resampled_s);
-  const auto resampled_z = interpolation::lerp(base_s, base_z, resampled_s);
-
-  PosePath resampled_path(resampled_x.size());
-  // Position
-  for (size_t i = 0; i < resampled_path.size(); ++i) {
-    resampled_path.at(i).position =
-      tier4_autoware_utils::createPoint(resampled_x.at(i), resampled_y.at(i), resampled_z.at(i));
-  }
-  // Orientation
-  for (size_t i = 0; i < resampled_path.size() - 1; ++i) {
-    const auto curr_p = resampled_path.at(i).position;
-    const auto next_p = resampled_path.at(i + 1).position;
-    const double yaw = std::atan2(next_p.y - curr_p.y, next_p.x - curr_p.x);
-    resampled_path.at(i).orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
-  }
-  resampled_path.back().orientation = resampled_path.at(resampled_path.size() - 2).orientation;
-
-  return resampled_path;
 }
 
 bool MapBasedPredictionNode::isDuplicated(

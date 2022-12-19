@@ -190,7 +190,6 @@ private:
     const float path_probability, const ManeuverProbability & maneuver_probability,
     const Maneuver & maneuver, std::vector<PredictedRefPath> & reference_paths);
   std::vector<PosePath> convertPathType(const lanelet::routing::LaneletPaths & paths);
-  PosePath resamplePath(const PosePath & base_path) const;
 
   void updateFuturePossibleLanelets(
     const TrackedObject & object, const lanelet::routing::LaneletPaths & paths);
