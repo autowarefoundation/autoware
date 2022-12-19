@@ -72,7 +72,9 @@ private:
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
 
-  bool check_engage_condition_ = true;  // if false, the vehicle is engaged without any checks.
+  bool check_engage_condition_ = true;       // if false, the vehicle is engaged without any checks.
+  double nearest_dist_deviation_threshold_;  // [m] for finding nearest index
+  double nearest_yaw_deviation_threshold_;   // [rad] for finding nearest index
   EngageAcceptableParam engage_acceptable_param_;
   StableCheckParam stable_check_param_;
   AckermannControlCommand control_cmd_;
