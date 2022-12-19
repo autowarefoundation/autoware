@@ -33,6 +33,7 @@
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
+#include "tier4_autoware_utils/ros/uuid_helper.hpp"
 #include "tier4_autoware_utils/ros/wait_for_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 

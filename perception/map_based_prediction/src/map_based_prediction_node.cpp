@@ -37,17 +37,6 @@
 
 namespace map_based_prediction
 {
-namespace
-{
-std::string toHexString(const unique_identifier_msgs::msg::UUID & id)
-{
-  std::stringstream ss;
-  for (auto i = 0; i < 16; ++i) {
-    ss << std::hex << std::setfill('0') << std::setw(2) << +id.uuid[i];
-  }
-  return ss.str();
-}
-
 lanelet::ConstLanelets getLanelets(const map_based_prediction::LaneletsData & data)
 {
   lanelet::ConstLanelets lanelets;
@@ -246,7 +235,6 @@ bool hasPotentialToReach(
 
   return false;
 }
-}  // namespace
 
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
 : Node("map_based_prediction", node_options), debug_accumulated_time_(0.0)
@@ -364,7 +352,7 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
   visualization_msgs::msg::MarkerArray debug_markers;
 
   for (const auto & object : in_objects->objects) {
-    std::string object_id = toHexString(object.object_id);
+    std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
     TrackedObject transformed_object = object;
 
     // transform object frame if it's based on map frame
@@ -744,7 +732,7 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
 
   // If the object is in the objects history, we check if the target lanelet is
   // inside the current lanelets id or following lanelets
-  const std::string object_id = toHexString(object.object_id);
+  const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
   if (objects_history_.count(object_id) != 0) {
     const std::vector<lanelet::ConstLanelet> & possible_lanelet =
       objects_history_.at(object_id).back().future_possible_lanelets;
@@ -817,7 +805,7 @@ void MapBasedPredictionNode::updateObjectsHistory(
   const std_msgs::msg::Header & header, const TrackedObject & object,
   const LaneletsData & current_lanelets_data)
 {
-  std::string object_id = toHexString(object.object_id);
+  std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
   const auto current_lanelets = getLanelets(current_lanelets_data);
 
   ObjectData single_object_data;
@@ -904,7 +892,7 @@ Maneuver MapBasedPredictionNode::predictObjectManeuver(
   const double object_detected_time)
 {
   // Step1. Check if we have the object in the buffer
-  const std::string object_id = toHexString(object.object_id);
+  const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
   if (objects_history_.count(object_id) == 0) {
     return Maneuver::LANE_FOLLOW;
   }
@@ -1063,7 +1051,7 @@ double MapBasedPredictionNode::calcLeftLateralOffset(
 void MapBasedPredictionNode::updateFuturePossibleLanelets(
   const TrackedObject & object, const lanelet::routing::LaneletPaths & paths)
 {
-  std::string object_id = toHexString(object.object_id);
+  std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
   if (objects_history_.count(object_id) == 0) {
     return;
   }
