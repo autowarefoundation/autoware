@@ -236,13 +236,9 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     logger_.get_child("state_machine"), *clock_);
 
   setSafe(state_machine_.getState() == StateMachine::State::GO);
-  if (is_entry_prohibited) {
-    setDistance(motion_utils::calcSignedArcLength(
-      path->points, planner_data_->current_pose.pose.position,
-      path->points.at(stop_line_idx_final).point.pose.position));
-  } else {
-    setDistance(std::numeric_limits<double>::lowest());
-  }
+  setDistance(motion_utils::calcSignedArcLength(
+    path->points, planner_data_->current_pose.pose.position,
+    path->points.at(stop_line_idx_final).point.pose.position));
 
   if (!isActivated()) {
     // if RTC says intersection entry is 'dangerous', insert stop_line(v == 0.0) in this block
