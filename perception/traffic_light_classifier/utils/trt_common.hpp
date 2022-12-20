@@ -118,8 +118,6 @@ public:
   bool isInitialized();
   int getNumInput();
   int getNumOutput();
-  int getInputBindingIndex();
-  int getOutputBindingIndex();
 
   UniquePtr<nvinfer1::IExecutionContext> context_;
 
