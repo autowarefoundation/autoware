@@ -788,6 +788,9 @@ Path BehaviorPathPlannerNode::convertToPath(
   }
 
   output = util::toPath(*path_candidate_ptr);
+  // header is replaced by the input one, so it is substituted again
+  output.header = planner_data_->route_handler->getRouteHeader();
+  output.header.stamp = this->now();
 
   if (!is_ready) {
     for (auto & point : output.points) {
