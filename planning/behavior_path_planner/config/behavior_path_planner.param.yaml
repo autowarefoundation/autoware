@@ -21,7 +21,7 @@
 
     path_interval: 2.0
 
-    visualize_drivable_area_for_shared_linestrings_lanelet: true
+    visualize_maximum_drivable_area: true
 
     lateral_distance_max_threshold: 2.0
     longitudinal_distance_min_threshold: 3.0

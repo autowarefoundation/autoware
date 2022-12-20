@@ -513,25 +513,3 @@ To print the debug message, just run the following
 ```bash
 ros2 topic echo /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance_debug_message_array
 ```
-
-### Visualizing drivable area boundary
-
-Sometimes, the developers might get a different result between two maps that may look identical during visual inspection.
-
-For example, in the same area, one can perform avoidance and another cannot. This might be related to the drivable area issues due to the non-compliance vector map design from the user.
-
-To debug the issue, the drivable area boundary can be visualized.
-
-![drivable_area_boundary_marker1](./image/avoidance_design/drivable_area_boundary_marker_example1.png)
-
-![drivable_area_boundary_marker2](./image/avoidance_design/drivable_area_boundary_marker_example2.png)
-
-The boundary can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/drivable_area_boundary`
-
-### Visualizing drivable area
-
-The drivable area can be visualize by adding the drivable area plugin
-
-![drivable_area_plugin](./image/drivable_area_plugin.png)
-
-and then add `/planning/scenario_planning/lane_driving/behavior_planning/path` as the topic.

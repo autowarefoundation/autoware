@@ -58,8 +58,8 @@ struct BehaviorPathPlannerParameters
   double base_link2front;
   double base_link2rear;
 
-  // drivable area visualization
-  bool visualize_drivable_area_for_shared_linestrings_lanelet;
+  // maximum drivable area visualization
+  bool visualize_maximum_drivable_area;
 
   // collision check
   double lateral_distance_max_threshold;

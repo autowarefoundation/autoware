@@ -69,9 +69,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   debug_lane_change_msg_array_publisher_ =
     create_publisher<LaneChangeDebugMsgArray>("~/debug/lane_change_debug_message_array", 1);
 
-  if (planner_data_->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
-    debug_drivable_area_lanelets_publisher_ =
-      create_publisher<MarkerArray>("~/drivable_area_boundary", 1);
+  if (planner_data_->parameters.visualize_maximum_drivable_area) {
+    debug_maximum_drivable_area_publisher_ =
+      create_publisher<MarkerArray>("~/maximum_drivable_area", 1);
   }
 
   bound_publisher_ = create_publisher<MarkerArray>("~/debug/bound", 1);
@@ -232,8 +232,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.turn_signal_on_swerving = declare_parameter("turn_signal_on_swerving", true);
 
   p.path_interval = declare_parameter<double>("path_interval");
-  p.visualize_drivable_area_for_shared_linestrings_lanelet =
-    declare_parameter("visualize_drivable_area_for_shared_linestrings_lanelet", true);
+  p.visualize_maximum_drivable_area = declare_parameter("visualize_maximum_drivable_area", true);
   p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
   p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
@@ -655,10 +654,10 @@ void BehaviorPathPlannerNode::run()
 
   publishSceneModuleDebugMsg();
 
-  if (planner_data->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
-    const auto drivable_area_lines = marker_utils::createFurthestLineStringMarkerArray(
-      util::getDrivableAreaForAllSharedLinestringLanelets(planner_data));
-    debug_drivable_area_lanelets_publisher_->publish(drivable_area_lines);
+  if (planner_data->parameters.visualize_maximum_drivable_area) {
+    const auto maximum_drivable_area =
+      marker_utils::createFurthestLineStringMarkerArray(util::getMaximumDrivableArea(planner_data));
+    debug_maximum_drivable_area_publisher_->publish(maximum_drivable_area);
   }
 
   mutex_bt_.unlock();

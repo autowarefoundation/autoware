@@ -76,3 +76,17 @@ std::vector<geometry_msgs::msg::Point> right_bound;
 and each point of right bound and left bound has a position in the absolute coordinate system.
 
 ![drivable_lines](./image/drivable_area/drivable_lines.drawio.svg)
+
+### Visualizing maximum drivable area (Debug)
+
+Sometimes, the developers might get a different result between two maps that may look identical during visual inspection.
+
+For example, in the same area, one can perform avoidance and another cannot. This might be related to the maximum drivable area issues due to the non-compliance vector map design from the user.
+
+To debug the issue, the maximum drivable area boundary can be visualized.
+
+![drivable_area_boundary_marker1](./image/drivable_area/drivable_area_boundary_marker_example1.png)
+
+![drivable_area_boundary_marker2](./image/drivable_area/drivable_area_boundary_marker_example2.png)
+
+The maximum drivable area can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/maximum_drivable_area`

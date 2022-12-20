@@ -178,7 +178,7 @@ private:
     const BehaviorModuleOutput & output);
 
   // debug
-  rclcpp::Publisher<MarkerArray>::SharedPtr debug_drivable_area_lanelets_publisher_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_maximum_drivable_area_publisher_;
   rclcpp::Publisher<AvoidanceDebugMsgArray>::SharedPtr debug_avoidance_msg_array_publisher_;
   rclcpp::Publisher<LaneChangeDebugMsgArray>::SharedPtr debug_lane_change_msg_array_publisher_;
 

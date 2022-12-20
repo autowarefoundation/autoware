@@ -1665,7 +1665,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
 
 // TODO(Azu) Some parts of is the same with generateCenterLinePath. Therefore it might be better if
 // we can refactor some of the code for better readability
-lanelet::ConstLineStrings3d getDrivableAreaForAllSharedLinestringLanelets(
+lanelet::ConstLineStrings3d getMaximumDrivableArea(
   const std::shared_ptr<const PlannerData> & planner_data)
 {
   const auto & p = planner_data->parameters;
