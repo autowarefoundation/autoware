@@ -294,7 +294,7 @@ std::vector<DrivableLanes> cutOverlappedLanes(
 
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
-  const std::shared_ptr<const PlannerData> planner_data);
+  const std::shared_ptr<const PlannerData> planner_data, const bool is_driving_forward = true);
 
 lanelet::ConstLineStrings3d getDrivableAreaForAllSharedLinestringLanelets(
   const std::shared_ptr<const PlannerData> & planner_data);
