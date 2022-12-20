@@ -148,7 +148,7 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
   const double keep_detection_line_margin, const bool use_stuck_stopline,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & target_path, const rclcpp::Logger logger,
-  const rclcpp::Clock::SharedPtr clock)
+  [[maybe_unused]] const rclcpp::Clock::SharedPtr clock)
 {
   /* set judge line dist */
   const double current_vel = planner_data->current_velocity->twist.linear.x;
@@ -196,13 +196,6 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
   if (use_stuck_stopline) {
     // the first point in intersection lane
     stuck_stop_line_idx_ip = lane_interval_ip_start;
-    if (stuck_stop_line_idx_ip == 0) {
-      RCLCPP_WARN_SKIPFIRST_THROTTLE(
-        logger, *clock, 1000 /* ms */,
-        "use_stuck_stopline, but ego is already in the intersection, not generating stuck stop "
-        "line");
-      return {std::nullopt, std::nullopt};
-    }
   } else {
     const auto stuck_stop_line_idx_ip_opt = util::getFirstPointInsidePolygons(
       path_ip, lane_interval_ip_start, lane_interval_ip_end, lane_id, conflicting_areas);
