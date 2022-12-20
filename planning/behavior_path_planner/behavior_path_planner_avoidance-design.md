@@ -422,6 +422,7 @@ The avoidance specific parameter configuration file can be located at `src/autow
 | enable_avoidance_over_same_direction       | [-]    | bool   | Extend avoidance trajectory to adjacent lanes that has same direction. If false, avoidance only happen in current lane.                          | true          |
 | enable_avoidance_over_opposite_direction   | [-]    | bool   | Extend avoidance trajectory to adjacent lanes that has opposite direction. `enable_avoidance_over_same_direction` must be `true` to take effects | true          |
 | enable_update_path_when_object_is_gone     | [-]    | bool   | Reset trajectory when avoided objects are gone. If false, shifted path points remain same even though the avoided objects are gone.              | false         |
+| enable_bound_clipping                      | `true` | bool   | Enable clipping left and right bound of drivable area when obstacles are in the drivable area                                                    | false         |
 
 (\*2) If there are multiple vehicles in a row to be avoided, no new avoidance path will be generated unless their lateral margin difference exceeds this value.
 
