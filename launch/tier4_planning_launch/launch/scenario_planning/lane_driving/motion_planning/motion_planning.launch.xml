@@ -1,7 +1,7 @@
 <launch>
   <!-- common param -->
   <arg name="common_param_path"/>
-  <arg name="vehicle_info_param_file"/>
+  <arg name="vehicle_param_file"/>
 
   <arg name="input_path_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
   <arg name="use_surround_obstacle_check" default="true"/>
@@ -12,7 +12,7 @@
       <arg name="param_path" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"/>
       <arg name="input_path_topic" value="$(var input_path_topic)"/>
       <arg name="output_path_topic" value="obstacle_avoidance_planner/trajectory"/>
-      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
     </include>
   </group>
 
@@ -20,7 +20,7 @@
   <group if="$(var use_surround_obstacle_check)">
     <include file="$(find-pkg-share surround_obstacle_checker)/launch/surround_obstacle_checker.launch.xml">
       <arg name="param_path" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/surround_obstacle_checker.param.yaml"/>
-      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
     </include>
   </group>
 
@@ -29,7 +29,7 @@
     <include file="$(find-pkg-share obstacle_stop_planner)/launch/obstacle_stop_planner.launch.xml">
       <!-- load config files -->
       <arg name="common_param_path" value="$(var common_param_path)"/>
-      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
       <arg name="adaptive_cruise_control_param_path" value="$(find-pkg-share tier4_planning_launch)/config/obstacle_stop_planner/adaptive_cruise_control.param.yaml"/>
       <arg name="obstacle_stop_planner_param_path" value="$(find-pkg-share tier4_planning_launch)/config/obstacle_stop_planner/obstacle_stop_planner.param.yaml"/>
       <arg name="enable_slow_down" value="false"/>

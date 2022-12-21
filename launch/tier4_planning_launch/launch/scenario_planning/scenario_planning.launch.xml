@@ -1,14 +1,4 @@
 <launch>
-  <!-- common param -->
-  <arg name="tier4_planning_launch_param_path"/>
-  <arg name="common_param_path" default="$(var tier4_planning_launch_param_path)/scenario_planning/common/common.param.yaml"/>
-  <arg name="nearest_search_param_path" default="$(var tier4_planning_launch_param_path)/scenario_planning/common/nearest_search.param.yaml"/>
-  <arg name="vehicle_info_param_file"/>
-
-  <!-- pointcloud container -->
-  <arg name="use_pointcloud_container"/>
-  <arg name="pointcloud_container_name"/>
-
   <!-- scenario selector -->
   <group>
     <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
@@ -25,25 +15,23 @@
 
   <!-- velocity planning with max velocity, acceleration, jerk, stop point constraint -->
   <group>
-    <arg name="param_path" default="$(var tier4_planning_launch_param_path)/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml"/>
     <!-- external velocity limit selector -->
     <group>
       <include file="$(find-pkg-share external_velocity_limit_selector)/launch/external_velocity_limit_selector.launch.xml">
         <arg name="common_param_path" value="$(var common_param_path)"/>
-        <arg name="param_path" value="$(var param_path)"/>
+        <arg name="param_path" value="$(var motion_velocity_smoother_param_path)"/>
       </include>
     </group>
     <!-- motion velocity smoother -->
     <group>
-      <arg name="smoother_type" default="JerkFiltered" description="options: JerkFiltered, L2, Analytical, Linf(Unstable)"/>
       <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
       <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory"/>
       <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
         <arg name="smoother_type" value="$(var smoother_type)"/>
         <arg name="common_param_path" value="$(var common_param_path)"/>
         <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
-        <arg name="param_path" value="$(var param_path)"/>
-        <arg name="smoother_param_path" value="$(var tier4_planning_launch_param_path)/scenario_planning/common/motion_velocity_smoother/$(var smoother_type).param.yaml"/>
+        <arg name="param_path" value="$(var motion_velocity_smoother_param_path)"/>
+        <arg name="smoother_param_path" value="$(var smoother_type_param_path)"/>
       </include>
     </group>
   </group>
@@ -54,16 +42,15 @@
     <group>
       <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving.launch.xml">
         <arg name="common_param_path" value="$(var common_param_path)"/>
-        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
         <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)"/>
         <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
-        <arg name="tier4_planning_launch_param_path" value="$(var tier4_planning_launch_param_path)"/>
       </include>
     </group>
     <!-- parking -->
     <group>
       <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/parking.launch.py">
-        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
       </include>
     </group>
   </group>

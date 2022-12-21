@@ -1,8 +1,0 @@
-/**:
-  ros__parameters:
-    detection_area:
-      stop_margin: 0.0
-      use_dead_line: false
-      dead_line_margin: 5.0
-      use_pass_judge_line: false
-      state_clear_time: 2.0

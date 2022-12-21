@@ -1,6 +1,0 @@
-/**:
-  ros__parameters:
-    stop_line:
-      stop_margin: 0.0
-      stop_check_dist: 2.0
-      stop_duration_sec: 1.0

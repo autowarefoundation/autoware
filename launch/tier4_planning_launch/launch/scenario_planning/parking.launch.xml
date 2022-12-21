@@ -1,5 +1,5 @@
 <launch>
-  <arg name="vehicle_info_param_file"/>
+  <arg name="vehicle_param_file"/>
 
   <!-- parking scenario -->
   <group>
@@ -12,7 +12,7 @@
         <arg name="input_scenario" value="/planning/scenario_planning/scenario"/>
         <arg name="output_grid_map" value="costmap_generator/grid_map"/>
         <arg name="output_occupancy_grid" value="costmap_generator/occupancy_grid"/>
-        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
       </include>
     </group>
 
@@ -25,7 +25,7 @@
         <arg name="output_trajectory" value="/planning/scenario_planning/parking/trajectory"/>
         <arg name="is_completed" value="/planning/scenario_planning/parking/is_completed"/>
         <arg name="param_file" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/parking/freespace_planner/freespace_planner.param.yaml"/>
-        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
       </include>
     </group>
   </group>

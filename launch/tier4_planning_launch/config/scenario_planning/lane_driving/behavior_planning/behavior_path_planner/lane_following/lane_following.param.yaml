@@ -1,4 +1,0 @@
-/**:
-  ros__parameters:
-    lane_following:
-      lane_change_prepare_duration: 2.0
