@@ -1,8 +1,10 @@
 <launch>
+  <!-- Parameter files -->
+  <arg name="pointcloud_map_loader_param_path"/>
+
   <arg name="map_path" default=""/>
   <arg name="lanelet2_map_path" default="$(var map_path)/lanelet2_map.osm"/>
   <arg name="pointcloud_map_path" default="$(var map_path)/pointcloud_map.pcd"/>
-  <arg name="pointcloud_map_loader_param_path" default="$(find-pkg-share tier4_map_launch)/config/pointcloud_map_loader.param.yaml"/>
 
   <group>
     <push-ros-namespace namespace="map"/>
