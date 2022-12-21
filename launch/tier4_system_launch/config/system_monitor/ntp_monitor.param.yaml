@@ -1,5 +1,0 @@
-/**:
-  ros__parameters:
-    server: ntp.nict.jp
-    offset_warn: 0.1
-    offset_error: 5.0

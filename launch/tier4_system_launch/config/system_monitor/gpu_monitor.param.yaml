@@ -1,8 +1,0 @@
-/**:
-  ros__parameters:
-    temp_warn: 90.0
-    temp_error: 95.0
-    gpu_usage_warn: 0.90
-    gpu_usage_error: 1.00
-    memory_usage_warn: 0.95
-    memory_usage_error: 0.99

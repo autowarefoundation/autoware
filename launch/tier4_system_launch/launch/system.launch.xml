@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <!-- Parameter files -->
+  <arg name="component_state_monitor_topic_path"/>
+  <arg name="emergency_handler_param_path"/>
+  <arg name="mrm_comfortable_stop_operator_param_path"/>
+  <arg name="mrm_emergency_stop_operator_param_path"/>
+  <arg name="system_error_monitor_param_path"/>
+  <arg name="system_error_monitor_planning_simulator_param_path"/>
+  <arg name="diagnostic_aggregator_vehicle_param_path"/>
+  <arg name="system_monitor_cpu_monitor_param_path"/>
+  <arg name="system_monitor_gpu_monitor_param_path"/>
+  <arg name="system_monitor_hdd_monitor_param_path"/>
+  <arg name="system_monitor_mem_monitor_param_path"/>
+  <arg name="system_monitor_net_monitor_param_path"/>
+  <arg name="system_monitor_ntp_monitor_param_path"/>
+  <arg name="system_monitor_process_monitor_param_path"/>
+  <arg name="system_monitor_voltage_monitor_param_path"/>
+
   <arg name="launch_system_monitor" default="true" description="launch system monitor"/>
   <arg name="run_mode" default="online" description="options: online, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
-  <arg name="tier4_system_launch_param_path" default="$(find-pkg-share tier4_system_launch)/config" description="tier4_system_launch parameter path"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
 
@@ -14,14 +30,14 @@
     <group if="$(var launch_system_monitor)">
       <push-ros-namespace namespace="system_monitor"/>
       <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch.xml">
-        <arg name="cpu_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/cpu_monitor.param.yaml"/>
-        <arg name="hdd_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/hdd_monitor.param.yaml"/>
-        <arg name="mem_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/mem_monitor.param.yaml"/>
-        <arg name="net_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/net_monitor.param.yaml"/>
-        <arg name="ntp_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/ntp_monitor.param.yaml"/>
-        <arg name="process_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/process_monitor.param.yaml"/>
-        <arg name="gpu_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/gpu_monitor.param.yaml"/>
-        <arg name="voltage_monitor_config_file" value="$(var tier4_system_launch_param_path)/system_monitor/voltage_monitor.param.yaml"/>
+        <arg name="cpu_monitor_config_file" value="$(var system_monitor_cpu_monitor_param_path)"/>
+        <arg name="hdd_monitor_config_file" value="$(var system_monitor_hdd_monitor_param_path)"/>
+        <arg name="mem_monitor_config_file" value="$(var system_monitor_mem_monitor_param_path)"/>
+        <arg name="net_monitor_config_file" value="$(var system_monitor_net_monitor_param_path)"/>
+        <arg name="ntp_monitor_config_file" value="$(var system_monitor_ntp_monitor_param_path)"/>
+        <arg name="process_monitor_config_file" value="$(var system_monitor_process_monitor_param_path)"/>
+        <arg name="gpu_monitor_config_file" value="$(var system_monitor_gpu_monitor_param_path)"/>
+        <arg name="voltage_monitor_config_file" value="$(var system_monitor_voltage_monitor_param_path)"/>
       </include>
     </group>
 
@@ -34,22 +50,18 @@
     <group>
       <include file="$(find-pkg-share component_state_monitor)/launch/component_state_monitor.launch.py">
         <arg name="mode" value="$(var run_mode)"/>
-        <arg name="file" value="$(var tier4_system_launch_param_path)/component_state_monitor/topics.yaml"/>
+        <arg name="file" value="$(var component_state_monitor_topic_path)"/>
       </include>
     </group>
 
     <!-- Error Monitor -->
     <group>
-      <let name="config_file" value="$(var tier4_system_launch_param_path)/system_error_monitor/system_error_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-      <let
-        name="config_file"
-        value="$(var tier4_system_launch_param_path)/system_error_monitor/system_error_monitor.planning_simulation.param.yaml"
-        if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"
-      />
+      <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+      <let name="config_file" value="$(var system_error_monitor_planning_simulator_param_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
       <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
         <arg name="config_file" value="$(var config_file)"/>
         <arg name="extra_agg_config_file_sensing" value="$(var sensor_launch_pkg)/config/diagnostic_aggregator/sensor_kit.param.yaml"/>
-        <arg name="extra_agg_config_file_vehicle" value="$(var tier4_system_launch_param_path)/system_error_monitor/diagnostic_aggregator/vehicle.param.yaml"/>
+        <arg name="extra_agg_config_file_vehicle" value="$(var diagnostic_aggregator_vehicle_param_path)"/>
         <arg name="use_emergency_hold" value="false"/>
       </include>
     </group>
@@ -57,21 +69,19 @@
     <!-- Emergency Handler -->
     <group>
       <include file="$(find-pkg-share emergency_handler)/launch/emergency_handler.launch.xml">
-        <arg name="config_file" value="$(var tier4_system_launch_param_path)/emergency_handler/emergency_handler.param.yaml"/>
+        <arg name="config_file" value="$(var emergency_handler_param_path)"/>
       </include>
     </group>
 
     <!-- MRM Operator -->
     <group>
-      <let name="config_file" value="$(var tier4_system_launch_param_path)/mrm_comfortable_stop_operator/mrm_comfortable_stop_operator.param.yaml"/>
       <include file="$(find-pkg-share mrm_comfortable_stop_operator)/launch/mrm_comfortable_stop_operator.launch.py">
-        <arg name="config_file" value="$(var config_file)"/>
+        <arg name="config_file" value="$(var mrm_comfortable_stop_operator_param_path)"/>
       </include>
     </group>
     <group>
-      <let name="config_file" value="$(var tier4_system_launch_param_path)/mrm_emergency_stop_operator/mrm_emergency_stop_operator.param.yaml"/>
       <include file="$(find-pkg-share mrm_emergency_stop_operator)/launch/mrm_emergency_stop_operator.launch.py">
-        <arg name="config_file" value="$(var config_file)"/>
+        <arg name="config_file" value="$(var mrm_emergency_stop_operator_param_path)"/>
       </include>
     </group>
   </group>

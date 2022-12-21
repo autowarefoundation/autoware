@@ -1,8 +1,0 @@
-/**:
-  ros__parameters:
-    usage_warn: 0.96
-    usage_error: 0.96
-    usage_warn_count: 1
-    usage_error_count: 2
-    usage_avg: true
-    msr_reader_port: 7634
