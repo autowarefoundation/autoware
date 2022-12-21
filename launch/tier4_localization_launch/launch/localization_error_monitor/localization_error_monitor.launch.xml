@@ -3,7 +3,7 @@
   <group>
     <include file="$(find-pkg-share localization_error_monitor)/launch/localization_error_monitor.launch.xml">
       <arg name="input/odom" value="/localization/kinematic_state"/>
-      <arg name="param_file" value="$(find-pkg-share tier4_localization_launch)/config/localization_error_monitor.param.yaml"/>
+      <arg name="param_file" value="$(var localization_error_monitor_param_path)"/>
     </include>
   </group>
 </launch>
