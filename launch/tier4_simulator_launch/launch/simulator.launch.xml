@@ -1,6 +1,7 @@
 <launch>
-  <arg name="tier4_simulator_launch_param_path" default="$(find-pkg-share tier4_simulator_launch)/config" description="tier4_simulator_launch parameter path"/>
-  <arg name="tier4_perception_launch_param_path" default="$(find-pkg-share tier4_perception_launch)/config" description="tier4_perception_launch parameter path"/>
+  <!-- Parameter files -->
+  <arg name="fault_injection_param_path"/>
+  <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
 
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
@@ -20,7 +21,7 @@
 
   <group if="$(var scenario_simulation)">
     <include file="$(find-pkg-share fault_injection)/launch/fault_injection.launch.xml">
-      <arg name="config_file" value="$(var tier4_simulator_launch_param_path)/fault_injection.param.yaml"/>
+      <arg name="config_file" value="$(var fault_injection_param_path)"/>
     </include>
   </group>
 
@@ -80,7 +81,7 @@
         <param name="use_lane_filter" value="false"/>
         <param name="use_inpaint" value="true"/>
         <param name="inpaint_radius" value="1.0"/>
-        <param name="param_file_path" value="$(var tier4_perception_launch_param_path)/obstacle_segmentation/ground_segmentation/elevation_map_parameters.yaml"/>
+        <param name="param_file_path" value="$(var obstacle_segmentation_ground_segmentation_elevation_map_param_path)"/>
         <param name="elevation_map_directory" value="$(find-pkg-share elevation_map_loader)/data/elevation_maps"/>
         <param name="use_elevation_map_cloud_publisher" value="false"/>
       </node>
