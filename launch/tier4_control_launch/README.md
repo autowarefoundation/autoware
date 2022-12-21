@@ -12,9 +12,15 @@ Please see `<exec_depend>` in `package.xml`.
 
 You can include as follows in `*.launch.xml` to use `control.launch.py`.
 
+Note that you should provide parameter paths as `PACKAGE_param_path`. The list of parameter paths you should provide is written at the top of `planning.launch.xml`.
+
 ```xml
 <include file="$(find-pkg-share tier4_control_launch)/launch/control.launch.py">
   <!-- options for lateral_controller_mode: mpc_follower, pure_pursuit -->
+  <!-- Parameter files -->
+  <arg name="FOO_NODE_param_path" value="..."/>
+  <arg name="BAR_NODE_param_path" value="..."/>
+  ...
   <arg name="lateral_controller_mode" value="mpc_follower" />
 </include>
 ```
