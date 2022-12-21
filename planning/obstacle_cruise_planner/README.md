@@ -4,30 +4,29 @@
 
 The `obstacle_cruise_planner` package has following modules.
 
-- obstacle stop planning
-  - inserting a stop point in the trajectory when there is a static obstacle on the trajectory.
-- adaptive cruise planning
-  - sending an external velocity limit to `motion_velocity_smoother` when there is a dynamic obstacle to cruise on the trajectory
+- Stop planning
+  - stop when there is a static obstacle near the trajectory.
+- Cruise planning
+  - slow down when there is a dynamic obstacle to cruise near the trajectory
 
 ## Interfaces
 
 ### Input topics
 
-| Name                          | Type                                            | Description                       |
-| ----------------------------- | ----------------------------------------------- | --------------------------------- |
-| `~/input/trajectory`          | autoware_auto_planning_msgs::Trajectory         | input trajectory                  |
-| `~/input/smoothed_trajectory` | autoware_auto_planning_msgs::Trajectory         | trajectory with smoothed velocity |
-| `~/input/objects`             | autoware_auto_perception_msgs::PredictedObjects | dynamic objects                   |
-| `~/input/odometry`            | nav_msgs::msg::Odometry                         | ego odometry                      |
+| Name                 | Type                                            | Description      |
+| -------------------- | ----------------------------------------------- | ---------------- |
+| `~/input/trajectory` | autoware_auto_planning_msgs::Trajectory         | input trajectory |
+| `~/input/objects`    | autoware_auto_perception_msgs::PredictedObjects | dynamic objects  |
+| `~/input/odometry`   | nav_msgs::msg::Odometry                         | ego odometry     |
 
 ### Output topics
 
-| Name                           | Type                                           | Description                           |
-| ------------------------------ | ---------------------------------------------- | ------------------------------------- |
-| `~output/trajectory`           | autoware_auto_planning_msgs::Trajectory        | output trajectory                     |
-| `~output/velocity_limit`       | tier4_planning_msgs::VelocityLimit             | velocity limit for cruising           |
-| `~output/clear_velocity_limit` | tier4_planning_msgs::VelocityLimitClearCommand | clear command for velocity limit      |
-| `~output/stop_reasons`         | tier4_planning_msgs::StopReasonArray           | reasons that make the vehicle to stop |
+| Name                            | Type                                           | Description                           |
+| ------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| `~/output/trajectory`           | autoware_auto_planning_msgs::Trajectory        | output trajectory                     |
+| `~/output/velocity_limit`       | tier4_planning_msgs::VelocityLimit             | velocity limit for cruising           |
+| `~/output/clear_velocity_limit` | tier4_planning_msgs::VelocityLimitClearCommand | clear command for velocity limit      |
+| `~/output/stop_reasons`         | tier4_planning_msgs::StopReasonArray           | reasons that make the vehicle to stop |
 
 ## Design
 
@@ -176,16 +175,37 @@ This includes not only cruising a front vehicle, but also reacting a cut-in and 
 The safe distance is calculated dynamically based on the Responsibility-Sensitive Safety (RSS) by the following equation.
 
 $$
-d = v_{ego} t_{idling} + \frac{1}{2} a_{ego} t_{idling}^2 + \frac{v_{ego}^2}{2 a_{ego}} - \frac{v_{obstacle}^2}{2 a_{obstacle}},
+d_{rss} = v_{ego} t_{idling} + \frac{1}{2} a_{ego} t_{idling}^2 + \frac{v_{ego}^2}{2 a_{ego}} - \frac{v_{obstacle}^2}{2 a_{obstacle}},
 $$
 
-assuming that $d$ is the calculated safe distance, $t_{idling}$ is the idling time for the ego to detect the front vehicle's deceleration, $v_{ego}$ is the ego's current velocity, $v_{obstacle}$ is the front obstacle's current velocity, $a_{ego}$ is the ego's acceleration, and $a_{obstacle}$ is the obstacle's acceleration.
+assuming that $d_rss$ is the calculated safe distance, $t_{idling}$ is the idling time for the ego to detect the front vehicle's deceleration, $v_{ego}$ is the ego's current velocity, $v_{obstacle}$ is the front obstacle's current velocity, $a_{ego}$ is the ego's acceleration, and $a_{obstacle}$ is the obstacle's acceleration.
 These values are parameterized as follows. Other common values such as ego's minimum acceleration is defined in `common.param.yaml`.
 
 | Parameter                         | Type   | Description                                                                   |
 | --------------------------------- | ------ | ----------------------------------------------------------------------------- |
 | `common.idling_time`              | double | idling time for the ego to detect the front vehicle starting deceleration [s] |
-| `common.min_object_accel_for_rss` | double | front obstacle's acceleration [m/ss]                                          |
+| `common.min_ego_accel_for_rss`    | double | ego's acceleration for RSS [m/ss]                                             |
+| `common.min_object_accel_for_rss` | double | front obstacle's acceleration for RSS [m/ss]                                  |
+
+The detailed formulation is as follows.
+
+$$
+d_{error} = d - d_{rss} \\
+d_{normalized} = lpf(d_{error} / d_{obstacle}) \\
+d_{quad, normalized} = sign(d_{normalized}) *d_{normalized}*d_{normalized} \\
+v_{pid} = pid(d_{quad, normalized}) \\
+v_{add} = v_{pid} > 0 ? v_{pid}* w_{acc} : v_{pid} \\
+v_{target} = max(v_{ego} + v_{add}, v_{min, cruise})
+$$
+
+| Variable          | Description                             |
+| ----------------- | --------------------------------------- |
+| `d`               | actual distane to obstacle              |
+| `d_{rss}`         | ideal distance to obstacle based on RSS |
+| `v_{min, cruise}` | `min_cruise_target_vel`                 |
+| `w_{acc}`         | `output_ratio_during_accel`             |
+| `lpf(val)`        | apply low-pass filter to `val`          |
+| `pid(val)`        | apply pid to `val`                      |
 
 ## Implementation
 

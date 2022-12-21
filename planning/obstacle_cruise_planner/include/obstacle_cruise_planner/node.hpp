@@ -18,24 +18,11 @@
 #include "obstacle_cruise_planner/common_structs.hpp"
 #include "obstacle_cruise_planner/optimization_based_planner/optimization_based_planner.hpp"
 #include "obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
+#include "obstacle_cruise_planner/type_alias.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <rclcpp/rclcpp.hpp>
-
-#include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
-#include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "geometry_msgs/msg/accel_stamped.hpp"
-#include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
-#include "geometry_msgs/msg/point_stamped.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "geometry_msgs/msg/twist_stamped.hpp"
-#include "nav_msgs/msg/odometry.hpp"
-#include "tier4_debug_msgs/msg/float32_stamped.hpp"
-#include "tier4_planning_msgs/msg/velocity_limit.hpp"
-#include "tier4_planning_msgs/msg/velocity_limit_clear_command.hpp"
-#include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
 
@@ -43,21 +30,6 @@
 #include <mutex>
 #include <string>
 #include <vector>
-
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedObject;
-using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-using geometry_msgs::msg::AccelStamped;
-using geometry_msgs::msg::AccelWithCovarianceStamped;
-using nav_msgs::msg::Odometry;
-using tier4_debug_msgs::msg::Float32Stamped;
-using tier4_planning_msgs::msg::StopReasonArray;
-using tier4_planning_msgs::msg::VelocityLimit;
-using tier4_planning_msgs::msg::VelocityLimitClearCommand;
-using vehicle_info_util::VehicleInfo;
 
 namespace motion_planning
 {
@@ -70,9 +42,6 @@ private:
   // callback functions
   rcl_interfaces::msg::SetParametersResult onParam(
     const std::vector<rclcpp::Parameter> & parameters);
-  void onObjects(const PredictedObjects::ConstSharedPtr msg);
-  void onOdometry(const Odometry::ConstSharedPtr);
-  void onAccel(const AccelWithCovarianceStamped::ConstSharedPtr);
   void onTrajectory(const Trajectory::ConstSharedPtr msg);
   void onSmoothedTrajectory(const Trajectory::ConstSharedPtr msg);
 
@@ -111,8 +80,6 @@ private:
 
   bool is_showing_debug_info_;
   double min_behavior_stop_margin_;
-  double nearest_dist_deviation_threshold_;
-  double nearest_yaw_deviation_threshold_;
   double obstacle_velocity_threshold_from_cruise_to_stop_;
   double obstacle_velocity_threshold_from_stop_to_cruise_;
 
@@ -126,27 +93,23 @@ private:
   rclcpp::Publisher<Trajectory>::SharedPtr trajectory_pub_;
   rclcpp::Publisher<VelocityLimit>::SharedPtr vel_limit_pub_;
   rclcpp::Publisher<VelocityLimitClearCommand>::SharedPtr clear_vel_limit_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_marker_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_cruise_wall_marker_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_stop_wall_marker_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_marker_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_cruise_wall_marker_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_stop_wall_marker_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_stop_planning_info_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_cruise_planning_info_pub_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr debug_calculation_time_pub_;
 
   // subscriber
-  rclcpp::Subscription<Trajectory>::SharedPtr trajectory_sub_;
-  rclcpp::Subscription<Trajectory>::SharedPtr smoothed_trajectory_sub_;
+  rclcpp::Subscription<Trajectory>::SharedPtr traj_sub_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr objects_sub_;
   rclcpp::Subscription<Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr acc_sub_;
 
-  // self pose listener
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_;
-
   // data for callback functions
   PredictedObjects::ConstSharedPtr in_objects_ptr_{nullptr};
-  geometry_msgs::msg::TwistStamped::SharedPtr current_twist_ptr_{nullptr};
-  geometry_msgs::msg::AccelStamped::SharedPtr current_accel_ptr_{nullptr};
+  Odometry::ConstSharedPtr current_odom_ptr_{nullptr};
+  AccelWithCovarianceStamped::ConstSharedPtr current_accel_ptr_{nullptr};
 
   // Vehicle Parameters
   VehicleInfo vehicle_info_;
@@ -195,13 +158,12 @@ private:
   ObstacleFilteringParam obstacle_filtering_param_;
 
   bool need_to_clear_vel_limit_{false};
+  EgoNearestParam ego_nearest_param_;
 
   bool is_driving_forward_{true};
   bool disable_stop_planning_{false};
 
   std::vector<TargetObstacle> prev_target_obstacles_;
-
-  std::shared_ptr<LowpassFilter1d> lpf_acc_ptr_;
 };
 }  // namespace motion_planning
 

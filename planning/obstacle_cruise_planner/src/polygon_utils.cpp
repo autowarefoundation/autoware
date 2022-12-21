@@ -88,9 +88,8 @@ Polygon2d createOneStepPolygon(
 namespace polygon_utils
 {
 boost::optional<size_t> getCollisionIndex(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const std::vector<Polygon2d> & traj_polygons, const geometry_msgs::msg::PoseStamped & obj_pose,
-  const autoware_auto_perception_msgs::msg::Shape & shape,
+  const Trajectory & traj, const std::vector<Polygon2d> & traj_polygons,
+  const geometry_msgs::msg::PoseStamped & obj_pose, const Shape & shape,
   std::vector<geometry_msgs::msg::PointStamped> & collision_geom_points, const double max_dist)
 {
   const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose.pose, shape);
@@ -128,10 +127,9 @@ boost::optional<size_t> getCollisionIndex(
 }
 
 std::vector<geometry_msgs::msg::PointStamped> getCollisionPoints(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const std::vector<Polygon2d> & traj_polygons, const std_msgs::msg::Header & obj_header,
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const autoware_auto_perception_msgs::msg::Shape & shape, const rclcpp::Time & current_time,
+  const Trajectory & traj, const std::vector<Polygon2d> & traj_polygons,
+  const std_msgs::msg::Header & obj_header, const PredictedPath & predicted_path,
+  const Shape & shape, const rclcpp::Time & current_time,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward,
   std::vector<size_t> & collision_index, const double max_dist,
   const double max_prediction_time_for_collision_check)
@@ -172,11 +170,10 @@ std::vector<geometry_msgs::msg::PointStamped> getCollisionPoints(
 }
 
 std::vector<geometry_msgs::msg::PointStamped> willCollideWithSurroundObstacle(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const std::vector<Polygon2d> & traj_polygons, const std_msgs::msg::Header & obj_header,
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const autoware_auto_perception_msgs::msg::Shape & shape, const rclcpp::Time & current_time,
-  const double max_dist, const double ego_obstacle_overlap_time_threshold,
+  const Trajectory & traj, const std::vector<Polygon2d> & traj_polygons,
+  const std_msgs::msg::Header & obj_header, const PredictedPath & predicted_path,
+  const Shape & shape, const rclcpp::Time & current_time, const double max_dist,
+  const double ego_obstacle_overlap_time_threshold,
   const double max_prediction_time_for_collision_check, std::vector<size_t> & collision_index,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward)
 {
@@ -200,8 +197,8 @@ std::vector<geometry_msgs::msg::PointStamped> willCollideWithSurroundObstacle(
 }
 
 std::vector<Polygon2d> createOneStepPolygons(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double expand_width)
+  const Trajectory & traj, const vehicle_info_util::VehicleInfo & vehicle_info,
+  const double expand_width)
 {
   std::vector<Polygon2d> polygons;
 
@@ -223,8 +220,8 @@ std::vector<Polygon2d> createOneStepPolygons(
 geometry_msgs::msg::PointStamped calcNearestCollisionPoint(
   const size_t & first_within_idx,
   const std::vector<geometry_msgs::msg::PointStamped> & collision_points,
-  const autoware_auto_planning_msgs::msg::Trajectory & decimated_traj,
-  const double vehicle_max_longitudinal_offset, const bool is_driving_forward)
+  const Trajectory & decimated_traj, const double vehicle_max_longitudinal_offset,
+  const bool is_driving_forward)
 {
   std::vector<geometry_msgs::msg::Point> segment_points(2);
   if (first_within_idx == 0) {

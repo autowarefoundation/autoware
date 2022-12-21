@@ -18,30 +18,14 @@
 #include "motion_utils/motion_utils.hpp"
 #include "obstacle_cruise_planner/common_structs.hpp"
 #include "obstacle_cruise_planner/stop_planning_debug_info.hpp"
+#include "obstacle_cruise_planner/type_alias.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
-
-#include "autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "tier4_planning_msgs/msg/stop_reason_array.hpp"
-#include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"
-#include "tier4_planning_msgs/msg/velocity_limit.hpp"
-#include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
 
 #include <memory>
 #include <vector>
-
-using autoware_adapi_v1_msgs::msg::VelocityFactor;
-using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-using tier4_debug_msgs::msg::Float32MultiArrayStamped;
-using tier4_planning_msgs::msg::StopSpeedExceeded;
-using tier4_planning_msgs::msg::VelocityLimit;
 
 class PlannerInterface
 {
@@ -53,8 +37,7 @@ public:
     vehicle_info_(vehicle_info),
     ego_nearest_param_(ego_nearest_param)
   {
-    stop_reasons_pub_ =
-      node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
+    stop_reasons_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
     velocity_factors_pub_ =
       node.create_publisher<VelocityFactorArray>("/planning/velocity_factors/obstacle_cruise", 1);
     stop_speed_exceeded_pub_ =
@@ -63,14 +46,10 @@ public:
 
   PlannerInterface() = default;
 
-  void setParams(
-    const bool is_showing_debug_info, const double min_behavior_stop_margin,
-    const double nearest_dist_deviation_threshold, const double nearest_yaw_deviation_threshold)
+  void setParam(const bool is_showing_debug_info, const double min_behavior_stop_margin)
   {
     is_showing_debug_info_ = is_showing_debug_info;
     min_behavior_stop_margin_ = min_behavior_stop_margin;
-    nearest_dist_deviation_threshold_ = nearest_dist_deviation_threshold;
-    nearest_yaw_deviation_threshold_ = nearest_yaw_deviation_threshold;
   }
 
   Trajectory generateStopTrajectory(
@@ -80,31 +59,10 @@ public:
     const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
     DebugData & debug_data) = 0;
 
-  void updateCommonParam(const std::vector<rclcpp::Parameter> & parameters)
+  void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
-    auto & i = longitudinal_info_;
-
-    tier4_autoware_utils::updateParam<double>(parameters, "common.max_accel", i.max_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "common.min_accel", i.min_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "common.max_jerk", i.max_jerk);
-    tier4_autoware_utils::updateParam<double>(parameters, "common.min_jerk", i.min_jerk);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.max_accel", i.limit_max_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.min_accel", i.limit_min_accel);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.max_jerk", i.limit_max_jerk);
-    tier4_autoware_utils::updateParam<double>(parameters, "limit.min_jerk", i.limit_min_jerk);
-    tier4_autoware_utils::updateParam<double>(
-      parameters, "common.min_ego_accel_for_rss", i.min_ego_accel_for_rss);
-    tier4_autoware_utils::updateParam<double>(
-      parameters, "common.min_object_accel_for_rss", i.min_object_accel_for_rss);
-    tier4_autoware_utils::updateParam<double>(parameters, "common.idling_time", i.idling_time);
-  }
-
-  virtual void updateParam([[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters) {}
-
-  // TODO(shimizu) remove this function
-  void setSmoothedTrajectory(const Trajectory::ConstSharedPtr traj)
-  {
-    smoothed_trajectory_ptr_ = traj;
+    updateCommonParam(parameters);
+    updateParam(parameters);
   }
 
   Float32MultiArrayStamped getStopPlanningDebugMessage(const rclcpp::Time & current_time) const
@@ -122,11 +80,9 @@ protected:
   bool is_showing_debug_info_{false};
   LongitudinalInfo longitudinal_info_;
   double min_behavior_stop_margin_;
-  double nearest_dist_deviation_threshold_;
-  double nearest_yaw_deviation_threshold_;
 
   // Publishers
-  rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reasons_pub_;
+  rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reasons_pub_;
   rclcpp::Publisher<VelocityFactorArray>::SharedPtr velocity_factors_pub_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr stop_speed_exceeded_pub_;
 
@@ -137,9 +93,6 @@ protected:
 
   // debug info
   StopPlanningDebugInfo stop_planning_debug_info_;
-
-  // TODO(shimizu) remove these parameters
-  Trajectory::ConstSharedPtr smoothed_trajectory_ptr_;
 
   double calcDistanceToCollisionPoint(
     const ObstacleCruisePlannerData & planner_data,
@@ -154,6 +107,13 @@ protected:
       std::pow(obj_vel, 2) * 0.5 / std::abs(i.min_object_accel_for_rss) + margin;
     return rss_dist_with_margin;
   }
+
+  void updateCommonParam(const std::vector<rclcpp::Parameter> & parameters)
+  {
+    longitudinal_info_.onParam(parameters);
+  }
+
+  virtual void updateParam([[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters) {}
 
   size_t findEgoIndex(const Trajectory & traj, const geometry_msgs::msg::Pose & ego_pose) const
   {

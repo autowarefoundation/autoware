@@ -102,6 +102,7 @@ private:
     double output_ratio_during_accel;
     double vel_to_acc_weight;
     bool enable_jerk_limit_to_output_acc{false};
+    bool disable_target_acceleration{false};
   };
   VelocityLimitBasedPlannerParam velocity_limit_based_planner_param_;
 
@@ -131,6 +132,7 @@ private:
   std::shared_ptr<LowpassFilter1d> lpf_normalized_error_cruise_dist_ptr_;
 
   // lpf for output
+  std::shared_ptr<LowpassFilter1d> lpf_output_vel_ptr_;
   std::shared_ptr<LowpassFilter1d> lpf_output_acc_ptr_;
   std::shared_ptr<LowpassFilter1d> lpf_output_jerk_ptr_;
 

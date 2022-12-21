@@ -82,6 +82,9 @@ PIDBasedPlanner::PIDBasedPlanner(
     velocity_limit_based_planner_param_.enable_jerk_limit_to_output_acc =
       node.declare_parameter<bool>(
         "pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc");
+
+    velocity_limit_based_planner_param_.disable_target_acceleration = node.declare_parameter<bool>(
+      "pid_based_planner.velocity_limit_based_planner.disable_target_acceleration");
   }
 
   {  // velocity insertion based planner
@@ -139,6 +142,7 @@ PIDBasedPlanner::PIDBasedPlanner(
   lpf_dist_to_obstacle_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
   lpf_obstacle_vel_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
   lpf_error_cruise_dist_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
+  lpf_output_vel_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
   lpf_output_acc_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
   lpf_output_jerk_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
 }
@@ -300,10 +304,12 @@ Trajectory PIDBasedPlanner::planCruise(
                                       : std::abs(vehicle_info_.min_longitudinal_offset_m);
       const double dist_to_rss_wall =
         std::min(error_cruise_dist + abs_ego_offset, dist_to_obstacle + abs_ego_offset);
+      const size_t wall_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
+        planner_data.traj.points, dist_to_rss_wall, ego_idx);
 
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
-        planner_data.traj.points.at(ego_idx).pose, "obstacle cruise", planner_data.current_time, 0,
-        dist_to_rss_wall);
+        planner_data.traj.points.at(wall_idx).pose, "obstacle cruise", planner_data.current_time,
+        0);
       tier4_autoware_utils::appendMarkerArray(markers, &debug_data.cruise_wall_marker);
 
       // cruise obstalce
@@ -324,6 +330,7 @@ Trajectory PIDBasedPlanner::planCruise(
   prev_target_acc_ = {};
   lpf_normalized_error_cruise_dist_ptr_->reset();
   lpf_output_acc_ptr_->reset();
+  lpf_output_vel_ptr_->reset();
   lpf_output_jerk_ptr_->reset();
 
   // delete marker
@@ -356,11 +363,15 @@ VelocityLimit PIDBasedPlanner::doCruiseWithVelocityLimit(
     return pid_output_vel;
   }();
 
-  const double positive_target_vel =
-    std::max(min_cruise_target_vel_, planner_data.current_vel + additional_vel);
+  const double positive_target_vel = lpf_output_vel_ptr_->filter(
+    std::max(min_cruise_target_vel_, planner_data.current_vel + additional_vel));
 
   // calculate target acceleration
   const double target_acc = [&]() {
+    if (p.disable_target_acceleration) {
+      return min_accel_during_cruise_;
+    }
+
     double target_acc = p.vel_to_acc_weight * additional_vel;
 
     // apply acc limit
@@ -450,11 +461,6 @@ Trajectory PIDBasedPlanner::doCruiseWithTrajectory(
     return target_jerk_ratio;
   }();
 
-  /*
-  const double target_acc = vel_to_acc_weight_ * additional_vel;
-  const double target_acc_with_acc_limit =
-    std::clamp(target_acc, min_accel_during_cruise_, longitudinal_info_.max_accel);
-  */
   cruise_planning_debug_info_.set(
     CruisePlanningDebugInfo::TYPE::CRUISE_TARGET_ACCELERATION, target_acc);
   cruise_planning_debug_info_.set(
@@ -462,14 +468,14 @@ Trajectory PIDBasedPlanner::doCruiseWithTrajectory(
 
   // set target longitudinal motion
   const auto prev_traj_closest_point = [&]() -> TrajectoryPoint {
-    if (smoothed_trajectory_ptr_) {
-      return motion_utils::calcInterpolatedPoint(
-        *smoothed_trajectory_ptr_, planner_data.current_pose, nearest_dist_deviation_threshold_,
-        nearest_yaw_deviation_threshold_);
-    }
+    // if (smoothed_trajectory_ptr_) {
+    //   return motion_utils::calcInterpolatedPoint(
+    //     *smoothed_trajectory_ptr_, planner_data.current_pose, nearest_dist_deviation_threshold_,
+    //     nearest_yaw_deviation_threshold_);
+    // }
     return motion_utils::calcInterpolatedPoint(
-      prev_traj_, planner_data.current_pose, nearest_dist_deviation_threshold_,
-      nearest_yaw_deviation_threshold_);
+      prev_traj_, planner_data.current_pose, ego_nearest_param_.dist_threshold,
+      ego_nearest_param_.yaw_threshold);
   }();
   const double v0 = prev_traj_closest_point.longitudinal_velocity_mps;
   const double a0 = prev_traj_closest_point.acceleration_mps2;
@@ -580,9 +586,7 @@ Trajectory PIDBasedPlanner::getAccelerationLimitedTrajectory(
   }
 
   auto acc_limited_traj = traj;
-  const size_t ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    acc_limited_traj.points, start_pose, nearest_dist_deviation_threshold_,
-    nearest_yaw_deviation_threshold_);
+  const size_t ego_seg_idx = findEgoIndex(acc_limited_traj, start_pose);
   double sum_dist = 0.0;
   for (size_t i = ego_seg_idx; i < acc_limited_traj.points.size(); ++i) {
     if (i != ego_seg_idx) {
@@ -636,6 +640,10 @@ void PIDBasedPlanner::updateParam(const std::vector<rclcpp::Parameter> & paramet
     tier4_autoware_utils::updateParam<bool>(
       parameters, "pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc",
       p.enable_jerk_limit_to_output_acc);
+
+    tier4_autoware_utils::updateParam<bool>(
+      parameters, "pid_based_planner.velocity_limit_based_planner.disable_target_acceleration",
+      p.disable_target_acceleration);
   }
 
   {  // velocity insertion based planner

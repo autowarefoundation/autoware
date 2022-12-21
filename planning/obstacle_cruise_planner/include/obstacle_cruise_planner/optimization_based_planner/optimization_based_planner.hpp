@@ -18,6 +18,7 @@
 #include "obstacle_cruise_planner/optimization_based_planner/s_boundary.hpp"
 #include "obstacle_cruise_planner/optimization_based_planner/velocity_optimizer.hpp"
 #include "obstacle_cruise_planner/planner_interface.hpp"
+#include "obstacle_cruise_planner/type_alias.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
@@ -25,19 +26,11 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <tier4_debug_msgs/msg/float32_stamped.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
-
 #include <boost/optional.hpp>
 
 #include <memory>
 #include <tuple>
 #include <vector>
-
-using autoware_auto_perception_msgs::msg::ObjectClassification;
-using autoware_auto_perception_msgs::msg::PredictedPath;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-using tier4_debug_msgs::msg::Float32Stamped;
 
 class OptimizationBasedPlanner : public PlannerInterface
 {
@@ -77,8 +70,7 @@ private:
     const ObstacleCruisePlannerData & planner_data, const geometry_msgs::msg::PointStamped & point);
 
   boost::optional<double> calcTrajectoryLengthFromCurrentPose(
-    const autoware_auto_planning_msgs::msg::Trajectory & traj,
-    const geometry_msgs::msg::Pose & current_pose);
+    const Trajectory & traj, const geometry_msgs::msg::Pose & current_pose);
 
   geometry_msgs::msg::Pose transformBaseLink2Center(
     const geometry_msgs::msg::Pose & pose_base_link);
@@ -101,6 +93,11 @@ private:
   rclcpp::Publisher<Trajectory>::SharedPtr optimized_sv_pub_;
   rclcpp::Publisher<Trajectory>::SharedPtr optimized_st_graph_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_wall_marker_pub_;
+
+  // Subscriber
+  rclcpp::Subscription<Trajectory>::SharedPtr smoothed_traj_sub_;
+
+  Trajectory::ConstSharedPtr smoothed_trajectory_ptr_{nullptr};
 
   // Resampling Parameter
   double dense_resampling_time_interval_;
