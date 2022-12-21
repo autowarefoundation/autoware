@@ -2,11 +2,10 @@
 <launch>
   <arg name="publish_rate" default="10.0"/>
   <arg name="enable_delay_compensation" default="true"/>
-  <arg name="tier4_perception_launch_param_path" default="$(find-pkg-share tier4_perception_launch)/config"/>
 
   <group>
     <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
-      <arg name="data_association_matrix_path" value="$(var tier4_perception_launch_param_path)/object_recognition/tracking/multi_object_tracker/data_association_matrix.param.yaml"/>
+      <arg name="data_association_matrix_path" value="$(var object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path)"/>
       <arg name="publish_rate" value="$(var publish_rate)"/>
       <arg name="enable_delay_compensation" value="$(var enable_delay_compensation)"/>
     </include>

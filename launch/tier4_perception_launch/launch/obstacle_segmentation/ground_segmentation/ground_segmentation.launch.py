@@ -33,8 +33,9 @@ class GroundSegmentationPipeline:
         self.context = context
         self.vehicle_info = self.get_vehicle_info()
         ground_segmentation_param_path = os.path.join(
-            LaunchConfiguration("tier4_perception_launch_param_path").perform(context),
-            "obstacle_segmentation/ground_segmentation/ground_segmentation.param.yaml",
+            LaunchConfiguration("obstacle_segmentation_ground_segmentation_param_path").perform(
+                context
+            ),
         )
         with open(ground_segmentation_param_path, "r") as f:
             self.ground_segmentation_param = yaml.safe_load(f)["/**"]["ros__parameters"]
@@ -329,12 +330,9 @@ class GroundSegmentationPipeline:
                         "inpaint_radius": 1.0,
                         "param_file_path": PathJoinSubstitution(
                             [
-                                LaunchConfiguration("tier4_perception_launch_param_path").perform(
-                                    context
-                                ),
-                                "obstacle_segmentation",
-                                "ground_segmentation",
-                                "elevation_map_parameters.yaml",
+                                LaunchConfiguration(
+                                    "obstacle_segmentation_ground_segmentation_elevation_map_param_path"
+                                ).perform(context),
                             ]
                         ),
                         "elevation_map_directory": PathJoinSubstitution(
@@ -518,7 +516,6 @@ def generate_launch_description():
     add_launch_arg("use_intra_process", "True")
     add_launch_arg("use_pointcloud_container", "False")
     add_launch_arg("container_name", "perception_pipeline_container")
-    add_launch_arg("tier4_perception_launch_param_path", "tier4_perception_launch parameter path")
     add_launch_arg("input/pointcloud", "/sensing/lidar/concatenated/pointcloud")
 
     set_container_executable = SetLaunchConfiguration(

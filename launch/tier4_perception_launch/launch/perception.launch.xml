@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- parameter path -->
-  <arg name="tier4_perception_launch_param_path" default="$(find-pkg-share tier4_perception_launch)/config" description="tier4_perception_launch parameter path"/>
+  <!-- Parameter files -->
+  <arg name="object_recognition_detection_object_lanelet_filter_param_path"/>
+  <arg name="object_recognition_detection_object_position_filter_param_path"/>
+  <arg name="object_recognition_detection_pointcloud_map_filter_param_path"/>
+  <arg name="object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path"/>
+  <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
+  <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
 
   <!-- common parameters -->
   <arg name="input/pointcloud" default="/sensing/lidar/concatenated/pointcloud" description="The topic will be used in the detection module"/>
@@ -45,7 +50,6 @@
     <group>
       <push-ros-namespace namespace="obstacle_segmentation"/>
       <include file="$(find-pkg-share tier4_perception_launch)/launch/obstacle_segmentation/ground_segmentation/ground_segmentation.launch.py">
-        <arg name="tier4_perception_launch_param_path" value="$(var tier4_perception_launch_param_path)"/>
         <arg name="base_frame" value="base_link"/>
         <arg name="use_intra_process" value="true"/>
         <arg name="use_multithread" value="true"/>
@@ -76,7 +80,6 @@
       <group>
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detection.launch.xml">
-          <arg name="tier4_perception_launch_param_path" value="$(var tier4_perception_launch_param_path)"/>
           <arg name="mode" value="$(var mode)"/>
           <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
           <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
@@ -106,9 +109,7 @@
       <!-- tracking module -->
       <group>
         <push-ros-namespace namespace="tracking"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
-          <arg name="tier4_perception_launch_param_path" value="$(var tier4_perception_launch_param_path)"/>
-        </include>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml"/>
       </group>
       <!-- prediction module -->
       <group>

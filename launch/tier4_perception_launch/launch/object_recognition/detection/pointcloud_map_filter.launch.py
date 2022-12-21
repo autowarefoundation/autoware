@@ -29,8 +29,9 @@ import yaml
 class PointcloudMapFilterPipeline:
     def __init__(self, context):
         pointcloud_map_filter_param_path = os.path.join(
-            LaunchConfiguration("tier4_perception_launch_param_path").perform(context),
-            "object_recognition/detection/pointcloud_map_filter.param.yaml",
+            LaunchConfiguration(
+                "object_recognition_detection_pointcloud_map_filter_param_path"
+            ).perform(context),
         )
         with open(pointcloud_map_filter_param_path, "r") as f:
             self.pointcloud_map_filter_param = yaml.safe_load(f)["/**"]["ros__parameters"]
@@ -150,7 +151,6 @@ def generate_launch_description():
     add_launch_arg("use_intra_process", "True")
     add_launch_arg("use_pointcloud_container", "False")
     add_launch_arg("container_name", "pointcloud_map_filter_pipeline_container")
-    add_launch_arg("tier4_perception_launch_param_path", "tier4_perception_launch parameter path")
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
         "component_container",
