@@ -1,5 +1,23 @@
 # ROS topics: Net Monitor
 
+## <u>Network Connection</u>
+
+/diagnostics/net_monitor: Network Connection
+
+<b>[summary]</b>
+
+| level | message        |
+| ----- | -------------- |
+| OK    | OK             |
+| WARN  | no such device |
+
+<b>[values]</b>
+
+| key                   | value (example)     |
+| --------------------- | ------------------- |
+| Network [0-9]: status | OK / no such device |
+| HDD [0-9]: name       | wlp82s0             |
+
 ## <u>Network Usage</u>
 
 /diagnostics/net_monitor: Network Usage
@@ -38,31 +56,19 @@
 | ----- | ------- |
 | OK    | OK      |
 
-<b>[values] program</b>
+<b>[values when specified program is detected]</b>
 
 | key                              | value (example)                             |
 | -------------------------------- | ------------------------------------------- |
-| nethogs [0-9]: PROGRAM           | /lambda/greengrassSystemComponents/1384/999 |
-| nethogs [0-9]: SENT (KB/Sec)     | 1.13574                                     |
-| nethogs [0-9]: RECEIVED (KB/Sec) | 0.261914                                    |
+| nethogs [0-9]: program           | /lambda/greengrassSystemComponents/1384/999 |
+| nethogs [0-9]: sent (KB/Sec)     | 1.13574                                     |
+| nethogs [0-9]: received (KB/Sec) | 0.261914                                    |
 
-<b>[values] all</b>
+<b>[values when error is occurring]</b>
 
-| key                   | value (example)                                                |
-| --------------------- | -------------------------------------------------------------- |
-| nethogs: all (KB/Sec) | python3.7/1520/999 0.274414 0.354883                           |
-|                       | /lambda/greengrassSystemComponents/1299/999 0.487305 0.0966797 |
-|                       | sshd: muser@pts/5/15917/1002 0.396094 0.0585938                |
-|                       | /usr/bin/python3.7/2371/999 0 0                                |
-|                       | /greengrass/ggc/packages/1.10.0/bin/daemon/906/0 0 0           |
-|                       | python3.7/4362/999 0 0                                         |
-|                       | unknown TCP/0/0 0 0                                            |
-
-<b>[values] error</b>
-
-| key   | value (example)                                       |
-| ----- | ----------------------------------------------------- |
-| error | [nethogs -t] execve failed: No such file or directory |
+| key   | value (example)                          |
+| ----- | ---------------------------------------- |
+| error | execve failed: No such file or directory |
 
 ## <u>Network CRC Error</u>
 
@@ -70,9 +76,10 @@
 
 <b>[summary]</b>
 
-| level | message |
-| ----- | ------- |
-| OK    | OK      |
+| level | message   |
+| ----- | --------- |
+| OK    | OK        |
+| WARN  | CRC error |
 
 <b>[values]</b>
 

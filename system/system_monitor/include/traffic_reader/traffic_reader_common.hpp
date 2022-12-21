@@ -17,21 +17,33 @@
  * @brief traffic reader definitions
  */
 
-#ifndef TRAFFIC_READER__TRAFFIC_READER_HPP_
-#define TRAFFIC_READER__TRAFFIC_READER_HPP_
+#ifndef TRAFFIC_READER__TRAFFIC_READER_COMMON_HPP_
+#define TRAFFIC_READER__TRAFFIC_READER_COMMON_HPP_
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <string>
 
-/**
- * @brief traffic information
- */
-struct TrafficReaderResult
+namespace traffic_reader_service
 {
-  int error_code_;   //!< @brief error code, 0 on success, otherwise error
-  std::string str_;  //!< @brief nethogs result string
+
+static constexpr char socket_path[] = "/tmp/traffic_reader";
+
+enum Request {
+  NONE = 0,
+  START_NETHOGS,
+  GET_RESULT,
+};
+
+/**
+ * @brief Result of nethogs
+ */
+struct Result
+{
+  int error_code;      //!< @brief Error code, 0 on success, otherwise error
+  std::string output;  //!< @brief Result output of nethogs
 
   /**
    * @brief Load or save data members.
@@ -43,13 +55,13 @@ struct TrafficReaderResult
   template <typename archive>
   void serialize(archive & ar, const unsigned /*version*/)  // NOLINT(runtime/references)
   {
-    ar & error_code_;
-    ar & str_;
+    ar & error_code;
+    ar & output;
   }
 };
 
-constexpr std::string_view GET_ALL_STR{"<All>"};  //!< @brief nethogs result all request string
+// constexpr std::string_view GET_ALL_STR{"<All>"};  //!< @brief nethogs result all request string
 
-constexpr int TRAFFIC_READER_PORT = 7636;  //!< @brief traffic reader port: 7634-7647 Unassigned
+}  // namespace traffic_reader_service
 
-#endif  // TRAFFIC_READER__TRAFFIC_READER_HPP_
+#endif  // TRAFFIC_READER__TRAFFIC_READER_COMMON_HPP_
