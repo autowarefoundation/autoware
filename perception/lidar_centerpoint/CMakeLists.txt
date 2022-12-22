@@ -4,6 +4,9 @@ project(lidar_centerpoint)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+# TODO(lidar_centerpoint): Remove once upgrading to TensorRT 8.5 is complete
+add_compile_options(-Wno-deprecated-declarations)
+
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 
 # set flags for CUDA availability

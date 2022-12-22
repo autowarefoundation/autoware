@@ -4,6 +4,9 @@ project(tensorrt_common)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+# TODO(tensorrt_common): Remove once upgrading to TensorRT 8.5 is complete
+add_compile_options(-Wno-deprecated-declarations)
+
 find_package(CUDA)
 find_package(CUDNN)
 find_package(TENSORRT)

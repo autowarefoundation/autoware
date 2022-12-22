@@ -4,6 +4,9 @@ project(tensorrt_yolo)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+# TODO(tensorrt_yolo): Remove once upgrading to TensorRT 8.5 is complete
+add_compile_options(-Wno-deprecated-declarations)
+
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 
 find_package(OpenCV REQUIRED)

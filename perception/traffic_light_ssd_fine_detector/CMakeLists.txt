@@ -4,6 +4,9 @@ project(traffic_light_ssd_fine_detector)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+# TODO(traffic_light_ssd_fine_detector): Remove once upgrading to TensorRT 8.5 is complete
+add_compile_options(-Wno-deprecated-declarations)
+
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 
 find_package(OpenCV REQUIRED)
