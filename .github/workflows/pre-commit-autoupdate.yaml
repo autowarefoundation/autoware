@@ -7,7 +7,7 @@ on:
 
 jobs:
   check-secret:
-    if: ${{ github.event.repository.private }}
+    if: ${{ github.event.repository.private }} # Use pre-commit.ci for public repositories
     uses: autowarefoundation/autoware-github-actions/.github/workflows/check-secret.yaml@v1
     secrets:
       secret: ${{ secrets.APP_ID }}
