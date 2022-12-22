@@ -246,6 +246,7 @@
       <arg name="input/object0" value="$(var merger/input/objects)"/>
       <arg name="input/object1" value="clustering/camera_lidar_fusion/short_range_objects"/>
       <arg name="output/object" value="camera_lidar_fusion/objects"/>
+      <arg name="priority_mode" value="0"/>
     </include>
   </group>
 
