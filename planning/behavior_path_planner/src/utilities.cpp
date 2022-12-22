@@ -1526,6 +1526,61 @@ double getSignedDistanceFromShoulderLeftBoundary(
   return arc_coordinates.distance;
 }
 
+std::optional<double> getSignedDistanceFromShoulderLeftBoundary(
+  const lanelet::ConstLanelets & shoulder_lanelets, const LinearRing2d & footprint,
+  const Pose & vehicle_pose)
+{
+  double min_distance = std::numeric_limits<double>::max();
+  const auto transformed_footprint =
+    transformVector(footprint, tier4_autoware_utils::pose2transform(vehicle_pose));
+  bool found_neighbor_shoulder_bound = false;
+  for (const auto & vehicle_corner_point : transformed_footprint) {
+    // convert point of footprint to pose
+    Pose vehicle_corner_pose{};
+    vehicle_corner_pose.position = tier4_autoware_utils::toMsg(vehicle_corner_point.to_3d());
+    vehicle_corner_pose.orientation = vehicle_pose.orientation;
+
+    // calculate distance to the shoulder bound directly next to footprint points
+    lanelet::ConstLanelet closest_shoulder_lanelet{};
+    if (lanelet::utils::query::getClosestLanelet(
+          shoulder_lanelets, vehicle_corner_pose, &closest_shoulder_lanelet)) {
+      const auto & left_line_2d = lanelet::utils::to2D(closest_shoulder_lanelet.leftBound3d());
+
+      for (size_t i = 1; i < left_line_2d.size(); ++i) {
+        const Point p_front = lanelet::utils::conversion::toGeomMsgPt(left_line_2d[i - 1]);
+        const Point p_back = lanelet::utils::conversion::toGeomMsgPt(left_line_2d[i]);
+
+        const Point inverse_p_front =
+          tier4_autoware_utils::inverseTransformPoint(p_front, vehicle_corner_pose);
+        const Point inverse_p_back =
+          tier4_autoware_utils::inverseTransformPoint(p_back, vehicle_corner_pose);
+
+        const double dy_front = inverse_p_front.y;
+        const double dy_back = inverse_p_back.y;
+        const double dx_front = inverse_p_front.x;
+        const double dx_back = inverse_p_back.x;
+        // is in segment
+        if (dx_front < 0 && dx_back > 0) {
+          const double lateral_distance_from_pose_to_segment =
+            (dy_front * dx_back + dy_back * -dx_front) / (dx_back - dx_front);
+          min_distance = std::min(lateral_distance_from_pose_to_segment, min_distance);
+          found_neighbor_shoulder_bound = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (!found_neighbor_shoulder_bound) {
+    RCLCPP_ERROR_STREAM(
+      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      "neighbor shoulder bound to footprint is not found.");
+    return {};
+  }
+
+  return -min_distance;
+}
+
 double getSignedDistanceFromRightBoundary(
   const lanelet::ConstLanelets & lanelets, const Pose & pose)
 {

@@ -114,21 +114,6 @@ std::vector<double> calcPathArcLengthArray(const T & points, const double offset
   return out;
 }
 
-template <class T>
-inline std::vector<double> calcCurvature(const T & points)
-{
-  std::vector<double> curvature_arr;
-  curvature_arr.push_back(0.0);
-  for (size_t i = 1; i < points.size() - 1; ++i) {
-    const auto p1 = getPoint(points.at(i - 1));
-    const auto p2 = getPoint(points.at(i));
-    const auto p3 = getPoint(points.at(i + 1));
-    curvature_arr.push_back(tier4_autoware_utils::calcCurvature(p1, p2, p3));
-  }
-  curvature_arr.push_back(0.0);
-  return curvature_arr;
-}
-
 }  // namespace planning_debug_tools
 
 #endif  // PLANNING_DEBUG_TOOLS__UTIL_HPP_

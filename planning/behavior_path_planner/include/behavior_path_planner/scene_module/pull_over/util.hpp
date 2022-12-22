@@ -50,16 +50,15 @@ PredictedObjects filterObjectsByLateralDistance(
   const double distance_thresh, const bool filter_inside);
 
 // debug
-Marker createPullOverAreaMarker(
-  const Pose & start_pose, const Pose & end_pose, const int32_t id,
-  const std_msgs::msg::Header & header, const double base_link2front, const double base_link2rear,
-  const double vehicle_width, const std_msgs::msg::ColorRGBA & color);
+MarkerArray createPullOverAreaMarkerArray(
+  const tier4_autoware_utils::MultiPolygon2d area_polygons, const std_msgs::msg::Header & header,
+  const std_msgs::msg::ColorRGBA & color, const double z);
 MarkerArray createPosesMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
 MarkerArray createTextsMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
 MarkerArray createGoalCandidatesMarkerArray(
-  std::vector<GoalCandidate> & goal_candidates, const std_msgs::msg::ColorRGBA & color);
+  GoalCandidates & goal_candidates, const std_msgs::msg::ColorRGBA & color);
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner
 

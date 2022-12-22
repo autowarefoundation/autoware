@@ -271,15 +271,14 @@ The lateral jerk is searched for among the predetermined minimum and maximum val
 
 ###### Parameters for shift parking
 
-| Name                               | Unit   | Type   | Description                                                                                              | Default value |
-| :--------------------------------- | :----- | :----- | :------------------------------------------------------------------------------------------------------- | :------------ |
-| enable_shift_parking               | [-]    | bool   | flag whether to enable shift parking                                                                     | true          |
-| pull_over_sampling_num             | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                      | 4             |
-| maximum_lateral_jerk               | [m/s3] | double | maximum lateral jerk                                                                                     | 2.0           |
-| minimum_lateral_jerk               | [m/s3] | double | minimum lateral jerk                                                                                     | 0.5           |
-| deceleration_interval              | [m]    | double | distance of deceleration section                                                                         | 15.0          |
-| after_pull_over_straight_distance  | [m]    | double | straight line distance after pull over end point                                                         | 5.0           |
-| before_pull_over_straight_distance | [m]    | double | straight line distance before pull over end point. a safe path should have a distance that includes this | 5.0           |
+| Name                              | Unit   | Type   | Description                                                         | Default value |
+| :-------------------------------- | :----- | :----- | :------------------------------------------------------------------ | :------------ |
+| enable_shift_parking              | [-]    | bool   | flag whether to enable shift parking                                | true          |
+| pull_over_sampling_num            | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk | 4             |
+| maximum_lateral_jerk              | [m/s3] | double | maximum lateral jerk                                                | 2.0           |
+| minimum_lateral_jerk              | [m/s3] | double | minimum lateral jerk                                                | 0.5           |
+| deceleration_interval             | [m]    | double | distance of deceleration section                                    | 15.0          |
+| after_pull_over_straight_distance | [m]    | double | straight line distance after pull over end point                    | 5.0           |
 
 ##### **geometric parallel parking**
 
@@ -362,13 +361,13 @@ The Pull Out module is activated when ego-vehicle is stationary and footprint of
 
 #### General parameters for pull_out
 
-| Name                         | Unit  | Type   | Description                                                    | Default value |
-| :--------------------------- | :---- | :----- | :------------------------------------------------------------- | :------------ |
-| th_arrived_distance_m        | [m]   | double | distance threshold for arrival of path termination             | 1.0           |
-| th_stopped_velocity_mps      | [m/s] | double | velocity threshold for arrival of path termination             | 0.01          |
-| th_stopped_time_sec          | [s]   | double | time threshold for arrival of path termination                 | 1.0           |
-| collision_check_margin       | [m]   | double | Obstacle collision check margin                                | 1.0           |
-| pull_out_finish_judge_buffer | [m]   | double | threshold for finish judgment distance from pull out end point | 1.0           |
+| Name                              | Unit  | Type   | Description                                                          | Default value |
+| :-------------------------------- | :---- | :----- | :------------------------------------------------------------------- | :------------ |
+| th_arrived_distance_m             | [m]   | double | distance threshold for arrival of path termination                   | 1.0           |
+| th_stopped_velocity_mps           | [m/s] | double | velocity threshold for arrival of path termination                   | 0.01          |
+| th_stopped_time_sec               | [s]   | double | time threshold for arrival of path termination                       | 1.0           |
+| collision_check_margin            | [m]   | double | Obstacle collision check margin                                      | 1.0           |
+| collision_check_distance_from_end | [m]   | double | collision check distance from end point. currently only for pull out | 15.0          |
 
 #### **Safe check with obstacles in shoulder lane**
 
@@ -396,15 +395,14 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 
 ###### parameters for shift pull out
 
-| Name                              | Unit   | Type   | Description                                                                                                          | Default value |
-| :-------------------------------- | :----- | :----- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
-| enable_shift_pull_out             | -      | bool   | flag whether to enable shift pull out                                                                                | true          |
-| shift_pull_out_velocity           | [m/s]  | double | velocity of shift pull out                                                                                           | 2.0           |
-| pull_out_sampling_num             | -      | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                                  | 4             |
-| before_pull_out_straight_distance | [m]    | double | distance before pull out start point                                                                                 | 0.0           |
-| maximum_lateral_jerk              | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
-| minimum_lateral_jerk              | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.5           |
-| minimum_shift_pull_out_distance   | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 20.0          |
+| Name                            | Unit   | Type   | Description                                                                                                          | Default value |
+| :------------------------------ | :----- | :----- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
+| enable_shift_pull_out           | -      | bool   | flag whether to enable shift pull out                                                                                | true          |
+| shift_pull_out_velocity         | [m/s]  | double | velocity of shift pull out                                                                                           | 2.0           |
+| pull_out_sampling_num           | -      | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                                  | 4             |
+| maximum_lateral_jerk            | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
+| minimum_lateral_jerk            | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.5           |
+| minimum_shift_pull_out_distance | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 20.0          |
 
 ##### **geometric pull out**
 

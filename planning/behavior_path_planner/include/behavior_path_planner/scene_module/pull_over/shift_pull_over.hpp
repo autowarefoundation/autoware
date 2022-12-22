@@ -41,21 +41,22 @@ public:
   boost::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
 protected:
-  PathWithLaneId generateRoadLaneReferencePath(
-    const lanelet::ConstLanelets & road_lanes, const Pose & shift_end_pose,
-    const double pull_over_distance) const;
-  PathWithLaneId generateShoulderLaneReferencePath(
-    const lanelet::ConstLanelets & shoulder_lanes, const Pose & shift_start_pose,
-    const Pose & goal_pose, const double shoulder_center_to_goal_distance) const;
+  PathWithLaneId generateReferencePath(
+    const lanelet::ConstLanelets & road_lanes, const Pose & end_pose) const;
   boost::optional<PullOverPath> generatePullOverPath(
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
-    const Pose & shift_end_pose, const Pose & goal_pose, const double lateral_jerk,
-    const double road_center_to_goal_distance, const double shoulder_center_to_goal_distance,
-    const double shoulder_left_bound_to_goal_distance) const;
+    const Pose & goal_pose, const double lateral_jerk) const;
   bool hasEnoughDistance(
     const PathWithLaneId & path, const lanelet::ConstLanelets & road_lanes, const Pose & start_pose,
     const Pose & goal_pose, const double pull_over_distance) const;
   bool isSafePath(const PathWithLaneId & path) const;
+  static double calcBeforeShiftedArcLength(
+    const PathWithLaneId & path, const double after_shifted_arc_length, const double dr);
+  static std::vector<double> splineTwoPoints(
+    std::vector<double> base_s, std::vector<double> base_x, const double begin_diff,
+    const double end_diff, std::vector<double> new_s);
+  static std::vector<Pose> interpolatePose(
+    const Pose & start_pose, const Pose & end_pose, const double resample_interval);
 
   LaneDepartureChecker lane_departure_checker_{};
   std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_{};

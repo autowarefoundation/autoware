@@ -47,6 +47,7 @@ struct PullOverPath
   std::vector<PathWithLaneId> partial_paths{};
   Pose start_pose{};
   Pose end_pose{};
+  std::vector<Pose> debug_poses{};
 };
 
 class PullOverPlannerBase

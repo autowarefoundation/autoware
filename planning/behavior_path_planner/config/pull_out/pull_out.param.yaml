@@ -5,12 +5,11 @@
       th_stopped_velocity: 0.01
       th_stopped_time: 1.0
       collision_check_margin: 1.0
-      pull_out_finish_judge_buffer: 1.0
+      collision_check_distance_from_end: 1.0
       # shift pull out
       enable_shift_pull_out: true
       shift_pull_out_velocity: 2.0
       pull_out_sampling_num: 4
-      before_pull_out_straight_distance: 0.0
       minimum_shift_pull_out_distance: 20.0
       maximum_lateral_jerk: 2.0
       minimum_lateral_jerk: 0.5

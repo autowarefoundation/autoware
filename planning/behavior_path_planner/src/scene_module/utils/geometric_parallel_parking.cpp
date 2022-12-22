@@ -163,6 +163,16 @@ std::vector<PathWithLaneId> GeometricParallelParking::generatePullOverPaths(
   // straight path from current to parking start
   const auto straight_path = generateStraightPath(start_pose);
 
+  // check the continuity of straight path and arc path
+  const Pose & road_path_last_pose = straight_path.points.back().point.pose;
+  const Pose & arc_path_first_pose = arc_paths.front().points.front().point.pose;
+  const double yaw_diff = tier4_autoware_utils::normalizeRadian(
+    tf2::getYaw(road_path_last_pose.orientation), tf2::getYaw(arc_path_first_pose.orientation));
+  const double distance = calcDistance2d(road_path_last_pose, arc_path_first_pose);
+  if (yaw_diff > tier4_autoware_utils::deg2rad(5.0) || distance > 0.1) {
+    return std::vector<PathWithLaneId>{};
+  }
+
   // combine straight_path -> arc_path*2
   auto paths = arc_paths;
   paths.insert(paths.begin(), straight_path);

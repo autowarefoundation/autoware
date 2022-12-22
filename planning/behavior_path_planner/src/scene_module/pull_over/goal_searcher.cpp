@@ -14,7 +14,9 @@
 
 #include "behavior_path_planner/scene_module/pull_over/goal_searcher.hpp"
 
+#include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/scene_module/pull_over/util.hpp"
+#include "lanelet2_extension/utility/utilities.hpp"
 
 #include <boost/optional.hpp>
 
@@ -36,53 +38,78 @@ GoalSearcher::GoalSearcher(
 {
 }
 
-std::vector<GoalCandidate> GoalSearcher::search(const Pose & original_goal_pose)
+GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
 {
-  std::vector<GoalCandidate> goal_candidates{};
+  GoalCandidates goal_candidates{};
 
-  const auto pull_over_lanes = pull_over_utils::getPullOverLanes(*(planner_data_->route_handler));
+  const auto & route_handler = planner_data_->route_handler;
+  const double vehicle_width = planner_data_->parameters.vehicle_width;
+  const double forward_length = parameters_.forward_goal_search_length;
+  const double backward_length = parameters_.backward_goal_search_length;
+  const double margin_from_boundary = parameters_.margin_from_boundary;
+  const double lateral_offset_interval = parameters_.lateral_offset_interval;
+  const double max_lateral_offset = parameters_.max_lateral_offset;
+
+  const auto pull_over_lanes = pull_over_utils::getPullOverLanes(*route_handler);
   auto lanes = util::getExtendedCurrentLanes(planner_data_);
   lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
+
+  const auto goal_arc_coords =
+    lanelet::utils::getArcCoordinates(pull_over_lanes, original_goal_pose);
+  const double s_start = std::max(0.0, goal_arc_coords.length - backward_length);
+  const double s_end = goal_arc_coords.length + forward_length;
+  auto center_line_path = util::resamplePathWithSpline(
+    route_handler->getCenterLinePath(pull_over_lanes, s_start, s_end),
+    parameters_.goal_search_interval);
 
   const auto shoulder_lane_objects =
     util::filterObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
 
-  for (double dx = -parameters_.backward_goal_search_length;
-       dx <= parameters_.forward_goal_search_length; dx += parameters_.goal_search_interval) {
-    // search goal_pose in lateral direction
+  std::vector<Pose> original_search_poses{};
+  for (size_t goal_id = 0; goal_id < center_line_path.points.size(); ++goal_id) {
+    const auto & center_pose = center_line_path.points.at(goal_id).point.pose;
+
+    const auto distance_from_left_bound = util::getSignedDistanceFromShoulderLeftBoundary(
+      pull_over_lanes, vehicle_footprint_, center_pose);
+    if (!distance_from_left_bound) continue;
+
+    const double offset_from_center_line = distance_from_left_bound.value() + margin_from_boundary;
+    const Pose original_search_pose = calcOffsetPose(center_pose, 0, -offset_from_center_line, 0);
+    original_search_poses.push_back(original_search_pose);  // for createAreaPolygon
     Pose search_pose{};
+    // search goal_pose in lateral direction
     bool found_lateral_no_collision_pose = false;
     double lateral_offset = 0.0;
-    for (double dy = 0; dy <= parameters_.max_lateral_offset;
-         dy += parameters_.lateral_offset_interval) {
+    for (double dy = 0; dy <= max_lateral_offset; dy += lateral_offset_interval) {
       lateral_offset = dy;
-      search_pose = calcOffsetPose(original_goal_pose, dx, -dy, 0);
+      search_pose = calcOffsetPose(original_search_pose, 0, -dy, 0);
 
-      const auto & transformed_vehicle_footprint =
+      const auto transformed_vehicle_footprint =
         transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(search_pose));
       if (LaneDepartureChecker::isOutOfLane(lanes, transformed_vehicle_footprint)) {
         continue;
       }
-
       if (checkCollision(search_pose)) {
         continue;
       }
 
-      // if finding objects near the search pose,
+      // if finding objects or detecting lane departure
       // shift search_pose in lateral direction one more
-      // because collision may be detected on other path points
-      if (dy > 0) {
-        search_pose = calcOffsetPose(search_pose, 0, -parameters_.lateral_offset_interval, 0);
+      // for avoiding them on other path points.
+      if (dy > 0 && dy < max_lateral_offset) {
+        search_pose = calcOffsetPose(search_pose, 0, -lateral_offset_interval, 0);
       }
 
       found_lateral_no_collision_pose = true;
       break;
     }
-    if (!found_lateral_no_collision_pose) continue;
+    if (!found_lateral_no_collision_pose) {
+      continue;
+    }
 
     constexpr bool filter_inside = true;
     const auto target_objects = pull_over_utils::filterObjectsByLateralDistance(
-      search_pose, planner_data_->parameters.vehicle_width, shoulder_lane_objects,
+      search_pose, vehicle_width, shoulder_lane_objects,
       parameters_.object_recognition_collision_check_margin, filter_inside);
     if (checkCollisionWithLongitudinalDistance(search_pose, target_objects)) {
       continue;
@@ -91,13 +118,14 @@ std::vector<GoalCandidate> GoalSearcher::search(const Pose & original_goal_pose)
     GoalCandidate goal_candidate{};
     goal_candidate.goal_pose = search_pose;
     goal_candidate.lateral_offset = lateral_offset;
+    goal_candidate.id = goal_id;
     // use longitudinal_distance as distance_from_original_goal
-    // TODO(kosuke55): use arc length for curve lane
-    goal_candidate.distance_from_original_goal =
-      std::abs(inverseTransformPose(search_pose, original_goal_pose).position.x);
-
+    goal_candidate.distance_from_original_goal = std::abs(motion_utils::calcSignedArcLength(
+      center_line_path.points, original_goal_pose.position, search_pose.position));
     goal_candidates.push_back(goal_candidate);
   }
+  createAreaPolygons(original_search_poses);
+
   // Sort with distance from original goal
   std::sort(goal_candidates.begin(), goal_candidates.end());
 
@@ -167,6 +195,50 @@ bool GoalSearcher::checkCollisionWithLongitudinalDistance(
     }
   }
   return false;
+}
+
+void GoalSearcher::createAreaPolygons(std::vector<Pose> original_search_poses)
+{
+  using tier4_autoware_utils::MultiPolygon2d;
+  using tier4_autoware_utils::Point2d;
+  using tier4_autoware_utils::Polygon2d;
+
+  const double vehicle_width = planner_data_->parameters.vehicle_width;
+  const double base_link2front = planner_data_->parameters.base_link2front;
+  const double base_link2rear = planner_data_->parameters.base_link2rear;
+  const double max_lateral_offset = parameters_.max_lateral_offset;
+
+  const auto appendPointToPolygon =
+    [](Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point) {
+      Point2d point{};
+      point.x() = geom_point.x;
+      point.y() = geom_point.y;
+      boost::geometry::append(polygon.outer(), point);
+    };
+
+  boost::geometry::clear(area_polygons_);
+  for (const auto p : original_search_poses) {
+    Polygon2d footprint{};
+    const Point p_left_front = calcOffsetPose(p, base_link2front, vehicle_width / 2, 0).position;
+    appendPointToPolygon(footprint, p_left_front);
+
+    const Point p_right_front =
+      calcOffsetPose(p, base_link2front, -vehicle_width / 2 - max_lateral_offset, 0).position;
+    appendPointToPolygon(footprint, p_right_front);
+
+    const Point p_right_back =
+      calcOffsetPose(p, -base_link2rear, -vehicle_width / 2 - max_lateral_offset, 0).position;
+    appendPointToPolygon(footprint, p_right_back);
+
+    const Point p_left_back = calcOffsetPose(p, -base_link2rear, vehicle_width / 2, 0).position;
+    appendPointToPolygon(footprint, p_left_back);
+
+    appendPointToPolygon(footprint, p_left_front);
+
+    MultiPolygon2d current_result{};
+    boost::geometry::union_(footprint, area_polygons_, current_result);
+    area_polygons_ = current_result;
+  }
 }
 
 }  // namespace behavior_path_planner

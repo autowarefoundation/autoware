@@ -114,6 +114,7 @@ private:
     const std::vector<Pose> & start_pose_candidates, const Pose & goal_pose);
   void planWithPriorityOnShortBackDistance(
     const std::vector<Pose> & start_pose_candidates, const Pose & goal_pose);
+  void generateStopPath();
   void updatePullOutStatus();
   static bool isOverlappedWithLane(
     const lanelet::ConstLanelet & candidate_lanelet,

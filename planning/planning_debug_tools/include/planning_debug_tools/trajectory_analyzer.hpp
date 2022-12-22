@@ -87,7 +87,7 @@ public:
     TrajectoryDebugInfo data;
     data.stamp = node_->now();
     data.size = points.size();
-    data.curvature = calcCurvature(points);
+    data.curvature = motion_utils::calcCurvature(points);
     const auto arclength_offset = motion_utils::calcSignedArcLength(points, 0, ego_p);
     data.arclength = calcPathArcLengthArray(points, -arclength_offset);
     data.velocity = getVelocityArray(points);

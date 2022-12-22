@@ -35,7 +35,6 @@
       minimum_lateral_jerk: 0.5
       deceleration_interval: 15.0
       after_pull_over_straight_distance: 5.0
-      before_pull_over_straight_distance: 5.0
       # parallel parking path
       enable_arc_forward_parking: true
       enable_arc_backward_parking: true

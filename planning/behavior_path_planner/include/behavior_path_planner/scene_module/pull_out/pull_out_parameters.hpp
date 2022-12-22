@@ -26,12 +26,11 @@ struct PullOutParameters
   double th_stopped_velocity;
   double th_stopped_time;
   double collision_check_margin;
-  double pull_out_finish_judge_buffer;
+  double collision_check_distance_from_end;
   // shift pull out
   bool enable_shift_pull_out;
   double shift_pull_out_velocity;
   int pull_out_sampling_num;
-  double before_pull_out_straight_distance;
   double minimum_shift_pull_out_distance;
   double maximum_lateral_jerk;
   double minimum_lateral_jerk;
