@@ -107,12 +107,12 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   endfunction()
 
   # centerpoint
-  download(v1 pts_voxel_encoder_centerpoint.onnx 94dcf01ccd53ef14a79787afaada63b4)
-  download(v1 pts_backbone_neck_head_centerpoint.onnx 7046995e502e11f35c9459668d8afde3)
+  download(v2 pts_voxel_encoder_centerpoint.onnx e8369d7e0f59951cf87c0274830de1fe)
+  download(v2 pts_backbone_neck_head_centerpoint.onnx 44e44d26781a69c741bf9bddde57fbb3)
 
   # centerpoint_tiny
-  download(v1 pts_voxel_encoder_centerpoint_tiny.onnx 410f730c537968cb27fbd70c941849a8)
-  download(v1 pts_backbone_neck_head_centerpoint_tiny.onnx e97c165c7877222c0e27e44409a07517)
+  download(v2 pts_voxel_encoder_centerpoint_tiny.onnx 5fb774fac44dc83949d05eb3ba077309)
+  download(v2 pts_backbone_neck_head_centerpoint_tiny.onnx e4658325b70222f7c3637fe00e586b82)
 
   find_package(ament_cmake_auto REQUIRED)
   ament_auto_find_build_dependencies()
