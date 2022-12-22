@@ -36,10 +36,10 @@ ApolloLidarSegmentationPreProcessor::ApolloLidarSegmentationPreProcessor(
   const tvm_utility::pipeline::InferenceEngineTVMConfig & config, int32_t range,
   bool8_t use_intensity_feature, bool8_t use_constant_feature, float32_t min_height,
   float32_t max_height)
-: input_channels(config.network_inputs[0].second[1]),
-  input_width(config.network_inputs[0].second[2]),
-  input_height(config.network_inputs[0].second[3]),
-  datatype_bytes(config.tvm_dtype_bits / 8),
+: input_channels(config.network_inputs[0].node_shape[1]),
+  input_width(config.network_inputs[0].node_shape[2]),
+  input_height(config.network_inputs[0].node_shape[3]),
+  input_datatype_bytes(config.network_inputs[0].tvm_dtype_bits / 8),
   feature_generator(std::make_shared<FeatureGenerator>(
     input_width, input_height, range, use_intensity_feature, use_constant_feature, min_height,
     max_height))
@@ -48,9 +48,9 @@ ApolloLidarSegmentationPreProcessor::ApolloLidarSegmentationPreProcessor(
   std::vector<int64_t> shape_x{1, input_channels, input_width, input_height};
   TVMArrayContainer x{
     shape_x,
-    config.tvm_dtype_code,
-    config.tvm_dtype_bits,
-    config.tvm_dtype_lanes,
+    config.network_inputs[0].tvm_dtype_code,
+    config.network_inputs[0].tvm_dtype_bits,
+    config.network_inputs[0].tvm_dtype_lanes,
     config.tvm_device_type,
     config.tvm_device_id};
   output = x;
@@ -68,7 +68,7 @@ TVMArrayContainerVector ApolloLidarSegmentationPreProcessor::schedule(
 
   TVMArrayCopyFromBytes(
     output.getArray(), feature_map_ptr->map_data.data(),
-    input_channels * input_height * input_width * datatype_bytes);
+    input_channels * input_height * input_width * input_datatype_bytes);
 
   return {output};
 }
@@ -78,10 +78,10 @@ ApolloLidarSegmentationPostProcessor::ApolloLidarSegmentationPostProcessor(
   const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr, int32_t range,
   float32_t objectness_thresh, float32_t score_threshold, float32_t height_thresh,
   int32_t min_pts_num)
-: output_channels(config.network_outputs[0].second[1]),
-  output_width(config.network_outputs[0].second[2]),
-  output_height(config.network_outputs[0].second[3]),
-  datatype_bytes(config.tvm_dtype_bits / 8),
+: output_channels(config.network_outputs[0].node_shape[1]),
+  output_width(config.network_outputs[0].node_shape[2]),
+  output_height(config.network_outputs[0].node_shape[3]),
+  output_datatype_bytes(config.network_outputs[0].tvm_dtype_bits / 8),
   objectness_thresh_(objectness_thresh),
   score_threshold_(score_threshold),
   height_thresh_(height_thresh),
@@ -100,7 +100,7 @@ std::shared_ptr<DetectedObjectsWithFeature> ApolloLidarSegmentationPostProcessor
   std::vector<float32_t> feature(output_channels * output_width * output_height, 0);
   TVMArrayCopyToBytes(
     input[0].getArray(), feature.data(),
-    output_channels * output_width * output_height * datatype_bytes);
+    output_channels * output_width * output_height * output_datatype_bytes);
   cluster2d_->cluster(
     feature.data(), pc_ptr_, valid_idx, objectness_thresh_, true /*use all grids for clustering*/);
   auto object_array = cluster2d_->getObjects(score_threshold_, height_thresh_, min_pts_num_);

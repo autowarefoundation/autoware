@@ -14,7 +14,7 @@
 
 # Get user-provided variables
 set(DOWNLOAD_ARTIFACTS OFF CACHE BOOL "enable artifacts download")
-set(MODELZOO_VERSION "2.1.0-20221102" CACHE STRING "targeted ModelZoo version")
+set(MODELZOO_VERSION "3.0.0-20221221" CACHE STRING "targeted ModelZoo version")
 
 #
 # Download the selected neural network if it is not already present on disk.
@@ -32,6 +32,7 @@ set(MODELZOO_VERSION "2.1.0-20221102" CACHE STRING "targeted ModelZoo version")
 function(get_neural_network MODEL_NAME MODEL_BACKEND DEPENDENCY)
   set(DATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data)
   set(EXTERNALPROJECT_NAME ${MODEL_NAME}_${MODEL_BACKEND})
+  set(PREPROCESSING "")
 
   # Prioritize user-provided models.
   if(IS_DIRECTORY "${DATA_PATH}/user/${MODEL_NAME}")
@@ -42,6 +43,13 @@ function(get_neural_network MODEL_NAME MODEL_BACKEND DEPENDENCY)
       "${DATA_PATH}/models/${MODEL_NAME}/inference_engine_tvm_config.hpp"
       COPYONLY
     )
+    if(EXISTS "${DATA_PATH}/user/${MODEL_NAME}/preprocessing_inference_engine_tvm_config.hpp")
+      configure_file(
+        "${DATA_PATH}/user/${MODEL_NAME}/preprocessing_inference_engine_tvm_config.hpp"
+        "${DATA_PATH}/models/${MODEL_NAME}/preprocessing_inference_engine_tvm_config.hpp"
+        COPYONLY
+      )
+    endif()
     set(DOWNLOAD_DIR "")
     set(SOURCE_DIR "${DATA_PATH}/user/${MODEL_NAME}")
     set(INSTALL_DIRECTORY "${DATA_PATH}/user/${MODEL_NAME}")
@@ -63,7 +71,9 @@ function(get_neural_network MODEL_NAME MODEL_BACKEND DEPENDENCY)
     set(SOURCE_DIR "${DATA_PATH}/models/${MODEL_NAME}")
     set(INSTALL_DIRECTORY "${DATA_PATH}/models/${MODEL_NAME}")
   endif()
-
+  if(EXISTS "${DATA_PATH}/models/${MODEL_NAME}/preprocessing_inference_engine_tvm_config.hpp")
+    set(PREPROCESSING "${DATA_PATH}/models/${MODEL_NAME}/preprocessing_inference_engine_tvm_config.hpp")
+  endif()
   include(ExternalProject)
   externalproject_add(${EXTERNALPROJECT_NAME}
     DOWNLOAD_DIR ${DOWNLOAD_DIR}
@@ -72,6 +82,7 @@ function(get_neural_network MODEL_NAME MODEL_BACKEND DEPENDENCY)
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     BUILD_BYPRODUCTS "${DATA_PATH}/models/${MODEL_NAME}/inference_engine_tvm_config.hpp"
+    BUILD_BYPRODUCTS ${PREPROCESSING}
     INSTALL_COMMAND ""
   )
   install(
