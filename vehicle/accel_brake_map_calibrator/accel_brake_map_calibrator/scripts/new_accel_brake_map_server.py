@@ -35,15 +35,43 @@ class DrawGraph(Node):
 
     def __init__(self):
         super().__init__("plot_server")
+
         self.srv = self.create_service(
             CalibData, "/accel_brake_map_calibrator/get_data_service", self.get_data_callback
         )
 
-        package_path = get_package_share_directory("accel_brake_map_calibrator")
         default_map_path = get_package_share_directory("raw_vehicle_cmd_converter")
+        self.declare_parameter(
+            "/accel_brake_map_calibrator/csv_default_map_dir", default_map_path + "/data/default/"
+        )
+        self.default_map_dir = (
+            self.get_parameter("/accel_brake_map_calibrator/csv_default_map_dir")
+            .get_parameter_value()
+            .string_value
+        )
 
-        self.default_map_dir = default_map_path + "/data/default/"
-        self.calibrated_map_dir = package_path + "/config/"
+        package_path = get_package_share_directory("accel_brake_map_calibrator")
+        self.declare_parameter(
+            "/accel_brake_map_calibrator/csv_calibrated_map_dir", package_path + "/config/"
+        )
+        self.calibrated_map_dir = (
+            self.get_parameter("/accel_brake_map_calibrator/csv_calibrated_map_dir")
+            .get_parameter_value()
+            .string_value
+        )
+
+        self.declare_parameter("calibration_method", "each_cell")
+        self.calibration_method = (
+            self.get_parameter("calibration_method").get_parameter_value().string_value
+        )
+        if self.calibration_method is None:
+            self.calibration_method = "each_cell"
+        elif not (
+            (self.calibration_method == "each_cell") | (self.calibration_method == "four_cell")
+        ):
+            print("invalid method.")
+            self.calibration_method = "each_cell"
+
         self.log_file = package_path + "/config/log.csv"
 
         config_file = package_path + "/config/accel_brake_map_calibrator.param.yaml"
@@ -71,6 +99,7 @@ class DrawGraph(Node):
         # debug
         self.get_logger().info("default map dir: {}".format(self.default_map_dir))
         self.get_logger().info("calibrated map dir: {}".format(self.calibrated_map_dir))
+        self.get_logger().info("calibrated method: {}".format(self.calibration_method))
         self.get_logger().info("log file :{}".format(self.log_file))
         self.get_logger().info("min_vel_thr : {}".format(self.min_vel_thr))
         self.get_logger().info("vel_diff_thr : {}".format(self.vel_diff_thr))
@@ -82,7 +111,7 @@ class DrawGraph(Node):
 
     def get_data_callback(self, request, response):
         # read csv
-        # If log file doesn't exsist, return empty data
+        # If log file doesn't exist, return empty data
         if not Path(self.log_file).exists():
             response.graph_image = []
             self.get_logger().info("svg data is empty")
@@ -123,6 +152,7 @@ class DrawGraph(Node):
             self.vel_diff_thr,
             CF.PEDAL_LIST,
             self.pedal_diff_thr,
+            self.calibration_method,
         )
 
         count_map, average_map, stddev_map = CalcUtils.create_stat_map(data)

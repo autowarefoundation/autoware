@@ -8,6 +8,7 @@
   <arg name="pedal_accel_graph_output" default="true"/>
   <arg name="progress_file_output" default="false"/>
   <arg name="use_sim_time" default="false"/>
+  <arg name="calibration_method" default="each_cell"/>
 
   <!-- calibration interface -->
   <node pkg="accel_brake_map_calibrator" exec="accel_brake_map_calibrator" name="accel_brake_map_calibrator" output="screen">
@@ -25,7 +26,9 @@
   </node>
 
   <!-- calibration plot and map server node -->
-  <node pkg="accel_brake_map_calibrator" exec="new_accel_brake_map_server.py" name="new_accel_brake_map_server" output="screen"/>
+  <node pkg="accel_brake_map_calibrator" exec="new_accel_brake_map_server.py" name="new_accel_brake_map_server" output="screen">
+    <param name="calibration_method" value="$(var calibration_method)"/>
+  </node>
   <!-- Rviz -->
   <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share accel_brake_map_calibrator)/rviz/occupancy.rviz" if="$(var rviz)"/>
 </launch>
