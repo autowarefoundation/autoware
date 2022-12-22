@@ -28,6 +28,7 @@
 #include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -35,7 +36,12 @@
 
 namespace behavior_path_planner
 {
+
+using motion_utils::calcSignedArcLength;
+using motion_utils::findNearestIndex;
+
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;
+
 class AvoidanceModule : public SceneModuleInterface
 {
 public:
@@ -134,10 +140,10 @@ private:
     const Point ego_position = planner_data_->self_pose->pose.position;
 
     for (const auto & left_shift : left_shift_array_) {
-      const double start_distance = motion_utils::calcSignedArcLength(
-        path.points, ego_position, left_shift.start_pose.position);
-      const double finish_distance = motion_utils::calcSignedArcLength(
-        path.points, ego_position, left_shift.finish_pose.position);
+      const double start_distance =
+        calcSignedArcLength(path.points, ego_position, left_shift.start_pose.position);
+      const double finish_distance =
+        calcSignedArcLength(path.points, ego_position, left_shift.finish_pose.position);
       rtc_interface_left_.updateCooperateStatus(
         left_shift.uuid, true, start_distance, finish_distance, clock_->now());
       if (finish_distance > -1.0e-03) {
@@ -148,10 +154,10 @@ private:
     }
 
     for (const auto & right_shift : right_shift_array_) {
-      const double start_distance = motion_utils::calcSignedArcLength(
-        path.points, ego_position, right_shift.start_pose.position);
-      const double finish_distance = motion_utils::calcSignedArcLength(
-        path.points, ego_position, right_shift.finish_pose.position);
+      const double start_distance =
+        calcSignedArcLength(path.points, ego_position, right_shift.start_pose.position);
+      const double finish_distance =
+        calcSignedArcLength(path.points, ego_position, right_shift.finish_pose.position);
       rtc_interface_right_.updateCooperateStatus(
         right_shift.uuid, true, start_distance, finish_distance, clock_->now());
       if (finish_distance > -1.0e-03) {
@@ -200,6 +206,7 @@ private:
   void fillObjectMovingTime(ObjectData & object_data) const;
   void compensateDetectionLost(
     ObjectDataArray & target_objects, ObjectDataArray & other_objects) const;
+  void fillShiftLine(AvoidancePlanningData & data, DebugData & debug) const;
 
   // data used in previous planning
   ShiftedPath prev_output_;
@@ -225,14 +232,13 @@ private:
   void updateRegisteredObject(const ObjectDataArray & objects);
 
   // -- for shift point generation --
-  AvoidLineArray calcShiftLines(AvoidLineArray & current_raw_shift_lines, DebugData & debug) const;
+  AvoidLineArray applyPreProcessToRawShiftLines(
+    AvoidLineArray & current_raw_shift_points, DebugData & debug) const;
 
   // shift point generation: generator
   double getShiftLength(
     const ObjectData & object, const bool & is_object_on_right, const double & avoid_margin) const;
   AvoidLineArray calcRawShiftLinesFromObjects(const ObjectDataArray & objects) const;
-  double getRightShiftBound() const;
-  double getLeftShiftBound() const;
 
   // shift point generation: combiner
   AvoidLineArray combineRawShiftLinesWithUniqueCheck(
@@ -268,7 +274,7 @@ private:
   void fillAdditionalInfoFromLongitudinal(AvoidLineArray & shift_lines) const;
 
   // -- for new shift point approval --
-  boost::optional<AvoidLineArray> findNewShiftLine(
+  AvoidLineArray findNewShiftLine(
     const AvoidLineArray & shift_lines, const PathShifter & shifter) const;
   void addShiftLineIfApproved(const AvoidLineArray & point);
   void addNewShiftLines(PathShifter & path_shifter, const AvoidLineArray & shift_lines) const;
@@ -300,32 +306,90 @@ private:
   void updateAvoidanceDebugData(std::vector<AvoidanceDebugMsg> & avoidance_debug_msg_array) const;
   mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_line_;
   mutable rclcpp::Time debug_avoidance_initializer_for_shift_line_time_;
-  // =====================================
+
   // ========= helper functions ==========
-  // =====================================
+
+  double getEgoSpeed() const
+  {
+    return std::abs(planner_data_->self_odometry->twist.twist.linear.x);
+  }
+
+  double getNominalAvoidanceEgoSpeed() const
+  {
+    return std::max(getEgoSpeed(), parameters_->min_nominal_avoidance_speed);
+  }
+
+  double getSharpAvoidanceEgoSpeed() const
+  {
+    return std::max(getEgoSpeed(), parameters_->min_sharp_avoidance_speed);
+  }
+
+  double getNominalPrepareDistance() const
+  {
+    const auto & p = parameters_;
+    const auto epsilon_m = 0.01;  // for floating error to pass "has_enough_distance" check.
+    const auto nominal_distance =
+      std::max(getEgoSpeed() * p->prepare_time, p->min_prepare_distance);
+    return nominal_distance + epsilon_m;
+  }
+
+  double getNominalAvoidanceDistance(const double shift_length) const
+  {
+    const auto & p = parameters_;
+    const auto distance_by_jerk = PathShifter::calcLongitudinalDistFromJerk(
+      shift_length, parameters_->nominal_lateral_jerk, getNominalAvoidanceEgoSpeed());
+
+    return std::max(p->min_avoidance_distance, distance_by_jerk);
+  }
+
+  double getSharpAvoidanceDistance(const double shift_length) const
+  {
+    const auto & p = parameters_;
+    const auto distance_by_jerk = PathShifter::calcLongitudinalDistFromJerk(
+      shift_length, parameters_->max_lateral_jerk, getSharpAvoidanceEgoSpeed());
+
+    return std::max(p->min_avoidance_distance, distance_by_jerk);
+  }
+
+  double getRightShiftBound() const
+  {
+    // TODO(Horibe) write me. Real lane boundary must be considered here.
+    return -parameters_->max_right_shift_length;
+  }
+
+  double getLeftShiftBound() const
+  {
+    // TODO(Horibe) write me. Real lane boundary must be considered here.
+    return parameters_->max_left_shift_length;
+  }
+
+  double getCurrentShift() const
+  {
+    return prev_output_.shift_length.at(
+      findNearestIndex(prev_output_.path.points, getEgoPosition()));
+  }
+
+  double getCurrentLinearShift() const
+  {
+    return prev_linear_shift_path_.shift_length.at(
+      findNearestIndex(prev_linear_shift_path_.path.points, getEgoPosition()));
+  }
+
+  double getCurrentBaseShift() const { return path_shifter_.getBaseOffset(); }
+
+  Point getEgoPosition() const { return planner_data_->self_pose->pose.position; }
+
+  Pose getEgoPose() const { return planner_data_->self_pose->pose; }
+
+  Pose getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
 
   PathWithLaneId calcCenterLinePath(
-    const std::shared_ptr<const PlannerData> & planner_data, const PoseStamped & pose) const;
+    const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose) const;
 
   // TODO(Horibe): think later.
   // for unique ID
   mutable uint64_t original_unique_id = 0;  // TODO(Horibe) remove mutable
   uint64_t getOriginalShiftLineUniqueId() const { return original_unique_id++; }
-
-  double getNominalAvoidanceDistance(const double shift_length) const;
-  double getNominalPrepareDistance() const;
-  double getNominalAvoidanceEgoSpeed() const;
-
-  double getSharpAvoidanceDistance(const double shift_length) const;
-  double getSharpAvoidanceEgoSpeed() const;
-
-  double getEgoSpeed() const;
-  Point getEgoPosition() const;
-  PoseStamped getEgoPose() const;
-  PoseStamped getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
-  double getCurrentBaseShift() const { return path_shifter_.getBaseOffset(); }
-  double getCurrentShift() const;
-  double getCurrentLinearShift() const;
 
   /**
    * avoidance module misc data

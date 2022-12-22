@@ -286,11 +286,22 @@ struct AvoidancePlanningData
   // current driving lanelet
   lanelet::ConstLanelets current_lanelets;
 
+  // output path
+  ShiftedPath candidate_path;
+
   // avoidance target objects
   ObjectDataArray target_objects;
 
   // the others
   ObjectDataArray other_objects;
+
+  // raw shift point
+  AvoidLineArray unapproved_raw_sl{};
+
+  // new shift point
+  AvoidLineArray unapproved_new_sl{};
+
+  bool avoiding_now{false};
 };
 
 /*
