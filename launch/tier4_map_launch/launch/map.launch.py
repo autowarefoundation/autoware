@@ -161,7 +161,11 @@ def generate_launch_description():
     ),
     add_launch_arg(
         "pointcloud_map_loader_param_path",
-        "",
+        [
+            FindPackageShare("tier4_map_launch"),
+            "/config/pointcloud_map_loader.param.yaml",
+            # ToDo(kminoda): This file should eventually be removed as well as the other components
+        ],
         "path to pointcloud_map_loader param file",
     ),
     add_launch_arg("use_intra_process", "false", "use ROS2 component container communication"),
