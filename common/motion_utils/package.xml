@@ -8,7 +8,11 @@
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <!-- reviewer-->
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
