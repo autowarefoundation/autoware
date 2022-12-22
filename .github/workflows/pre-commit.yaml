@@ -5,7 +5,7 @@ on:
 
 jobs:
   pre-commit:
-    if: ${{ github.event.repository.private }}
+    if: ${{ github.event.repository.private }} # Use pre-commit.ci for public repositories
     runs-on: ubuntu-latest
     steps:
       - name: Generate token
