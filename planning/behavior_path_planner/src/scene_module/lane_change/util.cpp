@@ -372,10 +372,10 @@ bool isLaneChangePathSafe(
     lane_change_parameters.enable_collision_check_at_prepare_phase;
   const auto & lane_changing_duration = lane_change_parameters.lane_changing_duration;
   const double check_end_time = lane_change_prepare_duration + lane_changing_duration;
-  constexpr double ego_predicted_path_min_speed{1.0};
+  const double min_lc_speed{lane_change_parameters.minimum_lane_change_velocity};
   const auto vehicle_predicted_path = util::convertToPredictedPath(
     path, current_twist, current_pose, static_cast<double>(current_seg_idx), check_end_time,
-    time_resolution, acceleration, ego_predicted_path_min_speed);
+    time_resolution, acceleration, min_lc_speed);
   const auto prepare_phase_ignore_target_speed_thresh =
     lane_change_parameters.prepare_phase_ignore_target_speed_thresh;
 
@@ -387,7 +387,7 @@ bool isLaneChangePathSafe(
     util::filterObjectIndicesByLanelets(*dynamic_objects, target_lanes);
 
   // find objects in current lane
-  constexpr double check_distance = 100.0;
+  const double check_distance = common_parameters.forward_path_length;
   const auto current_lane_object_indices_lanelet = util::filterObjectIndicesByLanelets(
     *dynamic_objects, current_lanes, arc.length, arc.length + check_distance);
 
