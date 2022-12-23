@@ -68,7 +68,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
       // std::exit(EXIT_FAILURE);  // TODO(Horibe) do appropriate handing
     }
     scene_module_->unlockRTCCommand();
-    return BT::NodeStatus::FAILURE;
+    return scene_module_->getNodeStatusWhileWaitingApproval();
   }
 
   while (rclcpp::ok()) {

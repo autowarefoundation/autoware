@@ -104,6 +104,15 @@ public:
   virtual BT::NodeStatus updateState() = 0;
 
   /**
+   * @brief If the module plan customized reference path while waiting approval, it should output
+   * SUCCESS. Otherwise, it should output FAILURE to check execution request of next module.
+   */
+  virtual BT::NodeStatus getNodeStatusWhileWaitingApproval() const
+  {
+    return BT::NodeStatus::FAILURE;
+  }
+
+  /**
    * @brief Return true if the module has request for execution (not necessarily feasible)
    */
   virtual bool isExecutionRequested() const = 0;
