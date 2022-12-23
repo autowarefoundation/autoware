@@ -238,12 +238,7 @@ bool BehaviorVelocityPlannerNode::isDataReady(
     RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for pointcloud");
     return false;
   }
-  if (!d.route_handler_) {
-    RCLCPP_INFO_THROTTLE(
-      get_logger(), clock, 3000, "Waiting for the initialization of route_handler");
-    return false;
-  }
-  if (!d.route_handler_->isMapMsgReady()) {
+  if (!map_ptr_) {
     RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for the initialization of map");
     return false;
   }
@@ -344,8 +339,8 @@ void BehaviorVelocityPlannerNode::onLaneletMap(
 {
   std::lock_guard<std::mutex> lock(mutex_);
 
-  // Load map
-  planner_data_.route_handler_ = std::make_shared<route_handler::RouteHandler>(*msg);
+  map_ptr_ = msg;
+  has_received_map_ = true;
 }
 
 void BehaviorVelocityPlannerNode::onTrafficSignals(
@@ -415,6 +410,18 @@ void BehaviorVelocityPlannerNode::onTrigger(
   }
 
   if (!isDataReady(planner_data_, *get_clock())) {
+    mutex_.unlock();
+    return;
+  }
+
+  // Load map and check route handler
+  if (has_received_map_) {
+    planner_data_.route_handler_ = std::make_shared<route_handler::RouteHandler>(*map_ptr_);
+    has_received_map_ = false;
+  }
+  if (!planner_data_.route_handler_) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), *get_clock(), 3000, "Waiting for the initialization of route_handler");
     mutex_.unlock();
     return;
   }

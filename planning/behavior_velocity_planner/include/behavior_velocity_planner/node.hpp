@@ -40,6 +40,7 @@
 
 namespace behavior_velocity_planner
 {
+using autoware_auto_mapping_msgs::msg::HADMapBin;
 using tier4_planning_msgs::msg::VelocityLimit;
 class BehaviorVelocityPlannerNode : public rclcpp::Node
 {
@@ -109,6 +110,8 @@ private:
   PlannerData planner_data_;
   BehaviorVelocityPlannerManager planner_manager_;
   bool is_driving_forward_{true};
+  HADMapBin::ConstSharedPtr map_ptr_{nullptr};
+  bool has_received_map_;
 
   // mutex for planner_data_
   std::mutex mutex_;
