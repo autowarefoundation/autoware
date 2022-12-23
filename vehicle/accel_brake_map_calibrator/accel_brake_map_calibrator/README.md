@@ -181,3 +181,76 @@ ros2 run accel_brake_map_calibrator actuation_cmd_publisher.py
 ```
 
 ![actuation_cmd_publisher_util](./media/actuation_cmd_publisher_util.png)
+
+## Calibration Method
+
+Two algorithms are selectable for the acceleration map update, [update_offset_four_cell_around](#update_offset_each_cell) and [update_offset_each_cell](update_offset_each_cell). Please see the link for datails.
+
+### Data Preprocessing
+
+Before calibration, missing or unusable data (e.g., too large handle angles) must first be eliminated. The following parameters are used to determine which data to remove.
+
+#### Parameters
+
+| Name                   | Description                  | Default Value |
+| ---------------------- | ---------------------------- | ------------- |
+| velocity_min_threshold | Exclude minimal velocity     | 0.1           |
+| max_steer_threshold    | Exclude large steering angle | 0.2           |
+| max_pitch_threshold    | Exclude large pitch angle    | 0.02          |
+| max_jerk_threshold     | Exclude large jerk           | 0.7           |
+| pedal_velocity_thresh  | Exclude large pedaling speed | 0.15          |
+
+### update_offset_each_cell
+
+Update by Recursive Least Squares(RLS) method using data close enough to each grid.
+
+**Advantage** : Only data close enough to each grid is used for calibration, allowing accurate updates at each point.
+
+**Disadvantage** : Calibration is time-consuming due to a large amount of data to be excluded.
+
+#### Parameters
+
+Data selection is determined by the following thresholds.
+| Name | Default Value |
+| -------- | -------- |
+|velocity_diff_threshold|0.556|
+|pedal_diff_threshold|0.03|
+
+#### Update formula
+
+$$
+\begin{align}
+    \theta[n]=&
+    \theta[n-1]+\frac{p[n-1]x^{(n)}}{\lambda+p[n-1](x^{(n)})^2}(y^{(n)}-\theta[n-1]x^{(n)})\\
+    p[n]=&\frac{p[n-1]}{\lambda+p[n-1](x^{(n)})^2}
+\end{align}
+$$
+
+#### Variables
+
+| Variable name      | Symbol      |
+| ------------------ | ----------- |
+| covariance         | $p[n-1]$    |
+| map_offset         | $\theta[n]$ |
+| forgetting*factor* | $\lambda$   |
+| phi                | $x(=1)$     |
+| measured_acc       | $y$         |
+
+### update_offset_four_cell_around [1]
+
+Update the offsets by RLS in four grids around newly obtained data. By considering linear interpolation, the update takes into account appropriate weights. Therefore, there is no need to remove data by thresholding.
+
+**Advantage** : No data is wasted because updates are performed on the 4 grids around the data with appropriate weighting.
+**Disadvantage** : Accuracy may be degraded due to extreme bias of the data. For example, if data $z(k)$ is biased near $Z_{RR}$ in Fig. 2, updating is performed at the four surrounding points ( $Z_{RR}$, $Z_{RL}$, $Z_{LR}$, and $Z_{LL}$), but accuracy at $Z_{LL}$ is not expected.
+
+<p align="center">
+  <img src="./media/fourcell_RLS.png" width="600">
+</p>
+
+#### Implementation
+
+See eq.(7)-(10) in [1] for the updated formula. In addition, eq.(17),(18) from [1] are used for Anti-Windup.
+
+### References
+
+[1] [Gabrielle Lochrie, Michael Doljevic, Mario Nona, Yongsoon Yoon, Anti-Windup Recursive Least Squares Method for Adaptive Lookup Tables with Application to Automotive Powertrain Control Systems, IFAC-PapersOnLine, Volume 54, Issue 20, 2021, Pages 840-845](https://www.sciencedirect.com/science/article/pii/S240589632102320X)
