@@ -635,6 +635,7 @@ PathWithLaneId PullOverModule::generateEmergencyStopPath()
   const auto & current_pose = planner_data_->self_pose->pose;
   const auto & common_parameters = planner_data_->parameters;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
+  constexpr double eps_vel = 0.01;
 
   // generate stop reference path
   const auto s_current =
@@ -662,7 +663,7 @@ PathWithLaneId PullOverModule::generateEmergencyStopPath()
       common_parameters.ego_nearest_yaw_threshold);
     const double distance_to_target = calcSignedArcLength(
       stop_path.points, current_pose.position, ego_idx, p.pose.position, target_idx);
-    if (0.0 < distance_to_target) {
+    if (0.0 < distance_to_target && eps_vel < current_vel) {
       p.longitudinal_velocity_mps = std::clamp(
         static_cast<float>(
           current_vel * (min_stop_distance - distance_to_target) / min_stop_distance),
