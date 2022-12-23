@@ -26,8 +26,8 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
-
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
@@ -71,6 +71,16 @@ public:
    * @brief  Set reference path.
    */
   void setPath(const PathWithLaneId & path);
+
+  /**
+   * @brief  Set velocity used to apply a lateral acceleration limit.
+   */
+  void setVelocity(const double velocity);
+
+  /**
+   * @brief  Set acceleration limit
+   */
+  void setLateralAccelerationLimit(const double acc);
 
   /**
    * @brief  Add shift point. You don't have to care about the start/end_idx.
@@ -122,65 +132,23 @@ public:
   ////////////////////////////////////////
 
   static double calcLongitudinalDistFromJerk(
-    const double lateral, const double jerk, const double velocity)
-  {
-    const double j = std::abs(jerk);
-    const double l = std::abs(lateral);
-    const double v = std::abs(velocity);
-    if (j < 1.0e-8) {
-      return 1.0e10;  // TODO(Horibe) maybe invalid arg?
-    }
-    return 4.0 * std::pow(0.5 * l / j, 1.0 / 3.0) * v;
-  }
+    const double lateral, const double jerk, const double velocity);
+
+  static double calcShiftTimeFromJerkAndJerk(
+    const double lateral, const double jerk, const double acc);
 
   static double calcJerkFromLatLonDistance(
-    const double lateral, const double longitudinal, const double velocity)
-  {
-    constexpr double ep = 1.0e-3;
-    const double lat = std::abs(lateral);
-    const double lon = std::max(std::abs(longitudinal), ep);
-    const double v = std::abs(velocity);
-    return 0.5 * lat * std::pow(4.0 * v / lon, 3);
-  }
+    const double lateral, const double longitudinal, const double velocity);
 
-  double getTotalShiftLength() const
-  {
-    double sum = base_offset_;
-    for (const auto & l : shift_lines_) {
-      sum += l.end_shift_length;
-    }
-    return sum;
-  }
+  double getTotalShiftLength() const;
 
-  double getLastShiftLength() const
-  {
-    if (shift_lines_.empty()) {
-      return base_offset_;
-    }
+  double getLastShiftLength() const;
 
-    const auto furthest = std::max_element(
-      shift_lines_.begin(), shift_lines_.end(),
-      [](auto & a, auto & b) { return a.end_idx < b.end_idx; });
-
-    return furthest->end_shift_length;
-  }
-
-  boost::optional<ShiftLine> getLastShiftLine() const
-  {
-    if (shift_lines_.empty()) {
-      return {};
-    }
-
-    const auto furthest = std::max_element(
-      shift_lines_.begin(), shift_lines_.end(),
-      [](auto & a, auto & b) { return a.end_idx > b.end_idx; });
-
-    return *furthest;
-  }
+  boost::optional<ShiftLine> getLastShiftLine() const;
 
   /**
    * @brief  Calculate the theoretical lateral jerk by spline shifting for current shift_lines_.
-   * @return Jerk array. THe size is same as the shift points.
+   * @return Jerk array. The size is same as the shift points.
    */
   std::vector<double> calcLateralJerk() const;
 
@@ -194,12 +162,24 @@ private:
   // The amount of shift length to the entire path.
   double base_offset_{0.0};
 
+  // Used to apply a lateral acceleration limit
+  double velocity_{0.0};
+
+  // lateral acceleration limit considered in the path planning
+  double acc_limit_{-1.0};
+
   // Logger
   mutable rclcpp::Logger logger_{
     rclcpp::get_logger("behavior_path_planner").get_child("path_shifter")};
 
   // Clock
   mutable rclcpp::Clock clock_{RCL_ROS_TIME};
+
+  std::pair<std::vector<double>, std::vector<double>> calcBaseLengths(
+    const double arclength, const double shift_length, const bool offset_back) const;
+
+  std::pair<std::vector<double>, std::vector<double>> getBaseLengthsWithoutAccelLimit(
+    const double arclength, const double shift_length, const bool offset_back) const;
 
   /**
    * @brief Calculate path index for shift_lines and set is_index_aligned_ to true.

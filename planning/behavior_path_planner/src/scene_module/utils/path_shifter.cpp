@@ -40,6 +40,14 @@ std::string toStr(const behavior_path_planner::ShiftLine & p)
          ", end idx = " + std::to_string(p.end_idx) +
          ", length = " + std::to_string(p.end_shift_length);
 }
+std::string toStr(const std::vector<double> & v)
+{
+  std::stringstream ss;
+  for (const auto & p : v) {
+    ss << p << ", ";
+  }
+  return ss.str();
+}
 }  // namespace
 
 namespace behavior_path_planner
@@ -55,6 +63,10 @@ void PathShifter::setPath(const PathWithLaneId & path)
   updateShiftLinesIndices(shift_lines_);
   sortShiftLinesAlongPath(shift_lines_);
 }
+void PathShifter::setVelocity(const double velocity) { velocity_ = velocity; }
+
+void PathShifter::setLateralAccelerationLimit(const double acc) { acc_limit_ = acc; }
+
 void PathShifter::addShiftLine(const ShiftLine & line)
 {
   shift_lines_.push_back(line);
@@ -195,12 +207,12 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
 
     // TODO(Watanabe) write docs.
     // These points are defined to achieve the constant-jerk shifting (see the header description).
-    const std::vector<double> base_distance = {
-      0.0, shifting_arclength / 4.0, shifting_arclength * 3.0 / 4.0, shifting_arclength};
-    const auto base_length =
-      offset_back
-        ? std::vector<double>{0.0, delta_shift / 12.0, delta_shift * 11.0 / 12.0, delta_shift}
-        : std::vector<double>{delta_shift, delta_shift * 11.0 / 12.0, delta_shift / 12.0, 0.0};
+    const auto [base_distance, base_length] =
+      calcBaseLengths(shifting_arclength, delta_shift, offset_back);
+
+    RCLCPP_DEBUG(
+      logger_, "base_distance = %s, base_length = %s", toStr(base_distance).c_str(),
+      toStr(base_length).c_str());
 
     std::vector<double> query_distance, query_length;
 
@@ -236,6 +248,79 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
       }
     }
   }
+}
+
+std::pair<std::vector<double>, std::vector<double>> PathShifter::getBaseLengthsWithoutAccelLimit(
+  const double arclength, const double shift_length, const bool offset_back) const
+{
+  const auto s = arclength;
+  const auto l = shift_length;
+  std::vector<double> base_lon = {0.0, 1.0 / 4.0 * s, 3.0 / 4.0 * s, s};
+  std::vector<double> base_lat = {0.0, 1.0 / 12.0 * l, 11.0 / 12.0 * l, l};
+
+  if (!offset_back) std::reverse(base_lat.begin(), base_lat.end());
+
+  return std::pair{base_lon, base_lat};
+}
+
+std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths(
+  const double arclength, const double shift_length, const bool offset_back) const
+{
+  const auto speed = std::abs(velocity_);
+
+  if (speed < 1.0e-5) {
+    // no need to consider acceleration limit
+    RCLCPP_INFO(logger_, "set velocity is zero. acc limit is ignored");
+    return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
+  }
+
+  const auto T = arclength / speed;
+  const auto L = std::abs(shift_length);
+  const auto a_max = 8.0 * L / (T * T);
+
+  if (a_max < acc_limit_) {
+    // no need to consider acceleration limit
+    RCLCPP_DEBUG(logger_, "No need to consider acc limit. max: %f, limit: %f", a_max, acc_limit_);
+    return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
+  }
+
+  const auto tj = T / 2.0 - 2.0 * L / (acc_limit_ * T);
+  const auto ta = 4.0 * L / (acc_limit_ * T) - T / 2.0;
+  const auto jerk = (2.0 * acc_limit_ * acc_limit_ * T) / (acc_limit_ * T * T - 4.0 * L);
+
+  if (tj < 0.0 || ta < 0.0 || jerk < 0.0 || tj / T < 0.1) {
+    // no need to consider acceleration limit
+    RCLCPP_WARN(
+      logger_,
+      "Acc limit is too small to be applied. Tj: %f, Ta: %f, j: %f, a_max: %f, acc_limit: %f", tj,
+      ta, jerk, a_max, acc_limit_);
+    return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
+  }
+
+  const auto tj3 = tj * tj * tj;
+  const auto ta2_tj = ta * ta * tj;
+  const auto ta_tj2 = ta * tj * tj;
+
+  const auto s1 = tj * speed;
+  const auto s2 = s1 + ta * speed;
+  const auto s3 = s2 + tj * speed;  // = s4
+  const auto s5 = s3 + tj * speed;
+  const auto s6 = s5 + ta * speed;
+  const auto s7 = s6 + tj * speed;
+
+  const auto sign = shift_length > 0.0 ? 1.0 : -1.0;
+  const auto l1 = sign * (1.0 / 6.0 * jerk * tj3);
+  const auto l2 = sign * (1.0 / 6.0 * jerk * tj3 + 0.5 * jerk * ta_tj2 + 0.5 * jerk * ta2_tj);
+  const auto l3 = sign * (jerk * tj3 + 1.5 * jerk * ta_tj2 + 0.5 * jerk * ta2_tj);  // = l4
+  const auto l5 = sign * (11.0 / 6.0 * jerk * tj3 + 2.5 * jerk * ta_tj2 + 0.5 * jerk * ta2_tj);
+  const auto l6 = sign * (11.0 / 6.0 * jerk * tj3 + 3.0 * jerk * ta_tj2 + jerk * ta2_tj);
+  const auto l7 = sign * (2.0 * jerk * tj3 + 3.0 * jerk * ta_tj2 + jerk * ta2_tj);
+
+  std::vector<double> base_lon = {0.0, s1, s2, s3, s5, s6, s7};
+  std::vector<double> base_lat = {0.0, l1, l2, l3, l5, l6, l7};
+  if (!offset_back) std::reverse(base_lat.begin(), base_lat.end());
+
+  return {base_lon, base_lat};
 }
 
 std::vector<double> PathShifter::calcLateralJerk() const
@@ -384,6 +469,89 @@ void PathShifter::shiftBaseLength(ShiftedPath * path, double offset) const
       addLateralOffsetOnIndexPoint(path, offset, i);
     }
   }
+}
+
+double PathShifter::calcShiftTimeFromJerkAndJerk(
+  const double lateral, const double jerk, const double acc)
+{
+  const double j = std::abs(jerk);
+  const double a = std::abs(acc);
+  const double l = std::abs(lateral);
+  if (j < 1.0e-8 || a < 1.0e-8) {
+    return 1.0e10;  // TODO(Horibe) maybe invalid arg?
+  }
+
+  // time with constant jerk
+  double tj = a / j;
+
+  // time with constant acceleration (zero jerk)
+  double ta = (std::sqrt(a * a + 4.0 * j * j * l / a) - 3.0 * a) / (2.0 * j);
+
+  if (ta < 0.0) {
+    // it will not hit the acceleration limit this time
+    tj = std::pow(l / (2.0 * j), 1.0 / 3.0);
+    ta = 0.0;
+  }
+
+  const double t_total = 4.0 * tj + 2.0 * ta;
+  return t_total;
+}
+
+double PathShifter::calcLongitudinalDistFromJerk(
+  const double lateral, const double jerk, const double velocity)
+{
+  const double j = std::abs(jerk);
+  const double l = std::abs(lateral);
+  const double v = std::abs(velocity);
+  if (j < 1.0e-8) {
+    return 1.0e10;  // TODO(Horibe) maybe invalid arg?
+  }
+  return 4.0 * std::pow(0.5 * l / j, 1.0 / 3.0) * v;
+}
+
+double PathShifter::calcJerkFromLatLonDistance(
+  const double lateral, const double longitudinal, const double velocity)
+{
+  constexpr double ep = 1.0e-3;
+  const double lat = std::abs(lateral);
+  const double lon = std::max(std::abs(longitudinal), ep);
+  const double v = std::abs(velocity);
+  return 0.5 * lat * std::pow(4.0 * v / lon, 3);
+}
+
+double PathShifter::getTotalShiftLength() const
+{
+  double sum = base_offset_;
+  for (const auto & l : shift_lines_) {
+    sum += l.end_shift_length;
+  }
+  return sum;
+}
+
+double PathShifter::getLastShiftLength() const
+{
+  if (shift_lines_.empty()) {
+    return base_offset_;
+  }
+
+  const auto furthest = std::max_element(
+    shift_lines_.begin(), shift_lines_.end(),
+    [](auto & a, auto & b) { return a.end_idx < b.end_idx; });
+
+  return furthest->end_shift_length;
+}
+
+boost::optional<ShiftLine> PathShifter::getLastShiftLine() const
+{
+  if (shift_lines_.empty()) {
+    return {};
+  }
+
+  const auto furthest = std::max_element(
+    shift_lines_.begin(), shift_lines_.end(),
+    [](auto & a, auto & b) { return a.end_idx > b.end_idx; });
+
+  return *furthest;
 }
 
 }  // namespace behavior_path_planner

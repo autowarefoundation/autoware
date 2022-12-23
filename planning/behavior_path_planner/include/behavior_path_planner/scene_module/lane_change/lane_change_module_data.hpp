@@ -26,7 +26,9 @@ namespace behavior_path_planner
 struct LaneChangeParameters
 {
   double lane_change_prepare_duration{2.0};
-  double lane_changing_duration{4.0};
+  double lane_changing_safety_check_duration{4.0};
+  double lane_changing_lateral_jerk{0.5};
+  double lane_changing_lateral_acc{0.5};
   double lane_change_finish_judge_buffer{3.0};
   double minimum_lane_change_velocity{5.6};
   double prediction_time_resolution{0.5};

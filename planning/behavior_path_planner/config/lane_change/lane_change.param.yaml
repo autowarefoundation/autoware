@@ -2,19 +2,28 @@
   ros__parameters:
     lane_change:
       lane_change_prepare_duration: 4.0         # [s]
-      lane_changing_duration: 8.0               # [s]
-      minimum_lane_change_prepare_distance: 4.0 # [m]
+      lane_changing_safety_check_duration: 8.0  # [s]
+
+      minimum_lane_change_prepare_distance: 2.0 # [m]
+      minimum_lane_change_length: 16.5          # [m]
+      backward_length_buffer_for_end_of_lane: 2.0 # [m]
       lane_change_finish_judge_buffer: 3.0      # [m]
-      minimum_lane_change_velocity: 5.6         # [m/s]
+
+      double lane_changing_lateral_jerk: 0.5    # [m/s3]
+      double lane_changing_lateral_acc: 0.5     # [m/s2]
+
+      minimum_lane_change_velocity: 2.778       # [m/s]
       prediction_time_resolution: 0.5           # [s]
       maximum_deceleration: 1.0                 # [m/s2]
       lane_change_sampling_num: 10
+
       abort_lane_change_velocity_thresh: 0.5
       abort_lane_change_angle_thresh: 10.0      # [deg]
       abort_lane_change_distance_thresh: 0.3    # [m]
       prepare_phase_ignore_target_speed_thresh: 0.1 # [m/s]
+
       enable_abort_lane_change: true
-      enable_collision_check_at_prepare_phase: false
+      enable_collision_check_at_prepare_phase: true
       use_predicted_path_outside_lanelet: true
-      use_all_predicted_path: true
+      use_all_predicted_path: false
       publish_debug_marker: false
