@@ -68,10 +68,8 @@ public:
 
 private:
   rclcpp::TimerBase::SharedPtr timer_control_;
-  trajectory_follower::InputData input_data_;
   double timeout_thr_sec_;
   boost::optional<LongitudinalOutput> longitudinal_output_{boost::none};
-  boost::optional<LateralOutput> lateral_output_{boost::none};
 
   std::shared_ptr<trajectory_follower::LongitudinalControllerBase> longitudinal_controller_;
   std::shared_ptr<trajectory_follower::LateralControllerBase> lateral_controller_;
@@ -83,6 +81,11 @@ private:
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
     control_cmd_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_marker_pub_;
+
+  autoware_auto_planning_msgs::msg::Trajectory::SharedPtr current_trajectory_ptr_;
+  nav_msgs::msg::Odometry::SharedPtr current_odometry_ptr_;
+  autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr current_steering_ptr_;
+  geometry_msgs::msg::AccelWithCovarianceStamped::SharedPtr current_accel_ptr_;
 
   enum class LateralControllerMode {
     INVALID = 0,
@@ -97,16 +100,19 @@ private:
   /**
    * @brief compute control command, and publish periodically
    */
+  boost::optional<trajectory_follower::InputData> createInputData(rclcpp::Clock & clock) const;
   void callbackTimerControl();
   void onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr);
   void onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg);
   void onSteering(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg);
   void onAccel(const geometry_msgs::msg::AccelWithCovarianceStamped::SharedPtr msg);
-  bool isTimeOut();
+  bool isTimeOut(const LongitudinalOutput & lon_out, const LateralOutput & lat_out);
   LateralControllerMode getLateralControllerMode(const std::string & algorithm_name) const;
   LongitudinalControllerMode getLongitudinalControllerMode(
     const std::string & algorithm_name) const;
-  void publishDebugMarker() const;
+  void publishDebugMarker(
+    const trajectory_follower::InputData & input_data,
+    const trajectory_follower::LateralOutput & lat_out) const;
 };
 }  // namespace trajectory_follower_nodes
 }  // namespace control

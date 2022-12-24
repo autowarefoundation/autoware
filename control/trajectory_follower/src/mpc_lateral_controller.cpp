@@ -173,11 +173,12 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
 
 MpcLateralController::~MpcLateralController() {}
 
-boost::optional<LateralOutput> MpcLateralController::run()
+LateralOutput MpcLateralController::run(InputData const & input_data)
 {
-  if (!checkData()) {
-    return boost::none;
-  }
+  // set input data
+  setTrajectory(input_data.current_trajectory);
+  m_current_kinematic_state = input_data.current_odometry;
+  m_current_steering = input_data.current_steering;
 
   autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd;
   autoware_auto_planning_msgs::msg::Trajectory predicted_traj;
@@ -189,8 +190,8 @@ boost::optional<LateralOutput> MpcLateralController::run()
   }
 
   const bool is_mpc_solved = m_mpc.calculateMPC(
-    *m_current_steering_ptr, m_current_kinematic_state_ptr->twist.twist.linear.x,
-    m_current_kinematic_state_ptr->pose.pose, ctrl_cmd, predicted_traj, debug_values);
+    m_current_steering, m_current_kinematic_state.twist.twist.linear.x,
+    m_current_kinematic_state.pose.pose, ctrl_cmd, predicted_traj, debug_values);
 
   publishPredictedTraj(predicted_traj);
   publishDebugValues(debug_values);
@@ -199,7 +200,7 @@ boost::optional<LateralOutput> MpcLateralController::run()
     LateralOutput output;
     output.control_cmd = createCtrlCmdMsg(cmd);
     output.sync_data.is_steer_converged = isSteerConverged(cmd);
-    return boost::optional<LateralOutput>(output);
+    return output;
   };
 
   if (isStoppedState()) {
@@ -223,13 +224,6 @@ boost::optional<LateralOutput> MpcLateralController::run()
   return createLateralOutput(ctrl_cmd);
 }
 
-void MpcLateralController::setInputData(InputData const & input_data)
-{
-  setTrajectory(input_data.current_trajectory_ptr);
-  m_current_kinematic_state_ptr = input_data.current_odometry_ptr;
-  m_current_steering_ptr = input_data.current_steering_ptr;
-}
-
 bool MpcLateralController::isSteerConverged(
   const autoware_auto_control_msgs::msg::AckermannLateralCommand & cmd) const
 {
@@ -241,74 +235,58 @@ bool MpcLateralController::isSteerConverged(
   }
 
   const bool is_converged =
-    std::abs(cmd.steering_tire_angle - m_current_steering_ptr->steering_tire_angle) <
+    std::abs(cmd.steering_tire_angle - m_current_steering.steering_tire_angle) <
     static_cast<float>(m_converged_steer_rad);
 
   return is_converged;
 }
 
-bool MpcLateralController::checkData() const
+bool MpcLateralController::isReady(const InputData & input_data)
 {
+  setTrajectory(input_data.current_trajectory);
+  m_current_kinematic_state = input_data.current_odometry;
+  m_current_steering = input_data.current_steering;
+
   if (!m_mpc.hasVehicleModel()) {
-    RCLCPP_DEBUG(node_->get_logger(), "MPC does not have a vehicle model");
+    RCLCPP_INFO_THROTTLE(
+      node_->get_logger(), *node_->get_clock(), 5000, "MPC does not have a vehicle model");
     return false;
   }
   if (!m_mpc.hasQPSolver()) {
-    RCLCPP_DEBUG(node_->get_logger(), "MPC does not have a QP solver");
+    RCLCPP_INFO_THROTTLE(
+      node_->get_logger(), *node_->get_clock(), 5000, "MPC does not have a QP solver");
     return false;
   }
-
-  if (!m_current_kinematic_state_ptr) {
-    RCLCPP_DEBUG(
-      node_->get_logger(), "waiting data. kinematic_state = %d",
-      m_current_kinematic_state_ptr != nullptr);
-    return false;
-  }
-
-  if (!m_current_steering_ptr) {
-    RCLCPP_DEBUG(
-      node_->get_logger(), "waiting data. current_steering = %d",
-      m_current_steering_ptr != nullptr);
-    return false;
-  }
-
   if (m_mpc.m_ref_traj.size() == 0) {
-    RCLCPP_DEBUG(node_->get_logger(), "trajectory size is zero.");
+    RCLCPP_INFO_THROTTLE(
+      node_->get_logger(), *node_->get_clock(), 5000, "trajectory size is zero.");
     return false;
   }
 
   return true;
 }
 
-void MpcLateralController::setTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
+void MpcLateralController::setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & msg)
 {
-  if (!msg) return;
+  m_current_trajectory = msg;
 
-  m_current_trajectory_ptr = msg;
-
-  if (!m_current_kinematic_state_ptr) {
-    RCLCPP_DEBUG(node_->get_logger(), "Current kinematic state is not received yet.");
-    return;
-  }
-
-  if (msg->points.size() < 3) {
+  if (msg.points.size() < 3) {
     RCLCPP_DEBUG(node_->get_logger(), "received path size is < 3, not enough.");
     return;
   }
 
-  if (!isValidTrajectory(*msg)) {
+  if (!isValidTrajectory(msg)) {
     RCLCPP_ERROR(node_->get_logger(), "Trajectory is invalid!! stop computing.");
     return;
   }
 
   m_mpc.setReferenceTrajectory(
-    *msg, m_traj_resample_dist, m_enable_path_smoothing, m_path_filter_moving_ave_num,
+    msg, m_traj_resample_dist, m_enable_path_smoothing, m_path_filter_moving_ave_num,
     m_curvature_smoothing_num_traj, m_curvature_smoothing_num_ref_steer,
     m_extend_trajectory_for_end_yaw_control);
 
   // update trajectory buffer to check the trajectory shape change.
-  m_trajectory_buffer.push_back(*m_current_trajectory_ptr);
+  m_trajectory_buffer.push_back(m_current_trajectory);
   while (rclcpp::ok()) {
     const auto time_diff = rclcpp::Time(m_trajectory_buffer.back().header.stamp) -
                            rclcpp::Time(m_trajectory_buffer.front().header.stamp);
@@ -337,7 +315,7 @@ autoware_auto_control_msgs::msg::AckermannLateralCommand
 MpcLateralController::getInitialControlCommand() const
 {
   autoware_auto_control_msgs::msg::AckermannLateralCommand cmd;
-  cmd.steering_tire_angle = m_current_steering_ptr->steering_tire_angle;
+  cmd.steering_tire_angle = m_current_steering.steering_tire_angle;
   cmd.steering_tire_rotation_rate = 0.0;
   return cmd;
 }
@@ -345,7 +323,7 @@ MpcLateralController::getInitialControlCommand() const
 bool MpcLateralController::isStoppedState() const
 {
   // If the nearest index is not found, return false
-  if (m_current_trajectory_ptr->points.empty()) {
+  if (m_current_trajectory.points.empty()) {
     return false;
   }
 
@@ -354,12 +332,12 @@ bool MpcLateralController::isStoppedState() const
   // control was turned off when approaching/exceeding the stop line on a curve or
   // emergency stop situation and it caused large tracking error.
   const size_t nearest = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    m_current_trajectory_ptr->points, m_current_kinematic_state_ptr->pose.pose,
-    m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
+    m_current_trajectory.points, m_current_kinematic_state.pose.pose, m_ego_nearest_dist_threshold,
+    m_ego_nearest_yaw_threshold);
 
-  const double current_vel = m_current_kinematic_state_ptr->twist.twist.linear.x;
+  const double current_vel = m_current_kinematic_state.twist.twist.linear.x;
   const double target_vel =
-    m_current_trajectory_ptr->points.at(static_cast<size_t>(nearest)).longitudinal_velocity_mps;
+    m_current_trajectory.points.at(static_cast<size_t>(nearest)).longitudinal_velocity_mps;
 
   const auto latest_published_cmd = m_ctrl_cmd_prev;  // use prev_cmd as a latest published command
   if (m_keep_steer_control_until_converged && !isSteerConverged(latest_published_cmd)) {
@@ -387,7 +365,7 @@ void MpcLateralController::publishPredictedTraj(
   autoware_auto_planning_msgs::msg::Trajectory & predicted_traj) const
 {
   predicted_traj.header.stamp = node_->now();
-  predicted_traj.header.frame_id = m_current_trajectory_ptr->header.frame_id;
+  predicted_traj.header.frame_id = m_current_trajectory.header.frame_id;
   m_pub_predicted_traj->publish(predicted_traj);
 }
 
@@ -521,7 +499,7 @@ bool MpcLateralController::isTrajectoryShapeChanged() const
   for (const auto & trajectory : m_trajectory_buffer) {
     if (
       tier4_autoware_utils::calcDistance2d(
-        trajectory.points.back().pose, m_current_trajectory_ptr->points.back().pose) >
+        trajectory.points.back().pose, m_current_trajectory.points.back().pose) >
       m_new_traj_end_dist) {
       return true;
     }

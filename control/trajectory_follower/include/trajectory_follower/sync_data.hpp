@@ -30,7 +30,8 @@ struct LateralSyncData
 
 struct LongitudinalSyncData
 {
-  bool is_velocity_converged{false};
+  // NOTE: This variable is not used for now
+  // bool is_velocity_converged{false};
 };
 
 }  // namespace trajectory_follower

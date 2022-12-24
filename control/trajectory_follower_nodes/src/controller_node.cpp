@@ -108,34 +108,36 @@ Controller::LongitudinalControllerMode Controller::getLongitudinalControllerMode
 
 void Controller::onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
 {
-  input_data_.current_trajectory_ptr = msg;
+  current_trajectory_ptr_ = msg;
 }
 
 void Controller::onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
-  input_data_.current_odometry_ptr = msg;
+  current_odometry_ptr_ = msg;
 }
 
 void Controller::onSteering(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
 {
-  input_data_.current_steering_ptr = msg;
+  current_steering_ptr_ = msg;
 }
 
 void Controller::onAccel(const geometry_msgs::msg::AccelWithCovarianceStamped::SharedPtr msg)
 {
-  input_data_.current_accel_ptr = msg;
+  current_accel_ptr_ = msg;
 }
 
-bool Controller::isTimeOut()
+bool Controller::isTimeOut(
+  const trajectory_follower::LongitudinalOutput & lon_out,
+  const trajectory_follower::LateralOutput & lat_out)
 {
   const auto now = this->now();
-  if ((now - lateral_output_->control_cmd.stamp).seconds() > timeout_thr_sec_) {
+  if ((now - lat_out.control_cmd.stamp).seconds() > timeout_thr_sec_) {
     RCLCPP_ERROR_THROTTLE(
       get_logger(), *get_clock(), 5000 /*ms*/,
       "Lateral control command too old, control_cmd will not be published.");
     return true;
   }
-  if ((now - longitudinal_output_->control_cmd.stamp).seconds() > timeout_thr_sec_) {
+  if ((now - lon_out.control_cmd.stamp).seconds() > timeout_thr_sec_) {
     RCLCPP_ERROR_THROTTLE(
       get_logger(), *get_clock(), 5000 /*ms*/,
       "Longitudinal control command too old, control_cmd will not be published.");
@@ -144,37 +146,83 @@ bool Controller::isTimeOut()
   return false;
 }
 
-void Controller::callbackTimerControl()
+boost::optional<trajectory_follower::InputData> Controller::createInputData(
+  rclcpp::Clock & clock) const
 {
-  // Since the longitudinal uses the convergence information of the steer
-  // with the current trajectory, it is necessary to run the lateral first.
-  // TODO(kosuke55): Do not depend on the order of execution.
-  lateral_controller_->setInputData(input_data_);  // trajectory, odometry, steering
-  const auto lat_out = lateral_controller_->run();
-  lateral_output_ = lat_out ? lat_out : lateral_output_;  // use previous value if none.
-  if (!lateral_output_) return;
+  if (!current_trajectory_ptr_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for trajectory.");
+    return {};
+  }
 
-  longitudinal_controller_->sync(lateral_output_->sync_data);
-  longitudinal_controller_->setInputData(input_data_);  // trajectory, odometry
-  const auto lon_out = longitudinal_controller_->run();
-  longitudinal_output_ = lon_out ? lon_out : longitudinal_output_;  // use previous value if none.
-  if (!longitudinal_output_) return;
+  if (!current_odometry_ptr_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current odometry.");
+    return {};
+  }
 
-  lateral_controller_->sync(longitudinal_output_->sync_data);
+  if (!current_steering_ptr_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current steering.");
+    return {};
+  }
 
-  // TODO(Horibe): Think specification. This comes from the old implementation.
-  if (isTimeOut()) return;
+  if (!current_accel_ptr_) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 5000, "Waiting for current accel.");
+    return {};
+  }
 
-  autoware_auto_control_msgs::msg::AckermannControlCommand out;
-  out.stamp = this->now();
-  out.lateral = lateral_output_->control_cmd;
-  out.longitudinal = longitudinal_output_->control_cmd;
-  control_cmd_pub_->publish(out);
+  trajectory_follower::InputData input_data;
+  input_data.current_trajectory = *current_trajectory_ptr_;
+  input_data.current_odometry = *current_odometry_ptr_;
+  input_data.current_steering = *current_steering_ptr_;
+  input_data.current_accel = *current_accel_ptr_;
 
-  publishDebugMarker();
+  return input_data;
 }
 
-void Controller::publishDebugMarker() const
+void Controller::callbackTimerControl()
+{
+  // 1. create input data
+  const auto input_data = createInputData(*get_clock());
+  if (!input_data) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), *get_clock(), 5000, "Control is skipped since input data is not ready.");
+    return;
+  }
+
+  // 2. check if controllers are ready
+  const bool is_lat_ready = lateral_controller_->isReady(*input_data);
+  const bool is_lon_ready = longitudinal_controller_->isReady(*input_data);
+  if (!is_lat_ready || !is_lon_ready) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), *get_clock(), 5000,
+      "Control is skipped since lateral and/or longitudinal controllers are not ready to run.");
+    return;
+  }
+
+  // 3. run controllers
+  const auto lat_out = lateral_controller_->run(*input_data);
+  const auto lon_out = longitudinal_controller_->run(*input_data);
+
+  // 4. sync with each other controllers
+  longitudinal_controller_->sync(lat_out.sync_data);
+  lateral_controller_->sync(lon_out.sync_data);
+
+  // TODO(Horibe): Think specification. This comes from the old implementation.
+  if (isTimeOut(lon_out, lat_out)) return;
+
+  // 5. publish control command
+  autoware_auto_control_msgs::msg::AckermannControlCommand out;
+  out.stamp = this->now();
+  out.lateral = lat_out.control_cmd;
+  out.longitudinal = lon_out.control_cmd;
+  control_cmd_pub_->publish(out);
+
+  // 6. publish debug marker
+  publishDebugMarker(*input_data, lat_out);
+}
+
+void Controller::publishDebugMarker(
+  const trajectory_follower::InputData & input_data,
+  const trajectory_follower::LateralOutput & lat_out) const
 {
   visualization_msgs::msg::MarkerArray debug_marker_array{};
 
@@ -184,14 +232,14 @@ void Controller::publishDebugMarker() const
       "map", this->now(), "steer_converged", 0, visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
       tier4_autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
       tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.99));
-    marker.pose = input_data_.current_odometry_ptr->pose.pose;
+    marker.pose = input_data.current_odometry.pose.pose;
 
     std::stringstream ss;
-    const double current = input_data_.current_steering_ptr->steering_tire_angle;
-    const double cmd = lateral_output_->control_cmd.steering_tire_angle;
+    const double current = input_data.current_steering.steering_tire_angle;
+    const double cmd = lat_out.control_cmd.steering_tire_angle;
     const double diff = current - cmd;
     ss << "current:" << current << " cmd:" << cmd << " diff:" << diff
-       << (lateral_output_->sync_data.is_steer_converged ? " (converged)" : " (not converged)");
+       << (lat_out.sync_data.is_steer_converged ? " (converged)" : " (not converged)");
     marker.text = ss.str();
 
     debug_marker_array.markers.push_back(marker);

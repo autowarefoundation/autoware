@@ -115,11 +115,11 @@ private:
   trajectory_follower::MPC m_mpc;
 
   //!< @brief measured kinematic state
-  nav_msgs::msg::Odometry::SharedPtr m_current_kinematic_state_ptr;
+  nav_msgs::msg::Odometry m_current_kinematic_state;
   //!< @brief measured steering
-  autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr m_current_steering_ptr;
+  autoware_auto_vehicle_msgs::msg::SteeringReport m_current_steering;
   //!< @brief reference trajectory
-  autoware_auto_planning_msgs::msg::Trajectory::SharedPtr m_current_trajectory_ptr;
+  autoware_auto_planning_msgs::msg::Trajectory m_current_trajectory;
 
   //!< @brief mpc filtered output in previous period
   double m_steer_cmd_prev = 0.0;
@@ -138,20 +138,18 @@ private:
 
   //!< initialize timer to work in real, simulation, and replay
   void initTimer(double period_s);
+
+  bool isReady(const InputData & input_data) override;
+
   /**
    * @brief compute control command for path follow with a constant control period
    */
-  boost::optional<LateralOutput> run() override;
-
-  /**
-   * @brief set input data like current odometry, trajectory and steering.
-   */
-  void setInputData(InputData const & input_data) override;
+  LateralOutput run(InputData const & input_data) override;
 
   /**
    * @brief set m_current_trajectory with received message
    */
-  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr);
+  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & msg);
 
   /**
    * @brief check if the received data is valid.

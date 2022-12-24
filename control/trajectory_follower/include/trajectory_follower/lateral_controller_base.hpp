@@ -40,8 +40,8 @@ struct LateralOutput
 class LateralControllerBase
 {
 public:
-  virtual boost::optional<LateralOutput> run() = 0;
-  virtual void setInputData(InputData const & input_data) = 0;
+  virtual bool isReady(const InputData & input_data) = 0;
+  virtual LateralOutput run(InputData const & input_data) = 0;
   void sync(LongitudinalSyncData const & longitudinal_sync_data)
   {
     longitudinal_sync_data_ = longitudinal_sync_data;

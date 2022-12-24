@@ -39,9 +39,12 @@ struct LongitudinalOutput
 class LongitudinalControllerBase
 {
 public:
-  virtual boost::optional<LongitudinalOutput> run() = 0;
-  virtual void setInputData(InputData const & input_data) = 0;
+  virtual bool isReady(const InputData & input_data) = 0;
+  virtual LongitudinalOutput run(InputData const & input_data) = 0;
   void sync(LateralSyncData const & lateral_sync_data) { lateral_sync_data_ = lateral_sync_data; }
+  // NOTE: This reset function should be called when the trajectory is replaned by changing ego pose
+  // or goal pose.
+  void reset() { lateral_sync_data_.is_steer_converged = false; }
 
 protected:
   LateralSyncData lateral_sync_data_;

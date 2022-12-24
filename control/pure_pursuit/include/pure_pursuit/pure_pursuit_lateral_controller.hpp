@@ -108,9 +108,9 @@ private:
   tier4_autoware_utils::SelfPoseListener self_pose_listener_;
   boost::optional<std::vector<TrajectoryPoint>> output_tp_array_;
   autoware_auto_planning_msgs::msg::Trajectory::SharedPtr trajectory_resampled_;
-  autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr trajectory_;
-  nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_;
-  autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr current_steering_;
+  autoware_auto_planning_msgs::msg::Trajectory trajectory_;
+  nav_msgs::msg::Odometry current_odometry_;
+  autoware_auto_vehicle_msgs::msg::SteeringReport current_steering_;
   boost::optional<AckermannLateralCommand> prev_cmd_;
 
   // Debug Publisher
@@ -138,14 +138,10 @@ private:
   /**
    * @brief compute control command for path follow with a constant control period
    */
-  boost::optional<LateralOutput> run() override;
+  bool isReady([[maybe_unused]] const InputData & input_data) override;
+  LateralOutput run(const InputData & input_data) override;
 
   AckermannLateralCommand generateCtrlCmdMsg(const double target_curvature);
-
-  /**
-   * @brief set input data
-   */
-  void setInputData(InputData const & input_data) override;
 
   // Parameter
   Param param_{};

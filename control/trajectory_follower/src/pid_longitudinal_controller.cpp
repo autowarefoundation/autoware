@@ -198,44 +198,34 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   // diagnostic
   setupDiagnosticUpdater();
 }
-void PidLongitudinalController::setInputData(InputData const & input_data)
-{
-  setTrajectory(input_data.current_trajectory_ptr);
-  setKinematicState(input_data.current_odometry_ptr);
-  setCurrentAcceleration(input_data.current_accel_ptr);
-}
 
-void PidLongitudinalController::setKinematicState(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
+void PidLongitudinalController::setKinematicState(const nav_msgs::msg::Odometry & msg)
 {
-  if (!msg) return;
-  m_current_kinematic_state_ptr = msg;
+  m_current_kinematic_state = msg;
 }
 
 void PidLongitudinalController::setCurrentAcceleration(
-  const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg)
+  const geometry_msgs::msg::AccelWithCovarianceStamped & msg)
 {
-  if (!msg) return;
-  m_current_accel_ptr = msg;
+  m_current_accel = msg;
 }
 
 void PidLongitudinalController::setTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg)
+  const autoware_auto_planning_msgs::msg::Trajectory & msg)
 {
-  if (!msg) return;
-
-  if (!trajectory_follower::longitudinal_utils::isValidTrajectory(*msg)) {
+  if (!trajectory_follower::longitudinal_utils::isValidTrajectory(msg)) {
     RCLCPP_ERROR_THROTTLE(
       node_->get_logger(), *node_->get_clock(), 3000, "received invalid trajectory. ignore.");
     return;
   }
 
-  if (msg->points.size() < 2) {
+  if (msg.points.size() < 2) {
     RCLCPP_WARN_THROTTLE(
       node_->get_logger(), *node_->get_clock(), 3000, "Unexpected trajectory size < 2. Ignored.");
     return;
   }
 
-  m_trajectory_ptr = msg;
+  m_trajectory = msg;
 }
 
 rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallback(
@@ -361,15 +351,20 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
   return result;
 }
 
-boost::optional<LongitudinalOutput> PidLongitudinalController::run()
+bool PidLongitudinalController::isReady([[maybe_unused]] const InputData & input_data)
 {
-  // wait for initial pointers
-  if (!m_current_kinematic_state_ptr || !m_trajectory_ptr || !m_current_accel_ptr) {
-    return boost::none;
-  }
+  return true;
+}
+
+LongitudinalOutput PidLongitudinalController::run(InputData const & input_data)
+{
+  // set input data
+  setTrajectory(input_data.current_trajectory);
+  setKinematicState(input_data.current_odometry);
+  setCurrentAcceleration(input_data.current_accel);
 
   // calculate current pose and control data
-  geometry_msgs::msg::Pose current_pose = m_current_kinematic_state_ptr->pose.pose;
+  geometry_msgs::msg::Pose current_pose = m_current_kinematic_state.pose.pose;
 
   const auto control_data = getControlData(current_pose);
 
@@ -417,14 +412,13 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
   control_data.dt = getDt();
 
   // current velocity and acceleration
-  control_data.current_motion.vel = m_current_kinematic_state_ptr->twist.twist.linear.x;
-  control_data.current_motion.acc = m_current_accel_ptr->accel.accel.linear.x;
+  control_data.current_motion.vel = m_current_kinematic_state.twist.twist.linear.x;
+  control_data.current_motion.acc = m_current_accel.accel.accel.linear.x;
 
   // nearest idx
   const size_t nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    m_trajectory_ptr->points, current_pose, m_ego_nearest_dist_threshold,
-    m_ego_nearest_yaw_threshold);
-  const auto & nearest_point = m_trajectory_ptr->points.at(nearest_idx).pose;
+    m_trajectory.points, current_pose, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
+  const auto & nearest_point = m_trajectory.points.at(nearest_idx).pose;
 
   // check if the deviation is worth emergency
   m_diagnostic_data.trans_deviation =
@@ -452,13 +446,13 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
 
   // distance to stopline
   control_data.stop_dist = trajectory_follower::longitudinal_utils::calcStopDistance(
-    current_pose, *m_trajectory_ptr, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
+    current_pose, m_trajectory, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
 
   // pitch
   const double raw_pitch =
     trajectory_follower::longitudinal_utils::getPitchByPose(current_pose.orientation);
   const double traj_pitch = trajectory_follower::longitudinal_utils::getPitchByTraj(
-    *m_trajectory_ptr, control_data.nearest_idx, m_wheel_base);
+    m_trajectory, control_data.nearest_idx, m_wheel_base);
   control_data.slope_angle = m_use_traj_for_pitch ? traj_pitch : m_lpf_pitch->filter(raw_pitch);
   updatePitchDebugValues(control_data.slope_angle, traj_pitch, raw_pitch);
 
@@ -512,7 +506,7 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   static constexpr double vel_epsilon =
     1e-3;  // NOTE: the same velocity threshold as motion_utils::searchZeroVelocity
   const double current_vel_cmd =
-    std::fabs(m_trajectory_ptr->points.at(control_data.nearest_idx).longitudinal_velocity_mps);
+    std::fabs(m_trajectory.points.at(control_data.nearest_idx).longitudinal_velocity_mps);
   const bool emergency_condition = m_enable_overshoot_emergency &&
                                    stop_dist < -p.emergency_state_overshoot_stop_dist &&
                                    current_vel_cmd < vel_epsilon;
@@ -628,13 +622,12 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
   if (m_control_state == ControlState::DRIVE) {
     const auto target_pose = trajectory_follower::longitudinal_utils::calcPoseAfterTimeDelay(
       current_pose, m_delay_compensation_time, current_vel);
-    const auto target_interpolated_point =
-      calcInterpolatedTargetValue(*m_trajectory_ptr, target_pose);
+    const auto target_interpolated_point = calcInterpolatedTargetValue(m_trajectory, target_pose);
     target_motion = Motion{
       target_interpolated_point.longitudinal_velocity_mps,
       target_interpolated_point.acceleration_mps2};
 
-    target_motion = keepBrakeBeforeStop(*m_trajectory_ptr, target_motion, nearest_idx);
+    target_motion = keepBrakeBeforeStop(m_trajectory, target_motion, nearest_idx);
 
     const double pred_vel_in_target =
       predictedVelocityInTargetPoint(control_data.current_motion, m_delay_compensation_time);
@@ -752,7 +745,7 @@ enum PidLongitudinalController::Shift PidLongitudinalController::getCurrentShift
 {
   constexpr double epsilon = 1e-5;
 
-  const double target_vel = m_trajectory_ptr->points.at(nearest_idx).longitudinal_velocity_mps;
+  const double target_vel = m_trajectory.points.at(nearest_idx).longitudinal_velocity_mps;
 
   if (target_vel > epsilon) {
     return Shift::Forward;
@@ -965,7 +958,7 @@ void PidLongitudinalController::updateDebugVelAcc(
   using trajectory_follower::DebugValues;
   const double current_vel = control_data.current_motion.vel;
 
-  const auto interpolated_point = calcInterpolatedTargetValue(*m_trajectory_ptr, current_pose);
+  const auto interpolated_point = calcInterpolatedTargetValue(m_trajectory, current_pose);
 
   m_debug_values.setValues(DebugValues::TYPE::CURRENT_VEL, current_vel);
   m_debug_values.setValues(DebugValues::TYPE::TARGET_VEL, target_motion.vel);

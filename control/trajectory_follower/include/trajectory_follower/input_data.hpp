@@ -30,10 +30,10 @@ namespace trajectory_follower
 {
 struct InputData
 {
-  autoware_auto_planning_msgs::msg::Trajectory::SharedPtr current_trajectory_ptr;
-  nav_msgs::msg::Odometry::SharedPtr current_odometry_ptr;
-  autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr current_steering_ptr;
-  geometry_msgs::msg::AccelWithCovarianceStamped::SharedPtr current_accel_ptr;
+  autoware_auto_planning_msgs::msg::Trajectory current_trajectory;
+  nav_msgs::msg::Odometry current_odometry;
+  autoware_auto_vehicle_msgs::msg::SteeringReport current_steering;
+  geometry_msgs::msg::AccelWithCovarianceStamped current_accel;
 };
 }  // namespace trajectory_follower
 }  // namespace control

@@ -91,9 +91,9 @@ private:
     const std::vector<rclcpp::Parameter> & parameters);
 
   // pointers for ros topic
-  nav_msgs::msg::Odometry::ConstSharedPtr m_current_kinematic_state_ptr{nullptr};
-  geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr m_current_accel_ptr{nullptr};
-  autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr m_trajectory_ptr{nullptr};
+  nav_msgs::msg::Odometry m_current_kinematic_state;
+  geometry_msgs::msg::AccelWithCovarianceStamped m_current_accel;
+  autoware_auto_planning_msgs::msg::Trajectory m_trajectory;
 
   // vehicle info
   double m_wheel_base;
@@ -223,30 +223,26 @@ private:
    * @brief set current and previous velocity with received message
    * @param [in] msg current state message
    */
-  void setKinematicState(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void setKinematicState(const nav_msgs::msg::Odometry & msg);
 
   /**
    * @brief set current acceleration with received message
    * @param [in] msg trajectory message
    */
-  void setCurrentAcceleration(
-    const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg);
+  void setCurrentAcceleration(const geometry_msgs::msg::AccelWithCovarianceStamped & msg);
 
   /**
    * @brief set reference trajectory with received message
    * @param [in] msg trajectory message
    */
-  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
+  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & msg);
+
+  bool isReady(const InputData & input_data) override;
 
   /**
    * @brief compute control command, and publish periodically
    */
-  boost::optional<LongitudinalOutput> run() override;
-
-  /**
-   * @brief set input data like current odometry and trajectory.
-   */
-  void setInputData(InputData const & input_data) override;
+  LongitudinalOutput run(InputData const & input_data) override;
 
   /**
    * @brief calculate data for controllers whose type is ControlData

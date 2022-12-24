@@ -45,7 +45,7 @@ using FakeNodeFixture = autoware::tools::testing::FakeTestNode;
 
 const rclcpp::Duration one_second(1, 0);
 
-std::shared_ptr<Controller> makeNode()
+rclcpp::NodeOptions makeNodeOptions(const bool enable_keep_stopped_until_steer_convergence = false)
 {
   // Pass default parameter file to the node
   const auto share_dir = ament_index_cpp::get_package_share_directory("trajectory_follower_nodes");
@@ -53,12 +53,19 @@ std::shared_ptr<Controller> makeNode()
   node_options.append_parameter_override("ctrl_period", 0.03);
   node_options.append_parameter_override("timeout_thr_sec", 0.5);
   node_options.append_parameter_override(
-    "enable_keep_stopped_until_steer_convergence", false);  // longitudinal
+    "enable_keep_stopped_until_steer_convergence",
+    enable_keep_stopped_until_steer_convergence);  // longitudinal
   node_options.arguments(
     {"--ros-args", "--params-file", share_dir + "/param/lateral_controller_defaults.param.yaml",
      "--params-file", share_dir + "/param/longitudinal_controller_defaults.param.yaml",
      "--params-file", share_dir + "/param/test_vehicle_info.param.yaml", "--params-file",
      share_dir + "/param/test_nearest_search.param.yaml"});
+
+  return node_options;
+}
+
+std::shared_ptr<Controller> makeNode(const rclcpp::NodeOptions & node_options)
+{
   std::shared_ptr<Controller> node = std::make_shared<Controller>(node_options);
 
   // Enable all logging in the node
@@ -73,11 +80,14 @@ std::shared_ptr<Controller> makeNode()
 class ControllerTester
 {
 public:
-  explicit ControllerTester(FakeNodeFixture * _fnf) : fnf(_fnf) {}
-
-  std::shared_ptr<Controller> node = makeNode();
+  explicit ControllerTester(FakeNodeFixture * _fnf, const rclcpp::NodeOptions & node_options)
+  : fnf(_fnf), node(makeNode(node_options))
+  {
+  }
 
   FakeNodeFixture * fnf;
+  std::shared_ptr<Controller> node;
+
   AckermannControlCommand::SharedPtr cmd_msg;
   bool received_control_command = false;
 
@@ -172,7 +182,8 @@ TrajectoryPoint make_traj_point(const double px, const double py, const float vx
 
 TEST_F(FakeNodeFixture, no_input)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   // No published data: expect a stopped command
   test_utils::waitForMessage(
@@ -182,7 +193,8 @@ TEST_F(FakeNodeFixture, no_input)
 
 TEST_F(FakeNodeFixture, empty_trajectory)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
 
@@ -200,7 +212,8 @@ TEST_F(FakeNodeFixture, empty_trajectory)
 // lateral
 TEST_F(FakeNodeFixture, straight_trajectory)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
@@ -225,7 +238,8 @@ TEST_F(FakeNodeFixture, straight_trajectory)
 
 TEST_F(FakeNodeFixture, right_turn)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
@@ -251,7 +265,8 @@ TEST_F(FakeNodeFixture, right_turn)
 
 TEST_F(FakeNodeFixture, left_turn)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
@@ -277,7 +292,8 @@ TEST_F(FakeNodeFixture, left_turn)
 
 TEST_F(FakeNodeFixture, stopped)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_default_odom();
@@ -306,7 +322,8 @@ TEST_F(FakeNodeFixture, stopped)
 // longitudinal
 TEST_F(FakeNodeFixture, longitudinal_keep_velocity)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
@@ -338,7 +355,8 @@ TEST_F(FakeNodeFixture, longitudinal_keep_velocity)
 
 TEST_F(FakeNodeFixture, longitudinal_slow_down)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_default_acc();
@@ -372,7 +390,8 @@ TEST_F(FakeNodeFixture, longitudinal_slow_down)
 
 TEST_F(FakeNodeFixture, longitudinal_accelerate)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_default_steer();
@@ -406,7 +425,8 @@ TEST_F(FakeNodeFixture, longitudinal_accelerate)
 
 TEST_F(FakeNodeFixture, longitudinal_stopped)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_default_odom();
@@ -433,7 +453,8 @@ TEST_F(FakeNodeFixture, longitudinal_stopped)
 
 TEST_F(FakeNodeFixture, longitudinal_reverse)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
 
@@ -459,7 +480,8 @@ TEST_F(FakeNodeFixture, longitudinal_reverse)
 
 TEST_F(FakeNodeFixture, longitudinal_emergency)
 {
-  ControllerTester tester(this);
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
 
   tester.send_default_transform();
   tester.publish_default_odom();
@@ -481,4 +503,63 @@ TEST_F(FakeNodeFixture, longitudinal_emergency)
   // Emergencies (e.g., far from trajectory) produces braking command (0 vel, negative accel)
   EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 0.0f);
   EXPECT_LT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
+}
+
+TEST_F(FakeNodeFixture, longitudinal_not_check_steer_converged)
+{
+  const auto node_options = makeNodeOptions();
+  ControllerTester tester(this, node_options);
+
+  tester.send_default_transform();
+  tester.publish_default_odom();
+  tester.publish_default_acc();
+
+  // steering_tire_angle has to be larger than the threshold to check convergence.
+  const double steering_tire_angle = -0.5;
+  tester.publish_steer_angle(steering_tire_angle);
+
+  // Publish trajectory starting away from the current ego pose
+  Trajectory traj;
+  traj.header.stamp = tester.node->now();
+  traj.header.frame_id = "map";
+  traj.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, 1.0f));
+  tester.traj_pub->publish(traj);
+
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  // Not keep stopped state when the lateral control is not converged.
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 1.0f);
+}
+
+TEST_F(FakeNodeFixture, longitudinal_check_steer_converged)
+{
+  // set enable_keep_stopped_until_steer_convergence true
+  const auto node_options = makeNodeOptions(true);
+  ControllerTester tester(this, node_options);
+
+  tester.send_default_transform();
+  tester.publish_default_odom();
+  tester.publish_default_acc();
+
+  // steering_tire_angle has to be larger than the threshold to check convergence.
+  const double steering_tire_angle = -0.5;
+  tester.publish_steer_angle(steering_tire_angle);
+
+  // Publish trajectory starting away from the current ego pose
+  Trajectory traj;
+  traj.header.stamp = tester.node->now();
+  traj.header.frame_id = "map";
+  traj.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, 1.0f));
+  tester.traj_pub->publish(traj);
+
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  // Keep stopped state when the lateral control is not converged.
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 0.0f);
 }
