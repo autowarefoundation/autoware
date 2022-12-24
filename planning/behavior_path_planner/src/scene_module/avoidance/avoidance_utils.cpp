@@ -20,6 +20,7 @@
 #include "behavior_path_planner/utilities.hpp"
 
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
+#include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
@@ -34,6 +35,7 @@ namespace behavior_path_planner
 
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
+using tier4_autoware_utils::calcYawDeviation;
 using tier4_autoware_utils::createQuaternionFromRPY;
 using tier4_autoware_utils::pose2transform;
 
@@ -494,6 +496,67 @@ void generateDrivableArea(
     // update boundary
     bound = updateBoundary(bound, sorted_points, start_segment_idx, end_segment_idx);
   }
+}
+
+double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const double v)
+{
+  return v * std::cos(calcYawDeviation(p_ref, p_target));
+}
+
+bool isCentroidWithinLanelets(
+  const PredictedObject & object, const lanelet::ConstLanelets & target_lanelets)
+{
+  if (target_lanelets.empty()) {
+    return false;
+  }
+
+  const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
+  lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
+
+  for (const auto & llt : target_lanelets) {
+    if (boost::geometry::within(object_centroid, llt.polygon2d().basicPolygon())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+lanelet::ConstLanelets getTargetLanelets(
+  const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
+  const double left_offset, const double right_offset)
+{
+  const auto & rh = planner_data->route_handler;
+
+  lanelet::ConstLanelets target_lanelets{};
+  for (const auto & lane : route_lanelets) {
+    auto l_offset = 0.0;
+    auto r_offset = 0.0;
+
+    const auto opt_left_lane = rh->getLeftLanelet(lane);
+    if (opt_left_lane) {
+      target_lanelets.push_back(opt_left_lane.get());
+    } else {
+      l_offset = left_offset;
+    }
+
+    const auto opt_right_lane = rh->getRightLanelet(lane);
+    if (opt_right_lane) {
+      target_lanelets.push_back(opt_right_lane.get());
+    } else {
+      r_offset = right_offset;
+    }
+
+    const auto right_opposite_lanes = rh->getRightOppositeLanelets(lane);
+    if (!right_opposite_lanes.empty()) {
+      target_lanelets.push_back(right_opposite_lanes.front());
+    }
+
+    const auto expand_lane = lanelet::utils::getExpandedLanelet(lane, l_offset, r_offset);
+    target_lanelets.push_back(expand_lane);
+  }
+
+  return target_lanelets;
 }
 
 }  // namespace behavior_path_planner

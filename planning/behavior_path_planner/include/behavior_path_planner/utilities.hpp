@@ -47,6 +47,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace behavior_path_planner::util
@@ -88,7 +89,7 @@ struct ProjectedDistancePoint
   double distance{0.0};
 };
 
-template <typename Pythagoras = bg::strategy::distance::pythagoras<> >
+template <typename Pythagoras = bg::strategy::distance::pythagoras<>>
 ProjectedDistancePoint pointToSegment(
   const Point2d & reference_point, const Point2d & point_from_ego,
   const Point2d & point_from_object);
@@ -260,13 +261,19 @@ std::vector<size_t> filterObjectIndicesByLanelets(
   const double start_arc_length, const double end_arc_length);
 
 /**
- * @brief Get index of the obstacles inside the lanelets
- * @return Indices corresponding to the obstacle inside the lanelets
+ * @brief Separate index of the obstacles into two part based on whether the object is within
+ * lanelet.
+ * @return Indices of objects pair. first objects are in the lanelet, and second others are out of
+ * lanelet.
  */
-std::vector<size_t> filterObjectIndicesByLanelets(
+std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets);
 
-PredictedObjects filterObjectsByLanelets(
+/**
+ * @brief Separate the objects into two part based on whether the object is within lanelet.
+ * @return Objects pair. first objects are in the lanelet, and second others are out of lanelet.
+ */
+std::pair<PredictedObjects, PredictedObjects> separateObjectsByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets);
 
 std::vector<size_t> filterObjectsIndicesByPath(

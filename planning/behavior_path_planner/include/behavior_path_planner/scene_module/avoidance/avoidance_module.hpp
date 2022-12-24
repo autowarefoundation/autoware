@@ -238,7 +238,9 @@ private:
   // shift point generation: generator
   double getShiftLength(
     const ObjectData & object, const bool & is_object_on_right, const double & avoid_margin) const;
-  AvoidLineArray calcRawShiftLinesFromObjects(const ObjectDataArray & objects) const;
+
+  AvoidLineArray calcRawShiftLinesFromObjects(
+    const AvoidancePlanningData & data, DebugData & debug) const;
 
   // shift point generation: combiner
   AvoidLineArray combineRawShiftLinesWithUniqueCheck(
@@ -306,6 +308,30 @@ private:
   void updateAvoidanceDebugData(std::vector<AvoidanceDebugMsg> & avoidance_debug_msg_array) const;
   mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_line_;
   mutable rclcpp::Time debug_avoidance_initializer_for_shift_line_time_;
+
+  double getLateralMarginFromVelocity(const double velocity) const;
+
+  double getRSSLongitudinalDistance(
+    const double v_ego, const double v_obj, const bool is_front_object) const;
+
+  ObjectDataArray getAdjacentLaneObjects(const lanelet::ConstLanelets & adjacent_lanes) const;
+
+  // ========= safety check ==============
+
+  lanelet::ConstLanelets getAdjacentLane(
+    const PathShifter & path_shifter, const double forward_distance,
+    const double backward_distance) const;
+
+  bool isSafePath(
+    const PathShifter & path_shifter, ShiftedPath & shifted_path, DebugData & debug) const;
+
+  bool isSafePath(
+    const PathWithLaneId & path, const lanelet::ConstLanelets & check_lanes,
+    DebugData & debug) const;
+
+  bool isEnoughMargin(
+    const PathPointWithLaneId & p_ego, const double t, const ObjectData & object,
+    MarginData & margin_data) const;
 
   // ========= helper functions ==========
 

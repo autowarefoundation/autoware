@@ -52,8 +52,8 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
 
   // collision check with objects in shoulder lanes
   const auto arc_path = planner_.getArcPath();
-  const auto shoulder_lane_objects =
-    util::filterObjectsByLanelets(*(planner_data_->dynamic_object), shoulder_lanes);
+  const auto [shoulder_lane_objects, others] =
+    util::separateObjectsByLanelets(*(planner_data_->dynamic_object), shoulder_lanes);
   if (util::checkCollisionBetweenPathFootprintsAndObjects(
         vehicle_footprint_, arc_path, shoulder_lane_objects, parameters_.collision_check_margin)) {
     return {};

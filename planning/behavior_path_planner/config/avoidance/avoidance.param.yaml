@@ -10,6 +10,7 @@
       enable_avoidance_over_same_direction: true
       enable_avoidance_over_opposite_direction: true
       enable_update_path_when_object_is_gone: false
+      enable_safety_check: false
 
       # For target object filtering
       threshold_speed_object_is_stopped: 1.0      # [m/s]
@@ -23,10 +24,19 @@
       object_check_shiftable_ratio: 0.6           # [-]
       object_check_min_road_shoulder_width: 0.5   # [m]
 
+      # For safety check
+      safety_check_backward_distance: 50.0        # [m]
+      safety_check_time_horizon: 10.0             # [s]
+      safety_check_idling_time: 1.5               # [s]
+      safety_check_accel_for_rss: 2.5             # [m/ss]
+
       # For lateral margin
       object_envelope_buffer: 0.3                 # [m]
       lateral_collision_margin: 1.0               # [m]
       lateral_collision_safety_buffer: 0.7        # [m]
+
+      # For longitudinal margin
+      longitudinal_collision_margin_buffer: 0.0   # [m]
 
       prepare_time: 2.0                           # [s]
       min_prepare_distance: 1.0                   # [m]
@@ -74,3 +84,9 @@
 
       # ---------- advanced parameters ----------
       avoidance_execution_lateral_threshold: 0.499
+
+      target_velocity_matrix:
+        col_size: 4
+        matrix:
+          [2.78, 5.56, 11.1, 13.9,   # velocity [m/s]
+           0.20, 0.90, 1.10, 1.20]   # margin [m]

@@ -288,6 +288,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.enable_avoidance_over_same_direction = dp("enable_avoidance_over_same_direction", true);
   p.enable_avoidance_over_opposite_direction = dp("enable_avoidance_over_opposite_direction", true);
   p.enable_update_path_when_object_is_gone = dp("enable_update_path_when_object_is_gone", false);
+  p.enable_safety_check = dp("enable_safety_check", false);
 
   p.threshold_distance_object_is_on_center = dp("threshold_distance_object_is_on_center", 1.0);
   p.threshold_speed_object_is_stopped = dp("threshold_speed_object_is_stopped", 1.0);
@@ -299,6 +300,13 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.object_envelope_buffer = dp("object_envelope_buffer", 0.1);
   p.lateral_collision_margin = dp("lateral_collision_margin", 2.0);
   p.lateral_collision_safety_buffer = dp("lateral_collision_safety_buffer", 0.5);
+  p.longitudinal_collision_safety_buffer = dp("longitudinal_collision_safety_buffer", 0.0);
+
+  p.safety_check_min_longitudinal_margin = dp("safety_check_min_longitudinal_margin", 0.0);
+  p.safety_check_backward_distance = dp("safety_check_backward_distance", 0.0);
+  p.safety_check_time_horizon = dp("safety_check_time_horizon", 10.0);
+  p.safety_check_idling_time = dp("safety_check_idling_time", 1.5);
+  p.safety_check_accel_for_rss = dp("safety_check_accel_for_rss", 2.5);
 
   p.prepare_time = dp("prepare_time", 3.0);
   p.min_prepare_distance = dp("min_prepare_distance", 10.0);
@@ -326,6 +334,13 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 
   p.publish_debug_marker = dp("publish_debug_marker", false);
   p.print_debug_info = dp("print_debug_info", false);
+
+  // velocity matrix
+  {
+    std::string ns = "avoidance.target_velocity_matrix.";
+    p.col_size = declare_parameter<int>(ns + "col_size");
+    p.target_velocity_matrix = declare_parameter<std::vector<double>>(ns + "matrix");
+  }
 
   p.avoid_car = dp("target_object.car", true);
   p.avoid_truck = dp("target_object.truck", true);

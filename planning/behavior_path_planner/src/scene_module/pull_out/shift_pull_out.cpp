@@ -56,8 +56,8 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
   }
 
   // extract objects in shoulder lane for collision check
-  const auto shoulder_lane_objects =
-    util::filterObjectsByLanelets(*dynamic_objects, shoulder_lanes);
+  const auto [shoulder_lane_objects, others] =
+    util::separateObjectsByLanelets(*dynamic_objects, shoulder_lanes);
 
   // get safe path
   for (auto & pull_out_path : pull_out_paths) {
