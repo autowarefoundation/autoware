@@ -756,9 +756,9 @@ void BehaviorPathPlannerNode::publish_steering_factor(const TurnIndicatorsComman
 
 void BehaviorPathPlannerNode::publish_bounds(const PathWithLaneId & path)
 {
-  constexpr double scale_x = 0.1;
-  constexpr double scale_y = 0.1;
-  constexpr double scale_z = 0.1;
+  constexpr double scale_x = 0.2;
+  constexpr double scale_y = 0.2;
+  constexpr double scale_z = 0.2;
   constexpr double color_r = 0.0 / 256.0;
   constexpr double color_g = 148.0 / 256.0;
   constexpr double color_b = 205.0 / 256.0;
