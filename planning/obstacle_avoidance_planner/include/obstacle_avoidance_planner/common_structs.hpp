@@ -153,6 +153,7 @@ struct DebugData
 
   std::vector<geometry_msgs::msg::Pose> mpt_ref_poses;
   std::vector<double> lateral_errors;
+  std::vector<double> yaw_errors;
 
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> eb_traj;
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> mpt_fixed_traj;

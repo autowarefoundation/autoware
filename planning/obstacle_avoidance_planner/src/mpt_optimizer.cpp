@@ -314,6 +314,15 @@ boost::optional<MPTOptimizer::MPTTrajs> MPTOptimizer::getModelPredictiveTrajecto
       return boost::none;
     }
   }
+  constexpr double max_yaw_deviation = 50.0 / 180 * 3.14;
+  for (const double yaw_error : debug_data.yaw_errors) {
+    if (max_yaw_deviation < std::abs(yaw_error)) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("mpt_optimizer"),
+        "return boost::none since yaw deviation is too large.");
+      return boost::none;
+    }
+  }
 
   auto full_optimized_ref_points = fixed_ref_points;
   full_optimized_ref_points.insert(
@@ -1197,6 +1206,7 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> MPTOptimizer::get
     ref_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(ref_point.yaw);
     debug_data.mpt_ref_poses.push_back(ref_pose);
     debug_data.lateral_errors.push_back(lat_error);
+    debug_data.yaw_errors.push_back(yaw_error);
 
     ref_point.optimized_kinematic_state << lat_error_vec.at(i), yaw_error_vec.at(i);
     if (i >= fixed_ref_points.size()) {
