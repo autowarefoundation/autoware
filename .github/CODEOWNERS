@@ -10,6 +10,7 @@ common/autoware_point_types/** taichi.higashide@tier4.jp @autowarefoundation/aut
 common/autoware_testing/** adam.dabrowski@robotec.ai @autowarefoundation/autoware-global-codeowners
 common/bag_time_manager_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/component_interface_tools/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/fake_test_node/** opensource@apex.ai @autowarefoundation/autoware-global-codeowners
@@ -18,7 +19,7 @@ common/goal_distance_calculator/** taiki.tanaka@tier4.jp @autowarefoundation/aut
 common/grid_map_utils/** maxime.clement@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/interpolation/** fumiya.watanabe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/kalman_filter/** koji.minoda@tier4.jp takeshi.ishita@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-common/motion_utils/** satoshi.ota@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/motion_utils/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/osqp_interface/** fumiya.watanabe@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/path_distance_calculator/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/perception_utils/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp takayuki.murooka@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -27,7 +28,7 @@ common/rtc_manager_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/auto
 common/signal_processing/** ali.boyali@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tensorrt_common/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_api_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
-common/tier4_autoware_utils/** kenji.miyake@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/tier4_autoware_utils/** kenji.miyake@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_calibration_rviz_plugin/** tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_control_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_datetime_rviz_plugin/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -44,7 +45,6 @@ common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp @autowarefoundation/
 common/time_utils/** christopherj.ho@gmail.com @autowarefoundation/autoware-global-codeowners
 common/trtexec_vendor/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tvm_utility/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
-common/web_controller/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/control_performance_analysis/** ali.boyali@tier4.jp berkay@leodrive.ai @autowarefoundation/autoware-global-codeowners
 control/external_cmd_selector/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/joy_controller/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -94,9 +94,9 @@ perception/image_projection_based_fusion/** yukihiro.saito@tier4.jp yusuke.muram
 perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
 perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
-perception/lidar_centerpoint/** yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/lidar_centerpoint/** kenzo.lobos@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_centerpoint_tvm/** carl.liu@autocore.ai xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/map_based_prediction/** yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/map_based_prediction/** shunsuke.miura@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/multi_object_tracker/** jilada.eccleston@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/object_merger/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/object_range_splitter/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -112,7 +112,7 @@ perception/traffic_light_map_based_detector/** yukihiro.saito@tier4.jp @autoware
 perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_visualization/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_path_planner/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/costmap_generator/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/freespace_planner/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -165,6 +165,6 @@ system/velodyne_monitor/** fumihito.ito@tier4.jp @autowarefoundation/autoware-gl
 tools/simulator_test/simulator_compatibility_test/** shpark@morai.ai @autowarefoundation/autoware-global-codeowners
 vehicle/accel_brake_map_calibrator/accel_brake_map_calibrator/** tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 vehicle/external_cmd_converter/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
-vehicle/raw_vehicle_cmd_converter/** taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
+vehicle/raw_vehicle_cmd_converter/** makoto.kurihara@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 vehicle/steer_offset_estimator/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
 vehicle/vehicle_info_util/** shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
