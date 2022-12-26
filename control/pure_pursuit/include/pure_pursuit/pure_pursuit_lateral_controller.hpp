@@ -35,7 +35,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
-#include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "trajectory_follower_base/lateral_controller_base.hpp"
 
 #include <motion_utils/resample/resample.hpp>
@@ -105,8 +104,7 @@ public:
 
 private:
   rclcpp::Node::SharedPtr node_;
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_;
-  boost::optional<std::vector<TrajectoryPoint>> output_tp_array_;
+  std::vector<TrajectoryPoint> output_tp_array_;
   autoware_auto_planning_msgs::msg::Trajectory::SharedPtr trajectory_resampled_;
   autoware_auto_planning_msgs::msg::Trajectory trajectory_;
   nav_msgs::msg::Odometry current_odometry_;
@@ -120,8 +118,6 @@ private:
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr
     pub_predicted_trajectory_;
 
-  bool isDataReady();
-
   void onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
 
   void onCurrentOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
@@ -131,7 +127,7 @@ private:
   // TF
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
+  geometry_msgs::msg::Pose current_pose_;
 
   void publishDebugMarker() const;
 
@@ -162,7 +158,7 @@ private:
 
   boost::optional<Trajectory> generatePredictedTrajectory();
 
-  boost::optional<AckermannLateralCommand> generateOutputControlCmd();
+  AckermannLateralCommand generateOutputControlCmd();
 
   bool calcIsSteerConverged(const AckermannLateralCommand & cmd);
 
