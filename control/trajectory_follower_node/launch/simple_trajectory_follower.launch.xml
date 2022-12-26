@@ -1,0 +1,16 @@
+<launch>
+  <arg name="use_external_target_vel" default="true"/>
+  <arg name="external_target_vel" default="5.0"/>
+  <arg name="lateral_deviation" default="0.0"/>
+
+  <!-- engage_transition_manager -->
+  <node pkg="trajectory_follower_node" exec="simple_trajectory_follower_exe" name="simple_trajectory_follower" output="screen">
+    <param name="use_external_target_vel" value="$(var use_external_target_vel)"/>
+    <param name="external_target_vel" value="$(var external_target_vel)"/>
+    <param name="lateral_deviation" value="$(var lateral_deviation)"/>
+
+    <remap from="input/kinematics" to="/localization/kinematic_state"/>
+    <remap from="input/trajectory" to="/planning/scenario_planning/trajectory"/>
+    <remap from="output/control_cmd" to="/vehicle/command/manual_control_cmd"/>
+  </node>
+</launch>

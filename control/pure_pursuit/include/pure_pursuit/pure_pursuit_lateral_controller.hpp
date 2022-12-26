@@ -36,7 +36,7 @@
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
-#include "trajectory_follower/lateral_controller_base.hpp"
+#include "trajectory_follower_base/lateral_controller_base.hpp"
 
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/tmp_conversion.hpp>
