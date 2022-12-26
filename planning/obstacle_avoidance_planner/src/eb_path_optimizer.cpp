@@ -154,6 +154,9 @@ EBPathOptimizer::getOptimizedTrajectory(
       interpolated_points = std::vector<geometry_msgs::msg::Point>(
         interpolated_points.begin(),
         interpolated_points.begin() + interpolated_points_end_seg_idx.get());
+      if (interpolated_points.empty()) {
+        return boost::none;
+      }
     }
   }
 
