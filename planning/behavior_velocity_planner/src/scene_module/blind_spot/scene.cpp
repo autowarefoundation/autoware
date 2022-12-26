@@ -389,7 +389,8 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
       bool exist_in_detection_area = bg::within(
         to_bg2d(object.kinematics.initial_pose_with_covariance.pose.position),
         lanelet::utils::to2D(areas_opt.get().detection_area));
-      bool exist_in_conflict_area = isPredictedPathInArea(object, areas_opt.get().conflict_area);
+      bool exist_in_conflict_area = isPredictedPathInArea(
+        object, areas_opt.get().conflict_area, planner_data_->current_pose.pose);
       if (exist_in_detection_area || exist_in_conflict_area) {
         obstacle_detected = true;
         debug_data_.conflicting_targets.objects.push_back(object);
@@ -403,16 +404,23 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
 
 bool BlindSpotModule::isPredictedPathInArea(
   const autoware_auto_perception_msgs::msg::PredictedObject & object,
-  const lanelet::CompoundPolygon3d & area) const
+  const lanelet::CompoundPolygon3d & area, geometry_msgs::msg::Pose ego_pose) const
 {
   const auto area_2d = lanelet::utils::to2D(area);
+  const auto ego_yaw = tf2::getYaw(ego_pose.orientation);
+  const auto threshold_yaw_diff = planner_param_.threshold_yaw_diff;
   // NOTE: iterating all paths including those of low confidence
   return std::any_of(
     object.kinematics.predicted_paths.begin(), object.kinematics.predicted_paths.end(),
-    [&area_2d](const auto & path) {
-      return std::any_of(path.path.begin(), path.path.end(), [&area_2d](const auto & point) {
-        return bg::within(to_bg2d(point.position), area_2d);
-      });
+    [&area_2d, &ego_yaw, &threshold_yaw_diff](const auto & path) {
+      return std::any_of(
+        path.path.begin(), path.path.end(),
+        [&area_2d, &ego_yaw, &threshold_yaw_diff](const auto & point) {
+          const auto is_in_area = bg::within(to_bg2d(point.position), area_2d);
+          const auto match_yaw =
+            std::fabs(ego_yaw - tf2::getYaw(point.orientation)) < threshold_yaw_diff;
+          return is_in_area && match_yaw;
+        });
     });
 }
 

@@ -36,6 +36,8 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
     node.declare_parameter(ns + ".ignore_width_from_center_line", 1.0);
   planner_param_.max_future_movement_time =
     node.declare_parameter(ns + ".max_future_movement_time", 10.0);
+  planner_param_.threshold_yaw_diff =
+    node.declare_parameter(ns + ".threshold_yaw_diff", M_PI / 6.0);
 }
 
 void BlindSpotModuleManager::launchNewModules(
