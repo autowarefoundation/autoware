@@ -107,13 +107,10 @@ double project_goal_to_map(
 namespace mission_planner::lanelet2
 {
 
-void DefaultPlanner::initialize(rclcpp::Node * node)
+void DefaultPlanner::initialize_common(rclcpp::Node * node)
 {
   is_graph_ready_ = false;
   node_ = node;
-  map_subscriber_ = node_->create_subscription<HADMapBin>(
-    "input/vector_map", rclcpp::QoS{10}.transient_local(),
-    std::bind(&DefaultPlanner::map_callback, this, std::placeholders::_1));
 
   const auto durable_qos = rclcpp::QoS(1).transient_local();
   pub_goal_footprint_marker_ =
@@ -123,10 +120,17 @@ void DefaultPlanner::initialize(rclcpp::Node * node)
   param_.goal_angle_threshold_deg = node_->declare_parameter("goal_angle_threshold_deg", 45.0);
 }
 
+void DefaultPlanner::initialize(rclcpp::Node * node)
+{
+  initialize_common(node);
+  map_subscriber_ = node_->create_subscription<HADMapBin>(
+    "input/vector_map", rclcpp::QoS{10}.transient_local(),
+    std::bind(&DefaultPlanner::map_callback, this, std::placeholders::_1));
+}
+
 void DefaultPlanner::initialize(rclcpp::Node * node, const HADMapBin::ConstSharedPtr msg)
 {
-  is_graph_ready_ = false;
-  node_ = node;
+  initialize_common(node);
   map_callback(msg);
 }
 
