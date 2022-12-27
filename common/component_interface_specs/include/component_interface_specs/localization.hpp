@@ -19,6 +19,7 @@
 
 #include <autoware_adapi_v1_msgs/msg/localization_initialization_state.hpp>
 #include <autoware_adapi_v1_msgs/srv/initialize_localization.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
 namespace localization_interface
 {
@@ -36,6 +37,15 @@ struct InitializationState
   static constexpr size_t depth = 3;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+};
+
+struct KinematicState
+{
+  using Message = nav_msgs::msg::Odometry;
+  static constexpr char name[] = "/localization/kinematic_state";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
 };
 
 }  // namespace localization_interface
