@@ -168,7 +168,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       // in case ego could not stop exactly before the stop line, but with some overshoot,
       // keep detection within some margin under low velocity threshold
     } else if (is_over_pass_judge_line && is_go_out_ && !external_stop) {
-      RCLCPP_INFO(logger_, "over the keep_detection line and not low speed. no plan needed.");
+      RCLCPP_DEBUG(logger_, "over the keep_detection line and not low speed. no plan needed.");
       RCLCPP_DEBUG(logger_, "===== plan end =====");
       setSafe(true);
       setDistance(motion_utils::calcSignedArcLength(
