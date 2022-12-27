@@ -49,12 +49,14 @@ control/control_performance_analysis/** ali.boyali@tier4.jp berkay@leodrive.ai @
 control/external_cmd_selector/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/joy_controller/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/lane_departure_checker/** kyoichi.sugahara@tier4.jp @autowarefoundation/autoware-global-codeowners
+control/mpc_lateral_controller/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/obstacle_collision_checker/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/operation_mode_transition_manager/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
+control/pid_longitudinal_controller/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/pure_pursuit/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/shift_decider/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
-control/trajectory_follower/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
-control/trajectory_follower_nodes/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
+control/trajectory_follower_base/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
+control/trajectory_follower_node/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/vehicle_cmd_gate/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai @autowarefoundation/autoware-global-codeowners
 evaluator/localization_evaluator/** dominik.jargot@robotec.ai @autowarefoundation/autoware-global-codeowners
@@ -114,7 +116,7 @@ perception/traffic_light_visualization/** yukihiro.saito@tier4.jp @autowarefound
 planning/behavior_path_planner/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/costmap_generator/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp shinnosuke.hirakawa@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/freespace_planner/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/freespace_planning_algorithms/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/mission_planner/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -152,6 +154,7 @@ system/bluetooth_monitor/** fumihito.ito@tier4.jp @autowarefoundation/autoware-g
 system/component_state_monitor/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/default_ad_api/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/default_ad_api_helpers/ad_api_adaptors/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+system/default_ad_api_helpers/ad_api_visualizers/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/default_ad_api_helpers/automatic_pose_initializer/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/dummy_diag_publisher/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/dummy_infrastructure/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
