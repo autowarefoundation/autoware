@@ -24,7 +24,7 @@
 namespace
 {
 VelocityLimit getHardestLimit(
-  const std::unordered_map<std::string, VelocityLimit> & velocity_limits,
+  const VelocityLimitTable & velocity_limits,
   const ExternalVelocityLimitSelectorNode::NodeParam & node_param)
 {
   VelocityLimit hardest_limit{};
@@ -65,6 +65,23 @@ VelocityLimit getHardestLimit(
 
   return hardest_limit;
 }
+
+std::string getDebugString(const VelocityLimitTable & velocity_limits)
+{
+  std::ostringstream string_stream;
+  string_stream << std::boolalpha << std::fixed << std::setprecision(2);
+  for (const auto & limit : velocity_limits) {
+    string_stream << "[" << limit.first << "]";
+    string_stream << "(";
+    string_stream << limit.second.use_constraints << ",";
+    string_stream << limit.second.max_velocity << ",";
+    string_stream << limit.second.constraints.min_acceleration << ",";
+    string_stream << limit.second.constraints.min_jerk << ",";
+    string_stream << limit.second.constraints.max_jerk << ")";
+  }
+
+  return string_stream.str();
+}
 }  // namespace
 
 ExternalVelocityLimitSelectorNode::ExternalVelocityLimitSelectorNode(
@@ -78,16 +95,18 @@ ExternalVelocityLimitSelectorNode::ExternalVelocityLimitSelectorNode(
     std::bind(&ExternalVelocityLimitSelectorNode::onVelocityLimitFromAPI, this, _1));
 
   sub_external_velocity_limit_from_internal_ = this->create_subscription<VelocityLimit>(
-    "input/velocity_limit_from_internal", rclcpp::QoS{1}.transient_local(),
+    "input/velocity_limit_from_internal", rclcpp::QoS{10}.transient_local(),
     std::bind(&ExternalVelocityLimitSelectorNode::onVelocityLimitFromInternal, this, _1));
 
   sub_velocity_limit_clear_command_ = this->create_subscription<VelocityLimitClearCommand>(
-    "input/velocity_limit_clear_command_from_internal", rclcpp::QoS{1}.transient_local(),
+    "input/velocity_limit_clear_command_from_internal", rclcpp::QoS{10}.transient_local(),
     std::bind(&ExternalVelocityLimitSelectorNode::onVelocityLimitClearCommand, this, _1));
 
   // Output
   pub_external_velocity_limit_ =
     this->create_publisher<VelocityLimit>("output/external_velocity_limit", 1);
+
+  pub_debug_string_ = this->create_publisher<StringStamped>("output/debug", 1);
 
   // Params
   {
@@ -112,6 +131,8 @@ void ExternalVelocityLimitSelectorNode::onVelocityLimitFromAPI(
 
   const auto velocity_limit = getCurrentVelocityLimit();
   publishVelocityLimit(velocity_limit);
+
+  publishDebugString();
 }
 
 void ExternalVelocityLimitSelectorNode::onVelocityLimitFromInternal(
@@ -122,6 +143,8 @@ void ExternalVelocityLimitSelectorNode::onVelocityLimitFromInternal(
 
   const auto velocity_limit = getCurrentVelocityLimit();
   publishVelocityLimit(velocity_limit);
+
+  publishDebugString();
 }
 
 void ExternalVelocityLimitSelectorNode::onVelocityLimitClearCommand(
@@ -135,11 +158,21 @@ void ExternalVelocityLimitSelectorNode::onVelocityLimitClearCommand(
 
   const auto velocity_limit = getCurrentVelocityLimit();
   publishVelocityLimit(velocity_limit);
+
+  publishDebugString();
 }
 
 void ExternalVelocityLimitSelectorNode::publishVelocityLimit(const VelocityLimit & velocity_limit)
 {
   pub_external_velocity_limit_->publish(velocity_limit);
+}
+
+void ExternalVelocityLimitSelectorNode::publishDebugString()
+{
+  StringStamped debug_string{};
+  debug_string.stamp = this->now();
+  debug_string.data = getDebugString(velocity_limit_table_);
+  pub_debug_string_->publish(debug_string);
 }
 
 void ExternalVelocityLimitSelectorNode::setVelocityLimitFromAPI(

@@ -8,6 +8,7 @@
   <arg name="input_velocity_limit_from_internal" default="/planning/scenario_planning/max_velocity_candidates"/>
   <arg name="input_velocity_limit_clear_command_from_internal" default="/planning/scenario_planning/clear_velocity_limit"/>
   <arg name="output_velocity_limit_from_selector" default="/planning/scenario_planning/max_velocity"/>
+  <arg name="output_debug_string" default="/planning/scenario_planning/external_velocity_limit_selector/debug"/>
 
   <node pkg="external_velocity_limit_selector" exec="external_velocity_limit_selector" name="external_velocity_limit_selector" output="screen">
     <param from="$(var common_param_path)"/>
@@ -16,5 +17,6 @@
     <remap from="input/velocity_limit_from_internal" to="$(var input_velocity_limit_from_internal)"/>
     <remap from="input/velocity_limit_clear_command_from_internal" to="$(var input_velocity_limit_clear_command_from_internal)"/>
     <remap from="output/external_velocity_limit" to="$(var output_velocity_limit_from_selector)"/>
+    <remap from="output/debug" to="$(var output_debug_string)"/>
   </node>
 </launch>
