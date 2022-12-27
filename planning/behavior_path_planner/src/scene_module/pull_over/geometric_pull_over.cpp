@@ -65,22 +65,8 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
   // check lane departure with road and shoulder lanes
   if (lane_departure_checker_.checkPathWillLeaveLane(lanes, arc_path)) return {};
 
-  // collision check
-  if (parameters_.use_occupancy_grid || !occupancy_grid_map_) {
-    const bool check_out_of_range = false;
-    if (occupancy_grid_map_->hasObstacleOnPath(arc_path, check_out_of_range)) {
-      return {};
-    }
-  }
-  if (parameters_.use_object_recognition) {
-    if (util::checkCollisionBetweenPathFootprintsAndObjects(
-          vehicle_footprint_, arc_path, *(planner_data_->dynamic_object),
-          parameters_.object_recognition_collision_check_margin)) {
-      return {};
-    }
-  }
-
   PullOverPath pull_over_path{};
+  pull_over_path.type = getPlannerType();
   pull_over_path.partial_paths = planner_.getPaths();
   pull_over_path.start_pose = planner_.getStartPose();
   pull_over_path.end_pose = planner_.getArcEndPose();

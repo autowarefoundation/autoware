@@ -148,7 +148,9 @@ MarkerArray createGoalCandidatesMarkerArray(
   // convert to pose vector
   std::vector<Pose> pose_vector{};
   for (const auto & goal_candidate : goal_candidates) {
-    pose_vector.push_back(goal_candidate.goal_pose);
+    if (goal_candidate.is_safe) {
+      pose_vector.push_back(goal_candidate.goal_pose);
+    }
   }
 
   auto marker_array = createPosesMarkerArray(pose_vector, "goal_candidates", color);

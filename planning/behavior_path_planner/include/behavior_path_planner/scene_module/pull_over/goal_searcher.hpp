@@ -37,6 +37,7 @@ public:
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
 
   GoalCandidates search(const Pose & original_goal_pose) override;
+  void update(GoalCandidates & goal_candidates) const override;
 
 private:
   void createAreaPolygons(std::vector<Pose> original_search_poses);

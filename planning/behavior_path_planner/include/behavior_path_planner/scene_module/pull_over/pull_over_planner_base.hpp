@@ -43,11 +43,44 @@ enum class PullOverPlannerType {
 
 struct PullOverPath
 {
-  PathWithLaneId path{};
+  PullOverPlannerType type{PullOverPlannerType::NONE};
   std::vector<PathWithLaneId> partial_paths{};
   Pose start_pose{};
   Pose end_pose{};
   std::vector<Pose> debug_poses{};
+  size_t goal_id{};
+
+  PathWithLaneId getFullPath() const
+  {
+    PathWithLaneId path{};
+    for (size_t i = 0; i < partial_paths.size(); ++i) {
+      if (i == 0) {
+        path.points.insert(
+          path.points.end(), partial_paths.at(i).points.begin(), partial_paths.at(i).points.end());
+      } else {
+        // skip overlapping point
+        path.points.insert(
+          path.points.end(), next(partial_paths.at(i).points.begin()),
+          partial_paths.at(i).points.end());
+      }
+    }
+    path.points = motion_utils::removeOverlapPoints(path.points);
+
+    return path;
+  }
+
+  PathWithLaneId getParkingPath() const
+  {
+    const PathWithLaneId full_path = getFullPath();
+    const size_t start_idx = motion_utils::findNearestIndex(full_path.points, start_pose.position);
+
+    PathWithLaneId parking_path{};
+    std::copy(
+      full_path.points.begin() + start_idx, full_path.points.end(),
+      std::back_inserter(parking_path.points));
+
+    return parking_path;
+  }
 };
 
 class PullOverPlannerBase

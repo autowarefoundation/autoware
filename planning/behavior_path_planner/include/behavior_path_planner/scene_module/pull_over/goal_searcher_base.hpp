@@ -36,9 +36,16 @@ struct GoalCandidate
   double distance_from_original_goal{0.0};
   double lateral_offset{0.0};
   size_t id{0};
+  bool is_safe{true};
 
   bool operator<(const GoalCandidate & other) const noexcept
   {
+    const double diff = distance_from_original_goal - other.distance_from_original_goal;
+    constexpr double eps = 0.01;
+    if (std::abs(diff) < eps) {
+      return lateral_offset < other.lateral_offset;
+    }
+
     return distance_from_original_goal < other.distance_from_original_goal;
   }
 };
@@ -57,6 +64,7 @@ public:
 
   MultiPolygon2d getAreaPolygons() { return area_polygons_; }
   virtual GoalCandidates search(const Pose & original_goal_pose) = 0;
+  virtual void update([[maybe_unused]] GoalCandidates & goal_candidates) const { return; }
 
 protected:
   PullOverParameters parameters_;

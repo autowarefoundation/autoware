@@ -178,15 +178,6 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
     return {};
   }
 
-  // check collision
-  PathWithLaneId collision_check_path = shifted_path.path;
-  collision_check_path.points.clear();
-  std::copy(
-    shifted_path.path.points.begin() + path_shifter.getShiftLines().front().start_idx,
-    shifted_path.path.points.end(), std::back_inserter(collision_check_path.points));
-
-  if (!isSafePath(collision_check_path)) return {};
-
   // set lane_id and velocity to shifted_path
   for (size_t i = path_shifter.getShiftLines().front().start_idx;
        i < shifted_path.path.points.size() - 1; ++i) {
@@ -214,89 +205,14 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // set pull over path
   PullOverPath pull_over_path{};
-  pull_over_path.path = shifted_path.path;
-  pull_over_path.partial_paths.push_back(pull_over_path.path);
+  pull_over_path.type = getPlannerType();
+  pull_over_path.partial_paths.push_back(shifted_path.path);
   pull_over_path.start_pose = path_shifter.getShiftLines().front().start;
   pull_over_path.end_pose = path_shifter.getShiftLines().front().end;
   pull_over_path.debug_poses.push_back(shift_end_pose_road_lane);
   pull_over_path.debug_poses.push_back(actual_shift_end_pose);
 
-  // check enough distance
-  if (!hasEnoughDistance(
-        pull_over_path.path, road_lanes, pull_over_path.start_pose, goal_pose,
-        pull_over_distance)) {
-    return {};
-  }
-
   return pull_over_path;
-}
-
-bool ShiftPullOver::hasEnoughDistance(
-  const PathWithLaneId & path, const lanelet::ConstLanelets & road_lanes, const Pose & start_pose,
-  const Pose & goal_pose, const double pull_over_distance) const
-{
-  const auto & current_pose = planner_data_->self_pose->pose;
-  const auto & common_params = planner_data_->parameters;
-  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
-
-  const size_t ego_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, current_pose, common_params.ego_nearest_dist_threshold,
-    common_params.ego_nearest_yaw_threshold);
-  const size_t start_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, start_pose, common_params.ego_nearest_dist_threshold,
-    common_params.ego_nearest_yaw_threshold);
-  const double dist_to_start_pose = motion_utils::calcSignedArcLength(
-    path.points, current_pose.position, ego_segment_idx, start_pose.position, start_segment_idx);
-
-  // once stopped, it cannot start again if start_pose is close.
-  // so need enough distance to restart
-  constexpr double eps_vel = 0.01;
-  // dist to restart should be less than decide_path_distance.
-  // otherwise, the goal would change immediately after departure.
-  const double dist_to_restart = parameters_.decide_path_distance / 2;
-  if (std::abs(current_vel) < eps_vel && dist_to_start_pose < dist_to_restart) {
-    return false;
-  }
-  const double current_to_stop_distance =
-    std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
-  if (dist_to_start_pose < current_to_stop_distance) {
-    return false;
-  }
-
-  const double road_lane_dist_to_goal = dist_to_start_pose + pull_over_distance;
-  if (road_lane_dist_to_goal > util::getDistanceToEndOfLane(current_pose, road_lanes)) {
-    return false;
-  }
-
-  const bool is_in_goal_route_section =
-    planner_data_->route_handler->isInGoalRouteSection(road_lanes.back());
-  if (
-    is_in_goal_route_section &&
-    road_lane_dist_to_goal > util::getSignedDistance(current_pose, goal_pose, road_lanes)) {
-    return false;
-  }
-
-  return true;
-}
-
-bool ShiftPullOver::isSafePath(const PathWithLaneId & path) const
-{
-  if (parameters_.use_occupancy_grid || !occupancy_grid_map_) {
-    const bool check_out_of_range = false;
-    if (occupancy_grid_map_->hasObstacleOnPath(path, check_out_of_range)) {
-      return false;
-    }
-  }
-
-  if (parameters_.use_object_recognition) {
-    if (util::checkCollisionBetweenPathFootprintsAndObjects(
-          vehicle_footprint_, path, *(planner_data_->dynamic_object),
-          parameters_.object_recognition_collision_check_margin)) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 double ShiftPullOver::calcBeforeShiftedArcLength(
