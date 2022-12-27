@@ -5,6 +5,11 @@
   <version>0.1.0</version>
   <description>The external_velocity_limit_selector ROS2 package</description>
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="shinnosuke.hirakawa@tier4.jp">Shinnosuke Hirakawa</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+  <maintainer email="tomohito.ando@tier4.jp">Tomohito Ando</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+
   <license>Apache License 2.0</license>
 
   <author email="satoshi.ota@tier4.jp">Satoshi Ota</author>
