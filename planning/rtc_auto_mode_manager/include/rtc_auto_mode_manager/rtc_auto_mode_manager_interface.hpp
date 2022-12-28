@@ -17,6 +17,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "tier4_rtc_msgs/msg/auto_mode_status.hpp"
+#include "tier4_rtc_msgs/msg/module.hpp"
 #include "tier4_rtc_msgs/srv/auto_mode.hpp"
 
 #include <memory>
@@ -25,6 +27,8 @@
 
 namespace rtc_auto_mode_manager
 {
+using tier4_rtc_msgs::msg::AutoModeStatus;
+using tier4_rtc_msgs::msg::Module;
 using tier4_rtc_msgs::srv::AutoMode;
 
 class RTCAutoModeManagerInterface
@@ -32,12 +36,13 @@ class RTCAutoModeManagerInterface
 public:
   RTCAutoModeManagerInterface(
     rclcpp::Node * node, const std::string & module_name, const bool default_enable);
+  AutoModeStatus getAutoModeStatus() const { return auto_mode_status_; }
 
 private:
   void onEnableService(
-    const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response) const;
+    const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response);
   AutoMode::Request createRequest(const AutoMode::Request::SharedPtr request) const;
-
+  AutoModeStatus auto_mode_status_;
   rclcpp::Client<AutoMode>::SharedPtr enable_cli_;
   rclcpp::Service<AutoMode>::SharedPtr enable_srv_;
 

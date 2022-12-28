@@ -18,18 +18,24 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rtc_auto_mode_manager/rtc_auto_mode_manager_interface.hpp"
 
+#include "tier4_rtc_msgs/msg/auto_mode_status_array.hpp"
+
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace rtc_auto_mode_manager
 {
+using tier4_rtc_msgs::msg::AutoModeStatusArray;
 class RTCAutoModeManagerNode : public rclcpp::Node
 {
 public:
   explicit RTCAutoModeManagerNode(const rclcpp::NodeOptions & node_options);
 
 private:
+  rclcpp::TimerBase::SharedPtr timer_;
+  AutoModeStatusArray auto_mode_statuses_;
+  rclcpp::Publisher<AutoModeStatusArray>::SharedPtr statuses_pub_;
   std::vector<std::shared_ptr<RTCAutoModeManagerInterface>> managers_;
 };
 

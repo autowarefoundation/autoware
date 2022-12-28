@@ -32,6 +32,17 @@ RTCAutoModeManagerNode::RTCAutoModeManagerNode(const rclcpp::NodeOptions & node_
       std::count(default_enable_list.begin(), default_enable_list.end(), module_name) != 0;
     managers_.push_back(std::make_shared<RTCAutoModeManagerInterface>(this, module_name, enabled));
   }
+  statuses_pub_ = create_publisher<AutoModeStatusArray>("output/auto_mode_statuses", 1);
+  using std::chrono_literals::operator""ms;
+  timer_ = rclcpp::create_timer(this, get_clock(), 100ms, [this] {
+    AutoModeStatusArray auto_mode_statuses;
+    for (const auto & m : managers_) {
+      auto_mode_statuses.stamp = get_clock()->now();
+      auto_mode_statuses.statuses.emplace_back(m->getAutoModeStatus());
+    }
+    statuses_pub_->publish(auto_mode_statuses);
+    auto_mode_statuses.statuses.clear();
+  });
 }
 
 }  // namespace rtc_auto_mode_manager
