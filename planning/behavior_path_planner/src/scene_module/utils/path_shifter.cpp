@@ -270,7 +270,7 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
 
   if (speed < 1.0e-5) {
     // no need to consider acceleration limit
-    RCLCPP_WARN_THROTTLE(logger_, clock_, 3000, "set velocity is zero. acc limit is ignored");
+    RCLCPP_DEBUG(logger_, "set velocity is zero. acc limit is ignored");
     return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
   }
 
