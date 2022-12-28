@@ -2,6 +2,9 @@
   ros__parameters:
     update_rate: 10.0
     system_emergency_heartbeat_timeout: 0.5
+    use_emergency_handling: false
+    check_external_emergency_heartbeat: false
+    use_start_request: false
     external_emergency_stop_heartbeat_timeout: 0.0
     stop_hold_acceleration: -1.5
     emergency_acceleration: -2.4

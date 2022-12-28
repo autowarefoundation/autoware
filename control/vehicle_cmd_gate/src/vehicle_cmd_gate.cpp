@@ -126,40 +126,40 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     "input/emergency/gear_cmd", 1, std::bind(&VehicleCmdGate::onEmergencyShiftCmd, this, _1));
 
   // Parameter
-  update_period_ = 1.0 / declare_parameter("update_rate", 10.0);
-  use_emergency_handling_ = declare_parameter("use_emergency_handling", false);
+  update_period_ = 1.0 / declare_parameter<double>("update_rate");
+  use_emergency_handling_ = declare_parameter<bool>("use_emergency_handling");
   check_external_emergency_heartbeat_ =
-    declare_parameter("check_external_emergency_heartbeat", false);
+    declare_parameter<bool>("check_external_emergency_heartbeat");
   system_emergency_heartbeat_timeout_ =
-    declare_parameter("system_emergency_heartbeat_timeout", 0.5);
+    declare_parameter<double>("system_emergency_heartbeat_timeout");
   external_emergency_stop_heartbeat_timeout_ =
-    declare_parameter("external_emergency_stop_heartbeat_timeout", 0.5);
-  stop_hold_acceleration_ = declare_parameter("stop_hold_acceleration", -1.5);
-  emergency_acceleration_ = declare_parameter("emergency_acceleration", -2.4);
+    declare_parameter<double>("external_emergency_stop_heartbeat_timeout");
+  stop_hold_acceleration_ = declare_parameter<double>("stop_hold_acceleration");
+  emergency_acceleration_ = declare_parameter<double>("emergency_acceleration");
 
   // Vehicle Parameter
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   {
     VehicleCmdFilterParam p;
     p.wheel_base = vehicle_info.wheel_base_m;
-    p.vel_lim = declare_parameter("nominal.vel_lim", 25.0);
-    p.lon_acc_lim = declare_parameter("nominal.lon_acc_lim", 5.0);
-    p.lon_jerk_lim = declare_parameter("nominal.lon_jerk_lim", 5.0);
-    p.lat_acc_lim = declare_parameter("nominal.lat_acc_lim", 5.0);
-    p.lat_jerk_lim = declare_parameter("nominal.lat_jerk_lim", 5.0);
-    p.actual_steer_diff_lim = declare_parameter("nominal.actual_steer_diff_lim", 1.0);
+    p.vel_lim = declare_parameter<double>("nominal.vel_lim");
+    p.lon_acc_lim = declare_parameter<double>("nominal.lon_acc_lim");
+    p.lon_jerk_lim = declare_parameter<double>("nominal.lon_jerk_lim");
+    p.lat_acc_lim = declare_parameter<double>("nominal.lat_acc_lim");
+    p.lat_jerk_lim = declare_parameter<double>("nominal.lat_jerk_lim");
+    p.actual_steer_diff_lim = declare_parameter<double>("nominal.actual_steer_diff_lim");
     filter_.setParam(p);
   }
 
   {
     VehicleCmdFilterParam p;
     p.wheel_base = vehicle_info.wheel_base_m;
-    p.vel_lim = declare_parameter("on_transition.vel_lim", 25.0);
-    p.lon_acc_lim = declare_parameter("on_transition.lon_acc_lim", 0.5);
-    p.lon_jerk_lim = declare_parameter("on_transition.lon_jerk_lim", 0.25);
-    p.lat_acc_lim = declare_parameter("on_transition.lat_acc_lim", 0.5);
-    p.lat_jerk_lim = declare_parameter("on_transition.lat_jerk_lim", 0.25);
-    p.actual_steer_diff_lim = declare_parameter("on_transition.actual_steer_diff_lim", 0.05);
+    p.vel_lim = declare_parameter<double>("on_transition.vel_lim");
+    p.lon_acc_lim = declare_parameter<double>("on_transition.lon_acc_lim");
+    p.lon_jerk_lim = declare_parameter<double>("on_transition.lon_jerk_lim");
+    p.lat_acc_lim = declare_parameter<double>("on_transition.lat_acc_lim");
+    p.lat_jerk_lim = declare_parameter<double>("on_transition.lat_jerk_lim");
+    p.actual_steer_diff_lim = declare_parameter<double>("on_transition.actual_steer_diff_lim");
     filter_on_transition_.setParam(p);
   }
 

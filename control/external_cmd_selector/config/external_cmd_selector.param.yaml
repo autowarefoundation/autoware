@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    update_rate: 10.0
+    initial_selector_mode: "local" # ["local", "remote"]

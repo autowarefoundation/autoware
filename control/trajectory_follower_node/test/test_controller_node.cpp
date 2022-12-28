@@ -56,6 +56,8 @@ rclcpp::NodeOptions makeNodeOptions(const bool enable_keep_stopped_until_steer_c
   rclcpp::NodeOptions node_options;
   node_options.append_parameter_override("ctrl_period", 0.03);
   node_options.append_parameter_override("timeout_thr_sec", 0.5);
+  node_options.append_parameter_override("lateral_controller_mode", "mpc");
+  node_options.append_parameter_override("longitudinal_controller_mode", "pid");
   node_options.append_parameter_override(
     "enable_keep_stopped_until_steer_convergence",
     enable_keep_stopped_until_steer_convergence);  // longitudinal
@@ -64,7 +66,8 @@ rclcpp::NodeOptions makeNodeOptions(const bool enable_keep_stopped_until_steer_c
      lateral_share_dir + "/param/lateral_controller_defaults.param.yaml", "--params-file",
      longitudinal_share_dir + "/param/longitudinal_controller_defaults.param.yaml", "--params-file",
      share_dir + "/param/test_vehicle_info.param.yaml", "--params-file",
-     share_dir + "/param/test_nearest_search.param.yaml"});
+     share_dir + "/param/test_nearest_search.param.yaml", "--params-file",
+     share_dir + "/param/trajectory_follower_node.param.yaml"});
 
   return node_options;
 }

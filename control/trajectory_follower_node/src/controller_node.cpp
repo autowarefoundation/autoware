@@ -37,11 +37,11 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
 {
   using std::placeholders::_1;
 
-  const double ctrl_period = declare_parameter<double>("ctrl_period", 0.03);
-  timeout_thr_sec_ = declare_parameter<double>("timeout_thr_sec", 0.5);
+  const double ctrl_period = declare_parameter<double>("ctrl_period");
+  timeout_thr_sec_ = declare_parameter<double>("timeout_thr_sec");
 
   const auto lateral_controller_mode =
-    getLateralControllerMode(declare_parameter("lateral_controller_mode", "mpc"));
+    getLateralControllerMode(declare_parameter<std::string>("lateral_controller_mode", "mpc"));
   switch (lateral_controller_mode) {
     case LateralControllerMode::MPC: {
       lateral_controller_ = std::make_shared<mpc_lateral_controller::MpcLateralController>(*this);
@@ -55,8 +55,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
       throw std::domain_error("[LateralController] invalid algorithm");
   }
 
-  const auto longitudinal_controller_mode =
-    getLongitudinalControllerMode(declare_parameter("longitudinal_controller_mode", "pid"));
+  const auto longitudinal_controller_mode = getLongitudinalControllerMode(
+    declare_parameter<std::string>("longitudinal_controller_mode", "pid"));
   switch (longitudinal_controller_mode) {
     case LongitudinalControllerMode::PID: {
       longitudinal_controller_ =
