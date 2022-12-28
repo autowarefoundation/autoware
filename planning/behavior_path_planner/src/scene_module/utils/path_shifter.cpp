@@ -270,7 +270,7 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
 
   if (speed < 1.0e-5) {
     // no need to consider acceleration limit
-    RCLCPP_INFO(logger_, "set velocity is zero. acc limit is ignored");
+    RCLCPP_WARN_THROTTLE(logger_, clock_, 3000, "set velocity is zero. acc limit is ignored");
     return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
   }
 
@@ -280,7 +280,9 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
 
   if (a_max < acc_limit_) {
     // no need to consider acceleration limit
-    RCLCPP_DEBUG(logger_, "No need to consider acc limit. max: %f, limit: %f", a_max, acc_limit_);
+    RCLCPP_WARN_THROTTLE(
+      logger_, clock_, 3000, "No need to consider acc limit. max: %f, limit: %f", a_max,
+      acc_limit_);
     return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
   }
 
@@ -290,8 +292,8 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
 
   if (tj < 0.0 || ta < 0.0 || jerk < 0.0 || tj / T < 0.1) {
     // no need to consider acceleration limit
-    RCLCPP_WARN(
-      logger_,
+    RCLCPP_WARN_THROTTLE(
+      logger_, clock_, 3000,
       "Acc limit is too small to be applied. Tj: %f, Ta: %f, j: %f, a_max: %f, acc_limit: %f", tj,
       ta, jerk, a_max, acc_limit_);
     return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
