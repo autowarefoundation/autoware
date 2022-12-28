@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>The static_centerline_optimizer package</description>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
@@ -33,10 +34,13 @@
   <depend>tier4_autoware_utils</depend>
   <depend>vehicle_info_util</depend>
 
+  <exec_depend>python3-flask-cors</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
 
+  <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
+  <test_depend>ros_testing</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 

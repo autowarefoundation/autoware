@@ -54,6 +54,17 @@ ament_auto_package(
     rviz
 )
 
+if(BUILD_TESTING)
+  add_launch_test(
+    test/test_static_centerline_optimizer.test.py
+    TIMEOUT "30"
+  )
+  install(DIRECTORY
+    test/data/
+    DESTINATION share/${PROJECT_NAME}/test/data/
+  )
+endif()
+
 install(PROGRAMS
   scripts/app.py
   DESTINATION lib/${PROJECT_NAME}

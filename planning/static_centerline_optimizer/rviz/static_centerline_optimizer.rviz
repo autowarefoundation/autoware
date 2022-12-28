@@ -177,27 +177,6 @@ Visualization Manager:
         Offset: 0
         Radius: 0.10000000149011612
         Value: false
-    - Alpha: 0.3499999940395355
-      Class: rviz_plugins/DrivableArea
-      Color Scheme: map
-      Draw Behind: true
-      Enabled: true
-      Name: DrivableArea
-      Topic:
-        Depth: 5
-        Durability Policy: Transient Local
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /static_centerline_optimizer/debug/raw_centerline
-      Update Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /static_centerline_optimizer/debug/raw_centerline_updates
-      Use Timestamp: false
-      Value: true
     - Class: rviz_common/Group
       Displays:
         - Class: rviz_plugins/PathFootprint
