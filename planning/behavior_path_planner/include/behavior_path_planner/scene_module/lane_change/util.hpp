@@ -97,7 +97,7 @@ bool isLaneChangePathSafe(
   const size_t current_seg_idx, const Twist & current_twist,
   const BehaviorPathPlannerParameters & common_parameters,
   const behavior_path_planner::LaneChangeParameters & lane_change_parameters,
-  const double front_decel, const double rear_decel,
+  const double front_decel, const double rear_decel, Pose & ego_pose_before_collision,
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const bool use_buffer = true,
   const double acceleration = 0.0);
 
@@ -133,12 +133,6 @@ PathWithLaneId getLaneChangePathLaneChangingSegment(
 bool isEgoWithinOriginalLane(
   const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
   const BehaviorPathPlannerParameters & common_param);
-bool isEgoDistanceNearToCenterline(
-  const lanelet::ConstLanelet & closest_lanelet, const Pose & current_pose,
-  const LaneChangeParameters & lane_change_param);
-bool isEgoHeadingAngleLessThanThreshold(
-  const lanelet::ConstLanelet & closest_lanelet, const Pose & current_pose,
-  const LaneChangeParameters & lane_change_param);
 
 TurnSignalInfo calc_turn_signal_info(
   const PathWithLaneId & prepare_path, const double prepare_velocity,
@@ -151,6 +145,18 @@ void get_turn_signal_info(
 std::vector<DrivableLanes> generateDrivableLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & lane_change_lanes);
+
+std::optional<LaneChangePath> getAbortPaths(
+  const std::shared_ptr<const PlannerData> & planner_data, const LaneChangePath & selected_path,
+  const Pose & ego_lerp_pose_before_collision, const BehaviorPathPlannerParameters & common_param,
+  const LaneChangeParameters & lane_change_param);
+
+double getLateralShift(const LaneChangePath & path);
+
+bool hasEnoughDistanceToLaneChangeAfterAbort(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const Pose & curent_pose, const double abort_return_dist,
+  const BehaviorPathPlannerParameters & common_param);
 }  // namespace behavior_path_planner::lane_change_utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_
