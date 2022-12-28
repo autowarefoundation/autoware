@@ -69,7 +69,6 @@ void SimModelIdealSteerAccGeared::updateStateWithGear(
     state(IDX::X) = prev_state(IDX::X);
     state(IDX::Y) = prev_state(IDX::Y);
     state(IDX::YAW) = prev_state(IDX::YAW);
-    current_acc_ = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
   };
 
   using autoware_auto_vehicle_msgs::msg::GearCommand;
@@ -94,4 +93,6 @@ void SimModelIdealSteerAccGeared::updateStateWithGear(
   } else {
     setStopState();
   }
+  // calculate acc from velocity diff
+  current_acc_ = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
 }
