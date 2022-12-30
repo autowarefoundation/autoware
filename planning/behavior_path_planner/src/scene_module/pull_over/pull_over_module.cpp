@@ -653,14 +653,16 @@ PathWithLaneId PullOverModule::generateStopPath()
     status_.is_safe ? status_.pull_over_path.start_pose
                     : (closest_start_pose_ ? closest_start_pose_.value() : *search_start_pose);
 
-  // if stop pose is behind current pose, stop as soon as possible
+  // if stop pose is closer than min_stop_distance, stop as soon as possible
   const size_t ego_idx = findEgoIndex(reference_path.points);
   const size_t stop_idx = findFirstNearestSegmentIndexWithSoftConstraints(
     reference_path.points, stop_pose, common_parameters.ego_nearest_dist_threshold,
     common_parameters.ego_nearest_yaw_threshold);
   const double ego_to_stop_distance = calcSignedArcLength(
     reference_path.points, current_pose.position, ego_idx, stop_pose.position, stop_idx);
-  if (ego_to_stop_distance < 0.0) {
+  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
+  const double min_stop_distance = std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
+  if (ego_to_stop_distance < min_stop_distance) {
     return generateEmergencyStopPath();
   }
 
