@@ -114,7 +114,9 @@ public:
   virtual ~AbstractPlanningAlgorithm() {}
 
 protected:
-  void computeCollisionIndexes(int theta_index, std::vector<IndexXY> & indexes) const;
+  void computeCollisionIndexes(
+    int theta_index, std::vector<IndexXY> & indexes,
+    std::vector<IndexXY> & vertex_indexes_2d) const;
   bool detectCollision(const IndexXYT & base_index) const;
   inline bool isOutOfRange(const IndexXYT & index) const
   {
@@ -142,6 +144,9 @@ protected:
 
   // collision indexes cache
   std::vector<std::vector<IndexXY>> coll_indexes_table_;
+
+  // vehicle vertex indexes cache
+  std::vector<std::vector<IndexXY>> vertex_indexes_table_;
 
   // is_obstacle's table
   std::vector<std::vector<bool>> is_obstacle_table_;

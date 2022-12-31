@@ -29,6 +29,7 @@
 #include <queue>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 namespace freespace_planning_algorithms
@@ -130,6 +131,11 @@ public:
 
   const PlannerWaypoints & getWaypoints() const { return waypoints_; }
 
+  inline int getKey(const IndexXYT & index)
+  {
+    return (index.theta + (index.y * x_scale_ + index.x) * y_scale_);
+  }
+
 private:
   bool search();
   void clearNodes();
@@ -139,14 +145,18 @@ private:
   double estimateCost(const geometry_msgs::msg::Pose & pose) const;
   bool isGoal(const AstarNode & node) const;
 
-  AstarNode * getNodeRef(const IndexXYT & index) { return &nodes_[index.y][index.x][index.theta]; }
+  AstarNode * getNodeRef(const IndexXYT & index)
+  {
+    return &(graph_.emplace(getKey(index), AstarNode()).first->second);
+  }
 
   // Algorithm specific param
   AstarParam astar_param_;
 
   // hybrid astar variables
   TransitionTable transition_table_;
-  std::vector<std::vector<std::vector<AstarNode>>> nodes_;
+  std::unordered_map<uint, AstarNode> graph_;
+
   std::priority_queue<AstarNode *, std::vector<AstarNode *>, NodeComparison> openlist_;
 
   // goal node, which may helpful in testing and debugging
@@ -154,6 +164,9 @@ private:
 
   // distance metric option (removed when the reeds_shepp gets stable)
   bool use_reeds_shepp_;
+
+  int x_scale_;
+  int y_scale_;
 };
 }  // namespace freespace_planning_algorithms
 

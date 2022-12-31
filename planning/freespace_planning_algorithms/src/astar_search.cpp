@@ -133,6 +133,8 @@ AstarSearch::AstarSearch(
     planner_common_param_.minimum_turning_radius, planner_common_param_.maximum_turning_radius,
     planner_common_param_.turning_radius_size, planner_common_param_.theta_size,
     astar_param_.use_back);
+
+  y_scale_ = planner_common_param.theta_size;
 }
 
 void AstarSearch::setMap(const nav_msgs::msg::OccupancyGrid & costmap)
@@ -141,17 +143,8 @@ void AstarSearch::setMap(const nav_msgs::msg::OccupancyGrid & costmap)
 
   clearNodes();
 
-  const auto height = costmap_.info.height;
-  const auto width = costmap_.info.width;
-
-  // Initialize nodes
-  nodes_.resize(height);
-  for (size_t i = 0; i < height; i++) {
-    nodes_[i].resize(width);
-    for (size_t j = 0; j < width; j++) {
-      nodes_[i][j].resize(planner_common_param_.theta_size);
-    }
-  }
+  x_scale_ = costmap_.info.height;
+  graph_.reserve(100000);
 }
 
 bool AstarSearch::makePlan(
@@ -175,8 +168,9 @@ void AstarSearch::clearNodes()
 {
   // clearing openlist is necessary because otherwise remaining elements of openlist
   // point to deleted node.
-  nodes_.clear();
   openlist_ = std::priority_queue<AstarNode *, std::vector<AstarNode *>, NodeComparison>();
+
+  graph_ = std::unordered_map<uint, AstarNode>();
 }
 
 bool AstarSearch::setStartNode()
