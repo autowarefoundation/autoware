@@ -125,7 +125,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     create_publisher<TurnIndicatorsReport>("output/turn_indicators_report", QoS{1});
   pub_hazard_lights_report_ =
     create_publisher<HazardLightsReport>("output/hazard_lights_report", QoS{1});
-  pub_current_pose_ = create_publisher<PoseStamped>("/current_pose", QoS{1});
+  pub_current_pose_ = create_publisher<PoseStamped>("output/debug/pose", QoS{1});
   pub_velocity_ = create_publisher<VelocityReport>("output/twist", QoS{1});
   pub_odom_ = create_publisher<Odometry>("output/odometry", QoS{1});
   pub_steer_ = create_publisher<SteeringReport>("output/steering", QoS{1});
