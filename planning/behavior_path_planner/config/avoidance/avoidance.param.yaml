@@ -18,6 +18,7 @@
 
       object_check_forward_distance: 150.0        # [m]
       object_check_backward_distance: 2.0         # [m]
+      object_check_goal_distance: 20.0            # [m]
 
       threshold_distance_object_is_on_center: 1.0 # [m]
 

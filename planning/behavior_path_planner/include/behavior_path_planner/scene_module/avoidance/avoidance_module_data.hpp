@@ -86,6 +86,10 @@ struct AvoidanceParameters
   // continue to detect backward vehicles as avoidance targets until they are this distance away
   double object_check_backward_distance;
 
+  // if the distance between object and goal position is less than this parameter, the module ignore
+  // the object.
+  double object_check_goal_distance;
+
   // use in judge whether the vehicle is parking object on road shoulder
   double object_check_shiftable_ratio;
 
