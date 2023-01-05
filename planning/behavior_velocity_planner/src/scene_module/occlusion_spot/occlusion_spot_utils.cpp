@@ -283,16 +283,13 @@ PossibleCollisionInfo calculateCollisionPathPointFromOcclusionSpot(
   const ArcCoordinates & arc_coord_occlusion_with_offset,
   const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param)
 {
-  auto calcPose = [](const lanelet::ConstLanelet & pl, const ArcCoordinates & arc) {
-    const auto & ll = pl.centerline2d();
+  auto calcPosition = [](const ConstLineString2d & ll, const ArcCoordinates & arc) {
     BasicPoint2d bp = fromArcCoordinates(ll, arc);
-    Pose pose;
-    pose.position.x = bp[0];
-    pose.position.y = bp[1];
-    pose.position.z = 0.0;
-    pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(
-      lanelet::utils::getLaneletAngle(pl, pose.position));
-    return pose;
+    Point position;
+    position.x = bp[0];
+    position.y = bp[1];
+    position.z = 0.0;
+    return position;
   };
   /**
    * @brief calculate obstacle collision intersection from arc coordinate info.
@@ -316,11 +313,13 @@ PossibleCollisionInfo calculateCollisionPathPointFromOcclusionSpot(
   pc.arc_lane_dist_at_collision = {distance_to_stop, arc_coord_occlusion_with_offset.distance};
   pc.obstacle_info.safe_motion = sm;
   pc.obstacle_info.ttv = ttv;
-  pc.obstacle_info.position = calcPose(path_lanelet, arc_coord_occlusion).position;
+
+  const auto & ll = path_lanelet.centerline2d();
+  pc.obstacle_info.position = calcPosition(ll, arc_coord_occlusion);
   pc.obstacle_info.max_velocity = param.pedestrian_vel;
-  pc.collision_pose = calcPose(path_lanelet, {arc_coord_occlusion_with_offset.length, 0.0});
-  pc.collision_with_margin.pose = calcPose(path_lanelet, {distance_to_stop, 0.0});
-  pc.intersection_pose = calcPose(path_lanelet, {arc_coord_occlusion.length, 0.0});
+  pc.collision_pose.position = calcPosition(ll, {arc_coord_occlusion_with_offset.length, 0.0});
+  pc.collision_with_margin.pose.position = calcPosition(ll, {distance_to_stop, 0.0});
+  pc.intersection_pose.position = calcPosition(ll, {arc_coord_occlusion.length, 0.0});
   return pc;
 }
 

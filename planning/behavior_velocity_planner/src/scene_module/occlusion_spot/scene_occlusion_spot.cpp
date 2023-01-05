@@ -183,7 +183,9 @@ bool OcclusionSpotModule::modifyPathVelocity(
   // Note: Consider offset from path start to ego here
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego);
   // apply safe velocity using ebs and pbs deceleration
-  utils::applySafeVelocityConsideringPossibleCollision(path, possible_collisions, param_);
+  utils::applySafeVelocityConsideringPossibleCollision(
+    path, possible_collisions, debug_data_.debug_poses, param_);
+  debug_data_.baselink_to_front = param_.baselink_to_front;
   // these debug topics needs computation resource
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;

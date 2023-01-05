@@ -28,7 +28,7 @@ namespace occlusion_spot_utils
 {
 void applySafeVelocityConsideringPossibleCollision(
   PathWithLaneId * inout_path, std::vector<PossibleCollisionInfo> & possible_collisions,
-  const PlannerParam & param);
+  std::vector<geometry_msgs::msg::Pose> & debug_poses, const PlannerParam & param);
 
 /**
  * @param: v: ego velocity config

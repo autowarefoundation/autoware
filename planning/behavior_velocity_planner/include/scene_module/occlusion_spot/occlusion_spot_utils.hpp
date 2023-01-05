@@ -183,6 +183,7 @@ struct PossibleCollisionInfo
 struct DebugData
 {
   double z;
+  double baselink_to_front;
   std::string road_type = "";
   std::string detection_type = "";
   Polygons2d detection_area_polygons;
@@ -190,8 +191,10 @@ struct DebugData
   std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
   std::vector<PossibleCollisionInfo> possible_collisions;
   std::vector<geometry_msgs::msg::Point> occlusion_points;
+  std::vector<geometry_msgs::msg::Pose> debug_poses;
   void resetData()
   {
+    debug_poses.clear();
     close_partition.clear();
     detection_area_polygons.clear();
     parked_vehicle_point.clear();

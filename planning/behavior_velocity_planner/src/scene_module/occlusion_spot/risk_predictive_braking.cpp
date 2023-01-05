@@ -25,7 +25,7 @@ namespace occlusion_spot_utils
 {
 void applySafeVelocityConsideringPossibleCollision(
   PathWithLaneId * inout_path, std::vector<PossibleCollisionInfo> & possible_collisions,
-  const PlannerParam & param)
+  std::vector<geometry_msgs::msg::Pose> & debug_poses, const PlannerParam & param)
 {
   // return nullptr or too few points
   if (!inout_path || inout_path->points.size() < 2) {
@@ -60,7 +60,9 @@ void applySafeVelocityConsideringPossibleCollision(
     safe_velocity = std::max(safe_velocity, v_min);
     possible_collision.obstacle_info.safe_motion.safe_velocity = safe_velocity;
     const auto & pose = possible_collision.collision_with_margin.pose;
-    planning_utils::insertDecelPoint(pose.position, *inout_path, safe_velocity);
+    const auto & decel_pose =
+      planning_utils::insertDecelPoint(pose.position, *inout_path, safe_velocity);
+    if (decel_pose) debug_poses.push_back(decel_pose.get());
   }
 }
 
