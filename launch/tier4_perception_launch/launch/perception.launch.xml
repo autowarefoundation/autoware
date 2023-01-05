@@ -8,6 +8,11 @@
   <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
 
+  <!-- centerpoint model configs -->
+  <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
+  <arg name="centerpoint_model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>
+  <arg name="centerpoint_model_param_path" default="$(find-pkg-share lidar_centerpoint)/config/$(var centerpoint_model_name).param.yaml"/>
+
   <!-- common parameters -->
   <arg name="input/pointcloud" default="/sensing/lidar/concatenated/pointcloud" description="The topic will be used in the detection module"/>
   <arg name="mode" default="camera_lidar_fusion" description="options: `camera_lidar_radar_fusion`, `camera_lidar_fusion`, `lidar_radar_fusion`, `lidar` or `radar`"/>
@@ -40,6 +45,7 @@
   <arg name="use_pointcloud_container" default="false" description="launch pointcloud container"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
   <!-- Traffic Light Recognition Parameters -->
+  <arg name="use_traffic_light_recognition" default="true"/>
   <arg name="traffic_light_recognition/enable_fine_detection" default="true"/>
 
   <!-- perception module -->
@@ -128,7 +134,7 @@
     </group>
 
     <!-- traffic light module -->
-    <group>
+    <group if="$(var use_traffic_light_recognition)">
       <push-ros-namespace namespace="traffic_light_recognition"/>
       <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml">
         <arg name="enable_fine_detection" value="$(var traffic_light_recognition/enable_fine_detection)"/>
