@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input/image" default="/sensing/camera/camera0/image_rect_color"/>
+  <arg name="output/objects" default="/perception/object_recognition/detection/rois0"/>
+  <arg name="model_name" default="yolox-tiny"/>
+  <arg name="model_path" default="$(find-pkg-share tensorrt_yolox)/data"/>
+  <arg name="score_threshold" default="0.35"/>
+  <arg name="nms_threshold" default="0.7"/>
+  <arg name="use_decompress" default="true" description="use image decompress"/>
+
+  <node pkg="image_transport_decompressor" exec="image_transport_decompressor_node" name="image_transport_decompressor_node" if="$(var use_decompress)">
+    <remap from="~/input/compressed_image" to="$(var input/image)/compressed"/>
+    <remap from="~/output/raw_image" to="$(var input/image)"/>
+  </node>
+
+  <node pkg="tensorrt_yolox" exec="tensorrt_yolox_node_exe" name="tensorrt_yolox" output="screen">
+    <remap from="~/in/image" to="$(var input/image)"/>
+    <remap from="~/out/objects" to="$(var output/objects)"/>
+    <param name="score_threshold" value="$(var score_threshold)"/>
+    <param name="model_path" value="$(var model_path)/$(var model_name).onnx"/>
+    <param name="label_path" value="$(var model_path)/label.txt"/>
+    <param name="trt_precision" value="fp16"/>
+    <param name="score_threshold" value="$(var score_threshold)"/>
+    <param name="nms_threshold" value="$(var nms_threshold)"/>
+  </node>
+</launch>
