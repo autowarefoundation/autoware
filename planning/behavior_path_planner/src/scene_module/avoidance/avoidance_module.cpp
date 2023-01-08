@@ -320,7 +320,9 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
       continue;
     }
 
-    if (object_data.longitudinal + parameters_->object_check_goal_distance > dist_to_goal) {
+    if (
+      object_data.longitudinal + object_data.length / 2 + parameters_->object_check_goal_distance >
+      dist_to_goal) {
       avoidance_debug_array_false_and_push_back("TooNearToGoal");
       object_data.reason = "TooNearToGoal";
       data.other_objects.push_back(object_data);
