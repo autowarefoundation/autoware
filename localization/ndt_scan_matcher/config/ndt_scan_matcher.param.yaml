@@ -65,3 +65,9 @@
 
     # Regularization scale factor
     regularization_scale_factor: 0.01
+
+    # A flag for using scan matching score based on de-grounded LiDAR scan
+    estimate_scores_for_degrounded_scan: false
+
+    # If lidar_point.z - base_link.z <= this threshold , the point will be removed
+    z_margin_for_ground_removal: 0.8
