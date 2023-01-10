@@ -1,4 +1,4 @@
-# `freespace planning algorithms`
+# freespace planning algorithms
 
 ## Role
 
@@ -48,7 +48,7 @@ colcon build --packages-select freespace_planning_algorithms
 colcon test --packages-select freespace_planning_algorithms
 ```
 
-Inside the test, simulation results are stored in `/tmp/fpalgos-{#algorithm_type}-case{#scenario_number}` as a rosbag.
+Inside the test, simulation results are stored in `/tmp/fpalgos-{algorithm_type}-case{scenario_number}` as a rosbag.
 Loading these resulting files, by using [test/debug_plot.py](test/debug_plot.py),
 one can create plots visualizing the path and obstacles as shown
 in the figures below. The created figures are then again saved in `/tmp`.
