@@ -143,7 +143,7 @@ visualization_msgs::msg::MarkerArray DetectionAreaModule::createDebugMarkerArray
 
     appendMarkerArray(
       debug::createPointsMarkerArray(
-        debug_data_.obstacle_points, "obstalces", module_id_, now, 0.6, 0.6, 0.6, 1.0, 0.0, 0.0),
+        debug_data_.obstacle_points, "obstacles", module_id_, now, 0.6, 0.6, 0.6, 1.0, 0.0, 0.0),
       &wall_marker, now);
   }
 
