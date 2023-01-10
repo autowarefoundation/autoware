@@ -61,7 +61,6 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     this->create_publisher<TurnIndicatorsCommand>("output/turn_indicators_cmd", durable_qos);
   hazard_light_cmd_pub_ =
     this->create_publisher<HazardLightsCommand>("output/hazard_lights_cmd", durable_qos);
-
   gate_mode_pub_ = this->create_publisher<GateMode>("output/gate_mode", durable_qos);
   engage_pub_ = this->create_publisher<EngageMsg>("output/engage", durable_qos);
   pub_external_emergency_ =
@@ -84,6 +83,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ = *msg; });
   mrm_state_sub_ = this->create_subscription<MrmState>(
     "input/mrm_state", 1, std::bind(&VehicleCmdGate::onMrmState, this, _1));
+  gear_status_sub_ = this->create_subscription<GearReport>(
+    "input/gear_status", 1, std::bind(&VehicleCmdGate::onGearStatus, this, _1));
 
   // Subscriber for auto
   auto_control_cmd_sub_ = this->create_subscription<AckermannControlCommand>(
@@ -257,6 +258,8 @@ void VehicleCmdGate::onAutoHazardLightsCmd(HazardLightsCommand::ConstSharedPtr m
 
 void VehicleCmdGate::onAutoShiftCmd(GearCommand::ConstSharedPtr msg) { auto_commands_.gear = *msg; }
 
+void VehicleCmdGate::onGearStatus(GearReport::ConstSharedPtr msg) { current_gear_ptr_ = msg; }
+
 // for remote
 void VehicleCmdGate::onRemoteCtrlCmd(AckermannControlCommand::ConstSharedPtr msg)
 {
@@ -346,6 +349,15 @@ void VehicleCmdGate::onTimer()
     return;
   }
 
+  if (is_gate_mode_changed_) {
+    // If gate mode is external, is_engaged_ is always true
+    // While changing gate mode external to auto, the first is_engaged_ is always true for the first
+    // loop in this scope. So we need to wait for the second loop
+    // after gate mode is changed.
+    is_gate_mode_changed_ = false;
+    return;
+  }
+
   // Select commands
   TurnIndicatorsCommand turn_indicator;
   HazardLightsCommand hazard_light;
@@ -362,6 +374,11 @@ void VehicleCmdGate::onTimer()
 
       // Don't send turn signal when autoware is not engaged
       if (!is_engaged_) {
+        if (!current_gear_ptr_) {
+          gear.command = GearCommand::NONE;
+        } else {
+          gear.command = current_gear_ptr_.get()->report;
+        }
         turn_indicator.command = TurnIndicatorsCommand::NO_COMMAND;
         hazard_light.command = HazardLightsCommand::NO_COMMAND;
       }
@@ -564,7 +581,7 @@ void VehicleCmdGate::onGateMode(GateMode::ConstSharedPtr msg)
 {
   const auto prev_gate_mode = current_gate_mode_;
   current_gate_mode_ = *msg;
-
+  is_gate_mode_changed_ = true;
   if (current_gate_mode_.data != prev_gate_mode.data) {
     RCLCPP_INFO(
       get_logger(), "GateMode changed: %s -> %s", getGateModeName(prev_gate_mode.data),
