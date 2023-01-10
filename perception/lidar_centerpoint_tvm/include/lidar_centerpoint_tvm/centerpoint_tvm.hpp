@@ -55,6 +55,22 @@ struct MixedInputs
   std::vector<int32_t> coords;
 };
 
+class LIDAR_CENTERPOINT_TVM_LOCAL TVMScatterIE : public tvm_utility::pipeline::InferenceEngine
+{
+public:
+  explicit TVMScatterIE(
+    tvm_utility::pipeline::InferenceEngineTVMConfig config, const std::string & pkg_name,
+    const std::string & function_name);
+  TVMArrayContainerVector schedule(const TVMArrayContainerVector & input);
+  void set_coords(TVMArrayContainer coords) { coords_ = coords; }
+
+private:
+  tvm_utility::pipeline::InferenceEngineTVMConfig config_;
+  TVMArrayContainer coords_;
+  TVMArrayContainerVector output_;
+  tvm::runtime::PackedFunc scatter_function;
+};
+
 class LIDAR_CENTERPOINT_TVM_LOCAL VoxelEncoderPreProcessor
 : public tvm_utility::pipeline::PreProcessor<MixedInputs>
 {
@@ -76,57 +92,9 @@ private:
   const int64_t max_voxel_size;
   const int64_t max_point_in_voxel_size;
   const int64_t encoder_in_feature_size;
-  const int64_t datatype_bytes;
+  const int64_t input_datatype_bytes;
   const CenterPointConfig config_detail;
   std::vector<float> encoder_in_features;
-  TVMArrayContainer output;
-};
-
-class LIDAR_CENTERPOINT_TVM_LOCAL VoxelEncoderPostProcessor
-: public tvm_utility::pipeline::PostProcessor<std::shared_ptr<std::vector<float>>>
-{
-public:
-  /// \brief Constructor.
-  /// \param[in] config The TVM configuration.
-  explicit VoxelEncoderPostProcessor(
-    const tvm_utility::pipeline::InferenceEngineTVMConfig & config);
-
-  /// \brief Copy the inference result.
-  /// \param[in] input The result of the voxel_encoder inference engine.
-  /// \return The inferred data.
-  std::shared_ptr<std::vector<float>> schedule(const TVMArrayContainerVector & input);
-
-private:
-  const int64_t max_voxel_size;
-  const int64_t encoder_out_feature_size;
-  const int64_t datatype_bytes;
-  std::shared_ptr<std::vector<float>> pillar_features;
-};
-
-class LIDAR_CENTERPOINT_TVM_LOCAL BackboneNeckHeadPreProcessor
-: public tvm_utility::pipeline::PreProcessor<MixedInputs>
-{
-public:
-  /// \brief Constructor.
-  /// \param[in] config The TVM configuration.
-  /// \param[in] config_mod The centerpoint model configuration.
-  explicit BackboneNeckHeadPreProcessor(
-    const tvm_utility::pipeline::InferenceEngineTVMConfig & config,
-    const CenterPointConfig & config_mod);
-
-  /// \brief Convert the pillar_features to spatial_features.
-  /// \param[in] pillar_inputs The pillar features related input
-  /// \return A TVM array containing the spatial_features.
-  /// \throw std::runtime_error If the features are incorrectly configured.
-  TVMArrayContainerVector schedule(const MixedInputs & pillar_inputs);
-
-private:
-  const int64_t input_channels;
-  const int64_t input_height;
-  const int64_t input_width;
-  const int64_t datatype_bytes;
-  const CenterPointConfig config_detail;
-  std::vector<float> spatial_features;
   TVMArrayContainer output;
 };
 
@@ -147,7 +115,7 @@ public:
   std::vector<Box3D> schedule(const TVMArrayContainerVector & input);
 
 private:
-  const int64_t datatype_bytes;
+  const int64_t output_datatype_bytes;
   const CenterPointConfig config_detail;
   std::vector<float> head_out_heatmap;
   std::vector<float> head_out_offset;
@@ -179,10 +147,10 @@ protected:
     const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
 
   using VE_PrePT = VoxelEncoderPreProcessor;
-  using BNH_PrePT = BackboneNeckHeadPreProcessor;
   using IET = tvm_utility::pipeline::InferenceEngineTVM;
-  using VE_PostPT = VoxelEncoderPostProcessor;
   using BNH_PostPT = BackboneNeckHeadPostProcessor;
+  using TSE = TVMScatterIE;
+  using TSP = tvm_utility::pipeline::TowStagePipeline<VE_PrePT, IET, TSE, BNH_PostPT>;
 
   tvm_utility::pipeline::InferenceEngineTVMConfig config_ve;
   tvm_utility::pipeline::InferenceEngineTVMConfig config_bnh;
@@ -190,14 +158,14 @@ protected:
   // Voxel Encoder Pipeline.
   std::shared_ptr<VE_PrePT> VE_PreP;
   std::shared_ptr<IET> VE_IE;
-  std::shared_ptr<VE_PostPT> VE_PostP;
-  std::shared_ptr<tvm_utility::pipeline::Pipeline<VE_PrePT, IET, VE_PostPT>> ve_pipeline;
 
   // Backbone Neck Head Pipeline.
-  std::shared_ptr<BNH_PrePT> BNH_PreP;
   std::shared_ptr<IET> BNH_IE;
   std::shared_ptr<BNH_PostPT> BNH_PostP;
-  std::shared_ptr<tvm_utility::pipeline::Pipeline<BNH_PrePT, IET, BNH_PostPT>> bnh_pipeline;
+
+  std::shared_ptr<TSE> scatter_ie;
+  std::shared_ptr<tvm_utility::pipeline::TowStagePipeline<VE_PrePT, IET, TSE, BNH_PostPT>>
+    TSP_pipeline;
 
   // Variables
   std::unique_ptr<VoxelGeneratorTemplate> vg_ptr_{nullptr};
@@ -207,6 +175,7 @@ protected:
   std::shared_ptr<std::vector<float>> voxels_;
   std::shared_ptr<std::vector<int32_t>> coordinates_;
   std::shared_ptr<std::vector<float>> num_points_per_voxel_;
+  TVMArrayContainer coords_tvm_;
 };
 
 }  // namespace lidar_centerpoint_tvm

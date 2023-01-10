@@ -24,6 +24,7 @@
     TVM as the inference engine.
   </description>
   <maintainer email="ambroise.vincent@arm.com">Ambroise Vincent</maintainer>
+  <maintainer email="xinyu.wang@tier4.jp">Xinyu Wang</maintainer>
   <license>Apache License 2.0</license>
 
   <build_depend>autoware_cmake</build_depend>
