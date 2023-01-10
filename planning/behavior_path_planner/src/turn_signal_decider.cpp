@@ -433,9 +433,9 @@ void TurnSignalDecider::set_intersection_info(
     }
     intersection_distance_ = dist_to_intersection_required_start;
     intersection_pose_point_ = inter_required_start_point;
+  } else {
+    initialize_intersection_info();
   }
-
-  initialize_intersection_info();
 }
 
 void TurnSignalDecider::initialize_intersection_info()
