@@ -51,13 +51,7 @@
 #include "eigen3/Eigen/LU"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_interface.hpp"
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace mpc_lateral_controller
+namespace autoware::motion::control::mpc_lateral_controller
 {
 
 /**
@@ -112,8 +106,5 @@ private:
   double m_cf;    //!< @brief front cornering power [N/rad]
   double m_cr;    //!< @brief rear cornering power [N/rad]
 };
-}  // namespace mpc_lateral_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::mpc_lateral_controller
 #endif  // MPC_LATERAL_CONTROLLER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_DYNAMICS_HPP_

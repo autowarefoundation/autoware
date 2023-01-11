@@ -14,13 +14,7 @@
 
 #include "mpc_lateral_controller/qp_solver/qp_solver_unconstr_fast.hpp"
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace mpc_lateral_controller
+namespace autoware::motion::control::mpc_lateral_controller
 {
 QPSolverEigenLeastSquareLLT::QPSolverEigenLeastSquareLLT() {}
 bool QPSolverEigenLeastSquareLLT::solve(
@@ -36,7 +30,4 @@ bool QPSolverEigenLeastSquareLLT::solve(
 
   return true;
 }
-}  // namespace mpc_lateral_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::mpc_lateral_controller

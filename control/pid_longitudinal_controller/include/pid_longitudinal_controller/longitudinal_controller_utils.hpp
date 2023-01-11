@@ -30,13 +30,7 @@
 #include <cmath>
 #include <limits>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace pid_longitudinal_controller
+namespace autoware::motion::control::pid_longitudinal_controller
 {
 namespace longitudinal_utils
 {
@@ -156,9 +150,6 @@ double applyDiffLimitFilter(
   const double input_val, const double prev_val, const double dt, const double max_val,
   const double min_val);
 }  // namespace longitudinal_utils
-}  // namespace pid_longitudinal_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::pid_longitudinal_controller
 
 #endif  // PID_LONGITUDINAL_CONTROLLER__LONGITUDINAL_CONTROLLER_UTILS_HPP_

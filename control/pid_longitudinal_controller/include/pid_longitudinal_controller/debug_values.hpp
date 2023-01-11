@@ -17,13 +17,7 @@
 
 #include <array>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace pid_longitudinal_controller
+namespace autoware::motion::control::pid_longitudinal_controller
 {
 
 /// Debug Values used for debugging or controller tuning
@@ -94,9 +88,6 @@ public:
 private:
   std::array<double, static_cast<size_t>(TYPE::SIZE)> m_values;
 };
-}  // namespace pid_longitudinal_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::pid_longitudinal_controller
 
 #endif  // PID_LONGITUDINAL_CONTROLLER__DEBUG_VALUES_HPP_

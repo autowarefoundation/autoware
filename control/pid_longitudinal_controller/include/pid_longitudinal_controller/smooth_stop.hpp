@@ -25,13 +25,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace pid_longitudinal_controller
+namespace autoware::motion::control::pid_longitudinal_controller
 {
 
 /**
@@ -116,9 +110,6 @@ private:
   rclcpp::Time m_weak_acc_time;
   bool m_is_set_params = false;
 };
-}  // namespace pid_longitudinal_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::pid_longitudinal_controller
 
 #endif  // PID_LONGITUDINAL_CONTROLLER__SMOOTH_STOP_HPP_

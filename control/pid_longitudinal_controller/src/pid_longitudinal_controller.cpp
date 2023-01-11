@@ -24,13 +24,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace pid_longitudinal_controller
+namespace autoware::motion::control::pid_longitudinal_controller
 {
 PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
 : node_{&node}, diagnostic_updater_(&node)
@@ -102,8 +96,7 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
 
     // set lowpass filter for vel error and pitch
     const double lpf_vel_error_gain{node_->declare_parameter<double>("lpf_vel_error_gain")};
-    m_lpf_vel_error =
-      std::make_shared<pid_longitudinal_controller::LowpassFilter1d>(0.0, lpf_vel_error_gain);
+    m_lpf_vel_error = std::make_shared<LowpassFilter1d>(0.0, lpf_vel_error_gain);
 
     m_current_vel_threshold_pid_integrate =
       node_->declare_parameter<double>("current_vel_threshold_pid_integration");  // [m/s]
@@ -171,7 +164,7 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   // parameters for slope compensation
   m_use_traj_for_pitch = node_->declare_parameter<bool>("use_trajectory_for_pitch_calculation");
   const double lpf_pitch_gain{node_->declare_parameter<double>("lpf_pitch_gain")};
-  m_lpf_pitch = std::make_shared<pid_longitudinal_controller::LowpassFilter1d>(0.0, lpf_pitch_gain);
+  m_lpf_pitch = std::make_shared<LowpassFilter1d>(0.0, lpf_pitch_gain);
   m_max_pitch_rad = node_->declare_parameter<double>("max_pitch_rad");  // [rad]
   m_min_pitch_rad = node_->declare_parameter<double>("min_pitch_rad");  // [rad]
 
@@ -213,7 +206,7 @@ void PidLongitudinalController::setCurrentAcceleration(
 void PidLongitudinalController::setTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & msg)
 {
-  if (!pid_longitudinal_controller::longitudinal_utils::isValidTrajectory(msg)) {
+  if (!longitudinal_utils::isValidTrajectory(msg)) {
     RCLCPP_ERROR_THROTTLE(
       node_->get_logger(), *node_->get_clock(), 3000, "received invalid trajectory. ignore.");
     return;
@@ -447,14 +440,13 @@ PidLongitudinalController::ControlData PidLongitudinalController::getControlData
   m_prev_shift = control_data.shift;
 
   // distance to stopline
-  control_data.stop_dist = pid_longitudinal_controller::longitudinal_utils::calcStopDistance(
+  control_data.stop_dist = longitudinal_utils::calcStopDistance(
     current_pose, m_trajectory, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
 
   // pitch
-  const double raw_pitch =
-    pid_longitudinal_controller::longitudinal_utils::getPitchByPose(current_pose.orientation);
-  const double traj_pitch = pid_longitudinal_controller::longitudinal_utils::getPitchByTraj(
-    m_trajectory, control_data.nearest_idx, m_wheel_base);
+  const double raw_pitch = longitudinal_utils::getPitchByPose(current_pose.orientation);
+  const double traj_pitch =
+    longitudinal_utils::getPitchByTraj(m_trajectory, control_data.nearest_idx, m_wheel_base);
   control_data.slope_angle = m_use_traj_for_pitch ? traj_pitch : m_lpf_pitch->filter(raw_pitch);
   updatePitchDebugValues(control_data.slope_angle, traj_pitch, raw_pitch);
 
@@ -466,10 +458,10 @@ PidLongitudinalController::Motion PidLongitudinalController::calcEmergencyCtrlCm
 {
   // These accelerations are without slope compensation
   const auto & p = m_emergency_state_params;
-  const double vel = pid_longitudinal_controller::longitudinal_utils::applyDiffLimitFilter(
-    p.vel, m_prev_raw_ctrl_cmd.vel, dt, p.acc);
-  const double acc = pid_longitudinal_controller::longitudinal_utils::applyDiffLimitFilter(
-    p.acc, m_prev_raw_ctrl_cmd.acc, dt, p.jerk);
+  const double vel =
+    longitudinal_utils::applyDiffLimitFilter(p.vel, m_prev_raw_ctrl_cmd.vel, dt, p.acc);
+  const double acc =
+    longitudinal_utils::applyDiffLimitFilter(p.acc, m_prev_raw_ctrl_cmd.acc, dt, p.jerk);
 
   RCLCPP_ERROR_THROTTLE(
     node_->get_logger(), *node_->get_clock(), 3000, "[Emergency stop] vel: %3.3f, acc: %3.3f", vel,
@@ -622,9 +614,8 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
   Motion raw_ctrl_cmd{};
   Motion target_motion{};
   if (m_control_state == ControlState::DRIVE) {
-    const auto target_pose =
-      pid_longitudinal_controller::longitudinal_utils::calcPoseAfterTimeDelay(
-        current_pose, m_delay_compensation_time, current_vel);
+    const auto target_pose = longitudinal_utils::calcPoseAfterTimeDelay(
+      current_pose, m_delay_compensation_time, current_vel);
     const auto target_interpolated_point = calcInterpolatedTargetValue(m_trajectory, target_pose);
     target_motion = Motion{
       target_interpolated_point.longitudinal_velocity_mps,
@@ -634,8 +625,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
 
     const double pred_vel_in_target =
       predictedVelocityInTargetPoint(control_data.current_motion, m_delay_compensation_time);
-    m_debug_values.setValues(
-      pid_longitudinal_controller::DebugValues::TYPE::PREDICTED_VEL, pred_vel_in_target);
+    m_debug_values.setValues(DebugValues::TYPE::PREDICTED_VEL, pred_vel_in_target);
 
     raw_ctrl_cmd.vel = target_motion.vel;
     raw_ctrl_cmd.acc = applyVelocityFeedback(target_motion, control_data.dt, pred_vel_in_target);
@@ -657,7 +647,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
     // This acceleration is without slope compensation
     const auto & p = m_stopped_state_params;
     raw_ctrl_cmd.vel = p.vel;
-    raw_ctrl_cmd.acc = pid_longitudinal_controller::longitudinal_utils::applyDiffLimitFilter(
+    raw_ctrl_cmd.acc = longitudinal_utils::applyDiffLimitFilter(
       p.acc, m_prev_raw_ctrl_cmd.acc, control_data.dt, p.jerk);
 
     RCLCPP_DEBUG(
@@ -703,7 +693,6 @@ autoware_auto_control_msgs::msg::LongitudinalCommand PidLongitudinalController::
 void PidLongitudinalController::publishDebugData(
   const Motion & ctrl_cmd, const ControlData & control_data)
 {
-  using pid_longitudinal_controller::DebugValues;
   // set debug values
   m_debug_values.setValues(DebugValues::TYPE::DT, control_data.dt);
   m_debug_values.setValues(DebugValues::TYPE::CALCULATED_ACC, control_data.current_motion.acc);
@@ -762,7 +751,6 @@ enum PidLongitudinalController::Shift PidLongitudinalController::getCurrentShift
 double PidLongitudinalController::calcFilteredAcc(
   const double raw_acc, const ControlData & control_data)
 {
-  using pid_longitudinal_controller::DebugValues;
   const double acc_max_filtered = std::clamp(raw_acc, m_min_acc, m_max_acc);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_ACC_LIMITED, acc_max_filtered);
 
@@ -774,9 +762,8 @@ double PidLongitudinalController::calcFilteredAcc(
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_SLOPE_APPLIED, acc_slope_filtered);
 
   // This jerk filter must be applied after slope compensation
-  const double acc_jerk_filtered =
-    pid_longitudinal_controller::longitudinal_utils::applyDiffLimitFilter(
-      acc_slope_filtered, m_prev_ctrl_cmd.acc, control_data.dt, m_max_jerk, m_min_jerk);
+  const double acc_jerk_filtered = longitudinal_utils::applyDiffLimitFilter(
+    acc_slope_filtered, m_prev_ctrl_cmd.acc, control_data.dt, m_max_jerk, m_min_jerk);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_JERK_LIMITED, acc_jerk_filtered);
 
   return acc_jerk_filtered;
@@ -864,7 +851,7 @@ PidLongitudinalController::calcInterpolatedTargetValue(
   }
 
   // apply linear interpolation
-  return pid_longitudinal_controller::longitudinal_utils::lerpTrajectoryPoint(
+  return longitudinal_utils::lerpTrajectoryPoint(
     traj.points, pose, m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
 }
 
@@ -919,7 +906,6 @@ double PidLongitudinalController::predictedVelocityInTargetPoint(
 double PidLongitudinalController::applyVelocityFeedback(
   const Motion target_motion, const double dt, const double current_vel)
 {
-  using pid_longitudinal_controller::DebugValues;
   const double current_vel_abs = std::fabs(current_vel);
   const double target_vel_abs = std::fabs(target_motion.vel);
   const bool enable_integration = (current_vel_abs > m_current_vel_threshold_pid_integrate);
@@ -932,12 +918,9 @@ double PidLongitudinalController::applyVelocityFeedback(
 
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_PID_APPLIED, feedback_acc);
   m_debug_values.setValues(DebugValues::TYPE::ERROR_VEL_FILTERED, error_vel_filtered);
-  m_debug_values.setValues(
-    DebugValues::TYPE::ACC_CMD_FB_P_CONTRIBUTION, pid_contributions.at(0));  // P
-  m_debug_values.setValues(
-    DebugValues::TYPE::ACC_CMD_FB_I_CONTRIBUTION, pid_contributions.at(1));  // I
-  m_debug_values.setValues(
-    DebugValues::TYPE::ACC_CMD_FB_D_CONTRIBUTION, pid_contributions.at(2));  // D
+  m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_P_CONTRIBUTION, pid_contributions.at(0));
+  m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_I_CONTRIBUTION, pid_contributions.at(1));
+  m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_D_CONTRIBUTION, pid_contributions.at(2));
 
   return feedback_acc;
 }
@@ -945,7 +928,6 @@ double PidLongitudinalController::applyVelocityFeedback(
 void PidLongitudinalController::updatePitchDebugValues(
   const double pitch, const double traj_pitch, const double raw_pitch)
 {
-  using pid_longitudinal_controller::DebugValues;
   const double to_degrees = (180.0 / static_cast<double>(M_PI));
   m_debug_values.setValues(DebugValues::TYPE::PITCH_LPF_RAD, pitch);
   m_debug_values.setValues(DebugValues::TYPE::PITCH_LPF_DEG, pitch * to_degrees);
@@ -959,7 +941,6 @@ void PidLongitudinalController::updateDebugVelAcc(
   const Motion & target_motion, const geometry_msgs::msg::Pose & current_pose,
   const ControlData & control_data)
 {
-  using pid_longitudinal_controller::DebugValues;
   const double current_vel = control_data.current_motion.vel;
 
   const auto interpolated_point = calcInterpolatedTargetValue(m_trajectory, current_pose);
@@ -1012,7 +993,4 @@ void PidLongitudinalController::checkControlState(
   stat.summary(level, msg);
 }
 
-}  // namespace pid_longitudinal_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::pid_longitudinal_controller

@@ -22,13 +22,7 @@
  * linear interpolation
  */
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace mpc_lateral_controller
+namespace autoware::motion::control::mpc_lateral_controller
 {
 namespace
 {
@@ -137,7 +131,4 @@ bool linearInterpolate(
   return_value = return_value_v.at(0);
   return true;
 }
-}  // namespace mpc_lateral_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::mpc_lateral_controller

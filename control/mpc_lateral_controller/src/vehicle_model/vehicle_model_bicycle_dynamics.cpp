@@ -16,13 +16,7 @@
 
 #include <algorithm>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace mpc_lateral_controller
+namespace autoware::motion::control::mpc_lateral_controller
 {
 DynamicsBicycleModel::DynamicsBicycleModel(
   const double wheelbase, const double mass_fl, const double mass_fr, const double mass_rl,
@@ -92,7 +86,4 @@ void DynamicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd & u_ref)
     m_lr * m_mass / (2 * m_cf * m_wheelbase) - m_lf * m_mass / (2 * m_cr * m_wheelbase);
   u_ref(0, 0) = m_wheelbase * m_curvature + Kv * vel * vel * m_curvature;
 }
-}  // namespace mpc_lateral_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::mpc_lateral_controller

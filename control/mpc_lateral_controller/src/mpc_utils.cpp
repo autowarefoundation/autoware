@@ -22,13 +22,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace mpc_lateral_controller
+namespace autoware::motion::control::mpc_lateral_controller
 {
 namespace MPCUtils
 {
@@ -429,7 +423,4 @@ void extendTrajectoryInYawDirection(
 }
 
 }  // namespace MPCUtils
-}  // namespace mpc_lateral_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::mpc_lateral_controller

@@ -28,13 +28,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace pid_longitudinal_controller
+namespace autoware::motion::control::pid_longitudinal_controller
 {
 namespace longitudinal_utils
 {
@@ -182,7 +176,4 @@ double applyDiffLimitFilter(
   return applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val);
 }
 }  // namespace longitudinal_utils
-}  // namespace pid_longitudinal_controller
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::pid_longitudinal_controller
