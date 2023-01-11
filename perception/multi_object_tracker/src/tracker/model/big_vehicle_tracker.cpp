@@ -39,7 +39,8 @@
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 BigVehicleTracker::BigVehicleTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const geometry_msgs::msg::Transform & self_transform)
 : Tracker(time, object.classification),
   logger_(rclcpp::get_logger("BigVehicleTracker")),
   last_update_time_(time),
@@ -131,10 +132,23 @@ BigVehicleTracker::BigVehicleTracker(
   if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
     bounding_box_ = {
       object.shape.dimensions.x, object.shape.dimensions.y, object.shape.dimensions.z};
+    last_input_bounding_box_ = bounding_box_;
   } else {
-    bounding_box_ = {2.0, 7.0, 2.0};
+    // past defalut value
+    // bounding_box_ = {7.0, 2.0, 2.0};
+    autoware_auto_perception_msgs::msg::DetectedObject bbox_object;
+    utils::convertConvexHullToBoundingBox(object, bbox_object);
+    bounding_box_ = {
+      bbox_object.shape.dimensions.x, bbox_object.shape.dimensions.y,
+      bbox_object.shape.dimensions.z};
+    last_input_bounding_box_ = {
+      bbox_object.shape.dimensions.x, bbox_object.shape.dimensions.y,
+      bbox_object.shape.dimensions.z};
   }
   ekf_.init(X, P);
+
+  /* calc nearest corner index*/
+  setNearestCornerOrSurfaceIndex(self_transform);  // this index is used in next measure step
 }
 
 bool BigVehicleTracker::predict(const rclcpp::Time & time)
@@ -249,29 +263,34 @@ bool BigVehicleTracker::measureWithPose(
       enable_velocity_measurement = true;
     }
   }
+
   // pos x, pos y, yaw, vx depending on pose measurement
   const int dim_y = enable_velocity_measurement ? 4 : 3;
-  double measurement_yaw = tier4_autoware_utils::normalizeRadian(
-    tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
-  {
-    Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);
-    ekf_.getX(X_t);
-    // Fixed measurement_yaw to be in the range of +-90 degrees of X_t(IDX::YAW)
-    while (M_PI_2 <= X_t(IDX::YAW) - measurement_yaw) {
-      measurement_yaw = measurement_yaw + M_PI;
-    }
-    while (M_PI_2 <= measurement_yaw - X_t(IDX::YAW)) {
-      measurement_yaw = measurement_yaw - M_PI;
-    }
+  double measurement_yaw = getMeasurementYaw(object);  // get sign-solved yaw angle
+  Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);           // predicted state
+  ekf_.getX(X_t);
+
+  // convert to boundingbox if input is convex shape
+  autoware_auto_perception_msgs::msg::DetectedObject bbox_object;
+  if (object.shape.type != autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    utils::convertConvexHullToBoundingBox(object, bbox_object);
+  } else {
+    bbox_object = object;
   }
+
+  /* get offset measurement*/
+  autoware_auto_perception_msgs::msg::DetectedObject offset_object;
+  utils::calcAnchorPointOffset(
+    last_input_bounding_box_.width, last_input_bounding_box_.length, last_nearest_corner_index_,
+    bbox_object, X_t(IDX::YAW), offset_object, tracking_offset_);
 
   /* Set measurement matrix */
   Eigen::MatrixXd Y(dim_y, 1);
   Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, ekf_params_.dim_x);
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
 
-  Y(IDX::X, 0) = object.kinematics.pose_with_covariance.pose.position.x;
-  Y(IDX::Y, 0) = object.kinematics.pose_with_covariance.pose.position.y;
+  Y(IDX::X, 0) = offset_object.kinematics.pose_with_covariance.pose.position.x;
+  Y(IDX::Y, 0) = offset_object.kinematics.pose_with_covariance.pose.position.y;
   Y(IDX::YAW, 0) = measurement_yaw;
   C(0, IDX::X) = 1.0;    // for pos x
   C(1, IDX::Y) = 1.0;    // for pos y
@@ -310,6 +329,7 @@ bool BigVehicleTracker::measureWithPose(
     }
   }
 
+  /* ekf tracks constant tracking point */
   if (!ekf_.update(Y, C, R)) {
     RCLCPP_WARN(logger_, "Cannot update");
   }
@@ -340,20 +360,29 @@ bool BigVehicleTracker::measureWithPose(
 bool BigVehicleTracker::measureWithShape(
   const autoware_auto_perception_msgs::msg::DetectedObject & object)
 {
+  autoware_auto_perception_msgs::msg::DetectedObject bbox_object;
+
+  // if input is convex shape convert it to bbox shape
   if (object.shape.type != autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    return false;
+    utils::convertConvexHullToBoundingBox(object, bbox_object);
+  } else {
+    bbox_object = object;
   }
+
   constexpr float gain = 0.9;
-
-  bounding_box_.width = gain * bounding_box_.width + (1.0 - gain) * object.shape.dimensions.x;
-  bounding_box_.length = gain * bounding_box_.length + (1.0 - gain) * object.shape.dimensions.y;
-  bounding_box_.height = gain * bounding_box_.height + (1.0 - gain) * object.shape.dimensions.z;
-
+  bounding_box_.length =
+    gain * bounding_box_.length + (1.0 - gain) * bbox_object.shape.dimensions.x;
+  bounding_box_.width = gain * bounding_box_.width + (1.0 - gain) * bbox_object.shape.dimensions.y;
+  bounding_box_.height =
+    gain * bounding_box_.height + (1.0 - gain) * bbox_object.shape.dimensions.z;
+  last_input_bounding_box_ = {
+    bbox_object.shape.dimensions.x, bbox_object.shape.dimensions.y, bbox_object.shape.dimensions.z};
   return true;
 }
 
 bool BigVehicleTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time)
+  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const geometry_msgs::msg::Transform & self_transform)
 {
   const auto & current_classification = getClassification();
   object_ = object;
@@ -369,6 +398,9 @@ bool BigVehicleTracker::measure(
 
   measureWithPose(object);
   measureWithShape(object);
+
+  /* calc nearest corner index*/
+  setNearestCornerOrSurfaceIndex(self_transform);  // this index is used in next measure step
 
   return true;
 }
@@ -391,8 +423,17 @@ bool BigVehicleTracker::getTrackedObject(
   tmp_ekf_for_no_update.getX(X_t);
   tmp_ekf_for_no_update.getP(P);
 
+  /*  put predicted pose and twist to output object  */
   auto & pose_with_cov = object.kinematics.pose_with_covariance;
   auto & twist_with_cov = object.kinematics.twist_with_covariance;
+
+  // recover bounding box from tracking point
+  const double dl = bounding_box_.length - last_input_bounding_box_.length;
+  const double dw = bounding_box_.width - last_input_bounding_box_.width;
+  const Eigen::Vector2d recovered_pose = utils::recoverFromTrackingPoint(
+    X_t(IDX::X), X_t(IDX::Y), X_t(IDX::YAW), dw, dl, last_nearest_corner_index_, tracking_offset_);
+  X_t(IDX::X) = recovered_pose.x();
+  X_t(IDX::Y) = recovered_pose.y();
 
   // position
   pose_with_cov.pose.position.x = X_t(IDX::X);
@@ -444,8 +485,8 @@ bool BigVehicleTracker::getTrackedObject(
   twist_with_cov.covariance[utils::MSG_COV_IDX::YAW_YAW] = P(IDX::WZ, IDX::WZ);
 
   // set shape
-  object.shape.dimensions.x = bounding_box_.width;
-  object.shape.dimensions.y = bounding_box_.length;
+  object.shape.dimensions.x = bounding_box_.length;
+  object.shape.dimensions.y = bounding_box_.width;
   object.shape.dimensions.z = bounding_box_.height;
   const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
   const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
@@ -453,4 +494,33 @@ bool BigVehicleTracker::getTrackedObject(
     tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
 
   return true;
+}
+
+void BigVehicleTracker::setNearestCornerOrSurfaceIndex(
+  const geometry_msgs::msg::Transform & self_transform)
+{
+  Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);
+  ekf_.getX(X_t);
+  last_nearest_corner_index_ = utils::getNearestCornerOrSurface(
+    X_t(IDX::X), X_t(IDX::Y), X_t(IDX::YAW), bounding_box_.width, bounding_box_.length,
+    self_transform);
+}
+
+double BigVehicleTracker::getMeasurementYaw(
+  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+{
+  double measurement_yaw = tier4_autoware_utils::normalizeRadian(
+    tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
+  {
+    Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);
+    ekf_.getX(X_t);
+    // Fixed measurement_yaw to be in the range of +-90 degrees of X_t(IDX::YAW)
+    while (M_PI_2 <= X_t(IDX::YAW) - measurement_yaw) {
+      measurement_yaw = measurement_yaw + M_PI;
+    }
+    while (M_PI_2 <= measurement_yaw - X_t(IDX::YAW)) {
+      measurement_yaw = measurement_yaw - M_PI;
+    }
+  }
+  return measurement_yaw;
 }

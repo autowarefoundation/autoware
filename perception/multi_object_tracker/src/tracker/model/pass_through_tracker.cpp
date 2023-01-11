@@ -37,7 +37,8 @@
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 PassThroughTracker::PassThroughTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const geometry_msgs::msg::Transform & /*self_transform*/)
 : Tracker(time, object.classification),
   logger_(rclcpp::get_logger("PassThroughTracker")),
   last_update_time_(time)
@@ -58,7 +59,8 @@ bool PassThroughTracker::predict(const rclcpp::Time & time)
 }
 
 bool PassThroughTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time)
+  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const geometry_msgs::msg::Transform & self_transform)
 {
   prev_observed_object_ = object_;
   object_ = object;
@@ -74,6 +76,7 @@ bool PassThroughTracker::measure(
   }
   last_update_time_ = time;
 
+  (void)self_transform;  // currently do not use self vehicle position
   return true;
 }
 

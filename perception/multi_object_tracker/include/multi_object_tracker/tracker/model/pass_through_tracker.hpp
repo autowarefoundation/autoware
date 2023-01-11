@@ -33,11 +33,12 @@ private:
 
 public:
   PassThroughTracker(
-    const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object);
+    const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+    const geometry_msgs::msg::Transform & self_transform);
   bool predict(const rclcpp::Time & time) override;
   bool measure(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    const rclcpp::Time & time) override;
+    const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+    const geometry_msgs::msg::Transform & self_transform) override;
   bool getTrackedObject(
     const rclcpp::Time & time,
     autoware_auto_perception_msgs::msg::TrackedObject & object) const override;

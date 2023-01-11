@@ -38,12 +38,12 @@ Tracker::Tracker(
 
 bool Tracker::updateWithMeasurement(
   const autoware_auto_perception_msgs::msg::DetectedObject & object,
-  const rclcpp::Time & measurement_time)
+  const rclcpp::Time & measurement_time, const geometry_msgs::msg::Transform & self_transform)
 {
   no_measurement_count_ = 0;
   ++total_measurement_count_;
   last_update_with_measurement_time_ = measurement_time;
-  measure(object, measurement_time);
+  measure(object, measurement_time, self_transform);
   return true;
 }
 

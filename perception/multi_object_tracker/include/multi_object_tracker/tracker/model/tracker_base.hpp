@@ -58,7 +58,7 @@ public:
   virtual ~Tracker() {}
   bool updateWithMeasurement(
     const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    const rclcpp::Time & measurement_time);
+    const rclcpp::Time & measurement_time, const geometry_msgs::msg::Transform & self_transform);
   bool updateWithoutMeasurement();
   std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> getClassification() const
   {
@@ -84,8 +84,8 @@ public:
 
 protected:
   virtual bool measure(
-    const autoware_auto_perception_msgs::msg::DetectedObject & object,
-    const rclcpp::Time & time) = 0;
+    const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+    const geometry_msgs::msg::Transform & self_transform) = 0;
 
 public:
   virtual bool getTrackedObject(

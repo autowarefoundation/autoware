@@ -41,7 +41,8 @@
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 PedestrianTracker::PedestrianTracker(
-  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)
+  const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
+  const geometry_msgs::msg::Transform & /*self_transform*/)
 : Tracker(time, object.classification),
   logger_(rclcpp::get_logger("PedestrianTracker")),
   last_update_time_(time),
@@ -299,8 +300,8 @@ bool PedestrianTracker::measureWithShape(
 {
   constexpr float gain = 0.9;
   if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    bounding_box_.width = gain * bounding_box_.width + (1.0 - gain) * object.shape.dimensions.x;
-    bounding_box_.length = gain * bounding_box_.length + (1.0 - gain) * object.shape.dimensions.y;
+    bounding_box_.length = gain * bounding_box_.length + (1.0 - gain) * object.shape.dimensions.x;
+    bounding_box_.width = gain * bounding_box_.width + (1.0 - gain) * object.shape.dimensions.y;
     bounding_box_.height = gain * bounding_box_.height + (1.0 - gain) * object.shape.dimensions.z;
   } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
     cylinder_.width = gain * cylinder_.width + (1.0 - gain) * object.shape.dimensions.x;
@@ -313,7 +314,8 @@ bool PedestrianTracker::measureWithShape(
 }
 
 bool PedestrianTracker::measure(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time)
+  const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
+  const geometry_msgs::msg::Transform & self_transform)
 {
   const auto & current_classification = getClassification();
   object_ = object;
@@ -330,6 +332,7 @@ bool PedestrianTracker::measure(
   measureWithPose(object);
   measureWithShape(object);
 
+  (void)self_transform;  // currently do not use self vehicle position
   return true;
 }
 
@@ -405,8 +408,8 @@ bool PedestrianTracker::getTrackedObject(
 
   // set shape
   if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    object.shape.dimensions.x = bounding_box_.width;
-    object.shape.dimensions.y = bounding_box_.length;
+    object.shape.dimensions.x = bounding_box_.length;
+    object.shape.dimensions.y = bounding_box_.width;
     object.shape.dimensions.z = bounding_box_.height;
   } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
     object.shape.dimensions.x = cylinder_.width;
