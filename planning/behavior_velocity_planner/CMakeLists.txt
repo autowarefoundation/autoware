@@ -22,6 +22,7 @@ set(scene_modules
   virtual_traffic_light
   occlusion_spot
   run_out
+  speed_bump
 )
 
 foreach(scene_module IN LISTS scene_modules)

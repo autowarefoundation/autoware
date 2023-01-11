@@ -18,6 +18,7 @@
   <arg name="launch_virtual_traffic_light" default="true"/>
   <arg name="launch_occlusion_spot" default="true"/>
   <arg name="launch_no_stopping_area" default="true"/>
+  <arg name="launch_speed_bump" default="true"/>
 
   <arg name="forward_path_length" default="1000.0"/>
   <arg name="backward_path_length" default="5.0"/>
@@ -36,6 +37,7 @@
     <param from="$(find-pkg-share behavior_velocity_planner)/config/virtual_traffic_light.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/occlusion_spot.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/no_stopping_area.param.yaml"/>
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/speed_bump.param.yaml"/>
 
     <param from="$(var vehicle_info_param_file)"/>
     <remap from="~/input/path_with_lane_id" to="path_with_lane_id"/>
@@ -62,6 +64,7 @@
     <param name="launch_virtual_traffic_light" value="$(var launch_virtual_traffic_light)"/>
     <param name="launch_occlusion_spot" value="$(var launch_occlusion_spot)"/>
     <param name="launch_no_stopping_area" value="$(var launch_no_stopping_area)"/>
+    <param name="launch_speed_bump" value="$(var launch_speed_bump)"/>
 
     <param name="forward_path_length" value="$(var forward_path_length)"/>
     <param name="backward_path_length" value="$(var backward_path_length)"/>

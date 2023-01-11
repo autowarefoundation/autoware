@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    speed_bump:
+      slow_start_margin: 1.0
+      slow_end_margin: 1.0
+      print_debug_info: false
+
+      # limits for speed bump height and slow down speed to create a linear equation
+      speed_calculation:
+        min_height: 0.05 # [m]
+        max_height: 0.30 # [m]
+        min_speed: 1.39  # [m/s] = [5 kph]
+        max_speed: 2.78  # [m/s] = [10 kph]

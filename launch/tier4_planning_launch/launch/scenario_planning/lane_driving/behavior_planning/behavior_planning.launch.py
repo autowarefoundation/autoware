@@ -129,6 +129,8 @@ def launch_setup(context, *args, **kwargs):
         no_stopping_area_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("run_out_param_path").perform(context), "r") as f:
         run_out_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(LaunchConfiguration("speed_bump_param_path").perform(context), "r") as f:
+        speed_bump_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(
         LaunchConfiguration("behavior_velocity_planner_param_path").perform(context), "r"
     ) as f:
@@ -192,6 +194,7 @@ def launch_setup(context, *args, **kwargs):
             no_stopping_area_param,
             vehicle_param,
             run_out_param,
+            speed_bump_param,
             common_param,
             motion_velocity_smoother_param,
             behavior_velocity_smoother_type_param,
