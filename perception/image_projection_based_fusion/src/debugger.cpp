@@ -55,7 +55,7 @@ Debugger::Debugger(
     }
 
     auto pub =
-      image_transport::create_publisher(node_ptr, "output/image_raw" + std::to_string(img_i));
+      image_transport::create_publisher(node_ptr, "~/debug/image_raw" + std::to_string(img_i));
     image_pubs_.push_back(pub);
     image_buffers_.at(img_i).set_capacity(image_buffer_size_);
   }

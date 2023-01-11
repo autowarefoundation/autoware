@@ -82,7 +82,7 @@ protected:
   // set args if you need
   virtual void postprocess(Msg & output_msg);
 
-  void publish(const Msg & output_msg);
+  virtual void publish(const Msg & output_msg);
 
   void timer_callback();
   void setPeriod(const int64_t new_period);

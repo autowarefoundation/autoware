@@ -16,6 +16,7 @@
 #define IMAGE_PROJECTION_BASED_FUSION__ROI_DETECTED_OBJECT_FUSION__NODE_HPP_
 
 #include "image_projection_based_fusion/fusion_node.hpp"
+#include "tier4_autoware_utils/ros/debug_publisher.hpp"
 
 #include <map>
 #include <memory>
@@ -24,34 +25,45 @@
 namespace image_projection_based_fusion
 {
 
+using sensor_msgs::msg::RegionOfInterest;
+
 class RoiDetectedObjectFusionNode : public FusionNode<DetectedObjects, DetectedObject>
 {
 public:
   explicit RoiDetectedObjectFusionNode(const rclcpp::NodeOptions & options);
 
 protected:
+  void preprocess(DetectedObjects & output_msg) override;
+
   void fuseOnSingleImage(
     const DetectedObjects & input_object_msg, const std::size_t image_id,
     const DetectedObjectsWithFeature & input_roi_msg,
     const sensor_msgs::msg::CameraInfo & camera_info, DetectedObjects & output_object_msg) override;
 
-  void generateDetectedObjectRois(
+  std::map<std::size_t, RegionOfInterest> generateDetectedObjectRoIs(
     const std::vector<DetectedObject> & input_objects, const double image_width,
     const double image_height, const Eigen::Affine3d & object2camera_affine,
-    const Eigen::Matrix4d & camera_projection,
-    std::map<std::size_t, sensor_msgs::msg::RegionOfInterest> & object_roi_map);
+    const Eigen::Matrix4d & camera_projection);
 
-  void updateDetectedObjectClassification(
+  void fuseObjectsOnImage(
+    const std::vector<DetectedObject> & objects,
     const std::vector<DetectedObjectWithFeature> & image_rois,
-    const std::map<std::size_t, sensor_msgs::msg::RegionOfInterest> & object_roi_map,
-    std::vector<DetectedObject> & output_objects);
+    const std::map<std::size_t, sensor_msgs::msg::RegionOfInterest> & object_roi_map);
 
-  bool use_iou_{false};
-  bool use_iou_x_{false};
-  bool use_iou_y_{false};
-  float iou_threshold_{0.0f};
+  void publish(const DetectedObjects & output_msg) override;
 
   bool out_of_scope(const DetectedObject & obj);
+
+private:
+  struct
+  {
+    double passthrough_lower_bound_probability_threshold{};
+    double min_iou_threshold{};
+    bool use_roi_probability{};
+    double roi_probability_threshold{};
+  } fusion_params_;
+
+  std::vector<bool> passthrough_object_flags_, fused_object_flags_, ignored_object_flags_;
 };
 
 }  // namespace image_projection_based_fusion
