@@ -76,6 +76,13 @@ enum class LaneChangeStates {
   Stop,
 };
 
+struct LaneChangePhaseInfo
+{
+  double prepare{0.0};
+  double lane_changing{0.0};
+
+  [[nodiscard]] double sum() const { return prepare + lane_changing; }
+};
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_

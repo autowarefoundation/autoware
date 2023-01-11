@@ -113,23 +113,21 @@ ShiftLine getLaneChangeShiftLine(
 
 PathWithLaneId getReferencePathFromTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
-  const Pose & lane_changing_start_pose, const double prepare_distance,
-  const double lane_changing_distance, const double forward_path_length,
-  const double lane_changing_speed);
-
-PathWithLaneId getReferencePathFromTargetLane(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
-  const Pose & in_target_front_pose, const Pose & in_target_end_pose);
+  const Pose & lane_changing_start_pose, const double target_lane_length,
+  const LaneChangePhaseInfo dist_prepare_to_lc_end, const double min_total_lane_changing_distance,
+  const double forward_path_length, const double resample_interval, const bool is_goal_in_route);
 
 PathWithLaneId getLaneChangePathPrepareSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
-  const Pose & current_pose, const double & backward_path_length, const double & prepare_distance,
-  const double & prepare_duration, const double & minimum_lane_change_velocity);
+  const double arc_length_from_current, const double backward_path_length,
+  const double prepare_distance, const double prepare_speed);
 
 PathWithLaneId getLaneChangePathLaneChangingSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanelets,
-  const Pose & current_pose, const double prepare_distance, const double lane_change_distance,
-  const double lane_changing_speed, const BehaviorPathPlannerParameters & common_param);
+  const double forward_path_length, const double arc_length_from_target,
+  const double target_lane_length, const LaneChangePhaseInfo dist_prepare_to_lc_end,
+  const double lane_changing_speed, const double total_required_min_dist);
+
 bool isEgoWithinOriginalLane(
   const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
   const BehaviorPathPlannerParameters & common_param);
