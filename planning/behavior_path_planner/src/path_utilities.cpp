@@ -56,7 +56,8 @@ std::vector<double> calcPathArcLengthArray(
  * @brief resamplePathWithSpline
  */
 PathWithLaneId resamplePathWithSpline(
-  const PathWithLaneId & path, const double interval, const bool keep_input_points)
+  const PathWithLaneId & path, const double interval, const bool keep_input_points,
+  const std::pair<double, double> target_section)
 {
   if (path.points.size() < 2) {
     return path;
@@ -96,16 +97,17 @@ PathWithLaneId resamplePathWithSpline(
 
   std::vector<double> s_out = s_in;
 
-  const double path_len = motion_utils::calcArcLength(transformed_path);
-  for (double s = 0.0; s < path_len; s += interval) {
+  const auto start_s = std::max(target_section.first, 0.0);
+  const auto end_s = std::min(target_section.second, motion_utils::calcArcLength(transformed_path));
+  for (double s = start_s; s < end_s; s += interval) {
     if (!has_almost_same_value(s_out, s)) {
       s_out.push_back(s);
     }
   }
 
   // Insert Terminal Point
-  if (!has_almost_same_value(s_out, path_len)) {
-    s_out.push_back(path_len);
+  if (!has_almost_same_value(s_out, end_s)) {
+    s_out.push_back(end_s);
   }
 
   // Insert Stop Point
