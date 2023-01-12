@@ -2,75 +2,25 @@
 /**:
   ros__parameters:
     avoidance:
-      resample_interval_for_planning: 0.3
-      resample_interval_for_output: 4.0
-      detection_area_right_expand_dist: 0.0
-      detection_area_left_expand_dist: 1.0
+      resample_interval_for_planning: 0.3               # [m]
+      resample_interval_for_output: 4.0                 # [m]
+      detection_area_right_expand_dist: 0.0             # [m]
+      detection_area_left_expand_dist: 1.0              # [m]
+      drivable_area_right_bound_offset: 0.0             # [m]
+      drivable_area_left_bound_offset: 0.0              # [m]
+      object_envelope_buffer: 0.3                       # [m]
 
+      # avoidance module common setting
+      enable_bound_clipping: false
       enable_avoidance_over_same_direction: true
       enable_avoidance_over_opposite_direction: true
       enable_update_path_when_object_is_gone: false
       enable_safety_check: false
-
-      # For target object filtering
-      threshold_speed_object_is_stopped: 1.0      # [m/s]
-      threshold_time_object_is_moving: 1.0        # [s]
-
-      object_check_forward_distance: 150.0        # [m]
-      object_check_backward_distance: 2.0         # [m]
-      object_check_goal_distance: 20.0            # [m]
-
-      threshold_distance_object_is_on_center: 1.0 # [m]
-
-      object_check_shiftable_ratio: 0.6           # [-]
-      object_check_min_road_shoulder_width: 0.5   # [m]
-
-      # For safety check
-      safety_check_backward_distance: 50.0        # [m]
-      safety_check_time_horizon: 10.0             # [s]
-      safety_check_idling_time: 1.5               # [s]
-      safety_check_accel_for_rss: 2.5             # [m/ss]
-
-      # For lateral margin
-      object_envelope_buffer: 0.3                 # [m]
-      lateral_collision_margin: 1.0               # [m]
-      lateral_collision_safety_buffer: 0.7        # [m]
-
-      # For longitudinal margin
-      longitudinal_collision_margin_buffer: 0.0   # [m]
-
-      prepare_time: 2.0                           # [s]
-      min_prepare_distance: 1.0                   # [m]
-      min_avoidance_distance: 10.0                # [m]
-
-      min_nominal_avoidance_speed: 7.0  # [m/s]
-      min_sharp_avoidance_speed: 1.0    # [m/s]
-
-      road_shoulder_safety_margin: 0.0 # [m]
-
-      max_right_shift_length: 5.0
-      max_left_shift_length: 5.0
-
-      nominal_lateral_jerk: 0.2   # [m/s3]
-      max_lateral_jerk: 1.0       # [m/s3]
-
-      # For detection loss compensation
-      object_last_seen_threshold: 2.0   # [s]
-
-      # For prevention of large acceleration while avoidance
-      min_avoidance_speed_for_acc_prevention: 3.0  # [m/s]
-      max_avoidance_acceleration: 0.5  # [m/s2]
-
-      # bound clipping for objects
-      enable_bound_clipping: false
+      enable_yield_maneuver: false
 
       # for debug
       publish_debug_marker: false
       print_debug_info: false
-
-      # not enabled yet
-      longitudinal_collision_margin_min_distance: 0.0          # [m]
-      longitudinal_collision_margin_time: 0.0
 
       # avoidance is performed for the object type with true
       target_object:
@@ -83,11 +33,80 @@
         motorcycle: false
         pedestrian: false
 
-      # ---------- advanced parameters ----------
-      avoidance_execution_lateral_threshold: 0.499
+      # For target object filtering
+      target_filtering:
+        # filtering moving objects
+        threshold_speed_object_is_stopped: 1.0          # [m/s]
+        threshold_time_object_is_moving: 1.0            # [s]
+        # detection range
+        object_check_forward_distance: 150.0            # [m]
+        object_check_backward_distance: 2.0             # [m]
+        object_check_goal_distance: 20.0                # [m]
+        # filtering parking objects
+        threshold_distance_object_is_on_center: 1.0     # [m]
+        object_check_shiftable_ratio: 0.6               # [-]
+        object_check_min_road_shoulder_width: 0.5       # [m]
+        # lost object compensation
+        object_last_seen_threshold: 2.0
+
+      # For safety check
+      safety_check:
+        safety_check_backward_distance: 50.0            # [m]
+        safety_check_time_horizon: 10.0                 # [s]
+        safety_check_idling_time: 1.5                   # [s]
+        safety_check_accel_for_rss: 2.5                 # [m/ss]
+        safety_check_hysteresis_factor: 2.0             # [-]
+
+      # For avoidance maneuver
+      avoidance:
+        # avoidance lateral parameters
+        lateral:
+          lateral_collision_margin: 1.0                 # [m]
+          lateral_collision_safety_buffer: 0.7          # [m]
+          lateral_passable_safety_buffer: 0.0           # [m]
+          road_shoulder_safety_margin: 0.0              # [m]
+          avoidance_execution_lateral_threshold: 0.499
+          max_right_shift_length: 5.0
+          max_left_shift_length: 5.0
+        # avoidance distance parameters
+        longitudinal:
+          prepare_time: 2.0                             # [s]
+          longitudinal_collision_safety_buffer: 0.0     # [m]
+          min_prepare_distance: 1.0                     # [m]
+          min_avoidance_distance: 10.0                  # [m]
+          min_nominal_avoidance_speed: 7.0              # [m/s]
+          min_sharp_avoidance_speed: 1.0                # [m/s]
+
+      # For yield maneuver
+      yield:
+        yield_velocity: 2.78                            # [m/s]
+
+      # For stop maneuver
+      stop:
+        min_distance: 10.0                              # [m]
+        max_distance: 20.0                              # [m]
+
+      constraints:
+        # vehicle slows down under longitudinal constraints
+        use_constraints_for_decel: false                # [-]
+
+        # lateral constraints
+        lateral:
+          nominal_lateral_jerk: 0.2                     # [m/s3]
+          max_lateral_jerk: 1.0                         # [m/s3]
+
+        # longitudinal constraints
+        longitudinal:
+          nominal_deceleration: -1.0                    # [m/ss]
+          nominal_jerk: 0.5                             # [m/sss]
+          max_deceleration: -2.0                        # [m/ss]
+          max_jerk: 1.0
+          # For prevention of large acceleration while avoidance
+          min_avoidance_speed_for_acc_prevention: 3.0   # [m/s]
+          max_avoidance_acceleration: 0.5               # [m/ss]
 
       target_velocity_matrix:
-        col_size: 4
+        col_size: 2
         matrix:
-          [2.78, 5.56, 11.1, 13.9,   # velocity [m/s]
-           0.20, 0.90, 1.10, 1.20]   # margin [m]
+          [2.78, 13.9,                                  # velocity [m/s]
+           0.50, 1.00]                                  # margin [m]

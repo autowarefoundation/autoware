@@ -37,7 +37,9 @@ namespace marker_utils::avoidance_marker
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::AvoidancePlanningData;
+using behavior_path_planner::AvoidanceState;
 using behavior_path_planner::AvoidLineArray;
+using behavior_path_planner::DebugData;
 using behavior_path_planner::ObjectDataArray;
 using behavior_path_planner::ShiftLineArray;
 using geometry_msgs::msg::Point;
@@ -47,6 +49,9 @@ using visualization_msgs::msg::MarkerArray;
 
 MarkerArray createEgoStatusMarkerArray(
   const AvoidancePlanningData & data, const Pose & p_ego, std::string && ns);
+
+MarkerArray createSafetyCheckMarkerArray(
+  const AvoidanceState & state, const Pose & pose, const DebugData & data);
 
 MarkerArray createAvoidLineMarkerArray(
   const AvoidLineArray & shift_points, std::string && ns, const float & r, const float & g,
