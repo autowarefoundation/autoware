@@ -70,6 +70,7 @@ struct Input
   lanelet::LaneletMapPtr lanelet_map{};
   LaneletRoute::ConstSharedPtr route{};
   lanelet::ConstLanelets route_lanelets{};
+  lanelet::ConstLanelets shoulder_lanelets{};
   Trajectory::ConstSharedPtr reference_trajectory{};
   Trajectory::ConstSharedPtr predicted_trajectory{};
 };

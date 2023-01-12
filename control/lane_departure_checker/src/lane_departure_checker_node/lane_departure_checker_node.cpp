@@ -197,6 +197,10 @@ void LaneDepartureCheckerNode::onLaneletMapBin(const HADMapBin::ConstSharedPtr m
 {
   lanelet_map_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_, &traffic_rules_, &routing_graph_);
+
+  // get all shoulder lanes
+  lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(lanelet_map_);
+  shoulder_lanelets_ = lanelet::utils::query::shoulderLanelets(all_lanelets);
 }
 
 void LaneDepartureCheckerNode::onRoute(const LaneletRoute::ConstSharedPtr msg) { route_ = msg; }
@@ -313,6 +317,7 @@ void LaneDepartureCheckerNode::onTimer()
   input_.lanelet_map = lanelet_map_;
   input_.route = route_;
   input_.route_lanelets = route_lanelets_;
+  input_.shoulder_lanelets = shoulder_lanelets_;
   input_.reference_trajectory = reference_trajectory_;
   input_.predicted_trajectory = predicted_trajectory_;
   processing_time_map["Node: setInputData"] = stop_watch.toc(true);

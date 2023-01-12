@@ -123,7 +123,15 @@ Output LaneDepartureChecker::update(const Input & input)
   output.vehicle_passing_areas = createVehiclePassingAreas(output.vehicle_footprints);
   output.processing_time_map["createVehiclePassingAreas"] = stop_watch.toc(true);
 
-  output.candidate_lanelets = getCandidateLanelets(input.route_lanelets, output.vehicle_footprints);
+  const auto candidate_road_lanelets =
+    getCandidateLanelets(input.route_lanelets, output.vehicle_footprints);
+  const auto candidate_shoulder_lanelets =
+    getCandidateLanelets(input.shoulder_lanelets, output.vehicle_footprints);
+  output.candidate_lanelets = candidate_road_lanelets;
+  output.candidate_lanelets.insert(
+    output.candidate_lanelets.end(), candidate_shoulder_lanelets.begin(),
+    candidate_shoulder_lanelets.end());
+
   output.processing_time_map["getCandidateLanelets"] = stop_watch.toc(true);
 
   output.will_leave_lane = willLeaveLane(output.candidate_lanelets, output.vehicle_footprints);

@@ -66,6 +66,7 @@ private:
   geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
   nav_msgs::msg::Odometry::ConstSharedPtr current_odom_;
   lanelet::LaneletMapPtr lanelet_map_;
+  lanelet::ConstLanelets shoulder_lanelets_;
   lanelet::traffic_rules::TrafficRulesPtr traffic_rules_;
   lanelet::routing::RoutingGraphPtr routing_graph_;
   LaneletRoute::ConstSharedPtr route_;
