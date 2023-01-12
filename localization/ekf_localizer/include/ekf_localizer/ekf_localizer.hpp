@@ -170,8 +170,7 @@ private:
 
   /* parameters */
 
-  int dim_x_;     //!< @brief  dimension of EKF state
-  int dim_x_ex_;  //!< @brief  dimension of extended EKF state (dim_x_ * extended_state_step)
+  int dim_x_;  //!< @brief  dimension of EKF state
 
   /* process noise variance for discrete model */
   double proc_cov_yaw_d_;       //!< @brief  discrete yaw process noise
