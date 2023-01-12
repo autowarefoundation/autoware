@@ -210,15 +210,11 @@ void ObstacleStopPlannerNode::onPointCloud(const PointCloud2::ConstSharedPtr inp
   obstacle_ros_pointcloud_ptr_ = std::make_shared<PointCloud2>();
   pcl::VoxelGrid<pcl::PointXYZ> filter;
   PointCloud::Ptr pointcloud_ptr(new PointCloud);
-  PointCloud::Ptr no_height_pointcloud_ptr(new PointCloud);
   PointCloud::Ptr no_height_filtered_pointcloud_ptr(new PointCloud);
 
   pcl::fromROSMsg(*input_msg, *pointcloud_ptr);
 
-  for (const auto & point : pointcloud_ptr->points) {
-    no_height_pointcloud_ptr->push_back(pcl::PointXYZ(point.x, point.y, 0.0));
-  }
-  filter.setInputCloud(no_height_pointcloud_ptr);
+  filter.setInputCloud(pointcloud_ptr);
   filter.setLeafSize(node_param_.voxel_grid_x, node_param_.voxel_grid_y, node_param_.voxel_grid_z);
   filter.filter(*no_height_filtered_pointcloud_ptr);
   pcl::toROSMsg(*no_height_filtered_pointcloud_ptr, *obstacle_ros_pointcloud_ptr_);
