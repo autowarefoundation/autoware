@@ -55,7 +55,7 @@ PullOutModule::PullOutModule(
       std::make_shared<GeometricPullOut>(node, parameters, getGeometricPullOutParameters()));
   }
   if (pull_out_planners_.empty()) {
-    RCLCPP_DEBUG(getLogger(), "Not found enabled planner");
+    RCLCPP_ERROR(getLogger(), "Not found enabled planner");
   }
 }
 

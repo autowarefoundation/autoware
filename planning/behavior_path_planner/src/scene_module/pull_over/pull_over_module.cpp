@@ -77,6 +77,9 @@ PullOverModule::PullOverModule(
       node, parameters, getGeometricPullOverParameters(), lane_departure_checker,
       occupancy_grid_map_, is_forward));
   }
+  if (pull_over_planners_.empty()) {
+    RCLCPP_ERROR(getLogger(), "Not found enabled planner");
+  }
 
   // set selected goal searcher
   // currently there is only one goal_searcher_type
