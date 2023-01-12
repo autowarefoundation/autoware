@@ -70,6 +70,15 @@ struct NodeParam
 
   // yaw threshold for ego's nearest index
   double ego_nearest_yaw_threshold;
+
+  // voxel grid x parameter for filtering pointcloud [m]
+  double voxel_grid_x;
+
+  // voxel grid y parameter for filtering pointcloud [m]
+  double voxel_grid_y;
+
+  // voxel grid z parameter for filtering pointcloud [m]
+  double voxel_grid_z;
 };
 
 struct StopParam

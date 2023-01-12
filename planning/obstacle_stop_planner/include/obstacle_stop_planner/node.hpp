@@ -117,6 +117,8 @@ private:
 
   rclcpp::Publisher<VelocityLimit>::SharedPtr pub_velocity_limit_;
 
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_obstacle_pointcloud_;
+
   std::unique_ptr<AdaptiveCruiseController> acc_controller_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   boost::optional<StopPoint> latest_stop_point_{boost::none};

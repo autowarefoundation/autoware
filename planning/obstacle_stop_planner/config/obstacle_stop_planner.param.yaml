@@ -3,6 +3,9 @@
     hunting_threshold: 0.5                   # even if the obstacle disappears, the stop judgment continues for hunting_threshold [s]
     max_velocity: 20.0                       # max velocity [m/s]
     enable_slow_down: False                  # whether to use slow down planner [-]
+    voxel_grid_x: 0.05                       # voxel grid x parameter for filtering pointcloud [m]
+    voxel_grid_y: 0.05                       # voxel grid y parameter for filtering pointcloud [m]
+    voxel_grid_z: 100000.0                   # voxel grid z parameter for filtering pointcloud [m]
 
     stop_planner:
       # params for stop position
