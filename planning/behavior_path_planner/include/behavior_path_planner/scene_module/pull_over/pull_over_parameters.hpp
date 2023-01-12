@@ -17,6 +17,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
 
 #include <string>
+#include <vector>
 
 namespace behavior_path_planner
 {
@@ -83,6 +84,7 @@ struct PullOverParameters
   // drivable area expansion
   double drivable_area_right_bound_offset;
   double drivable_area_left_bound_offset;
+  std::vector<std::string> drivable_area_types_to_skip;
   // debug
   bool print_debug_info;
 };

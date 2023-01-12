@@ -19,6 +19,7 @@
 
 #include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
 
+#include <string>
 #include <vector>
 
 namespace behavior_path_planner
@@ -52,6 +53,7 @@ struct LaneChangeParameters
   // drivable area expansion
   double drivable_area_right_bound_offset{0.0};
   double drivable_area_left_bound_offset{0.0};
+  std::vector<std::string> drivable_area_types_to_skip{};
 
   // debug marker
   bool publish_debug_marker{false};

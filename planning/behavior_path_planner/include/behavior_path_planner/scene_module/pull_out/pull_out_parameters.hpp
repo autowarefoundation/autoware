@@ -17,6 +17,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_PARAMETERS_HPP_
 
 #include <string>
+#include <vector>
 
 namespace behavior_path_planner
 {
@@ -51,6 +52,7 @@ struct PullOutParameters
   // drivable area expansion
   double drivable_area_right_bound_offset;
   double drivable_area_left_bound_offset;
+  std::vector<std::string> drivable_area_types_to_skip;
 };
 
 }  // namespace behavior_path_planner

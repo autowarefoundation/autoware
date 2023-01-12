@@ -140,7 +140,7 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
 
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_.drivable_area_left_bound_offset,
-    parameters_.drivable_area_right_bound_offset);
+    parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
 
   util::generateDrivableArea(reference_path, expanded_lanes, p.vehicle_length, planner_data_);
 

@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace behavior_path_planner
 {
@@ -50,6 +51,7 @@ struct SideShiftParameters
   // drivable area expansion
   double drivable_area_right_bound_offset;
   double drivable_area_left_bound_offset;
+  std::vector<std::string> drivable_area_types_to_skip;
 };
 
 class SideShiftModule : public SceneModuleInterface

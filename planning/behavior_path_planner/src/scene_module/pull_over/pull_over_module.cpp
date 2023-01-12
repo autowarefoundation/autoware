@@ -488,7 +488,7 @@ BehaviorModuleOutput PullOverModule::plan()
       const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
       const auto expanded_lanes = util::expandLanelets(
         shorten_lanes, parameters_.drivable_area_left_bound_offset,
-        parameters_.drivable_area_right_bound_offset);
+        parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
       util::generateDrivableArea(
         path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
     }
@@ -682,7 +682,7 @@ PathWithLaneId PullOverModule::generateStopPath()
   const auto shorten_lanes = util::cutOverlappedLanes(reference_path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_.drivable_area_left_bound_offset,
-    parameters_.drivable_area_right_bound_offset);
+    parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
   util::generateDrivableArea(
     reference_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 
@@ -739,7 +739,7 @@ PathWithLaneId PullOverModule::generateEmergencyStopPath()
   const auto shorten_lanes = util::cutOverlappedLanes(stop_path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_.drivable_area_left_bound_offset,
-    parameters_.drivable_area_right_bound_offset);
+    parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
   util::generateDrivableArea(
     stop_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 

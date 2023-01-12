@@ -274,6 +274,8 @@ SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
   p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
   p.shift_request_time_limit = dp("shift_request_time_limit", 1.0);
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_types_to_skip =
+    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
 
   return p;
 }
@@ -295,6 +297,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       declare_parameter<double>(ns + "drivable_area_right_bound_offset");
     p.drivable_area_left_bound_offset =
       declare_parameter<double>(ns + "drivable_area_left_bound_offset");
+    p.drivable_area_types_to_skip =
+      declare_parameter<std::vector<std::string>>(ns + "drivable_area_types_to_skip");
     p.object_envelope_buffer = declare_parameter<double>(ns + "object_envelope_buffer");
     p.enable_bound_clipping = declare_parameter<bool>(ns + "enable_bound_clipping");
     p.enable_avoidance_over_same_direction =
@@ -436,6 +440,8 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
     declare_parameter("lane_following.drivable_area_right_bound_offset", 0.0);
   p.drivable_area_left_bound_offset =
     declare_parameter("lane_following.drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_types_to_skip = declare_parameter(
+    "lane_following.drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
   p.lane_change_prepare_duration =
     declare_parameter("lane_following.lane_change_prepare_duration", 2.0);
   return p;
@@ -477,6 +483,8 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   // drivable area expansion
   p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_types_to_skip =
+    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
 
   // debug marker
   p.publish_debug_marker = dp("publish_debug_marker", false);
@@ -587,6 +595,8 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   // drivable area
   p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_types_to_skip =
+    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
   // debug
   p.print_debug_info = dp("print_debug_info", false);
 
@@ -648,6 +658,8 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
   // drivable area
   p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_types_to_skip =
+    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
 
   // validation of parameters
   if (p.pull_out_sampling_num < 1) {

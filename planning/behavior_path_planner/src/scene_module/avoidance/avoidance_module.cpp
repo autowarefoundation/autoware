@@ -2619,7 +2619,7 @@ void AvoidanceModule::generateExtendedDrivableArea(PathWithLaneId & path) const
 
   const auto extended_lanes = util::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset, {"road_border"});
+    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
 
   {
     const auto & p = planner_data_->parameters;

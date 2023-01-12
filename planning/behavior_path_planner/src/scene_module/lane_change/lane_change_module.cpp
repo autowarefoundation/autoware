@@ -324,7 +324,7 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
   const auto shorten_lanes = util::cutOverlappedLanes(reference_path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset);
+    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
   util::generateDrivableArea(
     reference_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 
@@ -661,7 +661,7 @@ void LaneChangeModule::generateExtendedDrivableArea(PathWithLaneId & path)
   const auto shorten_lanes = util::cutOverlappedLanes(path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset);
+    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
   util::generateDrivableArea(path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 }
 
