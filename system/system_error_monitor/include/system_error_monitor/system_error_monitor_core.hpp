@@ -141,6 +141,7 @@ private:
     autoware_auto_system_msgs::msg::HazardStatus * hazard_status) const;
   autoware_auto_system_msgs::msg::HazardStatus judgeHazardStatus() const;
   void updateHazardStatus();
+  void updateTimeoutHazardStatus();
   bool canAutoRecovery() const;
   bool isEmergencyHoldingRequired() const;
 };
