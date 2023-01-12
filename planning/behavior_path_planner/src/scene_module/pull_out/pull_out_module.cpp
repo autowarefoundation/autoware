@@ -198,6 +198,7 @@ BehaviorModuleOutput PullOutModule::plan()
 
   output.path = std::make_shared<PathWithLaneId>(path);
   output.turn_signal_info = calcTurnSignalInfo();
+  path_candidate_ = std::make_shared<PathWithLaneId>(getFullPath());
 
   const uint16_t steering_factor_direction = std::invoke([&output]() {
     if (output.turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
@@ -289,17 +290,16 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
     drivable_lanes, parameters_.drivable_area_left_bound_offset,
     parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
 
-  auto candidate_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
+  auto stop_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
   util::generateDrivableArea(
-    candidate_path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
-  auto stop_path = candidate_path;
+    stop_path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
   for (auto & p : stop_path.points) {
     p.point.longitudinal_velocity_mps = 0.0;
   }
 
   output.path = std::make_shared<PathWithLaneId>(stop_path);
   output.turn_signal_info = calcTurnSignalInfo();
-  path_candidate_ = std::make_shared<PathWithLaneId>(candidate_path);
+  path_candidate_ = std::make_shared<PathWithLaneId>(getFullPath());
 
   const uint16_t steering_factor_direction = std::invoke([&output]() {
     if (output.turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
@@ -312,10 +312,10 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
 
   if (status_.back_finished) {
     const double start_distance = motion_utils::calcSignedArcLength(
-      candidate_path.points, planner_data_->self_pose->pose.position,
+      stop_path.points, planner_data_->self_pose->pose.position,
       status_.pull_out_path.start_pose.position);
     const double finish_distance = motion_utils::calcSignedArcLength(
-      candidate_path.points, planner_data_->self_pose->pose.position,
+      stop_path.points, planner_data_->self_pose->pose.position,
       status_.pull_out_path.end_pose.position);
     updateRTCStatus(start_distance, finish_distance);
     steering_factor_interface_ptr_->updateSteeringFactor(
@@ -324,7 +324,7 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
       SteeringFactor::APPROACHING, "");
   } else {
     const double distance = motion_utils::calcSignedArcLength(
-      candidate_path.points, planner_data_->self_pose->pose.position,
+      stop_path.points, planner_data_->self_pose->pose.position,
       status_.pull_out_path.start_pose.position);
     updateRTCStatus(0.0, distance);
     steering_factor_interface_ptr_->updateSteeringFactor(
