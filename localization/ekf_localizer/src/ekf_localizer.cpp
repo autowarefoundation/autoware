@@ -395,6 +395,15 @@ void EKFLocalizer::initEKF()
   ekf_.init(X, P, params_.extend_state_step);
 }
 
+void warnIfPoseDelayTimeLessThanZero(const Warning & warning, const double delay_time)
+{
+  if (delay_time < 0.0) {
+    const auto s =
+      fmt::format("Pose time stamp is inappropriate, set delay to 0[s]. delay = {}", delay_time);
+    warning.warnThrottle(s, 1000);
+  }
+}
+
 /*
  * measurementUpdatePose
  */
@@ -415,12 +424,9 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
 
   /* Calculate delay step */
   double delay_time = (t_curr - pose.header.stamp).seconds() + params_.pose_additional_delay;
-  if (delay_time < 0.0) {
-    delay_time = 0.0;
-    warning_.warnThrottle(
-      fmt::format("Pose time stamp is inappropriate, set delay to 0[s]. delay = %f", delay_time),
-      1000);
-  }
+  warnIfPoseDelayTimeLessThanZero(warning_, delay_time);
+  delay_time = std::max(delay_time, 0.0);
+
   int delay_step = std::roundf(delay_time / ekf_dt_);
   if (delay_step > params_.extend_state_step - 1) {
     warning_.warnThrottle(
