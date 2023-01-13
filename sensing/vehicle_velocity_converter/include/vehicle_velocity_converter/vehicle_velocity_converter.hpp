@@ -43,6 +43,7 @@ private:
   std::string frame_id_;
   double stddev_vx_;
   double stddev_wz_;
+  double speed_scale_factor_;
   std::array<double, 36> twist_covariance_;
 };
 

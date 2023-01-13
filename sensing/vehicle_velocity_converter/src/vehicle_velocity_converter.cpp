@@ -20,6 +20,7 @@ VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_co
   stddev_vx_ = declare_parameter("velocity_stddev_xx", 0.2);
   stddev_wz_ = declare_parameter("angular_velocity_stddev_zz", 0.1);
   frame_id_ = declare_parameter("frame_id", "base_link");
+  speed_scale_factor_ = declare_parameter("speed_scale_factor", 1.0);
 
   vehicle_report_sub_ = create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>(
     "velocity_status", rclcpp::QoS{100},
@@ -39,7 +40,7 @@ void VehicleVelocityConverter::callbackVelocityReport(
   // set twist with covariance msg from vehicle report msg
   geometry_msgs::msg::TwistWithCovarianceStamped twist_with_covariance_msg;
   twist_with_covariance_msg.header = msg->header;
-  twist_with_covariance_msg.twist.twist.linear.x = msg->longitudinal_velocity;
+  twist_with_covariance_msg.twist.twist.linear.x = msg->longitudinal_velocity * speed_scale_factor_;
   twist_with_covariance_msg.twist.twist.linear.y = msg->lateral_velocity;
   twist_with_covariance_msg.twist.twist.angular.z = msg->heading_rate;
   twist_with_covariance_msg.twist.covariance[0 + 0 * 6] = stddev_vx_ * stddev_vx_;
