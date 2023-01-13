@@ -331,6 +331,12 @@ void MapBasedDetector::getVisibleTrafficLights(
   std::vector<lanelet::ConstLineString3d> & visible_traffic_lights)
 {
   for (const auto & traffic_light : all_traffic_lights) {
+    // some "Traffic Light" are actually not traffic lights
+    if (
+      traffic_light.hasAttribute("subtype") == false ||
+      traffic_light.attribute("subtype").value() == "solid") {
+      continue;
+    }
     const auto & tl_left_down_point = traffic_light.front();
     const auto & tl_right_down_point = traffic_light.back();
     const double tl_height = traffic_light.attributeOr("height", 0.0);
