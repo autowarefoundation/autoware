@@ -132,11 +132,6 @@ bool isEgoWithinOriginalLane(
   const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
   const BehaviorPathPlannerParameters & common_param);
 
-TurnSignalInfo calc_turn_signal_info(
-  const PathWithLaneId & prepare_path, const double prepare_velocity,
-  const double min_prepare_distance, const double prepare_duration, const ShiftLine & shift_line,
-  const ShiftedPath & lane_changing_path);
-
 void get_turn_signal_info(
   const LaneChangePath & lane_change_path, TurnSignalInfo * turn_signal_info);
 

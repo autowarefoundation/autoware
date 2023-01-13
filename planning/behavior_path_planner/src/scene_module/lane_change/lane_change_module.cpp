@@ -697,6 +697,7 @@ bool LaneChangeModule::isApprovedPathSafe(Pose & ego_pose_before_collision) cons
 
 void LaneChangeModule::updateOutputTurnSignal(BehaviorModuleOutput & output)
 {
+  calcTurnSignalInfo();
   const auto turn_signal_info = util::getPathTurnSignal(
     status_.current_lanes, status_.lane_change_path.shifted_path,
     status_.lane_change_path.shift_line, getEgoPose(), getEgoTwist().linear.x,
@@ -704,6 +705,49 @@ void LaneChangeModule::updateOutputTurnSignal(BehaviorModuleOutput & output)
   output.turn_signal_info.turn_signal.command = turn_signal_info.first.command;
 
   lane_change_utils::get_turn_signal_info(status_.lane_change_path, &output.turn_signal_info);
+}
+
+void LaneChangeModule::calcTurnSignalInfo()
+{
+  const auto get_blinker_pose =
+    [this](const PathWithLaneId & path, const lanelet::ConstLanelets & lanes, const double length) {
+      const auto & points = path.points;
+      const auto arc_front = lanelet::utils::getArcCoordinates(lanes, points.front().point.pose);
+      for (const auto & point : points) {
+        const auto & pt = point.point.pose;
+        const auto arc_current = lanelet::utils::getArcCoordinates(lanes, pt);
+        const auto diff = arc_current.length - arc_front.length;
+        if (diff > length) {
+          return pt;
+        }
+      }
+
+      RCLCPP_WARN(getLogger(), "unable to determine blinker pose...");
+      return points.front().point.pose;
+    };
+
+  const auto & path = status_.lane_change_path;
+  TurnSignalInfo turn_signal_info{};
+
+  turn_signal_info.desired_start_point = std::invoke([&]() {
+    const auto blinker_start_duration = planner_data_->parameters.turn_signal_search_time;
+    const auto prepare_duration = parameters_->lane_change_prepare_duration;
+    const auto prepare_to_blinker_start_diff = prepare_duration - blinker_start_duration;
+    if (prepare_to_blinker_start_diff < 1e-5) {
+      return path.path.points.front().point.pose;
+    }
+
+    return get_blinker_pose(path.path, path.reference_lanelets, prepare_to_blinker_start_diff);
+  });
+  turn_signal_info.desired_end_point = path.shift_line.end;
+
+  turn_signal_info.required_start_point = path.shift_line.start;
+  const auto mid_lane_change_length = path.lane_change_length / 2;
+  const auto & shifted_path = path.shifted_path.path;
+  turn_signal_info.required_end_point =
+    get_blinker_pose(shifted_path, path.target_lanelets, mid_lane_change_length);
+
+  status_.lane_change_path.turn_signal_info = turn_signal_info;
 }
 
 void LaneChangeModule::resetParameters()

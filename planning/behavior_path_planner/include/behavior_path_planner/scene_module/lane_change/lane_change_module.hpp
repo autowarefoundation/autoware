@@ -189,6 +189,7 @@ private:
   void updateOutputTurnSignal(BehaviorModuleOutput & output);
   void updateSteeringFactorPtr(const BehaviorModuleOutput & output);
   bool isApprovedPathSafe(Pose & ego_pose_before_collision) const;
+  void calcTurnSignalInfo();
 
   void updateSteeringFactorPtr(
     const CandidateOutput & output, const LaneChangePath & selected_path) const;
