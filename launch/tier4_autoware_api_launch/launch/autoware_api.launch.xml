@@ -1,11 +1,18 @@
 <launch>
-  <arg name="respawn_rosbridge" default="true"/>
-  <arg name="launch_path_distance_calculator" default="false"/>
+  <!-- AD API options -->
+  <arg name="launch_deprecated_api" default="false"/>
   <arg name="launch_default_ad_api" default="true"/>
   <arg name="launch_rviz_adaptors" default="true"/>
-  <!-- external api adaptor -->
-  <arg name="launch_calibration_status_api" default="false"/>
-  <arg name="launch_start_api" default="true"/>
+
+  <!-- rosbridge options -->
+  <arg name="rosbridge_enabled" default="false"/>
+  <arg name="rosbridge_respawn" default="true"/>
+  <arg name="rosbridge_max_message_size" default="10000000"/>
+
+  <!-- Deprecated API -->
+  <group if="$(var launch_deprecated_api)">
+    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/deprecated_api.launch.xml"/>
+  </group>
 
   <!-- AD API -->
   <group>
@@ -13,33 +20,19 @@
     <include file="$(find-pkg-share ad_api_adaptors)/launch/rviz_adaptors.launch.xml" if="$(var launch_rviz_adaptors)"/>
   </group>
 
-  <!-- awapi (deprecated) -->
+  <!-- RTC controller -->
   <group>
-    <include file="$(find-pkg-share awapi_awiv_adapter)/launch/awapi_awiv_adapter.launch.xml"/>
-  </group>
-
-  <!-- autoware api adaptor -->
-  <group>
-    <push-ros-namespace namespace="autoware_api"/>
-    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/external_api_adaptor.launch.py">
-      <arg name="launch_calibration_status_api" value="$(var launch_calibration_status_api)"/>
-      <arg name="launch_start_api" value="$(var launch_start_api)"/>
-    </include>
-    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/internal_api_adaptor.launch.py"/>
-    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/internal_api_relay.launch.xml"/>
-  </group>
-
-  <!-- autoware api utils -->
-  <group>
-    <push-ros-namespace namespace="autoware_api/utils"/>
-    <include file="$(find-pkg-share path_distance_calculator)/launch/path_distance_calculator.launch.xml" if="$(var launch_path_distance_calculator)"/>
+    <push-ros-namespace namespace="autoware_api/external/rtc_controller"/>
+    <node_container pkg="rclcpp_components" exec="component_container_mt" name="container" namespace="">
+      <composable_node pkg="autoware_iv_external_api_adaptor" plugin="external_api::RTCController" name="node"/>
+    </node_container>
   </group>
 
   <!-- rosbridge -->
-  <!-- TODO: respawn will work once https://github.com/ros2/launch/pull/569 is released. I'll delete this comment when it's done. -->
-  <group>
+  <group if="$(var rosbridge_enabled)">
     <include file="$(find-pkg-share rosbridge_server)/launch/rosbridge_websocket_launch.xml">
-      <arg name="respawn" value="$(var respawn_rosbridge)"/>
+      <arg name="respawn" value="$(var rosbridge_respawn)"/>
+      <arg name="max_message_size" value="$(var rosbridge_max_message_size)"/>
     </include>
   </group>
 </launch>

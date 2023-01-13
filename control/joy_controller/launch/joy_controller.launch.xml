@@ -28,7 +28,7 @@
     <remap from="output/vehicle_engage" to="$(var output_vehicle_engage)"/>
 
     <remap from="service/emergency_stop" to="/api/autoware/set/emergency"/>
-    <remap from="service/autoware_engage" to="/api/external/set/engage"/>
+    <remap from="service/autoware_engage" to="/api/autoware/set/engage"/>
 
     <param from="$(var config_file)"/>
     <param name="joy_type" value="$(var joy_type)"/>

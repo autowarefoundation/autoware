@@ -1,0 +1,20 @@
+<launch>
+  <!-- awapi -->
+  <group>
+    <include file="$(find-pkg-share awapi_awiv_adapter)/launch/awapi_awiv_adapter.launch.xml"/>
+  </group>
+
+  <!-- autoware api adaptor -->
+  <group>
+    <push-ros-namespace namespace="autoware_api"/>
+    <include file="$(find-pkg-share autoware_iv_external_api_adaptor)/launch/external_api_adaptor.launch.py"/>
+    <include file="$(find-pkg-share autoware_iv_internal_api_adaptor)/launch/internal_api_adaptor.launch.py"/>
+    <include file="$(find-pkg-share autoware_iv_internal_api_adaptor)/launch/internal_api_relay.launch.xml"/>
+  </group>
+
+  <!-- autoware api utils -->
+  <group>
+    <push-ros-namespace namespace="autoware_api/utils"/>
+    <include file="$(find-pkg-share path_distance_calculator)/launch/path_distance_calculator.launch.xml"/>
+  </group>
+</launch>
