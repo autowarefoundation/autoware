@@ -32,6 +32,10 @@
 #include <stack>
 #include <vector>
 
+namespace bg = boost::geometry;
+typedef bg::model::d2::point_xy<double> bg_point;
+typedef bg::model::polygon<bg_point> bg_polygon;
+
 namespace
 {
 std::vector<double> convertEulerAngleToMonotonic(const std::vector<double> & angle)
@@ -628,7 +632,7 @@ geometry_msgs::msg::Point getStartPoint(
   return bound.front();
 }
 
-bool isOutsideDrivableArea(
+bool isFrontDrivableArea(
   const geometry_msgs::msg::Point & point,
   const std::vector<geometry_msgs::msg::Point> & left_bound,
   const std::vector<geometry_msgs::msg::Point> & right_bound)
@@ -644,23 +648,33 @@ bool isOutsideDrivableArea(
   // ignore point behind of the front line
   const std::vector<geometry_msgs::msg::Point> front_bound = {left_start_point, right_start_point};
   const double lat_dist_to_front_bound = motion_utils::calcLateralOffset(front_bound, point);
-  if (lat_dist_to_front_bound < -min_dist) {
-    return false;
-  }
-
-  // left bound check
-  const double lat_dist_to_left_bound = motion_utils::calcLateralOffset(left_bound, point);
-  if (lat_dist_to_left_bound > min_dist) {
-    return true;
-  }
-
-  // right bound check
-  const double lat_dist_to_right_bound = motion_utils::calcLateralOffset(right_bound, point);
-  if (lat_dist_to_right_bound < -min_dist) {
+  if (lat_dist_to_front_bound < min_dist) {
     return true;
   }
 
   return false;
+}
+
+bg_polygon createDrivablePolygon(
+  const std::vector<geometry_msgs::msg::Point> & left_bound,
+  const std::vector<geometry_msgs::msg::Point> & right_bound)
+{
+  bg_polygon drivable_area_poly;
+
+  // right bound
+  for (const auto rp : right_bound) {
+    drivable_area_poly.outer().push_back(bg_point(rp.x, rp.y));
+  }
+
+  // left bound
+  auto reversed_left_bound = left_bound;
+  std::reverse(reversed_left_bound.begin(), reversed_left_bound.end());
+  for (const auto lp : reversed_left_bound) {
+    drivable_area_poly.outer().push_back(bg_point(lp.x, lp.y));
+  }
+
+  drivable_area_poly.outer().push_back(drivable_area_poly.outer().front());
+  return drivable_area_poly;
 }
 }  // namespace
 
@@ -668,8 +682,8 @@ namespace drivable_area_utils
 {
 bool isOutsideDrivableAreaFromRectangleFootprint(
   const autoware_auto_planning_msgs::msg::TrajectoryPoint & traj_point,
-  const std::vector<geometry_msgs::msg::Point> left_bound,
-  const std::vector<geometry_msgs::msg::Point> right_bound, const VehicleParam & vehicle_param)
+  const std::vector<geometry_msgs::msg::Point> & left_bound,
+  const std::vector<geometry_msgs::msg::Point> & right_bound, const VehicleParam & vehicle_param)
 {
   if (left_bound.empty() || right_bound.empty()) {
     return false;
@@ -694,12 +708,34 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
     tier4_autoware_utils::calcOffsetPose(traj_point.pose, -base_to_rear, -base_to_left, 0.0)
       .position;
 
-  const bool out_top_left = isOutsideDrivableArea(top_left_pos, left_bound, right_bound);
-  const bool out_top_right = isOutsideDrivableArea(top_right_pos, left_bound, right_bound);
-  const bool out_bottom_left = isOutsideDrivableArea(bottom_left_pos, left_bound, right_bound);
-  const bool out_bottom_right = isOutsideDrivableArea(bottom_right_pos, left_bound, right_bound);
+  const bool front_top_left = isFrontDrivableArea(top_left_pos, left_bound, right_bound);
+  const bool front_top_right = isFrontDrivableArea(top_right_pos, left_bound, right_bound);
+  const bool front_bottom_left = isFrontDrivableArea(bottom_left_pos, left_bound, right_bound);
+  const bool front_bottom_right = isFrontDrivableArea(bottom_right_pos, left_bound, right_bound);
 
-  if (out_top_left || out_top_right || out_bottom_left || out_bottom_right) {
+  // create rectangle
+  const auto drivable_area_poly = createDrivablePolygon(left_bound, right_bound);
+
+  if (
+    !front_top_left && !bg::within(bg_point(top_left_pos.x, top_left_pos.y), drivable_area_poly)) {
+    return true;
+  }
+
+  if (
+    !front_top_right &&
+    !bg::within(bg_point(top_right_pos.x, top_right_pos.y), drivable_area_poly)) {
+    return true;
+  }
+
+  if (
+    !front_bottom_left &&
+    !bg::within(bg_point(bottom_left_pos.x, bottom_left_pos.y), drivable_area_poly)) {
+    return true;
+  }
+
+  if (
+    !front_bottom_right &&
+    !bg::within(bg_point(bottom_right_pos.x, bottom_right_pos.y), drivable_area_poly)) {
     return true;
   }
 
