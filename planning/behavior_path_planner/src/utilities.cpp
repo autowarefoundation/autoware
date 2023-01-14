@@ -1077,6 +1077,10 @@ boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> 
     }
   }
 
+  if (overlapped_idx == lanes.size()) {
+    return {};
+  }
+
   return overlapped_idx;
 }
 
@@ -1090,30 +1094,30 @@ std::vector<DrivableLanes> cutOverlappedLanes(
 
   const std::vector<DrivableLanes> shorten_lanes{
     lanes.begin(), lanes.begin() + *overlapped_lanelet_id};
-  const std::vector<DrivableLanes> removed_lanes{
-    lanes.begin() + *overlapped_lanelet_id, lanes.end()};
+  const auto shorten_lanelets = util::transformToLanelets(shorten_lanes);
 
-  const auto transformed_lanes = util::transformToLanelets(removed_lanes);
-
-  auto isIncluded = [&transformed_lanes](const std::vector<int64_t> & lane_ids) {
-    if (transformed_lanes.empty() || lane_ids.empty()) return false;
-
-    for (const auto & transformed_lane : transformed_lanes) {
-      for (const auto & lane_id : lane_ids) {
-        if (lane_id == transformed_lane.id()) {
-          return true;
-        }
+  // create removed lanelets
+  std::vector<int64_t> removed_lane_ids;
+  for (size_t i = *overlapped_lanelet_id; i < lanes.size(); ++i) {
+    const auto target_lanelets = util::transformToLanelets(lanes.at(i));
+    for (const auto & target_lanelet : target_lanelets) {
+      // if target lane is inside of the shorten lanelets, we do not remove it
+      if (checkHasSameLane(shorten_lanelets, target_lanelet)) {
+        continue;
       }
+      removed_lane_ids.push_back(target_lanelet.id());
     }
-
-    return false;
-  };
+  }
 
   for (size_t i = 0; i < path.points.size(); ++i) {
     const auto & lane_ids = path.points.at(i).lane_ids;
-    if (isIncluded(lane_ids)) {
-      path.points.erase(path.points.begin() + i, path.points.end());
-      break;
+    for (const auto & lane_id : lane_ids) {
+      if (
+        std::find(removed_lane_ids.begin(), removed_lane_ids.end(), lane_id) !=
+        removed_lane_ids.end()) {
+        path.points.erase(path.points.begin() + i, path.points.end());
+        break;
+      }
     }
   }
 

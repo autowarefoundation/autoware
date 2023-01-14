@@ -74,6 +74,29 @@ void LaneFollowingModule::setParameters(const LaneFollowingParameters & paramete
   parameters_ = parameters;
 }
 
+lanelet::ConstLanelets getLaneletsFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler)
+{
+  std::vector<int64_t> unique_lanelet_ids;
+  for (const auto & p : path.points) {
+    const auto & lane_ids = p.lane_ids;
+    for (const auto & lane_id : lane_ids) {
+      if (
+        std::find(unique_lanelet_ids.begin(), unique_lanelet_ids.end(), lane_id) ==
+        unique_lanelet_ids.end()) {
+        unique_lanelet_ids.push_back(lane_id);
+      }
+    }
+  }
+
+  lanelet::ConstLanelets lanelets;
+  for (const auto & lane_id : unique_lanelet_ids) {
+    lanelets.push_back(route_handler->getLaneletsFromId(lane_id));
+  }
+
+  return lanelets;
+}
+
 PathWithLaneId LaneFollowingModule::getReferencePath() const
 {
   PathWithLaneId reference_path{};
@@ -95,7 +118,6 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   // For current_lanes with desired length
   const auto current_lanes = planner_data_->route_handler->getLaneletSequence(
     current_lane, current_pose, p.backward_path_length, p.forward_path_length);
-  const auto drivable_lanes = util::generateDrivableLanes(current_lanes);
 
   if (current_lanes.empty()) {
     return reference_path;
@@ -103,8 +125,7 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
 
   // calculate path with backward margin to avoid end points' instability by spline interpolation
   constexpr double extra_margin = 10.0;
-  const double backward_length =
-    std::max(p.backward_path_length, p.backward_path_length + extra_margin);
+  const double backward_length = p.backward_path_length + extra_margin;
   const auto current_lanes_with_backward_margin =
     util::calcLaneAroundPose(route_handler, current_pose, p.forward_path_length, backward_length);
   reference_path = util::getCenterLinePath(
@@ -115,6 +136,8 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   const size_t current_seg_idx = findEgoSegmentIndex(reference_path.points);
   util::clipPathLength(
     reference_path, current_seg_idx, p.forward_path_length, p.backward_path_length);
+  const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
+  const auto drivable_lanes = util::generateDrivableLanes(drivable_lanelets);
 
   {
     const int num_lane_change =
