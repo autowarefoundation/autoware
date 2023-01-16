@@ -134,13 +134,13 @@
                 <span
                   style="color: rgb(51 , 51 , 51) ; font-family: &quot;helvetica neue&quot; , &quot;helvetica&quot; , &quot;segoe ui&quot; , &quot;arial&quot; , &quot;freesans&quot; , sans-serif ; font-size: 12px ; font-style: normal ; font-weight: 400 ; letter-spacing: normal ; text-align: left ; text-indent: 0px ; text-transform: none ; word-spacing: 0px ; background-color: rgb(255 , 255 , 255) ; display: inline ; float: none"
                 >
-                  object_check_forward_distance
+                  object_check_backward_distance
                 </span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="2" y="279" fill="#000000" font-family="Helvetica" font-size="12px">object_check_forward_distance</text>
+        <text x="2" y="279" fill="#000000" font-family="Helvetica" font-size="12px">object_check_backward_distance</text>
       </switch>
     </g>
     <g transform="translate(-0.5 -0.5)">
@@ -155,13 +155,13 @@
                 <span
                   style="color: rgb(51 , 51 , 51) ; font-family: &quot;helvetica neue&quot; , &quot;helvetica&quot; , &quot;segoe ui&quot; , &quot;arial&quot; , &quot;freesans&quot; , sans-serif ; font-size: 12px ; font-style: normal ; font-weight: 400 ; letter-spacing: normal ; text-align: left ; text-indent: 0px ; text-transform: none ; word-spacing: 0px ; background-color: rgb(255 , 255 , 255) ; display: inline ; float: none"
                 >
-                  object_check_backward_distance
+                  object_check_forward_distance
                 </span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="212" y="279" fill="#000000" font-family="Helvetica" font-size="12px">object_check_backward_distance</text>
+        <text x="212" y="279" fill="#000000" font-family="Helvetica" font-size="12px">object_check_forward_distance</text>
       </switch>
     </g>
     <path d="M 820 216.63 L 820 205.37" fill="none" stroke="#4d4d4d" stroke-miterlimit="10" pointer-events="none"/>

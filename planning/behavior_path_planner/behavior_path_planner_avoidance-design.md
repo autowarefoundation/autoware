@@ -275,7 +275,7 @@ distance from overhang_pose
 to left most linestring
 end note
 else(\n no)
-partition getrightMostLineString() {
+partition getRightMostLineString() {
 repeat
 repeat
 :getRightLanelet;
