@@ -194,6 +194,7 @@ private:
   void updateSteeringFactorPtr(
     const CandidateOutput & output, const LaneChangePath & selected_path) const;
   bool isSafe() const;
+  bool isValidPath() const;
   bool isValidPath(const PathWithLaneId & path) const;
   bool isNearEndOfLane() const;
   bool isCurrentSpeedLow() const;

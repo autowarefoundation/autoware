@@ -111,7 +111,7 @@ bool LaneChangeModule::isExecutionReady() const
 BT::NodeStatus LaneChangeModule::updateState()
 {
   RCLCPP_DEBUG(getLogger(), "LANE_CHANGE updateState");
-  if (!isSafe()) {
+  if (!isValidPath()) {
     current_state_ = BT::NodeStatus::SUCCESS;
     return current_state_;
   }
@@ -148,8 +148,10 @@ BehaviorModuleOutput LaneChangeModule::plan()
 
   PathWithLaneId path = status_.lane_change_path.path;
   if (!isValidPath(path)) {
-    status_.is_safe = false;
+    status_.is_valid_path = false;
     return BehaviorModuleOutput{};
+  } else {
+    status_.is_valid_path = true;
   }
 
   if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentSpeedLow())) {
@@ -420,6 +422,8 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
 }
 
 bool LaneChangeModule::isSafe() const { return status_.is_safe; }
+
+bool LaneChangeModule::isValidPath() const { return status_.is_valid_path; }
 
 bool LaneChangeModule::isValidPath(const PathWithLaneId & path) const
 {

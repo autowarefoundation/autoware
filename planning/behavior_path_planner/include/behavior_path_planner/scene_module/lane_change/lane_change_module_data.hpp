@@ -68,6 +68,7 @@ struct LaneChangeStatus
   std::vector<uint64_t> lane_follow_lane_ids;
   std::vector<uint64_t> lane_change_lane_ids;
   bool is_safe;
+  bool is_valid_path = true;
   double start_distance;
 };
 
