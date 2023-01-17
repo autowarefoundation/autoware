@@ -167,17 +167,6 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
     p.point.pose.position.z = goal_pose.position.z;
   }
 
-  // check lane departure with road and shoulder lanes
-  const auto drivable_lanes =
-    util::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
-  const auto expanded_lanes = util::expandLanelets(
-    drivable_lanes, parameters_.drivable_area_left_bound_offset,
-    parameters_.drivable_area_right_bound_offset);
-  if (lane_departure_checker_.checkPathWillLeaveLane(
-        util::transformToLanelets(expanded_lanes), shifted_path.path)) {
-    return {};
-  }
-
   // set lane_id and velocity to shifted_path
   for (size_t i = path_shifter.getShiftLines().front().start_idx;
        i < shifted_path.path.points.size() - 1; ++i) {
@@ -211,6 +200,17 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   pull_over_path.end_pose = path_shifter.getShiftLines().front().end;
   pull_over_path.debug_poses.push_back(shift_end_pose_road_lane);
   pull_over_path.debug_poses.push_back(actual_shift_end_pose);
+
+  // check if the parking path will leave lanes
+  const auto drivable_lanes =
+    util::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
+  const auto expanded_lanes = util::expandLanelets(
+    drivable_lanes, parameters_.drivable_area_left_bound_offset,
+    parameters_.drivable_area_right_bound_offset);
+  if (lane_departure_checker_.checkPathWillLeaveLane(
+        util::transformToLanelets(expanded_lanes), pull_over_path.getParkingPath())) {
+    return {};
+  }
 
   return pull_over_path;
 }
