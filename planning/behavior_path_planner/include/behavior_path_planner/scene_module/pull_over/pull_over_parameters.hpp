@@ -39,6 +39,7 @@ struct PullOverParameters
   double longitudinal_margin;
   double max_lateral_offset;
   double lateral_offset_interval;
+  double ignore_distance_from_lane_start;
   // occupancy grid map
   bool use_occupancy_grid;
   bool use_occupancy_grid_for_longitudinal_margin;

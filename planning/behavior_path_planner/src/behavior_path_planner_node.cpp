@@ -548,6 +548,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.longitudinal_margin = dp("longitudinal_margin", 3.0);
   p.max_lateral_offset = dp("max_lateral_offset", 1.0);
   p.lateral_offset_interval = dp("lateral_offset_interval", 0.25);
+  p.ignore_distance_from_lane_start = dp("ignore_distance_from_lane_start", 15.0);
   // occupancy grid map
   p.use_occupancy_grid = dp("use_occupancy_grid", true);
   p.use_occupancy_grid_for_longitudinal_margin =

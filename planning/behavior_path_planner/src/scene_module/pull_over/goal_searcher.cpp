@@ -49,6 +49,7 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   const double margin_from_boundary = parameters_.margin_from_boundary;
   const double lateral_offset_interval = parameters_.lateral_offset_interval;
   const double max_lateral_offset = parameters_.max_lateral_offset;
+  const double ignore_distance_from_lane_start = parameters_.ignore_distance_from_lane_start;
 
   const auto pull_over_lanes = pull_over_utils::getPullOverLanes(*route_handler);
   auto lanes = util::getExtendedCurrentLanes(planner_data_);
@@ -69,6 +70,13 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   size_t goal_id = 0;
   for (const auto & p : center_line_path.points) {
     const Pose & center_pose = p.point.pose;
+
+    // ignore goal_pose near lane start
+    const double distance_from_lane_start =
+      lanelet::utils::getArcCoordinates(pull_over_lanes, center_pose).length;
+    if (distance_from_lane_start < ignore_distance_from_lane_start) {
+      continue;
+    }
 
     const auto distance_from_left_bound = util::getSignedDistanceFromShoulderLeftBoundary(
       pull_over_lanes, vehicle_footprint_, center_pose);
