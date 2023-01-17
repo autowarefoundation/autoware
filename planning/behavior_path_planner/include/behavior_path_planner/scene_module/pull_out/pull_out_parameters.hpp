@@ -38,6 +38,7 @@ struct PullOutParameters
   double deceleration_interval;
   // geometric pull out
   bool enable_geometric_pull_out;
+  bool divide_pull_out_path;
   double geometric_pull_out_velocity;
   double arc_path_interval;
   double lane_departure_margin;
