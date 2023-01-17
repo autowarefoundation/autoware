@@ -129,7 +129,8 @@ void get_nearest_timestamp_pose(
     const rclcpp::Time pose_time_stamp = output_new_pose_cov_msg_ptr->header.stamp;
     if (pose_time_stamp > time_stamp) {
       // TODO(Tier IV): refactor
-      if (pose_time_stamp.seconds() == 0.0) {
+      const rclcpp::Time old_pose_time_stamp = output_old_pose_cov_msg_ptr->header.stamp;
+      if (old_pose_time_stamp.seconds() == 0.0) {
         output_old_pose_cov_msg_ptr = output_new_pose_cov_msg_ptr;
       }
       break;
