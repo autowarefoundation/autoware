@@ -3,7 +3,7 @@ version: 2
 artifacts:
   - name: main
     build:
-      type: tier4/iv/main/amd64/v2
+      type: tier4/universe/main/amd64/v1
 
 simulations:
   - name: lexus_planning_sim

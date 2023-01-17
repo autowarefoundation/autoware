@@ -6,18 +6,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  load-env:
+    uses: ./.github/workflows/load-env.yaml
+
   build-main-self-hosted:
+    needs: load-env
     runs-on: [self-hosted, linux, ARM64]
-    container: ubuntu:20.04
+    container: ${{ needs.load-env.outputs.base-image }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-        with:
-          ref: ""
 
       - name: Run setup script
         run: |
-          ./setup-dev-env.sh -y universe
+          ./setup-dev-env.sh -y
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run vcs import
         run: |
@@ -32,9 +39,9 @@ jobs:
         run: |
           sudo apt-get -y update
           rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro galactic
+          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro ${{ needs.load-env.outputs.rosdistro }}
 
       - name: Build
         run: |
-          . /opt/ros/galactic/setup.sh
+          . /opt/ros/${{ needs.load-env.outputs.rosdistro }}/setup.sh
           colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=Release

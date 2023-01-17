@@ -25,8 +25,11 @@ jobs:
       - name: Get clang-format version
         id: get-clang-format-version
         run: |
-          latest_tag_name=$(gh release view --repo https://github.com/llvm/llvm-project --json tagName --jq ".tagName")
-          echo ::set-output name=version::$(echo "$latest_tag_name" | sd '.*-(.*)' '$1')
+          function get-latest-pip-version() {
+            pip index versions "$1" 2>/dev/null | head -n1 | sd '.*\((.*)\)' '$1'
+          }
+
+          echo ::set-output name=version::$(get-latest-pip-version clang-format)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

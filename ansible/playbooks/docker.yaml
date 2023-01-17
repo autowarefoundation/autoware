@@ -1,6 +1,26 @@
 - hosts: localhost
   connection: local
+  vars_prompt:
+    - name: prompt_install_nvidia
+      prompt: |-
+        [Warning] Some Autoware components depend on the CUDA, cuDNN and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
+        Install NVIDIA libraries? [y/N]
+      private: false
+  pre_tasks:
+    - name: Print args
+      ansible.builtin.debug:
+        msg:
+          - cuda_version: "{{ cuda_version }}"
+          - cudnn_version: "{{ cudnn_version }}"
+    - name: Show a warning if the NVIDIA libraries will not be installed
+      ansible.builtin.pause:
+        seconds: 10
+        prompt: |
+          [Warning] Skipping installation of NVIDIA libraries. Please manually install them if you plan to use any dependent components.
+      when: prompt_install_nvidia != 'y'
   roles:
+    - role: autoware.dev_env.cuda
+      when: prompt_install_nvidia == 'y' and install_devel == 'true'
     - role: autoware.dev_env.docker_engine
     - role: autoware.dev_env.nvidia_docker
     - role: autoware.dev_env.rocker

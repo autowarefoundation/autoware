@@ -48,6 +48,11 @@ RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
 ADD "https://gitlab.com/nvidia/container-images/opengl/raw/5191cf205d3e4bb1150091f9464499b076104354/glvnd/runtime/10_nvidia.json" /etc/glvnd/egl_vendor.d/10_nvidia.json
 RUN chmod 644 /etc/glvnd/egl_vendor.d/10_nvidia.json
 
+## Register OpenCL GPU vendors
+RUN mkdir -p /etc/OpenCL/vendors \
+  && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd \
+  && chmod 644 /etc/OpenCL/vendors/nvidia.icd
+
 ## Create entrypoint
 # hadolint ignore=DL3059
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc

@@ -1,0 +1,18 @@
+# https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
+- name: Install Git LFS
+  become: true
+  ansible.builtin.apt:
+    name: git-lfs
+    state: latest
+    update_cache: true
+
+# ref: https://github.com/ansible/ansible-lint/issues/1780
+- name: Check if git lfs is installed # https://github.com/git-lfs/git-lfs/issues/901
+  git_config:
+    list_all: true
+    scope: global
+  register: git_global_config
+
+- name: Setup Git LFS
+  command: git lfs install
+  when: "'filter.lfs.required' not in git_global_config.config_values"
