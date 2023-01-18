@@ -148,6 +148,9 @@
               num: 3
               radius_ratio: 0.8
 
+            fitting_uniform_circle:
+              num: 3  # must be greater than 1
+
             rear_drive:
               num_for_calculation: 3
               front_radius_ratio: 1.0

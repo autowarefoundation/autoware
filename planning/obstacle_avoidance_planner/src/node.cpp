@@ -85,6 +85,25 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
   return {radiuses, longitudinal_offsets};
 }
 
+std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
+  const VehicleParam & vehicle_param, size_t circle_num)
+{
+  circle_num = std::max(circle_num, static_cast<size_t>(2));
+
+  std::vector<double> longitudinal_offsets;
+  std::vector<double> radiuses;
+
+  const double radius = vehicle_param.width / 2.0;
+  const double unit_lon_length = vehicle_param.length / static_cast<double>(circle_num - 1);
+
+  for (size_t i = 0; i < circle_num; ++i) {
+    longitudinal_offsets.push_back(unit_lon_length * i - vehicle_param.rear_overhang);
+    radiuses.push_back(radius);
+  }
+
+  return {radiuses, longitudinal_offsets};
+}
+
 std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfoByBicycleModel(
   const VehicleParam & vehicle_param, const size_t circle_num, const double rear_radius_ratio,
   const double front_radius_ratio)
@@ -443,6 +462,13 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
           calcVehicleCirclesInfo(
             vehicle_param_, vehicle_circle_num_for_calculation_,
             vehicle_circle_radius_ratios_.front());
+      } else if (vehicle_circle_method_ == "fitting_uniform_circle") {
+        vehicle_circle_num_for_calculation_ = declare_parameter<int>(
+          "advanced.mpt.collision_free_constraints.vehicle_circles.fitting_uniform_circle.num");
+
+        std::tie(
+          mpt_param_.vehicle_circle_radiuses, mpt_param_.vehicle_circle_longitudinal_offsets) =
+          calcVehicleCirclesInfo(vehicle_param_, vehicle_circle_num_for_calculation_);
       } else if (vehicle_circle_method_ == "rear_drive") {
         vehicle_circle_num_for_calculation_ = declare_parameter<int>(
           "advanced.mpt.collision_free_constraints.vehicle_circles.rear_drive.num_for_calculation");
@@ -720,6 +746,15 @@ rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::onParam(
           calcVehicleCirclesInfo(
             vehicle_param_, vehicle_circle_num_for_calculation_,
             vehicle_circle_radius_ratios_.front());
+      } else if (vehicle_circle_method_ == "fitting_uniform_circle") {
+        updateParam<int>(
+          parameters,
+          "advanced.mpt.collision_free_constraints.vehicle_circles.fitting_uniform_circle.num",
+          vehicle_circle_num_for_calculation_);
+
+        std::tie(
+          mpt_param_.vehicle_circle_radiuses, mpt_param_.vehicle_circle_longitudinal_offsets) =
+          calcVehicleCirclesInfo(vehicle_param_, vehicle_circle_num_for_calculation_);
       } else if (vehicle_circle_method_ == "rear_drive") {
         updateParam<int>(
           parameters,
