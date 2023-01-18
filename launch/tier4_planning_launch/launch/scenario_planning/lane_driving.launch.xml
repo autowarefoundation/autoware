@@ -26,6 +26,9 @@
       <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving/motion_planning/motion_planning.launch.py">
         <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
         <arg name="use_multithread" value="true"/>
+        <arg name="use_surround_obstacle_check" value="$(var use_surround_obstacle_check)"/>
+        <arg name="cruise_planner_type" value="$(var cruise_planner_type)"/>
+        <arg name="use_experimental_lane_change_function" value="$(var use_experimental_lane_change_function)"/>
       </include>
     </group>
   </group>
