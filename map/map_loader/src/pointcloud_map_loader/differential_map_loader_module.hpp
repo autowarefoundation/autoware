@@ -50,10 +50,10 @@ private:
     GetDifferentialPointCloudMap::Request::SharedPtr req,
     GetDifferentialPointCloudMap::Response::SharedPtr res);
   void differentialAreaLoad(
-    const autoware_map_msgs::msg::AreaInfo area_info, const std::vector<std::string> & cached_ids,
+    const autoware_map_msgs::msg::AreaInfo & area_info, const std::vector<std::string> & cached_ids,
     GetDifferentialPointCloudMap::Response::SharedPtr & response) const;
   autoware_map_msgs::msg::PointCloudMapCellWithID loadPointCloudMapCellWithID(
-    const std::string path, const std::string map_id) const;
+    const std::string & path, const std::string & map_id) const;
 };
 
 #endif  // POINTCLOUD_MAP_LOADER__DIFFERENTIAL_MAP_LOADER_MODULE_HPP_

@@ -26,7 +26,7 @@ DifferentialMapLoaderModule::DifferentialMapLoaderModule(
 }
 
 void DifferentialMapLoaderModule::differentialAreaLoad(
-  const autoware_map_msgs::msg::AreaInfo area, const std::vector<std::string> & cached_ids,
+  const autoware_map_msgs::msg::AreaInfo & area, const std::vector<std::string> & cached_ids,
   GetDifferentialPointCloudMap::Response::SharedPtr & response) const
 {
   // iterate over all the available pcd map grids
@@ -52,7 +52,7 @@ void DifferentialMapLoaderModule::differentialAreaLoad(
     }
   }
 
-  for (int i = 0; i < static_cast<int>(cached_ids.size()); ++i) {
+  for (size_t i = 0; i < cached_ids.size(); ++i) {
     if (should_remove[i]) {
       response->ids_to_remove.push_back(cached_ids[i]);
     }
@@ -72,7 +72,7 @@ bool DifferentialMapLoaderModule::onServiceGetDifferentialPointCloudMap(
 
 autoware_map_msgs::msg::PointCloudMapCellWithID
 DifferentialMapLoaderModule::loadPointCloudMapCellWithID(
-  const std::string path, const std::string map_id) const
+  const std::string & path, const std::string & map_id) const
 {
   sensor_msgs::msg::PointCloud2 pcd;
   if (pcl::io::loadPCDFile(path, pcd) == -1) {

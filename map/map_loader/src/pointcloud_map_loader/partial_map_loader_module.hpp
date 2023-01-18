@@ -50,10 +50,10 @@ private:
     GetPartialPointCloudMap::Request::SharedPtr req,
     GetPartialPointCloudMap::Response::SharedPtr res);
   void partialAreaLoad(
-    const autoware_map_msgs::msg::AreaInfo area,
+    const autoware_map_msgs::msg::AreaInfo & area,
     GetPartialPointCloudMap::Response::SharedPtr & response) const;
   autoware_map_msgs::msg::PointCloudMapCellWithID loadPointCloudMapCellWithID(
-    const std::string path, const std::string map_id) const;
+    const std::string & path, const std::string & map_id) const;
 };
 
 #endif  // POINTCLOUD_MAP_LOADER__PARTIAL_MAP_LOADER_MODULE_HPP_

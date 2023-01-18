@@ -25,7 +25,7 @@ PartialMapLoaderModule::PartialMapLoaderModule(
 }
 
 void PartialMapLoaderModule::partialAreaLoad(
-  const autoware_map_msgs::msg::AreaInfo area,
+  const autoware_map_msgs::msg::AreaInfo & area,
   GetPartialPointCloudMap::Response::SharedPtr & response) const
 {
   // iterate over all the available pcd map grids
@@ -56,7 +56,7 @@ bool PartialMapLoaderModule::onServiceGetPartialPointCloudMap(
 }
 
 autoware_map_msgs::msg::PointCloudMapCellWithID PartialMapLoaderModule::loadPointCloudMapCellWithID(
-  const std::string path, const std::string map_id) const
+  const std::string & path, const std::string & map_id) const
 {
   sensor_msgs::msg::PointCloud2 pcd;
   if (pcl::io::loadPCDFile(path, pcd) == -1) {
