@@ -232,15 +232,13 @@ bool AccelBrakeMapCalibrator::getCurrentPitchFromTF(double * pitch)
   }
 
   // get tf
-  geometry_msgs::msg::TransformStamped::ConstSharedPtr transform;
-  try {
-    transform = transform_listener_->getTransform(
-      "map", "base_link", rclcpp::Time(0), rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
+  const auto transform = transform_listener_->getTransform(
+    "map", "base_link", rclcpp::Time(0), rclcpp::Duration::from_seconds(0.5));
+  if (!transform) {
     auto & clk = *this->get_clock();
     RCLCPP_WARN_STREAM_THROTTLE(
       rclcpp::get_logger("accel_brake_map_calibrator"), clk, 5000,
-      "cannot get map to base_link transform. " << ex.what());
+      "cannot get map to base_link transform. ");
     return false;
   }
   double roll, raw_pitch, yaw;
