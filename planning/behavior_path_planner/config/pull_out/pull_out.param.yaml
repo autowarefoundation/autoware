@@ -28,3 +28,4 @@
       max_back_distance: 15.0
       backward_search_resolution: 2.0
       backward_path_update_duration: 3.0
+      ignore_distance_from_lane_end: 15.0

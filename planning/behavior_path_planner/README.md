@@ -453,6 +453,7 @@ If a safe path cannot be generated from the current position, search backwards f
 | max_back_distance                                                          | [m]            | double | maximum back distance                                                                                                 | 15.0          |
 | backward_search_resolution                                                 | [m]            | double | distance interval for searching backward pull out start point                                                         | 2.0           |
 | backward_path_update_duration                                              | [s]            | double | time interval for searching backward pull out start point. this prevents chattering between back driving and pull_out | 3.0           |
+| ignore_distance_from_lane_end                                              | [m]            | double | distance from end of pull out lanes for ignoring start candidates                                                     | 15.0          |
 
 #### Unimplemented parts / limitations for pull put
 

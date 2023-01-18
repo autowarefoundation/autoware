@@ -657,6 +657,7 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
   p.max_back_distance = dp("max_back_distance", 15.0);
   p.backward_search_resolution = dp("backward_search_resolution", 2.0);
   p.backward_path_update_duration = dp("backward_path_update_duration", 3.0);
+  p.ignore_distance_from_lane_end = dp("ignore_distance_from_lane_end", 15.0);
   // drivable area
   p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
