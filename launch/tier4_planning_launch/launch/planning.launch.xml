@@ -9,6 +9,7 @@
   <arg name="use_pointcloud_container"/>
   <arg name="pointcloud_container_name"/>
   <arg name="use_surround_obstacle_check"/>
+  <arg name="use_experimental_lane_change_function"/>
 
   <!-- common -->
   <arg name="common_param_path"/>
