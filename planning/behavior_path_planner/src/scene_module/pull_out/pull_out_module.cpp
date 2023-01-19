@@ -557,8 +557,10 @@ std::vector<Pose> PullOutModule::searchBackedPoses()
     // check the back pose is near the lane end
     const double length_to_backed_pose =
       lanelet::utils::getArcCoordinates(status_.pull_out_lanes, *backed_pose).length;
-    const double length_to_lane_end =
-      lanelet::utils::getLaneletLength2d(status_.pull_out_lanes.back());
+    double length_to_lane_end = 0.0;
+    for (const auto & lane : status_.pull_out_lanes) {
+      length_to_lane_end += lanelet::utils::getLaneletLength2d(lane);
+    }
     const double distance_from_lane_end = length_to_lane_end - length_to_backed_pose;
     if (distance_from_lane_end < parameters_.ignore_distance_from_lane_end) {
       RCLCPP_WARN_THROTTLE(
