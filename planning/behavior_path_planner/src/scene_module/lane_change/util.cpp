@@ -63,24 +63,26 @@ bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets)
 {
+  const auto current_lane_poly = lanelet::utils::getPolygonFromArcLength(
+    original_lanelets, 0, std::numeric_limits<double>::max());
+  const auto target_lane_poly =
+    lanelet::utils::getPolygonFromArcLength(target_lanelets, 0, std::numeric_limits<double>::max());
+  const auto current_lane_poly_2d = lanelet::utils::to2D(current_lane_poly).basicPolygon();
+  const auto target_lane_poly_2d = lanelet::utils::to2D(target_lane_poly).basicPolygon();
   for (const auto & pt : path.points) {
-    bool is_in_lanelet = false;
-    for (const auto & llt : original_lanelets) {
-      if (lanelet::utils::isInLanelet(pt.point.pose, llt, 0.1)) {
-        is_in_lanelet = true;
-      }
+    const lanelet::BasicPoint2d ll_pt(pt.point.pose.position.x, pt.point.pose.position.y);
+    const auto is_in_current = boost::geometry::covered_by(ll_pt, current_lane_poly_2d);
+    if (is_in_current) {
+      continue;
     }
-    for (const auto & llt : target_lanelets) {
-      if (lanelet::utils::isInLanelet(pt.point.pose, llt, 0.1)) {
-        is_in_lanelet = true;
-      }
-    }
-    if (!is_in_lanelet) {
+    const auto is_in_target = boost::geometry::covered_by(ll_pt, target_lane_poly_2d);
+    if (!is_in_target) {
       return false;
     }
   }
   return true;
 }
+
 double getExpectedVelocityWhenDecelerate(
   const double & velocity, const double & expected_acceleration, const double & duration)
 {
@@ -228,6 +230,7 @@ LaneChangePaths getLaneChangePaths(
 
   const auto arc_position_from_current = lanelet::utils::getArcCoordinates(original_lanelets, pose);
   const auto arc_position_from_target = lanelet::utils::getArcCoordinates(target_lanelets, pose);
+
   const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanelets);
 
   for (double acceleration = 0.0; acceleration >= -maximum_deceleration;
