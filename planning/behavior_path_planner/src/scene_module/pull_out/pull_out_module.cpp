@@ -176,6 +176,9 @@ BehaviorModuleOutput PullOutModule::plan()
   if (!status_.is_safe) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
+    const PathWithLaneId stop_path = generateStopPath();
+    output.path = std::make_shared<PathWithLaneId>(stop_path);
+    path_candidate_ = std::make_shared<PathWithLaneId>(stop_path);
     return output;
   }
 
@@ -430,11 +433,11 @@ void PullOutModule::planWithPriorityOnShortBackDistance(
   }
 }
 
-void PullOutModule::generateStopPath()
+PathWithLaneId PullOutModule::generateStopPath() const
 {
   const auto & current_pose = planner_data_->self_pose->pose;
   constexpr double dummy_path_distance = 1.0;
-  const auto & moved_pose = calcOffsetPose(current_pose, dummy_path_distance, 0, 0);
+  const auto moved_pose = calcOffsetPose(current_pose, dummy_path_distance, 0, 0);
 
   // convert Pose to PathPointWithLaneId with 0 velocity.
   auto toPathPointWithLaneId = [this](const Pose & pose) {
@@ -452,9 +455,15 @@ void PullOutModule::generateStopPath()
   path.points.push_back(toPathPointWithLaneId(current_pose));
   path.points.push_back(toPathPointWithLaneId(moved_pose));
 
-  status_.pull_out_path.partial_paths.push_back(path);
-  status_.pull_out_path.start_pose = current_pose;
-  status_.pull_out_path.end_pose = current_pose;
+  // generate drivable area
+  const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
+  const auto expanded_lanes = util::expandLanelets(
+    shorten_lanes, parameters_.drivable_area_left_bound_offset,
+    parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
+  util::generateDrivableArea(
+    path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
+
+  return path;
 }
 
 void PullOutModule::updatePullOutStatus()
@@ -498,7 +507,9 @@ void PullOutModule::updatePullOutStatus()
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, generate stop path");
     status_.back_finished = true;  // no need to drive backward
-    generateStopPath();
+    status_.pull_out_path.partial_paths.push_back(generateStopPath());
+    status_.pull_out_path.start_pose = current_pose;
+    status_.pull_out_path.end_pose = current_pose;
   }
 
   checkBackFinished();
