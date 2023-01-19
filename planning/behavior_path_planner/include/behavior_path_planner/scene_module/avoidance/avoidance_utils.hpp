@@ -85,17 +85,16 @@ Polygon2d createEnvelopePolygon(
 void getEdgePoints(
   const Polygon2d & object_polygon, const double threshold, std::vector<Point> & edge_points);
 
-void getEdgePoints(
+void getPointData(
   const std::vector<Point> & bound, const std::vector<Point> & edge_points,
-  const double lat_dist_to_path, std::vector<PolygonPoint> & edge_points_data,
-  size_t & start_segment_idx, size_t & end_segment_idx);
+  const double lat_dist_to_path, std::vector<PolygonPoint> & edge_points_data);
 
 void sortPolygonPoints(
   const std::vector<PolygonPoint> & points, std::vector<PolygonPoint> & sorted_points);
 
 std::vector<Point> updateBoundary(
-  const std::vector<Point> & original_bound, const std::vector<PolygonPoint> & points,
-  const size_t start_segment_idx, const size_t end_segment_idx);
+  const std::vector<Point> & original_bound, const std::vector<Point> & edge_points,
+  const std::vector<PolygonPoint> & sorted_points);
 
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
