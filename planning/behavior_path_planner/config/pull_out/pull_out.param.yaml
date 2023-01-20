@@ -25,7 +25,7 @@
       # search start pose backward
       enable_back: true
       search_priority: "efficient_path"  # "efficient_path" or "short_back_distance"
-      max_back_distance: 15.0
+      max_back_distance: 30.0
       backward_search_resolution: 2.0
       backward_path_update_duration: 3.0
       ignore_distance_from_lane_end: 15.0

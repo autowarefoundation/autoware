@@ -654,7 +654,7 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
   p.search_priority =
     dp("search_priority", "efficient_path");  // "efficient_path" or "short_back_distance"
   p.enable_back = dp("enable_back", true);
-  p.max_back_distance = dp("max_back_distance", 15.0);
+  p.max_back_distance = dp("max_back_distance", 30.0);
   p.backward_search_resolution = dp("backward_search_resolution", 2.0);
   p.backward_path_update_duration = dp("backward_path_update_duration", 3.0);
   p.ignore_distance_from_lane_end = dp("ignore_distance_from_lane_end", 15.0);
