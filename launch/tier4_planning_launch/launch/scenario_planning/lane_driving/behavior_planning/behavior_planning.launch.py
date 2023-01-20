@@ -73,6 +73,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/output/path", "path_with_lane_id"),
             ("~/output/turn_indicators_cmd", "/planning/turn_indicators_cmd"),
             ("~/output/hazard_lights_cmd", "/planning/hazard_lights_cmd"),
+            ("~/output/modified_goal", "/planning/scenario_planning/modified_goal"),
         ],
         parameters=[
             nearest_search_param,

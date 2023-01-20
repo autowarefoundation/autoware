@@ -29,6 +29,7 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
+#include <autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -48,6 +49,7 @@ using autoware_adapi_v1_msgs::msg::SteeringFactor;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using autoware_planning_msgs::msg::PoseWithUuidStamped;
 using rtc_interface::RTCInterface;
 using steering_factor_interface::SteeringFactorInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
@@ -63,6 +65,8 @@ struct BehaviorModuleOutput
   PlanResult path{};
 
   TurnSignalInfo turn_signal_info{};
+
+  std::optional<PoseWithUuidStamped> modified_goal{};
 };
 
 struct CandidateOutput

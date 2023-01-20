@@ -18,6 +18,7 @@
 #include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -29,15 +30,15 @@ class ArrivalChecker
 public:
   explicit ArrivalChecker(rclcpp::Node * node);
   void reset_goal();
-  void reset_goal(const geometry_msgs::msg::PoseStamped & goal);
+  void reset_goal(const autoware_planning_msgs::msg::PoseWithUuidStamped & goal);
   bool is_arrived(const geometry_msgs::msg::PoseStamped & pose) const;
 
 private:
   double distance_;
   double angle_;
   double duration_;
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr goal_pose_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr sub_goal_;
+  autoware_planning_msgs::msg::PoseWithUuidStamped::ConstSharedPtr goal_pose_;
+  rclcpp::Subscription<autoware_planning_msgs::msg::PoseWithUuidStamped>::SharedPtr sub_goal_;
   motion_utils::VehicleStopChecker vehicle_stop_checker_;
 };
 

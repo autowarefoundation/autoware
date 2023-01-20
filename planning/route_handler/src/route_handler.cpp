@@ -336,6 +336,8 @@ lanelet::ConstPolygon3d RouteHandler::getIntersectionAreaById(const lanelet::Id 
 
 Header RouteHandler::getRouteHeader() const { return route_msg_.header; }
 
+UUID RouteHandler::getRouteUuid() const { return route_msg_.uuid; }
+
 std::vector<lanelet::ConstLanelet> RouteHandler::getLanesBeforePose(
   const geometry_msgs::msg::Pose & pose, const double length) const
 {

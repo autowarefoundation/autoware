@@ -38,6 +38,7 @@ namespace mission_planner
 {
 
 using PoseStamped = geometry_msgs::msg::PoseStamped;
+using PoseWithUuidStamped = autoware_planning_msgs::msg::PoseWithUuidStamped;
 using LaneletRoute = autoware_planning_msgs::msg::LaneletRoute;
 using MarkerArray = visualization_msgs::msg::MarkerArray;
 using SetRoutePoints = planning_interface::SetRoutePoints;

@@ -52,8 +52,6 @@ PullOverModule::PullOverModule(
 {
   rtc_interface_ptr_ = std::make_shared<RTCInterface>(&node, "pull_over");
   steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "pull_over");
-  goal_pose_pub_ =
-    node.create_publisher<PoseStamped>("/planning/scenario_planning/modified_goal", 1);
 
   LaneDepartureChecker lane_departure_checker{};
   lane_departure_checker.setVehicleInfo(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
@@ -466,7 +464,7 @@ BehaviorModuleOutput PullOverModule::plan()
 
       status_.is_safe = true;
       status_.pull_over_path = pull_over_path;
-      modified_goal_pose_ = pull_over_path.getFullPath().points.back().point.pose;
+      modified_goal_pose_ = *goal_candidate_it;
       break;
     }
 
@@ -534,12 +532,16 @@ BehaviorModuleOutput PullOverModule::plan()
 
   setDebugData();
 
-  // Publish the modified goal only when its path is safe.
-  if (status_.is_safe) {
-    PoseStamped goal_pose_stamped;
-    goal_pose_stamped.header = planner_data_->route_handler->getRouteHeader();
-    goal_pose_stamped.pose = modified_goal_pose_;
-    goal_pose_pub_->publish(goal_pose_stamped);
+  // Publish the modified goal only when it is updated
+  if (
+    status_.is_safe && modified_goal_pose_ &&
+    (!prev_goal_id_ || *prev_goal_id_ != modified_goal_pose_->id)) {
+    PoseWithUuidStamped modified_goal{};
+    modified_goal.uuid = planner_data_->route_handler->getRouteUuid();
+    modified_goal.pose = modified_goal_pose_->goal_pose;
+    modified_goal.header = planner_data_->route_handler->getRouteHeader();
+    output.modified_goal = modified_goal;
+    prev_goal_id_ = modified_goal_pose_->id;
   }
 
   const uint16_t steering_factor_direction = std::invoke([this]() {
@@ -554,7 +556,7 @@ BehaviorModuleOutput PullOverModule::plan()
 
   // TODO(tkhmy) add handle status TRYING
   steering_factor_interface_ptr_->updateSteeringFactor(
-    {status_.pull_over_path.start_pose, modified_goal_pose_},
+    {status_.pull_over_path.start_pose, modified_goal_pose_->goal_pose},
     {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::PULL_OVER,
     steering_factor_direction, SteeringFactor::TURNING, "");
 
@@ -575,7 +577,7 @@ BehaviorModuleOutput PullOverModule::planWaitingApproval()
 {
   updateOccupancyGrid();
   BehaviorModuleOutput out;
-  plan();  // update status_
+  out.modified_goal = plan().modified_goal;  // update status_
   out.path = std::make_shared<PathWithLaneId>(generateStopPath());
   path_candidate_ = status_.is_safe
                       ? std::make_shared<PathWithLaneId>(status_.pull_over_path.getFullPath())
@@ -594,7 +596,7 @@ BehaviorModuleOutput PullOverModule::planWaitingApproval()
   });
 
   steering_factor_interface_ptr_->updateSteeringFactor(
-    {status_.pull_over_path.start_pose, modified_goal_pose_},
+    {status_.pull_over_path.start_pose, modified_goal_pose_->goal_pose},
     {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::PULL_OVER,
     steering_factor_direction, SteeringFactor::APPROACHING, "");
   waitApproval();
@@ -609,7 +611,8 @@ std::pair<double, double> PullOverModule::calcDistanceToPathChange() const
     full_path.points, planner_data_->self_pose->pose, status_.pull_over_path.start_pose.position,
     std::numeric_limits<double>::max(), M_PI_2);
   const double dist_to_parking_finish_pose = calcSignedArcLength(
-    full_path.points, planner_data_->self_pose->pose.position, modified_goal_pose_.position);
+    full_path.points, planner_data_->self_pose->pose.position,
+    modified_goal_pose_->goal_pose.position);
   const double start_distance_to_path_change =
     dist_to_parking_start_pose ? *dist_to_parking_start_pose : std::numeric_limits<double>::max();
   return {start_distance_to_path_change, dist_to_parking_finish_pose};
@@ -798,7 +801,7 @@ bool PullOverModule::hasFinishedPullOver()
   // check ego car is close enough to goal pose
   const auto current_pose = planner_data_->self_pose->pose;
   const bool car_is_on_goal =
-    calcDistance2d(current_pose, modified_goal_pose_) < parameters_.th_arrived_distance;
+    calcDistance2d(current_pose, modified_goal_pose_->goal_pose) < parameters_.th_arrived_distance;
 
   return car_is_on_goal && isStopped();
 }
@@ -937,7 +940,7 @@ void PullOverModule::printParkingPositionError() const
   const auto current_pose = planner_data_->self_pose->pose;
   const double real_shoulder_to_map_shoulder = 0.0;
 
-  const Pose goal_to_ego = inverseTransformPose(current_pose, modified_goal_pose_);
+  const Pose goal_to_ego = inverseTransformPose(current_pose, modified_goal_pose_->goal_pose);
   const double dx = goal_to_ego.position.x;
   const double dy = goal_to_ego.position.y;
   const double distance_from_real_shoulder =
@@ -945,7 +948,8 @@ void PullOverModule::printParkingPositionError() const
   RCLCPP_INFO(
     getLogger(), "current pose to goal, dx:%f dy:%f dyaw:%f from_real_shoulder:%f", dx, dy,
     tier4_autoware_utils::rad2deg(
-      tf2::getYaw(current_pose.orientation) - tf2::getYaw(modified_goal_pose_.orientation)),
+      tf2::getYaw(current_pose.orientation) -
+      tf2::getYaw(modified_goal_pose_->goal_pose.orientation)),
     distance_from_real_shoulder);
 }
 }  // namespace behavior_path_planner

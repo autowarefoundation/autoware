@@ -64,6 +64,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   turn_signal_publisher_ =
     create_publisher<TurnIndicatorsCommand>("~/output/turn_indicators_cmd", 1);
   hazard_signal_publisher_ = create_publisher<HazardLightsCommand>("~/output/hazard_lights_cmd", 1);
+  modified_goal_publisher_ = create_publisher<PoseWithUuidStamped>("~/output/modified_goal", 1);
   debug_avoidance_msg_array_publisher_ =
     create_publisher<AvoidanceDebugMsgArray>("~/debug/avoidance_debug_message_array", 1);
   debug_lane_change_msg_array_publisher_ =
@@ -801,6 +802,12 @@ void BehaviorPathPlannerNode::run()
   publishPathCandidate(bt_manager_->getSceneModules());
 
   publishSceneModuleDebugMsg();
+
+  if (output.modified_goal) {
+    PoseWithUuidStamped modified_goal = *(output.modified_goal);
+    modified_goal.header.stamp = path->header.stamp;
+    modified_goal_publisher_->publish(modified_goal);
+  }
 
   if (planner_data->parameters.visualize_maximum_drivable_area) {
     const auto maximum_drivable_area =

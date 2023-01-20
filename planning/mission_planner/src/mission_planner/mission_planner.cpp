@@ -121,9 +121,11 @@ void MissionPlanner::change_route(const LaneletRoute & route)
 {
   // TODO(Takagi, Isamu): replace when modified goal is always published
   // arrival_checker_.reset_goal();
-  PoseStamped goal;
+  PoseWithUuidStamped goal;
   goal.header = route.header;
   goal.pose = route.goal_pose;
+  goal.uuid = route.uuid;
+
   arrival_checker_.reset_goal(goal);
 
   pub_route_->publish(route);
@@ -161,7 +163,7 @@ void MissionPlanner::on_set_route(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
 
-  // Use temporary pose stapmed for transform.
+  // Use temporary pose stamped for transform.
   PoseStamped pose;
   pose.header = req->header;
   pose.pose = req->goal;
@@ -202,7 +204,7 @@ void MissionPlanner::on_set_route_points(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
 
-  // Use temporary pose stapmed for transform.
+  // Use temporary pose stamped for transform.
   PoseStamped pose;
   pose.header = req->header;
 
