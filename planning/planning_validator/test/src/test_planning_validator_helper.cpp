@@ -75,7 +75,7 @@ rclcpp::NodeOptions getNodeOptionsWithDefaultParams()
 {
   rclcpp::NodeOptions node_options;
 
-  // for planing validator
+  // for planning validator
   node_options.append_parameter_override("publish_diag", true);
   node_options.append_parameter_override("invalid_trajectory_handling_type", 0);
   node_options.append_parameter_override("diag_error_count_threshold", 0);
