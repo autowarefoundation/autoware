@@ -25,7 +25,7 @@
     <!-- motion velocity smoother -->
     <group>
       <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
-      <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory"/>
+      <set_remap from="~/output/trajectory" to="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
       <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
         <arg name="smoother_type" value="$(var smoother_type)"/>
         <arg name="common_param_path" value="$(var common_param_path)"/>

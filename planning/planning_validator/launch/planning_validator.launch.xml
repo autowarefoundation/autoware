@@ -1,0 +1,16 @@
+<launch>
+  <arg name="planning_validator_param_path" default="$(find-pkg-share planning_validator)/config/planning_validator.param.yaml"/>
+  <arg name="input_trajectory" default="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
+  <arg name="output_trajectory" default="/planning/scenario_planning/trajectory"/>
+
+  <node name="planning_validator" exec="planning_validator_node" pkg="planning_validator" output="screen">
+    <!-- load config a file -->
+    <param from="$(var planning_validator_param_path)"/>
+
+    <!-- remap topic name -->
+    <remap from="~/input/trajectory" to="$(var input_trajectory)"/>
+    <remap from="~/input/kinematics" to="/localization/kinematic_state"/>
+    <remap from="~/output/trajectory" to="$(var output_trajectory)"/>
+    <remap from="~/output/validation_status" to="~/validation_status"/>
+  </node>
+</launch>

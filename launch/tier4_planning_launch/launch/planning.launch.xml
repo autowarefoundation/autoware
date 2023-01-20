@@ -50,6 +50,8 @@
   <!-- motion velocity smoother -->
   <arg name="motion_velocity_smoother_param_path"/>
   <arg name="smoother_type_param_path"/>
+  <!-- planning validator -->
+  <arg name="planning_validator_param_path"/>
 
   <group>
     <push-ros-namespace namespace="planning"/>
@@ -72,10 +74,13 @@
       </include>
     </group>
 
-    <!-- planning error monitor -->
+    <!-- planning validator -->
     <group>
-      <push-ros-namespace namespace="planning_diagnostics"/>
-      <include file="$(find-pkg-share tier4_planning_launch)/launch/planning_diagnostics/planning_error_monitor.launch.xml"/>
+      <include file="$(find-pkg-share planning_validator)/launch/planning_validator.launch.xml">
+        <arg name="input_trajectory" value="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
+        <arg name="output_trajectory" value="/planning/scenario_planning/trajectory"/>
+        <arg name="planning_validator_param_path" value="$(var planning_validator_param_path)"/>
+      </include>
     </group>
   </group>
 </launch>

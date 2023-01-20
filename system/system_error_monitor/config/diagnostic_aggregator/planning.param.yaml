@@ -24,24 +24,66 @@
               analyzers:
                 trajectory_finite_value:
                   type: diagnostic_aggregator/GenericAnalyzer
-                  path: trajectory_point_validation
-                  contains: [": trajectory_point_validation"]
+                  path: trajectory_validation_finite
+                  contains: [": trajectory_validation_finite"]
                   timeout: 1.0
 
                 trajectory_interval:
                   type: diagnostic_aggregator/GenericAnalyzer
-                  path: trajectory_interval_validation
-                  contains: [": trajectory_interval_validation"]
+                  path: trajectory_validation_interval
+                  contains: [": trajectory_validation_interval"]
                   timeout: 1.0
 
                 trajectory_curvature:
                   type: diagnostic_aggregator/GenericAnalyzer
-                  path: trajectory_curvature_validation
-                  contains: [": trajectory_curvature_validation"]
+                  path: trajectory_validation_curvature
+                  contains: [": trajectory_validation_curvature"]
                   timeout: 1.0
 
                 trajectory_sharp_angle:
                   type: diagnostic_aggregator/GenericAnalyzer
-                  path: trajectory_relative_angle_validation
-                  contains: [": trajectory_relative_angle_validation"]
+                  path: trajectory_validation_relative_angle
+                  contains: [": trajectory_validation_relative_angle"]
+                  timeout: 1.0
+
+                trajectory_relative_angle:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_relative_angle
+                  contains: [": trajectory_validation_relative_angle"]
+                  timeout: 1.0
+
+                trajectory_lateral_acceleration:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_lateral_acceleration
+                  contains: [": trajectory_validation_lateral_acceleration"]
+                  timeout: 1.0
+
+                trajectory_acceleration:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_acceleration
+                  contains: [": trajectory_validation_acceleration"]
+                  timeout: 1.0
+
+                trajectory_deceleration:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_deceleration
+                  contains: [": trajectory_validation_deceleration"]
+                  timeout: 1.0
+
+                trajectory_steering:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_steering
+                  contains: [": trajectory_validation_steering"]
+                  timeout: 1.0
+
+                trajectory_steering_rate:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_steering_rate
+                  contains: [": trajectory_validation_steering_rate"]
+                  timeout: 1.0
+
+                trajectory_velocity_deviation:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_validation_velocity_deviation
+                  contains: [": trajectory_validation_velocity_deviation"]
                   timeout: 1.0

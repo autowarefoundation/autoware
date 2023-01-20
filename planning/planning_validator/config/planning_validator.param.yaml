@@ -1,0 +1,28 @@
+/**:
+  ros__parameters:
+    # Operation option when invalid trajectory is detected
+    #  0: publish the trajectory even if it is invalid
+    #  1: stop publishing the trajectory
+    #  2: publish the last validated trajectory
+    invalid_trajectory_handling_type: 0
+
+    publish_diag: true  # if true, diagnostic msg is published
+
+    # If the number of consecutive invalid trajectory exceeds this threshold, the Diag will be set to ERROR.
+    # (For example, threshold = 1 means, even if the trajectory is invalid, Diag will not be ERROR if
+    #  the next trajectory is valid.)
+    diag_error_count_threshold: 0
+
+    display_on_terminal: true # show error msg on terminal
+
+    thresholds:
+      interval: 100.0
+      relative_angle: 2.0  # (= 115 degree)
+      curvature: 1.0
+      lateral_acc: 9.8
+      longitudinal_max_acc: 9.8
+      longitudinal_min_acc: -9.8
+      steering: 1.414
+      steering_rate: 10.0
+      velocity_deviation: 100.0
+      distance_deviation: 100.0
