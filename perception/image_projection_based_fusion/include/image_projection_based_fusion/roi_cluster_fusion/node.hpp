@@ -30,6 +30,7 @@ public:
 
 protected:
   void preprocess(DetectedObjectsWithFeature & output_cluster_msg) override;
+  void postprocess(DetectedObjectsWithFeature & output_cluster_msg) override;
 
   void fuseOnSingleImage(
     const DetectedObjectsWithFeature & input_cluster_msg, const std::size_t image_id,
@@ -42,8 +43,10 @@ protected:
   bool use_iou_{false};
   bool use_cluster_semantic_type_{false};
   float iou_threshold_{0.0f};
+  bool remove_unknown_;
 
   bool out_of_scope(const DetectedObjectWithFeature & obj);
+  // bool CheckUnknown(const DetectedObjectsWithFeature & obj);
 };
 
 }  // namespace image_projection_based_fusion

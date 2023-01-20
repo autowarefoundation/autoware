@@ -39,6 +39,7 @@ RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
   use_iou_ = declare_parameter("use_iou", false);
   use_cluster_semantic_type_ = declare_parameter("use_cluster_semantic_type", false);
   iou_threshold_ = declare_parameter("iou_threshold", 0.1);
+  remove_unknown_ = declare_parameter("remove_unknown", false);
 }
 
 void RoiClusterFusionNode::preprocess(DetectedObjectsWithFeature & output_cluster_msg)
@@ -51,6 +52,23 @@ void RoiClusterFusionNode::preprocess(DetectedObjectsWithFeature & output_cluste
       feature_object.object.existence_probability = 0.0;
     }
   }
+}
+
+void RoiClusterFusionNode::postprocess(DetectedObjectsWithFeature & output_cluster_msg)
+{
+  if (!remove_unknown_) {
+    return;
+  }
+  DetectedObjectsWithFeature known_objects;
+  known_objects.feature_objects.reserve(output_cluster_msg.feature_objects.size());
+  for (auto & feature_object : output_cluster_msg.feature_objects) {
+    if (
+      feature_object.object.classification.front().label !=
+      autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) {
+      known_objects.feature_objects.push_back(feature_object);
+    }
+  }
+  output_cluster_msg.feature_objects = known_objects.feature_objects;
 }
 
 void RoiClusterFusionNode::fuseOnSingleImage(
