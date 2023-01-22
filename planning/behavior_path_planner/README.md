@@ -135,6 +135,7 @@ Dynamic objects that satisfy the following conditions are considered to be avoid
 - low speed (default: < `1.0 m/s`)
 - Not being around center line (default: deviation from center > `0.5 m`)
 - Any footprint of the object in on the detection area (driving lane + `1 m` margin for lateral direction).
+- Object is not behind ego(default: > -`2.0 m`) or too far(default: < `150.0 m`) and object is not behind the path goal.
 
 <!-- The target objects are `CAR`, `TRUCK`, or `BUS` type with low speed (default: < `1.0 m/s`). If the object is around the center of lane, it is not considered as a target (default: deviation from center > `0.5 m`). -->
 

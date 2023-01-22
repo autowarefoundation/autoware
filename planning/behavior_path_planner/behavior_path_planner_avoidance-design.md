@@ -181,6 +181,7 @@ The avoidance target should be limited to stationary objects (you should not avo
   - User can limit avoidance targets (e.g. do not avoid unknown-class targets).
 - It is not being in the center of the route
   - This means that the vehicle is parked on the edge of the lane. This prevents the vehicle from avoiding a vehicle waiting at a traffic light in the middle of the lane. However, this is not an appropriate implementation for the purpose. Even if a vehicle is in the center of the lane, it should be avoided if it has its hazard lights on, and this is a point that should be improved in the future as the recognition performance improves.
+- Object is not behind ego(default: > -`2.0 m`) or too far(default: < `150.0 m`) and object is not behind the path goal.
 
 ![fig1](./image/avoidance_design/target_vehicle_selection.drawio.svg)
 
@@ -193,11 +194,20 @@ In order to prevent chattering of recognition results, once an obstacle is targe
 The lateral shift length is affected by 4 variables, namely `lateral_collision_safety_buffer`, `lateral_collision_margin`, `vehicle_width` and `overhang_distance`. The equation is as follows
 
 ```C++
-max_allowable_lateral_distance = lateral_collision_margin + lateral_collision_safety_buffer + 0.5 * vehicle_width
-shift_length = max_allowable_lateral_distance - overhang_distance
+avoid_margin = lateral_collision_margin + lateral_collision_safety_buffer + 0.5 * vehicle_width
+max_allowable_lateral_distance = to_road_shoulder_distance - road_shoulder_safety_margin - 0.5 * vehicle_width
+if(isOnRight(o))
+{
+  shift_length = avoid_margin + overhang_distance
+}
+else
+{
+  shift_length = avoid_margin - overhang_distance
+}
 ```
 
-The following figure illustrates these variables.
+The following figure illustrates these variables(This figure just shows the max value of lateral shift length).
+
 ![shift_point_and_its_constraints](./image/avoidance_design/avoidance_module-shift_point_and_its_constraints.drawio.png)
 
 ##### Rationale of having safety buffer and safety margin
@@ -222,11 +232,28 @@ These elements are used to compute the distance from the object to the road's sh
 
 ![obstacle_to_road_shoulder_distance](./image/avoidance_design/obstacle_to_road_shoulder_distance.drawio.svg)
 
-If the following condition is `false`, then the shift point will not be generated.
+If one of the following conditions is `false`, then the shift point will not be generated.
+
+- The distance to shoulder of road is enough
 
 ```C++
-max_allowable_lateral_distance <= (to_road_shoulder_distance - 0.5 * vehicle_width - road_shoulder_safety_margin)
+avoid_margin = lateral_collision_margin + lateral_collision_safety_buffer + 0.5 * vehicle_width
+avoid_margin <= (to_road_shoulder_distance - 0.5 * vehicle_width - road_shoulder_safety_margin)
 ```
+
+- The obstacle intrudes into the current driving path.
+
+  - when the object is on right of the path
+
+    ```C++
+    -overhang_dist<(lateral_collision_margin + lateral_collision_safety_buffer + 0.5 * vehicle_width)
+    ```
+
+  - when the object is on left of the path
+
+    ```C++
+    overhang_dist<(lateral_collision_margin + lateral_collision_safety_buffer + 0.5 * vehicle_width)
+    ```
 
 ##### Flow-chart of the process
 
@@ -322,6 +349,8 @@ if(isOnRight(object)?) then (yes)
 else (\n No)
 :shift_length = std::max(object.overhang_dist - avoid_margin);
 endif
+if(isSameDirectionShift(isOnRight(object),shift_length)?) then (no)
+stop
 endif
 }
 stop
