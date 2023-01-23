@@ -19,6 +19,10 @@
 
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 
+namespace vehicle_cmd_gate
+{
+using autoware_auto_control_msgs::msg::AckermannControlCommand;
+
 struct VehicleCmdFilterParam
 {
   double wheel_base;
@@ -43,35 +47,26 @@ public:
   void setLatJerkLim(double v) { param_.lat_jerk_lim = v; }
   void setActualSteerDiffLim(double v) { param_.actual_steer_diff_lim = v; }
   void setParam(const VehicleCmdFilterParam & p) { param_ = p; }
-  void setPrevCmd(const autoware_auto_control_msgs::msg::AckermannControlCommand & v)
-  {
-    prev_cmd_ = v;
-  }
+  void setPrevCmd(const AckermannControlCommand & v) { prev_cmd_ = v; }
 
-  void limitLongitudinalWithVel(
-    autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
-  void limitLongitudinalWithAcc(
-    const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
-  void limitLongitudinalWithJerk(
-    const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
-  void limitLateralWithLatAcc(
-    const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
-  void limitLateralWithLatJerk(
-    const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
+  void limitLongitudinalWithVel(AckermannControlCommand & input) const;
+  void limitLongitudinalWithAcc(const double dt, AckermannControlCommand & input) const;
+  void limitLongitudinalWithJerk(const double dt, AckermannControlCommand & input) const;
+  void limitLateralWithLatAcc(const double dt, AckermannControlCommand & input) const;
+  void limitLateralWithLatJerk(const double dt, AckermannControlCommand & input) const;
   void limitActualSteerDiff(
-    const double current_steer_angle,
-    autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
+    const double current_steer_angle, AckermannControlCommand & input) const;
   void filterAll(
-    const double dt, const double current_steer_angle,
-    autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
+    const double dt, const double current_steer_angle, AckermannControlCommand & input) const;
 
 private:
   VehicleCmdFilterParam param_;
-  autoware_auto_control_msgs::msg::AckermannControlCommand prev_cmd_;
+  AckermannControlCommand prev_cmd_;
 
-  double calcLatAcc(const autoware_auto_control_msgs::msg::AckermannControlCommand & cmd) const;
+  double calcLatAcc(const AckermannControlCommand & cmd) const;
   double calcSteerFromLatacc(const double v, const double latacc) const;
   double limitDiff(const double curr, const double prev, const double diff_lim) const;
 };
+}  // namespace vehicle_cmd_gate
 
 #endif  // VEHICLE_CMD_FILTER_HPP_

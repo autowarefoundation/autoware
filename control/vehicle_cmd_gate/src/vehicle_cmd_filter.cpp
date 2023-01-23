@@ -17,17 +17,19 @@
 #include <algorithm>
 #include <cmath>
 
+namespace vehicle_cmd_gate
+{
+
 VehicleCmdFilter::VehicleCmdFilter() {}
 
-void VehicleCmdFilter::limitLongitudinalWithVel(
-  autoware_auto_control_msgs::msg::AckermannControlCommand & input) const
+void VehicleCmdFilter::limitLongitudinalWithVel(AckermannControlCommand & input) const
 {
   input.longitudinal.speed = std::max(
     std::min(static_cast<double>(input.longitudinal.speed), param_.vel_lim), -param_.vel_lim);
 }
 
 void VehicleCmdFilter::limitLongitudinalWithAcc(
-  const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const
+  const double dt, AckermannControlCommand & input) const
 {
   input.longitudinal.acceleration = std::max(
     std::min(static_cast<double>(input.longitudinal.acceleration), param_.lon_acc_lim),
@@ -37,15 +39,14 @@ void VehicleCmdFilter::limitLongitudinalWithAcc(
 }
 
 void VehicleCmdFilter::VehicleCmdFilter::limitLongitudinalWithJerk(
-  const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const
+  const double dt, AckermannControlCommand & input) const
 {
   input.longitudinal.acceleration = limitDiff(
     input.longitudinal.acceleration, prev_cmd_.longitudinal.acceleration, param_.lon_jerk_lim * dt);
 }
 
 void VehicleCmdFilter::limitLateralWithLatAcc(
-  [[maybe_unused]] const double dt,
-  autoware_auto_control_msgs::msg::AckermannControlCommand & input) const
+  [[maybe_unused]] const double dt, AckermannControlCommand & input) const
 {
   double latacc = calcLatAcc(input);
   if (std::fabs(latacc) > param_.lat_acc_lim) {
@@ -57,7 +58,7 @@ void VehicleCmdFilter::limitLateralWithLatAcc(
 }
 
 void VehicleCmdFilter::limitLateralWithLatJerk(
-  const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const
+  const double dt, AckermannControlCommand & input) const
 {
   double curr_latacc = calcLatAcc(input);
   double prev_latacc = calcLatAcc(prev_cmd_);
@@ -73,8 +74,7 @@ void VehicleCmdFilter::limitLateralWithLatJerk(
 }
 
 void VehicleCmdFilter::limitActualSteerDiff(
-  const double current_steer_angle,
-  autoware_auto_control_msgs::msg::AckermannControlCommand & input) const
+  const double current_steer_angle, AckermannControlCommand & input) const
 {
   auto ds = input.lateral.steering_tire_angle - current_steer_angle;
   ds = std::clamp(ds, -param_.actual_steer_diff_lim, param_.actual_steer_diff_lim);
@@ -82,8 +82,7 @@ void VehicleCmdFilter::limitActualSteerDiff(
 }
 
 void VehicleCmdFilter::filterAll(
-  const double dt, const double current_steer_angle,
-  autoware_auto_control_msgs::msg::AckermannControlCommand & cmd) const
+  const double dt, const double current_steer_angle, AckermannControlCommand & cmd) const
 {
   limitLongitudinalWithJerk(dt, cmd);
   limitLongitudinalWithAcc(dt, cmd);
@@ -100,8 +99,7 @@ double VehicleCmdFilter::calcSteerFromLatacc(const double v, const double latacc
   return std::atan(latacc * param_.wheel_base / v_sq);
 }
 
-double VehicleCmdFilter::calcLatAcc(
-  const autoware_auto_control_msgs::msg::AckermannControlCommand & cmd) const
+double VehicleCmdFilter::calcLatAcc(const AckermannControlCommand & cmd) const
 {
   double v = cmd.longitudinal.speed;
   return v * v * std::tan(cmd.lateral.steering_tire_angle) / param_.wheel_base;
@@ -113,3 +111,5 @@ double VehicleCmdFilter::limitDiff(
   double diff = std::max(std::min(curr - prev, diff_lim), -diff_lim);
   return prev + diff;
 }
+
+}  // namespace vehicle_cmd_gate

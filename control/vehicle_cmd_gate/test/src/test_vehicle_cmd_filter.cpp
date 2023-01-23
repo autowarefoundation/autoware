@@ -29,7 +29,8 @@ using autoware_auto_control_msgs::msg::AckermannControlCommand;
 constexpr double NOMINAL_INTERVAL = 1.0;
 
 void setFilterParams(
-  VehicleCmdFilter & f, double v, double a, double j, double lat_a, double lat_j, double wheelbase)
+  vehicle_cmd_gate::VehicleCmdFilter & f, double v, double a, double j, double lat_a, double lat_j,
+  double wheelbase)
 {
   f.setVelLim(v);
   f.setLonAccLim(a);
@@ -62,7 +63,7 @@ void test_all(
   const double WHEELBASE = 3.0;
   const double DT = 0.1;  // [s]
 
-  VehicleCmdFilter filter;
+  vehicle_cmd_gate::VehicleCmdFilter filter;
   setFilterParams(filter, V_LIM, A_LIM, J_LIM, LAT_A_LIM, LAT_J_LIM, WHEELBASE);
   filter.setPrevCmd(prev_cmd);
 
