@@ -38,8 +38,8 @@ private:
   using ChangeAutowareControlAPI = system_interface::ChangeAutowareControl;
   using ChangeOperationModeAPI = system_interface::ChangeOperationMode;
   using OperationModeStateAPI = system_interface::OperationModeState;
-  component_interface_utils::Service<ChangeAutowareControlAPI>::SharedPtr srv_autoware_control;
-  component_interface_utils::Service<ChangeOperationModeAPI>::SharedPtr srv_operation_mode;
+  component_interface_utils::Service<ChangeAutowareControlAPI>::SharedPtr srv_autoware_control_;
+  component_interface_utils::Service<ChangeOperationModeAPI>::SharedPtr srv_operation_mode_;
   component_interface_utils::Publisher<OperationModeStateAPI>::SharedPtr pub_operation_mode_;
   void onChangeAutowareControl(
     const ChangeAutowareControlAPI::Service::Request::SharedPtr request,
