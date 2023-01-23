@@ -18,6 +18,7 @@
       enable_pre_smoothing: true # enable EB
       skip_optimization: false # skip MPT and EB
       reset_prev_optimization: false
+      is_considering_footprint_edges: false # consider ego footprint edges to decide whether footprint is outside drivable area
 
     common:
       # sampling

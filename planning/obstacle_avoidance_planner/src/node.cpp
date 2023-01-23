@@ -305,6 +305,8 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     enable_pre_smoothing_ = declare_parameter<bool>("option.enable_pre_smoothing");
     skip_optimization_ = declare_parameter<bool>("option.skip_optimization");
     reset_prev_optimization_ = declare_parameter<bool>("option.reset_prev_optimization");
+    is_considering_footprint_edges_ =
+      declare_parameter<bool>("option.is_considering_footprint_edges");
   }
 
   {  // trajectory parameter
@@ -600,6 +602,8 @@ rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::onParam(
     updateParam<bool>(parameters, "option.enable_pre_smoothing", enable_pre_smoothing_);
     updateParam<bool>(parameters, "option.skip_optimization", skip_optimization_);
     updateParam<bool>(parameters, "option.reset_prev_optimization", reset_prev_optimization_);
+    updateParam<bool>(
+      parameters, "option.is_considering_footprint_edges", is_considering_footprint_edges_);
   }
 
   {  // trajectory parameter
@@ -1293,7 +1297,7 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
 
     // calculate the first point being outside drivable area
     const bool is_outside = drivable_area_utils::isOutsideDrivableAreaFromRectangleFootprint(
-      traj_point, left_bound, right_bound, vehicle_param_);
+      traj_point, left_bound, right_bound, vehicle_param_, is_considering_footprint_edges_);
 
     // only insert zero velocity to the first point outside drivable area
     if (is_outside) {
