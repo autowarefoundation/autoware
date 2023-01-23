@@ -41,11 +41,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
+namespace autoware::motion::control
 {
 using trajectory_follower::LateralOutput;
 using trajectory_follower::LongitudinalOutput;
@@ -111,8 +107,6 @@ private:
     const trajectory_follower::LateralOutput & lat_out) const;
 };
 }  // namespace trajectory_follower_node
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control
 
 #endif  // TRAJECTORY_FOLLOWER_NODE__CONTROLLER_NODE_HPP_

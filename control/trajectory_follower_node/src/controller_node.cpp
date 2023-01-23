@@ -25,13 +25,7 @@
 #include <utility>
 #include <vector>
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace trajectory_follower_node
+namespace autoware::motion::control::trajectory_follower_node
 {
 Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("controller", node_options)
 {
@@ -248,10 +242,7 @@ void Controller::publishDebugMarker(
   debug_marker_pub_->publish(debug_marker_array);
 }
 
-}  // namespace trajectory_follower_node
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::trajectory_follower_node
 
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(autoware::motion::control::trajectory_follower_node::Controller)

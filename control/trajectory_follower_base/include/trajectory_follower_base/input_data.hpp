@@ -20,13 +20,7 @@
 #include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 
-namespace autoware
-{
-namespace motion
-{
-namespace control
-{
-namespace trajectory_follower
+namespace autoware::motion::control::trajectory_follower
 {
 struct InputData
 {
@@ -35,9 +29,6 @@ struct InputData
   autoware_auto_vehicle_msgs::msg::SteeringReport current_steering;
   geometry_msgs::msg::AccelWithCovarianceStamped current_accel;
 };
-}  // namespace trajectory_follower
-}  // namespace control
-}  // namespace motion
-}  // namespace autoware
+}  // namespace autoware::motion::control::trajectory_follower
 
 #endif  // TRAJECTORY_FOLLOWER_BASE__INPUT_DATA_HPP_
