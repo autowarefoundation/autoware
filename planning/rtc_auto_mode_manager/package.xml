@@ -6,6 +6,7 @@
   <description>The rtc_auto_mode_manager package</description>
 
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
 
   <license>Apache License 2.0</license>
 
