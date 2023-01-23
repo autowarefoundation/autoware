@@ -31,11 +31,11 @@
 
 ### Common Parameter
 
-| Parameter           | Type   | Description                                                                            |
-| ------------------- | ------ | -------------------------------------------------------------------------------------- |
-| `enable_slow_down`  | bool   | enable slow down planner [-]                                                           |
-| `max_velocity`      | double | max velocity [m/s]                                                                     |
-| `hunting_threshold` | double | even if the obstacle disappears, the stop judgment continues for hunting_threshold [s] |
+| Parameter              | Type   | Description                                                                               |
+| ---------------------- | ------ | ----------------------------------------------------------------------------------------- |
+| `enable_slow_down`     | bool   | enable slow down planner [-]                                                              |
+| `max_velocity`         | double | max velocity [m/s]                                                                        |
+| `chattering_threshold` | double | even if the obstacle disappears, the stop judgment continues for chattering_threshold [s] |
 
 ## Obstacle Stop Planner
 

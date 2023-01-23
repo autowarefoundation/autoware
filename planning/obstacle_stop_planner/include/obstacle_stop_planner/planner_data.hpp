@@ -63,7 +63,7 @@ struct NodeParam
   double max_velocity;
 
   // keep slow down or stop state if obstacle vanished [s]
-  double hunting_threshold;
+  double chattering_threshold;
 
   // dist threshold for ego's nearest index
   double ego_nearest_dist_threshold;

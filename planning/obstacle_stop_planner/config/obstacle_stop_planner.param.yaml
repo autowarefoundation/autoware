@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    hunting_threshold: 0.5                   # even if the obstacle disappears, the stop judgment continues for hunting_threshold [s]
+    chattering_threshold: 0.5                # even if the obstacle disappears, the stop judgment continues for chattering_threshold [s]
     max_velocity: 20.0                       # max velocity [m/s]
     enable_slow_down: False                  # whether to use slow down planner [-]
     voxel_grid_x: 0.05                       # voxel grid x parameter for filtering pointcloud [m]

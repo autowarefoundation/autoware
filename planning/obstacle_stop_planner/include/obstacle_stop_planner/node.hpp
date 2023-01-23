@@ -58,6 +58,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 namespace motion_planning
@@ -91,6 +92,17 @@ using vehicle_info_util::VehicleInfo;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
+struct ObstacleWithDetectionTime
+{
+  explicit ObstacleWithDetectionTime(const rclcpp::Time & t, pcl::PointXYZ & p)
+  : detection_time(t), point(p)
+  {
+  }
+
+  rclcpp::Time detection_time;
+  pcl::PointXYZ point;
+};
+
 class ObstacleStopPlannerNode : public rclcpp::Node
 {
 public:
@@ -121,14 +133,12 @@ private:
 
   std::unique_ptr<AdaptiveCruiseController> acc_controller_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
-  boost::optional<StopPoint> latest_stop_point_{boost::none};
   boost::optional<SlowDownSection> latest_slow_down_section_{boost::none};
+  std::vector<ObstacleWithDetectionTime> obstacle_history_{};
   tf2_ros::Buffer tf_buffer_{get_clock()};
   tf2_ros::TransformListener tf_listener_{tf_buffer_};
   PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_{nullptr};
   PredictedObjects::ConstSharedPtr object_ptr_{nullptr};
-  rclcpp::Time last_detect_time_collision_point_;
-  rclcpp::Time last_detect_time_slowdown_point_;
 
   Odometry::ConstSharedPtr current_velocity_ptr_{nullptr};
   AccelWithCovarianceStamped::ConstSharedPtr current_acceleration_ptr_{nullptr};
@@ -202,6 +212,31 @@ private:
   void onDynamicObjects(const PredictedObjects::ConstSharedPtr input_msg);
 
   void onExpandStopRange(const ExpandStopRange::ConstSharedPtr input_msg);
+
+  void updateObstacleHistory(const rclcpp::Time & now)
+  {
+    for (auto itr = obstacle_history_.begin(); itr != obstacle_history_.end();) {
+      const auto expired = (now - itr->detection_time).seconds() > node_param_.chattering_threshold;
+
+      if (expired) {
+        itr = obstacle_history_.erase(itr);
+        continue;
+      }
+
+      itr++;
+    }
+  }
+
+  PointCloud::Ptr getOldPointCloudPtr() const
+  {
+    PointCloud::Ptr ret(new PointCloud);
+
+    for (const auto & p : obstacle_history_) {
+      ret->push_back(p.point);
+    }
+
+    return ret;
+  }
 };
 }  // namespace motion_planning
 
