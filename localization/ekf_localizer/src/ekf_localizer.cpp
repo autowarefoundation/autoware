@@ -231,9 +231,7 @@ void EKFLocalizer::timerCallback()
 
   current_ekf_pose_.header.frame_id = params_.pose_frame_id;
   current_ekf_pose_.header.stamp = this->now();
-  current_ekf_pose_.pose.position.x = x;
-  current_ekf_pose_.pose.position.y = y;
-  current_ekf_pose_.pose.position.z = z;
+  current_ekf_pose_.pose.position = tier4_autoware_utils::createPoint(x, y, z);
   current_ekf_pose_.pose.orientation =
     tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
 
@@ -271,20 +269,10 @@ void EKFLocalizer::timerTFCallback()
     return;
   }
 
-  geometry_msgs::msg::TransformStamped transformStamped;
-  transformStamped.header.stamp = this->now();
-  transformStamped.header.frame_id = current_ekf_pose_.header.frame_id;
-  transformStamped.child_frame_id = "base_link";
-  transformStamped.transform.translation.x = current_ekf_pose_.pose.position.x;
-  transformStamped.transform.translation.y = current_ekf_pose_.pose.position.y;
-  transformStamped.transform.translation.z = current_ekf_pose_.pose.position.z;
-
-  transformStamped.transform.rotation.x = current_ekf_pose_.pose.orientation.x;
-  transformStamped.transform.rotation.y = current_ekf_pose_.pose.orientation.y;
-  transformStamped.transform.rotation.z = current_ekf_pose_.pose.orientation.z;
-  transformStamped.transform.rotation.w = current_ekf_pose_.pose.orientation.w;
-
-  tf_br_->sendTransform(transformStamped);
+  geometry_msgs::msg::TransformStamped transform_stamped;
+  transform_stamped = tier4_autoware_utils::pose2transform(current_ekf_pose_, "base_link");
+  transform_stamped.header.stamp = this->now();
+  tf_br_->sendTransform(transform_stamped);
 }
 
 /*
