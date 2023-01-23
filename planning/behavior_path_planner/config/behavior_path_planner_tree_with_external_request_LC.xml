@@ -15,14 +15,14 @@
                 <Condition ID="SideShift_Request"/>
                 <Action ID="SideShift_Plan" output="{output}"/>
             </ReactiveSequence>
-            <!-- <ReactiveSequence>
+            <ReactiveSequence>
                 <Condition ID="ExternalRequestLaneChangeRight_Request"/>
                 <Action ID="ExternalRequestLaneChangeRight_Plan" output="{output}"/>
             </ReactiveSequence>
             <ReactiveSequence>
                 <Condition ID="ExternalRequestLaneChangeLeft_Request"/>
                 <Action ID="ExternalRequestLaneChangeLeft_Plan" output="{output}"/>
-            </ReactiveSequence> -->
+            </ReactiveSequence>
             <ReactiveSequence>
                 <Condition ID="LaneChange_Request"/>
                 <Action ID="LaneChange_Plan" output="{output}"/>
