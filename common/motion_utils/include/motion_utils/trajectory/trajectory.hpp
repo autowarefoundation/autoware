@@ -438,6 +438,39 @@ double calcSignedArcLength(const T & points, const size_t src_idx, const size_t 
 }
 
 /**
+ *  @brief Computes the partial sums of the elements in the sub-ranges of
+ *         the range [src_idx, dst_idx) and return these sum as vector
+ */
+template <class T>
+std::vector<double> calcSignedArcLengthPartialSum(
+  const T & points, const size_t src_idx, const size_t dst_idx)
+{
+  try {
+    validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
+
+  if (src_idx + 1 > dst_idx) {
+    auto copied = points;
+    std::reverse(copied.begin(), copied.end());
+    return calcSignedArcLengthPartialSum(points, dst_idx, src_idx);
+  }
+
+  std::vector<double> partial_dist;
+  partial_dist.reserve(dst_idx - src_idx);
+
+  double dist_sum = 0.0;
+  partial_dist.push_back(dist_sum);
+  for (size_t i = src_idx; i < dst_idx - 1; ++i) {
+    dist_sum += tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i + 1));
+    partial_dist.push_back(dist_sum);
+  }
+  return partial_dist;
+}
+
+/**
  * @brief calcSignedArcLength from point to index
  */
 template <class T>
