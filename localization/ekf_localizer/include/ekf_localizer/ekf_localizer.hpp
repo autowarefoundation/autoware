@@ -15,6 +15,7 @@
 #ifndef EKF_LOCALIZER__EKF_LOCALIZER_HPP_
 #define EKF_LOCALIZER__EKF_LOCALIZER_HPP_
 
+#include "ekf_localizer/aged_object_queue.hpp"
 #include "ekf_localizer/hyper_parameters.hpp"
 #include "ekf_localizer/warning.hpp"
 
@@ -166,14 +167,8 @@ private:
 
   bool is_activated_;
 
-  /* for model prediction */
-  std::queue<geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr>
-    current_twist_queue_;  //!< @brief current measured twist
-  std::queue<int> current_twist_count_queue_;
-
-  std::queue<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr>
-    current_pose_queue_;  //!< @brief current measured pose
-  std::queue<int> current_pose_count_queue_;
+  AgedObjectQueue<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr> pose_queue_;
+  AgedObjectQueue<geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr> twist_queue_;
 
   geometry_msgs::msg::PoseStamped current_ekf_pose_;  //!< @brief current estimated pose
   geometry_msgs::msg::PoseStamped

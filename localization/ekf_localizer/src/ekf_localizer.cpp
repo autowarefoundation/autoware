@@ -54,7 +54,9 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   params_(this),
   ekf_rate_(params_.ekf_rate),
   ekf_dt_(params_.ekf_dt),
-  dim_x_(6 /* x, y, yaw, yaw_bias, vx, wz */)
+  dim_x_(6 /* x, y, yaw, yaw_bias, vx, wz */),
+  pose_queue_(params_.pose_smoothing_steps),
+  twist_queue_(params_.twist_smoothing_steps)
 {
   /* convert to continuous to discrete */
   proc_cov_vx_d_ = std::pow(params_.proc_stddev_vx_c * ekf_dt_, 2.0);
@@ -172,46 +174,30 @@ void EKFLocalizer::timerCallback()
   DEBUG_INFO(get_logger(), "------------------------- end prediction -------------------------\n");
 
   /* pose measurement update */
-  if (!current_pose_queue_.empty()) {
+  if (!pose_queue_.empty()) {
     DEBUG_INFO(get_logger(), "------------------------- start Pose -------------------------");
     stop_watch_.tic();
 
-    for (size_t i = 0; i < current_pose_queue_.size(); ++i) {
-      const auto pose = current_pose_queue_.front();
-      current_pose_queue_.pop();
-
-      const int count = current_pose_count_queue_.front();
-      current_pose_count_queue_.pop();
-
+    // save the initial size because the queue size can change in the loop
+    const size_t n = pose_queue_.size();
+    for (size_t i = 0; i < n; ++i) {
+      const auto pose = pose_queue_.pop_increment_age();
       measurementUpdatePose(*pose);
-
-      if (count + 1 < params_.pose_smoothing_steps) {
-        current_pose_queue_.push(pose);
-        current_pose_count_queue_.push(count + 1);
-      }
     }
     DEBUG_INFO(get_logger(), "[EKF] measurementUpdatePose calc time = %f [ms]", stop_watch_.toc());
     DEBUG_INFO(get_logger(), "------------------------- end Pose -------------------------\n");
   }
 
   /* twist measurement update */
-  if (!current_twist_queue_.empty()) {
+  if (!twist_queue_.empty()) {
     DEBUG_INFO(get_logger(), "------------------------- start Twist -------------------------");
     stop_watch_.tic();
 
-    for (size_t i = 0; i < current_twist_queue_.size(); ++i) {
-      const auto twist = current_twist_queue_.front();
-      current_twist_queue_.pop();
-
-      const int count = current_twist_count_queue_.front();
-      current_twist_count_queue_.pop();
-
+    // save the initial size because the queue size can change in the loop
+    const size_t n = twist_queue_.size();
+    for (size_t i = 0; i < n; ++i) {
+      const auto twist = twist_queue_.pop_increment_age();
       measurementUpdateTwist(*twist);
-
-      if (count + 1 < params_.twist_smoothing_steps) {
-        current_twist_queue_.push(twist);
-        current_twist_count_queue_.push(count + 1);
-      }
     }
     DEBUG_INFO(get_logger(), "[EKF] measurementUpdateTwist calc time = %f [ms]", stop_watch_.toc());
     DEBUG_INFO(get_logger(), "------------------------- end Twist -------------------------\n");
@@ -359,8 +345,7 @@ void EKFLocalizer::callbackPoseWithCovariance(
     return;
   }
 
-  current_pose_queue_.push(msg);
-  current_pose_count_queue_.push(0);
+  pose_queue_.push(msg);
 
   updateSimple1DFilters(*msg);
 }
@@ -371,8 +356,7 @@ void EKFLocalizer::callbackPoseWithCovariance(
 void EKFLocalizer::callbackTwistWithCovariance(
   geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg)
 {
-  current_twist_queue_.push(msg);
-  current_twist_count_queue_.push(0);
+  twist_queue_.push(msg);
 }
 
 /*
@@ -613,17 +597,17 @@ void EKFLocalizer::publishEstimateResult()
   pub_odom_->publish(odometry);
 
   /* debug measured pose */
-  if (!current_pose_queue_.empty()) {
+  if (!pose_queue_.empty()) {
     geometry_msgs::msg::PoseStamped p;
-    p.pose = current_pose_queue_.back()->pose.pose;
+    p.pose = pose_queue_.back()->pose.pose;
     p.header.stamp = current_time;
     pub_measured_pose_->publish(p);
   }
 
   /* debug publish */
   double pose_yaw = 0.0;
-  if (!current_pose_queue_.empty()) {
-    pose_yaw = tf2::getYaw(current_pose_queue_.back()->pose.pose.orientation);
+  if (!pose_queue_.empty()) {
+    pose_yaw = tf2::getYaw(pose_queue_.back()->pose.pose.orientation);
   }
 
   tier4_debug_msgs::msg::Float64MultiArrayStamped msg;
@@ -674,11 +658,8 @@ void EKFLocalizer::serviceTriggerNode(
   std_srvs::srv::SetBool::Response::SharedPtr res)
 {
   if (req->data) {
-    while (!current_pose_queue_.empty()) current_pose_queue_.pop();
-    while (!current_pose_count_queue_.empty()) current_pose_count_queue_.pop();
-
-    while (!current_twist_queue_.empty()) current_twist_queue_.pop();
-    while (!current_twist_count_queue_.empty()) current_twist_count_queue_.pop();
+    pose_queue_.clear();
+    twist_queue_.clear();
     is_activated_ = true;
   } else {
     is_activated_ = false;
