@@ -490,48 +490,6 @@ double calcLongitudinalDistanceFromEgoToObjects(
   return min_distance;
 }
 
-// only works with consecutive lanes
-std::vector<size_t> filterObjectIndicesByLanelets(
-  const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,
-  const double start_arc_length, const double end_arc_length)
-{
-  std::vector<size_t> indices;
-  if (target_lanelets.empty()) {
-    return {};
-  }
-  const auto polygon =
-    lanelet::utils::getPolygonFromArcLength(target_lanelets, start_arc_length, end_arc_length);
-  const auto polygon2d = lanelet::utils::to2D(polygon).basicPolygon();
-  if (polygon2d.empty()) {
-    // no lanelet polygon
-    return {};
-  }
-
-  for (size_t i = 0; i < objects.objects.size(); i++) {
-    const auto & obj = objects.objects.at(i);
-    // create object polygon
-    Polygon2d obj_polygon;
-    if (!calcObjectPolygon(obj, &obj_polygon)) {
-      continue;
-    }
-    // create lanelet polygon
-    Polygon2d lanelet_polygon;
-    lanelet_polygon.outer().reserve(polygon2d.size() + 1);
-    for (const auto & lanelet_point : polygon2d) {
-      lanelet_polygon.outer().emplace_back(lanelet_point.x(), lanelet_point.y());
-    }
-
-    lanelet_polygon.outer().push_back(lanelet_polygon.outer().front());
-
-    // check the object does not intersect the lanelet
-    if (!boost::geometry::disjoint(lanelet_polygon, obj_polygon)) {
-      indices.push_back(i);
-      continue;
-    }
-  }
-  return indices;
-}
-
 std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets)
 {
@@ -672,30 +630,6 @@ std::vector<double> calcObjectsDistanceToPath(
     distance_array.push_back(distance);
   }
   return distance_array;
-}
-
-std::vector<size_t> filterObjectsIndicesByPath(
-  const PredictedObjects & objects, const std::vector<size_t> & object_indices,
-  const PathWithLaneId & ego_path, const double vehicle_width)
-{
-  std::vector<size_t> indices;
-  const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
-  for (const auto & i : object_indices) {
-    Polygon2d obj_polygon;
-    if (!calcObjectPolygon(objects.objects.at(i), &obj_polygon)) {
-      continue;
-    }
-    LineString2d ego_path_line;
-    ego_path_line.reserve(ego_path_point_array.size());
-    for (const auto & ego_path_point : ego_path_point_array) {
-      boost::geometry::append(ego_path_line, Point2d(ego_path_point.x, ego_path_point.y));
-    }
-    const double distance = boost::geometry::distance(obj_polygon, ego_path_line);
-    if (distance < vehicle_width) {
-      indices.push_back(i);
-    }
-  }
-  return indices;
 }
 
 PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)

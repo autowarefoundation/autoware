@@ -290,14 +290,6 @@ double calcLongitudinalDistanceFromEgoToObjects(
   const PredictedObjects & dynamic_objects);
 
 /**
- * @brief Get index of the obstacles inside the lanelets with start and end length
- * @return Indices corresponding to the obstacle inside the lanelets
- */
-std::vector<size_t> filterObjectIndicesByLanelets(
-  const PredictedObjects & objects, const lanelet::ConstLanelets & lanelets,
-  const double start_arc_length, const double end_arc_length);
-
-/**
  * @brief Separate index of the obstacles into two part based on whether the object is within
  * lanelet.
  * @return Indices of objects pair. first objects are in the lanelet, and second others are out of
@@ -312,10 +304,6 @@ std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanel
  */
 std::pair<PredictedObjects, PredictedObjects> separateObjectsByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets);
-
-std::vector<size_t> filterObjectsIndicesByPath(
-  const PredictedObjects & objects, const std::vector<size_t> & object_indices,
-  const PathWithLaneId & ego_path, const double vehicle_width);
 
 PredictedObjects filterObjectsByVelocity(const PredictedObjects & objects, double lim_v);
 

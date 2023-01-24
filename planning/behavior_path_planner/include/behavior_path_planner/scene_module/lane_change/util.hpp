@@ -90,7 +90,7 @@ bool selectSafePath(
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data);
 
 bool isLaneChangePathSafe(
-  const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
+  const LaneChangePath & lane_change_path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const size_t current_seg_idx, const Twist & current_twist,
