@@ -197,10 +197,7 @@ PredictedPath convertToPredictedPath(
   double prev_vehicle_speed = vehicle_speed;
 
   // first point
-  const auto pt = lerpByLength(path.points, vehicle_pose_frenet.length);
-  Pose predicted_pose;
-  predicted_pose.position = pt;
-  predicted_path.path.push_back(predicted_pose);
+  predicted_path.path.push_back(lerpPoseByLength(path.points, vehicle_pose_frenet.length));
 
   for (double t = resolution; t < duration; t += resolution) {
     double accelerated_velocity = prev_vehicle_speed + acceleration * t;
@@ -213,10 +210,8 @@ PredictedPath convertToPredictedPath(
     }
 
     length += travel_distance;
-    const auto pt = lerpByLength(path.points, vehicle_pose_frenet.length + length);
-    Pose predicted_pose;
-    predicted_pose.position = pt;
-    predicted_path.path.push_back(predicted_pose);
+    predicted_path.path.push_back(
+      lerpPoseByLength(path.points, vehicle_pose_frenet.length + length));
     prev_vehicle_speed = accelerated_velocity;
   }
   return predicted_path;
@@ -236,21 +231,6 @@ PredictedPath resamplePredictedPath(
   }
 
   return resampled_path;
-}
-
-Pose lerpByPose(const Pose & p1, const Pose & p2, const double t)
-{
-  tf2::Transform tf_transform1, tf_transform2;
-  tf2::fromMsg(p1, tf_transform1);
-  tf2::fromMsg(p2, tf_transform2);
-  const auto & tf_point = tf2::lerp(tf_transform1.getOrigin(), tf_transform2.getOrigin(), t);
-  const auto & tf_quaternion =
-    tf2::slerp(tf_transform1.getRotation(), tf_transform2.getRotation(), t);
-
-  Pose pose{};
-  pose.position = tf2::toMsg(tf_point, pose.position);
-  pose.orientation = tf2::toMsg(tf_quaternion);
-  return pose;
 }
 
 bool lerpByTimeStamp(const PredictedPath & path, const double t_query, Pose * lerped_pt)
@@ -2311,13 +2291,12 @@ void getProjectedDistancePointFromPolygons(
 }
 
 bool getEgoExpectedPoseAndConvertToPolygon(
-  const Pose & current_pose, const PredictedPath & pred_path,
+  [[maybe_unused]] const Pose & current_pose, const PredictedPath & pred_path,
   tier4_autoware_utils::Polygon2d & ego_polygon, const double & check_current_time,
   const VehicleInfo & ego_info, Pose & expected_pose, std::string & failed_reason)
 {
   bool is_lerped =
     util::lerpByTimeStamp(pred_path, check_current_time, &expected_pose, failed_reason);
-  expected_pose.orientation = current_pose.orientation;
 
   const auto & i = ego_info;
   const auto & front_m = i.max_longitudinal_offset_m;
@@ -2336,7 +2315,6 @@ bool getObjectExpectedPoseAndConvertToPolygon(
 {
   bool is_lerped =
     util::lerpByTimeStamp(pred_path, check_current_time, &expected_pose, failed_reason);
-  expected_pose.orientation = object.kinematics.initial_pose_with_covariance.pose.orientation;
 
   is_lerped = util::calcObjectPolygon(object.shape, expected_pose, &obj_polygon);
   return is_lerped;
