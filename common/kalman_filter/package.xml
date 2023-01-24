@@ -14,6 +14,8 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <build_depend>autoware_cmake</build_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>eigen3_cmake_module</build_depend>
 
   <test_depend>ament_cmake_cppcheck</test_depend>
   <test_depend>ament_lint_auto</test_depend>
