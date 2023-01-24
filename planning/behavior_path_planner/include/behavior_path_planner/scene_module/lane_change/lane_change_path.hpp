@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_PATH_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_PATH_HPP_
 
+#include "behavior_path_planner/scene_module/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 
@@ -34,12 +35,25 @@ struct LaneChangePath
   ShiftedPath shifted_path;
   ShiftLine shift_line;
   double acceleration{0.0};
-  double preparation_length{0.0};
-  double lane_change_length{0.0};
+  LaneChangePhaseInfo length{};
+  LaneChangePhaseInfo duration{};
   TurnSignalInfo turn_signal_info;
   PathWithLaneId prev_path;
 };
 using LaneChangePaths = std::vector<LaneChangePath>;
+
+struct LaneChangeStatus
+{
+  PathWithLaneId lane_follow_path;
+  LaneChangePath lane_change_path;
+  lanelet::ConstLanelets current_lanes;
+  lanelet::ConstLanelets lane_change_lanes;
+  std::vector<uint64_t> lane_follow_lane_ids;
+  std::vector<uint64_t> lane_change_lane_ids;
+  bool is_safe;
+  bool is_valid_path = true;
+  double start_distance;
+};
 
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_PATH_HPP_

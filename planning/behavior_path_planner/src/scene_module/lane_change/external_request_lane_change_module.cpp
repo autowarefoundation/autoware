@@ -382,8 +382,7 @@ std::pair<bool, bool> ExternalRequestLaneChangeModule::getSafePath(
     if (!lane_change_paths.empty()) {
       const auto & longest_path = lane_change_paths.front();
       // we want to see check_distance [m] behind vehicle so add lane changing length
-      const double check_distance_with_path =
-        check_distance + longest_path.preparation_length + longest_path.lane_change_length;
+      const double check_distance_with_path = check_distance + longest_path.length.sum();
       check_lanes = route_handler->getCheckTargetLanesFromPath(
         longest_path.path, lane_change_lanes, check_distance_with_path);
     }
@@ -557,9 +556,8 @@ bool ExternalRequestLaneChangeModule::hasFinishedLaneChange() const
   const auto arclength_current =
     lanelet::utils::getArcCoordinates(status_.lane_change_lanes, current_pose);
   const double travel_distance = arclength_current.length - status_.start_distance;
-  const double finish_distance = status_.lane_change_path.preparation_length +
-                                 status_.lane_change_path.lane_change_length +
-                                 parameters_->lane_change_finish_judge_buffer;
+  const double finish_distance =
+    status_.lane_change_path.length.sum() + parameters_->lane_change_finish_judge_buffer;
   return travel_distance > finish_distance;
 }
 
@@ -681,8 +679,7 @@ bool ExternalRequestLaneChangeModule::isApprovedPathSafe(Pose & ego_pose_before_
 
   constexpr double check_distance = 100.0;
   // get lanes used for detection
-  const double check_distance_with_path =
-    check_distance + path.preparation_length + path.lane_change_length;
+  const double check_distance_with_path = check_distance + path.length.sum();
   const auto check_lanes = route_handler->getCheckTargetLanesFromPath(
     path.path, status_.lane_change_lanes, check_distance_with_path);
 
@@ -745,7 +742,7 @@ void ExternalRequestLaneChangeModule::calcTurnSignalInfo()
   turn_signal_info.desired_end_point = path.shift_line.end;
 
   turn_signal_info.required_start_point = path.shift_line.start;
-  const auto mid_lane_change_length = path.lane_change_length / 2;
+  const auto mid_lane_change_length = path.length.lane_changing / 2;
   const auto & shifted_path = path.shifted_path.path;
   turn_signal_info.required_end_point =
     get_blinker_pose(shifted_path, path.target_lanelets, mid_lane_change_length);

@@ -208,8 +208,18 @@ std::optional<LaneChangePath> constructCandidatePath(
 
   LaneChangePath candidate_path;
   candidate_path.acceleration = acceleration;
-  candidate_path.preparation_length = prepare_distance;
-  candidate_path.lane_change_length = lane_change_distance;
+  candidate_path.length.prepare = prepare_distance;
+  candidate_path.length.lane_changing = lane_change_distance;
+  candidate_path.duration.prepare = std::invoke([&]() {
+    const auto duration =
+      prepare_distance / std::max(lane_change_param.minimum_lane_change_velocity, speed.prepare);
+    return std::min(duration, lane_change_param.lane_change_prepare_duration);
+  });
+  candidate_path.duration.lane_changing = std::invoke([&]() {
+    const auto rounding_multiplier = 1.0 / lane_change_param.prediction_time_resolution;
+    return std::ceil((lane_change_distance / lane_changing_speed) * rounding_multiplier) /
+           rounding_multiplier;
+  });
   candidate_path.shift_line = shift_line;
   candidate_path.reference_lanelets = original_lanelets;
   candidate_path.target_lanelets = target_lanelets;
@@ -440,9 +450,7 @@ bool hasEnoughDistance(
   const Pose & goal_pose, const RouteHandler & route_handler,
   const double minimum_lane_change_length)
 {
-  const double & lane_change_prepare_distance = path.preparation_length;
-  const double & lane_changing_distance = path.lane_change_length;
-  const double lane_change_total_distance = lane_change_prepare_distance + lane_changing_distance;
+  const double lane_change_total_distance = path.length.sum();
   const int num = std::abs(route_handler.getNumLaneToPreferredLane(target_lanes.back()));
   const auto overall_graphs = route_handler.getOverallGraphPtr();
 
@@ -495,15 +503,27 @@ bool isLaneChangePathSafe(
   }
 
   const double time_resolution = lane_change_parameters.prediction_time_resolution;
-  const auto & lane_change_prepare_duration = lane_change_parameters.lane_change_prepare_duration;
+  const auto & lane_change_prepare_duration = lane_change_path.duration.prepare;
   const auto & enable_collision_check_at_prepare_phase =
     lane_change_parameters.enable_collision_check_at_prepare_phase;
-  const auto & lane_changing_safety_check_duration =
-    lane_change_parameters.lane_changing_safety_check_duration;
+  const auto & lane_changing_safety_check_duration = lane_change_path.duration.lane_changing;
   const double check_end_time = lane_change_prepare_duration + lane_changing_safety_check_duration;
   const double min_lc_speed{lane_change_parameters.minimum_lane_change_velocity};
+
+  const auto get_pose = std::invoke([&]() {
+    Pose p;
+    double dist{0.0};
+    for (size_t i = 1; i < path.points.size(); ++i) {
+      dist += motion_utils::calcSignedArcLength(path.points, i - 1, i);
+      if (dist >= common_parameters.backward_path_length) {
+        return path.points.at(i).point.pose;
+      }
+    }
+    return path.points.front().point.pose;
+  });
+
   const auto vehicle_predicted_path = util::convertToPredictedPath(
-    path, current_twist, current_pose, static_cast<double>(current_seg_idx), check_end_time,
+    path, current_twist, get_pose, static_cast<double>(current_seg_idx), check_end_time,
     time_resolution, acceleration, min_lc_speed);
   const auto prepare_phase_ignore_target_speed_thresh =
     lane_change_parameters.prepare_phase_ignore_target_speed_thresh;
