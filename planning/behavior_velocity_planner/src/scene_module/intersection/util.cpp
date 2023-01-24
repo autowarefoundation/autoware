@@ -145,8 +145,7 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
   const int lane_id, const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
   const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas,
   const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
-  const double keep_detection_line_margin, const bool use_stuck_stopline,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
+  const bool use_stuck_stopline, autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & target_path, const rclcpp::Logger logger,
   [[maybe_unused]] const rclcpp::Clock::SharedPtr clock)
 {
@@ -179,7 +178,6 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
   }
 
   const int stop_line_margin_idx_dist = std::ceil(stop_line_margin / interval);
-  const int keep_detection_line_margin_idx_dist = std::ceil(keep_detection_line_margin / interval);
   const int base2front_idx_dist =
     std::ceil(planner_data->vehicle_info_.max_longitudinal_offset_m / interval);
   const int pass_judge_idx_dist = std::ceil(pass_judge_line_dist / interval);
@@ -288,53 +286,28 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
     original_path->points.begin(), original_path->points.begin() + idxs.stop_line,
     [](const auto & p) { return std::fabs(p.point.longitudinal_velocity_mps) < 0.1; });
 
-  {
-    /* insert judge point */
-    const size_t pass_judge_idx_ip = static_cast<size_t>(std::min(
-      static_cast<int>(path_ip.points.size()) - 1,
-      std::max<int>(static_cast<int>(stop_idx_ip) - pass_judge_idx_dist, 0)));
-    /* if another stop point exist before intersection stop_line, disable judge_line. */
-    if (has_prior_stopline || pass_judge_idx_ip == stop_idx_ip) {
-      idxs.pass_judge_line = idxs.stop_line;
-    } else {
-      const auto & insert_point = path_ip.points.at(pass_judge_idx_ip).point.pose;
-      const auto duplicate_idx_opt =
-        util::getDuplicatedPointIdx(*original_path, insert_point.position);
-      if (duplicate_idx_opt.has_value()) {
-        idxs.pass_judge_line = duplicate_idx_opt.value();
-      } else {
-        const auto insert_idx_opt = util::insertPoint(insert_point, original_path);
-        if (!insert_idx_opt.has_value()) {
-          RCLCPP_WARN(logger, "insertPoint failed to pass judge line");
-          return {stuck_stop_line_idx, std::nullopt};
-        }
-        idxs.pass_judge_line = insert_idx_opt.value();
-        idxs.stop_line = std::min<size_t>(idxs.stop_line + 1, original_path->points.size() - 1);
-        if (stuck_stop_line_idx >= idxs.pass_judge_line) {
-          stuck_stop_line_idx =
-            std::min<size_t>(stuck_stop_line_idx + 1, original_path->points.size() - 1);
-        }
-      }
-    }
-  }
-
-  {
-    /* insert keep_detection_line */
-    const int keep_detection_idx_ip = std::min<size_t>(
-      stop_idx_ip + keep_detection_line_margin_idx_dist, path_ip.points.size() - 1);
-    const auto & insert_point = path_ip.points.at(keep_detection_idx_ip).point.pose;
-    const auto insert_idx_opt = util::getDuplicatedPointIdx(*original_path, insert_point.position);
-    if (insert_idx_opt.has_value()) {
-      idxs.keep_detection_line = insert_idx_opt.value();
+  /* insert judge point */
+  const size_t pass_judge_idx_ip = static_cast<size_t>(std::min(
+    static_cast<int>(path_ip.points.size()) - 1,
+    std::max<int>(static_cast<int>(stop_idx_ip) - pass_judge_idx_dist, 0)));
+  /* if another stop point exist before intersection stop_line, disable judge_line. */
+  if (has_prior_stopline || pass_judge_idx_ip == stop_idx_ip) {
+    idxs.pass_judge_line = idxs.stop_line;
+  } else {
+    const auto & insert_point = path_ip.points.at(pass_judge_idx_ip).point.pose;
+    const auto duplicate_idx_opt =
+      util::getDuplicatedPointIdx(*original_path, insert_point.position);
+    if (duplicate_idx_opt.has_value()) {
+      idxs.pass_judge_line = duplicate_idx_opt.value();
     } else {
       const auto insert_idx_opt = util::insertPoint(insert_point, original_path);
       if (!insert_idx_opt.has_value()) {
-        RCLCPP_WARN(logger, "insertPoint failed for keep detection line");
+        RCLCPP_WARN(logger, "insertPoint failed to pass judge line");
         return {stuck_stop_line_idx, std::nullopt};
       }
-      idxs.keep_detection_line = insert_idx_opt.value();
-      // keep_detection_line is after stop_line and pass_judge_line
-      if (stuck_stop_line_idx >= idxs.keep_detection_line) {
+      idxs.pass_judge_line = insert_idx_opt.value();
+      idxs.stop_line = std::min<size_t>(idxs.stop_line + 1, original_path->points.size() - 1);
+      if (stuck_stop_line_idx >= idxs.pass_judge_line) {
         stuck_stop_line_idx =
           std::min<size_t>(stuck_stop_line_idx + 1, original_path->points.size() - 1);
       }
@@ -343,10 +316,9 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
 
   RCLCPP_DEBUG(
     logger,
-    "generateStopLine() : keep_detection_idx = %ld, stop_idx = %ld, pass_judge_idx = %ld"
+    "generateStopLine() : stop_idx = %ld, pass_judge_idx = %ld"
     ", stuck_stop_idx = %ld, has_prior_stopline = %d",
-    idxs.keep_detection_line, idxs.stop_line, idxs.pass_judge_line, stuck_stop_line_idx,
-    has_prior_stopline);
+    idxs.stop_line, idxs.pass_judge_line, stuck_stop_line_idx, has_prior_stopline);
 
   return {stuck_stop_line_idx, std::make_optional<StopLineIdx>(idxs)};
 }

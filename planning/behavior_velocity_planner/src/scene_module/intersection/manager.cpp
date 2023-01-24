@@ -46,8 +46,6 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
   ip.state_transit_margin_time = node.declare_parameter(ns + ".state_transit_margin_time", 2.0);
   ip.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 1.0);
-  ip.keep_detection_line_margin = node.declare_parameter(ns + ".keep_detection_line_margin", 1.0);
-  ip.keep_detection_vel_thr = node.declare_parameter(ns + ".keep_detection_vel_thr", 0.833);
   ip.stuck_vehicle_detect_dist = node.declare_parameter(ns + ".stuck_vehicle_detect_dist", 3.0);
   ip.stuck_vehicle_ignore_dist = node.declare_parameter(ns + ".stuck_vehicle_ignore_dist", 5.0) +
                                  vehicle_info.max_longitudinal_offset_m;
@@ -63,6 +61,8 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.min_predicted_path_confidence =
     node.declare_parameter(ns + ".min_predicted_path_confidence", 0.05);
   ip.external_input_timeout = node.declare_parameter(ns + ".walkway.external_input_timeout", 1.0);
+  ip.minimum_ego_predicted_velocity =
+    node.declare_parameter(ns + ".minimum_ego_predicted_velocity", 1.388);
   ip.collision_start_margin_time = node.declare_parameter(ns + ".collision_start_margin_time", 5.0);
   ip.collision_end_margin_time = node.declare_parameter(ns + ".collision_end_margin_time", 2.0);
   ip.use_stuck_stopline = node.declare_parameter(ns + ".use_stuck_stopline", true);

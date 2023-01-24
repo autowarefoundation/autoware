@@ -61,7 +61,6 @@ struct StopLineIdx
   size_t first_inside_lane = 0;
   size_t pass_judge_line = 0;
   size_t stop_line = 0;
-  size_t keep_detection_line = 0;
 };
 
 /**
@@ -78,8 +77,7 @@ std::pair<std::optional<size_t>, std::optional<StopLineIdx>> generateStopLine(
   const int lane_id, const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
   const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas,
   const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
-  const double keep_detection_line_margin, const bool use_stuck_stopline,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
+  const bool use_stuck_stopline, autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & target_path, const rclcpp::Logger logger,
   const rclcpp::Clock::SharedPtr clock);
 
