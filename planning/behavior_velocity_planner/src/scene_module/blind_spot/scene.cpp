@@ -90,7 +90,7 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
   /* get current pose */
-  geometry_msgs::msg::PoseStamped current_pose = planner_data_->current_pose;
+  geometry_msgs::msg::Pose current_pose = planner_data_->current_odometry->pose;
 
   /* get lanelet map */
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
@@ -117,7 +117,7 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   /* calc closest index */
   const auto closest_idx_opt =
-    motion_utils::findNearestIndex(input_path.points, current_pose.pose, 3.0, M_PI_4);
+    motion_utils::findNearestIndex(input_path.points, current_pose, 3.0, M_PI_4);
   if (!closest_idx_opt) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       logger_, *clock_, 1000 /* ms */, "[Blind Spot] motion_utils::findNearestIndex fail");
@@ -133,8 +133,8 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   const double pass_judge_line_dist =
     planning_utils::calcJudgeLineDistWithAccLimit(current_vel, max_acc, delay_response_time);
   const auto stop_point_pose = path->points.at(stop_line_idx).point.pose;
-  const auto distance_until_stop = motion_utils::calcSignedArcLength(
-    input_path.points, current_pose.pose, stop_point_pose.position);
+  const auto distance_until_stop =
+    motion_utils::calcSignedArcLength(input_path.points, current_pose, stop_point_pose.position);
   if (distance_until_stop == boost::none) return true;
 
   /* get debug info */
@@ -174,7 +174,7 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   /* set stop speed */
   setSafe(state_machine_.getState() != StateMachine::State::STOP);
   setDistance(motion_utils::calcSignedArcLength(
-    path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position));
+    path->points, current_pose.position, path->points.at(stop_line_idx).point.pose.position));
   if (!isActivated()) {
     constexpr double stop_vel = 0.0;
     planning_utils::setVelocityFromIndex(stop_line_idx, stop_vel, path);
@@ -185,7 +185,7 @@ bool BlindSpotModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     stop_factor.stop_factor_points = planning_utils::toRosPoints(debug_data_.conflicting_targets);
     planning_utils::appendStopReason(stop_factor, stop_reason);
     velocity_factor_.set(
-      path->points, planner_data_->current_pose.pose, stop_pose, VelocityFactor::UNKNOWN);
+      path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
   } else {
     *path = input_path;  // reset path
   }
@@ -390,7 +390,7 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
         to_bg2d(object.kinematics.initial_pose_with_covariance.pose.position),
         lanelet::utils::to2D(areas_opt.get().detection_area));
       bool exist_in_conflict_area = isPredictedPathInArea(
-        object, areas_opt.get().conflict_area, planner_data_->current_pose.pose);
+        object, areas_opt.get().conflict_area, planner_data_->current_odometry->pose);
       if (exist_in_detection_area || exist_in_conflict_area) {
         obstacle_detected = true;
         debug_data_.conflicting_targets.objects.push_back(object);

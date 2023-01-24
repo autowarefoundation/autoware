@@ -22,12 +22,11 @@ namespace static_centerline_optimizer
 {
 namespace
 {
-geometry_msgs::msg::PoseStamped::ConstSharedPtr convert_to_pose_stamped(
-  const geometry_msgs::msg::Pose & pose)
+nav_msgs::msg::Odometry::ConstSharedPtr convert_to_odometry(const geometry_msgs::msg::Pose & pose)
 {
-  auto pose_stamped_ptr = std::make_shared<geometry_msgs::msg::PoseStamped>();
-  pose_stamped_ptr->pose = pose;
-  return pose_stamped_ptr;
+  auto odometry_ptr = std::make_shared<nav_msgs::msg::Odometry>();
+  odometry_ptr->pose.pose = pose;
+  return odometry_ptr;
 }
 
 lanelet::Point3d createPoint3d(const double x, const double y, const double z = 19.0)
@@ -84,7 +83,7 @@ PathWithLaneId get_path_with_lane_id(
   // create planner data
   auto planner_data = std::make_shared<behavior_path_planner::PlannerData>();
   planner_data->route_handler = std::make_shared<RouteHandler>(route_handler);
-  planner_data->self_pose = convert_to_pose_stamped(start_pose);
+  planner_data->self_odometry = convert_to_odometry(start_pose);
   planner_data->parameters.ego_nearest_dist_threshold = ego_nearest_dist_threshold;
   planner_data->parameters.ego_nearest_yaw_threshold = ego_nearest_yaw_threshold;
 

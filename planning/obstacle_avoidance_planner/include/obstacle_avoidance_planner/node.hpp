@@ -208,7 +208,7 @@ private:
     stop_watch_;
 
   // variables for subscribers
-  std::unique_ptr<geometry_msgs::msg::TwistStamped> current_twist_ptr_;
+  std::unique_ptr<Odometry> current_odometry_ptr_;
   std::unique_ptr<PredictedObjects> objects_ptr_;
 
   // variables for previous information
@@ -216,8 +216,6 @@ private:
   std::unique_ptr<Trajectories> prev_optimal_trajs_ptr_;
   std::unique_ptr<std::vector<PathPoint>> prev_path_points_ptr_;
   std::unique_ptr<rclcpp::Time> prev_replanned_time_ptr_;
-
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
 
   // ROS
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_;

@@ -776,7 +776,7 @@ std::optional<LaneChangePath> getAbortPaths(
 {
   const auto & route_handler = planner_data->route_handler;
   const auto current_speed = util::l2Norm(planner_data->self_odometry->twist.twist.linear);
-  const auto current_pose = planner_data->self_pose->pose;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto reference_lanelets = selected_path.reference_lanelets;
 
   const auto ego_nearest_dist_threshold = planner_data->parameters.ego_nearest_dist_threshold;

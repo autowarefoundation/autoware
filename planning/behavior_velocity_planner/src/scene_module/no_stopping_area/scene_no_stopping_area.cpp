@@ -113,7 +113,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
   // Store original path
   const auto original_path = *path;
   const auto & predicted_obj_arr_ptr = planner_data_->predicted_objects;
-  const auto & current_pose = planner_data_->current_pose;
+  const auto & current_pose = planner_data_->current_odometry;
   if (path->points.size() <= 2) {
     return true;
   }
@@ -137,9 +137,9 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
   }
   const auto & stop_pose = stop_point->second;
   setDistance(motion_utils::calcSignedArcLength(
-    original_path.points, current_pose.pose.position, stop_pose.position));
+    original_path.points, current_pose->pose.position, stop_pose.position));
   if (planning_utils::isOverLine(
-        original_path, current_pose.pose, stop_pose, planner_param_.dead_line_margin)) {
+        original_path, current_pose->pose, stop_pose, planner_param_.dead_line_margin)) {
     // ego can't stop in front of no stopping area -> GO or OR
     state_machine_.setState(StateMachine::State::GO);
     setSafe(true);
@@ -150,12 +150,12 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
   const double ego_space_in_front_of_stuck_vehicle =
     margin + vi.vehicle_length_m + planner_param_.stuck_vehicle_front_margin;
   const Polygon2d stuck_vehicle_detect_area = generateEgoNoStoppingAreaLanePolygon(
-    *path, current_pose.pose, ego_space_in_front_of_stuck_vehicle,
+    *path, current_pose->pose, ego_space_in_front_of_stuck_vehicle,
     planner_param_.detection_area_length);
   const double ego_space_in_front_of_stop_line =
     margin + planner_param_.stop_margin + vi.rear_overhang_m;
   const Polygon2d stop_line_detect_area = generateEgoNoStoppingAreaLanePolygon(
-    *path, current_pose.pose, ego_space_in_front_of_stop_line,
+    *path, current_pose->pose, ego_space_in_front_of_stop_line,
     planner_param_.detection_area_length);
   if (stuck_vehicle_detect_area.outer().empty() && stop_line_detect_area.outer().empty()) {
     setSafe(true);
@@ -171,7 +171,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
     checkStopLinesInNoStoppingArea(*path, stop_line_detect_area);
   const bool is_entry_prohibited =
     is_entry_prohibited_by_stuck_vehicle || is_entry_prohibited_by_stop_line;
-  if (!isStoppable(current_pose.pose, stop_point->second)) {
+  if (!isStoppable(current_pose->pose, stop_point->second)) {
     state_machine_.setState(StateMachine::State::GO);
     setSafe(true);
     return false;
@@ -195,7 +195,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason 
       stop_factor.stop_factor_points = debug_data_.stuck_points;
       planning_utils::appendStopReason(stop_factor, stop_reason);
       velocity_factor_.set(
-        path->points, planner_data_->current_pose.pose, stop_point->second,
+        path->points, planner_data_->current_odometry->pose, stop_point->second,
         VelocityFactor::UNKNOWN);
     }
 

@@ -102,7 +102,7 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   PathWithLaneId reference_path{};
 
   const auto & route_handler = planner_data_->route_handler;
-  const auto current_pose = planner_data_->self_pose->pose;
+  const auto current_pose = planner_data_->self_odometry->pose.pose;
   const auto p = planner_data_->parameters;
 
   // Set header

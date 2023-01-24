@@ -79,7 +79,7 @@ private:
   void onPredictedObjects(
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr msg);
   void onNoGroundPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  void onVehicleVelocity(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
   void onAcceleration(const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg);
   void onLaneletMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
   void onTrafficSignals(

@@ -55,9 +55,8 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
     "~/input/dynamic_obstacles", 1,
     [this](const PredictedObjects::ConstSharedPtr msg) { dynamic_obstacles_ptr_ = msg; });
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/odometry", rclcpp::QoS{1}, [this](const nav_msgs::msg::Odometry::ConstSharedPtr msg) {
-      current_ego_velocity_ = static_cast<Float>(msg->twist.twist.linear.x);
-    });
+    "~/input/odometry", rclcpp::QoS{1},
+    [this](const nav_msgs::msg::Odometry::ConstSharedPtr msg) { current_odometry_ptr_ = msg; });
   map_sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
     "~/input/map", rclcpp::QoS{1}.transient_local(),
     [this](const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg) {
@@ -171,18 +170,13 @@ rcl_interfaces::msg::SetParametersResult ObstacleVelocityLimiterNode::onParamete
 void ObstacleVelocityLimiterNode::onTrajectory(const Trajectory::ConstSharedPtr msg)
 {
   const auto t_start = std::chrono::system_clock::now();
-  const auto current_pose_ptr = self_pose_listener_.getCurrentPose();
-  if (!current_pose_ptr) {
-    RCLCPP_WARN_THROTTLE(
-      get_logger(), *get_clock(), rcutils_duration_value_t(1000), "Waiting for current pose");
-    return;
-  }
-  const auto ego_idx = motion_utils::findNearestIndex(msg->points, current_pose_ptr->pose);
+  const auto ego_idx =
+    motion_utils::findNearestIndex(msg->points, current_odometry_ptr_->pose.pose);
   if (!validInputs(ego_idx)) return;
   auto original_traj = *msg;
   if (preprocessing_params_.calculate_steering_angles)
     calculateSteeringAngles(original_traj, projection_params_.wheel_base);
-  velocity_params_.current_ego_velocity = *current_ego_velocity_;
+  velocity_params_.current_ego_velocity = current_odometry_ptr_->twist.twist.linear.x;
   const auto start_idx =
     calculateStartIndex(original_traj, *ego_idx, preprocessing_params_.start_distance);
   const auto end_idx = calculateEndIndex(
@@ -244,11 +238,11 @@ bool ObstacleVelocityLimiterNode::validInputs(const boost::optional<size_t> & eg
   if (!ego_idx)
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), one_sec, "Cannot calculate ego index on the trajectory");
-  if (!current_ego_velocity_)
+  if (!current_odometry_ptr_)
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), one_sec, "Current ego velocity not yet received");
 
-  return occupancy_grid_ptr_ && dynamic_obstacles_ptr_ && ego_idx && current_ego_velocity_;
+  return occupancy_grid_ptr_ && dynamic_obstacles_ptr_ && ego_idx && current_odometry_ptr_;
 }
 }  // namespace obstacle_velocity_limiter
 

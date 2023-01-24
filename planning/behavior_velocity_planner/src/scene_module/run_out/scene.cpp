@@ -55,7 +55,7 @@ bool RunOutModule::modifyPathVelocity(
   // set planner data
   const auto current_vel = planner_data_->current_velocity->twist.linear.x;
   const auto current_acc = planner_data_->current_acceleration->accel.accel.linear.x;
-  const auto & current_pose = planner_data_->current_pose.pose;
+  const auto & current_pose = planner_data_->current_odometry->pose;
 
   // set height of debug data
   debug_ptr_->setHeight(current_pose.position.z);
@@ -164,8 +164,8 @@ Polygons2d RunOutModule::createDetectionAreaPolygon(const PathWithLaneId & smoot
   Polygons2d detection_area_poly;
   const size_t ego_seg_idx = findEgoSegmentIndex(smoothed_path.points);
   planning_utils::createDetectionAreaPolygons(
-    detection_area_poly, smoothed_path, planner_data_->current_pose.pose, ego_seg_idx, da_range,
-    p.dynamic_obstacle.max_vel_kmph / 3.6);
+    detection_area_poly, smoothed_path, planner_data_->current_odometry->pose, ego_seg_idx,
+    da_range, p.dynamic_obstacle.max_vel_kmph / 3.6);
 
   for (const auto & poly : detection_area_poly) {
     debug_ptr_->pushDetectionAreaPolygons(poly);
@@ -663,7 +663,7 @@ void RunOutModule::insertVelocityForState(
 {
   using State = run_out_utils::StateMachine::State;
 
-  const auto & current_pose = planner_data.current_pose.pose;
+  const auto & current_pose = planner_data.current_odometry->pose;
   const auto & current_vel = planner_data.current_velocity->twist.linear.x;
   const auto & current_acc = planner_data.current_acceleration->accel.accel.linear.x;
 

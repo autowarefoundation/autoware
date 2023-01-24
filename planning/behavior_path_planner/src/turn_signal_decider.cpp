@@ -40,7 +40,7 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   // Data
   const double nearest_dist_threshold = planner_data->parameters.ego_nearest_dist_threshold;
   const double nearest_yaw_threshold = planner_data->parameters.ego_nearest_yaw_threshold;
-  const auto & current_pose = planner_data->self_pose->pose;
+  const auto & current_pose = planner_data->self_odometry->pose.pose;
   const double & current_vel = planner_data->self_odometry->twist.twist.linear.x;
   const auto route_handler = *(planner_data->route_handler);
 

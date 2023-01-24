@@ -85,7 +85,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
   /* get current pose */
-  const geometry_msgs::msg::PoseStamped current_pose = planner_data_->current_pose;
+  const geometry_msgs::msg::Pose current_pose = planner_data_->current_odometry->pose;
   const double current_vel = planner_data_->current_velocity->twist.linear.x;
 
   /* get lanelet map */
@@ -139,7 +139,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
   /* calc closest index */
   const auto closest_idx_opt =
-    motion_utils::findNearestIndex(path->points, current_pose.pose, 3.0, M_PI_4);
+    motion_utils::findNearestIndex(path->points, current_pose, 3.0, M_PI_4);
   if (!closest_idx_opt) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       logger_, *clock_, 1000 /* ms */, "motion_utils::findNearestIndex fail");
@@ -156,10 +156,10 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     const auto keep_detection_line_idx = stop_lines_idx_opt.value().keep_detection_line;
 
     const bool is_over_pass_judge_line =
-      util::isOverTargetIndex(*path, closest_idx, current_pose.pose, pass_judge_line_idx);
+      util::isOverTargetIndex(*path, closest_idx, current_pose, pass_judge_line_idx);
     const bool is_before_keep_detection_line =
       stop_lines_idx_opt.has_value()
-        ? util::isBeforeTargetIndex(*path, closest_idx, current_pose.pose, keep_detection_line_idx)
+        ? util::isBeforeTargetIndex(*path, closest_idx, current_pose, keep_detection_line_idx)
         : false;
     const bool keep_detection = is_before_keep_detection_line &&
                                 std::fabs(current_vel) < planner_param_.keep_detection_vel_thr;
@@ -172,7 +172,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       RCLCPP_DEBUG(logger_, "===== plan end =====");
       setSafe(true);
       setDistance(motion_utils::calcSignedArcLength(
-        path->points, planner_data_->current_pose.pose.position,
+        path->points, planner_data_->current_odometry->pose.position,
         path->points.at(stop_line_idx).point.pose.position));
       return true;
     }
@@ -213,7 +213,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       path->points.at(closest_idx).point.pose.position);
     const double eps = 1e-1;  // NOTE: check if sufficiently over the stuck stopline
     const bool is_over_stuck_stopline =
-      util::isOverTargetIndex(*path, closest_idx, current_pose.pose, stuck_line_idx) &&
+      util::isOverTargetIndex(*path, closest_idx, current_pose, stuck_line_idx) &&
       dist_stuck_stopline > eps;
     if (is_stuck && !is_over_stuck_stopline) {
       stop_line_idx_final = stuck_line_idx;
@@ -239,7 +239,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
   setSafe(state_machine_.getState() == StateMachine::State::GO);
   setDistance(motion_utils::calcSignedArcLength(
-    path->points, planner_data_->current_pose.pose.position,
+    path->points, planner_data_->current_odometry->pose.position,
     path->points.at(stop_line_idx_final).point.pose.position));
 
   if (!isActivated()) {
@@ -268,7 +268,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
       const auto & stop_pose = path->points.at(stop_line_idx_final).point.pose;
       velocity_factor_.set(
-        path->points, planner_data_->current_pose.pose, stop_pose, VelocityFactor::UNKNOWN);
+        path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
     }
 
     RCLCPP_DEBUG(logger_, "not activated. stop at the line.");
@@ -342,7 +342,7 @@ bool IntersectionModule::checkCollision(
     const auto object_pose = object.kinematics.initial_pose_with_covariance.pose;
     const bool is_in_ego_lane = bg::within(to_bg2d(object_pose.position), ego_poly);
     if (is_in_ego_lane) {
-      if (!planning_utils::isAheadOf(object_pose, planner_data_->current_pose.pose)) {
+      if (!planning_utils::isAheadOf(object_pose, planner_data_->current_odometry->pose)) {
         continue;
       }
       if (

@@ -261,7 +261,7 @@ void PurePursuitLateralController::averageFilterTrajectory(
 boost::optional<Trajectory> PurePursuitLateralController::generatePredictedTrajectory()
 {
   const auto closest_idx_result =
-    motion_utils::findNearestIndex(output_tp_array_, current_pose_, 3.0, M_PI_4);
+    motion_utils::findNearestIndex(output_tp_array_, current_odometry_.pose.pose, 3.0, M_PI_4);
 
   if (!closest_idx_result) {
     return boost::none;
@@ -282,7 +282,7 @@ boost::optional<Trajectory> PurePursuitLateralController::generatePredictedTraje
       // For first point, use the odometry for velocity, and use the current_pose for prediction.
 
       TrajectoryPoint p;
-      p.pose = current_pose_;
+      p.pose = current_odometry_.pose.pose;
       p.longitudinal_velocity_mps = current_odometry_.twist.twist.linear.x;
       predicted_trajectory.points.push_back(p);
 
@@ -370,7 +370,7 @@ bool PurePursuitLateralController::calcIsSteerConverged(const AckermannLateralCo
 AckermannLateralCommand PurePursuitLateralController::generateOutputControlCmd()
 {
   // Generate the control command
-  const auto pp_output = calcTargetCurvature(true, current_pose_);
+  const auto pp_output = calcTargetCurvature(true, current_odometry_.pose.pose);
   AckermannLateralCommand output_cmd;
 
   if (pp_output) {
@@ -410,9 +410,7 @@ void PurePursuitLateralController::publishDebugMarker() const
 
   marker_array.markers.push_back(createNextTargetMarker(debug_data_.next_target));
   marker_array.markers.push_back(
-    createTrajectoryCircleMarker(debug_data_.next_target, current_pose_));
-
-  pub_debug_marker_->publish(marker_array);
+    createTrajectoryCircleMarker(debug_data_.next_target, current_odometry_.pose.pose));
 }
 
 boost::optional<PpOutput> PurePursuitLateralController::calcTargetCurvature(

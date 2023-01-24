@@ -90,7 +90,7 @@ inline bool smoothPath(
   const PathWithLaneId & in_path, PathWithLaneId & out_path,
   const std::shared_ptr<const PlannerData> & planner_data)
 {
-  const geometry_msgs::msg::Pose current_pose = planner_data->current_pose.pose;
+  const geometry_msgs::msg::Pose current_pose = planner_data->current_odometry->pose;
   const double v0 = planner_data->current_velocity->twist.linear.x;
   const double a0 = planner_data->current_acceleration->accel.accel.linear.x;
   const auto & external_v_limit = planner_data->external_velocity_limit;

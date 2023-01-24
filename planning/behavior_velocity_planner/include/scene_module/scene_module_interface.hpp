@@ -126,7 +126,8 @@ protected:
   {
     const auto & p = planner_data_;
     return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      points, p->current_pose.pose, p->ego_nearest_dist_threshold, p->ego_nearest_yaw_threshold);
+      points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
+      p->ego_nearest_yaw_threshold);
   }
 
   template <class T>
@@ -134,7 +135,8 @@ protected:
   {
     const auto & p = planner_data_;
     return motion_utils::findFirstNearestIndexWithSoftConstraints(
-      points, p->current_pose.pose, p->ego_nearest_dist_threshold, p->ego_nearest_yaw_threshold);
+      points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
+      p->ego_nearest_yaw_threshold);
   }
 };
 
@@ -304,7 +306,8 @@ protected:
   {
     const auto & p = planner_data_;
     return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      points, p->current_pose.pose, p->ego_nearest_dist_threshold, p->ego_nearest_yaw_threshold);
+      points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
+      p->ego_nearest_yaw_threshold);
   }
 
   template <class T>
@@ -313,7 +316,8 @@ protected:
   {
     const auto & p = planner_data_;
     return motion_utils::findFirstNearestIndexWithSoftConstraints(
-      points, p->current_pose.pose, p->ego_nearest_dist_threshold, p->ego_nearest_yaw_threshold);
+      points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
+      p->ego_nearest_yaw_threshold);
   }
 
   std::set<std::shared_ptr<SceneModuleInterface>> scene_modules_;

@@ -137,7 +137,7 @@ private:
 
   void updateRegisteredRTCStatus(const PathWithLaneId & path)
   {
-    const Point ego_position = planner_data_->self_pose->pose.position;
+    const Point ego_position = planner_data_->self_odometry->pose.pose.position;
 
     for (const auto & left_shift : left_shift_array_) {
       const double start_distance =
@@ -451,9 +451,9 @@ private:
 
   double getCurrentBaseShift() const { return path_shifter_.getBaseOffset(); }
 
-  Point getEgoPosition() const { return planner_data_->self_pose->pose.position; }
+  Point getEgoPosition() const { return planner_data_->self_odometry->pose.pose.position; }
 
-  Pose getEgoPose() const { return planner_data_->self_pose->pose; }
+  Pose getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
 
   Pose getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
 

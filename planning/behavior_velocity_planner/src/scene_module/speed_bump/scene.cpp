@@ -79,7 +79,7 @@ bool SpeedBumpModule::modifyPathVelocity(
   debug_data_ = DebugData();
   debug_data_.base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
-  const auto & ego_pos = planner_data_->current_pose.pose.position;
+  const auto & ego_pos = planner_data_->current_odometry->pose.position;
   const auto & speed_bump = speed_bump_reg_elem_.speedBump();
   const auto & speed_bump_polygon = lanelet::utils::to2D(speed_bump).basicPolygon();
 

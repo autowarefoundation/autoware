@@ -100,7 +100,7 @@ bool OcclusionSpotModule::modifyPathVelocity(
         planner_data_->delay_response_time) +
       param_.detection_area_offset;  // To fill difference between planned and measured acc
   }
-  const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
+  const geometry_msgs::msg::Pose ego_pose = planner_data_->current_odometry->pose;
   PathWithLaneId clipped_path;
   utils::clipPathByLength(*path, clipped_path, param_.detection_area_length);
   PathWithLaneId path_interpolated;

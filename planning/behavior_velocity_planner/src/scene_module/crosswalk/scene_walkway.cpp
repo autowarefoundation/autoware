@@ -45,7 +45,7 @@ WalkwayModule::WalkwayModule(
 boost::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
   const PathWithLaneId & ego_path, bool & exist_stopline_in_map) const
 {
-  const auto & ego_pos = planner_data_->current_pose.pose.position;
+  const auto & ego_pos = planner_data_->current_odometry->pose.position;
 
   const auto stop_line = getStopLineFromMap(module_id_, planner_data_, "crosswalk_id");
   exist_stopline_in_map = static_cast<bool>(stop_line);
@@ -84,7 +84,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
 
   path_intersects_.clear();
 
-  const auto & ego_pos = planner_data_->current_pose.pose.position;
+  const auto & ego_pos = planner_data_->current_odometry->pose.position;
   const auto intersects =
     getPolygonIntersects(input, walkway_.polygon2d().basicPolygon(), ego_pos, 2);
 
@@ -123,7 +123,8 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     stop_factor.stop_factor_points.push_back(path_intersects_.front());
     planning_utils::appendStopReason(stop_factor, stop_reason);
     velocity_factor_.set(
-      path->points, planner_data_->current_pose.pose, stop_pose.get(), VelocityFactor::UNKNOWN);
+      path->points, planner_data_->current_odometry->pose, stop_pose.get(),
+      VelocityFactor::UNKNOWN);
 
     // use arc length to identify if ego vehicle is in front of walkway stop or not.
     const double signed_arc_dist_to_stop_point =

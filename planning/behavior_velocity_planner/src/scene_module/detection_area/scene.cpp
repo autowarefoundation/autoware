@@ -77,7 +77,7 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
   const auto stop_line = getStopLineGeometry2d();
 
   // Get self pose
-  const auto & self_pose = planner_data_->current_pose.pose;
+  const auto & self_pose = planner_data_->current_odometry->pose;
   const size_t current_seg_idx = findEgoSegmentIndex(path->points);
 
   // Get stop point
@@ -184,7 +184,8 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
     stop_factor.stop_factor_points = obstacle_points;
     planning_utils::appendStopReason(stop_factor, stop_reason);
     velocity_factor_.set(
-      path->points, planner_data_->current_pose.pose, stop_point->second, VelocityFactor::UNKNOWN);
+      path->points, planner_data_->current_odometry->pose, stop_point->second,
+      VelocityFactor::UNKNOWN);
   }
 
   // Create legacy StopReason

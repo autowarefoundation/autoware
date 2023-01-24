@@ -140,7 +140,7 @@ private:
   PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_{nullptr};
   PredictedObjects::ConstSharedPtr object_ptr_{nullptr};
 
-  Odometry::ConstSharedPtr current_velocity_ptr_{nullptr};
+  Odometry::ConstSharedPtr current_odometry_ptr_{nullptr};
   AccelWithCovarianceStamped::ConstSharedPtr current_acceleration_ptr_{nullptr};
   bool is_driving_forward_{true};
 

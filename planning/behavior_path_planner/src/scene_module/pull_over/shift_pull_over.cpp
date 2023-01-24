@@ -64,7 +64,7 @@ PathWithLaneId ShiftPullOver::generateReferencePath(
   const lanelet::ConstLanelets & road_lanes, const Pose & end_pose) const
 {
   const auto & route_handler = planner_data_->route_handler;
-  const Pose & current_pose = planner_data_->self_pose->pose;
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   const double backward_path_length = planner_data_->parameters.backward_path_length;
   const double pull_over_velocity = parameters_.pull_over_velocity;
   const double deceleration_interval = parameters_.deceleration_interval;

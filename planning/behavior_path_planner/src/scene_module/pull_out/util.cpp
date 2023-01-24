@@ -99,7 +99,7 @@ lanelet::ConstLanelets getPullOutLanes(const std::shared_ptr<const PlannerData> 
   const double pull_out_lane_length = 200.0;
   const double & vehicle_width = planner_data->parameters.vehicle_width;
   const auto & route_handler = planner_data->route_handler;
-  const auto current_pose = planner_data->self_pose->pose;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
 
   lanelet::ConstLanelet current_shoulder_lane;
   lanelet::ConstLanelets shoulder_lanes;

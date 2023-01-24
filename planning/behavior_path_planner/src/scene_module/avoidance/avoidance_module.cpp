@@ -3413,7 +3413,7 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
   }
 
   if (ego_front_to_shift_start > 0.0) {
-    turn_signal_info.desired_start_point = planner_data_->self_pose->pose;
+    turn_signal_info.desired_start_point = planner_data_->self_odometry->pose.pose;
   } else {
     turn_signal_info.desired_start_point = blinker_start_pose;
   }

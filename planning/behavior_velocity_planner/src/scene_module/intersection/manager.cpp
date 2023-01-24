@@ -78,7 +78,7 @@ void IntersectionModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lanelets = planning_utils::getLaneletsOnPath(
-    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_pose.pose);
+    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);
   for (size_t i = 0; i < lanelets.size(); i++) {
     const auto ll = lanelets.at(i);
     const auto lane_id = ll.id();
@@ -108,7 +108,7 @@ void MergeFromPrivateModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lanelets = planning_utils::getLaneletsOnPath(
-    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_pose.pose);
+    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);
   for (size_t i = 0; i < lanelets.size(); i++) {
     const auto ll = lanelets.at(i);
     const auto lane_id = ll.id();
@@ -162,7 +162,7 @@ IntersectionModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_id_set = planning_utils::getLaneIdSetOnPath(
-    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_pose.pose);
+    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);
 
   return [lane_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return lane_id_set.count(scene_module->getModuleId()) == 0;
@@ -173,7 +173,7 @@ MergeFromPrivateModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_id_set = planning_utils::getLaneIdSetOnPath(
-    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_pose.pose);
+    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);
 
   return [lane_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return lane_id_set.count(scene_module->getModuleId()) == 0;

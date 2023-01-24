@@ -1157,7 +1157,7 @@ void generateDrivableArea(
 
   // extract data
   const auto transformed_lanes = util::transformToLanelets(lanes);
-  const auto current_pose = planner_data->self_pose;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto route_handler = planner_data->route_handler;
   constexpr double overlap_threshold = 0.01;
 
@@ -1226,7 +1226,7 @@ void generateDrivableArea(
 
   // Get Closest segment for the start point
   constexpr double front_length = 0.5;
-  const auto front_pose = path.points.empty() ? current_pose->pose : path.points.front().point.pose;
+  const auto front_pose = path.points.empty() ? current_pose : path.points.front().point.pose;
   const size_t front_left_start_idx =
     findNearestSegmentIndexFromLateralDistance(left_bound, front_pose.position);
   const size_t front_right_start_idx =
@@ -1241,7 +1241,7 @@ void generateDrivableArea(
     findNearestSegmentIndexFromLateralDistance(right_bound, right_start_point);
 
   // Get Closest segment for the goal point
-  const auto goal_pose = path.points.empty() ? current_pose->pose : path.points.back().point.pose;
+  const auto goal_pose = path.points.empty() ? current_pose : path.points.back().point.pose;
   const size_t goal_left_start_idx =
     findNearestSegmentIndexFromLateralDistance(left_bound, goal_pose.position);
   const size_t goal_right_start_idx =
@@ -1709,10 +1709,10 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   const auto & p = planner_data->parameters;
 
   const auto & route_handler = planner_data->route_handler;
-  const auto & pose = planner_data->self_pose;
+  const auto & pose = planner_data->self_odometry->pose.pose;
 
   lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(pose->pose, &current_lane)) {
+  if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
     RCLCPP_ERROR(
       rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
       "failed to find closest lanelet within route!!!");
@@ -1721,7 +1721,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
 
   // For lanelet_sequence with desired length
   lanelet::ConstLanelets lanelet_sequence = route_handler->getLaneletSequence(
-    current_lane, pose->pose, p.backward_path_length, p.forward_path_length);
+    current_lane, pose, p.backward_path_length, p.forward_path_length);
 
   std::vector<DrivableLanes> drivable_lanes(lanelet_sequence.size());
   for (size_t i = 0; i < lanelet_sequence.size(); ++i) {
@@ -1730,7 +1730,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   }
 
   *centerline_path = getCenterLinePath(
-    *route_handler, lanelet_sequence, pose->pose, p.backward_path_length, p.forward_path_length, p);
+    *route_handler, lanelet_sequence, pose, p.backward_path_length, p.forward_path_length, p);
 
   centerline_path->header = route_handler->getRouteHeader();
 
@@ -1746,7 +1746,7 @@ lanelet::ConstLineStrings3d getMaximumDrivableArea(
 {
   const auto & p = planner_data->parameters;
   const auto & route_handler = planner_data->route_handler;
-  const auto & ego_pose = planner_data->self_pose->pose;
+  const auto & ego_pose = planner_data->self_odometry->pose.pose;
 
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(ego_pose, &current_lane)) {
@@ -2073,7 +2073,7 @@ std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & class
 lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> & planner_data)
 {
   const auto & route_handler = planner_data->route_handler;
-  const auto current_pose = planner_data->self_pose->pose;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto & common_parameters = planner_data->parameters;
 
   lanelet::ConstLanelet current_lane;
@@ -2113,7 +2113,7 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data)
 {
   const auto & route_handler = planner_data->route_handler;
-  const auto current_pose = planner_data->self_pose->pose;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto common_parameters = planner_data->parameters;
   const auto routing_graph_ptr = route_handler->getRoutingGraphPtr();
 

@@ -214,7 +214,7 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
   const auto input_path = *path;
 
-  const auto & self_pose = planner_data_->current_pose;
+  const auto & self_pose = planner_data_->current_odometry;
 
   // Get lanelet2 traffic lights and stop lines.
   lanelet::ConstLineString3d lanelet_stop_lines = *(traffic_light_reg_elem_.stopLine());
@@ -238,7 +238,7 @@ bool TrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   stop_line_point_msg.x = stop_line_point.x();
   stop_line_point_msg.y = stop_line_point.y();
   const double signed_arc_length_to_stop_point = motion_utils::calcSignedArcLength(
-    input_path.points, self_pose.pose.position, stop_line_point_msg);
+    input_path.points, self_pose->pose.position, stop_line_point_msg);
   setDistance(signed_arc_length_to_stop_point);
 
   // Check state
@@ -489,8 +489,8 @@ autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopP
       debug_data_.highest_confidence_traffic_light_point.value()};
   }
   velocity_factor_.set(
-    modified_path.points, planner_data_->current_pose.pose, target_point_with_lane_id.point.pose,
-    VelocityFactor::UNKNOWN);
+    modified_path.points, planner_data_->current_odometry->pose,
+    target_point_with_lane_id.point.pose, VelocityFactor::UNKNOWN);
   planning_utils::appendStopReason(stop_factor, stop_reason);
 
   return modified_path;

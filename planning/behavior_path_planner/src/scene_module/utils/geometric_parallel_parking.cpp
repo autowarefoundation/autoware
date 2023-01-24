@@ -43,7 +43,6 @@ using behavior_path_planner::util::removeOverlappingPoints;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
-using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::Transform;
 using geometry_msgs::msg::TransformStamped;
 using lanelet::utils::getArcCoordinates;
@@ -322,7 +321,7 @@ PathWithLaneId GeometricParallelParking::generateStraightPath(const Pose & start
   const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
   const auto start_arc_position = lanelet::utils::getArcCoordinates(current_lanes, start_pose);
 
-  const Pose current_pose = planner_data_->self_pose->pose;
+  const Pose current_pose = planner_data_->self_odometry->pose.pose;
   const auto current_arc_position = lanelet::utils::getArcCoordinates(current_lanes, current_pose);
 
   auto path = planner_data_->route_handler->getCenterLinePath(

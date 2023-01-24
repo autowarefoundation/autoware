@@ -129,7 +129,7 @@ void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)
 {
   const auto rh = planner_data_->route_handler_;
   for (const auto & crosswalk : getCrosswalksOnPath(
-         planner_data_->current_pose.pose, path, rh->getLaneletMapPtr(),
+         planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(),
          rh->getOverallGraphPtr())) {
     const auto module_id = crosswalk.id();
     if (!isModuleRegistered(module_id)) {
@@ -148,7 +148,7 @@ CrosswalkModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
 {
   const auto rh = planner_data_->route_handler_;
   const auto crosswalk_id_set = getCrosswalkIdSetOnPath(
-    planner_data_->current_pose.pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
+    planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
 
   return [crosswalk_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return crosswalk_id_set.count(scene_module->getModuleId()) == 0;
@@ -172,7 +172,7 @@ void WalkwayModuleManager::launchNewModules(
 {
   const auto rh = planner_data_->route_handler_;
   for (const auto & crosswalk : getCrosswalksOnPath(
-         planner_data_->current_pose.pose, path, rh->getLaneletMapPtr(),
+         planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(),
          rh->getOverallGraphPtr())) {
     const auto module_id = crosswalk.id();
     if (
@@ -191,7 +191,7 @@ WalkwayModuleManager::getModuleExpiredFunction(
 {
   const auto rh = planner_data_->route_handler_;
   const auto walkway_id_set = getCrosswalkIdSetOnPath(
-    planner_data_->current_pose.pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
+    planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
 
   return [walkway_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return walkway_id_set.count(scene_module->getModuleId()) == 0;

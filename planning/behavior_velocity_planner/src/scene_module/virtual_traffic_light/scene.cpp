@@ -256,7 +256,7 @@ bool VirtualTrafficLightModule::modifyPathVelocity(PathWithLaneId * path, StopRe
 
   // Copy data
   module_data_.head_pose = calcHeadPose(
-    planner_data_->current_pose.pose, planner_data_->vehicle_info_.max_longitudinal_offset_m);
+    planner_data_->current_odometry->pose, planner_data_->vehicle_info_.max_longitudinal_offset_m);
   module_data_.path = *path;
 
   // Calculate path index of end line
@@ -407,7 +407,7 @@ bool VirtualTrafficLightModule::isBeforeStartLine(const size_t end_line_idx)
   const size_t collision_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
     module_data_.path.points, collision->point, collision->index);
 
-  const auto & ego_pose = planner_data_->current_pose.pose;
+  const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
   const auto signed_arc_length = motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
@@ -430,7 +430,7 @@ bool VirtualTrafficLightModule::isBeforeStopLine(const size_t end_line_idx)
   const size_t collision_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
     module_data_.path.points, collision->point, collision->index);
 
-  const auto & ego_pose = planner_data_->current_pose.pose;
+  const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
   const auto signed_arc_length = motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
@@ -458,7 +458,7 @@ bool VirtualTrafficLightModule::isAfterAnyEndLine(const size_t end_line_idx)
   const size_t collision_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
     module_data_.path.points, collision->point, collision->index);
 
-  const auto & ego_pose = planner_data_->current_pose.pose;
+  const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
   const auto signed_arc_length = motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
@@ -479,7 +479,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine(const size_t end_line_idx)
   const size_t collision_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
     module_data_.path.points, collision->point, collision->index);
 
-  const auto & ego_pose = planner_data_->current_pose.pose;
+  const auto & ego_pose = planner_data_->current_odometry->pose;
   const size_t ego_seg_idx = findEgoSegmentIndex(module_data_.path.points);
   const auto signed_arc_length = motion_utils::calcSignedArcLength(
                                    module_data_.path.points, ego_pose.position, ego_seg_idx,
@@ -535,9 +535,9 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
   geometry_msgs::msg::Pose stop_pose{};
   if (!collision) {
     insertStopVelocityFromStart(path);
-    stop_pose = planner_data_->current_pose.pose;
+    stop_pose = planner_data_->current_odometry->pose;
   } else {
-    const auto & ego_pose = planner_data_->current_pose.pose;
+    const auto & ego_pose = planner_data_->current_odometry->pose;
     const size_t ego_seg_idx = findEgoSegmentIndex(path->points);
     const size_t collision_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
       path->points, collision->point, collision->index);
@@ -579,7 +579,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
   // Set StopReason
   setStopReason(stop_pose, stop_reason);
   velocity_factor_.set(
-    path->points, planner_data_->current_pose.pose, stop_pose, VelocityFactor::UNKNOWN,
+    path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN,
     command_.type);
 
   // Set data for visualization
@@ -602,7 +602,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtEndLine(
     }
 
     insertStopVelocityFromStart(path);
-    stop_pose = planner_data_->current_pose.pose;
+    stop_pose = planner_data_->current_odometry->pose;
   } else {
     const auto offset = -planner_data_->vehicle_info_.max_longitudinal_offset_m;
     const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
@@ -614,7 +614,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtEndLine(
   // Set StopReason
   setStopReason(stop_pose, stop_reason);
   velocity_factor_.set(
-    path->points, planner_data_->current_pose.pose, stop_pose, VelocityFactor::UNKNOWN);
+    path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
 
   // Set data for visualization
   module_data_.stop_head_pose_at_end_line =

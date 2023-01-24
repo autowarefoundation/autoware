@@ -44,7 +44,6 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
-using geometry_msgs::msg::PoseStamped;
 
 struct ParallelParkingParameters
 {

@@ -77,7 +77,6 @@ private:
   rclcpp::Subscription<Trajectory>::SharedPtr sub_current_trajectory_;
   rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
 
-  PoseStamped::ConstSharedPtr current_pose_ptr_;   // current vehicle pose
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
   VelocityLimit::ConstSharedPtr external_velocity_limit_ptr_{
     nullptr};                                     // external velocity limit message
@@ -91,8 +90,6 @@ private:
   // previous trajectory point closest to ego vehicle
   boost::optional<TrajectoryPoint> prev_closest_point_{};
   boost::optional<TrajectoryPoint> current_closest_point_from_prev_output_{};
-
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
 
   bool is_reverse_;
 

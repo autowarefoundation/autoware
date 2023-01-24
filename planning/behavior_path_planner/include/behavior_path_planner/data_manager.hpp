@@ -69,7 +69,6 @@ struct DrivableLanes
 
 struct PlannerData
 {
-  PoseStamped::ConstSharedPtr self_pose{};
   Odometry::ConstSharedPtr self_odometry{};
   AccelWithCovarianceStamped::ConstSharedPtr self_acceleration{};
   PredictedObjects::ConstSharedPtr dynamic_object{};

@@ -571,8 +571,6 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     std::bind(&ObstacleAvoidancePlanner::onParam, this, std::placeholders::_1));
 
   resetPlanning();
-
-  self_pose_listener_.waitForFirstPose();
 }
 
 rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::onParam(
@@ -865,9 +863,7 @@ rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::onParam(
 
 void ObstacleAvoidancePlanner::onOdometry(const Odometry::SharedPtr msg)
 {
-  current_twist_ptr_ = std::make_unique<geometry_msgs::msg::TwistStamped>();
-  current_twist_ptr_->header = msg->header;
-  current_twist_ptr_->twist = msg->twist.twist;
+  current_odometry_ptr_ = std::make_unique<Odometry>(*msg);
 }
 
 void ObstacleAvoidancePlanner::onObjects(const PredictedObjects::SharedPtr msg)
@@ -905,7 +901,7 @@ void ObstacleAvoidancePlanner::onPath(const Path::SharedPtr path_ptr)
 {
   stop_watch_.tic(__func__);
 
-  if (path_ptr->points.empty() || !current_twist_ptr_ || !objects_ptr_) {
+  if (path_ptr->points.empty() || !current_odometry_ptr_ || !objects_ptr_) {
     return;
   }
 
@@ -916,8 +912,8 @@ void ObstacleAvoidancePlanner::onPath(const Path::SharedPtr path_ptr)
   // create planner data
   PlannerData planner_data;
   planner_data.path = *path_ptr;
-  planner_data.ego_pose = self_pose_listener_.getCurrentPose()->pose;
-  planner_data.ego_vel = current_twist_ptr_->twist.linear.x;
+  planner_data.ego_pose = current_odometry_ptr_->pose.pose;
+  planner_data.ego_vel = current_odometry_ptr_->twist.twist.linear.x;
   planner_data.objects = objects_ptr_->objects;
 
   debug_data_ = DebugData();
