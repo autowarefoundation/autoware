@@ -5,6 +5,7 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 find_package(OpenCV REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
 
 ament_auto_add_library(behavior_path_planner_node SHARED
   src/behavior_path_planner_node.cpp

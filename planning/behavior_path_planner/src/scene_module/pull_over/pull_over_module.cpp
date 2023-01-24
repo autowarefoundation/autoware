@@ -22,6 +22,7 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <magic_enum.hpp>
 #include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -845,7 +846,11 @@ void PullOverModule::setDebugData()
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
   using motion_utils::createStopVirtualWallMarker;
+  using tier4_autoware_utils::createDefaultMarker;
   using tier4_autoware_utils::createMarkerColor;
+  using tier4_autoware_utils::createMarkerScale;
+
+  const auto header = planner_data_->route_handler->getRouteHeader();
 
   const auto add = [this](const MarkerArray & added) {
     tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
@@ -853,7 +858,6 @@ void PullOverModule::setDebugData()
 
   if (parameters_.enable_goal_research) {
     // Visualize pull over areas
-    const auto header = planner_data_->route_handler->getRouteHeader();
     const auto color = status_.has_decided_path ? createMarkerColor(1.0, 1.0, 0.0, 0.999)  // yellow
                                                 : createMarkerColor(0.0, 1.0, 0.0, 0.999);  // green
     const double z = refined_goal_pose_.position.z;
@@ -871,6 +875,19 @@ void PullOverModule::setDebugData()
     add(createPoseMarkerArray(
       status_.pull_over_path.end_pose, "pull_over_end_pose", 0, 0.3, 0.3, 0.9));
     add(createPathMarkerArray(status_.pull_over_path.getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
+  }
+
+  // Visualize planner type text
+  {
+    visualization_msgs::msg::MarkerArray planner_type_marker_array{};
+    auto marker = createDefaultMarker(
+      header.frame_id, header.stamp, "planner_type", 0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0),
+      createMarkerColor(1.0, 1.0, 1.0, 0.99));
+    marker.pose = modified_goal_pose_->goal_pose;
+    marker.text = magic_enum::enum_name(status_.pull_over_path.type);
+    planner_type_marker_array.markers.push_back(marker);
+    add(planner_type_marker_array);
   }
 
   // Visualize debug poses
