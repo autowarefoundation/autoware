@@ -428,6 +428,12 @@ bool RouteHandler::isDeadEndLanelet(const lanelet::ConstLanelet & lanelet) const
   return !getNextLaneletWithinRoute(lanelet, &next_lanelet);
 }
 
+lanelet::ConstLanelets RouteHandler::getLaneChangeableNeighbors(
+  const lanelet::ConstLanelet & lanelet) const
+{
+  return lanelet::utils::query::getLaneChangeableNeighbors(routing_graph_ptr_, lanelet);
+}
+
 lanelet::ConstLanelets RouteHandler::getLaneletSequenceAfter(
   const lanelet::ConstLanelet & lanelet, const double min_length) const
 {

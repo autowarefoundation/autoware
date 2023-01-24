@@ -305,18 +305,13 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
 
   const int num_lane_change =
     std::abs(route_handler->getNumLaneToPreferredLane(current_lanes.back()));
-  double optional_lengths{0.0};
-  const auto isInIntersection = util::checkLaneIsInIntersection(
-    *route_handler, reference_path, current_lanes, common_parameters, num_lane_change,
-    optional_lengths);
-  if (isInIntersection) {
-    reference_path = util::getCenterLinePath(
-      *route_handler, current_lanes, current_pose, common_parameters.backward_path_length,
-      common_parameters.forward_path_length, common_parameters, optional_lengths);
-  }
+
+  reference_path = util::getCenterLinePath(
+    *route_handler, current_lanes, current_pose, common_parameters.backward_path_length,
+    common_parameters.forward_path_length, common_parameters, 0.0);
 
   const double lane_change_buffer =
-    util::calcLaneChangeBuffer(common_parameters, num_lane_change, optional_lengths);
+    util::calcLaneChangeBuffer(common_parameters, num_lane_change, 0.0);
 
   reference_path = util::setDecelerationVelocity(
     *route_handler, reference_path, current_lanes, parameters_->lane_change_prepare_duration,

@@ -456,27 +456,19 @@ bool hasEnoughDistance(
   }
 
   if (
-    lane_change_total_distance + lane_change_required_distance >
-    util::getDistanceToNextIntersection(current_pose, current_lanes)) {
-    return false;
-  }
-
-  if (
     route_handler.isInGoalRouteSection(current_lanes.back()) &&
     lane_change_total_distance + lane_change_required_distance >
       util::getSignedDistance(current_pose, goal_pose, current_lanes)) {
     return false;
   }
 
-  if (
-    lane_change_total_distance + lane_change_required_distance >
-    util::getDistanceToCrosswalk(current_pose, current_lanes, *overall_graphs)) {
-    return false;
-  }
-
   // return is there is no target lanes. Else continue checking
   if (target_lanes.empty()) {
     return true;
+  }
+
+  if (lane_change_total_distance > util::getDistanceToEndOfLane(current_pose, target_lanes)) {
+    return false;
   }
 
   return true;
@@ -1003,22 +995,9 @@ bool hasEnoughDistanceToLaneChangeAfterAbort(
   }
 
   if (
-    abort_plus_lane_change_distance >
-    util::getDistanceToNextIntersection(current_pose, current_lanes)) {
-    return false;
-  }
-
-  if (
     route_handler.isInGoalRouteSection(current_lanes.back()) &&
     abort_plus_lane_change_distance >
       util::getSignedDistance(current_pose, route_handler.getGoalPose(), current_lanes)) {
-    return false;
-  }
-
-  if (
-    abort_plus_lane_change_distance >
-    util::getDistanceToCrosswalk(
-      current_pose, current_lanes, *route_handler.getOverallGraphPtr())) {
     return false;
   }
 

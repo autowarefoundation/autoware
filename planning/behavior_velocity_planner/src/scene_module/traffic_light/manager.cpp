@@ -125,7 +125,7 @@ void TrafficLightModuleManager::launchNewModules(
     // Use lanelet_id to unregister module when the route is changed
     const auto lane_id = traffic_light_reg_elem.second.id();
     const auto module_id = lane_id;
-    if (!isModuleRegistered(module_id)) {
+    if (!isModuleRegisteredFromRegElement(module_id)) {
       registerModule(std::make_shared<TrafficLightModule>(
         module_id, lane_id, *(traffic_light_reg_elem.first), traffic_light_reg_elem.second,
         planner_param_, logger_.get_child("traffic_light_module"), clock_));
@@ -143,9 +143,47 @@ TrafficLightModuleManager::getModuleExpiredFunction(
   const auto lanelet_id_set = planning_utils::getLaneletIdSetOnPath<TrafficLight>(
     path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_odometry->pose);
 
-  return [lanelet_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
-    return lanelet_id_set.count(scene_module->getModuleId()) == 0;
+  return [this, lanelet_id_set](
+           [[maybe_unused]] const std::shared_ptr<SceneModuleInterface> & scene_module) {
+    for (const auto & id : lanelet_id_set) {
+      if (isModuleRegisteredFromRegElement(id)) {
+        return false;
+      }
+    }
+    return true;
   };
+}
+
+bool TrafficLightModuleManager::isModuleRegisteredFromRegElement(const lanelet::Id & id) const
+{
+  const auto lane = planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(id);
+
+  for (const auto & registered_id : registered_module_id_set_) {
+    const auto registered_lane =
+      planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(registered_id);
+    for (const auto & registered_element : registered_lane.regulatoryElementsAs<TrafficLight>()) {
+      for (const auto & element : lane.regulatoryElementsAs<TrafficLight>()) {
+        if (hasSameTrafficLight(element, registered_element)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool TrafficLightModuleManager::hasSameTrafficLight(
+  const lanelet::TrafficLightConstPtr element,
+  const lanelet::TrafficLightConstPtr registered_element) const
+{
+  for (const auto & traffic_light : element->trafficLights()) {
+    for (const auto & registered_traffic_light : registered_element->trafficLights()) {
+      if (traffic_light.id() == registered_traffic_light.id()) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace behavior_velocity_planner
