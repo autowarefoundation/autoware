@@ -87,10 +87,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   perception_subscriber_ = create_subscription<PredictedObjects>(
     "~/input/perception", 1, std::bind(&BehaviorPathPlannerNode::onPerception, this, _1),
     createSubscriptionOptions(this));
-  // todo: change to ~/input
   occupancy_grid_subscriber_ = create_subscription<OccupancyGrid>(
-    "/perception/occupancy_grid_map/map", 1,
-    std::bind(&BehaviorPathPlannerNode::onOccupancyGrid, this, _1),
+    "~/input/occupancy_grid_map", 1, std::bind(&BehaviorPathPlannerNode::onOccupancyGrid, this, _1),
     createSubscriptionOptions(this));
   scenario_subscriber_ = create_subscription<Scenario>(
     "~/input/scenario", 1,
