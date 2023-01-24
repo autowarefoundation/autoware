@@ -144,6 +144,7 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
   param_.max_yaw_deviation_deg = declare_parameter("max_yaw_deviation_deg", 30.0);
   param_.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
   param_.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
+  param_.min_braking_distance = declare_parameter<double>("min_braking_distance");
 
   // Parameter Callback
   set_param_res_ =
@@ -367,6 +368,7 @@ rcl_interfaces::msg::SetParametersResult LaneDepartureCheckerNode::onParameter(
     update_param(parameters, "resample_interval", param_.resample_interval);
     update_param(parameters, "max_deceleration", param_.max_deceleration);
     update_param(parameters, "delay_time", param_.delay_time);
+    update_param(parameters, "min_braking_distance", param_.min_braking_distance);
 
     if (lane_departure_checker_) {
       lane_departure_checker_->setParam(param_);
