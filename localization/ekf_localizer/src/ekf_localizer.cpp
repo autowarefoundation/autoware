@@ -22,6 +22,7 @@
 #include "ekf_localizer/state_index.hpp"
 #include "ekf_localizer/state_transition.hpp"
 #include "ekf_localizer/warning.hpp"
+#include "ekf_localizer/warning_message.hpp"
 
 #include <rclcpp/duration.hpp>
 #include <rclcpp/logging.hpp>
@@ -437,16 +438,16 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   }
 
   /* Gate */
-  Eigen::MatrixXd y_ekf(dim_y, 1);
-  y_ekf << ekf_.getXelement(delay_step * dim_x_ + IDX::X),
-    ekf_.getXelement(delay_step * dim_x_ + IDX::Y), ekf_yaw;
+  const Eigen::Vector3d y_ekf(
+    ekf_.getXelement(delay_step * dim_x_ + IDX::X), ekf_.getXelement(delay_step * dim_x_ + IDX::Y),
+    ekf_yaw);
   const Eigen::MatrixXd P_curr = ekf_.getLatestP();
   const Eigen::MatrixXd P_y = P_curr.block(0, 0, dim_y, dim_y);
-  if (!mahalanobisGate(params_.pose_gate_dist, y_ekf, y, P_y)) {
-    warning_.warnThrottle(
-      "[EKF] Pose measurement update, mahalanobis distance is over limit. ignore "
-      "measurement data.",
-      2000);
+
+  const double distance = mahalanobis(y_ekf, y, P_y);
+  if (distance > params_.pose_gate_dist) {
+    warning_.warnThrottle(mahalanobisWarningMessage(distance, params_.pose_gate_dist), 2000);
+    warning_.warnThrottle("Ignore the measurement data.", 2000);
     return;
   }
 
@@ -515,17 +516,16 @@ void EKFLocalizer::measurementUpdateTwist(
     return;
   }
 
-  /* Gate */
-  Eigen::MatrixXd y_ekf(dim_y, 1);
-  y_ekf << ekf_.getXelement(delay_step * dim_x_ + IDX::VX),
-    ekf_.getXelement(delay_step * dim_x_ + IDX::WZ);
+  const Eigen::Vector2d y_ekf(
+    ekf_.getXelement(delay_step * dim_x_ + IDX::VX),
+    ekf_.getXelement(delay_step * dim_x_ + IDX::WZ));
   const Eigen::MatrixXd P_curr = ekf_.getLatestP();
   const Eigen::MatrixXd P_y = P_curr.block(4, 4, dim_y, dim_y);
-  if (!mahalanobisGate(params_.twist_gate_dist, y_ekf, y, P_y)) {
-    warning_.warnThrottle(
-      "[EKF] Twist measurement update, mahalanobis distance is over limit. ignore "
-      "measurement data.",
-      2000);
+
+  const double distance = mahalanobis(y_ekf, y, P_y);
+  if (distance > params_.twist_gate_dist) {
+    warning_.warnThrottle(mahalanobisWarningMessage(distance, params_.twist_gate_dist), 2000);
+    warning_.warnThrottle("Ignore the measurement data.", 2000);
     return;
   }
 

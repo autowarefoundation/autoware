@@ -1,4 +1,4 @@
-// Copyright 2022 Autoware Foundation
+// Copyright 2023 Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EKF_LOCALIZER__MAHALANOBIS_HPP_
-#define EKF_LOCALIZER__MAHALANOBIS_HPP_
+#include "ekf_localizer/warning_message.hpp"
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include <fmt/core.h>
+#include <gtest/gtest.h>
 
-double squaredMahalanobis(
-  const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
-
-double mahalanobis(const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
-
-#endif  // EKF_LOCALIZER__MAHALANOBIS_HPP_
+std::string mahalanobisWarningMessage(const double distance, const double max_distance)
+{
+  const std::string s = "The Mahalanobis distance {:.4f} is over the limit {:.4f}.";
+  return fmt::format(s, distance, max_distance);
+}

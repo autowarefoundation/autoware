@@ -1,4 +1,4 @@
-// Copyright 2022 Autoware Foundation
+// Copyright 2023 Autoware Foundation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EKF_LOCALIZER__MAHALANOBIS_HPP_
-#define EKF_LOCALIZER__MAHALANOBIS_HPP_
+#include "ekf_localizer/warning_message.hpp"
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include <gtest/gtest.h>
 
-double squaredMahalanobis(
-  const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
-
-double mahalanobis(const Eigen::VectorXd & x, const Eigen::VectorXd & y, const Eigen::MatrixXd & C);
-
-#endif  // EKF_LOCALIZER__MAHALANOBIS_HPP_
+TEST(MahalanobisWarningMessage, SmokeTest)
+{
+  EXPECT_STREQ(
+    mahalanobisWarningMessage(1.0, 0.5).c_str(),
+    "The Mahalanobis distance 1.0000 is over the limit 0.5000.");
+}
