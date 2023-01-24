@@ -17,6 +17,8 @@
 
 #include <string>
 
+std::string poseDelayTimeWarningMessage(const double delay_time);
+std::string twistDelayTimeWarningMessage(const double delay_time);
 std::string mahalanobisWarningMessage(const double distance, const double max_distance);
 
 #endif  // EKF_LOCALIZER__WARNING_MESSAGE_HPP_

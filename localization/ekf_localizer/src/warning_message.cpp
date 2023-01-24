@@ -15,7 +15,20 @@
 #include "ekf_localizer/warning_message.hpp"
 
 #include <fmt/core.h>
-#include <gtest/gtest.h>
+
+#include <string>
+
+std::string poseDelayTimeWarningMessage(const double delay_time)
+{
+  const std::string s = "Pose time stamp is inappropriate, set delay to 0[s]. delay = {:.3f}";
+  return fmt::format(s, delay_time);
+}
+
+std::string twistDelayTimeWarningMessage(const double delay_time)
+{
+  const std::string s = "Twist time stamp is inappropriate, set delay to 0[s]. delay = {:.3f}";
+  return fmt::format(s, delay_time);
+}
 
 std::string mahalanobisWarningMessage(const double distance, const double max_distance)
 {
