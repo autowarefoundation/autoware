@@ -165,12 +165,12 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVirtualWallMarkerArray()
 {
   visualization_msgs::msg::MarkerArray wall_marker;
   rclcpp::Time now = node_.now();
+
   size_t id = 0;
 
-  for (const auto & p : stop_pose_) {
-    appendMarkerArray(
-      motion_utils::createStopVirtualWallMarker(p, "run_out", now, id++), &wall_marker);
-  }
+  appendMarkerArray(
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_pose_, "run_out", now, id),
+    &wall_marker, now);
 
   stop_pose_.clear();
 

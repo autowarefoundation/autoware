@@ -175,21 +175,29 @@ visualization_msgs::msg::MarkerArray DetectionAreaModule::createVirtualWallMarke
   const rclcpp::Time now = clock_->now();
 
   auto id = getModuleId();
+
+  std::vector<Pose> stop_poses;
+  std::vector<Pose> dead_line_poses;
+
   for (const auto & p : debug_data_.stop_poses) {
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
-    appendMarkerArray(
-      motion_utils::createStopVirtualWallMarker(p_front, "detection_area", now, id++), &wall_marker,
-      now);
+    stop_poses.push_back(p_front);
   }
+  appendMarkerArray(
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(
+      stop_poses, "detection_area", now, id),
+    &wall_marker, now);
 
   for (const auto & p : debug_data_.dead_line_poses) {
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
-    appendMarkerArray(
-      motion_utils::createDeadLineVirtualWallMarker(p_front, "detection_area", now, id++),
-      &wall_marker, now);
+    dead_line_poses.push_back(p_front);
   }
+  appendMarkerArray(
+    virtual_wall_marker_creator_->createDeadLineVirtualWallMarker(
+      dead_line_poses, "detection_area", now, id),
+    &wall_marker, now);
 
   return wall_marker;
 }

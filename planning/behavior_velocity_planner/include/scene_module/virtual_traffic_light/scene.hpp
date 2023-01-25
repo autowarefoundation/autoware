@@ -94,6 +94,8 @@ private:
   tier4_v2x_msgs::msg::InfrastructureCommand command_;
   MapData map_data_;
   ModuleData module_data_;
+  std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_ =
+    std::make_shared<motion_utils::VirtualWallMarkerCreator>();
 
   void updateInfrastructureCommand();
 

@@ -38,6 +38,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -174,6 +175,9 @@ private:
 
   // whether ego passed safety_slow_point
   bool passed_safety_slow_point_;
+
+  std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_crosswalk_ =
+    std::make_shared<motion_utils::VirtualWallMarkerCreator>();
 };
 }  // namespace behavior_velocity_planner
 

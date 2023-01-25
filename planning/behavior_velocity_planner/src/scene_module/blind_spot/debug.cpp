@@ -78,8 +78,8 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createVirtualWallMarkerArr
 
   if (!isActivated() && !is_over_pass_judge_line_) {
     appendMarkerArray(
-      motion_utils::createStopVirtualWallMarker(
-        debug_data_.virtual_wall_pose, "blind_spot", now, module_id_),
+      virtual_wall_marker_creator_->createStopVirtualWallMarker(
+        {debug_data_.virtual_wall_pose}, "blind_spot", now, module_id_),
       &wall_marker, now);
   }
   return wall_marker;
