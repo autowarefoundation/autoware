@@ -675,6 +675,37 @@ visualization_msgs::msg::MarkerArray getVehicleCirclesMarkerArray(
   return msg;
 }
 
+visualization_msgs::msg::MarkerArray getFootprintByDrivableAreaMarkerArray(
+  const geometry_msgs::msg::Pose & stop_pose, const VehicleParam & vehicle_param,
+  const std::string & ns, const double r, const double g, const double b)
+{
+  visualization_msgs::msg::MarkerArray msg;
+
+  auto marker = createDefaultMarker(
+    "map", rclcpp::Clock().now(), ns, 1, visualization_msgs::msg::Marker::LINE_STRIP,
+    createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(r, g, b, 1.0));
+  marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+
+  const double base_to_right = (vehicle_param.wheel_tread / 2.0) + vehicle_param.right_overhang;
+  const double base_to_left = (vehicle_param.wheel_tread / 2.0) + vehicle_param.left_overhang;
+  const double base_to_front = vehicle_param.length - vehicle_param.rear_overhang;
+  const double base_to_rear = vehicle_param.rear_overhang;
+
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, base_to_front, base_to_left, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, base_to_front, -base_to_right, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, -base_to_rear, -base_to_right, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, -base_to_rear, base_to_left, 0.0).position);
+  marker.points.push_back(marker.points.front());
+
+  msg.markers.push_back(marker);
+
+  return msg;
+}
+
 visualization_msgs::msg::MarkerArray getVirtualWallMarkerArray(
   const geometry_msgs::msg::Pose & pose, const std::string & ns, const double r, const double g,
   const double b)
@@ -793,6 +824,15 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
       debug_data.vehicle_circle_radiuses, debug_data.mpt_visualize_sampling_num, "vehicle_circles",
       1.0, 0.3, 0.3),
     &vis_marker_array);
+
+  // footprint by drivable area
+  if (debug_data.stop_pose_by_drivable_area) {
+    appendMarkerArray(
+      getFootprintByDrivableAreaMarkerArray(
+        *debug_data.stop_pose_by_drivable_area, vehicle_param, "footprint_by_drivable_area", 1.0,
+        0.0, 0.0),
+      &vis_marker_array);
+  }
 
   return vis_marker_array;
 }
