@@ -510,20 +510,8 @@ bool isLaneChangePathSafe(
   const double check_end_time = lane_change_prepare_duration + lane_changing_safety_check_duration;
   const double min_lc_speed{lane_change_parameters.minimum_lane_change_velocity};
 
-  const auto get_pose = std::invoke([&]() {
-    Pose p;
-    double dist{0.0};
-    for (size_t i = 1; i < path.points.size(); ++i) {
-      dist += motion_utils::calcSignedArcLength(path.points, i - 1, i);
-      if (dist >= common_parameters.backward_path_length) {
-        return path.points.at(i).point.pose;
-      }
-    }
-    return path.points.front().point.pose;
-  });
-
   const auto vehicle_predicted_path = util::convertToPredictedPath(
-    path, current_twist, get_pose, static_cast<double>(current_seg_idx), check_end_time,
+    path, current_twist, current_pose, static_cast<double>(current_seg_idx), check_end_time,
     time_resolution, acceleration, min_lc_speed);
   const auto prepare_phase_ignore_target_speed_thresh =
     lane_change_parameters.prepare_phase_ignore_target_speed_thresh;
