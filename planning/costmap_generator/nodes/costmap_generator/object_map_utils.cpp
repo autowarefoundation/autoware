@@ -61,7 +61,7 @@ void FillPolygonAreas(
   grid_map::GridMap & out_grid_map,
   const std::vector<std::vector<geometry_msgs::msg::Point>> & in_points,
   const std::string & in_grid_layer_name, const int in_layer_background_value,
-  const int in_layer_min_value, const int in_fill_color, const int in_layer_max_value,
+  const int in_fill_color, const int in_layer_min_value, const int in_layer_max_value,
   const std::string & in_tf_target_frame, const std::string & in_tf_source_frame,
   const tf2_ros::Buffer & in_tf_buffer)
 {
