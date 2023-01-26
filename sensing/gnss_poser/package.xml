@@ -11,6 +11,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <build_depend>autoware_cmake</build_depend>
+  <build_depend>libboost-dev</build_depend>
 
   <depend>autoware_sensing_msgs</depend>
   <depend>geo_pos_conv</depend>
