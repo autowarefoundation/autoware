@@ -41,7 +41,7 @@ private:
   using COV_IDX = tier4_autoware_utils::xyz_covariance_index::XYZ_COV_IDX;
 
 public:
-  GyroOdometer();
+  explicit GyroOdometer(const rclcpp::NodeOptions & options);
   ~GyroOdometer();
 
 private:

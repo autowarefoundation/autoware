@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Autoware Foundation
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gyro_odometer/gyro_odometer_core.hpp"
-
 #include <rclcpp/rclcpp.hpp>
 
-#include <memory>
+#include <gtest/gtest.h>
 
 int main(int argc, char ** argv)
 {
+  testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
-  rclcpp::NodeOptions options;
-  auto node = std::make_shared<GyroOdometer>(options);
-  rclcpp::spin(node);
+  bool result = RUN_ALL_TESTS();
   rclcpp::shutdown();
-
-  return 0;
+  return result;
 }
