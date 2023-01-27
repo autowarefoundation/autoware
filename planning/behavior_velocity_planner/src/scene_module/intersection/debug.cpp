@@ -109,7 +109,6 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
 
-  const auto state = state_machine_.getState();
   const auto now = this->clock_->now();
 
   appendMarkerArray(
@@ -130,15 +129,11 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
 
   appendMarkerArray(
     debug::createPolygonMarkerArray(
-      debug_data_.ego_lane_polygon, "ego_lane", lane_id_, now, 0.3, 0.0, 0.0, 0.0, 0.3, 0.7),
-    &debug_marker_array);
-
-  appendMarkerArray(
-    debug::createPolygonMarkerArray(
       debug_data_.stuck_vehicle_detect_area, "stuck_vehicle_detect_area", lane_id_, now, 0.3, 0.0,
       0.0, 0.0, 0.5, 0.5),
     &debug_marker_array, now);
 
+  // TODO(Mamoru Sobue): should be changed path polygon for LC
   appendMarkerArray(
     debug::createPolygonMarkerArray(
       debug_data_.candidate_collision_ego_lane_polygon, "candidate_collision_ego_lane_polygon",
@@ -169,18 +164,6 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       debug_data_.predicted_obj_pose, "predicted_obj_pose", module_id_, 0.7, 0.85, 0.9),
     &debug_marker_array, now);
 
-  if (state == StateMachine::State::STOP) {
-    appendMarkerArray(
-      createPoseMarkerArray(
-        debug_data_.stop_point_pose, "stop_point_pose", module_id_, 1.0, 0.0, 0.0),
-      &debug_marker_array, now);
-
-    appendMarkerArray(
-      createPoseMarkerArray(
-        debug_data_.judge_point_pose, "judge_point_pose", module_id_, 1.0, 1.0, 0.5),
-      &debug_marker_array, now);
-  }
-
   return debug_marker_array;
 }
 
@@ -189,19 +172,11 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
   visualization_msgs::msg::MarkerArray wall_marker;
 
   const auto now = this->clock_->now();
-  const auto state = state_machine_.getState();
 
-  if (debug_data_.stop_required) {
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {debug_data_.stop_wall_pose}, "intersection", now, module_id_),
-      &wall_marker, now);
-  } else if (state == StateMachine::State::STOP) {
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {debug_data_.slow_wall_pose}, "intersection", now, module_id_),
-      &wall_marker, now);
-  }
+  appendMarkerArray(
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(
+      {debug_data_.stop_wall_pose}, "intersection", now, module_id_),
+    &wall_marker, now);
   return wall_marker;
 }
 
