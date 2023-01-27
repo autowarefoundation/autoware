@@ -42,17 +42,17 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
   use_steer_ff_ = declare_parameter("use_steer_ff", true);
   use_steer_fb_ = declare_parameter("use_steer_fb", true);
   if (convert_accel_cmd_) {
-    if (!accel_map_.readAccelMapFromCSV(csv_path_accel_map)) {
+    if (!accel_map_.readAccelMapFromCSV(csv_path_accel_map, true)) {
       throw std::invalid_argument("Accel map is invalid.");
     }
   }
   if (convert_brake_cmd_) {
-    if (!brake_map_.readBrakeMapFromCSV(csv_path_brake_map)) {
+    if (!brake_map_.readBrakeMapFromCSV(csv_path_brake_map, true)) {
       throw std::invalid_argument("Brake map is invalid.");
     }
   }
   if (convert_steer_cmd_) {
-    if (!steer_map_.readSteerMapFromCSV(csv_path_steer_map)) {
+    if (!steer_map_.readSteerMapFromCSV(csv_path_steer_map, true)) {
       throw std::invalid_argument("Steer map is invalid.");
     }
     const auto kp_steer{declare_parameter("steer_pid.kp", 150.0)};

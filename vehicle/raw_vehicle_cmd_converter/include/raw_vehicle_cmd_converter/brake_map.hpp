@@ -29,7 +29,7 @@ namespace raw_vehicle_cmd_converter
 class BrakeMap
 {
 public:
-  bool readBrakeMapFromCSV(const std::string & csv_path);
+  bool readBrakeMapFromCSV(const std::string & csv_path, const bool validation = false);
   bool getBrake(const double acc, const double vel, double & brake);
   bool getAcceleration(const double brake, const double vel, double & acc) const;
   std::vector<double> getVelIdx() const { return vel_index_; }

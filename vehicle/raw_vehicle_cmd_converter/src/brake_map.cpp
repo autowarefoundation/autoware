@@ -22,7 +22,7 @@
 
 namespace raw_vehicle_cmd_converter
 {
-bool BrakeMap::readBrakeMapFromCSV(const std::string & csv_path)
+bool BrakeMap::readBrakeMapFromCSV(const std::string & csv_path, const bool validation)
 {
   CSVLoader csv(csv_path);
   std::vector<std::vector<std::string>> table;
@@ -36,7 +36,7 @@ bool BrakeMap::readBrakeMapFromCSV(const std::string & csv_path)
   brake_index_ = CSVLoader::getColumnIndex(table);
   brake_map_ = CSVLoader::getMap(table);
   brake_index_rev_ = brake_index_;
-  if (!CSVLoader::validateMap(brake_map_, false)) {
+  if (validation && !CSVLoader::validateMap(brake_map_, false)) {
     return false;
   }
   std::reverse(std::begin(brake_index_rev_), std::end(brake_index_rev_));

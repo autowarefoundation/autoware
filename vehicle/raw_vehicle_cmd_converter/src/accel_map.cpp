@@ -25,7 +25,7 @@ using namespace std::literals::chrono_literals;
 
 namespace raw_vehicle_cmd_converter
 {
-bool AccelMap::readAccelMapFromCSV(const std::string & csv_path)
+bool AccelMap::readAccelMapFromCSV(const std::string & csv_path, const bool validation)
 {
   CSVLoader csv(csv_path);
   std::vector<std::vector<std::string>> table;
@@ -38,7 +38,7 @@ bool AccelMap::readAccelMapFromCSV(const std::string & csv_path)
   vel_index_ = CSVLoader::getRowIndex(table);
   throttle_index_ = CSVLoader::getColumnIndex(table);
   accel_map_ = CSVLoader::getMap(table);
-  if (!CSVLoader::validateMap(accel_map_, true)) {
+  if (validation && !CSVLoader::validateMap(accel_map_, true)) {
     return false;
   }
   return true;

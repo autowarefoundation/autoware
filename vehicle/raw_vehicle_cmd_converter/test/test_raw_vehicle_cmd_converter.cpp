@@ -95,9 +95,9 @@ TEST(ConverterTests, LoadExampleMap)
   const auto data_path =
     ament_index_cpp::get_package_share_directory("raw_vehicle_cmd_converter") + "/data/default/";
   // for invalid path
-  EXPECT_TRUE(accel_map.readAccelMapFromCSV(data_path + "accel_map.csv"));
-  EXPECT_TRUE(brake_map.readBrakeMapFromCSV(data_path + "brake_map.csv"));
-  EXPECT_TRUE(steer_map.readSteerMapFromCSV(data_path + "steer_map.csv"));
+  EXPECT_TRUE(accel_map.readAccelMapFromCSV(data_path + "accel_map.csv", true));
+  EXPECT_TRUE(brake_map.readBrakeMapFromCSV(data_path + "brake_map.csv", true));
+  EXPECT_TRUE(steer_map.readSteerMapFromCSV(data_path + "steer_map.csv", true));
 }
 
 TEST(ConverterTests, LoadValidPath)
@@ -112,14 +112,14 @@ TEST(ConverterTests, LoadValidPath)
   EXPECT_TRUE(loadSteerMapData(steer_map));
 
   // for invalid path
-  EXPECT_FALSE(accel_map.readAccelMapFromCSV("invalid.csv"));
-  EXPECT_FALSE(brake_map.readBrakeMapFromCSV("invalid.csv"));
-  EXPECT_FALSE(steer_map.readSteerMapFromCSV("invalid.csv"));
+  EXPECT_FALSE(accel_map.readAccelMapFromCSV("invalid.csv", true));
+  EXPECT_FALSE(brake_map.readBrakeMapFromCSV("invalid.csv", true));
+  EXPECT_FALSE(steer_map.readSteerMapFromCSV("invalid.csv", true));
 
   // for invalid maps
-  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_1col_map.csv"));
-  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_inconsistent_rows_map.csv"));
-  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_not_interpolatable.csv"));
+  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_1col_map.csv", true));
+  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_inconsistent_rows_map.csv", true));
+  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_not_interpolatable.csv", true));
 }
 
 TEST(ConverterTests, AccelMapCalculation)
