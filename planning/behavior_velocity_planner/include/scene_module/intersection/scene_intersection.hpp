@@ -93,6 +93,7 @@ public:
     double
       assumed_front_car_decel;  //! the expected deceleration of front car when front car as well
     bool enable_front_car_decel_prediction;  //! flag for using above feature
+    double stop_overshoot_margin;            //! overshoot margin for stuck, collsion detection
   };
 
   IntersectionModule(

@@ -69,6 +69,7 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.assumed_front_car_decel = node.declare_parameter(ns + ".assumed_front_car_decel", 1.0);
   ip.enable_front_car_decel_prediction =
     node.declare_parameter(ns + ".enable_front_car_decel_prediction", false);
+  ip.stop_overshoot_margin = node.declare_parameter(ns + ".stop_overshoot_margin", 0.5);
 }
 
 MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node)

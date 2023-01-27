@@ -20,6 +20,7 @@
       use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
       assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
       enable_front_car_decel_prediction: false # By default this feature is disabled
+      stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collsion detection
 
     merge_from_private_road:
       stop_duration_sec: 1.0
