@@ -914,13 +914,26 @@ double PidLongitudinalController::applyVelocityFeedback(
   std::vector<double> pid_contributions(3);
   const double pid_acc =
     m_pid_vel.calculate(error_vel_filtered, dt, enable_integration, pid_contributions);
-  const double feedback_acc = target_motion.acc + pid_acc;
+
+  // Feedforward scaling:
+  // This is for the coordinate convertion where feedforward is applied, from Time to Arclength.
+  // Details: For accurate control, the feedforward should be calculated in the arclength coordinate
+  // system, not in the time coordinate system. Otherwise, even if FF is applied, the vehicle speed
+  // deviation will be bigger.
+  constexpr double ff_scale_max = 2.0;  // for safety
+  constexpr double ff_scale_min = 0.5;  // for safety
+  const double ff_scale =
+    std::clamp(current_vel_abs / std::max(target_vel_abs, 0.1), ff_scale_min, ff_scale_max);
+  const double ff_acc = target_motion.acc * ff_scale;
+
+  const double feedback_acc = ff_acc + pid_acc;
 
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_PID_APPLIED, feedback_acc);
   m_debug_values.setValues(DebugValues::TYPE::ERROR_VEL_FILTERED, error_vel_filtered);
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_P_CONTRIBUTION, pid_contributions.at(0));
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_I_CONTRIBUTION, pid_contributions.at(1));
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_D_CONTRIBUTION, pid_contributions.at(2));
+  m_debug_values.setValues(DebugValues::TYPE::FF_SCALE, ff_acc);
 
   return feedback_acc;
 }
