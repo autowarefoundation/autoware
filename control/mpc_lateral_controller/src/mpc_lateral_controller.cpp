@@ -123,6 +123,19 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
     m_mpc.m_input_buffer = std::deque<double>(static_cast<size_t>(delay_step), 0.0);
   }
 
+  /* steering offset compensation */
+  {
+    const std::string ns = "steering_offset.";
+    enable_auto_steering_offset_removal_ =
+      node_->declare_parameter<bool>(ns + "enable_auto_steering_offset_removal");
+    const auto vel_thres = node_->declare_parameter<double>(ns + "update_vel_threshold");
+    const auto steer_thres = node_->declare_parameter<double>(ns + "update_steer_threshold");
+    const auto limit = node_->declare_parameter<double>(ns + "steering_offset_limit");
+    const auto num = node_->declare_parameter<int>(ns + "average_num");
+    steering_offset_ =
+      std::make_shared<SteeringOffsetEstimator>(wheelbase, num, vel_thres, steer_thres, limit);
+  }
+
   /* initialize lowpass filter */
   {
     const double steering_lpf_cutoff_hz =
@@ -148,6 +161,8 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
     "~/output/predicted_trajectory", 1);
   m_pub_debug_values = node_->create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
     "~/output/lateral_diagnostic", 1);
+  m_pub_steer_offset = node_->create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
+    "~/output/estimated_steer_offset", 1);
 
   // TODO(Frederik.Beaujean) ctor is too long, should factor out parameter declarations
   declareMPCparameters();
@@ -172,6 +187,9 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   setTrajectory(input_data.current_trajectory);
   m_current_kinematic_state = input_data.current_odometry;
   m_current_steering = input_data.current_steering;
+  if (enable_auto_steering_offset_removal_) {
+    m_current_steering.steering_tire_angle -= steering_offset_->getOffset();
+  }
 
   autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd;
   autoware_auto_planning_msgs::msg::Trajectory predicted_traj;
@@ -185,6 +203,13 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   const bool is_mpc_solved = m_mpc.calculateMPC(
     m_current_steering, m_current_kinematic_state.twist.twist.linear.x,
     m_current_kinematic_state.pose.pose, ctrl_cmd, predicted_traj, debug_values);
+
+  if (enable_auto_steering_offset_removal_) {
+    steering_offset_->updateOffset(
+      m_current_kinematic_state.twist.twist,
+      input_data.current_steering.steering_tire_angle);  // use unbiased steering
+    ctrl_cmd.steering_tire_angle += steering_offset_->getOffset();
+  }
 
   publishPredictedTraj(predicted_traj);
   publishDebugValues(debug_values);
@@ -367,6 +392,11 @@ void MpcLateralController::publishDebugValues(
 {
   debug_values.stamp = node_->now();
   m_pub_debug_values->publish(debug_values);
+
+  tier4_debug_msgs::msg::Float32Stamped offset;
+  offset.stamp = node_->now();
+  offset.data = steering_offset_->getOffset();
+  m_pub_steer_offset->publish(offset);
 }
 
 void MpcLateralController::declareMPCparameters()
