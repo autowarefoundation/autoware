@@ -61,7 +61,7 @@ control/vehicle_cmd_gate/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp @aut
 evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai @autowarefoundation/autoware-global-codeowners
 evaluator/localization_evaluator/** dominik.jargot@robotec.ai @autowarefoundation/autoware-global-codeowners
 launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
-launch/tier4_control_launch/** takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
+launch/tier4_control_launch/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_localization_launch/** yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_map_launch/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_perception_launch/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
