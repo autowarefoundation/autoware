@@ -203,6 +203,11 @@ void PidLongitudinalController::setCurrentAcceleration(
   m_current_accel = msg;
 }
 
+void PidLongitudinalController::setCurrentOperationMode(const OperationModeState & msg)
+{
+  m_current_operation_mode = msg;
+}
+
 void PidLongitudinalController::setTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & msg)
 {
@@ -357,6 +362,7 @@ trajectory_follower::LongitudinalOutput PidLongitudinalController::run(
   setTrajectory(input_data.current_trajectory);
   setKinematicState(input_data.current_odometry);
   setCurrentAcceleration(input_data.current_accel);
+  setCurrentOperationMode(input_data.current_operation_mode);
 
   // calculate current pose and control data
   geometry_msgs::msg::Pose current_pose = m_current_kinematic_state.pose.pose;
@@ -908,7 +914,9 @@ double PidLongitudinalController::applyVelocityFeedback(
 {
   const double current_vel_abs = std::fabs(current_vel);
   const double target_vel_abs = std::fabs(target_motion.vel);
-  const bool enable_integration = (current_vel_abs > m_current_vel_threshold_pid_integrate);
+  const bool is_under_control = m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
+  const bool enable_integration =
+    (current_vel_abs > m_current_vel_threshold_pid_integrate) && is_under_control;
   const double error_vel_filtered = m_lpf_vel_error->filter(target_vel_abs - current_vel_abs);
 
   std::vector<double> pid_contributions(3);

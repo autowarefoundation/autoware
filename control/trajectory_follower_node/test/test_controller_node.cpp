@@ -20,6 +20,7 @@
 #include "trajectory_follower_node/controller_node.hpp"
 #include "trajectory_follower_test_utils.hpp"
 
+#include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
@@ -39,6 +40,7 @@ using Trajectory = autoware_auto_planning_msgs::msg::Trajectory;
 using TrajectoryPoint = autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using VehicleOdometry = nav_msgs::msg::Odometry;
 using SteeringReport = autoware_auto_vehicle_msgs::msg::SteeringReport;
+using autoware_adapi_v1_msgs::msg::OperationModeState;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
 
 using FakeNodeFixture = autoware::tools::testing::FakeTestNode;
@@ -136,6 +138,14 @@ public:
     accel_pub->publish(acc_msg);
   };
 
+  void publish_autonomous_operation_mode()
+  {
+    OperationModeState msg;
+    msg.stamp = node->now();
+    msg.mode = OperationModeState::AUTONOMOUS;
+    operation_mode_pub->publish(msg);
+  };
+
   void publish_default_traj()
   {
     Trajectory traj_msg;
@@ -166,6 +176,9 @@ public:
 
   rclcpp::Publisher<AccelWithCovarianceStamped>::SharedPtr accel_pub =
     fnf->create_publisher<AccelWithCovarianceStamped>("controller/input/current_accel");
+
+  rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_pub =
+    fnf->create_publisher<OperationModeState>("controller/input/current_operation_mode");
 
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
     fnf->create_subscription<AckermannControlCommand>(
@@ -209,6 +222,7 @@ TEST_F(FakeNodeFixture, empty_trajectory)
   // Empty trajectory: expect a stopped command
   tester.publish_default_traj();
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_acc();
   tester.publish_default_steer();
 
@@ -225,6 +239,7 @@ TEST_F(FakeNodeFixture, straight_trajectory)
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -251,6 +266,7 @@ TEST_F(FakeNodeFixture, right_turn)
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -278,6 +294,7 @@ TEST_F(FakeNodeFixture, left_turn)
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -305,6 +322,7 @@ TEST_F(FakeNodeFixture, stopped)
 
   tester.send_default_transform();
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_acc();
 
   const double steering_tire_angle = -0.5;
@@ -335,6 +353,7 @@ TEST_F(FakeNodeFixture, longitudinal_keep_velocity)
 
   tester.send_default_transform();
   tester.publish_odom_vx(1.0);
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -373,6 +392,8 @@ TEST_F(FakeNodeFixture, longitudinal_slow_down)
   const double odom_vx = 1.0;
   tester.publish_odom_vx(odom_vx);
 
+  tester.publish_autonomous_operation_mode();
+
   // Publish non stopping trajectory
   Trajectory traj;
   traj.header.stamp = tester.node->now();
@@ -408,6 +429,8 @@ TEST_F(FakeNodeFixture, longitudinal_accelerate)
   const double odom_vx = 0.5;
   tester.publish_odom_vx(odom_vx);
 
+  tester.publish_autonomous_operation_mode();
+
   // Publish non stopping trajectory
   Trajectory traj;
   traj.header.stamp = tester.node->now();
@@ -438,6 +461,7 @@ TEST_F(FakeNodeFixture, longitudinal_stopped)
 
   tester.send_default_transform();
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -467,6 +491,7 @@ TEST_F(FakeNodeFixture, longitudinal_reverse)
   tester.send_default_transform();
 
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -493,6 +518,7 @@ TEST_F(FakeNodeFixture, longitudinal_emergency)
 
   tester.send_default_transform();
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_steer();
   tester.publish_default_acc();
 
@@ -520,6 +546,7 @@ TEST_F(FakeNodeFixture, longitudinal_not_check_steer_converged)
 
   tester.send_default_transform();
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_acc();
 
   // steering_tire_angle has to be larger than the threshold to check convergence.
@@ -550,6 +577,7 @@ TEST_F(FakeNodeFixture, longitudinal_check_steer_converged)
 
   tester.send_default_transform();
   tester.publish_default_odom();
+  tester.publish_autonomous_operation_mode();
   tester.publish_default_acc();
 
   // steering_tire_angle has to be larger than the threshold to check convergence.
