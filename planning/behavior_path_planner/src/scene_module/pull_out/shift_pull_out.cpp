@@ -140,22 +140,26 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
 
   for (double lateral_jerk = minimum_lateral_jerk; lateral_jerk <= maximum_lateral_jerk;
        lateral_jerk += jerk_resolution) {
-    // lateral distance from road center to start pose
-    const double shift_length = getArcCoordinates(road_lanes, start_pose).distance;
+    // generate road lane reference path
+    const auto arc_position_start = getArcCoordinates(road_lanes, start_pose);
+    const double s_start = std::max(arc_position_start.length - backward_path_length, 0.0);
+    const auto arc_position_goal = getArcCoordinates(road_lanes, goal_pose);
+    const double road_lanes_length = std::accumulate(
+      road_lanes.begin(), road_lanes.end(), 0.0, [](const double sum, const auto & lane) {
+        return sum + lanelet::utils::getLaneletLength2d(lane);
+      });
+    // if goal is behind start pose,
+    const bool goal_is_behind = arc_position_goal.length < s_start;
+    const double s_end = goal_is_behind ? road_lanes_length : arc_position_goal.length;
+    PathWithLaneId road_lane_reference_path = util::resamplePathWithSpline(
+      route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
 
-    PathWithLaneId road_lane_reference_path{};
-    {
-      const auto arc_position = getArcCoordinates(road_lanes, start_pose);
-      const double s_start = std::max(arc_position.length - backward_path_length, 0.0);
-      const auto arc_position_goal = getArcCoordinates(road_lanes, goal_pose);
-      double s_end = arc_position_goal.length;
-      road_lane_reference_path = util::resamplePathWithSpline(
-        route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
-    }
     PathShifter path_shifter{};
     path_shifter.setPath(road_lane_reference_path);
 
     // calculate after/before shifted pull out distance
+    // lateral distance from road center to start pose
+    const double shift_length = getArcCoordinates(road_lanes, start_pose).distance;
     const double pull_out_distance = std::max(
       PathShifter::calcLongitudinalDistFromJerk(
         abs(shift_length), lateral_jerk, shift_pull_out_velocity),
@@ -205,17 +209,16 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     // set velocity
     const size_t pull_out_end_idx =
       findNearestIndex(shifted_path.path.points, shift_end_pose.position);
-    const size_t goal_idx = findNearestIndex(shifted_path.path.points, goal_pose.position);
     for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
       auto & point = shifted_path.path.points.at(i);
       if (i < pull_out_end_idx) {
         point.point.longitudinal_velocity_mps = std::min(
           point.point.longitudinal_velocity_mps, static_cast<float>(shift_pull_out_velocity));
-        continue;
-      } else if (i >= goal_idx) {
-        point.point.longitudinal_velocity_mps = 0.0;
-        continue;
       }
+    }
+    // if the end point is the goal, set the velocity to 0
+    if (!goal_is_behind) {
+      shifted_path.path.points.back().point.longitudinal_velocity_mps = 0.0;
     }
 
     // add shifted path to candidates

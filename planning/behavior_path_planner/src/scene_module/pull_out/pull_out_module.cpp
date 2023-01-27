@@ -136,8 +136,7 @@ bool PullOutModule::isExecutionRequested() const
   // Check if any of the footprint points are in the shoulder lane
   lanelet::Lanelet closest_shoulder_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(
-        planner_data_->route_handler->getShoulderLanelets(),
-        planner_data_->self_odometry->pose.pose, &closest_shoulder_lanelet)) {
+        pull_out_lanes, planner_data_->self_odometry->pose.pose, &closest_shoulder_lanelet)) {
     return false;
   }
   if (!isOverlappedWithLane(closest_shoulder_lanelet, vehicle_footprint)) {
@@ -495,7 +494,7 @@ PathWithLaneId PullOutModule::generateStopPath() const
     p.point.longitudinal_velocity_mps = 0.0;
     lanelet::Lanelet closest_shoulder_lanelet;
     lanelet::utils::query::getClosestLanelet(
-      planner_data_->route_handler->getShoulderLanelets(), pose, &closest_shoulder_lanelet);
+      status_.pull_out_lanes, pose, &closest_shoulder_lanelet);
     p.lane_ids.push_back(closest_shoulder_lanelet.id());
     return p;
   };
