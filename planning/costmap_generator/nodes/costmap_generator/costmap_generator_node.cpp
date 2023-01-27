@@ -334,6 +334,10 @@ void CostmapGenerator::onTimer()
 
 bool CostmapGenerator::isActive()
 {
+  if (!lanelet_map_) {
+    return false;
+  }
+
   if (activate_by_scenario_) {
     if (scenario_) {
       const auto & s = scenario_->activating_scenarios;
