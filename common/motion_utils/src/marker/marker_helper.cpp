@@ -143,7 +143,7 @@ visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::handleVirtualWall
   size_t id_to_delete = id;
   visualization_msgs::msg::MarkerArray wall_marker;
 
-  if (poses.size() == 0 || previous_virtual_wall_poses.empty()) {
+  if (poses.size() == 0) {
     return wall_marker;
   }
 
