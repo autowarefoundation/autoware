@@ -11,6 +11,7 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <build_depend>autoware_cmake</build_depend>
+  <build_depend>libopencv-dev</build_depend>
 
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
