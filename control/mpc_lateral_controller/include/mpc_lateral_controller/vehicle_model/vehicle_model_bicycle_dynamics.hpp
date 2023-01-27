@@ -89,7 +89,7 @@ public:
    * @param [in] dt Discretization time [s]
    */
   void calculateDiscreteMatrix(
-    Eigen::MatrixXd & a_d, Eigen::MatrixXd & b_d, Eigen::MatrixXd & w_d, Eigen::MatrixXd & c_d,
+    Eigen::MatrixXd & a_d, Eigen::MatrixXd & b_d, Eigen::MatrixXd & c_d, Eigen::MatrixXd & w_d,
     const double dt) override;
 
   /**
