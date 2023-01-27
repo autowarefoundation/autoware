@@ -6,3 +6,9 @@
     min_cluster_size: 10
     max_cluster_size: 3000
     use_height: false
+    max_x: 70.0
+    min_x: -70.0
+    max_y: 70.0
+    min_y: -70.0
+    max_z: 4.5
+    min_z: -4.5
