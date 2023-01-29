@@ -22,13 +22,6 @@
 #include "raw_vehicle_cmd_converter/brake_map.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
-
-#ifdef ROS_DISTRO_GALACTIC
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#else
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#endif
-
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include <Eigen/Dense>
@@ -42,6 +35,7 @@
 #include "std_msgs/msg/float32_multi_array.hpp"
 #include "std_msgs/msg/multi_array_dimension.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
 #include "tier4_debug_msgs/msg/float32_stamped.hpp"
 #include "tier4_external_api_msgs/msg/calibration_status.hpp"
@@ -57,8 +51,26 @@
 #include <string>
 #include <vector>
 
+namespace accel_brake_map_calibrator
+{
+
+using autoware_auto_vehicle_msgs::msg::SteeringReport;
+using autoware_auto_vehicle_msgs::msg::VelocityReport;
+using geometry_msgs::msg::TwistStamped;
+using nav_msgs::msg::OccupancyGrid;
 using raw_vehicle_cmd_converter::AccelMap;
 using raw_vehicle_cmd_converter::BrakeMap;
+using std_msgs::msg::Float32MultiArray;
+using tier4_debug_msgs::msg::Float32MultiArrayStamped;
+using tier4_debug_msgs::msg::Float32Stamped;
+using tier4_external_api_msgs::msg::CalibrationStatus;
+using tier4_vehicle_msgs::msg::ActuationStatusStamped;
+using visualization_msgs::msg::MarkerArray;
+
+using tier4_vehicle_msgs::srv::UpdateAccelBrakeMap;
+
+using Map = std::vector<std::vector<double>>;
+
 struct DataStamped
 {
   DataStamped(const double _data, const rclcpp::Time & _data_time)
@@ -75,42 +87,40 @@ class AccelBrakeMapCalibrator : public rclcpp::Node
 private:
   std::shared_ptr<tier4_autoware_utils::TransformListener> transform_listener_;
   std::string csv_default_map_dir_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr original_map_occ_pub_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr update_map_occ_pub_;
-  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr original_map_raw_pub_;
-  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr update_map_raw_pub_;
-  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr offset_covariance_pub_;
-  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr debug_pub_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_count_pub_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_count_with_self_pose_pub_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_ave_pub_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_std_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr index_pub_;
+  rclcpp::Publisher<OccupancyGrid>::SharedPtr original_map_occ_pub_;
+  rclcpp::Publisher<OccupancyGrid>::SharedPtr update_map_occ_pub_;
+  rclcpp::Publisher<Float32MultiArray>::SharedPtr original_map_raw_pub_;
+  rclcpp::Publisher<Float32MultiArray>::SharedPtr update_map_raw_pub_;
+  rclcpp::Publisher<Float32MultiArray>::SharedPtr offset_covariance_pub_;
+  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_pub_;
+  rclcpp::Publisher<OccupancyGrid>::SharedPtr data_count_pub_;
+  rclcpp::Publisher<OccupancyGrid>::SharedPtr data_count_with_self_pose_pub_;
+  rclcpp::Publisher<OccupancyGrid>::SharedPtr data_ave_pub_;
+  rclcpp::Publisher<OccupancyGrid>::SharedPtr data_std_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr index_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr update_suggest_pub_;
-  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr current_map_error_pub_;
-  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr updated_map_error_pub_;
-  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr map_error_ratio_pub_;
-  rclcpp::Publisher<tier4_external_api_msgs::msg::CalibrationStatus>::SharedPtr
-    calibration_status_pub_;
+  rclcpp::Publisher<Float32Stamped>::SharedPtr current_map_error_pub_;
+  rclcpp::Publisher<Float32Stamped>::SharedPtr updated_map_error_pub_;
+  rclcpp::Publisher<Float32Stamped>::SharedPtr map_error_ratio_pub_;
+  rclcpp::Publisher<CalibrationStatus>::SharedPtr calibration_status_pub_;
 
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr velocity_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>::SharedPtr steer_sub_;
-  rclcpp::Subscription<tier4_vehicle_msgs::msg::ActuationStatusStamped>::SharedPtr
-    actuation_status_sub_;
+  rclcpp::Subscription<VelocityReport>::SharedPtr velocity_sub_;
+  rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;
+  rclcpp::Subscription<ActuationStatusStamped>::SharedPtr actuation_status_sub_;
 
   // Service
-  rclcpp::Service<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedPtr update_map_dir_server_;
+  rclcpp::Service<UpdateAccelBrakeMap>::SharedPtr update_map_dir_server_;
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr timer_output_csv_;
   void initTimer(double period_s);
   void initOutputCSVTimer(double period_s);
 
-  geometry_msgs::msg::TwistStamped::ConstSharedPtr twist_ptr_;
-  std::vector<std::shared_ptr<geometry_msgs::msg::TwistStamped>> twist_vec_;
+  TwistStamped::ConstSharedPtr twist_ptr_;
+  std::vector<std::shared_ptr<TwistStamped>> twist_vec_;
   std::vector<DataStampedPtr> accel_pedal_vec_;  // for delayed pedal
   std::vector<DataStampedPtr> brake_pedal_vec_;  // for delayed pedal
-  autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr steer_ptr_;
+  SteeringReport::ConstSharedPtr steer_ptr_;
   DataStampedPtr accel_pedal_ptr_;
   DataStampedPtr brake_pedal_ptr_;
   DataStampedPtr delayed_accel_pedal_ptr_;
@@ -181,13 +191,13 @@ private:
   double update_suggest_thresh_;
 
   // Accel / Brake Map update
-  std::vector<std::vector<double>> accel_map_value_;
-  std::vector<std::vector<double>> brake_map_value_;
-  std::vector<std::vector<double>> update_accel_map_value_;
-  std::vector<std::vector<double>> update_brake_map_value_;
-  std::vector<std::vector<double>> accel_offset_covariance_value_;
-  std::vector<std::vector<double>> brake_offset_covariance_value_;
-  std::vector<std::vector<std::vector<double>>> map_value_data_;
+  Map accel_map_value_;
+  Map brake_map_value_;
+  Map update_accel_map_value_;
+  Map update_brake_map_value_;
+  Map accel_offset_covariance_value_;
+  Map brake_offset_covariance_value_;
+  std::vector<Map> map_value_data_;
   std::vector<double> accel_vel_index_;
   std::vector<double> brake_vel_index_;
   std::vector<double> accel_pedal_index_;
@@ -229,22 +239,20 @@ private:
     const int brake_pedal_index, const int brake_vel_index, const double measured_acc,
     const double map_acc);
   void updateTotalMapOffset(const double measured_acc, const double map_acc);
-  void callbackActuationStatus(
-    const tier4_vehicle_msgs::msg::ActuationStatusStamped::ConstSharedPtr msg);
-  void callbackVelocity(const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg);
-  void callbackSteer(const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr msg);
+  void callbackActuationStatus(const ActuationStatusStamped::ConstSharedPtr msg);
+  void callbackVelocity(const VelocityReport::ConstSharedPtr msg);
+  void callbackSteer(const SteeringReport::ConstSharedPtr msg);
   bool callbackUpdateMapService(
     const std::shared_ptr<rmw_request_id_t> request_header,
-    tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Request::SharedPtr req,
-    tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Response::SharedPtr res);
+    UpdateAccelBrakeMap::Request::SharedPtr req, UpdateAccelBrakeMap::Response::SharedPtr res);
   bool getAccFromMap(const double velocity, const double pedal);
   double lowpass(const double original, const double current, const double gain = 0.8);
   double getPedalSpeed(
     const DataStampedPtr & prev_pedal, const DataStampedPtr & current_pedal,
     const double prev_pedal_speed);
   double getAccel(
-    const geometry_msgs::msg::TwistStamped::ConstSharedPtr & prev_twist,
-    const geometry_msgs::msg::TwistStamped::ConstSharedPtr & current_twist);
+    const TwistStamped::ConstSharedPtr & prev_twist,
+    const TwistStamped::ConstSharedPtr & current_twist);
   double getJerk();
   bool indexValueSearch(
     const std::vector<double> value_index, const double value, const double value_thresh,
@@ -269,13 +277,12 @@ private:
     const double throttle, const double brake, const double vel, AccelMap & accel_map,
     BrakeMap & brake_map);
   std::vector<double> getMapColumnFromUnifiedIndex(
-    const std::vector<std::vector<double>> & accel_map_value,
-    const std::vector<std::vector<double>> & brake_map_value, const std::size_t index);
+    const Map & accel_map_value, const Map & brake_map_value, const std::size_t index);
   double getPedalValueFromUnifiedIndex(const std::size_t index);
   int getUnifiedIndexFromAccelBrakeIndex(const bool accel_map, const std::size_t index);
   void pushDataToQue(
-    const geometry_msgs::msg::TwistStamped::ConstSharedPtr & data, const std::size_t max_size,
-    std::queue<geometry_msgs::msg::TwistStamped::ConstSharedPtr> * que);
+    const TwistStamped::ConstSharedPtr & data, const std::size_t max_size,
+    std::queue<TwistStamped::ConstSharedPtr> * que);
   template <class T>
   void pushDataToVec(const T data, const std::size_t max_size, std::vector<T> * vec);
   template <class T>
@@ -299,7 +306,7 @@ private:
   Eigen::MatrixXd accel_data_num_;
   Eigen::MatrixXd brake_data_num_;
 
-  nav_msgs::msg::OccupancyGrid getOccMsg(
+  OccupancyGrid getOccMsg(
     const std::string frame_id, const double height, const double width, const double resolution,
     const std::vector<int8_t> & map_value);
 
@@ -308,16 +315,13 @@ private:
 
   /* Debug */
   void publishMap(
-    const std::vector<std::vector<double>> accel_map_value,
-    const std::vector<std::vector<double>> brake_map_value, const std::string publish_type);
-  void publishOffsetCovMap(
-    const std::vector<std::vector<double>> accel_map_value,
-    const std::vector<std::vector<double>> brake_map_value);
+    const Map accel_map_value, const Map brake_map_value, const std::string publish_type);
+  void publishOffsetCovMap(const Map accel_map_value, const Map brake_map_value);
   void publishCountMap();
   void publishIndex();
   bool writeMapToCSV(
-    std::vector<double> vel_index, std::vector<double> pedal_index,
-    std::vector<std::vector<double>> value_map, std::string filename);
+    std::vector<double> vel_index, std::vector<double> pedal_index, Map value_map,
+    std::string filename);
   void addIndexToCSV(std::ofstream * csv_file);
   void addLogToCSV(
     std::ofstream * csv_file, const double & timestamp, const double velocity, const double accel,
@@ -326,7 +330,7 @@ private:
     const double steer, const double jerk, const double full_original_accel_mse,
     const double part_original_accel_mse, const double new_accel_mse);
 
-  mutable tier4_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
+  mutable Float32MultiArrayStamped debug_values_;
   enum DBGVAL {
     CURRENT_SPEED = 0,
     CURRENT_ACCEL_PEDAL = 1,
@@ -356,5 +360,7 @@ private:
 public:
   explicit AccelBrakeMapCalibrator(const rclcpp::NodeOptions & node_options);
 };
+
+}  // namespace accel_brake_map_calibrator
 
 #endif  // ACCEL_BRAKE_MAP_CALIBRATOR__ACCEL_BRAKE_MAP_CALIBRATOR_NODE_HPP_

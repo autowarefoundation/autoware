@@ -22,7 +22,7 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   rclcpp::NodeOptions node_options;
-  rclcpp::spin(std::make_shared<AccelBrakeMapCalibrator>(node_options));
+  rclcpp::spin(std::make_shared<accel_brake_map_calibrator::AccelBrakeMapCalibrator>(node_options));
   rclcpp::shutdown();
   return 0;
 }
