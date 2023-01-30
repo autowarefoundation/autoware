@@ -12,6 +12,7 @@
   <author email="ali.boyali@tier4.jp">Ali BOYALI</author>
 
   <build_depend>autoware_cmake</build_depend>
+  <build_depend>libboost-dev</build_depend>
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
