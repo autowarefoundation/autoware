@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/filter/truck_filter.hpp"
+#include "shape_estimation/filter/trailer_filter.hpp"
 
-bool TruckFilter::filter(
+bool TrailerFilter::filter(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
 {
   constexpr float min_width = 1.5;
   constexpr float max_width = 3.2;
-  constexpr float max_length = 7.9;  // upto 12m in japanese law
+  constexpr float max_length = 25.0;  // maximum Full-TRAILER size in JAPAN(normally upto 18m)
   return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
 }

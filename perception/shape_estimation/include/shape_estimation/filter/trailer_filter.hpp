@@ -12,14 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shape_estimation/filter/truck_filter.hpp"
+#ifndef SHAPE_ESTIMATION__FILTER__TRAILER_FILTER_HPP_
+#define SHAPE_ESTIMATION__FILTER__TRAILER_FILTER_HPP_
 
-bool TruckFilter::filter(
-  const autoware_auto_perception_msgs::msg::Shape & shape,
-  [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
+#include "shape_estimation/filter/filter_interface.hpp"
+#include "utils.hpp"
+
+class TrailerFilter : public ShapeEstimationFilterInterface
 {
-  constexpr float min_width = 1.5;
-  constexpr float max_width = 3.2;
-  constexpr float max_length = 7.9;  // upto 12m in japanese law
-  return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
-}
+public:
+  TrailerFilter() = default;
+
+  ~TrailerFilter() = default;
+
+  bool filter(
+    const autoware_auto_perception_msgs::msg::Shape & shape,
+    const geometry_msgs::msg::Pose & pose) override;
+};
+
+#endif  // SHAPE_ESTIMATION__FILTER__TRAILER_FILTER_HPP_
