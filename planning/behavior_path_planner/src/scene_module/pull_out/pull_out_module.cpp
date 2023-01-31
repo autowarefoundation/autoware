@@ -389,13 +389,13 @@ void PullOutModule::planWithPriorityOnEfficientPath(
   status_.planner_type = PlannerType::NONE;
 
   // check if start pose candidates are valid
-  if (start_pose_candidates.size() < 2) {
+  if (start_pose_candidates.empty()) {
     return;
   }
 
   // plan with each planner
   for (const auto & planner : pull_out_planners_) {
-    for (size_t i = 0; i < start_pose_candidates.size() - 1; i++) {
+    for (size_t i = 0; i < start_pose_candidates.size(); i++) {
       status_.back_finished = i == 0;
       const auto & pull_out_start_pose = start_pose_candidates.at(i);
       planner->setPlannerData(planner_data_);
@@ -412,6 +412,9 @@ void PullOutModule::planWithPriorityOnEfficientPath(
         status_.planner_type = planner->getPlannerType();
         break;
       }
+
+      if (i == start_pose_candidates.size() - 1) continue;
+
       //  check next path if back is needed
       const auto & pull_out_start_pose_next = start_pose_candidates.at(i + 1);
       const auto pull_out_path_next = planner->plan(pull_out_start_pose_next, goal_pose);
@@ -439,11 +442,11 @@ void PullOutModule::planWithPriorityOnShortBackDistance(
   status_.planner_type = PlannerType::NONE;
 
   // check if start pose candidates are valid
-  if (start_pose_candidates.size() < 2) {
+  if (start_pose_candidates.empty()) {
     return;
   }
 
-  for (size_t i = 0; i < start_pose_candidates.size() - 1; i++) {
+  for (size_t i = 0; i < start_pose_candidates.size(); i++) {
     status_.back_finished = i == 0;
     const auto & pull_out_start_pose = start_pose_candidates.at(i);
     // plan with each planner
@@ -462,6 +465,9 @@ void PullOutModule::planWithPriorityOnShortBackDistance(
         status_.planner_type = planner->getPlannerType();
         break;
       }
+
+      if (i == start_pose_candidates.size() - 1) continue;
+
       //  check next path if back is needed
       const auto & pull_out_start_pose_next = start_pose_candidates.at(i + 1);
       const auto pull_out_path_next = planner->plan(pull_out_start_pose_next, goal_pose);
