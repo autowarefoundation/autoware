@@ -22,6 +22,7 @@
 #include <QLayout>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTableWidget>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 
@@ -30,6 +31,8 @@
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_adapi_v1_msgs/msg/route_state.hpp>
+#include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
+#include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
 #include <autoware_adapi_v1_msgs/srv/accept_start.hpp>
 #include <autoware_adapi_v1_msgs/srv/change_operation_mode.hpp>
 #include <autoware_adapi_v1_msgs/srv/clear_route.hpp>
@@ -53,6 +56,10 @@ class AutowareStatePanel : public rviz_common::Panel
   using MotionState = autoware_adapi_v1_msgs::msg::MotionState;
   using AcceptStart = autoware_adapi_v1_msgs::srv::AcceptStart;
   using MRMState = autoware_adapi_v1_msgs::msg::MrmState;
+  using VelocityFactorArray = autoware_adapi_v1_msgs::msg::VelocityFactorArray;
+  using VelocityFactor = autoware_adapi_v1_msgs::msg::VelocityFactor;
+  using SteeringFactorArray = autoware_adapi_v1_msgs::msg::SteeringFactorArray;
+  using SteeringFactor = autoware_adapi_v1_msgs::msg::SteeringFactor;
 
   Q_OBJECT
 
@@ -80,6 +87,8 @@ protected:
   QGroupBox * makeLocalizationGroup();
   QGroupBox * makeMotionGroup();
   QGroupBox * makeFailSafeGroup();
+  QGroupBox * makeVelocityFactorsGroup();
+  QGroupBox * makeSteeringFactorsGroup();
 
   void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
   void onEmergencyStatus(const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg);
@@ -149,6 +158,16 @@ protected:
   rclcpp::Subscription<MRMState>::SharedPtr sub_mrm_;
 
   void onMRMState(const MRMState::ConstSharedPtr msg);
+
+  // Planning
+  QTableWidget * velocity_factors_table_{nullptr};
+  QTableWidget * steering_factors_table_{nullptr};
+
+  rclcpp::Subscription<VelocityFactorArray>::SharedPtr sub_velocity_factors_;
+  rclcpp::Subscription<SteeringFactorArray>::SharedPtr sub_steering_factors_;
+
+  void onVelocityFactors(const VelocityFactorArray::ConstSharedPtr msg);
+  void onSteeringFactors(const SteeringFactorArray::ConstSharedPtr msg);
 
   // Others
   QPushButton * velocity_limit_button_ptr_;
