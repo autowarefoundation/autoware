@@ -121,6 +121,7 @@ private:
   QPushButton * wait_vel_change_button_ptr_ = {nullptr};
   QPushButton * exec_button_ptr_ = {nullptr};
   QPushButton * wait_button_ptr_ = {nullptr};
+  QLabel * num_rtc_status_ptr_ = {nullptr};
 
   size_t column_size_ = {7};
   std::string enable_auto_mode_namespace_ = "/planning/enable_auto_mode";
