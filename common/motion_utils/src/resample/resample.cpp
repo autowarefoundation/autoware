@@ -21,7 +21,7 @@ namespace motion_utils
 {
 std::vector<geometry_msgs::msg::Point> resamplePointVector(
   const std::vector<geometry_msgs::msg::Point> & points,
-  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z)
 {
   // validate arguments
@@ -60,9 +60,12 @@ std::vector<geometry_msgs::msg::Point> resamplePointVector(
   const auto spline = [&](const auto & input) {
     return interpolation::spline(input_arclength, input, resampled_arclength);
   };
+  const auto spline_by_akima = [&](const auto & input) {
+    return interpolation::splineByAkima(input_arclength, input, resampled_arclength);
+  };
 
-  const auto interpolated_x = use_lerp_for_xy ? lerp(x) : spline(x);
-  const auto interpolated_y = use_lerp_for_xy ? lerp(y) : spline(y);
+  const auto interpolated_x = use_akima_spline_for_xy ? lerp(x) : spline_by_akima(x);
+  const auto interpolated_y = use_akima_spline_for_xy ? lerp(y) : spline_by_akima(y);
   const auto interpolated_z = use_lerp_for_z ? lerp(z) : spline(z);
 
   std::vector<geometry_msgs::msg::Point> resampled_points;
@@ -82,7 +85,7 @@ std::vector<geometry_msgs::msg::Point> resamplePointVector(
 
 std::vector<geometry_msgs::msg::Point> resamplePointVector(
   const std::vector<geometry_msgs::msg::Point> & points, const double resample_interval,
-  const bool use_lerp_for_xy, const bool use_lerp_for_z)
+  const bool use_akima_spline_for_xy, const bool use_lerp_for_z)
 {
   const double input_length = motion_utils::calcArcLength(points);
 
@@ -102,12 +105,12 @@ std::vector<geometry_msgs::msg::Point> resamplePointVector(
     resampling_arclength.push_back(input_length);
   }
 
-  return resamplePointVector(points, resampling_arclength, use_lerp_for_xy, use_lerp_for_z);
+  return resamplePointVector(points, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z);
 }
 
 std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   const std::vector<geometry_msgs::msg::Pose> & points,
-  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z)
 {
   // validate arguments
@@ -120,7 +123,7 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
     position.at(i) = points.at(i).position;
   }
   const auto resampled_position =
-    resamplePointVector(position, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePointVector(position, resampled_arclength, use_akima_spline_for_xy, use_lerp_for_z);
 
   std::vector<geometry_msgs::msg::Pose> resampled_points(resampled_position.size());
 
@@ -148,7 +151,7 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
 
 std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   const std::vector<geometry_msgs::msg::Pose> & points, const double resample_interval,
-  const bool use_lerp_for_xy, const bool use_lerp_for_z)
+  const bool use_akima_spline_for_xy, const bool use_lerp_for_z)
 {
   const double input_length = motion_utils::calcArcLength(points);
 
@@ -168,12 +171,12 @@ std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
     resampling_arclength.push_back(input_length);
   }
 
-  return resamplePoseVector(points, resampling_arclength, use_lerp_for_xy, use_lerp_for_z);
+  return resamplePoseVector(points, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z);
 }
 
 autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
-  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
   // validate arguments
@@ -245,7 +248,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   };
 
   const auto interpolated_pose =
-    resamplePoseVector(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampled_arclength, use_akima_spline_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_v ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_v ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);
@@ -279,7 +282,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
 
 autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
-  const double resample_interval, const bool use_lerp_for_xy, const bool use_lerp_for_z,
+  const double resample_interval, const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_v, const bool resample_input_path_stop_point)
 {
   // validate arguments
@@ -339,12 +342,13 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   }
 
   return resamplePath(
-    input_path, resampling_arclength, use_lerp_for_xy, use_lerp_for_z, use_zero_order_hold_for_v);
+    input_path, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z,
+    use_zero_order_hold_for_v);
 }
 
 autoware_auto_planning_msgs::msg::Path resamplePath(
   const autoware_auto_planning_msgs::msg::Path & input_path,
-  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
   // validate arguments
@@ -390,7 +394,7 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   };
 
   const auto interpolated_pose =
-    resamplePoseVector(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampled_arclength, use_akima_spline_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_v ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_v ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);
@@ -420,8 +424,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
 
 autoware_auto_planning_msgs::msg::Path resamplePath(
   const autoware_auto_planning_msgs::msg::Path & input_path, const double resample_interval,
-  const bool use_lerp_for_xy, const bool use_lerp_for_z, const bool use_zero_order_hold_for_twist,
-  const bool resample_input_path_stop_point)
+  const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
+  const bool use_zero_order_hold_for_twist, const bool resample_input_path_stop_point)
 {
   // validate arguments
   if (!resample_utils::validate_arguments(input_path.points, resample_interval)) {
@@ -473,13 +477,13 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   }
 
   return resamplePath(
-    input_path, resampling_arclength, use_lerp_for_xy, use_lerp_for_z,
+    input_path, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z,
     use_zero_order_hold_for_twist);
 }
 
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
-  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_twist)
 {
   // validate arguments
@@ -542,7 +546,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   };
 
   const auto interpolated_pose =
-    resamplePoseVector(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampled_arclength, use_akima_spline_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_twist ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_twist ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);
@@ -579,7 +583,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
 
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
-  const double resample_interval, const bool use_lerp_for_xy, const bool use_lerp_for_z,
+  const double resample_interval, const bool use_akima_spline_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_twist, const bool resample_input_trajectory_stop_point)
 {
   // validate arguments
@@ -632,7 +636,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   }
 
   return resampleTrajectory(
-    input_trajectory, resampling_arclength, use_lerp_for_xy, use_lerp_for_z,
+    input_trajectory, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z,
     use_zero_order_hold_for_twist);
 }
 
