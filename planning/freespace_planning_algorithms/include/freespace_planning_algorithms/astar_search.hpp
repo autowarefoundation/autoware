@@ -144,6 +144,7 @@ private:
   bool setGoalNode();
   double estimateCost(const geometry_msgs::msg::Pose & pose) const;
   bool isGoal(const AstarNode & node) const;
+  geometry_msgs::msg::Pose node2pose(const AstarNode & node) const;
 
   AstarNode * getNodeRef(const IndexXYT & index)
   {

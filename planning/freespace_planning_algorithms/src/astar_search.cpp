@@ -61,18 +61,6 @@ geometry_msgs::msg::Pose calcRelativePose(
   return transformed.pose;
 }
 
-geometry_msgs::msg::Pose node2pose(const AstarNode & node)
-{
-  geometry_msgs::msg::Pose pose_local;
-
-  pose_local.position.x = node.x;
-  pose_local.position.y = node.y;
-  pose_local.position.z = 0;
-  pose_local.orientation = tier4_autoware_utils::createQuaternionFromYaw(node.theta);
-
-  return pose_local;
-}
-
 AstarSearch::TransitionTable createTransitionTable(
   const double minimum_turning_radius, const double maximum_turning_radius,
   const int turning_radius_size, const double theta_size, const bool use_back)
@@ -354,6 +342,18 @@ bool AstarSearch::isGoal(const AstarNode & node) const
   }
 
   return true;
+}
+
+geometry_msgs::msg::Pose AstarSearch::node2pose(const AstarNode & node) const
+{
+  geometry_msgs::msg::Pose pose_local;
+
+  pose_local.position.x = node.x;
+  pose_local.position.y = node.y;
+  pose_local.position.z = goal_pose_.position.z;
+  pose_local.orientation = tier4_autoware_utils::createQuaternionFromYaw(node.theta);
+
+  return pose_local;
 }
 
 }  // namespace freespace_planning_algorithms

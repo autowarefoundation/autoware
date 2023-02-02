@@ -141,7 +141,7 @@ void RRTStar::setRRTPath(const std::vector<rrtstar_core::Pose> & waypoints)
     geometry_msgs::msg::Pose pose_local;
     pose_local.position.x = pt.x;
     pose_local.position.y = pt.y;
-    pose_local.position.z = 0.0;
+    pose_local.position.z = goal_pose_.position.z;
     tf2::Quaternion quat;
     quat.setRPY(0, 0, pt.yaw);
     tf2::convert(quat, pose_local.orientation);
