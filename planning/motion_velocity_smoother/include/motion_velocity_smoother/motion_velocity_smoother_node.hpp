@@ -208,6 +208,10 @@ private:
   Trajectory toTrajectoryMsg(
     const TrajectoryPoints & points, const std_msgs::msg::Header * header = nullptr) const;
 
+  TrajectoryPoint calcProjectedTrajectoryPoint(
+    const TrajectoryPoints & trajectory, const Pose & pose) const;
+  TrajectoryPoint calcProjectedTrajectoryPointFromEgo(const TrajectoryPoints & trajectory) const;
+
   // parameter handling
   void initCommonParam();
 

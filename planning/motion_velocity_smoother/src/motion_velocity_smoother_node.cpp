@@ -399,12 +399,7 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
 
   // calculate prev closest point
   if (!prev_output_.empty()) {
-    const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      prev_output_, current_odometry_ptr_->pose.pose, node_param_.ego_nearest_dist_threshold,
-      node_param_.ego_nearest_yaw_threshold);
-    const auto closest_point = trajectory_utils::calcInterpolatedTrajectoryPoint(
-      prev_output_, current_odometry_ptr_->pose.pose, current_seg_idx);
-    current_closest_point_from_prev_output_ = closest_point;
+    current_closest_point_from_prev_output_ = calcProjectedTrajectoryPointFromEgo(prev_output_);
   }
 
   // calculate distance to insert external velocity limit
@@ -884,11 +879,7 @@ void MotionVelocitySmootherNode::publishClosestVelocity(
   const TrajectoryPoints & trajectory, const Pose & current_pose,
   const rclcpp::Publisher<Float32Stamped>::SharedPtr pub) const
 {
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    trajectory, current_pose, node_param_.ego_nearest_dist_threshold,
-    node_param_.ego_nearest_yaw_threshold);
-  const auto closest_point =
-    trajectory_utils::calcInterpolatedTrajectoryPoint(trajectory, current_pose, current_seg_idx);
+  const auto closest_point = calcProjectedTrajectoryPoint(trajectory, current_pose);
 
   Float32Stamped vel_data{};
   vel_data.stamp = this->now();
@@ -898,11 +889,7 @@ void MotionVelocitySmootherNode::publishClosestVelocity(
 
 void MotionVelocitySmootherNode::publishClosestState(const TrajectoryPoints & trajectory)
 {
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    trajectory, current_odometry_ptr_->pose.pose, node_param_.ego_nearest_dist_threshold,
-    node_param_.ego_nearest_yaw_threshold);
-  const auto closest_point = trajectory_utils::calcInterpolatedTrajectoryPoint(
-    trajectory, current_odometry_ptr_->pose.pose, current_seg_idx);
+  const auto closest_point = calcProjectedTrajectoryPointFromEgo(trajectory);
 
   auto publishFloat = [=](const double data, const auto pub) {
     Float32Stamped msg{};
@@ -938,12 +925,7 @@ void MotionVelocitySmootherNode::publishClosestState(const TrajectoryPoints & tr
 void MotionVelocitySmootherNode::updatePrevValues(const TrajectoryPoints & final_result)
 {
   prev_output_ = final_result;
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    final_result, current_odometry_ptr_->pose.pose, node_param_.ego_nearest_dist_threshold,
-    node_param_.ego_nearest_yaw_threshold);
-  const auto closest_point = trajectory_utils::calcInterpolatedTrajectoryPoint(
-    final_result, current_odometry_ptr_->pose.pose, current_seg_idx);
-  prev_closest_point_ = closest_point;
+  prev_closest_point_ = calcProjectedTrajectoryPointFromEgo(final_result);
 }
 
 MotionVelocitySmootherNode::AlgorithmType MotionVelocitySmootherNode::getAlgorithmType(
@@ -968,11 +950,7 @@ MotionVelocitySmootherNode::AlgorithmType MotionVelocitySmootherNode::getAlgorit
 
 double MotionVelocitySmootherNode::calcTravelDistance() const
 {
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    prev_output_, current_odometry_ptr_->pose.pose, node_param_.ego_nearest_dist_threshold,
-    node_param_.ego_nearest_yaw_threshold);
-  const auto closest_point = trajectory_utils::calcInterpolatedTrajectoryPoint(
-    prev_output_, current_odometry_ptr_->pose.pose, current_seg_idx);
+  const auto closest_point = calcProjectedTrajectoryPointFromEgo(prev_output_);
 
   if (prev_closest_point_) {
     const double travel_dist =
@@ -1025,6 +1003,21 @@ void MotionVelocitySmootherNode::publishStopWatchTime()
   calculation_time_data.stamp = this->now();
   calculation_time_data.data = stop_watch_.toc();
   debug_calculation_time_->publish(calculation_time_data);
+}
+
+TrajectoryPoint MotionVelocitySmootherNode::calcProjectedTrajectoryPoint(
+  const TrajectoryPoints & trajectory, const Pose & pose) const
+{
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    trajectory, pose, node_param_.ego_nearest_dist_threshold,
+    node_param_.ego_nearest_yaw_threshold);
+  return trajectory_utils::calcInterpolatedTrajectoryPoint(trajectory, pose, current_seg_idx);
+}
+
+TrajectoryPoint MotionVelocitySmootherNode::calcProjectedTrajectoryPointFromEgo(
+  const TrajectoryPoints & trajectory) const
+{
+  return calcProjectedTrajectoryPoint(trajectory, current_odometry_ptr_->pose.pose);
 }
 
 }  // namespace motion_velocity_smoother
