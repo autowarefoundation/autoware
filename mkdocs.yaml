@@ -15,6 +15,7 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
+    - navigation.footer
   favicon: docs/assets/images/autoware-foundation.png
   icon:
     logo: fontawesome/solid/car
