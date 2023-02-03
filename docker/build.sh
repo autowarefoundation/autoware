@@ -52,7 +52,7 @@ fi
 export BUILDKIT_STEP_LOG_MAX_SIZE=10000000
 
 set -x
-docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/autoware-universe/docker-bake.hcl" \
+docker buildx bake --no-cache --load --progress=plain -f "$SCRIPT_DIR/autoware-universe/docker-bake.hcl" \
     --set "*.context=$WORKSPACE_ROOT" \
     --set "*.ssh=default" \
     --set "*.platform=$platform" \
