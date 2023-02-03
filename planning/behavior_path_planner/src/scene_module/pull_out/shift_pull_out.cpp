@@ -183,19 +183,25 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     }
 
     // get shift end pose
-    const auto shift_end_pose = std::invoke([&]() {
+    const auto shift_end_pose_ptr = std::invoke([&]() {
       const auto arc_position_shift_start =
         lanelet::utils::getArcCoordinates(road_lanes, start_pose);
       const double s_start = arc_position_shift_start.length + before_shifted_pull_out_distance;
       const double s_end = s_start + std::numeric_limits<double>::epsilon();
       const auto path = route_handler.getCenterLinePath(road_lanes, s_start, s_end, true);
-      return path.points.front().point.pose;
+      return path.points.empty()
+               ? nullptr
+               : std::make_shared<geometry_msgs::msg::Pose>(path.points.front().point.pose);
     });
+
+    if (!shift_end_pose_ptr) {
+      continue;
+    }
 
     // create shift line
     ShiftLine shift_line{};
     shift_line.start = start_pose;
-    shift_line.end = shift_end_pose;
+    shift_line.end = *shift_end_pose_ptr;
     shift_line.end_shift_length = shift_length;
     path_shifter.addShiftLine(shift_line);
 
@@ -208,7 +214,7 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
 
     // set velocity
     const size_t pull_out_end_idx =
-      findNearestIndex(shifted_path.path.points, shift_end_pose.position);
+      findNearestIndex(shifted_path.path.points, shift_end_pose_ptr->position);
     for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
       auto & point = shifted_path.path.points.at(i);
       if (i < pull_out_end_idx) {
