@@ -96,16 +96,19 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
   /* get detection area*/
   /* dynamically change detection area based on tl_arrow_solid_on */
-  [[maybe_unused]] const bool has_tl = util::hasAssociatedTrafficLight(assigned_lanelet);
   const bool tl_arrow_solid_on =
     util::isTrafficLightArrowActivated(assigned_lanelet, planner_data_->traffic_light_id_map);
-  auto && [detection_lanelets, conflicting_lanelets] = util::getObjectiveLanelets(
-    lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
-    tl_arrow_solid_on);
-  const std::vector<lanelet::CompoundPolygon3d> detection_area =
-    util::getPolygon3dFromLanelets(detection_lanelets, planner_param_.detection_area_length);
-  const std::vector<lanelet::CompoundPolygon3d> conflicting_area =
-    util::getPolygon3dFromLanelets(conflicting_lanelets);
+  if (
+    !intersection_lanelets_.has_value() ||
+    intersection_lanelets_.value().tl_arrow_solid_on != tl_arrow_solid_on) {
+    intersection_lanelets_ = util::getObjectiveLanelets(
+      lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
+      tl_arrow_solid_on);
+  }
+  const auto & detection_lanelets = intersection_lanelets_.value().attention;
+  const auto & adjacent_lanelets = intersection_lanelets_.value().adjacent;
+  const auto & detection_area = intersection_lanelets_.value().attention_area;
+  const auto & conflicting_area = intersection_lanelets_.value().conflicting_area;
   debug_data_.detection_area = detection_area;
 
   /* get intersection area */
@@ -115,25 +118,34 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     debug_data_.intersection_area = toGeomPoly(intersection_area_2d);
   }
 
-  /* get adjacent lanelets */
-  const auto adjacent_lanelets =
-    util::extendedAdjacentDirectionLanes(lanelet_map_ptr, routing_graph_ptr, assigned_lanelet);
-  debug_data_.adjacent_area = util::getPolygon3dFromLanelets(adjacent_lanelets);
-
-  /* set stop lines for base_link */
-  const auto [stuck_line_idx_opt, stop_lines_idx_opt] = util::generateStopLine(
-    lane_id_, detection_area, conflicting_area, planner_data_, planner_param_.stop_line_margin,
-    planner_param_.use_stuck_stopline, path, *path, logger_.get_child("util"), clock_);
-  if (!stuck_line_idx_opt.has_value()) {
-    // returns here if path is not intersecting with conflicting areas
-    RCLCPP_DEBUG_SKIPFIRST_THROTTLE(
-      logger_, *clock_, 1000 /* ms */, "setStopLineIdx for stuck line fail");
+  /* spline interpolation */
+  constexpr double interval = 0.2;
+  autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
+  if (!splineInterpolate(*path, interval, path_ip, logger_)) {
+    RCLCPP_DEBUG_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "splineInterpolate failed");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     setSafe(true);
     setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
-  const auto stuck_line_idx = stuck_line_idx_opt.value();
+  const auto lane_interval_ip_opt = util::findLaneIdInterval(path_ip, lane_id_);
+  if (!lane_interval_ip_opt.has_value()) {
+    RCLCPP_WARN(logger_, "Path has no interval on intersection lane %ld", lane_id_);
+    RCLCPP_DEBUG(logger_, "===== plan end =====");
+    setSafe(true);
+    setDistance(std::numeric_limits<double>::lowest());
+    return false;
+  }
+
+  const auto stuck_line_idx_opt = util::generateStuckStopLine(
+    lane_id_, conflicting_area, planner_data_, planner_param_.stop_line_margin,
+    planner_param_.use_stuck_stopline, path, path_ip, interval, lane_interval_ip_opt.value(),
+    logger_.get_child("util"));
+
+  /* set stop lines for base_link */
+  const auto stop_lines_idx_opt = util::generateStopLine(
+    lane_id_, detection_area, planner_data_, planner_param_.stop_line_margin, path, path_ip,
+    interval, lane_interval_ip_opt.value(), logger_.get_child("util"));
 
   /* calc closest index */
   const auto closest_idx_opt =
@@ -149,7 +161,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   const size_t closest_idx = closest_idx_opt.get();
 
   if (stop_lines_idx_opt.has_value()) {
-    const auto stop_line_idx = stop_lines_idx_opt.value().stop_line;
+    const auto stop_line_idx = stop_lines_idx_opt.value().collision_stop_line;
     const auto pass_judge_line_idx = stop_lines_idx_opt.value().pass_judge_line;
 
     const bool is_over_pass_judge_line =
@@ -189,29 +201,35 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     closest_idx, stuck_vehicle_detect_area, time_delay);
 
   /* calculate final stop lines */
-  int stop_line_idx_final =
-    stop_lines_idx_opt.has_value() ? stop_lines_idx_opt.value().stop_line : -1;
+  std::optional<size_t> stop_line_idx = std::nullopt;
   if (external_go) {
     is_entry_prohibited = false;
   } else if (external_stop) {
     is_entry_prohibited = true;
-  } else if (is_stuck || has_collision) {
+    stop_line_idx = stop_lines_idx_opt.has_value()
+                      ? std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line)
+                      : std::nullopt;
+  } else if (is_stuck && stuck_line_idx_opt.has_value()) {
     is_entry_prohibited = true;
     const double dist_stuck_stopline = motion_utils::calcSignedArcLength(
-      path->points, path->points.at(stuck_line_idx).point.pose.position,
+      path->points, path->points.at(stuck_line_idx_opt.value()).point.pose.position,
       path->points.at(closest_idx).point.pose.position);
     const bool is_over_stuck_stopline =
-      util::isOverTargetIndex(*path, closest_idx, current_pose, stuck_line_idx) &&
+      util::isOverTargetIndex(*path, closest_idx, current_pose, stuck_line_idx_opt.value()) &&
       dist_stuck_stopline > planner_param_.stop_overshoot_margin;
-    if (is_stuck && !is_over_stuck_stopline) {
-      stop_line_idx_final = stuck_line_idx;
-    } else if (
-      ((is_stuck && is_over_stuck_stopline) || has_collision) && stop_lines_idx_opt.has_value()) {
-      stop_line_idx_final = stop_lines_idx_opt.value().stop_line;
+    if (!is_over_stuck_stopline) {
+      stop_line_idx = stuck_line_idx_opt.value();
+    } else if (is_over_stuck_stopline && stop_lines_idx_opt.has_value()) {
+      stop_line_idx = stop_lines_idx_opt.value().collision_stop_line;
     }
+  } else if (has_collision) {
+    is_entry_prohibited = true;
+    stop_line_idx = stop_lines_idx_opt.has_value()
+                      ? std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line)
+                      : std::nullopt;
   }
 
-  if (stop_line_idx_final == -1) {
+  if (!stop_line_idx.has_value()) {
     RCLCPP_DEBUG(logger_, "detection_area is empty, no plan needed");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     setSafe(true);
@@ -226,23 +244,23 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   setSafe(state_machine_.getState() == StateMachine::State::GO);
   setDistance(motion_utils::calcSignedArcLength(
     path->points, planner_data_->current_odometry->pose.position,
-    path->points.at(stop_line_idx_final).point.pose.position));
+    path->points.at(stop_line_idx.value()).point.pose.position));
 
   if (!isActivated()) {
     // if RTC says intersection entry is 'dangerous', insert stop_line(v == 0.0) in this block
     is_go_out_ = false;
 
     constexpr double v = 0.0;
-    planning_utils::setVelocityFromIndex(stop_line_idx_final, v, path);
+    planning_utils::setVelocityFromIndex(stop_line_idx.value(), v, path);
     debug_data_.stop_required = true;
     const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
     debug_data_.stop_wall_pose =
-      planning_utils::getAheadPose(stop_line_idx_final, base_link2front, *path);
+      planning_utils::getAheadPose(stop_line_idx.value(), base_link2front, *path);
 
     // Get stop point and stop factor
     {
       tier4_planning_msgs::msg::StopFactor stop_factor;
-      stop_factor.stop_pose = path->points.at(stop_line_idx_final).point.pose;
+      stop_factor.stop_pose = path->points.at(stop_line_idx.value()).point.pose;
       const auto stop_factor_conflict =
         planning_utils::toRosPoints(debug_data_.conflicting_targets);
       const auto stop_factor_stuck = planning_utils::toRosPoints(debug_data_.stuck_targets);
@@ -250,7 +268,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
         planning_utils::concatVector(stop_factor_conflict, stop_factor_stuck);
       planning_utils::appendStopReason(stop_factor, stop_reason);
 
-      const auto & stop_pose = path->points.at(stop_line_idx_final).point.pose;
+      const auto & stop_pose = path->points.at(stop_line_idx.value()).point.pose;
       velocity_factor_.set(
         path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
     }
