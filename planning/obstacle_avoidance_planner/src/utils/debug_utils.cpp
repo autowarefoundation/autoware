@@ -445,7 +445,7 @@ visualization_msgs::msg::MarkerArray getBoundsCandidatesLineMarkerArray(
   visualization_msgs::msg::MarkerArray msg;
   const std::string ns = "bounds_candidates";
 
-  if (ref_points.empty()) return msg;
+  if (ref_points.empty() || bounds_candidates.empty()) return msg;
 
   auto marker = createDefaultMarker(
     "map", rclcpp::Clock().now(), ns, 0, visualization_msgs::msg::Marker::LINE_LIST,
