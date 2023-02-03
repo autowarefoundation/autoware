@@ -14,6 +14,8 @@
 #ifndef OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
 #define OBJECT_DETECTION__OBJECT_POLYGON_DISPLAY_BASE_HPP_
 
+#include "rviz_common/properties/enum_property.hpp"
+
 #include <common/color_alpha_property.hpp>
 #include <object_detection/object_polygon_detail.hpp>
 #include <rviz_common/display.hpp>
@@ -59,8 +61,7 @@ public:
 
   explicit ObjectPolygonDisplayBase(const std::string & default_topic)
   : m_marker_common(this),
-    m_display_3d_property{
-      "Display 3d polygon", true, "Enable/disable height visualization of the polygon", this},
+    // m_display_type_property{"Polygon Type", "3d", "Type of the polygon to display object", this},
     m_display_label_property{"Display Label", true, "Enable/disable label visualization", this},
     m_display_uuid_property{"Display UUID", true, "Enable/disable uuid visualization", this},
     m_display_pose_with_covariance_property{
@@ -79,6 +80,13 @@ public:
     m_line_width_property{"Line Width", 0.03, "Line width of object-shape", this},
     m_default_topic{default_topic}
   {
+    m_display_type_property = new rviz_common::properties::EnumProperty(
+      "Polygon Type", "3d", "Type of the polygon to display object.", this, SLOT(updatePalette()));
+    // Option values here must correspond to indices in palette_textures_ array in onInitialize()
+    // below.
+    m_display_type_property->addOption("3d", 0);
+    m_display_type_property->addOption("2d", 1);
+    m_display_type_property->addOption("Disable", 2);
     // iterate over default values to create and initialize the properties.
     for (const auto & map_property_it : detail::kDefaultObjectPropertyValues) {
       const auto & class_property_values = map_property_it.second;
@@ -150,13 +158,21 @@ protected:
     const ClassificationContainerT & labels, const double & line_width) const
   {
     const std_msgs::msg::ColorRGBA color_rgba = get_color_rgba(labels);
-
-    if (m_display_3d_property.getBool()) {
+    if (m_display_type_property->getOptionInt() == 0) {
       return detail::get_shape_marker_ptr(shape_msg, centroid, orientation, color_rgba, line_width);
+    } else if (m_display_type_property->getOptionInt() == 1) {
+      return detail::get_2d_shape_marker_ptr(
+        shape_msg, centroid, orientation, color_rgba, line_width);
     } else {
       return std::nullopt;
     }
   }
+
+  template <typename ClassificationContainerT>
+  visualization_msgs::msg::Marker::SharedPtr get_2d_shape_marker_ptr(
+    const autoware_auto_perception_msgs::msg::Shape & shape_msg,
+    const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
+    const std_msgs::msg::ColorRGBA & color_rgba, const double & line_width);
 
   /// \brief Convert given shape msg into a Marker to visualize label name
   /// \tparam ClassificationContainerT List type with ObjectClassificationMsg
@@ -366,8 +382,8 @@ private:
   std::list<rviz_common::properties::Property> m_class_group_properties;
   // Map to store class labels and its corresponding properties
   PolygonPropertyMap m_polygon_properties;
-  // Property to enable/disable height visualization of the polygon
-  rviz_common::properties::BoolProperty m_display_3d_property;
+  // Property to choose type of visualization polygon
+  rviz_common::properties::EnumProperty * m_display_type_property;
   // Property to enable/disable label visualization
   rviz_common::properties::BoolProperty m_display_label_property;
   // Property to enable/disable uuid visualization
