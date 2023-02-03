@@ -2026,25 +2026,7 @@ lanelet::ConstLanelets extendLanes(
 lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data)
 {
-  const auto & route_handler = planner_data->route_handler;
-  const auto current_pose = planner_data->self_odometry->pose.pose;
-  const auto common_parameters = planner_data->parameters;
-  const auto routing_graph_ptr = route_handler->getRoutingGraphPtr();
-
-  lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-      "failed to find closest lanelet within route!!!");
-    return {};  // TODO(Horibe) what should be returned?
-  }
-
-  // For current_lanes with desired length
-  const auto current_lanes = route_handler->getLaneletSequence(
-    current_lane, current_pose, common_parameters.backward_path_length,
-    common_parameters.forward_path_length);
-
-  return extendLanes(route_handler, current_lanes);
+  return extendLanes(planner_data->route_handler, getCurrentLanes(planner_data));
 }
 
 lanelet::ConstLanelets calcLaneAroundPose(
