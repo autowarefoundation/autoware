@@ -70,9 +70,11 @@ class SplineInterpolation
 {
 public:
   SplineInterpolation() = default;
-
-  void calcSplineCoefficients(
-    const std::vector<double> & base_keys, const std::vector<double> & base_values);
+  SplineInterpolation(
+    const std::vector<double> & base_keys, const std::vector<double> & base_values)
+  {
+    calcSplineCoefficients(base_keys, base_values);
+  }
 
   //!< @brief get values of spline interpolation on designated sampling points.
   //!< @details Assuming that query_keys are t vector for sampling, and interpolation is for x,
@@ -86,9 +88,21 @@ public:
   //            return value will be dx/dt(t) vector
   std::vector<double> getSplineInterpolatedDiffValues(const std::vector<double> & query_keys) const;
 
+  //!< @brief get 2nd differential values of spline interpolation on designated sampling points.
+  //!< @details Assuming that query_keys are t vector for sampling, and interpolation is for x,
+  //            meaning that spline interpolation was applied to x(t),
+  //            return value will be d^2/dt^2(t) vector
+  std::vector<double> getSplineInterpolatedQuadDiffValues(
+    const std::vector<double> & query_keys) const;
+
+  size_t getSize() const { return base_keys_.size(); }
+
 private:
   std::vector<double> base_keys_;
   interpolation::MultiSplineCoef multi_spline_coef_;
+
+  void calcSplineCoefficients(
+    const std::vector<double> & base_keys, const std::vector<double> & base_values);
 };
 
 #endif  // INTERPOLATION__SPLINE_INTERPOLATION_HPP_

@@ -85,10 +85,8 @@ std::vector<double> spline(
   const std::vector<double> & base_keys, const std::vector<double> & base_values,
   const std::vector<double> & query_keys)
 {
-  SplineInterpolation interpolator;
-
   // calculate spline coefficients
-  interpolator.calcSplineCoefficients(base_keys, base_values);
+  SplineInterpolation interpolator(base_keys, base_values);
 
   // interpolate base_keys at query_keys
   return interpolator.getSplineInterpolatedValues(query_keys);
@@ -262,6 +260,29 @@ std::vector<double> SplineInterpolation::getSplineInterpolatedDiffValues(
 
     const double ds = query_key - base_keys_.at(j);
     res.push_back(c.at(j) + (2.0 * b.at(j) + 3.0 * a.at(j) * ds) * ds);
+  }
+
+  return res;
+}
+
+std::vector<double> SplineInterpolation::getSplineInterpolatedQuadDiffValues(
+  const std::vector<double> & query_keys) const
+{
+  // throw exceptions for invalid arguments
+  const auto validated_query_keys = interpolation_utils::validateKeys(base_keys_, query_keys);
+
+  const auto & a = multi_spline_coef_.a;
+  const auto & b = multi_spline_coef_.b;
+
+  std::vector<double> res;
+  size_t j = 0;
+  for (const auto & query_key : validated_query_keys) {
+    while (base_keys_.at(j + 1) < query_key) {
+      ++j;
+    }
+
+    const double ds = query_key - base_keys_.at(j);
+    res.push_back(2.0 * b.at(j) + 6.0 * a.at(j) * ds);
   }
 
   return res;

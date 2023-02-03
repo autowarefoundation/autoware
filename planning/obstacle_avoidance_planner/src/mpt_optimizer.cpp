@@ -1472,8 +1472,8 @@ void MPTOptimizer::calcVehicleBounds(
     return;
   }
 
-  SplineInterpolationPoints2d ref_points_spline_interpolation;
-  ref_points_spline_interpolation.calcSplineCoefficients(points_utils::convertToPoints(ref_points));
+  SplineInterpolationPoints2d ref_points_spline_interpolation(
+    points_utils::convertToPoints(ref_points));
 
   for (size_t p_idx = 0; p_idx < ref_points.size(); ++p_idx) {
     const auto & ref_point = ref_points.at(p_idx);
