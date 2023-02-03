@@ -18,6 +18,7 @@
 #define FMT_HEADER_ONLY
 
 #include "ndt_scan_matcher/map_module.hpp"
+#include "ndt_scan_matcher/map_update_module.hpp"
 #include "ndt_scan_matcher/pose_initialization_module.hpp"
 #include "ndt_scan_matcher/tf2_listener_module.hpp"
 
@@ -34,8 +35,8 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <fmt/format.h>
+#include <multigrid_pclomp/multigrid_ndt_omp.h>
 #include <pcl/point_types.h>
-#include <pclomp/ndt_omp.h>
 #include <tf2/transform_datatypes.h>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -71,7 +72,7 @@ class NDTScanMatcher : public rclcpp::Node
   using PointSource = pcl::PointXYZ;
   using PointTarget = pcl::PointXYZ;
   using NormalDistributionsTransform =
-    pclomp::NormalDistributionsTransform<PointSource, PointTarget>;
+    pclomp::MultiGridNormalDistributionsTransform<PointSource, PointTarget>;
 
 public:
   NDTScanMatcher();
@@ -200,6 +201,7 @@ private:
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
   std::unique_ptr<MapModule> map_module_;
   std::unique_ptr<PoseInitializationModule> pose_init_module_;
+  std::unique_ptr<MapUpdateModule> map_update_module_;
 
   bool estimate_scores_for_degrounded_scan_;
   double z_margin_for_ground_removal_;

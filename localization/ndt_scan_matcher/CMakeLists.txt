@@ -34,6 +34,7 @@ ament_auto_add_executable(ndt_scan_matcher
   src/tf2_listener_module.cpp
   src/map_module.cpp
   src/pose_initialization_module.cpp
+  src/map_update_module.cpp
 )
 
 link_directories(${PCL_LIBRARY_DIRS})

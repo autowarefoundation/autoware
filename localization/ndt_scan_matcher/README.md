@@ -64,7 +64,6 @@ One optional function is regularization. Please see the regularization chapter i
 | `max_iterations`                        | int    | The number of iterations required to calculate alignment                                        |
 | `converged_param_type`                  | int    | The type of indicators for scan matching score (0: TP, 1: NVTL)                                 |
 | `converged_param_transform_probability` | double | Threshold for deciding whether to trust the estimation result                                   |
-| `neighborhood_search_method`            | int    | neighborhood search method (0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1)                         |
 | `num_threads`                           | int    | Number of threads used for parallel computing                                                   |
 
 (TP: Transform Probability, NVTL: Nearest Voxel Transform Probability)
@@ -171,6 +170,67 @@ The color of the trajectory indicates the error (meter) from the reference traje
 - The right figure shows that the regularization suppresses the longitudinal error.
 
 <img src="./media/trajectory_without_regularization.png" alt="drawing" width="300"/> <img src="./media/trajectory_with_regularization.png" alt="drawing" width="300"/>
+
+## Dynamic map loading
+
+Autoware supports dynamic map loading feature for `ndt_scan_matcher`. Using this feature, NDT dynamically requests for the surrounding pointcloud map to `pointcloud_map_loader`, and then receive and preprocess the map in an online fashion.
+
+Using the feature, `ndt_scan_matcher` can theoretically handle any large size maps in terms of memory usage. (Note that it is still possible that there exists a limitation due to other factors, e.g. floating-point error)
+
+<img src="./media/differential_area_loading.gif" alt="drawing" width="400"/>
+
+### Additional interfaces
+
+#### Additional inputs
+
+| Name             | Type                      | Description                                                 |
+| ---------------- | ------------------------- | ----------------------------------------------------------- |
+| `input_ekf_odom` | `nav_msgs::msg::Odometry` | Vehicle localization results (used for map update decision) |
+
+#### Additional outputs
+
+| Name                          | Type                            | Description                                       |
+| ----------------------------- | ------------------------------- | ------------------------------------------------- |
+| `debug/loaded_pointcloud_map` | `sensor_msgs::msg::PointCloud2` | pointcloud maps used for localization (for debug) |
+
+#### Additional client
+
+| Name                | Type                                                   | Description        |
+| ------------------- | ------------------------------------------------------ | ------------------ |
+| `client_map_loader` | `autoware_map_msgs::srv::GetDifferentialPointCloudMap` | map loading client |
+
+### Parameters
+
+| Name                                  | Type   | Description                                                          |
+| ------------------------------------- | ------ | -------------------------------------------------------------------- |
+| `use_dynamic_map_loading`             | bool   | Flag to enable dynamic map loading feature for NDT (TRUE by default) |
+| `dynamic_map_loading_update_distance` | double | Distance traveled to load new map(s)                                 |
+| `dynamic_map_loading_map_radius`      | double | Map loading radius for every update                                  |
+| `lidar_radius`                        | double | LiDAR radius used for localization (only used for diagnosis)         |
+
+### Enabling the dynamic map loading feature
+
+To use dynamic map loading feature for `ndt_scan_matcher`, you also need to appropriately configure some other settings outside of this node.
+Follow the next two instructions.
+
+1. enable dynamic map loading interface in `pointcloud_map_loader` (by setting `enable_differential_load` to true in the package)
+2. split the PCD files into grids (recommended size: 20[m] x 20[m])
+
+Note that the dynamic map loading may FAIL if the map is split into two or more large size map (e.g. 1000[m] x 1000[m]). Please provide either of
+
+- one PCD map file
+- multiple PCD map files divided into small size (~20[m])
+
+Here is a split PCD map for `sample-map-rosbag` from Autoware tutorial: [`sample-map-rosbag_split.zip`](https://github.com/autowarefoundation/autoware.universe/files/10349104/sample-map-rosbag_split.zip)
+
+|  PCD files  | `use_dynamic_map_loading` | `enable_differential_load` | How NDT loads map(s) |
+| :---------: | :-----------------------: | :------------------------: | :------------------: |
+| single file |           true            |            true            |  at once (standard)  |
+| single file |           true            |           false            |  **does NOT work**   |
+| single file |           false           |         true/false         |  at once (standard)  |
+|  splitted   |           true            |            true            |     dynamically      |
+|  splitted   |           true            |           false            |  **does NOT work**   |
+|  splitted   |           false           |         true/false         |  at once (standard)  |
 
 ## Scan matching score based on de-grounded LiDAR scan
 

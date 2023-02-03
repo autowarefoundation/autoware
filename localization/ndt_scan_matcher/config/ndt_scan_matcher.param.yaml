@@ -1,5 +1,7 @@
 /**:
   ros__parameters:
+    # Use dynamic map loading
+    use_dynamic_map_loading: true
 
     # Vehicle reference frame
     base_frame: "base_link"
@@ -41,10 +43,6 @@
     # Tolerance of distance difference between two initial poses used for linear interpolation. [m]
     initial_pose_distance_tolerance_m: 10.0
 
-    # neighborhood search method
-    # 0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1
-    neighborhood_search_method: 0
-
     # Number of threads used for parallel computing
     num_threads: 4
 
@@ -63,8 +61,17 @@
     # Regularization switch
     regularization_enabled: false
 
-    # Regularization scale factor
+    # regularization scale factor
     regularization_scale_factor: 0.01
+
+    # Dynamic map loading distance
+    dynamic_map_loading_update_distance: 20.0
+
+    # Dynamic map loading loading radius
+    dynamic_map_loading_map_radius: 150.0
+
+    # Radius of input LiDAR range (used for diagnostics of dynamic map loading)
+    lidar_radius: 100.0
 
     # A flag for using scan matching score based on de-grounded LiDAR scan
     estimate_scores_for_degrounded_scan: false
