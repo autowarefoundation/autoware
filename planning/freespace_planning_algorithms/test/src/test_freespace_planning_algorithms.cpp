@@ -270,8 +270,6 @@ bool test_algorithm(enum AlgorithmType algo_type, bool dump_rosbag = false)
   for (size_t i = 0; i < goal_poses.size(); ++i) {
     const auto goal_pose = goal_poses.at(i);
 
-    bool success_local = true;
-
     algo->setMap(costmap_msg);
     double msec;
     double cost;
@@ -284,7 +282,9 @@ bool test_algorithm(enum AlgorithmType algo_type, bool dump_rosbag = false)
       for (size_t j = 0; j < N_mc; j++) {
         const rclcpp::Time begin = clock.now();
         if (!algo->makePlan(create_pose_msg(start_pose), create_pose_msg(goal_pose))) {
-          success_local = false;
+          success_all = false;
+          std::cout << "plan fail" << std::endl;
+          continue;
         }
         const rclcpp::Time now = clock.now();
         time_sum += (now - begin).seconds() * 1000.0;
@@ -295,19 +295,18 @@ bool test_algorithm(enum AlgorithmType algo_type, bool dump_rosbag = false)
 
     } else {
       const rclcpp::Time begin = clock.now();
-      success_local = algo->makePlan(create_pose_msg(start_pose), create_pose_msg(goal_pose));
+      if (!algo->makePlan(create_pose_msg(start_pose), create_pose_msg(goal_pose))) {
+        success_all = false;
+        std::cout << "plan fail" << std::endl;
+        continue;
+      }
       const rclcpp::Time now = clock.now();
       msec = (now - begin).seconds() * 1000.0;
       cost = algo->getWaypoints().compute_length();
     }
 
-    if (success_local) {
-      std::cout << "plan success : " << msec << "[msec]"
-                << ", solution cost : " << cost << std::endl;
-    } else {
-      success_all = false;
-      std::cout << "plan fail : " << msec << "[msec]" << std::endl;
-    }
+    std::cout << "plan success : " << msec << "[msec]"
+              << ", solution cost : " << cost << std::endl;
     const auto result = algo->getWaypoints();
     geometry_msgs::msg::PoseArray trajectory;
     for (const auto & pose : result.waypoints) {
