@@ -16,6 +16,9 @@ while [ "$1" != "" ]; do
         option_platform="$2"
         shift
         ;;
+    --no-prebuilt)
+        option_no_prebuilt=true
+        ;;
     *)
         args+=("$1")
         ;;
@@ -30,6 +33,14 @@ if [ "$option_no_cuda" = "true" ]; then
 else
     setup_args="--no-cuda-drivers"
     image_name_suffix="-cuda"
+fi
+
+# Set prebuilt options
+if [ "$option_no_prebuilt" = "true" ]; then
+    targets="devel"
+else
+    # default targets include devel and prebuilt
+    targets=""
 fi
 
 # Set platform
@@ -60,5 +71,6 @@ docker buildx bake --no-cache --load --progress=plain -f "$SCRIPT_DIR/autoware-u
     --set "*.args.BASE_IMAGE=$base_image" \
     --set "*.args.SETUP_ARGS=$setup_args" \
     --set "devel.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest$image_name_suffix" \
-    --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest-prebuilt$image_name_suffix"
+    --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest-prebuilt$image_name_suffix" \
+    "$targets"
 set +x
