@@ -87,6 +87,11 @@ public:
     m_display_type_property->addOption("3d", 0);
     m_display_type_property->addOption("2d", 1);
     m_display_type_property->addOption("Disable", 2);
+    m_simple_visualize_mode_property = new rviz_common::properties::EnumProperty(
+      "Visualization Type", "Normal", "Simplicity of the polygon to display object.", this,
+      SLOT(updatePalette()));
+    m_simple_visualize_mode_property->addOption("Normal", 0);
+    m_simple_visualize_mode_property->addOption("Simple", 1);
     // iterate over default values to create and initialize the properties.
     for (const auto & map_property_it : detail::kDefaultObjectPropertyValues) {
       const auto & class_property_values = map_property_it.second;
@@ -262,7 +267,9 @@ protected:
     if (m_display_predicted_paths_property.getBool()) {
       const std::string uuid_str = uuid_to_string(uuid);
       const std_msgs::msg::ColorRGBA predicted_path_color = get_color_from_uuid(uuid_str);
-      return detail::get_predicted_path_marker_ptr(shape, predicted_path, predicted_path_color);
+      return detail::get_predicted_path_marker_ptr(
+        shape, predicted_path, predicted_path_color,
+        m_simple_visualize_mode_property->getOptionInt() == 1);
     } else {
       return std::nullopt;
     }
@@ -384,6 +391,8 @@ private:
   PolygonPropertyMap m_polygon_properties;
   // Property to choose type of visualization polygon
   rviz_common::properties::EnumProperty * m_display_type_property;
+  // Property to choose simplicity of visualization polygon
+  rviz_common::properties::EnumProperty * m_simple_visualize_mode_property;
   // Property to enable/disable label visualization
   rviz_common::properties::BoolProperty m_display_label_property;
   // Property to enable/disable uuid visualization

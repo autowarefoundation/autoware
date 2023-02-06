@@ -7,6 +7,8 @@
   <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
   <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
+  <maintainer email="takeshi.miura@tier4.jp">Takeshi Miura</maintainer>
+
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

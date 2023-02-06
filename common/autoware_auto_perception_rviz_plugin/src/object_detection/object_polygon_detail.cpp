@@ -72,7 +72,7 @@ visualization_msgs::msg::Marker::SharedPtr get_path_confidence_marker_ptr(
 visualization_msgs::msg::Marker::SharedPtr get_predicted_path_marker_ptr(
   const autoware_auto_perception_msgs::msg::Shape & shape,
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const std_msgs::msg::ColorRGBA & predicted_path_color)
+  const std_msgs::msg::ColorRGBA & predicted_path_color, const bool is_simple)
 {
   auto marker_ptr = std::make_shared<Marker>();
   marker_ptr->type = visualization_msgs::msg::Marker::LINE_LIST;
@@ -84,7 +84,7 @@ visualization_msgs::msg::Marker::SharedPtr get_predicted_path_marker_ptr(
   marker_ptr->color.a = std::max(
     static_cast<double>(std::min(static_cast<double>(predicted_path.confidence), 0.999)), 0.5);
   marker_ptr->scale.x = 0.03 * marker_ptr->color.a;
-  calc_path_line_list(predicted_path, marker_ptr->points);
+  calc_path_line_list(predicted_path, marker_ptr->points, is_simple);
   for (size_t k = 0; k < marker_ptr->points.size(); ++k) {
     marker_ptr->points.at(k).z -= shape.dimensions.z / 2.0;
   }
@@ -640,8 +640,10 @@ void calc_2d_polygon_bottom_line_list(
 
 void calc_path_line_list(
   const autoware_auto_perception_msgs::msg::PredictedPath & paths,
-  std::vector<geometry_msgs::msg::Point> & points)
+  std::vector<geometry_msgs::msg::Point> & points, const bool is_simple)
 {
+  const int circle_line_num = is_simple ? 5 : 10;
+
   for (int i = 0; i < static_cast<int>(paths.path.size()) - 1; ++i) {
     geometry_msgs::msg::Point point;
     point.x = paths.path.at(i).position.x;
@@ -652,7 +654,9 @@ void calc_path_line_list(
     point.y = paths.path.at(i + 1).position.y;
     point.z = paths.path.at(i + 1).position.z;
     points.push_back(point);
-    calc_circle_line_list(point, 0.25, points, 10);
+    if (!is_simple || i % 2 == 0) {
+      calc_circle_line_list(point, 0.25, points, circle_line_num);
+    }
   }
 }
 
