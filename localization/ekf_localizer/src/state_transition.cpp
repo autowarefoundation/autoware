@@ -30,7 +30,7 @@ double normalizeYaw(const double & yaw)
  * y_{k+1}   = y_k + vx_k * sin(yaw_k + b_k) * dt
  * yaw_{k+1} = yaw_k + (wz_k) * dt
  * b_{k+1}   = b_k
- * vx_{k+1}  = vz_k
+ * vx_{k+1}  = vx_k
  * wz_{k+1}  = wz_k
  *
  * (b_k : yaw_bias_k)
