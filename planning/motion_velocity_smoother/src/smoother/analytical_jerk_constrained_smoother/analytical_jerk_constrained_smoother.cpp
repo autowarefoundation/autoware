@@ -279,23 +279,31 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::resampleTrajectory(
 
 TrajectoryPoints AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilter(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
-  [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit) const
+  [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit,
+  const bool use_resampling, const double input_points_interval) const
 {
   if (input.size() < 3) {
     return input;  // cannot calculate lateral acc. do nothing.
   }
 
   // Interpolate with constant interval distance for lateral acceleration calculation.
-  constexpr double points_interval = 0.1;  // [m]
-  std::vector<double> out_arclength;
-  const std::vector<double> in_arclength = trajectory_utils::calcArclengthArray(input);
-  for (double s = 0; s < in_arclength.back(); s += points_interval) {
-    out_arclength.push_back(s);
+  const double points_interval = use_resampling ? input_points_interval : 0.1;  // [m]
+
+  TrajectoryPoints output;
+  // since the resampling takes a long time, omit the resampling when it is not requested
+  if (use_resampling) {
+    std::vector<double> out_arclength;
+    const std::vector<double> in_arclength = trajectory_utils::calcArclengthArray(input);
+    for (double s = 0; s < in_arclength.back(); s += points_interval) {
+      out_arclength.push_back(s);
+    }
+    const auto output_traj =
+      motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
+    auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
+    output.back() = input.back();  // keep the final speed.
+  } else {
+    output = input;
   }
-  const auto output_traj =
-    motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-  auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
-  output.back() = input.back();  // keep the final speed.
 
   constexpr double curvature_calc_dist = 5.0;  // [m] calc curvature with 5m away points
   const size_t idx_dist =

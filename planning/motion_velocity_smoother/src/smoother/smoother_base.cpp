@@ -71,25 +71,34 @@ double SmootherBase::getMinJerk() const { return base_param_.min_jerk; }
 
 TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
-  [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit) const
+  [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit,
+  const bool use_resampling, const double input_points_interval) const
 {
   if (input.size() < 3) {
     return input;  // cannot calculate lateral acc. do nothing.
   }
 
-  // Interpolate with constant interval distance for lateral acceleration calculation.
-  constexpr double points_interval = 0.1;  // [m]
-  std::vector<double> out_arclength;
-  const auto traj_length = motion_utils::calcArcLength(input);
-  for (double s = 0; s < traj_length; s += points_interval) {
-    out_arclength.push_back(s);
-  }
-  const auto output_traj =
-    motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-  auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
-  output.back() = input.back();  // keep the final speed.
-
   constexpr double curvature_calc_dist = 5.0;  // [m] calc curvature with 5m away points
+
+  // Interpolate with constant interval distance for lateral acceleration calculation.
+  TrajectoryPoints output;
+  const double points_interval =
+    use_resampling ? base_param_.sample_ds : input_points_interval;  // [m]
+  // since the resampling takes a long time, omit the resampling when it is not requested
+  if (use_resampling) {
+    std::vector<double> out_arclength;
+    const auto traj_length = motion_utils::calcArcLength(input);
+    for (double s = 0; s < traj_length; s += points_interval) {
+      out_arclength.push_back(s);
+    }
+    const auto output_traj =
+      motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
+    output = motion_utils::convertToTrajectoryPointArray(output_traj);
+    output.back() = input.back();  // keep the final speed.
+  } else {
+    output = input;
+  }
+
   const size_t idx_dist =
     static_cast<size_t>(std::max(static_cast<int>((curvature_calc_dist) / points_interval), 1));
 
@@ -131,24 +140,34 @@ TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   return output;
 }
 
-TrajectoryPoints SmootherBase::applySteeringRateLimit(const TrajectoryPoints & input) const
+TrajectoryPoints SmootherBase::applySteeringRateLimit(
+  const TrajectoryPoints & input, const bool use_resampling,
+  const double input_points_interval) const
 {
   if (input.size() < 3) {
     return input;  // cannot calculate the desired velocity. do nothing.
   }
-  // Interpolate with constant interval distance for lateral acceleration calculation.
-  std::vector<double> out_arclength;
-  const auto traj_length = motion_utils::calcArcLength(input);
-  for (double s = 0; s < traj_length; s += base_param_.sample_ds) {
-    out_arclength.push_back(s);
-  }
-  const auto output_traj =
-    motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-  auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
-  output.back() = input.back();  // keep the final speed.
 
-  const size_t idx_dist = static_cast<size_t>(std::max(
-    static_cast<int>((base_param_.curvature_calculation_distance) / base_param_.sample_ds), 1));
+  // Interpolate with constant interval distance for lateral acceleration calculation.
+  const double points_interval = use_resampling ? base_param_.sample_ds : input_points_interval;
+  TrajectoryPoints output;
+  // since the resampling takes a long time, omit the resampling when it is not requested
+  if (use_resampling) {
+    std::vector<double> out_arclength;
+    const auto traj_length = motion_utils::calcArcLength(input);
+    for (double s = 0; s < traj_length; s += points_interval) {
+      out_arclength.push_back(s);
+    }
+    const auto output_traj =
+      motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
+    output = motion_utils::convertToTrajectoryPointArray(output_traj);
+    output.back() = input.back();  // keep the final speed.
+  } else {
+    output = input;
+  }
+
+  const size_t idx_dist = static_cast<size_t>(
+    std::max(static_cast<int>((base_param_.curvature_calculation_distance) / points_interval), 1));
 
   // Calculate curvature assuming the trajectory points interval is constant
   const auto curvature_v = trajectory_utils::calcTrajectoryCurvatureFrom3Points(output, idx_dist);
@@ -163,14 +182,14 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(const TrajectoryPoints & i
       const double mean_vel =
         (output.at(i).longitudinal_velocity_mps + output.at(i + 1).longitudinal_velocity_mps) / 2.0;
       const double dt =
-        std::max(base_param_.sample_ds / mean_vel, std::numeric_limits<double>::epsilon());
+        std::max(points_interval / mean_vel, std::numeric_limits<double>::epsilon());
       const double steering_diff =
         fabs(output.at(i).front_wheel_angle_rad - output.at(i + 1).front_wheel_angle_rad);
       const double dt_steering =
         steering_diff / tier4_autoware_utils::deg2rad(base_param_.max_steering_angle_rate);
 
       if (dt_steering > dt) {
-        const double target_mean_vel = (base_param_.sample_ds / dt_steering);
+        const double target_mean_vel = (points_interval / dt_steering);
         for (size_t k = 0; k < 2; k++) {
           const double temp_vel =
             output.at(i + k).longitudinal_velocity_mps * (target_mean_vel / mean_vel);

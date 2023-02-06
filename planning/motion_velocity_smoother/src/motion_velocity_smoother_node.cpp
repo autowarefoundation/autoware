@@ -531,12 +531,14 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   const auto [initial_motion, type] = calcInitialMotion(input, input_closest);
 
   // Lateral acceleration limit
-  const auto traj_lateral_acc_filtered =
-    smoother_->applyLateralAccelerationFilter(input, initial_motion.vel, initial_motion.acc, true);
+  constexpr bool enable_smooth_limit = true;
+  constexpr bool use_resampling = true;
+  const auto traj_lateral_acc_filtered = smoother_->applyLateralAccelerationFilter(
+    input, initial_motion.vel, initial_motion.acc, enable_smooth_limit, use_resampling);
 
-  // Steering angle rate limit
+  // Steering angle rate limit (Note: set use_resample = false since it is resampled above)
   const auto traj_steering_rate_limited =
-    smoother_->applySteeringRateLimit(traj_lateral_acc_filtered);
+    smoother_->applySteeringRateLimit(traj_lateral_acc_filtered, false);
 
   // Resample trajectory with ego-velocity based interval distance
   auto traj_resampled = smoother_->resampleTrajectory(
