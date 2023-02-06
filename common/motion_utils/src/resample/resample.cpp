@@ -243,8 +243,12 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   const auto lerp = [&](const auto & input) {
     return interpolation::lerp(input_arclength, input, resampled_arclength);
   };
+
+  auto closest_segment_indices =
+    interpolation::calc_closest_segment_indices(input_arclength, resampled_arclength);
+
   const auto zoh = [&](const auto & input) {
-    return interpolation::zero_order_hold(input_arclength, input, resampled_arclength);
+    return interpolation::zero_order_hold(input_arclength, input, closest_segment_indices);
   };
 
   const auto interpolated_pose =
@@ -389,8 +393,14 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   const auto lerp = [&](const auto & input) {
     return interpolation::lerp(input_arclength, input, resampled_arclength);
   };
+
+  std::vector<size_t> closest_segment_indices;
+  if (use_zero_order_hold_for_v) {
+    closest_segment_indices =
+      interpolation::calc_closest_segment_indices(input_arclength, resampled_arclength);
+  }
   const auto zoh = [&](const auto & input) {
-    return interpolation::zero_order_hold(input_arclength, input, resampled_arclength);
+    return interpolation::zero_order_hold(input_arclength, input, closest_segment_indices);
   };
 
   const auto interpolated_pose =
@@ -541,8 +551,14 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const auto lerp = [&](const auto & input) {
     return interpolation::lerp(input_arclength, input, resampled_arclength);
   };
+
+  std::vector<size_t> closest_segment_indices;
+  if (use_zero_order_hold_for_twist) {
+    closest_segment_indices =
+      interpolation::calc_closest_segment_indices(input_arclength, resampled_arclength);
+  }
   const auto zoh = [&](const auto & input) {
-    return interpolation::zero_order_hold(input_arclength, input, resampled_arclength);
+    return interpolation::zero_order_hold(input_arclength, input, closest_segment_indices);
   };
 
   const auto interpolated_pose =
