@@ -324,9 +324,11 @@ void BehaviorVelocityPlannerNode::onAcceleration(
 
 void BehaviorVelocityPlannerNode::onParam()
 {
+  // Note(vrichard): mutex lock is not necessary as onParam is only called once in the constructed.
+  // It would be required if it was a callback.
+  // std::lock_guard<std::mutex> lock(mutex_);
   planner_data_.velocity_smoother_ =
     std::make_unique<motion_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
-  return;
 }
 
 void BehaviorVelocityPlannerNode::onLaneletMap(
@@ -367,6 +369,7 @@ void BehaviorVelocityPlannerNode::onExternalIntersectionStates(
 
 void BehaviorVelocityPlannerNode::onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   planner_data_.external_velocity_limit = *msg;
 }
 
@@ -392,10 +395,9 @@ void BehaviorVelocityPlannerNode::onVirtualTrafficLightStates(
 void BehaviorVelocityPlannerNode::onTrigger(
   const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg)
 {
-  mutex_.lock();  // for planner_data_
+  std::unique_lock<std::mutex> lk(mutex_);
 
   if (!isDataReady(planner_data_, *get_clock())) {
-    mutex_.unlock();
     return;
   }
 
@@ -407,20 +409,17 @@ void BehaviorVelocityPlannerNode::onTrigger(
   if (!planner_data_.route_handler_) {
     RCLCPP_INFO_THROTTLE(
       get_logger(), *get_clock(), 3000, "Waiting for the initialization of route_handler");
-    mutex_.unlock();
     return;
   }
-
-  // NOTE: planner_data must not be referenced for multithreading
-  const auto planner_data = planner_data_;
-  mutex_.unlock();
 
   if (input_path_msg->points.empty()) {
     return;
   }
 
   const autoware_auto_planning_msgs::msg::Path output_path_msg =
-    generatePath(input_path_msg, planner_data);
+    generatePath(input_path_msg, planner_data_);
+
+  lk.unlock();
 
   path_pub_->publish(output_path_msg);
   stop_reason_diag_pub_->publish(planner_manager_.getStopReasonDiag());
