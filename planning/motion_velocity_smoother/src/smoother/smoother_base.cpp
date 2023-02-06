@@ -69,16 +69,12 @@ double SmootherBase::getMaxJerk() const { return base_param_.max_jerk; }
 
 double SmootherBase::getMinJerk() const { return base_param_.min_jerk; }
 
-boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
+TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
   [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit) const
 {
-  if (input.empty()) {
-    return boost::none;
-  }
-
   if (input.size() < 3) {
-    return boost::optional<TrajectoryPoints>(input);  // cannot calculate lateral acc. do nothing.
+    return input;  // cannot calculate lateral acc. do nothing.
   }
 
   // Interpolate with constant interval distance for lateral acceleration calculation.
@@ -135,16 +131,10 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
   return output;
 }
 
-boost::optional<TrajectoryPoints> SmootherBase::applySteeringRateLimit(
-  const TrajectoryPoints & input) const
+TrajectoryPoints SmootherBase::applySteeringRateLimit(const TrajectoryPoints & input) const
 {
-  if (input.empty()) {
-    return boost::none;
-  }
-
   if (input.size() < 3) {
-    return boost::optional<TrajectoryPoints>(
-      input);  // cannot calculate the desired velocity. do nothing.
+    return input;  // cannot calculate the desired velocity. do nothing.
   }
   // Interpolate with constant interval distance for lateral acceleration calculation.
   std::vector<double> out_arclength;

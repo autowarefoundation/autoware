@@ -523,30 +523,24 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   const TrajectoryPoints & input, const size_t input_closest,
   TrajectoryPoints & traj_smoothed) const
 {
+  if (input.empty()) {
+    return false;  // cannot apply smoothing
+  }
+
   // Calculate initial motion for smoothing
   const auto [initial_motion, type] = calcInitialMotion(input, input_closest);
 
   // Lateral acceleration limit
   const auto traj_lateral_acc_filtered =
     smoother_->applyLateralAccelerationFilter(input, initial_motion.vel, initial_motion.acc, true);
-  if (!traj_lateral_acc_filtered) {
-    RCLCPP_ERROR(get_logger(), "Fail to do traj_lateral_acc_filtered");
-
-    return false;
-  }
 
   // Steering angle rate limit
   const auto traj_steering_rate_limited =
-    smoother_->applySteeringRateLimit(*traj_lateral_acc_filtered);
-  if (!traj_steering_rate_limited) {
-    RCLCPP_ERROR(get_logger(), "Fail to do traj_steering_rate_limited");
-
-    return false;
-  }
+    smoother_->applySteeringRateLimit(traj_lateral_acc_filtered);
 
   // Resample trajectory with ego-velocity based interval distance
   auto traj_resampled = smoother_->resampleTrajectory(
-    *traj_steering_rate_limited, current_odometry_ptr_->twist.twist.linear.x,
+    traj_steering_rate_limited, current_odometry_ptr_->twist.twist.linear.x,
     current_odometry_ptr_->pose.pose, node_param_.ego_nearest_dist_threshold,
     node_param_.ego_nearest_yaw_threshold);
 
@@ -593,7 +587,7 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   RCLCPP_DEBUG(get_logger(), "smoothVelocity : traj_smoothed.size() = %lu", traj_smoothed.size());
   if (publish_debug_trajs_) {
     {
-      auto tmp = *traj_lateral_acc_filtered;
+      auto tmp = traj_lateral_acc_filtered;
       if (is_reverse_) flipVelocity(tmp);
       pub_trajectory_latacc_filtered_->publish(toTrajectoryMsg(tmp));
     }
@@ -603,7 +597,7 @@ bool MotionVelocitySmootherNode::smoothVelocity(
       pub_trajectory_resampled_->publish(toTrajectoryMsg(tmp));
     }
     {
-      auto tmp = *traj_steering_rate_limited;
+      auto tmp = traj_steering_rate_limited;
       if (is_reverse_) flipVelocity(tmp);
       pub_trajectory_steering_rate_limited_->publish(toTrajectoryMsg(tmp));
     }

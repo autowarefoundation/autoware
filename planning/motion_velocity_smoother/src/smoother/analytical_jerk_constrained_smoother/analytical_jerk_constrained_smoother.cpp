@@ -277,16 +277,12 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::resampleTrajectory(
   return output;
 }
 
-boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilter(
+TrajectoryPoints AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilter(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
   [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit) const
 {
-  if (input.empty()) {
-    return boost::none;
-  }
-
   if (input.size() < 3) {
-    return boost::optional<TrajectoryPoints>(input);  // cannot calculate lateral acc. do nothing.
+    return input;  // cannot calculate lateral acc. do nothing.
   }
 
   // Interpolate with constant interval distance for lateral acceleration calculation.

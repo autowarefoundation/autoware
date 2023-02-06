@@ -77,7 +77,7 @@ public:
     [[maybe_unused]] const double nearest_dist_threshold,
     [[maybe_unused]] const double nearest_yaw_threshold) const override;
 
-  boost::optional<TrajectoryPoints> applyLateralAccelerationFilter(
+  TrajectoryPoints applyLateralAccelerationFilter(
     const TrajectoryPoints & input, [[maybe_unused]] const double v0,
     [[maybe_unused]] const double a0,
     [[maybe_unused]] const bool enable_smooth_limit) const override;

@@ -71,12 +71,12 @@ public:
     const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
     const double nearest_dist_threshold, const double nearest_yaw_threshold) const = 0;
 
-  virtual boost::optional<TrajectoryPoints> applyLateralAccelerationFilter(
+  virtual TrajectoryPoints applyLateralAccelerationFilter(
     const TrajectoryPoints & input, [[maybe_unused]] const double v0 = 0.0,
     [[maybe_unused]] const double a0 = 0.0,
     [[maybe_unused]] const bool enable_smooth_limit = false) const;
 
-  boost::optional<TrajectoryPoints> applySteeringRateLimit(const TrajectoryPoints & input) const;
+  TrajectoryPoints applySteeringRateLimit(const TrajectoryPoints & input) const;
 
   double getMaxAccel() const;
   double getMinDecel() const;
