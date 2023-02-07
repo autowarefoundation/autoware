@@ -373,7 +373,16 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   }
 
   // combine road and shoulder lanes
-  lanelet::ConstLanelets lanes = road_lanes;
+  // cut the road lanes up to start_pose to prevent unintended processing for overlapped lane
+  lanelet::ConstLanelets lanes{};
+  tier4_autoware_utils::Point2d start_point2d(start_pose.position.x, start_pose.position.y);
+  for (const auto & lane : road_lanes) {
+    if (boost::geometry::within(start_point2d, lane.polygon2d().basicPolygon())) {
+      lanes.push_back(lane);
+      break;
+    }
+    lanes.push_back(lane);
+  }
   lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
 
   // If start_pose is parallel to goal_pose, we can know lateral deviation of edges of vehicle,
