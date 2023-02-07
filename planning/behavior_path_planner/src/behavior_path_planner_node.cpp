@@ -1017,7 +1017,7 @@ bool BehaviorPathPlannerNode::keepInputPoints(
   return false;
 }
 
-void BehaviorPathPlannerNode::onOdometry(const Odometry::SharedPtr msg)
+void BehaviorPathPlannerNode::onOdometry(const Odometry::ConstSharedPtr msg)
 {
   const std::lock_guard<std::mutex> lock(mutex_pd_);
   planner_data_->self_odometry = msg;
