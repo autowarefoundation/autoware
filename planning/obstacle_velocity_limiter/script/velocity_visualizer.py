@@ -24,7 +24,6 @@ from rclpy.node import Node
 
 class TrajectoryVisualizer(Node):
     def __init__(self):
-
         super().__init__("trajectory_visualizer")
 
         self.fig = plt.figure()

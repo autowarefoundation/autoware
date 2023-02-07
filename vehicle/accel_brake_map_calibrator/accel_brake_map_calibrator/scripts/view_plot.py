@@ -158,7 +158,6 @@ class ViewPlot(Node):
         calibrated_acc_list,
         scatter_only,
     ):
-
         fig = plotter.subplot_more(subplot_num)
 
         if not scatter_only:

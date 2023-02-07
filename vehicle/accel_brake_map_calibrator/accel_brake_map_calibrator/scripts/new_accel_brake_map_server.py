@@ -254,7 +254,6 @@ class DrawGraph(Node):
         calibrated_pedal_list,
         calibrated_acc_list,
     ):
-
         fig = plotter.subplot_more(subplot_num)
 
         # calibrated map

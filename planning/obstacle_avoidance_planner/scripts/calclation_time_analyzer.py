@@ -79,7 +79,6 @@ class CalculationCostAnalyzer(Node):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--functions", type=str, default="solveOsqp")
     args = parser.parse_args()

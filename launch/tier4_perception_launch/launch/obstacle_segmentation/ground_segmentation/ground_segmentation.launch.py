@@ -249,7 +249,6 @@ class GroundSegmentationPipeline:
         return components
 
     def create_single_frame_obstacle_segmentation_components(self, input_topic, output_topic):
-
         additional_lidars = self.ground_segmentation_param["additional_lidars"]
         use_ransac = bool(self.ground_segmentation_param["ransac_input_topics"])
         use_additional = bool(additional_lidars)
@@ -424,7 +423,6 @@ class GroundSegmentationPipeline:
 
     @staticmethod
     def get_additional_lidars_concatenated_component(input_topics, output_topic):
-
         return ComposableNode(
             package="pointcloud_preprocessor",
             plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
@@ -507,7 +505,6 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-
     launch_arguments = []
 
     def add_launch_arg(name: str, default_value=None):

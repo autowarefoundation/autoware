@@ -25,7 +25,6 @@ def _create_mapping_tuple(name):
 
 
 def generate_launch_description():
-
     arguments = [
         # component
         DeclareLaunchArgument("use_intra_process"),

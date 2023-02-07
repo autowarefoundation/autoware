@@ -36,7 +36,6 @@ SELF_POSE_FRAME = "base_link"
 
 class TrajectoryVisualizer(Node):
     def __init__(self):
-
         super().__init__("trajectory_visualizer")
 
         self.fig = plt.figure()

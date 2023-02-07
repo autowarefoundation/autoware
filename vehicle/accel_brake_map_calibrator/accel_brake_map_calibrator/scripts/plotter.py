@@ -102,7 +102,7 @@ class Plotter(object):
             origin="lower",
         )
         ys, xs = np.meshgrid(width_range, height_range, indexing="ij")
-        for (x, y, val) in zip(xs.flatten(), ys.flatten(), data.flatten()):
+        for x, y, val in zip(xs.flatten(), ys.flatten(), data.flatten()):
             self.plot_text(x, y, val, num_data_type)
         plt.colorbar()
 

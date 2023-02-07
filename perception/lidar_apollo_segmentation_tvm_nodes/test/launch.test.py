@@ -24,7 +24,6 @@ import pytest
 
 @pytest.mark.launch_test
 def generate_test_description():
-
     lidar_apollo_segmentation_tvm = Node(
         package="lidar_apollo_segmentation_tvm_nodes",
         executable="lidar_apollo_segmentation_tvm_nodes_exe",

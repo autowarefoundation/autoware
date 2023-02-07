@@ -28,7 +28,6 @@ import yaml
 
 
 def launch_setup(context, *args, **kwargs):
-
     vehicle_info_param_path = LaunchConfiguration("vehicle_param_file").perform(context)
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
