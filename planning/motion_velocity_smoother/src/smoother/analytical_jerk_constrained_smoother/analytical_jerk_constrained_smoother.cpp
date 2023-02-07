@@ -287,7 +287,7 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilt
   }
 
   // Interpolate with constant interval distance for lateral acceleration calculation.
-  const double points_interval = use_resampling ? input_points_interval : 0.1;  // [m]
+  const double points_interval = use_resampling ? 0.1 : input_points_interval;  // [m]
 
   TrajectoryPoints output;
   // since the resampling takes a long time, omit the resampling when it is not requested
@@ -299,7 +299,7 @@ TrajectoryPoints AnalyticalJerkConstrainedSmoother::applyLateralAccelerationFilt
     }
     const auto output_traj =
       motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-    auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
+    output = motion_utils::convertToTrajectoryPointArray(output_traj);
     output.back() = input.back();  // keep the final speed.
   } else {
     output = input;
