@@ -232,6 +232,38 @@ double calcDecelDistPlanType3(const double v0, const double a0, const double ja)
   return x1;
 }
 
+tier4_autoware_utils::Polygon2d expandPolygon(
+  const tier4_autoware_utils::Polygon2d & input_polygon, const double offset)
+{
+  // NOTE: There is a duplicated point.
+  const size_t num_points = input_polygon.outer().size() - 1;
+
+  tier4_autoware_utils::Polygon2d expanded_polygon;
+  for (size_t i = 0; i < num_points; ++i) {
+    const auto & curr_p = input_polygon.outer().at(i);
+    const auto & next_p = input_polygon.outer().at(i + 1);
+    const auto & prev_p =
+      i == 0 ? input_polygon.outer().at(num_points - 1) : input_polygon.outer().at(i - 1);
+
+    Eigen::Vector2d current_to_next(next_p.x() - curr_p.x(), next_p.y() - curr_p.y());
+    Eigen::Vector2d current_to_prev(prev_p.x() - curr_p.x(), prev_p.y() - curr_p.y());
+    current_to_next.normalize();
+    current_to_prev.normalize();
+
+    const Eigen::Vector2d offset_vector = (-current_to_next - current_to_prev).normalized();
+    const double theta = std::acos(offset_vector.dot(current_to_next));
+    const double scaled_offset = offset / std::sin(theta);
+    const Eigen::Vector2d offset_point =
+      Eigen::Vector2d(curr_p.x(), curr_p.y()) + offset_vector * scaled_offset;
+
+    expanded_polygon.outer().push_back(
+      tier4_autoware_utils::Point2d(offset_point.x(), offset_point.y()));
+  }
+
+  boost::geometry::correct(expanded_polygon);
+  return expanded_polygon;
+}
+
 }  // namespace
 
 bool isOnRight(const ObjectData & obj) { return obj.lateral < 0.0; }
@@ -503,42 +535,8 @@ Polygon2d createEnvelopePolygon(
   tf2::doTransform(
     toMsg(envelope_poly, closest_pose.position.z), envelope_ros_polygon, geometry_tf);
 
-  std::vector<Polygon2d> offset_polygons{};
-  bg::strategy::buffer::distance_symmetric<double> distance_strategy(envelope_buffer);
-  bg::strategy::buffer::join_miter join_strategy;
-  bg::strategy::buffer::end_flat end_strategy;
-  bg::strategy::buffer::side_straight side_strategy;
-  bg::strategy::buffer::point_circle point_strategy;
-  bg::buffer(
-    toPolygon2d(envelope_ros_polygon), offset_polygons, distance_strategy, side_strategy,
-    join_strategy, end_strategy, point_strategy);
-
-  return offset_polygons.front();
-}
-
-void getEdgePoints(
-  const Polygon2d & object_polygon, const double threshold, std::vector<Point> & edge_points)
-{
-  if (object_polygon.outer().size() < 2) {
-    return;
-  }
-
-  const size_t num_points = object_polygon.outer().size();
-  for (size_t i = 0; i < num_points - 1; ++i) {
-    const auto & curr_p = object_polygon.outer().at(i);
-    const auto & next_p = object_polygon.outer().at(i + 1);
-    const auto & prev_p =
-      i == 0 ? object_polygon.outer().at(num_points - 2) : object_polygon.outer().at(i - 1);
-    const Eigen::Vector2d current_to_next(next_p.x() - curr_p.x(), next_p.y() - curr_p.y());
-    const Eigen::Vector2d current_to_prev(prev_p.x() - curr_p.x(), prev_p.y() - curr_p.y());
-    const double inner_val = current_to_next.dot(current_to_prev);
-    if (std::fabs(inner_val) > threshold) {
-      continue;
-    }
-
-    const auto edge_point = tier4_autoware_utils::createPoint(curr_p.x(), curr_p.y(), 0.0);
-    edge_points.push_back(edge_point);
-  }
+  const auto expanded_polygon = expandPolygon(toPolygon2d(envelope_ros_polygon), envelope_buffer);
+  return expanded_polygon;
 }
 
 void sortPolygonPoints(
@@ -698,11 +696,14 @@ void generateDrivableArea(
   for (const auto & object : objects) {
     const auto & obj_pose = object.object.kinematics.initial_pose_with_covariance.pose;
     const auto & obj_poly = object.envelope_poly;
-    constexpr double threshold = 0.01;
 
     // get edge points of the object
     std::vector<Point> edge_points;
-    getEdgePoints(obj_poly, threshold, edge_points);
+    for (size_t i = 0; i < obj_poly.outer().size() - 1;
+         ++i) {  // NOTE: There is a duplicated points
+      edge_points.push_back(tier4_autoware_utils::createPoint(
+        obj_poly.outer().at(i).x(), obj_poly.outer().at(i).y(), 0.0));
+    }
 
     // get a boundary that we have to change
     const double lat_dist_to_path = motion_utils::calcLateralOffset(path.points, obj_pose.position);
