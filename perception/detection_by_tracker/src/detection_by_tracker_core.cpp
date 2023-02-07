@@ -414,8 +414,6 @@ void DetectionByTracker::mergeOverSegmentedObjects(
       const float precision =
         perception_utils::get2dPrecision(initial_object.object, extended_tracked_object);
       if (precision < precision_threshold) {
-        if (tracked_object.classification.front().label)
-          std::cout << "Rejected by Perception Threshold:" << precision << std::endl;
         continue;
       }
       pcl::PointCloud<pcl::PointXYZ> pcl_cluster;
