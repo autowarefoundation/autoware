@@ -163,8 +163,6 @@ bool GeometricParallelParking::planPullOver(
   const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
   const lanelet::ConstLanelets & shoulder_lanes, const bool is_forward)
 {
-  clearPaths();
-
   const auto & common_params = planner_data_->parameters;
   const double end_pose_offset = is_forward ? -parameters_.after_forward_parking_straight_distance
                                             : parameters_.after_backward_parking_straight_distance;
@@ -227,8 +225,6 @@ bool GeometricParallelParking::planPullOut(
   const Pose & start_pose, const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
   const lanelet::ConstLanelets & shoulder_lanes)
 {
-  clearPaths();
-
   constexpr bool is_forward = false;         // parking backward means departing forward
   constexpr double start_pose_offset = 0.0;  // start_pose is current_pose
   constexpr double max_offset = 10.0;
@@ -267,7 +263,7 @@ bool GeometricParallelParking::planPullOut(
     }
 
     // get road center line path from departing end to goal, and combine after the second arc path
-    const double s_start = getArcCoordinates(road_lanes, *end_pose).length + 1.0;  // need buffer?
+    const double s_start = getArcCoordinates(road_lanes, *end_pose).length;
     const double s_goal = getArcCoordinates(road_lanes, goal_pose).length;
     const double road_lanes_length = std::accumulate(
       road_lanes.begin(), road_lanes.end(), 0.0, [](const double sum, const auto & lane) {
@@ -278,6 +274,16 @@ bool GeometricParallelParking::planPullOut(
     PathWithLaneId road_center_line_path =
       planner_data_->route_handler->getCenterLinePath(road_lanes, s_start, s_end, true);
 
+    // check the continuity of straight path and arc path
+    const Pose & road_path_first_pose = road_center_line_path.points.front().point.pose;
+    const Pose & arc_path_last_pose = arc_paths.back().points.back().point.pose;
+    const double yaw_diff = tier4_autoware_utils::normalizeRadian(
+      tf2::getYaw(road_path_first_pose.orientation), tf2::getYaw(arc_path_last_pose.orientation));
+    const double distance = calcDistance2d(road_path_first_pose, arc_path_last_pose);
+    if (yaw_diff > tier4_autoware_utils::deg2rad(5.0) || distance > 0.1) {
+      continue;
+    }
+
     // set departing velocity to arc paths and 0 velocity to end point
     constexpr bool set_stop_end = false;
     setVelocityToArcPaths(arc_paths, parameters_.departing_velocity, set_stop_end);
@@ -286,7 +292,8 @@ bool GeometricParallelParking::planPullOut(
     // combine the road center line path with the second arc path
     auto paths = arc_paths;
     paths.back().points.insert(
-      paths.back().points.end(), road_center_line_path.points.begin(),
+      paths.back().points.end(),
+      road_center_line_path.points.begin() + 1,  // to avoid overlapped point
       road_center_line_path.points.end());
     removeOverlappingPoints(paths.back());
 
@@ -350,6 +357,8 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
   const bool is_forward, const double end_pose_offset, const double lane_departure_margin)
 {
+  clearPaths();
+
   const auto common_params = planner_data_->parameters;
 
   const Pose arc_end_pose = calcOffsetPose(goal_pose, end_pose_offset, 0, 0);

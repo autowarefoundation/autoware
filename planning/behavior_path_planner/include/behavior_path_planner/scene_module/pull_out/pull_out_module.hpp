@@ -105,7 +105,7 @@ private:
   std::shared_ptr<PullOutPlannerBase> getCurrentPlanner() const;
   PathWithLaneId getFullPath() const;
   ParallelParkingParameters getGeometricPullOutParameters() const;
-  std::vector<Pose> searchBackedPoses();
+  std::vector<Pose> searchPullOutStartPoses();
 
   std::shared_ptr<LaneDepartureChecker> lane_departure_checker_;
 

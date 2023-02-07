@@ -534,16 +534,7 @@ void PullOutModule::updatePullOutStatus()
     util::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_out_lanes);
 
   // search pull out start candidates backward
-  std::vector<Pose> start_pose_candidates;
-  {
-    if (parameters_.enable_back) {
-      // the first element is current_pose
-      start_pose_candidates = searchBackedPoses();
-    } else {
-      // pull_out_start candidate is only current pose
-      start_pose_candidates.push_back(current_pose);
-    }
-  }
+  std::vector<Pose> start_pose_candidates = searchPullOutStartPoses();
 
   if (parameters_.search_priority == "efficient_path") {
     planWithPriorityOnEfficientPath(start_pose_candidates, goal_pose);
@@ -580,8 +571,10 @@ void PullOutModule::updatePullOutStatus()
 }
 
 // make this class?
-std::vector<Pose> PullOutModule::searchBackedPoses()
+std::vector<Pose> PullOutModule::searchPullOutStartPoses()
 {
+  std::vector<Pose> pull_out_start_pose{};
+
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
 
   // get backward shoulder path
@@ -598,9 +591,18 @@ std::vector<Pose> PullOutModule::searchBackedPoses()
     p.point.pose = calcOffsetPose(p.point.pose, 0, distance_from_center_line, 0);
   }
 
+  // if backward driving is disable, just refine current pose to the lanes
+  if (!parameters_.enable_back) {
+    const auto refined_pose =
+      calcLongitudinalOffsetPose(backward_shoulder_path.points, current_pose.position, 0);
+    if (refined_pose) {
+      pull_out_start_pose.push_back(*refined_pose);
+    }
+    return pull_out_start_pose;
+  }
+
   // check collision between footprint and object at the backed pose
   const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
-  std::vector<Pose> backed_poses;
   for (double back_distance = 0.0; back_distance <= parameters_.max_back_distance;
        back_distance += parameters_.backward_search_resolution) {
     const auto backed_pose = calcLongitudinalOffsetPose(
@@ -630,9 +632,9 @@ std::vector<Pose> PullOutModule::searchBackedPoses()
       break;  // poses behind this has a collision, so break.
     }
 
-    backed_poses.push_back(*backed_pose);
+    pull_out_start_pose.push_back(*backed_pose);
   }
-  return backed_poses;
+  return pull_out_start_pose;
 }
 
 bool PullOutModule::isOverlappedWithLane(
