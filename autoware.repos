@@ -52,7 +52,7 @@ repositories:
   universe/external/eagleye:
     type: git
     url: https://github.com/MapIV/eagleye
-    version: v1.6.0-ros2
+    version: autoware
   universe/external/rtklib_ros_bridge:
     type: git
     url: https://github.com/MapIV/rtklib_ros_bridge.git
