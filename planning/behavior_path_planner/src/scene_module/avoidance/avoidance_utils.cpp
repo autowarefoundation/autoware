@@ -643,24 +643,28 @@ std::vector<Point> updateBoundary(
   const auto closest_end_point =
     motion_utils::calcLongitudinalOffsetPoint(original_bound, end_segment_idx, end_offset);
 
-  std::vector<Point> updated_bound;
-
   const double min_dist = 1e-3;
-  // copy original points until front point
-  std::copy(
-    original_bound.begin(), original_bound.begin() + start_segment_idx + 1,
-    std::back_inserter(updated_bound));
 
-  // insert closest front point
-  if (
-    closest_front_point &&
-    tier4_autoware_utils::calcDistance2d(*closest_front_point, updated_bound.back()) > min_dist) {
-    updated_bound.push_back(*closest_front_point);
+  std::vector<Point> updated_bound;
+  if (0 < front_offset) {
+    // copy original points until front point
+    std::copy(
+      original_bound.begin(), original_bound.begin() + start_segment_idx + 1,
+      std::back_inserter(updated_bound));
+
+    // insert closest front point
+    if (
+      closest_front_point &&
+      tier4_autoware_utils::calcDistance2d(*closest_front_point, updated_bound.back()) > min_dist) {
+      updated_bound.push_back(*closest_front_point);
+    }
   }
 
   // insert sorted points
   for (const auto & sorted_point : sorted_points) {
-    if (tier4_autoware_utils::calcDistance2d(sorted_point.point, updated_bound.back()) > min_dist) {
+    if (
+      updated_bound.empty() ||
+      tier4_autoware_utils::calcDistance2d(sorted_point.point, updated_bound.back()) > min_dist) {
       updated_bound.push_back(sorted_point.point);
     }
   }
@@ -668,13 +672,15 @@ std::vector<Point> updateBoundary(
   // insert closest end point
   if (
     closest_end_point &&
-    tier4_autoware_utils::calcDistance2d(*closest_end_point, updated_bound.back()) > min_dist) {
+    (updated_bound.empty() ||
+     tier4_autoware_utils::calcDistance2d(*closest_end_point, updated_bound.back()) > min_dist)) {
     updated_bound.push_back(*closest_end_point);
   }
 
   // copy original points until the end of the original bound
   for (size_t i = end_segment_idx + 1; i < original_bound.size(); ++i) {
     if (
+      updated_bound.empty() ||
       tier4_autoware_utils::calcDistance2d(original_bound.at(i), updated_bound.back()) > min_dist) {
       updated_bound.push_back(original_bound.at(i));
     }
