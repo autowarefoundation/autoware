@@ -49,6 +49,7 @@ if(BUILD_TESTING)
     test/test_measurement.cpp
     test/test_numeric.cpp
     test/test_state_transition.cpp
+    test/test_string.cpp
     test/test_warning_message.cpp)
 
   foreach(filepath ${TEST_FILES})

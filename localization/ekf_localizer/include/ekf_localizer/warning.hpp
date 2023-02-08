@@ -26,14 +26,14 @@ public:
 
   void warn(const std::string & message) const
   {
-    RCLCPP_WARN(node_->get_logger(), message.c_str());
+    RCLCPP_WARN(node_->get_logger(), "%s", message.c_str());
   }
 
   void warnThrottle(const std::string & message, const int duration_milliseconds) const
   {
     RCLCPP_WARN_THROTTLE(
       node_->get_logger(), *(node_->get_clock()),
-      std::chrono::milliseconds(duration_milliseconds).count(), message.c_str());
+      std::chrono::milliseconds(duration_milliseconds).count(), "%s", message.c_str());
   }
 
 private:
