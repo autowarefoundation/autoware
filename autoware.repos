@@ -49,6 +49,10 @@ repositories:
     type: git
     url: https://github.com/tier4/pointcloud_to_laserscan.git
     version: tier4/main
+  universe/external/scenario_simulator_v2_msgs:
+    type: git
+    url: https://github.com/tier4/scenario_simulator_v2_msgs.git
+    version: main
   # launcher
   launcher/autoware_launch:
     type: git
