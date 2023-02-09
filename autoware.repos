@@ -51,7 +51,7 @@ repositories:
     version: tier4/main
   universe/external/eagleye:
     type: git
-    url: https://github.com/MapIV/eagleye
+    url: https://github.com/MapIV/eagleye.git
     version: autoware-main
   universe/external/rtklib_ros_bridge:
     type: git
