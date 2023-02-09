@@ -45,6 +45,10 @@ repositories:
     type: git
     url: https://github.com/tier4/ndt_omp.git
     version: tier4/main
+  universe/external/cuda-api-wrappers:
+    type: git
+    url: https://github.com/tier4/cuda-api-wrappers.git
+    version: 45f495b2d15c15f45a0015abd2a1c98d45ee65e9 # v0.6.1
   universe/external/pointcloud_to_laserscan:
     type: git
     url: https://github.com/tier4/pointcloud_to_laserscan.git
