@@ -76,6 +76,9 @@ struct AvoidanceParameters
   // enable yield maneuver.
   bool enable_yield_maneuver{false};
 
+  // disable path update
+  bool disable_path_update{false};
+
   // constrains
   bool use_constraints_for_decel{false};
 

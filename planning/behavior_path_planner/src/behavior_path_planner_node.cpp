@@ -324,6 +324,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       declare_parameter<bool>(ns + "enable_update_path_when_object_is_gone");
     p.enable_safety_check = declare_parameter<bool>(ns + "enable_safety_check");
     p.enable_yield_maneuver = declare_parameter<bool>(ns + "enable_yield_maneuver");
+    p.disable_path_update = declare_parameter<bool>(ns + "disable_path_update");
     p.publish_debug_marker = declare_parameter<bool>(ns + "publish_debug_marker");
     p.print_debug_info = declare_parameter<bool>(ns + "print_debug_info");
   }

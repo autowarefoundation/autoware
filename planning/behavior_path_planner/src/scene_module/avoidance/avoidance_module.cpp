@@ -2863,7 +2863,9 @@ BehaviorModuleOutput AvoidanceModule::plan()
     } else {
       RCLCPP_WARN_STREAM(getLogger(), "Direction is UNKNOWN");
     }
-    addShiftLineIfApproved(data.safe_new_sl);
+    if (!parameters_->disable_path_update) {
+      addShiftLineIfApproved(data.safe_new_sl);
+    }
   } else if (isWaitingApproval()) {
     clearWaitingApproval();
     removeCandidateRTCStatus();
@@ -2894,7 +2896,9 @@ BehaviorModuleOutput AvoidanceModule::plan()
   }
 
   avoidance_data_.state = updateEgoState(data);
-  updateEgoBehavior(data, avoidance_path);
+  if (!parameters_->disable_path_update) {
+    updateEgoBehavior(data, avoidance_path);
+  }
 
   if (parameters_->publish_debug_marker) {
     setDebugData(avoidance_data_, path_shifter_, debug_data_);
