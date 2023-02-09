@@ -43,10 +43,10 @@ RUN rm -rf \
   /etc/apt/sources.list.d/nvidia-docker.list
 
 ## Register Vulkan GPU vendors
-ADD "https://gitlab.com/nvidia/container-images/vulkan/raw/dc389b0445c788901fda1d85be96fd1cb9410164/nvidia_icd.json" /etc/vulkan/icd.d/nvidia_icd.json
-RUN chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
-ADD "https://gitlab.com/nvidia/container-images/opengl/raw/5191cf205d3e4bb1150091f9464499b076104354/glvnd/runtime/10_nvidia.json" /etc/glvnd/egl_vendor.d/10_nvidia.json
-RUN chmod 644 /etc/glvnd/egl_vendor.d/10_nvidia.json
+RUN curl https://gitlab.com/nvidia/container-images/vulkan/raw/dc389b0445c788901fda1d85be96fd1cb9410164/nvidia_icd.json -o /etc/vulkan/icd.d/nvidia_icd.json \
+  && chmod 644 /etc/vulkan/icd.d/nvidia_icd.json
+RUN curl https://gitlab.com/nvidia/container-images/opengl/raw/5191cf205d3e4bb1150091f9464499b076104354/glvnd/runtime/10_nvidia.json -o /etc/glvnd/egl_vendor.d/10_nvidia.json \
+  && chmod 644 /etc/glvnd/egl_vendor.d/10_nvidia.json
 
 ## Register OpenCL GPU vendors
 RUN mkdir -p /etc/OpenCL/vendors \
