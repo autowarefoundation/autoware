@@ -44,6 +44,7 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::util::calcObjectPolygon;
 using behavior_path_planner::util::getHighestProbLabel;
 using geometry_msgs::msg::Pose;
+using route_handler::RouteHandler;
 using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
@@ -111,6 +112,66 @@ void filterObjectIndices(
       others_obj_indices.push_back(i);
     }
   }
+}
+
+std::vector<std::vector<int64_t>> getSortedLaneIds(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes, const double rough_shift_length)
+{
+  std::vector<std::vector<int64_t>> sorted_lane_ids{};
+  sorted_lane_ids.reserve(target_lanes.size());
+  const auto get_sorted_lane_ids = [&](const lanelet::ConstLanelet & target_lane) {
+    const auto routing_graph_ptr = route_handler.getRoutingGraphPtr();
+    lanelet::ConstLanelet lane;
+    if (rough_shift_length < 0.0) {
+      // lane change to the left, so I wan to take the lane right to target
+      const auto has_target_right = routing_graph_ptr->right(target_lane);
+      if (has_target_right) {
+        lane = *has_target_right;
+      }
+    } else if (rough_shift_length > 0.0) {
+      const auto has_target_left = routing_graph_ptr->left(target_lane);
+      if (has_target_left) {
+        lane = *has_target_left;
+      }
+    } else {
+      lane = target_lane;
+    }
+
+    const auto find_same_id = std::find_if(
+      current_lanes.cbegin(), current_lanes.cend(),
+      [&lane](const lanelet::ConstLanelet & orig) { return orig.id() == lane.id(); });
+
+    if (find_same_id == current_lanes.cend()) {
+      return std::vector{target_lane.id()};
+    }
+
+    if (target_lane.id() > find_same_id->id()) {
+      return std::vector{find_same_id->id(), target_lane.id()};
+    }
+
+    return std::vector{target_lane.id(), find_same_id->id()};
+  };
+
+  std::transform(
+    target_lanes.cbegin(), target_lanes.cend(), std::back_inserter(sorted_lane_ids),
+    get_sorted_lane_ids);
+
+  return sorted_lane_ids;
+}
+
+std::vector<int64_t> replaceWithSortedIds(
+  const std::vector<int64_t> & original_lane_ids,
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids)
+{
+  for (const auto original_id : original_lane_ids) {
+    for (const auto & sorted_id : sorted_lane_ids) {
+      if (std::find(sorted_id.cbegin(), sorted_id.cend(), original_id) != sorted_id.cend()) {
+        return sorted_id;
+      }
+    }
+  }
+  return original_lane_ids;
 }
 }  // namespace
 
@@ -181,7 +242,8 @@ std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const double acceleration, const LaneChangePhaseInfo distance, const LaneChangePhaseInfo speed,
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids, const double acceleration,
+  const LaneChangePhaseInfo distance, const LaneChangePhaseInfo speed,
   const LaneChangeParameters & lane_change_param)
 {
   PathShifter path_shifter;
@@ -236,35 +298,32 @@ std::optional<LaneChangePath> constructCandidatePath(
   const Pose & lane_changing_end_pose = lane_changing_end_point.point.pose;
   const auto lanechange_end_idx =
     motion_utils::findNearestIndex(shifted_path.path.points, lane_changing_end_pose);
-  const auto insertLaneIDs = [](auto & target, const auto src) {
-    target.lane_ids.insert(target.lane_ids.end(), src.lane_ids.begin(), src.lane_ids.end());
-  };
-  if (lanechange_end_idx) {
-    for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
-      auto & point = shifted_path.path.points.at(i);
-      if (i < *lanechange_end_idx) {
-        insertLaneIDs(point, lane_changing_start_point);
-        insertLaneIDs(point, lane_changing_end_point);
-        point.point.longitudinal_velocity_mps = std::min(
-          point.point.longitudinal_velocity_mps,
-          lane_changing_start_point.point.longitudinal_velocity_mps);
-        continue;
-      }
-      point.point.longitudinal_velocity_mps =
-        std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_speed));
-      const auto nearest_idx =
-        motion_utils::findNearestIndex(lane_changing_segment.points, point.point.pose);
-      point.lane_ids = lane_changing_segment.points.at(*nearest_idx).lane_ids;
-    }
 
-    candidate_path.path = combineReferencePath(prepare_segment, shifted_path.path);
-    candidate_path.shifted_path = shifted_path;
-  } else {
+  if (!lanechange_end_idx) {
     RCLCPP_ERROR_STREAM(
       rclcpp::get_logger("behavior_path_planner").get_child("lane_change").get_child("util"),
       "lane change end idx not found on target path.");
     return std::nullopt;
   }
+
+  for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
+    auto & point = shifted_path.path.points.at(i);
+    if (i < *lanechange_end_idx) {
+      point.lane_ids = replaceWithSortedIds(point.lane_ids, sorted_lane_ids);
+      point.point.longitudinal_velocity_mps = std::min(
+        point.point.longitudinal_velocity_mps,
+        lane_changing_start_point.point.longitudinal_velocity_mps);
+      continue;
+    }
+    point.point.longitudinal_velocity_mps =
+      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_speed));
+    const auto nearest_idx =
+      motion_utils::findNearestIndex(lane_changing_segment.points, point.point.pose);
+    point.lane_ids = lane_changing_segment.points.at(*nearest_idx).lane_ids;
+  }
+
+  candidate_path.path = combineReferencePath(prepare_segment, shifted_path.path);
+  candidate_path.shifted_path = shifted_path;
 
   // check candidate path is in lanelet
   if (!isPathInLanelets(candidate_path.path, original_lanelets, target_lanelets)) {
@@ -321,6 +380,9 @@ LaneChangePaths getLaneChangePaths(
   const auto arc_position_from_target = lanelet::utils::getArcCoordinates(target_lanelets, pose);
 
   const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanelets);
+
+  const auto sorted_lane_ids = getSortedLaneIds(
+    route_handler, original_lanelets, target_lanelets, arc_position_from_target.distance);
 
   for (double acceleration = 0.0; acceleration >= -maximum_deceleration;
        acceleration -= acceleration_resolution) {
@@ -385,7 +447,8 @@ LaneChangePaths getLaneChangePaths(
     const auto lc_speed = LaneChangePhaseInfo{prepare_speed, lane_changing_speed};
     const auto candidate_path = constructCandidatePath(
       prepare_segment_reference, lane_changing_segment_reference, target_lane_reference_path,
-      shift_line, original_lanelets, target_lanelets, acceleration, lc_dist, lc_speed, parameter);
+      shift_line, original_lanelets, target_lanelets, sorted_lane_ids, acceleration, lc_dist,
+      lc_speed, parameter);
 
     if (!candidate_path) {
       continue;
