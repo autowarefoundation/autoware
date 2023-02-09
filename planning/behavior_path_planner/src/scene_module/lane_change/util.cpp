@@ -322,13 +322,13 @@ std::optional<LaneChangePath> constructCandidatePath(
     point.lane_ids = lane_changing_segment.points.at(*nearest_idx).lane_ids;
   }
 
-  candidate_path.path = combineReferencePath(prepare_segment, shifted_path.path);
-  candidate_path.shifted_path = shifted_path;
-
-  // check candidate path is in lanelet
-  if (!isPathInLanelets(candidate_path.path, original_lanelets, target_lanelets)) {
+  if (!isPathInLanelets(shifted_path.path, original_lanelets, target_lanelets)) {
     return std::nullopt;
   }
+
+  // check candidate path is in lanelet
+  candidate_path.path = combineReferencePath(prepare_segment, shifted_path.path);
+  candidate_path.shifted_path = shifted_path;
 
   return std::optional<LaneChangePath>{candidate_path};
 }
