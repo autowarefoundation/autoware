@@ -2329,19 +2329,43 @@ bool hasEnoughDistance(
   const auto is_obj_in_front = isObjectFront(front_vehicle_pose);
   debug.is_front = is_obj_in_front;
 
-  const auto front_vehicle_velocity =
-    (is_obj_in_front) ? object_current_twist.linear : ego_current_twist.linear;
+  const auto [front_vehicle_velocity, rear_vehicle_velocity] = std::invoke([&]() {
+    debug.object_twist.linear = object_current_twist.linear;
+    if (is_obj_in_front) {
+      return std::make_pair(
+        util::l2Norm(object_current_twist.linear), util::l2Norm(ego_current_twist.linear));
+    }
+    return std::make_pair(
+      util::l2Norm(ego_current_twist.linear), util::l2Norm(object_current_twist.linear));
+  });
 
-  const auto rear_vehicle_velocity =
-    (is_obj_in_front) ? ego_current_twist.linear : object_current_twist.linear;
-  debug.object_twist.linear = (is_obj_in_front) ? front_vehicle_velocity : rear_vehicle_velocity;
+  const auto is_unsafe_dist_between_vehicle = std::invoke([&]() {
+    // ignore this for parked vehicle.
+    if (l2Norm(object_current_twist.linear) < 0.1) {
+      return false;
+    }
+
+    // the value guarantee distance between vehicles are always more than dist
+    const auto max_vel = std::max(front_vehicle_velocity, rear_vehicle_velocity);
+    constexpr auto scale = 0.8;
+    const auto dist = scale * std::abs(max_vel) + param.longitudinal_distance_min_threshold;
+
+    // return value rounded to the nearest two floating point
+    return std::abs(front_vehicle_pose.position.x) < dist;
+  });
+
+  if (is_unsafe_dist_between_vehicle) {
+    return false;
+  }
 
   const auto front_vehicle_stop_threshold = frontVehicleStopDistance(
-    util::l2Norm(front_vehicle_velocity), front_decel, std::fabs(front_vehicle_pose.position.x));
+    front_vehicle_velocity, front_decel, std::abs(front_vehicle_pose.position.x));
 
+  // longitudinal_distance_min_threshold here guarantee future stopping distance must be more than
+  // longitudinal_distance_min_threshold
   const auto rear_vehicle_stop_threshold = std::max(
     rearVehicleStopDistance(
-      util::l2Norm(rear_vehicle_velocity), rear_decel, param.rear_vehicle_reaction_time,
+      rear_vehicle_velocity, rear_decel, param.rear_vehicle_reaction_time,
       param.rear_vehicle_safety_time_margin),
     param.longitudinal_distance_min_threshold);
 
