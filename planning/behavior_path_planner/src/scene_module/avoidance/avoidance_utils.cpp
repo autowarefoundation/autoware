@@ -704,11 +704,14 @@ void generateDrivableArea(
     const auto & obj_poly = object.envelope_poly;
 
     // get edge points of the object
+    const size_t nearest_path_idx = motion_utils::findNearestIndex(
+      path.points, obj_pose.position);  // to get z for object polygon
     std::vector<Point> edge_points;
     for (size_t i = 0; i < obj_poly.outer().size() - 1;
          ++i) {  // NOTE: There is a duplicated points
       edge_points.push_back(tier4_autoware_utils::createPoint(
-        obj_poly.outer().at(i).x(), obj_poly.outer().at(i).y(), 0.0));
+        obj_poly.outer().at(i).x(), obj_poly.outer().at(i).y(),
+        path.points.at(nearest_path_idx).point.pose.position.z));
     }
 
     // get a boundary that we have to change
