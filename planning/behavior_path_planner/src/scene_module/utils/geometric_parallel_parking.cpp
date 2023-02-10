@@ -138,8 +138,8 @@ std::vector<PathWithLaneId> GeometricParallelParking::generatePullOverPaths(
   // check the continuity of straight path and arc path
   const Pose & road_path_last_pose = straight_path.points.back().point.pose;
   const Pose & arc_path_first_pose = arc_paths.front().points.front().point.pose;
-  const double yaw_diff = tier4_autoware_utils::normalizeRadian(
-    tf2::getYaw(road_path_last_pose.orientation), tf2::getYaw(arc_path_first_pose.orientation));
+  const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(
+    tf2::getYaw(road_path_last_pose.orientation) - tf2::getYaw(arc_path_first_pose.orientation)));
   const double distance = calcDistance2d(road_path_last_pose, arc_path_first_pose);
   if (yaw_diff > tier4_autoware_utils::deg2rad(5.0) || distance > 0.1) {
     return std::vector<PathWithLaneId>{};
@@ -277,8 +277,8 @@ bool GeometricParallelParking::planPullOut(
     // check the continuity of straight path and arc path
     const Pose & road_path_first_pose = road_center_line_path.points.front().point.pose;
     const Pose & arc_path_last_pose = arc_paths.back().points.back().point.pose;
-    const double yaw_diff = tier4_autoware_utils::normalizeRadian(
-      tf2::getYaw(road_path_first_pose.orientation), tf2::getYaw(arc_path_last_pose.orientation));
+    const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(
+      tf2::getYaw(road_path_first_pose.orientation) - tf2::getYaw(arc_path_last_pose.orientation)));
     const double distance = calcDistance2d(road_path_first_pose, arc_path_last_pose);
     if (yaw_diff > tier4_autoware_utils::deg2rad(5.0) || distance > 0.1) {
       continue;
