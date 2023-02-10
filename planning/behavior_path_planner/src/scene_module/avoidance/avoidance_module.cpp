@@ -2573,12 +2573,8 @@ void AvoidanceModule::generateExtendedDrivableArea(PathWithLaneId & path) const
 
     // 2. when there are multiple turning lanes whose previous lanelet is the same in
     // intersection
-    const lanelet::ConstLanelets next_lanes_from_intersection = std::invoke(
+    const lanelet::ConstLanelets next_lanes = std::invoke(
       [&route_handler](const lanelet::ConstLanelet & lane) {
-        if (!lane.hasAttribute("turn_direction")) {
-          return lanelet::ConstLanelets{};
-        }
-
         // get previous lane, and return false if previous lane does not exist
         lanelet::ConstLanelets prev_lanes;
         if (!route_handler->getPreviousLaneletsWithinRoute(lane, &prev_lanes)) {
@@ -2598,7 +2594,7 @@ void AvoidanceModule::generateExtendedDrivableArea(PathWithLaneId & path) const
 
     // 2.1 look for neighbour lane, where end line of the lane is connected to end line of the
     // original lane
-    for (const auto & next_lane : next_lanes_from_intersection) {
+    for (const auto & next_lane : next_lanes) {
       if (current_lane.id() == next_lane.id()) {
         continue;
       }
