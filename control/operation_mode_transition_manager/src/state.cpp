@@ -71,7 +71,7 @@ AutonomousMode::AutonomousMode(rclcpp::Node * node)
   // params for mode change completed
   {
     auto & p = stable_check_param_;
-    p.duration = node->declare_parameter<double>("stable_check.duration");
+    p.duration = node->get_parameter("stable_check.duration").as_double();
     p.dist_threshold = node->declare_parameter<double>("stable_check.dist_threshold");
     p.speed_upper_threshold = node->declare_parameter<double>("stable_check.speed_upper_threshold");
     p.speed_lower_threshold = node->declare_parameter<double>("stable_check.speed_lower_threshold");
