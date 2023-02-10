@@ -332,7 +332,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     // object is behind ego or too far.
     if (object_data.longitudinal < -parameters_->object_check_backward_distance) {
       avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD);
-      object_data.reason = AvoidanceDebugFactor::OBJECT_BEHIND_PATH_GOAL;
+      object_data.reason = AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD;
       data.other_objects.push_back(object_data);
       continue;
     }
