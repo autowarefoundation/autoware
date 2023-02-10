@@ -44,6 +44,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 #include "tier4_external_api_msgs/srv/initialize_pose.hpp"
 
 #include <tf2_ros/buffer.h>
@@ -82,6 +83,7 @@ using geometry_msgs::msg::TransformStamped;
 using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Odometry;
+using sensor_msgs::msg::Imu;
 using tier4_external_api_msgs::srv::InitializePose;
 
 class DeltaTime
@@ -126,6 +128,7 @@ private:
   rclcpp::Publisher<Odometry>::SharedPtr pub_odom_;
   rclcpp::Publisher<SteeringReport>::SharedPtr pub_steer_;
   rclcpp::Publisher<AccelWithCovarianceStamped>::SharedPtr pub_acc_;
+  rclcpp::Publisher<Imu>::SharedPtr pub_imu_;
   rclcpp::Publisher<ControlModeReport>::SharedPtr pub_control_mode_report_;
   rclcpp::Publisher<GearReport>::SharedPtr pub_gear_report_;
   rclcpp::Publisher<TurnIndicatorsReport>::SharedPtr pub_turn_indicators_report_;
@@ -327,6 +330,11 @@ private:
    * @brief publish acceleration
    */
   void publish_acceleration();
+
+  /**
+   * @brief publish imu
+   */
+  void publish_imu();
 
   /**
    * @brief publish control_mode report

@@ -66,6 +66,7 @@ def launch_setup(context, *args, **kwargs):
             ("output/twist", "/vehicle/status/velocity_status"),
             ("output/odometry", "/localization/kinematic_state"),
             ("output/acceleration", "/localization/acceleration"),
+            ("output/imu", "/sensing/imu/imu_data"),
             ("output/steering", "/vehicle/status/steering_status"),
             ("output/gear_report", "/vehicle/status/gear_status"),
             ("output/turn_indicators_report", "/vehicle/status/turn_indicators_status"),
