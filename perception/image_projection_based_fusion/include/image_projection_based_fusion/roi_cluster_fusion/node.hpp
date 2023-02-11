@@ -44,7 +44,9 @@ protected:
   bool use_cluster_semantic_type_{false};
   float iou_threshold_{0.0f};
   bool remove_unknown_;
+  float trust_distance_;
 
+  bool filter_by_distance(const DetectedObjectWithFeature & obj);
   bool out_of_scope(const DetectedObjectWithFeature & obj);
   // bool CheckUnknown(const DetectedObjectsWithFeature & obj);
 };

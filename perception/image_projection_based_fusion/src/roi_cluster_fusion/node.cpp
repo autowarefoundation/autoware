@@ -40,6 +40,7 @@ RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
   use_cluster_semantic_type_ = declare_parameter("use_cluster_semantic_type", false);
   iou_threshold_ = declare_parameter("iou_threshold", 0.1);
   remove_unknown_ = declare_parameter("remove_unknown", false);
+  trust_distance_ = declare_parameter("trust_distance", 100.0);
 }
 
 void RoiClusterFusionNode::preprocess(DetectedObjectsWithFeature & output_cluster_msg)
@@ -100,6 +101,10 @@ void RoiClusterFusionNode::fuseOnSingleImage(
   std::map<std::size_t, RegionOfInterest> m_cluster_roi;
   for (std::size_t i = 0; i < input_cluster_msg.feature_objects.size(); ++i) {
     if (input_cluster_msg.feature_objects.at(i).feature.cluster.data.empty()) {
+      continue;
+    }
+
+    if (filter_by_distance(input_cluster_msg.feature_objects.at(i))) {
       continue;
     }
 
@@ -223,6 +228,13 @@ bool RoiClusterFusionNode::out_of_scope(const DetectedObjectWithFeature & obj)
   }
 
   return is_out;
+}
+
+bool RoiClusterFusionNode::filter_by_distance(const DetectedObjectWithFeature & obj)
+{
+  const auto & position = obj.object.kinematics.pose_with_covariance.pose.position;
+  const auto square_distance = position.x * position.x + position.y + position.y;
+  return square_distance > trust_distance_ * trust_distance_;
 }
 
 }  // namespace image_projection_based_fusion
