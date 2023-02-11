@@ -15,76 +15,53 @@
 #ifndef PATH_FOOTPRINT__DISPLAY_HPP_
 #define PATH_FOOTPRINT__DISPLAY_HPP_
 
-#include <rclcpp/rclcpp.hpp>
-#include <rviz_common/display_context.hpp>
-#include <rviz_common/frame_manager_iface.hpp>
-#include <rviz_common/message_filter_display.hpp>
-#include <rviz_common/properties/bool_property.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/parse_color.hpp>
-#include <rviz_common/validate_floats.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
+#include <path_footprint/display_base.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
-
-#include <OgreBillboardSet.h>
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
+#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 namespace rviz_plugins
 {
-using vehicle_info_util::VehicleInfo;
-using vehicle_info_util::VehicleInfoUtil;
-
-class AutowarePathFootprintDisplay
-: public rviz_common::MessageFilterDisplay<autoware_auto_planning_msgs::msg::Path>
+class AutowarePathWithLaneIdFootprintDisplay
+: public AutowarePathFootBaseprintDisplay<autoware_auto_planning_msgs::msg::PathWithLaneId>
 {
   Q_OBJECT
 
 public:
-  AutowarePathFootprintDisplay();
-  virtual ~AutowarePathFootprintDisplay();
-
-  void onInitialize() override;
-  void reset() override;
-
-private Q_SLOTS:
-  void updateVisualization();
-  void updateVehicleInfo();
-
-protected:
-  void processMessage(
-    const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr msg_ptr) override;
-  Ogre::ManualObject * path_footprint_manual_object_;
-  rviz_common::properties::BoolProperty * property_path_footprint_view_;
-  rviz_common::properties::ColorProperty * property_path_footprint_color_;
-  rviz_common::properties::FloatProperty * property_path_footprint_alpha_;
-  rviz_common::properties::FloatProperty * property_vehicle_length_;
-  rviz_common::properties::FloatProperty * property_vehicle_width_;
-  rviz_common::properties::FloatProperty * property_rear_overhang_;
-
-  struct VehicleFootprintInfo
-  {
-    VehicleFootprintInfo(const float l, const float w, const float r)
-    : length(l), width(w), rear_overhang(r)
-    {
-    }
-    float length, width, rear_overhang;
-  };
-
-  std::shared_ptr<VehicleInfo> vehicle_info_;
-  std::shared_ptr<VehicleFootprintInfo> vehicle_footprint_info_;
+  AutowarePathWithLaneIdFootprintDisplay();
 
 private:
-  autoware_auto_planning_msgs::msg::Path::ConstSharedPtr last_msg_ptr_;
-  bool validateFloats(const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr & msg_ptr);
+  void resetDetail() override;
+  void preprocessMessageDetail(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr) override;
+  void processMessageDetail(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr,
+    const size_t p_idx) override;
+
+  rviz_common::properties::BoolProperty property_lane_id_view_;
+  rviz_common::properties::FloatProperty property_lane_id_scale_;
+
+  using LaneIdObject =
+    std::pair<std::unique_ptr<Ogre::SceneNode>, std::unique_ptr<rviz_rendering::MovableText>>;
+  std::vector<LaneIdObject> lane_id_obj_ptrs_;
+};
+class AutowarePathFootprintDisplay
+: public AutowarePathFootBaseprintDisplay<autoware_auto_planning_msgs::msg::Path>
+{
+  Q_OBJECT
 };
 
+class AutowareTrajectoryFootprintDisplay
+: public AutowarePathFootBaseprintDisplay<autoware_auto_planning_msgs::msg::Trajectory>
+{
+  Q_OBJECT
+};
 }  // namespace rviz_plugins
 
 #endif  // PATH_FOOTPRINT__DISPLAY_HPP_
