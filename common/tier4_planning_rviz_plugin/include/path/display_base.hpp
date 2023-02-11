@@ -1,0 +1,354 @@
+// Copyright 2023 TIER IV, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef PATH__DISPLAY_BASE_HPP_
+#define PATH__DISPLAY_BASE_HPP_
+
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/message_filter_display.hpp>
+#include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/parse_color.hpp>
+#include <rviz_common/validate_floats.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
+
+#include <autoware_auto_planning_msgs/msg/path.hpp>
+
+#include <OgreBillboardSet.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+
+#include <deque>
+#include <memory>
+#include <vector>
+
+#define EIGEN_MPL2_ONLY
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
+#include <utils.hpp>
+
+namespace
+{
+std::unique_ptr<Ogre::ColourValue> gradation(
+  const QColor & color_min, const QColor & color_max, const double ratio)
+{
+  std::unique_ptr<Ogre::ColourValue> color_ptr(new Ogre::ColourValue);
+  color_ptr->g =
+    static_cast<float>(color_max.greenF() * ratio + color_min.greenF() * (1.0 - ratio));
+  color_ptr->r = static_cast<float>(color_max.redF() * ratio + color_min.redF() * (1.0 - ratio));
+  color_ptr->b = static_cast<float>(color_max.blueF() * ratio + color_min.blueF() * (1.0 - ratio));
+
+  return color_ptr;
+}
+
+std::unique_ptr<Ogre::ColourValue> setColorDependsOnVelocity(
+  const double vel_max, const double cmd_vel)
+{
+  const double cmd_vel_abs = std::fabs(cmd_vel);
+  const double vel_min = 0.0;
+
+  std::unique_ptr<Ogre::ColourValue> color_ptr(new Ogre::ColourValue());
+  if (vel_min < cmd_vel_abs && cmd_vel_abs <= (vel_max / 2.0)) {
+    double ratio = (cmd_vel_abs - vel_min) / (vel_max / 2.0 - vel_min);
+    color_ptr = gradation(Qt::red, Qt::yellow, ratio);
+  } else if ((vel_max / 2.0) < cmd_vel_abs && cmd_vel_abs <= vel_max) {
+    double ratio = (cmd_vel_abs - vel_max / 2.0) / (vel_max - vel_max / 2.0);
+    color_ptr = gradation(Qt::yellow, Qt::green, ratio);
+  } else if (vel_max < cmd_vel_abs) {
+    *color_ptr = Ogre::ColourValue::Green;
+  } else {
+    *color_ptr = Ogre::ColourValue::Red;
+  }
+
+  return color_ptr;
+}
+
+template <typename T>
+bool validateFloats(const typename T::ConstSharedPtr & msg_ptr)
+{
+  for (auto && path_point : msg_ptr->points) {
+    if (
+      !rviz_common::validateFloats(tier4_autoware_utils::getPose(path_point)) &&
+      !rviz_common::validateFloats(tier4_autoware_utils::getLongitudinalVelocity(path_point))) {
+      return false;
+    }
+  }
+  return true;
+}
+}  // namespace
+
+namespace rviz_plugins
+{
+template <typename T>
+class AutowarePathBaseDisplay : public rviz_common::MessageFilterDisplay<T>
+{
+public:
+  AutowarePathBaseDisplay()
+  :  // path
+    property_path_view_{"View Path", true, "", this},
+    property_path_width_{"Width", 2.0, "", &property_path_view_},
+    property_path_alpha_{"Alpha", 1.0, "", &property_path_view_},
+    property_path_color_view_{"Constant Color", false, "", &property_path_view_},
+    property_path_color_{"Color", Qt::black, "", &property_path_view_},
+    property_vel_max_{"Color Border Vel Max", 3.0, "[m/s]", this},
+    // velocity
+    property_velocity_view_{"View Velocity", true, "", this},
+    property_velocity_alpha_{"Alpha", 1.0, "", &property_velocity_view_},
+    property_velocity_scale_{"Scale", 0.3, "", &property_velocity_view_},
+    property_velocity_color_view_{"Constant Color", false, "", &property_velocity_view_},
+    property_velocity_color_{"Color", Qt::black, "", &property_velocity_view_},
+    // velocity text
+    property_velocity_text_view_{"View Text Velocity", false, "", this},
+    property_velocity_text_scale_{"Scale", 0.3, "", &property_velocity_text_view_}
+  {
+    // path
+    property_path_width_.setMin(0.0);
+    property_path_alpha_.setMin(0.0);
+    property_path_alpha_.setMax(1.0);
+    property_vel_max_.setMin(0.0);
+    // velocity
+    property_velocity_alpha_.setMin(0.0);
+    property_velocity_alpha_.setMax(1.0);
+    // velocity text
+    property_velocity_scale_.setMin(0.1);
+    property_velocity_scale_.setMax(10.0);
+  }
+
+  ~AutowarePathBaseDisplay() override
+  {
+    if (this->initialized()) {
+      this->scene_manager_->destroyManualObject(path_manual_object_);
+      this->scene_manager_->destroyManualObject(velocity_manual_object_);
+      for (size_t i = 0; i < velocity_text_nodes_.size(); i++) {
+        Ogre::SceneNode * node = velocity_text_nodes_.at(i);
+        node->removeAndDestroyAllChildren();
+        node->detachAllObjects();
+        this->scene_manager_->destroySceneNode(node);
+      }
+    }
+  }
+  void onInitialize() override
+  {
+    rviz_common::MessageFilterDisplay<T>::MFDClass::onInitialize();
+
+    path_manual_object_ = this->scene_manager_->createManualObject();
+    velocity_manual_object_ = this->scene_manager_->createManualObject();
+    path_manual_object_->setDynamic(true);
+    velocity_manual_object_->setDynamic(true);
+    this->scene_node_->attachObject(path_manual_object_);
+    this->scene_node_->attachObject(velocity_manual_object_);
+  }
+  void reset() override
+  {
+    rviz_common::MessageFilterDisplay<T>::MFDClass::reset();
+    path_manual_object_->clear();
+    velocity_manual_object_->clear();
+    for (size_t i = 0; i < velocity_texts_.size(); i++) {
+      Ogre::SceneNode * node = velocity_text_nodes_.at(i);
+      node->detachAllObjects();
+      node->removeAndDestroyAllChildren();
+      this->scene_manager_->destroySceneNode(node);
+    }
+    velocity_text_nodes_.clear();
+    velocity_texts_.clear();
+  }
+
+protected:
+  void processMessage(const typename T::ConstSharedPtr msg_ptr) override
+  {
+    if (!validateFloats<T>(msg_ptr)) {
+      this->setStatus(
+        rviz_common::properties::StatusProperty::Error, "Topic",
+        "Message contained invalid floating point values (nans or infs)");
+      return;
+    }
+
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    if (!this->context_->getFrameManager()->getTransform(msg_ptr->header, position, orientation)) {
+      RCLCPP_DEBUG(
+        rclcpp::get_logger("AutowarePathBaseDisplay"),
+        "Error transforming from frame '%s' to frame '%s'", msg_ptr->header.frame_id.c_str(),
+        qPrintable(this->fixed_frame_));
+    }
+
+    this->scene_node_->setPosition(position);
+    this->scene_node_->setOrientation(orientation);
+
+    path_manual_object_->clear();
+    velocity_manual_object_->clear();
+
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(
+      "BaseWhiteNoLighting", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    material->setDepthWriteEnabled(false);
+
+    if (!msg_ptr->points.empty()) {
+      path_manual_object_->estimateVertexCount(msg_ptr->points.size() * 2);
+      velocity_manual_object_->estimateVertexCount(msg_ptr->points.size());
+      path_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+      // path_manual_object_->begin("BaseWhiteNoLighting",
+      // Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+      velocity_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+
+      if (msg_ptr->points.size() > velocity_texts_.size()) {
+        for (size_t i = velocity_texts_.size(); i < msg_ptr->points.size(); i++) {
+          Ogre::SceneNode * node = this->scene_node_->createChildSceneNode();
+          rviz_rendering::MovableText * text =
+            new rviz_rendering::MovableText("not initialized", "Liberation Sans", 0.1);
+          text->setVisible(false);
+          text->setTextAlignment(
+            rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_ABOVE);
+          node->attachObject(text);
+          velocity_texts_.push_back(text);
+          velocity_text_nodes_.push_back(node);
+        }
+      } else if (msg_ptr->points.size() < velocity_texts_.size()) {
+        for (size_t i = velocity_texts_.size() - 1; i >= msg_ptr->points.size(); i--) {
+          Ogre::SceneNode * node = velocity_text_nodes_.at(i);
+          node->detachAllObjects();
+          node->removeAndDestroyAllChildren();
+          this->scene_manager_->destroySceneNode(node);
+        }
+        velocity_texts_.resize(msg_ptr->points.size());
+        velocity_text_nodes_.resize(msg_ptr->points.size());
+      }
+
+      for (size_t point_idx = 0; point_idx < msg_ptr->points.size(); point_idx++) {
+        const auto & path_point = msg_ptr->points.at(point_idx);
+        const auto & pose = tier4_autoware_utils::getPose(path_point);
+        const auto & velocity = tier4_autoware_utils::getLongitudinalVelocity(path_point);
+
+        // path
+        if (property_path_view_.getBool()) {
+          Ogre::ColourValue color;
+          if (property_path_color_view_.getBool()) {
+            color = rviz_common::properties::qtToOgre(property_path_color_.getColor());
+          } else {
+            // color change depending on velocity
+            std::unique_ptr<Ogre::ColourValue> dynamic_color_ptr =
+              setColorDependsOnVelocity(property_vel_max_.getFloat(), velocity);
+            color = *dynamic_color_ptr;
+          }
+          color.a = property_path_alpha_.getFloat();
+          Eigen::Vector3f vec_in;
+          Eigen::Vector3f vec_out;
+          Eigen::Quaternionf quat_yaw_reverse(0, 0, 0, 1);
+          {
+            vec_in << 0, (property_path_width_.getFloat() / 2.0), 0;
+            Eigen::Quaternionf quat(
+              pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+            if (!isDrivingForward(msg_ptr->points, point_idx)) {
+              quat *= quat_yaw_reverse;
+            }
+            vec_out = quat * vec_in;
+            path_manual_object_->position(
+              static_cast<float>(pose.position.x) + vec_out.x(),
+              static_cast<float>(pose.position.y) + vec_out.y(),
+              static_cast<float>(pose.position.z) + vec_out.z());
+            path_manual_object_->colour(color);
+          }
+          {
+            vec_in << 0, -(property_path_width_.getFloat() / 2.0), 0;
+            Eigen::Quaternionf quat(
+              pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+            if (!isDrivingForward(msg_ptr->points, point_idx)) {
+              quat *= quat_yaw_reverse;
+            }
+            vec_out = quat * vec_in;
+            path_manual_object_->position(
+              static_cast<float>(pose.position.x) + vec_out.x(),
+              static_cast<float>(pose.position.y) + vec_out.y(),
+              static_cast<float>(pose.position.z) + vec_out.z());
+            path_manual_object_->colour(color);
+          }
+        }
+
+        // velocity
+        if (property_velocity_view_.getBool()) {
+          Ogre::ColourValue color;
+          if (property_velocity_color_view_.getBool()) {
+            color = rviz_common::properties::qtToOgre(property_velocity_color_.getColor());
+          } else {
+            /* color change depending on velocity */
+            std::unique_ptr<Ogre::ColourValue> dynamic_color_ptr =
+              setColorDependsOnVelocity(property_vel_max_.getFloat(), velocity);
+            color = *dynamic_color_ptr;
+          }
+          color.a = property_velocity_alpha_.getFloat();
+
+          velocity_manual_object_->position(
+            pose.position.x, pose.position.y,
+            static_cast<float>(pose.position.z) + velocity * property_velocity_scale_.getFloat());
+          velocity_manual_object_->colour(color);
+        }
+
+        // velocity text
+        if (property_velocity_text_view_.getBool()) {
+          Ogre::Vector3 position;
+          position.x = pose.position.x;
+          position.y = pose.position.y;
+          position.z = pose.position.z;
+          Ogre::SceneNode * node = velocity_text_nodes_.at(point_idx);
+          node->setPosition(position);
+
+          rviz_rendering::MovableText * text = velocity_texts_.at(point_idx);
+          const double vel = velocity;
+          std::stringstream ss;
+          ss << std::fixed << std::setprecision(2) << vel;
+          text->setCaption(ss.str());
+          text->setCharacterHeight(property_velocity_text_scale_.getFloat());
+          text->setVisible(true);
+        } else {
+          rviz_rendering::MovableText * text = velocity_texts_.at(point_idx);
+          text->setVisible(false);
+        }
+      }
+
+      path_manual_object_->end();
+      velocity_manual_object_->end();
+    }
+    last_msg_ptr_ = msg_ptr;
+  }
+
+  Ogre::ManualObject * path_manual_object_{nullptr};
+  Ogre::ManualObject * velocity_manual_object_{nullptr};
+  std::vector<rviz_rendering::MovableText *> velocity_texts_;
+  std::vector<Ogre::SceneNode *> velocity_text_nodes_;
+
+  rviz_common::properties::BoolProperty property_path_view_;
+  rviz_common::properties::FloatProperty property_path_width_;
+  rviz_common::properties::FloatProperty property_path_alpha_;
+  rviz_common::properties::BoolProperty property_path_color_view_;
+  rviz_common::properties::ColorProperty property_path_color_;
+  rviz_common::properties::FloatProperty property_vel_max_;
+  rviz_common::properties::BoolProperty property_velocity_view_;
+  rviz_common::properties::FloatProperty property_velocity_alpha_;
+  rviz_common::properties::FloatProperty property_velocity_scale_;
+  rviz_common::properties::BoolProperty property_velocity_color_view_;
+  rviz_common::properties::ColorProperty property_velocity_color_;
+  rviz_common::properties::BoolProperty property_velocity_text_view_;
+  rviz_common::properties::FloatProperty property_velocity_text_scale_;
+
+private:
+  typename T::ConstSharedPtr last_msg_ptr_;
+};
+}  // namespace rviz_plugins
+
+#endif  // PATH__DISPLAY_BASE_HPP_

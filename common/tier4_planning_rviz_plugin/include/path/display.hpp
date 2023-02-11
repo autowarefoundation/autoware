@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,71 +15,30 @@
 #ifndef PATH__DISPLAY_HPP_
 #define PATH__DISPLAY_HPP_
 
-#include <rclcpp/rclcpp.hpp>
-#include <rviz_common/display_context.hpp>
-#include <rviz_common/frame_manager_iface.hpp>
-#include <rviz_common/message_filter_display.hpp>
-#include <rviz_common/properties/bool_property.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/parse_color.hpp>
-#include <rviz_common/validate_floats.hpp>
+#include <path/display_base.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
-
-#include <OgreBillboardSet.h>
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-
-#include <deque>
-#include <memory>
+#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 
 namespace rviz_plugins
 {
-class AutowarePathDisplay
-: public rviz_common::MessageFilterDisplay<autoware_auto_planning_msgs::msg::Path>
+class AutowarePathWithLaneIdDisplay
+: public AutowarePathBaseDisplay<autoware_auto_planning_msgs::msg::PathWithLaneId>
 {
   Q_OBJECT
-
-public:
-  AutowarePathDisplay();
-  ~AutowarePathDisplay() override;
-
-  void onInitialize() override;
-  void reset() override;
-
-private Q_SLOTS:
-  void updateVisualization();
-
-protected:
-  void processMessage(
-    const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr msg_ptr) override;
-  static std::unique_ptr<Ogre::ColourValue> setColorDependsOnVelocity(
-    const double vel_max, const double cmd_vel);
-  static std::unique_ptr<Ogre::ColourValue> gradation(
-    const QColor & color_min, const QColor & color_max, const double ratio);
-  Ogre::ManualObject * path_manual_object_{nullptr};
-  Ogre::ManualObject * velocity_manual_object_{nullptr};
-  rviz_common::properties::BoolProperty * property_path_view_;
-  rviz_common::properties::BoolProperty * property_velocity_view_;
-  rviz_common::properties::FloatProperty * property_path_width_;
-  rviz_common::properties::ColorProperty * property_path_color_;
-  rviz_common::properties::ColorProperty * property_velocity_color_;
-  rviz_common::properties::FloatProperty * property_path_alpha_;
-  rviz_common::properties::FloatProperty * property_velocity_alpha_;
-  rviz_common::properties::FloatProperty * property_velocity_scale_;
-  rviz_common::properties::BoolProperty * property_path_color_view_;
-  rviz_common::properties::BoolProperty * property_velocity_color_view_;
-  rviz_common::properties::FloatProperty * property_vel_max_;
-
-private:  // NOLINT for Qt
-  autoware_auto_planning_msgs::msg::Path::ConstSharedPtr last_msg_ptr_;
-  static bool validateFloats(
-    const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr & msg_ptr);
 };
 
+class AutowarePathDisplay : public AutowarePathBaseDisplay<autoware_auto_planning_msgs::msg::Path>
+{
+  Q_OBJECT
+};
+
+class AutowareTrajectoryDisplay
+: public AutowarePathBaseDisplay<autoware_auto_planning_msgs::msg::Trajectory>
+{
+  Q_OBJECT
+};
 }  // namespace rviz_plugins
 
 #endif  // PATH__DISPLAY_HPP_
