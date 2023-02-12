@@ -113,6 +113,7 @@
           <arg name="input/image6" value="$(var image_raw6)"/>
           <arg name="input/image7" value="$(var image_raw7)"/>
           <arg name="output/clusters" value="clusters"/>
+          <arg name="thrust_distance" value="30.0"/>
         </include>
       </group>
 
@@ -127,15 +128,6 @@
         <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
           <arg name="input" value="objects_with_feature"/>
           <arg name="output" value="objects"/>
-        </include>
-      </group>
-
-      <group>
-        <include file="$(find-pkg-share object_range_splitter)/launch/object_range_splitter.launch.xml">
-          <arg name="input/object" value="objects"/>
-          <arg name="output/long_range_object" value="long_range_objects"/>
-          <arg name="output/short_range_object" value="short_range_objects"/>
-          <arg name="split_range" value="30.0"/>
         </include>
       </group>
     </group>
@@ -241,17 +233,9 @@
     <let name="merger/input/objects" value="$(var lidar_detection_model)/objects" unless="$(var use_validator)"/>
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="$(var merger/input/objects)"/>
-      <arg name="input/object1" value="clustering/camera_lidar_fusion/short_range_objects"/>
+      <arg name="input/object1" value="clustering/camera_lidar_fusion/objects"/>
       <arg name="output/object" value="camera_lidar_fusion/objects"/>
       <arg name="priority_mode" value="0"/>
-    </include>
-  </group>
-
-  <group>
-    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
-      <arg name="input/object0" value="clustering/objects"/>
-      <arg name="input/object1" value="camera_lidar_fusion/objects"/>
-      <arg name="output/object" value="temporary_merged_objects"/>
     </include>
   </group>
 
@@ -259,7 +243,7 @@
     <let name="merger/output/objects" value="objects_before_filter" if="$(var use_object_filter)"/>
     <let name="merger/output/objects" value="$(var output/objects)" unless="$(var use_object_filter)"/>
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
-      <arg name="input/object0" value="temporary_merged_objects"/>
+      <arg name="input/object0" value="camera_lidar_fusion/objects"/>
       <arg name="input/object1" value="detection_by_tracker/objects"/>
       <arg name="output/object" value="$(var merger/output/objects)"/>
     </include>
