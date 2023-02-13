@@ -541,7 +541,9 @@ bool hasEnoughDistance(
     return true;
   }
 
-  if (lane_change_total_distance > util::getDistanceToEndOfLane(current_pose, target_lanes)) {
+  if (
+    lane_change_total_distance + lane_change_required_distance >
+    util::getDistanceToEndOfLane(current_pose, target_lanes)) {
     return false;
   }
 
