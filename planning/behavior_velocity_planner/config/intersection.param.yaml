@@ -3,6 +3,7 @@
     intersection:
       state_transit_margin_time: 1.0
       stop_line_margin: 3.0
+      keep_detection_vel_thr: 0.833 # == 3.0km/h. keep detection if ego is ego.vel < keep_detection_vel_thr
       stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
       stuck_vehicle_ignore_dist: 10.0 # obstacle stop max distance(5.0m) + stuck vehicle size / 2 (0.0m-)
       stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h

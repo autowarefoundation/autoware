@@ -68,6 +68,7 @@ public:
   {
     double state_transit_margin_time;
     double stop_line_margin;  //! distance from auto-generated stopline to detection_area boundary
+    double keep_detection_vel_thr;     //! keep detection if ego is ego.vel < keep_detection_vel_thr
     double stuck_vehicle_detect_dist;  //! distance from end point to finish stuck vehicle check
     double
       stuck_vehicle_ignore_dist;   //! distance from intersection start to start stuck vehicle check
