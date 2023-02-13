@@ -203,6 +203,73 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
   return true;
 }
 
+// calc smallest enclosing circle with average O(N) algorithm
+// reference:
+// https://erickimphotography.com/blog/wp-content/uploads/2018/09/Computational-Geometry-Algorithms-and-Applications-3rd-Ed.pdf
+std::pair<lanelet::BasicPoint2d, double> calcSmallestEnclosingCircle(
+  const lanelet::ConstPolygon2d & poly)
+{
+  // The `eps` is used to avoid precision bugs in circle inclusion checkings.
+  // If the value of `eps` is too small, this function doesn't work well. More than 1e-10 is
+  // recommended.
+  const double eps = 1e-5;
+  lanelet::BasicPoint2d center(0.0, 0.0);
+  double radius_squared = 0.0;
+
+  auto cross = [](const lanelet::BasicPoint2d & p1, const lanelet::BasicPoint2d & p2) -> double {
+    return p1.x() * p2.y() - p1.y() * p2.x();
+  };
+
+  auto make_circle_3 = [&](
+                         const lanelet::BasicPoint2d & p1, const lanelet::BasicPoint2d & p2,
+                         const lanelet::BasicPoint2d & p3) -> void {
+    // reference for circumcenter vector https://en.wikipedia.org/wiki/Circumscribed_circle
+    const double A = (p2 - p3).squaredNorm();
+    const double B = (p3 - p1).squaredNorm();
+    const double C = (p1 - p2).squaredNorm();
+    const double S = cross(p2 - p1, p3 - p1);
+    if (std::abs(S) < eps) return;
+    center = (A * (B + C - A) * p1 + B * (C + A - B) * p2 + C * (A + B - C) * p3) / (4 * S * S);
+    radius_squared = (center - p1).squaredNorm() + eps;
+  };
+
+  auto make_circle_2 =
+    [&](const lanelet::BasicPoint2d & p1, const lanelet::BasicPoint2d & p2) -> void {
+    center = (p1 + p2) * 0.5;
+    radius_squared = (center - p1).squaredNorm() + eps;
+  };
+
+  auto in_circle = [&](const lanelet::BasicPoint2d & p) -> bool {
+    return (center - p).squaredNorm() <= radius_squared;
+  };
+
+  // mini disc
+  for (size_t i = 1; i < poly.size(); i++) {
+    const auto p1 = poly[i].basicPoint2d();
+    if (in_circle(p1)) continue;
+
+    // mini disc with point
+    const auto p0 = poly[0].basicPoint2d();
+    make_circle_2(p0, p1);
+    for (size_t j = 0; j < i; j++) {
+      const auto p2 = poly[j].basicPoint2d();
+      if (in_circle(p2)) continue;
+
+      // mini disc with two points
+      make_circle_2(p1, p2);
+      for (size_t k = 0; k < j; k++) {
+        const auto p3 = poly[k].basicPoint2d();
+        if (in_circle(p3)) continue;
+
+        // mini disc with tree points
+        make_circle_3(p1, p2, p3);
+      }
+    }
+  }
+
+  return std::make_pair(center, radius_squared);
+}
+
 std::vector<geometry_msgs::msg::Point> DetectionAreaModule::getObstaclePoints() const
 {
   std::vector<geometry_msgs::msg::Point> obstacle_points;
@@ -211,11 +278,17 @@ std::vector<geometry_msgs::msg::Point> DetectionAreaModule::getObstaclePoints() 
   const auto & points = *(planner_data_->no_ground_pointcloud);
 
   for (const auto & detection_area : detection_areas) {
+    const auto poly = lanelet::utils::to2D(detection_area);
+    const auto circle = calcSmallestEnclosingCircle(poly);
     for (const auto p : points) {
-      if (bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(detection_area).basicPolygon())) {
-        obstacle_points.push_back(planning_utils::toRosPoint(p));
-        // get all obstacle point becomes high computation cost so skip if any point is found
-        break;
+      const double squared_dist = (circle.first.x() - p.x) * (circle.first.x() - p.x) +
+                                  (circle.first.y() - p.y) * (circle.first.y() - p.y);
+      if (squared_dist <= circle.second) {
+        if (bg::within(Point2d{p.x, p.y}, poly.basicPolygon())) {
+          obstacle_points.push_back(planning_utils::toRosPoint(p));
+          // get all obstacle point becomes high computation cost so skip if any point is found
+          break;
+        }
       }
     }
   }
