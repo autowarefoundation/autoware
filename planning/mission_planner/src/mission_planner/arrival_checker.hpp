@@ -28,18 +28,21 @@ namespace mission_planner
 class ArrivalChecker
 {
 public:
+  using PoseWithUuidStamped = autoware_planning_msgs::msg::PoseWithUuidStamped;
+  using PoseStamped = geometry_msgs::msg::PoseStamped;
   explicit ArrivalChecker(rclcpp::Node * node);
-  void reset_goal();
-  void reset_goal(const autoware_planning_msgs::msg::PoseWithUuidStamped & goal);
-  bool is_arrived(const geometry_msgs::msg::PoseStamped & pose) const;
+  void set_goal();
+  void set_goal(const PoseWithUuidStamped & goal);
+  bool is_arrived(const PoseStamped & pose) const;
 
 private:
   double distance_;
   double angle_;
   double duration_;
-  autoware_planning_msgs::msg::PoseWithUuidStamped::ConstSharedPtr goal_pose_;
-  rclcpp::Subscription<autoware_planning_msgs::msg::PoseWithUuidStamped>::SharedPtr sub_goal_;
+  std::optional<PoseWithUuidStamped> goal_with_uuid_;
+  rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_goal_;
   motion_utils::VehicleStopChecker vehicle_stop_checker_;
+  void modify_goal(const PoseWithUuidStamped & modified_goal);
 };
 
 }  // namespace mission_planner

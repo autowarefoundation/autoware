@@ -18,9 +18,6 @@
 
 #include <tf2/utils.h>
 
-// TODO(Takagi, Isamu): remove when modified goal is always published
-#include <memory>
-
 namespace mission_planner
 {
 
@@ -31,44 +28,48 @@ ArrivalChecker::ArrivalChecker(rclcpp::Node * node) : vehicle_stop_checker_(node
   distance_ = node->declare_parameter<double>("arrival_check_distance");
   duration_ = node->declare_parameter<double>("arrival_check_duration");
 
-  sub_goal_ = node->create_subscription<autoware_planning_msgs::msg::PoseWithUuidStamped>(
+  sub_goal_ = node->create_subscription<PoseWithUuidStamped>(
     "input/modified_goal", 1,
-    [this](const autoware_planning_msgs::msg::PoseWithUuidStamped::ConstSharedPtr msg) {
-      goal_pose_ = msg;
-    });
+    [this](const PoseWithUuidStamped::ConstSharedPtr msg) { modify_goal(*msg); });
 }
 
-void ArrivalChecker::reset_goal()
+void ArrivalChecker::set_goal()
 {
-  // Disable checking until the modified goal is received.
-  goal_pose_.reset();
+  // Ignore the modified goal after the route is cleared.
+  goal_with_uuid_ = std::nullopt;
 }
 
-// TODO(Takagi, Isamu): remove when modified goal is always published
-void ArrivalChecker::reset_goal(const autoware_planning_msgs::msg::PoseWithUuidStamped & goal)
+void ArrivalChecker::set_goal(const PoseWithUuidStamped & goal)
 {
-  const auto pose = std::make_shared<autoware_planning_msgs::msg::PoseWithUuidStamped>();
-  *pose = goal;
-  goal_pose_ = pose;
+  // Ignore the modified goal for the previous route using uuid.
+  goal_with_uuid_ = goal;
 }
 
-bool ArrivalChecker::is_arrived(const geometry_msgs::msg::PoseStamped & pose) const
+void ArrivalChecker::modify_goal(const PoseWithUuidStamped & modified_goal)
 {
-  // Check if the modified goal is received.
-  if (goal_pose_ == nullptr) {
+  if (!goal_with_uuid_) {
+    return;
+  }
+  if (goal_with_uuid_.value().uuid.uuid != modified_goal.uuid.uuid) {
+    return;
+  }
+  set_goal(modified_goal);
+}
+
+bool ArrivalChecker::is_arrived(const PoseStamped & pose) const
+{
+  if (!goal_with_uuid_) {
     return false;
   }
-  geometry_msgs::msg::PoseStamped goal;
-  goal.header = goal_pose_->header;
-  goal.pose = goal_pose_->pose;
+  const auto goal = goal_with_uuid_.value();
 
-  // Check frame_id.
+  // Check frame id
   if (goal.header.frame_id != pose.header.frame_id) {
     return false;
   }
 
   // Check distance.
-  if (distance_ < tier4_autoware_utils::calcDistance2d(pose, goal)) {
+  if (distance_ < tier4_autoware_utils::calcDistance2d(pose.pose, goal.pose)) {
     return false;
   }
 
