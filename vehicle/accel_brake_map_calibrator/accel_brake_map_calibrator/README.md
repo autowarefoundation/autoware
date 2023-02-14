@@ -184,7 +184,7 @@ ros2 run accel_brake_map_calibrator actuation_cmd_publisher.py
 
 ## Calibration Method
 
-Two algorithms are selectable for the acceleration map update, [update_offset_four_cell_around](#update_offset_each_cell) and [update_offset_each_cell](update_offset_each_cell). Please see the link for datails.
+Two algorithms are selectable for the acceleration map update, [update_offset_four_cell_around](#update_offset_four_cell_around-1) and [update_offset_each_cell](#update_offset_each_cell). Please see the link for datails.
 
 ### Data Preprocessing
 
@@ -221,8 +221,8 @@ Data selection is determined by the following thresholds.
 $$
 \begin{align}
     \theta[n]=&
-    \theta[n-1]+\frac{p[n-1]x^{(n)}}{\lambda+p[n-1](x^{(n)})^2}(y^{(n)}-\theta[n-1]x^{(n)})\\
-    p[n]=&\frac{p[n-1]}{\lambda+p[n-1](x^{(n)})^2}
+    \theta[n-1]+\frac{p[n-1]x^{(n)}}{\lambda+p[n-1]{(x^{(n)})}^2}(y^{(n)}-\theta[n-1]x^{(n)})\\
+    p[n]=&\frac{p[n-1]}{\lambda+p[n-1]{(x^{(n)})}^2}
 \end{align}
 $$
 

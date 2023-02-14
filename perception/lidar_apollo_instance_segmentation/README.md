@@ -9,7 +9,7 @@ based on CNN based model and obstacle clustering method.
 
 ## Inner-workings / Algorithms
 
-See the [original design](https://github.com/ApolloAuto/apollo/blob/master/docs/specs/3d_obstacle_perception.md) by Apollo.
+See the [original design](https://github.com/ApolloAuto/apollo/blob/r6.0.0/docs/specs/3d_obstacle_perception.md) by Apollo.
 
 ## Inputs / Outputs
 

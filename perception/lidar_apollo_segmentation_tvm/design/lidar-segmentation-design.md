@@ -30,4 +30,4 @@ The package exports a boolean `lidar_apollo_segmentation_tvm_BUILT` cmake variab
 
 ## Reference
 
-Lidar segmentation is based off a core algorithm by [Apollo](https://github.com/ApolloAuto/apollo/blob/master/docs/specs/3d_obstacle_perception.md), with modifications from [TierIV] (<https://github.com/tier4/lidar_instance_segmentation_tvm>) for the TVM backend.
+Lidar segmentation is based off a core algorithm by [Apollo](https://github.com/ApolloAuto/apollo/blob/r6.0.0/docs/specs/3d_obstacle_perception.md), with modifications from [TIER IV] (<https://github.com/tier4/lidar_instance_segmentation_tvm>) for the TVM backend.

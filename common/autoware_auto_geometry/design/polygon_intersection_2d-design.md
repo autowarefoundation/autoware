@@ -2,7 +2,7 @@
 
 Two convex polygon's intersection can be visualized on the image below as the blue area:
 
-<img src="convex_polygon_intersection.png">
+<!-- <img src="convex_polygon_intersection.png"> -->
 
 ## Purpose / Use cases
 
