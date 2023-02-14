@@ -22,9 +22,9 @@
 
 ## Parameters
 
-| Name                    | Type   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Default value |
-| :---------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| `use_last_detect_color` | `bool` | If this parameter is `true`, this module estimates pedestrian's traffic signal as RED not only when vehicle's traffic signal is detected as GREEN but also when detection results change GREEN to UNKNOWN. (If detection results change RED or AMBER to UNKNOWN, this module estimates pedestrian's traffic signal as UNKNOWN.) If this parameter is `false`, this module use only latest detection results for estimation. (Only when the detection result is GREEN, this module estimates pedestrian's traffic signal as RED.) | `true`        |
+| Name                    | Type   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Default value |
+| :---------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| `use_last_detect_color` | `bool` | If this parameter is `true`, this module estimates pedestrian's traffic signal as RED not only when vehicle's traffic signal is detected as GREEN/AMBER but also when detection results change GREEN/AMBER to UNKNOWN. (If detection results change RED or AMBER to UNKNOWN, this module estimates pedestrian's traffic signal as UNKNOWN.) If this parameter is `false`, this module use only latest detection results for estimation. (Only when the detection result is GREEN/AMBER, this module estimates pedestrian's traffic signal as RED.) | `true`        |
 
 ## Inner-workings / Algorithms
 
@@ -34,19 +34,19 @@ start
 :subscribe detected traffic signals & HDMap;
 :extract crosswalk lanelets from HDMap;
 :extract road lanelets that conflicts crosswalk;
-:initialize green_lanelets(lanelet::ConstLanelets);
-if (Latest detection result is **GREEN**?) then (yes)
-  :push back green_lanelets;
+:initialize non_red_lanelets(lanelet::ConstLanelets);
+if (Latest detection result is **GREEN** or **AMBER**?) then (yes)
+  :push back non_red_lanelets;
 else (no)
   if (use_last_detect_color is **true**?) then (yes)
-    if (Latest detection result is **UNKNOWN** and last detection result is **GREEN**?) then (yes)
-     :push back green_lanelets;
+    if (Latest detection result is **UNKNOWN** and last detection result is **GREEN** or **AMBER**?) then (yes)
+     :push back non_red_lanelets;
     endif
   endif
 endif
-if (Is there **STRAIGHT-GREEN** road lanelet in green_lanelets?) then (yes)
+if (Is there **STRAIGHT-NON-RED** road lanelet in non_red_lanelets?) then (yes)
   :estimate related pedestrian's traffic signal as **RED**;
-else if (Is there both **LEFT-GREEN** and **RIGHT-GREEN** road lanelet in green_lanelets?) then (yes)
+else if (Is there both **LEFT-NON-RED** and **RIGHT-NON-RED** road lanelet in non_red_lanelets?) then (yes)
   :estimate related pedestrian's traffic signal as **RED**;
 else (no)
   :estimate related pedestrian's traffic signal as **UNKNOWN**;
@@ -60,7 +60,7 @@ If traffic between pedestrians and vehicles is controlled by traffic signals, th
 ### Situation1
 
 - crosswalk conflicts **STRAIGHT** lanelet
-- the lanelet refers **GREEN** traffic signal
+- the lanelet refers **GREEN** or **AMBER** traffic signal (The following pictures show only **GREEN** case)
 
 <div align="center">
   <img src="images/straight.drawio.svg" width=80%>
@@ -72,7 +72,7 @@ If traffic between pedestrians and vehicles is controlled by traffic signals, th
 ### Situation2
 
 - crosswalk conflicts different turn direction lanelets (STRAIGHT and LEFT, LEFT and RIGHT, RIGHT and STRAIGHT)
-- the lanelets refer **GREEN** traffic signal
+- the lanelets refer **GREEN** or **AMBER** traffic signal (The following pictures show only **GREEN** case)
 
 <div align="center">
   <img src="images/intersection2.svg" width=80%>

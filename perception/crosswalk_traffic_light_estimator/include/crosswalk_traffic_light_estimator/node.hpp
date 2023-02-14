@@ -77,11 +77,11 @@ private:
   void setCrosswalkTrafficSignal(
     const lanelet::ConstLanelet & crosswalk, const uint8_t color, TrafficSignalArray & msg) const;
 
-  lanelet::ConstLanelets getGreenLanelets(
+  lanelet::ConstLanelets getNonRedLanelets(
     const lanelet::ConstLanelets & lanelets, const TrafficLightIdMap & traffic_light_id_map) const;
 
   uint8_t estimateCrosswalkTrafficSignal(
-    const lanelet::ConstLanelet & crosswalk, const lanelet::ConstLanelets & green_lanelets) const;
+    const lanelet::ConstLanelet & crosswalk, const lanelet::ConstLanelets & non_red_lanelets) const;
 
   boost::optional<uint8_t> getHighestConfidenceTrafficSignal(
     const lanelet::ConstLineStringsOrPolygons3d & traffic_lights,
