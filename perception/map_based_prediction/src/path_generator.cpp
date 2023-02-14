@@ -296,15 +296,18 @@ PosePath PathGenerator::interpolateReferencePath(
     return interpolated_path;
   }
 
-  std::vector<double> base_path_x;
-  std::vector<double> base_path_y;
-  std::vector<double> base_path_z;
-  std::vector<double> base_path_s;
+  std::vector<double> base_path_x(base_path.size());
+  std::vector<double> base_path_y(base_path.size());
+  std::vector<double> base_path_z(base_path.size());
+  std::vector<double> base_path_s(base_path.size(), 0.0);
   for (size_t i = 0; i < base_path.size(); ++i) {
-    base_path_x.push_back(base_path.at(i).position.x);
-    base_path_y.push_back(base_path.at(i).position.y);
-    base_path_z.push_back(base_path.at(i).position.z);
-    base_path_s.push_back(motion_utils::calcSignedArcLength(base_path, 0, i));
+    base_path_x.at(i) = base_path.at(i).position.x;
+    base_path_y.at(i) = base_path.at(i).position.y;
+    base_path_z.at(i) = base_path.at(i).position.z;
+    if (i > 0) {
+      base_path_s.at(i) = base_path_s.at(i - 1) + tier4_autoware_utils::calcDistance2d(
+                                                    base_path.at(i - 1), base_path.at(i));
+    }
   }
 
   std::vector<double> resampled_s(frenet_predicted_path.size());
