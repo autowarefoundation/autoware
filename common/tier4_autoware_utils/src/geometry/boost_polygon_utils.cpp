@@ -105,6 +105,16 @@ geometry_msgs::msg::Polygon rotatePolygon(
   return rotated_polygon;
 }
 
+Polygon2d rotatePolygon(const Polygon2d & polygon, const double angle)
+{
+  Polygon2d rotated_polygon;
+  const boost::geometry::strategy::transform::rotate_transformer<
+    boost::geometry::radian, double, 2, 2>
+    rotation(-angle);
+  boost::geometry::transform(polygon, rotated_polygon, rotation);
+  return rotated_polygon;
+}
+
 Polygon2d toPolygon2d(
   const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape)
 {

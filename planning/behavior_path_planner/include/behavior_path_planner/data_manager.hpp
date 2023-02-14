@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__DATA_MANAGER_HPP_
 
 #include "behavior_path_planner/parameters.hpp"
+#include "behavior_path_planner/util/drivable_area_expansion/parameters.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
@@ -78,6 +79,7 @@ struct PlannerData
   lanelet::ConstLanelets current_lanes{};
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};
   BehaviorPathPlannerParameters parameters{};
+  drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
   Approval approval{};
 };
 

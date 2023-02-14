@@ -33,6 +33,11 @@ bool isClockwise(const Polygon2d & polygon);
 Polygon2d inverseClockwise(const Polygon2d & polygon);
 geometry_msgs::msg::Polygon rotatePolygon(
   const geometry_msgs::msg::Polygon & polygon, const double & angle);
+/// @brief rotate a polygon by some angle around the origin
+/// @param[in] polygon input polygon
+/// @param[in] angle angle of rotation [rad]
+/// @return rotated polygon
+Polygon2d rotatePolygon(const Polygon2d & polygon, const double angle);
 Polygon2d toPolygon2d(
   const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape);
 Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::DetectedObject & object);
