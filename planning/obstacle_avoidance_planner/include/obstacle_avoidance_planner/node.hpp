@@ -180,6 +180,9 @@ private:
   bool reset_prev_optimization_;
   bool is_considering_footprint_edges_;
 
+  // vehicle stop margin
+  double vehicle_stop_margin_outside_drivable_area_;
+
   // vehicle circles info for for mpt constraints
   std::string vehicle_circle_method_;
   int vehicle_circle_num_for_calculation_;
