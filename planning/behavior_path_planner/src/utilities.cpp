@@ -2256,20 +2256,20 @@ bool getObjectExpectedPoseAndConvertToPolygon(
 std::vector<PredictedPath> getPredictedPathFromObj(
   const PredictedObject & obj, const bool & is_use_all_predicted_path)
 {
-  std::vector<PredictedPath> predicted_path_vec;
-  if (is_use_all_predicted_path) {
-    std::copy_if(
-      obj.kinematics.predicted_paths.cbegin(), obj.kinematics.predicted_paths.cend(),
-      std::back_inserter(predicted_path_vec),
-      [](const PredictedPath & path) { return !path.path.empty(); });
-  } else {
+  if (!is_use_all_predicted_path) {
     const auto max_confidence_path = std::max_element(
       obj.kinematics.predicted_paths.begin(), obj.kinematics.predicted_paths.end(),
-      [](const auto & path1, const auto & path2) { return path1.confidence > path2.confidence; });
+      [](const auto & path1, const auto & path2) { return path1.confidence < path2.confidence; });
     if (max_confidence_path != obj.kinematics.predicted_paths.end()) {
-      predicted_path_vec.push_back(*max_confidence_path);
+      return {*max_confidence_path};
     }
   }
+
+  std::vector<PredictedPath> predicted_path_vec;
+  std::copy_if(
+    obj.kinematics.predicted_paths.cbegin(), obj.kinematics.predicted_paths.cend(),
+    std::back_inserter(predicted_path_vec),
+    [](const PredictedPath & path) { return !path.path.empty(); });
   return predicted_path_vec;
 }
 
