@@ -249,6 +249,9 @@ bool convertToAutowareTrajectory(
     p.longitudinal_velocity_mps =
       static_cast<decltype(p.longitudinal_velocity_mps)>(input.vx.at(i));
     output.points.push_back(p);
+    if (output.points.size() == output.points.max_size()) {
+      break;
+    }
   }
   return true;
 }
