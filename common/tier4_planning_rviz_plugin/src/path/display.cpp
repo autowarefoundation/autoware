@@ -14,6 +14,7 @@
 
 #include <path/display.hpp>
 #include <pluginlib/class_list_macros.hpp>
+
 PLUGINLIB_EXPORT_CLASS(rviz_plugins::AutowarePathWithLaneIdDisplay, rviz_common::Display)
 PLUGINLIB_EXPORT_CLASS(rviz_plugins::AutowarePathDisplay, rviz_common::Display)
 PLUGINLIB_EXPORT_CLASS(rviz_plugins::AutowareTrajectoryDisplay, rviz_common::Display)

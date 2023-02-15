@@ -170,6 +170,7 @@ public:
   }
 
 protected:
+  virtual void visualizeDrivableArea([[maybe_unused]] const typename T::ConstSharedPtr msg_ptr) {}
   void processMessage(const typename T::ConstSharedPtr msg_ptr) override
   {
     if (!validateFloats<T>(msg_ptr)) {
@@ -324,6 +325,10 @@ protected:
       path_manual_object_->end();
       velocity_manual_object_->end();
     }
+
+    // visualize drivable area
+    visualizeDrivableArea(msg_ptr);
+
     last_msg_ptr_ = msg_ptr;
   }
 
