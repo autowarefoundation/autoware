@@ -17,8 +17,6 @@ include_directories(
 )
 
 ament_auto_add_library(tier4_planning_rviz_plugin SHARED
-  include/drivable_area/display.hpp
-  src/drivable_area/display.cpp
   # path point
   include/path/display_base.hpp
   include/path/display.hpp
