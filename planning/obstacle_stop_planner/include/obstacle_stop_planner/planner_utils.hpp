@@ -133,6 +133,11 @@ bool withinPolygon(
   const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
   PointCloud::Ptr within_points_ptr);
 
+bool withinPolyhedron(
+  const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
+  const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
+  PointCloud::Ptr within_points_ptr, double z_min, double z_max);
+
 bool convexHull(
   const std::vector<cv::Point2d> & pointcloud, std::vector<cv::Point2d> & polygon_points);
 

@@ -110,6 +110,10 @@ public:
   bool pushPolygon(
     const std::vector<cv::Point2d> & polygon, const double z, const PolygonType & type);
   bool pushPolygon(const std::vector<Eigen::Vector3d> & polygon, const PolygonType & type);
+  bool pushPolyhedron(
+    const std::vector<cv::Point2d> & polyhedron, const double z_min, const double z_max,
+    const PolygonType & type);
+  bool pushPolyhedron(const std::vector<Eigen::Vector3d> & polyhedron, const PolygonType & type);
   bool pushPose(const Pose & pose, const PoseType & type);
   bool pushObstaclePoint(const Point & obstacle_point, const PointType & type);
   bool pushObstaclePoint(const pcl::PointXYZ & obstacle_point, const PointType & type);
@@ -143,6 +147,8 @@ private:
   std::vector<std::vector<Eigen::Vector3d>> slow_down_range_polygons_;
   std::vector<std::vector<Eigen::Vector3d>> collision_polygons_;
   std::vector<std::vector<Eigen::Vector3d>> slow_down_polygons_;
+  std::vector<std::vector<Eigen::Vector3d>> vehicle_polyhedrons_;
+  std::vector<std::vector<Eigen::Vector3d>> collision_polyhedrons_;
   std::vector<std::vector<Eigen::Vector3d>> obstacle_polygons_;
 
   DebugValues debug_values_;

@@ -449,6 +449,32 @@ bool withinPolygon(
   return find_within_points;
 }
 
+bool withinPolyhedron(
+  const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
+  const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
+  PointCloud::Ptr within_points_ptr, double z_min, double z_max)
+{
+  Polygon2d boost_polygon;
+  bool find_within_points = false;
+  for (const auto & point : cv_polygon) {
+    boost_polygon.outer().push_back(bg::make<Point2d>(point.x, point.y));
+  }
+  boost_polygon.outer().push_back(bg::make<Point2d>(cv_polygon.front().x, cv_polygon.front().y));
+
+  for (const auto & candidate_point : *candidate_points_ptr) {
+    Point2d point(candidate_point.x, candidate_point.y);
+    if (bg::distance(prev_point, point) < radius || bg::distance(next_point, point) < radius) {
+      if (bg::within(point, boost_polygon)) {
+        if (candidate_point.z < z_max && candidate_point.z > z_min) {
+          within_points_ptr->push_back(candidate_point);
+          find_within_points = true;
+        }
+      }
+    }
+  }
+  return find_within_points;
+}
+
 bool convexHull(
   const std::vector<cv::Point2d> & pointcloud, std::vector<cv::Point2d> & polygon_points)
 {
