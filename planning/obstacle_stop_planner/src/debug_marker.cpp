@@ -88,6 +88,11 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
         slow_down_polygons_.push_back(polygon);
       }
       return true;
+    case PolygonType::Obstacle:
+      if (!polygon.empty()) {
+        obstacle_polygons_.push_back(polygon);
+      }
+      return true;
     default:
       return false;
   }
@@ -167,6 +172,7 @@ void ObstacleStopPlannerDebugNode::publish()
   collision_polygons_.clear();
   slow_down_range_polygons_.clear();
   slow_down_polygons_.clear();
+  obstacle_polygons_.clear();
   stop_pose_ptr_ = nullptr;
   target_stop_pose_ptr_ = nullptr;
   slow_down_start_pose_ptr_ = nullptr;
@@ -311,6 +317,29 @@ MarkerArray ObstacleStopPlannerDebugNode::makeVisualizationMarker()
           marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
         } else {
           const auto & p = slow_down_polygons_.at(i).at(j + 1);
+          marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
+        }
+      }
+    }
+    msg.markers.push_back(marker);
+  }
+
+  if (!obstacle_polygons_.empty()) {
+    auto marker = createDefaultMarker(
+      "map", current_time, "obstacle_polygons", 0, Marker::LINE_LIST,
+      createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(1.0, 1.0, 0.0, 0.999));
+
+    for (size_t i = 0; i < obstacle_polygons_.size(); ++i) {
+      for (size_t j = 0; j < obstacle_polygons_.at(i).size(); ++j) {
+        {
+          const auto & p = obstacle_polygons_.at(i).at(j);
+          marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
+        }
+        if (j + 1 == obstacle_polygons_.at(i).size()) {
+          const auto & p = obstacle_polygons_.at(i).at(0);
+          marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
+        } else {
+          const auto & p = obstacle_polygons_.at(i).at(j + 1);
           marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
         }
       }

@@ -103,6 +103,17 @@ struct ObstacleWithDetectionTime
   pcl::PointXYZ point;
 };
 
+struct PredictedObjectWithDetectionTime
+{
+  explicit PredictedObjectWithDetectionTime(const rclcpp::Time & t, Pose & p)
+  : detection_time(t), point(p)
+  {
+  }
+
+  rclcpp::Time detection_time;
+  Pose point;
+};
+
 class ObstacleStopPlannerNode : public rclcpp::Node
 {
 public:
@@ -135,6 +146,7 @@ private:
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   boost::optional<SlowDownSection> latest_slow_down_section_{boost::none};
   std::vector<ObstacleWithDetectionTime> obstacle_history_{};
+  std::vector<PredictedObjectWithDetectionTime> predicted_object_history_{};
   tf2_ros::Buffer tf_buffer_{get_clock()};
   tf2_ros::TransformListener tf_listener_{tf_buffer_};
   PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_{nullptr};
@@ -160,6 +172,10 @@ private:
     const TrajectoryPoints & decimate_trajectory, TrajectoryPoints & output,
     PlannerData & planner_data, const Header & trajectory_header, const VehicleInfo & vehicle_info,
     const StopParam & stop_param, const PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr);
+
+  void searchPredictedObject(
+    const TrajectoryPoints & decimate_trajectory, PlannerData & planner_data,
+    const VehicleInfo & vehicle_info, const StopParam & stop_param);
 
   void insertVelocity(
     TrajectoryPoints & trajectory, PlannerData & planner_data, const Header & trajectory_header,
@@ -220,6 +236,20 @@ private:
 
       if (expired) {
         itr = obstacle_history_.erase(itr);
+        continue;
+      }
+
+      itr++;
+    }
+  }
+
+  void updatePredictedObstacleHistory(const rclcpp::Time & now)
+  {
+    for (auto itr = predicted_object_history_.begin(); itr != predicted_object_history_.end();) {
+      const auto expired = (now - itr->detection_time).seconds() > node_param_.chattering_threshold;
+
+      if (expired) {
+        itr = predicted_object_history_.erase(itr);
         continue;
       }
 

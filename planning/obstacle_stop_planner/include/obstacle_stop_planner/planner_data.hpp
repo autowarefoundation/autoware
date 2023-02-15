@@ -79,6 +79,10 @@ struct NodeParam
 
   // voxel grid z parameter for filtering pointcloud [m]
   double voxel_grid_z;
+
+  bool use_predicted_objects;
+
+  bool publish_obstacle_polygon;
 };
 
 struct StopParam
@@ -103,6 +107,9 @@ struct StopParam
   // if any obstacles exist within the detection area, this module plans to stop
   // before the obstacle.
   double lateral_margin;
+  double vehicle_lateral_margin;
+  double pedestrian_lateral_margin;
+  double unknown_lateral_margin;
 
   // =================================
   // params for trajectory pre-process
@@ -152,6 +159,9 @@ struct SlowDownParam
   // lateral margin between the ego's footprint and the boundary of the detection area for slow down
   // obstacles [m]
   double lateral_margin;
+  double vehicle_lateral_margin;
+  double pedestrian_lateral_margin;
+  double unknown_lateral_margin;
 
   // ===================
   // params for velocity
@@ -231,6 +241,12 @@ struct PlannerData
   pcl::PointXYZ nearest_slow_down_point;
 
   pcl::PointXYZ lateral_nearest_slow_down_point;
+
+  Pose nearest_collision_point_pose{};
+
+  Pose nearest_slow_down_point_pose{};
+
+  Pose lateral_nearest_slow_down_point_pose{};
 
   rclcpp::Time nearest_collision_point_time{};
 

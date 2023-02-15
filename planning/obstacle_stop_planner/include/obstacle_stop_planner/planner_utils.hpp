@@ -28,6 +28,7 @@
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
 
 #include <boost/optional.hpp>
 
@@ -45,6 +46,7 @@ using diagnostic_msgs::msg::DiagnosticStatus;
 using diagnostic_msgs::msg::KeyValue;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::TransformStamped;
 using std_msgs::msg::Header;
 
@@ -148,7 +150,25 @@ void getLateralNearestPoint(
   const PointCloud & pointcloud, const Pose & base_pose, pcl::PointXYZ * lateral_nearest_point,
   double * deviation);
 
+void getNearestPointForPredictedObject(
+  const PoseArray & object, const Pose & base_pose, Pose * nearest_collision_point,
+  rclcpp::Time * nearest_collision_point_time);
+
+void getLateralNearestPointForPredictedObject(
+  const PoseArray & object, const Pose & base_pose, Pose * lateral_nearest_point,
+  double * deviation);
+
 Pose getVehicleCenterFromBase(const Pose & base_pose, const VehicleInfo & vehicle_info);
+
+Polygon2d convertPolygonObjectToGeometryPolygon(
+  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape);
+
+Polygon2d convertCylindricalObjectToGeometryPolygon(
+  const Pose & current_pose, const autoware_auto_perception_msgs::msg::Shape & obj_shape);
+
+Polygon2d convertBoundingBoxObjectToGeometryPolygon(
+  const Pose & current_pose, const double & base_to_front, const double & base_to_rear,
+  const double & base_to_width);
 
 std::string jsonDumpsPose(const Pose & pose);
 
