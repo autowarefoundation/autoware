@@ -16,8 +16,11 @@
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/zero_order_hold.hpp"
+#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
+using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 
@@ -86,6 +89,59 @@ TrajectoryPoint calcInterpolatedPoint(
     rclcpp::Duration(curr_pt.time_from_start).seconds(),
     rclcpp::Duration(next_pt.time_from_start).seconds(), clamped_ratio);
   interpolated_point.time_from_start = rclcpp::Duration::from_seconds(interpolated_time);
+
+  return interpolated_point;
+}
+
+PathPointWithLaneId calcInterpolatedPoint(
+  const PathWithLaneId & path, const geometry_msgs::msg::Pose & target_pose,
+  const bool use_zero_order_hold_for_twist, const double dist_threshold, const double yaw_threshold)
+{
+  if (path.points.empty()) {
+    PathPointWithLaneId interpolated_point{};
+    interpolated_point.point.pose = target_pose;
+    return interpolated_point;
+  } else if (path.points.size() == 1) {
+    return path.points.front();
+  }
+
+  const size_t segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, target_pose, dist_threshold, yaw_threshold);
+
+  // Calculate interpolation ratio
+  const auto & curr_pt = path.points.at(segment_idx);
+  const auto & next_pt = path.points.at(segment_idx + 1);
+  const auto v1 = tier4_autoware_utils::point2tfVector(curr_pt.point, next_pt.point);
+  const auto v2 = tier4_autoware_utils::point2tfVector(curr_pt.point, target_pose);
+  if (v1.length2() < 1e-3) {
+    return curr_pt;
+  }
+
+  const double ratio = v1.dot(v2) / v1.length2();
+  const double clamped_ratio = std::clamp(ratio, 0.0, 1.0);
+
+  // Interpolate
+  PathPointWithLaneId interpolated_point{};
+
+  // pose interpolation
+  interpolated_point.point.pose =
+    tier4_autoware_utils::calcInterpolatedPose(curr_pt.point, next_pt.point, clamped_ratio);
+
+  // twist interpolation
+  if (use_zero_order_hold_for_twist) {
+    interpolated_point.point.longitudinal_velocity_mps = curr_pt.point.longitudinal_velocity_mps;
+    interpolated_point.point.lateral_velocity_mps = curr_pt.point.lateral_velocity_mps;
+  } else {
+    interpolated_point.point.longitudinal_velocity_mps = interpolation::lerp(
+      curr_pt.point.longitudinal_velocity_mps, next_pt.point.longitudinal_velocity_mps,
+      clamped_ratio);
+    interpolated_point.point.lateral_velocity_mps = interpolation::lerp(
+      curr_pt.point.lateral_velocity_mps, next_pt.point.lateral_velocity_mps, clamped_ratio);
+  }
+
+  // heading rate interpolation
+  interpolated_point.point.heading_rate_rps = interpolation::lerp(
+    curr_pt.point.heading_rate_rps, next_pt.point.heading_rate_rps, clamped_ratio);
 
   return interpolated_point;
 }
