@@ -1,4 +1,8 @@
 <launch>
+  <arg name="config_file" default="$(find-pkg-share dummy_diag_publisher)/config/_empty.param.yaml"/>
+  <arg name="extra_config_file_sensor" default="$(find-pkg-share dummy_diag_publisher)/config/_empty.param.yaml"/>
+  <arg name="update_rate" default="10.0"/>
+
   <arg name="launch_rqt_reconfigure" default="true"/>
   <arg name="launch_rqt_runtime_monitor" default="true"/>
   <arg name="launch_rqt_robot_monitor" default="true"/>
@@ -22,46 +26,9 @@
     </node>
   </group>
 
-  <!-- velodyne -->
   <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="velodyne_connection"/>
-  </include>
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="velodyne_temperature"/>
-  </include>
-
-  <!-- livox -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="livox_ptp_signal"/>
-  </include>
-
-  <!-- camera -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="camera_connection"/>
-  </include>
-
-  <!-- lane departure -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="lane_departure"/>
-  </include>
-
-  <!-- obstacle crash -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="obstacle_crash"/>
-  </include>
-
-  <!-- vehicle -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="vehicle_errors"/>
-  </include>
-
-  <!-- CAN -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="can_bus_connection"/>
-  </include>
-
-  <!-- speaker (in order to check if correctly ignored) -->
-  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
-    <arg name="diag_name" value="speaker"/>
+    <arg name="config_file" value="$(var config_file)"/>
+    <arg name="extra_config_file_sensor" value="$(var extra_config_file_sensor)"/>
+    <arg name="update_rate" value="$(var update_rate)"/>
   </include>
 </launch>

@@ -1,0 +1,32 @@
+# Description:
+#   name: diag name
+#   is_active: Force update or not
+#   status: diag status set by dummy diag publisher "OK, Warn, Error, Stale"
+#
+# Note:
+#
+# default values are:
+#   is_active: "true"
+#   status: "OK"
+---
+/**:
+  ros__parameters:
+    required_diags:
+      velodyne_connection: {is_active: "false", status: "Error"}
+
+      velodyne_temperature: {is_active: "true", status: "Warn"}
+
+      livox_ptp_signal: default
+
+      camera_connection: {is_active: "true", status: "Stale"}
+
+
+      lane_departure: default
+
+      obstacle_crash: default
+
+      vehicle_errors: default
+
+      can_bus_connection: default
+
+      speaker: default

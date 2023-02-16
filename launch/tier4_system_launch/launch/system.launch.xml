@@ -7,7 +7,9 @@
   <arg name="mrm_emergency_stop_operator_param_path"/>
   <arg name="system_error_monitor_param_path"/>
   <arg name="system_error_monitor_planning_simulator_param_path"/>
+  <arg name="diagnostic_aggregator_system_param_path"/>
   <arg name="diagnostic_aggregator_vehicle_param_path"/>
+  <arg name="dummy_diag_publisher_param_path"/>
   <arg name="system_monitor_cpu_monitor_param_path"/>
   <arg name="system_monitor_gpu_monitor_param_path"/>
   <arg name="system_monitor_hdd_monitor_param_path"/>
@@ -18,10 +20,17 @@
   <arg name="system_monitor_voltage_monitor_param_path"/>
 
   <arg name="launch_system_monitor" default="true" description="launch system monitor"/>
+  <arg name="launch_dummy_diag_publisher" description="launch dummy diag publisher"/>
   <arg name="run_mode" default="online" description="options: online, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
+
+  <!-- Dummy Diag Publisher -->
+  <arg name="launch_rqt_reconfigure" default="false"/>
+  <arg name="launch_rqt_runtime_monitor" default="false"/>
+  <arg name="launch_rqt_robot_monitor" default="false"/>
+  <arg name="launch_rqt_runtime_monitor_err" default="false"/>
 
   <group>
     <push-ros-namespace namespace="/system"/>
@@ -31,12 +40,12 @@
       <push-ros-namespace namespace="system_monitor"/>
       <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch.xml">
         <arg name="cpu_monitor_config_file" value="$(var system_monitor_cpu_monitor_param_path)"/>
+        <arg name="gpu_monitor_config_file" value="$(var system_monitor_gpu_monitor_param_path)"/>
         <arg name="hdd_monitor_config_file" value="$(var system_monitor_hdd_monitor_param_path)"/>
         <arg name="mem_monitor_config_file" value="$(var system_monitor_mem_monitor_param_path)"/>
         <arg name="net_monitor_config_file" value="$(var system_monitor_net_monitor_param_path)"/>
         <arg name="ntp_monitor_config_file" value="$(var system_monitor_ntp_monitor_param_path)"/>
         <arg name="process_monitor_config_file" value="$(var system_monitor_process_monitor_param_path)"/>
-        <arg name="gpu_monitor_config_file" value="$(var system_monitor_gpu_monitor_param_path)"/>
         <arg name="voltage_monitor_config_file" value="$(var system_monitor_voltage_monitor_param_path)"/>
       </include>
     </group>
@@ -61,6 +70,7 @@
       <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
         <arg name="config_file" value="$(var config_file)"/>
         <arg name="extra_agg_config_file_sensing" value="$(var sensor_launch_pkg)/config/diagnostic_aggregator/sensor_kit.param.yaml"/>
+        <arg name="extra_agg_config_file_system" value="$(var diagnostic_aggregator_system_param_path)"/>
         <arg name="extra_agg_config_file_vehicle" value="$(var diagnostic_aggregator_vehicle_param_path)"/>
         <arg name="use_emergency_hold" value="false"/>
       </include>
@@ -84,5 +94,17 @@
         <arg name="config_file" value="$(var mrm_emergency_stop_operator_param_path)"/>
       </include>
     </group>
+  </group>
+
+  <!-- Dummy Diag Publisher -->
+  <group if="$(var launch_dummy_diag_publisher)">
+    <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher.launch.xml">
+      <arg name="config_file" value="$(var dummy_diag_publisher_param_path)"/>
+      <arg name="extra_config_file_sensor" value="$(var sensor_launch_pkg)/config/dummy_diag_publisher/sensor_kit.param.yaml"/>
+      <arg name="launch_rqt_reconfigure" value="$(var launch_rqt_reconfigure)"/>
+      <arg name="launch_rqt_runtime_monitor" value="$(var launch_rqt_runtime_monitor)"/>
+      <arg name="launch_rqt_robot_monitor" value="$(var launch_rqt_robot_monitor)"/>
+      <arg name="launch_rqt_runtime_monitor_err" value="$(var launch_rqt_runtime_monitor_err)"/>
+    </include>
   </group>
 </launch>

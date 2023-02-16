@@ -1,15 +1,13 @@
 <launch>
-  <arg name="diag_name"/>
+  <arg name="config_file" default="$(find-pkg-share dummy_diag_publisher)/config/dummy_diag_publisher.param.yaml"/>
+  <arg name="extra_config_file_sensor" default="$(find-pkg-share dummy_diag_publisher)/config/extra.param.yaml"/>
   <arg name="update_rate" default="10.0"/>
-  <arg name="is_active" default="true"/>
-  <arg name="status" default="0"/>
 
   <group>
-    <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher_node" name="$(anon dummy_diag_publisher)" output="screen">
-      <param name="diag_name" value="$(var diag_name)"/>
+    <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher" name="dummy_diag_publisher" output="screen">
+      <param from="$(var config_file)"/>
+      <param from="$(var extra_config_file_sensor)"/>
       <param name="update_rate" value="$(var update_rate)"/>
-      <param name="is_active" value="$(var is_active)"/>
-      <param name="status" value="$(var status)"/>
     </node>
   </group>
 </launch>

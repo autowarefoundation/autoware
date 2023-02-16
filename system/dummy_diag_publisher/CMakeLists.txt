@@ -4,15 +4,12 @@ project(dummy_diag_publisher)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-ament_auto_add_library(dummy_diag_publisher SHARED
-  src/dummy_diag_publisher_node/dummy_diag_publisher_node.cpp
-)
-
-rclcpp_components_register_node(dummy_diag_publisher
-  PLUGIN "DummyDiagPublisherNode"
-  EXECUTABLE dummy_diag_publisher_node
+ament_auto_add_executable(${PROJECT_NAME}
+  src/dummy_diag_publisher_node.cpp
+  src/dummy_diag_publisher_core.cpp
 )
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
+  config
 )
