@@ -146,6 +146,22 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     EXECUTABLE traffic_light_classifier_node
   )
 
+  ament_auto_add_library(single_image_debug_inference_node SHARED
+    src/cnn_classifier.cpp
+    src/color_classifier.cpp
+    src/nodelet.cpp
+    src/single_image_debug_inference_node.cpp
+  )
+  target_link_libraries(single_image_debug_inference_node
+    libutils
+    opencv_core
+    opencv_highgui
+  )
+  rclcpp_components_register_node(single_image_debug_inference_node
+    PLUGIN "traffic_light::SingleImageDebugInferenceNode"
+    EXECUTABLE single_image_debug_inference
+  )
+
   ament_auto_package(INSTALL_TO_SHARE
     data
     launch
