@@ -1173,33 +1173,53 @@ std::vector<PosePath> MapBasedPredictionNode::convertPathType(
       lanelet::ConstLanelets prev_lanelets = routing_graph_ptr_->previous(path.front());
       if (!prev_lanelets.empty()) {
         lanelet::ConstLanelet prev_lanelet = prev_lanelets.front();
+        bool init_flag = true;
+        geometry_msgs::msg::Pose prev_p;
         for (const auto & lanelet_p : prev_lanelet.centerline()) {
           geometry_msgs::msg::Pose current_p;
           current_p.position = lanelet::utils::conversion::toGeomMsgPt(lanelet_p);
-          const double lane_yaw = lanelet::utils::getLaneletAngle(prev_lanelet, current_p.position);
+          if (init_flag) {
+            init_flag = false;
+            prev_p = current_p;
+            continue;
+          }
+
+          const double lane_yaw = std::atan2(
+            current_p.position.y - prev_p.position.y, current_p.position.x - prev_p.position.x);
           current_p.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
           converted_path.push_back(current_p);
+          prev_p = current_p;
         }
       }
     }
 
     for (const auto & lanelet : path) {
+      bool init_flag = true;
+      geometry_msgs::msg::Pose prev_p;
       for (const auto & lanelet_p : lanelet.centerline()) {
         geometry_msgs::msg::Pose current_p;
         current_p.position = lanelet::utils::conversion::toGeomMsgPt(lanelet_p);
-        const double lane_yaw = lanelet::utils::getLaneletAngle(lanelet, current_p.position);
-        current_p.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
+        if (init_flag) {
+          init_flag = false;
+          prev_p = current_p;
+          continue;
+        }
 
         // Prevent from inserting same points
         if (!converted_path.empty()) {
-          const auto prev_p = converted_path.back();
-          const double tmp_dist = tier4_autoware_utils::calcDistance2d(prev_p, current_p);
+          const auto last_p = converted_path.back();
+          const double tmp_dist = tier4_autoware_utils::calcDistance2d(last_p, current_p);
           if (tmp_dist < 1e-6) {
+            prev_p = current_p;
             continue;
           }
         }
 
+        const double lane_yaw = std::atan2(
+          current_p.position.y - prev_p.position.y, current_p.position.x - prev_p.position.x);
+        current_p.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
         converted_path.push_back(current_p);
+        prev_p = current_p;
       }
     }
 
