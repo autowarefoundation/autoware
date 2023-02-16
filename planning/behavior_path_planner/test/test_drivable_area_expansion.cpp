@@ -22,6 +22,7 @@
 using drivable_area_expansion::linestring_t;
 using drivable_area_expansion::point_t;
 using drivable_area_expansion::segment_t;
+constexpr auto eps = 1e-9;
 
 TEST(DrivableAreaExpansionProjection, PointToSegment)
 {
@@ -31,57 +32,57 @@ TEST(DrivableAreaExpansionProjection, PointToSegment)
     point_t query(1.0, 1.0);
     segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, 1.0);
-    EXPECT_EQ(projection.point.x(), 1.0);
-    EXPECT_EQ(projection.point.y(), 0.0);
+    EXPECT_NEAR(projection.distance, 1.0, eps);
+    EXPECT_NEAR(projection.point.x(), 1.0, eps);
+    EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
     point_t query(-1.0, 1.0);
     segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, std::sqrt(2));
-    EXPECT_EQ(projection.point.x(), 0.0);
-    EXPECT_EQ(projection.point.y(), 0.0);
+    EXPECT_NEAR(projection.distance, std::sqrt(2), eps);
+    EXPECT_NEAR(projection.point.x(), 0.0, eps);
+    EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
     point_t query(11.0, 1.0);
     segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, std::sqrt(2));
-    EXPECT_EQ(projection.point.x(), 10.0);
-    EXPECT_EQ(projection.point.y(), 0.0);
+    EXPECT_NEAR(projection.distance, std::sqrt(2), eps);
+    EXPECT_NEAR(projection.point.x(), 10.0, eps);
+    EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
     point_t query(5.0, -5.0);
     segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, -5.0);
-    EXPECT_EQ(projection.point.x(), 5.0);
-    EXPECT_EQ(projection.point.y(), 0.0);
+    EXPECT_NEAR(projection.distance, -5.0, eps);
+    EXPECT_NEAR(projection.point.x(), 5.0, eps);
+    EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
     point_t query(5.0, -5.0);
     segment_t segment(point_t(0.0, 0.0), point_t(0.0, -10.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, 5.0);
-    EXPECT_EQ(projection.point.x(), 0.0);
-    EXPECT_EQ(projection.point.y(), -5.0);
+    EXPECT_NEAR(projection.distance, 5.0, eps);
+    EXPECT_NEAR(projection.point.x(), 0.0, eps);
+    EXPECT_NEAR(projection.point.y(), -5.0, eps);
   }
   {
     point_t query(5.0, 5.0);
     segment_t segment(point_t(2.5, 7.5), point_t(7.5, 2.5));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, 0.0);
-    EXPECT_EQ(projection.point.x(), 5.0);
-    EXPECT_EQ(projection.point.y(), 5.0);
+    EXPECT_NEAR(projection.distance, 0.0, eps);
+    EXPECT_NEAR(projection.point.x(), 5.0, eps);
+    EXPECT_NEAR(projection.point.y(), 5.0, eps);
   }
   {
     point_t query(0.0, 0.0);
     segment_t segment(point_t(2.5, 7.5), point_t(7.5, 2.5));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
-    EXPECT_EQ(projection.distance, -std::sqrt(50));
-    EXPECT_EQ(projection.point.x(), 5.0);
-    EXPECT_EQ(projection.point.y(), 5.0);
+    EXPECT_NEAR(projection.distance, -std::sqrt(50), eps);
+    EXPECT_NEAR(projection.point.x(), 5.0, eps);
+    EXPECT_NEAR(projection.point.y(), 5.0, eps);
   }
 }
 
@@ -95,26 +96,26 @@ TEST(DrivableAreaExpansionProjection, PointToLinestring)
   {
     point_t query(0.0, 0.0);
     const auto projection = point_to_linestring_projection(query, ls);
-    EXPECT_EQ(projection.arc_length, 0.0);
-    EXPECT_EQ(projection.distance, 0.0);
-    EXPECT_EQ(projection.projected_point.x(), 0.0);
-    EXPECT_EQ(projection.projected_point.y(), 0.0);
+    EXPECT_NEAR(projection.arc_length, 0.0, eps);
+    EXPECT_NEAR(projection.distance, 0.0, eps);
+    EXPECT_NEAR(projection.projected_point.x(), 0.0, eps);
+    EXPECT_NEAR(projection.projected_point.y(), 0.0, eps);
   }
   {
     point_t query(2.0, 1.0);
     const auto projection = point_to_linestring_projection(query, ls);
-    EXPECT_EQ(projection.arc_length, 2.0);
-    EXPECT_EQ(projection.distance, 1.0);
-    EXPECT_EQ(projection.projected_point.x(), 2.0);
-    EXPECT_EQ(projection.projected_point.y(), 0.0);
+    EXPECT_NEAR(projection.arc_length, 2.0, eps);
+    EXPECT_NEAR(projection.distance, 1.0, eps);
+    EXPECT_NEAR(projection.projected_point.x(), 2.0, eps);
+    EXPECT_NEAR(projection.projected_point.y(), 0.0, eps);
   }
   {
     point_t query(0.0, 5.0);
     const auto projection = point_to_linestring_projection(query, ls);
-    EXPECT_EQ(projection.arc_length, 30.0 + std::sqrt(2.5 * 2.5 * 2));
-    EXPECT_EQ(projection.distance, -std::sqrt(2.5 * 2.5 * 2));
-    EXPECT_EQ(projection.projected_point.x(), 2.5);
-    EXPECT_EQ(projection.projected_point.y(), 7.5);
+    EXPECT_NEAR(projection.arc_length, 30.0 + std::sqrt(2.5 * 2.5 * 2), eps);
+    EXPECT_NEAR(projection.distance, -std::sqrt(2.5 * 2.5 * 2), eps);
+    EXPECT_NEAR(projection.projected_point.x(), 2.5, eps);
+    EXPECT_NEAR(projection.projected_point.y(), 7.5, eps);
   }
 }
 
@@ -127,24 +128,24 @@ TEST(DrivableAreaExpansionProjection, LinestringToPoint)
     point_t(5.0, 5.0)};
   for (auto arc_length = 0.0; arc_length <= 10.0; arc_length += 1.0) {
     const auto projection = linestring_to_point_projection(ls, arc_length, 0.0);
-    EXPECT_EQ(projection.first.x(), arc_length);
-    EXPECT_EQ(projection.first.y(), 0.0);
-    EXPECT_EQ(projection.second.x(), arc_length);
-    EXPECT_EQ(projection.second.y(), 0.0);
+    EXPECT_NEAR(projection.first.x(), arc_length, eps);
+    EXPECT_NEAR(projection.first.y(), 0.0, eps);
+    EXPECT_NEAR(projection.second.x(), arc_length, eps);
+    EXPECT_NEAR(projection.second.y(), 0.0, eps);
   }
   for (auto arc_length = 11.0; arc_length <= 20.0; arc_length += 1.0) {
     const auto projection = linestring_to_point_projection(ls, arc_length, 0.0);
-    EXPECT_EQ(projection.first.x(), 10.0);
-    EXPECT_EQ(projection.first.y(), arc_length - 10.0);
-    EXPECT_EQ(projection.second.x(), 10.0);
-    EXPECT_EQ(projection.second.y(), arc_length - 10.0);
+    EXPECT_NEAR(projection.first.x(), 10.0, eps);
+    EXPECT_NEAR(projection.first.y(), arc_length - 10.0, eps);
+    EXPECT_NEAR(projection.second.x(), 10.0, eps);
+    EXPECT_NEAR(projection.second.y(), arc_length - 10.0, eps);
   }
   for (auto arc_length = 21.0; arc_length <= 30.0; arc_length += 1.0) {
     const auto projection = linestring_to_point_projection(ls, arc_length, 0.0);
-    EXPECT_EQ(projection.first.x(), 10.0 + (20 - arc_length));
-    EXPECT_EQ(projection.first.y(), 10.0);
-    EXPECT_EQ(projection.second.x(), 10.0 + (20 - arc_length));
-    EXPECT_EQ(projection.second.y(), 10.0);
+    EXPECT_NEAR(projection.first.x(), 10.0 + (20 - arc_length), eps);
+    EXPECT_NEAR(projection.first.y(), 10.0, eps);
+    EXPECT_NEAR(projection.second.x(), 10.0 + (20 - arc_length), eps);
+    EXPECT_NEAR(projection.second.y(), 10.0, eps);
   }
 }
 
@@ -172,19 +173,19 @@ TEST(DrivableAreaExpansionProjection, SubLinestring)
     // arc lengths inside the original: sublinestring with some interpolated points
     const auto sub = sub_linestring(ls, 1.5, 2.5);
     ASSERT_EQ(sub.size(), 3lu);
-    EXPECT_EQ(sub[0].x(), 1.5);
-    EXPECT_EQ(sub[1].x(), 2.0);
-    EXPECT_EQ(sub[2].x(), 2.5);
-    for (const auto & p : sub) EXPECT_EQ(p.y(), 0.0);
+    EXPECT_NEAR(sub[0].x(), 1.5, eps);
+    EXPECT_NEAR(sub[1].x(), 2.0, eps);
+    EXPECT_NEAR(sub[2].x(), 2.5, eps);
+    for (const auto & p : sub) EXPECT_NEAR(p.y(), 0.0, eps);
   }
   {
     // arc length outside of the original range: first & last point are replaced by interpolations
     const auto sub = sub_linestring(ls, -0.5, 8.5);
     ASSERT_EQ(sub.size(), ls.size());
-    EXPECT_EQ(sub.front().x(), -0.5);
+    EXPECT_NEAR(sub.front().x(), -0.5, eps);
     for (auto i = 1lu; i + 1 < ls.size(); ++i) EXPECT_TRUE(boost::geometry::equals(ls[i], sub[i]));
-    EXPECT_EQ(sub.back().x(), 8.5);
-    for (const auto & p : sub) EXPECT_EQ(p.y(), 0.0);
+    EXPECT_NEAR(sub.back().x(), 8.5, eps);
+    for (const auto & p : sub) EXPECT_NEAR(p.y(), 0.0, eps);
   }
 }
 
@@ -196,7 +197,6 @@ TEST(DrivableAreaExpansionProjection, InverseProjection)
   linestring_t ls = {
     point_t(0.0, 0.0), point_t(10.0, 0.0), point_t(10.0, 10.0), point_t(0.0, 10.0),
     point_t(5.0, 5.0)};
-  constexpr auto eps = 1e-9;
 
   for (auto x = 0.0; x < 10.0; x += 0.1) {
     for (auto y = 0.0; x < 10.0; x += 0.1) {
@@ -270,21 +270,21 @@ TEST(DrivableAreaExpansionProjection, expandDrivableArea)
   // unchanged path points
   ASSERT_EQ(path.points.size(), 3ul);
   for (auto i = 0.0; i < path.points.size(); ++i) {
-    EXPECT_EQ(path.points[i].point.pose.position.x, i);
-    EXPECT_EQ(path.points[i].point.pose.position.y, 0.0);
+    EXPECT_NEAR(path.points[i].point.pose.position.x, i, eps);
+    EXPECT_NEAR(path.points[i].point.pose.position.y, 0.0, eps);
   }
   // expanded left bound
   ASSERT_EQ(path.left_bound.size(), 2ul);
-  EXPECT_EQ(path.left_bound[0].x, 0.0);
-  EXPECT_EQ(path.left_bound[0].y, 2.0);
-  EXPECT_EQ(path.left_bound[1].x, 2.0);
-  EXPECT_EQ(path.left_bound[1].y, 2.0);
+  EXPECT_NEAR(path.left_bound[0].x, 0.0, eps);
+  EXPECT_NEAR(path.left_bound[0].y, 2.0, eps);
+  EXPECT_NEAR(path.left_bound[1].x, 2.0, eps);
+  EXPECT_NEAR(path.left_bound[1].y, 2.0, eps);
   // expanded right bound
   ASSERT_EQ(path.right_bound.size(), 3ul);
-  EXPECT_EQ(path.right_bound[0].x, 0.0);
-  EXPECT_EQ(path.right_bound[0].y, -2.0);
-  EXPECT_EQ(path.right_bound[1].x, 2.0);
-  EXPECT_EQ(path.right_bound[1].y, -2.0);
-  EXPECT_EQ(path.right_bound[2].x, 2.0);
-  EXPECT_EQ(path.right_bound[2].y, -1.0);
+  EXPECT_NEAR(path.right_bound[0].x, 0.0, eps);
+  EXPECT_NEAR(path.right_bound[0].y, -2.0, eps);
+  EXPECT_NEAR(path.right_bound[1].x, 2.0, eps);
+  EXPECT_NEAR(path.right_bound[1].y, -2.0, eps);
+  EXPECT_NEAR(path.right_bound[2].x, 2.0, eps);
+  EXPECT_NEAR(path.right_bound[2].y, -1.0, eps);
 }
