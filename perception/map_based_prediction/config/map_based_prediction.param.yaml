@@ -11,8 +11,7 @@
     sigma_yaw_angle_deg: 5.0 #[angle degree]
     object_buffer_time_length: 2.0 #[s]
     history_time_length: 1.0 #[s]
-    dist_ratio_threshold_to_left_bound: -0.5 #[ratio]
-    dist_ratio_threshold_to_right_bound: 0.5 #[ratio
-    diff_dist_threshold_to_left_bound: 0.29 #[m]
-    diff_dist_threshold_to_right_bound: -0.29 #[m]
+    dist_threshold_for_lane_change_detection: 1.0 #[m]
+    time_threshold_for_lane_change_detection: 5.0 #[s]
+    cutoff_freq_of_velocity_for_lane_change_detection: 0.1 #[Hz]
     reference_path_resolution: 0.5 #[m]
