@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <tensorrt_yolox/tensorrt_yolox_node.hpp>
+#include "tensorrt_yolox/tensorrt_yolox_node.hpp"
+
+#include "perception_utils/object_classification.hpp"
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 
@@ -44,6 +46,7 @@ TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
     RCLCPP_ERROR(this->get_logger(), "Could not find label file");
     rclcpp::shutdown();
   }
+  replaceLabelMap();
   trt_yolox_ = std::make_unique<tensorrt_yolox::TrtYoloX>(
     model_path, precision, label_map_.size(), score_threshold, nms_threshold);
 
@@ -72,8 +75,6 @@ void TrtYoloXNode::onConnect()
 
 void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
-  using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
-
   tier4_perception_msgs::msg::DetectedObjectsWithFeature out_objects;
 
   cv_bridge::CvImagePtr in_image_ptr;
@@ -97,23 +98,9 @@ void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
     object.feature.roi.y_offset = yolox_object.y_offset;
     object.feature.roi.width = yolox_object.width;
     object.feature.roi.height = yolox_object.height;
-    object.object.classification.emplace_back(autoware_auto_perception_msgs::build<Label>()
-                                                .label(Label::UNKNOWN)
-                                                .probability(yolox_object.score));
-    if (label_map_[yolox_object.type] == "CAR") {
-      object.object.classification.front().label = Label::CAR;
-    } else if (
-      label_map_[yolox_object.type] == "PEDESTRIAN" || label_map_[yolox_object.type] == "PERSON") {
-      object.object.classification.front().label = Label::PEDESTRIAN;
-    } else if (label_map_[yolox_object.type] == "BUS") {
-      object.object.classification.front().label = Label::BUS;
-    } else if (label_map_[yolox_object.type] == "TRUCK") {
-      object.object.classification.front().label = Label::TRUCK;
-    } else if (label_map_[yolox_object.type] == "BICYCLE") {
-      object.object.classification.front().label = Label::BICYCLE;
-    } else if (label_map_[yolox_object.type] == "MOTORCYCLE") {
-      object.object.classification.front().label = Label::MOTORCYCLE;
-    }
+    object.object.existence_probability = yolox_object.score;
+    object.object.classification =
+      perception_utils::toObjectClassifications(label_map_[yolox_object.type], 1.0f);
     out_objects.feature_objects.push_back(object);
     const auto left = std::max(0, static_cast<int>(object.feature.roi.x_offset));
     const auto top = std::max(0, static_cast<int>(object.feature.roi.y_offset));
@@ -147,6 +134,20 @@ bool TrtYoloXNode::readLabelFile(const std::string & label_path)
     ++label_index;
   }
   return true;
+}
+
+void TrtYoloXNode::replaceLabelMap()
+{
+  for (std::size_t i = 0; i < label_map_.size(); ++i) {
+    auto & label = label_map_[i];
+    if (label == "PERSON") {
+      label = "PEDESTRIAN";
+    } else if (
+      label != "CAR" || label != "PEDESTRIAN" || label != "BUS" || label != "TRUCK" ||
+      label != "BICYCLE" || label != "MOTORCYCLE") {
+      label = "UNKNOWN";
+    }
+  }
 }
 
 }  // namespace tensorrt_yolox
