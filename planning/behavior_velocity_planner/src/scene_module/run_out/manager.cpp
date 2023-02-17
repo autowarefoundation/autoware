@@ -72,8 +72,15 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
   }
 
   {
+    auto & p = planner_param_.mandatory_area;
+    const std::string ns_da = ns + ".mandatory_area";
+    p.decel_jerk = node.declare_parameter(ns_da + ".decel_jerk", -1.2);
+  }
+
+  {
     auto & p = planner_param_.dynamic_obstacle;
     const std::string ns_do = ns + ".dynamic_obstacle";
+    p.use_mandatory_area = node.declare_parameter(ns_do + ".use_mandatory_area", true);
     p.min_vel_kmph = node.declare_parameter(ns_do + ".min_vel_kmph", 0.0);
     p.max_vel_kmph = node.declare_parameter(ns_do + ".max_vel_kmph", 5.0);
     p.diameter = node.declare_parameter(ns_do + ".diameter", 0.1);
@@ -109,7 +116,7 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
   }
 
   debug_ptr_ = std::make_shared<RunOutDebug>(node);
-  setDynamicObstacleCreator(node);
+  setDynamicObstacleCreator(node, debug_ptr_);
 }
 
 void RunOutModuleManager::launchNewModules(
@@ -137,31 +144,33 @@ RunOutModuleManager::getModuleExpiredFunction(
     };
 }
 
-void RunOutModuleManager::setDynamicObstacleCreator(rclcpp::Node & node)
+void RunOutModuleManager::setDynamicObstacleCreator(
+  rclcpp::Node & node, std::shared_ptr<RunOutDebug> & debug_ptr)
 {
   using run_out_utils::DetectionMethod;
 
   const auto detection_method_enum = run_out_utils::toEnum(planner_param_.run_out.detection_method);
   switch (detection_method_enum) {
     case DetectionMethod::Object:
-      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForObject>(node);
+      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForObject>(
+        node, debug_ptr, planner_param_.dynamic_obstacle);
       break;
 
     case DetectionMethod::ObjectWithoutPath:
-      dynamic_obstacle_creator_ =
-        std::make_unique<DynamicObstacleCreatorForObjectWithoutPath>(node);
+      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForObjectWithoutPath>(
+        node, debug_ptr, planner_param_.dynamic_obstacle);
       break;
 
     case DetectionMethod::Points:
-      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForPoints>(node);
+      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForPoints>(
+        node, debug_ptr, planner_param_.dynamic_obstacle);
       break;
 
     default:
       RCLCPP_WARN_STREAM(logger_, "detection method is invalid. use default method (Object).");
-      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForObject>(node);
+      dynamic_obstacle_creator_ = std::make_unique<DynamicObstacleCreatorForObject>(
+        node, debug_ptr, planner_param_.dynamic_obstacle);
       break;
   }
-
-  dynamic_obstacle_creator_->setParam(planner_param_.dynamic_obstacle);
 }
 }  // namespace behavior_velocity_planner

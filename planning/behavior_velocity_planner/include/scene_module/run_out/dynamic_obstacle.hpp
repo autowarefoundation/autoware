@@ -16,6 +16,8 @@
 #define SCENE_MODULE__RUN_OUT__DYNAMIC_OBSTACLE_HPP_
 
 #include "behavior_velocity_planner/planner_data.hpp"
+#include "scene_module/run_out/debug.hpp"
+#include "scene_module/run_out/utils.hpp"
 #include "utilization/path_utilization.hpp"
 #include "utilization/util.hpp"
 
@@ -23,6 +25,9 @@
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#include <message_filters/subscriber.h>
+#include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/synchronizer.h>
 #include <pcl/common/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -32,6 +37,7 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #endif
 
+#include <memory>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -41,55 +47,12 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::Shape;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using run_out_utils::DynamicObstacle;
+using run_out_utils::DynamicObstacleData;
+using run_out_utils::DynamicObstacleParam;
+using run_out_utils::PlannerParam;
+using run_out_utils::PredictedPath;
 using PathPointsWithLaneId = std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId>;
-
-struct DynamicObstacleParam
-{
-  float min_vel_kmph{0.0};
-  float max_vel_kmph{5.0};
-
-  // parameter to convert points to dynamic obstacle
-  float diameter{0.1};              // [m]
-  float height{2.0};                // [m]
-  float max_prediction_time{10.0};  // [sec]
-  float time_step{0.5};             // [sec]
-  float points_interval{0.1};       // [m]
-};
-
-struct PoseWithRange
-{
-  geometry_msgs::msg::Pose pose_min;
-  geometry_msgs::msg::Pose pose_max;
-};
-
-// since we use the minimum and maximum velocity,
-// define the PredictedPath without time_step
-struct PredictedPath
-{
-  std::vector<geometry_msgs::msg::Pose> path;
-  float confidence;
-};
-
-// abstracted obstacle information
-struct DynamicObstacle
-{
-  geometry_msgs::msg::Pose pose;
-  std::vector<geometry_msgs::msg::Point> collision_points;
-  geometry_msgs::msg::Point nearest_collision_point;
-  float min_velocity_mps;
-  float max_velocity_mps;
-  std::vector<ObjectClassification> classifications;
-  Shape shape;
-  std::vector<PredictedPath> predicted_paths;
-};
-
-struct DynamicObstacleData
-{
-  PredictedObjects predicted_objects;
-  pcl::PointCloud<pcl::PointXYZ> obstacle_points;
-  PathWithLaneId path;
-  Polygons2d detection_area_polygon;
-};
 
 /**
  * @brief base class for creating dynamic obstacles from multiple types of input
@@ -97,24 +60,49 @@ struct DynamicObstacleData
 class DynamicObstacleCreator
 {
 public:
-  explicit DynamicObstacleCreator(rclcpp::Node & node) : node_(node) {}
+  using PointCloud2 = sensor_msgs::msg::PointCloud2;
+  using ExactTimeSyncPolicy = message_filters::sync_policies::ExactTime<PointCloud2, PointCloud2>;
+  using ExactTimeSynchronizer = message_filters::Synchronizer<ExactTimeSyncPolicy>;
+
+  explicit DynamicObstacleCreator(
+    rclcpp::Node & node, std::shared_ptr<RunOutDebug> & debug_ptr,
+    const DynamicObstacleParam & param)
+  : node_(node), debug_ptr_(debug_ptr), param_(param)
+  {
+  }
   virtual ~DynamicObstacleCreator() = default;
   virtual std::vector<DynamicObstacle> createDynamicObstacles() = 0;
-  void setParam(const DynamicObstacleParam & param) { param_ = param; }
   void setData(
-    const PlannerData & planner_data, const PathWithLaneId & path, const Polygons2d & poly)
+    const PlannerData & planner_data, const PlannerParam & planner_param,
+    const PathWithLaneId & path, const PathWithLaneId & smoothed_path)
   {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    // compare map filtered points are subscribed in derived class that needs points
     dynamic_obstacle_data_.predicted_objects = *planner_data.predicted_objects;
     dynamic_obstacle_data_.path = path;
-    dynamic_obstacle_data_.detection_area_polygon = poly;
+
+    // detection area is used only when detection target is Points
+    if (planner_param.run_out.detection_method == "Points") {
+      dynamic_obstacle_data_.detection_area =
+        createDetectionAreaPolygon(smoothed_path, planner_data, planner_param);
+      for (const auto & poly : dynamic_obstacle_data_.detection_area) {
+        debug_ptr_->pushDetectionAreaPolygons(poly);
+      }
+
+      if (param_.use_mandatory_area) {
+        dynamic_obstacle_data_.mandatory_detection_area =
+          createMandatoryDetectionAreaPolygon(smoothed_path, planner_data, planner_param);
+        for (const auto & poly : dynamic_obstacle_data_.mandatory_detection_area) {
+          debug_ptr_->pushMandatoryDetectionAreaPolygons(poly);
+        }
+      }
+    }
   }
 
 protected:
-  DynamicObstacleParam param_;
   rclcpp::Node & node_;
+  std::shared_ptr<RunOutDebug> debug_ptr_;
+  DynamicObstacleParam param_;
   DynamicObstacleData dynamic_obstacle_data_;
 
   // mutex for dynamic_obstacle_data_
@@ -127,7 +115,9 @@ protected:
 class DynamicObstacleCreatorForObject : public DynamicObstacleCreator
 {
 public:
-  explicit DynamicObstacleCreatorForObject(rclcpp::Node & node);
+  explicit DynamicObstacleCreatorForObject(
+    rclcpp::Node & node, std::shared_ptr<RunOutDebug> & debug_ptr,
+    const DynamicObstacleParam & param);
   std::vector<DynamicObstacle> createDynamicObstacles() override;
 };
 
@@ -138,7 +128,9 @@ public:
 class DynamicObstacleCreatorForObjectWithoutPath : public DynamicObstacleCreator
 {
 public:
-  explicit DynamicObstacleCreatorForObjectWithoutPath(rclcpp::Node & node);
+  explicit DynamicObstacleCreatorForObjectWithoutPath(
+    rclcpp::Node & node, std::shared_ptr<RunOutDebug> & debug_ptr,
+    const DynamicObstacleParam & param);
   std::vector<DynamicObstacle> createDynamicObstacles() override;
 };
 
@@ -149,17 +141,32 @@ public:
 class DynamicObstacleCreatorForPoints : public DynamicObstacleCreator
 {
 public:
-  explicit DynamicObstacleCreatorForPoints(rclcpp::Node & node);
+  explicit DynamicObstacleCreatorForPoints(
+    rclcpp::Node & node, std::shared_ptr<RunOutDebug> & debug_ptr,
+    const DynamicObstacleParam & param);
   std::vector<DynamicObstacle> createDynamicObstacles() override;
 
 private:
   void onCompareMapFilteredPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
+
+  void onSynchronizedPointCloud(
+    const PointCloud2::ConstSharedPtr compare_map_filtered_points,
+    const PointCloud2::ConstSharedPtr vector_map_filtered_points);
+
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr
     sub_compare_map_filtered_pointcloud_;
+
+  // synchronized subscribers
+  message_filters::Subscriber<PointCloud2> sub_compare_map_filtered_pointcloud_sync_;
+  message_filters::Subscriber<PointCloud2> sub_vector_map_inside_area_filtered_pointcloud_sync_;
+  std::unique_ptr<ExactTimeSynchronizer> exact_time_synchronizer_;
 
   // tf
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+
+  // obstacle points
+  pcl::PointCloud<pcl::PointXYZ> obstacle_points_map_filtered_;
 };
 
 }  // namespace behavior_velocity_planner

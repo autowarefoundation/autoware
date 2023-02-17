@@ -165,6 +165,10 @@ def launch_setup(context, *args, **kwargs):
                 "compare_map_filtered/pointcloud",
             ),
             (
+                "~/input/vector_map_inside_area_filtered_pointcloud",
+                "vector_map_inside_area_filtered/pointcloud",
+            ),
+            (
                 "~/input/traffic_signals",
                 "/perception/traffic_light_recognition/traffic_signals",
             ),

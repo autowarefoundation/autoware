@@ -486,5 +486,93 @@ DetectionMethod toEnum(const std::string & detection_method)
   }
 }
 
+Polygons2d createDetectionAreaPolygon(
+  const PathWithLaneId & path, const PlannerData & planner_data, const PlannerParam & planner_param)
+{
+  const auto & pd = planner_data;
+  const auto & pp = planner_param;
+
+  // calculate distance needed to stop with jerk and acc constraints
+  const float initial_vel = pd.current_velocity->twist.linear.x;
+  const float initial_acc = pd.current_acceleration->accel.accel.linear.x;
+  const float target_vel = 0.0;
+  const float jerk_dec_max = pp.smoother.start_jerk;
+  const float jerk_dec =
+    pp.run_out.specify_decel_jerk ? pp.run_out.deceleration_jerk : jerk_dec_max;
+  const float jerk_acc = std::abs(jerk_dec);
+  const float planning_dec =
+    jerk_dec < pp.common.normal_min_jerk ? pp.common.limit_min_acc : pp.common.normal_min_acc;
+  auto stop_dist = run_out_utils::calcDecelDistWithJerkAndAccConstraints(
+    initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
+
+  if (!stop_dist) {
+    stop_dist = boost::make_optional<double>(0.0);
+  }
+
+  // create detection area polygon
+  DetectionRange da_range;
+  const double obstacle_vel_mps = pp.dynamic_obstacle.max_vel_kmph / 3.6;
+  da_range.interval = pp.run_out.detection_distance;
+  da_range.min_longitudinal_distance =
+    pp.vehicle_param.base_to_front - pp.detection_area.margin_behind;
+  da_range.max_longitudinal_distance =
+    *stop_dist + pp.run_out.stop_margin + pp.detection_area.margin_ahead;
+  da_range.wheel_tread = pp.vehicle_param.wheel_tread;
+  da_range.right_overhang = pp.vehicle_param.right_overhang;
+  da_range.left_overhang = pp.vehicle_param.left_overhang;
+  da_range.max_lateral_distance = obstacle_vel_mps * pp.dynamic_obstacle.max_prediction_time;
+  Polygons2d detection_area_poly;
+  const size_t ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, pd.current_odometry->pose, pd.ego_nearest_dist_threshold,
+    pd.ego_nearest_yaw_threshold);
+  planning_utils::createDetectionAreaPolygons(
+    detection_area_poly, path, pd.current_odometry->pose, ego_seg_idx, da_range,
+    pp.dynamic_obstacle.max_vel_kmph / 3.6);
+
+  return detection_area_poly;
+}
+
+Polygons2d createMandatoryDetectionAreaPolygon(
+  const PathWithLaneId & path, const PlannerData & planner_data, const PlannerParam & planner_param)
+{
+  const auto & pd = planner_data;
+  const auto & pp = planner_param;
+
+  // calculate distance needed to stop with jerk and acc constraints
+  const float initial_vel = pd.current_velocity->twist.linear.x;
+  const float initial_acc = pd.current_acceleration->accel.accel.linear.x;
+  const float target_vel = 0.0;
+  const float jerk_dec = pp.mandatory_area.decel_jerk;
+  const float jerk_acc = std::abs(jerk_dec);
+  const float planning_dec =
+    jerk_dec < pp.common.normal_min_jerk ? pp.common.limit_min_acc : pp.common.normal_min_acc;
+  auto stop_dist = run_out_utils::calcDecelDistWithJerkAndAccConstraints(
+    initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
+
+  if (!stop_dist) {
+    stop_dist = boost::make_optional<double>(0.0);
+  }
+
+  // create detection area polygon
+  DetectionRange da_range;
+  const double obstacle_vel_mps = pp.dynamic_obstacle.max_vel_kmph / 3.6;
+  da_range.interval = pp.run_out.detection_distance;
+  da_range.min_longitudinal_distance = pp.vehicle_param.base_to_front;
+  da_range.max_longitudinal_distance = *stop_dist + pp.run_out.stop_margin;
+  da_range.wheel_tread = pp.vehicle_param.wheel_tread;
+  da_range.right_overhang = pp.vehicle_param.right_overhang;
+  da_range.left_overhang = pp.vehicle_param.left_overhang;
+  da_range.max_lateral_distance = obstacle_vel_mps * pp.dynamic_obstacle.max_prediction_time;
+  Polygons2d detection_area_poly;
+  const size_t ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, pd.current_odometry->pose, pd.ego_nearest_dist_threshold,
+    pd.ego_nearest_yaw_threshold);
+  planning_utils::createDetectionAreaPolygons(
+    detection_area_poly, path, pd.current_odometry->pose, ego_seg_idx, da_range,
+    pp.dynamic_obstacle.max_vel_kmph / 3.6);
+
+  return detection_area_poly;
+}
+
 }  // namespace run_out_utils
 }  // namespace behavior_velocity_planner

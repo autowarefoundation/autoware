@@ -76,8 +76,7 @@ bool RunOutModule::modifyPathVelocity(
     run_out_utils::trimPathFromSelfPose(extended_smoothed_path, current_pose, trim_distance);
 
   // create abstracted dynamic obstacles from objects or points
-  const auto detection_area_poly = createDetectionAreaPolygon(extended_smoothed_path);
-  dynamic_obstacle_creator_->setData(*planner_data_, *path, detection_area_poly);
+  dynamic_obstacle_creator_->setData(*planner_data_, planner_param_, *path, extended_smoothed_path);
   const auto dynamic_obstacles = dynamic_obstacle_creator_->createDynamicObstacles();
   debug_ptr_->setDebugValues(DebugValues::TYPE::NUM_OBSTACLES, dynamic_obstacles.size());
 
@@ -125,53 +124,6 @@ bool RunOutModule::modifyPathVelocity(
     DebugValues::TYPE::CALCULATION_TIME, elapsed_modify_path.count() / 1000.0);
 
   return true;
-}
-
-Polygons2d RunOutModule::createDetectionAreaPolygon(const PathWithLaneId & smoothed_path) const
-{
-  // calculate distance needed to stop with jerk and acc constraints
-  const float initial_vel = planner_data_->current_velocity->twist.linear.x;
-  const float initial_acc = planner_data_->current_acceleration->accel.accel.linear.x;
-  const float target_vel = 0.0;
-  const float jerk_dec_max = planner_param_.smoother.start_jerk;
-  const float jerk_dec = planner_param_.run_out.specify_decel_jerk
-                           ? planner_param_.run_out.deceleration_jerk
-                           : jerk_dec_max;
-  const float jerk_acc = std::abs(jerk_dec);
-  const float planning_dec = jerk_dec < planner_param_.common.normal_min_jerk
-                               ? planner_param_.common.limit_min_acc
-                               : planner_param_.common.normal_min_acc;
-  auto stop_dist = run_out_utils::calcDecelDistWithJerkAndAccConstraints(
-    initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
-
-  if (!stop_dist) {
-    stop_dist = boost::make_optional<double>(0.0);
-  }
-
-  // create detection area polygon
-  DetectionRange da_range;
-  const auto & p = planner_param_;
-  const double obstacle_vel_mps = p.dynamic_obstacle.max_vel_kmph / 3.6;
-  da_range.interval = p.run_out.detection_distance;
-  da_range.min_longitudinal_distance =
-    p.vehicle_param.base_to_front - p.detection_area.margin_behind;
-  da_range.max_longitudinal_distance =
-    *stop_dist + p.run_out.stop_margin + p.detection_area.margin_ahead;
-  da_range.wheel_tread = p.vehicle_param.wheel_tread;
-  da_range.right_overhang = p.vehicle_param.right_overhang;
-  da_range.left_overhang = p.vehicle_param.left_overhang;
-  da_range.max_lateral_distance = obstacle_vel_mps * p.dynamic_obstacle.max_prediction_time;
-  Polygons2d detection_area_poly;
-  const size_t ego_seg_idx = findEgoSegmentIndex(smoothed_path.points);
-  planning_utils::createDetectionAreaPolygons(
-    detection_area_poly, smoothed_path, planner_data_->current_odometry->pose, ego_seg_idx,
-    da_range, p.dynamic_obstacle.max_vel_kmph / 3.6);
-
-  for (const auto & poly : detection_area_poly) {
-    debug_ptr_->pushDetectionAreaPolygons(poly);
-  }
-
-  return detection_area_poly;
 }
 
 boost::optional<DynamicObstacle> RunOutModule::detectCollision(

@@ -39,7 +39,7 @@ private:
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
-  void setDynamicObstacleCreator(rclcpp::Node & node);
+  void setDynamicObstacleCreator(rclcpp::Node & node, std::shared_ptr<RunOutDebug> & debug_ptr);
 };
 }  // namespace behavior_velocity_planner
 

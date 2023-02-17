@@ -75,6 +75,8 @@ RunOutDebug::RunOutDebug(rclcpp::Node & node) : node_(node)
     node.create_publisher<Float32MultiArrayStamped>("~/debug/run_out/debug_values", 1);
   pub_accel_reason_ = node.create_publisher<Int32Stamped>("~/debug/run_out/accel_reason", 1);
   pub_debug_trajectory_ = node.create_publisher<Trajectory>("~/debug/run_out/trajectory", 1);
+  pub_debug_pointcloud_ = node.create_publisher<PointCloud2>(
+    "~/debug/run_out/filtered_pointcloud", rclcpp::SensorDataQoS().keep_last(1));
 }
 
 void RunOutDebug::pushCollisionPoints(const geometry_msgs::msg::Point & point)
@@ -129,6 +131,16 @@ void RunOutDebug::pushDetectionAreaPolygons(const Polygon2d & debug_polygon)
   detection_area_polygons_.push_back(ros_points);
 }
 
+void RunOutDebug::pushMandatoryDetectionAreaPolygons(const Polygon2d & debug_polygon)
+{
+  std::vector<geometry_msgs::msg::Point> ros_points;
+  for (const auto & p : debug_polygon.outer()) {
+    ros_points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0));
+  }
+
+  mandatory_detection_area_polygons_.push_back(ros_points);
+}
+
 void RunOutDebug::pushTravelTimeTexts(
   const double travel_time, const geometry_msgs::msg::Pose pose, const float lateral_offset)
 {
@@ -142,6 +154,7 @@ void RunOutDebug::clearDebugMarker()
   collision_points_.clear();
   nearest_collision_point_.clear();
   detection_area_polygons_.clear();
+  mandatory_detection_area_polygons_.clear();
   predicted_vehicle_polygons_.clear();
   predicted_obstacle_polygons_.clear();
   collision_obstacle_polygons_.clear();
@@ -244,6 +257,14 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArray
       &msg);
   }
 
+  if (!mandatory_detection_area_polygons_.empty()) {
+    appendMarkerArray(
+      createPolygonMarkerArray(
+        mandatory_detection_area_polygons_, current_time, "mandatory_detection_area_polygons",
+        createMarkerScale(0.04, 0.0, 0.0), createMarkerColor(1.0, 1.0, 0.0, 0.999), height_),
+      &msg);
+  }
+
   if (!travel_time_texts_.empty()) {
     auto marker = createDefaultMarker(
       "map", current_time, "travel_time_texts", 0,
@@ -284,6 +305,32 @@ void RunOutDebug::publishDebugValue()
 void RunOutDebug::publishDebugTrajectory(const Trajectory & trajectory)
 {
   pub_debug_trajectory_->publish(trajectory);
+}
+
+void RunOutDebug::publishFilteredPointCloud(
+  const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const std_msgs::msg::Header header)
+{
+  PointCloud2 pc;
+  pcl::toROSMsg(pointcloud, pc);
+  pc.header = header;
+
+  pub_debug_pointcloud_->publish(pc);
+}
+
+void RunOutDebug::publishFilteredPointCloud(const PointCloud2 & pointcloud)
+{
+  pub_debug_pointcloud_->publish(pointcloud);
+}
+
+void RunOutDebug::publishEmptyPointCloud()
+{
+  PointCloud2 pc;
+  pcl::toROSMsg(pcl::PointCloud<pcl::PointXYZ>(), pc);
+  // set arbitrary frame id to avoid warning
+  pc.header.frame_id = "map";
+  pc.header.stamp = node_.now();
+
+  pub_debug_pointcloud_->publish(pc);
 }
 
 void RunOutDebug::setHeight(const double height) { height_ = height; }

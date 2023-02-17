@@ -15,15 +15,20 @@
         margin_behind: 0.5 # [m] ahead margin for detection area length
         margin_ahead: 1.0  # [m] behind margin for detection area length
 
+      # This area uses points not filtered by vector map to ensure safety
+      mandatory_area:
+        decel_jerk: -1.2 # [m/s^3] deceleration jerk for obstacles in this area
+
       # parameter to create abstracted dynamic obstacles
       dynamic_obstacle:
-        min_vel_kmph: 0.0         # [km/h] minimum velocity for dynamic obstacles
-        max_vel_kmph: 5.0         # [km/h] maximum velocity for dynamic obstacles
-        diameter: 0.1             # [m] diameter of obstacles. used for creating dynamic obstacles from points
-        height: 2.0               # [m] height of obstacles. used for creating dynamic obstacles from points
-        max_prediction_time: 10.0 # [sec] create predicted path until this time
-        time_step: 0.5            # [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path
-        points_interval: 0.1      # [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method
+        use_mandatory_area: false  # [-] whether to use mandatory detection area
+        min_vel_kmph: 0.0          # [km/h] minimum velocity for dynamic obstacles
+        max_vel_kmph: 5.0          # [km/h] maximum velocity for dynamic obstacles
+        diameter: 0.1              # [m] diameter of obstacles. used for creating dynamic obstacles from points
+        height: 2.0                # [m] height of obstacles. used for creating dynamic obstacles from points
+        max_prediction_time: 10.0  # [sec] create predicted path until this time
+        time_step: 0.5             # [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path
+        points_interval: 0.1       # [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method
 
       # approach if ego has stopped in the front of the obstacle for a certain amount of time
       approaching:

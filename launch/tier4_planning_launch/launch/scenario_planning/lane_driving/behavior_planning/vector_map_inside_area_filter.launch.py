@@ -45,7 +45,7 @@ def generate_launch_description():
             plugin="pointcloud_preprocessor::VectorMapInsideAreaFilterComponent",
             name="vector_map_inside_area_filter_node",
             remappings=[
-                ("input", "/perception/obstacle_segmentation/pointcloud"),
+                ("input", "compare_map_filtered/pointcloud"),
                 ("input/vector_map", "/map/vector_map"),
                 ("output", "vector_map_inside_area_filtered/pointcloud"),
             ],

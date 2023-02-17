@@ -32,6 +32,7 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using run_out_utils::PlannerParam;
+using run_out_utils::PoseWithRange;
 using tier4_debug_msgs::msg::Float32Stamped;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 

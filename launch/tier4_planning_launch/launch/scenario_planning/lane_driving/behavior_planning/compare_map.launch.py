@@ -45,7 +45,7 @@ def generate_launch_description():
             plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent",
             name="voxel_distance_based_compare_map_filter_node",
             remappings=[
-                ("input", "vector_map_inside_area_filtered/pointcloud"),
+                ("input", "/perception/obstacle_segmentation/pointcloud"),
                 ("map", "/map/pointcloud_map"),
                 ("output", "compare_map_filtered/pointcloud"),
             ],
