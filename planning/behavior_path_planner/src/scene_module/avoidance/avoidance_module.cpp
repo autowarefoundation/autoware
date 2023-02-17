@@ -3217,7 +3217,7 @@ ShiftedPath AvoidanceModule::generateAvoidancePath(PathShifter & path_shifter) c
   ShiftedPath shifted_path;
   if (!path_shifter.generate(&shifted_path)) {
     RCLCPP_ERROR(getLogger(), "failed to generate shifted path.");
-    return toShiftedPath(avoidance_data_.reference_path);
+    return prev_output_;
   }
 
   return shifted_path;
