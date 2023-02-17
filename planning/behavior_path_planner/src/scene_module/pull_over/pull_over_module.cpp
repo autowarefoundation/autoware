@@ -469,18 +469,18 @@ BehaviorModuleOutput PullOverModule::plan()
       break;
     }
 
-    // Decelerate before the minimum shift distance from the goal search area.
+    // decelerate before the search area start
     if (status_.is_safe) {
-      auto & first_path = status_.pull_over_path.partial_paths.front();
       const auto search_start_pose = calcLongitudinalOffsetPose(
-        first_path.points, refined_goal_pose_.position,
+        status_.pull_over_path.getFullPath().points, refined_goal_pose_.position,
         -parameters_.backward_goal_search_length - planner_data_->parameters.base_link2front);
-      const Pose deceleration_pose =
-        search_start_pose ? *search_start_pose : first_path.points.front().point.pose;
-      constexpr double deceleration_buffer = 15.0;
-      first_path = util::setDecelerationVelocity(
-        first_path, parameters_.pull_over_velocity, deceleration_pose, -deceleration_buffer,
-        parameters_.deceleration_interval);
+      if (search_start_pose) {
+        auto & first_path = status_.pull_over_path.partial_paths.front();
+        constexpr double deceleration_buffer = 15.0;
+        first_path = util::setDecelerationVelocity(
+          first_path, parameters_.pull_over_velocity, *search_start_pose, -deceleration_buffer,
+          parameters_.deceleration_interval);
+      }
     }
 
     // generate drivable area for each partial path
