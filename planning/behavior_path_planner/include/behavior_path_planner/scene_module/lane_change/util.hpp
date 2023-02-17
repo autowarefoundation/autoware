@@ -81,8 +81,7 @@ LaneChangePaths selectValidPaths(
   const Pose & current_pose, const Pose & goal_pose, const double minimum_lane_change_length);
 
 bool selectSafePath(
-  const LaneChangePaths & paths, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes,
+  const LaneChangePaths & paths, const lanelet::ConstLanelets & backward_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
   const behavior_path_planner::LaneChangeParameters & ros_parameters,
@@ -90,8 +89,7 @@ bool selectSafePath(
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data);
 
 bool isLaneChangePathSafe(
-  const LaneChangePath & lane_change_path, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes,
+  const LaneChangePath & lane_change_path, const lanelet::ConstLanelets & backward_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const size_t current_seg_idx, const Twist & current_twist,
   const BehaviorPathPlannerParameters & common_parameters,
@@ -148,6 +146,9 @@ bool hasEnoughDistanceToLaneChangeAfterAbort(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const Pose & curent_pose, const double abort_return_dist,
   const BehaviorPathPlannerParameters & common_param);
-}  // namespace behavior_path_planner::lane_change_utils
 
+lanelet::ConstLanelets getExtendedTargetLanesForCollisionCheck(
+  const RouteHandler & route_handler, const lanelet::ConstLanelet & target_lanes,
+  const Pose & current_pose, const double backward_length);
+}  // namespace behavior_path_planner::lane_change_utils
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_

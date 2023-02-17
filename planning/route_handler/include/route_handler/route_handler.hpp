@@ -237,6 +237,19 @@ public:
     const lanelet::ConstLanelet & lanelet, bool is_right = true, bool is_left = true,
     bool is_opposite = true) const noexcept;
 
+  /**
+   * Retrieves a sequence of lanelets before the given lanelet.
+   * The total length of retrieved lanelet sequence at least given length. Returned lanelet sequence
+   * does not include input lanelet.]
+   * @param graph [input lanelet routing graph]
+   * @param lanelet [input lanelet]
+   * @param length [minimum length of retrieved lanelet sequence]
+   * @return   [lanelet sequence that leads to given lanelet]
+   */
+  std::vector<lanelet::ConstLanelets> getPrecedingLaneletSequence(
+    const lanelet::ConstLanelet & lanelet, const double length,
+    const lanelet::ConstLanelets & exclude_lanelets = {}) const;
+
   int getNumLaneToPreferredLane(const lanelet::ConstLanelet & lanelet) const;
   bool getClosestLaneletWithinRoute(
     const Pose & search_pose, lanelet::ConstLanelet * closest_lanelet) const;
