@@ -55,12 +55,6 @@ struct ModuleNameStamped
   rclcpp::Time stamp{0, 0, RCL_ROS_TIME};
 };
 
-struct Approval
-{
-  BoolStamped is_approved{false};
-  ModuleNameStamped is_force_approved{};
-};
-
 struct DrivableLanes
 {
   lanelet::ConstLanelet right_lane;
@@ -80,7 +74,6 @@ struct PlannerData
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};
   BehaviorPathPlannerParameters parameters{};
   drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
-  Approval approval{};
 };
 
 }  // namespace behavior_path_planner

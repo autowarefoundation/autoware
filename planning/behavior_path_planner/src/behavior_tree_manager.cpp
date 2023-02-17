@@ -117,18 +117,6 @@ BehaviorTreeManager::getModulesStatus()
   return modules_status_;
 }
 
-BT::NodeStatus BehaviorTreeManager::checkForceApproval(const std::string & name)
-{
-  const auto & approval = current_planner_data_->approval.is_force_approved;
-  if ((clock_.now() - approval.stamp).seconds() > 1.0) {
-    RCLCPP_WARN_THROTTLE(
-      logger_, clock_, 3000, "BehaviorTreeManager : Force approval data is time out!");
-    return BT::NodeStatus::FAILURE;
-  }
-
-  return approval.module_name == name ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-}
-
 void BehaviorTreeManager::resetNotRunningModulePathCandidate()
 {
   const bool is_any_module_running = std::any_of(
