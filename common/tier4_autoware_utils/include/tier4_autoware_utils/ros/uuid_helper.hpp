@@ -17,10 +17,21 @@
 
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
+#include <random>
 #include <string>
 
 namespace tier4_autoware_utils
 {
+inline unique_identifier_msgs::msg::UUID generateUUID()
+{
+  // Generate random number
+  unique_identifier_msgs::msg::UUID uuid;
+  std::mt19937 gen(std::random_device{}());
+  std::independent_bits_engine<std::mt19937, 8, uint8_t> bit_eng(gen);
+  std::generate(uuid.uuid.begin(), uuid.uuid.end(), bit_eng);
+
+  return uuid;
+}
 inline std::string toHexString(const unique_identifier_msgs::msg::UUID & id)
 {
   std::stringstream ss;
