@@ -63,6 +63,7 @@ private:
   float min_points_and_distance_ratio_;
   int min_points_;
   int max_points_;
+  long unsigned int max_filter_points_nb_;
   pcl::search::Search<pcl::PointXY>::Ptr kd_tree_;
 };
 
@@ -77,7 +78,9 @@ private:
     const PointCloud2::ConstSharedPtr & input_pointcloud);
   void filterByOccupancyGridMap(
     const OccupancyGrid & occupancy_grid_map, const PointCloud2 & pointcloud,
-    PclPointCloud & high_confidence, PclPointCloud & low_confidence);
+    PclPointCloud & high_confidence, PclPointCloud & low_confidence, PclPointCloud & out_ogm);
+  void splitPointCloudFrontBack(
+    const PointCloud2::ConstSharedPtr & input_pc, PointCloud2 & front_pc, PointCloud2 & behind_pc);
 
 private:
   class Debugger
