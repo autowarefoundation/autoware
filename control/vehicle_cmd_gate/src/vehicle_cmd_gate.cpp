@@ -74,8 +74,15 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     "input/gate_mode", 1, std::bind(&VehicleCmdGate::onGateMode, this, _1));
   engage_sub_ = create_subscription<EngageMsg>(
     "input/engage", 1, std::bind(&VehicleCmdGate::onEngage, this, _1));
+  kinematics_sub_ = create_subscription<Odometry>(
+    "input/kinematics", 1, [this](Odometry::SharedPtr msg) { current_kinematics_ = *msg; });
+  acc_sub_ = create_subscription<AccelWithCovarianceStamped>(
+    "input/acceleration", 1, [this](AccelWithCovarianceStamped::SharedPtr msg) {
+      current_acceleration_ = msg->accel.accel.linear.x;
+    });
   steer_sub_ = create_subscription<SteeringReport>(
-    "input/steering", 1, std::bind(&VehicleCmdGate::onSteering, this, _1));
+    "input/steering", 1,
+    [this](SteeringReport::SharedPtr msg) { current_steer_ = msg->steering_tire_angle; });
   operation_mode_sub_ = create_subscription<OperationModeState>(
     "input/operation_mode", rclcpp::QoS(1).transient_local(),
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ = *msg; });
@@ -497,11 +504,24 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
     filter_.filterAll(dt, current_steer_, out);
   }
 
-  // set prev value for both to keep consistency over switching
-  // TODO(Horibe): prev value should be actual steer, vel, acc when Manual mode to keep
-  // consistency when switching from Manual to Auto.
-  filter_.setPrevCmd(out);
-  filter_on_transition_.setPrevCmd(out);
+  // set prev value for both to keep consistency over switching:
+  // Actual steer, vel, acc should be considered in manual mode to prevent sudden motion when
+  // switching from manual to autonomous
+  auto prev_values =
+    (mode.mode == OperationModeState::AUTONOMOUS) ? out : getActualStatusAsCommand();
+
+  // TODO(Horibe): To prevent sudden acceleration/deceleration when switching from manual to
+  // autonomous, the filter should be applied for actual speed and acceleration during manual
+  // driving. However, this means that the output command from Gate will always be close to the
+  // driving state during manual driving. Since the Gate's output is checked by various modules as
+  // the intended value of Autoware, it should be closed to planned values. Conversely, it is
+  // undesirable for the target vehicle speed to be non-zero in a situation where the vehicle is
+  // supposed to stop. Until the appropriate handling will be done, previous value is used for the
+  // filter in manual mode.
+  prev_values.longitudinal = out.longitudinal;  // TODO(Horibe): to be removed
+
+  filter_.setPrevCmd(prev_values);
+  filter_on_transition_.setPrevCmd(prev_values);
 
   return out;
 }
@@ -563,11 +583,6 @@ void VehicleCmdGate::onEngageService(
   response->status = tier4_api_utils::response_success();
 }
 
-void VehicleCmdGate::onSteering(SteeringReport::ConstSharedPtr msg)
-{
-  current_steer_ = msg->steering_tire_angle;
-}
-
 void VehicleCmdGate::onMrmState(MrmState::ConstSharedPtr msg)
 {
   is_system_emergency_ =
@@ -589,6 +604,17 @@ double VehicleCmdGate::getDt()
   *prev_time_ = current_time;
 
   return dt;
+}
+
+AckermannControlCommand VehicleCmdGate::getActualStatusAsCommand()
+{
+  AckermannControlCommand status;
+  status.stamp = status.lateral.stamp = status.longitudinal.stamp = this->now();
+  status.lateral.steering_tire_angle = current_steer_;
+  status.lateral.steering_tire_rotation_rate = 0.0;
+  status.longitudinal.speed = current_kinematics_.twist.twist.linear.x;
+  status.longitudinal.acceleration = current_acceleration_;
+  return status;
 }
 
 void VehicleCmdGate::onExternalEmergencyStopService(

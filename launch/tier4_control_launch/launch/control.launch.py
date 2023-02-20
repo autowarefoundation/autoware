@@ -149,6 +149,8 @@ def launch_setup(context, *args, **kwargs):
             ("input/emergency/gear_cmd", "/system/emergency/gear_cmd"),
             ("input/mrm_state", "/system/fail_safe/mrm_state"),
             ("input/gear_status", "/vehicle/status/gear_status"),
+            ("input/kinematics", "/localization/kinematic_state"),
+            ("input/acceleration", "/localization/acceleration"),
             ("output/vehicle_cmd_emergency", "/control/command/emergency_cmd"),
             ("output/control_cmd", "/control/command/control_cmd"),
             ("output/gear_cmd", "/control/command/gear_cmd"),

@@ -31,6 +31,7 @@
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
+#include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <tier4_control_msgs/msg/gate_mode.hpp>
@@ -55,6 +56,7 @@ using autoware_auto_vehicle_msgs::msg::GearReport;
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_auto_vehicle_msgs::msg::SteeringReport;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using geometry_msgs::msg::AccelWithCovarianceStamped;
 using std_srvs::srv::Trigger;
 using tier4_control_msgs::msg::GateMode;
 using tier4_external_api_msgs::msg::Emergency;
@@ -100,14 +102,15 @@ private:
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
   rclcpp::Subscription<GateMode>::SharedPtr gate_mode_sub_;
-  rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;
   rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_sub_;
   rclcpp::Subscription<MrmState>::SharedPtr mrm_state_sub_;
   rclcpp::Subscription<GearReport>::SharedPtr gear_status_sub_;
+  rclcpp::Subscription<Odometry>::SharedPtr kinematics_sub_;             // for filter
+  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr acc_sub_;  // for filter
+  rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;            // for filter
 
   void onGateMode(GateMode::ConstSharedPtr msg);
   void onExternalEmergencyStopHeartbeat(Heartbeat::ConstSharedPtr msg);
-  void onSteering(SteeringReport::ConstSharedPtr msg);
   void onMrmState(MrmState::ConstSharedPtr msg);
 
   bool is_engaged_;
@@ -118,6 +121,8 @@ private:
   GateMode current_gate_mode_;
   MrmState current_mrm_state_;
   GearReport::ConstSharedPtr current_gear_ptr_;
+  Odometry current_kinematics_;
+  double current_acceleration_ = 0.0;
 
   // Heartbeat
   std::shared_ptr<rclcpp::Time> emergency_state_heartbeat_received_time_;
@@ -205,6 +210,7 @@ private:
 
   std::shared_ptr<rclcpp::Time> prev_time_;
   double getDt();
+  AckermannControlCommand getActualStatusAsCommand();
 
   VehicleCmdFilter filter_;
   AckermannControlCommand filterControlCommand(const AckermannControlCommand & msg);
