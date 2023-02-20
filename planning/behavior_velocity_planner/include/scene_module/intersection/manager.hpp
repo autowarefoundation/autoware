@@ -44,12 +44,7 @@ private:
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
-  bool hasSameParentLaneletAndTurnDirectionWith(
-    const lanelet::ConstLanelet & lane, const size_t module_id,
-    const std::string & turn_direction_lane) const;
-
-  bool hasSameParentLaneletAndTurnDirectionWithRegistered(
-    const lanelet::ConstLanelet & lane, const std::string & turn_direction) const;
+  bool hasSameParentLaneletAndTurnDirectionWithRegistered(const lanelet::ConstLanelet & lane) const;
 };
 
 class MergeFromPrivateModuleManager : public SceneModuleManagerInterface
@@ -67,12 +62,7 @@ private:
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
-  bool hasSameParentLaneletAndTurnDirectionWith(
-    const lanelet::ConstLanelet & lane, const size_t module_id,
-    const std::string & turn_direction_lane) const;
-
-  bool hasSameParentLaneletAndTurnDirectionWithRegistered(
-    const lanelet::ConstLanelet & lane, const std::string & turn_direction) const;
+  bool hasSameParentLaneletAndTurnDirectionWithRegistered(const lanelet::ConstLanelet & lane) const;
 };
 }  // namespace behavior_velocity_planner
 

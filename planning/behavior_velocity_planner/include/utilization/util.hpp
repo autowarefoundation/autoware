@@ -169,7 +169,8 @@ geometry_msgs::msg::Pose getAheadPose(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 Polygon2d generatePathPolygon(
   const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width);
-
+lanelet::ConstLanelet generatePathLanelet(
+  const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width);
 double calcJudgeLineDistWithAccLimit(
   const double velocity, const double max_stop_acceleration, const double delay_response_time);
 
@@ -292,6 +293,27 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output);
 boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, const size_t stop_seg_idx, PathWithLaneId & output);
+
+/*
+  @brief return 'associatvie' lanes in the intersection. 'associative' means that a lane shares same
+  or lane-changeable parent lanes with `lane` and has same turn_direction value.
+ */
+std::set<int> getAssociativeIntersectionLanelets(
+  lanelet::ConstLanelet lane, const lanelet::LaneletMapPtr lanelet_map,
+  const lanelet::routing::RoutingGraphPtr routing_graph);
+
+template <template <class> class Container>
+lanelet::ConstLanelets getConstLaneletsFromIds(
+  lanelet::LaneletMapConstPtr map, const Container<int> & ids)
+{
+  lanelet::ConstLanelets ret{};
+  for (const auto & id : ids) {
+    const auto ll = map->laneletLayer.get(id);
+    ret.push_back(ll);
+  }
+  return ret;
+}
+
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner
 

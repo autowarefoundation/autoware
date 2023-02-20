@@ -35,9 +35,9 @@ namespace bg = boost::geometry;
 MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
   const int64_t module_id, const int64_t lane_id,
   [[maybe_unused]] std::shared_ptr<const PlannerData> planner_data,
-  const PlannerParam & planner_param, const rclcpp::Logger logger,
+  const PlannerParam & planner_param, const std::set<int> & assoc_ids, const rclcpp::Logger logger,
   const rclcpp::Clock::SharedPtr clock)
-: SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id)
+: SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id), assoc_ids_(assoc_ids)
 {
   velocity_factor_.init(VelocityFactor::MERGE);
   planner_param_ = planner_param;
@@ -66,8 +66,8 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   /* get detection area */
   if (!intersection_lanelets_.has_value()) {
     intersection_lanelets_ = util::getObjectiveLanelets(
-      lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
-      false /* tl_arrow_solid on does not matter here*/);
+      lanelet_map_ptr, routing_graph_ptr, lane_id_, {} /* not used here */,
+      planner_param_.detection_area_length, false /* tl_arrow_solid on does not matter here*/);
   }
   const auto & detection_area = intersection_lanelets_.value().attention_area;
 
@@ -82,7 +82,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
     setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
-  const auto lane_interval_ip_opt = util::findLaneIdInterval(path_ip, lane_id_);
+  const auto lane_interval_ip_opt = util::findLaneIdsInterval(path_ip, assoc_ids_);
   if (!lane_interval_ip_opt.has_value()) {
     RCLCPP_WARN(logger_, "Path has no interval on intersection lane %ld", lane_id_);
     RCLCPP_DEBUG(logger_, "===== plan end =====");

@@ -295,6 +295,32 @@ Polygon2d generatePathPolygon(
   return ego_area;
 }
 
+lanelet::ConstLanelet generatePathLanelet(
+  const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width)
+{
+  lanelet::Points3d lefts;
+  for (size_t i = start_idx; i <= end_idx; ++i) {
+    const double yaw = tf2::getYaw(path.points.at(i).point.pose.orientation);
+    const double x = path.points.at(i).point.pose.position.x + width / 2 * std::sin(yaw);
+    const double y = path.points.at(i).point.pose.position.y - width / 2 * std::cos(yaw);
+    const lanelet::Point3d p(lanelet::InvalId, x, y, path.points.at(i).point.pose.position.z);
+    lefts.emplace_back(p);
+  }
+  lanelet::LineString3d left = lanelet::LineString3d(lanelet::InvalId, lefts);
+
+  lanelet::Points3d rights;
+  for (size_t i = start_idx; i <= end_idx; ++i) {
+    const double yaw = tf2::getYaw(path.points.at(i).point.pose.orientation);
+    const double x = path.points.at(i).point.pose.position.x - width / 2 * std::sin(yaw);
+    const double y = path.points.at(i).point.pose.position.y + width / 2 * std::cos(yaw);
+    const lanelet::Point3d p(lanelet::InvalId, x, y, path.points.at(i).point.pose.position.z);
+    rights.emplace_back(p);
+  }
+  lanelet::LineString3d right = lanelet::LineString3d(lanelet::InvalId, rights);
+
+  return lanelet::Lanelet(lanelet::InvalId, left, right);
+}
+
 geometry_msgs::msg::Pose transformRelCoordinate2D(
   const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin)
 {
@@ -668,5 +694,34 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
 
   return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
 }
+
+std::set<int> getAssociativeIntersectionLanelets(
+  lanelet::ConstLanelet lane, const lanelet::LaneletMapPtr lanelet_map,
+  const lanelet::routing::RoutingGraphPtr routing_graph)
+{
+  const std::string turn_direction = lane.attributeOr("turn_direction", "else");
+  if (turn_direction.compare("else") == 0) {
+    return {};
+  }
+
+  const auto parents = routing_graph->previous(lane);
+  std::set<int> parent_neighbors;
+  for (const auto & parent : parents) {
+    const auto neighbors = routing_graph->besides(parent);
+    for (const auto & neighbor : neighbors) parent_neighbors.insert(neighbor.id());
+  }
+  std::set<int> assocs;
+  for (const auto & parent_neighbor_id : parent_neighbors) {
+    const auto parent_neighbor = lanelet_map->laneletLayer.get(parent_neighbor_id);
+    const auto followings = routing_graph->following(parent_neighbor);
+    for (const auto & following : followings) {
+      if (following.attributeOr("turn_direction", "else") == turn_direction) {
+        assocs.insert(following.id());
+      }
+    }
+  }
+  return assocs;
+}
+
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner

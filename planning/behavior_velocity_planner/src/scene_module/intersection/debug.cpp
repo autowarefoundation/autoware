@@ -133,7 +133,10 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       0.0, 0.0, 0.5, 0.5),
     &debug_marker_array, now);
 
-  // TODO(Mamoru Sobue): should be changed path polygon for LC
+  appendMarkerArray(
+    createLaneletPolygonsMarkerArray({debug_data_.ego_lane}, "ego_lane", lane_id_, 1, 0.647, 0.0),
+    &debug_marker_array, now);
+
   appendMarkerArray(
     debug::createPolygonMarkerArray(
       debug_data_.candidate_collision_ego_lane_polygon, "candidate_collision_ego_lane_polygon",
