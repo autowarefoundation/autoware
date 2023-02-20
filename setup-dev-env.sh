@@ -31,10 +31,6 @@ while [ "$1" != "" ]; do
         # Disable installation dev package of role 'cuda' and 'tensorrt'.
         option_runtime=true
         ;;
-    --runtime)
-        # Disable installation dev package of role 'cuda' and 'tensorrt'.
-        option_runtime=true
-        ;;
     *)
         args+=("$1")
         ;;
