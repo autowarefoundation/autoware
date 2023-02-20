@@ -16,8 +16,8 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__GEOMETRIC_PULL_OVER_HPP_
 
 #include "behavior_path_planner/scene_module/pull_over/pull_over_planner_base.hpp"
-#include "behavior_path_planner/scene_module/utils/geometric_parallel_parking.hpp"
-#include "behavior_path_planner/scene_module/utils/occupancy_grid_based_collision_detector.hpp"
+#include "behavior_path_planner/util/geometric_parallel_parking/geometric_parallel_parking.hpp"
+#include "behavior_path_planner/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 

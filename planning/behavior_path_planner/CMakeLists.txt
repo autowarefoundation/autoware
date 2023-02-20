@@ -35,10 +35,10 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/scene_module/pull_out/util.cpp
   src/scene_module/pull_out/shift_pull_out.cpp
   src/scene_module/pull_out/geometric_pull_out.cpp
-  src/scene_module/utils/geometric_parallel_parking.cpp
-  src/scene_module/utils/occupancy_grid_based_collision_detector.cpp
-  src/scene_module/utils/path_shifter.cpp
   src/scene_module/scene_module_visitor.cpp
+  src/util/geometric_parallel_parking/geometric_parallel_parking.cpp
+  src/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
+  src/util/path_shifter/path_shifter.cpp
   src/util/drivable_area_expansion/drivable_area_expansion.cpp
   src/util/drivable_area_expansion/map_utils.cpp
   src/util/drivable_area_expansion/footprints.cpp

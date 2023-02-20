@@ -16,7 +16,6 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_PATH_HPP_
 
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module_data.hpp"
-#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>

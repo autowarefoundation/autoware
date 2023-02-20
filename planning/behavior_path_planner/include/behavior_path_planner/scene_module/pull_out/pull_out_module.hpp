@@ -20,8 +20,8 @@
 #include "behavior_path_planner/scene_module/pull_out/pull_out_path.hpp"
 #include "behavior_path_planner/scene_module/pull_out/shift_pull_out.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
-#include "behavior_path_planner/scene_module/utils/geometric_parallel_parking.hpp"
-#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
+#include "behavior_path_planner/util/geometric_parallel_parking/geometric_parallel_parking.hpp"
+#include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>

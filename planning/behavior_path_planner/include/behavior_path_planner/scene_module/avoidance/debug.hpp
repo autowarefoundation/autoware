@@ -17,7 +17,6 @@
 
 #include "behavior_path_planner/debug_utilities.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

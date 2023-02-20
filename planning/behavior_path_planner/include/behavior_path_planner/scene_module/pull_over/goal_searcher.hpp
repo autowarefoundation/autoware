@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__GOAL_SEARCHER_HPP_
 
 #include "behavior_path_planner/scene_module/pull_over/goal_searcher_base.hpp"
-#include "behavior_path_planner/scene_module/utils/occupancy_grid_based_collision_detector.hpp"
+#include "behavior_path_planner/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 
 #include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
 

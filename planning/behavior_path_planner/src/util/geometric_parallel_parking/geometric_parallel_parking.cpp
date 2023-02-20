@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/utils/geometric_parallel_parking.hpp"
+#include "behavior_path_planner/util/geometric_parallel_parking/geometric_parallel_parking.hpp"
 
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/utilities.hpp"

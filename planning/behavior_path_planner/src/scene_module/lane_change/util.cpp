@@ -18,7 +18,7 @@
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
-#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
+#include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
