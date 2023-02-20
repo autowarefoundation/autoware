@@ -27,10 +27,6 @@ while [ "$1" != "" ]; do
         # Disable installation of 'cuda-drivers' in the role 'cuda'.
         option_no_cuda_drivers=true
         ;;
-    --no-dev)
-        # Disable installation dev packages .
-        option_no_dev=true
-        ;;
     --runtime)
         # Disable installation dev package of role 'cuda' and 'tensorrt'.
         option_runtime=true

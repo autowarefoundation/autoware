@@ -1,4 +1,5 @@
 ARG BASE_IMAGE
+ARG PREBUILT_BASE_IMAGE
 # hadolint ignore=DL3006
 FROM $BASE_IMAGE as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -66,9 +67,8 @@ RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && find /autoware/install -type d -exec chmod 777 {} \;
 
-ARG CUDA_RUNTIME_BASE_IMAGE
 # hadolint ignore=DL3006
-FROM $CUDA_RUNTIME_BASE_IMAGE as prebuilt
+FROM $PREBUILT_BASE_IMAGE as prebuilt
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -95,7 +95,7 @@ RUN mkdir -p ~/.ssh \
 
 ## Set up runtime environment
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y $SETUP_ARGS --no-cuda-drivers --no-dev --runtime --ros-install-base universe \
+  ./setup-dev-env.sh -y $SETUP_ARGS --no-cuda-drivers --runtime universe \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \

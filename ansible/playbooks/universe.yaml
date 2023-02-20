@@ -37,7 +37,6 @@
       when: install_devel == 'true'
     - role: autoware.dev_env.ros2
     - role: autoware.dev_env.ros2_dev_tools
-      when: install_devel == 'true'
     - role: autoware.dev_env.rmw_implementation
 
     # Universe
