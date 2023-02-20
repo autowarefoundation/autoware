@@ -306,24 +306,6 @@ protected:
     return uuid;
   }
 
-  template <class T>
-  size_t findEgoIndex(const std::vector<T> & points) const
-  {
-    const auto & p = planner_data_;
-    return motion_utils::findFirstNearestIndexWithSoftConstraints(
-      points, p->self_odometry->pose.pose, p->parameters.ego_nearest_dist_threshold,
-      p->parameters.ego_nearest_yaw_threshold);
-  }
-
-  template <class T>
-  size_t findEgoSegmentIndex(const std::vector<T> & points) const
-  {
-    const auto & p = planner_data_;
-    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      points, p->self_odometry->pose.pose, p->parameters.ego_nearest_dist_threshold,
-      p->parameters.ego_nearest_yaw_threshold);
-  }
-
 public:
   BT::NodeStatus current_state_;
 };

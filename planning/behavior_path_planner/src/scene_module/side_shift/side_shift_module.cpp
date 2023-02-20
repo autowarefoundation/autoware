@@ -194,7 +194,7 @@ void SideShiftModule::updateData()
   current_lanelets_ = route_handler->getLaneletSequence(
     current_lane, reference_pose, p.backward_path_length, p.forward_path_length);
 
-  const size_t nearest_idx = findEgoIndex(path_shifter_.getReferencePath().points);
+  const size_t nearest_idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
   path_shifter_.removeBehindShiftLineAndSetBaseOffset(nearest_idx);
 }
 
@@ -337,7 +337,7 @@ ShiftLine SideShiftModule::calcShiftLine() const
     return dist_to_end;
   }();
 
-  const size_t nearest_idx = findEgoIndex(reference_path_->points);
+  const size_t nearest_idx = planner_data_->findEgoIndex(reference_path_->points);
   ShiftLine shift_line;
   shift_line.end_shift_length = requested_lateral_offset_;
   shift_line.start_idx = util::getIdxByArclength(*reference_path_, nearest_idx, dist_to_start);

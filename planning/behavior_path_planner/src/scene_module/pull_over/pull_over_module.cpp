@@ -485,7 +485,7 @@ BehaviorModuleOutput PullOverModule::plan()
 
     // generate drivable area for each partial path
     for (auto & path : status_.pull_over_path.partial_paths) {
-      const size_t ego_idx = findEgoIndex(path.points);
+      const size_t ego_idx = planner_data_->findEgoIndex(path.points);
       util::clipPathLength(path, ego_idx, planner_data_->parameters);
       const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
       const auto expanded_lanes = util::expandLanelets(
@@ -661,7 +661,7 @@ PathWithLaneId PullOverModule::generateStopPath()
                     : (closest_start_pose_ ? closest_start_pose_.value() : *search_start_pose);
 
   // if stop pose is closer than min_stop_distance, stop as soon as possible
-  const size_t ego_idx = findEgoIndex(reference_path.points);
+  const size_t ego_idx = planner_data_->findEgoIndex(reference_path.points);
   const size_t stop_idx = findFirstNearestSegmentIndexWithSoftConstraints(
     reference_path.points, stop_pose, common_parameters.ego_nearest_dist_threshold,
     common_parameters.ego_nearest_yaw_threshold);
@@ -722,7 +722,7 @@ PathWithLaneId PullOverModule::generateEmergencyStopPath()
   }
 
   // set deceleration velocity
-  const size_t ego_idx = findEgoIndex(stop_path.points);
+  const size_t ego_idx = planner_data_->findEgoIndex(stop_path.points);
   for (auto & point : stop_path.points) {
     auto & p = point.point;
     const size_t target_idx = findFirstNearestSegmentIndexWithSoftConstraints(

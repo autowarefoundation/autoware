@@ -32,6 +32,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace behavior_path_planner
 {
@@ -74,6 +75,22 @@ struct PlannerData
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};
   BehaviorPathPlannerParameters parameters{};
   drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
+
+  template <class T>
+  size_t findEgoIndex(const std::vector<T> & points) const
+  {
+    return motion_utils::findFirstNearestIndexWithSoftConstraints(
+      points, self_odometry->pose.pose, parameters.ego_nearest_dist_threshold,
+      parameters.ego_nearest_yaw_threshold);
+  }
+
+  template <class T>
+  size_t findEgoSegmentIndex(const std::vector<T> & points) const
+  {
+    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      points, self_odometry->pose.pose, parameters.ego_nearest_dist_threshold,
+      parameters.ego_nearest_yaw_threshold);
+  }
 };
 
 }  // namespace behavior_path_planner

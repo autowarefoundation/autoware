@@ -339,7 +339,7 @@ private:
 
   void postProcess(PathShifter & path_shifter) const
   {
-    const size_t nearest_idx = findEgoIndex(path_shifter.getReferencePath().points);
+    const size_t nearest_idx = planner_data_->findEgoIndex(path_shifter.getReferencePath().points);
     path_shifter.removeBehindShiftLineAndSetBaseOffset(nearest_idx);
   }
 

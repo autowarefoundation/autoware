@@ -798,7 +798,7 @@ void BehaviorPathPlannerNode::run()
   // publish drivable bounds
   publish_bounds(*path);
 
-  const size_t target_idx = findEgoIndex(path->points);
+  const size_t target_idx = planner_data->findEgoIndex(path->points);
   util::clipPathLength(*path, target_idx, planner_data_->parameters);
 
   if (!path->points.empty()) {

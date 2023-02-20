@@ -133,7 +133,7 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
     p.forward_path_length, p);
 
   // clip backward length
-  const size_t current_seg_idx = findEgoSegmentIndex(reference_path.points);
+  const size_t current_seg_idx = planner_data_->findEgoSegmentIndex(reference_path.points);
   util::clipPathLength(
     reference_path, current_seg_idx, p.forward_path_length, p.backward_path_length);
   const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
