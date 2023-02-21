@@ -16,7 +16,6 @@
 #define INPUT_HPP_
 
 #endif  // INPUT_HPP_
-#include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include "autoware_auto_planning_msgs/msg/path_point.hpp"
