@@ -57,7 +57,9 @@ std::optional<size_t> getDuplicatedPointIdx(
  */
 IntersectionLanelets getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const std::set<int> & assoc_ids, const double detection_area_length,
+  const int lane_id, const std::set<int> & assoc_ids,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const std::pair<size_t, size_t> lane_interval, const double detection_area_length,
   const bool tl_arrow_solid_on = false);
 
 /**
@@ -71,11 +73,11 @@ IntersectionLanelets getObjectiveLanelets(
  * @return nullopt if path is not intersecting with detection areas
  */
 std::optional<StopLineIdx> generateStopLine(
-  const int lane_id, const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
+  const int lane_id, const lanelet::CompoundPolygon3d & first_detection_area,
   const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double interval,
-  const std::pair<size_t, size_t> lane_interaval, const rclcpp::Logger logger);
+  const std::pair<size_t, size_t> lane_interval, const rclcpp::Logger logger);
 
 /**
  * @brief Generate a stop line for stuck vehicle
@@ -86,7 +88,7 @@ std::optional<StopLineIdx> generateStopLine(
  " @param use_stuck_stopline if true, a stop line is generated at the beginning of intersection lane
  */
 std::optional<size_t> generateStuckStopLine(
-  const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas,
+  const lanelet::CompoundPolygon3d & first_conflicting_area,
   const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
   const bool use_stuck_stopline, autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double ip_interval,
@@ -100,9 +102,10 @@ std::optional<size_t> generateStuckStopLine(
  * @param polygons target polygon
  * @return path point index
  */
-std::optional<size_t> getFirstPointInsidePolygons(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t lane_interval_start,
-  const size_t lane_interval_end, const std::vector<lanelet::CompoundPolygon3d> & polygons);
+std::optional<std::pair<size_t, lanelet::CompoundPolygon3d>> getFirstPointInsidePolygons(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const std::pair<size_t, size_t> lane_interval,
+  const std::vector<lanelet::CompoundPolygon3d> & polygons);
 
 /**
  * @brief Get stop point from map if exists
@@ -110,8 +113,8 @@ std::optional<size_t> getFirstPointInsidePolygons(
  * @return true when the stop point is defined on map.
  */
 bool getStopLineIndexFromMap(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t lane_interval_start,
-  const size_t lane_interval_end, const int lane_id,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const std::pair<size_t, size_t> lane_interval, const int lane_id,
   const std::shared_ptr<const PlannerData> & planner_data, size_t * stop_idx_ip,
   const double dist_thr, const rclcpp::Logger logger);
 

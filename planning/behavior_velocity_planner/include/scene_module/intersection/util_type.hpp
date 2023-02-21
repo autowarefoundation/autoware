@@ -15,8 +15,10 @@
 #ifndef SCENE_MODULE__INTERSECTION__UTIL_TYPE_HPP_
 #define SCENE_MODULE__INTERSECTION__UTIL_TYPE_HPP_
 
+#include <lanelet2_core/primitives/CompoundPolygon.h>
 #include <lanelet2_core/primitives/Lanelet.h>
 
+#include <optional>
 #include <vector>
 
 namespace behavior_velocity_planner::util
@@ -30,6 +32,11 @@ struct IntersectionLanelets
   std::vector<lanelet::CompoundPolygon3d> attention_area;
   std::vector<lanelet::CompoundPolygon3d> conflicting_area;
   std::vector<lanelet::CompoundPolygon3d> adjacent_area;
+  // the first area intersecting with the path
+  // even if lane change/re-routing happened on the intersection, these areas area are supposed to
+  // be invariant under the 'associative' lanes.
+  std::optional<lanelet::CompoundPolygon3d> first_conflicting_area;
+  std::optional<lanelet::CompoundPolygon3d> first_detection_area;
 };
 
 struct StopLineIdx

@@ -63,15 +63,6 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
-  /* get detection area */
-  if (!intersection_lanelets_.has_value()) {
-    intersection_lanelets_ = util::getObjectiveLanelets(
-      lanelet_map_ptr, routing_graph_ptr, lane_id_, {} /* not used here */,
-      planner_param_.detection_area_length, false /* tl_arrow_solid on does not matter here*/);
-  }
-  const auto & detection_area = intersection_lanelets_.value().attention_area;
-
-  /* set stop-line and stop-judgement-line for base_link */
   /* spline interpolation */
   constexpr double interval = 0.2;
   autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
@@ -90,10 +81,24 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
     setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
+  const auto lane_interval_ip = lane_interval_ip_opt.value();
 
-  const auto stop_lines_idx_opt = util::generateStopLine(
-    lane_id_, detection_area, planner_data_, planner_param_.stop_line_margin, path, path_ip,
-    interval, lane_interval_ip_opt.value(), logger_.get_child("util"));
+  /* get detection area */
+  if (!intersection_lanelets_.has_value()) {
+    intersection_lanelets_ = util::getObjectiveLanelets(
+      lanelet_map_ptr, routing_graph_ptr, lane_id_, {} /* not used here */, path_ip,
+      lane_interval_ip, planner_param_.detection_area_length,
+      false /* tl_arrow_solid on does not matter here*/);
+  }
+  const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area;
+
+  /* set stop-line and stop-judgement-line for base_link */
+  const auto stop_lines_idx_opt =
+    first_conflicting_area
+      ? util::generateStopLine(
+          lane_id_, first_conflicting_area.value(), planner_data_, planner_param_.stop_line_margin,
+          path, path_ip, interval, lane_interval_ip, logger_.get_child("util"))
+      : std::nullopt;
   if (!stop_lines_idx_opt.has_value()) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     return false;
