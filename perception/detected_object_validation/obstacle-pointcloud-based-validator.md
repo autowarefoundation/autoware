@@ -26,10 +26,12 @@ In the debug image above, the red DetectedObject is the validated object. The bl
 
 ## Parameters
 
-| Name                 | Type  | Description                                                                  |
-| -------------------- | ----- | ---------------------------------------------------------------------------- |
-| `min_pointcloud_num` | float | Threshold for the minimum number of obstacle point clouds in DetectedObjects |
-| `enable_debugger`    | bool  | Whether to create debug topics or not?                                       |
+| Name                            | Type  | Description                                                                                                                                                                |
+| ------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `min_points_num`                | int   | The minimum number of obstacle point clouds in DetectedObjects                                                                                                             |
+| `max_points_num`                | int   | The max number of obstacle point clouds in DetectedObjects                                                                                                                 |
+| `min_points_and_distance_ratio` | float | Threshold value of the number of point clouds per object when the distance from baselink is 1m, because the number of point clouds varies with the distance from baselink. |
+| `enable_debugger`               | bool  | Whether to create debug topics or not?                                                                                                                                     |
 
 ## Assumptions / Known limits
 

@@ -92,7 +92,10 @@ ObstaclePointCloudBasedValidator::ObstaclePointCloudBasedValidator(
   objects_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS{1});
 
-  min_pointcloud_num_ = declare_parameter<int>("min_pointcloud_num", 10);
+  points_num_threshold_param_.min_points_num = declare_parameter<int>("min_points_num", 10);
+  points_num_threshold_param_.max_points_num = declare_parameter<int>("max_points_num", 10);
+  points_num_threshold_param_.min_points_and_distance_ratio =
+    declare_parameter<float>("min_points_and_distance_ratio", 800.0);
 
   const bool enable_debugger = declare_parameter<bool>("enable_debugger", false);
   if (enable_debugger) debugger_ = std::make_shared<Debugger>(this);
@@ -132,6 +135,8 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
   for (size_t i = 0; i < transformed_objects.objects.size(); ++i) {
     const auto & transformed_object = transformed_objects.objects.at(i);
     const auto & object = input_objects->objects.at(i);
+    const auto & transformed_object_position =
+      transformed_object.kinematics.pose_with_covariance.pose.position;
     const auto search_radius = getMaxRadius(transformed_object);
     if (!search_radius) {
       output.objects.push_back(object);
@@ -143,8 +148,7 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
     std::vector<int> indices;
     std::vector<float> distances;
     kdtree->radiusSearch(
-      toPCL(transformed_object.kinematics.pose_with_covariance.pose.position),
-      search_radius.value(), indices, distances);
+      toPCL(transformed_object_position), search_radius.value(), indices, distances);
     for (const auto & index : indices) {
       neighbor_pointcloud->push_back(obstacle_pointcloud->at(index));
     }
@@ -152,9 +156,15 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
 
     // Filter object that have few pointcloud in them.
     const auto num = getPointCloudNumWithinPolygon(transformed_object, neighbor_pointcloud);
+    const auto object_distance =
+      std::hypot(transformed_object_position.x, transformed_object_position.y);
+    size_t min_pointcloud_num = std::clamp(
+      static_cast<size_t>(
+        points_num_threshold_param_.min_points_and_distance_ratio / object_distance + 0.5f),
+      points_num_threshold_param_.min_points_num, points_num_threshold_param_.max_points_num);
     if (num) {
-      (min_pointcloud_num_ <= num.value()) ? output.objects.push_back(object)
-                                           : removed_objects.objects.push_back(object);
+      (min_pointcloud_num <= num.value()) ? output.objects.push_back(object)
+                                          : removed_objects.objects.push_back(object);
     } else {
       output.objects.push_back(object);
     }
