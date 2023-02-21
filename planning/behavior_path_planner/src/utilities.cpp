@@ -969,8 +969,12 @@ boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> 
 
     for (const auto & lanelet : lanelets) {
       for (const auto & target_lanelet : target_lanelets) {
-        if (boost::geometry::intersects(
-              lanelet.polygon2d().basicPolygon(), target_lanelet.polygon2d().basicPolygon())) {
+        std::vector<Point2d> intersections{};
+        boost::geometry::intersection(
+          lanelet.polygon2d().basicPolygon(), target_lanelet.polygon2d().basicPolygon(),
+          intersections);
+        // if only one point intersects, it is assumed not to be overlapped
+        if (intersections.size() > 1) {
           return true;
         }
       }
@@ -1032,7 +1036,7 @@ std::vector<DrivableLanes> cutOverlappedLanes(
         std::find(removed_lane_ids.begin(), removed_lane_ids.end(), lane_id) !=
         removed_lane_ids.end()) {
         path.points.erase(path.points.begin() + i, path.points.end());
-        break;
+        return shorten_lanes;
       }
     }
   }
@@ -1175,10 +1179,11 @@ void generateDrivableArea(
     calcLongitudinalOffsetGoalPoint(left_bound, goal_pose, goal_left_start_idx, vehicle_length);
   const auto right_goal_point =
     calcLongitudinalOffsetGoalPoint(right_bound, goal_pose, goal_right_start_idx, vehicle_length);
-  const size_t left_goal_idx =
-    findNearestSegmentIndexFromLateralDistance(left_bound, left_goal_point);
-  const size_t right_goal_idx =
-    findNearestSegmentIndexFromLateralDistance(right_bound, right_goal_point);
+  const size_t left_goal_idx = std::max(
+    goal_left_start_idx, findNearestSegmentIndexFromLateralDistance(left_bound, left_goal_point));
+  const size_t right_goal_idx = std::max(
+    goal_right_start_idx,
+    findNearestSegmentIndexFromLateralDistance(right_bound, right_goal_point));
 
   // Store Data
   path.left_bound.clear();
