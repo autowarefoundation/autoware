@@ -6,4 +6,10 @@
     <description>AutowareStatePanel</description>
   </class>
 
+  <class
+    type="rviz_plugins::VelocitySteeringFactorsPanel"
+    base_class_type="rviz_common::Panel">
+    <description>VelocitySteeringFactorsPanel</description>
+  </class>
+
 </library>
