@@ -72,6 +72,13 @@ struct LaneChangePhaseInfo
 
   [[nodiscard]] double sum() const { return prepare + lane_changing; }
 };
+
+struct LaneChangeTargetObjectIndices
+{
+  std::vector<size_t> current_lane{};
+  std::vector<size_t> target_lane{};
+  std::vector<size_t> other_lane{};
+};
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_

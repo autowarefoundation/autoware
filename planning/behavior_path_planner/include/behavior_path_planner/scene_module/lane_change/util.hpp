@@ -69,33 +69,22 @@ std::optional<LaneChangePath> constructCandidatePath(
   const double prepare_speed, const double lane_change_distance, const double lane_changing_speed,
   const BehaviorPathPlannerParameters & params, const LaneChangeParameters & lane_change_param);
 
-LaneChangePaths getLaneChangePaths(
+std::pair<bool, bool> getLaneChangePaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
-  const BehaviorPathPlannerParameters & common_parameter,
-  const behavior_path_planner::LaneChangeParameters & parameter);
-
-LaneChangePaths selectValidPaths(
-  const LaneChangePaths & paths, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const RouteHandler & route_handler,
-  const Pose & current_pose, const Pose & goal_pose, const double minimum_lane_change_length);
-
-bool selectSafePath(
-  const LaneChangePaths & paths, const lanelet::ConstLanelets & backward_lanes,
-  const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
-  const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
-  const behavior_path_planner::LaneChangeParameters & ros_parameters,
-  LaneChangePath * selected_path,
-  std::unordered_map<std::string, CollisionCheckDebug> & debug_data);
+  const PredictedObjects::ConstSharedPtr dynamic_objects,
+  const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter,
+  const double check_distance, LaneChangePaths * candidate_paths,
+  std::unordered_map<std::string, CollisionCheckDebug> * debug_data);
 
 bool isLaneChangePathSafe(
-  const LaneChangePath & lane_change_path, const lanelet::ConstLanelets & backward_lanes,
-  const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
+  const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
+  const LaneChangeTargetObjectIndices & dynamic_object_indices, const Pose & current_pose,
   const size_t current_seg_idx, const Twist & current_twist,
   const BehaviorPathPlannerParameters & common_parameters,
   const behavior_path_planner::LaneChangeParameters & lane_change_parameters,
   const double front_decel, const double rear_decel, Pose & ego_pose_before_collision,
-  std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const bool use_buffer = true,
+  std::unordered_map<std::string, CollisionCheckDebug> & debug_data,
   const double acceleration = 0.0);
 
 bool hasEnoughDistance(
@@ -150,5 +139,14 @@ bool hasEnoughDistanceToLaneChangeAfterAbort(
 lanelet::ConstLanelets getExtendedTargetLanesForCollisionCheck(
   const RouteHandler & route_handler, const lanelet::ConstLanelet & target_lanes,
   const Pose & current_pose, const double backward_length);
+
+LaneChangeTargetObjectIndices filterObjectIndices(
+  const LaneChangePaths & lane_change_paths, const PredictedObjects & objects,
+  const lanelet::ConstLanelets & target_backward_lanes, const Pose & current_pose,
+  const double forward_path_length, const double filter_width,
+  const bool ignore_unknown_obj = false);
+
+double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
+
 }  // namespace behavior_path_planner::lane_change_utils
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_
