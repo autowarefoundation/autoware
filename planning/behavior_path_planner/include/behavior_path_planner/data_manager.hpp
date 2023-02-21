@@ -23,6 +23,9 @@
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
+#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
+#include <autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp>
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
@@ -30,6 +33,7 @@
 
 #include <lanelet2_core/geometry/Lanelet.h>
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -38,11 +42,16 @@ namespace behavior_path_planner
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
+using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using autoware_planning_msgs::msg::PoseWithUuidStamped;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using route_handler::RouteHandler;
+using PlanResult = PathWithLaneId::SharedPtr;
+
 struct BoolStamped
 {
   explicit BoolStamped(bool in_data) : data(in_data) {}
@@ -61,6 +70,46 @@ struct DrivableLanes
   lanelet::ConstLanelet right_lane;
   lanelet::ConstLanelet left_lane;
   lanelet::ConstLanelets middle_lanes;
+};
+
+struct TurnSignalInfo
+{
+  TurnSignalInfo()
+  {
+    turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+    hazard_signal.command = HazardLightsCommand::NO_COMMAND;
+  }
+
+  // desired turn signal
+  TurnIndicatorsCommand turn_signal;
+  HazardLightsCommand hazard_signal;
+
+  geometry_msgs::msg::Pose desired_start_point;
+  geometry_msgs::msg::Pose desired_end_point;
+  geometry_msgs::msg::Pose required_start_point;
+  geometry_msgs::msg::Pose required_end_point;
+};
+
+struct BehaviorModuleOutput
+{
+  BehaviorModuleOutput() = default;
+
+  // path planed by module
+  PlanResult path{};
+
+  TurnSignalInfo turn_signal_info{};
+
+  std::optional<PoseWithUuidStamped> modified_goal{};
+};
+
+struct CandidateOutput
+{
+  CandidateOutput() = default;
+  explicit CandidateOutput(const PathWithLaneId & path) : path_candidate{path} {}
+  PathWithLaneId path_candidate{};
+  double lateral_shift{0.0};
+  double start_distance_to_path_change{std::numeric_limits<double>::lowest()};
+  double finish_distance_to_path_change{std::numeric_limits<double>::lowest()};
 };
 
 struct PlannerData

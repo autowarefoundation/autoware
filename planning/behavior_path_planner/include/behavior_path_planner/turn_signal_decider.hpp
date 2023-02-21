@@ -39,24 +39,6 @@ using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using route_handler::RouteHandler;
 
-struct TurnSignalInfo
-{
-  TurnSignalInfo()
-  {
-    turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
-    hazard_signal.command = HazardLightsCommand::NO_COMMAND;
-  }
-
-  // desired turn signal
-  TurnIndicatorsCommand turn_signal;
-  HazardLightsCommand hazard_signal;
-
-  geometry_msgs::msg::Pose desired_start_point;
-  geometry_msgs::msg::Pose desired_end_point;
-  geometry_msgs::msg::Pose required_start_point;
-  geometry_msgs::msg::Pose required_end_point;
-};
-
 const std::map<std::string, uint8_t> signal_map = {
   {"left", TurnIndicatorsCommand::ENABLE_LEFT},
   {"right", TurnIndicatorsCommand::ENABLE_RIGHT},

@@ -27,9 +27,6 @@
 
 #include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
-#include <autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -47,37 +44,12 @@ namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::SteeringFactor;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
-using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
-using autoware_planning_msgs::msg::PoseWithUuidStamped;
 using rtc_interface::RTCInterface;
 using steering_factor_interface::SteeringFactorInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using unique_identifier_msgs::msg::UUID;
 using visualization_msgs::msg::MarkerArray;
 using PlanResult = PathWithLaneId::SharedPtr;
-
-struct BehaviorModuleOutput
-{
-  BehaviorModuleOutput() = default;
-
-  // path planed by module
-  PlanResult path{};
-
-  TurnSignalInfo turn_signal_info{};
-
-  std::optional<PoseWithUuidStamped> modified_goal{};
-};
-
-struct CandidateOutput
-{
-  CandidateOutput() = default;
-  explicit CandidateOutput(const PathWithLaneId & path) : path_candidate{path} {}
-  PathWithLaneId path_candidate{};
-  double lateral_shift{0.0};
-  double start_distance_to_path_change{std::numeric_limits<double>::lowest()};
-  double finish_distance_to_path_change{std::numeric_limits<double>::lowest()};
-};
 
 class SceneModuleInterface
 {
