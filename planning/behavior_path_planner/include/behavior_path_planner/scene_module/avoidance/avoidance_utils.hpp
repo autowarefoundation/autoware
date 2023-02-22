@@ -99,7 +99,8 @@ std::vector<Point> updateBoundary(
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
   const std::shared_ptr<const PlannerData> planner_data, const ObjectDataArray & objects,
-  const bool enable_bound_clipping, const bool disable_path_update);
+  const bool enable_bound_clipping, const bool disable_path_update,
+  const double original_object_buffer);
 
 double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const double v);
 

@@ -313,6 +313,10 @@ struct ObjectData  // avoidance target
 
   // is avoidable by behavior module
   bool is_avoidable{false};
+
+  // lateral avoid margin
+  // NOTE: If margin is less than the minimum margin threshold, boost::none will be set.
+  boost::optional<double> avoid_margin{boost::none};
 };
 using ObjectDataArray = std::vector<ObjectData>;
 

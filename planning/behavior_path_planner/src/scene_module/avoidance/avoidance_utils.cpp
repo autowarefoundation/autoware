@@ -691,7 +691,8 @@ std::vector<Point> updateBoundary(
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
   const std::shared_ptr<const PlannerData> planner_data, const ObjectDataArray & objects,
-  const bool enable_bound_clipping, const bool disable_path_update)
+  const bool enable_bound_clipping, const bool disable_path_update,
+  const double original_object_buffer)
 {
   util::generateDrivableArea(path, lanes, vehicle_length, planner_data);
   if (objects.empty() || !enable_bound_clipping) {
@@ -699,18 +700,23 @@ void generateDrivableArea(
   }
 
   for (const auto & object : objects) {
+    // If avoidance is executed by both behavior and motion, only non-avoidable object will be
+    // extracted from the drivable area.
     if (!disable_path_update) {
-      // If avoidance is executed by both behavior and motion, only non-avoidable object will be
-      // extracted from the drivable area.
       if (object.is_avoidable) {
         continue;
       }
     }
 
-    // TODO(murooka) check if there is lateral margin to run in the drivable area
+    // check if avoid marin is calculated
+    if (!object.avoid_margin) {
+      continue;
+    }
 
     const auto & obj_pose = object.object.kinematics.initial_pose_with_covariance.pose;
-    const auto & obj_poly = object.envelope_poly;
+    const double diff_poly_buffer = object.avoid_margin.get() - original_object_buffer -
+                                    planner_data->parameters.vehicle_width / 2.0;
+    const auto obj_poly = expandPolygon(object.envelope_poly, diff_poly_buffer);
 
     // get edge points of the object
     const size_t nearest_path_idx = motion_utils::findNearestIndex(
