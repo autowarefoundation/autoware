@@ -15,13 +15,13 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_MODULE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_MODULE_HPP_
 
-#include "behavior_path_planner/scene_module/pull_over/geometric_pull_over.hpp"
-#include "behavior_path_planner/scene_module/pull_over/goal_searcher.hpp"
-#include "behavior_path_planner/scene_module/pull_over/pull_over_parameters.hpp"
-#include "behavior_path_planner/scene_module/pull_over/shift_pull_over.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/util/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
+#include "behavior_path_planner/util/pull_over/geometric_pull_over.hpp"
+#include "behavior_path_planner/util/pull_over/goal_searcher.hpp"
+#include "behavior_path_planner/util/pull_over/pull_over_parameters.hpp"
+#include "behavior_path_planner/util/pull_over/shift_pull_over.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 

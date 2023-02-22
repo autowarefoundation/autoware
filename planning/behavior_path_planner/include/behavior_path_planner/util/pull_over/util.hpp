@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__UTIL_HPP_
 
-#include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
+#include "behavior_path_planner/util/pull_over/goal_searcher_base.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
@@ -41,6 +41,8 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using visualization_msgs::msg::Marker;
+using visualization_msgs::msg::MarkerArray;
 
 // TODO(sugahara) move to util
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
@@ -62,4 +64,4 @@ MarkerArray createGoalCandidatesMarkerArray(
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__UTIL_HPP_

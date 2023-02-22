@@ -27,15 +27,15 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/scene_module/lane_change/util.cpp
   src/scene_module/lane_change/debug.cpp
   src/scene_module/pull_over/pull_over_module.cpp
-  src/scene_module/pull_over/util.cpp
-  src/scene_module/pull_over/shift_pull_over.cpp
-  src/scene_module/pull_over/geometric_pull_over.cpp
-  src/scene_module/pull_over/goal_searcher.cpp
   src/scene_module/pull_out/pull_out_module.cpp
-  src/scene_module/pull_out/util.cpp
-  src/scene_module/pull_out/shift_pull_out.cpp
-  src/scene_module/pull_out/geometric_pull_out.cpp
   src/scene_module/scene_module_visitor.cpp
+  src/util/pull_over/util.cpp
+  src/util/pull_over/shift_pull_over.cpp
+  src/util/pull_over/geometric_pull_over.cpp
+  src/util/pull_over/goal_searcher.cpp
+  src/util/pull_out/util.cpp
+  src/util/pull_out/shift_pull_out.cpp
+  src/util/pull_out/geometric_pull_out.cpp
   src/util/geometric_parallel_parking/geometric_parallel_parking.cpp
   src/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
   src/util/path_shifter/path_shifter.cpp

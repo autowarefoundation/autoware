@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__SHIFT_PULL_OUT_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__SHIFT_PULL_OUT_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__SHIFT_PULL_OUT_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__SHIFT_PULL_OUT_HPP_
 
-#include "behavior_path_planner/scene_module/pull_out/pull_out_path.hpp"
-#include "behavior_path_planner/scene_module/pull_out/pull_out_planner_base.hpp"
+#include "behavior_path_planner/util/pull_out/pull_out_path.hpp"
+#include "behavior_path_planner/util/pull_out/pull_out_planner_base.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
@@ -56,4 +56,4 @@ public:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__SHIFT_PULL_OUT_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__SHIFT_PULL_OUT_HPP_

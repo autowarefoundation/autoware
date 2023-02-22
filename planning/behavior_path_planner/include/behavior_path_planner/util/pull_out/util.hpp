@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__UTIL_HPP_
 
-#include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
+#include "behavior_path_planner/data_manager.hpp"
+
+#include <route_handler/route_handler.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
@@ -35,6 +37,7 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using route_handler::RouteHandler;
 
 PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2);
 PathWithLaneId getBackwardPath(
@@ -45,4 +48,4 @@ Pose getBackedPose(
   const Pose & current_pose, const double & yaw_shoulder_lane, const double & back_distance);
 }  // namespace behavior_path_planner::pull_out_utils
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__UTIL_HPP_

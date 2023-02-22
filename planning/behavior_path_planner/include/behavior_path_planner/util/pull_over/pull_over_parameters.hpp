@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
 
 #include <string>
 #include <vector>
@@ -91,4 +91,4 @@ struct PullOverParameters
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__PULL_OVER_PARAMETERS_HPP_

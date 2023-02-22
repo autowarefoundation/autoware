@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_PLANNER_BASE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_PLANNER_BASE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__PULL_OUT_PLANNER_BASE_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__PULL_OUT_PLANNER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/parameters.hpp"
-#include "behavior_path_planner/scene_module/pull_out/pull_out_parameters.hpp"
-#include "behavior_path_planner/scene_module/pull_out/pull_out_path.hpp"
 #include "behavior_path_planner/util/create_vehicle_footprint.hpp"
+#include "behavior_path_planner/util/pull_out/pull_out_parameters.hpp"
+#include "behavior_path_planner/util/pull_out/pull_out_path.hpp"
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -68,4 +68,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_PLANNER_BASE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__PULL_OUT__PULL_OUT_PLANNER_BASE_HPP_
