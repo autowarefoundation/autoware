@@ -399,12 +399,7 @@ protected:
 
   void generateUUID(const int64_t & module_id)
   {
-    // Generate random number
-    UUID uuid;
-    std::mt19937 gen(std::random_device{}());
-    std::independent_bits_engine<std::mt19937, 8, uint8_t> bit_eng(gen);
-    std::generate(uuid.uuid.begin(), uuid.uuid.end(), bit_eng);
-    map_uuid_.insert({module_id, uuid});
+    map_uuid_.insert({module_id, tier4_autoware_utils::generateUUID()});
   }
 
   void removeUUID(const int64_t & module_id)

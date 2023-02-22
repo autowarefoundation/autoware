@@ -46,6 +46,7 @@ using autoware_adapi_v1_msgs::msg::SteeringFactor;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using rtc_interface::RTCInterface;
 using steering_factor_interface::SteeringFactorInterface;
+using tier4_autoware_utils::generateUUID;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using unique_identifier_msgs::msg::UUID;
 using visualization_msgs::msg::MarkerArray;
@@ -266,17 +267,6 @@ protected:
   void waitApproval() { is_waiting_approval_ = true; }
 
   void clearWaitingApproval() { is_waiting_approval_ = false; }
-
-  static UUID generateUUID()
-  {
-    // Generate random number
-    UUID uuid;
-    std::mt19937 gen(std::random_device{}());
-    std::independent_bits_engine<std::mt19937, 8, uint8_t> bit_eng(gen);
-    std::generate(uuid.uuid.begin(), uuid.uuid.end(), bit_eng);
-
-    return uuid;
-  }
 
 public:
   BT::NodeStatus current_state_;
