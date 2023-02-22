@@ -29,8 +29,25 @@ using behavior_path_planner::PlannerData;
 struct PolygonPoint
 {
   geometry_msgs::msg::Point point;
+  size_t bound_seg_idx;
+  double lon_dist_to_segment;
   double lat_dist_to_bound;
-  double lon_dist;
+
+  bool is_after(const PolygonPoint & other_point) const
+  {
+    if (bound_seg_idx == other_point.bound_seg_idx) {
+      return other_point.lon_dist_to_segment < lon_dist_to_segment;
+    }
+    return other_point.bound_seg_idx < bound_seg_idx;
+  }
+
+  bool is_outside_bounds(const bool is_on_right) const
+  {
+    if (is_on_right) {
+      return lat_dist_to_bound < 0.0;
+    }
+    return 0.0 < lat_dist_to_bound;
+  };
 };
 
 bool isOnRight(const ObjectData & obj);
@@ -81,20 +98,6 @@ std::vector<std::string> getUuidStr(const ObjectDataArray & objs);
 
 Polygon2d createEnvelopePolygon(
   const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer);
-
-void getEdgePoints(
-  const Polygon2d & object_polygon, const double threshold, std::vector<Point> & edge_points);
-
-void getPointData(
-  const std::vector<Point> & bound, const std::vector<Point> & edge_points,
-  const double lat_dist_to_path, std::vector<PolygonPoint> & edge_points_data);
-
-void sortPolygonPoints(
-  const std::vector<PolygonPoint> & points, std::vector<PolygonPoint> & sorted_points);
-
-std::vector<Point> updateBoundary(
-  const std::vector<Point> & original_bound, const std::vector<Point> & edge_points,
-  const std::vector<PolygonPoint> & sorted_points);
 
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
