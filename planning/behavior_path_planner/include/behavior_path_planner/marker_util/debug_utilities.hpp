@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
-#define BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
+#define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
 
 #include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
@@ -115,4 +115,4 @@ MarkerArray createObjectsMarkerArray(
 
 }  // namespace marker_utils
 
-#endif  // BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_

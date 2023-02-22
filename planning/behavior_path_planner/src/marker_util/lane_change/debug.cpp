@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
 
-#include <behavior_path_planner/scene_module/lane_change/debug.hpp>
+#include <behavior_path_planner/marker_util/lane_change/debug.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>

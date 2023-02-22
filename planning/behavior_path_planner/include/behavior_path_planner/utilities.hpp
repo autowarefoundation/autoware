@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/debug_utilities.hpp"
+#include "behavior_path_planner/marker_util/debug_utilities.hpp"
 #include "behavior_path_planner/util/pull_out/pull_out_path.hpp"
 
 #include <opencv2/opencv.hpp>

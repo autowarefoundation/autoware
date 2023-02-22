@@ -15,19 +15,14 @@
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
 
 #include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/scene_module/lane_change/util.hpp"
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
+#include "behavior_path_planner/util/lane_change/util.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
-
-#include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
-#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
-#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 
 #include <algorithm>
 #include <limits>

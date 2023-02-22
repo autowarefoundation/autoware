@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SIDE_SHIFT__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SIDE_SHIFT__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__SIDE_SHIFT__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__SIDE_SHIFT__UTIL_HPP_
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -44,4 +44,4 @@ Point transformToGrid(
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SIDE_SHIFT__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__SIDE_SHIFT__UTIL_HPP_

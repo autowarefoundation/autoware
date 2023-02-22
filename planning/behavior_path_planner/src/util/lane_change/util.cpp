@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/lane_change/util.hpp"
+#include "behavior_path_planner/util/lane_change/util.hpp"
 
 #include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/scene_module/lane_change/lane_change_module_data.hpp"
-#include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
+#include "behavior_path_planner/util/lane_change/lane_change_module_data.hpp"
+#include "behavior_path_planner/util/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utilities.hpp"
 

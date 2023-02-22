@@ -12,23 +12,21 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/behavior_tree_manager.cpp
   src/utilities.cpp
   src/path_utilities.cpp
-  src/debug_utilities.cpp
   src/steering_factor_interface.cpp
   src/turn_signal_decider.cpp
   src/scene_module/scene_module_bt_node_interface.cpp
   src/scene_module/side_shift/side_shift_module.cpp
-  src/scene_module/side_shift/util.cpp
   src/scene_module/avoidance/avoidance_module.cpp
   src/scene_module/avoidance/avoidance_utils.cpp
   src/scene_module/avoidance/debug.cpp
   src/scene_module/lane_following/lane_following_module.cpp
   src/scene_module/lane_change/external_request_lane_change_module.cpp
   src/scene_module/lane_change/lane_change_module.cpp
-  src/scene_module/lane_change/util.cpp
-  src/scene_module/lane_change/debug.cpp
   src/scene_module/pull_over/pull_over_module.cpp
   src/scene_module/pull_out/pull_out_module.cpp
   src/scene_module/scene_module_visitor.cpp
+  src/util/lane_change/util.cpp
+  src/util/side_shift/util.cpp
   src/util/pull_over/util.cpp
   src/util/pull_over/shift_pull_over.cpp
   src/util/pull_over/geometric_pull_over.cpp
@@ -43,6 +41,8 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/util/drivable_area_expansion/map_utils.cpp
   src/util/drivable_area_expansion/footprints.cpp
   src/util/drivable_area_expansion/expansion.cpp
+  src/marker_util/debug_utilities.cpp
+  src/marker_util/lane_change/debug.cpp
 )
 
 target_include_directories(behavior_path_planner_node SYSTEM PUBLIC

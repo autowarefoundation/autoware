@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__LANE_CHANGE__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__LANE_CHANGE__UTIL_HPP_
 
+#include "behavior_path_planner/marker_util/lane_change/debug.hpp"
 #include "behavior_path_planner/parameters.hpp"
-#include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
-#include "behavior_path_planner/scene_module/lane_change/lane_change_module_data.hpp"
-#include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
+#include "behavior_path_planner/util/lane_change/lane_change_module_data.hpp"
+#include "behavior_path_planner/util/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <route_handler/route_handler.hpp>
@@ -44,6 +44,7 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using marker_utils::CollisionCheckDebug;
 using tier4_autoware_utils::Polygon2d;
 
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
@@ -149,4 +150,4 @@ LaneChangeTargetObjectIndices filterObjectIndices(
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
 
 }  // namespace behavior_path_planner::lane_change_utils
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__LANE_CHANGE__UTIL_HPP_

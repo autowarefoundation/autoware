@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/side_shift/util.hpp"
+#include "behavior_path_planner/util/side_shift/util.hpp"
 
 #include "behavior_path_planner/utilities.hpp"
 
