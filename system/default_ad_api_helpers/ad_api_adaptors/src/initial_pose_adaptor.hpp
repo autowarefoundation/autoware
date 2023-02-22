@@ -17,10 +17,10 @@
 
 #include <autoware_ad_api_specs/localization.hpp>
 #include <component_interface_utils/rclcpp.hpp>
+#include <map_height_fitter/map_height_fitter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
 namespace ad_api_adaptors
 {
@@ -33,11 +33,10 @@ public:
 private:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using Initialize = autoware_ad_api::localization::Initialize;
-  using RequestHeightFitting = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_initial_pose_;
-  rclcpp::Client<RequestHeightFitting>::SharedPtr cli_map_fit_;
   component_interface_utils::Client<Initialize>::SharedPtr cli_initialize_;
   std::array<double, 36> rviz_particle_covariance_;
+  map_height_fitter::MapHeightFitter fitter_;
 
   void on_initial_pose(const PoseWithCovarianceStamped::ConstSharedPtr msg);
 };

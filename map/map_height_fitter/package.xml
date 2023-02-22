@@ -1,28 +1,30 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ad_api_adaptors</name>
+  <name>map_height_fitter</name>
   <version>0.1.0</version>
-  <description>The ad_api_adaptors package</description>
+  <description>The map_height_fitter package</description>
   <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
-  <maintainer email="makoto.yabuta@tier4.jp">yabuta</maintainer>
-  <maintainer email="kahhooi.tan@tier4.jp">Kah Hooi Tan</maintainer>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <license>Apache License 2.0</license>
+  <author email="isamu.takagi@tier4.jp">Takagi, Isamu</author>
 
-  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_ad_api_specs</depend>
-  <depend>autoware_adapi_v1_msgs</depend>
-  <depend>component_interface_utils</depend>
-  <depend>map_height_fitter</depend>
+  <depend>autoware_map_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>libpcl-common</depend>
+  <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
-
   <export>
     <build_type>ament_cmake</build_type>
   </export>

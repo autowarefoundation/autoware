@@ -4,8 +4,6 @@ project(pose_initializer)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-find_package(PCL REQUIRED COMPONENTS common)
-
 ament_auto_add_executable(pose_initializer_node
   src/pose_initializer/pose_initializer_node.cpp
   src/pose_initializer/pose_initializer_core.cpp
@@ -14,11 +12,6 @@ ament_auto_add_executable(pose_initializer_node
   src/pose_initializer/stop_check_module.cpp
   src/pose_initializer/localization_trigger_module.cpp
 )
-ament_auto_add_executable(map_height_fitter
-  src/map_height_fitter/map_height_fitter_node.cpp
-  src/map_height_fitter/map_height_fitter_core.cpp
-)
-target_link_libraries(map_height_fitter ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
   function(add_testcase filepath)

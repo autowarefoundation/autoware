@@ -15,24 +15,23 @@
 #ifndef POSE_INITIALIZER__GNSS_MODULE_HPP_
 #define POSE_INITIALIZER__GNSS_MODULE_HPP_
 
+#include <map_height_fitter/map_height_fitter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
 class GnssModule
 {
 private:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
-  using RequestHeightFitting = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
 
 public:
   explicit GnssModule(rclcpp::Node * node);
-  PoseWithCovarianceStamped get_pose() const;
+  PoseWithCovarianceStamped get_pose();
 
 private:
+  map_height_fitter::MapHeightFitter fitter_;
   rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Client<RequestHeightFitting>::SharedPtr cli_map_fit_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_gnss_pose_;
   PoseWithCovarianceStamped::ConstSharedPtr pose_;
   double timeout_;

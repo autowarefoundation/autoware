@@ -34,10 +34,9 @@ std::array<double, 36> get_covariance_parameter(rclcpp::Node * node, const std::
   return array;
 }
 
-InitialPoseAdaptor::InitialPoseAdaptor() : Node("initial_pose_adaptor")
+InitialPoseAdaptor::InitialPoseAdaptor() : Node("initial_pose_adaptor"), fitter_(this)
 {
   rviz_particle_covariance_ = get_covariance_parameter(this, "initial_pose_particle_covariance");
-  cli_map_fit_ = create_client<RequestHeightFitting>("~/fit_map_height");
   sub_initial_pose_ = create_subscription<PoseWithCovarianceStamped>(
     "~/initialpose", rclcpp::QoS(1),
     std::bind(&InitialPoseAdaptor::on_initial_pose, this, std::placeholders::_1));
@@ -48,14 +47,15 @@ InitialPoseAdaptor::InitialPoseAdaptor() : Node("initial_pose_adaptor")
 
 void InitialPoseAdaptor::on_initial_pose(const PoseWithCovarianceStamped::ConstSharedPtr msg)
 {
-  const auto req = std::make_shared<RequestHeightFitting::Request>();
-  req->pose_with_covariance = *msg;
-  cli_map_fit_->async_send_request(req, [this](Future<RequestHeightFitting> future) {
-    const auto req = std::make_shared<Initialize::Service::Request>();
-    req->pose.push_back(future.get()->pose_with_covariance);
-    req->pose.back().pose.covariance = rviz_particle_covariance_;
-    cli_initialize_->async_send_request(req);
-  });
+  const auto & point = msg->pose.pose.position;
+  const auto & frame = msg->header.frame_id;
+  auto pose = *msg;
+  pose.pose.pose.position = fitter_.fit(point, frame);
+  pose.pose.covariance = rviz_particle_covariance_;
+
+  const auto req = std::make_shared<Initialize::Service::Request>();
+  req->pose.push_back(pose);
+  cli_initialize_->async_send_request(req);
 }
 
 }  // namespace ad_api_adaptors
@@ -63,7 +63,7 @@ void InitialPoseAdaptor::on_initial_pose(const PoseWithCovarianceStamped::ConstS
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::executors::SingleThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor;
   auto node = std::make_shared<ad_api_adaptors::InitialPoseAdaptor>();
   executor.add_node(node);
   executor.spin();

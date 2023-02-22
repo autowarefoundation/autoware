@@ -12,17 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "map_height_fitter_core.hpp"
+#ifndef MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
+#define MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_
+
+#include <rclcpp/rclcpp.hpp>
+
+#include <geometry_msgs/msg/point.hpp>
 
 #include <memory>
+#include <string>
 
-int main(int argc, char ** argv)
+namespace map_height_fitter
 {
-  rclcpp::init(argc, argv);
-  rclcpp::executors::MultiThreadedExecutor executor;
-  auto node = std::make_shared<MapHeightFitter>();
-  executor.add_node(node);
-  executor.spin();
-  executor.remove_node(node);
-  rclcpp::shutdown();
-}
+
+using geometry_msgs::msg::Point;
+
+class MapHeightFitter final
+{
+public:
+  MapHeightFitter(rclcpp::Node * node);
+  ~MapHeightFitter();
+  Point fit(const Point & position, const std::string & frame);
+
+private:
+  struct Impl;
+  std::unique_ptr<Impl> impl_;
+};
+
+}  // namespace map_height_fitter
+
+#endif  // MAP_HEIGHT_FITTER__MAP_HEIGHT_FITTER_HPP_

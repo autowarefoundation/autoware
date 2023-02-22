@@ -3,8 +3,10 @@
     <push-ros-namespace namespace="default_ad_api/helpers"/>
     <node pkg="ad_api_adaptors" exec="initial_pose_adaptor" name="initial_pose_adaptor">
       <param from="$(find-pkg-share ad_api_adaptors)/config/initial_pose.param.yaml"/>
+      <param name="map_loader_name" value="/map/pointcloud_map_loader"/>
       <remap from="~/initialpose" to="/initialpose"/>
-      <remap from="~/fit_map_height" to="/localization/util/fit_map_height"/>
+      <remap from="~/pointcloud_map" to="/map/pointcloud_map"/>
+      <remap from="~/partial_map_load" to="/map/get_partial_pointcloud_map"/>
     </node>
     <node pkg="ad_api_adaptors" exec="routing_adaptor" name="routing_adaptor">
       <remap from="~/input/goal" to="/planning/mission_planning/goal"/>
