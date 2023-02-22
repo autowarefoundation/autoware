@@ -239,7 +239,7 @@ private:
   // ========= shift line generator ======
 
   AvoidLineArray calcRawShiftLinesFromObjects(
-    const AvoidancePlanningData & data, DebugData & debug) const;
+    AvoidancePlanningData & data, DebugData & debug) const;
 
   AvoidLineArray applyPreProcessToRawShiftLines(
     AvoidLineArray & current_raw_shift_points, DebugData & debug) const;

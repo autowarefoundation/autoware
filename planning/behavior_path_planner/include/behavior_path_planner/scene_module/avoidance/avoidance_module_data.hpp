@@ -310,6 +310,9 @@ struct ObjectData  // avoidance target
 
   // unavoidable reason
   std::string reason{""};
+
+  // is avoidable by behavior module
+  bool is_avoidable{false};
 };
 using ObjectDataArray = std::vector<ObjectData>;
 

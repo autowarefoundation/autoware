@@ -691,7 +691,7 @@ std::vector<Point> updateBoundary(
 void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
   const std::shared_ptr<const PlannerData> planner_data, const ObjectDataArray & objects,
-  const bool enable_bound_clipping)
+  const bool enable_bound_clipping, const bool disable_path_update)
 {
   util::generateDrivableArea(path, lanes, vehicle_length, planner_data);
   if (objects.empty() || !enable_bound_clipping) {
@@ -699,6 +699,16 @@ void generateDrivableArea(
   }
 
   for (const auto & object : objects) {
+    if (!disable_path_update) {
+      // If avoidance is executed by both behavior and motion, only non-avoidable object will be
+      // extracted from the drivable area.
+      if (object.is_avoidable) {
+        continue;
+      }
+    }
+
+    // TODO(murooka) check if there is lateral margin to run in the drivable area
+
     const auto & obj_pose = object.object.kinematics.initial_pose_with_covariance.pose;
     const auto & obj_poly = object.envelope_poly;
 

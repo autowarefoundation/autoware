@@ -917,7 +917,7 @@ double AvoidanceModule::getShiftLength(
  * and longitudinal positions in the Frenet coordinate. The jerk limit is also considered here.
  */
 AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
-  const AvoidancePlanningData & data, DebugData & debug) const
+  AvoidancePlanningData & data, DebugData & debug) const
 {
   {
     debug_avoidance_initializer_for_shift_line_.clear();
@@ -939,7 +939,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
   AvoidLineArray avoid_lines;
   std::vector<AvoidanceDebugMsg> avoidance_debug_msg_array;
   avoidance_debug_msg_array.reserve(data.target_objects.size());
-  for (auto o : data.target_objects) {
+  for (auto & o : data.target_objects) {
     AvoidanceDebugMsg avoidance_debug_msg;
     const auto avoidance_debug_array_false_and_push_back =
       [&avoidance_debug_msg, &avoidance_debug_msg_array](const std::string & failed_reason) {
@@ -1068,6 +1068,8 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
       nominal_return_distance);
     avoidance_debug_msg.allow_avoidance = true;
     avoidance_debug_msg_array.push_back(avoidance_debug_msg);
+
+    o.is_avoidable = true;
   }
 
   debug_avoidance_initializer_for_shift_line_ = std::move(avoidance_debug_msg_array);
@@ -2693,7 +2695,7 @@ void AvoidanceModule::generateExtendedDrivableArea(PathWithLaneId & path) const
     const auto & p = planner_data_->parameters;
     generateDrivableArea(
       path, drivable_lanes, p.vehicle_length, planner_data_, avoidance_data_.target_objects,
-      parameters_->enable_bound_clipping);
+      parameters_->enable_bound_clipping, parameters_->disable_path_update);
   }
 }
 
