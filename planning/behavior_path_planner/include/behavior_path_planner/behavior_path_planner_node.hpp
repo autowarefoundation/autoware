@@ -17,7 +17,6 @@
 
 #include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request_lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_following/lane_following_module.hpp"
@@ -26,6 +25,7 @@
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 #include "behavior_path_planner/steering_factor_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
+#include "behavior_path_planner/util/avoidance/avoidance_module_data.hpp"
 
 #include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>

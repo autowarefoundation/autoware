@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/avoidance/debug.hpp"
+#include "behavior_path_planner/marker_util/avoidance/debug.hpp"
 
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/utilities.hpp"

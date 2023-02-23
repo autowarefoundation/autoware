@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__AVOIDANCE__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__AVOIDANCE__UTIL_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/util/avoidance/avoidance_module_data.hpp"
 
 #include <memory>
 #include <string>
@@ -123,4 +123,4 @@ void insertDecelPoint(
   boost::optional<Pose> & p_out);
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__AVOIDANCE__UTIL_HPP_
