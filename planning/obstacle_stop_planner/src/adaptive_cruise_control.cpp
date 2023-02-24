@@ -133,56 +133,57 @@ AdaptiveCruiseController::AdaptiveCruiseController(
 
   /* config */
   param_.use_object_to_est_vel =
-    node_->declare_parameter(acc_ns + "use_object_to_estimate_vel", true);
-  param_.use_pcl_to_est_vel = node_->declare_parameter(acc_ns + "use_pcl_to_estimate_vel", true);
-  param_.consider_obj_velocity = node_->declare_parameter(acc_ns + "consider_obj_velocity", true);
+    node_->declare_parameter<bool>(acc_ns + "use_object_to_estimate_vel");
+  param_.use_pcl_to_est_vel = node_->declare_parameter<bool>(acc_ns + "use_pcl_to_estimate_vel");
+  param_.consider_obj_velocity = node_->declare_parameter<bool>(acc_ns + "consider_obj_velocity");
 
   /* parameter for acc */
   param_.obstacle_velocity_thresh_to_start_acc =
-    node_->declare_parameter(acc_ns + "obstacle_velocity_thresh_to_start_acc", 1.5);
+    node_->declare_parameter<double>(acc_ns + "obstacle_velocity_thresh_to_start_acc");
   param_.obstacle_velocity_thresh_to_stop_acc =
-    node_->declare_parameter(acc_ns + "obstacle_velocity_thresh_to_stop_acc", 1.0);
+    node_->declare_parameter<double>(acc_ns + "obstacle_velocity_thresh_to_stop_acc");
   param_.emergency_stop_acceleration =
-    node_->declare_parameter(acc_ns + "emergency_stop_acceleration", -3.5);
+    node_->declare_parameter<double>(acc_ns + "emergency_stop_acceleration");
   param_.obstacle_emergency_stop_acceleration =
-    node_->declare_parameter(acc_ns + "obstacle_emergency_stop_acceleration", -5.0);
+    node_->declare_parameter<double>(acc_ns + "obstacle_emergency_stop_acceleration");
   param_.emergency_stop_idling_time =
-    node_->declare_parameter(acc_ns + "emergency_stop_idling_time", 0.5);
-  param_.min_dist_stop = node_->declare_parameter(acc_ns + "min_dist_stop", 4.0);
+    node_->declare_parameter<double>(acc_ns + "emergency_stop_idling_time");
+  param_.min_dist_stop = node_->declare_parameter<double>(acc_ns + "min_dist_stop");
   param_.max_standard_acceleration =
-    node_->declare_parameter(acc_ns + "max_standard_acceleration", 0.5);
+    node_->declare_parameter<double>(acc_ns + "max_standard_acceleration");
   param_.min_standard_acceleration =
-    node_->declare_parameter(acc_ns + "min_standard_acceleration", -1.0);
-  param_.standard_idling_time = node_->declare_parameter(acc_ns + "standard_idling_time", 0.5);
-  param_.min_dist_standard = node_->declare_parameter(acc_ns + "min_dist_standard", 4.0);
+    node_->declare_parameter<double>(acc_ns + "min_standard_acceleration");
+  param_.standard_idling_time = node_->declare_parameter<double>(acc_ns + "standard_idling_time");
+  param_.min_dist_standard = node_->declare_parameter<double>(acc_ns + "min_dist_standard");
   param_.obstacle_min_standard_acceleration =
-    node_->declare_parameter(acc_ns + "obstacle_min_standard_acceleration", -1.5);
+    node_->declare_parameter<double>(acc_ns + "obstacle_min_standard_acceleration");
   param_.margin_rate_to_change_vel =
-    node_->declare_parameter(acc_ns + "margin_rate_to_change_vel", 0.3);
+    node_->declare_parameter<double>(acc_ns + "margin_rate_to_change_vel");
   param_.use_time_compensation_to_dist =
-    node_->declare_parameter(acc_ns + "use_time_compensation_to_calc_distance", true);
-  param_.lowpass_gain_ = node_->declare_parameter(acc_ns + "lowpass_gain_of_upper_velocity", 0.6);
+    node_->declare_parameter<bool>(acc_ns + "use_time_compensation_to_calc_distance");
+  param_.lowpass_gain_ =
+    node_->declare_parameter<double>(acc_ns + "lowpass_gain_of_upper_velocity");
 
   /* parameter for pid in acc */
-  param_.p_coeff_pos = node_->declare_parameter(acc_ns + "p_coefficient_positive", 0.1);
-  param_.p_coeff_neg = node_->declare_parameter(acc_ns + "p_coefficient_negative", 0.3);
-  param_.d_coeff_pos = node_->declare_parameter(acc_ns + "d_coefficient_positive", 0.0);
-  param_.d_coeff_neg = node_->declare_parameter(acc_ns + "d_coefficient_negative", 0.1);
+  param_.p_coeff_pos = node_->declare_parameter<double>(acc_ns + "p_coefficient_positive");
+  param_.p_coeff_neg = node_->declare_parameter<double>(acc_ns + "p_coefficient_negative");
+  param_.d_coeff_pos = node_->declare_parameter<double>(acc_ns + "d_coefficient_positive");
+  param_.d_coeff_neg = node_->declare_parameter<double>(acc_ns + "d_coefficient_negative");
 
   /* parameter for speed estimation of obstacle */
   param_.object_polygon_length_margin =
-    node_->declare_parameter(acc_ns + "object_polygon_length_margin", 2.0);
+    node_->declare_parameter<double>(acc_ns + "object_polygon_length_margin");
   param_.object_polygon_width_margin =
-    node_->declare_parameter(acc_ns + "object_polygon_width_margin", 0.5);
+    node_->declare_parameter<double>(acc_ns + "object_polygon_width_margin");
   param_.valid_est_vel_diff_time =
-    node_->declare_parameter(acc_ns + "valid_estimated_vel_diff_time", 1.0);
-  param_.valid_vel_que_time = node_->declare_parameter(acc_ns + "valid_vel_que_time", 0.5);
-  param_.valid_est_vel_max = node_->declare_parameter(acc_ns + "valid_estimated_vel_max", 20.0);
-  param_.valid_est_vel_min = node_->declare_parameter(acc_ns + "valid_estimated_vel_min", -20.0);
-  param_.thresh_vel_to_stop = node_->declare_parameter(acc_ns + "thresh_vel_to_stop", 0.5);
+    node_->declare_parameter<double>(acc_ns + "valid_estimated_vel_diff_time");
+  param_.valid_vel_que_time = node_->declare_parameter<double>(acc_ns + "valid_vel_que_time");
+  param_.valid_est_vel_max = node_->declare_parameter<double>(acc_ns + "valid_estimated_vel_max");
+  param_.valid_est_vel_min = node_->declare_parameter<double>(acc_ns + "valid_estimated_vel_min");
+  param_.thresh_vel_to_stop = node_->declare_parameter<double>(acc_ns + "thresh_vel_to_stop");
   param_.use_rough_est_vel =
-    node_->declare_parameter(acc_ns + "use_rough_velocity_estimation", false);
-  param_.rough_velocity_rate = node_->declare_parameter(acc_ns + "rough_velocity_rate", 0.9);
+    node_->declare_parameter<bool>(acc_ns + "use_rough_velocity_estimation");
+  param_.rough_velocity_rate = node_->declare_parameter<double>(acc_ns + "rough_velocity_rate");
 
   /* publisher */
   pub_debug_ = node_->create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(

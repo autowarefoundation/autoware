@@ -71,9 +71,9 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     p.chattering_threshold = declare_parameter<double>("chattering_threshold");
     p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
     p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
-    p.voxel_grid_x = declare_parameter("voxel_grid_x", 0.05);
-    p.voxel_grid_y = declare_parameter("voxel_grid_y", 0.05);
-    p.voxel_grid_z = declare_parameter("voxel_grid_z", 100000.0);
+    p.voxel_grid_x = declare_parameter<double>("voxel_grid_x");
+    p.voxel_grid_y = declare_parameter<double>("voxel_grid_y");
+    p.voxel_grid_z = declare_parameter<double>("voxel_grid_z");
     p.use_predicted_objects = declare_parameter<bool>("use_predicted_objects");
     p.publish_obstacle_polygon = declare_parameter<bool>("publish_obstacle_polygon");
   }
