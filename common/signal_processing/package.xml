@@ -16,6 +16,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
+  <build_export_depend>libboost-dev</build_export_depend>
 
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
