@@ -96,43 +96,61 @@ CropBoxFilterComponent::CropBoxFilterComponent(const rclcpp::NodeOptions & optio
   }
 }
 
+// TODO(sykwer): Temporary Implementation: Delete this function definition when all the filter nodes
+// conform to new API.
 void CropBoxFilterComponent::filter(
+  const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output)
+{
+  (void)input;
+  (void)indices;
+  (void)output;
+}
+
+// TODO(sykwer): Temporary Implementation: Rename this function to `filter()` when all the filter
+// nodes conform to new API. Then delete the old `filter()` defined above.
+void CropBoxFilterComponent::faster_filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
-  PointCloud2 & output)
+  PointCloud2 & output, const TransformInfo & transform_info)
 {
   std::scoped_lock lock(mutex_);
   stop_watch_ptr_->toc("processing_time", true);
+
+  int x_offset = input->fields[pcl::getFieldIndex(*input, "x")].offset;
+  int y_offset = input->fields[pcl::getFieldIndex(*input, "y")].offset;
+  int z_offset = input->fields[pcl::getFieldIndex(*input, "z")].offset;
+
   output.data.resize(input->data.size());
-  Eigen::Vector3f pt(Eigen::Vector3f::Zero());
-  size_t j = 0;
-  const auto data_size = input->data.size();
-  const auto point_step = input->point_step;
-  // If inside the cropbox
-  if (!param_.negative) {
-    for (size_t i = 0; i + point_step < data_size; i += point_step) {
-      memcpy(pt.data(), &input->data[i], sizeof(float) * 3);
-      if (
-        param_.min_z < pt.z() && pt.z() < param_.max_z && param_.min_y < pt.y() &&
-        pt.y() < param_.max_y && param_.min_x < pt.x() && pt.x() < param_.max_x) {
-        memcpy(&output.data[j], &input->data[i], point_step);
-        j += point_step;
+  size_t output_size = 0;
+
+  for (size_t global_offset = 0; global_offset + input->point_step < input->data.size();
+       global_offset += input->point_step) {
+    Eigen::Vector4f point(
+      *reinterpret_cast<const float *>(&input->data[global_offset + x_offset]),
+      *reinterpret_cast<const float *>(&input->data[global_offset + y_offset]),
+      *reinterpret_cast<const float *>(&input->data[global_offset + z_offset]), 1);
+
+    if (transform_info.need_transform) {
+      if (std::isfinite(point[0]) && std::isfinite(point[1]), std::isfinite(point[2])) {
+        point = transform_info.eigen_transform * point;
+      } else {
+        // TODO(sykwer): Implement the appropriate logic for `max range point` and `invalid point`.
+        // https://github.com/ros-perception/perception_pcl/blob/628aaec1dc73ef4adea01e9d28f11eb417b948fd/pcl_ros/src/transforms.cpp#L185-L201
+        RCLCPP_ERROR(this->get_logger(), "Not implemented logic");
       }
     }
-    // If outside the cropbox
-  } else {
-    for (size_t i = 0; i + point_step < data_size; i += point_step) {
-      memcpy(pt.data(), &input->data[i], sizeof(float) * 3);
-      if (
-        param_.min_z > pt.z() || pt.z() > param_.max_z || param_.min_y > pt.y() ||
-        pt.y() > param_.max_y || param_.min_x > pt.x() || pt.x() > param_.max_x) {
-        memcpy(&output.data[j], &input->data[i], point_step);
-        j += point_step;
-      }
+
+    bool point_is_inside = point[2] > param_.min_z && point[2] < param_.max_z &&
+                           point[1] > param_.min_y && point[1] < param_.max_y &&
+                           point[0] > param_.min_x && point[0] < param_.max_x;
+    if ((!param_.negative && point_is_inside) || (param_.negative && !point_is_inside)) {
+      memcpy(&output.data[output_size], &point, input->point_step);
+      output_size += input->point_step;
     }
   }
 
-  output.data.resize(j);
-  output.header.frame_id = input->header.frame_id;
+  output.data.resize(output_size);
+  output.header.frame_id =
+    tf_input_frame_;  // Note that `input->header.frame_id` is data before converted
   output.height = 1;
   output.fields = input->fields;
   output.is_bigendian = input->is_bigendian;
@@ -142,6 +160,7 @@ void CropBoxFilterComponent::filter(
   output.row_step = static_cast<uint32_t>(output.data.size() / output.height);
 
   publishCropBoxPolygon();
+
   // add processing time for debug
   if (debug_publisher_) {
     const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);

@@ -92,7 +92,7 @@ pointcloud_preprocessor::Filter::Filter(
       "output", rclcpp::SensorDataQoS().keep_last(max_queue_size_));
   }
 
-  subscribe();
+  subscribe(filter_name);
 
   // Set tf_listener, tf_buffer.
   setupTF();
@@ -114,6 +114,18 @@ void pointcloud_preprocessor::Filter::setupTF()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void pointcloud_preprocessor::Filter::subscribe()
 {
+  std::string filter_name = "";
+  subscribe(filter_name);
+}
+
+void pointcloud_preprocessor::Filter::subscribe(const std::string & filter_name)
+{
+  // TODO(sykwer): Change the corresponding node to subscribe to `faster_input_indices_callback`
+  // each time a child class supports the faster version.
+  // When all the child classes support the faster version, this workaround is deleted.
+  auto callback = filter_name == "CropBoxFilter" ? &Filter::faster_input_indices_callback
+                                                 : &Filter::input_indices_callback;
+
   if (use_indices_) {
     // Subscribe to the input using a filter
     sub_input_filter_.subscribe(
@@ -124,19 +136,19 @@ void pointcloud_preprocessor::Filter::subscribe()
     if (approximate_sync_) {
       sync_input_indices_a_ = std::make_shared<ApproximateTimeSyncPolicy>(max_queue_size_);
       sync_input_indices_a_->connectInput(sub_input_filter_, sub_indices_filter_);
-      sync_input_indices_a_->registerCallback(std::bind(
-        &Filter::input_indices_callback, this, std::placeholders::_1, std::placeholders::_2));
+      sync_input_indices_a_->registerCallback(
+        std::bind(callback, this, std::placeholders::_1, std::placeholders::_2));
     } else {
       sync_input_indices_e_ = std::make_shared<ExactTimeSyncPolicy>(max_queue_size_);
       sync_input_indices_e_->connectInput(sub_input_filter_, sub_indices_filter_);
-      sync_input_indices_e_->registerCallback(std::bind(
-        &Filter::input_indices_callback, this, std::placeholders::_1, std::placeholders::_2));
+      sync_input_indices_e_->registerCallback(
+        std::bind(callback, this, std::placeholders::_1, std::placeholders::_2));
     }
   } else {
     // Subscribe in an old fashion to input only (no filters)
     // CAN'T use auto-type here.
-    std::function<void(const PointCloud2ConstPtr msg)> cb = std::bind(
-      &Filter::input_indices_callback, this, std::placeholders::_1, PointIndicesConstPtr());
+    std::function<void(const PointCloud2ConstPtr msg)> cb =
+      std::bind(callback, this, std::placeholders::_1, PointIndicesConstPtr());
     sub_input_ = create_subscription<PointCloud2>(
       "input", rclcpp::SensorDataQoS().keep_last(max_queue_size_), cb);
   }
@@ -159,6 +171,8 @@ void pointcloud_preprocessor::Filter::unsubscribe()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TODO(sykwer): Temporary Implementation: Delete this function definition when all the filter nodes
+// conform to new API.
 void pointcloud_preprocessor::Filter::computePublish(
   const PointCloud2ConstPtr & input, const IndicesPtr & indices)
 {
@@ -167,37 +181,7 @@ void pointcloud_preprocessor::Filter::computePublish(
   // Call the virtual method in the child
   filter(input, indices, *output);
 
-  // Check whether the user has given a different output TF frame
-  if (!tf_output_frame_.empty() && output->header.frame_id != tf_output_frame_) {
-    RCLCPP_DEBUG(
-      this->get_logger(), "[computePublish] Transforming output dataset from %s to %s.",
-      output->header.frame_id.c_str(), tf_output_frame_.c_str());
-    // Convert the cloud into the different frame
-    auto cloud_transformed = std::make_unique<PointCloud2>();
-    if (!pcl_ros::transformPointCloud(tf_output_frame_, *output, *cloud_transformed, *tf_buffer_)) {
-      RCLCPP_ERROR(
-        this->get_logger(), "[computePublish] Error converting output dataset from %s to %s.",
-        output->header.frame_id.c_str(), tf_output_frame_.c_str());
-      return;
-    }
-    output = std::move(cloud_transformed);
-  }
-  if (tf_output_frame_.empty() && output->header.frame_id != tf_input_orig_frame_) {
-    // no tf_output_frame given, transform the dataset to its original frame
-    RCLCPP_DEBUG(
-      this->get_logger(), "[computePublish] Transforming output dataset from %s back to %s.",
-      output->header.frame_id.c_str(), tf_input_orig_frame_.c_str());
-    // Convert the cloud into the different frame
-    auto cloud_transformed = std::make_unique<PointCloud2>();
-    if (!pcl_ros::transformPointCloud(
-          tf_input_orig_frame_, *output, *cloud_transformed, *tf_buffer_)) {
-      RCLCPP_ERROR(
-        this->get_logger(), "[computePublish] Error converting output dataset from %s back to %s.",
-        output->header.frame_id.c_str(), tf_input_orig_frame_.c_str());
-      return;
-    }
-    output = std::move(cloud_transformed);
-  }
+  if (!convert_output_costly(output)) return;
 
   // Copy timestamp to keep it
   output->header.stamp = input->header.stamp;
@@ -227,6 +211,8 @@ rcl_interfaces::msg::SetParametersResult pointcloud_preprocessor::Filter::filter
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+// TODO(sykwer): Temporary Implementation: Delete this function definition when all the filter nodes
+// conform to new API.
 void pointcloud_preprocessor::Filter::input_indices_callback(
   const PointCloud2ConstPtr cloud, const PointIndicesConstPtr indices)
 {
@@ -299,4 +285,184 @@ void pointcloud_preprocessor::Filter::input_indices_callback(
   }
 
   computePublish(cloud_tf, vindices);
+}
+
+// For performance reason, we get only a transformation matrix here.
+// The implementation is based on the one shown in the URL below.
+// https://github.com/ros-perception/perception_pcl/blob/628aaec1dc73ef4adea01e9d28f11eb417b948fd/pcl_ros/src/transforms.cpp#L61-L94
+bool pointcloud_preprocessor::Filter::_calculate_transform_matrix(
+  const std::string & target_frame, const sensor_msgs::msg::PointCloud2 & from,
+  const tf2_ros::Buffer & tf_buffer, Eigen::Matrix4f & eigen_transform /*output*/)
+{
+  if (from.header.frame_id == target_frame) {
+    eigen_transform = Eigen::Matrix4f::Identity(4, 4);
+    return true;
+  }
+
+  geometry_msgs::msg::TransformStamped transform;
+
+  try {
+    transform = tf_buffer.lookupTransform(
+      target_frame, from.header.frame_id, tf2_ros::fromMsg(from.header.stamp));
+  } catch (tf2::LookupException & e) {
+    RCLCPP_ERROR(this->get_logger(), "%s", e.what());
+    return false;
+  } catch (tf2::ExtrapolationException & e) {
+    RCLCPP_ERROR(this->get_logger(), "%s", e.what());
+    return false;
+  }
+
+  pcl_ros::transformAsMatrix(transform, eigen_transform);
+  return true;
+}
+
+// Returns false in error cases
+bool pointcloud_preprocessor::Filter::calculate_transform_matrix(
+  const std::string & target_frame, const sensor_msgs::msg::PointCloud2 & from,
+  TransformInfo & transform_info /*output*/)
+{
+  transform_info.need_transform = false;
+
+  if (target_frame.empty() || from.header.frame_id == target_frame) return true;
+
+  RCLCPP_DEBUG(
+    this->get_logger(), "[get_transform_matrix] Transforming input dataset from %s to %s.",
+    from.header.frame_id.c_str(), target_frame.c_str());
+
+  if (!tf_buffer_->canTransform(
+        target_frame, from.header.frame_id, this->now(), rclcpp::Duration::from_seconds(1.0))) {
+    RCLCPP_ERROR_STREAM(
+      this->get_logger(),
+      "[get_transform_matrix] timeout tf: " << from.header.frame_id << "->" << target_frame);
+    return false;
+  }
+
+  if (!_calculate_transform_matrix(
+        target_frame, from, *tf_buffer_, transform_info.eigen_transform /*output*/)) {
+    RCLCPP_ERROR(
+      this->get_logger(),
+      "[calculate_transform_matrix] Error converting input dataset from %s to %s.",
+      from.header.frame_id.c_str(), target_frame.c_str());
+    return false;
+  }
+
+  transform_info.need_transform = true;
+  return true;
+}
+
+// Returns false in error cases
+bool pointcloud_preprocessor::Filter::convert_output_costly(std::unique_ptr<PointCloud2> & output)
+{
+  // In terms of performance, we should avoid using pcl_ros library function,
+  // but this code path isn't reached in the main use case of Autoware, so it's left as is for now.
+  if (!tf_output_frame_.empty() && output->header.frame_id != tf_output_frame_) {
+    RCLCPP_DEBUG(
+      this->get_logger(), "[convert_output_costly] Transforming output dataset from %s to %s.",
+      output->header.frame_id.c_str(), tf_output_frame_.c_str());
+
+    // Convert the cloud into the different frame
+    auto cloud_transformed = std::make_unique<PointCloud2>();
+    if (!pcl_ros::transformPointCloud(tf_output_frame_, *output, *cloud_transformed, *tf_buffer_)) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "[convert_output_costly] Error converting output dataset from %s to %s.",
+        output->header.frame_id.c_str(), tf_output_frame_.c_str());
+      return false;
+    }
+
+    output = std::move(cloud_transformed);
+  }
+
+  // Same as the comment above
+  if (tf_output_frame_.empty() && output->header.frame_id != tf_input_orig_frame_) {
+    // No tf_output_frame given, transform the dataset to its original frame
+    RCLCPP_DEBUG(
+      this->get_logger(), "[convert_output_costly] Transforming output dataset from %s back to %s.",
+      output->header.frame_id.c_str(), tf_input_orig_frame_.c_str());
+
+    auto cloud_transformed = std::make_unique<PointCloud2>();
+    if (!pcl_ros::transformPointCloud(
+          tf_input_orig_frame_, *output, *cloud_transformed, *tf_buffer_)) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "[convert_output_costly] Error converting output dataset from %s back to %s.",
+        output->header.frame_id.c_str(), tf_input_orig_frame_.c_str());
+      return false;
+    }
+
+    output = std::move(cloud_transformed);
+  }
+
+  return true;
+}
+
+// TODO(sykwer): Temporary Implementation: Rename this function to `input_indices_callback()` when
+// all the filter nodes conform to new API. Then delete the old `input_indices_callback()` defined
+// above.
+void pointcloud_preprocessor::Filter::faster_input_indices_callback(
+  const PointCloud2ConstPtr cloud, const PointIndicesConstPtr indices)
+{
+  if (!isValid(cloud)) {
+    RCLCPP_ERROR(this->get_logger(), "[input_indices_callback] Invalid input!");
+    return;
+  }
+
+  if (indices && !isValid(indices)) {
+    RCLCPP_ERROR(this->get_logger(), "[input_indices_callback] Invalid indices!");
+    return;
+  }
+
+  if (indices) {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "[input_indices_callback]\n"
+      "   - PointCloud with %d data points (%s), stamp %f, and frame %s on input topic received.\n"
+      "   - PointIndices with %zu values, stamp %f, and frame %s on indices topic received.",
+      cloud->width * cloud->height, pcl::getFieldsList(*cloud).c_str(),
+      rclcpp::Time(cloud->header.stamp).seconds(), cloud->header.frame_id.c_str(),
+      indices->indices.size(), rclcpp::Time(indices->header.stamp).seconds(),
+      indices->header.frame_id.c_str());
+  } else {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "[input_indices_callback] PointCloud with %d data points and frame %s on input topic "
+      "received.",
+      cloud->width * cloud->height, cloud->header.frame_id.c_str());
+  }
+
+  tf_input_orig_frame_ = cloud->header.frame_id;
+
+  // For performance reason, defer the transform computation.
+  // Do not use pcl_ros::transformPointCloud(). It's too slow due to the unnecessary copy.
+  TransformInfo transform_info;
+  if (!calculate_transform_matrix(tf_input_frame_, *cloud, transform_info)) return;
+
+  // Need setInputCloud() here because we have to extract x/y/z
+  IndicesPtr vindices;
+  if (indices) {
+    vindices.reset(new std::vector<int>(indices->indices));
+  }
+
+  auto output = std::make_unique<PointCloud2>();
+
+  // TODO(sykwer): Change to `filter()` call after when the filter nodes conform to new API.
+  faster_filter(cloud, vindices, *output, transform_info);
+
+  if (!convert_output_costly(output)) return;
+
+  output->header.stamp = cloud->header.stamp;
+  pub_output_->publish(std::move(output));
+}
+
+// TODO(sykwer): Temporary Implementation: Remove this interface when all the filter nodes conform
+// to new API. It's not a pure virtual function so that a child class does not have to implement
+// this function.
+void pointcloud_preprocessor::Filter::faster_filter(
+  const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output,
+  const TransformInfo & transform_info)
+{
+  (void)input;
+  (void)indices;
+  (void)output;
+  (void)transform_info;
 }
