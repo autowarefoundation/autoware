@@ -1,6 +1,7 @@
 <launch>
   <!-- Parameter files -->
   <arg name="pointcloud_map_loader_param_path"/>
+  <arg name="lanelet2_map_loader_param_path"/>
 
   <arg name="map_path" default=""/>
   <arg name="lanelet2_map_path" default="$(var map_path)/lanelet2_map.osm"/>
@@ -10,6 +11,7 @@
     <push-ros-namespace namespace="map"/>
     <include file="$(find-pkg-share map_loader)/launch/lanelet2_map_loader.launch.xml">
       <arg name="lanelet2_map_path" value="$(var lanelet2_map_path)"/>
+      <arg name="lanelet2_map_loader_param_path" value="$(var lanelet2_map_loader_param_path)"/>
     </include>
 
     <include file="$(find-pkg-share map_loader)/launch/pointcloud_map_loader.launch.xml">
