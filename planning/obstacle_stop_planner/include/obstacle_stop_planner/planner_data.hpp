@@ -121,11 +121,11 @@ struct StopParam
   // params for trajectory pre-process
   // =================================
 
-  // trajectory extend distance [m]
-  double extend_distance;
-
   // step length for pointcloud search range [m]
   double step_length;
+
+  // enable extend trajectory after goal lane for obstacle detection
+  bool enable_stop_behind_goal_for_obstacle;
 
   // ======
   // others

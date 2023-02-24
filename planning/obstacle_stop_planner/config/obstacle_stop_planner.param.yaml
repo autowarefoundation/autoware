@@ -25,7 +25,7 @@
         pedestrian_lateral_margin: 0.0       # margin of pedestrian footprint [m]
         unknown_lateral_margin: 0.0          # margin of unknown footprint [m]
         step_length: 1.0                     # step length for pointcloud search range [m]
-        extend_distance: 0.0                 # extend trajectory to consider after goal obstacle in the extend_distance [m]
+        enable_stop_behind_goal_for_obstacle: True # enable extend trajectory after goal lane for obstacle detection
 
 
     slow_down_planner:

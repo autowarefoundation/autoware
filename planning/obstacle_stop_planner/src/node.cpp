@@ -98,7 +98,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
       declare_parameter<double>(ns + "detection_area.pedestrian_lateral_margin");
     p.unknown_lateral_margin =
       declare_parameter<double>(ns + "detection_area.unknown_lateral_margin");
-    p.extend_distance = declare_parameter<double>(ns + "detection_area.extend_distance");
+    p.enable_stop_behind_goal_for_obstacle =
+      declare_parameter<bool>(ns + "detection_area.enable_stop_behind_goal_for_obstacle");
     p.step_length = declare_parameter<double>(ns + "detection_area.step_length");
 
     // apply offset
@@ -311,14 +312,17 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
     motion_utils::convertToTrajectoryPointArray(*input_msg);
 
   // trim trajectory from self pose
-  const auto base_trajectory = trimTrajectoryWithIndexFromSelfPose(
+  TrajectoryPoints base_trajectory = trimTrajectoryWithIndexFromSelfPose(
     motion_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
     planner_data.trajectory_trim_index);
+
   // extend trajectory to consider obstacles after the goal
-  const auto extend_trajectory = extendTrajectory(base_trajectory, stop_param.extend_distance);
+  if (stop_param.enable_stop_behind_goal_for_obstacle) {
+    base_trajectory = extendTrajectory(base_trajectory, stop_param.max_longitudinal_margin);
+  }
   // decimate trajectory for calculation cost
   const auto decimate_trajectory = decimateTrajectory(
-    extend_trajectory, stop_param.step_length, planner_data.decimate_trajectory_index_map);
+    base_trajectory, stop_param.step_length, planner_data.decimate_trajectory_index_map);
 
   if (node_param_.use_predicted_objects) {
     searchPredictedObject(decimate_trajectory, planner_data, vehicle_info, stop_param);
