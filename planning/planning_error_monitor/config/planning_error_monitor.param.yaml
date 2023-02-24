@@ -1,7 +1,0 @@
-/**:
-  ros__parameters:
-    # trajectory check
-    error_interval: 100.0 # error interval distance threshold [m]
-    error_curvature: 2.0 # error curvature threshold [rad/m]
-    error_sharp_angle: 0.785398 # error sharp angle threshold [rad]
-    ignore_too_close_points: 0.01 # ignore too close distance threshold [m]

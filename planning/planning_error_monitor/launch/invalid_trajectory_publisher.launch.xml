@@ -1,9 +1,0 @@
-<launch>
-  <arg name="input/trajectory" default="/planning/scenario_planning/trajectory"/>
-  <arg name="output/trajectory" default="/planning/scenario_planning/trajectory"/>
-
-  <node name="invalid_trajectory_publisher" exec="invalid_trajectory_publisher" pkg="planning_error_monitor" output="screen">
-    <remap from="~/input/trajectory" to="$(var input/trajectory)"/>
-    <remap from="~/output/trajectory" to="$(var output/trajectory)"/>
-  </node>
-</launch>
