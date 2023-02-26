@@ -111,15 +111,15 @@ ExternalVelocityLimitSelectorNode::ExternalVelocityLimitSelectorNode(
   // Params
   {
     auto & p = node_param_;
-    p.max_velocity = this->declare_parameter<double>("max_velocity", 20.0);
-    p.normal_min_acc = this->declare_parameter<double>("normal.min_acc", -1.0);
-    p.normal_max_acc = this->declare_parameter<double>("normal.max_acc", 1.0);
-    p.normal_min_jerk = this->declare_parameter<double>("normal.min_jerk", -0.1);
-    p.normal_max_jerk = this->declare_parameter<double>("normal.max_jerk", 0.1);
-    p.limit_min_acc = this->declare_parameter<double>("limit.min_acc", -2.5);
-    p.limit_max_acc = this->declare_parameter<double>("limit.max_acc", 2.5);
-    p.limit_min_jerk = this->declare_parameter<double>("limit.min_jerk", -1.5);
-    p.limit_max_jerk = this->declare_parameter<double>("limit.max_jerk", 1.5);
+    p.max_velocity = this->declare_parameter<double>("max_velocity");
+    p.normal_min_acc = this->declare_parameter<double>("normal.min_acc");
+    p.normal_max_acc = this->declare_parameter<double>("normal.max_acc");
+    p.normal_min_jerk = this->declare_parameter<double>("normal.min_jerk");
+    p.normal_max_jerk = this->declare_parameter<double>("normal.max_jerk");
+    p.limit_min_acc = this->declare_parameter<double>("limit.min_acc");
+    p.limit_max_acc = this->declare_parameter<double>("limit.max_acc");
+    p.limit_min_jerk = this->declare_parameter<double>("limit.min_jerk");
+    p.limit_max_jerk = this->declare_parameter<double>("limit.max_jerk");
   }
 }
 
