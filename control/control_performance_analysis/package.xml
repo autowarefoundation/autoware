@@ -4,8 +4,14 @@
   <name>control_performance_analysis</name>
   <version>0.1.0</version>
   <description>Controller Performance Evaluation</description>
-  <maintainer email="ali.boyali@tier4.jp">Ali Boyali</maintainer>
   <maintainer email="berkay@leodrive.ai">Berkay Karaman</maintainer>
+  <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
 
   <license>Apache License 2.0</license>
 
