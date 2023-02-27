@@ -30,7 +30,7 @@ ShiftDecider::ShiftDecider(const rclcpp::NodeOptions & node_options)
   rclcpp::QoS durable_qos(queue_size);
   durable_qos.transient_local();
 
-  park_on_goal_ = declare_parameter("park_on_goal", true);
+  park_on_goal_ = declare_parameter<bool>("park_on_goal");
 
   pub_shift_cmd_ =
     create_publisher<autoware_auto_vehicle_msgs::msg::GearCommand>("output/gear_cmd", durable_qos);
