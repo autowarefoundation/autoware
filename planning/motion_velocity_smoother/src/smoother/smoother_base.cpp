@@ -31,30 +31,31 @@ using vehicle_info_util::VehicleInfoUtil;
 SmootherBase::SmootherBase(rclcpp::Node & node)
 {
   auto & p = base_param_;
-  p.max_accel = node.declare_parameter("normal.max_acc", 2.0);
-  p.min_decel = node.declare_parameter("normal.min_acc", -3.0);
-  p.stop_decel = node.declare_parameter("stop_decel", 0.0);
-  p.max_jerk = node.declare_parameter("normal.max_jerk", 0.3);
-  p.min_jerk = node.declare_parameter("normal.min_jerk", -0.1);
-  p.max_lateral_accel = node.declare_parameter("max_lateral_accel", 0.2);
+  p.max_accel = node.declare_parameter<double>("normal.max_acc");
+  p.min_decel = node.declare_parameter<double>("normal.min_acc");
+  p.stop_decel = node.declare_parameter<double>("stop_decel");
+  p.max_jerk = node.declare_parameter<double>("normal.max_jerk");
+  p.min_jerk = node.declare_parameter<double>("normal.min_jerk");
+  p.max_lateral_accel = node.declare_parameter<double>("max_lateral_accel");
   p.min_decel_for_lateral_acc_lim_filter =
-    node.declare_parameter("min_decel_for_lateral_acc_lim_filter", -2.5);
-  p.sample_ds = node.declare_parameter("resample_ds", 0.5);
-  p.curvature_threshold = node.declare_parameter("curvature_threshold", 0.2);
-  p.max_steering_angle_rate = node.declare_parameter("max_steering_angle_rate", 5.0);
-  p.curvature_calculation_distance = node.declare_parameter("curvature_calculation_distance", 1.0);
-  p.decel_distance_before_curve = node.declare_parameter("decel_distance_before_curve", 3.5);
-  p.decel_distance_after_curve = node.declare_parameter("decel_distance_after_curve", 0.0);
-  p.min_curve_velocity = node.declare_parameter("min_curve_velocity", 1.38);
-  p.resample_param.max_trajectory_length = node.declare_parameter("max_trajectory_length", 200.0);
-  p.resample_param.min_trajectory_length = node.declare_parameter("min_trajectory_length", 30.0);
-  p.resample_param.resample_time = node.declare_parameter("resample_time", 10.0);
-  p.resample_param.dense_resample_dt = node.declare_parameter("dense_resample_dt", 0.1);
+    node.declare_parameter<double>("min_decel_for_lateral_acc_lim_filter");
+  p.sample_ds = node.declare_parameter<double>("resample_ds");
+  p.curvature_threshold = node.declare_parameter<double>("curvature_threshold");
+  p.max_steering_angle_rate = node.declare_parameter<double>("max_steering_angle_rate");
+  p.curvature_calculation_distance =
+    node.declare_parameter<double>("curvature_calculation_distance");
+  p.decel_distance_before_curve = node.declare_parameter<double>("decel_distance_before_curve");
+  p.decel_distance_after_curve = node.declare_parameter<double>("decel_distance_after_curve");
+  p.min_curve_velocity = node.declare_parameter<double>("min_curve_velocity");
+  p.resample_param.max_trajectory_length = node.declare_parameter<double>("max_trajectory_length");
+  p.resample_param.min_trajectory_length = node.declare_parameter<double>("min_trajectory_length");
+  p.resample_param.resample_time = node.declare_parameter<double>("resample_time");
+  p.resample_param.dense_resample_dt = node.declare_parameter<double>("dense_resample_dt");
   p.resample_param.dense_min_interval_distance =
-    node.declare_parameter("dense_min_interval_distance", 0.1);
-  p.resample_param.sparse_resample_dt = node.declare_parameter("sparse_resample_dt", 0.5);
+    node.declare_parameter<double>("dense_min_interval_distance");
+  p.resample_param.sparse_resample_dt = node.declare_parameter<double>("sparse_resample_dt");
   p.resample_param.sparse_min_interval_distance =
-    node.declare_parameter("sparse_min_interval_distance", 4.0);
+    node.declare_parameter<double>("sparse_min_interval_distance");
 }
 
 void SmootherBase::setParam(const BaseParam & param) { base_param_ = param; }

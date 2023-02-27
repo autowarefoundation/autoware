@@ -31,11 +31,11 @@ namespace motion_velocity_smoother
 JerkFilteredSmoother::JerkFilteredSmoother(rclcpp::Node & node) : SmootherBase(node)
 {
   auto & p = smoother_param_;
-  p.jerk_weight = node.declare_parameter("jerk_weight", 10.0);
-  p.over_v_weight = node.declare_parameter("over_v_weight", 100000.0);
-  p.over_a_weight = node.declare_parameter("over_a_weight", 5000.0);
-  p.over_j_weight = node.declare_parameter("over_j_weight", 2000.0);
-  p.jerk_filter_ds = node.declare_parameter("jerk_filter_ds", 0.1);
+  p.jerk_weight = node.declare_parameter<double>("jerk_weight");
+  p.over_v_weight = node.declare_parameter<double>("over_v_weight");
+  p.over_a_weight = node.declare_parameter<double>("over_a_weight");
+  p.over_j_weight = node.declare_parameter<double>("over_j_weight");
+  p.jerk_filter_ds = node.declare_parameter<double>("jerk_filter_ds");
 
   qp_solver_.updateMaxIter(20000);
   qp_solver_.updateRhoInterval(0);  // 0 means automatic

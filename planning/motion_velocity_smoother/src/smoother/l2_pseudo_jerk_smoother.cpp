@@ -27,9 +27,9 @@ namespace motion_velocity_smoother
 L2PseudoJerkSmoother::L2PseudoJerkSmoother(rclcpp::Node & node) : SmootherBase(node)
 {
   auto & p = smoother_param_;
-  p.pseudo_jerk_weight = node.declare_parameter("pseudo_jerk_weight", 100.0);
-  p.over_v_weight = node.declare_parameter("over_v_weight", 100000.0);
-  p.over_a_weight = node.declare_parameter("over_a_weight", 1000.0);
+  p.pseudo_jerk_weight = node.declare_parameter<double>("pseudo_jerk_weight");
+  p.over_v_weight = node.declare_parameter<double>("over_v_weight");
+  p.over_a_weight = node.declare_parameter<double>("over_a_weight");
 
   qp_solver_.updateMaxIter(4000);
   qp_solver_.updateRhoInterval(0);  // 0 means automatic

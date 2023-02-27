@@ -69,24 +69,24 @@ AnalyticalJerkConstrainedSmoother::AnalyticalJerkConstrainedSmoother(rclcpp::Nod
 : SmootherBase(node)
 {
   auto & p = smoother_param_;
-  p.resample.ds_resample = node.declare_parameter("resample.ds_resample", 0.1);
-  p.resample.num_resample = node.declare_parameter("resample.num_resample", 1);
-  p.resample.delta_yaw_threshold = node.declare_parameter("resample.delta_yaw_threshold", 0.785);
+  p.resample.ds_resample = node.declare_parameter<double>("resample.ds_resample");
+  p.resample.num_resample = node.declare_parameter<int>("resample.num_resample");
+  p.resample.delta_yaw_threshold = node.declare_parameter<double>("resample.delta_yaw_threshold");
   p.latacc.enable_constant_velocity_while_turning =
-    node.declare_parameter("latacc.enable_constant_velocity_while_turning", false);
+    node.declare_parameter<bool>("latacc.enable_constant_velocity_while_turning");
   p.latacc.constant_velocity_dist_threshold =
-    node.declare_parameter("latacc.constant_velocity_dist_threshold", 2.0);
-  p.forward.max_acc = node.declare_parameter("forward.max_acc", 1.0);
-  p.forward.min_acc = node.declare_parameter("forward.min_acc", -1.0);
-  p.forward.max_jerk = node.declare_parameter("forward.max_jerk", 0.3);
-  p.forward.min_jerk = node.declare_parameter("forward.min_jerk", -0.3);
-  p.forward.kp = node.declare_parameter("forward.kp", 0.3);
-  p.backward.start_jerk = node.declare_parameter("backward.start_jerk", -0.1);
-  p.backward.min_jerk_mild_stop = node.declare_parameter("backward.min_jerk_mild_stop", -0.3);
-  p.backward.min_jerk = node.declare_parameter("backward.min_jerk", -1.5);
-  p.backward.min_acc_mild_stop = node.declare_parameter("backward.min_acc_mild_stop", -1.0);
-  p.backward.min_acc = node.declare_parameter("backward.min_acc", -2.5);
-  p.backward.span_jerk = node.declare_parameter("backward.span_jerk", -0.01);
+    node.declare_parameter<double>("latacc.constant_velocity_dist_threshold");
+  p.forward.max_acc = node.declare_parameter<double>("forward.max_acc");
+  p.forward.min_acc = node.declare_parameter<double>("forward.min_acc");
+  p.forward.max_jerk = node.declare_parameter<double>("forward.max_jerk");
+  p.forward.min_jerk = node.declare_parameter<double>("forward.min_jerk");
+  p.forward.kp = node.declare_parameter<double>("forward.kp");
+  p.backward.start_jerk = node.declare_parameter<double>("backward.start_jerk");
+  p.backward.min_jerk_mild_stop = node.declare_parameter<double>("backward.min_jerk_mild_stop");
+  p.backward.min_jerk = node.declare_parameter<double>("backward.min_jerk");
+  p.backward.min_acc_mild_stop = node.declare_parameter<double>("backward.min_acc_mild_stop");
+  p.backward.min_acc = node.declare_parameter<double>("backward.min_acc");
+  p.backward.span_jerk = node.declare_parameter<double>("backward.span_jerk");
 }
 
 void AnalyticalJerkConstrainedSmoother::setParam(const Param & smoother_param)
