@@ -52,14 +52,14 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   using std::placeholders::_1;
 
   // Node Parameter
-  node_param_.update_rate = declare_parameter("update_rate", 10.0);
+  node_param_.update_rate = declare_parameter<double>("update_rate");
 
   // Core Parameter
-  param_.delay_time = declare_parameter("delay_time", 0.3);
-  param_.footprint_margin = declare_parameter("footprint_margin", 0.0);
-  param_.max_deceleration = declare_parameter("max_deceleration", 2.0);
-  param_.resample_interval = declare_parameter("resample_interval", 0.5);
-  param_.search_radius = declare_parameter("search_radius", 5.0);
+  param_.delay_time = declare_parameter<double>("delay_time");
+  param_.footprint_margin = declare_parameter<double>("footprint_margin");
+  param_.max_deceleration = declare_parameter<double>("max_deceleration");
+  param_.resample_interval = declare_parameter<double>("resample_interval");
+  param_.search_radius = declare_parameter<double>("search_radius");
 
   // Dynamic Reconfigure
   set_param_res_ = this->add_on_set_parameters_callback(
