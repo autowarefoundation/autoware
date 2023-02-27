@@ -14,9 +14,10 @@
     stop_planner:
       # params for stop position
       stop_position:
-        max_longitudinal_margin: 5.0         # stop margin distance from obstacle on the path [m]
-        min_longitudinal_margin: 2.0         # stop margin distance when any other stop point is inserted in stop margin [m]
-        hold_stop_margin_distance: 0.0       # the ego keeps stopping if the ego is in this margin [m]
+        max_longitudinal_margin: 5.0             # stop margin distance from obstacle on the path [m]
+        max_longitudinal_margin_behind_goal: 3.0 # stop margin distance from obstacle behind the goal on the path [m]
+        min_longitudinal_margin: 2.0             # stop margin distance when any other stop point is inserted in stop margin [m]
+        hold_stop_margin_distance: 0.0           # the ego keeps stopping if the ego is in this margin [m]
 
       # params for detection area
       detection_area:

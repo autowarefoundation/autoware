@@ -99,6 +99,7 @@ struct StopParam
 
   // margin between obstacle and the ego's front [m]
   double max_longitudinal_margin;
+  double max_longitudinal_margin_behind_goal;
 
   // margin between obstacle and the ego's front [m]
   // if any other stop point is inserted within max_longitudinal_margin.

@@ -89,11 +89,12 @@ This module has parameter `hold_stop_margin_distance` in order to prevent from t
 
 #### Stop position
 
-| Parameter                   | Type   | Description                                                                                                                                    |
-| --------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `max_longitudinal_margin`   | double | margin between obstacle and the ego's front [m]                                                                                                |
-| `min_longitudinal_margin`   | double | if any obstacle exists within `max_longitudinal_margin`, this module set margin as the value of _stop margin_ to `min_longitudinal_margin` [m] |
-| `hold_stop_margin_distance` | double | parameter for restart prevention (See above section) [m]                                                                                       |
+| Parameter                             | Type   | Description                                                                                                                                    |
+| ------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `max_longitudinal_margin`             | double | margin between obstacle and the ego's front [m]                                                                                                |
+| `max_longitudinal_margin_behind_goal` | double | margin between obstacle and the ego's front when the stop point is behind the goal[m]                                                          |
+| `min_longitudinal_margin`             | double | if any obstacle exists within `max_longitudinal_margin`, this module set margin as the value of _stop margin_ to `min_longitudinal_margin` [m] |
+| `hold_stop_margin_distance`           | double | parameter for restart prevention (See above section) [m]                                                                                       |
 
 #### Obstacle detection area
 

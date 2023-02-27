@@ -85,6 +85,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     // params for stop position
     p.max_longitudinal_margin =
       declare_parameter<double>(ns + "stop_position.max_longitudinal_margin");
+    p.max_longitudinal_margin_behind_goal =
+      declare_parameter<double>(ns + "stop_position.max_longitudinal_margin_behind_goal");
     p.min_longitudinal_margin =
       declare_parameter<double>(ns + "stop_position.min_longitudinal_margin");
     p.hold_stop_margin_distance =
@@ -104,6 +106,7 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
 
     // apply offset
     p.max_longitudinal_margin += i.max_longitudinal_offset_m;
+    p.max_longitudinal_margin_behind_goal += i.max_longitudinal_offset_m;
     p.min_longitudinal_margin += i.max_longitudinal_offset_m;
     p.stop_search_radius =
       p.step_length +
@@ -1297,8 +1300,13 @@ StopPoint ObstacleStopPlannerNode::searchInsertPoint(
   const int idx, const TrajectoryPoints & base_trajectory, const double dist_remain,
   const StopParam & stop_param)
 {
+  const bool is_behind_goal = static_cast<size_t>(idx) == base_trajectory.size() - 1;
+  const double max_longitudinal_margin = is_behind_goal
+                                           ? stop_param.max_longitudinal_margin_behind_goal
+                                           : stop_param.max_longitudinal_margin;
+
   const auto max_dist_stop_point =
-    createTargetPoint(idx, stop_param.max_longitudinal_margin, base_trajectory, dist_remain);
+    createTargetPoint(idx, max_longitudinal_margin, base_trajectory, dist_remain);
   const auto min_dist_stop_point =
     createTargetPoint(idx, stop_param.min_longitudinal_margin, base_trajectory, dist_remain);
 
