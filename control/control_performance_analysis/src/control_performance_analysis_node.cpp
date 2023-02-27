@@ -45,14 +45,14 @@ ControlPerformanceAnalysisNode::ControlPerformanceAnalysisNode(
   param_.wheelbase_ = vehicle_info.wheel_base_m;
 
   // Node Parameters.
-  param_.curvature_interval_length_ = declare_parameter("curvature_interval_length", 10.0);
-  param_.prevent_zero_division_value_ = declare_parameter("prevent_zero_division_value", 0.001);
-  param_.odom_interval_ = declare_parameter("odom_interval", 2);
+  param_.curvature_interval_length_ = declare_parameter<double>("curvature_interval_length");
+  param_.prevent_zero_division_value_ = declare_parameter<double>("prevent_zero_division_value");
+  param_.odom_interval_ = declare_parameter<int>("odom_interval");
   param_.acceptable_max_distance_to_waypoint_ =
-    declare_parameter("acceptable_max_distance_to_waypoint", 1.5);
+    declare_parameter<double>("acceptable_max_distance_to_waypoint");
   param_.acceptable_max_yaw_difference_rad_ =
-    declare_parameter("acceptable_max_yaw_difference_rad", 1.0472);
-  param_.lpf_gain_ = declare_parameter("low_pass_filter_gain", 0.8);
+    declare_parameter<double>("acceptable_max_yaw_difference_rad");
+  param_.lpf_gain_ = declare_parameter<double>("low_pass_filter_gain");
 
   // Prepare error computation class with the wheelbase parameter.
   control_performance_core_ptr_ = std::make_unique<ControlPerformanceAnalysisCore>(param_);
