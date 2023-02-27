@@ -1008,11 +1008,12 @@ bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
 bool BehaviorPathPlannerNode::keepInputPoints(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
-  const auto target_module = "PullOver";
+  const auto target_module_1 = "PullOver";
+  const auto target_module_2 = "Avoidance";
 
   for (auto & status : statuses) {
     if (status->is_waiting_approval || status->status == BT::NodeStatus::RUNNING) {
-      if (target_module == status->module_name) {
+      if (target_module_1 == status->module_name || target_module_2 == status->module_name) {
         return true;
       }
     }

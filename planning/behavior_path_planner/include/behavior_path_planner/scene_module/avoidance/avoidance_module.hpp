@@ -50,6 +50,10 @@ public:
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
   BT::NodeStatus updateState() override;
+  BT::NodeStatus getNodeStatusWhileWaitingApproval() const override
+  {
+    return BT::NodeStatus::SUCCESS;
+  }
   BehaviorModuleOutput plan() override;
   CandidateOutput planCandidate() const override;
   BehaviorModuleOutput planWaitingApproval() override;
