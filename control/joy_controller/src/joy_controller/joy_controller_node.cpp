@@ -450,18 +450,18 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
 : Node("joy_controller", node_options)
 {
   // Parameter
-  joy_type_ = declare_parameter("joy_type", std::string("DS4"));
-  update_rate_ = declare_parameter("update_rate", 10.0);
-  accel_ratio_ = declare_parameter("accel_ratio", 3.0);
-  brake_ratio_ = declare_parameter("brake_ratio", 5.0);
-  steer_ratio_ = declare_parameter("steer_ratio", 0.5);
-  steering_angle_velocity_ = declare_parameter("steering_angle_velocity", 0.1);
-  accel_sensitivity_ = declare_parameter("accel_sensitivity", 1.0);
-  brake_sensitivity_ = declare_parameter("brake_sensitivity", 1.0);
-  velocity_gain_ = declare_parameter("control_command.velocity_gain", 3.0);
-  max_forward_velocity_ = declare_parameter("control_command.max_forward_velocity", 20.0);
-  max_backward_velocity_ = declare_parameter("control_command.max_backward_velocity", 3.0);
-  backward_accel_ratio_ = declare_parameter("control_command.backward_accel_ratio", 1.0);
+  joy_type_ = declare_parameter<std::string>("joy_type");
+  update_rate_ = declare_parameter<double>("update_rate");
+  accel_ratio_ = declare_parameter<double>("accel_ratio");
+  brake_ratio_ = declare_parameter<double>("brake_ratio");
+  steer_ratio_ = declare_parameter<double>("steer_ratio");
+  steering_angle_velocity_ = declare_parameter<double>("steering_angle_velocity");
+  accel_sensitivity_ = declare_parameter<double>("accel_sensitivity");
+  brake_sensitivity_ = declare_parameter<double>("brake_sensitivity");
+  velocity_gain_ = declare_parameter<double>("control_command.velocity_gain");
+  max_forward_velocity_ = declare_parameter<double>("control_command.max_forward_velocity");
+  max_backward_velocity_ = declare_parameter<double>("control_command.max_backward_velocity");
+  backward_accel_ratio_ = declare_parameter<double>("control_command.backward_accel_ratio");
 
   RCLCPP_INFO(get_logger(), "Joy type: %s", joy_type_.c_str());
 
