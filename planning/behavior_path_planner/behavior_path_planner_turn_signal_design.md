@@ -1,4 +1,4 @@
-# Turn Signal Decider
+# Turn Signal design
 
 Turn Signal decider determines necessary blinkers.
 

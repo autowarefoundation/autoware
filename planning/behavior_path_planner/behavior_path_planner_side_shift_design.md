@@ -1,4 +1,4 @@
-# Side shift Module
+# Side Shift design
 
 (For remote control) Shift the path to left or right according to an external instruction.
 

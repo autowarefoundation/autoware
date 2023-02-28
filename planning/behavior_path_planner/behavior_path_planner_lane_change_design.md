@@ -1,4 +1,4 @@
-# Lane Change
+# Lane Change design
 
 The Lane Change module is activated when lane change is needed and can be safely executed.
 

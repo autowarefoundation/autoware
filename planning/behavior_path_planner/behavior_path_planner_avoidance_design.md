@@ -1,4 +1,4 @@
-# Avoidance Module
+# Avoidance design
 
 This is a rule-based path planning module designed for obstacle avoidance.
 

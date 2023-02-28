@@ -1,4 +1,4 @@
-# Design limitation
+# Limitations
 
 The document describes the limitations that are currently present in the `behavior_path_planner` module.
 

@@ -1,8 +1,8 @@
-## Path Generation
+# Path Generation design
 
 This document explains how the path is generated for lane change and avoidance, etc. The implementation can be found in [path_shifter.hpp](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/behavior_path_planner/include/behavior_path_planner/scene_module/utils/path_shifter.hpp).
 
-### Overview
+## Overview
 
 The base idea of the path generation in lane change and avoidance is to smoothly shift the reference path, such as the center line, in the lateral direction. This is achieved by using a constant-jerk profile as in the figure below. More details on how it is used can be found in [README](https://github.com/autowarefoundation/autoware.universe/blob/main/planning/behavior_path_planner/README.md). It is assumed that the reference path is smooth enough for this algorithm.
 
@@ -14,7 +14,7 @@ The figure below explains how the application of a constant lateral jerk $l^{'''
 
 Note that, due to the rarity of the $T_v$ in almost all cases of lane change and avoidance, $T_v$ is not considered in the current implementation.
 
-### Mathematical Derivation
+## Mathematical Derivation
 
 By applying simple integral operations, the following analytical equations can be derived to describe the shift distance $l(t)$ at each time under lateral jerk, acceleration, and velocity constraints.
 
@@ -32,7 +32,7 @@ l_7&= 2 j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j + j(T_a + T_j)T_j T_v
 
 These equations are used to determine the shape of a path. Additionally, by applying further mathematical operations to these basic equations, the expressions of the following subsections can be derived.
 
-#### Calculation of Maximum Acceleration from transition time and final shift length
+### Calculation of Maximum Acceleration from transition time and final shift length
 
 In the case where there are no limitations on lateral velocity and lateral acceleration, the maximum lateral acceleration during the shifting can be calculated as follows. The constant-jerk time is given by $T_j = T_{\rm total}/4$ because of its symmetric property. Since $T_a=T_v=0$, the final shift length $L=l_7=2jT_j^3$ can be determined using the above equation. The maximum lateral acceleration is then given by $a_{\rm max} =jT_j$. This results in the following expression for the maximum lateral acceleration:
 
@@ -42,7 +42,7 @@ a_{\rm max}  = \frac{8L}{T_{\rm total}^2}
 \end{align}
 ```
 
-#### Calculation of Ta, Tj and jerk from acceleration limit
+### Calculation of Ta, Tj and jerk from acceleration limit
 
 In the case where there are no limitations on lateral velocity, the constant-jerk and acceleration times, as well as the required jerk can be calculated from the acceleration limit, total time, and final shift length as follows. Since $T_v=0$, the final shift length is given by:
 
@@ -73,7 +73,7 @@ jerk&=\frac{2a_{\rm lim} ^2T_{\rm total}}{a_{\rm lim} T_{\rm total}^2-4L}
 
 where $T_j$ is the constant-jerk time, $T_a$ is the constant acceleration time, $j$ is the required jerk, $a_{\rm lim}$ is the acceleration limit, and $L$ is the final shift length.
 
-#### Calculation of Required Time from Jerk and Acceleration Constraint
+### Calculation of Required Time from Jerk and Acceleration Constraint
 
 In the case where there are no limitations on lateral velocity, the total time required for shifting can be calculated from the jerk and acceleration limits and the final shift length as follows. By solving the two equations given above:
 
@@ -92,6 +92,6 @@ T_a &= \frac{1}{2}\sqrt{\frac{a_{\rm lim}}{j}^2 + \frac{4L}{a_{\rm lim}}} - \fra
 
 The total time required for shifting can then be calculated as $T_{\rm total}=4T_j+2T_a$.
 
-### Limitation
+## Limitation
 
 - Since $T_v$ is zero in almost all cases of lane change and avoidance, $T_v$ is not considered in the current implementation.
