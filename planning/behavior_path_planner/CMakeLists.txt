@@ -7,22 +7,15 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-ament_auto_add_library(behavior_path_planner_node SHARED
-  src/behavior_path_planner_node.cpp
-  src/behavior_tree_manager.cpp
+# use planner manager that supports behavior tree
+set(USE_BT TRUE)
+message(STATUS "USE_BEHAVIOR_TREE: " ${USE_BT})
+
+set(common_src
   src/utilities.cpp
   src/path_utilities.cpp
   src/steering_factor_interface.cpp
   src/turn_signal_decider.cpp
-  src/scene_module/scene_module_bt_node_interface.cpp
-  src/scene_module/side_shift/side_shift_module.cpp
-  src/scene_module/avoidance/avoidance_module.cpp
-  src/scene_module/lane_following/lane_following_module.cpp
-  src/scene_module/lane_change/external_request_lane_change_module.cpp
-  src/scene_module/lane_change/lane_change_module.cpp
-  src/scene_module/pull_over/pull_over_module.cpp
-  src/scene_module/pull_out/pull_out_module.cpp
-  src/scene_module/scene_module_visitor.cpp
   src/util/avoidance/util.cpp
   src/util/lane_change/util.cpp
   src/util/side_shift/util.cpp
@@ -33,17 +26,51 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/util/pull_out/util.cpp
   src/util/pull_out/shift_pull_out.cpp
   src/util/pull_out/geometric_pull_out.cpp
-  src/util/geometric_parallel_parking/geometric_parallel_parking.cpp
-  src/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
   src/util/path_shifter/path_shifter.cpp
   src/util/drivable_area_expansion/drivable_area_expansion.cpp
   src/util/drivable_area_expansion/map_utils.cpp
   src/util/drivable_area_expansion/footprints.cpp
   src/util/drivable_area_expansion/expansion.cpp
+  src/util/geometric_parallel_parking/geometric_parallel_parking.cpp
+  src/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
   src/marker_util/debug_utilities.cpp
   src/marker_util/avoidance/debug.cpp
   src/marker_util/lane_change/debug.cpp
 )
+
+if(USE_BT)
+  ament_auto_add_library(behavior_path_planner_node SHARED
+    src/behavior_path_planner_node.cpp
+    src/behavior_tree_manager.cpp
+    src/scene_module/scene_module_visitor.cpp
+    src/scene_module/scene_module_bt_node_interface.cpp
+    src/scene_module/side_shift/side_shift_module.cpp
+    src/scene_module/avoidance/avoidance_module.cpp
+    src/scene_module/lane_following/lane_following_module.cpp
+    src/scene_module/lane_change/external_request_lane_change_module.cpp
+    src/scene_module/lane_change/lane_change_module.cpp
+    src/scene_module/pull_over/pull_over_module.cpp
+    src/scene_module/pull_out/pull_out_module.cpp
+    ${common_src}
+  )
+
+  target_compile_definitions(behavior_path_planner_node PRIVATE USE_BEHAVIOR_TREE)
+
+  message(WARNING "Build behavior_path_planner with BT...")
+
+else()
+  ament_auto_add_library(behavior_path_planner_node SHARED
+    src/behavior_path_planner_node.cpp
+    src/planner_manager.cpp
+    src/scene_module/scene_module_visitor.cpp
+    # src/scene_module_v2/avoidance
+    # src/scene_module_v2/lane_change
+    # src/scene_module_v2/...
+    ${common_src}
+  )
+
+  message(WARNING "Build behavior_path_planner without BT...")
+endif()
 
 target_include_directories(behavior_path_planner_node SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIR}

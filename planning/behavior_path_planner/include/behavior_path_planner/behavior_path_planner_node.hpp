@@ -15,19 +15,28 @@
 #ifndef BEHAVIOR_PATH_PLANNER__BEHAVIOR_PATH_PLANNER_NODE_HPP_
 #define BEHAVIOR_PATH_PLANNER__BEHAVIOR_PATH_PLANNER_NODE_HPP_
 
-#include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/data_manager.hpp"
+
+#ifdef USE_BEHAVIOR_TREE
+#include "behavior_path_planner/behavior_tree_manager.hpp"
+#include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request_lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_following/lane_following_module.hpp"
 #include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
+#else
+#include "behavior_path_planner/planner_manager.hpp"
+#include "behavior_path_planner/scene_module_v2/scene_module_interface.hpp"
+#endif
+
 #include "behavior_path_planner/steering_factor_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/util/avoidance/avoidance_module_data.hpp"
 
 #include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
+#include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path.hpp>
@@ -65,6 +74,7 @@ inline void update_param(
 
 namespace behavior_path_planner
 {
+using autoware_adapi_v1_msgs::msg::OperationModeState;
 using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::Path;
@@ -97,6 +107,9 @@ private:
   rclcpp::Subscription<Scenario>::SharedPtr scenario_subscriber_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_subscriber_;
+#ifndef USE_BEHAVIOR_TREE
+  rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_subscriber_;
+#endif
   rclcpp::Publisher<PathWithLaneId>::SharedPtr path_publisher_;
   rclcpp::Publisher<TurnIndicatorsCommand>::SharedPtr turn_signal_publisher_;
   rclcpp::Publisher<HazardLightsCommand>::SharedPtr hazard_signal_publisher_;
@@ -105,9 +118,18 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_candidate_publishers_;
+#ifndef USE_BEHAVIOR_TREE
+  std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_reference_publishers_;
+#endif
 
   std::shared_ptr<PlannerData> planner_data_;
+
+#ifdef USE_BEHAVIOR_TREE
   std::shared_ptr<BehaviorTreeManager> bt_manager_;
+#else
+  std::shared_ptr<PlannerManager> planner_manager_;
+#endif
+
   std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
   Scenario::SharedPtr current_scenario_{nullptr};
 
@@ -127,11 +149,15 @@ private:
   // update planner data
   std::shared_ptr<PlannerData> createLatestPlannerData();
 
+#ifdef USE_BEHAVIOR_TREE
   // parameters
   std::shared_ptr<AvoidanceParameters> avoidance_param_ptr;
   std::shared_ptr<LaneChangeParameters> lane_change_param_ptr;
+#endif
 
   BehaviorPathPlannerParameters getCommonParam();
+
+#ifdef USE_BEHAVIOR_TREE
   BehaviorTreeManagerParam getBehaviorTreeManagerParam();
   SideShiftParameters getSideShiftParam();
   AvoidanceParameters getAvoidanceParam();
@@ -139,6 +165,7 @@ private:
   LaneChangeParameters getLaneChangeParam();
   PullOverParameters getPullOverParam();
   PullOutParameters getPullOutParam();
+#endif
 
   // callback
   void onOdometry(const Odometry::ConstSharedPtr msg);
@@ -147,6 +174,9 @@ private:
   void onOccupancyGrid(const OccupancyGrid::ConstSharedPtr msg);
   void onMap(const HADMapBin::ConstSharedPtr map_msg);
   void onRoute(const LaneletRoute::ConstSharedPtr route_msg);
+#ifndef USE_BEHAVIOR_TREE
+  void onOperationMode(const OperationModeState::ConstSharedPtr msg);
+#endif
   SetParametersResult onSetParam(const std::vector<rclcpp::Parameter> & parameters);
 
   /**
@@ -205,8 +235,16 @@ private:
   /**
    * @brief publish path candidate
    */
+#ifdef USE_BEHAVIOR_TREE
   void publishPathCandidate(
     const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules);
+#else
+  void publishPathCandidate(
+    const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers);
+
+  void publishPathReference(
+    const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers);
+#endif
 
   /**
    * @brief convert path with lane id to path for publish path candidate

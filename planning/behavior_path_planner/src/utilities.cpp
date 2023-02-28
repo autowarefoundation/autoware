@@ -2464,4 +2464,27 @@ double calcLaneChangeBuffer(
 {
   return num_lane_change * calcTotalLaneChangeDistance(common_param) + length_to_intersection;
 }
+
+lanelet::ConstLanelets getLaneletsFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler)
+{
+  std::vector<int64_t> unique_lanelet_ids;
+  for (const auto & p : path.points) {
+    const auto & lane_ids = p.lane_ids;
+    for (const auto & lane_id : lane_ids) {
+      if (
+        std::find(unique_lanelet_ids.begin(), unique_lanelet_ids.end(), lane_id) ==
+        unique_lanelet_ids.end()) {
+        unique_lanelet_ids.push_back(lane_id);
+      }
+    }
+  }
+
+  lanelet::ConstLanelets lanelets;
+  for (const auto & lane_id : unique_lanelet_ids) {
+    lanelets.push_back(route_handler->getLaneletsFromId(lane_id));
+  }
+
+  return lanelets;
+}
 }  // namespace behavior_path_planner::util

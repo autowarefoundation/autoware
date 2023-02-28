@@ -19,6 +19,8 @@
 
 struct BehaviorPathPlannerParameters
 {
+  bool verbose;
+
   double backward_path_length;
   double forward_path_length;
   double backward_length_buffer_for_end_of_lane;

@@ -517,6 +517,9 @@ double calcTotalLaneChangeDistance(
 double calcLaneChangeBuffer(
   const BehaviorPathPlannerParameters & common_param, const int num_lane_change,
   const double length_to_intersection = 0.0);
+
+lanelet::ConstLanelets getLaneletsFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler);
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_

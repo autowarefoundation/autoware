@@ -16,7 +16,6 @@
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
 #include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 #include "behavior_path_planner/util/drivable_area_expansion/map_utils.hpp"
 
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -92,6 +91,12 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   occupancy_grid_subscriber_ = create_subscription<OccupancyGrid>(
     "~/input/occupancy_grid_map", 1, std::bind(&BehaviorPathPlannerNode::onOccupancyGrid, this, _1),
     createSubscriptionOptions(this));
+#ifndef USE_BEHAVIOR_TREE
+  operation_mode_subscriber_ = create_subscription<OperationModeState>(
+    "/system/operation_mode/state", 1,
+    std::bind(&BehaviorPathPlannerNode::onOperationMode, this, _1),
+    createSubscriptionOptions(this));
+#endif
   scenario_subscriber_ = create_subscription<Scenario>(
     "~/input/scenario", 1,
     [this](const Scenario::ConstSharedPtr msg) {
@@ -108,13 +113,19 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     "~/input/route", qos_transient_local, std::bind(&BehaviorPathPlannerNode::onRoute, this, _1),
     createSubscriptionOptions(this));
 
+#ifdef USE_BEHAVIOR_TREE
   avoidance_param_ptr = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
   lane_change_param_ptr = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
+#endif
 
   m_set_param_res = this->add_on_set_parameters_callback(
     std::bind(&BehaviorPathPlannerNode::onSetParam, this, std::placeholders::_1));
+
+#ifdef USE_BEHAVIOR_TREE
   // behavior tree manager
   {
+    RCLCPP_INFO(get_logger(), "use behavior tree.");
+
     const std::string path_candidate_name_space = "/planning/path_candidate/";
     mutex_bt_.lock();
 
@@ -170,6 +181,21 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
 
     mutex_bt_.unlock();
   }
+#else
+  {
+    RCLCPP_INFO(get_logger(), "not use behavior tree.");
+
+    const std::string path_candidate_name_space = "/planning/path_candidate/";
+    const std::string path_reference_name_space = "/planning/path_reference/";
+
+    mutex_bt_.lock();
+
+    const auto & p = planner_data_->parameters;
+    planner_manager_ = std::make_shared<PlannerManager>(*this, p.verbose);
+
+    mutex_bt_.unlock();
+  }
+#endif
 
   // turn signal decider
   {
@@ -197,6 +223,10 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
 BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 {
   BehaviorPathPlannerParameters p{};
+
+#ifndef USE_BEHAVIOR_TREE
+  p.verbose = declare_parameter<bool>("verbose");
+#endif
 
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
@@ -275,6 +305,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   return p;
 }
 
+#ifdef USE_BEHAVIOR_TREE
 SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -296,7 +327,9 @@ SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
 
   return p;
 }
+#endif
 
+#ifdef USE_BEHAVIOR_TREE
 AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 {
   AvoidanceParameters p{};
@@ -450,7 +483,9 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 
   return p;
 }
+#endif
 
+#ifdef USE_BEHAVIOR_TREE
 LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
 {
   LaneFollowingParameters p{};
@@ -464,7 +499,9 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
     declare_parameter("lane_following.lane_change_prepare_duration", 2.0);
   return p;
 }
+#endif
 
+#ifdef USE_BEHAVIOR_TREE
 LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -541,7 +578,9 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 
   return p;
 }
+#endif
 
+#ifdef USE_BEHAVIOR_TREE
 PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -637,7 +676,9 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
 
   return p;
 }
+#endif
 
+#ifdef USE_BEHAVIOR_TREE
 PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -693,7 +734,9 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
 
   return p;
 }
+#endif
 
+#ifdef USE_BEHAVIOR_TREE
 BehaviorTreeManagerParam BehaviorPathPlannerNode::getBehaviorTreeManagerParam()
 {
   BehaviorTreeManagerParam p{};
@@ -702,6 +745,7 @@ BehaviorTreeManagerParam BehaviorPathPlannerNode::getBehaviorTreeManagerParam()
   p.groot_zmq_server_port = declare_parameter("groot_zmq_server_port", 1667);
   return p;
 }
+#endif
 
 // wait until mandatory data is ready
 bool BehaviorPathPlannerNode::isDataReady()
@@ -735,6 +779,12 @@ bool BehaviorPathPlannerNode::isDataReady()
     return missing("self_acceleration");
   }
 
+#ifndef USE_BEHAVIOR_TREE
+  if (!planner_data_->operation_mode) {
+    return missing("operation_mode");
+  }
+#endif
+
   return true;
 }
 
@@ -756,7 +806,11 @@ std::shared_ptr<PlannerData> BehaviorPathPlannerNode::createLatestPlannerData()
     // so that the each modules do not have to care about the "route jump".
     if (!is_first_time) {
       RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
+#ifdef USE_BEHAVIOR_TREE
       bt_manager_->resetBehaviorTree();
+#else
+      planner_manager_->reset();
+#endif
     }
 
     has_received_route_ = false;
@@ -783,8 +837,18 @@ void BehaviorPathPlannerNode::run()
   // create latest planner data
   const auto planner_data = createLatestPlannerData();
 
+#ifndef USE_BEHAVIOR_TREE
+  if (planner_data->operation_mode->mode != OperationModeState::AUTONOMOUS) {
+    planner_manager_->resetRootLanelet(planner_data);
+  }
+#endif
+
   // run behavior planner
+#ifdef USE_BEHAVIOR_TREE
   const auto output = bt_manager_->run(planner_data);
+#else
+  const auto output = planner_manager_->run(planner_data);
+#endif
 
   // path handling
   const auto path = getPath(output, planner_data);
@@ -808,7 +872,12 @@ void BehaviorPathPlannerNode::run()
       get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
   }
 
+#ifdef USE_BEHAVIOR_TREE
   publishPathCandidate(bt_manager_->getSceneModules());
+#else
+  publishPathCandidate(planner_manager_->getSceneModuleManagers());
+  publishPathReference(planner_manager_->getSceneModuleManagers());
+#endif
 
   publishSceneModuleDebugMsg();
 
@@ -823,6 +892,11 @@ void BehaviorPathPlannerNode::run()
       marker_utils::createFurthestLineStringMarkerArray(util::getMaximumDrivableArea(planner_data));
     debug_maximum_drivable_area_publisher_->publish(maximum_drivable_area);
   }
+
+#ifndef USE_BEHAVIOR_TREE
+  planner_manager_->print();
+  planner_manager_->publishDebugMarker();
+#endif
 
   mutex_bt_.unlock();
   RCLCPP_DEBUG(get_logger(), "----- behavior path planner end -----\n\n");
@@ -914,20 +988,22 @@ void BehaviorPathPlannerNode::publish_bounds(const PathWithLaneId & path)
 
 void BehaviorPathPlannerNode::publishSceneModuleDebugMsg()
 {
-  {
-    const auto debug_messages_data_ptr = bt_manager_->getAllSceneModuleDebugMsgData();
-    const auto avoidance_debug_message = debug_messages_data_ptr->getAvoidanceModuleDebugMsg();
-    if (avoidance_debug_message) {
-      debug_avoidance_msg_array_publisher_->publish(*avoidance_debug_message);
-    }
+#ifdef USE_BEHAVIOR_TREE
+  const auto debug_messages_data_ptr = bt_manager_->getAllSceneModuleDebugMsgData();
 
-    const auto lane_change_debug_message = debug_messages_data_ptr->getLaneChangeModuleDebugMsg();
-    if (lane_change_debug_message) {
-      debug_lane_change_msg_array_publisher_->publish(*lane_change_debug_message);
-    }
+  const auto avoidance_debug_message = debug_messages_data_ptr->getAvoidanceModuleDebugMsg();
+  if (avoidance_debug_message) {
+    debug_avoidance_msg_array_publisher_->publish(*avoidance_debug_message);
   }
+
+  const auto lane_change_debug_message = debug_messages_data_ptr->getLaneChangeModuleDebugMsg();
+  if (lane_change_debug_message) {
+    debug_lane_change_msg_array_publisher_->publish(*lane_change_debug_message);
+  }
+#endif
 }
 
+#ifdef USE_BEHAVIOR_TREE
 void BehaviorPathPlannerNode::publishPathCandidate(
   const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules)
 {
@@ -938,6 +1014,49 @@ void BehaviorPathPlannerNode::publishPathCandidate(
     }
   }
 }
+#else
+void BehaviorPathPlannerNode::publishPathCandidate(
+  const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers)
+{
+  for (auto & manager : managers) {
+    if (path_candidate_publishers_.count(manager->getModuleName()) == 0) {
+      continue;
+    }
+
+    if (manager->getSceneModules().empty()) {
+      path_candidate_publishers_.at(manager->getModuleName())
+        ->publish(convertToPath(nullptr, false));
+      continue;
+    }
+
+    for (auto & module : manager->getSceneModules()) {
+      path_candidate_publishers_.at(module->name())
+        ->publish(convertToPath(module->getPathCandidate(), module->isExecutionReady()));
+    }
+  }
+}
+
+void BehaviorPathPlannerNode::publishPathReference(
+  const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers)
+{
+  for (auto & manager : managers) {
+    if (path_reference_publishers_.count(manager->getModuleName()) == 0) {
+      continue;
+    }
+
+    if (manager->getSceneModules().empty()) {
+      path_reference_publishers_.at(manager->getModuleName())
+        ->publish(convertToPath(nullptr, false));
+      continue;
+    }
+
+    for (auto & module : manager->getSceneModules()) {
+      path_reference_publishers_.at(module->name())
+        ->publish(convertToPath(module->getPathReference(), true));
+    }
+  }
+}
+#endif
 
 Path BehaviorPathPlannerNode::convertToPath(
   const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready)
@@ -976,7 +1095,11 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
     get_logger(), "BehaviorTreeManager: output is %s.", bt_output.path ? "FOUND" : "NOT FOUND");
 
   PathWithLaneId connected_path;
+#ifdef USE_BEHAVIOR_TREE
   const auto module_status_ptr_vec = bt_manager_->getModulesStatus();
+#else
+  const auto module_status_ptr_vec = planner_manager_->getSceneModuleStatus();
+#endif
   if (skipSmoothGoalConnection(module_status_ptr_vec)) {
     connected_path = *path;
   } else {
@@ -994,8 +1117,14 @@ bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
 {
   const auto target_module = "PullOver";
 
+#ifdef USE_BEHAVIOR_TREE
+  const auto target_status = BT::NodeStatus::RUNNING;
+#else
+  const auto target_status = ModuleStatus::RUNNING;
+#endif
+
   for (auto & status : statuses) {
-    if (status->is_waiting_approval || status->status == BT::NodeStatus::RUNNING) {
+    if (status->is_waiting_approval || status->status == target_status) {
       if (target_module == status->module_name) {
         return true;
       }
@@ -1008,12 +1137,19 @@ bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
 bool BehaviorPathPlannerNode::keepInputPoints(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
-  const auto target_module_1 = "PullOver";
-  const auto target_module_2 = "Avoidance";
+  const std::vector<std::string> target_modules = {"PullOver", "Avoidance"};
+
+#ifdef USE_BEHAVIOR_TREE
+  const auto target_status = BT::NodeStatus::RUNNING;
+#else
+  const auto target_status = ModuleStatus::RUNNING;
+#endif
 
   for (auto & status : statuses) {
-    if (status->is_waiting_approval || status->status == BT::NodeStatus::RUNNING) {
-      if (target_module_1 == status->module_name || target_module_2 == status->module_name) {
+    if (status->is_waiting_approval || status->status == target_status) {
+      if (
+        std::find(target_modules.begin(), target_modules.end(), status->module_name) !=
+        target_modules.end()) {
         return true;
       }
     }
@@ -1053,26 +1189,37 @@ void BehaviorPathPlannerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
   route_ptr_ = msg;
   has_received_route_ = true;
 }
+#ifndef USE_BEHAVIOR_TREE
+void BehaviorPathPlannerNode::onOperationMode(const OperationModeState::ConstSharedPtr msg)
+{
+  const std::lock_guard<std::mutex> lock(mutex_pd_);
+  planner_data_->operation_mode = msg;
+}
+#endif
 
 SetParametersResult BehaviorPathPlannerNode::onSetParam(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   rcl_interfaces::msg::SetParametersResult result;
 
+#ifdef USE_BEHAVIOR_TREE
   if (!lane_change_param_ptr && !avoidance_param_ptr) {
     result.successful = false;
     result.reason = "param not initialized";
     return result;
   }
+#endif
 
   result.successful = true;
   result.reason = "success";
 
   try {
+#ifdef USE_BEHAVIOR_TREE
     update_param(
       parameters, "avoidance.publish_debug_marker", avoidance_param_ptr->publish_debug_marker);
     update_param(
       parameters, "lane_change.publish_debug_marker", lane_change_param_ptr->publish_debug_marker);
+#endif
     // Drivable area expansion parameters
     using drivable_area_expansion::DrivableAreaExpansionParameters;
     update_param(

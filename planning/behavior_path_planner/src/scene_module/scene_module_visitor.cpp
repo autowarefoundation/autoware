@@ -14,7 +14,11 @@
 
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 
+#ifdef USE_BEHAVIOR_TREE
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#else
+#include "behavior_path_planner/scene_module_v2/scene_module_interface.hpp"
+#endif
 
 namespace behavior_path_planner
 {
