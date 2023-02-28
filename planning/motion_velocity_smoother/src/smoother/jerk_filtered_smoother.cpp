@@ -187,10 +187,9 @@ bool JerkFilteredSmoother::apply(
   /**************************************************************/
 
   // jerk: d(ai)/ds * v_ref -> minimize weight * ((a1 - a0) / ds * v_ref)^2 * ds
-  constexpr double ZERO_VEL_THR_FOR_DT_CALC = 0.3;
   const double smooth_weight = smoother_param_.jerk_weight;
   for (size_t i = 0; i < N - 1; ++i) {
-    const double ref_vel = v_max_arr.at(i);
+    const double ref_vel = 0.5 * (v_max_arr.at(i) + v_max_arr.at(i + 1));
     const double interval_dist = std::max(interval_dist_arr.at(i), 0.0001);
     const double w_x_ds_inv = (1.0 / interval_dist) * ref_vel;
     P(IDX_A0 + i, IDX_A0 + i) += smooth_weight * w_x_ds_inv * w_x_ds_inv * interval_dist;
@@ -254,7 +253,7 @@ bool JerkFilteredSmoother::apply(
   // Soft Constraint Jerk Limit: jerk_min < pseudo_jerk[i] * ref_vel[i] - gamma[i] < jerk_max
   // -> jerk_min * ds < (a[i+1] - a[i]) * ref_vel[i] - gamma[i] * ds < jerk_max * ds
   for (size_t i = 0; i < N - 1; ++i, ++constr_idx) {
-    const double ref_vel = std::max(v_max_arr.at(i), ZERO_VEL_THR_FOR_DT_CALC);
+    const double ref_vel = 0.5 * (v_max_arr.at(i) + v_max_arr.at(i + 1));
     const double ds = interval_dist_arr.at(i);
     A(constr_idx, IDX_A0 + i) = -ref_vel;     // -a[i] * ref_vel
     A(constr_idx, IDX_A0 + i + 1) = ref_vel;  //  a[i+1] * ref_vel
