@@ -506,19 +506,16 @@ bool isLaneChangePathSafe(
   }
 
   const double time_resolution = lane_change_parameters.prediction_time_resolution;
-  const auto & lane_change_prepare_duration = lane_change_path.duration.prepare;
-  const auto & enable_collision_check_at_prepare_phase =
+  const auto check_at_prepare_phase =
     lane_change_parameters.enable_collision_check_at_prepare_phase;
-  const auto & lane_changing_safety_check_duration = lane_change_path.duration.lane_changing;
-  const double check_end_time = lane_change_prepare_duration + lane_changing_safety_check_duration;
+
+  const double check_start_time = check_at_prepare_phase ? 0.0 : lane_change_path.duration.prepare;
+  const double check_end_time = lane_change_path.duration.sum();
   const double min_lc_speed{lane_change_parameters.minimum_lane_change_velocity};
 
   const auto vehicle_predicted_path = util::convertToPredictedPath(
     path, current_twist, current_pose, static_cast<double>(current_seg_idx), check_end_time,
     time_resolution, acceleration, min_lc_speed);
-  const auto prepare_phase_ignore_target_speed_thresh =
-    lane_change_parameters.prepare_phase_ignore_target_speed_thresh;
-
   const auto & vehicle_info = common_parameters.vehicle_info;
 
   auto in_lane_object_indices = dynamic_objects_indices.target_lane;
@@ -551,26 +548,42 @@ bool isLaneChangePathSafe(
       }
     };
 
+  const auto reserve_size =
+    static_cast<size_t>((check_end_time - check_start_time) / time_resolution);
+  std::vector<double> check_durations{};
+  std::vector<std::pair<Pose, tier4_autoware_utils::Polygon2d>> interpolated_ego{};
+  check_durations.reserve(reserve_size);
+  interpolated_ego.reserve(reserve_size);
+
+  {
+    Pose expected_ego_pose = current_pose;
+    for (double t = check_start_time; t < check_end_time; t += time_resolution) {
+      std::string failed_reason;
+      tier4_autoware_utils::Polygon2d ego_polygon;
+      [[maybe_unused]] const auto get_ego_info = util::getEgoExpectedPoseAndConvertToPolygon(
+        current_pose, vehicle_predicted_path, ego_polygon, t, vehicle_info, expected_ego_pose,
+        failed_reason);
+      check_durations.push_back(t);
+      interpolated_ego.emplace_back(expected_ego_pose, ego_polygon);
+    }
+  }
+
   for (const auto & i : in_lane_object_indices) {
     const auto & obj = dynamic_objects->objects.at(i);
-    const auto object_speed =
-      util::l2Norm(obj.kinematics.initial_twist_with_covariance.twist.linear);
-    const double check_start_time = (enable_collision_check_at_prepare_phase &&
-                                     (object_speed > prepare_phase_ignore_target_speed_thresh))
-                                      ? 0.0
-                                      : lane_change_prepare_duration;
     auto current_debug_data = assignDebugData(obj);
     const auto predicted_paths =
       util::getPredictedPathFromObj(obj, lane_change_parameters.use_all_predicted_path);
     for (const auto & obj_path : predicted_paths) {
       if (!util::isSafeInLaneletCollisionCheck(
-            current_pose, current_twist, vehicle_predicted_path, vehicle_info, check_start_time,
-            check_end_time, time_resolution, obj, obj_path, common_parameters, front_decel,
+            interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
+            obj, obj_path, common_parameters,
+            lane_change_parameters.prepare_phase_ignore_target_speed_thresh, front_decel,
             rear_decel, ego_pose_before_collision, current_debug_data.second)) {
         appendDebugInfo(current_debug_data, false);
         return false;
       }
     }
+    appendDebugInfo(current_debug_data, true);
   }
 
   if (!lane_change_parameters.use_predicted_path_outside_lanelet) {
@@ -585,16 +598,10 @@ bool isLaneChangePathSafe(
     const auto predicted_paths =
       util::getPredictedPathFromObj(obj, lane_change_parameters.use_all_predicted_path);
 
-    const auto object_speed =
-      util::l2Norm(obj.kinematics.initial_twist_with_covariance.twist.linear);
-    const double check_start_time = (enable_collision_check_at_prepare_phase &&
-                                     (object_speed > prepare_phase_ignore_target_speed_thresh))
-                                      ? 0.0
-                                      : lane_change_prepare_duration;
     if (!util::isSafeInFreeSpaceCollisionCheck(
-          current_pose, current_twist, vehicle_predicted_path, vehicle_info, check_start_time,
-          check_end_time, time_resolution, obj, common_parameters, front_decel, rear_decel,
-          current_debug_data.second)) {
+          interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare, obj,
+          common_parameters, lane_change_parameters.prepare_phase_ignore_target_speed_thresh,
+          front_decel, rear_decel, current_debug_data.second)) {
       appendDebugInfo(current_debug_data, false);
       return false;
     }
