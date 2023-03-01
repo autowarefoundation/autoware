@@ -27,9 +27,9 @@ while [ "$1" != "" ]; do
         # Disable installation of 'cuda-drivers' in the role 'cuda'.
         option_no_cuda_drivers=true
         ;;
-    --no-dev)
-        # Disable installation dev packages .
-        option_no_dev=true
+    --runtime)
+        # Disable installation dev package of role 'cuda' and 'tensorrt'.
+        option_runtime=true
         ;;
     *)
         args+=("$1")
@@ -82,8 +82,9 @@ if [ "$option_no_cuda_drivers" = "true" ]; then
 fi
 
 # Check installation of dev package
-if [ "$option_no_dev" = "true" ]; then
+if [ "$option_runtime" = "true" ]; then
     ansible_args+=("--extra-vars" "install_devel=false")
+    # ROS installation type, default "desktop"
     ansible_args+=("--extra-vars" "installation_type=ros-base")
 else
     ansible_args+=("--extra-vars" "install_devel=true")
