@@ -1117,11 +1117,7 @@ bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
 {
   const auto target_module = "PullOver";
 
-#ifdef USE_BEHAVIOR_TREE
-  const auto target_status = BT::NodeStatus::RUNNING;
-#else
   const auto target_status = ModuleStatus::RUNNING;
-#endif
 
   for (auto & status : statuses) {
     if (status->is_waiting_approval || status->status == target_status) {
@@ -1139,11 +1135,7 @@ bool BehaviorPathPlannerNode::keepInputPoints(
 {
   const std::vector<std::string> target_modules = {"PullOver", "Avoidance"};
 
-#ifdef USE_BEHAVIOR_TREE
-  const auto target_status = BT::NodeStatus::RUNNING;
-#else
   const auto target_status = ModuleStatus::RUNNING;
-#endif
 
   for (auto & status : statuses) {
     if (status->is_waiting_approval || status->status == target_status) {

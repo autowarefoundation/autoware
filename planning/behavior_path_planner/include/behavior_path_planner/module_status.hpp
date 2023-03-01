@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
+#ifndef BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_
+#define BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_
 
-#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#ifdef USE_BEHAVIOR_TREE
+#include <behaviortree_cpp_v3/basic_types.h>
+#endif
 
 namespace behavior_path_planner
 {
-std::shared_ptr<AvoidanceDebugMsgArray> SceneModuleVisitor::getAvoidanceModuleDebugMsg() const
-{
-  return avoidance_visitor_;
-}
 
-std::shared_ptr<LaneChangeDebugMsgArray> SceneModuleVisitor::getLaneChangeModuleDebugMsg() const
-{
-  return lane_change_visitor_;
-}
+#ifdef USE_BEHAVIOR_TREE
+using ModuleStatus = BT::NodeStatus;
+#else
+enum class ModuleStatus {
+  IDLE = 0,
+  RUNNING = 1,
+  SUCCESS = 2,
+  FAILURE = 3,
+  // SKIPPED = 4,
+};
+#endif
+
 }  // namespace behavior_path_planner
+
+#endif  // BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_

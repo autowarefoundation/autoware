@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__BEHAVIOR_PATH_PLANNER_NODE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 
 #ifdef USE_BEHAVIOR_TREE
 #include "behavior_path_planner/behavior_tree_manager.hpp"
@@ -28,7 +29,6 @@
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 #else
 #include "behavior_path_planner/planner_manager.hpp"
-#include "behavior_path_planner/scene_module_v2/scene_module_interface.hpp"
 #endif
 
 #include "behavior_path_planner/steering_factor_interface.hpp"

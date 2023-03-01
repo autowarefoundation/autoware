@@ -121,10 +121,10 @@ void BehaviorTreeManager::resetNotRunningModulePathCandidate()
 {
   const bool is_any_module_running = std::any_of(
     scene_modules_.begin(), scene_modules_.end(),
-    [](const auto & module) { return module->current_state_ == BT::NodeStatus::RUNNING; });
+    [](const auto & module) { return module->getCurrentStatus() == BT::NodeStatus::RUNNING; });
 
   for (auto & module : scene_modules_) {
-    if (is_any_module_running && (module->current_state_ != BT::NodeStatus::RUNNING)) {
+    if (is_any_module_running && (module->getCurrentStatus() != BT::NodeStatus::RUNNING)) {
       module->resetPathCandidate();
     }
   }

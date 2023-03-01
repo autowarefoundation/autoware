@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/module_status.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
@@ -29,8 +30,6 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
-
-#include <behaviortree_cpp_v3/basic_types.h>
 
 #include <algorithm>
 #include <limits>
@@ -59,16 +58,19 @@ public:
   : name_{name},
     logger_{node.get_logger().get_child(name)},
     clock_{node.get_clock()},
-    uuid_(generateUUID()),
     is_waiting_approval_{false},
-    current_state_{BT::NodeStatus::SUCCESS}
+    is_locked_new_module_launch_{false},
+    uuid_(generateUUID()),
+    current_state_{ModuleStatus::SUCCESS}
   {
+#ifdef USE_BEHAVIOR_TREE
     std::string module_ns;
     module_ns.resize(name.size());
     std::transform(name.begin(), name.end(), module_ns.begin(), tolower);
 
     const auto ns = std::string("~/debug/") + module_ns;
     pub_debug_marker_ = node.create_publisher<MarkerArray>(ns, 20);
+#endif
   }
 
   virtual ~SceneModuleInterface() = default;
@@ -78,16 +80,13 @@ public:
    *        FAILURE if plan has failed, RUNNING if plan is on going.
    *        These condition is to be implemented in each modules.
    */
-  virtual BT::NodeStatus updateState() = 0;
+  virtual ModuleStatus updateState() = 0;
 
   /**
    * @brief If the module plan customized reference path while waiting approval, it should output
    * SUCCESS. Otherwise, it should output FAILURE to check execution request of next module.
    */
-  virtual BT::NodeStatus getNodeStatusWhileWaitingApproval() const
-  {
-    return BT::NodeStatus::FAILURE;
-  }
+  virtual ModuleStatus getNodeStatusWhileWaitingApproval() const { return ModuleStatus::FAILURE; }
 
   /**
    * @brief Return true if the module has request for execution (not necessarily feasible)
@@ -135,7 +134,7 @@ public:
    */
   virtual BehaviorModuleOutput run()
   {
-    current_state_ = BT::NodeStatus::RUNNING;
+    current_state_ = ModuleStatus::RUNNING;
 
     updateData();
 
@@ -196,25 +195,6 @@ public:
     steering_factor_interface_ptr_->publishSteeringFactor(clock_->now());
   }
 
-  /**
-   * @brief set planner data
-   */
-  void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
-
-  void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
-
-  std::string name() const { return name_; }
-
-  rclcpp::Logger getLogger() const { return logger_; }
-
-  std::shared_ptr<const PlannerData> planner_data_;
-
-  bool isWaitingApproval() const { return is_waiting_approval_; }
-
-  PlanResult getPathCandidate() const { return path_candidate_; }
-
-  void resetPathCandidate() { path_candidate_.reset(); }
-
   virtual void lockRTCCommand()
   {
     if (!rtc_interface_ptr_) {
@@ -230,23 +210,56 @@ public:
     }
     rtc_interface_ptr_->unlockCommandUpdate();
   }
+
+  /**
+   * @brief set previous module's output as input for this module
+   */
+  void setPreviousModuleOutput(const BehaviorModuleOutput & previous_module_output)
+  {
+    previous_module_output_ = previous_module_output;
+  }
+
+  /**
+   * @brief set planner data
+   */
+  void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
+
+#ifdef USE_BEHAVIOR_TREE
+  void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
+#endif
+
+  bool isWaitingApproval() const { return is_waiting_approval_; }
+
+  bool isLockedNewModuleLaunch() const { return is_locked_new_module_launch_; }
+
+  void resetPathCandidate() { path_candidate_.reset(); }
+
+  void resetPathReference() { path_reference_.reset(); }
+
+  PlanResult getPathCandidate() const { return path_candidate_; }
+
+  PlanResult getPathReference() const { return path_reference_; }
+
+  MarkerArray getDebugMarkers() { return debug_marker_; }
+
+  ModuleStatus getCurrentStatus() const { return current_state_; }
+
   virtual void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const = 0;
+
+  std::string name() const { return name_; }
+
+  rclcpp::Logger getLogger() const { return logger_; }
 
 private:
   std::string name_;
+
   rclcpp::Logger logger_;
 
-protected:
-  rclcpp::Clock::SharedPtr clock_;
+#ifdef USE_BEHAVIOR_TREE
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
-  mutable MarkerArray debug_marker_;
+#endif
 
-  std::shared_ptr<RTCInterface> rtc_interface_ptr_;
-  std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
-  UUID uuid_;
-  bool is_waiting_approval_;
-  PlanResult path_candidate_;
-
+protected:
   void updateRTCStatus(const double start_distance, const double finish_distance)
   {
     if (!rtc_interface_ptr_) {
@@ -264,12 +277,35 @@ protected:
     rtc_interface_ptr_->clearCooperateStatus();
   }
 
+  void lockNewModuleLaunch() { is_locked_new_module_launch_ = true; }
+
+  void unlockNewModuleLaunch() { is_locked_new_module_launch_ = false; }
+
   void waitApproval() { is_waiting_approval_ = true; }
 
   void clearWaitingApproval() { is_waiting_approval_ = false; }
 
-public:
-  BT::NodeStatus current_state_;
+  rclcpp::Clock::SharedPtr clock_;
+
+  std::shared_ptr<RTCInterface> rtc_interface_ptr_;
+
+  std::shared_ptr<const PlannerData> planner_data_;
+
+  std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
+
+  bool is_waiting_approval_;
+  bool is_locked_new_module_launch_;
+
+  UUID uuid_;
+
+  PlanResult path_candidate_;
+  PlanResult path_reference_;
+
+  ModuleStatus current_state_;
+
+  BehaviorModuleOutput previous_module_output_;
+
+  mutable MarkerArray debug_marker_;
 };
 
 }  // namespace behavior_path_planner

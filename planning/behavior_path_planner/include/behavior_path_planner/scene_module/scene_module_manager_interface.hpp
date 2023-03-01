@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE_V2__SCENE_MODULE_MANAGER_INTERFACE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE_V2__SCENE_MODULE_MANAGER_INTERFACE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
+#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_MANAGER_INTERFACE_HPP_
 
-#include "behavior_path_planner/scene_module_v2/scene_module_interface.hpp"
+#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -187,4 +187,4 @@ private:
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE_V2__SCENE_MODULE_MANAGER_INTERFACE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_MANAGER_INTERFACE_HPP_

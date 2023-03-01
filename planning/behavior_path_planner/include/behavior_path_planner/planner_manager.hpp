@@ -15,8 +15,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__PLANNER_MANAGER_HPP_
 #define BEHAVIOR_PATH_PLANNER__PLANNER_MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module_v2/scene_module_interface.hpp"
-#include "behavior_path_planner/scene_module_v2/scene_module_manager_interface.hpp"
+#include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
