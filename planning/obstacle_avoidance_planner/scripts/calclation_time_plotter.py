@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2022 Tier IV, Inc.
+# Copyright 2023 TIER IV, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,23 +53,42 @@ class CalculationCostAnalyzer(Node):
     def CallbackCalculationCost(self, msg):
         max_y = 0
         max_x = 0
+
         for f_idx, function_name in enumerate(self.functions_name):
+            is_found = False
             for line in msg.data.split("\n"):
                 if function_name in line:
                     y = float(line.split(":=")[1].split("[ms]")[0])
                     self.y_vec[f_idx].append(y)
 
+                    is_found = True
+                    break
+
+            if not is_found:
+                self.y_vec[f_idx].append(None)
+
             if len(self.y_vec[f_idx]) > 100:
                 self.y_vec[f_idx].popleft()
 
+            print(len(self.y_vec[f_idx]))
+
             x_vec = list(range(len(self.y_vec[f_idx])))
 
-            self.lines[f_idx].set_xdata(x_vec)
-            self.lines[f_idx].set_ydata(self.y_vec[f_idx])
+            valid_x_vec = []
+            valid_y_vec = []
+            for i in range(len(x_vec)):
+                if self.y_vec[f_idx][i] is not None:
+                    valid_x_vec.append(x_vec[i])
+                    valid_y_vec.append(self.y_vec[f_idx][i])
 
-            if len(self.y_vec[f_idx]) > 0:
-                max_x = max(max_x, max(x_vec))
-                max_y = max(max_y, max(self.y_vec[f_idx]))
+            print(len(valid_x_vec), len(valid_y_vec))
+
+            self.lines[f_idx].set_xdata(valid_x_vec)
+            self.lines[f_idx].set_ydata(valid_y_vec)
+
+            if len(valid_y_vec) > 0:
+                max_x = max(max_x, max(valid_x_vec))
+                max_y = max(max_y, max(valid_y_vec))
 
         plt.xlim(0, max_x)
         plt.ylim(0.0, max_y)

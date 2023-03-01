@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,82 +11,34 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*
- * This Code is inspired by code from https://github.com/LiJiangnanBit/path_optimizer
- *
- * MIT License
- *
- * Copyright (c) 2020 Li Jiangnan
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 
 #ifndef OBSTACLE_AVOIDANCE_PLANNER__MPT_OPTIMIZER_HPP_
 #define OBSTACLE_AVOIDANCE_PLANNER__MPT_OPTIMIZER_HPP_
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Sparse"
+#include "gtest/gtest.h"
 #include "interpolation/linear_interpolation.hpp"
+#include "interpolation/spline_interpolation_points_2d.hpp"
 #include "obstacle_avoidance_planner/common_structs.hpp"
-#include "obstacle_avoidance_planner/vehicle_model/vehicle_model_interface.hpp"
+#include "obstacle_avoidance_planner/state_equation_generator.hpp"
+#include "obstacle_avoidance_planner/type_alias.hpp"
 #include "osqp_interface/osqp_interface.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
-
-#include "autoware_auto_planning_msgs/msg/path_point.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
-#include "nav_msgs/msg/map_meta_data.hpp"
-
-#include "boost/optional.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <memory>
+#include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
-enum class CollisionType { NO_COLLISION = 0, OUT_OF_SIGHT = 1, OUT_OF_ROAD = 2, OBJECT = 3 };
-
+namespace obstacle_avoidance_planner
+{
 struct Bounds
 {
-  Bounds() = default;
-  Bounds(
-    const double lower_bound_, const double upper_bound_, CollisionType lower_collision_type_,
-    CollisionType upper_collision_type_)
-  : lower_bound(lower_bound_),
-    upper_bound(upper_bound_),
-    lower_collision_type(lower_collision_type_),
-    upper_collision_type(upper_collision_type_)
-  {
-  }
-
   double lower_bound;
   double upper_bound;
-
-  CollisionType lower_collision_type;
-  CollisionType upper_collision_type;
-
-  bool hasCollisionWithRightObject() const { return lower_collision_type == CollisionType::OBJECT; }
-
-  bool hasCollisionWithLeftObject() const { return upper_collision_type == CollisionType::OBJECT; }
-
-  bool hasCollisionWithObject() const
-  {
-    return hasCollisionWithRightObject() || hasCollisionWithLeftObject();
-  }
 
   static Bounds lerp(Bounds prev_bounds, Bounds next_bounds, double ratio)
   {
@@ -95,14 +47,7 @@ struct Bounds
     const double upper_bound =
       interpolation::lerp(prev_bounds.upper_bound, next_bounds.upper_bound, ratio);
 
-    if (ratio < 0.5) {
-      return Bounds{
-        lower_bound, upper_bound, prev_bounds.lower_collision_type,
-        prev_bounds.upper_collision_type};
-    }
-
-    return Bounds{
-      lower_bound, upper_bound, next_bounds.lower_collision_type, next_bounds.upper_collision_type};
+    return Bounds{lower_bound, upper_bound};
   }
 
   void translate(const double offset)
@@ -112,53 +57,72 @@ struct Bounds
   }
 };
 
+struct KinematicState
+{
+  double lat{0.0};
+  double yaw{0.0};
+
+  Eigen::Vector2d toEigenVector() const { return Eigen::Vector2d{lat, yaw}; }
+};
+
 struct ReferencePoint
 {
-  geometry_msgs::msg::Point p;
-  double k = 0;
-  double v = 0;
-  double yaw = 0;
-  double s = 0;
-  double alpha = 0.0;
-  Bounds bounds;
-  bool near_objects;
+  geometry_msgs::msg::Pose pose;
+  double longitudinal_velocity_mps;
 
-  // NOTE: fix_kinematic_state is used for two purposes
-  //       one is fixing points around ego for stability
-  //       second is fixing current ego pose when no velocity for planning from ego pose
-  boost::optional<Eigen::Vector2d> fix_kinematic_state = boost::none;
-  bool plan_from_ego = true;
-  Eigen::Vector2d optimized_kinematic_state;
-  double optimized_input;
+  // additional information
+  double curvature{0.0};
+  double delta_arc_length{0.0};
+  double alpha{0.0};                          // for minimizing lateral error
+  Bounds bounds{};                            // bounds on `pose`
+  std::vector<std::optional<double>> beta{};  // for collision-free constraint
+  double normalized_avoidance_cost{0.0};
 
-  //
-  std::vector<boost::optional<double>> beta;
-  VehicleBounds vehicle_bounds;
+  // bounds and its local pose on each collision-free constraint
+  std::vector<Bounds> bounds_on_constraints{};
+  std::vector<geometry_msgs::msg::Pose> pose_on_constraints{};
 
-  // SequentialBoundsCandidates sequential_bounds_candidates;
-  std::vector<geometry_msgs::msg::Pose> vehicle_bounds_poses;  // for debug visualization
+  // optimization result
+  std::optional<KinematicState> fixed_kinematic_state{std::nullopt};
+  KinematicState optimized_kinematic_state{};
+  double optimized_input{};
+  std::optional<std::vector<double>> slack_variables{std::nullopt};
+
+  double getYaw() const { return tf2::getYaw(pose.orientation); }
+
+  geometry_msgs::msg::Pose offsetDeviation(const double lat_dev, const double yaw_dev) const
+  {
+    auto pose_with_deviation = tier4_autoware_utils::calcOffsetPose(pose, 0.0, lat_dev, 0.0);
+    pose_with_deviation.orientation =
+      tier4_autoware_utils::createQuaternionFromYaw(getYaw() + yaw_dev);
+    return pose_with_deviation;
+  }
 };
 
 class MPTOptimizer
 {
-private:
-  struct MPTMatrix
-  {
-    // Eigen::MatrixXd Aex;
-    Eigen::MatrixXd Bex;
-    Eigen::VectorXd Wex;
-    // Eigen::SparseMatrix<double> Cex;
-    // Eigen::SparseMatrix<double> Qex;
-    // Eigen::SparseMatrix<double> Rex;
-    // Eigen::MatrixXd R1ex;
-    // Eigen::MatrixXd R2ex;
-    // Eigen::MatrixXd Uref_ex;
-  };
+public:
+  MPTOptimizer(
+    rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
+    const vehicle_info_util::VehicleInfo & vehicle_info, const TrajectoryParam & traj_param,
+    const std::shared_ptr<DebugData> debug_data_ptr,
+    const std::shared_ptr<TimeKeeper> time_keeper_ptr);
 
+  std::optional<std::vector<TrajectoryPoint>> getModelPredictiveTrajectory(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & smoothed_points);
+
+  void initialize(const bool enable_debug_info, const TrajectoryParam & traj_param);
+  void resetPreviousData();
+  void onParam(const std::vector<rclcpp::Parameter> & parameters);
+
+  double getTrajectoryLength() const;
+  int getNumberOfPoints() const;
+
+private:
   struct ValueMatrix
   {
-    Eigen::SparseMatrix<double> Qex;
-    Eigen::SparseMatrix<double> Rex;
+    Eigen::SparseMatrix<double> Q;
+    Eigen::SparseMatrix<double> R;
   };
 
   struct ObjectiveMatrix
@@ -174,123 +138,161 @@ private:
     Eigen::VectorXd upper_bound;
   };
 
-  struct MPTTrajs
+  struct MPTParam
   {
-    std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> mpt;
-    std::vector<ReferencePoint> ref_points;
+    explicit MPTParam(rclcpp::Node * node, const vehicle_info_util::VehicleInfo & vehicle_info);
+    MPTParam() = default;
+    void onParam(const std::vector<rclcpp::Parameter> & parameters);
+
+    // option
+    bool enable_warm_start;
+    bool enable_manual_warm_start;
+    bool enable_optimization_validation;
+    bool steer_limit_constraint;
+    int mpt_visualize_sampling_num;  // for debug
+
+    // common
+    double delta_arc_length;
+    int num_points;
+
+    // kinematics
+    double optimization_center_offset;
+    double max_steer_rad;
+
+    // clearance
+    double hard_clearance_from_road;
+    double soft_clearance_from_road;
+    double soft_collision_free_weight;
+
+    // weight
+    double lat_error_weight;
+    double yaw_error_weight;
+    double yaw_error_rate_weight;
+
+    double terminal_lat_error_weight;
+    double terminal_yaw_error_weight;
+    double goal_lat_error_weight;
+    double goal_yaw_error_weight;
+
+    double steer_input_weight;
+    double steer_rate_weight;
+
+    // avoidance
+    double max_avoidance_cost;
+    double avoidance_cost_margin;
+    double avoidance_cost_band_length;
+    double avoidance_cost_decrease_rate;
+    double avoidance_lat_error_weight;
+    double avoidance_yaw_error_weight;
+    double avoidance_steer_input_weight;
+
+    // constraint type
+    bool soft_constraint;
+    bool hard_constraint;
+    bool l_inf_norm;
+
+    // vehicle circles
+    std::string vehicle_circles_method;
+    int vehicle_circles_uniform_circle_num;
+    double vehicle_circles_uniform_circle_radius_ratio;
+    int vehicle_circles_bicycle_model_num;
+    double vehicle_circles_bicycle_model_rear_radius_ratio;
+    double vehicle_circles_bicycle_model_front_radius_ratio;
+    int vehicle_circles_fitting_uniform_circle_num;
+
+    // validation
+    double max_validation_lat_error;
+    double max_validation_yaw_error;
   };
+
+  // publisher
+  rclcpp::Publisher<Trajectory>::SharedPtr debug_fixed_traj_pub_;
+  rclcpp::Publisher<Trajectory>::SharedPtr debug_ref_traj_pub_;
+  rclcpp::Publisher<Trajectory>::SharedPtr debug_mpt_traj_pub_;
+
+  // argument
+  bool enable_debug_info_;
+  EgoNearestParam ego_nearest_param_;
+  vehicle_info_util::VehicleInfo vehicle_info_;
+  TrajectoryParam traj_param_;
+  mutable std::shared_ptr<DebugData> debug_data_ptr_;
+  mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;
+  rclcpp::Logger logger_;
+  MPTParam mpt_param_;
+
+  StateEquationGenerator state_equation_generator_;
+  std::unique_ptr<autoware::common::osqp::OSQPInterface> osqp_solver_ptr_;
 
   const double osqp_epsilon_ = 1.0e-3;
 
-  bool is_showing_debug_info_;
-  TrajectoryParam traj_param_;
-  VehicleParam vehicle_param_;
-  MPTParam mpt_param_;
-  std::unique_ptr<VehicleModelInterface> vehicle_model_ptr_;
-  std::unique_ptr<autoware::common::osqp::OSQPInterface> osqp_solver_ptr_;
+  // vehicle circles
+  std::vector<double> vehicle_circle_longitudinal_offsets_;  // from base_link
+  std::vector<double> vehicle_circle_radiuses_;
 
-  geometry_msgs::msg::Pose current_ego_pose_;
-  double current_ego_vel_;
+  // previous data
+  int prev_mat_n_ = 0;
+  int prev_mat_m_ = 0;
+  std::shared_ptr<std::vector<ReferencePoint>> prev_ref_points_ptr_{nullptr};
 
-  int prev_mat_n = 0;
-  int prev_mat_m = 0;
+  void updateVehicleCircles();
 
-  mutable tier4_autoware_utils::StopWatch<
-    std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
-    stop_watch_;
-
-  std::vector<ReferencePoint> getReferencePoints(
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
-    const std::vector<geometry_msgs::msg::Point> & left_bound,
-    const std::vector<geometry_msgs::msg::Point> & right_bound,
-    const std::unique_ptr<Trajectories> & prev_mpt_points, DebugData & debug_data) const;
-
-  void calcPlanningFromEgo(std::vector<ReferencePoint> & ref_points) const;
-
-  /*
-  std::vector<ReferencePoint> convertToReferencePoints(
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
-    const std::unique_ptr<Trajectories> & prev_mpt_points, const bool enable_avoidance,
-    const CVMaps & maps, DebugData & debug_data) const;
-  */
-
-  std::vector<ReferencePoint> getFixedReferencePoints(
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
-    const std::unique_ptr<Trajectories> & prev_trajs) const;
-
-  void calcBounds(
+  std::vector<ReferencePoint> calcReferencePoints(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & smoothed_points) const;
+  void updateCurvature(
+    std::vector<ReferencePoint> & ref_points,
+    const SplineInterpolationPoints2d & ref_points_spline) const;
+  void updateOrientation(
+    std::vector<ReferencePoint> & ref_points,
+    const SplineInterpolationPoints2d & ref_points_spline) const;
+  void updateBounds(
     std::vector<ReferencePoint> & ref_points,
     const std::vector<geometry_msgs::msg::Point> & left_bound,
-    const std::vector<geometry_msgs::msg::Point> & right_bound, DebugData & debug_data) const;
-
-  void calcVehicleBounds(std::vector<ReferencePoint> & ref_points, DebugData & debug_data) const;
-
-  // void calcFixState(
-  // std::vector<ReferencePoint> & ref_points,
-  // const std::unique_ptr<Trajectories> & prev_trajs) const;
-
-  void calcOrientation(std::vector<ReferencePoint> & ref_points) const;
-
-  void calcCurvature(std::vector<ReferencePoint> & ref_points) const;
-
-  void calcArcLength(std::vector<ReferencePoint> & ref_points) const;
-
-  void calcExtraPoints(
+    const std::vector<geometry_msgs::msg::Point> & right_bound) const;
+  void updateVehicleBounds(
     std::vector<ReferencePoint> & ref_points,
-    const std::unique_ptr<Trajectories> & prev_trajs) const;
+    const SplineInterpolationPoints2d & ref_points_spline) const;
+  void updateFixedPoint(std::vector<ReferencePoint> & ref_points) const;
+  void updateDeltaArcLength(std::vector<ReferencePoint> & ref_points) const;
+  void updateExtraPoints(std::vector<ReferencePoint> & ref_points) const;
 
-  /*
-   * predict equation: Xec = Aex * x0 + Bex * Uex + Wex
-   * cost function: J = Xex' * Qex * Xex + (Uex - Uref)' * R1ex * (Uex - Uref_ex) + Uex' * R2ex *
-   * Uex Qex = diag([Q,Q,...]), R1ex = diag([R,R,...])
-   */
-  MPTMatrix generateMPTMatrix(
-    const std::vector<ReferencePoint> & reference_points, DebugData & debug_data) const;
-
-  ValueMatrix generateValueMatrix(
+  ValueMatrix calcValueMatrix(
     const std::vector<ReferencePoint> & reference_points,
-    const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points,
-    DebugData & debug_data) const;
+    const std::vector<TrajectoryPoint> & traj_points) const;
+
+  ObjectiveMatrix calcObjectiveMatrix(
+    const StateEquationGenerator::Matrix & mpt_mat, const ValueMatrix & obj_mat,
+    const std::vector<ReferencePoint> & ref_points) const;
+
+  ConstraintMatrix calcConstraintMatrix(
+    const StateEquationGenerator::Matrix & mpt_mat,
+    const std::vector<ReferencePoint> & ref_points) const;
+
+  std::optional<Eigen::VectorXd> calcOptimizedSteerAngles(
+    const std::vector<ReferencePoint> & ref_points, const ObjectiveMatrix & obj_mat,
+    const ConstraintMatrix & const_mat);
+  Eigen::VectorXd calcInitialSolutionForManualWarmStart(
+    const std::vector<ReferencePoint> & ref_points,
+    const std::vector<ReferencePoint> & prev_ref_points) const;
+  std::pair<ObjectiveMatrix, ConstraintMatrix> updateMatrixForManualWarmStart(
+    const ObjectiveMatrix & obj_mat, const ConstraintMatrix & const_mat,
+    const std::optional<Eigen::VectorXd> & u0) const;
 
   void addSteerWeightR(
-    std::vector<Eigen::Triplet<double>> & Rex_triplet_vec,
+    std::vector<Eigen::Triplet<double>> & R_triplet_vec,
     const std::vector<ReferencePoint> & ref_points) const;
 
-  boost::optional<Eigen::VectorXd> executeOptimization(
-    const std::unique_ptr<Trajectories> & prev_trajs, const bool enable_avoidance,
-    const MPTMatrix & mpt_mat, const ValueMatrix & obj_mat,
-    const std::vector<ReferencePoint> & ref_points, DebugData & debug_data);
+  std::optional<std::vector<TrajectoryPoint>> calcMPTPoints(
+    std::vector<ReferencePoint> & ref_points, const Eigen::VectorXd & U,
+    const StateEquationGenerator::Matrix & mpt_matrix) const;
 
-  std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> getMPTPoints(
-    std::vector<ReferencePoint> & fixed_ref_points,
-    std::vector<ReferencePoint> & non_fixed_ref_points, const Eigen::VectorXd & Uex,
-    const MPTMatrix & mpt_matrix, DebugData & debug_data);
-
-  std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> getMPTFixedPoints(
+  void publishDebugTrajectories(
+    const std_msgs::msg::Header & header, const std::vector<ReferencePoint> & ref_points,
+    const std::vector<TrajectoryPoint> & mpt_traj_points) const;
+  std::vector<TrajectoryPoint> extractFixedPoints(
     const std::vector<ReferencePoint> & ref_points) const;
 
-  ObjectiveMatrix getObjectiveMatrix(
-    const MPTMatrix & mpt_mat, const ValueMatrix & obj_mat,
-    [[maybe_unused]] const std::vector<ReferencePoint> & ref_points, DebugData & debug_data) const;
-
-  ConstraintMatrix getConstraintMatrix(
-    const bool enable_avoidance, const MPTMatrix & mpt_mat,
-    const std::vector<ReferencePoint> & ref_points, DebugData & debug_data) const;
-
-public:
-  MPTOptimizer(
-    const bool is_showing_debug_info, const TrajectoryParam & traj_param,
-    const VehicleParam & vehicle_param, const MPTParam & mpt_param);
-
-  boost::optional<MPTTrajs> getModelPredictiveTrajectory(
-    const bool enable_avoidance,
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & smoothed_points,
-    const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points,
-    const std::vector<geometry_msgs::msg::Point> & left_bound,
-    const std::vector<geometry_msgs::msg::Point> & right_bound,
-    const std::unique_ptr<Trajectories> & prev_trajs,
-    const geometry_msgs::msg::Pose & current_ego_pose, const double current_ego_vel,
-    DebugData & debug_data);
+  size_t getNumberOfSlackVariables() const;
+  std::optional<double> calcNormalizedAvoidanceCost(const ReferencePoint & ref_point) const;
 };
-
+}  // namespace obstacle_avoidance_planner
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__MPT_OPTIMIZER_HPP_

@@ -19,7 +19,7 @@
   <arg name="map_loader_param" default="$(find-pkg-share map_loader)/config/lanelet2_map_loader.param.yaml"/>
   <arg
     name="obstacle_avoidance_planner_param"
-    default="$(find-pkg-share planning_launch)/config/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"
+    default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"
   />
 
   <!-- Global parameters (for PathFootprint in tier4_planning_rviz_plugin) -->
@@ -56,8 +56,8 @@
     <param name="start_lanelet_id" value="$(var start_lanelet_id)"/>
     <param name="end_lanelet_id" value="$(var end_lanelet_id)"/>
     <!-- common param -->
-    <param from="$(find-pkg-share planning_launch)/config/scenario_planning/common/common.param.yaml"/>
-    <param from="$(find-pkg-share planning_launch)/config/scenario_planning/common/nearest_search.param.yaml"/>
+    <param from="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/common.param.yaml"/>
+    <param from="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/common/nearest_search.param.yaml"/>
     <!-- component param -->
     <param from="$(var map_loader_param)"/>
     <param from="$(var obstacle_avoidance_planner_param)"/>

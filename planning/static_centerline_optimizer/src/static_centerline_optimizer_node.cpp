@@ -19,8 +19,8 @@
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "map_loader/lanelet2_map_loader_node.hpp"
 #include "motion_utils/motion_utils.hpp"
-#include "static_centerline_optimizer/collision_free_optimizer_node.hpp"
 #include "static_centerline_optimizer/msg/points_with_lane_id.hpp"
+#include "static_centerline_optimizer/successive_trajectory_optimizer_node.hpp"
 #include "static_centerline_optimizer/type_alias.hpp"
 #include "static_centerline_optimizer/utils.hpp"
 
@@ -391,9 +391,8 @@ std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
   RCLCPP_INFO(get_logger(), "Converted to path and published.");
 
   // optimize trajectory by the obstacle_avoidance_planner package
-  CollisionFreeOptimizerNode successive_path_optimizer(create_node_options());
-  const auto optimized_traj =
-    successive_path_optimizer.pathCallback(std::make_shared<Path>(raw_path));
+  SuccessiveTrajectoryOptimizer successive_trajectory_optimizer(create_node_options());
+  const auto optimized_traj = successive_trajectory_optimizer.on_centerline(raw_path);
   pub_optimized_centerline_->publish(optimized_traj);
   const auto optimized_traj_points = motion_utils::convertToTrajectoryPointArray(optimized_traj);
 

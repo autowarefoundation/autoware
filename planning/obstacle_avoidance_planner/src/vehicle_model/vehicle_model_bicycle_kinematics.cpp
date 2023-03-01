@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Autoware Foundation
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,50 +18,24 @@
 #include <limits>
 #include <vector>
 
-KinematicsBicycleModel::KinematicsBicycleModel(const double wheel_base, const double steer_limit)
-: VehicleModelInterface(/* dim_x */ 2, /* dim_u */ 1, /* dim_y */ 2, wheel_base, steer_limit)
+KinematicsBicycleModel::KinematicsBicycleModel(const double wheelbase, const double steer_limit)
+: VehicleModelInterface(2, 1, 2, wheelbase, steer_limit)
 {
 }
 
 void KinematicsBicycleModel::calculateStateEquationMatrix(
-  Eigen::MatrixXd & Ad, Eigen::MatrixXd & Bd, Eigen::MatrixXd & Wd, const double ds)
+  Eigen::MatrixXd & Ad, Eigen::MatrixXd & Bd, Eigen::MatrixXd & Wd, const double curvature,
+  const double ds) const
 {
-  // const double epsilon = std::numeric_limits<double>::epsilon();
-  // constexpr double dt = 0.03;  // assuming delta time for steer tau
-
-  /*
-  const double lf = wheel_base_ - center_offset_from_base_;
-  const double lr = center_offset_from_base_;
-  */
-
-  const double delta_r = std::atan(wheel_base_ * curvature_);
+  const double delta_r = std::atan(wheelbase_ * curvature);
   const double cropped_delta_r = std::clamp(delta_r, -steer_limit_, steer_limit_);
 
-  // NOTE: cos(delta_r) will not be zero since that happens only when curvature is infinity
-  Ad << 1.0, ds,  //
-    0.0, 1.0;
+  // NOTE: cos(delta_r) will not be zero since curvature will not be infinity
+  Ad << 1.0, ds, 0.0, 1.0;
 
-  Bd << 0.0, ds / wheel_base_ / std::pow(std::cos(delta_r), 2.0);
+  Bd << 0.0, ds / wheelbase_ / std::pow(std::cos(delta_r), 2.0);
 
-  Wd << 0.0, -ds * curvature_ + ds / wheel_base_ *
-                                  (std::tan(cropped_delta_r) -
-                                   cropped_delta_r / std::pow(std::cos(cropped_delta_r), 2.0));
-}
-
-void KinematicsBicycleModel::calculateObservationMatrix(Eigen::MatrixXd & Cd)
-{
-  Cd << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0;
-}
-
-void KinematicsBicycleModel::calculateObservationSparseMatrix(
-  std::vector<Eigen::Triplet<double>> & Cd_vec)
-{
-  Cd_vec.clear();
-  Cd_vec.push_back({0, 0, 1.0});
-  Cd_vec.push_back({1, 1, 1.0});
-}
-
-void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd * Uref)
-{
-  (*Uref)(0, 0) = std::atan(wheel_base_ * curvature_);
+  Wd << 0.0, -ds * curvature + ds / wheelbase_ *
+                                 (std::tan(cropped_delta_r) -
+                                  cropped_delta_r / std::pow(std::cos(cropped_delta_r), 2.0));
 }

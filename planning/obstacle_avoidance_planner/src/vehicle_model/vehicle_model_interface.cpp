@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Autoware Foundation
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,23 +15,12 @@
 #include "obstacle_avoidance_planner/vehicle_model/vehicle_model_interface.hpp"
 
 VehicleModelInterface::VehicleModelInterface(
-  int dim_x, int dim_u, int dim_y, double wheel_base, double steer_limit)
-: dim_x_(dim_x),
-  dim_u_(dim_u),
-  dim_y_(dim_y),
-  wheel_base_(wheel_base),
-  steer_limit_(steer_limit),
-  center_offset_from_base_(0.0)
+  const int dim_x, const int dim_u, const int dim_y, const double wheelbase,
+  const double steer_limit)
+: dim_x_(dim_x), dim_u_(dim_u), dim_y_(dim_y), wheelbase_(wheelbase), steer_limit_(steer_limit)
 {
 }
 
-int VehicleModelInterface::getDimX() { return dim_x_; }
-int VehicleModelInterface::getDimU() { return dim_u_; }
-int VehicleModelInterface::getDimY() { return dim_y_; }
-
-void VehicleModelInterface::updateCenterOffset(const double center_offset_from_base)
-{
-  center_offset_from_base_ = center_offset_from_base;
-}
-
-void VehicleModelInterface::setCurvature(const double curvature) { curvature_ = curvature; }
+int VehicleModelInterface::getDimX() const { return dim_x_; }
+int VehicleModelInterface::getDimU() const { return dim_u_; }
+int VehicleModelInterface::getDimY() const { return dim_y_; }

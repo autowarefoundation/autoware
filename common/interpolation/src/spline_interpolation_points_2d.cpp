@@ -35,12 +35,13 @@ std::vector<double> calcEuclidDist(const std::vector<double> & x, const std::vec
   return dist_v;
 }
 
-std::array<std::vector<double>, 3> getBaseValues(
+std::array<std::vector<double>, 4> getBaseValues(
   const std::vector<geometry_msgs::msg::Point> & points)
 {
   // calculate x, y
   std::vector<double> base_x;
   std::vector<double> base_y;
+  std::vector<double> base_z;
   for (size_t i = 0; i < points.size(); i++) {
     const auto & current_pos = points.at(i);
     if (i > 0) {
@@ -53,16 +54,17 @@ std::array<std::vector<double>, 3> getBaseValues(
     }
     base_x.push_back(current_pos.x);
     base_y.push_back(current_pos.y);
+    base_z.push_back(current_pos.z);
   }
 
   // calculate base_keys, base_values
-  if (base_x.size() < 2 || base_y.size() < 2) {
+  if (base_x.size() < 2 || base_y.size() < 2 || base_z.size() < 2) {
     throw std::logic_error("The numbef of unique points is not enough.");
   }
 
   const std::vector<double> base_s = calcEuclidDist(base_x, base_y);
 
-  return {base_s, base_x, base_y};
+  return {base_s, base_x, base_y, base_z};
 }
 }  // namespace
 
@@ -137,10 +139,12 @@ geometry_msgs::msg::Point SplineInterpolationPoints2d::getSplineInterpolatedPoin
 
   const double x = spline_x_.getSplineInterpolatedValues({whole_s}).at(0);
   const double y = spline_y_.getSplineInterpolatedValues({whole_s}).at(0);
+  const double z = spline_z_.getSplineInterpolatedValues({whole_s}).at(0);
 
   geometry_msgs::msg::Point geom_point;
   geom_point.x = x;
   geom_point.y = y;
+  geom_point.z = z;
   return geom_point;
 }
 
@@ -226,8 +230,10 @@ void SplineInterpolationPoints2d::calcSplineCoefficientsInner(
   base_s_vec_ = base.at(0);
   const auto & base_x_vec = base.at(1);
   const auto & base_y_vec = base.at(2);
+  const auto & base_z_vec = base.at(3);
 
   // calculate spline coefficients
   spline_x_ = SplineInterpolation(base_s_vec_, base_x_vec);
   spline_y_ = SplineInterpolation(base_s_vec_, base_y_vec);
+  spline_z_ = SplineInterpolation(base_s_vec_, base_z_vec);
 }

@@ -84,6 +84,7 @@ private:
   void calcSplineCoefficientsInner(const std::vector<geometry_msgs::msg::Point> & points);
   SplineInterpolation spline_x_;
   SplineInterpolation spline_y_;
+  SplineInterpolation spline_z_;
 
   std::vector<double> base_s_vec_;
 };

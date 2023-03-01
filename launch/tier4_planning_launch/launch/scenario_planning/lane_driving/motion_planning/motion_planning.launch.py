@@ -48,12 +48,12 @@ def launch_setup(context, *args, **kwargs):
         obstacle_avoidance_planner_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     obstacle_avoidance_planner_component = ComposableNode(
         package="obstacle_avoidance_planner",
-        plugin="ObstacleAvoidancePlanner",
+        plugin="obstacle_avoidance_planner::ObstacleAvoidancePlanner",
         name="obstacle_avoidance_planner",
         namespace="",
         remappings=[
-            ("~/input/objects", "/perception/object_recognition/objects"),
             ("~/input/path", LaunchConfiguration("input_path_topic")),
+            ("~/input/odometry", "/localization/kinematic_state"),
             ("~/output/path", "obstacle_avoidance_planner/trajectory"),
         ],
         parameters=[
