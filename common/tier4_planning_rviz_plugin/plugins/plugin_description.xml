@@ -4,20 +4,10 @@
     base_class_type="rviz_common::Display">
     <description>Display path points of autoware_auto_planning_msg::Path</description>
   </class>
-  <class name="rviz_plugins/PathFootprint"
-    type="rviz_plugins::AutowarePathFootprintDisplay"
-    base_class_type="rviz_common::Display">
-    <description>Display footprint of autoware_auto_planning_msg::Path</description>
-  </class>
   <class name="rviz_plugins/PathWithLaneId"
     type="rviz_plugins::AutowarePathWithLaneIdDisplay"
     base_class_type="rviz_common::Display">
     <description>Display path_with_lane_id of autoware_auto_planning_msg::PathWithLaneId</description>
-  </class>
-  <class name="rviz_plugins/PathWithLaneIdFootprint"
-    type="rviz_plugins::AutowarePathWithLaneIdFootprintDisplay"
-    base_class_type="rviz_common::Display">
-    <description>Display footprint of autoware_auto_planning_msg::PathWithLaneId</description>
   </class>
   <class name="rviz_plugins/PoseWithUuidStamped"
     type="rviz_plugins::AutowarePoseWithUuidStampedDisplay"
@@ -28,11 +18,6 @@
     type="rviz_plugins::AutowareTrajectoryDisplay"
     base_class_type="rviz_common::Display">
     <description>Display trajectory points of autoware_auto_planning_msg::Trajectory</description>
-  </class>
-  <class name="rviz_plugins/TrajectoryFootprint"
-    type="rviz_plugins::AutowareTrajectoryFootprintDisplay"
-    base_class_type="rviz_common::Display">
-    <description>Display footprint of autoware_auto_planning_msg::Trajectory</description>
   </class>
   <class name="rviz_plugins/MaxVelocity"
     type="rviz_plugins::MaxVelocityDisplay"
