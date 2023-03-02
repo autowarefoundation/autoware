@@ -70,6 +70,9 @@ struct AvoidanceParameters
   // enable update path when if detected objects on planner data is gone.
   bool enable_update_path_when_object_is_gone{false};
 
+  // enable avoidance for all parking vehicle
+  bool enable_force_avoidance_for_stopped_vehicle{false};
+
   // enable safety check. if avoidance path is NOT safe, the ego will execute yield maneuver
   bool enable_safety_check{false};
 
@@ -101,6 +104,9 @@ struct AvoidanceParameters
   // vehicles with speed greater than this will not be avoided
   double threshold_speed_object_is_stopped;
 
+  // execute only when there is no intersection or crosswalk behind of the stopped vehicle.
+  double object_check_force_avoidance_clearance;
+
   // distance to avoid object detection
   double object_check_forward_distance;
 
@@ -122,6 +128,9 @@ struct AvoidanceParameters
 
   // vehicles which is moving more than this parameter will not be avoided
   double threshold_time_object_is_moving;
+
+  // force avoidance
+  double threshold_time_force_avoidance_for_stopped_vehicle;
 
   // we want to keep this lateral margin when avoiding
   double lateral_collision_margin;
@@ -290,6 +299,10 @@ struct ObjectData  // avoidance target
   rclcpp::Time last_stop;
   double move_time{0.0};
 
+  // object stopping duration
+  rclcpp::Time last_move;
+  double stop_time{0.0};
+
   // store the information of the lanelet which the object's overhang is currently occupying
   lanelet::ConstLanelet overhang_lanelet;
 
@@ -304,6 +317,9 @@ struct ObjectData  // avoidance target
 
   // lateral distance from overhang to the road shoulder
   double to_road_shoulder_distance{0.0};
+
+  // to intersection
+  double to_stop_factor_distance{std::numeric_limits<double>::max()};
 
   // if lateral margin is NOT enough, the ego must avoid the object.
   bool avoid_required{false};

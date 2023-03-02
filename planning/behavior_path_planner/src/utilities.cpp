@@ -1235,6 +1235,31 @@ double getDistanceToEndOfLane(const Pose & current_pose, const lanelet::ConstLan
   return lanelet_length - arc_coordinates.length;
 }
 
+double getDistanceToNextTrafficLight(
+  const Pose & current_pose, const lanelet::ConstLanelets & lanelets)
+{
+  const auto & arc_coordinates = lanelet::utils::getArcCoordinates(lanelets, current_pose);
+
+  lanelet::ConstLanelet current_lanelet;
+  if (!lanelet::utils::query::getClosestLanelet(lanelets, current_pose, &current_lanelet)) {
+    return std::numeric_limits<double>::max();
+  }
+
+  double distance = 0;
+  bool is_after_current_lanelet = false;
+  for (const auto & llt : lanelets) {
+    if (llt == current_lanelet) {
+      is_after_current_lanelet = true;
+    }
+    if (is_after_current_lanelet && !llt.regulatoryElementsAs<lanelet::TrafficLight>().empty()) {
+      return distance - arc_coordinates.length;
+    }
+    distance += lanelet::utils::getLaneletLength3d(llt);
+  }
+
+  return std::numeric_limits<double>::max();
+}
+
 double getDistanceToNextIntersection(
   const Pose & current_pose, const lanelet::ConstLanelets & lanelets)
 {

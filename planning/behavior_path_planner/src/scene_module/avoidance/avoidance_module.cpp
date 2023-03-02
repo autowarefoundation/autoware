@@ -405,6 +405,44 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
       }
     }
 
+    // calculate avoid_margin dynamically
+    // NOTE: This calculation must be after calculating to_road_shoulder_distance.
+    const double max_avoid_margin = parameters_->lateral_collision_safety_buffer +
+                                    parameters_->lateral_collision_margin + 0.5 * vehicle_width;
+    const double min_safety_lateral_distance =
+      parameters_->lateral_collision_safety_buffer + 0.5 * vehicle_width;
+    const auto max_allowable_lateral_distance = object_data.to_road_shoulder_distance -
+                                                parameters_->road_shoulder_safety_margin -
+                                                0.5 * vehicle_width;
+
+    const auto avoid_margin = [&]() -> boost::optional<double> {
+      if (max_allowable_lateral_distance < min_safety_lateral_distance) {
+        return boost::none;
+      }
+      return std::min(max_allowable_lateral_distance, max_avoid_margin);
+    }();
+
+    // force avoidance for stopped vehicle
+    {
+      const auto to_traffic_light =
+        util::getDistanceToNextTrafficLight(object_pose, data.current_lanelets);
+
+      object_data.to_stop_factor_distance =
+        std::min(to_traffic_light, object_data.to_stop_factor_distance);
+    }
+
+    if (
+      object_data.stop_time > parameters_->threshold_time_force_avoidance_for_stopped_vehicle &&
+      parameters_->enable_force_avoidance_for_stopped_vehicle) {
+      if (
+        object_data.to_stop_factor_distance > parameters_->object_check_force_avoidance_clearance) {
+        object_data.last_seen = clock_->now();
+        object_data.avoid_margin = avoid_margin;
+        data.target_objects.push_back(object_data);
+        continue;
+      }
+    }
+
     DEBUG_PRINT(
       "set object_data: longitudinal = %f, lateral = %f, largest_overhang = %f,"
       "to_road_shoulder_distance = %f",
@@ -506,23 +544,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     }
 
     object_data.last_seen = clock_->now();
-
-    // calculate avoid_margin dynamically
-    // NOTE: This calculation must be after calculating to_road_shoulder_distance.
-    const double max_avoid_margin = parameters_->lateral_collision_safety_buffer +
-                                    parameters_->lateral_collision_margin + 0.5 * vehicle_width;
-    const double min_safety_lateral_distance =
-      parameters_->lateral_collision_safety_buffer + 0.5 * vehicle_width;
-    const auto max_allowable_lateral_distance = object_data.to_road_shoulder_distance -
-                                                parameters_->road_shoulder_safety_margin -
-                                                0.5 * vehicle_width;
-
-    object_data.avoid_margin = [&]() -> boost::optional<double> {
-      if (max_allowable_lateral_distance < min_safety_lateral_distance) {
-        return boost::none;
-      }
-      return std::min(max_allowable_lateral_distance, max_avoid_margin);
-    }();
+    object_data.avoid_margin = avoid_margin;
 
     // set data
     data.target_objects.push_back(object_data);
@@ -583,21 +605,28 @@ void AvoidanceModule::fillObjectMovingTime(ObjectData & object_data) const
     object_data.last_stop = clock_->now();
     object_data.move_time = 0.0;
     if (is_new_object) {
+      object_data.stop_time = 0.0;
+      object_data.last_move = clock_->now();
       stopped_objects_.push_back(object_data);
     } else {
+      same_id_obj->stop_time = (clock_->now() - same_id_obj->last_move).seconds();
       same_id_obj->last_stop = clock_->now();
       same_id_obj->move_time = 0.0;
+      object_data.stop_time = same_id_obj->stop_time;
     }
     return;
   }
 
   if (is_new_object) {
     object_data.move_time = std::numeric_limits<double>::max();
+    object_data.stop_time = 0.0;
+    object_data.last_move = clock_->now();
     return;
   }
 
   object_data.last_stop = same_id_obj->last_stop;
   object_data.move_time = (clock_->now() - same_id_obj->last_stop).seconds();
+  object_data.stop_time = 0.0;
 
   if (object_data.move_time > parameters_->threshold_time_object_is_moving) {
     stopped_objects_.erase(same_id_obj);

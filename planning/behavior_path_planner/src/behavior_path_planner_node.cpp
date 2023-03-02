@@ -357,6 +357,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       declare_parameter<bool>(ns + "enable_avoidance_over_opposite_direction");
     p.enable_update_path_when_object_is_gone =
       declare_parameter<bool>(ns + "enable_update_path_when_object_is_gone");
+    p.enable_force_avoidance_for_stopped_vehicle =
+      declare_parameter<bool>(ns + "enable_force_avoidance_for_stopped_vehicle");
     p.enable_safety_check = declare_parameter<bool>(ns + "enable_safety_check");
     p.enable_yield_maneuver = declare_parameter<bool>(ns + "enable_yield_maneuver");
     p.disable_path_update = declare_parameter<bool>(ns + "disable_path_update");
@@ -384,6 +386,10 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       declare_parameter<double>(ns + "threshold_speed_object_is_stopped");
     p.threshold_time_object_is_moving =
       declare_parameter<double>(ns + "threshold_time_object_is_moving");
+    p.threshold_time_force_avoidance_for_stopped_vehicle =
+      declare_parameter<double>(ns + "threshold_time_force_avoidance_for_stopped_vehicle");
+    p.object_check_force_avoidance_clearance =
+      declare_parameter<double>(ns + "object_check_force_avoidance_clearance");
     p.object_check_forward_distance =
       declare_parameter<double>(ns + "object_check_forward_distance");
     p.object_check_backward_distance =
