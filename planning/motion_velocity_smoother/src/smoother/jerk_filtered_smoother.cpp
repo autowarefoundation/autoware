@@ -198,12 +198,15 @@ bool JerkFilteredSmoother::apply(
     P(IDX_A0 + i + 1, IDX_A0 + i + 1) += smooth_weight * w_x_ds_inv * w_x_ds_inv * interval_dist;
   }
 
+  // |v_max_i^2 - b_i|/v_max^2 -> minimize (-bi) * ds / v_max^2
   for (size_t i = 0; i < N; ++i) {
-    const double v_max = std::max(v_max_arr.at(i), 0.1);
-    q.at(IDX_B0 + i) =
-      -1.0 / (v_max * v_max);  // |v_max_i^2 - b_i|/v_max^2 -> minimize (-bi) * ds / v_max^2
-    if (i < N - 1) {
-      q.at(IDX_B0 + i) *= std::max(interval_dist_arr.at(i), 0.0001);
+    if (v_max_arr.at(i) > 0.01) {
+      // Note that if v_max[i] is too small, we did not minimize the corresponding -b[i]
+      double v_weight_term = -1.0 / (v_max_arr.at(i) * v_max_arr.at(i));
+      if (i < N - 1) {
+        v_weight_term *= std::max(interval_dist_arr.at(i), 0.0001);
+      }
+      q.at(IDX_B0 + i) += v_weight_term;
     }
     P(IDX_DELTA0 + i, IDX_DELTA0 + i) += over_v_weight;  // over velocity cost
     P(IDX_SIGMA0 + i, IDX_SIGMA0 + i) += over_a_weight;  // over acceleration cost
