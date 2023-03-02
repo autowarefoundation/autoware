@@ -99,6 +99,7 @@
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
       <arg name="gnss_enabled" value="false"/>
       <arg name="ndt_enabled" value="false"/>
+      <arg name="ekf_enabled" value="false"/>
       <arg name="stop_check_enabled" value="false"/>
     </include>
   </group>

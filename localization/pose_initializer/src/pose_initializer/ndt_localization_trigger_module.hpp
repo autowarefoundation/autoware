@@ -1,4 +1,4 @@
-// Copyright 2022 The Autoware Contributors
+// Copyright 2023 The Autoware Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSE_INITIALIZER__LOCALIZATION_TRIGGER_MODULE_HPP_
-#define POSE_INITIALIZER__LOCALIZATION_TRIGGER_MODULE_HPP_
+#ifndef POSE_INITIALIZER__NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
+#define POSE_INITIALIZER__NDT_LOCALIZATION_TRIGGER_MODULE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <std_srvs/srv/set_bool.hpp>
 
-class LocalizationTriggerModule
+class NdtLocalizationTriggerModule
 {
 private:
   using SetBool = std_srvs::srv::SetBool;
 
 public:
-  explicit LocalizationTriggerModule(rclcpp::Node * node);
-  void deactivate() const;
-  void activate() const;
+  explicit NdtLocalizationTriggerModule(rclcpp::Node * node);
+  void send_request(bool flag) const;
 
 private:
   rclcpp::Logger logger_;
-  rclcpp::Client<SetBool>::SharedPtr client_ekf_trigger_;
   rclcpp::Client<SetBool>::SharedPtr client_ndt_trigger_;
 };
 
-#endif  // POSE_INITIALIZER__LOCALIZATION_TRIGGER_MODULE_HPP_
+#endif  // POSE_INITIALIZER__NDT_LOCALIZATION_TRIGGER_MODULE_HPP_

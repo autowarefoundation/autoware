@@ -15,8 +15,9 @@
 #include "pose_initializer_core.hpp"
 
 #include "copy_vector_to_array.hpp"
+#include "ekf_localization_trigger_module.hpp"
 #include "gnss_module.hpp"
-#include "localization_trigger_module.hpp"
+#include "ndt_localization_trigger_module.hpp"
 #include "ndt_module.hpp"
 #include "stop_check_module.hpp"
 
@@ -34,12 +35,15 @@ PoseInitializer::PoseInitializer() : Node("pose_initializer")
   output_pose_covariance_ = get_covariance_parameter(this, "output_pose_covariance");
   gnss_particle_covariance_ = get_covariance_parameter(this, "gnss_particle_covariance");
 
+  if (declare_parameter<bool>("ekf_enabled")) {
+    ekf_localization_trigger_ = std::make_unique<EkfLocalizationTriggerModule>(this);
+  }
   if (declare_parameter<bool>("gnss_enabled")) {
     gnss_ = std::make_unique<GnssModule>(this);
   }
   if (declare_parameter<bool>("ndt_enabled")) {
     ndt_ = std::make_unique<NdtModule>(this);
-    localization_trigger_ = std::make_unique<LocalizationTriggerModule>(this);
+    ndt_localization_trigger_ = std::make_unique<NdtLocalizationTriggerModule>(this);
   }
   if (declare_parameter<bool>("stop_check_enabled")) {
     // Add 1.0 sec margin for twist buffer.
@@ -73,8 +77,11 @@ void PoseInitializer::on_initialize(
   }
   try {
     change_state(State::Message::INITIALIZING);
-    if (localization_trigger_) {
-      localization_trigger_->deactivate();
+    if (ekf_localization_trigger_) {
+      ekf_localization_trigger_->send_request(false);
+    }
+    if (ndt_localization_trigger_) {
+      ndt_localization_trigger_->send_request(false);
     }
     auto pose = req->pose.empty() ? get_gnss_pose() : req->pose.front();
     if (ndt_) {
@@ -82,8 +89,11 @@ void PoseInitializer::on_initialize(
     }
     pose.pose.covariance = output_pose_covariance_;
     pub_reset_->publish(pose);
-    if (localization_trigger_) {
-      localization_trigger_->activate();
+    if (ekf_localization_trigger_) {
+      ekf_localization_trigger_->send_request(true);
+    }
+    if (ndt_localization_trigger_) {
+      ndt_localization_trigger_->send_request(true);
     }
     res->status.success = true;
     change_state(State::Message::INITIALIZED);

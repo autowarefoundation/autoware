@@ -2,10 +2,12 @@
   <arg name="config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer.param.yaml"/>
   <arg name="gnss_enabled"/>
   <arg name="ndt_enabled"/>
+  <arg name="ekf_enabled"/>
   <arg name="stop_check_enabled"/>
 
   <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
     <param from="$(var config_file)"/>
+    <param name="ekf_enabled" value="$(var ekf_enabled)"/>
     <param name="ndt_enabled" value="$(var ndt_enabled)"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
     <param name="stop_check_enabled" value="$(var stop_check_enabled)"/>
