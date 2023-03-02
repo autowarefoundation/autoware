@@ -188,7 +188,7 @@ QGroupBox * AutowareStatePanel::makeMotionGroup()
 
 QGroupBox * AutowareStatePanel::makeFailSafeGroup()
 {
-  auto * group = new QGroupBox("FalSafe");
+  auto * group = new QGroupBox("FailSafe");
   auto * grid = new QGridLayout;
 
   mrm_state_label_ptr_ = new QLabel("INIT");
