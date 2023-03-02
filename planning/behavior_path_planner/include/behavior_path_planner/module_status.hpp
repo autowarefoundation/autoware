@@ -15,14 +15,14 @@
 #ifndef BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_
 #define BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 #include <behaviortree_cpp_v3/basic_types.h>
 #endif
 
 namespace behavior_path_planner
 {
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 using ModuleStatus = BT::NodeStatus;
 #else
 enum class ModuleStatus {

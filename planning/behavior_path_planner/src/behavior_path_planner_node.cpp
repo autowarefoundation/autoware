@@ -91,7 +91,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   occupancy_grid_subscriber_ = create_subscription<OccupancyGrid>(
     "~/input/occupancy_grid_map", 1, std::bind(&BehaviorPathPlannerNode::onOccupancyGrid, this, _1),
     createSubscriptionOptions(this));
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   operation_mode_subscriber_ = create_subscription<OperationModeState>(
     "/system/operation_mode/state", 1,
     std::bind(&BehaviorPathPlannerNode::onOperationMode, this, _1),
@@ -113,7 +113,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     "~/input/route", qos_transient_local, std::bind(&BehaviorPathPlannerNode::onRoute, this, _1),
     createSubscriptionOptions(this));
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   avoidance_param_ptr = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
   lane_change_param_ptr = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
 #endif
@@ -121,7 +121,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   m_set_param_res = this->add_on_set_parameters_callback(
     std::bind(&BehaviorPathPlannerNode::onSetParam, this, std::placeholders::_1));
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   // behavior tree manager
   {
     RCLCPP_INFO(get_logger(), "use behavior tree.");
@@ -224,7 +224,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 {
   BehaviorPathPlannerParameters p{};
 
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   p.verbose = declare_parameter<bool>("verbose");
 #endif
 
@@ -305,7 +305,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   return p;
 }
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -329,7 +329,7 @@ SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
 }
 #endif
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 {
   AvoidanceParameters p{};
@@ -491,7 +491,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 }
 #endif
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
 {
   LaneFollowingParameters p{};
@@ -507,7 +507,7 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
 }
 #endif
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -586,7 +586,7 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 }
 #endif
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -684,7 +684,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
 }
 #endif
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
 {
   const auto dp = [this](const std::string & str, auto def_val) {
@@ -742,7 +742,7 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
 }
 #endif
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 BehaviorTreeManagerParam BehaviorPathPlannerNode::getBehaviorTreeManagerParam()
 {
   BehaviorTreeManagerParam p{};
@@ -785,7 +785,7 @@ bool BehaviorPathPlannerNode::isDataReady()
     return missing("self_acceleration");
   }
 
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   if (!planner_data_->operation_mode) {
     return missing("operation_mode");
   }
@@ -812,7 +812,7 @@ std::shared_ptr<PlannerData> BehaviorPathPlannerNode::createLatestPlannerData()
     // so that the each modules do not have to care about the "route jump".
     if (!is_first_time) {
       RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
       bt_manager_->resetBehaviorTree();
 #else
       planner_manager_->reset();
@@ -843,14 +843,14 @@ void BehaviorPathPlannerNode::run()
   // create latest planner data
   const auto planner_data = createLatestPlannerData();
 
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   if (planner_data->operation_mode->mode != OperationModeState::AUTONOMOUS) {
     planner_manager_->resetRootLanelet(planner_data);
   }
 #endif
 
   // run behavior planner
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   const auto output = bt_manager_->run(planner_data);
 #else
   const auto output = planner_manager_->run(planner_data);
@@ -878,7 +878,7 @@ void BehaviorPathPlannerNode::run()
       get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
   }
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   publishPathCandidate(bt_manager_->getSceneModules());
 #else
   publishPathCandidate(planner_manager_->getSceneModuleManagers());
@@ -899,7 +899,7 @@ void BehaviorPathPlannerNode::run()
     debug_maximum_drivable_area_publisher_->publish(maximum_drivable_area);
   }
 
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   planner_manager_->print();
   planner_manager_->publishDebugMarker();
 #endif
@@ -994,7 +994,7 @@ void BehaviorPathPlannerNode::publish_bounds(const PathWithLaneId & path)
 
 void BehaviorPathPlannerNode::publishSceneModuleDebugMsg()
 {
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   const auto debug_messages_data_ptr = bt_manager_->getAllSceneModuleDebugMsgData();
 
   const auto avoidance_debug_message = debug_messages_data_ptr->getAvoidanceModuleDebugMsg();
@@ -1009,7 +1009,7 @@ void BehaviorPathPlannerNode::publishSceneModuleDebugMsg()
 #endif
 }
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 void BehaviorPathPlannerNode::publishPathCandidate(
   const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules)
 {
@@ -1101,7 +1101,7 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
     get_logger(), "BehaviorTreeManager: output is %s.", bt_output.path ? "FOUND" : "NOT FOUND");
 
   PathWithLaneId connected_path;
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   const auto module_status_ptr_vec = bt_manager_->getModulesStatus();
 #else
   const auto module_status_ptr_vec = planner_manager_->getSceneModuleStatus();
@@ -1187,7 +1187,7 @@ void BehaviorPathPlannerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
   route_ptr_ = msg;
   has_received_route_ = true;
 }
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
 void BehaviorPathPlannerNode::onOperationMode(const OperationModeState::ConstSharedPtr msg)
 {
   const std::lock_guard<std::mutex> lock(mutex_pd_);
@@ -1200,7 +1200,7 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
 {
   rcl_interfaces::msg::SetParametersResult result;
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   if (!lane_change_param_ptr && !avoidance_param_ptr) {
     result.successful = false;
     result.reason = "param not initialized";
@@ -1212,7 +1212,7 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
   result.reason = "success";
 
   try {
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
     update_param(
       parameters, "avoidance.publish_debug_marker", avoidance_param_ptr->publish_debug_marker);
     update_param(

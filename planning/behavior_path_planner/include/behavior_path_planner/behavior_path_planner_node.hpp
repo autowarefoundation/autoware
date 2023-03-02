@@ -18,7 +18,7 @@
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
 #include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request_lane_change_module.hpp"
@@ -107,7 +107,7 @@ private:
   rclcpp::Subscription<Scenario>::SharedPtr scenario_subscriber_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_subscriber_;
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_subscriber_;
 #endif
   rclcpp::Publisher<PathWithLaneId>::SharedPtr path_publisher_;
@@ -118,13 +118,13 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_candidate_publishers_;
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_reference_publishers_;
 #endif
 
   std::shared_ptr<PlannerData> planner_data_;
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   std::shared_ptr<BehaviorTreeManager> bt_manager_;
 #else
   std::shared_ptr<PlannerManager> planner_manager_;
@@ -149,7 +149,7 @@ private:
   // update planner data
   std::shared_ptr<PlannerData> createLatestPlannerData();
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   // parameters
   std::shared_ptr<AvoidanceParameters> avoidance_param_ptr;
   std::shared_ptr<LaneChangeParameters> lane_change_param_ptr;
@@ -157,7 +157,7 @@ private:
 
   BehaviorPathPlannerParameters getCommonParam();
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   BehaviorTreeManagerParam getBehaviorTreeManagerParam();
   SideShiftParameters getSideShiftParam();
   AvoidanceParameters getAvoidanceParam();
@@ -174,7 +174,7 @@ private:
   void onOccupancyGrid(const OccupancyGrid::ConstSharedPtr msg);
   void onMap(const HADMapBin::ConstSharedPtr map_msg);
   void onRoute(const LaneletRoute::ConstSharedPtr route_msg);
-#ifndef USE_BEHAVIOR_TREE
+#ifndef USE_OLD_ARCHITECTURE
   void onOperationMode(const OperationModeState::ConstSharedPtr msg);
 #endif
   SetParametersResult onSetParam(const std::vector<rclcpp::Parameter> & parameters);
@@ -235,7 +235,7 @@ private:
   /**
    * @brief publish path candidate
    */
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   void publishPathCandidate(
     const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules);
 #else

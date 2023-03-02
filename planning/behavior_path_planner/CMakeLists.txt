@@ -7,9 +7,7 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-# use planner manager that supports behavior tree
-set(USE_BT TRUE)
-message(STATUS "USE_BEHAVIOR_TREE: " ${USE_BT})
+set(COMPILE_WITH_OLD_ARCHITECTURE TRUE)
 
 set(common_src
   src/utilities.cpp
@@ -40,7 +38,7 @@ set(common_src
   src/marker_util/lane_change/debug.cpp
 )
 
-if(USE_BT)
+if(COMPILE_WITH_OLD_ARCHITECTURE)
   ament_auto_add_library(behavior_path_planner_node SHARED
     src/behavior_tree_manager.cpp
     src/scene_module/scene_module_bt_node_interface.cpp
@@ -54,9 +52,9 @@ if(USE_BT)
     ${common_src}
   )
 
-  target_compile_definitions(behavior_path_planner_node PRIVATE USE_BEHAVIOR_TREE)
+  target_compile_definitions(behavior_path_planner_node PRIVATE USE_OLD_ARCHITECTURE)
 
-  message(WARNING "Build behavior_path_planner with BT...")
+  message(WARNING "Build behavior_path_planner with OLD framework...")
 
 else()
   ament_auto_add_library(behavior_path_planner_node SHARED
@@ -64,7 +62,7 @@ else()
     ${common_src}
   )
 
-  message(WARNING "Build behavior_path_planner without BT...")
+  message(WARNING "Build behavior_path_planner with NEW framework...")
 endif()
 
 target_include_directories(behavior_path_planner_node SYSTEM PUBLIC

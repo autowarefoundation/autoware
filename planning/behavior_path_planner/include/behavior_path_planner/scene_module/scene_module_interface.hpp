@@ -63,7 +63,7 @@ public:
     uuid_(generateUUID()),
     current_state_{ModuleStatus::SUCCESS}
   {
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
     std::string module_ns;
     module_ns.resize(name.size());
     std::transform(name.begin(), name.end(), module_ns.begin(), tolower);
@@ -224,7 +224,7 @@ public:
    */
   void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
 #endif
 
@@ -255,7 +255,7 @@ private:
 
   rclcpp::Logger logger_;
 
-#ifdef USE_BEHAVIOR_TREE
+#ifdef USE_OLD_ARCHITECTURE
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
 #endif
 
