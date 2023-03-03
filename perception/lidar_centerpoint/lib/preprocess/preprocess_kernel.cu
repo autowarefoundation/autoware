@@ -141,6 +141,7 @@ __global__ void generateFeatures_kernel(
   }
 }
 
+// cspell: ignore divup
 cudaError_t generateFeatures_launch(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
   const std::size_t num_voxels, const std::size_t max_voxel_size, const float voxel_size_x,

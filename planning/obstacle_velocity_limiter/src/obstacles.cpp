@@ -79,6 +79,7 @@ void addSensorObstacles(
   const ObstacleMasks & masks, tier4_autoware_utils::TransformListener & transform_listener,
   const std::string & target_frame, const ObstacleParameters & obstacle_params)
 {
+  // cspell: ignore OCCUPANCYGRID
   if (obstacle_params.dynamic_source == ObstacleParameters::OCCUPANCYGRID) {
     auto grid_map = convertToGridMap(occupancy_grid);
     threshold(grid_map, obstacle_params.occupancy_grid_threshold);

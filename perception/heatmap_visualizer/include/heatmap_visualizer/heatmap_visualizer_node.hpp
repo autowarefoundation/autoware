@@ -64,7 +64,7 @@ private:
   float map_length_;
   float map_resolution_;
   bool use_confidence_;
-  std::vector<std::string> class_names_{"UNKNWON", "CAR",     "TRUCK",     "BUS",
+  std::vector<std::string> class_names_{"UNKNOWN", "CAR",     "TRUCK",     "BUS",
                                         "TRAILER", "BICYCLE", "MOTORBIKE", "PEDESTRIAN"};
   bool rename_car_to_truck_and_bus_;
 

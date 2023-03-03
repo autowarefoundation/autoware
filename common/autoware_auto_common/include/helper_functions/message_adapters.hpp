@@ -34,7 +34,7 @@ namespace message_field_adapters
 /// Using alias for Time message
 using TimeStamp = builtin_interfaces::msg::Time;
 
-/// \brief Helper class to check existance of header file in compile time:
+/// \brief Helper class to check existence of header file in compile time:
 /// https://stackoverflow.com/a/16000226/2325407
 template <typename T, typename = nullptr_t>
 struct HasHeader : std::false_type

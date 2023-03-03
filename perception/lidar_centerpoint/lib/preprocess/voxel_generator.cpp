@@ -71,7 +71,7 @@ std::size_t VoxelGenerator::pointsToVoxels(
       pd_ptr_->pointcloud_cache_size() > 1
         ? pd_ptr_->getAffineWorldToCurrent() * pc_cache_iter->affine_past2world
         : Eigen::Affine3f::Identity();
-    float timelag = static_cast<float>(
+    float time_lag = static_cast<float>(
       pd_ptr_->getCurrentTimestamp() - rclcpp::Time(pc_msg.header.stamp).seconds());
 
     for (sensor_msgs::PointCloud2ConstIterator<float> x_iter(pc_msg, "x"), y_iter(pc_msg, "y"),
@@ -83,7 +83,7 @@ std::size_t VoxelGenerator::pointsToVoxels(
       point[0] = point_current.x();
       point[1] = point_current.y();
       point[2] = point_current.z();
-      point[3] = timelag;
+      point[3] = time_lag;
 
       out_of_range = false;
       for (std::size_t di = 0; di < config_.point_dim_size_; di++) {

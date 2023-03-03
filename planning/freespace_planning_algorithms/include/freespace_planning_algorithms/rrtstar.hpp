@@ -30,7 +30,7 @@ struct RRTStarParam
   bool enable_update;  // update solution even after feasible solution found with given time budget
   bool use_informed_sampling;  // use informed sampling (informed rrtstar)
   double max_planning_time;  // if enable_update is true, update is done before time elapsed [msec]
-  double neighbour_radius;   // neighbore radius [m]
+  double neighbor_radius;    // neighbor radius [m]
   double margin;             // [m]
 };
 
@@ -61,7 +61,7 @@ public:
   bool hasObstacleOnTrajectory(const geometry_msgs::msg::PoseArray & trajectory) const override;
 
 private:
-  void setRRTPath(const std::vector<rrtstar_core::Pose> & waypints);
+  void setRRTPath(const std::vector<rrtstar_core::Pose> & waypoints);
 
   // algorithm specific param
   const RRTStarParam rrtstar_param_;

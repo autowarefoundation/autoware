@@ -41,6 +41,7 @@ __device__ inline float dist2dPow(const Box3D * a, const Box3D * b)
   return powf(a->x - b->x, 2) + powf(a->y - b->y, 2);
 }
 
+// cspell: ignore divup
 __global__ void circleNMS_Kernel(
   const Box3D * boxes, const std::size_t num_boxes3d, const std::size_t col_blocks,
   const float dist2d_pow_threshold, std::uint64_t * mask)

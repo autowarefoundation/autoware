@@ -77,6 +77,7 @@ bool validate_local_optimal_solution_oscillation(
   return false;
 }
 
+// cspell: ignore degrounded
 NDTScanMatcher::NDTScanMatcher()
 : Node("ndt_scan_matcher"),
   tf2_broadcaster_(*this),

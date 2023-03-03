@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <obstacle_velocity_limiter/forward_projection.hpp>
 

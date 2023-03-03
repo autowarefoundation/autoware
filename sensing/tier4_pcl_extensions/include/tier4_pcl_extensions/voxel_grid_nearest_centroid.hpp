@@ -94,6 +94,7 @@ protected:
   using VoxelGrid<PointT>::max_b_;
   using VoxelGrid<PointT>::inverse_leaf_size_;
   using VoxelGrid<PointT>::div_b_;
+  // cspell: ignore divb
   using VoxelGrid<PointT>::divb_mul_;
 
   typedef typename pcl::traits::fieldList<PointT>::type FieldList;
@@ -216,7 +217,7 @@ public:
   : searchable_(true),
     // min_points_per_voxel_ (6),
     min_points_per_voxel_(1),
-    // min_covar_eigvalue_mult_ (0.01),
+    // min_covar_eigenvalue_mult_ (0.01),
     leaves_(),
     voxel_centroids_(),
     voxel_centroids_leaf_indices_(),
@@ -257,12 +258,12 @@ public:
   inline int getMinPointPerVoxel() { return min_points_per_voxel_; }
 
   /** \brief Set the minimum allowable ratio between eigenvalues to prevent singular covariance
-   * matrices. \param[in] min_covar_eigvalue_mult the minimum allowable ratio between eigenvalues
+   * matrices. \param[in] min_covar_eigenvalue_mult the minimum allowable ratio between eigenvalues
    */
   // inline void
-  // setCovEigValueInflationRatio (double min_covar_eigvalue_mult)
+  // setCovEigValueInflationRatio (double min_covar_eigenvalue_mult)
   // {
-  //   min_covar_eigvalue_mult_ = min_covar_eigvalue_mult;
+  //   min_covar_eigenvalue_mult_ = min_covar_eigenvalue_mult;
   // }
 
   /** \brief Get the minimum allowable ratio between eigenvalues to prevent singular covariance
@@ -271,7 +272,7 @@ public:
   // inline double
   // getCovEigValueInflationRatio ()
   // {
-  //   return min_covar_eigvalue_mult_;
+  //   return min_covar_eigenvalue_mult_;
   // }
 
   /** \brief Filter cloud and initializes voxel structure.
@@ -516,7 +517,7 @@ protected:
 
   /** \brief Minimum allowable ratio between eigenvalues to prevent singular covariance
    *         matrices. */
-  // double min_covar_eigvalue_mult_;
+  // double min_covar_eigenvalue_mult_;
 
   /** \brief Voxel structure containing all leaf nodes (includes voxels with less than
    *         a sufficient number of points). */

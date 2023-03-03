@@ -330,7 +330,7 @@ inline void convertConvexHullToBoundingBox(
   const Eigen::Vector2d new_local_center{(max_x + min_x) / 2.0, (max_y + min_y) / 2.0};
   const Eigen::Vector2d new_center = center + Rinv.transpose() * new_local_center;
 
-  // set output paramters
+  // set output parameters
   output_object = input_object;
   output_object.kinematics.pose_with_covariance.pose.position.x = new_center.x();
   output_object.kinematics.pose_with_covariance.pose.position.y = new_center.y();

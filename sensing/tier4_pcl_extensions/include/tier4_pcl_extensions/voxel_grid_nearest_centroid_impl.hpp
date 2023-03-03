@@ -126,6 +126,7 @@ void pcl::VoxelGridNearestCentroid<PointT>::applyFilter(PointCloud & output)
   // Clear the leaves
   leaves_.clear();
 
+  // cspell: ignore divb
   // Set up the division multiplier
   divb_mul_ = Eigen::Vector4i(1, div_b_[0], div_b_[0] * div_b_[1], 0);
 
@@ -299,7 +300,7 @@ void pcl::VoxelGridNearestCentroid<PointT>::applyFilter(PointCloud & output)
 
   // Eigen values less than a threshold of max eigen value are inflated to a set fraction of the
   // max eigen value.
-  // double min_covar_eigvalue;
+  // double min_covar_eigenvalue;
 
   for (typename std::map<size_t, Leaf>::iterator it = leaves_.begin(); it != leaves_.end(); ++it) {
     // Normalize the centroid

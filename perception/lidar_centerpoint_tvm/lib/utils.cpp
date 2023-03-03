@@ -23,6 +23,7 @@ namespace perception
 namespace lidar_centerpoint_tvm
 {
 
+// cspell: ignore divup
 std::size_t divup(const std::size_t a, const std::size_t b)
 {
   if (a == 0) {

@@ -58,7 +58,7 @@ public:
    */
   size_t size() const;
   /**
-   * @return true if the compensents sizes are all 0 or are inconsistent
+   * @return true if the components sizes are all 0 or are inconsistent
    */
   inline bool empty() const { return size() == 0; }
 

@@ -4,9 +4,11 @@
 
 Let us define $f(x)$ as minimum cost of the path when path is constrained to pass through $x$ (so path will be $x_{\mathrm{start}} \to \mathrm{x} \to \mathrm{x_{\mathrm{goal}}}$). Also, let us define $c_{\mathrm{best}}$ as the current minimum cost of the feasible paths. Let us define a set $ X(f) = \left\{ x \in X | f(x) < c*{\mathrm{best}} \right\} $. If we could sample a new point from $X_f$ instead of $X$ as in vanilla RRT\*, chance that $c*{\mathrm{best}}$ is updated is increased, thus the convergence rate is improved.
 
-In most case, $f(x)$ is unknown, thus it is straightforward to approximiate the function $f$ by a heuristic function $\hat{f}$. A heuristic function is [admissible](https://en.wikipedia.org/wiki/Admissible_heuristic) if $\forall x \in X, \hat{f}(x) < f(x)$, which is sufficient condition of conversion to optimal path. The good heuristic function $\hat{f}$ has two properties: 1) it is an admissible tight lower bound of $f$ and 2) sampling from $X(\hat{f})$ is easy.
+In most case, $f(x)$ is unknown, thus it is straightforward to approximate the function $f$ by a heuristic function $\hat{f}$. A heuristic function is [admissible](https://en.wikipedia.org/wiki/Admissible_heuristic) if $\forall x \in X, \hat{f}(x) < f(x)$, which is sufficient condition of conversion to optimal path. The good heuristic function $\hat{f}$ has two properties: 1) it is an admissible tight lower bound of $f$ and 2) sampling from $X(\hat{f})$ is easy.
 
-According to Gammell et al [1], a good heursitic function when path is always straight is $\hat{f}(x) = ||x_{\mathrm{start}} - x|| + ||x - x_{\mathrm{goal}}||$. If we don't assume any obstacle information the heursitic is tightest. Also, $X(\hat{f})$ is hyper-ellipsoid, and hence sampling from it can be done analitically.
+<!-- cspell: ignore Gammell -->
+
+According to Gammell et al [1], a good heuristic function when path is always straight is $\hat{f}(x) = ||x_{\mathrm{start}} - x|| + ||x - x_{\mathrm{goal}}||$. If we don't assume any obstacle information the heuristic is tightest. Also, $X(\hat{f})$ is hyper-ellipsoid, and hence sampling from it can be done analytically.
 
 ### Modification to fit reeds-sheep path case
 

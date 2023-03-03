@@ -14,6 +14,7 @@
 
 #include "obstacle_velocity_limiter/occupancy_grid_utils.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <boost/geometry/algorithms/correct.hpp>
 

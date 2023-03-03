@@ -18,6 +18,7 @@ class PublisherMoraiCtrlCmd(Node):
         self.topic = "/ctrl_cmd"
         self.publisher_ = self.create_publisher(CtrlCmd, self.topic, 10)
 
+    # cspell: ignore longl
     def publish_msg(self, cmd):
         msg = CtrlCmd()
         msg.longl_cmd_type = cmd["longCmdType"]

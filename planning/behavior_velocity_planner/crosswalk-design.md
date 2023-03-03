@@ -175,7 +175,7 @@ This module uses the larger value of estimated object velocity and `min_object_v
 
 ```plantuml
 start
-if (Pedestrain's traffic light signal is **RED**?) then (yes)
+if (Pedestrian's traffic light signal is **RED**?) then (yes)
 else (no)
   if (There are objects around the crosswalk?) then (yes)
     :calculate TTC & TTV;

@@ -79,12 +79,14 @@ None
 
 #### RRT\* search parameters
 
+<!-- cspell:ignore Gammell -->
+
 | Parameter               | Type   | Description                                                                   |
 | ----------------------- | ------ | ----------------------------------------------------------------------------- |
 | `max planning time`     | double | maximum planning time [msec] (used only when `enable_update` is set `true`)   |
 | `enable_update`         | bool   | whether update after feasible solution found until `max_planning time` elapse |
-| `use_informed_sampling` | bool   | Use informed RRT\* (of Gammmell et al.)                                       |
-| `neighbour_radius`      | double | neighbour radius of RRT\* algorithm                                           |
+| `use_informed_sampling` | bool   | Use informed RRT\* (of Gammell et al.)                                        |
+| `neighbor_radius`       | double | neighbor radius of RRT\* algorithm                                            |
 | `margin`                | double | safety margin ensured in path's collision checking in RRT\* algorithm         |
 
 ### Flowchart

@@ -53,7 +53,7 @@ double BoxSDF::operator()(double x, double y) const
   const auto && vec_global = tf2::Vector3(x, y, 0.0);
   const auto vec_local = tf_local_to_global_(vec_global);
 
-  // As for signed distance field for a box, please refere:
+  // As for signed distance field for a box, please refer:
   // https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
   const auto sd_val_x = std::abs(vec_local.getX()) - 0.5 * length_;
   const auto sd_val_y = std::abs(vec_local.getY()) - 0.5 * width_;

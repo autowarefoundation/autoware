@@ -8,7 +8,7 @@ The `image_diagnostics` is a node that check the status of the input raw image.
 
 Below figure shows the flowchart of image diagnostics node. Each image is divided into small blocks for block state assessment.
 
-![image diagnostics flowchar ](./image/image_diagnostics_overview.svg)
+![image diagnostics flowchart ](./image/image_diagnostics_overview.svg)
 
 Each small image block state is assessed as below figure.
 

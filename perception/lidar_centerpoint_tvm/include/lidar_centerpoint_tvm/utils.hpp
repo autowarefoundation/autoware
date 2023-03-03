@@ -40,6 +40,7 @@ struct Box3D
   float vel_y;
 };
 
+// cspell: ignore divup
 std::size_t divup(const std::size_t a, const std::size_t b);
 
 }  // namespace lidar_centerpoint_tvm

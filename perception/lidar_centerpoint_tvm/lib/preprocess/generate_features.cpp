@@ -52,7 +52,7 @@ void generateFeatures_worker(
         pillar_idx * config.max_point_in_voxel_size_ * config.point_feature_size_ +
         i * config.point_feature_size_;
       for (std::size_t j = 0; j < config.point_feature_size_; j++) {
-        // point (x, y, z, instensity)
+        // point (x, y, z, intensity)
         if (i < points_count && j < 3) points_sum[j] += voxel_features[point_idx + j];
       }
     }
@@ -104,6 +104,7 @@ void generateFeatures_worker(
   }
 }
 
+// cspell: ignore divup
 void generateFeatures(
   const std::vector<float> & voxel_features, const std::vector<float> & voxel_num_points,
   const std::vector<int32_t> & coords, const std::size_t num_voxels,

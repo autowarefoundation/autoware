@@ -78,7 +78,7 @@ public:
   // input params
   std::size_t class_size_{3};
   const std::size_t point_dim_size_{3};  // x, y and z
-  std::size_t point_feature_size_{4};    // x, y, z and timelag
+  std::size_t point_feature_size_{4};    // x, y, z and time-lag
   std::size_t max_point_in_voxel_size_{32};
   std::size_t max_voxel_size_{40000};
   float range_min_x_{-89.6f};

@@ -17,6 +17,8 @@
 #include <image_projection_based_fusion/utils/geometry.hpp>
 #include <image_projection_based_fusion/utils/utils.hpp>
 
+// cspell: ignore minx, maxx, miny, maxy, minz, maxz
+
 namespace image_projection_based_fusion
 {
 

@@ -30,8 +30,8 @@
 namespace gnss_poser
 {
 enum class MGRSPrecision {
-  _10_KIRO_METER = 1,
-  _1_KIRO_METER = 2,
+  _10_KILO_METER = 1,
+  _1_KILO_METER = 2,
   _100_METER = 3,
   _10_METER = 4,
   _1_METER = 5,
@@ -87,7 +87,8 @@ GNSSStat NavSatFix2UTM(
 
   try {
     GeographicLib::UTMUPS::Forward(
-      nav_sat_fix_msg.latitude, nav_sat_fix_msg.longitude, utm.zone, utm.northup, utm.x, utm.y);
+      nav_sat_fix_msg.latitude, nav_sat_fix_msg.longitude, utm.zone, utm.east_north_up, utm.x,
+      utm.y);
 
     utm.z = EllipsoidHeight2OrthometricHeight(nav_sat_fix_msg, logger);
 
@@ -111,14 +112,14 @@ GNSSStat NavSatFix2LocalCartesianUTM(
     utm_origin.coordinate_system = CoordinateSystem::UTM;
     GeographicLib::UTMUPS::Forward(
       nav_sat_fix_origin.latitude, nav_sat_fix_origin.longitude, utm_origin.zone,
-      utm_origin.northup, utm_origin.x, utm_origin.y);
+      utm_origin.east_north_up, utm_origin.x, utm_origin.y);
     utm_origin.z = EllipsoidHeight2OrthometricHeight(nav_sat_fix_origin, logger);
     // individual coordinates of global coordinate system
     double global_x = 0.0;
     double global_y = 0.0;
     GeographicLib::UTMUPS::Forward(
-      nav_sat_fix_msg.latitude, nav_sat_fix_msg.longitude, utm_origin.zone, utm_origin.northup,
-      global_x, global_y);
+      nav_sat_fix_msg.latitude, nav_sat_fix_msg.longitude, utm_origin.zone,
+      utm_origin.east_north_up, global_x, global_y);
     utm_local.latitude = nav_sat_fix_msg.latitude;
     utm_local.longitude = nav_sat_fix_msg.longitude;
     utm_local.altitude = nav_sat_fix_msg.altitude;
@@ -142,7 +143,8 @@ GNSSStat UTM2MGRS(
   try {
     std::string mgrs_code;
     GeographicLib::MGRS::Forward(
-      utm.zone, utm.northup, utm.x, utm.y, utm.latitude, static_cast<int>(precision), mgrs_code);
+      utm.zone, utm.east_north_up, utm.x, utm.y, utm.latitude, static_cast<int>(precision),
+      mgrs_code);
     mgrs.mgrs_zone = std::string(mgrs_code.substr(0, GZD_ID_size));
     mgrs.x = std::stod(mgrs_code.substr(GZD_ID_size, static_cast<int>(precision))) *
              std::pow(

@@ -73,6 +73,7 @@
     # Radius of input LiDAR range (used for diagnostics of dynamic map loading)
     lidar_radius: 100.0
 
+    # cspell: ignore degrounded
     # A flag for using scan matching score based on de-grounded LiDAR scan
     estimate_scores_for_degrounded_scan: false
 

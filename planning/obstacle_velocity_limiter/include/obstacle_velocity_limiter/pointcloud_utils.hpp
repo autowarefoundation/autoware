@@ -17,6 +17,7 @@
 
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include <geometry_msgs/msg/transform.hpp>
@@ -39,7 +40,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr transformPointCloud(
   const PointCloud & pointcloud_msg, tier4_autoware_utils::TransformListener & transform_listener,
   const std::string & target_frame);
 
-/// @brief filter the pointcloud to keep only relevent points
+/// @brief filter the pointcloud to keep only relevant points
 /// @param[in,out] pointcloud to filter
 /// @param[in] masks obstacle masks used to filter the pointcloud
 void filterPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud, const ObstacleMasks & masks);

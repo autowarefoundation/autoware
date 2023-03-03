@@ -77,6 +77,9 @@ PlotCurrentVelocity('localization_kinematic_state', '/localization/kinematic_sta
 in Function Library
 ![image](./image/script.png)
 
+<!-- cspell:ignore Timeseries -->
+<!-- Ignore cspell errors caused by external factors -->
+
 ```lua
 
 function PlotValue(name, path, timestamp, value)

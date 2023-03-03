@@ -188,7 +188,7 @@ TEST(ordered_check, basic)
     make_points<autoware_auto_perception_msgs::msg::PointXYZIF>(2.0, 1.0)};
   EXPECT_FALSE(autoware::common::geometry::all_ordered(points_list.begin(), points_list.end()));
 
-  // Colinearity
+  // Collinearity
   points_list = {
     make_points<autoware_auto_perception_msgs::msg::PointXYZIF>(2.0, 2.0),
     make_points<autoware_auto_perception_msgs::msg::PointXYZIF>(4.0, 4.0),

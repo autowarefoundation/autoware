@@ -84,7 +84,7 @@ bool convertToAutowareTrajectory(
 /**
  * @brief calculate the arc length at each point of the given trajectory
  * @param [in] trajectory trajectory for which to calculate the arc length
- * @param [out] arclength the cummulative arc length at each point of the trajectory
+ * @param [out] arclength the cumulative arc length at each point of the trajectory
  */
 void calcMPCTrajectoryArclength(const MPCTrajectory & trajectory, std::vector<double> * arclength);
 /**

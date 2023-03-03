@@ -142,12 +142,12 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                <span style="font-style: normal;">The pedestrain has no intention to cross via this route.</span>
+                <span style="font-style: normal;">The pedestrian has no intention to cross via this route.</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="1221" y="196" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">The pedestrain has no intent...</text>
+        <text x="1221" y="196" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">The pedestrian has no intent...</text>
       </switch>
     </g>
     <path d="M 720 227 L 771 195" fill="none" stroke="rgb(0, 0, 0)" stroke-width="4" stroke-miterlimit="10" stroke-dasharray="4 4" pointer-events="none"/>

@@ -26,6 +26,7 @@
   <arg name="input_rois_number" default="$(var input/rois_number)"/>
 
   <!-- debug -->
+  <!-- cspell: ignore minx, maxx, miny, maxy, minz, maxz  -->
   <arg name="debug_mode" default="false"/>
   <arg name="filter_scope_minx" default="-100"/>
   <arg name="filter_scope_maxx" default="100"/>

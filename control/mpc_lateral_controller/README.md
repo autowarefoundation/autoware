@@ -31,6 +31,8 @@ Different vehicle models are implemented:
 
 For the optimization, a Quadratic Programming (QP) solver is used and two options are currently implemented:
 
+<!-- cspell: ignore ADMM -->
+
 - unconstraint_fast : use least square method to solve unconstraint QP with eigen.
 - [osqp](https://osqp.org/): run the [following ADMM](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) algorithm (for more details see the related papers at the [Citing OSQP](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) section):
 

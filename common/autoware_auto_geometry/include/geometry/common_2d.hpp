@@ -262,7 +262,6 @@ T times_2d(const T & p, const float32_t a)
 /// \tparam T point type. Must have point adapters defined or have float members x and y
 /// \brief solve p + t * u = q + s * v
 ///        Ref: https://stackoverflow.com/questions/563198/
-///             whats-the-most-efficent-way-to-calculate-where-two-line-segments-intersect
 /// \param[in] pt anchor point of first line
 /// \param[in] u direction of first line
 /// \param[in] q anchor point of second line
@@ -274,6 +273,8 @@ inline T intersection_2d(const T & pt, const T & u, const T & q, const T & v)
 {
   const float32_t num = cross_2d(minus_2d(pt, q), u);
   float32_t den = cross_2d(v, u);
+  // cspell: ignore FEPS
+  // FEPS means "Float EPSilon"
   constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
   if (fabsf(den) < FEPS) {
     if (fabsf(num) < FEPS) {
@@ -292,7 +293,7 @@ inline T intersection_2d(const T & pt, const T & u, const T & q, const T & v)
 /// \brief rotate point given precomputed sin and cos
 /// \param[inout] pt point to rotate
 /// \param[in] cos_th precomputed cosine value
-/// \param[in] sin_th precompined sine value
+/// \param[in] sin_th precomputed sine value
 template <typename T>
 inline void rotate_2d(T & pt, const float32_t cos_th, const float32_t sin_th)
 {
@@ -321,7 +322,7 @@ inline T rotate_2d(const T & pt, const float32_t th_rad)
 /// \brief compute q s.t. p T q, or p * q = 0
 ///        This is the equivalent of a 90 degree ccw rotation
 /// \param[in] pt point to get normal point of
-/// \return point normal to p (unnormalized)
+/// \return point normal to p (un-normalized)
 template <typename T>
 inline T get_normal(const T & pt)
 {
@@ -334,7 +335,7 @@ inline T get_normal(const T & pt)
 /// \tparam T point type. Must have point adapters defined or have float members x and y
 /// \brief get magnitude of x and y components:
 /// \param[in] pt point to get magnitude of
-/// \return magitude of x and y components together
+/// \return magnitude of x and y components together
 template <typename T>
 inline auto norm_2d(const T & pt)
 {

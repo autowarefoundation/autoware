@@ -79,6 +79,7 @@ bool isDirectionForward(
 bool isDirectionForward(
   const geometry_msgs::msg::Pose & prev, const geometry_msgs::msg::Point & next);
 
+// cspell: ignore pointinpoly
 // refer from apache's pointinpoly in http://www.visibone.com/inpoly/
 template <typename T>
 bool isInPolygon(const std::vector<T> & polygon, const T & point)

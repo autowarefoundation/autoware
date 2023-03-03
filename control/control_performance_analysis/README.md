@@ -11,7 +11,9 @@ Based on the various input from planning, control, and vehicle, it publishes the
 
 All results in `ErrorStamped` message are calculated in Frenet Frame of curve. Errors and velocity errors are calculated by using paper below.
 
-`Werling, Moritz & Groell, Lutz & Bretthauer, Georg. (2010). Invariant Trajectory Tracking With a Full-Size Autonomous Road Vehicle. Robotics, IEEE Transactions on. 26. 758 - 765. 10.1109/TRO.2010.2052325.`
+<!-- cspell: ignore Werling Moritz Groell Lutz Bretthauer Georg -->
+
+`Werling, Moritz & Groell, Lutz & Bretthauer, Georg. (2010). Invariant Trajectory Tracking With a Full-Size Autonomous Road Vehicle. IEEE Transactions on Robotics. 26. 758 - 765. 10.1109/TRO.2010.2052325.`
 
 If you are interested in calculations, you can see the error and error velocity calculations in section `C. Asymptotical Trajectory Tracking With Orientation Control`.
 

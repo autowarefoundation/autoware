@@ -118,6 +118,8 @@ At this step, we define a boolean variable whether to use the pre-warping option
 
 **References:**
 
+<!-- cspell: ignore Manolakis Dimitris Vinay -->
+
 1. Manolakis, Dimitris G., and Vinay K. Ingle. Applied digital signal processing: theory and practice. Cambridge
    University Press, 2011.
 

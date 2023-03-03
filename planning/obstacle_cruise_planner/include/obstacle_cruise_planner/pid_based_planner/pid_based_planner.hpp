@@ -82,7 +82,7 @@ private:
     const ObstacleCruisePlannerData & planner_data,
     const CruiseObstacleInfo & cruise_obstacle_info);
 
-  // velocityinsertion based planner
+  // velocity insertion based planner
   Trajectory doCruiseWithTrajectory(
     const ObstacleCruisePlannerData & planner_data,
     const CruiseObstacleInfo & cruise_obstacle_info);

@@ -211,7 +211,7 @@ void geo_pos_conv::conv_llh2xyz(void)
   Pmo = 0.9999;
 
   /*WGS84 Parameters*/
-  AW = 6378137.0;            // Semimajor Axis
+  AW = 6378137.0;            // Semi-major Axis
   FW = 1.0 / 298.257222101;  // 298.257223563 //Geometrical flattening
 
   Pe = sqrt(2.0 * FW - pow(FW, 2));

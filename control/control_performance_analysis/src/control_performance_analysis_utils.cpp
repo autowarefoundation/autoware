@@ -40,11 +40,11 @@ double curvatureFromThreePoints(
 {
   double area = triangleArea(a, b, c);
 
-  double amag = std::hypot(a[0] - b[0], a[1] - b[1]);  // magnitude of triangle edges
-  double bmag = std::hypot(b[0] - c[0], b[1] - c[1]);
-  double cmag = std::hypot(c[0] - a[0], c[1] - a[1]);
+  double a_mag = std::hypot(a[0] - b[0], a[1] - b[1]);  // magnitude of triangle edges
+  double b_mag = std::hypot(b[0] - c[0], b[1] - c[1]);
+  double c_mag = std::hypot(c[0] - a[0], c[1] - a[1]);
 
-  double curvature = 4 * area / std::max(amag * bmag * cmag, 1e-4);
+  double curvature = 4 * area / std::max(a_mag * b_mag * c_mag, 1e-4);
 
   return curvature;
 }

@@ -38,6 +38,7 @@ Trajectory resampleTrajectory(const Trajectory & trajectory, const double min_in
 
 void calcCurvature(const Trajectory & trajectory, std::vector<double> & curvatures);
 
+// cspell: ignore steerings
 void calcSteeringAngles(
   const Trajectory & trajectory, const double wheelbase, std::vector<double> & steerings);
 

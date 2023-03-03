@@ -21,6 +21,7 @@
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/trajectory_preprocessing.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/motion_utils.hpp>

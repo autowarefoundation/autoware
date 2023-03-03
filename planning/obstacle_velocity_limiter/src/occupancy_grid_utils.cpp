@@ -15,6 +15,7 @@
 #include "obstacle_velocity_limiter/occupancy_grid_utils.hpp"
 
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <grid_map_core/Polygon.hpp>
 #include <grid_map_core/iterators/GridMapIterator.hpp>

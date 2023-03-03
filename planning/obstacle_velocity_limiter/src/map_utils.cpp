@@ -17,6 +17,7 @@
 
 #include "lanelet2_core/primitives/LineString.h"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <boost/geometry.hpp>
 

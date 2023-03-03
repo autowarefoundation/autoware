@@ -60,6 +60,7 @@ template <typename FooT, typename In1, typename In2>
 using false_bar_expression2 =
   decltype(std::declval<FooT>().bar(std::declval<In1>(), std::declval<const In2 &>()));
 
+// cspell: ignore asdasd
 // Signature mismatch:
 template <typename FooT, typename In1, typename In2, typename In3>
 using false_bar_expression3 = decltype(std::declval<FooT>().asdasd(

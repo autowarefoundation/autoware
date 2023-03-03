@@ -15,6 +15,7 @@
 #include "obstacle_velocity_limiter/distance.hpp"
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>

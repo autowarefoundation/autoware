@@ -13,8 +13,8 @@ File structure
 - test_morai_sim
 
 1. test_base provides shared methods for testing. Other test codes are created based on functions defined here.
-2. test_sim_common_manual_testing provides the most basic functions. Any simualtor can be tested using codes here. However, to make these codes usable with any simulators, the codes do not include any features for test automation.
-3. test_morai_sim is an automated version of test_sim_common_manual_testing for MORAI SIM: Drive. Thus it includes 'MORAI SIM: Drive'-specific codes. Users of the other simulators may create similar version for thier simulator of interest.
+2. test_sim_common_manual_testing provides the most basic functions. Any simulator can be tested using codes here. However, to make these codes usable with any simulators, the codes do not include any features for test automation.
+3. test_morai_sim is an automated version of test_sim_common_manual_testing for MORAI SIM: Drive. Thus it includes 'MORAI SIM: Drive'-specific codes. Users of the other simulators may create similar version for their simulator of interest.
 
 ## Test Procedures for test_sim_common_manual_testing
 

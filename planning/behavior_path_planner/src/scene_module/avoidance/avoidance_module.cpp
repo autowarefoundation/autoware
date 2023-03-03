@@ -2568,7 +2568,7 @@ ObjectDataArray AvoidanceModule::getAdjacentLaneObjects(
 
 // TODO(murooka) judge when and which way to extend drivable area. current implementation is keep
 // extending during avoidance module
-// TODO(murooka) freespace during turning in intersection where there is no neighbour lanes
+// TODO(murooka) freespace during turning in intersection where there is no neighbor lanes
 // NOTE: Assume that there is no situation where there is an object in the middle lane of more than
 // two lanes since which way to avoid is not obvious
 void AvoidanceModule::generateExtendedDrivableArea(PathWithLaneId & path) const
@@ -2642,7 +2642,7 @@ void AvoidanceModule::generateExtendedDrivableArea(PathWithLaneId & path) const
     const auto next_lanes_for_left =
       get_next_lanes_from_same_previous_lane(current_drivable_lanes.left_lane);
 
-    // 2.2 look for neighbour lane recursively, where end line of the lane is connected to end line
+    // 2.2 look for neighbor lane recursively, where end line of the lane is connected to end line
     // of the original lane
     const auto update_drivable_lanes =
       [&](const lanelet::ConstLanelets & next_lanes, const bool is_left) {

@@ -83,7 +83,7 @@ std::vector<Line> get_sorted_face_list(const Iter start, const Iter end)
   return face_list;
 }
 
-/// \brief Append points of the polygon `internal` that are contained in the polygon `exernal`.
+/// \brief Append points of the polygon `internal` that are contained in the polygon `external`.
 template <
   template <typename...> class Iterable1T, template <typename...> class Iterable2T, typename PointT>
 void append_contained_points(
@@ -146,6 +146,9 @@ void append_intersection_points(
         Interval edge2_y_interval{
           std::min(point_adapter::y_(edge2.first), point_adapter::y_(edge2.second)),
           std::max(point_adapter::y_(edge2.first), point_adapter::y_(edge2.second))};
+
+        // cspell: ignore feps
+        // feps means "Float EPSilon"
 
         // The accumulated floating point error depends on the magnitudes of each end of the
         // intervals. Hence the upper bound of the absolute magnitude should be taken into account
@@ -274,7 +277,7 @@ std::list<PointT> convex_polygon_intersection2d(
 /// \param polygon1 A convex polygon
 /// \param polygon2 A convex polygon
 /// \return (Intersection / Union) between two given polygons.
-/// \throws std::domain_error If there is any inconsistency on the undderlying geometrical
+/// \throws std::domain_error If there is any inconsistency on the underlying geometrical
 /// computation.
 template <
   template <typename...> class Iterable1T, template <typename...> class Iterable2T, typename PointT>

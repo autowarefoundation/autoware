@@ -28,6 +28,8 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 #endif
 
+// cspell: ignore minx, maxx, miny, maxy, minz, maxz
+
 namespace image_projection_based_fusion
 {
 

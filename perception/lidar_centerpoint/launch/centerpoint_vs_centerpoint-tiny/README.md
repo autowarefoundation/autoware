@@ -40,7 +40,7 @@ source install/setup.bash
 ros2 bag play /YOUR/ROSBAG/PATH/ --clock 100
 ```
 
-Don't forget to add `clock` inorder to sync between two rviz display.
+Don't forget to add `clock` in order to sync between two rviz display.
 
 You can also use the sample rosbag provided by autoware [here](https://autowarefoundation.github.io/autoware-documentation/main/tutorials/ad-hoc-simulation/rosbag-replay-simulation/).
 

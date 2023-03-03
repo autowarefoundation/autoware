@@ -23,6 +23,7 @@
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+// cspell: ignore multipolygon, multilinestring
 namespace obstacle_velocity_limiter
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;

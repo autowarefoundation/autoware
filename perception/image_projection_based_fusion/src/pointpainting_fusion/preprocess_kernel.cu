@@ -39,6 +39,7 @@ const std::size_t MAX_POINT_IN_VOXEL_SIZE = 32;  // the same as max_point_in_vox
 const std::size_t WARPS_PER_BLOCK = 4;
 const std::size_t ENCODER_IN_FEATURE_SIZE = 12;  // same as encoder_in_feature_size_ in config.hpp
 
+// cspell: ignore divup
 std::size_t divup(const std::size_t a, const std::size_t b)
 {
   if (a == 0) {

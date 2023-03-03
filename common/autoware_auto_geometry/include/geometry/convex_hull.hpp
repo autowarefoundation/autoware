@@ -136,6 +136,8 @@ typename std::list<PointT>::const_iterator convex_hull_impl(std::list<PointT> & 
   const auto lexical_comparator = [](const PointT & a, const PointT & b) -> bool8_t {
     using point_adapter::x_;
     using point_adapter::y_;
+    // cspell: ignore FEPS
+    // FEPS means "Float EPSilon"
     constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
     return (fabsf(x_(a) - x_(b)) > FEPS) ? (x_(a) < x_(b)) : (y_(a) < y_(b));
   };

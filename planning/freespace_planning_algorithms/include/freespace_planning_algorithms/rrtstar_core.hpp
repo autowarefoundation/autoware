@@ -38,6 +38,7 @@ using Pose = freespace_planning_algorithms::ReedsSheppStateSpace::StateXYT;
 using ReedsSheppStateSpace = freespace_planning_algorithms::ReedsSheppStateSpace;
 const double inf = std::numeric_limits<double>::infinity();
 
+// cspell: ignore rsspace
 class CSpace
 {
 public:
@@ -59,7 +60,7 @@ public:
   // Note that parent-to-child and child-to-parent reeds-shepp paths are sometimes
   // different, because there may two reeds-shepp paths with an exact same cost given two poses.
   // For example, say you want to compute a reeds-shepp path from [0, 0, 0] to [0, 1, 0], where
-  // each element indicate x, y, and yaw. In such a case, you will have symetric two reeds-sheep
+  // each element indicate x, y, and yaw. In such a case, you will have symmetric two reeds-sheep
   // paths, one of which starts moving with forward motion and
   // the other of which with backward motion.
   // So, due to floating point level difference, the resulting reeds-shepp path can be different.
@@ -137,15 +138,15 @@ public:
 
 private:
   NodeConstSharedPtr findNearestNode(const Pose & x_rand) const;
-  std::vector<NodeConstSharedPtr> findNeighboreNodes(const Pose & pose) const;
+  std::vector<NodeConstSharedPtr> findNeighborNodes(const Pose & pose) const;
   NodeSharedPtr addNewNode(const Pose & pose, NodeSharedPtr node_parent);
   NodeConstSharedPtr getBestParentNode(
     const Pose & pose_new, const NodeConstSharedPtr & node_nearest,
-    const std::vector<NodeConstSharedPtr> & neighbore_nodes) const;
+    const std::vector<NodeConstSharedPtr> & neighbor_nodes) const;
   void reconnect(const NodeSharedPtr & node_new, const NodeSharedPtr & node_reconnect);
   NodeConstSharedPtr getReconnectTargeNode(
     const NodeConstSharedPtr node_new,
-    const std::vector<NodeConstSharedPtr> & neighbore_nodes) const;
+    const std::vector<NodeConstSharedPtr> & neighbor_nodes) const;
 
   NodeSharedPtr node_start_;
   NodeSharedPtr node_goal_;

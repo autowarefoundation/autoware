@@ -36,8 +36,8 @@ public:
   virtual bool isReady(const InputData & input_data) = 0;
   virtual LongitudinalOutput run(InputData const & input_data) = 0;
   void sync(LateralSyncData const & lateral_sync_data);
-  // NOTE: This reset function should be called when the trajectory is replaned by changing ego pose
-  // or goal pose.
+  // NOTE: This reset function should be called when the trajectory is replanned by changing ego
+  // pose or goal pose.
   void reset();
 
 protected:

@@ -8,6 +8,8 @@ This package detects target objects e.g., cars, trucks, bicycles, and pedestrian
 
 ### Cite
 
+<!-- cspell: ignore Zheng, Songtao, Feng, Zeming, Jian -->
+
 Zheng Ge, Songtao Liu, Feng Wang, Zeming Li, Jian Sun, "YOLOX: Exceeding YOLO Series in 2021", arXiv preprint arXiv:2107.08430, 2021 [[ref](https://arxiv.org/abs/2107.08430)]
 
 ## Inputs / Outputs

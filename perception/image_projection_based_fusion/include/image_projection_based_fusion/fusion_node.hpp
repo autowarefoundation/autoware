@@ -40,6 +40,8 @@
 #include <utility>
 #include <vector>
 
+// cspell: ignore minx, maxx, miny, maxy, minz, maxz
+
 namespace image_projection_based_fusion
 {
 using autoware_auto_perception_msgs::msg::DetectedObject;
@@ -109,7 +111,7 @@ protected:
 
   // cache for fusion
   std::vector<bool> is_fused_;
-  std::pair<int64_t, typename Msg::SharedPtr> sub_stdpair_;
+  std::pair<int64_t, typename Msg::SharedPtr> sub_std_pair_;
   std::vector<std::map<int64_t, DetectedObjectsWithFeature::ConstSharedPtr>> roi_stdmap_;
   std::mutex mutex_;
 
@@ -119,6 +121,7 @@ protected:
   // debugger
   std::shared_ptr<Debugger> debugger_;
   virtual bool out_of_scope(const ObjType & obj) = 0;
+  // cspell: ignore minx, maxx, miny, maxy, minz, maxz
   float filter_scope_minx_;
   float filter_scope_maxx_;
   float filter_scope_miny_;

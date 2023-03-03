@@ -38,18 +38,18 @@ std::optional<double> distanceToClosestCollision(
   for (const auto & obs_point : collision_checker.intersections(footprint)) {
     if (params.distance_method == ProjectionParameters::EXACT) {
       if (params.model == ProjectionParameters::PARTICLE) {
-        const auto euclidian_dist = bg::distance(obs_point, projection.front());
+        const auto euclidean_dist = bg::distance(obs_point, projection.front());
         const auto collision_heading = std::atan2(
           obs_point.y() - projection.front().y(), obs_point.x() - projection.front().x());
         const auto angle = params.heading - collision_heading;
-        const auto long_dist = std::abs(std::cos(angle)) * euclidian_dist;
+        const auto long_dist = std::abs(std::cos(angle)) * euclidean_dist;
         min_dist = std::min(min_dist, long_dist);
       } else {  // BICYCLE model with curved projection
         min_dist = std::min(min_dist, arcDistance(projection.front(), params.heading, obs_point));
       }
     } else {  // APPROXIMATION
-      const auto euclidian_dist = bg::distance(obs_point, projection.front());
-      min_dist = std::min(min_dist, euclidian_dist);
+      const auto euclidean_dist = bg::distance(obs_point, projection.front());
+      min_dist = std::min(min_dist, euclidean_dist);
     }
   }
   if (min_dist != std::numeric_limits<double>::max()) distance = min_dist;

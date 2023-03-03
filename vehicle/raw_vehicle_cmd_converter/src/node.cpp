@@ -144,7 +144,7 @@ double RawVehicleCommandConverterNode::calculateSteer(
   double dt = (current_time - prev_time_steer_calculation_).seconds();
   if (std::abs(dt) > 1.0) {
     RCLCPP_WARN_EXPRESSION(get_logger(), is_debugging_, "ignore old topic");
-    dt = 0.1;  // set ordinaray delta time instead
+    dt = 0.1;  // set ordinary delta time instead
   }
   prev_time_steer_calculation_ = current_time;
   // feed-forward

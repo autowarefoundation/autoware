@@ -78,7 +78,7 @@ TEST(TestInterpolate, Failure)
   ASSERT_FALSE(
     linearInterpolate({1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0}, {1.0, 3.5}, target_values));
 
-  // Missmatched inputs
+  // Mismatched inputs
   ASSERT_FALSE(linearInterpolate({1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0}, {1.0, 1.5}, target_values));
   ASSERT_FALSE(linearInterpolate({1.0, 2.0, 3.0}, {1.0, 2.0, 3.0, 4.0}, {1.0, 1.5}, target_values));
 

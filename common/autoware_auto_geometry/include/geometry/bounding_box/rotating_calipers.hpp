@@ -139,7 +139,7 @@ void init_bbox(const IT begin, const IT end, Point4<IT> & support)
 /// \param[in] end An iterator to one past the last point on a convex hull
 /// \param[in] metric_fn A functor determining what measure the bounding box is minimum with respect
 ///                      to
-/// \tparam IT An iterator type dereferencable into a point type with float members x and y
+/// \tparam IT An iterator type dereferenceable into a point type with float members x and y
 /// \tparam MetricF A functor that computes a float measure from the x and y size (width and length)
 ///                 of a bounding box, assumed to be packed in a Point32 message.
 /// \throw std::domain_error if the list of points is too small to reasonable generate a bounding
@@ -223,7 +223,7 @@ BoundingBox rotating_calipers_impl(const IT begin, const IT end, const MetricF m
 /// \param[in] begin An iterator to the first point on a convex hull
 /// \param[in] end An iterator to one past the last point on a convex hull
 /// \return A minimum area bounding box, value field is the area
-/// \tparam IT An iterator type dereferencable into a point type with float members x and y
+/// \tparam IT An iterator type dereferenceable into a point type with float members x and y
 template <typename IT>
 BoundingBox minimum_area_bounding_box(const IT begin, const IT end)
 {
@@ -238,7 +238,7 @@ BoundingBox minimum_area_bounding_box(const IT begin, const IT end)
 /// \param[in] begin An iterator to the first point on a convex hull
 /// \param[in] end An iterator to one past the last point on a convex hull
 /// \return A minimum perimeter bounding box, value field is half the perimeter
-/// \tparam IT An iterator type dereferencable into a point type with float members x and y
+/// \tparam IT An iterator type dereferenceable into a point type with float members x and y
 template <typename IT>
 BoundingBox minimum_perimeter_bounding_box(const IT begin, const IT end)
 {

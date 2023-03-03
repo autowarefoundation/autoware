@@ -164,7 +164,7 @@ Increasing the number will improve the smoothness of the estimation, but may hav
 
 - `proc_stddev_vx_c` : set to maximum linear acceleration
 - `proc_stddev_wz_c` : set to maximum angular acceleration
-- `proc_stddev_yaw_c` : This parameter describes the correlation between the yaw and yawrate. A large value means the change in yaw does not correlate to the estimated yawrate. If this is set to 0, it means the change in estimated yaw is equal to yawrate. Usually, this should be set to 0.
+- `proc_stddev_yaw_c` : This parameter describes the correlation between the yaw and yaw rate. A large value means the change in yaw does not correlate to the estimated yaw rate. If this is set to 0, it means the change in estimated yaw is equal to yaw rate. Usually, this should be set to 0.
 - `proc_stddev_yaw_bias_c` : This parameter is the standard deviation for the rate of change in yaw bias. In most cases, yaw bias is constant, so it can be very small, but must be non-zero.
 
 ## Kalman Filter Model

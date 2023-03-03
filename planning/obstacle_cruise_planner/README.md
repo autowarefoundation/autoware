@@ -200,7 +200,7 @@ $$
 
 | Variable          | Description                             |
 | ----------------- | --------------------------------------- |
-| `d`               | actual distane to obstacle              |
+| `d`               | actual distance to obstacle             |
 | `d_{rss}`         | ideal distance to obstacle based on RSS |
 | `v_{min, cruise}` | `min_cruise_target_vel`                 |
 | `w_{acc}`         | `output_ratio_during_accel`             |

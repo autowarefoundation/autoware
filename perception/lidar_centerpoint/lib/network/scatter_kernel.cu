@@ -48,6 +48,7 @@ __global__ void scatterFeatures_kernel(
     feature;
 }
 
+// cspell: ignore divup
 cudaError_t scatterFeatures_launch(
   const float * pillar_features, const int * coords, const std::size_t num_pillars,
   const std::size_t max_voxel_size, const std::size_t encoder_out_feature_size,

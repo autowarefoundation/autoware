@@ -16,6 +16,7 @@
 #define OBSTACLE_VELOCITY_LIMITER__MAP_UTILS_HPP_
 
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <lanelet2_core/LaneletMap.h>
 

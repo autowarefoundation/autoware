@@ -69,8 +69,8 @@ class VelocityChecker(Node):
 
         # planning path and trajectories
         profile = rclpy.qos.QoSProfile(depth=1)
-        transien_local = rclpy.qos.QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
-        transient_local_profile = rclpy.qos.QoSProfile(depth=1, durability=transien_local)
+        transient_local = rclpy.qos.QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+        transient_local_profile = rclpy.qos.QoSProfile(depth=1, durability=transient_local)
         lane_drv = "/planning/scenario_planning/lane_driving"
         scenario = "/planning/scenario_planning"
         self.sub0 = self.create_subscription(

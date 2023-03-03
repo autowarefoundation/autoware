@@ -203,6 +203,7 @@ private:
   std::unique_ptr<PoseInitializationModule> pose_init_module_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
 
+  // cspell: ignore degrounded
   bool estimate_scores_for_degrounded_scan_;
   double z_margin_for_ground_removal_;
 };

@@ -59,7 +59,7 @@ std::array<std::vector<double>, 4> getBaseValues(
 
   // calculate base_keys, base_values
   if (base_x.size() < 2 || base_y.size() < 2 || base_z.size() < 2) {
-    throw std::logic_error("The numbef of unique points is not enough.");
+    throw std::logic_error("The number of unique points is not enough.");
   }
 
   const std::vector<double> base_s = calcEuclidDist(base_x, base_y);

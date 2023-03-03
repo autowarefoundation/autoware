@@ -52,7 +52,7 @@ namespace details
 {
 /// \brief Internal struct for packing three indices together
 ///
-/// The use of this struct publically is a violation of our coding standards, but I claim it's
+/// The use of this struct publicly is a violation of our coding standards, but I claim it's
 /// fine because (a) it's details, (b) it is literally three unrelated members packaged together.
 /// This type is needed for conceptual convenience so I don't have massive function parameter
 /// lists
@@ -109,7 +109,9 @@ public:
       throw std::domain_error("SpatialHash::Config: voxel index may overflow!");
     }
     // small fudging to prevent weird boundary effects
-    // (e.g (x=xmax, y) rolls index over to (x=0, y+1)
+    // (e.g (x=x_max, y) rolls index over to (x=0, y+1)
+    // cspell: ignore FEPS
+    // FEPS means "Float EPSilon"
     constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
     // lint -e{1938} read only access is fine NOLINT
     m_max_x -= FEPS;
@@ -134,17 +136,17 @@ public:
   details::BinRange bin_range(const details::Index3 & ref, const float radius) const
   {
     // Compute distance in units of voxels
-    const Index iradius = static_cast<Index>(std::ceil(radius / m_side_length));
+    const Index i_radius = static_cast<Index>(std::ceil(radius / m_side_length));
     // Dumb ternary because potentially unsigned Index type
-    const Index xmin = (ref.x > iradius) ? (ref.x - iradius) : 0U;
-    const Index ymin = (ref.y > iradius) ? (ref.y - iradius) : 0U;
-    const Index zmin = (ref.z > iradius) ? (ref.z - iradius) : 0U;
+    const Index x_min = (ref.x > i_radius) ? (ref.x - i_radius) : 0U;
+    const Index y_min = (ref.y > i_radius) ? (ref.y - i_radius) : 0U;
+    const Index z_min = (ref.z > i_radius) ? (ref.z - i_radius) : 0U;
     // In 2D mode, m_max_z should be 0, same with ref.z
-    const Index xmax = std::min(ref.x + iradius, m_max_x_idx);
-    const Index ymax = std::min(ref.y + iradius, m_max_y_idx);
-    const Index zmax = std::min(ref.z + iradius, m_max_z_idx);
+    const Index x_max = std::min(ref.x + i_radius, m_max_x_idx);
+    const Index y_max = std::min(ref.y + i_radius, m_max_y_idx);
+    const Index z_max = std::min(ref.z + i_radius, m_max_z_idx);
     // return bottom-left portion of cube and top-right portion of cube
-    return {{xmin, ymin, zmin}, {xmax, ymax, zmax}};
+    return {{x_min, y_min, z_min}, {x_max, y_max, z_max}};
   }
 
   /// \brief Get next index within a given range
@@ -281,8 +283,8 @@ protected:
   float32_t idx_distance(const Index ref_idx, const Index query_idx) const
   {
     /// Not using fabs because Index is (possibly) unsigned
-    const Index idist = (ref_idx >= query_idx) ? (ref_idx - query_idx) : (query_idx - ref_idx);
-    float32_t dist = static_cast<float32_t>(idist) - 1.0F;
+    const Index i_dist = (ref_idx >= query_idx) ? (ref_idx - query_idx) : (query_idx - ref_idx);
+    float32_t dist = static_cast<float32_t>(i_dist) - 1.0F;
     return std::max(dist, 0.0F);
   }
 
@@ -302,8 +304,8 @@ private:
     const float64_t dmax = static_cast<float64_t>(max);
     const float64_t dmin = static_cast<float64_t>(min);
     const float64_t width = (dmax - dmin) * static_cast<float64_t>(m_side_length_inv);
-    constexpr float64_t fltmax = static_cast<float64_t>(std::numeric_limits<float32_t>::max());
-    if (fltmax <= width) {
+    constexpr float64_t flt_max = static_cast<float64_t>(std::numeric_limits<float32_t>::max());
+    if (flt_max <= width) {
       throw std::domain_error("SpatialHash::Config: voxel size approaching floating point limit");
     }
     return static_cast<Index>(width);

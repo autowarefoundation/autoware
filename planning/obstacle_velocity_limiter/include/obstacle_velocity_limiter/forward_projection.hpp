@@ -17,6 +17,7 @@
 
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
 

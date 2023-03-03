@@ -103,7 +103,7 @@ See <https://pointclouds.org/documentation/tutorials/statistical_outlier.html> f
 | Name                                                       | Type  | Description                                                                    | Default value |
 | :--------------------------------------------------------- | :---- | :----------------------------------------------------------------------------- | :------------ |
 | pcl_grid_map_extraction/outlier_removal/is_remove_outliers | float | Whether to perform statistical outlier removal.                                | false         |
-| pcl_grid_map_extraction/outlier_removal/mean_K             | float | Number of neighbours to analyze for estimating statistics of a point.          | 10            |
+| pcl_grid_map_extraction/outlier_removal/mean_K             | float | Number of neighbors to analyze for estimating statistics of a point.           | 10            |
 | pcl_grid_map_extraction/outlier_removal/stddev_threshold   | float | Number of standard deviations under which points are considered to be inliers. | 1.0           |
 
 #### Subsampling parameters

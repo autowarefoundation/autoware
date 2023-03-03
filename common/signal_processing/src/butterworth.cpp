@@ -190,6 +190,7 @@ void ButterworthFilter::printContinuousTimeTF() const
   RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[%s]", tf_text.c_str());
 }
 
+// cspell: ignore dend
 /**
  * @brief This method assumes the continuous time transfer function of filter has already been
  * computed and stored in the object and uses the bilinear transformation to obtain the discrete

@@ -61,7 +61,7 @@ TrtYoloX::TrtYoloX(
       break;
     default:
       std::stringstream s;
-      s << "\"" << model_path << "\" is unsuppoerted format";
+      s << "\"" << model_path << "\" is unsupported format";
       std::runtime_error{s.str()};
   }
 
@@ -227,6 +227,7 @@ void TrtYoloX::decodeOutputs(
   qsortDescentInplace(proposals);
 
   std::vector<int> picked;
+  // cspell: ignore Bboxes
   nmsSortedBboxes(proposals, picked, nms_threshold_);
 
   int count = static_cast<int>(picked.size());
@@ -310,24 +311,24 @@ void TrtYoloX::generateYoloxProposals(
   }    // point anchor loop
 }
 
-void TrtYoloX::qsortDescentInplace(ObjectArray & faceobjects, int left, int right) const
+void TrtYoloX::qsortDescentInplace(ObjectArray & face_objects, int left, int right) const
 {
   int i = left;
   int j = right;
-  float p = faceobjects[(left + right) / 2].score;
+  float p = face_objects[(left + right) / 2].score;
 
   while (i <= j) {
-    while (faceobjects[i].score > p) {
+    while (face_objects[i].score > p) {
       i++;
     }
 
-    while (faceobjects[j].score < p) {
+    while (face_objects[j].score < p) {
       j--;
     }
 
     if (i <= j) {
       // swap
-      std::swap(faceobjects[i], faceobjects[j]);
+      std::swap(face_objects[i], face_objects[j]);
 
       i++;
       j--;
@@ -339,38 +340,38 @@ void TrtYoloX::qsortDescentInplace(ObjectArray & faceobjects, int left, int righ
 #pragma omp section
     {
       if (left < j) {
-        qsortDescentInplace(faceobjects, left, j);
+        qsortDescentInplace(face_objects, left, j);
       }
     }
 #pragma omp section
     {
       if (i < right) {
-        qsortDescentInplace(faceobjects, i, right);
+        qsortDescentInplace(face_objects, i, right);
       }
     }
   }
 }
 
 void TrtYoloX::nmsSortedBboxes(
-  const ObjectArray & faceobjects, std::vector<int> & picked, float nms_threshold) const
+  const ObjectArray & face_objects, std::vector<int> & picked, float nms_threshold) const
 {
   picked.clear();
-  const int n = faceobjects.size();
+  const int n = face_objects.size();
 
   std::vector<float> areas(n);
   for (int i = 0; i < n; i++) {
     cv::Rect rect(
-      faceobjects[i].x_offset, faceobjects[i].y_offset, faceobjects[i].width,
-      faceobjects[i].height);
+      face_objects[i].x_offset, face_objects[i].y_offset, face_objects[i].width,
+      face_objects[i].height);
     areas[i] = rect.area();
   }
 
   for (int i = 0; i < n; i++) {
-    const Object & a = faceobjects[i];
+    const Object & a = face_objects[i];
 
     int keep = 1;
     for (int j = 0; j < static_cast<int>(picked.size()); j++) {
-      const Object & b = faceobjects[picked[j]];
+      const Object & b = face_objects[picked[j]];
 
       // intersection over union
       float inter_area = intersectionArea(a, b);

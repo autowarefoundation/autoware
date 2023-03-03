@@ -42,7 +42,7 @@ Search one or more lanelets satisfying the following conditions for each target 
   - Create a reference path for the object from the associated lanelet.
 - Predict Object Maneuver
   - Generate predicted paths for the object.
-  - The probability is assigned to each maneuver of `Lane Follow`, `Left Lane Change`, and `Right Lane Chagne` based on the object history and the reference path obtained in the first step.
+  - The probability is assigned to each maneuver of `Lane Follow`, `Left Lane Change`, and `Right Lane Change` based on the object history and the reference path obtained in the first step.
   - The following information is used to determine the maneuver.
     - The distance between the current center of gravity of the object and the left and right boundaries of the lane
     - The lateral velocity (distance moved to the lateral direction in `t` seconds)

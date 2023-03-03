@@ -241,6 +241,8 @@ This is a function that using de-grounded LiDAR scan estimate scan matching scor
 
 ### Parameters
 
+<!-- cspell: ignore degrounded -->
+
 | Name                                  | Type   | Description                                                                           |
 | ------------------------------------- | ------ | ------------------------------------------------------------------------------------- |
 | `estimate_scores_for_degrounded_scan` | bool   | Flag for using scan matching score based on de-grounded LiDAR scan (FALSE by default) |

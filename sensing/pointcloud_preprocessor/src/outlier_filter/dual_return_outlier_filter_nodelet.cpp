@@ -186,7 +186,7 @@ void DualReturnOutlierFilterComponent::filter(
       } else if (keep_next) {
         temp_segment.points.push_back(*iter);
         keep_next = false;
-        // Analyse segment points here
+        // Analyze segment points here
       } else {
         // Log the deleted azimuth and its distance for analysis
         switch (roi_mode_map_[roi_mode_]) {
@@ -220,7 +220,7 @@ void DualReturnOutlierFilterComponent::filter(
         }
       }
     }
-    // Analyse last segment points here
+    // Analyze last segment points here
     std::vector<int> noise_frequency(horizontal_bins, 0);
     uint current_deleted_index = 0;
     uint current_temp_segment_index = 0;
@@ -301,7 +301,7 @@ void DualReturnOutlierFilterComponent::filter(
       } else if (keep_next) {
         temp_segment.points.push_back(*iter);
         keep_next = false;
-        // Analyse segment points here
+        // Analyze segment points here
       } else {
         // Log the deleted azimuth and its distance for analysis
         // deleted_azimuths.push_back(iter->azimuth < 0.f ? 0.f : iter->azimuth);

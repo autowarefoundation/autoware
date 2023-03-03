@@ -74,7 +74,7 @@ private:
   void generateYoloxProposals(
     std::vector<GridAndStride> grid_strides, float * feat_blob, float prob_threshold,
     ObjectArray & objects) const;
-  void qsortDescentInplace(ObjectArray & faceobjects, int left, int right) const;
+  void qsortDescentInplace(ObjectArray & face_objects, int left, int right) const;
   inline void qsortDescentInplace(ObjectArray & objects) const
   {
     if (objects.empty()) {
@@ -89,8 +89,9 @@ private:
     cv::Rect_<float> inter = a_rect & b_rect;
     return inter.area();
   }
+  // cspell: ignore Bboxes
   void nmsSortedBboxes(
-    const ObjectArray & faceobjects, std::vector<int> & picked, float nms_threshold) const;
+    const ObjectArray & face_objects, std::vector<int> & picked, float nms_threshold) const;
 
   std::unique_ptr<tensorrt_common::TrtCommon> trt_common_;
 

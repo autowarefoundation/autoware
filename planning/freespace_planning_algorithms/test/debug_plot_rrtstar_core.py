@@ -25,6 +25,8 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 
+# cspell: ignore ndim, ndata, linewidth
+
 
 @dataclass
 class Node:

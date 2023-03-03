@@ -208,7 +208,7 @@ TEST(PolygonIterator, Difference)
   GridMap map({"layer"});
   map.setGeometry(Length(5.0, 5.0), 1.0, Position(0.0, 0.0));  // bufferSize(8, 5)
 
-  // Triangle where the hypothenus is an exact diagonal of the map: difference.
+  // Triangle where the hypotenuse is an exact diagonal of the map: difference.
   Polygon polygon;
   polygon.addVertex(Position(2.5, 2.5));
   polygon.addVertex(Position(-2.5, 2.5));
@@ -226,7 +226,7 @@ TEST(PolygonIterator, Difference)
   }
   EXPECT_TRUE(diff);
 
-  // Triangle where the hypothenus does not cross any cell center: no difference.
+  // Triangle where the hypotenuse does not cross any cell center: no difference.
   polygon.removeVertices();
   polygon.addVertex(Position(2.5, 2.1));
   polygon.addVertex(Position(-2.5, 2.5));

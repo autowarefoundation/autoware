@@ -18,6 +18,7 @@
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
@@ -102,13 +103,13 @@ polygon_t createEnvelopePolygon(const std::vector<polygon_t> & footprints);
 /// @details depending on the method used, multiple lines can be created for a same trajectory point
 /// @param[in] trajectory input trajectory
 /// @param[in] params projection parameters
-/// @return projecton lines for each trajectory point
+/// @return projection lines for each trajectory point
 std::vector<multilinestring_t> createProjectedLines(
   const Trajectory & trajectory, ProjectionParameters & params);
 
 /// @brief limit the velocity of the given trajectory
 /// @param[in] trajectory input trajectory
-/// @param[in] collision_checker object used to retrive collision points
+/// @param[in] collision_checker object used to retrieve collision points
 /// @param[in] projections forward projection lines at each trajectory point
 /// @param[in] footprints footprint of the forward projection at each trajectory point
 /// @param[in] projection_params projection parameters

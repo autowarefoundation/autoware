@@ -79,7 +79,7 @@ TYPED_TEST(AreaTest, Triangle)
   EXPECT_FLOAT_EQ(2.0, this->area());  // A = (1/2) * b * h
 }
 
-// Rectangle is easy to do computationall
+// Rectangle is easy to do computational
 TYPED_TEST(AreaTest, Rectangle)
 {
   this->add_point(-5.0, -5.0);

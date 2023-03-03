@@ -39,6 +39,7 @@ TrtCommon::TrtCommon(
 {
   for (const auto & plugin_path : plugin_paths) {
     int32_t flags{RTLD_LAZY};
+// cspell: ignore asan
 #if ENABLE_ASAN
     // https://github.com/google/sanitizers/issues/89
     // asan doesn't handle module unloading correctly and there are no plans on doing

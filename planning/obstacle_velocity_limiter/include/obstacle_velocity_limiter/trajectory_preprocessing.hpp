@@ -16,6 +16,7 @@
 #define OBSTACLE_VELOCITY_LIMITER__TRAJECTORY_PREPROCESSING_HPP_
 
 #include "obstacle_velocity_limiter/types.hpp"
+// cspell: ignore multipolygon, multilinestring
 
 namespace obstacle_velocity_limiter
 {

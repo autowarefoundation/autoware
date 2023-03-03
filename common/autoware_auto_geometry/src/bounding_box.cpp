@@ -17,7 +17,9 @@
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <geometry/bounding_box/bounding_box_common.hpp>
 #include <geometry/bounding_box/eigenbox_2d.hpp>
+// cspell: ignore eigenbox
 #include <geometry/bounding_box/lfit.hpp>
+// cspell: ignore lfit
 #include <geometry/bounding_box/rotating_calipers.hpp>
 
 #include <geometry_msgs/msg/point32.hpp>
@@ -134,7 +136,7 @@ std::vector<geometry_msgs::msg::Point32> GEOMETRY_PUBLIC get_transformed_corners
 
 }  // namespace details
 ///////////////////////////////////////////////////////////////////////////////
-// precompilation
+// pre-compilation
 using autoware::common::types::PointXYZIF;
 template BoundingBox minimum_area_bounding_box<PointXYZIF>(std::list<PointXYZIF> & list);
 template BoundingBox minimum_perimeter_bounding_box<PointXYZIF>(std::list<PointXYZIF> & list);

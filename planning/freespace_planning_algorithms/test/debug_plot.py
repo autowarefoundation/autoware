@@ -91,8 +91,10 @@ class VehicleModel:
     def from_problem_description(cls, pd: ProblemDescription) -> "VehicleModel":
         return cls(pd.vehicle_length.data, pd.vehicle_width.data, pd.vehicle_base2back.data)
 
+    # cspell: ignore nparr
+    # nparr means "numpy array" (maybe)
     def get_vertices(self, pose: Pose) -> np.ndarray:
-        x, y, yaw = self.posemsg_to_nparr(pose)
+        x, y, yaw = self.pose_msg_to_nparr(pose)
 
         back = -1.0 * self.base2back
         front = self.length - self.base2back
@@ -120,20 +122,20 @@ class VehicleModel:
         z = quaternion.z
         w = quaternion.w
 
-        sinr_cosp = 2 * (w * x + y * z)
-        cosr_cosp = 1 - 2 * (x * x + y * y)
-        roll = atan2(sinr_cosp, cosr_cosp)
+        sin_roll_cos_pitch = 2 * (w * x + y * z)
+        cos_roll_cos_pitch = 1 - 2 * (x * x + y * y)
+        roll = atan2(sin_roll_cos_pitch, cos_roll_cos_pitch)
 
-        sinp = 2 * (w * y - z * x)
-        pitch = asin(sinp)
+        sin_pitch = 2 * (w * y - z * x)
+        pitch = asin(sin_pitch)
 
-        siny_cosp = 2 * (w * z + x * y)
-        cosy_cosp = 1 - 2 * (y * y + z * z)
-        yaw = atan2(siny_cosp, cosy_cosp)
+        sin_yaw_cos_pitch = 2 * (w * z + x * y)
+        cos_yaw_cos_pitch = 1 - 2 * (y * y + z * z)
+        yaw = atan2(sin_yaw_cos_pitch, cos_yaw_cos_pitch)
         return roll, pitch, yaw
 
     @staticmethod
-    def posemsg_to_nparr(pose_msg: Pose) -> Tuple[float, float, float]:
+    def pose_msg_to_nparr(pose_msg: Pose) -> Tuple[float, float, float]:
         _, _, yaw = VehicleModel.euler_from_quaternion(pose_msg.orientation)
         return pose_msg.position.x, pose_msg.position.y, yaw
 
@@ -151,12 +153,12 @@ def plot_problem(pd: ProblemDescription, ax, meta_info):
     X, Y = np.meshgrid(x_lin, y_lin)
     ax.contourf(X, Y, arr, cmap="Greys")
 
-    vmodel = VehicleModel.from_problem_description(pd)
-    vmodel.plot_pose(pd.start, ax, "green")
-    vmodel.plot_pose(pd.goal, ax, "red")
+    vehicle_model = VehicleModel.from_problem_description(pd)
+    vehicle_model.plot_pose(pd.start, ax, "green")
+    vehicle_model.plot_pose(pd.goal, ax, "red")
 
     for pose in pd.trajectory.poses:
-        vmodel.plot_pose(pose, ax, "blue", 0.5)
+        vehicle_model.plot_pose(pose, ax, "blue", 0.5)
 
     text = "elapsed : {0} [msec]".format(int(round(pd.elapsed_time.data)))
     ax.text(0.3, 0.3, text, fontsize=15, color="red")
@@ -168,7 +170,7 @@ def plot_problem(pd: ProblemDescription, ax, meta_info):
     ax.set_ylim([b_min[1], b_max[1]])
 
 
-def create_concate_png(src_list, dest, is_horizontal):
+def create_concat_png(src_list, dest, is_horizontal):
     opt = "+append" if is_horizontal else "-append"
     cmd = ["convert", opt]
     for src in src_list:
@@ -179,11 +181,14 @@ def create_concate_png(src_list, dest, is_horizontal):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--concat", action="store_true", help="concat pngs (requires image magick)")
+    parser.add_argument(
+        "--concat", action="store_true", help="concat png images (requires imagemagick)"
+    )
     args = parser.parse_args()
     concat = args.concat
 
     dir_name_table: Dict[Tuple[str, int], str] = {}
+    # cspell: ignore fpalgos, cand
     prefix = "fpalgos"
     for cand_dir in os.listdir("/tmp"):
         if cand_dir.startswith(prefix):
@@ -200,7 +205,7 @@ if __name__ == "__main__":
 
     for i in range(n_algo):
         algo_name = algo_names[i]
-        algo_pngs = []
+        algo_png_images = []
         for j in range(n_case):
             fig, ax = plt.subplots()
 
@@ -214,10 +219,10 @@ if __name__ == "__main__":
             fig.tight_layout()
 
             file_name = os.path.join("/tmp", "plot-{}.png".format(meta_info))
-            algo_pngs.append(file_name)
+            algo_png_images.append(file_name)
             plt.savefig(file_name)
             print("saved to {}".format(file_name))
 
         algowise_summary_file = os.path.join("/tmp", "summary-{}.png".format(algo_name))
         if concat:
-            create_concate_png(algo_pngs, algowise_summary_file, True)
+            create_concat_png(algo_png_images, algowise_summary_file, True)

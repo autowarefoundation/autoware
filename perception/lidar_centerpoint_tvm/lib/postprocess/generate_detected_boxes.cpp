@@ -114,6 +114,7 @@ void generateBoxes3D_worker(
   }
 }
 
+// cspell: ignore divup
 void generateDetectedBoxes3D(
   const std::vector<float> & out_heatmap, const std::vector<float> & out_offset,
   const std::vector<float> & out_z, const std::vector<float> & out_dim,
@@ -135,7 +136,7 @@ void generateDetectedBoxes3D(
     threadPool[idx].join();
   }
 
-  // suppress by socre
+  // suppress by score
   const auto num_det_boxes3d =
     std::count_if(boxes3d.begin(), boxes3d.end(), is_score_greater(config.score_threshold_));
   if (num_det_boxes3d == 0) {
@@ -150,17 +151,17 @@ void generateDetectedBoxes3D(
   // sort by score
   std::sort(det_boxes3d_nonms.begin(), det_boxes3d_nonms.end(), score_greater());
 
-  // supress by NMS
+  // suppress by NMS
   std::vector<bool> final_keep_mask(num_det_boxes3d);
   const auto num_final_det_boxes3d =
     circleNMS(det_boxes3d_nonms, config.circle_nms_dist_threshold_, final_keep_mask);
 
   det_boxes3d.resize(num_final_det_boxes3d);
-  std::size_t boxid = 0;
+  std::size_t box_id = 0;
   for (std::size_t idx = 0; idx < final_keep_mask.size(); idx++) {
     if (final_keep_mask[idx]) {
-      det_boxes3d[boxid] = det_boxes3d_nonms[idx];
-      boxid++;
+      det_boxes3d[box_id] = det_boxes3d_nonms[idx];
+      box_id++;
     }
   }
   // std::copy_if(det_boxes3d_nonms.begin(), det_boxes3d_nonms.end(), final_keep_mask.begin(),

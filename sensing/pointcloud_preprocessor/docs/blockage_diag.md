@@ -50,7 +50,7 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 
 ## Assumptions / Known limits
 
-1. Only Hesai Pandar40P and Hesai PandarQT were tested. For a new LiDAR, it is neccessary to check order of channel id in vertical distribution manually and modifiy the code.
+1. Only Hesai Pandar40P and Hesai PandarQT were tested. For a new LiDAR, it is necessary to check order of channel id in vertical distribution manually and modify the code.
 2. The current method is still limited for dust type of blockage when dust particles are sparsely distributed.
 
 ## (Optional) Error detection and handling
