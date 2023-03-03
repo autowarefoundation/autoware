@@ -601,43 +601,6 @@ double calcSignedArcLength(
 }
 
 /**
- * @brief calculate length of 2D distance between two points, specified by start pose and end point
- * index of points container.
- * @param points points of trajectory, path, ...
- * @param src_pose start pose
- * @param dst_idx index of end point
- * @param max_dist max distance, used to search for nearest segment index to start pose
- * @param max_yaw max yaw, used to search for nearest segment index to start pose
- * @return length of distance between two points.
- * Length is positive if destination point associated to dst_idx is greater that point associated to
- * src_pose (i.e. after it in trajectory, path, ...) and negative otherwise.
- */
-template <class T>
-boost::optional<double> calcSignedArcLength(
-  const T & points, const geometry_msgs::msg::Pose & src_pose, const size_t dst_idx,
-  const double max_dist = std::numeric_limits<double>::max(),
-  const double max_yaw = std::numeric_limits<double>::max())
-{
-  try {
-    validateNonEmpty(points);
-  } catch (const std::exception & e) {
-    std::cerr << e.what() << std::endl;
-    return {};
-  }
-
-  const auto src_seg_idx = findNearestSegmentIndex(points, src_pose, max_dist, max_yaw);
-  if (!src_seg_idx) {
-    return boost::none;
-  }
-
-  const double signed_length_on_traj = calcSignedArcLength(points, *src_seg_idx, dst_idx);
-  const double signed_length_src_offset =
-    calcLongitudinalOffsetToSegment(points, *src_seg_idx, src_pose.position);
-
-  return signed_length_on_traj - signed_length_src_offset;
-}
-
-/**
  * @brief calculate length of 2D distance between two points, specified by start index of points
  * container and end point.
  * @param points points of trajectory, path, ...
@@ -690,47 +653,6 @@ double calcSignedArcLength(
   const double signed_length_on_traj = calcSignedArcLength(points, src_seg_idx, dst_seg_idx);
   const double signed_length_src_offset =
     calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
-  const double signed_length_dst_offset =
-    calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
-
-  return signed_length_on_traj - signed_length_src_offset + signed_length_dst_offset;
-}
-
-/**
- * @brief calculate length of 2D distance between two points, specified by start pose and end point.
- * @param points points of trajectory, path, ...
- * @param src_pose start pose
- * @param dst_point end point
- * @param max_dist max distance, used to search for nearest segment index to start pose
- * @param max_yaw max yaw, used to search for nearest segment index to start pose
- * @return length of distance between two points.
- * Length is positive if destination point is greater that source point associated to src_pose (i.e.
- * after it in trajectory, path, ...) and negative otherwise.
- */
-template <class T>
-boost::optional<double> calcSignedArcLength(
-  const T & points, const geometry_msgs::msg::Pose & src_pose,
-  const geometry_msgs::msg::Point & dst_point,
-  const double max_dist = std::numeric_limits<double>::max(),
-  const double max_yaw = std::numeric_limits<double>::max())
-{
-  try {
-    validateNonEmpty(points);
-  } catch (const std::exception & e) {
-    std::cerr << e.what() << std::endl;
-    return {};
-  }
-
-  const auto src_seg_idx = findNearestSegmentIndex(points, src_pose, max_dist, max_yaw);
-  if (!src_seg_idx) {
-    return boost::none;
-  }
-
-  const size_t dst_seg_idx = findNearestSegmentIndex(points, dst_point);
-
-  const double signed_length_on_traj = calcSignedArcLength(points, *src_seg_idx, dst_seg_idx);
-  const double signed_length_src_offset =
-    calcLongitudinalOffsetToSegment(points, *src_seg_idx, src_pose.position);
   const double signed_length_dst_offset =
     calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
 
@@ -836,55 +758,6 @@ boost::optional<double> calcDistanceToForwardStopPoint(
   }
 
   return std::max(0.0, calcSignedArcLength(points_with_twist, src_idx, *closest_stop_idx));
-}
-
-/**
- * @brief calculate length of 2D distance between given pose and first point in container with zero
- * longitudinal velocity
- * @param points_with_twist points of trajectory, path, ... (with velocity)
- * @param pose given pose to start the distance calculation from
- * @param max_dist max distance, used to search for nearest segment index in points container to the
- * given pose
- * @param max_yaw max yaw, used to search for nearest segment index in points container to the given
- * pose
- * @return Length of 2D distance between given pose and first point in container with zero
- * longitudinal velocity
- */
-template <class T>
-boost::optional<double> calcDistanceToForwardStopPoint(
-  const T & points_with_twist, const geometry_msgs::msg::Pose & pose,
-  const double max_dist = std::numeric_limits<double>::max(),
-  const double max_yaw = std::numeric_limits<double>::max())
-{
-  try {
-    validateNonEmpty(points_with_twist);
-  } catch (const std::exception & e) {
-    std::cerr << e.what() << std::endl;
-    return {};
-  }
-
-  const auto nearest_segment_idx =
-    motion_utils::findNearestSegmentIndex(points_with_twist, pose, max_dist, max_yaw);
-
-  if (!nearest_segment_idx) {
-    return boost::none;
-  }
-
-  const auto stop_idx = motion_utils::searchZeroVelocityIndex(
-    points_with_twist, *nearest_segment_idx + 1, points_with_twist.size());
-
-  if (!stop_idx) {
-    return boost::none;
-  }
-
-  const auto closest_stop_dist =
-    motion_utils::calcSignedArcLength(points_with_twist, pose, *stop_idx, max_dist, max_yaw);
-
-  if (!closest_stop_dist) {
-    return boost::none;
-  }
-
-  return std::max(0.0, *closest_stop_dist);
 }
 
 /**
@@ -1616,6 +1489,52 @@ size_t findFirstNearestSegmentIndexWithSoftConstraints(
   }
 
   return nearest_idx;
+}
+
+/**
+ * @brief calculate the point offset from source point along the trajectory (or path)
+ * @brief calculate length of 2D distance between given pose and first point in container with zero
+ * longitudinal velocity
+ * @param points_with_twist points of trajectory, path, ... (with velocity)
+ * @param pose given pose to start the distance calculation from
+ * @param max_dist max distance, used to search for nearest segment index in points container to the
+ * given pose
+ * @param max_yaw max yaw, used to search for nearest segment index in points container to the given
+ * pose
+ * @return Length of 2D distance between given pose and first point in container with zero
+ * longitudinal velocity
+ */
+template <class T>
+boost::optional<double> calcDistanceToForwardStopPoint(
+  const T & points_with_twist, const geometry_msgs::msg::Pose & pose,
+  const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max())
+{
+  try {
+    validateNonEmpty(points_with_twist);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
+
+  const auto nearest_segment_idx =
+    motion_utils::findNearestSegmentIndex(points_with_twist, pose, max_dist, max_yaw);
+
+  if (!nearest_segment_idx) {
+    return boost::none;
+  }
+
+  const auto stop_idx = motion_utils::searchZeroVelocityIndex(
+    points_with_twist, *nearest_segment_idx + 1, points_with_twist.size());
+
+  if (!stop_idx) {
+    return boost::none;
+  }
+
+  const auto closest_stop_dist =
+    calcSignedArcLength(points_with_twist, pose.position, *nearest_segment_idx, *stop_idx);
+
+  return std::max(0.0, closest_stop_dist);
 }
 }  // namespace motion_utils
 

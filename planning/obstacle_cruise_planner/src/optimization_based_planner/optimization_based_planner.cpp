@@ -595,18 +595,16 @@ bool OptimizationBasedPlanner::checkOnTrajectory(
 boost::optional<double> OptimizationBasedPlanner::calcTrajectoryLengthFromCurrentPose(
   const Trajectory & traj, const geometry_msgs::msg::Pose & current_pose)
 {
-  const auto traj_length = motion_utils::calcSignedArcLength(
-    traj.points, current_pose, traj.points.size() - 1, ego_nearest_param_.dist_threshold,
-    ego_nearest_param_.yaw_threshold);
+  const size_t ego_segment_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    traj.points, current_pose, ego_nearest_param_.dist_threshold, ego_nearest_param_.yaw_threshold);
 
-  if (!traj_length) {
-    return {};
-  }
+  const auto traj_length = motion_utils::calcSignedArcLength(
+    traj.points, current_pose.position, ego_segment_idx, traj.points.size() - 1);
 
   const auto dist_to_closest_stop_point = motion_utils::calcDistanceToForwardStopPoint(
     traj.points, current_pose, ego_nearest_param_.dist_threshold, ego_nearest_param_.yaw_threshold);
   if (dist_to_closest_stop_point) {
-    return std::min(traj_length.get(), dist_to_closest_stop_point.get());
+    return std::min(traj_length, dist_to_closest_stop_point.get());
   }
 
   return traj_length;
