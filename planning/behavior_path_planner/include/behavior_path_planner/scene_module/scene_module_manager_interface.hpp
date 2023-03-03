@@ -40,15 +40,14 @@ class SceneModuleManagerInterface
 {
 public:
   SceneModuleManagerInterface(
-    rclcpp::Node * node, const std::string & name, const size_t max_module_num,
-    const size_t priority, const bool enable_simultaneous_execution)
+    rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
   : node_(node),
     clock_(*node->get_clock()),
     logger_(node->get_logger().get_child(name)),
     name_(name),
-    max_module_num_(max_module_num),
-    priority_(priority),
-    enable_simultaneous_execution_(enable_simultaneous_execution)
+    max_module_num_(config.max_module_size),
+    priority_(config.priority),
+    enable_simultaneous_execution_(config.enable_simultaneous_execution)
   {
     pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name, 20);
   }
@@ -157,8 +156,6 @@ public:
   virtual void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) = 0;
 
 protected:
-  virtual void getModuleParams(rclcpp::Node * node) = 0;
-
   virtual std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() = 0;
 
   rclcpp::Node * node_;

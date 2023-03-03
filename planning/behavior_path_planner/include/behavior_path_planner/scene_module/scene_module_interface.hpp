@@ -259,6 +259,8 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
 #endif
 
+  BehaviorModuleOutput previous_module_output_;
+
 protected:
   void updateRTCStatus(const double start_distance, const double finish_distance)
   {
@@ -276,6 +278,8 @@ protected:
     }
     rtc_interface_ptr_->clearCooperateStatus();
   }
+
+  BehaviorModuleOutput getPreviousModuleOutput() const { return previous_module_output_; }
 
   void lockNewModuleLaunch() { is_locked_new_module_launch_ = true; }
 
@@ -302,8 +306,6 @@ protected:
   PlanResult path_reference_;
 
   ModuleStatus current_state_;
-
-  BehaviorModuleOutput previous_module_output_;
 
   mutable MarkerArray debug_marker_;
 };

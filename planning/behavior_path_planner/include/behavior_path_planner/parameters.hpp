@@ -17,9 +17,19 @@
 
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
+struct ModuleConfigParameters
+{
+  bool enable_module{false};
+  bool enable_simultaneous_execution{false};
+  uint8_t priority{0};
+  uint8_t max_module_size{0};
+};
+
 struct BehaviorPathPlannerParameters
 {
   bool verbose;
+
+  ModuleConfigParameters config_avoidance;
 
   double backward_path_length;
   double forward_path_length;
