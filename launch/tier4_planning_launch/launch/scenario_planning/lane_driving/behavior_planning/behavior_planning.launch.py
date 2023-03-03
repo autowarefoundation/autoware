@@ -67,6 +67,10 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/vector_map", LaunchConfiguration("map_topic_name")),
             ("~/input/perception", "/perception/object_recognition/objects"),
             ("~/input/occupancy_grid_map", "/perception/occupancy_grid_map/map"),
+            (
+                "~/input/costmap",
+                "/planning/scenario_planning/parking/costmap_generator/occupancy_grid",
+            ),
             ("~/input/odometry", "/localization/kinematic_state"),
             ("~/input/accel", "/localization/acceleration"),
             ("~/input/scenario", "/planning/scenario_planning/scenario"),

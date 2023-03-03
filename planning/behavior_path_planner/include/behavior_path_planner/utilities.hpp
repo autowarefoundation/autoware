@@ -333,6 +333,10 @@ void generateDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
   const std::shared_ptr<const PlannerData> planner_data, const bool is_driving_forward = true);
 
+void generateDrivableArea(
+  PathWithLaneId & path, const double vehicle_length, const double vehicle_width,
+  const double margin, const bool is_driving_forward = true);
+
 lanelet::ConstLineStrings3d getMaximumDrivableArea(
   const std::shared_ptr<const PlannerData> & planner_data);
 

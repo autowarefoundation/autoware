@@ -39,6 +39,7 @@ enum class PullOverPlannerType {
   SHIFT,
   ARC_FORWARD,
   ARC_BACKWARD,
+  FREESPACE,
 };
 
 struct PullOverPath

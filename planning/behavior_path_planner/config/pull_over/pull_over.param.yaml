@@ -47,6 +47,37 @@
       backward_parking_lane_departure_margin: 0.0
       arc_path_interval: 1.0
       pull_over_max_steer_angle: 0.35  # 20deg
+      # freespace parking
+      enable_freespace_parking: true
+      freespace_parking:
+        planning_algorithm: "astar"  # options: astar, rrtstar
+        velocity: 1.0
+        vehicle_shape_margin: 1.0
+        time_limit: 3000.0
+        minimum_turning_radius: 5.0
+        maximum_turning_radius: 5.0
+        turning_radius_size: 1
+        # search configs
+        theta_size: 144
+        angle_goal_range: 6.0
+        curve_weight: 1.2
+        reverse_weight: 1.0
+        lateral_goal_range: 0.5
+        longitudinal_goal_range: 2.0
+        # costmap configs
+        obstacle_threshold: 30
+        # -- A* search Configurations --
+        astar:
+          only_behind_solutions: false
+          use_back: false
+          distance_heuristic_weight: 1.0
+        # -- RRT* search Configurations --
+        rrtstar:
+          enable_update: true
+          use_informed_sampling: true
+          max_planning_time: 150.0
+          neighbor_radius: 8.0
+          margin: 1.0
       # hazard on when parked
       hazard_on_threshold_distance: 1.0
       hazard_on_threshold_velocity: 0.5

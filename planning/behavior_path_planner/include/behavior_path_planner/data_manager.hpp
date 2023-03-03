@@ -123,6 +123,7 @@ struct PlannerData
   AccelWithCovarianceStamped::ConstSharedPtr self_acceleration{};
   PredictedObjects::ConstSharedPtr dynamic_object{};
   OccupancyGrid::ConstSharedPtr occupancy_grid{};
+  OccupancyGrid::ConstSharedPtr costmap{};
   OperationModeState::ConstSharedPtr operation_mode{};
   PathWithLaneId::SharedPtr reference_path{std::make_shared<PathWithLaneId>()};
   PathWithLaneId::SharedPtr prev_output_path{std::make_shared<PathWithLaneId>()};

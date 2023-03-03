@@ -91,6 +91,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   occupancy_grid_subscriber_ = create_subscription<OccupancyGrid>(
     "~/input/occupancy_grid_map", 1, std::bind(&BehaviorPathPlannerNode::onOccupancyGrid, this, _1),
     createSubscriptionOptions(this));
+  costmap_subscriber_ = create_subscription<OccupancyGrid>(
+    "~/input/costmap", 1, std::bind(&BehaviorPathPlannerNode::onCostMap, this, _1),
+    createSubscriptionOptions(this));
   operation_mode_subscriber_ = create_subscription<OperationModeState>(
     "/system/operation_mode/state", 1,
     std::bind(&BehaviorPathPlannerNode::onOperationMode, this, _1),
@@ -633,6 +636,8 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.backward_parking_lane_departure_margin = dp("backward_parking_lane_departure_margin", 0.0);
   p.arc_path_interval = dp("arc_path_interval", 1.0);
   p.pull_over_max_steer_angle = dp("pull_over_max_steer_angle", 0.35);  // 20deg
+  // freespace parking
+  p.enable_freespace_parking = dp("enable_freespace_parking", true);
   // hazard
   p.hazard_on_threshold_distance = dp("hazard_on_threshold_distance", 1.0);
   p.hazard_on_threshold_velocity = dp("hazard_on_threshold_velocity", 0.5);
@@ -1159,6 +1164,11 @@ void BehaviorPathPlannerNode::onOccupancyGrid(const OccupancyGrid::ConstSharedPt
 {
   const std::lock_guard<std::mutex> lock(mutex_pd_);
   planner_data_->occupancy_grid = msg;
+}
+void BehaviorPathPlannerNode::onCostMap(const OccupancyGrid::ConstSharedPtr msg)
+{
+  const std::lock_guard<std::mutex> lock(mutex_pd_);
+  planner_data_->costmap = msg;
 }
 void BehaviorPathPlannerNode::onMap(const HADMapBin::ConstSharedPtr msg)
 {

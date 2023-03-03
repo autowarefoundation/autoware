@@ -313,4 +313,157 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   return std::make_pair(turn_signal, max_distance);
 }
 
+PathWithLaneId convertWayPointsToPathWithLaneId(
+  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity)
+{
+  PathWithLaneId path;
+  path.header = waypoints.header;
+  for (const auto & waypoint : waypoints.waypoints) {
+    PathPointWithLaneId point{};
+    point.point.pose = waypoint.pose.pose;
+    // point.lane_id = // todo
+    point.point.longitudinal_velocity_mps = (waypoint.is_back ? -1 : 1) * velocity;
+    path.points.push_back(point);
+  }
+  return path;
+}
+
+std::vector<size_t> getReversingIndices(const PathWithLaneId & path)
+{
+  std::vector<size_t> indices;
+
+  for (size_t i = 0; i < path.points.size() - 1; ++i) {
+    if (
+      path.points.at(i).point.longitudinal_velocity_mps *
+        path.points.at(i + 1).point.longitudinal_velocity_mps <
+      0) {
+      indices.push_back(i);
+    }
+  }
+
+  return indices;
+}
+
+std::vector<PathWithLaneId> dividePath(
+  const PathWithLaneId & path, const std::vector<size_t> indices)
+{
+  std::vector<PathWithLaneId> divided_paths;
+
+  if (indices.empty()) {
+    divided_paths.push_back(path);
+    return divided_paths;
+  }
+
+  for (size_t i = 0; i < indices.size(); ++i) {
+    PathWithLaneId divided_path;
+    divided_path.header = path.header;
+    if (i == 0) {
+      divided_path.points.insert(
+        divided_path.points.end(), path.points.begin(), path.points.begin() + indices.at(i) + 1);
+    } else {
+      // include the point at indices.at(i - 1) and indices.at(i)
+      divided_path.points.insert(
+        divided_path.points.end(), path.points.begin() + indices.at(i - 1),
+        path.points.begin() + indices.at(i) + 1);
+    }
+    divided_paths.push_back(divided_path);
+  }
+
+  PathWithLaneId divided_path;
+  divided_path.header = path.header;
+  divided_path.points.insert(
+    divided_path.points.end(), path.points.begin() + indices.back(), path.points.end());
+  divided_paths.push_back(divided_path);
+
+  return divided_paths;
+}
+
+void correctDividedPathVelocity(std::vector<PathWithLaneId> & divided_paths)
+{
+  for (auto & path : divided_paths) {
+    const auto is_driving_forward = motion_utils::isDrivingForward(path.points);
+    if (!is_driving_forward) {
+      continue;
+    }
+
+    if (*is_driving_forward) {
+      for (auto & point : path.points) {
+        point.point.longitudinal_velocity_mps = std::abs(point.point.longitudinal_velocity_mps);
+      }
+    } else {
+      for (auto & point : path.points) {
+        point.point.longitudinal_velocity_mps = -std::abs(point.point.longitudinal_velocity_mps);
+      }
+    }
+    path.points.back().point.longitudinal_velocity_mps = 0.0;
+  }
+}
+
+bool isCloseToPath(const PathWithLaneId & path, const Pose & pose, const double distance_threshold)
+{
+  for (const auto & point : path.points) {
+    const auto & p = point.point.pose.position;
+    const double dist = std::hypot(pose.position.x - p.x, pose.position.y - p.y);
+    if (dist < distance_threshold) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// only two points is supported
+std::vector<double> splineTwoPoints(
+  std::vector<double> base_s, std::vector<double> base_x, const double begin_diff,
+  const double end_diff, std::vector<double> new_s)
+{
+  const double h = base_s.at(1) - base_s.at(0);
+
+  const double c = begin_diff;
+  const double d = base_x.at(0);
+  const double a = (end_diff * h - 2 * base_x.at(1) + c * h + 2 * d) / std::pow(h, 3);
+  const double b = (3 * base_x.at(1) - end_diff * h - 2 * c * h - 3 * d) / std::pow(h, 2);
+
+  std::vector<double> res;
+  for (const auto & s : new_s) {
+    const double ds = s - base_s.at(0);
+    res.push_back(d + (c + (b + a * ds) * ds) * ds);
+  }
+
+  return res;
+}
+
+std::vector<Pose> interpolatePose(
+  const Pose & start_pose, const Pose & end_pose, const double resample_interval)
+{
+  std::vector<Pose> interpolated_poses{};  // output
+
+  const std::vector<double> base_s{
+    0, tier4_autoware_utils::calcDistance2d(start_pose.position, end_pose.position)};
+  const std::vector<double> base_x{start_pose.position.x, end_pose.position.x};
+  const std::vector<double> base_y{start_pose.position.y, end_pose.position.y};
+  std::vector<double> new_s;
+
+  constexpr double eps = 0.3;  // prevent overlapping
+  for (double s = eps; s < base_s.back() - eps; s += resample_interval) {
+    new_s.push_back(s);
+  }
+
+  const std::vector<double> interpolated_x = splineTwoPoints(
+    base_s, base_x, std::cos(tf2::getYaw(start_pose.orientation)),
+    std::cos(tf2::getYaw(end_pose.orientation)), new_s);
+  const std::vector<double> interpolated_y = splineTwoPoints(
+    base_s, base_y, std::sin(tf2::getYaw(start_pose.orientation)),
+    std::sin(tf2::getYaw(end_pose.orientation)), new_s);
+  for (size_t i = 0; i < interpolated_x.size(); ++i) {
+    Pose pose{};
+    pose = util::lerpByPose(end_pose, start_pose, (base_s.back() - new_s.at(i)) / base_s.back());
+    pose.position.x = interpolated_x.at(i);
+    pose.position.y = interpolated_y.at(i);
+    pose.position.z = end_pose.position.z;
+    interpolated_poses.push_back(pose);
+  }
+
+  return interpolated_poses;
+}
+
 }  // namespace behavior_path_planner::util

@@ -50,7 +50,7 @@ public:
         node.declare_parameter("rrtstar.enable_update", true),
         node.declare_parameter("rrtstar.use_informed_sampling", true),
         node.declare_parameter("rrtstar.max_planning_time", 150.0),
-        node.declare_parameter("rrtstar.neighbour_radius", 8.0),
+        node.declare_parameter("rrtstar.neighbor_radius", 8.0),
         node.declare_parameter("rrtstar.margin", 0.1)})
   {
   }

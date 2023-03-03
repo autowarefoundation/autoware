@@ -69,6 +69,8 @@ struct PullOverParameters
   double backward_parking_lane_departure_margin;
   double arc_path_interval;
   double pull_over_max_steer_angle;
+  // freespace parking
+  bool enable_freespace_parking;
   // hazard
   double hazard_on_threshold_distance;
   double hazard_on_threshold_velocity;

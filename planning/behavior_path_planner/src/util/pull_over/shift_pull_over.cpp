@@ -143,7 +143,7 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // interpolate between shift end pose to goal pose
   std::vector<Pose> interpolated_poses =
-    interpolatePose(shifted_path.path.points.back().point.pose, goal_pose, 0.5);
+    util::interpolatePose(shifted_path.path.points.back().point.pose, goal_pose, 0.5);
   for (const auto & pose : interpolated_poses) {
     PathPointWithLaneId p = shifted_path.path.points.back();
     p.point.pose = pose;
@@ -241,60 +241,5 @@ double ShiftPullOver::calcBeforeShiftedArcLength(
   }
 
   return before_arc_length;
-}
-
-// only two points is supported
-std::vector<double> ShiftPullOver::splineTwoPoints(
-  std::vector<double> base_s, std::vector<double> base_x, const double begin_diff,
-  const double end_diff, std::vector<double> new_s)
-{
-  const double h = base_s.at(1) - base_s.at(0);
-
-  const double c = begin_diff;
-  const double d = base_x.at(0);
-  const double a = (end_diff * h - 2 * base_x.at(1) + c * h + 2 * d) / std::pow(h, 3);
-  const double b = (3 * base_x.at(1) - end_diff * h - 2 * c * h - 3 * d) / std::pow(h, 2);
-
-  std::vector<double> res;
-  for (const auto & s : new_s) {
-    const double ds = s - base_s.at(0);
-    res.push_back(d + (c + (b + a * ds) * ds) * ds);
-  }
-
-  return res;
-}
-
-std::vector<Pose> ShiftPullOver::interpolatePose(
-  const Pose & start_pose, const Pose & end_pose, const double resample_interval)
-{
-  std::vector<Pose> interpolated_poses{};  // output
-
-  const std::vector<double> base_s{
-    0, tier4_autoware_utils::calcDistance2d(start_pose.position, end_pose.position)};
-  const std::vector<double> base_x{start_pose.position.x, end_pose.position.x};
-  const std::vector<double> base_y{start_pose.position.y, end_pose.position.y};
-  std::vector<double> new_s;
-
-  constexpr double eps = 0.3;  // prevent overlapping
-  for (double s = eps; s < base_s.back() - eps; s += resample_interval) {
-    new_s.push_back(s);
-  }
-
-  const std::vector<double> interpolated_x = splineTwoPoints(
-    base_s, base_x, std::cos(tf2::getYaw(start_pose.orientation)),
-    std::cos(tf2::getYaw(end_pose.orientation)), new_s);
-  const std::vector<double> interpolated_y = splineTwoPoints(
-    base_s, base_y, std::sin(tf2::getYaw(start_pose.orientation)),
-    std::sin(tf2::getYaw(end_pose.orientation)), new_s);
-  for (size_t i = 0; i < interpolated_x.size(); ++i) {
-    Pose pose{};
-    pose = util::lerpByPose(end_pose, start_pose, (base_s.back() - new_s.at(i)) / base_s.back());
-    pose.position.x = interpolated_x.at(i);
-    pose.position.y = interpolated_y.at(i);
-    pose.position.z = end_pose.position.z;
-    interpolated_poses.push_back(pose);
-  }
-
-  return interpolated_poses;
 }
 }  // namespace behavior_path_planner
