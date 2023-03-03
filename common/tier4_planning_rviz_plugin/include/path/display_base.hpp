@@ -219,6 +219,11 @@ protected:
 
   void processMessage(const typename T::ConstSharedPtr msg_ptr) override
   {
+    path_manual_object_->clear();
+    velocity_manual_object_->clear();
+    footprint_manual_object_->clear();
+    point_manual_object_->clear();
+
     if (!validateFloats<T>(msg_ptr)) {
       this->setStatus(
         rviz_common::properties::StatusProperty::Error, "Topic",
@@ -254,9 +259,6 @@ protected:
     if (msg_ptr->points.empty()) {
       return;
     }
-
-    path_manual_object_->clear();
-    velocity_manual_object_->clear();
 
     Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(
       "BaseWhiteNoLighting", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -392,9 +394,6 @@ protected:
       return;
     }
 
-    footprint_manual_object_->clear();
-    point_manual_object_->clear();
-
     Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(
       "BaseWhiteNoLighting", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
@@ -402,7 +401,6 @@ protected:
 
     footprint_manual_object_->estimateVertexCount(msg_ptr->points.size() * 4 * 2);
     footprint_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
-
     point_manual_object_->estimateVertexCount(msg_ptr->points.size() * 3 * 8);
     point_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 

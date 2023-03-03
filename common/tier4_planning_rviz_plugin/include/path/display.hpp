@@ -127,6 +127,9 @@ public:
 protected:
   void visualizeDrivableArea(const typename T::ConstSharedPtr msg_ptr) override
   {
+    left_bound_object_->clear();
+    right_bound_object_->clear();
+
     if (!validateBoundFloats<T>(msg_ptr)) {
       this->setStatus(
         rviz_common::properties::StatusProperty::Error, "Topic",
@@ -134,8 +137,6 @@ protected:
       return;
     }
 
-    left_bound_object_->clear();
-    right_bound_object_->clear();
     if (property_drivable_area_view_->getBool()) {
       Ogre::ColourValue color =
         rviz_common::properties::qtToOgre(property_drivable_area_color_->getColor());
