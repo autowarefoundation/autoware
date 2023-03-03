@@ -208,64 +208,6 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 - The ego-vehicle is stopped.
   - The speed is lower than threshold (default: < `0.01m/s`).
 
-#### General parameters for pull_over
-
-| Name                       | Unit   | Type   | Description                                                                                                                             | Default value |
-| :------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| request_length             | [m]    | double | when the ego-vehicle approaches the goal by this distance, the module is activated.                                                     | 200.0         |
-| th_arrived_distance        | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
-| th_stopped_velocity        | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
-| th_stopped_time            | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
-| pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 2.0           |
-| pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 1.38          |
-| margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
-| decide_path_distance       | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
-| maximum_deceleration       | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 1.0           |
-
-#### **collision check**
-
-##### **occupancy grid based collision check**
-
-Generate footprints from ego-vehicle path points and determine obstacle collision from the value of occupancy_grid of the corresponding cell.
-
-##### Parameters for occupancy grid based collision check
-
-| Name                                       | Unit | Type   | Description                                                                                                     | Default value |
-| :----------------------------------------- | :--- | :----- | :-------------------------------------------------------------------------------------------------------------- | :------------ |
-| use_occupancy_grid                         | -    | bool   | flag whether to use occupancy grid for collision check                                                          | true          |
-| use_occupancy_grid_for_longitudinal_margin | -    | bool   | flag whether to use occupancy grid for keeping longitudinal margin                                              | false         |
-| occupancy_grid_collision_check_margin      | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                           | 0.0           |
-| theta_size                                 | -    | int    | size of theta angle to be considered. angular resolution for collision check will be 2$\pi$ / theta_size [rad]. | 360           |
-| obstacle_threshold                         | -    | int    | threshold of cell values to be considered as obstacles                                                          | 60            |
-
-##### Parameters for object recognition based collision check
-
-| Name                                      | Unit | Type   | Description                                                | Default value |
-| :---------------------------------------- | :--- | :----- | :--------------------------------------------------------- | :------------ |
-| use_object_recognition                    | -    | bool   | flag whether to use object recognition for collision check | true          |
-| object_recognition_collision_check_margin | [m]  | double | margin to calculate ego-vehicle cells from footprint.      | 1.0           |
-
-#### **Goal Search**
-
-If it is not possible to park safely at a given goal, `/planning/scenario_planning/modified_goal` is
-searched for in certain range of the shoulder lane.
-
-[Video of how goal search works](https://user-images.githubusercontent.com/39142679/188359594-c6724e3e-1cb7-4051-9a18-8d2c67d4dee9.mp4)
-
-##### Parameters for goal search
-
-| Name                            | Unit | Type   | Description                                                                                                                                                                                                              | Default value  |
-| :------------------------------ | :--- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------- |
-| search_priority                 | -    | string | In case `efficient_path` use a goal that can generate an efficient path( priority is `shift_parking` -> `arc_forward_parking` -> `arc_backward_parking`). In case `close_goal` use the closest goal to the original one. | efficient_path |
-| enable_goal_research            | -    | double | flag whether to search goal                                                                                                                                                                                              | true           |
-| forward_goal_search_length      | [m]  | double | length of forward range to be explored from the original goal                                                                                                                                                            | 20.0           |
-| backward_goal_search_length     | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
-| goal_search_interval            | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 2.0            |
-| longitudinal_margin             | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
-| max_lateral_offset              | [m]  | double | maximum offset of goal search in the lateral direction                                                                                                                                                                   | 3.0            |
-| lateral_offset_interval         | [m]  | double | distance interval of goal search in the lateral direction                                                                                                                                                                | 3.0            |
-| ignore_distance_from_lane_start | [m]  | double | distance from start of pull over lanes for ignoring goal candidates                                                                                                                                                      | 15.0           |
-
 #### **Path Generation**
 
 There are three path generation methods.
@@ -282,30 +224,10 @@ The lateral jerk is searched for among the predetermined minimum and maximum val
 
 ![shift_parking](./image/shift_parking.drawio.svg)
 
-[Video of how shift_parking works](https://user-images.githubusercontent.com/39142679/178034101-4dc61a33-bc49-41a0-a9a8-755cce53cbc6.mp4)
-
-###### Parameters for shift parking
-
-| Name                              | Unit   | Type   | Description                                                         | Default value |
-| :-------------------------------- | :----- | :----- | :------------------------------------------------------------------ | :------------ |
-| enable_shift_parking              | [-]    | bool   | flag whether to enable shift parking                                | true          |
-| pull_over_sampling_num            | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk | 4             |
-| maximum_lateral_jerk              | [m/s3] | double | maximum lateral jerk                                                | 2.0           |
-| minimum_lateral_jerk              | [m/s3] | double | minimum lateral jerk                                                | 0.5           |
-| deceleration_interval             | [m]    | double | distance of deceleration section                                    | 15.0          |
-| after_pull_over_straight_distance | [m]    | double | straight line distance after pull over end point                    | 5.0           |
-
 ##### **geometric parallel parking**
 
 Generate two arc paths with discontinuous curvature. It stops twice in the middle of the path to control the steer on the spot. There are two path generation methods: forward and backward.
 See also [[1]](https://www.sciencedirect.com/science/article/pii/S1474667015347431) for details of the algorithm. There is also [a simple python implementation](https://github.com/kosuke55/geometric-parallel-parking).
-
-###### Parameters geometric parallel parking
-
-| Name                    | Unit  | Type   | Description                                                                                                                         | Default value |
-| :---------------------- | :---- | :----- | :---------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| arc_path_interval       | [m]   | double | interval between arc path points                                                                                                    | 1.0           |
-| pull_over_max_steer_rad | [rad] | double | maximum steer angle for path generation. it may not be possible to control steer up to max_steer_angle in vehicle_info when stopped | 0.35          |
 
 ###### arc forward parking
 
@@ -313,33 +235,11 @@ Generate two forward arc paths.
 
 ![arc_forward_parking](./image/arc_forward_parking.drawio.svg)
 
-[Video of how arc_forward_parking works](https://user-images.githubusercontent.com/39142679/178034128-4754c401-8aff-4745-b69a-4a69ca29ce4b.mp4)
-
-###### Parameters arc forward parking
-
-| Name                                    | Unit  | Type   | Description                                                                     | Default value |
-| :-------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------ | :------------ |
-| enable_arc_forward_parking              | [-]   | bool   | flag whether to enable arc forward parking                                      | true          |
-| after_forward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                                | 2.0           |
-| forward_parking_velocity                | [m/s] | double | velocity when forward parking                                                   | 1.38          |
-| forward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front left corner of ego-vehicle when forward parking | 0.0           |
-
 ###### arc backward parking
 
 Generate two backward arc paths.
 
 ![arc_backward_parking](./image/arc_backward_parking.drawio.svg).
-
-[Video of how arc_forward_parking works](https://user-images.githubusercontent.com/39142679/178034280-4b6754fe-3981-4aee-b5e0-970f34563c6d.mp4)
-
-###### Parameters arc backward parking
-
-| Name                                     | Unit  | Type   | Description                                                               | Default value |
-| :--------------------------------------- | :---- | :----- | :------------------------------------------------------------------------ | :------------ |
-| enable_arc_backward_parking              | [-]   | bool   | flag whether to enable arc backward parking                               | true          |
-| after_backward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                          | 2.0           |
-| backward_parking_velocity                | [m/s] | double | velocity when backward parking                                            | -1.38         |
-| backward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front right corner of ego-vehicle when backward | 0.0           |
 
 #### Unimplemented parts / limitations for pull over
 
@@ -374,24 +274,6 @@ The Pull Out module is activated when ego-vehicle is stationary and footprint of
 
 - Exceeding the pull out end point by more than the threshold (default: `1.0m`)
 
-#### General parameters for pull_out
-
-| Name                              | Unit  | Type   | Description                                                          | Default value |
-| :-------------------------------- | :---- | :----- | :------------------------------------------------------------------- | :------------ |
-| th_arrived_distance_m             | [m]   | double | distance threshold for arrival of path termination                   | 1.0           |
-| th_stopped_velocity_mps           | [m/s] | double | velocity threshold for arrival of path termination                   | 0.01          |
-| th_stopped_time_sec               | [s]   | double | time threshold for arrival of path termination                       | 1.0           |
-| collision_check_margin            | [m]   | double | Obstacle collision check margin                                      | 1.0           |
-| collision_check_distance_from_end | [m]   | double | collision check distance from end point. currently only for pull out | 15.0          |
-
-#### **Safe check with obstacles in shoulder lane**
-
-1. Calculate ego-vehicle's footprint on pull out path between from current position to pull out end point. (Illustrated by blue frame)
-2. Calculate object's polygon which is located in shoulder lane
-3. If a distance between the footprint and the polygon is lower than the threshold (default: `1.0 m`), that is judged as a unsafe path
-
-![pull_out_collision_check](./image/pull_out_collision_check.drawio.svg)
-
 #### **Path Generation**
 
 There are two path generation methods.
@@ -406,19 +288,6 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 
 ![shift_pull_out](./image/shift_pull_out.drawio.svg)
 
-[Video of how shift pull out works](https://user-images.githubusercontent.com/39142679/187872468-6d5057ee-e039-499b-afc7-fe0dc8052a6b.mp4)
-
-###### parameters for shift pull out
-
-| Name                            | Unit   | Type   | Description                                                                                                          | Default value |
-| :------------------------------ | :----- | :----- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
-| enable_shift_pull_out           | -      | bool   | flag whether to enable shift pull out                                                                                | true          |
-| shift_pull_out_velocity         | [m/s]  | double | velocity of shift pull out                                                                                           | 2.0           |
-| pull_out_sampling_num           | -      | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                                  | 4             |
-| maximum_lateral_jerk            | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
-| minimum_lateral_jerk            | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.5           |
-| minimum_shift_pull_out_distance | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 20.0          |
-
 ##### **geometric pull out**
 
 Generate two arc paths with discontinuous curvature. Ego-vehicle stops once in the middle of the path to control the steer on the spot.
@@ -426,41 +295,12 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 ![geometric_pull_out](./image/geometric_pull_out.drawio.svg)
 
-[Video of how geometric pull out works](https://user-images.githubusercontent.com/39142679/181024707-3e7ca5ee-62de-4334-b9e9-ded313de1ea1.mp4)
-
-###### parameters for geometric pull out
-
-| Name                        | Unit  | Type   | Description                                             | Default value |
-| :-------------------------- | :---- | :----- | :------------------------------------------------------ | :------------ |
-| enable_geometric_pull_out   | -     | bool   | flag whether to enable geometric pull out               | true          |
-| geometric_pull_out_velocity | [m/s] | double | velocity of geometric pull out                          | 1.0           |
-| arc_path_interval           | [m]   | double | path points interval of arc paths of geometric pull out | 1.0           |
-| lane_departure_margin       | [m]   | double | margin of deviation to lane right                       | 0.2           |
-| pull_out_max_steer_angle    | [rad] | double | maximum steer angle for path generation                 | 0.26          |
-
-#### **backward pull out start point search**
-
-If a safe path cannot be generated from the current position, search backwards for a pull out start point at regular intervals(default: `2.0`).
-
-![pull_out_after_back](./image/pull_out_after_back.drawio.svg)
-
-[Video of how pull out after backward driving works](https://user-images.githubusercontent.com/39142679/181025149-8fb9fb51-9b8f-45c4-af75-27572f4fba78.mp4)
-
-| Name                                                                       | Unit           | Type   | Description                                                                                                           | Default value |
-| :------------------------------------------------------------------------- | :------------- | :----- | :-------------------------------------------------------------------------------------------------------------------- | :------------ |
-| enable_back                                                                | -              | bool   | flag whether to search backward for start_point                                                                       | true          |
-| enable_back                                                                | -              | bool   | In the case of `efficient_path`, use efficient paths even if the back distance is longer.                             |
-| In case of `short_back_distance`, use a path with as short a back distance | efficient_path |
-| max_back_distance                                                          | [m]            | double | maximum back distance                                                                                                 | 30.0          |
-| backward_search_resolution                                                 | [m]            | double | distance interval for searching backward pull out start point                                                         | 2.0           |
-| backward_path_update_duration                                              | [s]            | double | time interval for searching backward pull out start point. this prevents chattering between back driving and pull_out | 3.0           |
-| ignore_distance_from_lane_end                                              | [m]            | double | distance from end of pull out lanes for ignoring start candidates                                                     | 15.0          |
-
 #### Unimplemented parts / limitations for pull put
 
 - pull out from the right shoulder lane to the left lane is not allowed.
 - The safety of the road lane is not judged
   - Collision prediction is not performed for vehicles approaching from behind the road lane.
+- freespace pull out is not yet implemented.
 
 ### Side Shift
 
