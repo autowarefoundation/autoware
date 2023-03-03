@@ -984,6 +984,17 @@ lanelet::Lanelets RouteHandler::getLeftOppositeLanelets(const lanelet::ConstLane
   return opposite_lanelets;
 }
 
+lanelet::ConstLanelet RouteHandler::getMostRightLanelet(const lanelet::ConstLanelet & lanelet) const
+{
+  // recursively compute the width of the lanes
+  const auto & same = getRightLanelet(lanelet);
+
+  if (same) {
+    return getMostRightLanelet(same.get());
+  }
+  return lanelet;
+}
+
 lanelet::ConstLanelet RouteHandler::getMostLeftLanelet(const lanelet::ConstLanelet & lanelet) const
 {
   // recursively compute the width of the lanes

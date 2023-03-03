@@ -181,6 +181,15 @@ public:
     bool is_opposite = true, const bool & invert_opposite = false) const noexcept;
 
   /**
+   * @brief Check if same-direction lane is available at the right side of the lanelet
+   * Searches for any lanes regardless of whether it is lane-changeable or not.
+   * Required the linestring to be shared(same line ID) between the lanelets.
+   * @param the lanelet of interest
+   * @return vector of lanelet having same direction if true
+   */
+  lanelet::ConstLanelet getMostRightLanelet(const lanelet::ConstLanelet & lanelet) const;
+
+  /**
    * @brief Check if same-direction lane is available at the left side of the lanelet
    * Searches for any lanes regardless of whether it is lane-changeable or not.
    * Required the linestring to be shared(same line ID) between the lanelets.
