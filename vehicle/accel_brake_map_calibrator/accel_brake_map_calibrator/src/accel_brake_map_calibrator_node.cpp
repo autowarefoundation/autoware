@@ -155,7 +155,7 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
   std::copy(accel_map_value_.begin(), accel_map_value_.end(), update_accel_map_value_.begin());
   std::copy(brake_map_value_.begin(), brake_map_value_.end(), update_brake_map_value_.begin());
 
-  // inialize matrix for covariance calculation
+  // initialize matrix for covariance calculation
   {
     const auto genConstMat = [](const Map & map, const auto val) {
       return Eigen::MatrixXd::Constant(map.size(), map.at(0).size(), val);

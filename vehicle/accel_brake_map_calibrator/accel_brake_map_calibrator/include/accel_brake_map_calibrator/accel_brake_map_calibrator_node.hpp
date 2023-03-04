@@ -296,13 +296,13 @@ private:
   bool isTimeout(const DataStampedPtr & data_stamped, const double timeout_sec);
 
   /* for covariance calculation */
-  // mean value on each cell (counting methoud depends on the update algorithm)
+  // mean value on each cell (counting method depends on the update algorithm)
   Eigen::MatrixXd accel_data_mean_mat_;
   Eigen::MatrixXd brake_data_mean_mat_;
-  // calculated vairiance on each cell
+  // calculated variance on each cell
   Eigen::MatrixXd accel_data_covariance_mat_;
   Eigen::MatrixXd brake_data_covariance_mat_;
-  // number of data on each cell (counting methoud depends on the update algorithm)
+  // number of data on each cell (counting method depends on the update algorithm)
   Eigen::MatrixXd accel_data_num_;
   Eigen::MatrixXd brake_data_num_;
 

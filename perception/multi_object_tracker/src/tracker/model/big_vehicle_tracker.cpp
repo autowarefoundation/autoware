@@ -132,7 +132,7 @@ BigVehicleTracker::BigVehicleTracker(
       object.shape.dimensions.x, object.shape.dimensions.y, object.shape.dimensions.z};
     last_input_bounding_box_ = bounding_box_;
   } else {
-    // past defalut value
+    // past default value
     // bounding_box_ = {7.0, 2.0, 2.0};
     autoware_auto_perception_msgs::msg::DetectedObject bbox_object;
     utils::convertConvexHullToBoundingBox(object, bbox_object);

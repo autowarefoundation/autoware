@@ -924,7 +924,7 @@ double PidLongitudinalController::applyVelocityFeedback(
     m_pid_vel.calculate(error_vel_filtered, dt, enable_integration, pid_contributions);
 
   // Feedforward scaling:
-  // This is for the coordinate convertion where feedforward is applied, from Time to Arclength.
+  // This is for the coordinate conversion where feedforward is applied, from Time to Arclength.
   // Details: For accurate control, the feedforward should be calculated in the arclength coordinate
   // system, not in the time coordinate system. Otherwise, even if FF is applied, the vehicle speed
   // deviation will be bigger.

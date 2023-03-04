@@ -86,14 +86,14 @@ public:
     double min_predicted_path_confidence;
     //! minimum confidence value of predicted path to use for collision detection
     double external_input_timeout;          //! used to disable external input
-    double minimum_ego_predicted_velocity;  //! used to calclate ego's future velocity profile
+    double minimum_ego_predicted_velocity;  //! used to calculate ego's future velocity profile
     double collision_start_margin_time;     //! start margin time to check collision
     double collision_end_margin_time;       //! end margin time to check collision
     bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
     double
       assumed_front_car_decel;  //! the expected deceleration of front car when front car as well
     bool enable_front_car_decel_prediction;  //! flag for using above feature
-    double stop_overshoot_margin;            //! overshoot margin for stuck, collsion detection
+    double stop_overshoot_margin;            //! overshoot margin for stuck, collision detection
   };
 
   IntersectionModule(
