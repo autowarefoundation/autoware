@@ -160,9 +160,17 @@ void OccupancyGridMap::updateOrigin(double new_origin_x, double new_origin_y)
   delete[] local_map;
 }
 
+/**
+ * @brief update Gridmap with PointCloud
+ *
+ * @param raw_pointcloud raw point cloud on a certain frame (usually base_link)
+ * @param obstacle_pointcloud raw point cloud on a certain frame (usually base_link)
+ * @param robot_pose frame of point cloud (usually base_link)
+ * @param gridmap_origin manually chosen grid map origin frame
+ */
 void OccupancyGridMap::updateWithPointCloud(
   const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
-  const Pose & robot_pose)
+  const Pose & robot_pose, const Pose & gridmap_origin)
 {
   constexpr double min_angle = tier4_autoware_utils::deg2rad(-180.0);
   constexpr double max_angle = tier4_autoware_utils::deg2rad(180.0);
@@ -240,7 +248,7 @@ void OccupancyGridMap::updateWithPointCloud(
                        : obstacle_pointcloud_angle_bin.back();
     }
     raytrace(
-      robot_pose.position.x, robot_pose.position.y, end_distance.wx, end_distance.wy,
+      gridmap_origin.position.x, gridmap_origin.position.y, end_distance.wx, end_distance.wy,
       occupancy_cost_value::FREE_SPACE);
   }
 

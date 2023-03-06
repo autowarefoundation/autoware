@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    map_length: 100     # [m]
+    map_resolution: 0.5 # [m]
+
+    use_height_filter: true
+    enable_single_frame_mode: false
+
+    # grid map coordinate
+    map_frame: "map"
+    base_link_frame: "base_link"
+    output_frame: "base_link"
+    # center of grid_map. Main LiDAR frame is preferable like: "velodyne_top"

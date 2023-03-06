@@ -82,7 +82,7 @@ bool cropPointcloudByHeight(
   return true;
 }
 
-geometry_msgs::msg::Pose getPose(
+[[maybe_unused]] geometry_msgs::msg::Pose getPose(
   const std_msgs::msg::Header & source_header, const tf2_ros::Buffer & tf2,
   const std::string & target_frame)
 {
@@ -112,6 +112,7 @@ LaserscanBasedOccupancyGridMapNode::LaserscanBasedOccupancyGridMapNode(
   /* params */
   map_frame_ = declare_parameter("map_frame", "map");
   base_link_frame_ = declare_parameter("base_link_frame", "base_link");
+  output_frame_ = declare_parameter("output_frame", "base_link");
   use_height_filter_ = declare_parameter("use_height_filter", true);
   enable_single_frame_mode_ = declare_parameter("enable_single_frame_mode", false);
   const double map_length{declare_parameter("map_length", 100.0)};
@@ -213,7 +214,12 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
     transformPointcloud(*laserscan_pc_ptr, *tf2_, map_frame_, trans_laserscan_pc);
     transformPointcloud(filtered_obstacle_pc, *tf2_, map_frame_, trans_obstacle_pc);
     transformPointcloud(filtered_raw_pc, *tf2_, map_frame_, trans_raw_pc);
-    pose = getPose(laserscan_pc_ptr->header, *tf2_, map_frame_);
+    // pose = getPose(laserscan_pc_ptr->header, *tf2_, map_frame_);
+    geometry_msgs::msg::TransformStamped tf_stamped;
+    tf_stamped = tf2_->lookupTransform(
+      map_frame_, output_frame_, laserscan_pc_ptr->header.stamp,
+      rclcpp::Duration::from_seconds(0.5));
+    pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
   } catch (tf2::TransformException & ex) {
     RCLCPP_WARN_STREAM(get_logger(), ex.what());
     return;

@@ -82,6 +82,7 @@ private:
   // ROS Parameters
   std::string map_frame_;
   std::string base_link_frame_;
+  std::string output_frame_;
   bool use_height_filter_;
   bool enable_single_frame_mode_;
 };

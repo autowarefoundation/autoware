@@ -72,7 +72,7 @@ public:
 
   void updateWithPointCloud(
     const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
-    const Pose & robot_pose);
+    const Pose & robot_pose, const Pose & gridmap_origin);
 
   void updateOrigin(double new_origin_x, double new_origin_y) override;
 
