@@ -47,6 +47,11 @@ CNNClassifier::CNNClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 
   trt_ = std::make_shared<Tn::TrtCommon>(model_file_path, precision, input_name, output_name);
   trt_->setup();
+
+  if (node_ptr_->declare_parameter("build_only", false)) {
+    RCLCPP_INFO(node_ptr_->get_logger(), "TensorRT engine is built and shutdown node.");
+    rclcpp::shutdown();
+  }
 }
 
 bool CNNClassifier::getTrafficSignal(

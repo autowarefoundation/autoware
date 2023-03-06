@@ -54,14 +54,15 @@ These colors and shapes are assigned to the message as follows:
 
 #### cnn_classifier
 
-| Name              | Type | Description                          |
-| ----------------- | ---- | ------------------------------------ |
-| `model_file_path` | str  | path to the model file               |
-| `label_file_path` | str  | path to the label file               |
-| `precision`       | str  | TensorRT precision, `fp16` or `int8` |
-| `input_c`         | str  | the channel size of an input image   |
-| `input_h`         | str  | the height of an input image         |
-| `input_w`         | str  | the width of an input image          |
+| Name              | Type | Description                                      |
+| ----------------- | ---- | ------------------------------------------------ |
+| `model_file_path` | str  | path to the model file                           |
+| `label_file_path` | str  | path to the label file                           |
+| `precision`       | str  | TensorRT precision, `fp16` or `int8`             |
+| `input_c`         | str  | the channel size of an input image               |
+| `input_h`         | str  | the height of an input image                     |
+| `input_w`         | str  | the width of an input image                      |
+| `build_only`      | bool | shutdown node after TensorRT engin file is built |
 
 #### hsv_classifier
 
