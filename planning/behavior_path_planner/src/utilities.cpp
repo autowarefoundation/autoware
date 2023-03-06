@@ -423,14 +423,12 @@ double calcLateralDistanceFromEgoToObject(
 
   for (const auto & p : obj_polygon.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    // left direction is positive
     const double signed_distance_from_left =
       tier4_autoware_utils::calcLateralDeviation(vehicle_left_pose, point);
-    // right direction is positive
     const double signed_distance_from_right =
       tier4_autoware_utils::calcLateralDeviation(vehicle_right_pose, point);
 
-    if (signed_distance_from_left < 0.0 && signed_distance_from_right < 0.0) {
+    if (signed_distance_from_left < 0.0 && signed_distance_from_right > 0.0) {
       // point is between left and right
       return 0.0;
     }
