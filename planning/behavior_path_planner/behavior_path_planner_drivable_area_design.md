@@ -59,7 +59,7 @@ This section gives details of the generation of the drivable area (`left_bound` 
 
 Before generating drivable areas, drivable lanes need to be sorted. Drivable Lanes are selected in each module (`Lane Follow`, `Avoidance`, `Lane Change`, `Pull Over`, `Pull Out` and etc.), so more details about selection of drivable lanes can be found in each module's document. We use the following structure to define the drivable lanes.
 
-```plantuml
+```cpp
 struct DrivalbleLanes
 {
     lanelet::ConstLanelet right_lanelet; // right most lane
@@ -74,7 +74,7 @@ The image of the sorted drivable lanes is depicted in the following picture.
 
 Note that, the order of drivable lanes become
 
-```plantuml
+```cpp
 drivable_lanes = {DrivableLane1, DrivableLanes2, DrivableLanes3, DrivableLanes4, DrivableLanes5}
 ```
 
@@ -82,7 +82,7 @@ drivable_lanes = {DrivableLane1, DrivableLanes2, DrivableLanes3, DrivableLanes4,
 
 In this section, a drivable area is created using drivable lanes arranged in the order in which vehicles pass by. We created `left_bound` from left boundary of the leftmost lanelet and `right_bound` from right boundary of the rightmost lanelet. The image of the created drivable area will be the following blue lines. Note that the drivable area is defined in the `Path` and `PathWithLaneId` messages as
 
-```plantuml
+```cpp
 std::vector<geometry_msgs::msg::Point> left_bound;
 std::vector<geometry_msgs::msg::Point> right_bound;
 ```
