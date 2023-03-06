@@ -14,6 +14,8 @@
 
 #include "pointcloud_preprocessor/distortion_corrector/distortion_corrector.hpp"
 
+#include "tier4_autoware_utils/math/trigonometry.hpp"
+
 #include <deque>
 #include <string>
 #include <utility>
@@ -217,17 +219,30 @@ bool DistortionCorrectorComponent::undistortPointCloud(
   }
 
   const tf2::Transform tf2_base_link_to_sensor_inv{tf2_base_link_to_sensor.inverse()};
+
+  // For performance, do not instantiate `rclcpp::Time` inside of the for-loop
+  double twist_stamp = rclcpp::Time(twist_it->header.stamp).seconds();
+  double imu_stamp = rclcpp::Time(imu_it->header.stamp).seconds();
+
+  // For performance, instantiate outside of the for-loop
+  tf2::Quaternion baselink_quat{};
+  tf2::Transform baselink_tf_odom{};
+  tf2::Vector3 point{};
+  tf2::Vector3 undistorted_point{};
+
+  // For performance, avoid transform computation if unnecessary
+  bool need_transform = points.header.frame_id != base_link_frame_;
+
   for (; it_x != it_x.end(); ++it_x, ++it_y, ++it_z, ++it_time_stamp) {
-    for (;
-         (twist_it != std::end(twist_queue_) - 1 &&
-          *it_time_stamp > rclcpp::Time(twist_it->header.stamp).seconds());
-         ++twist_it) {
+    while (twist_it != std::end(twist_queue_) - 1 && *it_time_stamp > twist_stamp) {
+      ++twist_it;
+      twist_stamp = rclcpp::Time(twist_it->header.stamp).seconds();
     }
 
     float v{static_cast<float>(twist_it->twist.linear.x)};
     float w{static_cast<float>(twist_it->twist.angular.z)};
 
-    if (std::abs(*it_time_stamp - rclcpp::Time(twist_it->header.stamp).seconds()) > 0.1) {
+    if (std::abs(*it_time_stamp - twist_stamp) > 0.1) {
       RCLCPP_WARN_STREAM_THROTTLE(
         get_logger(), *get_clock(), 10000 /* ms */,
         "twist time_stamp is too late. Could not interpolate.");
@@ -241,7 +256,13 @@ bool DistortionCorrectorComponent::undistortPointCloud(
             *it_time_stamp > rclcpp::Time(imu_it->header.stamp).seconds());
            ++imu_it) {
       }
-      if (std::abs(*it_time_stamp - rclcpp::Time(imu_it->header.stamp).seconds()) > 0.1) {
+
+      while (imu_it != std::end(angular_velocity_queue_) - 1 && *it_time_stamp > imu_stamp) {
+        ++imu_it;
+        imu_stamp = rclcpp::Time(imu_it->header.stamp).seconds();
+      }
+
+      if (std::abs(*it_time_stamp - imu_stamp) > 0.1) {
         RCLCPP_WARN_STREAM_THROTTLE(
           get_logger(), *get_clock(), 10000 /* ms */,
           "imu time_stamp is too late. Could not interpolate.");
@@ -250,30 +271,34 @@ bool DistortionCorrectorComponent::undistortPointCloud(
       }
     }
 
-    const float time_offset = static_cast<float>(*it_time_stamp - prev_time_stamp_sec);
+    const auto time_offset = static_cast<float>(*it_time_stamp - prev_time_stamp_sec);
 
-    const tf2::Vector3 sensorTF_point{*it_x, *it_y, *it_z};
+    point.setValue(*it_x, *it_y, *it_z);
 
-    const tf2::Vector3 base_linkTF_point{tf2_base_link_to_sensor_inv * sensorTF_point};
+    if (need_transform) {
+      point = tf2_base_link_to_sensor_inv * point;
+    }
 
     theta += w * time_offset;
-    tf2::Quaternion baselink_quat{};
-    baselink_quat.setRPY(0.0, 0.0, theta);
+    baselink_quat.setValue(
+      0, 0, tier4_autoware_utils::sin(theta * 0.5f),
+      tier4_autoware_utils::cos(theta * 0.5f));  // baselink_quat.setRPY(0.0, 0.0, theta);
     const float dis = v * time_offset;
-    x += dis * std::cos(theta);
-    y += dis * std::sin(theta);
+    x += dis * tier4_autoware_utils::cos(theta);
+    y += dis * tier4_autoware_utils::sin(theta);
 
-    tf2::Transform baselinkTF_odom{};
-    baselinkTF_odom.setOrigin(tf2::Vector3(x, y, 0.0));
-    baselinkTF_odom.setRotation(baselink_quat);
+    baselink_tf_odom.setOrigin(tf2::Vector3(x, y, 0.0));
+    baselink_tf_odom.setRotation(baselink_quat);
 
-    const tf2::Vector3 base_linkTF_trans_point{baselinkTF_odom * base_linkTF_point};
+    undistorted_point = baselink_tf_odom * point;
 
-    const tf2::Vector3 sensorTF_trans_point{tf2_base_link_to_sensor * base_linkTF_trans_point};
+    if (need_transform) {
+      undistorted_point = tf2_base_link_to_sensor * undistorted_point;
+    }
 
-    *it_x = sensorTF_trans_point.getX();
-    *it_y = sensorTF_trans_point.getY();
-    *it_z = sensorTF_trans_point.getZ();
+    *it_x = static_cast<float>(undistorted_point.getX());
+    *it_y = static_cast<float>(undistorted_point.getY());
+    *it_z = static_cast<float>(undistorted_point.getZ());
 
     prev_time_stamp_sec = *it_time_stamp;
   }
