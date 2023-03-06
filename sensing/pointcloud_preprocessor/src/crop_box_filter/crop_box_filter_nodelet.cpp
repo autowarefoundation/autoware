@@ -154,8 +154,11 @@ void CropBoxFilterComponent::faster_filter(
   }
 
   output.data.resize(output_size);
-  output.header.frame_id =
-    tf_input_frame_;  // Note that `input->header.frame_id` is data before converted
+
+  // Note that `input->header.frame_id` is data before converted when `transform_info.need_transform
+  // == true`
+  output.header.frame_id = !tf_input_frame_.empty() ? tf_input_frame_ : tf_input_orig_frame_;
+
   output.height = 1;
   output.fields = input->fields;
   output.is_bigendian = input->is_bigendian;
