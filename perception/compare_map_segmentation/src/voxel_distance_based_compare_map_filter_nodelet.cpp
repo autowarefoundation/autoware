@@ -58,8 +58,9 @@ void VoxelDistanceBasedCompareMapFilterComponent::filter(
     if (index == -1) {                 // empty voxel
       std::vector<int> nn_indices(1);  // nn means nearest neighbor
       std::vector<float> nn_distances(1);
-      tree_->nearestKSearch(pcl_input->points.at(i), 1, nn_indices, nn_distances);
-      if (distance_threshold_ * distance_threshold_ < nn_distances.at(0)) {
+      if (
+        tree_->radiusSearch(
+          pcl_input->points.at(i), distance_threshold_, nn_indices, nn_distances, 1) == 0) {
         pcl_output->points.push_back(pcl_input->points.at(i));
       }
     }
