@@ -35,6 +35,7 @@
 #include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/util/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/util/lane_change/lane_change_module_data.hpp"
+#include "behavior_path_planner/util/lane_following/module_data.hpp"
 #include "behavior_path_planner/util/pull_out/pull_out_parameters.hpp"
 #include "behavior_path_planner/util/pull_over/pull_over_parameters.hpp"
 #include "behavior_path_planner/util/side_shift/side_shift_parameters.hpp"
@@ -153,16 +154,17 @@ private:
   // parameters
   std::shared_ptr<AvoidanceParameters> avoidance_param_ptr_;
   std::shared_ptr<LaneChangeParameters> lane_change_param_ptr_;
+  std::shared_ptr<LaneFollowingParameters> lane_following_param_ptr_;
 
   BehaviorPathPlannerParameters getCommonParam();
 
 #ifdef USE_OLD_ARCHITECTURE
   BehaviorTreeManagerParam getBehaviorTreeManagerParam();
-  LaneFollowingParameters getLaneFollowingParam();
 #endif
 
   AvoidanceParameters getAvoidanceParam();
   LaneChangeParameters getLaneChangeParam();
+  LaneFollowingParameters getLaneFollowingParam();
   SideShiftParameters getSideShiftParam();
   PullOverParameters getPullOverParam();
   PullOutParameters getPullOutParam();

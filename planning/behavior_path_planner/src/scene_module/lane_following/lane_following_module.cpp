@@ -25,7 +25,8 @@
 namespace behavior_path_planner
 {
 LaneFollowingModule::LaneFollowingModule(
-  const std::string & name, rclcpp::Node & node, const LaneFollowingParameters & parameters)
+  const std::string & name, rclcpp::Node & node,
+  const std::shared_ptr<LaneFollowingParameters> & parameters)
 : SceneModuleInterface{name, node}, parameters_{parameters}
 {
   initParam();
@@ -69,7 +70,7 @@ void LaneFollowingModule::onExit()
   RCLCPP_DEBUG(getLogger(), "LANE_FOLLOWING onExit");
 }
 
-void LaneFollowingModule::setParameters(const LaneFollowingParameters & parameters)
+void LaneFollowingModule::setParameters(const std::shared_ptr<LaneFollowingParameters> & parameters)
 {
   parameters_ = parameters;
 }
@@ -146,15 +147,15 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
     const double lane_change_buffer = util::calcLaneChangeBuffer(p, num_lane_change);
 
     reference_path = util::setDecelerationVelocity(
-      *route_handler, reference_path, current_lanes, parameters_.lane_change_prepare_duration,
+      *route_handler, reference_path, current_lanes, parameters_->lane_change_prepare_duration,
       lane_change_buffer);
   }
 
   const auto shorten_lanes = util::cutOverlappedLanes(reference_path, drivable_lanes);
 
   const auto expanded_lanes = util::expandLanelets(
-    shorten_lanes, parameters_.drivable_area_left_bound_offset,
-    parameters_.drivable_area_right_bound_offset, parameters_.drivable_area_types_to_skip);
+    shorten_lanes, parameters_->drivable_area_left_bound_offset,
+    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
 
   util::generateDrivableArea(reference_path, expanded_lanes, p.vehicle_length, planner_data_);
 

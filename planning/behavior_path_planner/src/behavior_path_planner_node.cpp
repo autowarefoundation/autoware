@@ -118,6 +118,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   {
     avoidance_param_ptr_ = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
     lane_change_param_ptr_ = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
+    lane_following_param_ptr_ = std::make_shared<LaneFollowingParameters>(getLaneFollowingParam());
   }
 
   m_set_param_res = this->add_on_set_parameters_callback(
@@ -144,7 +145,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     bt_manager_->registerSceneModule(avoidance_module);
 
     auto lane_following_module =
-      std::make_shared<LaneFollowingModule>("LaneFollowing", *this, getLaneFollowingParam());
+      std::make_shared<LaneFollowingModule>("LaneFollowing", *this, lane_following_param_ptr_);
     bt_manager_->registerSceneModule(lane_following_module);
 
     auto ext_request_lane_change_right_module =
@@ -193,7 +194,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     mutex_bt_.lock();
 
     const auto & p = planner_data_->parameters;
-    planner_manager_ = std::make_shared<PlannerManager>(*this, p.verbose);
+    planner_manager_ =
+      std::make_shared<PlannerManager>(*this, lane_following_param_ptr_, p.verbose);
 
     mutex_bt_.unlock();
   }
@@ -487,7 +489,6 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   return p;
 }
 
-#ifdef USE_OLD_ARCHITECTURE
 LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
 {
   LaneFollowingParameters p{};
@@ -501,7 +502,6 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
     declare_parameter("lane_following.lane_change_prepare_duration", 2.0);
   return p;
 }
-#endif
 
 LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 {

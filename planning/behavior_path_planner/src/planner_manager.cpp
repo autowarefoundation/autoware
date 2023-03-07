@@ -27,8 +27,11 @@
 namespace behavior_path_planner
 {
 
-PlannerManager::PlannerManager(rclcpp::Node & node, const bool verbose)
-: logger_(node.get_logger().get_child("planner_manager")),
+PlannerManager::PlannerManager(
+  rclcpp::Node & node, const std::shared_ptr<LaneFollowingParameters> & parameters,
+  const bool verbose)
+: parameters_{parameters},
+  logger_(node.get_logger().get_child("planner_manager")),
   clock_(*node.get_clock()),
   verbose_{verbose}
 {
@@ -355,12 +358,15 @@ BehaviorModuleOutput PlannerManager::getReferencePath(
     const double lane_change_buffer = util::calcLaneChangeBuffer(p, num_lane_change);
 
     reference_path = util::setDecelerationVelocity(
-      *route_handler, reference_path, current_lanes, 2.0, lane_change_buffer);
+      *route_handler, reference_path, current_lanes, parameters_->lane_change_prepare_duration,
+      lane_change_buffer);
   }
 
   const auto shorten_lanes = util::cutOverlappedLanes(reference_path, drivable_lanes);
 
-  const auto expanded_lanes = util::expandLanelets(shorten_lanes, 0.0, 0.0);
+  const auto expanded_lanes = util::expandLanelets(
+    shorten_lanes, parameters_->drivable_area_left_bound_offset,
+    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
 
   util::generateDrivableArea(reference_path, expanded_lanes, p.vehicle_length, data);
 
