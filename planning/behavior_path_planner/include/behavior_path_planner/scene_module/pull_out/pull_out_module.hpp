@@ -63,25 +63,38 @@ struct PullOutStatus
 class PullOutModule : public SceneModuleInterface
 {
 public:
+#ifdef USE_OLD_ARCHITECTURE
   PullOutModule(
-    const std::string & name, rclcpp::Node & node, const PullOutParameters & parameters);
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<PullOutParameters> & parameters);
+#else
+  PullOutModule(
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<PullOutParameters> & parameters,
+    const std::shared_ptr<RTCInterface> & rtc_interface);
+
+  void updateModuleParams(const std::shared_ptr<PullOutParameters> & parameters)
+  {
+    parameters_ = parameters;
+  }
+#endif
 
   BehaviorModuleOutput run() override;
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
-  BT::NodeStatus updateState() override;
-  BT::NodeStatus getNodeStatusWhileWaitingApproval() const override
-  {
-    return BT::NodeStatus::SUCCESS;
-  }
+  ModuleStatus updateState() override;
+  ModuleStatus getNodeStatusWhileWaitingApproval() const override { return ModuleStatus::SUCCESS; }
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
   void onEntry() override;
   void onExit() override;
 
-  void setParameters(const PullOutParameters & parameters) { parameters_ = parameters; }
+  void setParameters(const std::shared_ptr<PullOutParameters> & parameters)
+  {
+    parameters_ = parameters;
+  }
   void resetStatus();
 
   void acceptVisitor(
@@ -90,7 +103,7 @@ public:
   }
 
 private:
-  PullOutParameters parameters_;
+  std::shared_ptr<PullOutParameters> parameters_;
   vehicle_info_util::VehicleInfo vehicle_info_;
 
   std::vector<std::shared_ptr<PullOutPlannerBase>> pull_out_planners_;

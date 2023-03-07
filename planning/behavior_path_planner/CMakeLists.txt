@@ -15,6 +15,7 @@ set(common_src
   src/steering_factor_interface.cpp
   src/behavior_path_planner_node.cpp
   src/scene_module/scene_module_visitor.cpp
+  src/scene_module/pull_out/pull_out_module.cpp
   src/turn_signal_decider.cpp
   src/util/avoidance/util.cpp
   src/util/lane_change/util.cpp
@@ -49,7 +50,6 @@ if(COMPILE_WITH_OLD_ARCHITECTURE)
     src/scene_module/lane_change/external_request_lane_change_module.cpp
     src/scene_module/lane_change/lane_change_module.cpp
     src/scene_module/pull_over/pull_over_module.cpp
-    src/scene_module/pull_out/pull_out_module.cpp
     ${common_src}
   )
 
@@ -60,6 +60,7 @@ if(COMPILE_WITH_OLD_ARCHITECTURE)
 else()
   ament_auto_add_library(behavior_path_planner_node SHARED
     src/planner_manager.cpp
+    src/scene_module/pull_out/manager.cpp
     ${common_src}
   )
 

@@ -30,6 +30,7 @@ struct BehaviorPathPlannerParameters
   bool verbose;
 
   ModuleConfigParameters config_avoidance;
+  ModuleConfigParameters config_pull_out;
 
   double backward_path_length;
   double forward_path_length;

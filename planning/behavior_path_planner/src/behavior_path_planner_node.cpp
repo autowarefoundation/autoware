@@ -119,6 +119,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     avoidance_param_ptr_ = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
     lane_change_param_ptr_ = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
     lane_following_param_ptr_ = std::make_shared<LaneFollowingParameters>(getLaneFollowingParam());
+    pull_out_param_ptr_ = std::make_shared<PullOutParameters>(getPullOutParam());
   }
 
   m_set_param_res = this->add_on_set_parameters_callback(
@@ -175,7 +176,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       "PullOver", create_publisher<Path>(path_candidate_name_space + "pull_over", 1));
     bt_manager_->registerSceneModule(pull_over_module);
 
-    auto pull_out_module = std::make_shared<PullOutModule>("PullOut", *this, getPullOutParam());
+    auto pull_out_module = std::make_shared<PullOutModule>("PullOut", *this, pull_out_param_ptr_);
     path_candidate_publishers_.emplace(
       "PullOut", create_publisher<Path>(path_candidate_name_space + "pull_out", 1));
     bt_manager_->registerSceneModule(pull_out_module);
@@ -196,6 +197,16 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const auto & p = planner_data_->parameters;
     planner_manager_ =
       std::make_shared<PlannerManager>(*this, lane_following_param_ptr_, p.verbose);
+
+    if (p.config_pull_out.enable_module) {
+      auto manager = std::make_shared<PullOutModuleManager>(
+        this, "pull_out", p.config_pull_out, pull_out_param_ptr_);
+      planner_manager_->registerSceneModuleManager(manager);
+      path_candidate_publishers_.emplace(
+        "pull_out", create_publisher<Path>(path_candidate_name_space + "pull_out", 1));
+      path_reference_publishers_.emplace(
+        "pull_out", create_publisher<Path>(path_reference_name_space + "pull_out", 1));
+    }
 
     mutex_bt_.unlock();
   }
@@ -229,6 +240,15 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   BehaviorPathPlannerParameters p{};
 
   p.verbose = declare_parameter<bool>("verbose");
+
+  {
+    const std::string ns = "pull_out.";
+    p.config_pull_out.enable_module = declare_parameter<bool>(ns + "enable_module");
+    p.config_pull_out.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_pull_out.priority = declare_parameter<int>(ns + "priority");
+    p.config_pull_out.max_module_size = declare_parameter<int>(ns + "max_module_size");
+  }
 
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
