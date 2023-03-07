@@ -56,6 +56,11 @@ TrtYoloXNode::TrtYoloXNode(const rclcpp::NodeOptions & node_options)
   objects_pub_ = this->create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
     "~/out/objects", 1);
   image_pub_ = image_transport::create_publisher(this, "~/out/image");
+
+  if (declare_parameter("build_only", false)) {
+    RCLCPP_INFO(this->get_logger(), "TensorRT engine file is built and exit.");
+    rclcpp::shutdown();
+  }
 }
 
 void TrtYoloXNode::onConnect()

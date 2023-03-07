@@ -31,20 +31,21 @@ Zheng Ge, Songtao Liu, Feng Wang, Zeming Li, Jian Sun, "YOLOX: Exceeding YOLO Se
 
 ### Core Parameters
 
-| Name              | Type  | Default Value | Description                                                                           |
-| ----------------- | ----- | ------------- | ------------------------------------------------------------------------------------- |
-| `score_threshold` | float | 0.3           | If the objectness score is less than this value, the object is ignored in yolo layer. |
-| `nms_threshold`   | float | 0.7           | The IoU threshold for NMS method                                                      |
+| Name              | Type  | Default Value | Description                                                                            |
+| ----------------- | ----- | ------------- | -------------------------------------------------------------------------------------- |
+| `score_threshold` | float | 0.3           | If the objectness score is less than this value, the object is ignored in yolox layer. |
+| `nms_threshold`   | float | 0.7           | The IoU threshold for NMS method                                                       |
 
 **NOTE:** These two parameters are only valid for "plain" model (described later).
 
 ### Node Parameters
 
-| Name         | Type   | Default Value | Description                                                        |
-| ------------ | ------ | ------------- | ------------------------------------------------------------------ |
-| `onnx_file`  | string | ""            | The onnx file name for yolo model                                  |
-| `label_file` | string | ""            | The label file with label names for detected objects written on it |
-| `mode`       | string | "fp32"        | The inference mode: "fp32", "fp16", "int8"                         |
+| Name            | Type   | Default Value | Description                                                        |
+| --------------- | ------ | ------------- | ------------------------------------------------------------------ |
+| `model_path`    | string | ""            | The onnx file name for yolox model                                 |
+| `label_path`    | string | ""            | The label file with label names for detected objects written on it |
+| `trt_precision` | string | "fp32"        | The inference mode: "fp32", "fp16", "int8"                         |
+| `build_only`    | bool   | false         | shutdown node after TensorRT engine file is built                  |
 
 ## Assumptions / Known limits
 
