@@ -505,45 +505,50 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
 
 LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 {
-  const auto dp = [this](const std::string & str, auto def_val) {
-    std::string name = "lane_change." + str;
-    return this->declare_parameter(name, def_val);
-  };
-
   LaneChangeParameters p{};
+  const auto parameter = [](std::string && name) { return "lane_change." + name; };
 
   // trajectory generation
-  p.lane_change_prepare_duration = dp("lane_change_prepare_duration", 2.0);
-  p.lane_changing_safety_check_duration = dp("lane_changing_safety_check_duration", 4.0);
-  p.lane_changing_lateral_jerk = dp("lane_changing_lateral_jerk", 0.5);
-  p.lane_changing_lateral_acc = dp("lane_changing_lateral_acc", 0.5);
-  p.lane_change_finish_judge_buffer = dp("lane_change_finish_judge_buffer", 3.0);
-  p.minimum_lane_change_velocity = dp("minimum_lane_change_velocity", 5.6);
-  p.prediction_time_resolution = dp("prediction_time_resolution", 0.5);
-  p.maximum_deceleration = dp("maximum_deceleration", 1.0);
-  p.lane_change_sampling_num = dp("lane_change_sampling_num", 10);
+  p.lane_change_prepare_duration =
+    declare_parameter<double>(parameter("lane_change_prepare_duration"));
+  p.lane_changing_safety_check_duration =
+    declare_parameter<double>(parameter("lane_changing_safety_check_duration"));
+  p.lane_changing_lateral_jerk = declare_parameter<double>(parameter("lane_changing_lateral_jerk"));
+  p.lane_changing_lateral_acc = declare_parameter<double>(parameter("lane_changing_lateral_acc"));
+  p.lane_change_finish_judge_buffer =
+    declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
+  p.minimum_lane_change_velocity =
+    declare_parameter<double>(parameter("minimum_lane_change_velocity"));
+  p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
+  p.maximum_deceleration = declare_parameter<double>(parameter("maximum_deceleration"));
+  p.lane_change_sampling_num = declare_parameter<int>(parameter("lane_change_sampling_num"));
 
   // collision check
-  p.enable_collision_check_at_prepare_phase = dp("enable_collision_check_at_prepare_phase", true);
-  p.prepare_phase_ignore_target_speed_thresh = dp("prepare_phase_ignore_target_speed_thresh", 0.1);
-  p.use_predicted_path_outside_lanelet = dp("use_predicted_path_outside_lanelet", true);
-  p.use_all_predicted_path = dp("use_all_predicted_path", true);
+  p.enable_collision_check_at_prepare_phase =
+    declare_parameter<bool>(parameter("enable_collision_check_at_prepare_phase"));
+  p.prepare_phase_ignore_target_speed_thresh =
+    declare_parameter<double>(parameter("prepare_phase_ignore_target_speed_thresh"));
+  p.use_predicted_path_outside_lanelet =
+    declare_parameter<bool>(parameter("use_predicted_path_outside_lanelet"));
+  p.use_all_predicted_path = declare_parameter<bool>(parameter("use_all_predicted_path"));
 
   // abort
-  p.enable_cancel_lane_change = dp("enable_cancel_lane_change", true);
-  p.enable_abort_lane_change = dp("enable_abort_lane_change", false);
+  p.enable_cancel_lane_change = declare_parameter<bool>(parameter("enable_cancel_lane_change"));
+  p.enable_abort_lane_change = declare_parameter<bool>(parameter("enable_abort_lane_change"));
 
-  p.abort_delta_time = dp("abort_delta_time", 3.0);
-  p.abort_max_lateral_jerk = dp("abort_max_lateral_jerk", 10.0);
+  p.abort_delta_time = declare_parameter<double>(parameter("abort_delta_time"));
+  p.abort_max_lateral_jerk = declare_parameter<double>(parameter("abort_max_lateral_jerk"));
 
   // drivable area expansion
-  p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
-  p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_right_bound_offset =
+    declare_parameter<double>(parameter("drivable_area_right_bound_offset"));
+  p.drivable_area_left_bound_offset =
+    declare_parameter<double>(parameter("drivable_area_left_bound_offset"));
   p.drivable_area_types_to_skip =
-    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
+    declare_parameter<std::vector<std::string>>(parameter("drivable_area_types_to_skip"));
 
   // debug marker
-  p.publish_debug_marker = dp("publish_debug_marker", false);
+  p.publish_debug_marker = declare_parameter<bool>(parameter("publish_debug_marker"));
 
   // validation of parameters
   if (p.lane_change_sampling_num < 1) {
