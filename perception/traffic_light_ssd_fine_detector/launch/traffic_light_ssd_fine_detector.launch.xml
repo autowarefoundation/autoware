@@ -12,6 +12,7 @@
   <arg name="std" default="[0.5, 0.5, 0.5]"/>
   <arg name="save_rough_roi_image" default="false"/>
   <arg name="manager" default="traffic_light_recognition_nodelet_manager"/>
+  <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
   <node pkg="traffic_light_ssd_fine_detector" exec="traffic_light_ssd_fine_detector_node" name="traffic_light_ssd_fine_detector">
     <remap from="~/input/image" to="$(var input/image)"/>
@@ -25,6 +26,7 @@
     <param name="approximate_sync" value="$(var approximate_sync)"/>
     <param name="mean" value="$(var mean)"/>
     <param name="std" value="$(var std)"/>
+    <param name="build_only" value="$(var build_only)"/>
   </node>
 
   <node if="$(var save_rough_roi_image)" pkg="roi_image_saver" exec="traffic_light_roi_image_saver_node" name="$(anon traffic_light_roi_image_saver)" output="screen">

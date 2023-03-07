@@ -57,6 +57,7 @@ Based on the camera image and the global ROI array detected by `map_based_detect
 | `mode`             | string | "FP32"                         | The inference mode: "FP32", "FP16", "INT8"                           |
 | `max_batch_size`   | int    | 8                              | The size of the batch processed at one time by inference by TensorRT |
 | `approximate_sync` | bool   | false                          | Flag for whether to ues approximate sync policy                      |
+| `build_only`       | bool   | false                          | shutdown node after TensorRT engine file is built                    |
 
 ## Assumptions / Known limits
 

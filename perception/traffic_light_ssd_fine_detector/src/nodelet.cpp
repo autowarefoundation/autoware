@@ -107,6 +107,11 @@ TrafficLightSSDFineDetectorNodelet::TrafficLightSSDFineDetectorNodelet(
     sync_.reset(new Sync(SyncPolicy(10), image_sub_, roi_sub_));
     sync_->registerCallback(std::bind(&TrafficLightSSDFineDetectorNodelet::callback, this, _1, _2));
   }
+
+  if (this->declare_parameter("build_only", false)) {
+    RCLCPP_INFO(this->get_logger(), "TensorRT engine is built and shutdown node.");
+    rclcpp::shutdown();
+  }
 }
 
 void TrafficLightSSDFineDetectorNodelet::connectCb()
