@@ -36,6 +36,7 @@ namespace mission_planner::lanelet2
 struct DefaultPlannerParameters
 {
   double goal_angle_threshold_deg;
+  bool enable_correct_goal_pose;
 };
 
 class DefaultPlanner : public mission_planner::PlannerPlugin

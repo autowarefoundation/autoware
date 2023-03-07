@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    map_frame: map
+    arrival_check_angle_deg: 45.0
+    arrival_check_distance: 1.0
+    arrival_check_duration: 1.0
+    goal_angle_threshold_deg: 45.0
+    enable_correct_goal_pose: false

@@ -52,4 +52,7 @@ void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2);
 
 lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets);
+std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet);
+geometry_msgs::msg::Pose convertBasicPoint3dToPose(
+  const lanelet::BasicPoint3d & point, const double lane_yaw);
 #endif  // LANELET2_PLUGINS__UTILITY_FUNCTIONS_HPP_

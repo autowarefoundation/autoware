@@ -86,3 +86,30 @@ lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets)
   auto combined_lanelet = lanelet::Lanelet(lanelet::InvalId, left_bound, right_bound);
   return std::move(combined_lanelet);
 }
+
+std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet)
+{
+  std::vector<geometry_msgs::msg::Point> centerline_points;
+  for (const auto & point : lanelet.centerline()) {
+    geometry_msgs::msg::Point center_point;
+    center_point.x = point.basicPoint().x();
+    center_point.y = point.basicPoint().y();
+    center_point.z = point.basicPoint().z();
+    centerline_points.push_back(center_point);
+  }
+  return centerline_points;
+}
+
+geometry_msgs::msg::Pose convertBasicPoint3dToPose(
+  const lanelet::BasicPoint3d & point, const double lane_yaw)
+{
+  // calculate new orientation of goal
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = point.x();
+  pose.position.y = point.y();
+  pose.position.z = point.z();
+
+  pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(lane_yaw);
+
+  return pose;
+}

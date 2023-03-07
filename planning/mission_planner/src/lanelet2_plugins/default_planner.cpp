@@ -102,6 +102,34 @@ double project_goal_to_map(
   return project.z();
 }
 
+geometry_msgs::msg::Pose get_closest_centerline_pose(
+  const lanelet::ConstLanelets & road_lanelets, const geometry_msgs::msg::Pose & point,
+  vehicle_info_util::VehicleInfo vehicle_info)
+{
+  lanelet::Lanelet closest_lanelet;
+  lanelet::utils::query::getClosestLanelet(road_lanelets, point, &closest_lanelet);
+
+  const auto refined_center_line = lanelet::utils::generateFineCenterline(closest_lanelet, 1.0);
+  closest_lanelet.setCenterline(refined_center_line);
+
+  const double lane_yaw = lanelet::utils::getLaneletAngle(closest_lanelet, point.position);
+
+  const auto nearest_idx =
+    motion_utils::findNearestIndex(convertCenterlineToPoints(closest_lanelet), point.position);
+  const auto nearest_point = closest_lanelet.centerline()[nearest_idx];
+
+  // shift nearest point on its local y axis so that vehicle's right and left edges
+  // would have approx the same clearance from road border
+  const auto shift_length = (vehicle_info.right_overhang_m - vehicle_info.left_overhang_m) / 2.0;
+  const auto delta_x = -shift_length * std::sin(lane_yaw);
+  const auto delta_y = shift_length * std::cos(lane_yaw);
+
+  lanelet::BasicPoint3d refined_point(
+    nearest_point.x() + delta_x, nearest_point.y() + delta_y, nearest_point.z());
+
+  return convertBasicPoint3dToPose(refined_point, lane_yaw);
+}
+
 }  // anonymous namespace
 
 namespace mission_planner::lanelet2
@@ -118,6 +146,7 @@ void DefaultPlanner::initialize_common(rclcpp::Node * node)
 
   vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo();
   param_.goal_angle_threshold_deg = node_->declare_parameter("goal_angle_threshold_deg", 45.0);
+  param_.enable_correct_goal_pose = node_->declare_parameter("enable_correct_goal_pose", false);
 }
 
 void DefaultPlanner::initialize(rclcpp::Node * node)
@@ -381,7 +410,13 @@ PlannerPlugin::LaneletRoute DefaultPlanner::plan(const RoutePoints & points)
     route_sections = combine_consecutive_route_sections(route_sections, local_route_sections);
   }
 
-  if (!is_goal_valid(points.back(), all_route_lanelets)) {
+  auto goal_pose = points.back();
+  if (param_.enable_correct_goal_pose) {
+    goal_pose = get_closest_centerline_pose(
+      lanelet::utils::query::laneletLayer(lanelet_map_ptr_), goal_pose, vehicle_info_);
+  }
+
+  if (!is_goal_valid(goal_pose, all_route_lanelets)) {
     RCLCPP_WARN(logger, "Goal is not valid! Please check position and angle of goal_pose");
     return route_msg;
   }
@@ -391,7 +426,7 @@ PlannerPlugin::LaneletRoute DefaultPlanner::plan(const RoutePoints & points)
     return route_msg;
   }
 
-  const auto refined_goal = refine_goal_height(points.back(), route_sections);
+  const auto refined_goal = refine_goal_height(goal_pose, route_sections);
   RCLCPP_DEBUG(logger, "Goal Pose Z : %lf", refined_goal.position.z);
 
   // The header is assigned by mission planner.

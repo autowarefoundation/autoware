@@ -16,6 +16,8 @@
   <arg name="nearest_search_param_path"/>
   <!-- rtc -->
   <arg name="rtc_auto_mode_manager_param_path"/>
+  <!-- mission planner -->
+  <arg name="mission_planner_param_path"/>
   <!-- behavior path planner -->
   <arg name="side_shift_param_path"/>
   <arg name="avoidance_param_path"/>
@@ -58,7 +60,9 @@
     <!-- mission planning module -->
     <group>
       <push-ros-namespace namespace="mission_planning"/>
-      <include file="$(find-pkg-share tier4_planning_launch)/launch/mission_planning/mission_planning.launch.xml"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/mission_planning/mission_planning.launch.xml">
+        <arg name="mission_planner_param_path" value="$(var mission_planner_param_path)"/>
+      </include>
     </group>
 
     <!-- scenario planning module -->
