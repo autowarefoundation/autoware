@@ -55,6 +55,7 @@ def generate_launch_description():
         name="container",
         package="rclcpp_components",
         executable="component_container_mt",
+        ros_arguments=["--log-level", "default_ad_api.container:=WARN"],
         composable_node_descriptions=components,
     )
     web_server = Node(
