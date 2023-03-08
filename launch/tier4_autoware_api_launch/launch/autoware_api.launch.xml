@@ -23,7 +23,7 @@
   <!-- RTC controller -->
   <group>
     <push-ros-namespace namespace="autoware_api/external/rtc_controller"/>
-    <node_container pkg="rclcpp_components" exec="component_container_mt" name="container" namespace="">
+    <node_container pkg="rclcpp_components" exec="component_container_mt" name="container" namespace="" ros_args="--log-level autoware_api.external.rtc_controller.container:=warn">
       <composable_node pkg="autoware_iv_external_api_adaptor" plugin="external_api::RTCController" name="node"/>
     </node_container>
   </group>
