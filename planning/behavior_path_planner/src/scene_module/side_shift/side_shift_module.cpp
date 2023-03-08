@@ -27,15 +27,23 @@
 namespace behavior_path_planner
 {
 using geometry_msgs::msg::Point;
+using motion_utils::calcSignedArcLength;
+using motion_utils::findNearestIndex;
+using motion_utils::findNearestSegmentIndex;
+using tier4_autoware_utils::calcDistance2d;
+using tier4_autoware_utils::getPoint;
 
 SideShiftModule::SideShiftModule(
-  const std::string & name, rclcpp::Node & node, const SideShiftParameters & parameters)
+  const std::string & name, rclcpp::Node & node,
+  const std::shared_ptr<SideShiftParameters> & parameters)
 : SceneModuleInterface{name, node}, parameters_{parameters}
 {
   using std::placeholders::_1;
 
+#ifdef USE_OLD_ARCHITECTURE
   lateral_offset_subscriber_ = node.create_subscription<LateralOffset>(
     "~/input/lateral_offset", 1, std::bind(&SideShiftModule::onLateralOffset, this, _1));
+#endif
 
   // If lateral offset is subscribed, it approves side shift module automatically
   clearWaitingApproval();
@@ -43,7 +51,7 @@ SideShiftModule::SideShiftModule(
 
 void SideShiftModule::initVariables()
 {
-  reference_path_ = std::make_shared<PathWithLaneId>();
+  reference_path_ = PathWithLaneId();
   start_pose_reset_request_ = false;
   requested_lateral_offset_ = 0.0;
   inserted_lateral_offset_ = 0.0;
@@ -53,29 +61,33 @@ void SideShiftModule::initVariables()
   prev_shift_line_ = ShiftLine{};
   path_shifter_ = PathShifter{};
   resetPathCandidate();
+  resetPathReference();
 }
 
 void SideShiftModule::onEntry()
 {
   // write me... (Don't initialize variables, otherwise lateral offset gets zero on entry.)
   start_pose_reset_request_ = false;
+#ifdef USE_OLD_ARCHITECTURE
+  current_state_ = ModuleStatus::IDLE;
+#endif
 }
 
 void SideShiftModule::onExit()
 {
   // write me...
   initVariables();
-  current_state_ = BT::NodeStatus::SUCCESS;
+  current_state_ = ModuleStatus::SUCCESS;
 }
 
-void SideShiftModule::setParameters(const SideShiftParameters & parameters)
+void SideShiftModule::setParameters(const std::shared_ptr<SideShiftParameters> & parameters)
 {
   parameters_ = parameters;
 }
 
 bool SideShiftModule::isExecutionRequested() const
 {
-  if (current_state_ == BT::NodeStatus::RUNNING) {
+  if (current_state_ == ModuleStatus::RUNNING) {
     return true;
   }
 
@@ -107,7 +119,7 @@ bool SideShiftModule::isReadyForNextRequest(
   return false;
 }
 
-BT::NodeStatus SideShiftModule::updateState()
+ModuleStatus SideShiftModule::updateState()
 {
   // Never return the FAILURE. When the desired offset is zero and the vehicle is in the original
   // drivable area,this module can stop the computation and return SUCCESS.
@@ -145,7 +157,7 @@ BT::NodeStatus SideShiftModule::updateState()
     no_shifted_plan);
 
   if (no_request && no_shifted_plan && no_offset_diff) {
-    current_state_ = BT::NodeStatus::SUCCESS;
+    current_state_ = ModuleStatus::SUCCESS;
   } else {
     const auto & current_lanes = util::getCurrentLanes(planner_data_);
     const auto & current_pose = planner_data_->self_odometry->pose.pose;
@@ -163,7 +175,7 @@ BT::NodeStatus SideShiftModule::updateState()
     } else {
       shift_status_ = SideShiftStatus::AFTER_SHIFT;
     }
-    current_state_ = BT::NodeStatus::RUNNING;
+    current_state_ = ModuleStatus::RUNNING;
   }
 
   return current_state_;
@@ -171,15 +183,24 @@ BT::NodeStatus SideShiftModule::updateState()
 
 void SideShiftModule::updateData()
 {
+  if (prev_reference_.points.empty()) {
+    prev_reference_ = *getPreviousModuleOutput().path;
+  }
+
   const auto reference_pose = prev_output_.shift_length.empty()
                                 ? planner_data_->self_odometry->pose.pose
                                 : getUnshiftedEgoPose(prev_output_);
   const auto centerline_path = calcCenterLinePath(planner_data_, reference_pose);
 
   constexpr double resample_interval = 1.0;
-  *reference_path_ = util::resamplePathWithSpline(centerline_path, resample_interval);
+#ifdef USE_OLD_ARCHITECTURE
+  reference_path_ = util::resamplePathWithSpline(centerline_path, resample_interval);
+#else
+  const auto backward_extened_path = extendBackwardLength(*getPreviousModuleOutput().path);
+  reference_path_ = util::resamplePathWithSpline(backward_extened_path, resample_interval);
+#endif
 
-  path_shifter_.setPath(*reference_path_);
+  path_shifter_.setPath(reference_path_);
 
   const auto & route_handler = planner_data_->route_handler;
   const auto & p = planner_data_->parameters;
@@ -196,6 +217,15 @@ void SideShiftModule::updateData()
 
   const size_t nearest_idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
   path_shifter_.removeBehindShiftLineAndSetBaseOffset(nearest_idx);
+
+#ifndef USE_OLD_ARCHITECTURE
+  if (planner_data_->lateral_offset != nullptr) {
+    if (isReadyForNextRequest(parameters_->shift_request_time_limit)) {
+      lateral_offset_change_request_ = true;
+      requested_lateral_offset_ = planner_data_->lateral_offset->lateral_offset;
+    }
+  }
+#endif
 }
 
 void SideShiftModule::replaceShiftLine()
@@ -249,8 +279,10 @@ BehaviorModuleOutput SideShiftModule::plan()
 
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(shifted_path.path);
+  output.reference_path = getPreviousModuleOutput().reference_path;
 
   prev_output_ = shifted_path;
+  path_reference_ = getPreviousModuleOutput().reference_path;
 
   return output;
 }
@@ -284,7 +316,9 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
 
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(shifted_path.path);
+  output.reference_path = getPreviousModuleOutput().reference_path;
   path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
+  path_reference_ = getPreviousModuleOutput().reference_path;
 
   prev_output_ = shifted_path;
 
@@ -293,6 +327,7 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
   return output;
 }
 
+#ifdef USE_OLD_ARCHITECTURE
 void SideShiftModule::onLateralOffset(const LateralOffset::ConstSharedPtr lateral_offset_msg)
 {
   const double new_lateral_offset = lateral_offset_msg->lateral_offset;
@@ -306,16 +341,17 @@ void SideShiftModule::onLateralOffset(const LateralOffset::ConstSharedPtr latera
     return;
   }
 
-  if (parameters_.shift_request_time_limit < parameters_.time_to_start_shifting) {
+  if (parameters_->shift_request_time_limit < parameters_->time_to_start_shifting) {
     RCLCPP_DEBUG(
       getLogger(), "Shift request time might be too low. Generated trajectory might be wavy");
   }
   // new offset is requested.
-  if (isReadyForNextRequest(parameters_.shift_request_time_limit)) {
+  if (isReadyForNextRequest(parameters_->shift_request_time_limit)) {
     lateral_offset_change_request_ = true;
     requested_lateral_offset_ = new_lateral_offset;
   }
 }
+#endif
 
 ShiftLine SideShiftModule::calcShiftLine() const
 {
@@ -323,27 +359,27 @@ ShiftLine SideShiftModule::calcShiftLine() const
   const auto ego_speed = std::abs(planner_data_->self_odometry->twist.twist.linear.x);
 
   const double dist_to_start =
-    std::max(p.min_distance_to_start_shifting, ego_speed * p.time_to_start_shifting);
+    std::max(p->min_distance_to_start_shifting, ego_speed * p->time_to_start_shifting);
 
   const double dist_to_end = [&]() {
     const double shift_length = requested_lateral_offset_ - getClosestShiftLength();
     const double jerk_shifting_distance = path_shifter_.calcLongitudinalDistFromJerk(
-      shift_length, p.shifting_lateral_jerk, std::max(ego_speed, p.min_shifting_speed));
-    const double shifting_distance = std::max(jerk_shifting_distance, p.min_shifting_distance);
+      shift_length, p->shifting_lateral_jerk, std::max(ego_speed, p->min_shifting_speed));
+    const double shifting_distance = std::max(jerk_shifting_distance, p->min_shifting_distance);
     const double dist_to_end = dist_to_start + shifting_distance;
     RCLCPP_DEBUG(
       getLogger(), "min_distance_to_start_shifting = %f, dist_to_start = %f, dist_to_end = %f",
-      parameters_.min_distance_to_start_shifting, dist_to_start, dist_to_end);
+      parameters_->min_distance_to_start_shifting, dist_to_start, dist_to_end);
     return dist_to_end;
   }();
 
-  const size_t nearest_idx = planner_data_->findEgoIndex(reference_path_->points);
+  const size_t nearest_idx = planner_data_->findEgoIndex(reference_path_.points);
   ShiftLine shift_line;
   shift_line.end_shift_length = requested_lateral_offset_;
-  shift_line.start_idx = util::getIdxByArclength(*reference_path_, nearest_idx, dist_to_start);
-  shift_line.start = reference_path_->points.at(shift_line.start_idx).point.pose;
-  shift_line.end_idx = util::getIdxByArclength(*reference_path_, nearest_idx, dist_to_end);
-  shift_line.end = reference_path_->points.at(shift_line.end_idx).point.pose;
+  shift_line.start_idx = util::getIdxByArclength(reference_path_, nearest_idx, dist_to_start);
+  shift_line.start = reference_path_.points.at(shift_line.start_idx).point.pose;
+  shift_line.end_idx = util::getIdxByArclength(reference_path_, nearest_idx, dist_to_end);
+  shift_line.end = reference_path_.points.at(shift_line.end_idx).point.pose;
 
   return shift_line;
 }
@@ -367,15 +403,15 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
   constexpr double margin = 0.5;
   const double left_offset = std::max(
     *itr.second + (*itr.first > threshold ? margin : 0.0),
-    parameters_.drivable_area_left_bound_offset);
+    parameters_->drivable_area_left_bound_offset);
   const double right_offset = -std::min(
     *itr.first - (*itr.first < -threshold ? margin : 0.0),
-    -parameters_.drivable_area_right_bound_offset);
+    -parameters_->drivable_area_right_bound_offset);
 
   const auto drivable_lanes = util::generateDrivableLanes(current_lanelets_);
   const auto shorten_lanes = util::cutOverlappedLanes(path->path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(
-    shorten_lanes, left_offset, right_offset, parameters_.drivable_area_types_to_skip);
+    shorten_lanes, left_offset, right_offset, parameters_->drivable_area_types_to_skip);
 
   {
     const auto & p = planner_data_->parameters;
@@ -400,6 +436,49 @@ Pose SideShiftModule::getUnshiftedEgoPose(const ShiftedPath & prev_path) const
   unshifted_pose.orientation = ego_pose.orientation;
 
   return unshifted_pose;
+}
+
+PathWithLaneId SideShiftModule::extendBackwardLength(const PathWithLaneId & original_path) const
+{
+  // special for avoidance: take behind distance upt ot shift-start-point if it exist.
+  const auto longest_dist_to_shift_point = [&]() {
+    double max_dist = 0.0;
+    for (const auto & pnt : path_shifter_.getShiftLines()) {
+      max_dist = std::max(max_dist, calcDistance2d(getEgoPose(), pnt.start));
+    }
+    return max_dist;
+  }();
+
+  const auto extra_margin = 10.0;  // Since distance does not consider arclength, but just line.
+  const auto backward_length = std::max(
+    planner_data_->parameters.backward_path_length, longest_dist_to_shift_point + extra_margin);
+
+  const size_t orig_ego_idx = findNearestIndex(original_path.points, getEgoPose().position);
+  const size_t prev_ego_idx = findNearestSegmentIndex(
+    prev_reference_.points, getPoint(original_path.points.at(orig_ego_idx)));
+
+  size_t clip_idx = 0;
+  for (size_t i = 0; i < prev_ego_idx; ++i) {
+    if (backward_length > calcSignedArcLength(prev_reference_.points, clip_idx, prev_ego_idx)) {
+      break;
+    }
+    clip_idx = i;
+  }
+
+  PathWithLaneId extended_path{};
+  {
+    extended_path.points.insert(
+      extended_path.points.end(), prev_reference_.points.begin() + clip_idx,
+      prev_reference_.points.begin() + prev_ego_idx);
+  }
+
+  {
+    extended_path.points.insert(
+      extended_path.points.end(), original_path.points.begin() + orig_ego_idx,
+      original_path.points.end());
+  }
+
+  return extended_path;
 }
 
 // NOTE: this function is ported from avoidance.

@@ -31,6 +31,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_planning_msgs/msg/lateral_offset.hpp>
 
 #include <lanelet2_core/geometry/Lanelet.h>
 
@@ -52,6 +53,7 @@ using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using route_handler::RouteHandler;
+using tier4_planning_msgs::msg::LateralOffset;
 using PlanResult = PathWithLaneId::SharedPtr;
 
 struct BoolStamped
@@ -124,6 +126,7 @@ struct PlannerData
   PredictedObjects::ConstSharedPtr dynamic_object{};
   OccupancyGrid::ConstSharedPtr occupancy_grid{};
   OccupancyGrid::ConstSharedPtr costmap{};
+  LateralOffset::ConstSharedPtr lateral_offset{};
   OperationModeState::ConstSharedPtr operation_mode{};
   PathWithLaneId::SharedPtr reference_path{std::make_shared<PathWithLaneId>()};
   PathWithLaneId::SharedPtr prev_output_path{std::make_shared<PathWithLaneId>()};

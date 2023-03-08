@@ -40,13 +40,14 @@ class SideShiftModule : public SceneModuleInterface
 {
 public:
   SideShiftModule(
-    const std::string & name, rclcpp::Node & node, const SideShiftParameters & parameters);
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<SideShiftParameters> & parameters);
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
   bool isReadyForNextRequest(
     const double & min_request_time_sec, bool override_requests = false) const noexcept;
-  BT::NodeStatus updateState() override;
+  ModuleStatus updateState() override;
   void updateData() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
@@ -54,7 +55,12 @@ public:
   void onEntry() override;
   void onExit() override;
 
-  void setParameters(const SideShiftParameters & parameters);
+  void setParameters(const std::shared_ptr<SideShiftParameters> & parameters);
+
+  void updateModuleParams(const std::shared_ptr<SideShiftParameters> & parameters)
+  {
+    parameters_ = parameters;
+  }
 
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
@@ -66,7 +72,9 @@ private:
 
   void initVariables();
 
+#ifdef USE_OLD_ARCHITECTURE
   void onLateralOffset(const LateralOffset::ConstSharedPtr lateral_offset_msg);
+#endif
 
   // non-const methods
   void adjustDrivableArea(ShiftedPath * path) const;
@@ -82,9 +90,10 @@ private:
 
   // member
   PathWithLaneId refined_path_{};
-  std::shared_ptr<PathWithLaneId> reference_path_{std::make_shared<PathWithLaneId>()};
+  PathWithLaneId reference_path_{};
+  PathWithLaneId prev_reference_{};
   lanelet::ConstLanelets current_lanelets_;
-  SideShiftParameters parameters_;
+  std::shared_ptr<SideShiftParameters> parameters_;
 
   // Requested lateral offset to shift the reference path.
   double requested_lateral_offset_{0.0};
@@ -112,6 +121,7 @@ private:
   // NOTE: this function is ported from avoidance.
   Pose getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
   inline Pose getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
+  PathWithLaneId extendBackwardLength(const PathWithLaneId & original_path) const;
   PathWithLaneId calcCenterLinePath(
     const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose) const;
 
