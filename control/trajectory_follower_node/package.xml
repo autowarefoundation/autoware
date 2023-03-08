@@ -42,6 +42,7 @@
   <test_depend>autoware_lint_common</test_depend>
   <test_depend>autoware_testing</test_depend>
   <test_depend>fake_test_node</test_depend>
+  <test_depend>ros_testing</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
