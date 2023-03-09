@@ -491,6 +491,7 @@ bool PullOverModule::returnToLaneParking()
 BehaviorModuleOutput PullOverModule::plan()
 {
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
 
   resetPathCandidate();
   resetPathReference();
@@ -535,9 +536,8 @@ BehaviorModuleOutput PullOverModule::plan()
       // decide velocity to guarantee turn signal lighting time
       if (!status_.has_decided_velocity) {
         auto & first_path = status_.pull_over_path->partial_paths.front();
-        const auto vel = static_cast<float>(std::max(
-          planner_data_->self_odometry->twist.twist.linear.x,
-          parameters_->pull_over_minimum_velocity));
+        const auto vel =
+          static_cast<float>(std::max(current_vel, parameters_->pull_over_minimum_velocity));
         for (auto & p : first_path.points) {
           p.point.longitudinal_velocity_mps = std::min(p.point.longitudinal_velocity_mps, vel);
         }
@@ -597,12 +597,18 @@ BehaviorModuleOutput PullOverModule::plan()
       const auto search_start_pose = calcLongitudinalOffsetPose(
         status_.pull_over_path->getFullPath().points, refined_goal_pose_.position,
         -parameters_->backward_goal_search_length - planner_data_->parameters.base_link2front);
+      auto & first_path = status_.pull_over_path->partial_paths.front();
       if (search_start_pose) {
-        auto & first_path = status_.pull_over_path->partial_paths.front();
         constexpr double deceleration_buffer = 15.0;
         first_path = util::setDecelerationVelocity(
           first_path, parameters_->pull_over_velocity, *search_start_pose, -deceleration_buffer,
           parameters_->deceleration_interval);
+      } else {
+        // if already passed the search start pose, set pull_over_velocity to first_path.
+        for (auto & p : first_path.points) {
+          p.point.longitudinal_velocity_mps = std::min(
+            p.point.longitudinal_velocity_mps, static_cast<float>(parameters_->pull_over_velocity));
+        }
       }
     }
 
@@ -790,6 +796,7 @@ PathWithLaneId PullOverModule::generateStopPath()
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & common_parameters = planner_data_->parameters;
+  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
 
   if (status_.current_lanes.empty()) {
     return PathWithLaneId{};
@@ -828,7 +835,6 @@ PathWithLaneId PullOverModule::generateStopPath()
     common_parameters.ego_nearest_yaw_threshold);
   const double ego_to_stop_distance = calcSignedArcLength(
     reference_path.points, current_pose.position, ego_idx, stop_pose.position, stop_idx);
-  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
   const double min_stop_distance = std::pow(current_vel, 2) / parameters_->maximum_deceleration / 2;
   if (ego_to_stop_distance < min_stop_distance) {
     return generateEmergencyStopPath();
@@ -840,10 +846,18 @@ PathWithLaneId PullOverModule::generateStopPath()
   status_.stop_pose = stop_pose;
 
   // slow down before the search area.
-  constexpr double deceleration_buffer = 15.0;
-  reference_path = util::setDecelerationVelocity(
-    reference_path, parameters_->pull_over_velocity, *search_start_pose, -deceleration_buffer,
-    parameters_->deceleration_interval);
+  if (search_start_pose) {
+    constexpr double deceleration_buffer = 15.0;
+    reference_path = util::setDecelerationVelocity(
+      reference_path, parameters_->pull_over_velocity, *search_start_pose, -deceleration_buffer,
+      parameters_->deceleration_interval);
+  } else {
+    // if already passed the search start pose, set pull_over_velocity to reference_path.
+    for (auto & p : reference_path.points) {
+      p.point.longitudinal_velocity_mps = std::min(
+        p.point.longitudinal_velocity_mps, static_cast<float>(parameters_->pull_over_velocity));
+    }
+  }
 
   // generate drivable area
   const auto drivable_lanes = util::generateDrivableLanes(status_.current_lanes);
