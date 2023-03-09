@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="3406px" height="564px" viewBox="-0.5 -0.5 3406 564">
+  <defs/>
+  <g>
+    <rect x="2" y="2" width="3400" height="560" fill="#e6e6e6" stroke="none" pointer-events="all"/>
+    <rect x="2" y="42" width="3400" height="480" fill="#cccccc" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <path d="M 2 282 L 3402 282" fill="none" stroke="rgb(0, 0, 0)" stroke-width="3" stroke-miterlimit="10" stroke-dasharray="9 9" pointer-events="stroke"/>
+    <rect x="2" y="112" width="840" height="100" fill="#66ff66" stroke="none" pointer-events="all"/>
+    <rect x="1552" y="12" width="200" height="120" fill="#ff6666" stroke="#000000" stroke-width="3" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 72px; margin-left: 1553px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 20px;">Avoidance Target</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1652" y="78" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Avoidance Target</text>
+      </switch>
+    </g>
+    <path d="M 842 162 Q 1202 162 1362 281.5 Q 1522 401 1882 402" fill="none" stroke="#66ff66" stroke-width="100" stroke-miterlimit="10" pointer-events="stroke"/>
+    <rect x="1882" y="352" width="1520" height="100" fill="#66ff66" stroke="none" pointer-events="all"/>
+    <rect x="1162" y="169" width="200" height="120" fill="#ffffff" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 229px; margin-left: 1163px;"
+          >
+            <div data-drawio-colors="color: #000000; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                Ego
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1262" y="235" fill="#000000" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Ego</text>
+      </switch>
+    </g>
+    <path d="M 2 162 L 3402 162" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="1 2" pointer-events="stroke"/>
+    <path d="M 1142 223.76 L 1142 170.24" fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 1142 229.76 L 1138 221.76 L 1142 223.76 L 1146 221.76 Z" fill="#000000" stroke="#000000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 1142 164.24 L 1146 172.24 L 1142 170.24 L 1138 172.24 Z" fill="#000000" stroke="#000000" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 1162 229 L 1142 229" fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" pointer-events="stroke"/>
+    <rect x="912" y="172" width="250" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 248px; height: 1px; padding-top: 187px; margin-left: 913px;"
+          >
+            <div data-drawio-colors="color: #000000; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; font-style: italic; white-space: normal; overflow-wrap: normal;"
+              >
+                current shift
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1037" y="193" fill="#000000" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold" font-style="italic">current shift</text>
+      </switch>
+    </g>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Text is not SVG - cannot display</text>
+    </a>
+  </switch>
+</svg>

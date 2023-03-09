@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1965px" height="764px" viewBox="-0.5 -0.5 1965 764">
+  <defs/>
+  <g>
+    <rect x="2" y="2" width="1960" height="760" fill="#e6e6e6" stroke="none" pointer-events="all"/>
+    <rect x="2" y="122" width="1960" height="480" fill="#cccccc" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <rect x="2" y="12" width="1960" height="590" fill="none" stroke="#33ff33" stroke-width="5" pointer-events="all"/>
+    <path d="M 2 362 L 1962 362" fill="none" stroke="rgb(0, 0, 0)" stroke-width="3" stroke-miterlimit="10" stroke-dasharray="9 9" pointer-events="stroke"/>
+    <rect x="2" y="202" width="1960" height="80" fill="#99ff99" stroke="none" pointer-events="all"/>
+    <path d="M 2 241.5 L 1962 241.5" fill="none" stroke="rgb(0, 0, 0)" stroke-width="2" stroke-miterlimit="10" stroke-dasharray="6 6" pointer-events="stroke"/>
+    <rect x="57" y="182" width="200" height="120" fill="#ffffff" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 242px; margin-left: 58px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                Ego
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="157" y="248" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Ego</text>
+      </switch>
+    </g>
+    <rect x="2" y="42" width="1960" height="80" fill="#b3b3b3" stroke="rgb(0, 0, 0)" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1958px; height: 1px; padding-top: 82px; margin-left: 3px;">
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                road shoulder
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="982" y="88" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">road shoulder</text>
+      </switch>
+    </g>
+    <rect x="927" y="112" width="200" height="120" fill="#66ff66" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 172px; margin-left: 928px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 14px;">Non-Avoidance Target</span>
+                <br style="font-size: 14px;"/>
+                <span style="font-size: 14px;">(NotParkingObject:<br/>shiftable_ratio &lt; threshold)</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1027" y="178" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Non-Avoidance Target...</text>
+      </switch>
+    </g>
+    <rect x="1512" y="182" width="200" height="120" fill="#66ff66" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 242px; margin-left: 1513px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 14px;">Non-Avoidance Target</span>
+                <br style="font-size: 14px;"/>
+                <span style="font-size: 14px;">(TooNearCenterLine:<br/>shift_length &lt; threshold)</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1612" y="248" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Non-Avoidance Target...</text>
+      </switch>
+    </g>
+    <rect x="622" y="32" width="200" height="120" fill="#ff6666" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 92px; margin-left: 623px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 14px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                Avoidance Target
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="722" y="96" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="14px" text-anchor="middle" font-weight="bold">Avoidance Target</text>
+      </switch>
+    </g>
+    <rect x="1242" y="72" width="200" height="120" fill="#ff6666" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 132px; margin-left: 1243px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 14px;">Avoidance Target<br/>(shiftable_ratio &gt; threshold)<br/></span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1342" y="138" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Avoidance Target...</text>
+      </switch>
+    </g>
+    <rect x="527" y="612" width="200" height="120" fill="#66ff66" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 672px; margin-left: 528px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 14px;">Non-Avoidance Target</span>
+                <br style="font-size: 14px;"/>
+                <span style="font-size: 14px;">(OutOfTargetArea)</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="627" y="678" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Non-Avoidance Target...</text>
+      </switch>
+    </g>
+    <rect x="1192" y="422" width="200" height="120" fill="#66ff66" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 482px; margin-left: 1193px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 14px;">Non-Avoidance Target</span>
+                <br style="font-size: 14px;"/>
+                <span style="font-size: 14px;">(MovingObject:<br/>moving_time &gt; threshold &amp;&amp;<br/>velocity &gt; threshold)</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="1292" y="488" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Non-Avoidance Target...</text>
+      </switch>
+    </g>
+    <path d="M 1192 482 L 1056.6 482.21" fill="none" stroke="rgb(0, 0, 0)" stroke-width="5" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 1048.35 482.22 L 1059.34 476.7 L 1056.6 482.21 L 1059.36 487.7 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-width="5" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="462" y="332" width="200" height="120" fill="#ff6666" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 198px; height: 1px; padding-top: 392px; margin-left: 463px;"
+          >
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div
+                style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; overflow-wrap: normal;"
+              >
+                <span style="font-size: 14px;">Avoidance Target</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="562" y="398" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-weight="bold">Avoidance Target</text>
+      </switch>
+    </g>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Text is not SVG - cannot display</text>
+    </a>
+  </switch>
+</svg>
