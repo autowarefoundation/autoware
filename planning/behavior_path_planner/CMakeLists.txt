@@ -17,6 +17,7 @@ set(common_src
   src/scene_module/scene_module_visitor.cpp
   src/scene_module/pull_out/pull_out_module.cpp
   src/scene_module/side_shift/side_shift_module.cpp
+  src/scene_module/lane_change/lane_change_module.cpp
   src/turn_signal_decider.cpp
   src/util/avoidance/util.cpp
   src/util/lane_change/util.cpp
@@ -48,7 +49,6 @@ if(COMPILE_WITH_OLD_ARCHITECTURE)
     src/scene_module/avoidance/avoidance_module.cpp
     src/scene_module/lane_following/lane_following_module.cpp
     src/scene_module/lane_change/external_request_lane_change_module.cpp
-    src/scene_module/lane_change/lane_change_module.cpp
     src/scene_module/pull_over/pull_over_module.cpp
     ${common_src}
   )
@@ -62,6 +62,7 @@ else()
     src/planner_manager.cpp
     src/scene_module/pull_out/manager.cpp
     src/scene_module/side_shift/manager.cpp
+    src/scene_module/lane_change/manager.cpp
     ${common_src}
   )
 
