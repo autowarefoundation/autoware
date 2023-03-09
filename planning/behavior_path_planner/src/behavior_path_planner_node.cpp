@@ -245,6 +245,16 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         module_topic, create_publisher<Path>(path_reference_name_space + module_topic, 1));
     }
 
+    if (p.config_avoidance.enable_module) {
+      auto manager = std::make_shared<AvoidanceModuleManager>(
+        this, "avoidance", p.config_avoidance, avoidance_param_ptr_);
+      planner_manager_->registerSceneModuleManager(manager);
+      path_candidate_publishers_.emplace(
+        "avoidance", create_publisher<Path>(path_candidate_name_space + "avoidance", 1));
+      path_reference_publishers_.emplace(
+        "avoidance", create_publisher<Path>(path_reference_name_space + "avoidance", 1));
+    }
+
     mutex_bt_.unlock();
   }
 #endif
@@ -312,6 +322,15 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
       declare_parameter<bool>(ns + "enable_simultaneous_execution");
     p.config_lane_change.priority = declare_parameter<int>(ns + "priority");
     p.config_lane_change.max_module_size = declare_parameter<int>(ns + "max_module_size");
+  }
+
+  {
+    const std::string ns = "avoidance.";
+    p.config_avoidance.enable_module = declare_parameter<bool>(ns + "enable_module");
+    p.config_avoidance.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_avoidance.priority = declare_parameter<int>(ns + "priority");
+    p.config_avoidance.max_module_size = declare_parameter<int>(ns + "max_module_size");
   }
 
   // vehicle info

@@ -75,24 +75,41 @@ void pushUniqueVector(T & base_vector, const T & additional_vector)
 }
 }  // namespace
 
+#ifdef USE_OLD_ARCHITECTURE
 AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters)
 : SceneModuleInterface{name, node},
   parameters_{std::move(parameters)},
-  rtc_interface_left_(&node, "avoidance_left"),
-  rtc_interface_right_(&node, "avoidance_right"),
+  uuid_left_{generateUUID()},
+  uuid_right_{generateUUID()}
+{
+  using std::placeholders::_1;
+  rtc_interface_left_ = std::make_shared<RTCInterface>(&node, "avoidance_left"),
+  rtc_interface_right_ = std::make_shared<RTCInterface>(&node, "avoidance_right"),
+  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "avoidance");
+}
+#else
+AvoidanceModule::AvoidanceModule(
+  const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters,
+  std::shared_ptr<RTCInterface> & rtc_interface_left,
+  std::shared_ptr<RTCInterface> & rtc_interface_right)
+: SceneModuleInterface{name, node},
+  parameters_{std::move(parameters)},
+  rtc_interface_left_{rtc_interface_left},
+  rtc_interface_right_{rtc_interface_right},
   uuid_left_{generateUUID()},
   uuid_right_{generateUUID()}
 {
   using std::placeholders::_1;
   steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "avoidance");
 }
+#endif
 
 bool AvoidanceModule::isExecutionRequested() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionRequested");
 
-  if (current_state_ == BT::NodeStatus::RUNNING) {
+  if (current_state_ == ModuleStatus::RUNNING) {
     return true;
   }
 
@@ -126,30 +143,27 @@ bool AvoidanceModule::isExecutionReady() const
     static_cast<void>(calcAvoidancePlanningData(debug));
   }
 
-  if (current_state_ == BT::NodeStatus::RUNNING) {
+  if (current_state_ == ModuleStatus::RUNNING) {
     return true;
   }
 
   return true;
 }
 
-BT::NodeStatus AvoidanceModule::updateState()
+ModuleStatus AvoidanceModule::updateState()
 {
   const auto is_plan_running = isAvoidancePlanRunning();
-
-  DebugData debug;
-  const auto avoid_data = calcAvoidancePlanningData(debug);
-  const bool has_avoidance_target = !avoid_data.target_objects.empty();
+  const bool has_avoidance_target = !avoidance_data_.target_objects.empty();
 
   if (!is_plan_running && !has_avoidance_target) {
-    current_state_ = BT::NodeStatus::SUCCESS;
+    current_state_ = ModuleStatus::SUCCESS;
   } else if (
     !has_avoidance_target && parameters_->enable_update_path_when_object_is_gone &&
     !isAvoidanceManeuverRunning()) {
     // if dynamic objects are removed on path, change current state to reset path
-    current_state_ = BT::NodeStatus::SUCCESS;
+    current_state_ = ModuleStatus::SUCCESS;
   } else {
-    current_state_ = BT::NodeStatus::RUNNING;
+    current_state_ = ModuleStatus::RUNNING;
   }
 
   DEBUG_PRINT(
@@ -160,9 +174,10 @@ BT::NodeStatus AvoidanceModule::updateState()
 
 bool AvoidanceModule::isAvoidancePlanRunning() const
 {
-  const bool has_base_offset = std::abs(path_shifter_.getBaseOffset()) > 0.01;
-  const bool has_shift_line = (path_shifter_.getShiftLinesSize() > 0);
-  return has_base_offset || has_shift_line;
+  constexpr double AVOIDING_SHIFT_THR = 0.1;
+  const bool has_base_offset = std::abs(path_shifter_.getBaseOffset()) > AVOIDING_SHIFT_THR;
+  const bool has_shift_point = (path_shifter_.getShiftLinesSize() > 0);
+  return has_base_offset || has_shift_point;
 }
 bool AvoidanceModule::isAvoidanceManeuverRunning()
 {
@@ -195,8 +210,15 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
   }
 
   // reference path
+#ifdef USE_OLD_ARCHITECTURE
   data.reference_path =
     util::resamplePathWithSpline(center_path, parameters_->resample_interval_for_planning);
+#else
+  const auto backward_extened_path = extendBackwardLength(*getPreviousModuleOutput().path);
+  data.reference_path = util::resamplePathWithSpline(
+    backward_extened_path, parameters_->resample_interval_for_planning);
+#endif
+
   if (data.reference_path.points.size() < 2) {
     // if the resampled path has only 1 point, use original path.
     data.reference_path = center_path;
@@ -829,6 +851,7 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
       insertWaitPoint(parameters_->use_constraints_for_decel, path);
       removeAllRegisteredShiftPoints(path_shifter_);
       clearWaitingApproval();
+      unlockNewModuleLaunch();
       removeRTCStatus();
       break;
     }
@@ -2840,6 +2863,52 @@ void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(Shifted
     parameters_->max_avoidance_acceleration, vmax, ego_idx, target_idx);
 }
 
+PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & original_path) const
+{
+  // special for avoidance: take behind distance upt ot shift-start-point if it exist.
+  const auto longest_dist_to_shift_point = [&]() {
+    double max_dist = 0.0;
+    for (const auto & pnt : path_shifter_.getShiftLines()) {
+      max_dist = std::max(max_dist, calcDistance2d(getEgoPose(), pnt.start));
+    }
+    for (const auto & sp : registered_raw_shift_lines_) {
+      max_dist = std::max(max_dist, calcDistance2d(getEgoPose(), sp.start));
+    }
+    return max_dist;
+  }();
+
+  const auto extra_margin = 10.0;  // Since distance does not consider arclength, but just line.
+  const auto backward_length = std::max(
+    planner_data_->parameters.backward_path_length, longest_dist_to_shift_point + extra_margin);
+
+  const size_t orig_ego_idx = findNearestIndex(original_path.points, getEgoPosition());
+  const size_t prev_ego_idx = findNearestSegmentIndex(
+    prev_reference_.points, getPoint(original_path.points.at(orig_ego_idx)));
+
+  size_t clip_idx = 0;
+  for (size_t i = 0; i < prev_ego_idx; ++i) {
+    if (backward_length > calcSignedArcLength(prev_reference_.points, clip_idx, prev_ego_idx)) {
+      break;
+    }
+    clip_idx = i;
+  }
+
+  PathWithLaneId extended_path{};
+  {
+    extended_path.points.insert(
+      extended_path.points.end(), prev_reference_.points.begin() + clip_idx,
+      prev_reference_.points.begin() + prev_ego_idx);
+  }
+
+  {
+    extended_path.points.insert(
+      extended_path.points.end(), original_path.points.begin() + orig_ego_idx,
+      original_path.points.end());
+  }
+
+  return extended_path;
+}
+
 // TODO(Horibe) clean up functions: there is a similar code in util as well.
 PathWithLaneId AvoidanceModule::calcCenterLinePath(
   const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose) const
@@ -2972,6 +3041,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   const auto & data = avoidance_data_;
 
   resetPathCandidate();
+  resetPathReference();
 
   /**
    * Has new shift point?
@@ -3039,6 +3109,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   }
 
   output.path = std::make_shared<PathWithLaneId>(avoidance_path.path);
+  output.reference_path = getPreviousModuleOutput().reference_path;
 
   const size_t ego_idx = planner_data_->findEgoIndex(output.path->points);
   util::clipPathLength(*output.path, ego_idx, planner_data_->parameters);
@@ -3097,6 +3168,11 @@ BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
 {
   // we can execute the plan() since it handles the approval appropriately.
   BehaviorModuleOutput out = plan();
+#ifndef USE_OLD_ARCHITECTURE
+  if (path_shifter_.getShiftLines().empty()) {
+    out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
+  }
+#endif
   const auto candidate = planCandidate();
   constexpr double threshold_to_update_status = -1.0e-03;
   if (candidate.start_distance_to_path_change > threshold_to_update_status) {
@@ -3107,6 +3183,7 @@ BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
     removeCandidateRTCStatus();
   }
   path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+  path_reference_ = getPreviousModuleOutput().reference_path;
   return out;
 }
 
@@ -3135,6 +3212,8 @@ void AvoidanceModule::addShiftLineIfApproved(const AvoidLineArray & shift_lines)
     uuid_left_ = generateUUID();
     uuid_right_ = generateUUID();
     candidate_uuid_ = generateUUID();
+
+    lockNewModuleLaunch();
 
     DEBUG_PRINT("shift_line size: %lu -> %lu", prev_size, path_shifter_.getShiftLinesSize());
   } else {
@@ -3301,6 +3380,22 @@ ShiftedPath AvoidanceModule::generateAvoidancePath(PathShifter & path_shifter) c
 
 void AvoidanceModule::updateData()
 {
+#ifndef USE_OLD_ARCHITECTURE
+  // for the first time
+  if (prev_output_.path.points.empty()) {
+    prev_output_.path = *getPreviousModuleOutput().path;
+    prev_output_.shift_length = std::vector<double>(prev_output_.path.points.size(), 0.0);
+  }
+  if (prev_linear_shift_path_.path.points.empty()) {
+    prev_linear_shift_path_.path = *getPreviousModuleOutput().path;
+    prev_linear_shift_path_.shift_length =
+      std::vector<double>(prev_linear_shift_path_.path.points.size(), 0.0);
+  }
+  if (prev_reference_.points.empty()) {
+    prev_reference_ = *getPreviousModuleOutput().path;
+  }
+#endif
+
   debug_data_ = DebugData();
   avoidance_data_ = calcAvoidancePlanningData(debug_data_);
 
@@ -3317,6 +3412,7 @@ void AvoidanceModule::updateData()
   // update registered shift point for new reference path & remove past objects
   updateRegisteredRawShiftLines();
 
+#ifdef USE_OLD_ARCHITECTURE
   // for the first time
   if (prev_output_.path.points.empty()) {
     prev_output_.path = avoidance_data_.reference_path;
@@ -3330,6 +3426,7 @@ void AvoidanceModule::updateData()
   if (prev_reference_.points.empty()) {
     prev_reference_ = avoidance_data_.reference_path;
   }
+#endif
 
   fillShiftLine(avoidance_data_, debug_data_);
 }
@@ -3442,16 +3539,21 @@ void AvoidanceModule::onEntry()
 {
   DEBUG_PRINT("AVOIDANCE onEntry. wait approval!");
   initVariables();
-  current_state_ = BT::NodeStatus::SUCCESS;
+#ifdef USE_OLD_ARCHITECTURE
+  current_state_ = ModuleStatus::SUCCESS;
+#else
+  current_state_ = ModuleStatus::IDLE;
+#endif
 }
 
 void AvoidanceModule::onExit()
 {
   DEBUG_PRINT("AVOIDANCE onExit");
   initVariables();
-  current_state_ = BT::NodeStatus::SUCCESS;
+  current_state_ = ModuleStatus::SUCCESS;
   clearWaitingApproval();
   removeRTCStatus();
+  unlockNewModuleLaunch();
   steering_factor_interface_ptr_->clearSteeringFactors();
 }
 
@@ -3467,6 +3569,7 @@ void AvoidanceModule::initVariables()
   debug_data_ = DebugData();
   debug_marker_.markers.clear();
   resetPathCandidate();
+  resetPathReference();
   registered_raw_shift_lines_ = {};
   current_raw_shift_lines_ = {};
   original_unique_id = 0;

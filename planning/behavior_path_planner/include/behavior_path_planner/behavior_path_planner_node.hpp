@@ -29,6 +29,7 @@
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 #else
 #include "behavior_path_planner/planner_manager.hpp"
+#include "behavior_path_planner/scene_module/avoidance/manager.hpp"
 #include "behavior_path_planner/scene_module/lane_change/manager.hpp"
 #include "behavior_path_planner/scene_module/pull_out/manager.hpp"
 #include "behavior_path_planner/scene_module/pull_over/manager.hpp"
