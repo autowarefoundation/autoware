@@ -123,6 +123,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     lane_change_param_ptr_ = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
     lane_following_param_ptr_ = std::make_shared<LaneFollowingParameters>(getLaneFollowingParam());
     pull_out_param_ptr_ = std::make_shared<PullOutParameters>(getPullOutParam());
+    pull_over_param_ptr_ = std::make_shared<PullOverParameters>(getPullOverParam());
     side_shift_param_ptr_ = std::make_shared<SideShiftParameters>(getSideShiftParam());
   }
 
@@ -175,7 +176,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       "LaneChange", create_publisher<Path>(path_candidate_name_space + "lane_change", 1));
     bt_manager_->registerSceneModule(lane_change_module);
 
-    auto pull_over_module = std::make_shared<PullOverModule>("PullOver", *this, getPullOverParam());
+    auto pull_over_module =
+      std::make_shared<PullOverModule>("PullOver", *this, pull_over_param_ptr_);
     path_candidate_publishers_.emplace(
       "PullOver", create_publisher<Path>(path_candidate_name_space + "pull_over", 1));
     bt_manager_->registerSceneModule(pull_over_module);
@@ -210,6 +212,16 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         "pull_out", create_publisher<Path>(path_candidate_name_space + "pull_out", 1));
       path_reference_publishers_.emplace(
         "pull_out", create_publisher<Path>(path_reference_name_space + "pull_out", 1));
+    }
+
+    if (p.config_pull_over.enable_module) {
+      auto manager = std::make_shared<PullOverModuleManager>(
+        this, "pull_over", p.config_pull_over, pull_over_param_ptr_);
+      planner_manager_->registerSceneModuleManager(manager);
+      path_candidate_publishers_.emplace(
+        "pull_over", create_publisher<Path>(path_candidate_name_space + "pull_over", 1));
+      path_reference_publishers_.emplace(
+        "pull_over", create_publisher<Path>(path_reference_name_space + "pull_over", 1));
     }
 
     if (p.config_side_shift.enable_module) {
@@ -276,6 +288,15 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   }
 
   {
+    const std::string ns = "pull_over.";
+    p.config_pull_over.enable_module = declare_parameter<bool>(ns + "enable_module");
+    p.config_pull_over.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_pull_over.priority = declare_parameter<int>(ns + "priority");
+    p.config_pull_over.max_module_size = declare_parameter<int>(ns + "max_module_size");
+  }
+
+  {
     const std::string ns = "side_shift.";
     p.config_side_shift.enable_module = declare_parameter<bool>(ns + "enable_module");
     p.config_side_shift.enable_simultaneous_execution =
@@ -286,7 +307,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 
   {
     const std::string ns = "lane_change.";
-
     p.config_lane_change.enable_module = declare_parameter<bool>(ns + "enable_module");
     p.config_lane_change.enable_simultaneous_execution =
       declare_parameter<bool>(ns + "enable_simultaneous_execution");
@@ -1180,7 +1200,11 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
 bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
+#ifdef USE_OLD_ARCHITECTURE
   const auto target_module = "PullOver";
+#else
+  const auto target_module = "pull_over";
+#endif
 
   const auto target_status = ModuleStatus::RUNNING;
 
@@ -1198,7 +1222,11 @@ bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
 bool BehaviorPathPlannerNode::keepInputPoints(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
+#ifdef USE_OLD_ARCHITECTURE
   const std::vector<std::string> target_modules = {"PullOver", "Avoidance"};
+#else
+  const std::vector<std::string> target_modules = {"pull_over", "avoidance"};
+#endif
 
   const auto target_status = ModuleStatus::RUNNING;
 

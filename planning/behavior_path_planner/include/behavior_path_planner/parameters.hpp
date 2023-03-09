@@ -31,6 +31,7 @@ struct BehaviorPathPlannerParameters
 
   ModuleConfigParameters config_avoidance;
   ModuleConfigParameters config_pull_out;
+  ModuleConfigParameters config_pull_over;
   ModuleConfigParameters config_side_shift;
   ModuleConfigParameters config_lane_change;
 

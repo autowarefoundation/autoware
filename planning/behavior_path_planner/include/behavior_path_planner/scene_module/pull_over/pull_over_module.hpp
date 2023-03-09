@@ -85,25 +85,35 @@ struct PUllOverStatus
 class PullOverModule : public SceneModuleInterface
 {
 public:
+#ifdef USE_OLD_ARCHITECTURE
   PullOverModule(
-    const std::string & name, rclcpp::Node & node, const PullOverParameters & parameters);
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<PullOverParameters> & parameters);
+#else
+  PullOverModule(
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<PullOverParameters> & parameters,
+    const std::shared_ptr<RTCInterface> & rtc_interface);
+
+  void updateModuleParams(const std::shared_ptr<PullOverParameters> & parameters)
+  {
+    parameters_ = parameters;
+  }
+#endif
 
   BehaviorModuleOutput run() override;
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
-  BT::NodeStatus updateState() override;
-  BT::NodeStatus getNodeStatusWhileWaitingApproval() const override
-  {
-    return BT::NodeStatus::SUCCESS;
-  }
+  ModuleStatus updateState() override;
+  ModuleStatus getNodeStatusWhileWaitingApproval() const override { return ModuleStatus::SUCCESS; }
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
   void onEntry() override;
   void onExit() override;
 
-  void setParameters(const PullOverParameters & parameters);
+  void setParameters(const std::shared_ptr<PullOverParameters> & parameters);
 
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
@@ -111,7 +121,7 @@ public:
   }
 
 private:
-  PullOverParameters parameters_;
+  std::shared_ptr<PullOverParameters> parameters_;
 
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;
   std::unique_ptr<PullOverPlannerBase> freespace_planner_;

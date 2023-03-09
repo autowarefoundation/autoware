@@ -31,6 +31,7 @@
 #include "behavior_path_planner/planner_manager.hpp"
 #include "behavior_path_planner/scene_module/lane_change/manager.hpp"
 #include "behavior_path_planner/scene_module/pull_out/manager.hpp"
+#include "behavior_path_planner/scene_module/pull_over/manager.hpp"
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 #endif
 
@@ -162,6 +163,7 @@ private:
   std::shared_ptr<LaneChangeParameters> lane_change_param_ptr_;
   std::shared_ptr<LaneFollowingParameters> lane_following_param_ptr_;
   std::shared_ptr<PullOutParameters> pull_out_param_ptr_;
+  std::shared_ptr<PullOverParameters> pull_over_param_ptr_;
 
   BehaviorPathPlannerParameters getCommonParam();
 
