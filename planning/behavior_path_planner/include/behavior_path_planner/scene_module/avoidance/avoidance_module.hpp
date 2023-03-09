@@ -281,6 +281,7 @@ private:
     AvoidLineArray & shift_lines, const bool recalculate_start_length = true) const;
   AvoidLineArray fillAdditionalInfo(const AvoidLineArray & shift_lines) const;
   AvoidLine fillAdditionalInfo(const AvoidLine & shift_line) const;
+  AvoidLine getNonStraightShiftLine(const AvoidLineArray & shift_lines) const;
   void fillAdditionalInfoFromPoint(AvoidLineArray & shift_lines) const;
   void fillAdditionalInfoFromLongitudinal(AvoidLineArray & shift_lines) const;
 
@@ -350,6 +351,8 @@ private:
   double getFeasibleDecelDistance(const double target_velocity) const;
 
   double getMildDecelDistance(const double target_velocity) const;
+
+  double getRelativeLengthFromPath(const AvoidLine & avoid_line) const;
 
   // ========= safety check ==============
 

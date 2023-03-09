@@ -58,18 +58,6 @@ using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 
 namespace
 {
-
-AvoidLine getNonStraightShiftLine(const AvoidLineArray & shift_lines)
-{
-  for (const auto & sl : shift_lines) {
-    if (fabs(sl.getRelativeLength()) > 0.01) {
-      return sl;
-    }
-  }
-
-  return {};
-}
-
 bool isEndPointsConnected(
   const lanelet::ConstLanelet & left_lane, const lanelet::ConstLanelet & right_lane)
 {
@@ -1189,6 +1177,17 @@ AvoidLine AvoidanceModule::fillAdditionalInfo(const AvoidLine & shift_line) cons
 {
   const auto ret = fillAdditionalInfo(AvoidLineArray{shift_line});
   return ret.front();
+}
+
+AvoidLine AvoidanceModule::getNonStraightShiftLine(const AvoidLineArray & shift_lines) const
+{
+  for (const auto & sl : shift_lines) {
+    if (fabs(getRelativeLengthFromPath(sl)) > 0.01) {
+      return sl;
+    }
+  }
+
+  return {};
 }
 
 void AvoidanceModule::fillAdditionalInfoFromPoint(AvoidLineArray & shift_lines) const
@@ -2989,9 +2988,9 @@ BehaviorModuleOutput AvoidanceModule::plan()
     printShiftLines(data.safe_new_sl, "new_shift_lines");
 
     const auto sl = getNonStraightShiftLine(data.safe_new_sl);
-    if (sl.getRelativeLength() > 0.0) {
+    if (getRelativeLengthFromPath(sl) > 0.0) {
       removePreviousRTCStatusRight();
-    } else if (sl.getRelativeLength() < 0.0) {
+    } else if (getRelativeLengthFromPath(sl) < 0.0) {
       removePreviousRTCStatusLeft();
     } else {
       RCLCPP_WARN_STREAM(getLogger(), "Direction is UNKNOWN");
@@ -3069,7 +3068,7 @@ CandidateOutput AvoidanceModule::planCandidate() const
     const auto sl_front = data.safe_new_sl.front();
     const auto sl_back = data.safe_new_sl.back();
 
-    output.lateral_shift = sl.getRelativeLength();
+    output.lateral_shift = getRelativeLengthFromPath(sl);
     output.start_distance_to_path_change = sl_front.start_longitudinal;
     output.finish_distance_to_path_change = sl_back.end_longitudinal;
 
@@ -3127,9 +3126,9 @@ void AvoidanceModule::addShiftLineIfApproved(const AvoidLineArray & shift_lines)
     const auto sl_front = shift_lines.front();
     const auto sl_back = shift_lines.back();
 
-    if (sl.getRelativeLength() > 0.0) {
+    if (getRelativeLengthFromPath(sl) > 0.0) {
       left_shift_array_.push_back({uuid_left_, sl_front.start, sl_back.end});
-    } else if (sl.getRelativeLength() < 0.0) {
+    } else if (getRelativeLengthFromPath(sl) < 0.0) {
       right_shift_array_.push_back({uuid_right_, sl_front.start, sl_back.end});
     }
 
@@ -3718,6 +3717,18 @@ double AvoidanceModule::getMildDecelDistance(const double target_velocity) const
   const auto & j_lim = parameters_->nominal_jerk;
   return calcDecelDistWithJerkAndAccConstraints(
     getEgoSpeed(), target_velocity, a_now, a_lim, j_lim, -1.0 * j_lim);
+}
+
+double AvoidanceModule::getRelativeLengthFromPath(const AvoidLine & avoid_line) const
+{
+  if (prev_reference_.points.size() != prev_linear_shift_path_.path.points.size()) {
+    throw std::logic_error("prev_reference_ and prev_linear_shift_path_ must have same size.");
+  }
+
+  const auto current_shift_length = prev_linear_shift_path_.shift_length.at(
+    findNearestIndex(prev_reference_.points, avoid_line.end.position));
+
+  return avoid_line.end_shift_length - current_shift_length;
 }
 
 void AvoidanceModule::insertWaitPoint(
