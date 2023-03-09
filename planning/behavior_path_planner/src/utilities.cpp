@@ -2403,16 +2403,14 @@ bool hasEnoughDistance(
   const auto [front_vehicle_velocity, rear_vehicle_velocity] = std::invoke([&]() {
     debug.object_twist.linear = object_current_twist.linear;
     if (is_obj_in_front) {
-      return std::make_pair(
-        util::l2Norm(object_current_twist.linear), util::l2Norm(ego_current_twist.linear));
+      return std::make_pair(object_current_twist.linear.x, ego_current_twist.linear.x);
     }
-    return std::make_pair(
-      util::l2Norm(ego_current_twist.linear), util::l2Norm(object_current_twist.linear));
+    return std::make_pair(ego_current_twist.linear.x, object_current_twist.linear.x);
   });
 
   const auto is_unsafe_dist_between_vehicle = std::invoke([&]() {
     // ignore this for parked vehicle.
-    if (l2Norm(object_current_twist.linear) < 0.1) {
+    if (object_current_twist.linear.x < 0.1) {
       return false;
     }
 
@@ -2461,7 +2459,7 @@ bool isSafeInLaneletCollisionCheck(
 
   Pose expected_obj_pose = target_object.kinematics.initial_pose_with_covariance.pose;
   const auto & object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
-  const auto object_speed = l2Norm(object_twist.linear);
+  const auto object_speed = object_twist.linear.x;
   const auto ignore_check_at_time = [&](const double current_time) {
     return (
       (current_time < prepare_duration) &&
@@ -2522,7 +2520,7 @@ bool isSafeInFreeSpaceCollisionCheck(
   }
 
   const auto & object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
-  const auto object_speed = l2Norm(object_twist.linear);
+  const auto object_speed = object_twist.linear.x;
   const auto ignore_check_at_time = [&](const double current_time) {
     return (
       (current_time < prepare_duration) &&

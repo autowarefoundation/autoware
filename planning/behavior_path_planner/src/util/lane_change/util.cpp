@@ -294,7 +294,7 @@ std::pair<bool, bool> getLaneChangePaths(
   const auto lane_change_sampling_num = parameter.lane_change_sampling_num;
 
   // get velocity
-  const auto current_velocity = util::l2Norm(twist.linear);
+  const auto current_velocity = twist.linear.x;
 
   const auto acceleration_resolution = std::abs(maximum_deceleration) / lane_change_sampling_num;
 
@@ -840,7 +840,7 @@ std::optional<LaneChangePath> getAbortPaths(
   [[maybe_unused]] const LaneChangeParameters & lane_change_param)
 {
   const auto & route_handler = planner_data->route_handler;
-  const auto current_speed = util::l2Norm(planner_data->self_odometry->twist.twist.linear);
+  const auto current_speed = planner_data->self_odometry->twist.twist.linear.x;
   const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto reference_lanelets = selected_path.reference_lanelets;
 

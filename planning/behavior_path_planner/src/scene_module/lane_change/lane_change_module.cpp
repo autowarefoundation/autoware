@@ -451,7 +451,7 @@ bool LaneChangeModule::isNearEndOfLane() const
 bool LaneChangeModule::isCurrentSpeedLow() const
 {
   constexpr double threshold_ms = 10.0 * 1000 / 3600;
-  return util::l2Norm(getEgoTwist().linear) < threshold_ms;
+  return getEgoTwist().linear.x < threshold_ms;
 }
 
 bool LaneChangeModule::isAbortConditionSatisfied()
@@ -573,7 +573,7 @@ std::shared_ptr<LaneChangeDebugMsgArray> LaneChangeModule::get_debug_msg_array()
     debug_msg.is_front = debug_data.is_front;
     debug_msg.relative_distance = debug_data.relative_to_ego;
     debug_msg.failed_reason = debug_data.failed_reason;
-    debug_msg.velocity = util::l2Norm(debug_data.object_twist.linear);
+    debug_msg.velocity = debug_data.object_twist.linear.x;
     debug_msg_array.lane_change_info.push_back(debug_msg);
   }
   lane_change_debug_msg_array_ = debug_msg_array;
