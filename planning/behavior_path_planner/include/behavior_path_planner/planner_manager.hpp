@@ -131,7 +131,6 @@ private:
   {
     module_ptr->setData(planner_data);
     module_ptr->setPreviousModuleOutput(previous_module_output);
-    module_ptr->updateData();
 
     module_ptr->lockRTCCommand();
     const auto result = module_ptr->run();
