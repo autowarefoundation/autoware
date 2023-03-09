@@ -74,7 +74,7 @@ namespace rtc_interface
 {
 RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name)
 : logger_{node->get_logger().get_child("RTCInterface[" + name + "]")},
-  is_auto_mode_{false},
+  is_auto_mode_init_{false},
   is_locked_{false}
 {
   using std::placeholders::_1;
@@ -160,7 +160,6 @@ void RTCInterface::updateCooperateCommandStatus(const std::vector<CooperateComma
     if (itr != registered_status_.statuses.end()) {
       itr->command_status = command.command;
       itr->auto_mode = false;
-      is_auto_mode_ = false;
     }
   }
 }
@@ -169,7 +168,7 @@ void RTCInterface::onAutoModeService(
   const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  is_auto_mode_ = request->enable;
+  is_auto_mode_init_ = request->enable;
   for (auto & status : registered_status_.statuses) {
     status.auto_mode = request->enable;
   }
@@ -196,7 +195,7 @@ void RTCInterface::updateCooperateStatus(
     status.command_status.type = Command::DEACTIVATE;
     status.start_distance = start_distance;
     status.finish_distance = finish_distance;
-    status.auto_mode = is_auto_mode_;
+    status.auto_mode = is_auto_mode_init_;
     registered_status_.statuses.push_back(status);
     return;
   }
@@ -206,7 +205,6 @@ void RTCInterface::updateCooperateStatus(
   itr->safe = safe;
   itr->start_distance = start_distance;
   itr->finish_distance = finish_distance;
-  itr->auto_mode = is_auto_mode_;
 }
 
 void RTCInterface::removeCooperateStatus(const UUID & uuid)

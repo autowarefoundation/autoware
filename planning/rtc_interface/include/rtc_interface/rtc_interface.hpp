@@ -81,7 +81,7 @@ private:
   Module module_;
   CooperateStatusArray registered_status_;
   std::vector<CooperateCommand> stored_commands_;
-  bool is_auto_mode_;
+  bool is_auto_mode_init_;
   bool is_locked_;
 
   std::string cooperate_status_namespace_ = "/planning/cooperate_status";
