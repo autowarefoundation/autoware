@@ -3,12 +3,14 @@ project(obstacle_avoidance_planner)
 
 include(CheckCXXCompilerFlag)
 
+# NOTE: With the following option, when the compile-time and runtime CPU
+#       architectures are different, the node will die.
 # For Eigen vectorization.
-check_cxx_compiler_flag("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
-if(COMPILER_SUPPORTS_MARCH_NATIVE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-  message(STATUS "Enabling MARCH NATIVE ")
-endif()
+# check_cxx_compiler_flag("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
+# if(COMPILER_SUPPORTS_MARCH_NATIVE)
+#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+#   message(STATUS "Enabling MARCH NATIVE ")
+# endif()
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
