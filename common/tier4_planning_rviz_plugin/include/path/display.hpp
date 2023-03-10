@@ -84,19 +84,14 @@ class AutowarePathWithDrivableAreaDisplay : public AutowarePathBaseDisplay<T>
 {
 public:
   AutowarePathWithDrivableAreaDisplay()
+  : property_drivable_area_view_{"View Drivable Area", true, "", this},
+    property_drivable_area_alpha_{"Alpha", 0.999, "", &property_drivable_area_view_},
+    property_drivable_area_color_{"Color", QColor(0, 148, 205), "", &property_drivable_area_view_},
+    property_drivable_area_width_{"Width", 0.3f, "", &property_drivable_area_view_}
   {
-    property_drivable_area_view_ = new rviz_common::properties::BoolProperty(
-      "View Drivable Area", true, "", this, SLOT(updateVisualization()));
-    property_drivable_area_alpha_ = new rviz_common::properties::FloatProperty(
-      "Alpha", 0.999, "", property_drivable_area_view_, SLOT(updateVisualization()), this);
-    property_drivable_area_alpha_->setMin(0.0);
-    property_drivable_area_alpha_->setMax(1.0);
-    property_drivable_area_color_ = new rviz_common::properties::ColorProperty(
-      "Color", QColor(0, 148, 205), "", property_drivable_area_view_, SLOT(updateVisualization()),
-      this);
-    property_drivable_area_width_ = new rviz_common::properties::FloatProperty(
-      "Width", 0.3f, "", property_drivable_area_view_, SLOT(updateVisualization()), this);
-    property_drivable_area_width_->setMin(0.001);
+    property_drivable_area_alpha_.setMin(0.0);
+    property_drivable_area_alpha_.setMax(1.0);
+    property_drivable_area_width_.setMin(0.001);
   }
 
   ~AutowarePathWithDrivableAreaDisplay()
@@ -137,11 +132,11 @@ protected:
       return;
     }
 
-    if (property_drivable_area_view_->getBool()) {
+    if (property_drivable_area_view_.getBool()) {
       Ogre::ColourValue color =
-        rviz_common::properties::qtToOgre(property_drivable_area_color_->getColor());
-      color.a = property_drivable_area_alpha_->getFloat();
-      const auto line_width = property_drivable_area_width_->getFloat();
+        rviz_common::properties::qtToOgre(property_drivable_area_color_.getColor());
+      color.a = property_drivable_area_alpha_.getFloat();
+      const auto line_width = property_drivable_area_width_.getFloat();
       visualizeBound(msg_ptr->left_bound, color, line_width, left_bound_object_);
       visualizeBound(msg_ptr->right_bound, color, line_width, right_bound_object_);
     }
@@ -151,10 +146,10 @@ private:
   Ogre::ManualObject * left_bound_object_{nullptr};
   Ogre::ManualObject * right_bound_object_{nullptr};
 
-  rviz_common::properties::BoolProperty * property_drivable_area_view_;
-  rviz_common::properties::ColorProperty * property_drivable_area_color_;
-  rviz_common::properties::FloatProperty * property_drivable_area_alpha_;
-  rviz_common::properties::FloatProperty * property_drivable_area_width_;
+  rviz_common::properties::BoolProperty property_drivable_area_view_;
+  rviz_common::properties::FloatProperty property_drivable_area_alpha_;
+  rviz_common::properties::ColorProperty property_drivable_area_color_;
+  rviz_common::properties::FloatProperty property_drivable_area_width_;
 };
 
 class AutowarePathWithLaneIdDisplay
