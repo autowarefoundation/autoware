@@ -408,8 +408,7 @@ void extendTrajectoryInYawDirection(
 
   // get terminal pose
   autoware_auto_planning_msgs::msg::Trajectory autoware_traj;
-  autoware::motion::control::mpc_lateral_controller::MPCUtils::convertToAutowareTrajectory(
-    traj, autoware_traj);
+  MPCUtils::convertToAutowareTrajectory(traj, autoware_traj);
   auto extended_pose = autoware_traj.points.back().pose;
 
   constexpr double extend_dist = 10.0;

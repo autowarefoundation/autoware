@@ -107,7 +107,7 @@ private:
   std::deque<autoware_auto_planning_msgs::msg::Trajectory> m_trajectory_buffer;
 
   // MPC object
-  mpc_lateral_controller::MPC m_mpc;
+  MPC m_mpc;
 
   //!< @brief measured kinematic state
   nav_msgs::msg::Odometry m_current_kinematic_state;

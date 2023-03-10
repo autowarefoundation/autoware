@@ -81,13 +81,13 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
   /* vehicle model setup */
   const std::string vehicle_model_type =
     node_->declare_parameter<std::string>("vehicle_model_type");
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr;
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr;
   if (vehicle_model_type == "kinematics") {
-    vehicle_model_ptr = std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
+    vehicle_model_ptr = std::make_shared<KinematicsBicycleModel>(
       wheelbase, m_mpc.m_steer_lim, m_mpc.m_param.steer_tau);
   } else if (vehicle_model_type == "kinematics_no_delay") {
-    vehicle_model_ptr = std::make_shared<mpc_lateral_controller::KinematicsBicycleModelNoDelay>(
-      wheelbase, m_mpc.m_steer_lim);
+    vehicle_model_ptr =
+      std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase, m_mpc.m_steer_lim);
   } else if (vehicle_model_type == "dynamics") {
     const double mass_fl = node_->declare_parameter<double>("vehicle.mass_fl");
     const double mass_fr = node_->declare_parameter<double>("vehicle.mass_fr");
@@ -98,19 +98,19 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
 
     // vehicle_model_ptr is only assigned in ctor, so parameter value have to be passed at init time
     // // NOLINT
-    vehicle_model_ptr = std::make_shared<mpc_lateral_controller::DynamicsBicycleModel>(
-      wheelbase, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
+    vehicle_model_ptr =
+      std::make_shared<DynamicsBicycleModel>(wheelbase, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
   } else {
     RCLCPP_ERROR(node_->get_logger(), "vehicle_model_type is undefined");
   }
 
   /* QP solver setup */
   const std::string qp_solver_type = node_->declare_parameter<std::string>("qp_solver_type");
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr;
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr;
   if (qp_solver_type == "unconstraint_fast") {
-    qpsolver_ptr = std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+    qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   } else if (qp_solver_type == "osqp") {
-    qpsolver_ptr = std::make_shared<mpc_lateral_controller::QPSolverOSQP>(node_->get_logger());
+    qpsolver_ptr = std::make_shared<QPSolverOSQP>(node_->get_logger());
   } else {
     RCLCPP_ERROR(node_->get_logger(), "qp_solver_type is undefined");
   }
@@ -452,7 +452,7 @@ rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
   result.reason = "success";
 
   // strong exception safety wrt MPCParam
-  mpc_lateral_controller::MPCParam param = m_mpc.m_param;
+  MPCParam param = m_mpc.m_param;
   try {
     update_param(parameters, "mpc_prediction_horizon", param.prediction_horizon);
     update_param(parameters, "mpc_prediction_dt", param.prediction_dt);
