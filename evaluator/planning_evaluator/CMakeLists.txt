@@ -4,6 +4,8 @@ project(planning_evaluator)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+find_package(pluginlib REQUIRED)
+
 ament_auto_add_library(${PROJECT_NAME}_node SHARED
   src/metrics_calculator.cpp
   src/${PROJECT_NAME}_node.cpp

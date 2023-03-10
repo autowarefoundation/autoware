@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>ROS2 node for evaluating planners</description>
   <maintainer email="maxime.clement@tier4.jp">Maxime CLEMENT</maintainer>
+  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="maxime.clement@tier4.jp">Maxime CLEMENT</author>
@@ -20,6 +21,7 @@
   <depend>geometry_msgs</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
+  <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>

@@ -86,5 +86,10 @@
         <arg name="planning_validator_param_path" value="$(var planning_validator_param_path)"/>
       </include>
     </group>
+
+    <!-- planning evaluator -->
+    <group>
+      <include file="$(find-pkg-share planning_evaluator)/launch/planning_evaluator.launch.xml"/>
+    </group>
   </group>
 </launch>

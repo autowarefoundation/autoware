@@ -156,7 +156,7 @@ void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_m
   }
   metrics_calculator_.setPreviousTrajectory(*traj_msg);
   auto runtime = (now() - start).seconds();
-  RCLCPP_INFO(get_logger(), "Calculation time: %2.2f ms", runtime * 1e3);
+  RCLCPP_DEBUG(get_logger(), "Planning evaluation calculation time: %2.2f ms", runtime * 1e3);
 }
 
 void PlanningEvaluatorNode::onReferenceTrajectory(const Trajectory::ConstSharedPtr traj_msg)
