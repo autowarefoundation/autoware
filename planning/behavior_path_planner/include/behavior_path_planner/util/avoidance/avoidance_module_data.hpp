@@ -408,6 +408,9 @@ struct AvoidancePlanningData
   // the others
   ObjectDataArray other_objects;
 
+  // nearest object that should be avoid
+  boost::optional<ObjectData> stop_target_object{boost::none};
+
   // raw shift point
   AvoidLineArray unapproved_raw_sl{};
 

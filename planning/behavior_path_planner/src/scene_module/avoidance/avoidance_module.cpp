@@ -743,12 +743,14 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
   }
 
   /**
-   * Check whether the ego should avoid the front object. When the ego follows reference path,
+   * Find the nearest object that should be avoid. When the ego follows reference path,
    * if the lateral distance is smaller than minimum margin, the ego should avoid the object.
    */
-  if (!data.target_objects.empty()) {
-    const auto o_front = data.target_objects.front();
-    data.avoid_required = o_front.avoid_required;
+  for (const auto & o : data.target_objects) {
+    if (o.avoid_required) {
+      data.avoid_required = true;
+      data.stop_target_object = o;
+    }
   }
 
   /**
@@ -760,6 +762,18 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
     data.candidate_path = toShiftedPath(data.reference_path);
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "not found safe avoidance path. transit yield maneuver...");
+  }
+
+  /**
+   * Even if data.avoid_required is false, the module cancels registered shift point when the
+   * approved avoidance path is not safe.
+   */
+  if (!data.safe && registered) {
+    data.yield_required = true;
+    data.candidate_path = toShiftedPath(data.reference_path);
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000,
+      "found safe avoidance path, but it is not safe. canceling avoidance path...");
   }
 
   /**
@@ -784,7 +798,7 @@ void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugDat
   debug.current_raw_shift = data.unapproved_raw_sl;
   debug.new_shift_lines = data.unapproved_new_sl;
 
-  if (data.target_objects.empty()) {
+  if (!data.stop_target_object) {
     return;
   }
 
@@ -796,7 +810,7 @@ void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugDat
     return;
   }
 
-  const auto o_front = data.target_objects.front();
+  const auto o_front = data.stop_target_object.get();
   const auto & base_link2front = planner_data_->parameters.base_link2front;
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
 
@@ -821,16 +835,16 @@ void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugDat
 
 AvoidanceState AvoidanceModule::updateEgoState(const AvoidancePlanningData & data) const
 {
+  if (data.yield_required && parameters_->enable_yield_maneuver) {
+    return AvoidanceState::YIELD;
+  }
+
   if (!data.avoid_required) {
     return AvoidanceState::NOT_AVOID;
   }
 
   if (!data.found_avoidance_path) {
     return AvoidanceState::AVOID_PATH_NOT_READY;
-  }
-
-  if (data.yield_required && parameters_->enable_yield_maneuver) {
-    return AvoidanceState::YIELD;
   }
 
   if (isWaitingApproval() && path_shifter_.getShiftLines().empty()) {
@@ -3842,7 +3856,7 @@ void AvoidanceModule::insertWaitPoint(
   const auto & base_link2front = planner_data_->parameters.base_link2front;
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
 
-  if (data.target_objects.empty()) {
+  if (!data.stop_target_object) {
     return;
   }
 
@@ -3865,7 +3879,7 @@ void AvoidanceModule::insertWaitPoint(
   // D4: o_front.longitudinal
   // D5: base_link2front
 
-  const auto o_front = data.target_objects.front();
+  const auto o_front = data.stop_target_object.get();
 
   const auto avoid_margin =
     p->lateral_collision_safety_buffer + p->lateral_collision_margin + 0.5 * vehicle_width;
@@ -3918,8 +3932,10 @@ void AvoidanceModule::insertPrepareVelocity(const bool avoidable, ShiftedPath & 
     return;
   }
 
-  if (data.target_objects.front().reason != AvoidanceDebugFactor::TOO_LARGE_JERK) {
-    return;
+  if (!!data.stop_target_object) {
+    if (data.stop_target_object.get().reason != AvoidanceDebugFactor::TOO_LARGE_JERK) {
+      return;
+    }
   }
 
   if (data.avoiding_now) {
