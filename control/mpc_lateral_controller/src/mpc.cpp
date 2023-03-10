@@ -253,8 +253,11 @@ void MPC::setReferenceTrajectory(
 
 void MPC::resetPrevResult(const autoware_auto_vehicle_msgs::msg::SteeringReport & current_steer)
 {
-  m_raw_steer_cmd_prev = current_steer.steering_tire_angle;
-  m_raw_steer_cmd_pprev = current_steer.steering_tire_angle;
+  // Consider limit. The prev value larger than limiation brakes the optimization constraint and
+  // resluts in optimization failure.
+  const float steer_lim_f = static_cast<float>(m_steer_lim);
+  m_raw_steer_cmd_prev = std::clamp(current_steer.steering_tire_angle, -steer_lim_f, steer_lim_f);
+  m_raw_steer_cmd_pprev = std::clamp(current_steer.steering_tire_angle, -steer_lim_f, steer_lim_f);
 }
 
 bool MPC::getData(
