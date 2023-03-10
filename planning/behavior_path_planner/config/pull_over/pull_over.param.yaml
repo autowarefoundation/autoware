@@ -87,6 +87,7 @@
       min_stop_distance: 5.0
       stop_time: 2.0
       hysteresis_buffer_distance: 2.0
+      prediction_time_resolution: 0.5
       enable_collision_check_at_prepare_phase: false
       use_predicted_path_outside_lanelet: false
       use_all_predicted_path: false

@@ -25,90 +25,19 @@ namespace behavior_path_planner
 FreespacePullOver::FreespacePullOver(
   rclcpp::Node & node, const PullOverParameters & parameters,
   const vehicle_info_util::VehicleInfo & vehicle_info)
-: PullOverPlannerBase{node, parameters}
+: PullOverPlannerBase{node, parameters}, velocity_{parameters.freespace_parking_velocity}
 {
-  velocity_ = node.declare_parameter("pull_over.freespace_parking.velocity", 1.0);
-
-  const double vehicle_shape_margin =
-    node.declare_parameter("pull_over.freespace_parking.vehicle_shape_margin", 1.0);
-  freespace_planning_algorithms::VehicleShape vehicle_shape(vehicle_info, vehicle_shape_margin);
-
-  const auto algorithm =
-    node.declare_parameter("pull_over.freespace_parking.planning_algorithm", "astar");
-  if (algorithm == "astar") {
-    const auto astar_param = getAstarParam(node);
-    use_back_ = astar_param.use_back;
-    planner_ = std::make_unique<AstarSearch>(getCommonParam(node), vehicle_shape, astar_param);
-  } else if (algorithm == "rrtstar") {
+  freespace_planning_algorithms::VehicleShape vehicle_shape(
+    vehicle_info, parameters.vehicle_shape_margin);
+  if (parameters.algorithm == "astar") {
+    use_back_ = parameters.astar_parameters.use_back;
+    planner_ = std::make_unique<AstarSearch>(
+      parameters.common_parameters, vehicle_shape, parameters.astar_parameters);
+  } else if (parameters.algorithm == "rrtstar") {
     use_back_ = true;  // no option for disabling back in rrtstar
-    planner_ =
-      std::make_unique<RRTStar>(getCommonParam(node), vehicle_shape, getRRTStarParam(node));
+    planner_ = std::make_unique<RRTStar>(
+      parameters.common_parameters, vehicle_shape, parameters.rrt_star_parameters);
   }
-}
-
-PlannerCommonParam FreespacePullOver::getCommonParam(rclcpp::Node & node) const
-{
-  const auto dp = [&node](const std::string & str, auto def_val) {
-    std::string name = "pull_over.freespace_parking." + str;
-    return node.declare_parameter(name, def_val);
-  };
-
-  PlannerCommonParam p{};
-
-  // search configs
-  p.time_limit = dp("time_limit", 5000.0);
-  p.minimum_turning_radius = dp("minimum_turning_radius", 0.5);
-  p.maximum_turning_radius = dp("maximum_turning_radius", 6.0);
-  p.turning_radius_size = dp("turning_radius_size", 11);
-  p.maximum_turning_radius = std::max(p.maximum_turning_radius, p.minimum_turning_radius);
-  p.turning_radius_size = std::max(p.turning_radius_size, 1);
-
-  p.theta_size = dp("theta_size", 48);
-  p.angle_goal_range = dp("angle_goal_range", 6.0);
-
-  p.curve_weight = dp("curve_weight", 1.2);
-  p.reverse_weight = dp("reverse_weight", 2.00);
-  p.lateral_goal_range = dp("lateral_goal_range", 0.5);
-  p.longitudinal_goal_range = dp("longitudinal_goal_range", 2.0);
-
-  // costmap configs
-  p.obstacle_threshold = dp("obstacle_threshold", 100);
-
-  return p;
-}
-
-AstarParam FreespacePullOver::getAstarParam(rclcpp::Node & node) const
-{
-  const auto dp = [&node](const std::string & str, auto def_val) {
-    std::string name = "pull_over.freespace_parking.astar." + str;
-    return node.declare_parameter(name, def_val);
-  };
-
-  AstarParam p{};
-
-  p.only_behind_solutions = dp("only_behind_solutions", false);
-  p.use_back = dp("use_back", true);
-  p.distance_heuristic_weight = dp("distance_heuristic_weight", 1.0);
-
-  return p;
-}
-
-RRTStarParam FreespacePullOver::getRRTStarParam(rclcpp::Node & node) const
-{
-  const auto dp = [&node](const std::string & str, auto def_val) {
-    std::string name = "pull_over.freespace_parking.rrtstar." + str;
-    return node.declare_parameter(name, def_val);
-  };
-
-  RRTStarParam p;
-
-  p.enable_update = dp("enable_update", true);
-  p.use_informed_sampling = dp("use_informed_sampling", true);
-  p.max_planning_time = dp("max_planning_time", 150.0);
-  p.neighbor_radius = dp("neighbor_radius", 8.0);
-  p.margin = dp("margin", 0.1);
-
-  return p;
 }
 
 boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)

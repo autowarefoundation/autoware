@@ -16,11 +16,20 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__PULL_OVER_PARAMETERS_HPP_
 
+#include <freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <freespace_planning_algorithms/astar_search.hpp>
+#include <freespace_planning_algorithms/rrtstar.hpp>
+
 #include <string>
 #include <vector>
 
 namespace behavior_path_planner
 {
+
+using freespace_planning_algorithms::AstarParam;
+using freespace_planning_algorithms::PlannerCommonParam;
+using freespace_planning_algorithms::RRTStarParam;
+
 struct PullOverParameters
 {
   double request_length;
@@ -44,8 +53,8 @@ struct PullOverParameters
   bool use_occupancy_grid;
   bool use_occupancy_grid_for_longitudinal_margin;
   double occupancy_grid_collision_check_margin;
-  double theta_size;
-  double obstacle_threshold;
+  int theta_size;
+  int obstacle_threshold;
   // object recognition
   bool use_object_recognition;
   double object_recognition_collision_check_margin;
@@ -90,6 +99,14 @@ struct PullOverParameters
   std::vector<std::string> drivable_area_types_to_skip;
   // debug
   bool print_debug_info;
+
+  // freespace pull over
+  std::string algorithm;
+  double freespace_parking_velocity;
+  double vehicle_shape_margin;
+  PlannerCommonParam common_parameters;
+  AstarParam astar_parameters;
+  RRTStarParam rrt_star_parameters;
 };
 }  // namespace behavior_path_planner
 

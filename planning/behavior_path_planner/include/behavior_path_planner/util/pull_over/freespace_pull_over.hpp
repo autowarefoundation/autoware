@@ -29,11 +29,8 @@
 namespace behavior_path_planner
 {
 using freespace_planning_algorithms::AbstractPlanningAlgorithm;
-using freespace_planning_algorithms::AstarParam;
 using freespace_planning_algorithms::AstarSearch;
-using freespace_planning_algorithms::PlannerCommonParam;
 using freespace_planning_algorithms::RRTStar;
-using freespace_planning_algorithms::RRTStarParam;
 
 class FreespacePullOver : public PullOverPlannerBase
 {
@@ -47,10 +44,6 @@ public:
   boost::optional<PullOverPath> plan(const Pose & goal_pose) override;
 
 protected:
-  PlannerCommonParam getCommonParam(rclcpp::Node & node) const;
-  AstarParam getAstarParam(rclcpp::Node & node) const;
-  RRTStarParam getRRTStarParam(rclcpp::Node & node) const;
-
   std::unique_ptr<AbstractPlanningAlgorithm> planner_;
   double velocity_;
   bool use_back_;
