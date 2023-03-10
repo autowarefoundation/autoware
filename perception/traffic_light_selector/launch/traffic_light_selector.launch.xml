@@ -1,0 +1,14 @@
+<launch>
+  <push-ros-namespace namespace="traffic_light_selector"/>
+  <node_container pkg="rclcpp_components" exec="component_container" name="container" namespace="">
+    <composable_node pkg="traffic_light_selector" plugin="TrafficLightConverter" name="converter">
+      <remap from="~/sub/traffic_lights" to="/perception/traffic_light_recognition/traffic_signals"/>
+      <remap from="~/pub/traffic_lights" to="/perception/traffic_light_selector/internal/traffic_lights"/>
+    </composable_node>
+    <composable_node pkg="traffic_light_selector" plugin="TrafficLightSelector" name="selector">
+      <remap from="~/sub/vector_map" to="/map/vector_map"/>
+      <remap from="~/sub/traffic_lights" to="/perception/traffic_light_selector/internal/traffic_lights"/>
+      <remap from="~/pub/traffic_signals" to="/perception/traffic_light_selector/traffic_signals"/>
+    </composable_node>
+  </node_container>
+</launch>
