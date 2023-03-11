@@ -416,6 +416,10 @@ std::vector<Polygon2d> getTargetLaneletPolygons(
 
 void shiftPose(Pose * pose, double shift_length);
 
+PathWithLaneId getCenterLinePathFromRootLanelet(
+  const lanelet::ConstLanelet & root_lanelet,
+  const std::shared_ptr<const PlannerData> & planner_data);
+
 // route handler
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
@@ -438,6 +442,9 @@ PathWithLaneId setDecelerationVelocityForTurnSignal(
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);
 
 lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> & planner_data);
+
+lanelet::ConstLanelets getCurrentLanesFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data);
 
 lanelet::ConstLanelets extendLanes(
   const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
