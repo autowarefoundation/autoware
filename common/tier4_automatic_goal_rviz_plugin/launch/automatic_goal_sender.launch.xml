@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="goals_list_file_path" description="" default=""/>
+  <arg name="goals_achieved_dir_path" description="" default=""/>
+
+  <node pkg="tier4_automatic_goal_rviz_plugin" exec="automatic_goal_sender" name="automatic_goal_sender" output="screen">
+    <param name="goals_list_file_path" value="$(var goals_list_file_path)"/>
+    <param name="goals_achieved_dir_path" value="$(var goals_achieved_dir_path)"/>
+  </node>
+</launch>
