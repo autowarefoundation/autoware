@@ -114,7 +114,12 @@ bool AvoidanceModule::isExecutionRequested() const
   }
 
   // Check ego is in preferred lane
+#ifdef USE_OLD_ARCHITECTURE
   const auto current_lanes = util::getCurrentLanes(planner_data_);
+#else
+  const auto current_lanes =
+    util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
+#endif
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(
     current_lanes, planner_data_->self_odometry->pose.pose, &current_lane);
@@ -235,9 +240,14 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
     calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
 
   // lanelet info
+#ifdef USE_OLD_ARCHITECTURE
   data.current_lanelets = util::calcLaneAroundPose(
     planner_data_->route_handler, reference_pose, planner_data_->parameters.forward_path_length,
     planner_data_->parameters.backward_path_length);
+#else
+  data.current_lanelets =
+    util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
+#endif
 
   // keep avoidance state
   data.state = avoidance_data_.state;
@@ -2955,8 +2965,13 @@ PathWithLaneId AvoidanceModule::calcCenterLinePath(
     "p.backward_path_length = %f, longest_dist_to_shift_line = %f, backward_length = %f",
     p.backward_path_length, longest_dist_to_shift_line, backward_length);
 
+#ifdef USE_OLD_ARCHITECTURE
   const lanelet::ConstLanelets current_lanes =
     util::calcLaneAroundPose(route_handler, pose, p.forward_path_length, backward_length);
+#else
+  const lanelet::ConstLanelets current_lanes =
+    util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
+#endif
   centerline_path = util::getCenterLinePath(
     *route_handler, current_lanes, pose, backward_length, p.forward_path_length, p);
 
