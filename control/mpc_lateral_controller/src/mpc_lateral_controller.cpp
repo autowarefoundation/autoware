@@ -204,6 +204,15 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     m_current_steering, m_current_kinematic_state.twist.twist.linear.x,
     m_current_kinematic_state.pose.pose, ctrl_cmd, predicted_traj, debug_values);
 
+  // reset previous MPC result
+  // Note: When a large deviation from the trajectory occurs, the optimization stops and
+  // the vehicle will return to the path by re-planning the trajectory or external operation.
+  // After the recovery, the previous value of the optimization may deviate greatly from
+  // the actual steer angle, and it may make the optimization result unstable.
+  if (!is_mpc_solved) {
+    m_mpc.resetPrevResult(m_current_steering);
+  }
+
   if (enable_auto_steering_offset_removal_) {
     steering_offset_->updateOffset(
       m_current_kinematic_state.twist.twist,
