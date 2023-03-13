@@ -80,6 +80,7 @@ void LaneChangeModule::onEntry()
   current_state_ = ModuleStatus::SUCCESS;
 #else
   current_state_ = ModuleStatus::IDLE;
+  waitApproval();
 #endif
   current_lane_change_state_ = LaneChangeStates::Normal;
   updateLaneChangeStatus();
