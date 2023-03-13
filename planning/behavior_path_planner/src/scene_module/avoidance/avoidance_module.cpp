@@ -116,10 +116,6 @@ bool AvoidanceModule::isExecutionRequested() const
   // Check ego is in preferred lane
 #ifdef USE_OLD_ARCHITECTURE
   const auto current_lanes = util::getCurrentLanes(planner_data_);
-#else
-  const auto current_lanes =
-    util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
-#endif
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(
     current_lanes, planner_data_->self_odometry->pose.pose, &current_lane);
@@ -128,6 +124,7 @@ bool AvoidanceModule::isExecutionRequested() const
   if (num != 0) {
     return false;
   }
+#endif
 
   // Check avoidance targets exist
   const auto avoid_data = calcAvoidancePlanningData(debug_data_);
