@@ -268,6 +268,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   return std::optional<LaneChangePath>{candidate_path};
 }
 
+#ifdef USE_OLD_ARCHITECTURE
 std::pair<bool, bool> getLaneChangePaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
@@ -275,6 +276,15 @@ std::pair<bool, bool> getLaneChangePaths(
   const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter,
   const double check_distance, LaneChangePaths * candidate_paths,
   std::unordered_map<std::string, CollisionCheckDebug> * debug_data)
+#else
+std::pair<bool, bool> getLaneChangePaths(
+  const PathWithLaneId & original_path, const RouteHandler & route_handler,
+  const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
+  const Pose & pose, const Twist & twist, const PredictedObjects::ConstSharedPtr dynamic_objects,
+  const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter,
+  const double check_distance, LaneChangePaths * candidate_paths,
+  std::unordered_map<std::string, CollisionCheckDebug> * debug_data)
+#endif
 {
   debug_data->clear();
   if (original_lanelets.empty() || target_lanelets.empty()) {
@@ -320,7 +330,8 @@ std::pair<bool, bool> getLaneChangePaths(
   const auto required_total_min_distance =
     util::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
 
-  const auto arc_position_from_current = lanelet::utils::getArcCoordinates(original_lanelets, pose);
+  [[maybe_unused]] const auto arc_position_from_current =
+    lanelet::utils::getArcCoordinates(original_lanelets, pose);
   const auto arc_position_from_target = lanelet::utils::getArcCoordinates(target_lanelets, pose);
 
   const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanelets);
@@ -352,9 +363,15 @@ std::pair<bool, bool> getLaneChangePaths(
       continue;
     }
 
+#ifdef USE_OLD_ARCHITECTURE
     const auto prepare_segment_reference = getLaneChangePathPrepareSegment(
       route_handler, original_lanelets, arc_position_from_current.length, backward_path_length,
       prepare_distance, std::max(prepare_speed, minimum_lane_change_velocity));
+#else
+    const auto prepare_segment_reference = getLaneChangePathPrepareSegment(
+      original_path, original_lanelets, pose, backward_path_length, prepare_distance,
+      std::max(prepare_speed, minimum_lane_change_velocity));
+#endif
 
     const auto estimated_shift_length = lanelet::utils::getArcCoordinates(
       target_lanelets, prepare_segment_reference.points.front().point.pose);
@@ -659,6 +676,27 @@ PathWithLaneId getLaneChangePathPrepareSegment(
 
   PathWithLaneId prepare_segment =
     route_handler.getCenterLinePath(original_lanelets, s_start, s_end);
+
+  prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
+    prepare_segment.points.back().point.longitudinal_velocity_mps,
+    static_cast<float>(prepare_speed));
+
+  return prepare_segment;
+}
+
+PathWithLaneId getLaneChangePathPrepareSegment(
+  const PathWithLaneId & original_path, const lanelet::ConstLanelets & original_lanelets,
+  const Pose & current_pose, const double backward_path_length, const double prepare_distance,
+  const double prepare_speed)
+{
+  if (original_lanelets.empty()) {
+    return PathWithLaneId();
+  }
+
+  auto prepare_segment = original_path;
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    prepare_segment.points, current_pose, 3.0, 1.0);
+  util::clipPathLength(prepare_segment, current_seg_idx, prepare_distance, backward_path_length);
 
   prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
     prepare_segment.points.back().point.longitudinal_velocity_mps,

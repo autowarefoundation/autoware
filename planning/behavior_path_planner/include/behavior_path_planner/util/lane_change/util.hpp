@@ -78,6 +78,14 @@ std::pair<bool, bool> getLaneChangePaths(
   const double check_distance, LaneChangePaths * candidate_paths,
   std::unordered_map<std::string, CollisionCheckDebug> * debug_data);
 
+std::pair<bool, bool> getLaneChangePaths(
+  const PathWithLaneId & original_path, const RouteHandler & route_handler,
+  const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
+  const Pose & pose, const Twist & twist, const PredictedObjects::ConstSharedPtr dynamic_objects,
+  const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter,
+  const double check_distance, LaneChangePaths * candidate_paths,
+  std::unordered_map<std::string, CollisionCheckDebug> * debug_data);
+
 bool isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
   const LaneChangeTargetObjectIndices & dynamic_object_indices, const Pose & current_pose,
@@ -107,6 +115,11 @@ PathWithLaneId getLaneChangePathPrepareSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const double arc_length_from_current, const double backward_path_length,
   const double prepare_distance, const double prepare_speed);
+
+PathWithLaneId getLaneChangePathPrepareSegment(
+  const PathWithLaneId & original_path, const lanelet::ConstLanelets & original_lanelets,
+  const Pose & current_pose, const double backward_path_length, const double prepare_distance,
+  const double prepare_speed);
 
 PathWithLaneId getLaneChangePathLaneChangingSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanelets,
