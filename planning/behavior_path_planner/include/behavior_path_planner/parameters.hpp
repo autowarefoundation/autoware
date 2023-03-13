@@ -56,7 +56,9 @@ struct BehaviorPathPlannerParameters
   double turn_signal_shift_length_threshold;
   bool turn_signal_on_swerving;
 
-  double path_interval;
+  double enable_akima_spline_first;
+  double input_path_interval;
+  double output_path_interval;
 
   double ego_nearest_dist_threshold;
   double ego_nearest_yaw_threshold;

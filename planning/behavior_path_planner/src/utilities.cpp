@@ -1975,7 +1975,11 @@ PathWithLaneId getCenterLinePath(
     s_forward = std::min(s_forward, goal_arc_coordinates.length - lane_change_buffer);
   }
 
-  return route_handler.getCenterLinePath(lanelet_sequence, s_backward, s_forward, true);
+  const auto raw_path_with_lane_id =
+    route_handler.getCenterLinePath(lanelet_sequence, s_backward, s_forward, true);
+  const auto resampled_path_with_lane_id = motion_utils::resamplePath(
+    raw_path_with_lane_id, parameter.input_path_interval, parameter.enable_akima_spline_first);
+  return raw_path_with_lane_id;
 }
 
 // for lane following

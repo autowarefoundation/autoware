@@ -383,7 +383,9 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter("turn_signal_shift_length_threshold", 0.3);
   p.turn_signal_on_swerving = declare_parameter("turn_signal_on_swerving", true);
 
-  p.path_interval = declare_parameter<double>("path_interval");
+  p.enable_akima_spline_first = declare_parameter<bool>("enable_akima_spline_first");
+  p.input_path_interval = declare_parameter<double>("input_path_interval");
+  p.output_path_interval = declare_parameter<double>("output_path_interval");
   p.visualize_maximum_drivable_area = declare_parameter("visualize_maximum_drivable_area", true);
   p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
   p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
@@ -1270,7 +1272,7 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
   }
 
   const auto resampled_path = util::resamplePathWithSpline(
-    connected_path, planner_data_->parameters.path_interval,
+    connected_path, planner_data_->parameters.output_path_interval,
     keepInputPoints(module_status_ptr_vec));
   return std::make_shared<PathWithLaneId>(resampled_path);
 }
