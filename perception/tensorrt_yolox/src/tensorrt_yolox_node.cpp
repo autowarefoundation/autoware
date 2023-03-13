@@ -148,8 +148,8 @@ void TrtYoloXNode::replaceLabelMap()
     if (label == "PERSON") {
       label = "PEDESTRIAN";
     } else if (
-      label != "CAR" || label != "PEDESTRIAN" || label != "BUS" || label != "TRUCK" ||
-      label != "BICYCLE" || label != "MOTORCYCLE") {
+      label != "CAR" && label != "PEDESTRIAN" && label != "BUS" && label != "TRUCK" &&
+      label != "BICYCLE" && label != "MOTORCYCLE") {
       label = "UNKNOWN";
     }
   }
