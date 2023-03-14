@@ -76,13 +76,13 @@ AstarSearch::TransitionTable createTransitionTable(
   const auto & R_min = minimum_turning_radius;
   const auto & R_max = maximum_turning_radius;
   const double step_min = R_min * dtheta;
-  const double dR = (R_max - R_min) / turning_radius_size;
+  const double dR = (R_max - R_min) / std::max(turning_radius_size - 1, 1);
 
   // NodeUpdate actions
   std::vector<NodeUpdate> forward_node_candidates;
   const NodeUpdate forward_straight{step_min, 0.0, 0.0, step_min, false, false};
   forward_node_candidates.push_back(forward_straight);
-  for (int i = 0; i < turning_radius_size + 1; ++i) {
+  for (int i = 0; i < turning_radius_size; ++i) {
     double R = R_min + i * dR;
     double step = R * dtheta;
     const NodeUpdate forward_left{
