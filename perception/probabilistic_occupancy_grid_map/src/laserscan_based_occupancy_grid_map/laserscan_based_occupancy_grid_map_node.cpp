@@ -93,6 +93,18 @@ bool cropPointcloudByHeight(
   pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
   return pose;
 }
+
+geometry_msgs::msg::Pose getPose(
+  const builtin_interfaces::msg::Time & stamp, const tf2_ros::Buffer & tf2,
+  const std::string & source_frame, const std::string & target_frame)
+{
+  geometry_msgs::msg::Pose pose;
+  geometry_msgs::msg::TransformStamped tf_stamped;
+  tf_stamped =
+    tf2.lookupTransform(target_frame, source_frame, stamp, rclcpp::Duration::from_seconds(0.5));
+  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
+  return pose;
+}
 }  // namespace
 
 namespace occupancy_grid_map
@@ -112,7 +124,8 @@ LaserscanBasedOccupancyGridMapNode::LaserscanBasedOccupancyGridMapNode(
   /* params */
   map_frame_ = declare_parameter("map_frame", "map");
   base_link_frame_ = declare_parameter("base_link_frame", "base_link");
-  output_frame_ = declare_parameter("output_frame", "base_link");
+  gridmap_origin_frame_ = declare_parameter("gridmap_origin_frame", "base_link");
+  scan_origin_frame_ = declare_parameter("scan_origin_frame", "base_link");
   use_height_filter_ = declare_parameter("use_height_filter", true);
   enable_single_frame_mode_ = declare_parameter("enable_single_frame_mode", false);
   const double map_length{declare_parameter("map_length", 100.0)};
@@ -209,17 +222,15 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
   PointCloud2 trans_laserscan_pc{};
   PointCloud2 trans_obstacle_pc{};
   PointCloud2 trans_raw_pc{};
-  Pose pose{};
+  Pose gridmap_origin{};
+  Pose scan_origin{};
   try {
     transformPointcloud(*laserscan_pc_ptr, *tf2_, map_frame_, trans_laserscan_pc);
     transformPointcloud(filtered_obstacle_pc, *tf2_, map_frame_, trans_obstacle_pc);
     transformPointcloud(filtered_raw_pc, *tf2_, map_frame_, trans_raw_pc);
-    // pose = getPose(laserscan_pc_ptr->header, *tf2_, map_frame_);
-    geometry_msgs::msg::TransformStamped tf_stamped;
-    tf_stamped = tf2_->lookupTransform(
-      map_frame_, output_frame_, laserscan_pc_ptr->header.stamp,
-      rclcpp::Duration::from_seconds(0.5));
-    pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
+    gridmap_origin =
+      getPose(laserscan_pc_ptr->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
+    scan_origin = getPose(laserscan_pc_ptr->header.stamp, *tf2_, scan_origin_frame_, map_frame_);
   } catch (tf2::TransformException & ex) {
     RCLCPP_WARN_STREAM(get_logger(), ex.what());
     return;
@@ -231,16 +242,16 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
     occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
     occupancy_grid_map_updater_ptr_->getResolution());
   single_frame_occupancy_grid_map.updateOrigin(
-    pose.position.x - single_frame_occupancy_grid_map.getSizeInMetersX() / 2,
-    pose.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
+    gridmap_origin.position.x - single_frame_occupancy_grid_map.getSizeInMetersX() / 2,
+    gridmap_origin.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
   single_frame_occupancy_grid_map.updateFreespaceCells(trans_raw_pc);
-  single_frame_occupancy_grid_map.raytrace2D(trans_laserscan_pc, pose);
+  single_frame_occupancy_grid_map.raytrace2D(trans_laserscan_pc, scan_origin);
   single_frame_occupancy_grid_map.updateOccupiedCells(trans_obstacle_pc);
 
   if (enable_single_frame_mode_) {
     // publish
     occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
-      map_frame_, laserscan_pc_ptr->header.stamp, pose.position.z,
+      map_frame_, laserscan_pc_ptr->header.stamp, gridmap_origin.position.z,
       single_frame_occupancy_grid_map));
   } else {
     // Update with bayes filter
@@ -248,7 +259,7 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
 
     // publish
     occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
-      map_frame_, laserscan_pc_ptr->header.stamp, pose.position.z,
+      map_frame_, laserscan_pc_ptr->header.stamp, gridmap_origin.position.z,
       *occupancy_grid_map_updater_ptr_));
   }
 }

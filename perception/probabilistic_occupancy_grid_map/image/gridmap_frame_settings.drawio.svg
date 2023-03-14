@@ -1,0 +1,80 @@
+<svg
+  host="65bd71144e"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="321px"
+  height="361px"
+  viewBox="-0.5 -0.5 321 361"
+  content="&lt;mxfile&gt;&lt;diagram id=&quot;bXZzcvQcPpC1UQPAvKQk&quot; name=&quot;Page-1&quot;&gt;7Vpbb5swFP41SNtDI+4Jj0162cukSnnY9jS54IBVgjPjNEl//WxsA+bSJG3o0rVUavHnC5zvfMfHNjWc2XJ7S8Aq+Y4jmBq2GW0N58qwbTtw2W8O7ATg244AYoIiAVkVMEdPUIKmRNcogrnWkGKcUrTSwRBnGQyphgFC8EZvtsCp/tQViGELmIcgbaM/UEQTgU7scYV/gyhO1JMtPxA1S6AaS0vyBER4U4Oca8OZEYypuFtuZzDl3CleRL+bntryxQjM6CEdbNHhEaRraZt8L7pTxhK8ziLI25uGM90kiML5CoS8dsO8y7CELlNWstjtAqXpXPYFa4olNMMpJsVwzsLjPxzHGa3h4mJ4Tgl+gLUav7hYTds4ae8jJBRua5A09hbiJaRkx5qoWl8Sv2uUN5UfHeWcpObDEgRSO3E5dkUvu5EMd7M93s92zOheHW5oqXFwr0YwnyXAHusE2JM2AZbbQcD4BPY7++2HWXTJI5SVwhTkOQp1gbWpkaTCSIvZNgE1A70O+xRGYAooetQjvcto+YQ7jNiblPx6Or1ug7Ucr0kIZZ96XPYMo/pRQGJIW/0KwksbD/KB+3of5OxtqGqB2UgKu0HpB/OT9fwwp3ObdVzsZDiDTae1plXTLCbcxkRc4hHIk2Le592ZG8nuJ08CI08Vf9XrrrYyQ4jSTpZ6pzJBjZaFzkQaTkMbjv9CcbhNkQXDycM/G3lYtl8XiDkKgmCPSIrSHSSIWQzJp3LYaujtlHPAouRtlKOrZux9ziy9+mB5Z+RYQXW5ulwmwcifmNXlD6aeyXmq51M8z6xZGlsA1xpucgn+rTx63fy/+dR1mwvRwXx6QMQPvYl1zAZtanO+bxM7abDykk3scZLu2UD1qbpN2uSsBHv221s1lw29v/3wLny7na99bjlE+vN8lwonc7E+zsWACwWrw8l+SqWTNG/7f9b8eHx6D8KHuDidvgiFEy85dfH9F9vzDJs906zffC18qToXSUd5vgKVBmqQH/O/eQiy35igGGW/FwQsoXo9Zpl4Q9GuJU2W6qiuR5CiOONzDxMU3+1OeUJEIUgvZcUSRRHvPiUwR08yKfJV64ozXXDvTQ3vio+1pjgX30faUpehUD+Al1Cvpo84Se/WWD0Dd56jnyADe71ayVcgG0Irwrf8Y9QSrPpkIB7+vmVw/AeV4IVLsVMIwe6aNT63FwOcR/V5+fSZoPMjkZYJOudtcc6xL2ZZ76KjKYPONvGCZ/KExbEpm77rib1PtieIdNv09Bk/aEd6GdWvjHRWrL6BCxFV/0jgXP8F&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <rect x="0" y="0" width="320" height="320" fill="#f5f5f5" stroke="#666666" pointer-events="all"/>
+    <path d="M 160 160 L 160 126.37" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>
+    <path d="M 160 121.12 L 163.5 128.12 L 160 126.37 L 156.5 128.12 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>
+    <path d="M 157 160 L 126.37 160" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>
+    <ellipse cx="160" cy="160" rx="3" ry="3" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" pointer-events="none"/>
+    <path d="M 121.12 160 L 128.12 156.5 L 126.37 160 L 128.12 163.5 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>
+    <path d="M 190 200 L 160 320" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <path d="M 190 200 L 40.32 319.68" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <path d="M 190 200 L 0 240" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <path d="M 190 200 L 0 160" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <path d="M 190 200 L 280 240" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <path d="M 190 200 L 190 166.37" fill="none" stroke="#660033" stroke-miterlimit="10" pointer-events="none"/>
+    <path d="M 190 161.12 L 193.5 168.12 L 190 166.37 L 186.5 168.12 Z" fill="#660033" stroke="#660033" stroke-miterlimit="10" pointer-events="none"/>
+    <path d="M 187 200 L 156.37 200" fill="none" stroke="#660033" stroke-miterlimit="10" pointer-events="none"/>
+    <ellipse cx="190" cy="200" rx="3" ry="3" fill="#660033" stroke="#660033" pointer-events="none"/>
+    <path d="M 151.12 200 L 158.12 196.5 L 156.37 200 L 158.12 203.5 Z" fill="#660033" stroke="#660033" stroke-miterlimit="10" pointer-events="none"/>
+    <path d="M 190 200 L 280 320" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 215px; margin-left: 210px;">
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: nowrap;">
+                <font color="#660033" style="background-color: rgb(255, 255, 255);">scan_origin_frame</font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="210" y="219" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="12px" text-anchor="middle">scan_origin_frame</text>
+      </switch>
+    </g>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 175px; margin-left: 100px;">
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: nowrap;">
+                <span style="background-color: rgb(255, 255, 255);">gridmap_origin_frame</span>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="100" y="179" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="12px" text-anchor="middle">gridmap_origin_frame</text>
+      </switch>
+    </g>
+    <path d="M 190 200 L 230 160" fill="none" stroke="#660033" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="none"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 345px; margin-left: 160px;">
+            <div data-drawio-colors="color: #660033; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(102, 0, 51); line-height: 1.2; pointer-events: none; white-space: nowrap;">
+                <font color="#000000">gridmap_origin = center of the gridmap</font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="160" y="349" fill="#660033" font-family="Helvetica" font-size="12px" text-anchor="middle">gridmap_origin = center of the gridmap</text>
+      </switch>
+    </g>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Text is not SVG - cannot display</text>
+    </a>
+  </switch>
+</svg>

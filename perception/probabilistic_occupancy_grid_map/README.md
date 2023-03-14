@@ -9,7 +9,9 @@ This package outputs the probability of having an obstacle as occupancy grid map
 
 Occupancy grid map is generated on `map_frame`, and grid orientation is fixed.
 
-You may need to choose `output_frame` which means grid map origin. Default is `base_link`, but your main LiDAR sensor frame (e.g. `velodyne_top` in sample_vehicle) would be the better choice.
+You may need to choose `scan_origin_frame` and `gridmap_origin_frame` which means sensor origin and gridmap origin respectively. Especially, set your main LiDAR sensor frame (e.g. `velodyne_top` in sample_vehicle) as a `scan_origin_frame` would result in better performance.
+
+![image_for_frame_parameter_visualization](./image/gridmap_frame_settings.drawio.svg)
 
 ### Each config paramters
 
@@ -21,7 +23,8 @@ Config parameters are managed in `config/*.yaml` and here shows its outline.
 | --------------------------------- | ------------- |
 | map_frame                         | "map"         |
 | base_link_frame                   | "base_link"   |
-| output_frame                      | "base_link"   |
+| scan_origin_frame                 | "base_link"   |
+| gridmap_origin_frame              | "base_link"   |
 | use_height_filter                 | true          |
 | enable_single_frame_mode          | false         |
 | map_length                        | 100.0 [m]     |
@@ -40,7 +43,8 @@ Config parameters are managed in `config/*.yaml` and here shows its outline.
 | enable_single_frame_mode | false         |
 | map_frame                | "map"         |
 | base_link_frame          | "base_link"   |
-| output_frame             | "base_link"   |
+| scan_origin_frame        | "base_link"   |
+| gridmap_origin_frame     | "base_link"   |
 
 ## References/External links
 

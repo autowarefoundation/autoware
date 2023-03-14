@@ -48,4 +48,5 @@ rclcpp_components_register_node(laserscan_based_occupancy_grid_map
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
+    config
 )

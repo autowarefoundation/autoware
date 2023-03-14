@@ -2,8 +2,10 @@
   ros__parameters:
     map_frame: "map"
     base_link_frame: "base_link"
-    output_frame: "base_link"
-    # using top of the main lidar frame is appropriate. ex) velodyne_top
+    # center of the grid map
+    gridmap_origin_frame: "base_link"
+    # ray-tracing center: main sensor frame is preferable like: "velodyne_top"
+    scan_origin_frame: "base_link"
 
     use_height_filter: true
     enable_single_frame_mode: false

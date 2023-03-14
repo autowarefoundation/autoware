@@ -81,6 +81,30 @@ void transformPointcloud(
   output.header.stamp = input.header.stamp;
   output.header.frame_id = "";
 }
+
+/**
+ * @brief Get the Inverse Pose object
+ *
+ * @param input
+ * @return geometry_msgs::msg::Pose inverted pose
+ */
+geometry_msgs::msg::Pose getInversePose(const geometry_msgs::msg::Pose & pose)
+{
+  tf2::Vector3 position(pose.position.x, pose.position.y, pose.position.z);
+  tf2::Quaternion orientation(
+    pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+  tf2::Transform tf(orientation, position);
+  const auto inv_tf = tf.inverse();
+  geometry_msgs::msg::Pose inv_pose;
+  inv_pose.position.x = inv_tf.getOrigin().x();
+  inv_pose.position.y = inv_tf.getOrigin().y();
+  inv_pose.position.z = inv_tf.getOrigin().z();
+  inv_pose.orientation.x = inv_tf.getRotation().x();
+  inv_pose.orientation.y = inv_tf.getRotation().y();
+  inv_pose.orientation.z = inv_tf.getRotation().z();
+  inv_pose.orientation.w = inv_tf.getRotation().w();
+  return inv_pose;
+}
 }  // namespace
 
 namespace costmap_2d
@@ -165,22 +189,28 @@ void OccupancyGridMap::updateOrigin(double new_origin_x, double new_origin_y)
  *
  * @param raw_pointcloud raw point cloud on a certain frame (usually base_link)
  * @param obstacle_pointcloud raw point cloud on a certain frame (usually base_link)
- * @param robot_pose frame of point cloud (usually base_link)
- * @param gridmap_origin manually chosen grid map origin frame
+ * @param robot_pose frame of the input point cloud (usually base_link)
+ * @param scan_origin manually chosen grid map origin frame
  */
 void OccupancyGridMap::updateWithPointCloud(
   const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
-  const Pose & robot_pose, const Pose & gridmap_origin)
+  const Pose & robot_pose, const Pose & scan_origin)
 {
   constexpr double min_angle = tier4_autoware_utils::deg2rad(-180.0);
   constexpr double max_angle = tier4_autoware_utils::deg2rad(180.0);
   constexpr double angle_increment = tier4_autoware_utils::deg2rad(0.1);
   const size_t angle_bin_size = ((max_angle - min_angle) / angle_increment) + size_t(1 /*margin*/);
 
-  // Transform to map frame
-  PointCloud2 trans_raw_pointcloud, trans_obstacle_pointcloud;
-  transformPointcloud(raw_pointcloud, robot_pose, trans_raw_pointcloud);
-  transformPointcloud(obstacle_pointcloud, robot_pose, trans_obstacle_pointcloud);
+  // Transform from base_link to map frame
+  PointCloud2 map_raw_pointcloud, map_obstacle_pointcloud;  // point cloud in map frame
+  transformPointcloud(raw_pointcloud, robot_pose, map_raw_pointcloud);
+  transformPointcloud(obstacle_pointcloud, robot_pose, map_obstacle_pointcloud);
+
+  // Transform from map frame to scan frame
+  PointCloud2 scan_raw_pointcloud, scan_obstacle_pointcloud;  // point cloud in scan frame
+  const auto scan2map_pose = getInversePose(scan_origin);     // scan -> map transform pose
+  transformPointcloud(map_raw_pointcloud, scan2map_pose, scan_raw_pointcloud);
+  transformPointcloud(map_obstacle_pointcloud, scan2map_pose, scan_obstacle_pointcloud);
 
   // Create angle bins
   struct BinInfo
@@ -198,17 +228,18 @@ void OccupancyGridMap::updateWithPointCloud(
   std::vector</*angle bin*/ std::vector<BinInfo>> raw_pointcloud_angle_bins;
   obstacle_pointcloud_angle_bins.resize(angle_bin_size);
   raw_pointcloud_angle_bins.resize(angle_bin_size);
-  for (PointCloud2ConstIterator<float> iter_x(raw_pointcloud, "x"), iter_y(raw_pointcloud, "y"),
-       iter_wx(trans_raw_pointcloud, "x"), iter_wy(trans_raw_pointcloud, "y");
+  for (PointCloud2ConstIterator<float> iter_x(scan_raw_pointcloud, "x"),
+       iter_y(scan_raw_pointcloud, "y"), iter_wx(map_raw_pointcloud, "x"),
+       iter_wy(map_raw_pointcloud, "y");
        iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_wx, ++iter_wy) {
     const double angle = atan2(*iter_y, *iter_x);
     const int angle_bin_index = (angle - min_angle) / angle_increment;
     raw_pointcloud_angle_bins.at(angle_bin_index)
       .push_back(BinInfo(std::hypot(*iter_y, *iter_x), *iter_wx, *iter_wy));
   }
-  for (PointCloud2ConstIterator<float> iter_x(obstacle_pointcloud, "x"),
-       iter_y(obstacle_pointcloud, "y"), iter_wx(trans_obstacle_pointcloud, "x"),
-       iter_wy(trans_obstacle_pointcloud, "y");
+  for (PointCloud2ConstIterator<float> iter_x(scan_obstacle_pointcloud, "x"),
+       iter_y(scan_obstacle_pointcloud, "y"), iter_wx(map_obstacle_pointcloud, "x"),
+       iter_wy(map_obstacle_pointcloud, "y");
        iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_wx, ++iter_wy) {
     const double angle = atan2(*iter_y, *iter_x);
     int angle_bin_index = (angle - min_angle) / angle_increment;
@@ -248,7 +279,7 @@ void OccupancyGridMap::updateWithPointCloud(
                        : obstacle_pointcloud_angle_bin.back();
     }
     raytrace(
-      gridmap_origin.position.x, gridmap_origin.position.y, end_distance.wx, end_distance.wy,
+      scan_origin.position.x, scan_origin.position.y, end_distance.wx, end_distance.wy,
       occupancy_cost_value::FREE_SPACE);
   }
 

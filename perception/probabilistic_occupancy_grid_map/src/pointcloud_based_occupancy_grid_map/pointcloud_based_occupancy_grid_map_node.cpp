@@ -93,6 +93,18 @@ geometry_msgs::msg::Pose getPose(
   pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
   return pose;
 }
+
+geometry_msgs::msg::Pose getPose(
+  const builtin_interfaces::msg::Time & stamp, const tf2_ros::Buffer & tf2,
+  const std::string & source_frame, const std::string & target_frame)
+{
+  geometry_msgs::msg::Pose pose;
+  geometry_msgs::msg::TransformStamped tf_stamped;
+  tf_stamped =
+    tf2.lookupTransform(target_frame, source_frame, stamp, rclcpp::Duration::from_seconds(0.5));
+  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
+  return pose;
+}
 }  // namespace
 
 namespace occupancy_grid_map
@@ -111,7 +123,8 @@ PointcloudBasedOccupancyGridMapNode::PointcloudBasedOccupancyGridMapNode(
   /* params */
   map_frame_ = declare_parameter("map_frame", "map");
   base_link_frame_ = declare_parameter("base_link_frame", "base_link");
-  output_frame_ = declare_parameter("output_frame", "base_link");
+  gridmap_origin_frame_ = declare_parameter("gridmap_origin_frame", "base_link");
+  scan_origin_frame_ = declare_parameter("scan_origin_frame", "base_link");
   use_height_filter_ = declare_parameter("use_height_filter", true);
   enable_single_frame_mode_ = declare_parameter("enable_single_frame_mode", false);
   const double map_length{declare_parameter("map_length", 100.0)};
@@ -174,12 +187,11 @@ void PointcloudBasedOccupancyGridMapNode::onPointcloudWithObstacleAndRaw(
   // Get from map to sensor frame pose
   Pose robot_pose{};
   Pose gridmap_origin{};
+  Pose scan_origin{};
   try {
     robot_pose = getPose(input_raw_msg->header, *tf2_, map_frame_);
-    geometry_msgs::msg::TransformStamped tf_stamped;
-    tf_stamped = tf2_->lookupTransform(
-      map_frame_, output_frame_, input_raw_msg->header.stamp, rclcpp::Duration::from_seconds(0.5));
-    gridmap_origin = tier4_autoware_utils::transform2pose(tf_stamped.transform);
+    gridmap_origin = getPose(input_raw_msg->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
+    scan_origin = getPose(input_raw_msg->header.stamp, *tf2_, scan_origin_frame_, map_frame_);
   } catch (tf2::TransformException & ex) {
     RCLCPP_WARN_STREAM(get_logger(), ex.what());
     return;
@@ -194,7 +206,7 @@ void PointcloudBasedOccupancyGridMapNode::onPointcloudWithObstacleAndRaw(
     gridmap_origin.position.x - single_frame_occupancy_grid_map.getSizeInMetersX() / 2,
     gridmap_origin.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
   single_frame_occupancy_grid_map.updateWithPointCloud(
-    filtered_raw_pc, filtered_obstacle_pc, robot_pose, gridmap_origin);
+    filtered_raw_pc, filtered_obstacle_pc, robot_pose, scan_origin);
 
   if (enable_single_frame_mode_) {
     // publish

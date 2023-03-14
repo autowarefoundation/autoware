@@ -14,6 +14,7 @@
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import OpaqueFunction
 from launch.actions import SetLaunchConfiguration
 from launch.conditions import IfCondition
 from launch.conditions import UnlessCondition
@@ -21,22 +22,19 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+import yaml
 
 
-def generate_launch_description():
-    def add_launch_arg(name: str, default_value=None):
-        return DeclareLaunchArgument(name, default_value=default_value)
-
-    set_container_executable = SetLaunchConfiguration(
-        "container_executable",
-        "component_container",
-        condition=UnlessCondition(LaunchConfiguration("use_multithread")),
+def launch_setup(context, *args, **kwargs):
+    # load parameter files
+    param_file = LaunchConfiguration("param_file").perform(context)
+    with open(param_file, "r") as f:
+        laserscan_based_occupancy_grid_map_node_params = yaml.safe_load(f)["/**"]["ros__parameters"]
+    laserscan_based_occupancy_grid_map_node_params["input_obstacle_pointcloud"] = bool(
+        LaunchConfiguration("input_obstacle_pointcloud").perform(context)
     )
-
-    set_container_mt_executable = SetLaunchConfiguration(
-        "container_executable",
-        "component_container_mt",
-        condition=IfCondition(LaunchConfiguration("use_multithread")),
+    laserscan_based_occupancy_grid_map_node_params["input_obstacle_and_raw_pointcloud"] = bool(
+        LaunchConfiguration("input_obstacle_and_raw_pointcloud").perform(context)
     )
 
     composable_nodes = [
@@ -53,7 +51,9 @@ def generate_launch_description():
             ],
             parameters=[
                 {
-                    "target_frame": "base_link",  # Leave disabled to output scan in pointcloud frame
+                    "target_frame": laserscan_based_occupancy_grid_map_node_params[
+                        "scan_origin_frame"
+                    ],  # Leave disabled to output scan in pointcloud frame
                     "transform_tolerance": 0.01,
                     "min_height": 0.0,
                     "max_height": 2.0,
@@ -85,16 +85,7 @@ def generate_launch_description():
                 ("~/input/raw_pointcloud", LaunchConfiguration("input/raw_pointcloud")),
                 ("~/output/occupancy_grid_map", LaunchConfiguration("output")),
             ],
-            parameters=[
-                {
-                    "map_resolution": 0.5,
-                    "use_height_filter": True,
-                    "input_obstacle_pointcloud": LaunchConfiguration("input_obstacle_pointcloud"),
-                    "input_obstacle_and_raw_pointcloud": LaunchConfiguration(
-                        "input_obstacle_and_raw_pointcloud"
-                    ),
-                }
-            ],
+            parameters=[laserscan_based_occupancy_grid_map_node_params],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         ),
     ]
@@ -115,6 +106,25 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration("use_pointcloud_container")),
     )
 
+    return [occupancy_grid_map_container, load_composable_nodes]
+
+
+def generate_launch_description():
+    def add_launch_arg(name: str, default_value=None):
+        return DeclareLaunchArgument(name, default_value=default_value)
+
+    set_container_executable = SetLaunchConfiguration(
+        "container_executable",
+        "component_container",
+        condition=UnlessCondition(LaunchConfiguration("use_multithread")),
+    )
+
+    set_container_mt_executable = SetLaunchConfiguration(
+        "container_executable",
+        "component_container_mt",
+        condition=IfCondition(LaunchConfiguration("use_multithread")),
+    )
+
     return LaunchDescription(
         [
             add_launch_arg("use_multithread", "false"),
@@ -128,11 +138,11 @@ def generate_launch_description():
             add_launch_arg("output/stixel", "virtual_scan/stixel"),
             add_launch_arg("input_obstacle_pointcloud", "false"),
             add_launch_arg("input_obstacle_and_raw_pointcloud", "true"),
-            add_launch_arg("use_pointcloud_container", "False"),
+            add_launch_arg("param_file", "config/laserscan_based_occupancy_grid_map.param.yaml"),
+            add_launch_arg("use_pointcloud_container", "false"),
             add_launch_arg("container_name", "occupancy_grid_map_container"),
             set_container_executable,
             set_container_mt_executable,
-            occupancy_grid_map_container,
-            load_composable_nodes,
         ]
+        + [OpaqueFunction(function=launch_setup)]
     )
