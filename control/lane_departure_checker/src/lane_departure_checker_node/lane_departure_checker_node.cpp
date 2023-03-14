@@ -183,9 +183,6 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
 
   updater_.add("trajectory_deviation", this, &LaneDepartureCheckerNode::checkTrajectoryDeviation);
 
-  // Wait for first self pose
-  self_pose_listener_.waitForFirstPose();
-
   // Timer
   const auto period_ns = rclcpp::Rate(node_param_.update_rate).period();
   timer_ = rclcpp::create_timer(
@@ -221,11 +218,6 @@ void LaneDepartureCheckerNode::onPredictedTrajectory(const Trajectory::ConstShar
 
 bool LaneDepartureCheckerNode::isDataReady()
 {
-  if (!current_pose_) {
-    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting for current_pose...");
-    return false;
-  }
-
   if (!current_odom_) {
     RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting for current_twist msg...");
     return false;
@@ -261,7 +253,7 @@ bool LaneDepartureCheckerNode::isDataTimeout()
   const auto now = this->now();
 
   constexpr double th_pose_timeout = 1.0;
-  const auto pose_time_diff = rclcpp::Time(current_pose_->header.stamp) - now;
+  const auto pose_time_diff = rclcpp::Time(current_odom_->header.stamp) - now;
   if (pose_time_diff.seconds() > th_pose_timeout) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "pose is timeout...");
     return true;
@@ -292,8 +284,6 @@ void LaneDepartureCheckerNode::onTimer()
   std::map<std::string, double> processing_time_map;
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("Total");
-
-  current_pose_ = self_pose_listener_.getCurrentPose();
 
   if (!isDataReady()) {
     return;
@@ -337,7 +327,6 @@ void LaneDepartureCheckerNode::onTimer()
   processing_time_map["Node: getRouteLanelets"] = stop_watch.toc(true);
 
   input_.current_odom = current_odom_;
-  input_.current_pose = current_pose_;
   input_.lanelet_map = lanelet_map_;
   input_.route = route_;
   input_.route_lanelets = route_lanelets_;
@@ -471,7 +460,7 @@ visualization_msgs::msg::MarkerArray LaneDepartureCheckerNode::createMarkerArray
 
   visualization_msgs::msg::MarkerArray marker_array;
 
-  const auto base_link_z = current_pose_->pose.position.z;
+  const auto base_link_z = current_odom_->pose.pose.position.z;
 
   if (node_param_.visualize_lanelet) {
     // Route Lanelets

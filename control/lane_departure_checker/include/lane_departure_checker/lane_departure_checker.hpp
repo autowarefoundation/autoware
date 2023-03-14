@@ -66,7 +66,6 @@ struct Param
 
 struct Input
 {
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose{};
   nav_msgs::msg::Odometry::ConstSharedPtr current_odom{};
   lanelet::LaneletMapPtr lanelet_map{};
   LaneletRoute::ConstSharedPtr route{};

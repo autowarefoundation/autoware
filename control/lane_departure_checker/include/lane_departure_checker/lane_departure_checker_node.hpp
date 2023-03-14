@@ -23,7 +23,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/ros/processing_time_publisher.hpp>
-#include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
@@ -61,7 +60,6 @@ public:
 
 private:
   // Subscriber
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
   rclcpp::Subscription<HADMapBin>::SharedPtr sub_lanelet_map_bin_;
   rclcpp::Subscription<LaneletRoute>::SharedPtr sub_route_;
@@ -69,7 +67,6 @@ private:
   rclcpp::Subscription<Trajectory>::SharedPtr sub_predicted_trajectory_;
 
   // Data Buffer
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
   nav_msgs::msg::Odometry::ConstSharedPtr current_odom_;
   lanelet::LaneletMapPtr lanelet_map_;
   lanelet::ConstLanelets shoulder_lanelets_;

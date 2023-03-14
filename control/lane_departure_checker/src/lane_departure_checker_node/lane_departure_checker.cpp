@@ -100,7 +100,7 @@ Output LaneDepartureChecker::update(const Input & input)
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
 
   output.trajectory_deviation = calcTrajectoryDeviation(
-    *input.reference_trajectory, input.current_pose->pose, param_.ego_nearest_dist_threshold,
+    *input.reference_trajectory, input.current_odom->pose.pose, param_.ego_nearest_dist_threshold,
     param_.ego_nearest_yaw_threshold);
   output.processing_time_map["calcTrajectoryDeviation"] = stop_watch.toc(true);
 
