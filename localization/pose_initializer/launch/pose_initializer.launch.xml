@@ -1,20 +1,12 @@
 <launch>
+  <arg name="common_config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer_common.param.yaml"/>
   <arg name="config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer.param.yaml"/>
-  <arg name="gnss_enabled"/>
-  <arg name="ndt_enabled"/>
-  <arg name="ekf_enabled"/>
-  <arg name="stop_check_enabled"/>
 
   <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
+    <param from="$(var common_config_file)"/>
     <param from="$(var config_file)"/>
-    <param name="ekf_enabled" value="$(var ekf_enabled)"/>
-    <param name="ndt_enabled" value="$(var ndt_enabled)"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
-    <param name="stop_check_enabled" value="$(var stop_check_enabled)"/>
-    <param name="stop_check_duration" value="3.0"/>
     <remap from="stop_check_twist" to="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
-    <param name="gnss_enabled" value="$(var gnss_enabled)"/>
-    <param name="gnss_pose_timeout" value="3.0"/>
     <remap from="gnss_pose_cov" to="/sensing/gnss/pose_with_covariance"/>
     <remap from="pose_reset" to="/initialpose3d"/>
     <remap from="ekf_trigger_node" to="/localization/pose_estimator/trigger_node"/>

@@ -21,7 +21,7 @@
 
   <arg name="launch_system_monitor" default="true" description="launch system monitor"/>
   <arg name="launch_dummy_diag_publisher" description="launch dummy diag publisher"/>
-  <arg name="run_mode" default="online" description="options: online, planning_simulation"/>
+  <arg name="run_mode" default="online" description="options: online, logging_simulation, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
 
   <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
@@ -66,6 +66,7 @@
     <!-- Error Monitor -->
     <group>
       <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+      <let name="config_file" value="$(var system_error_monitor_param_path)" if="$(eval &quot;'$(var run_mode)'=='logging_simulation'&quot;)"/>
       <let name="config_file" value="$(var system_error_monitor_planning_simulator_param_path)" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
       <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
         <arg name="config_file" value="$(var config_file)"/>

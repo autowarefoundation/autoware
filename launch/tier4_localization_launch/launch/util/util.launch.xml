@@ -14,10 +14,8 @@
   <!-- pose_initializer -->
   <group>
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-      <arg name="gnss_enabled" value="true"/>
-      <arg name="ndt_enabled" value="true"/>
-      <arg name="ekf_enabled" value="true"/>
-      <arg name="stop_check_enabled" value="true"/>
+      <arg name="common_config_file" value="$(var pose_initializer_common_param_path)"/>
+      <arg name="config_file" value="$(var pose_initializer_param_path)"/>
     </include>
   </group>
 
