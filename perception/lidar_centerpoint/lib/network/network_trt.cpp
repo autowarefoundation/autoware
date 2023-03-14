@@ -39,9 +39,8 @@ bool VoxelEncoderTRT::setProfile(
 }
 
 HeadTRT::HeadTRT(
-  const std::vector<std::size_t> & out_channel_sizes, const CenterPointConfig & config,
-  const bool verbose)
-: TensorRTWrapper(config, verbose), out_channel_sizes_(out_channel_sizes)
+  const std::vector<std::size_t> & out_channel_sizes, const CenterPointConfig & config)
+: TensorRTWrapper(config), out_channel_sizes_(out_channel_sizes)
 {
 }
 

@@ -35,7 +35,7 @@ CenterPointTRT::CenterPointTRT(
   post_proc_ptr_ = std::make_unique<PostProcessCUDA>(config_);
 
   // encoder
-  encoder_trt_ptr_ = std::make_unique<VoxelEncoderTRT>(config_, verbose_);
+  encoder_trt_ptr_ = std::make_unique<VoxelEncoderTRT>(config_);
   encoder_trt_ptr_->init(
     encoder_param.onnx_path(), encoder_param.engine_path(), encoder_param.trt_precision());
   encoder_trt_ptr_->context_->setBindingDimensions(
@@ -47,7 +47,7 @@ CenterPointTRT::CenterPointTRT(
   std::vector<std::size_t> out_channel_sizes = {
     config_.class_size_,        config_.head_out_offset_size_, config_.head_out_z_size_,
     config_.head_out_dim_size_, config_.head_out_rot_size_,    config_.head_out_vel_size_};
-  head_trt_ptr_ = std::make_unique<HeadTRT>(out_channel_sizes, config_, verbose_);
+  head_trt_ptr_ = std::make_unique<HeadTRT>(out_channel_sizes, config_);
   head_trt_ptr_->init(head_param.onnx_path(), head_param.engine_path(), head_param.trt_precision());
   head_trt_ptr_->context_->setBindingDimensions(
     0, nvinfer1::Dims4(

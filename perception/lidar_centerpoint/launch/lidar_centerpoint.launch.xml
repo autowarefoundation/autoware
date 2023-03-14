@@ -8,6 +8,7 @@
   <arg name="class_remapper_param_path" default="$(find-pkg-share lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
   <arg name="score_threshold" default="0.35"/>
   <arg name="has_twist" default="false"/>
+  <arg name="build_only" default="false" description="shutdown node after TensorRT engine file is built"/>
 
   <node pkg="lidar_centerpoint" exec="lidar_centerpoint_node" name="lidar_centerpoint" output="screen">
     <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
@@ -21,6 +22,7 @@
     <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
     <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
     <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
+    <param name="build_only" value="$(var build_only)"/>
     <param from="$(var model_param_path)"/>
     <param from="$(var class_remapper_param_path)"/>
   </node>

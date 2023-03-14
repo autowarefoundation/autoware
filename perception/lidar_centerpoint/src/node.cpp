@@ -121,6 +121,11 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
     stop_watch_ptr_->tic("cyclic_time");
     stop_watch_ptr_->tic("processing_time");
   }
+
+  if (this->declare_parameter("build_only", false)) {
+    RCLCPP_INFO(this->get_logger(), "TensorRT engine is built and shutdown node.");
+    rclcpp::shutdown();
+  }
 }
 
 void LidarCenterPointNode::pointCloudCallback(

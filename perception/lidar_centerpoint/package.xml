@@ -19,6 +19,7 @@
   <depend>python3-open3d</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>tensorrt_common</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tier4_autoware_utils</depend>

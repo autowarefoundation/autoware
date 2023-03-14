@@ -43,6 +43,7 @@ We trained the models using <https://github.com/open-mmlab/mmdetection3d>.
 | `nms_iou_target_class_names`    | list[string] | -             | target classes for IoU-based Non Maximum Suppression          |
 | `nms_iou_search_distance_2d`    | double       | -             | If two objects are farther than the value, NMS isn't applied. |
 | `nms_iou_threshold`             | double       | -             | IoU threshold for the IoU-based Non Maximum Suppression       |
+| `build_only`                    | bool         | `false`       | shutdown the node after TensorRT engine file is built         |
 
 ## Assumptions / Known limits
 

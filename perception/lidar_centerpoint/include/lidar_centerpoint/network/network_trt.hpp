@@ -38,9 +38,7 @@ class HeadTRT : public TensorRTWrapper
 public:
   using TensorRTWrapper::TensorRTWrapper;
 
-  HeadTRT(
-    const std::vector<std::size_t> & out_channel_sizes, const CenterPointConfig & config,
-    const bool verbose);
+  HeadTRT(const std::vector<std::size_t> & out_channel_sizes, const CenterPointConfig & config);
 
 protected:
   bool setProfile(

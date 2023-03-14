@@ -81,7 +81,6 @@ protected:
   std::unique_ptr<PostProcessCUDA> post_proc_ptr_{nullptr};
   cudaStream_t stream_{nullptr};
 
-  bool verbose_{false};
   std::size_t class_size_{0};
   CenterPointConfig config_;
   std::size_t num_voxels_{0};
