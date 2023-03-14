@@ -2691,4 +2691,16 @@ lanelet::ConstLanelets getLaneletsFromPath(
 
   return lanelets;
 }
+
+double calcLateralDistanceToLanelet(
+  const lanelet::ConstLanelets & lanelet_sequence, const geometry_msgs::msg::Pose & pose)
+{
+  lanelet::ConstLanelet closest_lanelet;
+  lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lanelet);
+  const auto & centerline_2d = lanelet::utils::to2D(closest_lanelet.centerline());
+
+  const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(pose.position);
+  return lanelet::geometry::signedDistance(
+    centerline_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
+}
 }  // namespace behavior_path_planner::util

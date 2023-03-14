@@ -373,13 +373,13 @@ std::pair<bool, bool> getLaneChangePaths(
       std::max(prepare_speed, minimum_lane_change_velocity));
 #endif
 
-    const auto estimated_shift_length = lanelet::utils::getArcCoordinates(
+    const auto estimated_shift_length = util::calcLateralDistanceToLanelet(
       target_lanelets, prepare_segment_reference.points.front().point.pose);
 
     const auto [lane_changing_speed, lane_changing_distance] =
       calcLaneChangingSpeedAndDistanceWhenDecelerate(
-        prepare_speed, estimated_shift_length.distance, acceleration, end_of_lane_dist,
-        common_parameter, parameter);
+        prepare_speed, estimated_shift_length, acceleration, end_of_lane_dist, common_parameter,
+        parameter);
 
     const auto lc_dist = LaneChangePhaseInfo{prepare_distance, lane_changing_distance};
 
