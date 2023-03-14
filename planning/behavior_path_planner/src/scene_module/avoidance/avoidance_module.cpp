@@ -1376,7 +1376,7 @@ void AvoidanceModule::generateTotalShiftLine(
   for (size_t i = 1; i < N; ++i) {
     bool has_object = false;
     for (const auto & al : avoid_lines) {
-      if (al.start_idx < i && i < al.end_idx) {
+      if (al.start_idx <= i && i <= al.end_idx) {
         has_object = true;
         break;
       }
