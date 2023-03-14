@@ -44,7 +44,7 @@ Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::DetectedObject &
 Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::TrackedObject & object);
 Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::PredictedObject & object);
 double getArea(const autoware_auto_perception_msgs::msg::Shape & shape);
-
+Polygon2d expandPolygon(const Polygon2d & input_polygon, const double offset);
 }  // namespace tier4_autoware_utils
 
 #endif  // TIER4_AUTOWARE_UTILS__GEOMETRY__BOOST_POLYGON_UTILS_HPP_

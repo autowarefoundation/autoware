@@ -259,3 +259,45 @@ TEST(boost_geometry, boost_getArea)
     EXPECT_DOUBLE_EQ(anti_clock_wise_area, x * y);
   }
 }
+
+TEST(boost_geometry, boost_expandPolygon)
+{
+  using tier4_autoware_utils::expandPolygon;
+
+  {  // box with a certain offset
+    Polygon2d box_poly{{{-1.0, -1.0}, {-1.0, 1.0}, {1.0, 1.0}, {1.0, -1.0}, {-1.0, -1.0}}};
+    const auto expanded_poly = expandPolygon(box_poly, 1.0);
+
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(0).x(), -2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(0).y(), -2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(1).x(), -2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(1).y(), 2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(2).x(), 2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(2).y(), 2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(3).x(), 2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(3).y(), -2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(4).x(), -2.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(4).y(), -2.0);
+  }
+
+  {  // box with no offset
+    Polygon2d box_poly{{{-1.0, -1.0}, {-1.0, 1.0}, {1.0, 1.0}, {1.0, -1.0}, {-1.0, -1.0}}};
+    const auto expanded_poly = expandPolygon(box_poly, 0.0);
+
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(0).x(), -1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(0).y(), -1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(1).x(), -1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(1).y(), 1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(2).x(), 1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(2).y(), 1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(3).x(), 1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(3).y(), -1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(4).x(), -1.0);
+    EXPECT_DOUBLE_EQ(expanded_poly.outer().at(4).y(), -1.0);
+  }
+
+  {  // empty polygon
+    Polygon2d empty_poly;
+    EXPECT_THROW(expandPolygon(empty_poly, 1.0), std::out_of_range);
+  }
+}

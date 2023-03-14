@@ -230,38 +230,6 @@ double calcDecelDistPlanType3(const double v0, const double a0, const double ja)
   return x1;
 }
 
-tier4_autoware_utils::Polygon2d expandPolygon(
-  const tier4_autoware_utils::Polygon2d & input_polygon, const double offset)
-{
-  // NOTE: There is a duplicated point.
-  const size_t num_points = input_polygon.outer().size() - 1;
-
-  tier4_autoware_utils::Polygon2d expanded_polygon;
-  for (size_t i = 0; i < num_points; ++i) {
-    const auto & curr_p = input_polygon.outer().at(i);
-    const auto & next_p = input_polygon.outer().at(i + 1);
-    const auto & prev_p =
-      i == 0 ? input_polygon.outer().at(num_points - 1) : input_polygon.outer().at(i - 1);
-
-    Eigen::Vector2d current_to_next(next_p.x() - curr_p.x(), next_p.y() - curr_p.y());
-    Eigen::Vector2d current_to_prev(prev_p.x() - curr_p.x(), prev_p.y() - curr_p.y());
-    current_to_next.normalize();
-    current_to_prev.normalize();
-
-    const Eigen::Vector2d offset_vector = (-current_to_next - current_to_prev).normalized();
-    const double theta = std::acos(offset_vector.dot(current_to_next));
-    const double scaled_offset = offset / std::sin(theta);
-    const Eigen::Vector2d offset_point =
-      Eigen::Vector2d(curr_p.x(), curr_p.y()) + offset_vector * scaled_offset;
-
-    expanded_polygon.outer().push_back(
-      tier4_autoware_utils::Point2d(offset_point.x(), offset_point.y()));
-  }
-
-  boost::geometry::correct(expanded_polygon);
-  return expanded_polygon;
-}
-
 boost::optional<geometry_msgs::msg::Point> intersect(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
   const geometry_msgs::msg::Point & p3, const geometry_msgs::msg::Point & p4)
@@ -834,7 +802,8 @@ Polygon2d createEnvelopePolygon(
   tf2::doTransform(
     toMsg(envelope_poly, closest_pose.position.z), envelope_ros_polygon, geometry_tf);
 
-  const auto expanded_polygon = expandPolygon(toPolygon2d(envelope_ros_polygon), envelope_buffer);
+  const auto expanded_polygon =
+    tier4_autoware_utils::expandPolygon(toPolygon2d(envelope_ros_polygon), envelope_buffer);
   return expanded_polygon;
 }
 
@@ -869,7 +838,8 @@ void generateDrivableArea(
     const auto & obj_pose = object.object.kinematics.initial_pose_with_covariance.pose;
     const double diff_poly_buffer = object.avoid_margin.get() - original_object_buffer -
                                     planner_data->parameters.vehicle_width / 2.0;
-    const auto obj_poly = expandPolygon(object.envelope_poly, diff_poly_buffer);
+    const auto obj_poly =
+      tier4_autoware_utils::expandPolygon(object.envelope_poly, diff_poly_buffer);
 
     // get edge points of the object
     const size_t nearest_path_idx = motion_utils::findNearestIndex(

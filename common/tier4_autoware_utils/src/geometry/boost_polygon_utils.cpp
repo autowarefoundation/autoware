@@ -210,4 +210,37 @@ double getArea(const autoware_auto_perception_msgs::msg::Shape & shape)
 
   throw std::logic_error("The shape type is not supported in tier4_autoware_utils.");
 }
+
+// NOTE: The number of vertices on the expanded polygon by boost::geometry::buffer
+//       is larger than the original one.
+//       This function fixes the issue.
+Polygon2d expandPolygon(const Polygon2d & input_polygon, const double offset)
+{
+  // NOTE: input_polygon is supposed to have a duplicated point.
+  const size_t num_points = input_polygon.outer().size() - 1;
+
+  Polygon2d expanded_polygon;
+  for (size_t i = 0; i < num_points; ++i) {
+    const auto & curr_p = input_polygon.outer().at(i);
+    const auto & next_p = input_polygon.outer().at(i + 1);
+    const auto & prev_p =
+      i == 0 ? input_polygon.outer().at(num_points - 1) : input_polygon.outer().at(i - 1);
+
+    Eigen::Vector2d current_to_next(next_p.x() - curr_p.x(), next_p.y() - curr_p.y());
+    Eigen::Vector2d current_to_prev(prev_p.x() - curr_p.x(), prev_p.y() - curr_p.y());
+    current_to_next.normalize();
+    current_to_prev.normalize();
+
+    const Eigen::Vector2d offset_vector = (-current_to_next - current_to_prev).normalized();
+    const double theta = std::acos(offset_vector.dot(current_to_next));
+    const double scaled_offset = offset / std::sin(theta);
+    const Eigen::Vector2d offset_point =
+      Eigen::Vector2d(curr_p.x(), curr_p.y()) + offset_vector * scaled_offset;
+
+    expanded_polygon.outer().push_back(Point2d(offset_point.x(), offset_point.y()));
+  }
+
+  boost::geometry::correct(expanded_polygon);
+  return expanded_polygon;
+}
 }  // namespace tier4_autoware_utils
