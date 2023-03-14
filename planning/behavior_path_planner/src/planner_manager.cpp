@@ -281,7 +281,7 @@ BehaviorModuleOutput PlannerManager::update(const std::shared_ptr<PlannerData> &
     if ((*itr)->getCurrentStatus() != ModuleStatus::RUNNING) {
       if (itr == approved_module_ptrs_.begin()) {
         // update root lanelet when the lane change is done.
-        if (name == "lane_change") {
+        if (name.find("lane_change") != std::string::npos) {
           root_lanelet_ = updateRootLanelet(data);
         }
 

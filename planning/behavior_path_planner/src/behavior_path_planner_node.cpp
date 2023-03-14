@@ -234,10 +234,23 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         "side_shift", create_publisher<Path>(path_reference_name_space + "side_shift", 1));
     }
 
-    if (p.config_lane_change.enable_module) {
-      const std::string module_topic = "lane_change";
+    if (p.config_lane_change_left.enable_module) {
+      const std::string module_topic = "lane_change_left";
       auto manager = std::make_shared<LaneChangeModuleManager>(
-        this, module_topic, p.config_lane_change, lane_change_param_ptr_);
+        this, module_topic, p.config_lane_change_left, lane_change_param_ptr_,
+        route_handler::Direction::LEFT);
+      planner_manager_->registerSceneModuleManager(manager);
+      path_candidate_publishers_.emplace(
+        module_topic, create_publisher<Path>(path_candidate_name_space + module_topic, 1));
+      path_reference_publishers_.emplace(
+        module_topic, create_publisher<Path>(path_reference_name_space + module_topic, 1));
+    }
+
+    if (p.config_lane_change_right.enable_module) {
+      const std::string module_topic = "lane_change_right";
+      auto manager = std::make_shared<LaneChangeModuleManager>(
+        this, module_topic, p.config_lane_change_right, lane_change_param_ptr_,
+        route_handler::Direction::RIGHT);
       planner_manager_->registerSceneModuleManager(manager);
       path_candidate_publishers_.emplace(
         module_topic, create_publisher<Path>(path_candidate_name_space + module_topic, 1));
@@ -316,12 +329,21 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   }
 
   {
-    const std::string ns = "lane_change.";
-    p.config_lane_change.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_lane_change.enable_simultaneous_execution =
+    const std::string ns = "lane_change_left.";
+    p.config_lane_change_left.enable_module = declare_parameter<bool>(ns + "enable_module");
+    p.config_lane_change_left.enable_simultaneous_execution =
       declare_parameter<bool>(ns + "enable_simultaneous_execution");
-    p.config_lane_change.priority = declare_parameter<int>(ns + "priority");
-    p.config_lane_change.max_module_size = declare_parameter<int>(ns + "max_module_size");
+    p.config_lane_change_left.priority = declare_parameter<int>(ns + "priority");
+    p.config_lane_change_left.max_module_size = declare_parameter<int>(ns + "max_module_size");
+  }
+
+  {
+    const std::string ns = "lane_change_right.";
+    p.config_lane_change_right.enable_module = declare_parameter<bool>(ns + "enable_module");
+    p.config_lane_change_right.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_lane_change_right.priority = declare_parameter<int>(ns + "priority");
+    p.config_lane_change_right.max_module_size = declare_parameter<int>(ns + "max_module_size");
   }
 
   {

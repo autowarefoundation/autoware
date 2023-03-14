@@ -1106,30 +1106,33 @@ std::vector<lanelet::ConstLanelets> RouteHandler::getPrecedingLaneletSequence(
 }
 
 bool RouteHandler::getLaneChangeTarget(
-  const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const
+  const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet,
+  const Direction direction) const
 {
   for (const auto & lanelet : lanelets) {
-    const int num = getNumLaneToPreferredLane(lanelet);
+    const int num = getNumLaneToPreferredLane(lanelet, direction);
     if (num == 0) {
       continue;
     }
 
-    if (num < 0) {
-      if (!!routing_graph_ptr_->right(lanelet)) {
-        const auto right_lanelet = routing_graph_ptr_->right(lanelet);
-        *target_lanelet = right_lanelet.get();
-        return true;
+    if (direction == Direction::NONE || direction == Direction::RIGHT) {
+      if (num < 0) {
+        if (!!routing_graph_ptr_->right(lanelet)) {
+          const auto right_lanelet = routing_graph_ptr_->right(lanelet);
+          *target_lanelet = right_lanelet.get();
+          return true;
+        }
       }
-      continue;
     }
 
-    if (num > 0) {
-      if (!!routing_graph_ptr_->left(lanelet)) {
-        const auto left_lanelet = routing_graph_ptr_->left(lanelet);
-        *target_lanelet = left_lanelet.get();
-        return true;
+    if (direction == Direction::NONE || direction == Direction::LEFT) {
+      if (num > 0) {
+        if (!!routing_graph_ptr_->left(lanelet)) {
+          const auto left_lanelet = routing_graph_ptr_->left(lanelet);
+          *target_lanelet = left_lanelet.get();
+          return true;
+        }
       }
-      continue;
     }
   }
 
@@ -1212,26 +1215,34 @@ lanelet::ConstLanelets RouteHandler::getClosestLaneletSequence(const Pose & pose
   return getLaneletSequence(lanelet);
 }
 
-int RouteHandler::getNumLaneToPreferredLane(const lanelet::ConstLanelet & lanelet) const
+int RouteHandler::getNumLaneToPreferredLane(
+  const lanelet::ConstLanelet & lanelet, const Direction direction) const
 {
-  int num = 0;
   if (exists(preferred_lanelets_, lanelet)) {
-    return num;
+    return 0;
   }
-  const auto & right_lanes =
-    lanelet::utils::query::getAllNeighborsRight(routing_graph_ptr_, lanelet);
-  for (const auto & right : right_lanes) {
-    num--;
-    if (exists(preferred_lanelets_, right)) {
-      return num;
+
+  if ((direction == Direction::NONE) || (direction == Direction::RIGHT)) {
+    int num{0};
+    const auto & right_lanes =
+      lanelet::utils::query::getAllNeighborsRight(routing_graph_ptr_, lanelet);
+    for (const auto & right : right_lanes) {
+      num--;
+      if (exists(preferred_lanelets_, right)) {
+        return num;
+      }
     }
   }
-  const auto & left_lanes = lanelet::utils::query::getAllNeighborsLeft(routing_graph_ptr_, lanelet);
-  num = 0;
-  for (const auto & left : left_lanes) {
-    num++;
-    if (exists(preferred_lanelets_, left)) {
-      return num;
+
+  if ((direction == Direction::NONE) || (direction == Direction::LEFT)) {
+    const auto & left_lanes =
+      lanelet::utils::query::getAllNeighborsLeft(routing_graph_ptr_, lanelet);
+    int num = 0;
+    for (const auto & left : left_lanes) {
+      num++;
+      if (exists(preferred_lanelets_, left)) {
+        return num;
+      }
     }
   }
 
@@ -1368,7 +1379,7 @@ lanelet::ConstLanelets RouteHandler::getLaneChangeTargetLanes(const Pose & pose)
 }
 
 double RouteHandler::getLaneChangeableDistance(
-  const Pose & current_pose, const LaneChangeDirection & direction) const
+  const Pose & current_pose, const Direction & direction) const
 {
   lanelet::ConstLanelet current_lane;
   if (!getClosestLaneletWithinRoute(current_pose, &current_lane)) {
@@ -1382,12 +1393,12 @@ double RouteHandler::getLaneChangeableDistance(
   double accumulated_distance = 0;
   for (const auto & lane : lanelet_sequence) {
     lanelet::ConstLanelet target_lane;
-    if (direction == LaneChangeDirection::RIGHT) {
+    if (direction == Direction::RIGHT) {
       if (!getRightLaneletWithinRoute(lane, &target_lane)) {
         break;
       }
     }
-    if (direction == LaneChangeDirection::LEFT) {
+    if (direction == Direction::LEFT) {
       if (!getLeftLaneletWithinRoute(lane, &target_lane)) {
         break;
       }

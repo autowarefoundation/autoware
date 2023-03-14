@@ -1163,4 +1163,14 @@ double calcLateralBufferForFiltering(const double vehicle_width, const double la
   return lateral_buffer + 0.5 * vehicle_width;
 }
 
+std::string getStrDirection(const std::string & name, const Direction direction)
+{
+  if (direction == Direction::LEFT) {
+    return name + "_left";
+  }
+  if (direction == Direction::RIGHT) {
+    return name + "_right";
+  }
+  return "";
+}
 }  // namespace behavior_path_planner::lane_change_utils

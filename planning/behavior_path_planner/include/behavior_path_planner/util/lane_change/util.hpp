@@ -45,6 +45,7 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using marker_utils::CollisionCheckDebug;
+using route_handler::Direction;
 using tier4_autoware_utils::Polygon2d;
 
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
@@ -161,6 +162,8 @@ LaneChangeTargetObjectIndices filterObjectIndices(
   const bool ignore_unknown_obj = false);
 
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
+
+std::string getStrDirection(const std::string name, const Direction direction);
 
 }  // namespace behavior_path_planner::lane_change_utils
 #endif  // BEHAVIOR_PATH_PLANNER__UTIL__LANE_CHANGE__UTIL_HPP_

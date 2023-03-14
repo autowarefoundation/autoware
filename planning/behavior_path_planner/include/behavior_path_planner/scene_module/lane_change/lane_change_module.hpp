@@ -45,6 +45,7 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using marker_utils::CollisionCheckDebug;
+using route_handler::Direction;
 using tier4_planning_msgs::msg::LaneChangeDebugMsg;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
@@ -59,8 +60,7 @@ public:
   LaneChangeModule(
     const std::string & name, rclcpp::Node & node,
     const std::shared_ptr<LaneChangeParameters> & parameters,
-    const std::shared_ptr<RTCInterface> & rtc_interface_left,
-    const std::shared_ptr<RTCInterface> & rtc_interface_right);
+    const std::shared_ptr<RTCInterface> & rtc_interface, Direction direction);
 #endif
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
@@ -75,13 +75,7 @@ public:
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
 
-#ifndef USE_OLD_ARCHITECTURE
-  void updateModuleParams(const std::shared_ptr<LaneChangeParameters> & parameters)
-  {
-    parameters_ = parameters;
-  }
-#endif
-
+#ifdef USE_OLD_ARCHITECTURE
   void publishRTCStatus() override
   {
     rtc_interface_left_->publishCooperateStatus(clock_->now());
@@ -110,6 +104,12 @@ public:
     rtc_interface_left_->unlockCommandUpdate();
     rtc_interface_right_->unlockCommandUpdate();
   }
+#else
+  void updateModuleParams(const std::shared_ptr<LaneChangeParameters> & parameters)
+  {
+    parameters_ = parameters;
+  }
+#endif
 
 private:
   std::shared_ptr<LaneChangeParameters> parameters_;
@@ -125,16 +125,21 @@ private:
   bool is_abort_path_approved_{false};
   bool is_abort_approval_requested_{false};
   bool is_abort_condition_satisfied_{false};
-  bool is_activated_ = false;
+  bool is_activated_{false};
 
+#ifdef USE_OLD_ARCHITECTURE
   std::shared_ptr<RTCInterface> rtc_interface_left_;
   std::shared_ptr<RTCInterface> rtc_interface_right_;
   UUID uuid_left_;
   UUID uuid_right_;
   UUID candidate_uuid_;
+#else
+  Direction direction_{Direction::NONE};
+#endif
 
   void resetParameters();
 
+#ifdef USE_OLD_ARCHITECTURE
   void waitApprovalLeft(const double start_distance, const double finish_distance)
   {
     rtc_interface_left_->updateCooperateStatus(
@@ -190,8 +195,8 @@ private:
       rtc_interface_right_->removeCooperateStatus(uuid_right_);
     }
   }
+#endif
 
-  lanelet::ConstLanelets get_original_lanes() const;
   PathWithLaneId getReferencePath() const;
   lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes, const double lane_change_lane_length) const;
