@@ -36,7 +36,11 @@ using EvalNode = planning_diagnostics::PlanningEvaluatorNode;
 using Trajectory = autoware_auto_planning_msgs::msg::Trajectory;
 using TrajectoryPoint = autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using Objects = autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_planning_msgs::msg::PoseWithUuidStamped;
 using diagnostic_msgs::msg::DiagnosticArray;
+using nav_msgs::msg::Odometry;
+
+constexpr double epsilon = 1e-6;
 
 class EvalTest : public ::testing::Test
 {
@@ -70,6 +74,10 @@ protected:
       dummy_node, "/planning_evaluator/input/reference_trajectory", 1);
     objects_pub_ =
       rclcpp::create_publisher<Objects>(dummy_node, "/planning_evaluator/input/objects", 1);
+    odom_pub_ =
+      rclcpp::create_publisher<Odometry>(dummy_node, "/planning_evaluator/input/odometry", 1);
+    modified_goal_pub_ = rclcpp::create_publisher<PoseWithUuidStamped>(
+      dummy_node, "/planning_evaluator/input/modified_goal", 1);
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(dummy_node);
     publishEgoPose(0.0, 0.0, 0.0);
@@ -139,28 +147,51 @@ protected:
     return metric_value_;
   }
 
-  void publishEgoPose(const double x, const double y, const double yaw)
+  double publishModifiedGoalAndGetMetric(const double x, const double y, const double yaw)
   {
-    geometry_msgs::msg::TransformStamped t;
+    metric_updated_ = false;
 
-    // Read message content and assign it to
-    // corresponding tf variables
-    t.header.stamp = dummy_node->now();
-    t.header.frame_id = "map";
-    t.child_frame_id = "base_link";
-
-    t.transform.translation.x = x;
-    t.transform.translation.y = y;
-    t.transform.translation.z = 0.0;
-
+    PoseWithUuidStamped goal;
+    goal.header.frame_id = "map";
+    goal.header.stamp = dummy_node->now();
+    goal.pose.position.x = x;
+    goal.pose.position.y = y;
+    goal.pose.position.z = 0.0;
     tf2::Quaternion q;
     q.setRPY(0.0, 0.0, yaw);
-    t.transform.rotation.x = q.x();
-    t.transform.rotation.y = q.y();
-    t.transform.rotation.z = q.z();
-    t.transform.rotation.w = q.w();
+    goal.pose.orientation.x = q.x();
+    goal.pose.orientation.y = q.y();
+    goal.pose.orientation.z = q.z();
+    goal.pose.orientation.w = q.w();
+    modified_goal_pub_->publish(goal);
 
-    tf_broadcaster_->sendTransform(t);
+    while (!metric_updated_) {
+      rclcpp::spin_some(eval_node);
+      rclcpp::spin_some(dummy_node);
+      rclcpp::sleep_for(std::chrono::milliseconds(100));
+    }
+    return metric_value_;
+  }
+
+  void publishEgoPose(const double x, const double y, const double yaw)
+  {
+    Odometry odom;
+    odom.header.frame_id = "map";
+    odom.header.stamp = dummy_node->now();
+    odom.pose.pose.position.x = x;
+    odom.pose.pose.position.y = y;
+    odom.pose.pose.position.z = 0.0;
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, yaw);
+    odom.pose.pose.orientation.x = q.x();
+    odom.pose.pose.orientation.y = q.y();
+    odom.pose.pose.orientation.z = q.z();
+    odom.pose.pose.orientation.w = q.w();
+
+    odom_pub_->publish(odom);
+    rclcpp::spin_some(eval_node);
+    rclcpp::spin_some(dummy_node);
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
 
   // Latest metric value
@@ -173,6 +204,8 @@ protected:
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_;
   rclcpp::Publisher<Trajectory>::SharedPtr ref_traj_pub_;
   rclcpp::Publisher<Objects>::SharedPtr objects_pub_;
+  rclcpp::Publisher<PoseWithUuidStamped>::SharedPtr modified_goal_pub_;
+  rclcpp::Publisher<Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<DiagnosticArray>::SharedPtr metric_sub_;
   // TF broadcaster
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -406,4 +439,30 @@ TEST_F(EvalTest, TestObstacleTTC)
   // if no exact collision point, last point before collision is used
   t.points[1].pose.position.x = 1.0;
   EXPECT_DOUBLE_EQ(publishTrajectoryAndGetMetric(t), 2.0);
+}
+
+TEST_F(EvalTest, TestModifiedGoalLongitudinalDeviation)
+{
+  setTargetMetric(planning_diagnostics::Metric::modified_goal_longitudinal_deviation);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(1.0, 0.0, 0.0), 1.0, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(1.0, 0.0, M_PI_2), 0.0, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(0.0, 1.0, 0.0), 0.0, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(0.0, 1.0, M_PI_2), 1.0, epsilon);
+}
+
+TEST_F(EvalTest, TestModifiedGoalLateralDeviation)
+{
+  setTargetMetric(planning_diagnostics::Metric::modified_goal_lateral_deviation);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(1.0, 0.0, 0.0), 0.0, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(1.0, 0.0, M_PI_2), 1.0, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(0.0, 1.0, 0.0), 1.0, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(0.0, 1.0, M_PI_2), 0.0, epsilon);
+}
+
+TEST_F(EvalTest, TestModifiedGoalYawDeviation)
+{
+  setTargetMetric(planning_diagnostics::Metric::modified_goal_yaw_deviation);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(0.0, 0.0, M_PI_2), M_PI_2, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(1.0, 1.0, -M_PI_2), M_PI_2, epsilon);
+  EXPECT_NEAR(publishModifiedGoalAndGetMetric(1.0, 1.0, -M_PI_4), M_PI_4, epsilon);
 }

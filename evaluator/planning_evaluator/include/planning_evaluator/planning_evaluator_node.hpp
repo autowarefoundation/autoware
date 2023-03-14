@@ -24,7 +24,9 @@
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 #include <array>
 #include <deque>
@@ -37,8 +39,10 @@ namespace planning_diagnostics
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::PoseWithUuidStamped;
 using diagnostic_msgs::msg::DiagnosticArray;
 using diagnostic_msgs::msg::DiagnosticStatus;
+using nav_msgs::msg::Odometry;
 
 /**
  * @brief Node for planning evaluation
@@ -48,6 +52,12 @@ class PlanningEvaluatorNode : public rclcpp::Node
 public:
   explicit PlanningEvaluatorNode(const rclcpp::NodeOptions & node_options);
   ~PlanningEvaluatorNode();
+
+  /**
+   * @brief callback on receiving an odometry
+   * @param [in] odometry_msg received odometry message
+   */
+  void onOdometry(const Odometry::ConstSharedPtr odometry_msg);
 
   /**
    * @brief callback on receiving a trajectory
@@ -68,9 +78,10 @@ public:
   void onObjects(const PredictedObjects::ConstSharedPtr objects_msg);
 
   /**
-   * @brief update the ego pose stored in the MetricsCalculator
+   * @brief callback on receiving a modified goal
+   * @param [in] modified_goal_msg received modified goal message
    */
-  void updateCalculatorEgoPose(const std::string & target_frame);
+  void onModifiedGoal(const PoseWithUuidStamped::ConstSharedPtr modified_goal_msg);
 
   /**
    * @brief publish the given metric statistic
@@ -80,11 +91,15 @@ public:
 
 private:
   static bool isFinite(const TrajectoryPoint & p);
+  void publishModifiedGoalDeviationMetrics();
 
   // ROS
   rclcpp::Subscription<Trajectory>::SharedPtr traj_sub_;
   rclcpp::Subscription<Trajectory>::SharedPtr ref_sub_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr objects_sub_;
+  rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr modified_goal_sub_;
+  rclcpp::Subscription<Odometry>::SharedPtr odom_sub_;
+
   rclcpp::Publisher<DiagnosticArray>::SharedPtr metrics_pub_;
   std::shared_ptr<tf2_ros::TransformListener> transform_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -99,6 +114,9 @@ private:
   std::vector<Metric> metrics_;
   std::deque<rclcpp::Time> stamps_;
   std::array<std::deque<Stat<double>>, static_cast<size_t>(Metric::SIZE)> metric_stats_;
+
+  Odometry::ConstSharedPtr ego_state_ptr_;
+  PoseWithUuidStamped::ConstSharedPtr modified_goal_ptr_;
 };
 }  // namespace planning_diagnostics
 

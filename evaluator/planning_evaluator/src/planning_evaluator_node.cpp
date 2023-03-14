@@ -40,6 +40,13 @@ PlanningEvaluatorNode::PlanningEvaluatorNode(const rclcpp::NodeOptions & node_op
 
   objects_sub_ = create_subscription<PredictedObjects>(
     "~/input/objects", 1, std::bind(&PlanningEvaluatorNode::onObjects, this, _1));
+
+  modified_goal_sub_ = create_subscription<PoseWithUuidStamped>(
+    "~/input/modified_goal", 1, std::bind(&PlanningEvaluatorNode::onModifiedGoal, this, _1));
+
+  odom_sub_ = create_subscription<Odometry>(
+    "~/input/odometry", 1, std::bind(&PlanningEvaluatorNode::onOdometry, this, _1));
+
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   transform_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
@@ -98,24 +105,6 @@ PlanningEvaluatorNode::~PlanningEvaluatorNode()
   }
 }
 
-void PlanningEvaluatorNode::updateCalculatorEgoPose(const std::string & target_frame)
-{
-  try {
-    const geometry_msgs::msg::TransformStamped transform =
-      tf_buffer_->lookupTransform(target_frame, ego_frame_str_, tf2::TimePointZero);
-    geometry_msgs::msg::Pose ego_pose;
-    ego_pose.position.x = transform.transform.translation.x;
-    ego_pose.position.y = transform.transform.translation.y;
-    ego_pose.position.z = transform.transform.translation.z;
-    ego_pose.orientation = transform.transform.rotation;
-    metrics_calculator_.setEgoPose(ego_pose);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_INFO(
-      this->get_logger(), "Cannot set ego pose: could not transform %s to %s: %s",
-      target_frame.c_str(), ego_frame_str_.c_str(), ex.what());
-  }
-}
-
 DiagnosticStatus PlanningEvaluatorNode::generateDiagnosticStatus(
   const Metric & metric, const Stat<double> & metric_stat) const
 {
@@ -137,18 +126,24 @@ DiagnosticStatus PlanningEvaluatorNode::generateDiagnosticStatus(
 
 void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_msg)
 {
+  if (!ego_state_ptr_) {
+    return;
+  }
+
   auto start = now();
   stamps_.push_back(traj_msg->header.stamp);
-
-  updateCalculatorEgoPose(traj_msg->header.frame_id);
 
   DiagnosticArray metrics_msg;
   metrics_msg.header.stamp = now();
   for (Metric metric : metrics_) {
-    const Stat metric_stat = metrics_calculator_.calculate(Metric(metric), *traj_msg);
-    metric_stats_[static_cast<size_t>(metric)].push_back(metric_stat);
-    if (metric_stat.count() > 0) {
-      metrics_msg.status.push_back(generateDiagnosticStatus(metric, metric_stat));
+    const auto metric_stat = metrics_calculator_.calculate(Metric(metric), *traj_msg);
+    if (!metric_stat) {
+      continue;
+    }
+
+    metric_stats_[static_cast<size_t>(metric)].push_back(*metric_stat);
+    if (metric_stat->count() > 0) {
+      metrics_msg.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
     }
   }
   if (!metrics_msg.status.empty()) {
@@ -157,6 +152,51 @@ void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_m
   metrics_calculator_.setPreviousTrajectory(*traj_msg);
   auto runtime = (now() - start).seconds();
   RCLCPP_DEBUG(get_logger(), "Planning evaluation calculation time: %2.2f ms", runtime * 1e3);
+}
+
+void PlanningEvaluatorNode::onModifiedGoal(
+  const PoseWithUuidStamped::ConstSharedPtr modified_goal_msg)
+{
+  modified_goal_ptr_ = modified_goal_msg;
+  if (ego_state_ptr_) {
+    publishModifiedGoalDeviationMetrics();
+  }
+}
+
+void PlanningEvaluatorNode::onOdometry(const Odometry::ConstSharedPtr odometry_msg)
+{
+  ego_state_ptr_ = odometry_msg;
+  metrics_calculator_.setEgoPose(odometry_msg->pose.pose);
+
+  if (modified_goal_ptr_) {
+    publishModifiedGoalDeviationMetrics();
+  }
+}
+
+void PlanningEvaluatorNode::publishModifiedGoalDeviationMetrics()
+{
+  auto start = now();
+
+  DiagnosticArray metrics_msg;
+  metrics_msg.header.stamp = now();
+  for (Metric metric : metrics_) {
+    const auto metric_stat = metrics_calculator_.calculate(
+      Metric(metric), modified_goal_ptr_->pose, ego_state_ptr_->pose.pose);
+    if (!metric_stat) {
+      continue;
+    }
+    metric_stats_[static_cast<size_t>(metric)].push_back(*metric_stat);
+    if (metric_stat->count() > 0) {
+      metrics_msg.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
+    }
+  }
+  if (!metrics_msg.status.empty()) {
+    metrics_pub_->publish(metrics_msg);
+  }
+  auto runtime = (now() - start).seconds();
+  RCLCPP_DEBUG(
+    get_logger(), "Planning evaluation modified goal deviation calculation time: %2.2f ms",
+    runtime * 1e3);
 }
 
 void PlanningEvaluatorNode::onReferenceTrajectory(const Trajectory::ConstSharedPtr traj_msg)

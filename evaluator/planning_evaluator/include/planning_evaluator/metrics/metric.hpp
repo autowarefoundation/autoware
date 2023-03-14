@@ -41,6 +41,9 @@ enum class Metric {
   stability_frechet,
   obstacle_distance,
   obstacle_ttc,
+  modified_goal_longitudinal_deviation,
+  modified_goal_lateral_deviation,
+  modified_goal_yaw_deviation,
   SIZE,
 };
 
@@ -63,7 +66,10 @@ static const std::unordered_map<std::string, Metric> str_to_metric = {
   {"stability_frechet", Metric::stability_frechet},
   {"obstacle_distance", Metric::obstacle_distance},
   {"obstacle_ttc", Metric::obstacle_ttc},
-};
+  {"modified_goal_longitudinal_deviation", Metric::modified_goal_longitudinal_deviation},
+  {"modified_goal_lateral_deviation", Metric::modified_goal_lateral_deviation},
+  {"modified_goal_yaw_deviation", Metric::modified_goal_yaw_deviation}};
+
 static const std::unordered_map<Metric, std::string> metric_to_str = {
   {Metric::curvature, "curvature"},
   {Metric::point_interval, "point_interval"},
@@ -79,7 +85,10 @@ static const std::unordered_map<Metric, std::string> metric_to_str = {
   {Metric::stability, "stability"},
   {Metric::stability_frechet, "stability_frechet"},
   {Metric::obstacle_distance, "obstacle_distance"},
-  {Metric::obstacle_ttc, "obstacle_ttc"}};
+  {Metric::obstacle_ttc, "obstacle_ttc"},
+  {Metric::modified_goal_longitudinal_deviation, "modified_goal_longitudinal_deviation"},
+  {Metric::modified_goal_lateral_deviation, "modified_goal_lateral_deviation"},
+  {Metric::modified_goal_yaw_deviation, "modified_goal_yaw_deviation"}};
 
 // Metrics descriptions
 static const std::unordered_map<Metric, std::string> metric_descriptions = {
@@ -97,7 +106,10 @@ static const std::unordered_map<Metric, std::string> metric_descriptions = {
   {Metric::stability, "Stability[m]"},
   {Metric::stability_frechet, "StabilityFrechet[m]"},
   {Metric::obstacle_distance, "Obstacle_distance[m]"},
-  {Metric::obstacle_ttc, "Obstacle_time_to_collision[s]"}};
+  {Metric::obstacle_ttc, "Obstacle_time_to_collision[s]"},
+  {Metric::modified_goal_longitudinal_deviation, "Modified_goal_longitudinal_deviation[m]"},
+  {Metric::modified_goal_lateral_deviation, "Modified_goal_lateral_deviation[m]"},
+  {Metric::modified_goal_yaw_deviation, "Modified_goal_yaw_deviation[rad]"}};
 
 namespace details
 {

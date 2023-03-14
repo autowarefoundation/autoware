@@ -14,7 +14,6 @@
 
 #ifndef PLANNING_EVALUATOR__METRICS_CALCULATOR_HPP_
 #define PLANNING_EVALUATOR__METRICS_CALCULATOR_HPP_
-
 #include "planning_evaluator/metrics/metric.hpp"
 #include "planning_evaluator/parameters.hpp"
 #include "planning_evaluator/stat.hpp"
@@ -22,13 +21,19 @@
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "autoware_planning_msgs/msg/pose_with_uuid_stamped.hpp"
 #include "geometry_msgs/msg/pose.hpp"
+
+#include <optional>
 
 namespace planning_diagnostics
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_planning_msgs::msg::PoseWithUuidStamped;
+using geometry_msgs::msg::Point;
+using geometry_msgs::msg::Pose;
 
 class MetricsCalculator
 {
@@ -42,7 +47,9 @@ public:
    * @param [in] metric Metric enum value
    * @return string describing the requested metric
    */
-  Stat<double> calculate(const Metric metric, const Trajectory & traj) const;
+  std::optional<Stat<double>> calculate(const Metric metric, const Trajectory & traj) const;
+  std::optional<Stat<double>> calculate(
+    const Metric metric, const Pose & base_pose, const Pose & target_pose) const;
 
   /**
    * @brief set the reference trajectory used to calculate the deviation metrics
@@ -68,6 +75,12 @@ public:
    */
   void setEgoPose(const geometry_msgs::msg::Pose & pose);
 
+  /**
+   * @brief get the ego pose
+   * @return ego pose
+   */
+  Pose getEgoPose();
+
 private:
   /**
    * @brief trim a trajectory from the current ego pose to some fixed time or distance
@@ -86,6 +99,7 @@ private:
   Trajectory previous_trajectory_lookahead_;
   PredictedObjects dynamic_objects_;
   geometry_msgs::msg::Pose ego_pose_;
+  PoseWithUuidStamped modified_goal_;
 };  // class MetricsCalculator
 
 }  // namespace planning_diagnostics

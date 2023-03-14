@@ -55,7 +55,9 @@ MotionEvaluatorNode::~MotionEvaluatorNode()
   f << std::endl;
   for (Metric metric : metrics_) {
     const auto & stat = metrics_calculator_.calculate(metric, accumulated_trajectory_);
-    f /* << std::setw(3 * column_width) */ << stat << " ";
+    if (stat) {
+      f /* << std::setw(3 * column_width) */ << *stat << " ";
+    }
   }
   f.close();
 }
