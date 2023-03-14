@@ -7,7 +7,6 @@ on:
 
 jobs:
   check-secret:
-    if: ${{ github.event.repository.private }}
     uses: autowarefoundation/autoware-github-actions/.github/workflows/check-secret.yaml@v1
     secrets:
       secret: ${{ secrets.APP_ID }}

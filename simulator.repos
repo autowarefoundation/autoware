@@ -2,4 +2,4 @@ repositories:
   simulator/scenario_simulator:
     type: git
     url: https://github.com/tier4/scenario_simulator_v2.git
-    version: eb5e3220b31ef26b49939f748e82b46f28ce80e0
+    version: c425a60edc321fcfd56d4404ec42f0a64865d3e4
