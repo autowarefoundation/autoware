@@ -10,7 +10,6 @@ ament_auto_add_library(${CONTROLLER_NODE} SHARED
   src/controller_node.cpp
 )
 
-target_compile_options(${CONTROLLER_NODE} PRIVATE -Wno-error=old-style-cast)
 rclcpp_components_register_node(${CONTROLLER_NODE}
   PLUGIN "autoware::motion::control::trajectory_follower_node::Controller"
   EXECUTABLE ${CONTROLLER_NODE}_exe
@@ -23,9 +22,6 @@ ament_auto_add_library(${SIMPLE_TRAJECTORY_FOLLOWER_NODE} SHARED
   src/simple_trajectory_follower.cpp
 )
 
-# TODO(simple_trajectory_follower) : RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
-# TODO(simple_trajectory_follower) : Temporary workaround until this is fixed.
-target_compile_options(${SIMPLE_TRAJECTORY_FOLLOWER_NODE} PRIVATE -Wno-error=old-style-cast)
 rclcpp_components_register_node(${SIMPLE_TRAJECTORY_FOLLOWER_NODE}
   PLUGIN "simple_trajectory_follower::SimpleTrajectoryFollower"
   EXECUTABLE ${SIMPLE_TRAJECTORY_FOLLOWER_NODE}_exe
