@@ -12,5 +12,3 @@
     map_length: 100.0
     map_width: 100.0
     map_resolution: 0.5
-    input_obstacle_pointcloud: true
-    input_obstacle_and_raw_pointcloud: true

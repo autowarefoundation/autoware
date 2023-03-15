@@ -31,12 +31,6 @@ def launch_setup(context, *args, **kwargs):
     param_file = LaunchConfiguration("param_file").perform(context)
     with open(param_file, "r") as f:
         laserscan_based_occupancy_grid_map_node_params = yaml.safe_load(f)["/**"]["ros__parameters"]
-    laserscan_based_occupancy_grid_map_node_params["input_obstacle_pointcloud"] = bool(
-        LaunchConfiguration("input_obstacle_pointcloud").perform(context)
-    )
-    laserscan_based_occupancy_grid_map_node_params["input_obstacle_and_raw_pointcloud"] = bool(
-        LaunchConfiguration("input_obstacle_and_raw_pointcloud").perform(context)
-    )
 
     composable_nodes = [
         ComposableNode(
@@ -86,7 +80,15 @@ def launch_setup(context, *args, **kwargs):
                 ("~/input/raw_pointcloud", LaunchConfiguration("input/raw_pointcloud")),
                 ("~/output/occupancy_grid_map", LaunchConfiguration("output")),
             ],
-            parameters=[laserscan_based_occupancy_grid_map_node_params],
+            parameters=[
+                laserscan_based_occupancy_grid_map_node_params,
+                {
+                    "input_obstacle_pointcloud": LaunchConfiguration("input_obstacle_pointcloud"),
+                    "input_obstacle_and_raw_pointcloud": LaunchConfiguration(
+                        "input_obstacle_and_raw_pointcloud"
+                    ),
+                },
+            ],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         ),
     ]
