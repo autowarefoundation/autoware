@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import OpaqueFunction
@@ -138,7 +139,11 @@ def generate_launch_description():
             add_launch_arg("output/stixel", "virtual_scan/stixel"),
             add_launch_arg("input_obstacle_pointcloud", "false"),
             add_launch_arg("input_obstacle_and_raw_pointcloud", "true"),
-            add_launch_arg("param_file", "config/laserscan_based_occupancy_grid_map.param.yaml"),
+            add_launch_arg(
+                "param_file",
+                get_package_share_directory("probabilistic_occupancy_grid_map")
+                + "/config/laserscan_based_occupancy_grid_map.param.yaml",
+            ),
             add_launch_arg("use_pointcloud_container", "false"),
             add_launch_arg("container_name", "occupancy_grid_map_container"),
             set_container_executable,
