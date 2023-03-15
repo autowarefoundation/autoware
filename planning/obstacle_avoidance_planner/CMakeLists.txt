@@ -49,6 +49,11 @@ rclcpp_components_register_node(obstacle_avoidance_planner
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
-    scripts
     config
+    rviz
+)
+
+install(PROGRAMS
+  scripts/calclation_time_plotter.py
+  DESTINATION lib/${PROJECT_NAME}
 )

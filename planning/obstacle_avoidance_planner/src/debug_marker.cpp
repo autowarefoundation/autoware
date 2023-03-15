@@ -84,18 +84,18 @@ MarkerArray getBoundsLineMarkerArray(
   // create lower bound marker
   auto lb_marker = createDefaultMarker(
     "map", rclcpp::Clock().now(), "", 0, Marker::LINE_LIST, createMarkerScale(0.05, 0.0, 0.0),
-    createMarkerColor(0.99 + 0.5, 0.99, 0.2, 0.3));
+    createMarkerColor(0.5, 0.99, 0.2, 0.8));
   lb_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
 
   // create upper bound marker
   auto ub_marker = createDefaultMarker(
     "map", rclcpp::Clock().now(), "", 1, Marker::LINE_LIST, createMarkerScale(0.05, 0.0, 0.0),
-    createMarkerColor(0.99, 0.99 + 0.5, 0.2, 0.3));
+    createMarkerColor(0.99, 0.5, 0.2, 0.8));
   ub_marker.lifetime = rclcpp::Duration::from_seconds(1.5);
 
   for (size_t bound_idx = 0; bound_idx < ref_points.at(0).bounds_on_constraints.size();
        ++bound_idx) {
-    const std::string ns = "base_bounds_" + std::to_string(bound_idx);
+    const std::string ns = "bounds" + std::to_string(bound_idx);
 
     {  // lower bound
       lb_marker.points.clear();

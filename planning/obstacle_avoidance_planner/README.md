@@ -132,6 +132,11 @@ Some examples are shown in the following figure, and it is shown that the trajec
 
 More details can be seen [here](docs/mpt.md).
 
+### applyInputVelocity
+
+Velocity is assigned in the optimized trajectory from the velocity in the behavior path.
+The shapes of the optimized trajectory and the path are different, therefore the each nearest trajectory point to the path is searched and the velocity is interpolated with zero-order hold.
+
 ### insertZeroVelocityOutsideDrivableArea
 
 Optimized trajectory is too short for velocity planning, therefore extend the trajectory by concatenating the optimized trajectory and the behavior path considering drivability.
@@ -154,11 +159,6 @@ The output trajectory is memorized as a previously generated trajectory for the 
 _Rationale_
 In the current design, since there are some modelling errors, the constraints are considered to be soft constraints.
 Therefore, we have to make sure that the optimized trajectory is inside the drivable area or not after optimization.
-
-### alignVelocity
-
-Velocity is assigned in the result trajectory from the velocity in the behavior path.
-The shapes of the trajectory and the path are different, therefore the each nearest trajectory point to the path is searched and interpolated linearly.
 
 ## Limitation
 
@@ -192,41 +192,21 @@ Although it has a cons to converge to the local minima, it can get a good soluti
 
 ### Drivability in narrow roads
 
-- set `option.drivability_check.use_vehicle_circles` true
-  - use a set of circles as a shape of the vehicle when checking if the generated trajectory will be outside the drivable area.
-- make `mpt.clearance.soft_clearance_from_road` smaller
-- make `mpt.kinematics.optimization_center_offset` different
+- modify `mpt.clearance.soft_clearance_from_road`
+  - This parameter describes how much margin to make between the trajectory and road boundaries.
+  - Due to the model error for optimization, the constraint such as collision-free is not fully met.
+    - By making this parameter larger, the is for narrow-road driving may be resolved. 12180
+- modify `mpt.kinematics.optimization_center_offset`
 
-  - The point on the vehicle, offset forward from the base link` tries to follow the reference path.
+  - The point on the vehicle, offset forward with this parameter from the base link` tries to follow the reference path.
 
-  - This may cause the a part of generated trajectory will be outside the drivable area.
+- change or tune the method to approximate footprints with a set of circles.
+  - See [here](https://autowarefoundation.github.io/autoware.universe/main/planning/obstacle_avoidance_planner/docs/mpt/#collision-free)
+  - Tuning means changing the ratio of circle's radius.
 
 ### Computation time
 
-- Loose EB optimization
-
-  - 1. make `eb.common.delta_arc_length` large and `eb.common.num_points` small
-    - This makes the number of design variables smaller
-    - Be careful about the trajectory length between MPT and EB as shown in Assumptions.
-    - However, empirically this causes large turn at the corner (e.g. The vehicle turns a steering wheel to the opposite side (=left) a bit just before the corner turning to right)
-  - 2. make `eb.qp.eps_abs` and `eb.qp.eps_rel` small
-    - This causes very unstable reference path generation for MPT, or turning a steering wheel a little bit larger
-
-- Enable computation reduction flag
-
-  - 1. set l_inf_norm true (by default)
-    - use L-inf norm optimization for MPT w.r.t. slack variables, resulting in lower number of design variables
-  - 2. set enable_warm_start true
-  - 3. set enable_manual_warm_start true (by default)
-  - 4. set steer_limit_constraint false
-    - This causes no assumption for trajectory generation where steering angle will not exceeds its hardware limitation
-  - 5. make the number of collision-free constraints small
-    - How to change parameters depend on the type of collision-free constraints
-      - If
-    - This may cause the trajectory generation where a part of ego vehicle is out of drivable area
-
-- Disable publishing debug visualization markers
-  - set `option.is_publishing_*` false
+- under construction
 
 ### Robustness
 
@@ -243,10 +223,6 @@ Although it has a cons to converge to the local minima, it can get a good soluti
   - EB is not required if the reference path for MPT is smooth enough and does not change its shape suddenly
 - `option.enable_calculation_time_info` enables showing each calculation time for functions and total calculation time on the terminal.
 - `option.enable_outside_drivable_area_stop` enables stopping just before the generated trajectory point will be outside the drivable area.
-- `mpt.option.plan_from_ego` enables planning from the ego pose when the ego's velocity is zero.
-- `mpt.option.max_plan_from_ego_length` maximum length threshold to plan from ego. it is enabled when the length of trajectory is shorter than this value.
-- `mpt.option.two_step_soft_constraint` enables two step of soft constraints for collision free
-  - `mpt.option.soft_clearance_from_road` and `mpt.option.soft_second_clearance_from_road` are the weight.
 
 ## How To Debug
 

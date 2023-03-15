@@ -99,7 +99,12 @@ class CalculationCostAnalyzer(Node):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--functions", type=str, default="solveOsqp")
+    parser.add_argument(
+        "-f",
+        "--functions",
+        type=str,
+        default="onPath, getModelPredictiveTrajectory, getEBTrajectory",
+    )
     args = parser.parse_args()
 
     rclpy.init()
