@@ -15,6 +15,7 @@
 #include "laserscan_based_occupancy_grid_map/laserscan_based_occupancy_grid_map_node.hpp"
 
 #include "cost_value.hpp"
+#include "utils/utils.hpp"
 
 #include <pcl_ros/transforms.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -34,78 +35,6 @@
 
 #include <memory>
 #include <string>
-
-namespace
-{
-bool transformPointcloud(
-  const sensor_msgs::msg::PointCloud2 & input, const tf2_ros::Buffer & tf2,
-  const std::string & target_frame, sensor_msgs::msg::PointCloud2 & output)
-{
-  geometry_msgs::msg::TransformStamped tf_stamped;
-  tf_stamped = tf2.lookupTransform(
-    target_frame, input.header.frame_id, input.header.stamp, rclcpp::Duration::from_seconds(0.5));
-  // transform pointcloud
-  Eigen::Matrix4f tf_matrix = tf2::transformToEigen(tf_stamped.transform).matrix().cast<float>();
-  pcl_ros::transformPointCloud(tf_matrix, input, output);
-  output.header.stamp = input.header.stamp;
-  output.header.frame_id = target_frame;
-  return true;
-}
-
-bool cropPointcloudByHeight(
-  const sensor_msgs::msg::PointCloud2 & input, const tf2_ros::Buffer & tf2,
-  const std::string & target_frame, const float min_height, const float max_height,
-  sensor_msgs::msg::PointCloud2 & output)
-{
-  rclcpp::Clock clock{RCL_ROS_TIME};
-  // Transformed pointcloud on target frame
-  sensor_msgs::msg::PointCloud2 trans_input_tmp;
-  const bool is_target_frame = (input.header.frame_id == target_frame);
-  if (!is_target_frame) {
-    if (!transformPointcloud(input, tf2, target_frame, trans_input_tmp)) return false;
-  }
-  const sensor_msgs::msg::PointCloud2 & trans_input = is_target_frame ? input : trans_input_tmp;
-
-  // Apply height filter
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
-  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(trans_input, "x"),
-       iter_y(trans_input, "y"), iter_z(trans_input, "z");
-       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
-    if (min_height < *iter_z && *iter_z < max_height) {
-      pcl_output->push_back(pcl::PointXYZ(*iter_x, *iter_y, *iter_z));
-    }
-  }
-
-  // Convert to ros msg
-  pcl::toROSMsg(*pcl_output, output);
-  output.header = trans_input.header;
-  return true;
-}
-
-[[maybe_unused]] geometry_msgs::msg::Pose getPose(
-  const std_msgs::msg::Header & source_header, const tf2_ros::Buffer & tf2,
-  const std::string & target_frame)
-{
-  geometry_msgs::msg::Pose pose;
-  geometry_msgs::msg::TransformStamped tf_stamped;
-  tf_stamped = tf2.lookupTransform(
-    target_frame, source_header.frame_id, source_header.stamp, rclcpp::Duration::from_seconds(0.5));
-  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
-  return pose;
-}
-
-geometry_msgs::msg::Pose getPose(
-  const builtin_interfaces::msg::Time & stamp, const tf2_ros::Buffer & tf2,
-  const std::string & source_frame, const std::string & target_frame)
-{
-  geometry_msgs::msg::Pose pose;
-  geometry_msgs::msg::TransformStamped tf_stamped;
-  tf_stamped =
-    tf2.lookupTransform(target_frame, source_frame, stamp, rclcpp::Duration::from_seconds(0.5));
-  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
-  return pose;
-}
-}  // namespace
 
 namespace occupancy_grid_map
 {
@@ -204,12 +133,12 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
   PointCloud2 cropped_raw_pc{};
   if (use_height_filter_) {
     constexpr float min_height = -1.0, max_height = 2.0;
-    if (!cropPointcloudByHeight(
+    if (!utils::cropPointcloudByHeight(
           *input_obstacle_msg, *tf2_, base_link_frame_, min_height, max_height,
           cropped_obstacle_pc)) {
       return;
     }
-    if (!cropPointcloudByHeight(
+    if (!utils::cropPointcloudByHeight(
           *input_raw_msg, *tf2_, base_link_frame_, min_height, max_height, cropped_raw_pc)) {
       return;
     }
@@ -225,12 +154,13 @@ void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRa
   Pose gridmap_origin{};
   Pose scan_origin{};
   try {
-    transformPointcloud(*laserscan_pc_ptr, *tf2_, map_frame_, trans_laserscan_pc);
-    transformPointcloud(filtered_obstacle_pc, *tf2_, map_frame_, trans_obstacle_pc);
-    transformPointcloud(filtered_raw_pc, *tf2_, map_frame_, trans_raw_pc);
+    utils::transformPointcloud(*laserscan_pc_ptr, *tf2_, map_frame_, trans_laserscan_pc);
+    utils::transformPointcloud(filtered_obstacle_pc, *tf2_, map_frame_, trans_obstacle_pc);
+    utils::transformPointcloud(filtered_raw_pc, *tf2_, map_frame_, trans_raw_pc);
     gridmap_origin =
-      getPose(laserscan_pc_ptr->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
-    scan_origin = getPose(laserscan_pc_ptr->header.stamp, *tf2_, scan_origin_frame_, map_frame_);
+      utils::getPose(laserscan_pc_ptr->header.stamp, *tf2_, gridmap_origin_frame_, map_frame_);
+    scan_origin =
+      utils::getPose(laserscan_pc_ptr->header.stamp, *tf2_, scan_origin_frame_, map_frame_);
   } catch (tf2::TransformException & ex) {
     RCLCPP_WARN_STREAM(get_logger(), ex.what());
     return;

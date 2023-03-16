@@ -18,6 +18,7 @@ ament_auto_add_library(pointcloud_based_occupancy_grid_map SHARED
   src/pointcloud_based_occupancy_grid_map/pointcloud_based_occupancy_grid_map_node.cpp
   src/pointcloud_based_occupancy_grid_map/occupancy_grid_map.cpp
   src/updater/occupancy_grid_map_binary_bayes_filter_updater.cpp
+  src/utils/utils.cpp
 )
 
 target_link_libraries(pointcloud_based_occupancy_grid_map
@@ -34,6 +35,7 @@ ament_auto_add_library(laserscan_based_occupancy_grid_map SHARED
   src/laserscan_based_occupancy_grid_map/laserscan_based_occupancy_grid_map_node.cpp
   src/laserscan_based_occupancy_grid_map/occupancy_grid_map.cpp
   src/updater/occupancy_grid_map_binary_bayes_filter_updater.cpp
+  src/utils/utils.cpp
 )
 
 target_link_libraries(laserscan_based_occupancy_grid_map

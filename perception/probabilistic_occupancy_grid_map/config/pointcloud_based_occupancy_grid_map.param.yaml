@@ -5,6 +5,8 @@
 
     use_height_filter: true
     enable_single_frame_mode: false
+    # use sensor pointcloud to filter obstacle pointcloud
+    filter_obstacle_pointcloud_by_raw_pointcloud: false
 
     # grid map coordinate
     map_frame: "map"
