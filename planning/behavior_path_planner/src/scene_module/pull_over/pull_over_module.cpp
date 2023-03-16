@@ -132,6 +132,7 @@ void PullOverModule::resetStatus()
   pull_over_path_candidates_.clear();
   closest_start_pose_.reset();
   goal_candidates_.clear();
+  prev_goal_id_.reset();
 }
 
 // This function is needed for waiting for planner_data_
