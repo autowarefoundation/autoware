@@ -356,7 +356,7 @@ std::pair<bool, bool> getLaneChangePaths(
       std::max(prepare_speed, minimum_lane_change_velocity));
 #endif
 
-    const auto estimated_shift_length = util::calcLateralDistanceToLanelet(
+    const auto estimated_shift_length = lanelet::utils::getLateralDistanceToClosestLanelet(
       target_lanelets, prepare_segment.points.front().point.pose);
 
     const auto [lane_changing_speed, lane_changing_distance] = calcLaneChangingSpeedAndDistance(
@@ -617,7 +617,7 @@ ShiftLine getLaneChangingShiftLine(
 
   ShiftLine shift_line;
   shift_line.end_shift_length =
-    util::calcLateralDistanceToLanelet(target_lanes, lane_changing_start_pose);
+    lanelet::utils::getLateralDistanceToClosestLanelet(target_lanes, lane_changing_start_pose);
   shift_line.start = lane_changing_start_pose;
   shift_line.end = lane_changing_end_pose;
   shift_line.start_idx =

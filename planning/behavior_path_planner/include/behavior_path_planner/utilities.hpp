@@ -534,9 +534,6 @@ double calcLaneChangeBuffer(
 
 lanelet::ConstLanelets getLaneletsFromPath(
   const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler);
-
-double calcLateralDistanceToLanelet(
-  const lanelet::ConstLanelets & lanelet_sequence, const geometry_msgs::msg::Pose & pose);
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_
