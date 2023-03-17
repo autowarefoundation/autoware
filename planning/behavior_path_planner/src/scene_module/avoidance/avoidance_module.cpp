@@ -751,10 +751,12 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
 
   /**
    * Find the nearest object that should be avoid. When the ego follows reference path,
-   * if the lateral distance is smaller than minimum margin, the ego should avoid the object.
+   * if the both of following two conditions are satisfied, the module surely avoid the object.
+   * Condition1: there is risk to collide with object without avoidance.
+   * Condition2: there is enough space to avoid.
    */
   for (const auto & o : data.target_objects) {
-    if (o.avoid_required) {
+    if (o.avoid_required && o.is_avoidable) {
       data.avoid_required = true;
       data.stop_target_object = o;
     }
