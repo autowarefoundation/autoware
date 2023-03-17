@@ -315,7 +315,8 @@ std::pair<bool, bool> getLaneChangePaths(
   const auto required_total_min_distance =
     util::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
 
-  const auto arc_position_from_current = lanelet::utils::getArcCoordinates(original_lanelets, pose);
+  [[maybe_unused]] const auto arc_position_from_current =
+    lanelet::utils::getArcCoordinates(original_lanelets, pose);
   const auto arc_position_from_target = lanelet::utils::getArcCoordinates(target_lanelets, pose);
 
   const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanelets);
