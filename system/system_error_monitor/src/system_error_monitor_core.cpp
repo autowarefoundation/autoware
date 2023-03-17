@@ -410,6 +410,10 @@ bool AutowareErrorMonitor::isDataReady()
 bool AutowareErrorMonitor::isDataHeartbeatTimeout()
 {
   auto isTimeout = [this](const rclcpp::Time & last_stamp, const double threshold) {
+    if (last_stamp.get_clock_type() != this->now().get_clock_type()) {
+      RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 5000, "clock type is different...");
+      return false;
+    }
     const auto time_diff = this->now() - last_stamp;
     return time_diff.seconds() > threshold;
   };
