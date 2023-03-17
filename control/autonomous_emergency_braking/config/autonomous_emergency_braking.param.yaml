@@ -1,0 +1,16 @@
+/**:
+  ros__parameters:
+    use_predicted_trajectory: true
+    use_imu_path: true
+    voxel_grid_x: 0.05
+    voxel_grid_y: 0.05
+    voxel_grid_z: 100000.0
+    min_generated_path_length: 0.5
+    expand_width: 0.1
+    longitudinal_offset: 2.0
+    t_response: 1.0
+    a_ego_min: -3.0
+    a_obj_min: -1.0
+    prediction_time_horizon: 1.5
+    prediction_time_interval: 0.1
+    aeb_hz: 10.0

@@ -1,0 +1,19 @@
+<launch>
+  <arg name="param_path" default="$(find-pkg-share autonomous_emergency_braking)/config/autonomous_emergency_braking.param.yaml"/>
+  <arg name="input_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="input_velocity" default="/vehicle/status/velocity_status"/>
+  <arg name="input_imu" default="/sensing/imu/imu_data"/>
+  <arg name="input_odometry" default="/localization/kinematic_state"/>
+  <arg name="input_predicted_trajectory" default="/control/trajectory_follower/lateral/predicted_trajectory"/>
+
+  <node pkg="autonomous_emergency_braking" exec="autonomous_emergency_braking" name="autonomous_emergency_braking" output="screen">
+    <!-- load config files -->
+    <param from="$(var param_path)"/>
+    <!-- remap topic name -->
+    <remap from="~/input/pointcloud" to="$(var input_pointcloud)"/>
+    <remap from="~/input/velocity" to="$(var input_velocity)"/>
+    <remap from="~/input/imu" to="$(var input_imu)"/>
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/predicted_trajectory" to="$(var input_predicted_trajectory)"/>
+  </node>
+</launch>

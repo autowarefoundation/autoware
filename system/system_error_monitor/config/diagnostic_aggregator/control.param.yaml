@@ -4,6 +4,20 @@
       type: diagnostic_aggregator/AnalyzerGroup
       path: control
       analyzers:
+        autonomous_emergency_braking:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: autonomous_emergency_braking
+          analyzers:
+            performance_monitoring:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: performance_monitoring
+              analyzers:
+                emergency_stop:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: emergency_stop
+                  contains: [": aeb_emergency_stop"]
+                  timeout: 1.0
+
         control_command_gate:
           type: diagnostic_aggregator/AnalyzerGroup
           path: control_command_gate
