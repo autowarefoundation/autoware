@@ -4,6 +4,14 @@ project(autonomous_emergency_braking)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+find_package(PCL REQUIRED)
+
+include_directories(
+  include
+  SYSTEM
+  ${PCL_INCLUDE_DIRS}
+)
+
 set(AEB_NODE ${PROJECT_NAME}_node)
 ament_auto_add_library(${AEB_NODE} SHARED
   src/node.cpp
