@@ -54,6 +54,7 @@ ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions &
     split_points_distance_tolerance_ = declare_parameter("split_points_distance_tolerance", 0.2);
     split_height_distance_ = declare_parameter("split_height_distance", 0.2);
     use_virtual_ground_point_ = declare_parameter("use_virtual_ground_point", true);
+    use_recheck_ground_cluster_ = declare_parameter("use_recheck_ground_cluster", true);
     radial_dividers_num_ = std::ceil(2.0 * M_PI / radial_divider_angle_rad_);
     vehicle_info_ = VehicleInfoUtil(*this).getVehicleInfo();
 
@@ -356,7 +357,9 @@ void ScanGroundFilterComponent::classifyPointCloudGridScan(
       // move to new grid
       if (p->grid_id > prev_p->grid_id && ground_cluster.getAverageRadius() > 0.0) {
         // check if the prev grid have ground point cloud
-        recheckGroundCluster(ground_cluster, non_ground_height_threshold_, out_no_ground_indices);
+        if (use_recheck_ground_cluster_) {
+          recheckGroundCluster(ground_cluster, non_ground_height_threshold_, out_no_ground_indices);
+        }
         curr_gnd_grid.radius = ground_cluster.getAverageRadius();
         curr_gnd_grid.avg_height = ground_cluster.getAverageHeight();
         curr_gnd_grid.max_height = ground_cluster.getMaxHeight();
@@ -611,7 +614,11 @@ rcl_interfaces::msg::SetParametersResult ScanGroundFilterComponent::onParameter(
       get_logger(),
       "Setting use_virtual_ground_point to: " << std::boolalpha << use_virtual_ground_point_);
   }
-
+  if (get_param(p, "use_recheck_ground_cluster", use_recheck_ground_cluster_)) {
+    RCLCPP_DEBUG_STREAM(
+      get_logger(),
+      "Setting use_recheck_ground_cluster to: " << std::boolalpha << use_recheck_ground_cluster_);
+  }
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
   result.reason = "success";

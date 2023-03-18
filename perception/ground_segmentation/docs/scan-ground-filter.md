@@ -47,6 +47,7 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 | `gnd_grid_buffer_size`            | uint16 | 4             | Number of grids using to estimate local ground slope,<br /> applied only for elevation_grid_mode                                                  |
 | `low_priority_region_x`           | float  | -20.0         | The non-zero x threshold in back side from which small objects detection is low priority [m]                                                      |
 | `elevation_grid_mode`             | bool   | true          | Elevation grid scan mode option                                                                                                                   |
+| `use_recheck_ground_cluster`      | bool   | true          | Enable recheck ground cluster                                                                                                                     |
 
 ## Assumptions / Known limits
 

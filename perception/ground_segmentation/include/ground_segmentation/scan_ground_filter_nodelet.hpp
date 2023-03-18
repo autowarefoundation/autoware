@@ -170,6 +170,7 @@ private:
   double                                    // minimum height threshold regardless the slope,
     split_height_distance_;                 // useful for close points
   bool use_virtual_ground_point_;
+  bool use_recheck_ground_cluster_;  // to enable recheck ground cluster
   size_t radial_dividers_num_;
   VehicleInfo vehicle_info_;
 
