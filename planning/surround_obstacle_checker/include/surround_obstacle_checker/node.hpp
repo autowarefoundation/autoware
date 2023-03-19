@@ -23,7 +23,6 @@
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <diagnostic_msgs/msg/key_value.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -46,8 +45,6 @@ namespace surround_obstacle_checker
 
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::Shape;
-using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using motion_utils::VehicleStopChecker;
 using tier4_planning_msgs::msg::VelocityLimit;
 using tier4_planning_msgs::msg::VelocityLimitClearCommand;
