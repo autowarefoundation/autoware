@@ -273,17 +273,13 @@ boost::optional<size_t> findNearestIndex(
 
   for (size_t i = 0; i < points.size(); ++i) {
     const auto squared_dist = tier4_autoware_utils::calcSquaredDistance2d(points.at(i), pose);
-    if (squared_dist > max_squared_dist) {
+    if (squared_dist > max_squared_dist || squared_dist >= min_squared_dist) {
       continue;
     }
 
     const auto yaw =
       tier4_autoware_utils::calcYawDeviation(tier4_autoware_utils::getPose(points.at(i)), pose);
     if (std::fabs(yaw) > max_yaw) {
-      continue;
-    }
-
-    if (squared_dist >= min_squared_dist) {
       continue;
     }
 
