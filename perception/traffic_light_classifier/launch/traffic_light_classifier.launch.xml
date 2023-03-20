@@ -19,7 +19,12 @@
     <param name="classifier_type" value="$(var classifier_type)"/>
     <param name="model_file_path" value="$(find-pkg-share traffic_light_classifier)/data/traffic_light_classifier_mobilenetv2.onnx"/>
     <param name="label_file_path" value="$(find-pkg-share traffic_light_classifier)/data/lamp_labels.txt"/>
+    <param name="mean" value="[0.242, 0.193, 0.201]"/>
+    <param name="std" value="[1.0, 1.0, 1.0]"/>
     <param name="precision" value="fp16"/>
+    <param name="input_name" value="input_0"/>
+    <param name="output_name" value="output_0"/>
+    <param name="apply_softmax" value="true"/>
     <param name="input_c" value="3"/>
     <param name="input_h" value="224"/>
     <param name="input_w" value="224"/>
