@@ -12,6 +12,8 @@
 
   <build_depend>autoware_cmake</build_depend>
 
+  <buildtool_export_depend>ros_testing</buildtool_export_depend>
+
   <test_depend>ament_cmake_core</test_depend>
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
