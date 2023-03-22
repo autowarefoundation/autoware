@@ -327,6 +327,7 @@ class GroundSegmentationPipeline:
                         "use_lane_filter": False,
                         "use_inpaint": True,
                         "inpaint_radius": 1.0,
+                        "lane_margin": 2.0,
                         "param_file_path": PathJoinSubstitution(
                             [
                                 LaunchConfiguration(

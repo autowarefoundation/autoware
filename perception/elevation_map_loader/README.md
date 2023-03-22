@@ -36,21 +36,17 @@ Cells with No elevation value can be inpainted using the values of neighboring c
 
 ### Node parameters
 
-| Name                              | Type        | Description                                                                                                | Default value |
-| :-------------------------------- | :---------- | :--------------------------------------------------------------------------------------------------------- | :------------ |
-| map_layer_name                    | std::string | elevation_map layer name                                                                                   | elevation     |
-| param_file_path                   | std::string | GridMap parameters config                                                                                  | path_default  |
-| elevation_map_file_path           | std::string | elevation_map file (bag2)                                                                                  | path_default  |
-| map_frame                         | std::string | map_frame when loading elevation_map file                                                                  | map           |
-| use_inpaint                       | bool        | Whether to inpaint empty cells                                                                             | true          |
-| inpaint_radius                    | float       | Radius of a circular neighborhood of each point inpainted that is considered by the algorithm [m]          | 0.3           |
-| use_elevation_map_cloud_publisher | bool        | Whether to publish `output/elevation_map_cloud`                                                            | false         |
-| use_lane_filter                   | bool        | Whether to filter elevation_map with vector_map                                                            | false         |
-| lane_margin                       | float       | Value of how much to expand the range of vector_map [m]                                                    | 0.5           |
-| lane_height_diff_thresh           | float       | Only point clouds in the height range of this value from vector_map are used to generate elevation_map [m] | 1.0           |
-| lane_filter_voxel_size_x          | float       | Voxel size x for calculating point clouds in vector_map [m]                                                | 0.04          |
-| lane_filter_voxel_size_y          | float       | Voxel size y for calculating point clouds in vector_map [m]                                                | 0.04          |
-| lane_filter_voxel_size_z          | float       | Voxel size z for calculating point clouds in vector_map [m]                                                | 0.04          |
+| Name                              | Type        | Description                                                                                                                       | Default value |
+| :-------------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| map_layer_name                    | std::string | elevation_map layer name                                                                                                          | elevation     |
+| param_file_path                   | std::string | GridMap parameters config                                                                                                         | path_default  |
+| elevation_map_directory           | std::string | elevation_map file (bag2)                                                                                                         | path_default  |
+| map_frame                         | std::string | map_frame when loading elevation_map file                                                                                         | map           |
+| use_inpaint                       | bool        | Whether to inpaint empty cells                                                                                                    | true          |
+| inpaint_radius                    | float       | Radius of a circular neighborhood of each point inpainted that is considered by the algorithm [m]                                 | 0.3           |
+| use_elevation_map_cloud_publisher | bool        | Whether to publish `output/elevation_map_cloud`                                                                                   | false         |
+| use_lane_filter                   | bool        | Whether to filter elevation_map with vector_map                                                                                   | false         |
+| lane_margin                       | float       | Margin distance from the lane polygon of the area to be included in the inpainting mask [m]. Used only when use_lane_filter=True. | 0.0           |
 
 ### GridMap parameters
 

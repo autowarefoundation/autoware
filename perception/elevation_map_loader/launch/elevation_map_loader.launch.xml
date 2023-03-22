@@ -5,13 +5,6 @@
   <arg name="use_inpaint" default="true"/>
   <arg name="inpaint_radius" default="1.0"/>
 
-  <!-- Filter with lanelet. Disable if lane_margin is 0.0 -->
-  <arg name="lane_margin" default="0.0"/>
-  <arg name="lane_height_diff_thresh" default="1.0"/>
-  <arg name="lane_filter_voxel_size_x" default="0.04"/>
-  <arg name="lane_filter_voxel_size_y" default="0.04"/>
-  <arg name="lane_filter_voxel_size_z" default="0.04"/>
-
   <node pkg="elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
     <remap from="output/elevation_map" to="/map/elevation_map"/>
     <remap from="input/pointcloud_map" to="/map/pointcloud_map"/>
@@ -20,10 +13,5 @@
     <param name="elevation_map_directory" value="$(var elevation_map_directory)"/>
     <param name="param_file_path" value="$(var param_file_path)"/>
     <param name="use_lane_filter" value="$(var use_lane_filter)"/>
-    <param name="lane_margin" value="$(var lane_margin)"/>
-    <param name="lane_height_diff_thresh" value="$(var lane_height_diff_thresh)"/>
-    <param name="lane_filter_voxel_size_x" value="$(var lane_filter_voxel_size_x)"/>
-    <param name="lane_filter_voxel_size_y" value="$(var lane_filter_voxel_size_y)"/>
-    <param name="lane_filter_voxel_size_z" value="$(var lane_filter_voxel_size_z)"/>
   </node>
 </launch>

@@ -19,10 +19,12 @@
 #include <grid_map_pcl/GridMapPclLoader.hpp>
 #include <grid_map_pcl/helpers.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
+#include <grid_map_utils/polygon_iterator.hpp>
 #include <rclcpp/logger.hpp>
 
 #include <grid_map_msgs/msg/grid_map.hpp>
 
+#include <boost/geometry.hpp>
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
@@ -61,11 +63,7 @@ ElevationMapLoaderNode::ElevationMapLoaderNode(const rclcpp::NodeOptions & optio
   data_manager_.use_lane_filter_ = use_lane_filter;
 
   lane_filter_.use_lane_filter_ = use_lane_filter;
-  lane_filter_.lane_margin_ = this->declare_parameter("lane_margin", 0.5);
-  lane_filter_.lane_height_diff_thresh_ = this->declare_parameter("lane_height_diff_thresh", 1.0);
-  lane_filter_.voxel_size_x_ = declare_parameter("lane_filter_voxel_size_x", 0.04);
-  lane_filter_.voxel_size_y_ = declare_parameter("lane_filter_voxel_size_y", 0.04);
-  lane_filter_.voxel_size_z_ = declare_parameter("lane_filter_voxel_size_z", 0.04);
+  lane_filter_.lane_margin_ = this->declare_parameter("lane_margin", 0.0);
 
   rclcpp::QoS durable_qos{1};
   durable_qos.transient_local();
@@ -176,21 +174,14 @@ void ElevationMapLoaderNode::createElevationMap()
 {
   auto grid_map_logger = rclcpp::get_logger("grid_map_logger");
   grid_map_logger.set_level(rclcpp::Logger::Level::Error);
-  pcl::shared_ptr<grid_map::GridMapPclLoader> grid_map_pcl_loader =
-    pcl::make_shared<grid_map::GridMapPclLoader>(grid_map_logger);
-  grid_map_pcl_loader->loadParameters(param_file_path_);
-  if (lane_filter_.use_lane_filter_) {
-    const auto convex_hull = getConvexHull(data_manager_.map_pcl_ptr_);
-    lanelet::ConstLanelets intersected_lanelets =
-      getIntersectedLanelets(convex_hull, lane_filter_.road_lanelets_);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr lane_filtered_map_pcl_ptr =
-      getLaneFilteredPointCloud(intersected_lanelets, data_manager_.map_pcl_ptr_);
-    grid_map_pcl_loader->setInputCloud(lane_filtered_map_pcl_ptr);
-  } else {
+  {
+    pcl::shared_ptr<grid_map::GridMapPclLoader> grid_map_pcl_loader =
+      pcl::make_shared<grid_map::GridMapPclLoader>(grid_map_logger);
+    grid_map_pcl_loader->loadParameters(param_file_path_);
     grid_map_pcl_loader->setInputCloud(data_manager_.map_pcl_ptr_);
+    createElevationMapFromPointcloud(grid_map_pcl_loader);
+    elevation_map_ = grid_map_pcl_loader->getGridMap();
   }
-  createElevationMapFromPointcloud(grid_map_pcl_loader);
-  elevation_map_ = grid_map_pcl_loader->getGridMap();
   if (use_inpaint_) {
     inpaintElevationMap(inpaint_radius_);
   }
@@ -212,12 +203,45 @@ void ElevationMapLoaderNode::inpaintElevationMap(const float radius)
 {
   // Convert elevation layer to OpenCV image to fill in holes.
   // Get the inpaint mask (nonzero pixels indicate where values need to be filled in).
+  namespace bg = boost::geometry;
+  using tier4_autoware_utils::Point2d;
+
   elevation_map_.add("inpaint_mask", 0.0);
 
   elevation_map_.setBasicLayers(std::vector<std::string>());
-  for (grid_map::GridMapIterator iterator(elevation_map_); !iterator.isPastEnd(); ++iterator) {
-    if (!elevation_map_.isValid(*iterator, layer_name_)) {
-      elevation_map_.at("inpaint_mask", *iterator) = 1.0;
+  if (lane_filter_.use_lane_filter_) {
+    for (const auto & lanelet : lane_filter_.road_lanelets_) {
+      auto lane_polygon = lanelet.polygon2d().basicPolygon();
+      grid_map::Polygon polygon;
+
+      if (lane_filter_.lane_margin_ > 0) {
+        lanelet::BasicPolygons2d out;
+        bg::strategy::buffer::distance_symmetric<double> distance_strategy(
+          lane_filter_.lane_margin_);
+        bg::strategy::buffer::join_miter join_strategy;
+        bg::strategy::buffer::end_flat end_strategy;
+        bg::strategy::buffer::point_square point_strategy;
+        bg::strategy::buffer::side_straight side_strategy;
+        bg::buffer(
+          lane_polygon, out, distance_strategy, side_strategy, join_strategy, end_strategy,
+          point_strategy);
+        lane_polygon = out.front();
+      }
+      for (const auto & p : lane_polygon) {
+        polygon.addVertex(grid_map::Position(p[0], p[1]));
+      }
+      for (grid_map_utils::PolygonIterator iterator(elevation_map_, polygon); !iterator.isPastEnd();
+           ++iterator) {
+        if (!elevation_map_.isValid(*iterator, layer_name_)) {
+          elevation_map_.at("inpaint_mask", *iterator) = 1.0;
+        }
+      }
+    }
+  } else {
+    for (grid_map::GridMapIterator iterator(elevation_map_); !iterator.isPastEnd(); ++iterator) {
+      if (!elevation_map_.isValid(*iterator, layer_name_)) {
+        elevation_map_.at("inpaint_mask", *iterator) = 1.0;
+      }
     }
   }
   cv::Mat original_image;
@@ -237,138 +261,6 @@ void ElevationMapLoaderNode::inpaintElevationMap(const float radius)
   grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 3>(
     filled_image, layer_name_, elevation_map_, min_value, max_value);
   elevation_map_.erase("inpaint_mask");
-}
-
-tier4_autoware_utils::LinearRing2d ElevationMapLoaderNode::getConvexHull(
-  const pcl::PointCloud<pcl::PointXYZ>::Ptr & input_cloud)
-{
-  // downsample pointcloud to reduce convex hull calculation cost
-  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  downsampled_cloud->points.reserve(input_cloud->points.size());
-  pcl::VoxelGrid<pcl::PointXYZ> filter;
-  filter.setInputCloud(input_cloud);
-  filter.setLeafSize(0.5, 0.5, 100.0);
-  filter.filter(*downsampled_cloud);
-
-  tier4_autoware_utils::MultiPoint2d candidate_points;
-  for (const auto & p : downsampled_cloud->points) {
-    candidate_points.emplace_back(p.x, p.y);
-  }
-
-  tier4_autoware_utils::LinearRing2d convex_hull;
-  boost::geometry::convex_hull(candidate_points, convex_hull);
-
-  return convex_hull;
-}
-
-lanelet::ConstLanelets ElevationMapLoaderNode::getIntersectedLanelets(
-  const tier4_autoware_utils::LinearRing2d & convex_hull,
-  const lanelet::ConstLanelets & road_lanelets)
-{
-  lanelet::ConstLanelets intersected_lanelets;
-  for (const auto & road_lanelet : road_lanelets) {
-    if (boost::geometry::intersects(convex_hull, road_lanelet.polygon2d().basicPolygon())) {
-      intersected_lanelets.push_back(road_lanelet);
-    }
-  }
-  return intersected_lanelets;
-}
-
-bool ElevationMapLoaderNode::checkPointWithinLanelets(
-  const pcl::PointXYZ & point, const lanelet::ConstLanelets & intersected_lanelets)
-{
-  tier4_autoware_utils::Point2d point2d(point.x, point.y);
-  for (const auto & lanelet : intersected_lanelets) {
-    if (lane_filter_.lane_margin_ > 0) {
-      if (
-        boost::geometry::distance(point2d, lanelet.polygon2d().basicPolygon()) >
-        lane_filter_.lane_margin_) {
-        continue;
-      }
-    } else {
-      if (!boost::geometry::within(point2d, lanelet.polygon2d().basicPolygon())) {
-        continue;
-      }
-    }
-
-    if (lane_filter_.lane_height_diff_thresh_ > 0) {
-      float distance = calculateDistancePointFromPlane(point, lanelet);
-      if (distance < lane_filter_.lane_height_diff_thresh_) {
-        return true;
-      }
-    } else {
-      return true;
-    }
-  }
-  return false;
-}
-
-float ElevationMapLoaderNode::calculateDistancePointFromPlane(
-  const pcl::PointXYZ & point, const lanelet::ConstLanelet & lanelet)
-{
-  const Eigen::Vector3d point_3d(point.x, point.y, point.z);
-  const Eigen::Vector2d point_2d(point.x, point.y);
-
-  const float distance_3d = boost::geometry::distance(point_3d, lanelet.centerline3d());
-  const float distance_2d = boost::geometry::distance(point_2d, lanelet.centerline2d());
-  const float distance = std::sqrt(distance_3d * distance_3d - distance_2d * distance_2d);
-
-  return distance;
-}
-
-pcl::PointCloud<pcl::PointXYZ>::Ptr ElevationMapLoaderNode::getLaneFilteredPointCloud(
-  const lanelet::ConstLanelets & intersected_lanelets,
-  const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud)
-{
-  pcl::PointCloud<pcl::PointXYZ> filtered_cloud;
-  filtered_cloud.header = cloud->header;
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr centralized_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  centralized_cloud->reserve(cloud->size());
-
-  // The coordinates of the point cloud are too large, resulting in calculation errors,
-  // so offset them to the center.
-  // https://github.com/PointCloudLibrary/pcl/issues/4895
-  Eigen::Vector4f centroid;
-  pcl::compute3DCentroid(*cloud, centroid);
-  for (const auto & p : cloud->points) {
-    centralized_cloud->points.push_back(
-      pcl::PointXYZ(p.x - centroid[0], p.y - centroid[1], p.z - centroid[2]));
-  }
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
-  voxel_grid.setLeafSize(lane_filter_.voxel_size_x_, lane_filter_.voxel_size_y_, 100000.0);
-  voxel_grid.setInputCloud(centralized_cloud);
-  voxel_grid.setSaveLeafLayout(true);
-  voxel_grid.filter(*downsampled_cloud);
-
-  std::unordered_map<size_t, pcl::PointCloud<pcl::PointXYZ>> downsampled2original_map;
-  for (const auto & p : centralized_cloud->points) {
-    if (std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)) {
-      continue;
-    }
-    const size_t index = voxel_grid.getCentroidIndex(p);
-    downsampled2original_map[index].points.push_back(p);
-  }
-
-  for (auto & point : downsampled_cloud->points) {
-    if (checkPointWithinLanelets(
-          pcl::PointXYZ(point.x + centroid[0], point.y + centroid[1], point.z + centroid[2]),
-          intersected_lanelets)) {
-      const size_t index = voxel_grid.getCentroidIndex(point);
-      for (auto & original_point : downsampled2original_map[index].points) {
-        original_point.x += centroid[0];
-        original_point.y += centroid[1];
-        original_point.z += centroid[2];
-        filtered_cloud.points.push_back(original_point);
-      }
-    }
-  }
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud_ptr;
-  filtered_cloud_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(filtered_cloud);
-  return filtered_cloud_ptr;
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr ElevationMapLoaderNode::createPointcloudFromElevationMap()
