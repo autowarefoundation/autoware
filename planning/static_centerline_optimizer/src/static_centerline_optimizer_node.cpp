@@ -374,8 +374,14 @@ std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
     utils::get_center_pose(*route_handler_ptr_, route_lane_ids.front());
 
   // ego nearest search parameters
-  const double ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
-  const double ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
+  const double ego_nearest_dist_threshold =
+    has_parameter("ego_nearest_dist_threshold")
+      ? get_parameter("ego_nearest_dist_threshold").as_double()
+      : declare_parameter<double>("ego_nearest_dist_threshold");
+  const double ego_nearest_yaw_threshold =
+    has_parameter("ego_nearest_yaw_threshold")
+      ? get_parameter("ego_nearest_yaw_threshold").as_double()
+      : declare_parameter<double>("ego_nearest_yaw_threshold");
 
   // extract path with lane id from lanelets
   const auto raw_path_with_lane_id = utils::get_path_with_lane_id(
