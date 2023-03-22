@@ -55,6 +55,7 @@ RUN mkdir -p /etc/OpenCL/vendors \
   && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd \
   && chmod 644 /etc/OpenCL/vendors/nvidia.icd
 
+## TODO: remove/re-evaluate after Ubuntu 24.04 is released
 ## Fix OpenGL issues (e.g. black screen in rviz2) due to old mesa lib in Ubuntu 22.04
 ## See https://github.com/autowarefoundation/autoware.universe/issues/2789
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common \
