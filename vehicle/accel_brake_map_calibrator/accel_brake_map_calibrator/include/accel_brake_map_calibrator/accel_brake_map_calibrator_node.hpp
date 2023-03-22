@@ -41,6 +41,7 @@
 #include "tier4_external_api_msgs/msg/calibration_status.hpp"
 #include "tier4_external_api_msgs/msg/calibration_status_array.hpp"
 #include "tier4_external_api_msgs/srv/get_accel_brake_map_calibration_data.hpp"
+#include "tier4_vehicle_msgs/msg/actuation_command_stamped.hpp"
 #include "tier4_vehicle_msgs/msg/actuation_status_stamped.hpp"
 #include "tier4_vehicle_msgs/srv/update_accel_brake_map.hpp"
 
@@ -64,6 +65,7 @@ using std_msgs::msg::Float32MultiArray;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Float32Stamped;
 using tier4_external_api_msgs::msg::CalibrationStatus;
+using tier4_vehicle_msgs::msg::ActuationCommandStamped;
 using tier4_vehicle_msgs::msg::ActuationStatusStamped;
 using visualization_msgs::msg::MarkerArray;
 
@@ -107,6 +109,7 @@ private:
   rclcpp::Subscription<VelocityReport>::SharedPtr velocity_sub_;
   rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;
   rclcpp::Subscription<ActuationStatusStamped>::SharedPtr actuation_status_sub_;
+  rclcpp::Subscription<ActuationCommandStamped>::SharedPtr actuation_cmd_sub_;
 
   // Service
   rclcpp::Service<UpdateAccelBrakeMap>::SharedPtr update_map_dir_server_;
@@ -132,6 +135,7 @@ private:
 
   int get_pitch_method_;
   int update_method_;
+  int accel_brake_value_source_;
   double acceleration_ = 0.0;
   double acceleration_time_;
   double pre_acceleration_ = 0.0;
@@ -239,6 +243,9 @@ private:
     const int brake_pedal_index, const int brake_vel_index, const double measured_acc,
     const double map_acc);
   void updateTotalMapOffset(const double measured_acc, const double map_acc);
+  void callbackActuation(
+    const std_msgs::msg::Header header, const double accel, const double brake);
+  void callbackActuationCommand(const ActuationCommandStamped::ConstSharedPtr msg);
   void callbackActuationStatus(const ActuationStatusStamped::ConstSharedPtr msg);
   void callbackVelocity(const VelocityReport::ConstSharedPtr msg);
   void callbackSteer(const SteeringReport::ConstSharedPtr msg);
@@ -355,6 +362,11 @@ private:
     UPDATE_OFFSET_EACH_CELL = 0,
     UPDATE_OFFSET_TOTAL = 1,
     UPDATE_OFFSET_FOUR_CELL_AROUND = 2,
+  };
+
+  enum ACCEL_BRAKE_SOURCE {
+    STATUS = 0,
+    COMMAND = 1,
   };
 
 public:

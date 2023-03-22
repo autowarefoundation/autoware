@@ -16,6 +16,7 @@
     <remap from="~/input/velocity" to="/vehicle/status/velocity_status"/>
     <remap from="~/input/steer" to="/vehicle/status/steering_status"/>
     <remap from="~/input/actuation_status" to="/vehicle/status/actuation_status"/>
+    <remap from="~/input/actuation_cmd" to="/control/command/actuation_cmd"/>
     <remap from="~/input/update_map_dir" to="~/update_map_dir"/>
     <param name="csv_default_map_dir" value="$(var csv_default_map_dir)"/>
     <param name="csv_calibrated_map_dir" value="$(var csv_calibrated_map_dir)"/>

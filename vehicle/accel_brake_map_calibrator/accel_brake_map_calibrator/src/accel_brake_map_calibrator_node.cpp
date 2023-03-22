@@ -59,6 +59,18 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
     RCLCPP_ERROR_STREAM(get_logger(), "update_method_ is wrong. (available method: tf, file, none");
     return;
   }
+  const auto accel_brake_value_source_str =
+    declare_parameter("accel_brake_value_source", std::string("status"));
+  if (accel_brake_value_source_str == std::string("status")) {
+    accel_brake_value_source_ = ACCEL_BRAKE_SOURCE::STATUS;
+  } else if (accel_brake_value_source_str == std::string("command")) {
+    accel_brake_value_source_ = ACCEL_BRAKE_SOURCE::COMMAND;
+  } else {
+    RCLCPP_ERROR_STREAM(
+      get_logger(), "accel_brake_value_source is wrong. (available source: status, command");
+    return;
+  }
+
   update_suggest_thresh_ = declare_parameter<double>("update_suggest_thresh", 0.7);
   csv_calibrated_map_dir_ = declare_parameter("csv_calibrated_map_dir", std::string(""));
   output_accel_file_ = csv_calibrated_map_dir_ + "/accel_map.csv";
@@ -201,9 +213,16 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
     std::bind(&AccelBrakeMapCalibrator::callbackVelocity, this, _1));
   steer_sub_ = create_subscription<SteeringReport>(
     "~/input/steer", queue_size, std::bind(&AccelBrakeMapCalibrator::callbackSteer, this, _1));
-  actuation_status_sub_ = create_subscription<ActuationStatusStamped>(
-    "~/input/actuation_status", queue_size,
-    std::bind(&AccelBrakeMapCalibrator::callbackActuationStatus, this, _1));
+  if (accel_brake_value_source_ == ACCEL_BRAKE_SOURCE::STATUS) {
+    actuation_status_sub_ = create_subscription<ActuationStatusStamped>(
+      "~/input/actuation_status", queue_size,
+      std::bind(&AccelBrakeMapCalibrator::callbackActuationStatus, this, _1));
+  }
+  if (accel_brake_value_source_ == ACCEL_BRAKE_SOURCE::COMMAND) {
+    actuation_cmd_sub_ = create_subscription<ActuationCommandStamped>(
+      "~/input/actuation_cmd", queue_size,
+      std::bind(&AccelBrakeMapCalibrator::callbackActuationCommand, this, _1));
+  }
 
   // Service
   update_map_dir_server_ = create_service<UpdateAccelBrakeMap>(
@@ -481,12 +500,11 @@ void AccelBrakeMapCalibrator::callbackSteer(const SteeringReport::ConstSharedPtr
   steer_ptr_ = msg;
 }
 
-void AccelBrakeMapCalibrator::callbackActuationStatus(
-  const ActuationStatusStamped::ConstSharedPtr msg)
+void AccelBrakeMapCalibrator::callbackActuation(
+  const std_msgs::msg::Header header, const double accel, const double brake)
 {
   // get accel data
-  accel_pedal_ptr_ =
-    std::make_shared<DataStamped>(msg->status.accel_status, rclcpp::Time(msg->header.stamp));
+  accel_pedal_ptr_ = std::make_shared<DataStamped>(accel, rclcpp::Time(header.stamp));
   if (!accel_pedal_vec_.empty()) {
     const auto past_accel_ptr =
       getNearestTimeDataFromVec(accel_pedal_ptr_, dif_pedal_time_, accel_pedal_vec_);
@@ -502,8 +520,7 @@ void AccelBrakeMapCalibrator::callbackActuationStatus(
     getNearestTimeDataFromVec(accel_pedal_ptr_, pedal_to_accel_delay_, accel_pedal_vec_);
 
   // get brake data
-  brake_pedal_ptr_ =
-    std::make_shared<DataStamped>(msg->status.brake_status, rclcpp::Time(msg->header.stamp));
+  brake_pedal_ptr_ = std::make_shared<DataStamped>(brake, rclcpp::Time(header.stamp));
   if (!brake_pedal_vec_.empty()) {
     const auto past_brake_ptr =
       getNearestTimeDataFromVec(brake_pedal_ptr_, dif_pedal_time_, brake_pedal_vec_);
@@ -517,6 +534,24 @@ void AccelBrakeMapCalibrator::callbackActuationStatus(
   pushDataToVec(brake_pedal_ptr_, pedal_vec_max_size_, &brake_pedal_vec_);
   delayed_brake_pedal_ptr_ =
     getNearestTimeDataFromVec(brake_pedal_ptr_, pedal_to_accel_delay_, brake_pedal_vec_);
+}
+
+void AccelBrakeMapCalibrator::callbackActuationCommand(
+  const ActuationCommandStamped::ConstSharedPtr msg)
+{
+  const auto header = msg->header;
+  const auto accel = msg->actuation.accel_cmd;
+  const auto brake = msg->actuation.brake_cmd;
+  callbackActuation(header, accel, brake);
+}
+
+void AccelBrakeMapCalibrator::callbackActuationStatus(
+  const ActuationStatusStamped::ConstSharedPtr msg)
+{
+  const auto header = msg->header;
+  const auto accel = msg->status.accel_status;
+  const auto brake = msg->status.brake_status;
+  callbackActuation(header, accel, brake);
 }
 
 bool AccelBrakeMapCalibrator::callbackUpdateMapService(
