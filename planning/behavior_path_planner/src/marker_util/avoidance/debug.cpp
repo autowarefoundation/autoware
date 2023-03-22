@@ -337,7 +337,45 @@ MarkerArray createPredictedVehiclePositions(const PathWithLaneId & path, std::st
   return msg;
 }
 
-MarkerArray createTargetObjectsMarkerArray(
+MarkerArray createAvoidableTargetObjectsMarkerArray(
+  const behavior_path_planner::ObjectDataArray & objects, std::string && ns)
+{
+  MarkerArray msg;
+  msg.markers.reserve(objects.size() * 3);
+
+  appendMarkerArray(
+    createObjectsCubeMarkerArray(
+      objects, ns + "_cube", createMarkerScale(3.0, 1.5, 1.5),
+      createMarkerColor(1.0, 1.0, 0.0, 0.8)),
+    &msg);
+
+  appendMarkerArray(createObjectInfoMarkerArray(objects, ns + "_info"), &msg);
+
+  {
+    for (const auto & object : objects) {
+      const auto pos = object.object.kinematics.initial_pose_with_covariance.pose.position;
+
+      {
+        auto marker = createDefaultMarker(
+          "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns + "_envelope_polygon", 0L,
+          Marker::LINE_STRIP, createMarkerScale(0.1, 0.0, 0.0),
+          createMarkerColor(1.0, 1.0, 1.0, 0.999));
+
+        for (const auto & p : object.envelope_poly.outer()) {
+          marker.points.push_back(createPoint(p.x(), p.y(), pos.z));
+        }
+
+        marker.points.push_back(marker.points.front());
+        marker.id = uuidToInt32(object.object.object_id);
+        msg.markers.push_back(marker);
+      }
+    }
+  }
+
+  return msg;
+}
+
+MarkerArray createUnavoidableTargetObjectsMarkerArray(
   const behavior_path_planner::ObjectDataArray & objects, std::string && ns)
 {
   MarkerArray msg;
