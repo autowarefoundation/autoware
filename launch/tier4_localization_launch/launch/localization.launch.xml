@@ -6,6 +6,7 @@
   <arg name="random_downsample_filter_param_path"/>
   <arg name="ndt_scan_matcher_param_path"/>
   <arg name="localization_error_monitor_param_path"/>
+  <arg name="ekf_localizer_param_path"/>
   <arg name="pose_initializer_param_path"/>
   <arg name="pose_initializer_common_param_path"/>
 
