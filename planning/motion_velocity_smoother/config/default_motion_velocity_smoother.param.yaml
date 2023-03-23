@@ -48,5 +48,11 @@
     post_sparse_resample_dt: 0.1             # resample time interval for sparse sampling [s]
     post_sparse_min_interval_distance: 1.0   # minimum points-interval length for sparse sampling [m]
 
+    # steering angle rate limit parameters
+    max_steering_angle_rate: 40.0            # maximum steering angle rate [degree/s]
+    resample_ds: 0.1                         # distance between trajectory points [m]
+    curvature_threshold: 0.02                # if curvature > curvature_threshold, steeringRateLimit is triggered [1/m]
+    curvature_calculation_distance: 1.0      # distance of points while curvature is calculating [m]
+
     # system
     over_stop_velocity_warn_thr: 1.389  # used to check if the optimization exceeds the input velocity on the stop point

@@ -24,6 +24,12 @@ rclcpp_components_register_node(obstacle_cruise_planner_core
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  ament_add_ros_isolated_gtest(test_${PROJECT_NAME}
+    test/test_${PROJECT_NAME}_node_interface.cpp
+  )
+  target_link_libraries(test_${PROJECT_NAME}
+  obstacle_cruise_planner_core
+  )
 endif()
 
 ament_auto_package(
