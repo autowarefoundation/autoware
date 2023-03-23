@@ -32,6 +32,7 @@
 #include <vector>
 namespace behavior_path_planner
 {
+#ifdef USE_OLD_ARCHITECTURE
 std::string getTopicName(const ExternalRequestLaneChangeModule::Direction & direction)
 {
   const std::string direction_name =
@@ -771,5 +772,6 @@ ExternalRequestLaneChangeLeftModule::ExternalRequestLaneChangeLeftModule(
 : ExternalRequestLaneChangeModule{name, node, parameters, Direction::LEFT}
 {
 }
+#endif
 
 }  // namespace behavior_path_planner

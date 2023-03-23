@@ -20,6 +20,7 @@ set(common_src
   src/scene_module/pull_over/pull_over_module.cpp
   src/scene_module/side_shift/side_shift_module.cpp
   src/scene_module/lane_change/lane_change_module.cpp
+  src/scene_module/lane_change/external_request_lane_change_module.cpp
   src/turn_signal_decider.cpp
   src/util/avoidance/util.cpp
   src/util/lane_change/util.cpp
@@ -49,7 +50,6 @@ if(COMPILE_WITH_OLD_ARCHITECTURE)
     src/behavior_tree_manager.cpp
     src/scene_module/scene_module_bt_node_interface.cpp
     src/scene_module/lane_following/lane_following_module.cpp
-    src/scene_module/lane_change/external_request_lane_change_module.cpp
     src/scene_module/pull_over/pull_over_module.cpp
     ${common_src}
   )

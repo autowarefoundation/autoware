@@ -47,6 +47,8 @@ using marker_utils::CollisionCheckDebug;
 using tier4_planning_msgs::msg::LaneChangeDebugMsg;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
+#ifdef USE_OLD_ARCHITECTURE
+
 class ExternalRequestLaneChangeModule : public SceneModuleInterface
 {
 public:
@@ -151,6 +153,7 @@ public:
     const std::string & name, rclcpp::Node & node,
     std::shared_ptr<LaneChangeParameters> parameters);
 };
+#endif
 
 }  // namespace behavior_path_planner
 // clang-format off

@@ -1105,9 +1105,8 @@ std::vector<lanelet::ConstLanelets> RouteHandler::getPrecedingLaneletSequence(
     routing_graph_ptr_, lanelet, length, exclude_lanelets);
 }
 
-bool RouteHandler::getLaneChangeTarget(
-  const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet,
-  const Direction direction) const
+boost::optional<lanelet::ConstLanelet> RouteHandler::getLaneChangeTarget(
+  const lanelet::ConstLanelets & lanelets, const Direction direction) const
 {
   for (const auto & lanelet : lanelets) {
     const int num = getNumLaneToPreferredLane(lanelet, direction);
@@ -1118,9 +1117,7 @@ bool RouteHandler::getLaneChangeTarget(
     if (direction == Direction::NONE || direction == Direction::RIGHT) {
       if (num < 0) {
         if (!!routing_graph_ptr_->right(lanelet)) {
-          const auto right_lanelet = routing_graph_ptr_->right(lanelet);
-          *target_lanelet = right_lanelet.get();
-          return true;
+          return routing_graph_ptr_->right(lanelet);
         }
       }
     }
@@ -1128,16 +1125,42 @@ bool RouteHandler::getLaneChangeTarget(
     if (direction == Direction::NONE || direction == Direction::LEFT) {
       if (num > 0) {
         if (!!routing_graph_ptr_->left(lanelet)) {
-          const auto left_lanelet = routing_graph_ptr_->left(lanelet);
-          *target_lanelet = left_lanelet.get();
-          return true;
+          return routing_graph_ptr_->left(lanelet);
         }
       }
     }
   }
 
-  *target_lanelet = lanelets.front();
-  return false;
+  return boost::none;
+}
+
+boost::optional<lanelet::ConstLanelet> RouteHandler::getLaneChangeTargetExceptPreferredLane(
+  const lanelet::ConstLanelets & lanelets, const Direction direction) const
+{
+  for (const auto & lanelet : lanelets) {
+    if (direction == Direction::RIGHT) {
+      // Get right lanelet if preferred lane is on the left
+      if (getNumLaneToPreferredLane(lanelet, direction) < 0) {
+        continue;
+      }
+
+      if (!!routing_graph_ptr_->right(lanelet)) {
+        return routing_graph_ptr_->right(lanelet);
+      }
+    }
+
+    if (direction == Direction::LEFT) {
+      // Get left lanelet if preferred lane is on the right
+      if (getNumLaneToPreferredLane(lanelet, direction) > 0) {
+        continue;
+      }
+      if (!!routing_graph_ptr_->left(lanelet)) {
+        return routing_graph_ptr_->left(lanelet);
+      }
+    }
+  }
+
+  return boost::none;
 }
 
 bool RouteHandler::getRightLaneChangeTargetExceptPreferredLane(

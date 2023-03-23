@@ -35,8 +35,8 @@ struct BehaviorPathPlannerParameters
   ModuleConfigParameters config_side_shift;
   ModuleConfigParameters config_lane_change_left;
   ModuleConfigParameters config_lane_change_right;
-  ModuleConfigParameters config_external_lane_change_left;
-  ModuleConfigParameters config_external_lane_change_right;
+  ModuleConfigParameters config_ext_request_lane_change_left;
+  ModuleConfigParameters config_ext_request_lane_change_right;
 
   double backward_path_length;
   double forward_path_length;

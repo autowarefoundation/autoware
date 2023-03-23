@@ -204,6 +204,15 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     planner_manager_ =
       std::make_shared<PlannerManager>(*this, lane_following_param_ptr_, p.verbose);
 
+    const auto register_and_create_publisher = [&](const auto & manager) {
+      const auto & module_name = manager->getModuleName();
+      planner_manager_->registerSceneModuleManager(manager);
+      path_candidate_publishers_.emplace(
+        module_name, create_publisher<Path>(path_candidate_name_space + module_name, 1));
+      path_reference_publishers_.emplace(
+        module_name, create_publisher<Path>(path_reference_name_space + module_name, 1));
+    };
+
     if (p.config_pull_out.enable_module) {
       auto manager = std::make_shared<PullOutModuleManager>(
         this, "pull_out", p.config_pull_out, pull_out_param_ptr_);
@@ -238,24 +247,32 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       const std::string module_topic = "lane_change_left";
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_lane_change_left, lane_change_param_ptr_,
-        route_handler::Direction::LEFT);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        module_topic, create_publisher<Path>(path_candidate_name_space + module_topic, 1));
-      path_reference_publishers_.emplace(
-        module_topic, create_publisher<Path>(path_reference_name_space + module_topic, 1));
+        route_handler::Direction::LEFT, LaneChangeModuleType::NORMAL);
+      register_and_create_publisher(manager);
     }
 
     if (p.config_lane_change_right.enable_module) {
       const std::string module_topic = "lane_change_right";
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_lane_change_right, lane_change_param_ptr_,
-        route_handler::Direction::RIGHT);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        module_topic, create_publisher<Path>(path_candidate_name_space + module_topic, 1));
-      path_reference_publishers_.emplace(
-        module_topic, create_publisher<Path>(path_reference_name_space + module_topic, 1));
+        route_handler::Direction::RIGHT, LaneChangeModuleType::NORMAL);
+      register_and_create_publisher(manager);
+    }
+
+    if (p.config_ext_request_lane_change_right.enable_module) {
+      const std::string module_topic = "ext_request_lane_change_right";
+      auto manager = std::make_shared<LaneChangeModuleManager>(
+        this, module_topic, p.config_ext_request_lane_change_right, lane_change_param_ptr_,
+        route_handler::Direction::RIGHT, LaneChangeModuleType::EXTERNAL_REQUEST);
+      register_and_create_publisher(manager);
+    }
+
+    if (p.config_ext_request_lane_change_left.enable_module) {
+      const std::string module_topic = "ext_request_lane_change_left";
+      auto manager = std::make_shared<LaneChangeModuleManager>(
+        this, module_topic, p.config_ext_request_lane_change_left, lane_change_param_ptr_,
+        route_handler::Direction::LEFT, LaneChangeModuleType::EXTERNAL_REQUEST);
+      register_and_create_publisher(manager);
     }
 
     if (p.config_avoidance.enable_module) {
@@ -344,6 +361,28 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
       declare_parameter<bool>(ns + "enable_simultaneous_execution");
     p.config_lane_change_right.priority = declare_parameter<int>(ns + "priority");
     p.config_lane_change_right.max_module_size = declare_parameter<int>(ns + "max_module_size");
+  }
+
+  {
+    const std::string ns = "ext_request_lane_change_right.";
+    p.config_ext_request_lane_change_right.enable_module =
+      declare_parameter<bool>(ns + "enable_module");
+    p.config_ext_request_lane_change_right.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_ext_request_lane_change_right.priority = declare_parameter<int>(ns + "priority");
+    p.config_ext_request_lane_change_right.max_module_size =
+      declare_parameter<int>(ns + "max_module_size");
+  }
+
+  {
+    const std::string ns = "ext_request_lane_change_left.";
+    p.config_ext_request_lane_change_left.enable_module =
+      declare_parameter<bool>(ns + "enable_module");
+    p.config_ext_request_lane_change_left.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_ext_request_lane_change_left.priority = declare_parameter<int>(ns + "priority");
+    p.config_ext_request_lane_change_left.max_module_size =
+      declare_parameter<int>(ns + "max_module_size");
   }
 
   {

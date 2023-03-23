@@ -296,9 +296,10 @@ public:
   PathWithLaneId getCenterLinePath(
     const lanelet::ConstLanelets & lanelet_sequence, const double s_start, const double s_end,
     bool use_exact = true) const;
-  bool getLaneChangeTarget(
-    const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet,
-    const Direction direction = Direction::NONE) const;
+  boost::optional<lanelet::ConstLanelet> getLaneChangeTarget(
+    const lanelet::ConstLanelets & lanelets, const Direction direction = Direction::NONE) const;
+  boost::optional<lanelet::ConstLanelet> getLaneChangeTargetExceptPreferredLane(
+    const lanelet::ConstLanelets & lanelets, const Direction direction) const;
   bool getRightLaneChangeTargetExceptPreferredLane(
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;
   bool getLeftLaneChangeTargetExceptPreferredLane(

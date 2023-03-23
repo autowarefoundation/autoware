@@ -60,7 +60,8 @@ public:
   LaneChangeModule(
     const std::string & name, rclcpp::Node & node,
     const std::shared_ptr<LaneChangeParameters> & parameters,
-    const std::shared_ptr<RTCInterface> & rtc_interface, Direction direction);
+    const std::shared_ptr<RTCInterface> & rtc_interface, Direction direction,
+    LaneChangeModuleType type);
 #endif
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
@@ -135,6 +136,7 @@ private:
   UUID candidate_uuid_;
 #else
   Direction direction_{Direction::NONE};
+  LaneChangeModuleType type_{LaneChangeModuleType::NORMAL};
 #endif
 
   void resetParameters();
@@ -198,8 +200,10 @@ private:
 #endif
 
   PathWithLaneId getReferencePath() const;
+#ifdef USE_OLD_ARCHITECTURE
   lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes, const double lane_change_lane_length) const;
+#endif
   std::pair<bool, bool> getSafePath(
     const lanelet::ConstLanelets & lane_change_lanes, const double check_distance,
     LaneChangePath & safe_path) const;

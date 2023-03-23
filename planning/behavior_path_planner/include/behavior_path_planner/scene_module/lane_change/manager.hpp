@@ -33,12 +33,13 @@ class LaneChangeModuleManager : public SceneModuleManagerInterface
 public:
   LaneChangeModuleManager(
     rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-    std::shared_ptr<LaneChangeParameters> parameters, Direction direction);
+    std::shared_ptr<LaneChangeParameters> parameters, const Direction direction,
+    const LaneChangeModuleType type);
 
   std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
     return std::make_shared<LaneChangeModule>(
-      name_, *node_, parameters_, rtc_interface_, direction_);
+      name_, *node_, parameters_, rtc_interface_, direction_, type_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
@@ -51,6 +52,8 @@ private:
   std::vector<std::shared_ptr<LaneChangeModule>> registered_modules_;
 
   Direction direction_;
+
+  LaneChangeModuleType type_;
 };
 
 }  // namespace behavior_path_planner
