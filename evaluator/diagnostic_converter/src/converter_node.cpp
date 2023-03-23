@@ -14,6 +14,23 @@
 
 #include "converter_node.hpp"
 
+#include <regex>
+
+namespace
+{
+std::string removeInvalidTopicString(std::string input_string)
+{
+  std::regex pattern{R"([a-zA-Z0-9/_]+)"};
+
+  std::string result;
+  for (std::sregex_iterator itr(std::begin(input_string), std::end(input_string), pattern), end;
+       itr != end; ++itr) {
+    result += itr->str();
+  }
+  return result;
+}
+}  // namespace
+
 namespace diagnostic_converter
 {
 DiagnosticConverter::DiagnosticConverter(const rclcpp::NodeOptions & node_options)
@@ -41,8 +58,8 @@ void DiagnosticConverter::onDiagnostic(
   for (const auto & status : diag_msg->status) {
     std::string status_topic = base_topic + (status.name.empty() ? "" : "_" + status.name);
     for (const auto & key_value : status.values) {
-      getPublisher(status_topic + "_" + key_value.key, diag_idx)
-        ->publish(createUserDefinedValue(key_value));
+      const auto valid_topic_name = removeInvalidTopicString(status_topic + "_" + key_value.key);
+      getPublisher(valid_topic_name, diag_idx)->publish(createUserDefinedValue(key_value));
     }
   }
 }
