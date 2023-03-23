@@ -191,10 +191,10 @@ The avoidance target should be limited to stationary objects (you should not avo
 
 Not only the length from the centerline, but also the length from the road shoulder is calculated and used for the filtering process. It calculates the ratio of _the actual length between the the object's center and the center line_ `shift_length` and _the maximum length the object can shift_ `shiftable_length`.
 
-```math
-l_D = l_a - \frac{width}{2}
+$$
+l_D = l_a - \frac{width}{2} \\
 ratio =  \frac{l_d}{l_D}
-```
+$$
 
 - $l_d$ : actual shift length
 - $l_D$ : shiftable length
@@ -485,9 +485,9 @@ After calculating the future position of Ego and object, the module calculates t
 
 The value of the longitudinal margin is calculated based on Responsibility-Sensitive Safety theory ([RSS](https://newsroom.intel.com/articles/rss-explained-five-rules-autonomous-vehicle-safety/#gs.ljzofv)). The `safety_check_idling_time` represents $T_{idle}$, and `safety_check_accel_for_rss` represents $a_{max}$.
 
-```math
+$$
 D_{lon} = V_{ego}T_{idle} + \frac{1}{2}a_{max}T_{idle}^2 + \frac{(V_{ego} + a_{max}T_{idle})^2}{2a_{max}} - \frac{V_{obj}^2}{2a_{max}}
-```
+$$
 
 The lateral margin is changeable based on ego longitudinal velocity. If the vehicle is driving at a high speed, the lateral margin should be larger, and if the vehicle is driving at a low speed, the value of the lateral margin should be set to a smaller value. Thus, the lateral margin for each vehicle speed is set as a parameter, and the module determines the lateral margin from the current vehicle speed as shown in the following figure.
 
@@ -534,9 +534,9 @@ The module determines that it is NOT passable without avoidance if the object ov
 lateral_passable_collision_margin: 0.5 # [-]
 ```
 
-```math
+$$
 L_{overhang} < \frac{W}{2} + L_{margin} (not passable)
-```
+$$
 
 The $W$ represents vehicle width, and $L_{margin}$ represents `lateral_passable_collision_margin`.
 
@@ -550,9 +550,9 @@ The current behavior in unsafe condition is just slow down and it is so conserva
 
 The YIELD maneuver is executed **ONLY** when the vehicle has **NOT** initiated avoidance maneuver. The module has a threshold parameter (`avoidance_initiate_threshold`) for the amount of shifting and determines that the vehicle is initiating avoidance if the vehicle current shift exceeds the threshold.
 
-```math
+$$
 SHIFT_{current} > L_{threshold}
-```
+$$
 
 ![fig1](./image/avoidance/yield_limitation.svg)
 
