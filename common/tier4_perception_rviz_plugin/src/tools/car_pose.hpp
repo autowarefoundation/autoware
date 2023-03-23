@@ -73,6 +73,17 @@ public:
   [[nodiscard]] Object createObjectMsg() const override;
 };
 
+class BikeInitialPoseTool : public InteractiveObjectTool
+{
+public:
+  BikeInitialPoseTool();
+  void onInitialize() override;
+  [[nodiscard]] Object createObjectMsg() const override;
+
+private:
+  rviz_common::properties::EnumProperty * label_;
+};
+
 }  // namespace rviz_plugins
 
 #endif  // TOOLS__CAR_POSE_HPP_

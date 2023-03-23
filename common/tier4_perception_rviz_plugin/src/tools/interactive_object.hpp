@@ -52,6 +52,7 @@
 #include <QObject>
 #include <rclcpp/node.hpp>
 #include <rviz_common/properties/bool_property.hpp>
+#include <rviz_common/properties/enum_property.hpp>
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/string_property.hpp>
 #include <rviz_common/properties/tf_frame_property.hpp>

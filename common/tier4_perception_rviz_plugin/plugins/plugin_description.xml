@@ -11,6 +11,10 @@
          type="rviz_plugins::BusInitialPoseTool"
          base_class_type="rviz_common::Tool">
   </class>
+  <class name="rviz_plugins/BikeInitialPoseTool"
+         type="rviz_plugins::BikeInitialPoseTool"
+         base_class_type="rviz_common::Tool">
+  </class>
   <class name="rviz_plugins/UnknownInitialPoseTool"
          type="rviz_plugins::UnknownInitialPoseTool"
          base_class_type="rviz_common::Tool">
