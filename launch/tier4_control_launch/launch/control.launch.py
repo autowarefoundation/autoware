@@ -199,6 +199,11 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             vehicle_cmd_gate_param,
             vehicle_info_param,
+            {
+                "check_external_emergency_heartbeat": LaunchConfiguration(
+                    "check_external_emergency_heartbeat"
+                ),
+            },
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
@@ -338,6 +343,7 @@ def generate_launch_description():
     add_launch_arg("external_cmd_selector_param_path")
     add_launch_arg("aeb_param_path")
     add_launch_arg("enable_autonomous_emergency_braking")
+    add_launch_arg("check_external_emergency_heartbeat")
 
     # component
     add_launch_arg("use_intra_process", "false", "use ROS2 component container communication")
