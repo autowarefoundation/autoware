@@ -18,7 +18,7 @@
 
 namespace
 {
-std::string removeInvalidTopicString(std::string input_string)
+std::string removeInvalidTopicString(const std::string & input_string)
 {
   std::regex pattern{R"([a-zA-Z0-9/_]+)"};
 
@@ -28,6 +28,20 @@ std::string removeInvalidTopicString(std::string input_string)
     result += itr->str();
   }
   return result;
+}
+
+std::string removeUnitString(const std::string & input_string)
+{
+  for (size_t i = 0; i < input_string.size(); ++i) {
+    if (input_string.at(i) == '[') {
+      if (i != 0 && input_string.at(i - 1) == ' ') {
+        // Blank is also removed
+        return std::string{input_string.begin(), input_string.begin() + i - 1};
+      }
+      return std::string{input_string.begin(), input_string.begin() + i};
+    }
+  }
+  return input_string;
 }
 }  // namespace
 
@@ -68,7 +82,7 @@ UserDefinedValue DiagnosticConverter::createUserDefinedValue(const KeyValue & ke
 {
   UserDefinedValue param_msg;
   param_msg.type.data = UserDefinedValueType::DOUBLE;
-  param_msg.value = key_value.value;
+  param_msg.value = removeUnitString(key_value.value);
   return param_msg;
 }
 
