@@ -60,6 +60,7 @@ public:
     bool use_pass_judge_line;
     double state_clear_time;
     double hold_stop_margin_distance;
+    double distance_to_judge_over_stop_line;
   };
 
 public:

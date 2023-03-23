@@ -12,14 +12,15 @@ This module is activated when there is a detection area on the target lane.
 
 ### Module Parameters
 
-| Parameter                   | Type   | Description                                                                                        |
-| --------------------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| `use_dead_line`             | bool   | [-] weather to use dead line or not                                                                |
-| `use_pass_judge_line`       | bool   | [-] weather to use pass judge line or not                                                          |
-| `state_clear_time`          | double | [s] when the vehicle is stopping for certain time without incoming obstacle, move to STOPPED state |
-| `stop_margin`               | double | [m] a margin that the vehicle tries to stop before stop_line                                       |
-| `dead_line_margin`          | double | [m] ignore threshold that vehicle behind is collide with ego vehicle or not                        |
-| `hold_stop_margin_distance` | double | [m] parameter for restart prevention (See Algorithm section)                                       |
+| Parameter                          | Type   | Description                                                                                        |
+| ---------------------------------- | ------ | -------------------------------------------------------------------------------------------------- |
+| `use_dead_line`                    | bool   | [-] weather to use dead line or not                                                                |
+| `use_pass_judge_line`              | bool   | [-] weather to use pass judge line or not                                                          |
+| `state_clear_time`                 | double | [s] when the vehicle is stopping for certain time without incoming obstacle, move to STOPPED state |
+| `stop_margin`                      | double | [m] a margin that the vehicle tries to stop before stop_line                                       |
+| `dead_line_margin`                 | double | [m] ignore threshold that vehicle behind is collide with ego vehicle or not                        |
+| `hold_stop_margin_distance`        | double | [m] parameter for restart prevention (See Algorithm section)                                       |
+| `distance_to_judge_over_stop_line` | double | [m] parameter for judging that the stop line has been crossed                                      |
 
 ### Inner-workings / Algorithm
 

@@ -7,3 +7,4 @@
       use_pass_judge_line: false
       state_clear_time: 2.0
       hold_stop_margin_distance: 0.0
+      distance_to_judge_over_stop_line: 0.5
