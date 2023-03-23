@@ -45,6 +45,12 @@ std::string getModuleName(const uint8_t module_type)
     case Module::EXT_REQUEST_LANE_CHANGE_RIGHT: {
       return "ext_request_lane_change_right";
     }
+    case Module::AVOIDANCE_BY_LC_LEFT: {
+      return "avoidance_by_lane_change_left";
+    }
+    case Module::AVOIDANCE_BY_LC_RIGHT: {
+      return "avoidance_by_lane_change_right";
+    }
     case Module::AVOIDANCE_LEFT: {
       return "avoidance_left";
     }
@@ -87,9 +93,10 @@ bool isPathChangeModule(const uint8_t module_type)
   if (
     module_type == Module::LANE_CHANGE_LEFT || module_type == Module::LANE_CHANGE_RIGHT ||
     module_type == Module::EXT_REQUEST_LANE_CHANGE_LEFT ||
-    module_type == Module::EXT_REQUEST_LANE_CHANGE_RIGHT || module_type == Module::AVOIDANCE_LEFT ||
-    module_type == Module::AVOIDANCE_RIGHT || module_type == Module::PULL_OVER ||
-    module_type == Module::PULL_OUT) {
+    module_type == Module::EXT_REQUEST_LANE_CHANGE_RIGHT ||
+    module_type == Module::AVOIDANCE_BY_LC_LEFT || module_type == Module::AVOIDANCE_BY_LC_RIGHT ||
+    module_type == Module::AVOIDANCE_LEFT || module_type == Module::AVOIDANCE_RIGHT ||
+    module_type == Module::PULL_OVER || module_type == Module::PULL_OUT) {
     return true;
   }
   return false;
@@ -98,7 +105,7 @@ bool isPathChangeModule(const uint8_t module_type)
 RTCManagerPanel::RTCManagerPanel(QWidget * parent) : rviz_common::Panel(parent)
 {
   // TODO(tanaka): replace this magic number to Module::SIZE
-  const size_t module_size = 14;
+  const size_t module_size = 18;
   auto_modes_.reserve(module_size);
   auto * v_layout = new QVBoxLayout;
   auto vertical_header = new QHeaderView(Qt::Vertical);
