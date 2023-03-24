@@ -178,6 +178,7 @@ private:
     double steer_rate_weight;
 
     // avoidance
+    double max_longitudinal_margin_for_bound_violation;
     double max_avoidance_cost;
     double avoidance_cost_margin;
     double avoidance_cost_band_length;
@@ -248,6 +249,8 @@ private:
     std::vector<ReferencePoint> & ref_points,
     const std::vector<geometry_msgs::msg::Point> & left_bound,
     const std::vector<geometry_msgs::msg::Point> & right_bound) const;
+  std::vector<ReferencePoint> extendViolatedBounds(
+    const std::vector<ReferencePoint> & ref_points) const;
   void updateVehicleBounds(
     std::vector<ReferencePoint> & ref_points,
     const SplineInterpolationPoints2d & ref_points_spline) const;

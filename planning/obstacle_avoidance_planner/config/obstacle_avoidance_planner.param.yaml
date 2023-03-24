@@ -61,7 +61,7 @@
     mpt:
       option:
         # TODO(murooka) enable the following. Currently enabling the flag makes QP so heavy
-        steer_limit_constraint: false # true
+        steer_limit_constraint: false
         visualize_sampling_num: 1
         enable_manual_warm_start: false
         enable_warm_start: true
@@ -102,10 +102,11 @@
 
       # avoidance
       avoidance:
-        max_avoidance_cost: 0.5            # [m]
-        avoidance_cost_margin: 0.0         # [m]
-        avoidance_cost_band_length: 5.0    # [m]
-        avoidance_cost_decrease_rate: 0.05 # decreased cost per point interval
+        max_longitudinal_margin_for_bound_violation: 1.0 # [m]
+        max_avoidance_cost: 0.5                          # [m]
+        avoidance_cost_margin: 0.0                       # [m]
+        avoidance_cost_band_length: 5.0                  # [m]
+        avoidance_cost_decrease_rate: 0.05               # decreased cost per point interval
 
         weight:
           lat_error_weight: 0.0     # weight for lateral error
