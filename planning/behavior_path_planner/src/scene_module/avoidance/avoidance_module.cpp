@@ -1115,8 +1115,8 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
         if (!data.avoiding_now) {
           o.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
           debug.unavoidable_objects.push_back(o);
+          continue;
         }
-        continue;
       }
 
       // This is the case of exceeding the jerk limit. Use the sharp avoidance ego speed.
@@ -1129,8 +1129,8 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
         if (!data.avoiding_now) {
           o.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
           debug.unavoidable_objects.push_back(o);
+          continue;
         }
-        continue;
       }
     }
     const auto avoiding_distance =
