@@ -58,6 +58,7 @@ RUN mkdir -p /etc/OpenCL/vendors \
 ## TODO: remove/re-evaluate after Ubuntu 24.04 is released
 ## Fix OpenGL issues (e.g. black screen in rviz2) due to old mesa lib in Ubuntu 22.04
 ## See https://github.com/autowarefoundation/autoware.universe/issues/2789
+# hadolint ignore=DL3008
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common \
   && apt-add-repository ppa:kisak/kisak-mesa \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y \
