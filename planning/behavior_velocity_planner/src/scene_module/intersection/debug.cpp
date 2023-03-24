@@ -176,10 +176,12 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
 
   const auto now = this->clock_->now();
 
-  appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(
-      {debug_data_.stop_wall_pose}, "intersection", now, module_id_),
-    &wall_marker, now);
+  if (state_machine_.getState() == StateMachine::State::STOP) {
+    appendMarkerArray(
+      virtual_wall_marker_creator_->createStopVirtualWallMarker(
+        {debug_data_.stop_wall_pose}, "intersection", now, module_id_),
+      &wall_marker, now);
+  }
   return wall_marker;
 }
 

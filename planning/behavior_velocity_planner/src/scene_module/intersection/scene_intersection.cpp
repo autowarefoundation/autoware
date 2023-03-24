@@ -271,7 +271,6 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
     constexpr double v = 0.0;
     planning_utils::setVelocityFromIndex(stop_line_idx.value(), v, path);
-    debug_data_.stop_required = true;
     const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
     debug_data_.stop_wall_pose =
       planning_utils::getAheadPose(stop_line_idx.value(), base_link2front, *path);
