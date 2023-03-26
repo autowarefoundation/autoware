@@ -24,7 +24,7 @@ runs:
 
     - name: Set image name
       id: set-image-name
-      run: echo "::set-output name=image-name::ghcr.io/${{ github.repository_owner }}/${{ inputs.package-name }}"
+      run: echo "image-name=ghcr.io/${{ github.repository_owner }}/${{ inputs.package-name }}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Create Docker manifest for latest

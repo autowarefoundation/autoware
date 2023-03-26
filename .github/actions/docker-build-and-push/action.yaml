@@ -51,7 +51,7 @@ runs:
         tags_multiline="${tags_multiline//$'\n'/'%0A'}"
         tags_multiline="${tags_multiline//$'\r'/'%0D'}"
 
-        echo ::set-output name=tags::$tags_multiline
+        echo "tags=$tags_multiline" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Docker meta for devel
