@@ -55,6 +55,17 @@ RUN mkdir -p /etc/OpenCL/vendors \
   && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd \
   && chmod 644 /etc/OpenCL/vendors/nvidia.icd
 
+## TODO: remove/re-evaluate after Ubuntu 24.04 is released
+## Fix OpenGL issues (e.g. black screen in rviz2) due to old mesa lib in Ubuntu 22.04
+## See https://github.com/autowarefoundation/autoware.universe/issues/2789
+# hadolint ignore=DL3008
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y software-properties-common \
+  && apt-add-repository ppa:kisak/kisak-mesa \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+  libegl-mesa0 libegl1-mesa-dev libgbm-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri libglapi-mesa libglx-mesa0 \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
 ## Create entrypoint
 # hadolint ignore=DL3059
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
