@@ -62,8 +62,6 @@ jobs:
 
       - name: Enable auto-merge
         if: ${{ steps.create-pr.outputs.pull-request-operation == 'created' }}
-        uses: peter-evans/enable-pull-request-automerge@v2
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
-          merge-method: squash
+        run: gh pr merge --squash --auto "${{ steps.create-pr.outputs.pull-request-number }}"
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
