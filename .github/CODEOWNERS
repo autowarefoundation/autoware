@@ -46,7 +46,7 @@ common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp @autowarefoundation/
 common/time_utils/** christopherj.ho@gmail.com @autowarefoundation/autoware-global-codeowners
 common/trtexec_vendor/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tvm_utility/** ambroise.vincent@arm.com xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
-control/autonomous_emergency_braking/** yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
+control/autonomous_emergency_braking/** takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/control_performance_analysis/** berkay@leodrive.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/external_cmd_selector/** fumiya.watanabe@tier4.jp kenji.miyake@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/joy_controller/** fumiya.watanabe@tier4.jp kenji.miyake@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -87,6 +87,7 @@ map/map_height_fitter/** isamu.takagi@tier4.jp yamato.ando@tier4.jp @autowarefou
 map/map_loader/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
 map/map_tf_generator/** azumi.suzuki@tier4.jp @autowarefoundation/autoware-global-codeowners
 map/util/lanelet2_map_preprocessor/** ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/bytetrack/** manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/compare_map_segmentation/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/crosswalk_traffic_light_estimator/** satoshi.ota@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/detected_object_feature_remover/** tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
