@@ -273,7 +273,7 @@ bool MPC::getData(
   data->nearest_idx = static_cast<int>(nearest_idx);
   data->steer = static_cast<double>(current_steer.steering_tire_angle);
   data->lateral_err = MPCUtils::calcLateralError(current_pose, data->nearest_pose);
-  data->yaw_err = autoware::common::helper_functions::wrap_angle(
+  data->yaw_err = tier4_autoware_utils::normalizeRadian(
     tf2::getYaw(current_pose.orientation) - tf2::getYaw(data->nearest_pose.orientation));
 
   /* get predicted steer */

@@ -17,7 +17,6 @@
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
-#include "geometry/common_2d.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
