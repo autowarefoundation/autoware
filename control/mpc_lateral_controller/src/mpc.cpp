@@ -284,8 +284,8 @@ bool MPC::getData(
   *m_steer_prediction_prev = data->predicted_steer;
 
   /* check error limit */
-  const double dist_err = autoware::common::geometry::distance_2d<double>(
-    current_pose.position, data->nearest_pose.position);
+  const double dist_err =
+    tier4_autoware_utils::calcDistance2d(current_pose.position, data->nearest_pose.position);
   if (dist_err > m_admissible_position_error) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       m_logger, *m_clock, duration, "position error is over limit. error = %fm, limit: %fm",

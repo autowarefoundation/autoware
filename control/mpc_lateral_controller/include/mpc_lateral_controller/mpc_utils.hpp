@@ -16,7 +16,6 @@
 #define MPC_LATERAL_CONTROLLER__MPC_UTILS_HPP_
 
 #include "eigen3/Eigen/Core"
-#include "geometry/common_2d.hpp"
 #include "helper_functions/angle_utils.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"

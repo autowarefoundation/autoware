@@ -15,8 +15,6 @@
 #ifndef MPC_LATERAL_CONTROLLER__MPC_HPP_
 #define MPC_LATERAL_CONTROLLER__MPC_HPP_
 
-#include "geometry/common_2d.hpp"
-#include "helper_functions/angle_utils.hpp"
 #include "mpc_lateral_controller/interpolate.hpp"
 #include "mpc_lateral_controller/lowpass_filter.hpp"
 #include "mpc_lateral_controller/mpc_trajectory.hpp"
