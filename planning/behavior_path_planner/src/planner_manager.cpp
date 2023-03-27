@@ -373,6 +373,7 @@ BehaviorModuleOutput PlannerManager::getReferencePath(
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(reference_path);
   output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.drivable_lanes = drivable_lanes;
 
   return output;
 }

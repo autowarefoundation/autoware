@@ -140,6 +140,10 @@ void get_turn_signal_info(
   const LaneChangePath & lane_change_path, TurnSignalInfo * turn_signal_info);
 
 std::vector<DrivableLanes> generateDrivableLanes(
+  const std::vector<DrivableLanes> original_drivable_lanes, const RouteHandler & route_handler,
+  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & lane_change_lanes);
+
+std::vector<DrivableLanes> generateDrivableLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & lane_change_lanes);
 

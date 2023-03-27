@@ -107,6 +107,9 @@ struct BehaviorModuleOutput
   TurnSignalInfo turn_signal_info{};
 
   std::optional<PoseWithUuidStamped> modified_goal{};
+
+  // drivable lanes
+  std::vector<DrivableLanes> drivable_lanes;
 };
 
 struct CandidateOutput
