@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="in_image" default="/sensing/camera/camera0/image_rect_color"/>
+  <arg name="in_image_compressed" default="$(var in_image)/compressed"/>
+  <arg name="detection_rect" default="/perception/object_recognition/detection/rois0"/>
+  <arg name="tracked_rect" default="/perception/object_recognition/detection/tracked/rois0"/>
+  <arg name="track_buffer_length" default="30"/>
+  <arg name="use_raw" default="false"/>
+  <arg name="enable_visualizer" default="true"/>
+
+  <node pkg="bytetrack" exec="bytetrack_node_exe" output="screen">
+    <remap from="~/in/rect" to="$(var detection_rect)"/>
+    <remap from="~/out/objects" to="$(var tracked_rect)"/>
+    <remap from="~/out/objects/debug/uuid" to="$(var tracked_rect)/debug/uuid"/>
+    <param name="track_buffer_length" value="$(var track_buffer_length)"/>
+  </node>
+
+  <node pkg="bytetrack" exec="bytetrack_visualizer_node_exe" output="screen" if="$(var enable_visualizer)">
+    <remap from="~/in/image" to="$(var in_image)"/>
+    <remap from="~/in/rect" to="$(var tracked_rect)"/>
+    <remap from="~/in/uuid" to="$(var tracked_rect)/debug/uuid"/>
+    <param name="use_raw" value="$(var use_raw)"/>
+  </node>
+</launch>
