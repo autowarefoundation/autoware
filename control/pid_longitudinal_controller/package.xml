@@ -20,7 +20,6 @@
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_control_msgs</depend>
-  <depend>autoware_auto_geometry</depend>
   <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>diagnostic_msgs</depend>
