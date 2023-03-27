@@ -24,12 +24,12 @@ repos:
         args: [-c, .markdownlint.yaml, --fix]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.4
+    rev: v3.0.0-alpha.6
     hooks:
       - id: prettier
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.29.0
+    rev: v1.30.0
     hooks:
       - id: yamllint
 
@@ -49,7 +49,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.6.0-1
+    rev: v3.6.0-2
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
@@ -66,7 +66,7 @@ repos:
         args: [--line-length=100]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v15.0.7
+    rev: v16.0.0
     hooks:
       - id: clang-format
         types_or: [c++, c, cuda]
