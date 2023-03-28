@@ -216,7 +216,7 @@ bool AEB::isDataReady()
   }
 
   if (use_imu_path_ && !imu_ptr_) {
-    return missing("object pointcloud");
+    return missing("imu");
   }
 
   if (use_predicted_trajectory_ && !predicted_traj_ptr_) {
