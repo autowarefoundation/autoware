@@ -26,8 +26,8 @@ jobs:
             REF_NAME="${{ github.ref_name }}"
           fi
 
-          echo ::set-output name=ref-name::"$REF_NAME"
-          echo ::set-output name=tag-name::"${REF_NAME#beta/}"
+          echo "ref-name=$REF_NAME" >> $GITHUB_OUTPUT
+          echo "tag-name=${REF_NAME#beta/}" >> $GITHUB_OUTPUT"
 
       - name: Check out repository
         uses: actions/checkout@v3
@@ -39,7 +39,7 @@ jobs:
         id: set-target-name
         run: |
           if [[ "${{ steps.set-tag-name.outputs.ref-name }}" =~ "beta/" ]]; then
-            echo ::set-output name=target-name::"${{ steps.set-tag-name.outputs.ref-name }}"
+            echo "target-name=${{ steps.set-tag-name.outputs.ref-name }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Create a local tag for beta branches
@@ -62,7 +62,7 @@ jobs:
             verb=edit
           fi
 
-          echo ::set-output name=verb::"$verb"
+          echo "verb=$verb" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

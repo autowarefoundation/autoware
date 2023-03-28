@@ -31,9 +31,9 @@ jobs:
         if: ${{ steps.check-fixes-yaml-existence.outputs.exists == 'true' }}
         id: set-variables
         run: |
-          echo ::set-output name=pr-id::"$(cat /tmp/clang-tidy-result/pr-id.txt)"
-          echo ::set-output name=pr-head-repo::"$(cat /tmp/clang-tidy-result/pr-head-repo.txt)"
-          echo ::set-output name=pr-head-ref::"$(cat /tmp/clang-tidy-result/pr-head-ref.txt)"
+          echo "pr-id=$(cat /tmp/clang-tidy-result/pr-id.txt)" >> $GITHUB_OUTPUT
+          echo "pr-head-repo=$(cat /tmp/clang-tidy-result/pr-head-repo.txt)" >> $GITHUB_OUTPUT
+          echo "pr-head-ref=$(cat /tmp/clang-tidy-result/pr-head-ref.txt)" >> $GITHUB_OUTPUT
 
       - name: Check out PR head
         if: ${{ steps.check-fixes-yaml-existence.outputs.exists == 'true' }}
