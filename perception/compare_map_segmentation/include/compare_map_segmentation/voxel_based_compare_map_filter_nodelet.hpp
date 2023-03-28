@@ -15,11 +15,13 @@
 #ifndef COMPARE_MAP_SEGMENTATION__VOXEL_BASED_COMPARE_MAP_FILTER_NODELET_HPP_
 #define COMPARE_MAP_SEGMENTATION__VOXEL_BASED_COMPARE_MAP_FILTER_NODELET_HPP_
 
+#include "compare_map_segmentation/voxel_grid_map_loader.hpp"
 #include "pointcloud_preprocessor/filter.hpp"
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/search/pcl_search.h>
 
+#include <memory>
 #include <vector>
 
 namespace compare_map_segmentation
@@ -30,25 +32,14 @@ protected:
   virtual void filter(
     const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output);
 
-  void input_target_callback(const PointCloud2ConstPtr map);
-  bool is_in_voxel(
-    const pcl::PointXYZ & src_point, const pcl::PointXYZ & target_point,
-    const double distance_threshold, const PointCloudPtr & map,
-    /* Can not add const in PCL specification */ pcl::VoxelGrid<pcl::PointXYZ> & voxel) const;
-
 private:
   // pcl::SegmentDifferences<pcl::PointXYZ> impl_;
+  std::unique_ptr<VoxelGridMapLoader> voxel_grid_map_loader_;
   rclcpp::Subscription<PointCloud2>::SharedPtr sub_map_;
-  PointCloudPtr voxel_map_ptr_;
   double distance_threshold_;
-  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_;
   bool set_map_in_voxel_grid_;
 
-  /** \brief Parameter service callback result : needed to be hold */
-  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
-
-  /** \brief Parameter service callback */
-  rcl_interfaces::msg::SetParametersResult paramCallback(const std::vector<rclcpp::Parameter> & p);
+  bool dynamic_map_load_enable_;
 
 public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW

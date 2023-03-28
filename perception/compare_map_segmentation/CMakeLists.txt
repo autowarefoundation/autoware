@@ -27,6 +27,7 @@ add_library(compare_map_segmentation SHARED
   src/voxel_based_compare_map_filter_nodelet.cpp
   src/voxel_distance_based_compare_map_filter_nodelet.cpp
   src/compare_elevation_map_filter_node.cpp
+  src/voxel_grid_map_loader.cpp
 )
 
 target_link_libraries(compare_map_segmentation
@@ -44,6 +45,7 @@ ament_target_dependencies(compare_map_segmentation
   rclcpp_components
   sensor_msgs
   tier4_autoware_utils
+  autoware_map_msgs
 )
 
 if(OPENMP_FOUND)
