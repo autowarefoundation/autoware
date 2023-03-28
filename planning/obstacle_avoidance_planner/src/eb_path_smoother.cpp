@@ -183,8 +183,8 @@ EBPathSmoother::getEBTrajectory(const PlannerData & planner_data)
 
   const size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(p.traj_points, p.ego_pose, ego_nearest_param_);
-  const auto cropped_traj_points = trajectory_utils::cropPoints(
-    p.traj_points, p.ego_pose.position, ego_seg_idx, forward_traj_length, -backward_traj_length);
+  const auto cropped_traj_points = motion_utils::cropPoints(
+    p.traj_points, p.ego_pose.position, ego_seg_idx, forward_traj_length, backward_traj_length);
 
   // check if goal is contained in cropped_traj_points
   const bool is_goal_contained =

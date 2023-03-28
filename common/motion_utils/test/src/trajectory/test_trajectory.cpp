@@ -4543,3 +4543,96 @@ TEST(trajectory, removeOverlapPoints)
     EXPECT_TRUE(removed_traj.empty());
   }
 }
+
+TEST(trajectory, cropForwardPoints)
+{
+  using motion_utils::cropForwardPoints;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+
+  {  // Normal case
+    const auto cropped_traj_points =
+      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.5, 1.5, 0.0), 1, 4.8);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(7));
+  }
+
+  {  // Forward length is longer than points arc length.
+    const auto cropped_traj_points =
+      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.5, 1.5, 0.0), 1, 10.0);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(10));
+  }
+
+  {  // Point is on the previous segment
+    const auto cropped_traj_points =
+      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.0, 1.0, 0.0), 0, 2.5);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
+  }
+
+  {  // Point is on the next segment
+    const auto cropped_traj_points =
+      cropForwardPoints(traj.points, tier4_autoware_utils::createPoint(1.0, 1.0, 0.0), 1, 2.5);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
+  }
+}
+
+TEST(trajectory, cropBackwardPoints)
+{
+  using motion_utils::cropBackwardPoints;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+
+  {  // Normal case
+    const auto cropped_traj_points =
+      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.5, 8.5, 0.0), 8, 4.8);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(6));
+  }
+
+  {  // Backward length is longer than points arc length.
+    const auto cropped_traj_points =
+      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.5, 8.5, 0.0), 8, 10.0);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(10));
+  }
+
+  {  // Point is on the previous segment
+    const auto cropped_traj_points =
+      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.0, 8.0, 0.0), 7, 2.5);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
+  }
+
+  {  // Point is on the next segment
+    const auto cropped_traj_points =
+      cropBackwardPoints(traj.points, tier4_autoware_utils::createPoint(8.0, 8.0, 0.0), 8, 2.5);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
+  }
+}
+
+TEST(trajectory, cropPoints)
+{
+  using motion_utils::cropPoints;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+
+  {  // Normal case
+    const auto cropped_traj_points =
+      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.5, 3.5, 0.0), 3, 2.3, 1.2);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(3));
+  }
+
+  {  // Length is longer than points arc length.
+    const auto cropped_traj_points =
+      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.5, 3.5, 0.0), 3, 10.0, 10.0);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(10));
+  }
+
+  {  // Point is on the previous segment
+    const auto cropped_traj_points =
+      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.0, 3.0, 0.0), 2, 2.2, 1.9);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
+  }
+
+  {  // Point is on the next segment
+    const auto cropped_traj_points =
+      cropPoints(traj.points, tier4_autoware_utils::createPoint(3.0, 3.0, 0.0), 3, 2.2, 1.9);
+    EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
+  }
+}

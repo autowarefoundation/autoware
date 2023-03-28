@@ -553,9 +553,9 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   constexpr double tmp_margin = 10.0;
   size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
-  ref_points = trajectory_utils::cropPoints(
+  ref_points = motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
-    -backward_traj_length - tmp_margin);
+    backward_traj_length + tmp_margin);
   SplineInterpolationPoints2d ref_points_spline(ref_points);
   ego_seg_idx = trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
 
@@ -565,9 +565,9 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
 
   // 4. crop backward
   // NOTE: Start point may change. Spline calculation is required.
-  ref_points = trajectory_utils::cropPoints(
+  ref_points = motion_utils::cropPoints(
     ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length + tmp_margin,
-    -backward_traj_length);
+    backward_traj_length);
   ref_points_spline = SplineInterpolationPoints2d(ref_points);
   ego_seg_idx = trajectory_utils::findEgoSegmentIndex(ref_points, p.ego_pose, ego_nearest_param_);
 
@@ -590,7 +590,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
   updateExtraPoints(ref_points);
 
   // 9. crop forward
-  // ref_points = trajectory_utils::cropForwardPoints(
+  // ref_points = motion_utils::cropForwardPoints(
   //   ref_points, p.ego_pose.position, ego_seg_idx, forward_traj_length);
   if (static_cast<size_t>(mpt_param_.num_points) < ref_points.size()) {
     ref_points.resize(mpt_param_.num_points);

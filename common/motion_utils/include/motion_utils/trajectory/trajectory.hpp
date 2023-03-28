@@ -1532,6 +1532,82 @@ boost::optional<double> calcDistanceToForwardStopPoint(
 
   return std::max(0.0, closest_stop_dist);
 }
+
+// NOTE: Points after forward length from the point will be cropped
+//       forward_length is assumed to be positive.
+template <typename T>
+T cropForwardPoints(
+  const T & points, const geometry_msgs::msg::Point & target_pos, const size_t target_seg_idx,
+  const double forward_length)
+{
+  if (points.empty()) {
+    return T{};
+  }
+
+  double sum_length =
+    -motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
+  for (size_t i = target_seg_idx + 1; i < points.size(); ++i) {
+    sum_length += tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i - 1));
+    if (forward_length < sum_length) {
+      const size_t end_idx = i;
+      return T{points.begin(), points.begin() + end_idx};
+    }
+  }
+
+  return points;
+}
+
+// NOTE: Points before backward length from the point will be cropped
+//       backward_length is assumed to be positive.
+template <typename T>
+T cropBackwardPoints(
+  const T & points, const geometry_msgs::msg::Point & target_pos, const size_t target_seg_idx,
+  const double backward_length)
+{
+  if (points.empty()) {
+    return T{};
+  }
+
+  double sum_length =
+    -motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
+  for (int i = target_seg_idx; 0 < i; --i) {
+    sum_length -= tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i - 1));
+    if (sum_length < -backward_length) {
+      const size_t begin_idx = i;
+      return T{points.begin() + begin_idx, points.end()};
+    }
+  }
+
+  return points;
+}
+
+template <typename T>
+T cropPoints(
+  const T & points, const geometry_msgs::msg::Point & target_pos, const size_t target_seg_idx,
+  const double forward_length, const double backward_length)
+{
+  if (points.empty()) {
+    return T{};
+  }
+
+  // NOTE: Cropping forward must be done first in order to keep target_seg_idx.
+  const auto cropped_forward_points =
+    cropForwardPoints(points, target_pos, target_seg_idx, forward_length);
+
+  const size_t modified_target_seg_idx =
+    std::min(target_seg_idx, cropped_forward_points.size() - 2);
+  const auto cropped_points = cropBackwardPoints(
+    cropped_forward_points, target_pos, modified_target_seg_idx, backward_length);
+
+  if (cropped_points.size() < 2) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("obstacle_avoidance_planner.trajectory_utils"),
+      ". Return original points since cropped_points size is less than 2.");
+    return points;
+  }
+
+  return cropped_points;
+}
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_

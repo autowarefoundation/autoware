@@ -375,7 +375,7 @@ void ObstacleAvoidancePlanner::applyInputVelocity(
 
     const size_t ego_seg_idx =
       trajectory_utils::findEgoSegmentIndex(input_traj_points, ego_pose, ego_nearest_param_);
-    return trajectory_utils::cropForwardPoints(
+    return motion_utils::cropForwardPoints(
       input_traj_points, ego_pose.position, ego_seg_idx,
       optimized_traj_length + margin_traj_length);
   }();
