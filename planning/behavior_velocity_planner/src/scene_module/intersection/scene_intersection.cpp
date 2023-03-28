@@ -221,7 +221,8 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
   /* calculate final stop lines */
   std::optional<size_t> stop_line_idx =
-    std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line);
+    stop_lines_idx_opt ? std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line)
+                       : std::nullopt;
   if (external_go) {
     is_entry_prohibited = false;
   } else if (external_stop) {
