@@ -44,14 +44,11 @@ runs:
           tags+=("type=match,pattern=\d+.\d+")
         fi
 
-        # Workaround for multiline strings
-        # https://github.community/t/set-output-truncates-multiline-strings/16852
-        tags_multiline=$(printf "%s\n" "${tags[@]}")
-        tags_multiline="${tags_multiline//'%'/'%25'}"
-        tags_multiline="${tags_multiline//$'\n'/'%0A'}"
-        tags_multiline="${tags_multiline//$'\r'/'%0D'}"
-
-        echo ::set-output name=tags::$tags_multiline
+        # Output multiline strings: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "tags<<$EOF" >> $GITHUB_OUTPUT
+        echo "$(printf "%s\n" "${tags[@]}")" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Docker meta for devel
