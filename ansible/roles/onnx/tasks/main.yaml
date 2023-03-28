@@ -1,0 +1,13 @@
+- name: Download traffic_light_classifier_mobilenetv2.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier_mobilenetv2.onnx
+    dest: traffic_light_classifier_mobilenetv2.onnx
+    checksum: sha256:5e1bbdeeb1589cab19cbb69d70553e0fd81fb302b09167ae2946112dcf898b24
+
+- name: Download lamp_labels.txt
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/lamp_labels.txt
+    dest: lamp_labels.txt
+    checksum: sha256:baac220ef86b70c94673bbf982121f7d43591b1768ac05e98f235b23772a9bed

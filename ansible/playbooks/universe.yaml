@@ -7,6 +7,11 @@
         [Warning] Some Autoware components depend on the CUDA, cuDNN and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
         Install NVIDIA libraries? [y/N]
       private: false
+    - name: prompt_download_onnx
+      prompt: |-
+        [Warning] Should the ONNX model files be downloaded alongside setting up the development environment.
+        Download ONNX files? [y/N]
+      private: false
   pre_tasks:
     - name: Verify OS
       ansible.builtin.fail:
@@ -49,3 +54,7 @@
     - role: autoware.dev_env.tensorrt
       when: prompt_install_nvidia == 'y'
     - role: autoware.dev_env.git_lfs
+
+    # ONNX files
+    - role: autoware.dev_env.onnx
+      when: prompt_download_onnx == 'y'
