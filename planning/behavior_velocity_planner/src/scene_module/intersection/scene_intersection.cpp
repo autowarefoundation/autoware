@@ -212,6 +212,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   debug_data_.stuck_vehicle_detect_area = toGeomPoly(stuck_vehicle_detect_area);
 
   /* calculate dynamic collision around detection area */
+  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   const double time_delay =
     is_go_out_ ? 0.0 : (planner_param_.state_transit_margin_time - state_machine_.getDuration());
   const bool has_collision = checkCollision(
@@ -219,7 +220,8 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     ego_lane_with_next_lane, objects_ptr, closest_idx, time_delay);
 
   /* calculate final stop lines */
-  std::optional<size_t> stop_line_idx = std::nullopt;
+  std::optional<size_t> stop_line_idx =
+    std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line);
   if (external_go) {
     is_entry_prohibited = false;
   } else if (external_stop) {
@@ -269,11 +271,10 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     // if RTC says intersection entry is 'dangerous', insert stop_line(v == 0.0) in this block
     is_go_out_ = false;
 
-    constexpr double v = 0.0;
-    planning_utils::setVelocityFromIndex(stop_line_idx.value(), v, path);
-    const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+    planning_utils::setVelocityFromIndex(stop_line_idx.value(), 0.0 /* [m/s] */, path);
+    debug_data_.stop_required = true;  // dangerous or disabled by RTC
     debug_data_.stop_wall_pose =
-      planning_utils::getAheadPose(stop_line_idx.value(), base_link2front, *path);
+      planning_utils::getAheadPose(stop_line_idx.value(), baselink2front, *path);
 
     // Get stop point and stop factor
     {
