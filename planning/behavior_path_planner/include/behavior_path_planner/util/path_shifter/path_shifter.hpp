@@ -134,8 +134,7 @@ public:
   static double calcLongitudinalDistFromJerk(
     const double lateral, const double jerk, const double velocity);
 
-  static double calcShiftTimeFromJerkAndJerk(
-    const double lateral, const double jerk, const double acc);
+  static double calcShiftTimeFromJerk(const double lateral, const double jerk, const double acc);
 
   static double calcJerkFromLatLonDistance(
     const double lateral, const double longitudinal, const double velocity);

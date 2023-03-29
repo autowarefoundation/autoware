@@ -22,6 +22,7 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
@@ -640,12 +641,11 @@ bool LaneChangeModule::isAbortState() const
 bool LaneChangeModule::hasFinishedLaneChange() const
 {
   const auto & current_pose = getEgoPose();
-  const auto arclength_current =
-    lanelet::utils::getArcCoordinates(status_.lane_change_lanes, current_pose);
-  const double travel_distance = arclength_current.length - status_.start_distance;
-  const double finish_distance =
-    status_.lane_change_path.length.sum() + parameters_->lane_change_finish_judge_buffer;
-  return travel_distance > finish_distance;
+  const auto & lane_change_path = status_.lane_change_path.path;
+  const auto & lane_change_end = status_.lane_change_path.shift_line.end;
+  const double dist_to_lane_change_end = motion_utils::calcSignedArcLength(
+    lane_change_path.points, current_pose.position, lane_change_end.position);
+  return dist_to_lane_change_end + parameters_->lane_change_finish_judge_buffer < 0.0;
 }
 
 void LaneChangeModule::setObjectDebugVisualization() const

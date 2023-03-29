@@ -54,10 +54,9 @@ bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets);
 
-std::pair<double, double> calcLaneChangingSpeedAndDistance(
-  const double velocity, const double shift_length, const double deceleration,
-  const double min_total_lc_len, const BehaviorPathPlannerParameters & com_param,
-  const LaneChangeParameters & lc_param);
+double calcLaneChangingDistance(
+  const double lane_changing_velocity, const double shift_length, const double min_total_lc_len,
+  const BehaviorPathPlannerParameters & com_param, const LaneChangeParameters & lc_param);
 
 std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
@@ -113,8 +112,8 @@ ShiftLine getLaneChangingShiftLine(
 PathWithLaneId getReferencePathFromTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & lane_changing_start_pose, const double target_lane_length,
-  const double lane_changing_distance, const double min_total_lane_changing_distance,
-  const double forward_path_length, const double resample_interval, const bool is_goal_in_route);
+  const double lane_changing_distance, const double forward_path_length,
+  const double resample_interval, const bool is_goal_in_route);
 
 PathWithLaneId getPrepareSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
@@ -128,8 +127,8 @@ PathWithLaneId getPrepareSegment(
 
 PathWithLaneId getLaneChangingSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanelets,
-  const double forward_path_length, const double arc_length_from_target,
-  const double target_lane_length, const LaneChangePhaseInfo dist_prepare_to_lc_end,
+  const double forward_path_length, const Pose & lane_changing_start_pose,
+  const double target_lane_length, const double lane_changing_distance,
   const double lane_changing_speed, const double total_required_min_dist);
 
 bool isEgoWithinOriginalLane(
