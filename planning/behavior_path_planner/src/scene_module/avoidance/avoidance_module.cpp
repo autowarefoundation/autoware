@@ -759,6 +759,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
     if (o.avoid_required && o.is_avoidable) {
       data.avoid_required = true;
       data.stop_target_object = o;
+      break;
     }
   }
 
