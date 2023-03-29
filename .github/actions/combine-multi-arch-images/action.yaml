@@ -62,7 +62,7 @@ runs:
         echo -e "\n[arm64_tags]\n$arm64_tags"
         echo -e "\n[base_tags]\n$base_tags"
 
-        echo "tags=$(printf "%s " $base_tags | sed 's/\s*$//')" >> $GITHUB_OUTPUT"
+        echo "tags=$(printf "%s " $base_tags | sed 's/\s*$//')" >> $GITHUB_OUTPUT
       env:
         ALL_TAGS: ${{ steps.get-all-tags.outputs.tags }}
       shell: bash
