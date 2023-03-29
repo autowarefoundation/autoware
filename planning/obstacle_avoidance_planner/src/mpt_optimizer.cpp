@@ -171,9 +171,12 @@ double calcLateralDistToBounds(
         tier4_autoware_utils::calcDistance2d(pose.position, *intersect_point) *
         (is_point_left ? 1.0 : -1.0);
 
-      closest_dist_to_bound =
-        is_left_bound ? std::min(dist_to_bound - additional_offset, closest_dist_to_bound)
-                      : std::max(dist_to_bound + additional_offset, closest_dist_to_bound);
+      // the bound which is closest to the centerline will be chosen
+      const double tmp_dist_to_bound =
+        is_left_bound ? dist_to_bound - additional_offset : dist_to_bound + additional_offset;
+      if (std::abs(tmp_dist_to_bound) < std::abs(closest_dist_to_bound)) {
+        closest_dist_to_bound = tmp_dist_to_bound;
+      }
     }
   }
 
@@ -782,12 +785,19 @@ void MPTOptimizer::updateBounds(
     mpt_param_.soft_clearance_from_road + vehicle_info_.vehicle_width_m / 2.0;
 
   // calculate distance to left/right bound on each reference point
-  for (auto & ref_point : ref_points) {
-    const double dist_to_left_bound =
-      calcLateralDistToBounds(ref_point.pose, left_bound, soft_road_clearance, true);
-    const double dist_to_right_bound =
-      calcLateralDistToBounds(ref_point.pose, right_bound, soft_road_clearance, false);
-    ref_point.bounds = Bounds{dist_to_right_bound, dist_to_left_bound};
+  // NOTE: Reference points is sometimes not fully covered by the drivable area.
+  //       In some edge cases like U-turn, the wrong bound may be found. To avoid finding the wrong
+  //       bound, some beginning bounds are copied from the following one.
+  const size_t min_ref_point_index = std::min(
+    static_cast<size_t>(std::ceil(1.0 / mpt_param_.delta_arc_length)), ref_points.size() - 1);
+  for (size_t i = 0; i < ref_points.size(); ++i) {
+    const auto ref_point_for_bound_search = ref_points.at(std::max(min_ref_point_index, i));
+    const double dist_to_left_bound = calcLateralDistToBounds(
+      ref_point_for_bound_search.pose, left_bound, soft_road_clearance, true);
+    const double dist_to_right_bound = calcLateralDistToBounds(
+      ref_point_for_bound_search.pose, right_bound, soft_road_clearance, false);
+
+    ref_points.at(i).bounds = Bounds{dist_to_right_bound, dist_to_left_bound};
   }
 
   // extend violated bounds, where the input path is outside the drivable area
