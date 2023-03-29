@@ -131,7 +131,9 @@ void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_m
   }
 
   auto start = now();
-  stamps_.push_back(traj_msg->header.stamp);
+  if (!output_file_str_.empty()) {
+    stamps_.push_back(traj_msg->header.stamp);
+  }
 
   DiagnosticArray metrics_msg;
   metrics_msg.header.stamp = now();
@@ -141,7 +143,10 @@ void PlanningEvaluatorNode::onTrajectory(const Trajectory::ConstSharedPtr traj_m
       continue;
     }
 
-    metric_stats_[static_cast<size_t>(metric)].push_back(*metric_stat);
+    if (!output_file_str_.empty()) {
+      metric_stats_[static_cast<size_t>(metric)].push_back(*metric_stat);
+    }
+
     if (metric_stat->count() > 0) {
       metrics_msg.status.push_back(generateDiagnosticStatus(metric, *metric_stat));
     }
