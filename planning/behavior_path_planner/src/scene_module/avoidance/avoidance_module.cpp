@@ -113,6 +113,9 @@ bool AvoidanceModule::isExecutionRequested() const
     return true;
   }
 
+  // Check avoidance targets exist
+  auto avoid_data = calcAvoidancePlanningData(debug_data_);
+
   // Check ego is in preferred lane
 #ifdef USE_OLD_ARCHITECTURE
   const auto current_lanes = util::getCurrentLanes(planner_data_);
@@ -124,10 +127,13 @@ bool AvoidanceModule::isExecutionRequested() const
   if (num != 0) {
     return false;
   }
-#endif
+#else
+  fillShiftLine(avoid_data, debug_data_);
 
-  // Check avoidance targets exist
-  const auto avoid_data = calcAvoidancePlanningData(debug_data_);
+  if (avoid_data.unapproved_new_sl.empty()) {
+    return false;
+  }
+#endif
 
   if (parameters_->publish_debug_marker) {
     setDebugData(avoid_data, path_shifter_, debug_data_);
