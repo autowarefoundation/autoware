@@ -27,7 +27,7 @@ jobs:
           fi
 
           echo "ref-name=$REF_NAME" >> $GITHUB_OUTPUT
-          echo "tag-name=${REF_NAME#beta/}" >> $GITHUB_OUTPUT"
+          echo "tag-name=${REF_NAME#beta/}" >> $GITHUB_OUTPUT
 
       - name: Check out repository
         uses: actions/checkout@v3
