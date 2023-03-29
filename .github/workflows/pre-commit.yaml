@@ -20,11 +20,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Set git config
-        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-
       - name: Run pre-commit
         uses: autowarefoundation/autoware-github-actions/pre-commit@v1
         with:
