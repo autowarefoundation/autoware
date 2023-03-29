@@ -149,14 +149,13 @@ private:
 
   TurnSignalDecider turn_signal_decider_;
 
-  std::mutex mutex_pd_;  // mutex for planner_data_
-  std::mutex mutex_bt_;  // mutex for bt_manager_
+  std::mutex mutex_pd_;       // mutex for planner_data_
+  std::mutex mutex_manager_;  // mutex for bt_manager_ or planner_manager_
+  std::mutex mutex_map_;      // mutex for has_received_map_ and map_ptr_
+  std::mutex mutex_route_;    // mutex for has_received_route_ and route_ptr_
 
   // setup
   bool isDataReady();
-
-  // update planner data
-  std::shared_ptr<PlannerData> createLatestPlannerData();
 
   // parameters
   std::shared_ptr<AvoidanceParameters> avoidance_param_ptr_;
@@ -195,7 +194,8 @@ private:
    * @brief Modify the path points near the goal to smoothly connect the lanelet and the goal point.
    */
   PathWithLaneId modifyPathForSmoothGoalConnection(
-    const PathWithLaneId & path) const;  // (TODO) move to util
+    const PathWithLaneId & path,
+    const std::shared_ptr<PlannerData> & planner_data) const;  // (TODO) move to util
   OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
 
   /**
@@ -206,8 +206,15 @@ private:
   /**
    * @brief extract path from behavior tree output
    */
+#ifdef USE_OLD_ARCHITECTURE
   PathWithLaneId::SharedPtr getPath(
-    const BehaviorModuleOutput & bt_out, const std::shared_ptr<PlannerData> planner_data);
+    const BehaviorModuleOutput & bt_out, const std::shared_ptr<PlannerData> & planner_data,
+    const std::shared_ptr<BehaviorTreeManager> & bt_manager);
+#else
+  PathWithLaneId::SharedPtr getPath(
+    const BehaviorModuleOutput & bt_out, const std::shared_ptr<PlannerData> & planner_data,
+    const std::shared_ptr<PlannerManager> & planner_manager);
+#endif
 
   /**
    * @brief skip smooth goal connection
@@ -242,27 +249,34 @@ private:
   /**
    * @brief publish debug messages
    */
-  void publishSceneModuleDebugMsg();
+#ifdef USE_OLD_ARCHITECTURE
+  void publishSceneModuleDebugMsg(
+    const std::shared_ptr<SceneModuleVisitor> & debug_messages_data_ptr);
+#endif
 
   /**
    * @brief publish path candidate
    */
 #ifdef USE_OLD_ARCHITECTURE
   void publishPathCandidate(
-    const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules);
+    const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules,
+    const std::shared_ptr<PlannerData> & planner_data);
 #else
   void publishPathCandidate(
-    const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers);
+    const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers,
+    const std::shared_ptr<PlannerData> & planner_data);
 
   void publishPathReference(
-    const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers);
+    const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers,
+    const std::shared_ptr<PlannerData> & planner_data);
 #endif
 
   /**
    * @brief convert path with lane id to path for publish path candidate
    */
   Path convertToPath(
-    const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready);
+    const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready,
+    const std::shared_ptr<PlannerData> & planner_data);
 };
 }  // namespace behavior_path_planner
 
