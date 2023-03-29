@@ -1620,6 +1620,14 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
     printShiftLines(sl_array_trimmed, "after trimSharpReturn");
   }
 
+  // - Combine avoid points that have almost same gradient (again)
+  {
+    const auto CHANGE_SHIFT_THRESHOLD = 0.2;
+    trimSimilarGradShiftLine(sl_array_trimmed, CHANGE_SHIFT_THRESHOLD);
+    debug.trim_similar_grad_shift_third = sl_array_trimmed;
+    printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift_second");
+  }
+
   return sl_array_trimmed;
 }
 
@@ -3826,6 +3834,7 @@ void AvoidanceModule::setDebugData(
     debug.trim_similar_grad_shift_second, "c_4_trim_similar_grad_shift", 0.97, 0.32, 0.91);
   addAvoidLine(debug.trim_momentary_return, "c_5_trim_momentary_return", 0.976, 0.078, 0.878);
   addAvoidLine(debug.trim_too_sharp_shift, "c_6_trim_too_sharp_shift", 0.576, 0.0, 0.978);
+  addAvoidLine(debug.trim_similar_grad_shift_third, "c_7_trim_too_sharp_shift", 1.0, 0.0, 0.0);
 
   addShiftLine(shifter.getShiftLines(), "path_shifter_registered_points", 0.99, 0.99, 0.0, 0.5);
   addAvoidLine(debug.new_shift_lines, "path_shifter_proposed_points", 0.99, 0.0, 0.0, 0.5);

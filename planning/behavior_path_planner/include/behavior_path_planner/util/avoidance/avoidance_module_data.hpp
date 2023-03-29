@@ -497,6 +497,7 @@ struct DebugData
   AvoidLineArray quantized;
   AvoidLineArray trim_small_shift;
   AvoidLineArray trim_similar_grad_shift_second;
+  AvoidLineArray trim_similar_grad_shift_third;
   AvoidLineArray trim_momentary_return;
   AvoidLineArray trim_too_sharp_shift;
   std::vector<double> pos_shift;
