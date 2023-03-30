@@ -4,6 +4,7 @@ BasedOnStyle: Google
 
 AccessModifierOffset: -2
 AlignAfterOpenBracket: AlwaysBreak
+AllowShortFunctionsOnASingleLine: InlineOnly
 BraceWrapping:
   AfterClass: true
   AfterFunction: true
