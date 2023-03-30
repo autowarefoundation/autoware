@@ -170,6 +170,7 @@ size_t getIdxByArclength(
   }
 }
 
+// TODO(murooka) This function should be replaced with motion_utils::cropPoints
 void clipPathLength(
   PathWithLaneId & path, const size_t target_idx, const double forward, const double backward)
 {
@@ -186,6 +187,7 @@ void clipPathLength(
   path.points = clipped_points;
 }
 
+// TODO(murooka) This function should be replaced with motion_utils::cropPoints
 void clipPathLength(
   PathWithLaneId & path, const size_t target_idx, const BehaviorPathPlannerParameters & params)
 {

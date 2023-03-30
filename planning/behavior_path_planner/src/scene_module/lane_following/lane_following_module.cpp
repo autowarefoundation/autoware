@@ -134,9 +134,13 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
     p.forward_path_length, p);
 
   // clip backward length
+  // NOTE: In order to keep backward_path_length at least, resampling interval is added to the
+  // backward.
   const size_t current_seg_idx = planner_data_->findEgoSegmentIndex(reference_path.points);
-  util::clipPathLength(
-    reference_path, current_seg_idx, p.forward_path_length, p.backward_path_length);
+  reference_path.points = motion_utils::cropPoints(
+    reference_path.points, current_pose.position, current_seg_idx, p.forward_path_length,
+    p.backward_path_length + p.input_path_interval);
+
   const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
   const auto drivable_lanes = util::generateDrivableLanes(drivable_lanelets);
 
