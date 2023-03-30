@@ -310,17 +310,11 @@ std::pair<bool, bool> getLaneChangePaths(
 
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
-  const auto end_of_lane_dist = std::invoke([&]() {
-    const auto required_dist = util::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
-    if (is_goal_in_route) {
-      return util::getSignedDistance(pose, route_handler.getGoalPose(), original_lanelets) -
-             required_dist;
-    }
-    return util::getDistanceToEndOfLane(pose, original_lanelets) - required_dist;
-  });
-
   const auto required_total_min_distance =
     util::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
+
+  const auto dist_to_end_of_current_lane =
+    util::getDistanceToEndOfLane(pose, original_lanelets) - required_total_min_distance;
 
   [[maybe_unused]] const auto arc_position_from_current =
     lanelet::utils::getArcCoordinates(original_lanelets, pose);
@@ -380,14 +374,22 @@ std::pair<bool, bool> getLaneChangePaths(
     // we assume constant speed during lane change
     const auto lane_changing_speed = std::max(prepare_speed, minimum_lane_change_velocity);
     const auto lane_changing_distance = calcLaneChangingDistance(
-      lane_changing_speed, estimated_shift_length, end_of_lane_dist, common_parameter, parameter);
+      lane_changing_speed, estimated_shift_length, common_parameter, parameter);
+
+    if (lane_changing_distance + prepare_distance > dist_to_end_of_current_lane) {
+      // total lane changing distance it too long
+      continue;
+    }
 
     if (is_goal_in_route) {
       const double s_start =
         lanelet::utils::getArcCoordinates(target_lanelets, lane_changing_start_pose).length;
       const double s_goal =
         lanelet::utils::getArcCoordinates(target_lanelets, route_handler.getGoalPose()).length;
-      if (s_start + lane_changing_distance + parameter.lane_change_finish_judge_buffer > s_goal) {
+      if (
+        s_start + lane_changing_distance + parameter.lane_change_finish_judge_buffer +
+          required_total_min_distance >
+        s_goal) {
         continue;
       }
     }
@@ -727,15 +729,15 @@ PathWithLaneId getPrepareSegment(
 }
 
 double calcLaneChangingDistance(
-  const double lane_changing_speed, const double shift_length, const double min_total_lc_len,
+  const double lane_changing_speed, const double shift_length,
   const BehaviorPathPlannerParameters & com_param, const LaneChangeParameters & lc_param)
 {
   const auto required_time = PathShifter::calcShiftTimeFromJerk(
     shift_length, lc_param.lane_changing_lateral_jerk, lc_param.lane_changing_lateral_acc);
 
-  const auto expected_dist = lane_changing_speed * required_time;
-  const auto lane_changing_distance =
-    (expected_dist < min_total_lc_len) ? expected_dist : com_param.minimum_lane_change_length;
+  const double & min_lane_change_length = com_param.minimum_lane_change_length;
+  const double lane_changing_distance =
+    std::max(lane_changing_speed * required_time, min_lane_change_length);
 
   RCLCPP_DEBUG(
     rclcpp::get_logger("behavior_path_planner")
