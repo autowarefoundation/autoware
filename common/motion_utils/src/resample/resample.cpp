@@ -179,8 +179,38 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   const std::vector<double> & resampled_arclength, const bool use_akima_spline_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
+  auto resampling_arclength = resampled_arclength;
+
+  // Add resampling_arclength to insert input points which have multiple lane_ids
+  for (size_t i = 0; i < input_path.points.size(); ++i) {
+    if (input_path.points.at(i).lane_ids.size() < 2) {
+      continue;
+    }
+
+    const double distance_to_resampling_point = calcSignedArcLength(input_path.points, 0, i);
+    for (size_t i = 1; i < resampling_arclength.size(); ++i) {
+      if (
+        resampling_arclength.at(i - 1) <= distance_to_resampling_point &&
+        distance_to_resampling_point < resampling_arclength.at(i)) {
+        const double dist_to_prev_point =
+          std::fabs(distance_to_resampling_point - resampling_arclength.at(i - 1));
+        const double dist_to_following_point =
+          std::fabs(resampling_arclength.at(i) - distance_to_resampling_point);
+        if (dist_to_prev_point < motion_utils::overlap_threshold) {
+          resampling_arclength.at(i - 1) = distance_to_resampling_point;
+        } else if (dist_to_following_point < motion_utils::overlap_threshold) {
+          resampling_arclength.at(i) = distance_to_resampling_point;
+        } else {
+          resampling_arclength.insert(
+            resampling_arclength.begin() + i, distance_to_resampling_point);
+        }
+        break;
+      }
+    }
+  }
+
   // validate arguments
-  if (!resample_utils::validate_arguments(input_path.points, resampled_arclength)) {
+  if (!resample_utils::validate_arguments(input_path.points, resampling_arclength)) {
     return input_path;
   }
 
@@ -233,7 +263,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
     lane_ids.push_back(input_path.points.at(i).lane_ids);
   }
 
-  if (input_arclength.back() < resampled_arclength.back()) {
+  if (input_arclength.back() < resampling_arclength.back()) {
     std::cerr << "[motion_utils]: resampled path length is longer than input path length"
               << std::endl;
     return input_path;
@@ -241,25 +271,56 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
 
   // Interpolate
   const auto lerp = [&](const auto & input) {
-    return interpolation::lerp(input_arclength, input, resampled_arclength);
+    return interpolation::lerp(input_arclength, input, resampling_arclength);
   };
 
   auto closest_segment_indices =
-    interpolation::calc_closest_segment_indices(input_arclength, resampled_arclength);
+    interpolation::calc_closest_segment_indices(input_arclength, resampling_arclength);
 
   const auto zoh = [&](const auto & input) {
     return interpolation::zero_order_hold(input_arclength, input, closest_segment_indices);
   };
 
   const auto interpolated_pose =
-    resamplePoseVector(input_pose, resampled_arclength, use_akima_spline_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampling_arclength, use_akima_spline_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_v ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_v ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);
   const auto interpolated_is_final = zoh(is_final);
-  const auto interpolated_lane_ids = zoh(lane_ids);
 
-  if (interpolated_pose.size() != resampled_arclength.size()) {
+  // interpolate lane_ids
+  std::vector<std::vector<int64_t>> interpolated_lane_ids;
+  interpolated_lane_ids.resize(resampling_arclength.size());
+  constexpr double epsilon = 1e-6;
+  for (size_t i = 0; i < resampling_arclength.size(); ++i) {
+    const size_t seg_idx = std::min(closest_segment_indices.at(i), input_path.points.size() - 2);
+    const auto & prev_lane_ids = input_path.points.at(seg_idx).lane_ids;
+    const auto & next_lane_ids = input_path.points.at(seg_idx + 1).lane_ids;
+
+    if (std::abs(input_arclength.at(seg_idx) - resampling_arclength.at(i)) <= epsilon) {
+      interpolated_lane_ids.at(i).insert(
+        interpolated_lane_ids.at(i).end(), prev_lane_ids.begin(), prev_lane_ids.end());
+    } else if (std::abs(input_arclength.at(seg_idx + 1) - resampling_arclength.at(i)) <= epsilon) {
+      interpolated_lane_ids.at(i).insert(
+        interpolated_lane_ids.at(i).end(), next_lane_ids.begin(), next_lane_ids.end());
+    } else {
+      // extract lane_ids those prev_lane_ids and next_lane_ids have in common
+      for (const auto target_lane_id : prev_lane_ids) {
+        if (
+          std::find(next_lane_ids.begin(), next_lane_ids.end(), target_lane_id) !=
+          next_lane_ids.end()) {
+          interpolated_lane_ids.at(i).push_back(target_lane_id);
+        }
+      }
+      // If there are no common lane_ids, the prev_lane_ids is assigned.
+      if (interpolated_lane_ids.at(i).empty()) {
+        interpolated_lane_ids.at(i).insert(
+          interpolated_lane_ids.at(i).end(), prev_lane_ids.begin(), prev_lane_ids.end());
+      }
+    }
+  }
+
+  if (interpolated_pose.size() != resampling_arclength.size()) {
     std::cerr << "[motion_utils]: Resampled pose size is different from resampled arclength"
               << std::endl;
     return input_path;
