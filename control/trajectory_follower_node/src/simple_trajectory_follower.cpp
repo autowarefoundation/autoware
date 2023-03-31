@@ -36,9 +36,9 @@ SimpleTrajectoryFollower::SimpleTrajectoryFollower(const rclcpp::NodeOptions & o
   sub_trajectory_ = create_subscription<Trajectory>(
     "input/trajectory", 1, [this](const Trajectory::SharedPtr msg) { trajectory_ = msg; });
 
-  use_external_target_vel_ = declare_parameter<bool>("use_external_target_vel", false);
-  external_target_vel_ = declare_parameter<float>("external_target_vel", 0.0);
-  lateral_deviation_ = declare_parameter<float>("lateral_deviation", 0.0);
+  use_external_target_vel_ = declare_parameter<bool>("use_external_target_vel");
+  external_target_vel_ = declare_parameter<float>("external_target_vel");
+  lateral_deviation_ = declare_parameter<float>("lateral_deviation");
 
   using namespace std::literals::chrono_literals;
   timer_ = rclcpp::create_timer(
