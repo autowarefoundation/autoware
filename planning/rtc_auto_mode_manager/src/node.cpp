@@ -23,9 +23,9 @@ RTCAutoModeManagerNode::RTCAutoModeManagerNode(const rclcpp::NodeOptions & node_
 : Node("rtc_auto_mode_manager_node", node_options)
 {
   const std::vector<std::string> module_list =
-    declare_parameter("module_list", std::vector<std::string>());
+    declare_parameter<std::vector<std::string>>("module_list");
   const std::vector<std::string> default_enable_list =
-    declare_parameter("default_enable_list", std::vector<std::string>());
+    declare_parameter<std::vector<std::string>>("default_enable_list");
 
   for (const auto & module_name : module_list) {
     const bool enabled =
