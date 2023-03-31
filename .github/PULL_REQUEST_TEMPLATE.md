@@ -3,7 +3,6 @@
 Click the `Preview` tab and select a PR template:
 
 - [Standard change](?expand=1&template=standard-change.md)
-  - `feat` (features) and `fix` (bug fixes) must choose this.
 - [Small change](?expand=1&template=small-change.md)
 
 **Do NOT send a PR with this description.**

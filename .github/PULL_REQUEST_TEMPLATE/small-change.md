@@ -2,6 +2,13 @@
 
 <!-- Write a brief description of this PR. -->
 
+## Tests performed
+
+<!-- Describe how you have tested this PR. -->
+<!-- Must fill in feat (feature), fix (bug fix), perf (performance), and any other PRs that should be tested. -->
+
+Not applicable
+
 ## Pre-review checklist for the PR author
 
 The PR author **must** check the checkboxes below when creating the PR.
