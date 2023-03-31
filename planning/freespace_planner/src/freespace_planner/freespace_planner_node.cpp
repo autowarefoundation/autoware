@@ -226,16 +226,16 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
   // NodeParam
   {
     auto & p = node_param_;
-    p.planning_algorithm = declare_parameter("planning_algorithm", "astar");
-    p.waypoints_velocity = declare_parameter("waypoints_velocity", 5.0);
-    p.update_rate = declare_parameter("update_rate", 1.0);
-    p.th_arrived_distance_m = declare_parameter("th_arrived_distance_m", 1.0);
-    p.th_stopped_time_sec = declare_parameter("th_stopped_time_sec", 1.0);
-    p.th_stopped_velocity_mps = declare_parameter("th_stopped_velocity_mps", 0.01);
-    p.th_course_out_distance_m = declare_parameter("th_course_out_distance_m", 3.0);
-    p.vehicle_shape_margin_m = declare_parameter("vehicle_shape_margin_m", 1.0);
-    p.replan_when_obstacle_found = declare_parameter("replan_when_obstacle_found", true);
-    p.replan_when_course_out = declare_parameter("replan_when_course_out", true);
+    p.planning_algorithm = declare_parameter<std::string>("planning_algorithm");
+    p.waypoints_velocity = declare_parameter<double>("waypoints_velocity");
+    p.update_rate = declare_parameter<double>("update_rate");
+    p.th_arrived_distance_m = declare_parameter<double>("th_arrived_distance_m");
+    p.th_stopped_time_sec = declare_parameter<double>("th_stopped_time_sec");
+    p.th_stopped_velocity_mps = declare_parameter<double>("th_stopped_velocity_mps");
+    p.th_course_out_distance_m = declare_parameter<double>("th_course_out_distance_m");
+    p.vehicle_shape_margin_m = declare_parameter<double>("vehicle_shape_margin_m");
+    p.replan_when_obstacle_found = declare_parameter<bool>("replan_when_obstacle_found");
+    p.replan_when_course_out = declare_parameter<bool>("replan_when_course_out");
   }
 
   // set vehicle_info
@@ -291,22 +291,22 @@ PlannerCommonParam FreespacePlannerNode::getPlannerCommonParam()
   PlannerCommonParam p;
 
   // search configs
-  p.time_limit = declare_parameter("time_limit", 5000.0);
-  p.minimum_turning_radius = declare_parameter("minimum_turning_radius", 0.5);
-  p.maximum_turning_radius = declare_parameter("maximum_turning_radius", 6.0);
-  p.turning_radius_size = declare_parameter("turning_radius_size", 11);
+  p.time_limit = declare_parameter<double>("time_limit");
+  p.minimum_turning_radius = declare_parameter<double>("minimum_turning_radius");
+  p.maximum_turning_radius = declare_parameter<double>("maximum_turning_radius");
+  p.turning_radius_size = declare_parameter<int>("turning_radius_size");
   p.maximum_turning_radius = std::max(p.maximum_turning_radius, p.minimum_turning_radius);
   p.turning_radius_size = std::max(p.turning_radius_size, 1);
 
-  p.theta_size = declare_parameter("theta_size", 48);
-  p.angle_goal_range = declare_parameter("angle_goal_range", 6.0);
-  p.curve_weight = declare_parameter("curve_weight", 1.2);
-  p.reverse_weight = declare_parameter("reverse_weight", 2.00);
-  p.lateral_goal_range = declare_parameter("lateral_goal_range", 0.5);
-  p.longitudinal_goal_range = declare_parameter("longitudinal_goal_range", 2.0);
+  p.theta_size = declare_parameter<int>("theta_size");
+  p.angle_goal_range = declare_parameter<double>("angle_goal_range");
+  p.curve_weight = declare_parameter<double>("curve_weight");
+  p.reverse_weight = declare_parameter<double>("reverse_weight");
+  p.lateral_goal_range = declare_parameter<double>("lateral_goal_range");
+  p.longitudinal_goal_range = declare_parameter<double>("longitudinal_goal_range");
 
   // costmap configs
-  p.obstacle_threshold = declare_parameter("obstacle_threshold", 100);
+  p.obstacle_threshold = declare_parameter<int>("obstacle_threshold");
 
   return p;
 }
