@@ -351,11 +351,11 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_),
   current_scenario_(tier4_planning_msgs::msg::Scenario::EMPTY),
-  update_rate_(this->declare_parameter<double>("update_rate", 10.0)),
-  th_max_message_delay_sec_(this->declare_parameter<double>("th_max_message_delay_sec", 1.0)),
-  th_arrived_distance_m_(this->declare_parameter<double>("th_arrived_distance_m", 1.0)),
-  th_stopped_time_sec_(this->declare_parameter<double>("th_stopped_time_sec", 1.0)),
-  th_stopped_velocity_mps_(this->declare_parameter<double>("th_stopped_velocity_mps", 0.01)),
+  update_rate_(this->declare_parameter<double>("update_rate")),
+  th_max_message_delay_sec_(this->declare_parameter<double>("th_max_message_delay_sec")),
+  th_arrived_distance_m_(this->declare_parameter<double>("th_arrived_distance_m")),
+  th_stopped_time_sec_(this->declare_parameter<double>("th_stopped_time_sec")),
+  th_stopped_velocity_mps_(this->declare_parameter<double>("th_stopped_velocity_mps")),
   is_parking_completed_(false)
 {
   // Input
