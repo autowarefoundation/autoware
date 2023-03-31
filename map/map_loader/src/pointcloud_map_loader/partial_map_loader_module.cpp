@@ -29,7 +29,6 @@ void PartialMapLoaderModule::partialAreaLoad(
   GetPartialPointCloudMap::Response::SharedPtr & response) const
 {
   // iterate over all the available pcd map grids
-
   for (const auto & ele : all_pcd_file_metadata_dict_) {
     std::string path = ele.first;
     PCDFileMetadata metadata = ele.second;
@@ -42,6 +41,11 @@ void PartialMapLoaderModule::partialAreaLoad(
 
     autoware_map_msgs::msg::PointCloudMapCellWithID pointcloud_map_cell_with_id =
       loadPointCloudMapCellWithID(path, map_id);
+    pointcloud_map_cell_with_id.min_x = metadata.min.x;
+    pointcloud_map_cell_with_id.min_y = metadata.min.y;
+    pointcloud_map_cell_with_id.max_x = metadata.max.x;
+    pointcloud_map_cell_with_id.max_y = metadata.max.y;
+
     response->new_pointcloud_with_ids.push_back(pointcloud_map_cell_with_id);
   }
 }

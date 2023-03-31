@@ -16,6 +16,53 @@
 
 #include <fmt/format.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
+std::map<std::string, PCDFileMetadata> loadPCDMetadata(const std::string & pcd_metadata_path)
+{
+  YAML::Node config = YAML::LoadFile(pcd_metadata_path);
+
+  std::map<std::string, PCDFileMetadata> metadata;
+
+  for (const auto & node : config) {
+    if (
+      node.first.as<std::string>() == "x_resolution" ||
+      node.first.as<std::string>() == "y_resolution") {
+      continue;
+    }
+
+    std::string key = node.first.as<std::string>();
+    std::vector<int> values = node.second.as<std::vector<int>>();
+
+    PCDFileMetadata fileMetadata;
+    fileMetadata.min.x = values[0];
+    fileMetadata.min.y = values[1];
+    fileMetadata.max.x = values[0] + config["x_resolution"].as<float>();
+    fileMetadata.max.y = values[1] + config["y_resolution"].as<float>();
+
+    metadata[key] = fileMetadata;
+  }
+
+  return metadata;
+}
+
+std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
+  const std::map<std::string, PCDFileMetadata> & pcd_metadata_path,
+  const std::vector<std::string> & pcd_paths)
+{
+  std::map<std::string, PCDFileMetadata> absolute_path_map;
+  for (const auto & path : pcd_paths) {
+    std::string filename = path.substr(path.find_last_of("/\\") + 1);
+    auto it = pcd_metadata_path.find(filename);
+    if (it != pcd_metadata_path.end()) {
+      absolute_path_map[path] = it->second;
+    }
+  }
+  return absolute_path_map;
+}
+
 bool sphereAndBoxOverlapExists(
   const geometry_msgs::msg::Point center, const double radius, const pcl::PointXYZ box_min_point,
   const pcl::PointXYZ box_max_point)

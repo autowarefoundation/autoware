@@ -29,6 +29,7 @@
   <depend>tf2_ros</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
+  <depend>yaml-cpp</depend>
 
   <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_lint_auto</test_depend>

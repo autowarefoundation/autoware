@@ -89,6 +89,7 @@ def launch_setup(context, *args, **kwargs):
         ],
         parameters=[
             {"pcd_paths_or_directory": ["[", LaunchConfiguration("pointcloud_map_path"), "]"]},
+            {"pcd_metadata_path": [LaunchConfiguration("pointcloud_map_metadata_path")]},
             pointcloud_map_loader_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
@@ -150,6 +151,11 @@ def generate_launch_description():
         "pointcloud_map_path",
         [LaunchConfiguration("map_path"), "/pointcloud_map.pcd"],
         "path to pointcloud map file",
+    ),
+    add_launch_arg(
+        "pointcloud_map_metadata_path",
+        [LaunchConfiguration("map_path"), "/pointcloud_map_metadata.yaml"],
+        "path to pointcloud map metadata file",
     ),
     add_launch_arg(
         "lanelet2_map_loader_param_path",
