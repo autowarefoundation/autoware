@@ -20,10 +20,9 @@ TrajectoryAnalyzerNode::TrajectoryAnalyzerNode(const rclcpp::NodeOptions & optio
 : Node("trajectory_analyzer", options)
 {
   using TopicNames = std::vector<std::string>;
-  const auto path_topics = declare_parameter<TopicNames>("path_topics", TopicNames{});
-  const auto path_with_lane_id_topics =
-    declare_parameter<TopicNames>("path_with_lane_id_topics", TopicNames{});
-  const auto trajectory_topics = declare_parameter<TopicNames>("trajectory_topics", TopicNames{});
+  const auto path_topics = declare_parameter<TopicNames>("path_topics");
+  const auto path_with_lane_id_topics = declare_parameter<TopicNames>("path_with_lane_id_topics");
+  const auto trajectory_topics = declare_parameter<TopicNames>("trajectory_topics");
 
   for (const auto & s : path_topics) {
     path_analyzers_.push_back(std::make_shared<TrajectoryAnalyzer<Path>>(this, s));
