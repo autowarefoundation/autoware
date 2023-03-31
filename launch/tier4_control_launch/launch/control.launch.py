@@ -82,6 +82,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             {
                 "lateral_controller_mode": LaunchConfiguration("lateral_controller_mode"),
+                "longitudinal_controller_mode": LaunchConfiguration("longitudinal_controller_mode"),
             },
             nearest_search_param,
             trajectory_follower_node_param,
