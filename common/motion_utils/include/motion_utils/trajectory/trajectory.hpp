@@ -1246,6 +1246,42 @@ inline boost::optional<size_t> insertStopPoint(
 }
 
 /**
+ * @brief Insert deceleration point from the source pose
+ * @param src_point source point
+ * @param distance_to_decel_point  distance to deceleration point from the src point
+ * @param velocity velocity of stop point
+ * @param points_with_twist output points of trajectory, path, ... (with velocity)
+ */
+template <class T>
+boost::optional<size_t> insertDecelPoint(
+  const geometry_msgs::msg::Point & src_point, const double distance_to_decel_point,
+  const double velocity, T & points_with_twist)
+{
+  const auto decel_point =
+    calcLongitudinalOffsetPoint(points_with_twist, src_point, distance_to_decel_point);
+
+  if (!decel_point) {
+    return {};
+  }
+
+  const auto seg_idx = findNearestSegmentIndex(points_with_twist, decel_point.get());
+  const auto insert_idx = insertTargetPoint(seg_idx, decel_point.get(), points_with_twist);
+
+  if (!insert_idx) {
+    return {};
+  }
+
+  for (size_t i = insert_idx.get(); i < points_with_twist.size(); ++i) {
+    const auto & original_velocity =
+      tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.at(i));
+    tier4_autoware_utils::setLongitudinalVelocity(
+      std::min(original_velocity, velocity), points_with_twist.at(i));
+  }
+
+  return insert_idx;
+}
+
+/**
  * @brief Insert orientation to each point in points container (trajectory, path, ...)
  * @param points points of trajectory, path, ... (input / output)
  * @param is_driving_forward  flag indicating the order of points is forward or backward
