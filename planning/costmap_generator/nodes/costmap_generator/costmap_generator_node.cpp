@@ -161,26 +161,26 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
 : Node("costmap_generator", node_options), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
   // Parameters
-  costmap_frame_ = this->declare_parameter<std::string>("costmap_frame", "map");
-  vehicle_frame_ = this->declare_parameter<std::string>("vehicle_frame", "base_link");
-  map_frame_ = this->declare_parameter<std::string>("map_frame", "map");
-  update_rate_ = this->declare_parameter<double>("update_rate", 10.0);
-  activate_by_scenario_ = this->declare_parameter<bool>("activate_by_scenario", true);
-  grid_min_value_ = this->declare_parameter<double>("grid_min_value", 0.0);
-  grid_max_value_ = this->declare_parameter<double>("grid_max_value", 1.0);
-  grid_resolution_ = this->declare_parameter<double>("grid_resolution", 0.2);
-  grid_length_x_ = this->declare_parameter<double>("grid_length_x", 50);
-  grid_length_y_ = this->declare_parameter<double>("grid_length_y", 30);
-  grid_position_x_ = this->declare_parameter<double>("grid_position_x", 20);
-  grid_position_y_ = this->declare_parameter<double>("grid_position_y", 0);
-  maximum_lidar_height_thres_ = this->declare_parameter<double>("maximum_lidar_height_thres", 0.3);
-  minimum_lidar_height_thres_ = this->declare_parameter<double>("minimum_lidar_height_thres", -2.2);
-  use_objects_ = this->declare_parameter<bool>("use_objects", true);
-  use_points_ = this->declare_parameter<bool>("use_points", true);
-  use_wayarea_ = this->declare_parameter<bool>("use_wayarea", true);
-  use_parkinglot_ = this->declare_parameter<bool>("use_parkinglot", true);
-  expand_polygon_size_ = this->declare_parameter<double>("expand_polygon_size", 1.0);
-  size_of_expansion_kernel_ = this->declare_parameter<int>("size_of_expansion_kernel", 9);
+  costmap_frame_ = this->declare_parameter<std::string>("costmap_frame");
+  vehicle_frame_ = this->declare_parameter<std::string>("vehicle_frame");
+  map_frame_ = this->declare_parameter<std::string>("map_frame");
+  update_rate_ = this->declare_parameter<double>("update_rate");
+  activate_by_scenario_ = this->declare_parameter<bool>("activate_by_scenario");
+  grid_min_value_ = this->declare_parameter<double>("grid_min_value");
+  grid_max_value_ = this->declare_parameter<double>("grid_max_value");
+  grid_resolution_ = this->declare_parameter<double>("grid_resolution");
+  grid_length_x_ = this->declare_parameter<double>("grid_length_x");
+  grid_length_y_ = this->declare_parameter<double>("grid_length_y");
+  grid_position_x_ = this->declare_parameter<double>("grid_position_x");
+  grid_position_y_ = this->declare_parameter<double>("grid_position_y");
+  maximum_lidar_height_thres_ = this->declare_parameter<double>("maximum_lidar_height_thres");
+  minimum_lidar_height_thres_ = this->declare_parameter<double>("minimum_lidar_height_thres");
+  use_objects_ = this->declare_parameter<bool>("use_objects");
+  use_points_ = this->declare_parameter<bool>("use_points");
+  use_wayarea_ = this->declare_parameter<bool>("use_wayarea");
+  use_parkinglot_ = this->declare_parameter<bool>("use_parkinglot");
+  expand_polygon_size_ = this->declare_parameter<double>("expand_polygon_size");
+  size_of_expansion_kernel_ = this->declare_parameter<int>("size_of_expansion_kernel");
 
   // Wait for first tf
   // We want to do this before creating subscriptions
