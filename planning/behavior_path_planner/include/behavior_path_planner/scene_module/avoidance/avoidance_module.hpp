@@ -359,9 +359,9 @@ private:
     path_shifter.removeBehindShiftLineAndSetBaseOffset(nearest_idx);
   }
 
-  double getFeasibleDecelDistance(const double target_velocity) const;
+  boost::optional<double> getFeasibleDecelDistance(const double target_velocity) const;
 
-  double getMildDecelDistance(const double target_velocity) const;
+  boost::optional<double> getMildDecelDistance(const double target_velocity) const;
 
   double getRelativeLengthFromPath(const AvoidLine & avoid_line) const;
 

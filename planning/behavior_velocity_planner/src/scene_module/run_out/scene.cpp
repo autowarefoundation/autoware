@@ -536,7 +536,7 @@ boost::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   const float planning_dec = jerk_dec < planner_param_.common.normal_min_jerk
                                ? planner_param_.common.limit_min_acc
                                : planner_param_.common.normal_min_acc;
-  auto stop_dist = run_out_utils::calcDecelDistWithJerkAndAccConstraints(
+  auto stop_dist = motion_utils::calcDecelDistWithJerkAndAccConstraints(
     current_vel, target_vel, current_acc, planning_dec, jerk_acc, jerk_dec);
   if (!stop_dist) {
     RCLCPP_WARN_STREAM(logger_, "failed to calculate stop distance.");

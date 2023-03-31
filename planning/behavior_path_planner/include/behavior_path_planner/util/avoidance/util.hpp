@@ -114,10 +114,6 @@ lanelet::ConstLanelets getTargetLanelets(
   const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
   const double left_offset, const double right_offset);
 
-double calcDecelDistWithJerkAndAccConstraints(
-  const double current_vel, const double target_vel, const double current_acc, const double acc_min,
-  const double jerk_acc, const double jerk_dec);
-
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
   boost::optional<Pose> & p_out);

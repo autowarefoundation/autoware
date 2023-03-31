@@ -22,6 +22,7 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/distance/distance.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
@@ -43,6 +44,7 @@
 
 namespace behavior_path_planner
 {
+using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
@@ -3863,7 +3865,8 @@ void AvoidanceModule::updateAvoidanceDebugData(
   }
 }
 
-double AvoidanceModule::getFeasibleDecelDistance(const double target_velocity) const
+boost::optional<double> AvoidanceModule::getFeasibleDecelDistance(
+  const double target_velocity) const
 {
   const auto & a_now = planner_data_->self_acceleration->accel.accel.linear.x;
   const auto & a_lim = parameters_->max_deceleration;
@@ -3872,7 +3875,7 @@ double AvoidanceModule::getFeasibleDecelDistance(const double target_velocity) c
     getEgoSpeed(), target_velocity, a_now, a_lim, j_lim, -1.0 * j_lim);
 }
 
-double AvoidanceModule::getMildDecelDistance(const double target_velocity) const
+boost::optional<double> AvoidanceModule::getMildDecelDistance(const double target_velocity) const
 {
   const auto & a_now = planner_data_->self_acceleration->accel.accel.linear.x;
   const auto & a_lim = parameters_->nominal_deceleration;
@@ -3943,11 +3946,11 @@ void AvoidanceModule::insertWaitPoint(
   }
 
   const auto stop_distance = getMildDecelDistance(0.0);
-
-  const auto insert_distance = std::max(start_longitudinal, stop_distance);
-
-  insertDecelPoint(
-    getEgoPosition(), insert_distance, 0.0, shifted_path.path, debug_data_.stop_pose);
+  if (stop_distance) {
+    const auto insert_distance = std::max(start_longitudinal, *stop_distance);
+    insertDecelPoint(
+      getEgoPosition(), insert_distance, 0.0, shifted_path.path, debug_data_.stop_pose);
+  }
 }
 
 void AvoidanceModule::insertYieldVelocity(ShiftedPath & shifted_path) const
@@ -3964,9 +3967,11 @@ void AvoidanceModule::insertYieldVelocity(ShiftedPath & shifted_path) const
   }
 
   const auto decel_distance = getMildDecelDistance(p->yield_velocity);
-
-  insertDecelPoint(
-    getEgoPosition(), decel_distance, p->yield_velocity, shifted_path.path, debug_data_.slow_pose);
+  if (decel_distance) {
+    insertDecelPoint(
+      getEgoPosition(), *decel_distance, p->yield_velocity, shifted_path.path,
+      debug_data_.slow_pose);
+  }
 }
 
 void AvoidanceModule::insertPrepareVelocity(const bool avoidable, ShiftedPath & shifted_path) const
@@ -3992,8 +3997,10 @@ void AvoidanceModule::insertPrepareVelocity(const bool avoidable, ShiftedPath & 
   }
 
   const auto decel_distance = getFeasibleDecelDistance(0.0);
-
-  insertDecelPoint(getEgoPosition(), decel_distance, 0.0, shifted_path.path, debug_data_.slow_pose);
+  if (decel_distance) {
+    insertDecelPoint(
+      getEgoPosition(), *decel_distance, 0.0, shifted_path.path, debug_data_.slow_pose);
+  }
 }
 
 std::shared_ptr<AvoidanceDebugMsgArray> AvoidanceModule::get_debug_msg_array() const
