@@ -1,0 +1,58 @@
+/**:
+  ros__parameters:
+    # Static expansion
+    avoidance:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+      drivable_area_types_to_skip: [road_border]
+    lane_change:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+      drivable_area_types_to_skip: [road_border]
+    lane_following:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+      drivable_area_types_to_skip: [road_border]
+    pull_out:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+      drivable_area_types_to_skip: [road_border]
+    pull_over:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+      drivable_area_types_to_skip: [road_border]
+    side_shift:
+      drivable_area_right_bound_offset: 0.0
+      drivable_area_left_bound_offset: 0.0
+      drivable_area_types_to_skip: [road_border]
+
+    # Dynamic expansion by projecting the ego footprint along the path
+    dynamic_expansion:
+      enabled: false
+      ego:
+        extra_footprint_offset:
+          front: 0.5 # [m] extra length to add to the front of the ego footprint
+          rear: 0.5 # [m] extra length to add to the rear of the ego footprint
+          left: 0.5 # [m] extra length to add to the left of the ego footprint
+          right: 0.5 # [m] extra length to add to the rear of the ego footprint
+      dynamic_objects:
+        avoid: true # if true, the drivable area is not expanded in the predicted path of dynamic objects
+        extra_footprint_offset:
+          front: 0.5 # [m] extra length to add to the front of the dynamic object footprint
+          rear: 0.5 # [m] extra length to add to the rear of the dynamic object footprint
+          left: 0.5 # [m] extra length to add to the left of the dynamic object footprint
+          right: 0.5 # [m] extra length to add to the rear of the dynamic object footprint
+      expansion:
+        method: polygon # method used to expand the drivable area. Either 'lanelet' or 'polygon'.
+                         # 'lanelet': add lanelets overlapped by the ego footprints
+                         # 'polygon': add polygons built around sections of the ego footprint that go out of the drivable area
+        max_distance: 0.0 # [m] maximum distance by which the drivable area can be expended (0.0 means no limit)
+        max_path_arc_length: 50.0 # [m] maximum arc length along the path where the ego footprint is projected (0.0 means no limit)
+        extra_arc_length: 0.5 # [m] extra expansion arc length around an ego footprint
+      avoid_linestring:
+        types: # linestring types in the lanelet maps that will not be crossed when expanding the drivable area
+          - road_border
+        distance: 0.0 # [m] distance to keep between the drivable area and the linestrings to avoid
+        compensate:
+          enable: true  # if true, when the drivable area cannot be expanded in one direction to completely include the ego footprint, it is expanded in the opposite direction
+          extra_distance: 3.0 # [m] extra distance to add to the compensation
