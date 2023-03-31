@@ -59,7 +59,7 @@ double calcLaneChangingDistance(
   const BehaviorPathPlannerParameters & com_param, const LaneChangeParameters & lc_param);
 
 std::optional<LaneChangePath> constructCandidatePath(
-  const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
+  const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const double acceleration, const double prepare_distance, const double prepare_duration,
@@ -106,8 +106,9 @@ bool hasEnoughDistance(
 #endif
 
 ShiftLine getLaneChangingShiftLine(
-  const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
-  const lanelet::ConstLanelets & target_lanes, const PathWithLaneId & reference_path);
+  const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
+  const lanelet::ConstLanelets & target_lanes, const PathWithLaneId & reference_path,
+  const double shift_length);
 
 PathWithLaneId getReferencePathFromTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
@@ -125,7 +126,7 @@ PathWithLaneId getPrepareSegment(
   const Pose & current_pose, const double backward_path_length, const double prepare_distance,
   const double prepare_speed);
 
-PathWithLaneId getLaneChangingSegment(
+PathWithLaneId getTargetSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanelets,
   const double forward_path_length, const Pose & lane_changing_start_pose,
   const double target_lane_length, const double lane_changing_distance,
