@@ -28,13 +28,9 @@ bool validCheckDecelPlan(
   const double a_max = a_target + std::abs(a_margin);
 
   if (v_end < v_min || v_max < v_end) {
-    std::cerr << "[validCheckDecelPlan] valid check error! v_target = " << v_target
-              << ", v_end = " << v_end << std::endl;
     return false;
   }
   if (a_end < a_min || a_max < a_end) {
-    std::cerr << "[validCheckDecelPlan] valid check error! a_target = " << a_target
-              << ", a_end = " << a_end << std::endl;
     return false;
   }
 
