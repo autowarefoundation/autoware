@@ -5,7 +5,7 @@
 ## Tests performed
 
 <!-- Describe how you have tested this PR. -->
-<!-- Must fill in feat (feature), fix (bug fix), perf (performance), and any other PRs that should be tested. -->
+<!-- Although the default value is set to "Not Applicable.", please update this section if the type is either [feat, fix, perf], or if requested by the reviewers. -->
 
 Not applicable.
 
