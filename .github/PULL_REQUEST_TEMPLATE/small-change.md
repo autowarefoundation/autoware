@@ -7,7 +7,7 @@
 <!-- Describe how you have tested this PR. -->
 <!-- Must fill in feat (feature), fix (bug fix), perf (performance), and any other PRs that should be tested. -->
 
-Not applicable
+Not applicable.
 
 ## Pre-review checklist for the PR author
 
