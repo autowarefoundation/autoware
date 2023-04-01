@@ -2,6 +2,13 @@
 
 <!-- Write a brief description of this PR. -->
 
+## Tests performed
+
+<!-- Describe how you have tested this PR. -->
+<!-- Although the default value is set to "Not Applicable.", please update this section if the type is either [feat, fix, perf], or if requested by the reviewers. -->
+
+Not applicable.
+
 ## Pre-review checklist for the PR author
 
 The PR author **must** check the checkboxes below when creating the PR.
