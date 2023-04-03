@@ -537,3 +537,128 @@ TEST(Interpolation, interpolate_path_for_path)
     EXPECT_NEAR(result.point.heading_rate_rps, 0.3, epsilon);
   }
 }
+
+TEST(Interpolation, interpolate_points_with_length)
+{
+  using motion_utils::calcInterpolatedPose;
+
+  {
+    autoware_auto_planning_msgs::msg::Trajectory traj;
+    traj.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      traj.points.at(i) =
+        generateTestTrajectoryPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1, i * 0.05);
+    }
+
+    // Same points as the trajectory point
+    {
+      const auto result = calcInterpolatedPose(traj.points, 3.0);
+
+      EXPECT_NEAR(result.position.x, 3.0, epsilon);
+      EXPECT_NEAR(result.position.y, 0.0, epsilon);
+      EXPECT_NEAR(result.position.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+    }
+
+    // Random Point
+    {
+      const auto result = calcInterpolatedPose(traj.points, 2.5);
+
+      EXPECT_NEAR(result.position.x, 2.5, epsilon);
+      EXPECT_NEAR(result.position.y, 0.0, epsilon);
+      EXPECT_NEAR(result.position.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+    }
+
+    // Negative length
+    {
+      const auto result = calcInterpolatedPose(traj.points, -3.0);
+
+      EXPECT_NEAR(result.position.x, 0.0, epsilon);
+      EXPECT_NEAR(result.position.y, 0.0, epsilon);
+      EXPECT_NEAR(result.position.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+    }
+
+    // Boundary value (0.0)
+    {
+      const auto result = calcInterpolatedPose(traj.points, 0.0);
+
+      EXPECT_NEAR(result.position.x, 0.0, epsilon);
+      EXPECT_NEAR(result.position.y, 0.0, epsilon);
+      EXPECT_NEAR(result.position.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+    }
+
+    // Terminal Point
+    {
+      const auto result = calcInterpolatedPose(traj.points, 9.0);
+
+      EXPECT_NEAR(result.position.x, 9.0, epsilon);
+      EXPECT_NEAR(result.position.y, 0.0, epsilon);
+      EXPECT_NEAR(result.position.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+    }
+
+    // Outside of terminal point
+    {
+      const auto result = calcInterpolatedPose(traj.points, 10.0);
+
+      EXPECT_NEAR(result.position.x, 9.0, epsilon);
+      EXPECT_NEAR(result.position.y, 0.0, epsilon);
+      EXPECT_NEAR(result.position.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+    }
+  }
+
+  // one point
+  {
+    autoware_auto_planning_msgs::msg::Trajectory traj;
+    traj.points.resize(1);
+    for (size_t i = 0; i < 1; ++i) {
+      traj.points.at(i) = generateTestTrajectoryPoint(
+        (i + 1) * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1, i * 0.05);
+    }
+
+    const auto result = calcInterpolatedPose(traj.points, 2.0);
+    EXPECT_NEAR(result.position.x, 1.0, epsilon);
+    EXPECT_NEAR(result.position.y, 0.0, epsilon);
+    EXPECT_NEAR(result.position.z, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+  }
+
+  // Empty Point
+  {
+    const Trajectory traj;
+    const auto result = calcInterpolatedPose(traj.points, 2.0);
+
+    EXPECT_NEAR(result.position.x, 0.0, epsilon);
+    EXPECT_NEAR(result.position.y, 0.0, epsilon);
+    EXPECT_NEAR(result.position.z, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.x, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.y, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.z, 0.0, epsilon);
+    EXPECT_NEAR(result.orientation.w, 1.0, epsilon);
+  }
+}
