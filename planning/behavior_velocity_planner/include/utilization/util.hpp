@@ -155,7 +155,10 @@ void setVelocityFromIndex(const size_t begin_idx, const double vel, PathWithLane
 void insertVelocity(
   PathWithLaneId & path, const PathPointWithLaneId & path_point, const double v,
   size_t & insert_index, const double min_distance = 0.001);
-inline int64_t bitShift(int64_t original_id) { return original_id << (sizeof(int32_t) * 8 / 2); }
+inline int64_t bitShift(int64_t original_id)
+{
+  return original_id << (sizeof(int32_t) * 8 / 2);
+}
 
 geometry_msgs::msg::Pose transformRelCoordinate2D(
   const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);

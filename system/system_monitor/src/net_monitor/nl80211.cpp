@@ -24,7 +24,9 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
 
-NL80211::NL80211() : bitrate_(0.0), initialized_(false), socket_(nullptr), id_(-1), cb_(nullptr) {}
+NL80211::NL80211() : bitrate_(0.0), initialized_(false), socket_(nullptr), id_(-1), cb_(nullptr)
+{
+}
 
 // Attribute validation policy
 static struct nla_policy stats_policy[NL80211_STA_INFO_MAX + 1];

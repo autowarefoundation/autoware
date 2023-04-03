@@ -31,7 +31,9 @@
 
 namespace bp = boost::process;
 
-L2pingService::L2pingService(const int port) : port_(port), socket_(-1) {}
+L2pingService::L2pingService(const int port) : port_(port), socket_(-1)
+{
+}
 
 bool L2pingService::initialize()
 {
@@ -74,7 +76,10 @@ bool L2pingService::initialize()
   return true;
 }
 
-void L2pingService::shutdown() { close(socket_); }
+void L2pingService::shutdown()
+{
+  close(socket_);
+}
 
 void L2pingService::run()
 {

@@ -76,9 +76,15 @@ void AutowarePoseWithUuidStampedDisplay::onDisable()
   axes_->getSceneNode()->setVisible(false);
 }
 
-void AutowarePoseWithUuidStampedDisplay::subscribe() { MFDClass::subscribe(); }
+void AutowarePoseWithUuidStampedDisplay::subscribe()
+{
+  MFDClass::subscribe();
+}
 
-void AutowarePoseWithUuidStampedDisplay::unsubscribe() { MFDClass::unsubscribe(); }
+void AutowarePoseWithUuidStampedDisplay::unsubscribe()
+{
+  MFDClass::unsubscribe();
+}
 
 void AutowarePoseWithUuidStampedDisplay::updateVisualization()
 {

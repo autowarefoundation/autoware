@@ -16,7 +16,9 @@
 
 namespace autoware::motion::control::mpc_lateral_controller
 {
-QPSolverEigenLeastSquareLLT::QPSolverEigenLeastSquareLLT() {}
+QPSolverEigenLeastSquareLLT::QPSolverEigenLeastSquareLLT()
+{
+}
 bool QPSolverEigenLeastSquareLLT::solve(
   const Eigen::MatrixXd & h_mat, const Eigen::MatrixXd & f_vec, const Eigen::MatrixXd & /*a*/,
   const Eigen::VectorXd & /*lb*/, const Eigen::VectorXd & /*ub*/, const Eigen::VectorXd & /*lb_a*/,

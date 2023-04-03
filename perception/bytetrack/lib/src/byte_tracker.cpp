@@ -51,7 +51,9 @@ ByteTracker::ByteTracker(
   std::cout << "Init ByteTrack!" << std::endl;
 }
 
-ByteTracker::~ByteTracker() {}
+ByteTracker::~ByteTracker()
+{
+}
 
 std::vector<STrack> ByteTracker::update(const std::vector<ByteTrackObject> & objects)
 {

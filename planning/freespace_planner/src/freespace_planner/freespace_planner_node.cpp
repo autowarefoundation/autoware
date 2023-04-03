@@ -326,7 +326,10 @@ void FreespacePlannerNode::onOccupancyGrid(const OccupancyGrid::ConstSharedPtr m
   occupancy_grid_ = msg;
 }
 
-void FreespacePlannerNode::onScenario(const Scenario::ConstSharedPtr msg) { scenario_ = msg; }
+void FreespacePlannerNode::onScenario(const Scenario::ConstSharedPtr msg)
+{
+  scenario_ = msg;
+}
 
 void FreespacePlannerNode::onOdometry(const Odometry::ConstSharedPtr msg)
 {

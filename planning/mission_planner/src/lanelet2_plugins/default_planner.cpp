@@ -163,7 +163,10 @@ void DefaultPlanner::initialize(rclcpp::Node * node, const HADMapBin::ConstShare
   map_callback(msg);
 }
 
-bool DefaultPlanner::ready() const { return is_graph_ready_; }
+bool DefaultPlanner::ready() const
+{
+  return is_graph_ready_;
+}
 
 void DefaultPlanner::map_callback(const HADMapBin::ConstSharedPtr msg)
 {

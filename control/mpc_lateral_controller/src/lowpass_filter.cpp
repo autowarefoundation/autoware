@@ -23,7 +23,9 @@ Butterworth2dFilter::Butterworth2dFilter(double dt, double f_cutoff_hz)
   initialize(dt, f_cutoff_hz);
 }
 
-Butterworth2dFilter::~Butterworth2dFilter() {}
+Butterworth2dFilter::~Butterworth2dFilter()
+{
+}
 
 void Butterworth2dFilter::initialize(const double & dt, const double & f_cutoff_hz)
 {

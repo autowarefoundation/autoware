@@ -188,7 +188,10 @@ bool PullOutModule::isExecutionRequested() const
   return true;
 }
 
-bool PullOutModule::isExecutionReady() const { return true; }
+bool PullOutModule::isExecutionReady() const
+{
+  return true;
+}
 
 // this runs only when RUNNING
 ModuleStatus PullOutModule::updateState()
@@ -290,7 +293,10 @@ BehaviorModuleOutput PullOutModule::plan()
   return output;
 }
 
-CandidateOutput PullOutModule::planCandidate() const { return CandidateOutput{}; }
+CandidateOutput PullOutModule::planCandidate() const
+{
+  return CandidateOutput{};
+}
 
 std::shared_ptr<PullOutPlannerBase> PullOutModule::getCurrentPlanner() const
 {

@@ -31,7 +31,10 @@ namespace lidar_apollo_segmentation_tvm
 {
 namespace
 {
-inline float32_t normalizeIntensity(float32_t intensity) { return intensity / 255; }
+inline float32_t normalizeIntensity(float32_t intensity)
+{
+  return intensity / 255;
+}
 }  // namespace
 
 FeatureGenerator::FeatureGenerator(

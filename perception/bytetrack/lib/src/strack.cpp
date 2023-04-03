@@ -61,7 +61,9 @@ STrack::STrack(std::vector<float> tlwh_, float score, int label)
   this->label = label;
 }
 
-STrack::~STrack() {}
+STrack::~STrack()
+{
+}
 
 void STrack::activate(byte_kalman::KalmanFilter & kalman_filter, int frame_id)
 {
@@ -186,7 +188,10 @@ std::vector<float> STrack::tlwh_to_xyah(std::vector<float> tlwh_tmp)
   return tlwh_output;
 }
 
-std::vector<float> STrack::to_xyah() { return tlwh_to_xyah(tlwh); }
+std::vector<float> STrack::to_xyah()
+{
+  return tlwh_to_xyah(tlwh);
+}
 
 std::vector<float> STrack::tlbr_to_tlwh(std::vector<float> & tlbr)
 {
@@ -195,9 +200,15 @@ std::vector<float> STrack::tlbr_to_tlwh(std::vector<float> & tlbr)
   return tlbr;
 }
 
-void STrack::mark_lost() { state = TrackState::Lost; }
+void STrack::mark_lost()
+{
+  state = TrackState::Lost;
+}
 
-void STrack::mark_removed() { state = TrackState::Removed; }
+void STrack::mark_removed()
+{
+  state = TrackState::Removed;
+}
 
 int STrack::next_id()
 {
@@ -206,7 +217,10 @@ int STrack::next_id()
   return _count;
 }
 
-int STrack::end_frame() { return this->frame_id; }
+int STrack::end_frame()
+{
+  return this->frame_id;
+}
 
 void STrack::multi_predict(
   std::vector<STrack *> & stracks, byte_kalman::KalmanFilter & kalman_filter)

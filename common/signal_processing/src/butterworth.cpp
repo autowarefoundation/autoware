@@ -52,9 +52,15 @@ void ButterworthFilter::Buttord(
   setCutOffFrequency(right_lim);
 }
 
-void ButterworthFilter::setOrder(const int & N) { filter_specs_.N = N; }
+void ButterworthFilter::setOrder(const int & N)
+{
+  filter_specs_.N = N;
+}
 
-void ButterworthFilter::setCutOffFrequency(const double & Wc) { filter_specs_.Wc_rad_sec = Wc; }
+void ButterworthFilter::setCutOffFrequency(const double & Wc)
+{
+  filter_specs_.Wc_rad_sec = Wc;
+}
 
 /**
  * @brief Sets the cut-off and sampling frequencies.
@@ -76,7 +82,10 @@ void ButterworthFilter::setCutOffFrequency(const double & fc, const double & fs)
   filter_specs_.fs = fs;
 }
 
-sOrderCutOff ButterworthFilter::getOrderCutOff() const { return filter_specs_; }
+sOrderCutOff ButterworthFilter::getOrderCutOff() const
+{
+  return filter_specs_;
+}
 
 /**
  * @brief Matlab equivalent : [b, a]  = butter(n, Wn, 's')
@@ -306,9 +315,18 @@ void ButterworthFilter::printDiscreteTimeTF() const
 
   RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[%s]", stream.str().c_str());
 }
-std::vector<double> ButterworthFilter::getAn() const { return AnBn_.An; }
-std::vector<double> ButterworthFilter::getBn() const { return AnBn_.Bn; }
-sDifferenceAnBn ButterworthFilter::getAnBn() const { return AnBn_; }
+std::vector<double> ButterworthFilter::getAn() const
+{
+  return AnBn_.An;
+}
+std::vector<double> ButterworthFilter::getBn() const
+{
+  return AnBn_.Bn;
+}
+sDifferenceAnBn ButterworthFilter::getAnBn() const
+{
+  return AnBn_;
+}
 
 void ButterworthFilter::printFilterSpecs() const
 {

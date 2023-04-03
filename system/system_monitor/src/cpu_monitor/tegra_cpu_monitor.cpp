@@ -31,7 +31,9 @@ CPUMonitor::CPUMonitor(const rclcpp::NodeOptions & options) : CPUMonitorBase("cp
   updater_.removeByName("CPU Thermal Throttling");
 }
 
-void CPUMonitor::checkThrottling(diagnostic_updater::DiagnosticStatusWrapper & /* stat */) {}
+void CPUMonitor::checkThrottling(diagnostic_updater::DiagnosticStatusWrapper & /* stat */)
+{
+}
 
 void CPUMonitor::getTempNames()
 {

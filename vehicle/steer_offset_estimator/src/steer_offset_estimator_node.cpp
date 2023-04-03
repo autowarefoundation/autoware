@@ -79,9 +79,15 @@ void SteerOffsetEstimatorNode::monitorSteerOffset(DiagnosticStatusWrapper & stat
   stat.summary(DiagStatus::OK, "Calibration OK");
 }
 
-void SteerOffsetEstimatorNode::onTwist(const TwistStamped::ConstSharedPtr msg) { twist_ptr_ = msg; }
+void SteerOffsetEstimatorNode::onTwist(const TwistStamped::ConstSharedPtr msg)
+{
+  twist_ptr_ = msg;
+}
 
-void SteerOffsetEstimatorNode::onSteer(const Steering::ConstSharedPtr msg) { steer_ptr_ = msg; }
+void SteerOffsetEstimatorNode::onSteer(const Steering::ConstSharedPtr msg)
+{
+  steer_ptr_ = msg;
+}
 
 bool SteerOffsetEstimatorNode::updateSteeringOffset()
 {

@@ -44,6 +44,9 @@ float sin(float radian)
   return mul * g_sin_table[idx];
 }
 
-float cos(float radian) { return sin(radian + static_cast<float>(tier4_autoware_utils::pi) / 2.f); }
+float cos(float radian)
+{
+  return sin(radian + static_cast<float>(tier4_autoware_utils::pi) / 2.f);
+}
 
 }  // namespace tier4_autoware_utils

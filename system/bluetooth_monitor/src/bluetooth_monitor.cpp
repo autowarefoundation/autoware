@@ -130,7 +130,10 @@ bool BluetoothMonitor::receiveData(diagnostic_updater::DiagnosticStatusWrapper &
   return true;
 }
 
-void BluetoothMonitor::closeConnection() { close(socket_); }
+void BluetoothMonitor::closeConnection()
+{
+  close(socket_);
+}
 
 void BluetoothMonitor::setErrorLevel(diagnostic_updater::DiagnosticStatusWrapper & stat)
 {

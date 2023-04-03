@@ -81,7 +81,10 @@ bool getStartAvoidPose(
   return false;
 }
 
-bool isAlmostZero(double v) { return std::fabs(v) < 1.0e-4; }
+bool isAlmostZero(double v)
+{
+  return std::fabs(v) < 1.0e-4;
+}
 
 Point transformToGrid(
   const Point & pt, const double longitudinal_offset, const double lateral_offset, const double yaw,

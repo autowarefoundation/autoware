@@ -208,7 +208,10 @@ void OSQPInterface::updateAlpha(const double alpha)
   }
 }
 
-void OSQPInterface::updateScaling(const int scaling) { m_settings->scaling = scaling; }
+void OSQPInterface::updateScaling(const int scaling)
+{
+  m_settings->scaling = scaling;
+}
 
 void OSQPInterface::updatePolish(const bool polish)
 {

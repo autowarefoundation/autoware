@@ -95,7 +95,10 @@ PathWithLaneId GeometricParallelParking::getArcPath() const
   return path;
 }
 
-bool GeometricParallelParking::isParking() const { return current_path_idx_ > 0; }
+bool GeometricParallelParking::isParking() const
+{
+  return current_path_idx_ > 0;
+}
 
 void GeometricParallelParking::setVelocityToArcPaths(
   std::vector<PathWithLaneId> & arc_paths, const double velocity, const bool set_stop_end)

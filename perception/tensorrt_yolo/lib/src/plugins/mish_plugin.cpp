@@ -74,7 +74,9 @@ inline int64_t volume(const Dims & d)
 
 namespace yolo
 {
-MishPlugin::MishPlugin() {}
+MishPlugin::MishPlugin()
+{
+}
 
 // create the plugin at runtime from a byte stream
 MishPlugin::MishPlugin(const void * data, size_t length)
@@ -85,28 +87,54 @@ MishPlugin::MishPlugin(const void * data, size_t length)
 
 // IPluginV2 Methods
 
-const char * MishPlugin::getPluginType() const noexcept { return MISH_PLUGIN_NAME; }
+const char * MishPlugin::getPluginType() const noexcept
+{
+  return MISH_PLUGIN_NAME;
+}
 
-const char * MishPlugin::getPluginVersion() const noexcept { return MISH_PLUGIN_VERSION; }
+const char * MishPlugin::getPluginVersion() const noexcept
+{
+  return MISH_PLUGIN_VERSION;
+}
 
-int MishPlugin::getNbOutputs() const noexcept { return 1; }
+int MishPlugin::getNbOutputs() const noexcept
+{
+  return 1;
+}
 
-int MishPlugin::initialize() noexcept { return 0; }
+int MishPlugin::initialize() noexcept
+{
+  return 0;
+}
 
-void MishPlugin::terminate() noexcept {}
+void MishPlugin::terminate() noexcept
+{
+}
 
-size_t MishPlugin::getSerializationSize() const noexcept { return 0; }
+size_t MishPlugin::getSerializationSize() const noexcept
+{
+  return 0;
+}
 
-void MishPlugin::serialize(void * buffer) const noexcept { (void)buffer; }
+void MishPlugin::serialize(void * buffer) const noexcept
+{
+  (void)buffer;
+}
 
-void MishPlugin::destroy() noexcept { delete this; }
+void MishPlugin::destroy() noexcept
+{
+  delete this;
+}
 
 void MishPlugin::setPluginNamespace(const char * pluginNamespace) noexcept
 {
   mPluginNamespace = pluginNamespace;
 }
 
-const char * MishPlugin::getPluginNamespace() const noexcept { return mPluginNamespace; }
+const char * MishPlugin::getPluginNamespace() const noexcept
+{
+  return mPluginNamespace;
+}
 
 // IPluginV2Ext Methods
 
@@ -204,11 +232,20 @@ MishPluginCreator::MishPluginCreator()
   mFC.fields = mPluginAttributes.data();
 }
 
-const char * MishPluginCreator::getPluginName() const noexcept { return MISH_PLUGIN_NAME; }
+const char * MishPluginCreator::getPluginName() const noexcept
+{
+  return MISH_PLUGIN_NAME;
+}
 
-const char * MishPluginCreator::getPluginVersion() const noexcept { return MISH_PLUGIN_VERSION; }
+const char * MishPluginCreator::getPluginVersion() const noexcept
+{
+  return MISH_PLUGIN_VERSION;
+}
 
-const PluginFieldCollection * MishPluginCreator::getFieldNames() noexcept { return &mFC; }
+const PluginFieldCollection * MishPluginCreator::getFieldNames() noexcept
+{
+  return &mFC;
+}
 
 IPluginV2DynamicExt * MishPluginCreator::createPlugin(
   const char * name, const PluginFieldCollection * fc) noexcept

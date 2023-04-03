@@ -399,7 +399,10 @@ std::pair<bool, bool> ExternalRequestLaneChangeModule::getSafePath(
   return {found_valid_path, found_safe_path};
 }
 
-bool ExternalRequestLaneChangeModule::isSafe() const { return status_.is_safe; }
+bool ExternalRequestLaneChangeModule::isSafe() const
+{
+  return status_.is_safe;
+}
 
 bool ExternalRequestLaneChangeModule::isValidPath(const PathWithLaneId & path) const
 {

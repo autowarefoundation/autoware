@@ -74,7 +74,10 @@ CPUMonitorBase::CPUMonitorBase(const std::string & node_name, const rclcpp::Node
     this->create_publisher<tier4_external_api_msgs::msg::CpuUsage>("~/cpu_usage", durable_qos);
 }
 
-void CPUMonitorBase::update() { updater_.force_update(); }
+void CPUMonitorBase::update()
+{
+  updater_.force_update();
+}
 
 void CPUMonitorBase::checkTemp(diagnostic_updater::DiagnosticStatusWrapper & stat)
 {

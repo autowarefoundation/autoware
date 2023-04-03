@@ -54,6 +54,9 @@ void SteeringFactorInterface::clearSteeringFactors()
   registered_steering_factors_.factors.clear();
 }
 
-rclcpp::Logger SteeringFactorInterface::getLogger() const { return logger_; }
+rclcpp::Logger SteeringFactorInterface::getLogger() const
+{
+  return logger_;
+}
 
 }  // namespace steering_factor_interface

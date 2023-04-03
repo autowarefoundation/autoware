@@ -20,7 +20,9 @@
 namespace vehicle_cmd_gate
 {
 
-VehicleCmdFilter::VehicleCmdFilter() {}
+VehicleCmdFilter::VehicleCmdFilter()
+{
+}
 
 void VehicleCmdFilter::limitLongitudinalWithVel(AckermannControlCommand & input) const
 {

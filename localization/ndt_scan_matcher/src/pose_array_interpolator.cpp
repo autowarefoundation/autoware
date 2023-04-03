@@ -70,7 +70,10 @@ geometry_msgs::msg::PoseWithCovarianceStamped PoseArrayInterpolator::get_new_pos
   return *new_pose_ptr_;
 }
 
-bool PoseArrayInterpolator::is_success() { return success_; }
+bool PoseArrayInterpolator::is_success()
+{
+  return success_;
+}
 
 bool PoseArrayInterpolator::validate_time_stamp_difference(
   const rclcpp::Time & target_time, const rclcpp::Time & reference_time,

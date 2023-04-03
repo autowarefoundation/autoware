@@ -18,7 +18,10 @@
 
 namespace
 {
-inline float normalizeIntensity(float intensity) { return intensity / 255.0f; }
+inline float normalizeIntensity(float intensity)
+{
+  return intensity / 255.0f;
+}
 }  // namespace
 
 FeatureGenerator::FeatureGenerator(

@@ -178,7 +178,9 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
   m_mpc.setClock(node_->get_clock());
 }
 
-MpcLateralController::~MpcLateralController() {}
+MpcLateralController::~MpcLateralController()
+{
+}
 
 trajectory_follower::LateralOutput MpcLateralController::run(
   trajectory_follower::InputData const & input_data)

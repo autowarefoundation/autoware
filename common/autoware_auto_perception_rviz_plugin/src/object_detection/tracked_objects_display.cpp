@@ -24,7 +24,9 @@ namespace rviz_plugins
 {
 namespace object_detection
 {
-TrackedObjectsDisplay::TrackedObjectsDisplay() : ObjectPolygonDisplayBase("tracks") {}
+TrackedObjectsDisplay::TrackedObjectsDisplay() : ObjectPolygonDisplayBase("tracks")
+{
+}
 
 void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
 {

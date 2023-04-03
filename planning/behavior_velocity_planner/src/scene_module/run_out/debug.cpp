@@ -284,7 +284,10 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArray
 
   return msg;
 }
-void RunOutDebug::setAccelReason(const AccelReason & accel_reason) { accel_reason_ = accel_reason; }
+void RunOutDebug::setAccelReason(const AccelReason & accel_reason)
+{
+  accel_reason_ = accel_reason;
+}
 
 void RunOutDebug::publishDebugValue()
 {
@@ -333,7 +336,10 @@ void RunOutDebug::publishEmptyPointCloud()
   pub_debug_pointcloud_->publish(pc);
 }
 
-void RunOutDebug::setHeight(const double height) { height_ = height; }
+void RunOutDebug::setHeight(const double height)
+{
+  height_ = height;
+}
 
 // scene module
 visualization_msgs::msg::MarkerArray RunOutModule::createDebugMarkerArray()

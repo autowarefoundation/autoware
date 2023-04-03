@@ -197,7 +197,10 @@ bool isInPolygon(
   return isInPolygon<tf2::Vector3>(polygon_conv, point_conv);
 }
 
-double kmph2mps(const double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
+double kmph2mps(const double velocity_kmph)
+{
+  return (velocity_kmph * 1000) / (60 * 60);
+}
 
 double normalizeEulerAngle(const double euler)
 {

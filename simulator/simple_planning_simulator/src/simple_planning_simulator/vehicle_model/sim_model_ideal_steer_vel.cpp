@@ -19,17 +19,38 @@ SimModelIdealSteerVel::SimModelIdealSteerVel(double wheelbase)
 {
 }
 
-double SimModelIdealSteerVel::getX() { return state_(IDX::X); }
-double SimModelIdealSteerVel::getY() { return state_(IDX::Y); }
-double SimModelIdealSteerVel::getYaw() { return state_(IDX::YAW); }
-double SimModelIdealSteerVel::getVx() { return input_(IDX_U::VX_DES); }
-double SimModelIdealSteerVel::getVy() { return 0.0; }
-double SimModelIdealSteerVel::getAx() { return current_ax_; }
+double SimModelIdealSteerVel::getX()
+{
+  return state_(IDX::X);
+}
+double SimModelIdealSteerVel::getY()
+{
+  return state_(IDX::Y);
+}
+double SimModelIdealSteerVel::getYaw()
+{
+  return state_(IDX::YAW);
+}
+double SimModelIdealSteerVel::getVx()
+{
+  return input_(IDX_U::VX_DES);
+}
+double SimModelIdealSteerVel::getVy()
+{
+  return 0.0;
+}
+double SimModelIdealSteerVel::getAx()
+{
+  return current_ax_;
+}
 double SimModelIdealSteerVel::getWz()
 {
   return input_(IDX_U::VX_DES) * std::tan(input_(IDX_U::STEER_DES)) / wheelbase_;
 }
-double SimModelIdealSteerVel::getSteer() { return input_(IDX_U::STEER_DES); }
+double SimModelIdealSteerVel::getSteer()
+{
+  return input_(IDX_U::STEER_DES);
+}
 void SimModelIdealSteerVel::update(const double & dt)
 {
   updateRungeKutta(dt, input_);

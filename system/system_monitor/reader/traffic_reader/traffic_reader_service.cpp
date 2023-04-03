@@ -61,7 +61,10 @@ bool TrafficReaderService::initialize()
   return true;
 }
 
-void TrafficReaderService::shutdown() { io_service_.stop(); }
+void TrafficReaderService::shutdown()
+{
+  io_service_.stop();
+}
 
 void TrafficReaderService::run()
 {

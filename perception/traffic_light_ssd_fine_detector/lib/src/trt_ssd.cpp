@@ -193,6 +193,9 @@ int Net::getMaxBatchSize()
   return engine_->getProfileDimensions(0, 0, nvinfer1::OptProfileSelector::kMAX).d[0];
 }
 
-int Net::getMaxDetections() { return engine_->getBindingDimensions(1).d[1]; }
+int Net::getMaxDetections()
+{
+  return engine_->getBindingDimensions(1).d[1];
+}
 
 }  // namespace ssd

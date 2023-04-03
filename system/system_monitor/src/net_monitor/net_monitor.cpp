@@ -85,7 +85,10 @@ NetMonitor::NetMonitor(const rclcpp::NodeOptions & options)
   send_start_nethogs_request();
 }
 
-NetMonitor::~NetMonitor() { shutdown_nl80211(); }
+NetMonitor::~NetMonitor()
+{
+  shutdown_nl80211();
+}
 
 void NetMonitor::check_connection(diagnostic_updater::DiagnosticStatusWrapper & status)
 {
@@ -323,7 +326,10 @@ void NetMonitor::on_timer()
   update_network_list();
 }
 
-void NetMonitor::shutdown_nl80211() { nl80211_.shutdown(); }
+void NetMonitor::shutdown_nl80211()
+{
+  nl80211_.shutdown();
+}
 
 void NetMonitor::make_invalid_diagnostic_status(
   const NetworkInfomation & network, int index,

@@ -19,8 +19,14 @@
 
 #include <cmath>
 
-inline bool hasInf(const Eigen::MatrixXd & v) { return v.array().isInf().any(); }
+inline bool hasInf(const Eigen::MatrixXd & v)
+{
+  return v.array().isInf().any();
+}
 
-inline bool hasNan(const Eigen::MatrixXd & v) { return v.array().isNaN().any(); }
+inline bool hasNan(const Eigen::MatrixXd & v)
+{
+  return v.array().isNaN().any();
+}
 
 #endif  // EKF_LOCALIZER__NUMERIC_HPP_

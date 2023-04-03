@@ -102,7 +102,10 @@ PlanningNode::PlanningNode(const rclcpp::NodeOptions & options) : Node("planning
   timer_ = rclcpp::create_timer(this, get_clock(), rate.period(), [this]() { on_timer(); });
 }
 
-void PlanningNode::on_trajectory(const Trajectory::ConstSharedPtr msg) { trajectory_ = msg; }
+void PlanningNode::on_trajectory(const Trajectory::ConstSharedPtr msg)
+{
+  trajectory_ = msg;
+}
 
 void PlanningNode::on_kinematic_state(const KinematicState::ConstSharedPtr msg)
 {

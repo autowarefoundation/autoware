@@ -574,7 +574,10 @@ void VehicleCmdGate::onGateMode(GateMode::ConstSharedPtr msg)
   }
 }
 
-void VehicleCmdGate::onEngage(EngageMsg::ConstSharedPtr msg) { is_engaged_ = msg->engage; }
+void VehicleCmdGate::onEngage(EngageMsg::ConstSharedPtr msg)
+{
+  is_engaged_ = msg->engage;
+}
 
 void VehicleCmdGate::onEngageService(
   const EngageSrv::Request::SharedPtr request, const EngageSrv::Response::SharedPtr response)

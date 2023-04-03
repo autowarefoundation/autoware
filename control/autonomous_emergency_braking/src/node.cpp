@@ -138,14 +138,20 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   timer_ = rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&AEB::onTimer, this));
 }
 
-void AEB::onTimer() { updater_.force_update(); }
+void AEB::onTimer()
+{
+  updater_.force_update();
+}
 
 void AEB::onVelocity(const VelocityReport::ConstSharedPtr input_msg)
 {
   current_velocity_ptr_ = input_msg;
 }
 
-void AEB::onImu(const Imu::ConstSharedPtr input_msg) { imu_ptr_ = input_msg; }
+void AEB::onImu(const Imu::ConstSharedPtr input_msg)
+{
+  imu_ptr_ = input_msg;
+}
 
 void AEB::onPredictedTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg)

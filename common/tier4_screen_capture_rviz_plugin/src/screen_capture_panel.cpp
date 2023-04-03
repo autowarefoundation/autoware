@@ -98,9 +98,13 @@ void AutowareScreenCapturePanel::onInitialize()
     std::bind(&AutowareScreenCapturePanel::onCaptureTrigger, this, _1, _2));
 }
 
-void onPrefixChanged() {}
+void onPrefixChanged()
+{
+}
 
-void AutowareScreenCapturePanel::onRateChanged() {}
+void AutowareScreenCapturePanel::onRateChanged()
+{
+}
 
 void AutowareScreenCapturePanel::onClickScreenCapture()
 {
@@ -188,9 +192,15 @@ void AutowareScreenCapturePanel::update()
   setFormatDate(ros_time_label_, rclcpp::Clock().now().seconds());
 }
 
-void AutowareScreenCapturePanel::save(rviz_common::Config config) const { Panel::save(config); }
+void AutowareScreenCapturePanel::save(rviz_common::Config config) const
+{
+  Panel::save(config);
+}
 
-void AutowareScreenCapturePanel::load(const rviz_common::Config & config) { Panel::load(config); }
+void AutowareScreenCapturePanel::load(const rviz_common::Config & config)
+{
+  Panel::load(config);
+}
 
 AutowareScreenCapturePanel::~AutowareScreenCapturePanel() = default;
 

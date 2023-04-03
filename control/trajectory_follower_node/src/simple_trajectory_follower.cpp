@@ -109,7 +109,10 @@ double SimpleTrajectoryFollower::calcAccCmd()
   return acc;
 }
 
-bool SimpleTrajectoryFollower::checkData() { return (trajectory_ && odometry_); }
+bool SimpleTrajectoryFollower::checkData()
+{
+  return (trajectory_ && odometry_);
+}
 
 }  // namespace simple_trajectory_follower
 

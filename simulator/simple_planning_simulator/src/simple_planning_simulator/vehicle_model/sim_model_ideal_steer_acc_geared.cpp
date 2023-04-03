@@ -23,17 +23,38 @@ SimModelIdealSteerAccGeared::SimModelIdealSteerAccGeared(double wheelbase)
 {
 }
 
-double SimModelIdealSteerAccGeared::getX() { return state_(IDX::X); }
-double SimModelIdealSteerAccGeared::getY() { return state_(IDX::Y); }
-double SimModelIdealSteerAccGeared::getYaw() { return state_(IDX::YAW); }
-double SimModelIdealSteerAccGeared::getVx() { return state_(IDX::VX); }
-double SimModelIdealSteerAccGeared::getVy() { return 0.0; }
-double SimModelIdealSteerAccGeared::getAx() { return current_acc_; }
+double SimModelIdealSteerAccGeared::getX()
+{
+  return state_(IDX::X);
+}
+double SimModelIdealSteerAccGeared::getY()
+{
+  return state_(IDX::Y);
+}
+double SimModelIdealSteerAccGeared::getYaw()
+{
+  return state_(IDX::YAW);
+}
+double SimModelIdealSteerAccGeared::getVx()
+{
+  return state_(IDX::VX);
+}
+double SimModelIdealSteerAccGeared::getVy()
+{
+  return 0.0;
+}
+double SimModelIdealSteerAccGeared::getAx()
+{
+  return current_acc_;
+}
 double SimModelIdealSteerAccGeared::getWz()
 {
   return state_(IDX::VX) * std::tan(input_(IDX_U::STEER_DES)) / wheelbase_;
 }
-double SimModelIdealSteerAccGeared::getSteer() { return input_(IDX_U::STEER_DES); }
+double SimModelIdealSteerAccGeared::getSteer()
+{
+  return input_(IDX_U::STEER_DES);
+}
 void SimModelIdealSteerAccGeared::update(const double & dt)
 {
   const auto prev_state = state_;

@@ -52,7 +52,10 @@ struct score_greater
   bool operator()(const Box3D & lb, const Box3D & rb) { return lb.score > rb.score; }
 };
 
-inline float sigmoid(float x) { return 1.0f / (1.0f + expf(-x)); }
+inline float sigmoid(float x)
+{
+  return 1.0f / (1.0f + expf(-x));
+}
 
 void generateBoxes3D_worker(
   const std::vector<float> & out_heatmap, const std::vector<float> & out_offset,

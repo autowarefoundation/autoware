@@ -44,7 +44,9 @@ FeatureMap::FeatureMap(const int width, const int height, const int range)
   count_data = &(map_data[0]) + width * height * 2;
   nonempty_data = &(map_data[0]) + width * height * 3;
 }
-void FeatureMap::initializeMap([[maybe_unused]] std::vector<float> & map) {}
+void FeatureMap::initializeMap([[maybe_unused]] std::vector<float> & map)
+{
+}
 void FeatureMap::resetMap([[maybe_unused]] std::vector<float> & map)
 {
   const int size = width * height;
@@ -66,7 +68,9 @@ FeatureMapWithIntensity::FeatureMapWithIntensity(const int width, const int heig
   mean_intensity_data = &(map_data[0]) + width * height * 4;
   nonempty_data = &(map_data[0]) + width * height * 5;
 }
-void FeatureMapWithIntensity::initializeMap([[maybe_unused]] std::vector<float> & map) {}
+void FeatureMapWithIntensity::initializeMap([[maybe_unused]] std::vector<float> & map)
+{
+}
 void FeatureMapWithIntensity::resetMap([[maybe_unused]] std::vector<float> & map)
 {
   const int size = width * height;

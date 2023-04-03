@@ -35,17 +35,38 @@ SimModelDelaySteerVel::SimModelDelaySteerVel(
   initializeInputQueue(dt);
 }
 
-double SimModelDelaySteerVel::getX() { return state_(IDX::X); }
-double SimModelDelaySteerVel::getY() { return state_(IDX::Y); }
-double SimModelDelaySteerVel::getYaw() { return state_(IDX::YAW); }
-double SimModelDelaySteerVel::getVx() { return state_(IDX::VX); }
-double SimModelDelaySteerVel::getVy() { return 0.0; }
-double SimModelDelaySteerVel::getAx() { return current_ax_; }
+double SimModelDelaySteerVel::getX()
+{
+  return state_(IDX::X);
+}
+double SimModelDelaySteerVel::getY()
+{
+  return state_(IDX::Y);
+}
+double SimModelDelaySteerVel::getYaw()
+{
+  return state_(IDX::YAW);
+}
+double SimModelDelaySteerVel::getVx()
+{
+  return state_(IDX::VX);
+}
+double SimModelDelaySteerVel::getVy()
+{
+  return 0.0;
+}
+double SimModelDelaySteerVel::getAx()
+{
+  return current_ax_;
+}
 double SimModelDelaySteerVel::getWz()
 {
   return state_(IDX::VX) * std::tan(state_(IDX::STEER)) / wheelbase_;
 }
-double SimModelDelaySteerVel::getSteer() { return state_(IDX::STEER); }
+double SimModelDelaySteerVel::getSteer()
+{
+  return state_(IDX::STEER);
+}
 void SimModelDelaySteerVel::update(const double & dt)
 {
   Eigen::VectorXd delayed_input = Eigen::VectorXd::Zero(dim_u_);

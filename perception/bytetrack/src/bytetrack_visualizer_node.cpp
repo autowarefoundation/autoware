@@ -39,7 +39,10 @@ ByteTrackVisualizerNode::ByteTrackVisualizerNode(const rclcpp::NodeOptions & nod
   image_pub_ = image_transport::create_publisher(this, "~/out/image");
 }
 
-ByteTrackVisualizerNode::~ByteTrackVisualizerNode() { cv::destroyAllWindows(); }
+ByteTrackVisualizerNode::~ByteTrackVisualizerNode()
+{
+  cv::destroyAllWindows();
+}
 
 bool ByteTrackVisualizerNode::get_topic_qos(const std::string & query_topic, rclcpp::QoS & qos)
 {

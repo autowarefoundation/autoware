@@ -102,15 +102,29 @@ NMSPlugin::NMSPlugin(void const * data, size_t length)
   read(d, count_);
 }
 
-const char * NMSPlugin::getPluginType() const noexcept { return NMS_PLUGIN_NAME; }
+const char * NMSPlugin::getPluginType() const noexcept
+{
+  return NMS_PLUGIN_NAME;
+}
 
-const char * NMSPlugin::getPluginVersion() const noexcept { return NMS_PLUGIN_VERSION; }
+const char * NMSPlugin::getPluginVersion() const noexcept
+{
+  return NMS_PLUGIN_VERSION;
+}
 
-int NMSPlugin::getNbOutputs() const noexcept { return 3; }
+int NMSPlugin::getNbOutputs() const noexcept
+{
+  return 3;
+}
 
-int NMSPlugin::initialize() noexcept { return 0; }
+int NMSPlugin::initialize() noexcept
+{
+  return 0;
+}
 
-void NMSPlugin::terminate() noexcept {}
+void NMSPlugin::terminate() noexcept
+{
+}
 
 size_t NMSPlugin::getSerializationSize() const noexcept
 {
@@ -125,11 +139,20 @@ void NMSPlugin::serialize(void * buffer) const noexcept
   write(d, count_);
 }
 
-void NMSPlugin::destroy() noexcept { delete this; }
+void NMSPlugin::destroy() noexcept
+{
+  delete this;
+}
 
-void NMSPlugin::setPluginNamespace(const char * N) noexcept { (void)N; }
+void NMSPlugin::setPluginNamespace(const char * N) noexcept
+{
+  (void)N;
+}
 
-const char * NMSPlugin::getPluginNamespace() const noexcept { return NMS_PLUGIN_NAMESPACE; }
+const char * NMSPlugin::getPluginNamespace() const noexcept
+{
+  return NMS_PLUGIN_NAMESPACE;
+}
 
 // IPluginV2Ext Methods
 
@@ -216,16 +239,33 @@ int NMSPlugin::enqueue(
     getWorkspaceSize(inputDesc, 3, outputDesc, 3), stream);
 }
 
-NMSPluginCreator::NMSPluginCreator() {}
+NMSPluginCreator::NMSPluginCreator()
+{
+}
 
-const char * NMSPluginCreator::getPluginName() const noexcept { return NMS_PLUGIN_NAME; }
+const char * NMSPluginCreator::getPluginName() const noexcept
+{
+  return NMS_PLUGIN_NAME;
+}
 
-const char * NMSPluginCreator::getPluginVersion() const noexcept { return NMS_PLUGIN_VERSION; }
+const char * NMSPluginCreator::getPluginVersion() const noexcept
+{
+  return NMS_PLUGIN_VERSION;
+}
 
-const char * NMSPluginCreator::getPluginNamespace() const noexcept { return NMS_PLUGIN_NAMESPACE; }
+const char * NMSPluginCreator::getPluginNamespace() const noexcept
+{
+  return NMS_PLUGIN_NAMESPACE;
+}
 
-void NMSPluginCreator::setPluginNamespace(const char * N) noexcept { (void)N; }
-const PluginFieldCollection * NMSPluginCreator::getFieldNames() noexcept { return nullptr; }
+void NMSPluginCreator::setPluginNamespace(const char * N) noexcept
+{
+  (void)N;
+}
+const PluginFieldCollection * NMSPluginCreator::getFieldNames() noexcept
+{
+  return nullptr;
+}
 IPluginV2DynamicExt * NMSPluginCreator::createPlugin(
   const char * name, const PluginFieldCollection * fc) noexcept
 {

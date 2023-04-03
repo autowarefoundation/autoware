@@ -240,7 +240,10 @@ void DummyDiagPublisher::addDiagByStatus(const std::string & diag_name, const St
   }
 }
 
-void DummyDiagPublisher::onTimer() { updater_.force_update(); }
+void DummyDiagPublisher::onTimer()
+{
+  updater_.force_update();
+}
 
 DummyDiagPublisher::DummyDiagPublisher()
 : Node(

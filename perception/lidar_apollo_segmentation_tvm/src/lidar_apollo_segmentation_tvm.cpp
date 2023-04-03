@@ -194,7 +194,10 @@ std::shared_ptr<const DetectedObjectsWithFeature> ApolloLidarSegmentation::detec
   return output;
 }
 
-const std::string & ApolloLidarSegmentation::network_name() const { return config.network_name; }
+const std::string & ApolloLidarSegmentation::network_name() const
+{
+  return config.network_name;
+}
 
 tvm_utility::Version ApolloLidarSegmentation::version_check() const
 {

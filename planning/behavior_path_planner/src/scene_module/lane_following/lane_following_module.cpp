@@ -37,9 +37,15 @@ void LaneFollowingModule::initParam()
   clearWaitingApproval();  // no need approval
 }
 
-bool LaneFollowingModule::isExecutionRequested() const { return true; }
+bool LaneFollowingModule::isExecutionRequested() const
+{
+  return true;
+}
 
-bool LaneFollowingModule::isExecutionReady() const { return true; }
+bool LaneFollowingModule::isExecutionReady() const
+{
+  return true;
+}
 
 BT::NodeStatus LaneFollowingModule::updateState()
 {

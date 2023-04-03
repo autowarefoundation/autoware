@@ -63,7 +63,10 @@ LocalizationErrorMonitor::LocalizationErrorMonitor()
     this, get_clock(), 100ms, std::bind(&LocalizationErrorMonitor::onTimer, this));
 }
 
-void LocalizationErrorMonitor::onTimer() { updater_.force_update(); }
+void LocalizationErrorMonitor::onTimer()
+{
+  updater_.force_update();
+}
 
 void LocalizationErrorMonitor::checkLocalizationAccuracy(
   diagnostic_updater::DiagnosticStatusWrapper & stat)

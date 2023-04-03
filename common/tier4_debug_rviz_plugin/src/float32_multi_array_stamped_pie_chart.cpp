@@ -301,7 +301,10 @@ void Float32MultiArrayStampedPieChartDisplay::subscribe()
   }
 }
 
-void Float32MultiArrayStampedPieChartDisplay::unsubscribe() { sub_.reset(); }
+void Float32MultiArrayStampedPieChartDisplay::unsubscribe()
+{
+  sub_.reset();
+}
 
 void Float32MultiArrayStampedPieChartDisplay::onEnable()
 {

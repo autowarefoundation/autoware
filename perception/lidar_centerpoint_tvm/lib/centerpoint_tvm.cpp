@@ -174,7 +174,9 @@ CenterPointTVM::CenterPointTVM(
   initPtr();
 }
 
-CenterPointTVM::~CenterPointTVM() {}
+CenterPointTVM::~CenterPointTVM()
+{
+}
 
 void CenterPointTVM::initPtr()
 {

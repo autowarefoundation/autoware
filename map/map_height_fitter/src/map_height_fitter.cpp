@@ -195,9 +195,14 @@ Point MapHeightFitter::Impl::fit(const Point & position, const std::string & fra
   return result;
 }
 
-MapHeightFitter::MapHeightFitter(rclcpp::Node * node) { impl_ = std::make_unique<Impl>(node); }
+MapHeightFitter::MapHeightFitter(rclcpp::Node * node)
+{
+  impl_ = std::make_unique<Impl>(node);
+}
 
-MapHeightFitter::~MapHeightFitter() {}
+MapHeightFitter::~MapHeightFitter()
+{
+}
 
 Point MapHeightFitter::fit(const Point & position, const std::string & frame)
 {

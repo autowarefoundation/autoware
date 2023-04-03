@@ -106,9 +106,15 @@ void MetricsCalculator::setPredictedObjects(const PredictedObjects & objects)
   dynamic_objects_ = objects;
 }
 
-void MetricsCalculator::setEgoPose(const geometry_msgs::msg::Pose & pose) { ego_pose_ = pose; }
+void MetricsCalculator::setEgoPose(const geometry_msgs::msg::Pose & pose)
+{
+  ego_pose_ = pose;
+}
 
-Pose MetricsCalculator::getEgoPose() { return ego_pose_; }
+Pose MetricsCalculator::getEgoPose()
+{
+  return ego_pose_;
+}
 
 Trajectory MetricsCalculator::getLookaheadTrajectory(
   const Trajectory & traj, const double max_dist_m, const double max_time_s) const

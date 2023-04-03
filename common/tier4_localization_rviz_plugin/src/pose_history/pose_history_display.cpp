@@ -50,9 +50,15 @@ void PoseHistory::onInitialize()
   lines_ = std::make_unique<rviz_rendering::BillboardLine>(scene_manager_, scene_node_);
 }
 
-void PoseHistory::onEnable() { subscribe(); }
+void PoseHistory::onEnable()
+{
+  subscribe();
+}
 
-void PoseHistory::onDisable() { unsubscribe(); }
+void PoseHistory::onDisable()
+{
+  unsubscribe();
+}
 
 void PoseHistory::update(float wall_dt, float ros_dt)
 {
@@ -67,7 +73,10 @@ void PoseHistory::update(float wall_dt, float ros_dt)
   }
 }
 
-void PoseHistory::subscribe() { MFDClass::subscribe(); }
+void PoseHistory::subscribe()
+{
+  MFDClass::subscribe();
+}
 
 void PoseHistory::unsubscribe()
 {

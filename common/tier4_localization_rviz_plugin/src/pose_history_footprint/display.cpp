@@ -109,11 +109,20 @@ void PoseHistoryFootprint::onInitialize()
   scene_node_->attachObject(trajectory_footprint_manual_object_);
 }
 
-void PoseHistoryFootprint::onEnable() { subscribe(); }
+void PoseHistoryFootprint::onEnable()
+{
+  subscribe();
+}
 
-void PoseHistoryFootprint::onDisable() { unsubscribe(); }
+void PoseHistoryFootprint::onDisable()
+{
+  unsubscribe();
+}
 
-void PoseHistoryFootprint::subscribe() { MFDClass::subscribe(); }
+void PoseHistoryFootprint::subscribe()
+{
+  MFDClass::subscribe();
+}
 
 void PoseHistoryFootprint::unsubscribe()
 {

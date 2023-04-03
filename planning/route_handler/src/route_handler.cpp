@@ -123,7 +123,10 @@ std::string toString(const geometry_msgs::msg::Pose & pose)
 
 namespace route_handler
 {
-RouteHandler::RouteHandler(const HADMapBin & map_msg) { setMap(map_msg); }
+RouteHandler::RouteHandler(const HADMapBin & map_msg)
+{
+  setMap(map_msg);
+}
 
 void RouteHandler::setMap(const HADMapBin & map_msg)
 {
@@ -180,7 +183,10 @@ void RouteHandler::setRoute(const LaneletRoute & route_msg)
   }
 }
 
-bool RouteHandler::isHandlerReady() const { return is_handler_ready_; }
+bool RouteHandler::isHandlerReady() const
+{
+  return is_handler_ready_;
+}
 
 void RouteHandler::setRouteLanelets(const lanelet::ConstLanelets & path_lanelets)
 {
@@ -334,9 +340,15 @@ lanelet::ConstPolygon3d RouteHandler::getIntersectionAreaById(const lanelet::Id 
   return lanelet_map_ptr_->polygonLayer.get(id);
 }
 
-Header RouteHandler::getRouteHeader() const { return route_msg_.header; }
+Header RouteHandler::getRouteHeader() const
+{
+  return route_msg_.header;
+}
 
-UUID RouteHandler::getRouteUuid() const { return route_msg_.uuid; }
+UUID RouteHandler::getRouteUuid() const
+{
+  return route_msg_.uuid;
+}
 
 std::vector<lanelet::ConstLanelet> RouteHandler::getLanesBeforePose(
   const geometry_msgs::msg::Pose & pose, const double length) const
@@ -374,9 +386,15 @@ std::vector<lanelet::ConstLanelet> RouteHandler::getLanesAfterGoal(
   return succeeding_lanes_vec.front();
 }
 
-lanelet::ConstLanelets RouteHandler::getRouteLanelets() const { return route_lanelets_; }
+lanelet::ConstLanelets RouteHandler::getRouteLanelets() const
+{
+  return route_lanelets_;
+}
 
-Pose RouteHandler::getGoalPose() const { return route_msg_.goal_pose; }
+Pose RouteHandler::getGoalPose() const
+{
+  return route_msg_.goal_pose;
+}
 
 lanelet::Id RouteHandler::getGoalLaneId() const
 {
@@ -1498,7 +1516,10 @@ lanelet::ConstLanelets RouteHandler::getCheckTargetLanesFromPath(
   return check_lanelets;
 }
 
-bool RouteHandler::isMapMsgReady() const { return is_map_msg_ready_; }
+bool RouteHandler::isMapMsgReady() const
+{
+  return is_map_msg_ready_;
+}
 
 lanelet::routing::RoutingGraphPtr RouteHandler::getRoutingGraphPtr() const
 {
@@ -1516,7 +1537,10 @@ std::shared_ptr<const lanelet::routing::RoutingGraphContainer> RouteHandler::get
   return overall_graphs_ptr_;
 }
 
-lanelet::LaneletMapPtr RouteHandler::getLaneletMapPtr() const { return lanelet_map_ptr_; }
+lanelet::LaneletMapPtr RouteHandler::getLaneletMapPtr() const
+{
+  return lanelet_map_ptr_;
+}
 
 lanelet::routing::RelationType RouteHandler::getRelation(
   const lanelet::ConstLanelet & prev_lane, const lanelet::ConstLanelet & next_lane) const
@@ -1553,7 +1577,10 @@ lanelet::routing::RelationType RouteHandler::getRelation(
   return lanelet::routing::RelationType::None;
 }
 
-lanelet::ConstLanelets RouteHandler::getShoulderLanelets() const { return shoulder_lanelets_; }
+lanelet::ConstLanelets RouteHandler::getShoulderLanelets() const
+{
+  return shoulder_lanelets_;
+}
 
 lanelet::ConstLanelets RouteHandler::getPreviousLaneletSequence(
   const lanelet::ConstLanelets & lanelet_sequence) const

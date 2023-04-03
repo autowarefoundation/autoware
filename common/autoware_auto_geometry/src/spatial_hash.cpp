@@ -59,7 +59,10 @@ details::Index3 Config2d::index3_(const float32_t x, const float32_t y, const fl
   return {x_index(x), y_index(y), Index{}};  // zero initialization
 }
 ////////////////////////////////////////////////////////////////////////////////
-Index Config2d::index_(const details::Index3 & idx) const { return bin_impl(idx.x, idx.y); }
+Index Config2d::index_(const details::Index3 & idx) const
+{
+  return bin_impl(idx.x, idx.y);
+}
 ////////////////////////////////////////////////////////////////////////////////
 Config3d::Config3d(
   const float32_t min_x, const float32_t max_x, const float32_t min_y, const float32_t max_y,
@@ -88,7 +91,10 @@ details::Index3 Config3d::index3_(const float32_t x, const float32_t y, const fl
   return {x_index(x), y_index(y), z_index(z)};  // zero initialization
 }
 ////////////////////////////////////////////////////////////////////////////////
-Index Config3d::index_(const details::Index3 & idx) const { return bin_impl(idx.x, idx.y, idx.z); }
+Index Config3d::index_(const details::Index3 & idx) const
+{
+  return bin_impl(idx.x, idx.y, idx.z);
+}
 ////////////////////////////////////////////////////////////////////////////////
 template class SpatialHash<geometry_msgs::msg::Point32, Config2d>;
 template class SpatialHash<geometry_msgs::msg::Point32, Config3d>;

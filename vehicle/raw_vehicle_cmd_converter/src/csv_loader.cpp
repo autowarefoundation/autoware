@@ -21,7 +21,10 @@
 
 namespace raw_vehicle_cmd_converter
 {
-CSVLoader::CSVLoader(const std::string & csv_path) { csv_path_ = csv_path; }
+CSVLoader::CSVLoader(const std::string & csv_path)
+{
+  csv_path_ = csv_path;
+}
 
 bool CSVLoader::readCSV(Table & result, const char delim)
 {

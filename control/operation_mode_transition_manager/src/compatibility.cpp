@@ -42,7 +42,10 @@ void Compatibility::on_autoware_engage(const AutowareEngage::ConstSharedPtr msg)
   autoware_engage_ = msg;
 }
 
-void Compatibility::on_gate_mode(const GateMode::ConstSharedPtr msg) { gate_mode_ = msg; }
+void Compatibility::on_gate_mode(const GateMode::ConstSharedPtr msg)
+{
+  gate_mode_ = msg;
+}
 
 void Compatibility::on_selector_mode(const SelectorModeMsg::ConstSharedPtr msg)
 {

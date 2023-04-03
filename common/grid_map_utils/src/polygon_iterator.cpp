@@ -153,7 +153,10 @@ bool PolygonIterator::operator!=(const PolygonIterator & other) const
   return current_line_ != other.current_line_ || current_col_ != other.current_col_;
 }
 
-const grid_map::Index & PolygonIterator::operator*() const { return current_index_; }
+const grid_map::Index & PolygonIterator::operator*() const
+{
+  return current_index_;
+}
 
 void PolygonIterator::goToNextLine()
 {

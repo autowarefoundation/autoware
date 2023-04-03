@@ -467,7 +467,10 @@ void MPTOptimizer::initialize(const bool enable_debug_info, const TrajectoryPara
   traj_param_ = traj_param;
 }
 
-void MPTOptimizer::resetPreviousData() { prev_ref_points_ptr_ = nullptr; }
+void MPTOptimizer::resetPreviousData()
+{
+  prev_ref_points_ptr_ = nullptr;
+}
 
 void MPTOptimizer::onParam(const std::vector<rclcpp::Parameter> & parameters)
 {
@@ -1528,7 +1531,10 @@ double MPTOptimizer::getTrajectoryLength() const
   return forward_traj_length + backward_traj_length;
 }
 
-int MPTOptimizer::getNumberOfPoints() const { return mpt_param_.num_points; }
+int MPTOptimizer::getNumberOfPoints() const
+{
+  return mpt_param_.num_points;
+}
 
 size_t MPTOptimizer::getNumberOfSlackVariables() const
 {

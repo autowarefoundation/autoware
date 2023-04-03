@@ -68,7 +68,10 @@ InteractiveObject::InteractiveObject(const Ogre::Vector3 & point)
   std::generate(uuid_.begin(), uuid_.end(), bit_eng);
 }
 
-std::array<uint8_t, 16> InteractiveObject::uuid() const { return uuid_; }
+std::array<uint8_t, 16> InteractiveObject::uuid() const
+{
+  return uuid_;
+}
 
 void InteractiveObject::twist(geometry_msgs::msg::Twist & twist) const
 {
@@ -113,11 +116,20 @@ void InteractiveObject::update(const Ogre::Vector3 & point)
              : std::atan2(velocity_.y, velocity_.x);
 }
 
-void InteractiveObject::reset() { velocity_ = Ogre::Vector3::ZERO; }
+void InteractiveObject::reset()
+{
+  velocity_ = Ogre::Vector3::ZERO;
+}
 
-double InteractiveObject::distance(const Ogre::Vector3 & point) { return point_.distance(point); }
+double InteractiveObject::distance(const Ogre::Vector3 & point)
+{
+  return point_.distance(point);
+}
 
-InteractiveObjectCollection::InteractiveObjectCollection() { target_ = nullptr; }
+InteractiveObjectCollection::InteractiveObjectCollection()
+{
+  target_ = nullptr;
+}
 
 void InteractiveObjectCollection::select(const Ogre::Vector3 & point)
 {

@@ -53,7 +53,10 @@ using TestTypes = TestTypes_<geometry_msgs::msg::Point32>;
 TYPED_TEST_SUITE(AreaTest, TestTypes, );
 
 // The empty set has zero area
-TYPED_TEST(AreaTest, DegenerateZero) { EXPECT_FLOAT_EQ(0.0, this->area()); }
+TYPED_TEST(AreaTest, DegenerateZero)
+{
+  EXPECT_FLOAT_EQ(0.0, this->area());
+}
 
 // An individual point has zero area
 TYPED_TEST(AreaTest, DegenerateOne)

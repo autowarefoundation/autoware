@@ -36,13 +36,31 @@ using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::getPoint;
 using tier4_autoware_utils::getRPY;
 
-double getVelocity(const PathPoint & p) { return p.longitudinal_velocity_mps; }
-double getVelocity(const PathPointWithLaneId & p) { return p.point.longitudinal_velocity_mps; }
-double getVelocity(const TrajectoryPoint & p) { return p.longitudinal_velocity_mps; }
+double getVelocity(const PathPoint & p)
+{
+  return p.longitudinal_velocity_mps;
+}
+double getVelocity(const PathPointWithLaneId & p)
+{
+  return p.point.longitudinal_velocity_mps;
+}
+double getVelocity(const TrajectoryPoint & p)
+{
+  return p.longitudinal_velocity_mps;
+}
 
-double getYaw(const PathPoint & p) { return getRPY(p.pose.orientation).z; }
-double getYaw(const PathPointWithLaneId & p) { return getRPY(p.point.pose.orientation).z; }
-double getYaw(const TrajectoryPoint & p) { return getRPY(p.pose.orientation).z; }
+double getYaw(const PathPoint & p)
+{
+  return getRPY(p.pose.orientation).z;
+}
+double getYaw(const PathPointWithLaneId & p)
+{
+  return getRPY(p.point.pose.orientation).z;
+}
+double getYaw(const TrajectoryPoint & p)
+{
+  return getRPY(p.pose.orientation).z;
+}
 
 template <class T>
 inline std::vector<double> getYawArray(const T & points)

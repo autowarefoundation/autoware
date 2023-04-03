@@ -89,9 +89,15 @@ lanelet::ConstLanelets get_lanelets_from_ids(
   return lanelets;
 }
 
-rclcpp::NodeOptions create_node_options() { return rclcpp::NodeOptions{}; }
+rclcpp::NodeOptions create_node_options()
+{
+  return rclcpp::NodeOptions{};
+}
 
-rclcpp::QoS create_transient_local_qos() { return rclcpp::QoS{1}.transient_local(); }
+rclcpp::QoS create_transient_local_qos()
+{
+  return rclcpp::QoS{1}.transient_local();
+}
 
 lanelet::BasicPoint2d convertToLaneletPoint(const geometry_msgs::msg::Point & geom_point)
 {

@@ -21,7 +21,9 @@
 
 namespace euclidean_cluster
 {
-VoxelGridBasedEuclideanCluster::VoxelGridBasedEuclideanCluster() {}
+VoxelGridBasedEuclideanCluster::VoxelGridBasedEuclideanCluster()
+{
+}
 
 VoxelGridBasedEuclideanCluster::VoxelGridBasedEuclideanCluster(
   bool use_height, int min_cluster_size, int max_cluster_size)

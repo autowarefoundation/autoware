@@ -24,7 +24,9 @@
 
 namespace centerpoint
 {
-TensorRTWrapper::TensorRTWrapper(const CenterPointConfig & config) : config_(config) {}
+TensorRTWrapper::TensorRTWrapper(const CenterPointConfig & config) : config_(config)
+{
+}
 
 TensorRTWrapper::~TensorRTWrapper()
 {

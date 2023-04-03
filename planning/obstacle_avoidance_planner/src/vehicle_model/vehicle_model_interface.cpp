@@ -21,6 +21,15 @@ VehicleModelInterface::VehicleModelInterface(
 {
 }
 
-int VehicleModelInterface::getDimX() const { return dim_x_; }
-int VehicleModelInterface::getDimU() const { return dim_u_; }
-int VehicleModelInterface::getDimY() const { return dim_y_; }
+int VehicleModelInterface::getDimX() const
+{
+  return dim_x_;
+}
+int VehicleModelInterface::getDimU() const
+{
+  return dim_u_;
+}
+int VehicleModelInterface::getDimY() const
+{
+  return dim_y_;
+}

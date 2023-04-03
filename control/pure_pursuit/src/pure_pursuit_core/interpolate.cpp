@@ -83,9 +83,16 @@ bool LinearInterpolate::interpolate(
  * spline interpolation
  */
 
-SplineInterpolate::SplineInterpolate() {}
-SplineInterpolate::SplineInterpolate(const std::vector<double> & x) { generateSpline(x); }
-SplineInterpolate::~SplineInterpolate() {}
+SplineInterpolate::SplineInterpolate()
+{
+}
+SplineInterpolate::SplineInterpolate(const std::vector<double> & x)
+{
+  generateSpline(x);
+}
+SplineInterpolate::~SplineInterpolate()
+{
+}
 void SplineInterpolate::generateSpline(const std::vector<double> & x)
 {
   int N = x.size();

@@ -34,11 +34,20 @@ geo_pos_conv::geo_pos_conv()
 {
 }
 
-double geo_pos_conv::x() const { return m_x; }
+double geo_pos_conv::x() const
+{
+  return m_x;
+}
 
-double geo_pos_conv::y() const { return m_y; }
+double geo_pos_conv::y() const
+{
+  return m_y;
+}
 
-double geo_pos_conv::z() const { return m_z; }
+double geo_pos_conv::z() const
+{
+  return m_z;
+}
 
 void geo_pos_conv::set_plane(double lat, double lon)
 {

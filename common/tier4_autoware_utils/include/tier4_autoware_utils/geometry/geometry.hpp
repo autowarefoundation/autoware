@@ -747,7 +747,10 @@ inline geometry_msgs::msg::Twist createTwist(
   return geometry_msgs::build<geometry_msgs::msg::Twist>().linear(velocity).angular(angular);
 }
 
-inline double calcNorm(const geometry_msgs::msg::Vector3 & v) { return std::hypot(v.x, v.y, v.z); }
+inline double calcNorm(const geometry_msgs::msg::Vector3 & v)
+{
+  return std::hypot(v.x, v.y, v.z);
+}
 
 /**
  * @brief Judge whether twist covariance is valid.

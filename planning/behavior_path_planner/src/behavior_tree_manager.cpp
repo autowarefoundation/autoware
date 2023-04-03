@@ -130,7 +130,10 @@ void BehaviorTreeManager::resetNotRunningModulePathCandidate()
   }
 }
 
-void BehaviorTreeManager::resetBehaviorTree() { bt_tree_.haltTree(); }
+void BehaviorTreeManager::resetBehaviorTree()
+{
+  bt_tree_.haltTree();
+}
 
 void BehaviorTreeManager::addGrootMonitoring(
   BT::Tree * tree, uint16_t publisher_port, uint16_t server_port, uint16_t max_msg_per_second)

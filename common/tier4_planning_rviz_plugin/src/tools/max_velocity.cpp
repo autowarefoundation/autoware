@@ -122,7 +122,10 @@ void MaxVelocityDisplay::subscribe()
   }
 }
 
-void MaxVelocityDisplay::unsubscribe() { max_vel_sub_.reset(); }
+void MaxVelocityDisplay::unsubscribe()
+{
+  max_vel_sub_.reset();
+}
 
 void MaxVelocityDisplay::processMessage(
   const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg_ptr)

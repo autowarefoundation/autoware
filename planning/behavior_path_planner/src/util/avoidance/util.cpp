@@ -365,7 +365,10 @@ std::vector<Point> updateBoundary(
 }
 }  // namespace
 
-bool isOnRight(const ObjectData & obj) { return obj.lateral < 0.0; }
+bool isOnRight(const ObjectData & obj)
+{
+  return obj.lateral < 0.0;
+}
 
 double calcShiftLength(
   const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin)

@@ -180,6 +180,12 @@ void L2ping::setStatusCode(StatusCode code)
   status_.error_message = {};
 }
 
-L2pingStatus L2ping::getStatus() const { return status_; }
+L2pingStatus L2ping::getStatus() const
+{
+  return status_;
+}
 
-const std::string & L2ping::getAddress() const { return status_.address; }
+const std::string & L2ping::getAddress() const
+{
+  return status_.address;
+}

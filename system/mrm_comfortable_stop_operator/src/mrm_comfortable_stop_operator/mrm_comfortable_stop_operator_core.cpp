@@ -96,7 +96,10 @@ void MrmComfortableStopOperator::publishVelocityLimitClearCommand() const
   pub_velocity_limit_clear_command_->publish(velocity_limit_clear_command);
 }
 
-void MrmComfortableStopOperator::onTimer() const { publishStatus(); }
+void MrmComfortableStopOperator::onTimer() const
+{
+  publishStatus();
+}
 
 }  // namespace mrm_comfortable_stop_operator
 

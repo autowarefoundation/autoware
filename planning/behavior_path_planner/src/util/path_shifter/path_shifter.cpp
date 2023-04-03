@@ -63,9 +63,15 @@ void PathShifter::setPath(const PathWithLaneId & path)
   updateShiftLinesIndices(shift_lines_);
   sortShiftLinesAlongPath(shift_lines_);
 }
-void PathShifter::setVelocity(const double velocity) { velocity_ = velocity; }
+void PathShifter::setVelocity(const double velocity)
+{
+  velocity_ = velocity;
+}
 
-void PathShifter::setLateralAccelerationLimit(const double acc) { acc_limit_ = acc; }
+void PathShifter::setLateralAccelerationLimit(const double acc)
+{
+  acc_limit_ = acc;
+}
 
 void PathShifter::addShiftLine(const ShiftLine & line)
 {

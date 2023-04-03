@@ -37,17 +37,38 @@ SimModelDelaySteerAccGeared::SimModelDelaySteerAccGeared(
   initializeInputQueue(dt);
 }
 
-double SimModelDelaySteerAccGeared::getX() { return state_(IDX::X); }
-double SimModelDelaySteerAccGeared::getY() { return state_(IDX::Y); }
-double SimModelDelaySteerAccGeared::getYaw() { return state_(IDX::YAW); }
-double SimModelDelaySteerAccGeared::getVx() { return state_(IDX::VX); }
-double SimModelDelaySteerAccGeared::getVy() { return 0.0; }
-double SimModelDelaySteerAccGeared::getAx() { return state_(IDX::ACCX); }
+double SimModelDelaySteerAccGeared::getX()
+{
+  return state_(IDX::X);
+}
+double SimModelDelaySteerAccGeared::getY()
+{
+  return state_(IDX::Y);
+}
+double SimModelDelaySteerAccGeared::getYaw()
+{
+  return state_(IDX::YAW);
+}
+double SimModelDelaySteerAccGeared::getVx()
+{
+  return state_(IDX::VX);
+}
+double SimModelDelaySteerAccGeared::getVy()
+{
+  return 0.0;
+}
+double SimModelDelaySteerAccGeared::getAx()
+{
+  return state_(IDX::ACCX);
+}
 double SimModelDelaySteerAccGeared::getWz()
 {
   return state_(IDX::VX) * std::tan(state_(IDX::STEER)) / wheelbase_;
 }
-double SimModelDelaySteerAccGeared::getSteer() { return state_(IDX::STEER); }
+double SimModelDelaySteerAccGeared::getSteer()
+{
+  return state_(IDX::STEER);
+}
 void SimModelDelaySteerAccGeared::update(const double & dt)
 {
   Eigen::VectorXd delayed_input = Eigen::VectorXd::Zero(dim_u_);

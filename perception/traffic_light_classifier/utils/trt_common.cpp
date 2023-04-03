@@ -150,7 +150,10 @@ bool TrtCommon::buildEngineFromOnnx(std::string onnx_file_path, std::string outp
   return true;
 }
 
-bool TrtCommon::isInitialized() { return is_initialized_; }
+bool TrtCommon::isInitialized()
+{
+  return is_initialized_;
+}
 
 int TrtCommon::getNumInput()
 {

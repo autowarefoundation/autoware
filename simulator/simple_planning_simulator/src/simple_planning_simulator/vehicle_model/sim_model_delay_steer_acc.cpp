@@ -35,17 +35,38 @@ SimModelDelaySteerAcc::SimModelDelaySteerAcc(
   initializeInputQueue(dt);
 }
 
-double SimModelDelaySteerAcc::getX() { return state_(IDX::X); }
-double SimModelDelaySteerAcc::getY() { return state_(IDX::Y); }
-double SimModelDelaySteerAcc::getYaw() { return state_(IDX::YAW); }
-double SimModelDelaySteerAcc::getVx() { return state_(IDX::VX); }
-double SimModelDelaySteerAcc::getVy() { return 0.0; }
-double SimModelDelaySteerAcc::getAx() { return state_(IDX::ACCX); }
+double SimModelDelaySteerAcc::getX()
+{
+  return state_(IDX::X);
+}
+double SimModelDelaySteerAcc::getY()
+{
+  return state_(IDX::Y);
+}
+double SimModelDelaySteerAcc::getYaw()
+{
+  return state_(IDX::YAW);
+}
+double SimModelDelaySteerAcc::getVx()
+{
+  return state_(IDX::VX);
+}
+double SimModelDelaySteerAcc::getVy()
+{
+  return 0.0;
+}
+double SimModelDelaySteerAcc::getAx()
+{
+  return state_(IDX::ACCX);
+}
 double SimModelDelaySteerAcc::getWz()
 {
   return state_(IDX::VX) * std::tan(state_(IDX::STEER)) / wheelbase_;
 }
-double SimModelDelaySteerAcc::getSteer() { return state_(IDX::STEER); }
+double SimModelDelaySteerAcc::getSteer()
+{
+  return state_(IDX::STEER);
+}
 void SimModelDelaySteerAcc::update(const double & dt)
 {
   Eigen::VectorXd delayed_input = Eigen::VectorXd::Zero(dim_u_);

@@ -15,7 +15,9 @@
 
 namespace automatic_goal
 {
-AutowareAutomaticGoalSender::AutowareAutomaticGoalSender() : Node("automatic_goal_sender") {}
+AutowareAutomaticGoalSender::AutowareAutomaticGoalSender() : Node("automatic_goal_sender")
+{
+}
 
 void AutowareAutomaticGoalSender::init()
 {

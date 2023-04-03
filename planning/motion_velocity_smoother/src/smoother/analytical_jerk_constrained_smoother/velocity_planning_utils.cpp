@@ -343,9 +343,15 @@ double integ_x(double x0, double v0, double a0, double j0, double t)
   return x0 + v0 * t + 0.5 * a0 * t * t + (1.0 / 6.0) * j0 * t * t * t;
 }
 
-double integ_v(double v0, double a0, double j0, double t) { return v0 + a0 * t + 0.5 * j0 * t * t; }
+double integ_v(double v0, double a0, double j0, double t)
+{
+  return v0 + a0 * t + 0.5 * j0 * t * t;
+}
 
-double integ_a(double a0, double j0, double t) { return a0 + j0 * t; }
+double integ_a(double a0, double j0, double t)
+{
+  return a0 + j0 * t;
+}
 
 }  // namespace analytical_velocity_planning_utils
 }  // namespace motion_velocity_smoother

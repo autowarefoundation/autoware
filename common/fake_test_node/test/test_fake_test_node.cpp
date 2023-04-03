@@ -91,7 +91,10 @@ void run_test(int32_t value_in_message, FixtureT * fixture)
 }  // namespace
 
 /// @test Test that we can use a non-parametrized test.
-TEST_F(FakeNodeFixture, Test) { run_test(15, this); }
+TEST_F(FakeNodeFixture, Test)
+{
+  run_test(15, this);
+}
 
 INSTANTIATE_TEST_SUITE_P(
   FakeNodeFixtureTests, FakeNodeFixtureParametrized,
@@ -99,4 +102,7 @@ INSTANTIATE_TEST_SUITE_P(
   ::testing::Values(-5, 0, 42));
 
 /// @test Test that we can use a parametrized test.
-TEST_P(FakeNodeFixtureParametrized, Test) { run_test(GetParam(), this); }
+TEST_P(FakeNodeFixtureParametrized, Test)
+{
+  run_test(GetParam(), this);
+}

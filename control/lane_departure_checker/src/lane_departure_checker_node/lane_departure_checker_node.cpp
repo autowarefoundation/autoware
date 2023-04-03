@@ -204,7 +204,10 @@ void LaneDepartureCheckerNode::onLaneletMapBin(const HADMapBin::ConstSharedPtr m
   shoulder_lanelets_ = lanelet::utils::query::shoulderLanelets(all_lanelets);
 }
 
-void LaneDepartureCheckerNode::onRoute(const LaneletRoute::ConstSharedPtr msg) { route_ = msg; }
+void LaneDepartureCheckerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
+{
+  route_ = msg;
+}
 
 void LaneDepartureCheckerNode::onReferenceTrajectory(const Trajectory::ConstSharedPtr msg)
 {

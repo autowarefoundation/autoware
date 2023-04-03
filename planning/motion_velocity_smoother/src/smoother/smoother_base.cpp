@@ -58,17 +58,35 @@ SmootherBase::SmootherBase(rclcpp::Node & node)
     node.declare_parameter<double>("sparse_min_interval_distance");
 }
 
-void SmootherBase::setParam(const BaseParam & param) { base_param_ = param; }
+void SmootherBase::setParam(const BaseParam & param)
+{
+  base_param_ = param;
+}
 
-SmootherBase::BaseParam SmootherBase::getBaseParam() const { return base_param_; }
+SmootherBase::BaseParam SmootherBase::getBaseParam() const
+{
+  return base_param_;
+}
 
-double SmootherBase::getMaxAccel() const { return base_param_.max_accel; }
+double SmootherBase::getMaxAccel() const
+{
+  return base_param_.max_accel;
+}
 
-double SmootherBase::getMinDecel() const { return base_param_.min_decel; }
+double SmootherBase::getMinDecel() const
+{
+  return base_param_.min_decel;
+}
 
-double SmootherBase::getMaxJerk() const { return base_param_.max_jerk; }
+double SmootherBase::getMaxJerk() const
+{
+  return base_param_.max_jerk;
+}
 
-double SmootherBase::getMinJerk() const { return base_param_.min_jerk; }
+double SmootherBase::getMinJerk() const
+{
+  return base_param_.min_jerk;
+}
 
 TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,

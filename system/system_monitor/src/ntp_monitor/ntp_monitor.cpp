@@ -49,7 +49,10 @@ NTPMonitor::NTPMonitor(const rclcpp::NodeOptions & options)
   updater_.add("NTP Offset", this, &NTPMonitor::checkOffset);
 }
 
-void NTPMonitor::update() { updater_.force_update(); }
+void NTPMonitor::update()
+{
+  updater_.force_update();
+}
 
 void NTPMonitor::checkOffset(diagnostic_updater::DiagnosticStatusWrapper & stat)
 {

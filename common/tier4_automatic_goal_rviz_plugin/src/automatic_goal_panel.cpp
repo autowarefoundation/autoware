@@ -251,7 +251,10 @@ void AutowareAutomaticGoalPanel::onAppendGoal(const PoseStamped::ConstSharedPtr 
 }
 
 // Override
-void AutowareAutomaticGoalPanel::onCallResult() { updateGUI(); }
+void AutowareAutomaticGoalPanel::onCallResult()
+{
+  updateGUI();
+}
 void AutowareAutomaticGoalPanel::onGoalListUpdated()
 {
   goals_list_widget_ptr_->clear();

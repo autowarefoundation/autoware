@@ -79,7 +79,10 @@ ExternalCmdConverterNode::ExternalCmdConverterNode(const rclcpp::NodeOptions & n
   current_shift_cmd_ = std::make_shared<GearCommand>();
 }
 
-void ExternalCmdConverterNode::onTimer() { updater_.force_update(); }
+void ExternalCmdConverterNode::onTimer()
+{
+  updater_.force_update();
+}
 
 void ExternalCmdConverterNode::onVelocity(const Odometry::ConstSharedPtr msg)
 {

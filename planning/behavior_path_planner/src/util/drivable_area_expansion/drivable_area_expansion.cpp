@@ -43,9 +43,15 @@ void expandDrivableArea(
   updateDrivableAreaBounds(path, expanded_drivable_area);
 }
 
-point_t convert_point(const Point & p) { return point_t{p.x, p.y}; }
+point_t convert_point(const Point & p)
+{
+  return point_t{p.x, p.y};
+}
 
-Point convert_point(const point_t & p) { return Point().set__x(p.x()).set__y(p.y()); }
+Point convert_point(const point_t & p)
+{
+  return Point().set__x(p.x()).set__y(p.y());
+}
 
 polygon_t createExpandedDrivableAreaPolygon(
   const PathWithLaneId & path, const multipolygon_t & expansion_polygons)
