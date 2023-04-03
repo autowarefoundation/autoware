@@ -195,8 +195,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   candidate_path.length.prepare = prepare_distance;
   candidate_path.length.lane_changing = lane_change_distance;
   candidate_path.duration.prepare = std::invoke([&]() {
-    const auto duration =
-      prepare_distance / std::max(lane_change_param.minimum_lane_change_velocity, speed.prepare);
+    const auto duration = prepare_distance / speed.prepare;
     return std::min(duration, lane_change_param.lane_change_prepare_duration);
   });
   candidate_path.duration.lane_changing = std::invoke([&]() {
@@ -286,11 +285,19 @@ std::pair<bool, bool> getLaneChangePaths(
   const auto prepare_duration = parameter.lane_change_prepare_duration;
   const auto minimum_prepare_distance = common_parameter.minimum_lane_change_prepare_distance;
   const auto minimum_lane_change_velocity = parameter.minimum_lane_change_velocity;
-  const auto maximum_deceleration = parameter.maximum_deceleration;
   const auto lane_change_sampling_num = parameter.lane_change_sampling_num;
 
   // get velocity
   const auto current_velocity = twist.linear.x;
+
+  // compute maximum_deceleration
+  const auto maximum_deceleration =
+    std::invoke([&minimum_lane_change_velocity, &current_velocity, &parameter]() {
+      const double min_a =
+        (minimum_lane_change_velocity - current_velocity) / parameter.lane_change_prepare_duration;
+      return std::clamp(
+        min_a, -std::abs(parameter.maximum_deceleration), -std::numeric_limits<double>::epsilon());
+    });
 
   const auto acceleration_resolution = std::abs(maximum_deceleration) / lane_change_sampling_num;
 
@@ -330,14 +337,10 @@ std::pair<bool, bool> getLaneChangePaths(
   LaneChangeTargetObjectIndices dynamic_object_indices;
 
   candidate_paths->reserve(lane_change_sampling_num);
-  for (double acceleration = 0.0; acceleration >= -maximum_deceleration;
+  for (double acceleration = 0.0; acceleration >= maximum_deceleration;
        acceleration -= acceleration_resolution) {
-    const double prepare_speed = current_velocity + acceleration * prepare_duration;
-
-    // skip if velocity becomes less than zero before starting lane change
-    if (prepare_speed < 0.0) {
-      break;
-    }
+    const auto prepare_speed =
+      std::max(current_velocity + acceleration * prepare_duration, minimum_lane_change_velocity);
 
     // get path on original lanes
     const double prepare_distance = std::max(
@@ -351,7 +354,7 @@ std::pair<bool, bool> getLaneChangePaths(
 #ifdef USE_OLD_ARCHITECTURE
     const auto prepare_segment = getPrepareSegment(
       route_handler, original_lanelets, arc_position_from_current.length, backward_path_length,
-      prepare_distance, std::max(prepare_speed, minimum_lane_change_velocity));
+      prepare_distance, prepare_speed);
 #else
     const auto prepare_segment = getPrepareSegment(
       original_path, original_lanelets, pose, backward_path_length, prepare_distance,
@@ -372,7 +375,7 @@ std::pair<bool, bool> getLaneChangePaths(
       lanelet::utils::getLateralDistanceToClosestLanelet(target_lanelets, lane_changing_start_pose);
 
     // we assume constant speed during lane change
-    const auto lane_changing_speed = std::max(prepare_speed, minimum_lane_change_velocity);
+    const auto lane_changing_speed = prepare_speed;
     const auto lane_changing_distance =
       calcLaneChangingDistance(lane_changing_speed, shift_length, common_parameter, parameter);
 
