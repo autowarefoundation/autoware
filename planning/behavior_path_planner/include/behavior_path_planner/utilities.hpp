@@ -80,7 +80,7 @@ using geometry_msgs::msg::Pose;
 using marker_utils::CollisionCheckDebug;
 using vehicle_info_util::VehicleInfo;
 
-struct FrenetCoordinate3d
+struct FrenetPoint
 {
   double length{0.0};    // longitudinal
   double distance{0.0};  // lateral
@@ -114,25 +114,17 @@ PredictedPath convertToPredictedPath(
   const double acceleration, const double min_speed = 1.0);
 
 template <class T>
-FrenetCoordinate3d convertToFrenetCoordinate3d(
-  const std::vector<T> & pose_array, const Point & search_point_geom, const size_t seg_idx)
+FrenetPoint convertToFrenetPoint(
+  const T & points, const Point & search_point_geom, const size_t seg_idx)
 {
-  FrenetCoordinate3d frenet_coordinate;
+  FrenetPoint frenet_point;
 
   const double longitudinal_length =
-    motion_utils::calcLongitudinalOffsetToSegment(pose_array, seg_idx, search_point_geom);
-  frenet_coordinate.length =
-    motion_utils::calcSignedArcLength(pose_array, 0, seg_idx) + longitudinal_length;
-  frenet_coordinate.distance =
-    motion_utils::calcLateralOffset(pose_array, search_point_geom, seg_idx);
+    motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, search_point_geom);
+  frenet_point.length = motion_utils::calcSignedArcLength(points, 0, seg_idx) + longitudinal_length;
+  frenet_point.distance = motion_utils::calcLateralOffset(points, search_point_geom, seg_idx);
 
-  return frenet_coordinate;
-}
-
-inline FrenetCoordinate3d convertToFrenetCoordinate3d(
-  const PathWithLaneId & path, const Point & search_point_geom, const size_t seg_idx)
-{
-  return convertToFrenetCoordinate3d(path.points, search_point_geom, seg_idx);
+  return frenet_point;
 }
 
 std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets);

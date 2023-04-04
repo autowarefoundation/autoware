@@ -22,7 +22,7 @@
 
 using behavior_path_planner::PathWithLaneId;
 using behavior_path_planner::Pose;
-using behavior_path_planner::util::FrenetCoordinate3d;
+using behavior_path_planner::util::FrenetPoint;
 using geometry_msgs::msg::Point;
 
 TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLine)
@@ -35,7 +35,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLin
 
   const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     geometry_points, vehicle_pose, 3.0, 1.0);
-  FrenetCoordinate3d vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetCoordinate3d(
+  const auto vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetPoint(
     geometry_points, vehicle_pose.position, vehicle_seg_idx);
 
   EXPECT_NEAR(vehicle_pose_frenet.distance, -1.7f, 1e-3);
@@ -52,7 +52,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnDiagonalLin
 
   const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     geometry_points, vehicle_pose, 3.0, 1.0);
-  FrenetCoordinate3d vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetCoordinate3d(
+  const auto vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetPoint(
     geometry_points, vehicle_pose.position, vehicle_seg_idx);
 
   EXPECT_NEAR(vehicle_pose_frenet.distance, 0, 1e-2);
