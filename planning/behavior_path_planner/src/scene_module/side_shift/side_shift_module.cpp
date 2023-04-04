@@ -33,16 +33,22 @@ using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::getPoint;
 
+#ifdef USE_OLD_ARCHITECTURE
 SideShiftModule::SideShiftModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<SideShiftParameters> & parameters)
-: SceneModuleInterface{name, node}, parameters_{parameters}
+: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
 {
   using std::placeholders::_1;
-
-#ifdef USE_OLD_ARCHITECTURE
   lateral_offset_subscriber_ = node.create_subscription<LateralOffset>(
     "~/input/lateral_offset", 1, std::bind(&SideShiftModule::onLateralOffset, this, _1));
+#else
+SideShiftModule::SideShiftModule(
+  const std::string & name, rclcpp::Node & node,
+  const std::shared_ptr<SideShiftParameters> & parameters,
+  const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
+: SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
+{
 #endif
 
   // If lateral offset is subscribed, it approves side shift module automatically

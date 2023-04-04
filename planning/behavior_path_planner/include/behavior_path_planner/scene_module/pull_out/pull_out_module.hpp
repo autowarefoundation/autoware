@@ -36,6 +36,7 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -71,7 +72,7 @@ public:
   PullOutModule(
     const std::string & name, rclcpp::Node & node,
     const std::shared_ptr<PullOutParameters> & parameters,
-    const std::shared_ptr<RTCInterface> & rtc_interface);
+    const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
   void updateModuleParams(const std::shared_ptr<PullOutParameters> & parameters)
   {

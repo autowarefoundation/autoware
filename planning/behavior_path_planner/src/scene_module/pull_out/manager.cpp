@@ -26,9 +26,8 @@ namespace behavior_path_planner
 PullOutModuleManager::PullOutModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
   const std::shared_ptr<PullOutParameters> & parameters)
-: SceneModuleManagerInterface(node, name, config), parameters_{parameters}
+: SceneModuleManagerInterface(node, name, config, {""}), parameters_{parameters}
 {
-  rtc_interface_ = std::make_shared<RTCInterface>(node, name);
 }
 
 void PullOutModuleManager::updateModuleParams(

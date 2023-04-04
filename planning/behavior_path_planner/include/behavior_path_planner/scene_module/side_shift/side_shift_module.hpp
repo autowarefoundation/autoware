@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -39,9 +40,16 @@ using tier4_planning_msgs::msg::LateralOffset;
 class SideShiftModule : public SceneModuleInterface
 {
 public:
+#ifdef USE_OLD_ARCHITECTURE
   SideShiftModule(
     const std::string & name, rclcpp::Node & node,
     const std::shared_ptr<SideShiftParameters> & parameters);
+#else
+  SideShiftModule(
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<SideShiftParameters> & parameters,
+    const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
+#endif
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;

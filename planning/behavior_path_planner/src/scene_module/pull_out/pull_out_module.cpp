@@ -38,11 +38,10 @@ namespace behavior_path_planner
 PullOutModule::PullOutModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<PullOutParameters> & parameters)
-: SceneModuleInterface{name, node},
+: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})},
   parameters_{parameters},
   vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
 {
-  rtc_interface_ptr_ = std::make_shared<RTCInterface>(&node, "pull_out");
   steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "pull_out");
   lane_departure_checker_ = std::make_shared<LaneDepartureChecker>();
   lane_departure_checker_->setVehicleInfo(vehicle_info_);
@@ -64,12 +63,11 @@ PullOutModule::PullOutModule(
 PullOutModule::PullOutModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<PullOutParameters> & parameters,
-  const std::shared_ptr<RTCInterface> & rtc_interface)
-: SceneModuleInterface{name, node},
+  const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
+: SceneModuleInterface{name, node, rtc_interface_ptr_map},
   parameters_{parameters},
   vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
 {
-  rtc_interface_ptr_ = rtc_interface;
   steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "pull_out");
   lane_departure_checker_ = std::make_shared<LaneDepartureChecker>();
   lane_departure_checker_->setVehicleInfo(vehicle_info_);
@@ -742,7 +740,9 @@ void PullOutModule::checkBackFinished()
     // request pull_out approval
     waitApproval();
     removeRTCStatus();
-    uuid_ = generateUUID();
+    for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
+      itr->second = generateUUID();
+    }
     current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
   }
 }

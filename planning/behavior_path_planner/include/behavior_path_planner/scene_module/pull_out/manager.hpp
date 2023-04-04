@@ -36,15 +36,13 @@ public:
 
   std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
-    return std::make_shared<PullOutModule>(name_, *node_, parameters_, rtc_interface_);
+    return std::make_shared<PullOutModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
   std::shared_ptr<PullOutParameters> parameters_;
-
-  std::shared_ptr<RTCInterface> rtc_interface_;
 
   std::vector<std::shared_ptr<PullOutModule>> registered_modules_;
 };

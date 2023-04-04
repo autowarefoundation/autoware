@@ -40,7 +40,8 @@ class SceneModuleManagerInterface
 {
 public:
   SceneModuleManagerInterface(
-    rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
+    rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
+    const std::vector<std::string> & rtc_types)
   : node_(node),
     clock_(*node->get_clock()),
     logger_(node->get_logger().get_child(name)),
@@ -49,6 +50,14 @@ public:
     priority_(config.priority),
     enable_simultaneous_execution_(config.enable_simultaneous_execution)
   {
+    for (const auto & rtc_type : rtc_types) {
+      const auto snake_case_name = util::convertToSnakeCase(name);
+      const auto rtc_interface_name =
+        rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
+      rtc_interface_ptr_map_.emplace(
+        rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name));
+    }
+
     pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name, 20);
   }
 
@@ -173,6 +182,8 @@ protected:
   std::vector<SceneModulePtr> registered_modules_;
 
   SceneModulePtr idling_module_;
+
+  std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map_;
 
 private:
   size_t max_module_num_;

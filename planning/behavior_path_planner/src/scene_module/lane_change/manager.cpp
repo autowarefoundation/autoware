@@ -28,13 +28,11 @@ LaneChangeModuleManager::LaneChangeModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
   std::shared_ptr<LaneChangeParameters> parameters, const Direction direction,
   const LaneChangeModuleType type)
-: SceneModuleManagerInterface(node, name, config),
+: SceneModuleManagerInterface(node, name, config, {""}),
   parameters_{std::move(parameters)},
   direction_{direction},
   type_{type}
-
 {
-  rtc_interface_ = std::make_shared<RTCInterface>(node, name);
 }
 
 void LaneChangeModuleManager::updateModuleParams(

@@ -39,14 +39,12 @@ public:
   std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
     return std::make_shared<LaneChangeModule>(
-      name_, *node_, parameters_, rtc_interface_, direction_, type_);
+      name_, *node_, parameters_, rtc_interface_ptr_map_, direction_, type_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
-  std::shared_ptr<RTCInterface> rtc_interface_;
-
   std::shared_ptr<LaneChangeParameters> parameters_;
 
   std::vector<std::shared_ptr<LaneChangeModule>> registered_modules_;
