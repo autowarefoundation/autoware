@@ -3,7 +3,7 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: 90ed3f1f3371d75eb30b6e7d2acb88ccec4e8030
+    version: 8667820119cf0ff8a8ce990a4a615770903eecf8
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
@@ -11,11 +11,11 @@ repositories:
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: 34338c0d9e68ea8c7598a66f319cdcb6d92873a3
+    version: a70a157ec5551766b3a45494e89a090a78cd4f1f
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: 0a3421239fcf576d3e73036c6b5da1daf2b8c8d0
+    version: 794aed1b9dd5eaf5e1ce349fb96ac7adb87a8f9a
   core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
@@ -28,11 +28,11 @@ repositories:
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
-    version: e490986fd3a7e35aa5af8f0120d083afdd8a4fce
+    version: e61768b3fcb6821e684d5ad75e310a74f9b568b8
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
-    version: 87febc35abc9310eaec0b6dd3ce2a4845ce515aa
+    version: 4c0a8da7b9293ee248281faab4c7f82cc99499c6
   universe/external/morai_msgs:
     type: git
     url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
@@ -58,7 +58,7 @@ repositories:
   sensor_component/external/sensor_component_description:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
-    version: 475857daeb4c4883ab0295336713364b326e8278
+    version: a6a628186b124bc1af73c4f48a6dcd4b441391d3
   sensor_component/external/tamagawa_imu_driver:
     type: git
     url: https://github.com/tier4/tamagawa_imu_driver.git
@@ -84,7 +84,7 @@ repositories:
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
-    version: 3db50a2abc68576308289cc84d83d14376144d64
+    version: e2cd8b70611b2502a78facd597c8e2507b5b3c77
   # param
   param/autoware_individual_params:
     type: git
