@@ -159,7 +159,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         "ExternalRequestLaneChangeRight", *this, lane_change_param_ptr_);
     path_candidate_publishers_.emplace(
       "ExternalRequestLaneChangeRight",
-      create_publisher<Path>(path_candidate_name_space + "ext_request_lane_change_right", 1));
+      create_publisher<Path>(path_candidate_name_space + "external_request_lane_change_right", 1));
     bt_manager_->registerSceneModule(ext_request_lane_change_right_module);
 
     auto ext_request_lane_change_left_module =
@@ -167,7 +167,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         "ExternalRequestLaneChangeLeft", *this, lane_change_param_ptr_);
     path_candidate_publishers_.emplace(
       "ExternalRequestLaneChangeLeft",
-      create_publisher<Path>(path_candidate_name_space + "ext_request_lane_change_left", 1));
+      create_publisher<Path>(path_candidate_name_space + "external_request_lane_change_left", 1));
     bt_manager_->registerSceneModule(ext_request_lane_change_left_module);
 
     auto lane_change_module =
@@ -258,7 +258,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     }
 
     if (p.config_ext_request_lane_change_right.enable_module) {
-      const std::string module_topic = "ext_request_lane_change_right";
+      const std::string module_topic = "external_request_lane_change_right";
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_ext_request_lane_change_right, lane_change_param_ptr_,
         route_handler::Direction::RIGHT, LaneChangeModuleType::EXTERNAL_REQUEST);
@@ -266,7 +266,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     }
 
     if (p.config_ext_request_lane_change_left.enable_module) {
-      const std::string module_topic = "ext_request_lane_change_left";
+      const std::string module_topic = "external_request_lane_change_left";
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_ext_request_lane_change_left, lane_change_param_ptr_,
         route_handler::Direction::LEFT, LaneChangeModuleType::EXTERNAL_REQUEST);
@@ -360,7 +360,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   }
 
   {
-    const std::string ns = "ext_request_lane_change_right.";
+    const std::string ns = "external_request_lane_change_right.";
     p.config_ext_request_lane_change_right.enable_module =
       declare_parameter<bool>(ns + "enable_module");
     p.config_ext_request_lane_change_right.enable_simultaneous_execution =
@@ -371,7 +371,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   }
 
   {
-    const std::string ns = "ext_request_lane_change_left.";
+    const std::string ns = "external_request_lane_change_left.";
     p.config_ext_request_lane_change_left.enable_module =
       declare_parameter<bool>(ns + "enable_module");
     p.config_ext_request_lane_change_left.enable_simultaneous_execution =

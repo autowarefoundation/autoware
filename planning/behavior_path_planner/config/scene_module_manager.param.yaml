@@ -3,13 +3,13 @@
 # NOTE: The smaller the priority number is, the higher the module priority is.
 /**:
   ros__parameters:
-    ext_request_lane_change_left:
+    external_request_lane_change_left:
       enable_module: false
       enable_simultaneous_execution: false
       priority: 6
       max_module_size: 1
 
-    ext_request_lane_change_right:
+    external_request_lane_change_right:
       enable_module: false
       enable_simultaneous_execution: false
       priority: 6
