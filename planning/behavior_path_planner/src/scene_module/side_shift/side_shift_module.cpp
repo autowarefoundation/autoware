@@ -51,6 +51,9 @@ SideShiftModule::SideShiftModule(
 {
 #endif
 
+  // TODO(murooka) The following is temporary implementation for new architecture's refactoring
+  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "side_shift");
+
   // If lateral offset is subscribed, it approves side shift module automatically
   clearWaitingApproval();
 }
@@ -70,20 +73,16 @@ void SideShiftModule::initVariables()
   resetPathReference();
 }
 
-void SideShiftModule::onEntry()
+void SideShiftModule::processOnEntry()
 {
   // write me... (Don't initialize variables, otherwise lateral offset gets zero on entry.)
   start_pose_reset_request_ = false;
-#ifdef USE_OLD_ARCHITECTURE
-  current_state_ = ModuleStatus::IDLE;
-#endif
 }
 
-void SideShiftModule::onExit()
+void SideShiftModule::processOnExit()
 {
   // write me...
   initVariables();
-  current_state_ = ModuleStatus::SUCCESS;
 }
 
 void SideShiftModule::setParameters(const std::shared_ptr<SideShiftParameters> & parameters)

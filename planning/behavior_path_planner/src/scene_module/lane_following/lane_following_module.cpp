@@ -31,6 +31,9 @@ LaneFollowingModule::LaneFollowingModule(
 : SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
 {
   initParam();
+  // TODO(murooka) The following is temporary implementation for new architecture's refactoring
+  steering_factor_interface_ptr_ =
+    std::make_unique<SteeringFactorInterface>(&node, "lane_following");
 }
 
 void LaneFollowingModule::initParam()
@@ -64,17 +67,15 @@ CandidateOutput LaneFollowingModule::planCandidate() const
 {
   return CandidateOutput(getReferencePath());
 }
-void LaneFollowingModule::onEntry()
+void LaneFollowingModule::processOnEntry()
 {
   initParam();
   current_state_ = BT::NodeStatus::RUNNING;
-  RCLCPP_DEBUG(getLogger(), "LANE_FOLLOWING onEntry");
 }
-void LaneFollowingModule::onExit()
+void LaneFollowingModule::processOnExit()
 {
   initParam();
   current_state_ = BT::NodeStatus::SUCCESS;
-  RCLCPP_DEBUG(getLogger(), "LANE_FOLLOWING onExit");
 }
 
 void LaneFollowingModule::setParameters(const std::shared_ptr<LaneFollowingParameters> & parameters)

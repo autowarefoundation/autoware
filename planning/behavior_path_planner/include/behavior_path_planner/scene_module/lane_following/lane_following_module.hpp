@@ -42,8 +42,8 @@ public:
   BT::NodeStatus updateState() override;
   BehaviorModuleOutput plan() override;
   CandidateOutput planCandidate() const override;
-  void onEntry() override;
-  void onExit() override;
+  void processOnEntry() override;
+  void processOnExit() override;
 
   void setParameters(const std::shared_ptr<LaneFollowingParameters> & parameters);
   void acceptVisitor(

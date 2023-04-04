@@ -162,12 +162,38 @@ public:
   /**
    * @brief Called on the first time when the module goes into RUNNING.
    */
-  virtual void onEntry() = 0;
+  void onEntry()
+  {
+    RCLCPP_DEBUG(getLogger(), "%s %s", name_.c_str(), __func__);
+
+#ifdef USE_OLD_ARCHITECTURE
+    current_state_ = ModuleStatus::SUCCESS;
+#else
+    current_state_ = ModuleStatus::IDLE;
+#endif
+
+    processOnEntry();
+  }
+
+  virtual void processOnEntry() {}
 
   /**
    * @brief Called when the module exit from RUNNING.
    */
-  virtual void onExit() = 0;
+  void onExit()
+  {
+    RCLCPP_DEBUG(getLogger(), "%s %s", name_.c_str(), __func__);
+
+    current_state_ = ModuleStatus::SUCCESS;
+    clearWaitingApproval();
+    removeRTCStatus();
+    unlockNewModuleLaunch();
+    steering_factor_interface_ptr_->clearSteeringFactors();
+
+    processOnExit();
+  }
+
+  virtual void processOnExit() {}
 
   /**
    * @brief Publish status if the module is requested to run
