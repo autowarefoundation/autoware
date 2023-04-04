@@ -199,7 +199,8 @@ PredictedPath convertToPredictedPath(
   double prev_vehicle_speed = vehicle_speed;
 
   // first point
-  predicted_path.path.push_back(lerpPoseByLength(path.points, vehicle_pose_frenet.length));
+  predicted_path.path.push_back(
+    motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length));
 
   for (double t = resolution; t < duration; t += resolution) {
     double accelerated_velocity = prev_vehicle_speed + acceleration * t;
@@ -213,7 +214,7 @@ PredictedPath convertToPredictedPath(
 
     length += travel_distance;
     predicted_path.path.push_back(
-      lerpPoseByLength(path.points, vehicle_pose_frenet.length + length));
+      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
     prev_vehicle_speed = accelerated_velocity;
   }
   return predicted_path;
@@ -273,7 +274,7 @@ bool lerpByTimeStamp(const PredictedPath & path, const double t_query, Pose * le
       const double duration = time_step.seconds();
       const double offset = t_query - prev_t;
       const double ratio = offset / duration;
-      *lerped_pt = lerpByPose(prev_pt, pt, ratio);
+      *lerped_pt = tier4_autoware_utils::calcInterpolatedPose(prev_pt, pt, ratio);
       return true;
     }
   }
@@ -315,7 +316,7 @@ bool lerpByTimeStamp(
       const double duration = time_step.seconds();
       const double offset = t_query - prev_t;
       const double ratio = offset / duration;
-      *lerped_pt = lerpByPose(prev_pt, pt, ratio);
+      *lerped_pt = tier4_autoware_utils::calcInterpolatedPose(prev_pt, pt, ratio);
       return true;
     }
   }
@@ -1600,7 +1601,7 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
     if (accumulated_length > length) {
       insert_idx = i;
       const double ratio = 1 - (accumulated_length - length) / segment_length;
-      stop_pose = lerpByPose(prev_pose, curr_pose, ratio);
+      stop_pose = tier4_autoware_utils::calcInterpolatedPose(prev_pose, curr_pose, ratio);
       break;
     }
   }
