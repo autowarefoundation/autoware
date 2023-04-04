@@ -598,17 +598,15 @@ bool isLaneChangePathSafe(
   check_durations.reserve(reserve_size);
   interpolated_ego.reserve(reserve_size);
 
-  {
-    Pose expected_ego_pose = current_pose;
-    for (double t = check_start_time; t < check_end_time; t += time_resolution) {
-      std::string failed_reason;
-      tier4_autoware_utils::Polygon2d ego_polygon;
-      [[maybe_unused]] const auto get_ego_info = util::getEgoExpectedPoseAndConvertToPolygon(
-        current_pose, vehicle_predicted_path, ego_polygon, t, vehicle_info, expected_ego_pose,
-        failed_reason);
-      check_durations.push_back(t);
-      interpolated_ego.emplace_back(expected_ego_pose, ego_polygon);
+  for (double t = check_start_time; t < check_end_time; t += time_resolution) {
+    tier4_autoware_utils::Polygon2d ego_polygon;
+    const auto result =
+      util::getEgoExpectedPoseAndConvertToPolygon(vehicle_predicted_path, t, vehicle_info);
+    if (!result) {
+      continue;
     }
+    check_durations.push_back(t);
+    interpolated_ego.emplace_back(result->first, result->second);
   }
 
   for (const auto & i : in_lane_object_indices) {

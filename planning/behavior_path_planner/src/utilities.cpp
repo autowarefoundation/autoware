@@ -220,111 +220,6 @@ PredictedPath convertToPredictedPath(
   return predicted_path;
 }
 
-PredictedPath resamplePredictedPath(
-  const PredictedPath & input_path, const double resolution, const double duration)
-{
-  PredictedPath resampled_path{};
-
-  for (double t = 0.0; t < duration; t += resolution) {
-    Pose pose;
-    if (!lerpByTimeStamp(input_path, t, &pose)) {
-      continue;
-    }
-    resampled_path.path.push_back(pose);
-  }
-
-  return resampled_path;
-}
-
-bool lerpByTimeStamp(const PredictedPath & path, const double t_query, Pose * lerped_pt)
-{
-  const rclcpp::Duration time_step(path.time_step);
-  auto clock{rclcpp::Clock{RCL_ROS_TIME}};
-  if (lerped_pt == nullptr) {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"), clock, 1000,
-      "failed to lerp by time due to nullptr pt");
-    return false;
-  }
-  if (path.path.empty()) {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"), clock, 1000,
-      "Empty path. Failed to interpolate path by time!");
-    return false;
-  }
-
-  const double t_final = time_step.seconds() * static_cast<double>(path.path.size() - 1);
-  if (t_query > t_final) {
-    RCLCPP_DEBUG_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-      "failed to interpolate path by time!" << std::endl
-                                            << "t_final    : " << t_final
-                                            << "query time : " << t_query);
-    *lerped_pt = path.path.back();
-
-    return false;
-  }
-
-  for (size_t i = 1; i < path.path.size(); i++) {
-    const auto & pt = path.path.at(i);
-    const auto & prev_pt = path.path.at(i - 1);
-    const double t = time_step.seconds() * static_cast<double>(i);
-    if (t_query <= t) {
-      const double prev_t = time_step.seconds() * static_cast<double>(i - 1);
-      const double duration = time_step.seconds();
-      const double offset = t_query - prev_t;
-      const double ratio = offset / duration;
-      *lerped_pt = tier4_autoware_utils::calcInterpolatedPose(prev_pt, pt, ratio);
-      return true;
-    }
-  }
-
-  RCLCPP_ERROR_STREAM(
-    rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-    "Something failed in function: ");
-  return false;
-}
-
-bool lerpByTimeStamp(
-  const PredictedPath & path, const double t_query, Pose * lerped_pt, std::string & failed_reason)
-{
-  const rclcpp::Duration time_step(path.time_step);
-  auto clock{rclcpp::Clock{RCL_ROS_TIME}};
-  if (lerped_pt == nullptr) {
-    failed_reason = "nullptr_pt";
-    return false;
-  }
-  if (path.path.empty()) {
-    failed_reason = "empty_path";
-    return false;
-  }
-
-  const double t_final = time_step.seconds() * static_cast<double>(path.path.size() - 1);
-  if (t_query > t_final) {
-    failed_reason = "query_exceed_t_final";
-    *lerped_pt = path.path.back();
-
-    return false;
-  }
-
-  for (size_t i = 1; i < path.path.size(); i++) {
-    const auto & pt = path.path.at(i);
-    const auto & prev_pt = path.path.at(i - 1);
-    const double t = time_step.seconds() * static_cast<double>(i);
-    if (t_query <= t) {
-      const double prev_t = time_step.seconds() * static_cast<double>(i - 1);
-      const double duration = time_step.seconds();
-      const double offset = t_query - prev_t;
-      const double ratio = offset / duration;
-      *lerped_pt = tier4_autoware_utils::calcInterpolatedPose(prev_pt, pt, ratio);
-      return true;
-    }
-  }
-
-  failed_reason = "unknown_failure";
-  return false;
-}
-
 double getDistanceBetweenPredictedPaths(
   const PredictedPath & object_path, const PredictedPath & ego_path, const double start_time,
   const double end_time, const double resolution)
@@ -332,14 +227,15 @@ double getDistanceBetweenPredictedPaths(
   double min_distance = std::numeric_limits<double>::max();
   const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
   for (double t = start_time; t < end_time; t += resolution) {
-    Pose object_pose, ego_pose;
-    if (!lerpByTimeStamp(object_path, t, &object_pose)) {
+    const auto object_pose = perception_utils::calcInterpolatedPose(object_path, t);
+    if (!object_pose) {
       continue;
     }
-    if (!lerpByTimeStamp(ego_path, t, &ego_pose)) {
+    const auto ego_pose = perception_utils::calcInterpolatedPose(ego_path, t);
+    if (!ego_pose) {
       continue;
     }
-    double distance = tier4_autoware_utils::calcDistance3d(object_pose, ego_pose);
+    double distance = tier4_autoware_utils::calcDistance3d(*object_pose, *ego_pose);
     if (distance < min_distance) {
       min_distance = distance;
     }
@@ -362,11 +258,11 @@ double getDistanceBetweenPredictedPathAndObject(
     return min_distance;
   }
   for (double t = start_time; t < end_time; t += resolution) {
-    Pose ego_pose;
-    if (!lerpByTimeStamp(ego_path, t, &ego_pose)) {
+    const auto ego_pose = perception_utils::calcInterpolatedPose(ego_path, t);
+    if (!ego_pose) {
       continue;
     }
-    Point2d ego_point{ego_pose.position.x, ego_pose.position.y};
+    Point2d ego_point{ego_pose->position.x, ego_pose->position.y};
 
     double distance = boost::geometry::distance(obj_polygon, ego_point);
     if (distance < min_distance) {
@@ -2324,34 +2220,43 @@ void getProjectedDistancePointFromPolygons(
   }
 }
 
-bool getEgoExpectedPoseAndConvertToPolygon(
-  [[maybe_unused]] const Pose & current_pose, const PredictedPath & pred_path,
-  tier4_autoware_utils::Polygon2d & ego_polygon, const double & check_current_time,
-  const VehicleInfo & ego_info, Pose & expected_pose, std::string & failed_reason)
+boost::optional<std::pair<Pose, Polygon2d>> getEgoExpectedPoseAndConvertToPolygon(
+  const PredictedPath & pred_path, const double current_time, const VehicleInfo & ego_info)
 {
-  bool is_lerped =
-    util::lerpByTimeStamp(pred_path, check_current_time, &expected_pose, failed_reason);
+  const auto interpolated_pose = perception_utils::calcInterpolatedPose(pred_path, current_time);
+
+  if (!interpolated_pose) {
+    return {};
+  }
 
   const auto & i = ego_info;
   const auto & front_m = i.max_longitudinal_offset_m;
   const auto & width_m = i.vehicle_width_m / 2.0;
   const auto & back_m = i.rear_overhang_m;
 
-  ego_polygon =
-    util::convertBoundingBoxObjectToGeometryPolygon(expected_pose, front_m, back_m, width_m);
+  const auto ego_polygon =
+    util::convertBoundingBoxObjectToGeometryPolygon(*interpolated_pose, front_m, back_m, width_m);
 
-  return is_lerped;
+  return std::make_pair(*interpolated_pose, ego_polygon);
 }
 
-bool getObjectExpectedPoseAndConvertToPolygon(
-  const PredictedPath & pred_path, const PredictedObject & object, Polygon2d & obj_polygon,
-  const double & check_current_time, Pose & expected_pose, std::string & failed_reason)
+boost::optional<std::pair<Pose, Polygon2d>> getObjectExpectedPoseAndConvertToPolygon(
+  const PredictedPath & pred_path, const double current_time, const PredictedObject & object)
 {
-  bool is_lerped =
-    util::lerpByTimeStamp(pred_path, check_current_time, &expected_pose, failed_reason);
+  const auto interpolated_pose = perception_utils::calcInterpolatedPose(pred_path, current_time);
 
-  is_lerped = util::calcObjectPolygon(object.shape, expected_pose, &obj_polygon);
-  return is_lerped;
+  if (!interpolated_pose) {
+    return {};
+  }
+
+  Polygon2d obj_polygon;
+  const bool has_converted =
+    util::calcObjectPolygon(object.shape, *interpolated_pose, &obj_polygon);
+  if (has_converted) {
+    return std::make_pair(*interpolated_pose, obj_polygon);
+  }
+
+  return {};
 }
 
 std::vector<PredictedPath> getPredictedPathFromObj(
@@ -2504,7 +2409,6 @@ bool isSafeInLaneletCollisionCheck(
 {
   debug.lerped_path.reserve(check_duration.size());
 
-  Pose expected_obj_pose = target_object.kinematics.initial_pose_with_covariance.pose;
   const auto & object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
   const auto object_speed = object_twist.linear.x;
   const auto ignore_check_at_time = [&](const double current_time) {
@@ -2520,10 +2424,14 @@ bool isSafeInLaneletCollisionCheck(
       continue;
     }
 
-    tier4_autoware_utils::Polygon2d obj_polygon;
-    [[maybe_unused]] const auto get_obj_info = util::getObjectExpectedPoseAndConvertToPolygon(
-      target_object_path, target_object, obj_polygon, current_time, expected_obj_pose,
-      debug.failed_reason);
+    const auto result = util::getObjectExpectedPoseAndConvertToPolygon(
+      target_object_path, current_time, target_object);
+    if (!result) {
+      continue;
+    }
+
+    auto expected_obj_pose = result->first;
+    const auto & obj_polygon = result->second;
     const auto & ego_info = interpolated_ego.at(i);
     auto expected_ego_pose = ego_info.first;
     const auto & ego_polygon = ego_info.second;

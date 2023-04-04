@@ -20,6 +20,7 @@
 #include "behavior_path_planner/util/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/util/pull_out/pull_out_path.hpp"
 #include "motion_utils/motion_utils.hpp"
+#include "perception_utils/predicted_path_utils.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <route_handler/route_handler.hpp>
@@ -158,8 +159,6 @@ double getArcLengthToTargetLanelet(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelet & target_lane,
   const Pose & pose);
 
-bool lerpByTimeStamp(const PredictedPath & path, const double t, Pose * lerped_pt);
-
 bool calcObjectPolygon(const PredictedObject & object, Polygon2d * object_polygon);
 
 bool calcObjectPolygon(
@@ -167,9 +166,6 @@ bool calcObjectPolygon(
 
 bool calcObjectPolygon(
   const Shape & object_shape, const Pose & object_pose, Polygon2d * object_polygon);
-
-PredictedPath resamplePredictedPath(
-  const PredictedPath & input_path, const double resolution, const double duration);
 
 double getDistanceBetweenPredictedPaths(
   const PredictedPath & path1, const PredictedPath & path2, const double start_time,
@@ -397,14 +393,11 @@ std::vector<PredictedPath> getPredictedPathFromObj(
 
 Pose projectCurrentPoseToTarget(const Pose & desired_object, const Pose & target_object);
 
-bool getEgoExpectedPoseAndConvertToPolygon(
-  const Pose & current_pose, const PredictedPath & pred_path,
-  tier4_autoware_utils::Polygon2d & ego_polygon, const double & check_current_time,
-  const VehicleInfo & ego_info, Pose & expected_pose, std::string & failed_reason);
+boost::optional<std::pair<Pose, Polygon2d>> getEgoExpectedPoseAndConvertToPolygon(
+  const PredictedPath & pred_path, const double current_time, const VehicleInfo & ego_info);
 
-bool getObjectExpectedPoseAndConvertToPolygon(
-  const PredictedPath & pred_path, const PredictedObject & object, Polygon2d & obj_polygon,
-  const double & check_current_time, Pose & expected_pose, std::string & failed_reason);
+boost::optional<std::pair<Pose, Polygon2d>> getObjectExpectedPoseAndConvertToPolygon(
+  const PredictedPath & pred_path, const double current_time, const PredictedObject & object);
 
 bool isObjectFront(const Pose & ego_pose, const Pose & obj_pose);
 
