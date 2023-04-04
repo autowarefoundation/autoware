@@ -467,6 +467,10 @@ lanelet::ConstLanelets RouteHandler::getLaneletSequenceAfter(
     if (!getNextLaneletWithinRoute(current_lanelet, &next_lanelet)) {
       break;
     }
+    // loop check
+    if (lanelet.id() == next_lanelet.id()) {
+      break;
+    }
     lanelet_sequence_forward.push_back(next_lanelet);
     current_lanelet = next_lanelet;
     length +=
@@ -489,6 +493,12 @@ lanelet::ConstLanelets RouteHandler::getLaneletSequenceUpTo(
   while (rclcpp::ok() && length < min_length) {
     lanelet::ConstLanelets candidate_lanelets;
     if (!getPreviousLaneletsWithinRoute(current_lanelet, &candidate_lanelets)) {
+      break;
+    }
+    // loop check
+    if (std::any_of(
+          candidate_lanelets.begin(), candidate_lanelets.end(),
+          [lanelet](auto & prev_llt) { return lanelet.id() == prev_llt.id(); })) {
       break;
     }
 
