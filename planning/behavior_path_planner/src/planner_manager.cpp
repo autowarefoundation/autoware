@@ -278,16 +278,19 @@ BehaviorModuleOutput PlannerManager::update(const std::shared_ptr<PlannerData> &
     const auto result = run(*itr, data, output);  // execute approved module planning.
 
     // check the module is necessary or not.
-    if ((*itr)->getCurrentStatus() != ModuleStatus::RUNNING) {
+    const auto current_status = (*itr)->getCurrentStatus();
+    if (current_status != ModuleStatus::RUNNING) {
       if (itr == approved_module_ptrs_.begin()) {
         // update root lanelet when the lane change is done.
-        if (name.find("lane_change") != std::string::npos) {
-          root_lanelet_ = updateRootLanelet(data);
+        if (current_status == ModuleStatus::SUCCESS) {
+          if (name.find("lane_change") != std::string::npos) {
+            root_lanelet_ = updateRootLanelet(data);
+          }
+          output = result;
         }
 
         deleteExpiredModules(*itr);  // unregister the expired module from manager.
         itr = approved_module_ptrs_.erase(itr);
-        output = result;
         processing_time_.at(name) += stop_watch_.toc(name, true);
         continue;
       }

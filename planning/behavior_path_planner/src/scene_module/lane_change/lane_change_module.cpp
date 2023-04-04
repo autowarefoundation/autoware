@@ -141,7 +141,7 @@ ModuleStatus LaneChangeModule::updateState()
 {
   RCLCPP_DEBUG(getLogger(), "LANE_CHANGE updateState");
   if (!isValidPath()) {
-    current_state_ = ModuleStatus::SUCCESS;
+    current_state_ = ModuleStatus::FAILURE;
     return current_state_;
   }
 
