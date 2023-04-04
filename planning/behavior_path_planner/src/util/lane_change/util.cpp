@@ -1263,14 +1263,7 @@ LaneChangeTargetObjectIndices filterObjectIndices(
       }
     }
 
-    Polygon2d obj_polygon;
-    if (!util::calcObjectPolygon(obj, &obj_polygon)) {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("behavior_path_planner").get_child("lane_change"),
-        "Failed to calcObjectPolygon...!!!");
-      continue;
-    }
-
+    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj);
     if (boost::geometry::intersects(current_polygon, obj_polygon)) {
       const double distance = boost::geometry::distance(obj_polygon, ego_path_linestring);
 

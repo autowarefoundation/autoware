@@ -253,10 +253,7 @@ double getDistanceBetweenPredictedPathAndObject(
   rclcpp::Time ros_start_time = clock.now() + rclcpp::Duration::from_seconds(start_time);
   rclcpp::Time ros_end_time = clock.now() + rclcpp::Duration::from_seconds(end_time);
   const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
-  Polygon2d obj_polygon;
-  if (!calcObjectPolygon(object, &obj_polygon)) {
-    return min_distance;
-  }
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
   for (double t = start_time; t < end_time; t += resolution) {
     const auto ego_pose = perception_utils::calcInterpolatedPose(ego_path, t);
     if (!ego_pose) {
@@ -293,11 +290,7 @@ bool checkCollisionBetweenFootprintAndObjects(
     transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(ego_pose));
 
   for (const auto & object : dynamic_objects.objects) {
-    Polygon2d obj_polygon;
-    if (!calcObjectPolygon(object, &obj_polygon)) {
-      continue;
-    }
-
+    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
     const double distance = boost::geometry::distance(obj_polygon, vehicle_footprint);
     if (distance < margin) return true;
   }
@@ -308,11 +301,7 @@ double calcLateralDistanceFromEgoToObject(
   const Pose & ego_pose, const double vehicle_width, const PredictedObject & dynamic_object)
 {
   double min_distance = std::numeric_limits<double>::max();
-  Polygon2d obj_polygon;
-  if (!calcObjectPolygon(dynamic_object, &obj_polygon)) {
-    return min_distance;
-  }
-
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(dynamic_object);
   const auto vehicle_left_pose =
     tier4_autoware_utils::calcOffsetPose(ego_pose, 0, vehicle_width / 2, 0);
   const auto vehicle_right_pose =
@@ -342,11 +331,7 @@ double calcLongitudinalDistanceFromEgoToObject(
   const PredictedObject & dynamic_object)
 {
   double min_distance = std::numeric_limits<double>::max();
-  Polygon2d obj_polygon;
-  if (!calcObjectPolygon(dynamic_object, &obj_polygon)) {
-    return min_distance;
-  }
-
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(dynamic_object);
   const auto vehicle_front_pose =
     tier4_autoware_utils::calcOffsetPose(ego_pose, base_link2front, 0, 0);
   const auto vehicle_rear_pose =
@@ -401,16 +386,8 @@ std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanel
     // create object polygon
     const auto & obj = objects.objects.at(i);
     // create object polygon
-    Polygon2d obj_polygon;
-    if (!util::calcObjectPolygon(obj, &obj_polygon)) {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-        "Failed to calcObjectPolygon...!!!");
-      continue;
-    }
-
+    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj);
     bool is_filtered_object = false;
-
     for (const auto & llt : target_lanelets) {
       // create lanelet polygon
       const auto polygon2d = llt.polygon2d().basicPolygon();
@@ -513,11 +490,7 @@ std::vector<double> calcObjectsDistanceToPath(
   std::vector<double> distance_array;
   const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
   for (const auto & obj : objects.objects) {
-    Polygon2d obj_polygon;
-    if (!calcObjectPolygon(obj, &obj_polygon)) {
-      std::cerr << __func__ << ": fail to convert object to polygon" << std::endl;
-      continue;
-    }
+    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj);
     LineString2d ego_path_line;
     ego_path_line.reserve(ego_path_point_array.size());
     for (const auto & ego_path_point : ego_path_point_array) {
@@ -2249,14 +2222,8 @@ boost::optional<std::pair<Pose, Polygon2d>> getObjectExpectedPoseAndConvertToPol
     return {};
   }
 
-  Polygon2d obj_polygon;
-  const bool has_converted =
-    util::calcObjectPolygon(object.shape, *interpolated_pose, &obj_polygon);
-  if (has_converted) {
-    return std::make_pair(*interpolated_pose, obj_polygon);
-  }
-
-  return {};
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(*interpolated_pose, object.shape);
+  return std::make_pair(*interpolated_pose, obj_polygon);
 }
 
 std::vector<PredictedPath> getPredictedPathFromObj(
@@ -2469,11 +2436,7 @@ bool isSafeInFreeSpaceCollisionCheck(
   const double prepare_phase_ignore_target_speed_thresh, const double front_decel,
   const double rear_decel, CollisionCheckDebug & debug)
 {
-  tier4_autoware_utils::Polygon2d obj_polygon;
-  if (!util::calcObjectPolygon(target_object, &obj_polygon)) {
-    return false;
-  }
-
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(target_object);
   const auto & object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
   const auto object_speed = object_twist.linear.x;
   const auto ignore_check_at_time = [&](const double current_time) {
