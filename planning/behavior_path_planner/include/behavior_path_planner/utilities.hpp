@@ -104,8 +104,6 @@ void getProjectedDistancePointFromPolygons(
 
 std::vector<Pose> convertToPoseArray(const PathWithLaneId & path);
 
-std::vector<Point> convertToGeometryPointArray(const PathWithLaneId & path);
-
 PoseArray convertToGeometryPoseArray(const PathWithLaneId & path);
 
 PredictedPath convertToPredictedPath(

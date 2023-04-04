@@ -137,27 +137,6 @@ double l2Norm(const Vector3 vector)
   return std::sqrt(std::pow(vector.x, 2) + std::pow(vector.y, 2) + std::pow(vector.z, 2));
 }
 
-std::vector<Point> convertToGeometryPointArray(const PathWithLaneId & path)
-{
-  std::vector<Point> converted_path;
-  converted_path.reserve(path.points.size());
-  for (const auto & point_with_id : path.points) {
-    converted_path.push_back(point_with_id.point.pose.position);
-  }
-  return converted_path;
-}
-
-std::vector<Point> convertToGeometryPointArray(const PredictedPath & path)
-{
-  std::vector<Point> converted_path;
-
-  converted_path.reserve(path.path.size());
-  for (const auto & pose : path.path) {
-    converted_path.push_back(pose.position);
-  }
-  return converted_path;
-}
-
 PoseArray convertToGeometryPoseArray(const PathWithLaneId & path)
 {
   PoseArray converted_array;
@@ -225,7 +204,6 @@ double getDistanceBetweenPredictedPaths(
   const double end_time, const double resolution)
 {
   double min_distance = std::numeric_limits<double>::max();
-  const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
   for (double t = start_time; t < end_time; t += resolution) {
     const auto object_pose = perception_utils::calcInterpolatedPose(object_path, t);
     if (!object_pose) {
@@ -252,7 +230,6 @@ double getDistanceBetweenPredictedPathAndObject(
   double min_distance = std::numeric_limits<double>::max();
   rclcpp::Time ros_start_time = clock.now() + rclcpp::Duration::from_seconds(start_time);
   rclcpp::Time ros_end_time = clock.now() + rclcpp::Duration::from_seconds(end_time);
-  const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
   const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
   for (double t = start_time; t < end_time; t += resolution) {
     const auto ego_pose = perception_utils::calcInterpolatedPose(ego_path, t);
@@ -488,13 +465,13 @@ std::vector<double> calcObjectsDistanceToPath(
   const PredictedObjects & objects, const PathWithLaneId & ego_path)
 {
   std::vector<double> distance_array;
-  const auto ego_path_point_array = convertToGeometryPointArray(ego_path);
   for (const auto & obj : objects.objects) {
     const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj);
     LineString2d ego_path_line;
-    ego_path_line.reserve(ego_path_point_array.size());
-    for (const auto & ego_path_point : ego_path_point_array) {
-      boost::geometry::append(ego_path_line, Point2d(ego_path_point.x, ego_path_point.y));
+    ego_path_line.reserve(ego_path.points.size());
+    for (const auto & p : ego_path.points) {
+      boost::geometry::append(
+        ego_path_line, Point2d(p.point.pose.position.x, p.point.pose.position.y));
     }
     const double distance = boost::geometry::distance(obj_polygon, ego_path_line);
     distance_array.push_back(distance);
