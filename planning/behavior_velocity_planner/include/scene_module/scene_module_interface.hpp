@@ -129,15 +129,6 @@ protected:
       points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
       p->ego_nearest_yaw_threshold);
   }
-
-  template <class T>
-  size_t findEgoIndex(const std::vector<T> & points) const
-  {
-    const auto & p = planner_data_;
-    return motion_utils::findFirstNearestIndexWithSoftConstraints(
-      points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
-      p->ego_nearest_yaw_threshold);
-  }
 };
 
 class SceneModuleManagerInterface
@@ -306,16 +297,6 @@ protected:
   {
     const auto & p = planner_data_;
     return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
-      p->ego_nearest_yaw_threshold);
-  }
-
-  template <class T>
-  size_t findEgoIndex(
-    const std::vector<T> & points, const geometry_msgs::msg::Pose & ego_pose) const
-  {
-    const auto & p = planner_data_;
-    return motion_utils::findFirstNearestIndexWithSoftConstraints(
       points, p->current_odometry->pose, p->ego_nearest_dist_threshold,
       p->ego_nearest_yaw_threshold);
   }
