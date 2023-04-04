@@ -298,7 +298,7 @@ bool GeometricParallelParking::planPullOut(
       paths.back().points.end(),
       road_center_line_path.points.begin() + 1,  // to avoid overlapped point
       road_center_line_path.points.end());
-    removeOverlappingPoints(paths.back());
+    paths.back() = removeOverlappingPoints(paths.back());
 
     // if the end point is the goal, set the velocity to 0
     if (!goal_is_behind) {
