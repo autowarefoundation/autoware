@@ -451,31 +451,18 @@ void AEB::addMarker(
   const double color_r, const double color_g, const double color_b, const double color_a,
   const std::string & path_ns, const std::string & poly_ns, MarkerArray & debug_markers)
 {
-  // transform to map
-  geometry_msgs::msg::TransformStamped transform_stamped{};
-  try {
-    transform_stamped = tf_buffer_.lookupTransform(
-      "map", "base_link", current_time, rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR_STREAM(get_logger(), "[AEB] Failed to look up transform from base_link to map");
-    return;
-  }
-
   auto path_marker = tier4_autoware_utils::createDefaultMarker(
-    "map", current_time, path_ns, 0L, Marker::LINE_STRIP,
+    "base_link", current_time, path_ns, 0L, Marker::LINE_STRIP,
     tier4_autoware_utils::createMarkerScale(0.2, 0.2, 0.2),
     tier4_autoware_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   path_marker.points.resize(path.size());
   for (size_t i = 0; i < path.size(); ++i) {
-    const auto & pose = path.at(i);
-    geometry_msgs::msg::Pose map_pose;
-    tf2::doTransform(pose, map_pose, transform_stamped);
-    path_marker.points.at(i) = map_pose.position;
+    path_marker.points.at(i) = path.at(i).position;
   }
   debug_markers.markers.push_back(path_marker);
 
   auto polygon_marker = tier4_autoware_utils::createDefaultMarker(
-    "map", current_time, poly_ns, 0, Marker::LINE_LIST,
+    "base_link", current_time, poly_ns, 0, Marker::LINE_LIST,
     tier4_autoware_utils::createMarkerScale(0.03, 0.0, 0.0),
     tier4_autoware_utils::createMarkerColor(color_r, color_g, color_b, color_a));
   for (const auto & poly : polygons) {
@@ -484,13 +471,8 @@ void AEB::addMarker(
       const auto & boost_np = poly.outer().at((dp_idx + 1) % poly.outer().size());
       const auto curr_point = tier4_autoware_utils::createPoint(boost_cp.x(), boost_cp.y(), 0.0);
       const auto next_point = tier4_autoware_utils::createPoint(boost_np.x(), boost_np.y(), 0.0);
-
-      geometry_msgs::msg::Point map_curr_point;
-      geometry_msgs::msg::Point map_next_point;
-      tf2::doTransform(curr_point, map_curr_point, transform_stamped);
-      tf2::doTransform(next_point, map_next_point, transform_stamped);
-      polygon_marker.points.push_back(map_curr_point);
-      polygon_marker.points.push_back(map_next_point);
+      polygon_marker.points.push_back(curr_point);
+      polygon_marker.points.push_back(next_point);
     }
   }
   debug_markers.markers.push_back(polygon_marker);
