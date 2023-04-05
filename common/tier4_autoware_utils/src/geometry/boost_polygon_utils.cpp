@@ -198,6 +198,29 @@ tier4_autoware_utils::Polygon2d toPolygon2d(
     object.kinematics.initial_pose_with_covariance.pose, object.shape);
 }
 
+Polygon2d toFootprint(
+  const geometry_msgs::msg::Pose & base_link_pose, const double base_to_front,
+  const double base_to_rear, const double width)
+{
+  Polygon2d polygon;
+  const auto point0 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, base_to_front, width / 2.0, 0.0).position;
+  const auto point1 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, base_to_front, -width / 2.0, 0.0).position;
+  const auto point2 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, -base_to_rear, -width / 2.0, 0.0).position;
+  const auto point3 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, -base_to_rear, width / 2.0, 0.0).position;
+
+  appendPointToPolygon(polygon, point0);
+  appendPointToPolygon(polygon, point1);
+  appendPointToPolygon(polygon, point2);
+  appendPointToPolygon(polygon, point3);
+  appendPointToPolygon(polygon, point0);
+
+  return isClockwise(polygon) ? polygon : inverseClockwise(polygon);
+}
+
 double getArea(const autoware_auto_perception_msgs::msg::Shape & shape)
 {
   if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
