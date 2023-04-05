@@ -27,6 +27,8 @@
   <arg name="container_name" default="pointcloud_container"/>
   <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
   <arg name="score_threshold" default="0.35"/>
+  <arg name="remove_unknown" default="true"/>
+  <arg name="trust_distance" default="30.0"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
@@ -106,7 +108,8 @@
           <arg name="input/image6" value="$(var image_raw6)"/>
           <arg name="input/image7" value="$(var image_raw7)"/>
           <arg name="output/clusters" value="clusters"/>
-          <arg name="trust_distance" value="30.0"/>
+          <arg name="remove_unknown" value="$(var remove_unknown)"/>
+          <arg name="trust_distance" value="$(var trust_distance)"/>
         </include>
       </group>
 
