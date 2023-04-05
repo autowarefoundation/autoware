@@ -122,31 +122,9 @@ using geometry_msgs::msg::PoseWithCovarianceStamped;
 using tf2::fromMsg;
 using tier4_autoware_utils::Point2d;
 
-std::vector<Pose> convertToPoseArray(const PathWithLaneId & path)
-{
-  std::vector<Pose> pose_array;
-  pose_array.reserve(path.points.size());
-  for (const auto & pt : path.points) {
-    pose_array.push_back(pt.point.pose);
-  }
-  return pose_array;
-}
-
 double l2Norm(const Vector3 vector)
 {
   return std::sqrt(std::pow(vector.x, 2) + std::pow(vector.y, 2) + std::pow(vector.z, 2));
-}
-
-PoseArray convertToGeometryPoseArray(const PathWithLaneId & path)
-{
-  PoseArray converted_array;
-  converted_array.header = path.header;
-
-  converted_array.poses.reserve(path.points.size());
-  for (const auto & point_with_id : path.points) {
-    converted_array.poses.push_back(point_with_id.point.pose);
-  }
-  return converted_array;
 }
 
 PredictedPath convertToPredictedPath(
@@ -1385,19 +1363,6 @@ std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets)
     ids.push_back(llt.id());
   }
   return ids;
-}
-
-Path convertToPathFromPathWithLaneId(const PathWithLaneId & path_with_lane_id)
-{
-  Path path;
-  path.header = path_with_lane_id.header;
-  path.left_bound = path_with_lane_id.left_bound;
-  path.right_bound = path_with_lane_id.right_bound;
-  path.points.reserve(path_with_lane_id.points.size());
-  for (const auto & pt_with_lane_id : path_with_lane_id.points) {
-    path.points.push_back(pt_with_lane_id.point);
-  }
-  return path;
 }
 
 lanelet::Polygon3d getVehiclePolygon(

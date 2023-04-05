@@ -102,10 +102,6 @@ void getProjectedDistancePointFromPolygons(
   Pose & point_on_object);
 // data conversions
 
-std::vector<Pose> convertToPoseArray(const PathWithLaneId & path);
-
-PoseArray convertToGeometryPoseArray(const PathWithLaneId & path);
-
 PredictedPath convertToPredictedPath(
   const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & pose,
   const double nearest_seg_idx, const double duration, const double resolution,
