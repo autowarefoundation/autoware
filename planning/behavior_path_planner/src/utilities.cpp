@@ -129,51 +129,42 @@ double l2Norm(const Vector3 vector)
 
 PredictedPath convertToPredictedPath(
   const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & vehicle_pose,
-  const double nearest_seg_idx, const double duration, const double resolution,
-  const double acceleration, const double min_speed)
+  const size_t nearest_seg_idx, const double duration, const double resolution,
+  const double prepare_time, const double acceleration)
 {
   PredictedPath predicted_path{};
   predicted_path.time_step = rclcpp::Duration::from_seconds(resolution);
   predicted_path.path.reserve(std::min(path.points.size(), static_cast<size_t>(100)));
+
   if (path.points.empty()) {
     return predicted_path;
   }
 
   FrenetPoint vehicle_pose_frenet =
     convertToFrenetPoint(path.points, vehicle_pose.position, nearest_seg_idx);
-  auto clock{rclcpp::Clock{RCL_ROS_TIME}};
-  rclcpp::Time start_time = clock.now();
-  double vehicle_speed = std::abs(vehicle_twist.linear.x);
-  if (vehicle_speed < min_speed) {
-    vehicle_speed = min_speed;
-    RCLCPP_DEBUG_STREAM_THROTTLE(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"), clock, 1000,
-      "cannot convert PathWithLaneId with zero velocity, using minimum value " << min_speed
-                                                                               << " [m/s] instead");
-  }
-
-  double length = 0;
-  double prev_vehicle_speed = vehicle_speed;
+  const double initial_velocity = std::abs(vehicle_twist.linear.x);
+  const double lane_change_velocity = std::max(initial_velocity + acceleration * prepare_time, 0.0);
 
   // first point
   predicted_path.path.push_back(
     motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length));
 
-  for (double t = resolution; t < duration; t += resolution) {
-    double accelerated_velocity = prev_vehicle_speed + acceleration * t;
-    double travel_distance = 0;
-    if (accelerated_velocity < min_speed) {
-      travel_distance = min_speed * resolution;
-    } else {
-      travel_distance =
-        prev_vehicle_speed * resolution + 0.5 * acceleration * resolution * resolution;
-    }
-
-    length += travel_distance;
+  // prepare segment
+  for (double t = resolution; t < prepare_time; t += resolution) {
+    const double length = initial_velocity * t + 0.5 * acceleration * t * t;
     predicted_path.path.push_back(
       motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
-    prev_vehicle_speed = accelerated_velocity;
   }
+
+  // lane changing segment
+  const double offset =
+    initial_velocity * prepare_time + 0.5 * acceleration * prepare_time * prepare_time;
+  for (double t = prepare_time; t < duration; t += resolution) {
+    const double length = lane_change_velocity * (t - prepare_time) + offset;
+    predicted_path.path.push_back(
+      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
+  }
+
   return predicted_path;
 }
 

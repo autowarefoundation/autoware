@@ -85,9 +85,8 @@ std::pair<bool, bool> getLaneChangePaths(
 bool isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
   const LaneChangeTargetObjectIndices & dynamic_object_indices, const Pose & current_pose,
-  const size_t current_seg_idx, const Twist & current_twist,
-  const BehaviorPathPlannerParameters & common_parameters,
-  const behavior_path_planner::LaneChangeParameters & lane_change_parameters,
+  const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameter,
+  const behavior_path_planner::LaneChangeParameters & lane_change_parameter,
   const double front_decel, const double rear_decel, Pose & ego_pose_before_collision,
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data,
   const double acceleration = 0.0);
