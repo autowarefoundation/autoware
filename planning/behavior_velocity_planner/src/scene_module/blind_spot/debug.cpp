@@ -29,6 +29,42 @@ using tier4_autoware_utils::createMarkerScale;
 namespace
 {
 
+visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
+  const std::vector<lanelet::CompoundPolygon3d> & polygons, const std::string & ns,
+  const int64_t lane_id, const double r, const double g, const double b)
+{
+  visualization_msgs::msg::MarkerArray msg;
+
+  int32_t i = 0;
+  int32_t uid = planning_utils::bitShift(lane_id);
+  for (const auto & polygon : polygons) {
+    visualization_msgs::msg::Marker marker{};
+    marker.header.frame_id = "map";
+
+    marker.ns = ns;
+    marker.id = uid + i++;
+    marker.lifetime = rclcpp::Duration::from_seconds(0.3);
+    marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.orientation = createMarkerOrientation(0, 0, 0, 1.0);
+    marker.scale = createMarkerScale(0.1, 0.0, 0.0);
+    marker.color = createMarkerColor(r, g, b, 0.999);
+    for (const auto & p : polygon) {
+      geometry_msgs::msg::Point point;
+      point.x = p.x();
+      point.y = p.y();
+      point.z = p.z();
+      marker.points.push_back(point);
+    }
+    if (!marker.points.empty()) {
+      marker.points.push_back(marker.points.front());
+    }
+    msg.markers.push_back(marker);
+  }
+
+  return msg;
+}
+
 visualization_msgs::msg::MarkerArray createPoseMarkerArray(
   const geometry_msgs::msg::Pose & pose, const StateMachine::State & state, const std::string & ns,
   const int64_t id, const double r, const double g, const double b)
@@ -103,15 +139,15 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
     &debug_marker_array, now);
 
   appendMarkerArray(
-    debug::createPolygonMarkerArray(
-      debug_data_.conflict_area_for_blind_spot, "conflict_area_for_blind_spot", module_id_, now,
-      0.3, 0.0, 0.0, 0.0, 0.5, 0.5),
+    createLaneletPolygonsMarkerArray(
+      debug_data_.conflict_areas_for_blind_spot, "conflict_area_for_blind_spot", module_id_, 0.0,
+      0.5, 0.5),
     &debug_marker_array, now);
 
   appendMarkerArray(
-    debug::createPolygonMarkerArray(
-      debug_data_.detection_area_for_blind_spot, "detection_area_for_blind_spot", module_id_, now,
-      0.3, 0.0, 0.0, 0.0, 0.5, 0.5),
+    createLaneletPolygonsMarkerArray(
+      debug_data_.detection_areas_for_blind_spot, "detection_area_for_blind_spot", module_id_, 0.5,
+      0.0, 0.0),
     &debug_marker_array, now);
 
   appendMarkerArray(

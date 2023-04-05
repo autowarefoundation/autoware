@@ -2,9 +2,9 @@
 
 ### Role
 
-Blind spot check while turning right/left by a dynamic object information and planning a velocity of the start/stop.
+Blind spot module checks possible collisions with bicycles and pedestrians running on its left/right side while turing left/right before junctions.
 
-![brief](./docs/blind_spot/blind_spot.svg)
+![brief](./docs/blind_spot/blind-spot.drawio.svg)
 
 ### Activation Timing
 
@@ -33,12 +33,13 @@ Once a "stop" is judged, it will not transit to the "go" state until the "go" ju
 
 ### Module Parameters
 
-| Parameter                       | Type   | Description                                                                 |
-| ------------------------------- | ------ | --------------------------------------------------------------------------- |
-| `stop_line_margin`              | double | [m] a margin that the vehicle tries to stop before stop_line                |
-| `backward_length`               | double | [m] distance from closest path point to the edge of beginning point.        |
-| `ignore_width_from_center_line` | double | [m] ignore threshold that vehicle behind is collide with ego vehicle or not |
-| `max_future_movement_time`      | double | [s] maximum time for considering future movement of object                  |
+| Parameter                       | Type   | Description                                                                                    |
+| ------------------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| `stop_line_margin`              | double | [m] a margin that the vehicle tries to stop before stop_line                                   |
+| `backward_length`               | double | [m] distance from closest path point to the edge of beginning point.                           |
+| `ignore_width_from_center_line` | double | [m] ignore threshold that vehicle behind is collide with ego vehicle or not                    |
+| `max_future_movement_time`      | double | [s] maximum time for considering future movement of object                                     |
+| `adjacent_extend_width`         | double | [m] if adjacent lane e.g. bicycle only lane exists, blind_spot area is expanded by this length |
 
 ### Flowchart
 
