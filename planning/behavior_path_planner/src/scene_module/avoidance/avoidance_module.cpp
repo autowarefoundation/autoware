@@ -635,9 +635,7 @@ void AvoidanceModule::fillObjectEnvelopePolygon(
     return;
   }
 
-  Polygon2d object_polygon{};
-  util::calcObjectPolygon(object_data.object, &object_polygon);
-
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object_data.object);
   if (!within(object_polygon, same_id_obj->envelope_poly)) {
     object_data.envelope_poly =
       createEnvelopePolygon(object_data, closest_pose, parameters_->object_envelope_buffer);

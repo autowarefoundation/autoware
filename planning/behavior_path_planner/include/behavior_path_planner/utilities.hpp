@@ -146,14 +146,6 @@ double getArcLengthToTargetLanelet(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelet & target_lane,
   const Pose & pose);
 
-bool calcObjectPolygon(const PredictedObject & object, Polygon2d * object_polygon);
-
-bool calcObjectPolygon(
-  const Shape & object_shape, const Pose & object_pose, Polygon2d * object_polygon);
-
-bool calcObjectPolygon(
-  const Shape & object_shape, const Pose & object_pose, Polygon2d * object_polygon);
-
 double getDistanceBetweenPredictedPaths(
   const PredictedPath & path1, const PredictedPath & path2, const double start_time,
   const double end_time, const double resolution);
@@ -367,11 +359,6 @@ lanelet::ConstLanelets calcLaneAroundPose(
 Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   const Pose & current_pose, const double & base_to_front, const double & base_to_rear,
   const double & base_to_width);
-
-Polygon2d convertCylindricalObjectToGeometryPolygon(
-  const Pose & current_pose, const Shape & obj_shape);
-
-Polygon2d convertPolygonObjectToGeometryPolygon(const Pose & current_pose, const Shape & obj_shape);
 
 std::string getUuidStr(const PredictedObject & obj);
 

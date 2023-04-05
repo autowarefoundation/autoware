@@ -458,9 +458,7 @@ void fillLongitudinalAndLengthByClosestFootprint(
   const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos,
   ObjectData & obj)
 {
-  tier4_autoware_utils::Polygon2d object_poly{};
-  util::calcObjectPolygon(object, &object_poly);
-
+  const auto object_poly = tier4_autoware_utils::toPolygon2d(object);
   const double distance = motion_utils::calcSignedArcLength(
     path.points, ego_pos, object.kinematics.initial_pose_with_covariance.pose.position);
   double min_distance = distance;
@@ -499,9 +497,7 @@ double calcOverhangDistance(
 {
   double largest_overhang = isOnRight(object_data) ? -100.0 : 100.0;  // large number
 
-  tier4_autoware_utils::Polygon2d object_poly{};
-  util::calcObjectPolygon(object_data.object, &object_poly);
-
+  const auto object_poly = tier4_autoware_utils::toPolygon2d(object_data.object);
   for (const auto & p : object_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
     const auto lateral = tier4_autoware_utils::calcLateralDeviation(base_pose, point);
@@ -600,8 +596,7 @@ Polygon2d createEnvelopePolygon(
   using tier4_autoware_utils::Polygon2d;
   using Box = bg::model::box<Point2d>;
 
-  Polygon2d object_polygon{};
-  util::calcObjectPolygon(object_data.object, &object_polygon);
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object_data.object);
 
   const auto toPolygon2d = [](const geometry_msgs::msg::Polygon & polygon) {
     Polygon2d ret{};

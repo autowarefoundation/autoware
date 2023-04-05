@@ -385,51 +385,6 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByLanelets(
   return std::make_pair(target_objects, other_objects);
 }
 
-bool calcObjectPolygon(const PredictedObject & object, Polygon2d * object_polygon)
-{
-  if (object.shape.type == Shape::BOUNDING_BOX) {
-    const double & length_m = object.shape.dimensions.x / 2;
-    const double & width_m = object.shape.dimensions.y / 2;
-    *object_polygon = convertBoundingBoxObjectToGeometryPolygon(
-      object.kinematics.initial_pose_with_covariance.pose, length_m, length_m, width_m);
-
-  } else if (object.shape.type == Shape::CYLINDER) {
-    *object_polygon = convertCylindricalObjectToGeometryPolygon(
-      object.kinematics.initial_pose_with_covariance.pose, object.shape);
-  } else if (object.shape.type == Shape::POLYGON) {
-    *object_polygon = convertPolygonObjectToGeometryPolygon(
-      object.kinematics.initial_pose_with_covariance.pose, object.shape);
-  } else {
-    RCLCPP_WARN(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"), "Object shape unknown!");
-    return false;
-  }
-
-  return true;
-}
-
-bool calcObjectPolygon(
-  const Shape & object_shape, const Pose & object_pose, Polygon2d * object_polygon)
-{
-  if (object_shape.type == Shape::BOUNDING_BOX) {
-    const double & length_m = object_shape.dimensions.x / 2;
-    const double & width_m = object_shape.dimensions.y / 2;
-    *object_polygon =
-      convertBoundingBoxObjectToGeometryPolygon(object_pose, length_m, length_m, width_m);
-
-  } else if (object_shape.type == Shape::CYLINDER) {
-    *object_polygon = convertCylindricalObjectToGeometryPolygon(object_pose, object_shape);
-  } else if (object_shape.type == Shape::POLYGON) {
-    *object_polygon = convertPolygonObjectToGeometryPolygon(object_pose, object_shape);
-  } else {
-    RCLCPP_WARN(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"), "Object shape unknown!");
-    return false;
-  }
-
-  return true;
-}
-
 std::vector<double> calcObjectsDistanceToPath(
   const PredictedObjects & objects, const PathWithLaneId & ego_path)
 {
@@ -2000,44 +1955,6 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   object_polygon.outer().emplace_back(p3_obj.x(), p3_obj.y());
   object_polygon.outer().emplace_back(p4_obj.x(), p4_obj.y());
 
-  object_polygon.outer().push_back(object_polygon.outer().front());
-
-  return object_polygon;
-}
-
-Polygon2d convertCylindricalObjectToGeometryPolygon(
-  const Pose & current_pose, const Shape & obj_shape)
-{
-  Polygon2d object_polygon;
-
-  const double obj_x = current_pose.position.x;
-  const double obj_y = current_pose.position.y;
-
-  constexpr int N = 20;
-  const double r = obj_shape.dimensions.x / 2;
-  object_polygon.outer().reserve(N + 1);
-  for (int i = 0; i < N; ++i) {
-    object_polygon.outer().emplace_back(
-      obj_x + r * std::cos(2.0 * M_PI / N * i), obj_y + r * std::sin(2.0 * M_PI / N * i));
-  }
-
-  object_polygon.outer().push_back(object_polygon.outer().front());
-
-  return object_polygon;
-}
-
-Polygon2d convertPolygonObjectToGeometryPolygon(const Pose & current_pose, const Shape & obj_shape)
-{
-  Polygon2d object_polygon;
-  tf2::Transform tf_map2obj;
-  fromMsg(current_pose, tf_map2obj);
-  const auto obj_points = obj_shape.footprint.points;
-  object_polygon.outer().reserve(obj_points.size() + 1);
-  for (const auto & obj_point : obj_points) {
-    tf2::Vector3 obj(obj_point.x, obj_point.y, obj_point.z);
-    tf2::Vector3 tf_obj = tf_map2obj * obj;
-    object_polygon.outer().emplace_back(tf_obj.x(), tf_obj.y());
-  }
   object_polygon.outer().push_back(object_polygon.outer().front());
 
   return object_polygon;
