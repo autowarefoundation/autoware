@@ -177,7 +177,7 @@ BehaviorModuleOutput LaneChangeModule::plan()
   }
 
   if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentSpeedLow())) {
-    const auto stop_point = util::insertStopPoint(0.1, &path);
+    const auto stop_point = util::insertStopPoint(0.1, path);
   }
 
   if (isAbortState()) {

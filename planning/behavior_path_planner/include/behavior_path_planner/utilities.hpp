@@ -303,7 +303,7 @@ bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal
 std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   const std::shared_ptr<const PlannerData> & planner_data);
 
-PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path);
+PathPointWithLaneId insertStopPoint(const double length, PathWithLaneId & path);
 
 double getSignedDistanceFromShoulderLeftBoundary(
   const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose);

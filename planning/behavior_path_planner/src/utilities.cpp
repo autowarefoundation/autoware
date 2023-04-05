@@ -1383,46 +1383,44 @@ lanelet::Polygon3d getVehiclePolygon(
   return llt_poly;
 }
 
-PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
+PathPointWithLaneId insertStopPoint(const double length, PathWithLaneId & path)
 {
-  if (path->points.empty()) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-      "failed to insert stop point. path points is empty.");
+  const size_t original_size = path.points.size();
+
+  // insert stop point
+  const auto insert_idx = motion_utils::insertStopPoint(length, path.points);
+  if (!insert_idx) {
     return PathPointWithLaneId();
   }
 
-  double accumulated_length = 0;
-  size_t insert_idx = 0;
-  Pose stop_pose;
-  for (size_t i = 1; i < path->points.size(); i++) {
-    const auto prev_pose = path->points.at(i - 1).point.pose;
-    const auto curr_pose = path->points.at(i).point.pose;
-    const double segment_length = tier4_autoware_utils::calcDistance3d(prev_pose, curr_pose);
-    accumulated_length += segment_length;
-    if (accumulated_length > length) {
-      insert_idx = i;
-      const double ratio = 1 - (accumulated_length - length) / segment_length;
-      stop_pose = tier4_autoware_utils::calcInterpolatedPose(prev_pose, curr_pose, ratio);
-      break;
+  // check if a stop point is inserted
+  if (path.points.size() == original_size) {
+    return path.points.at(*insert_idx);
+  }
+
+  if (*insert_idx == 0 || *insert_idx == original_size - 1) {
+    return path.points.at(*insert_idx);
+  }
+
+  // check lane ids of the inserted stop point
+  path.points.at(*insert_idx).lane_ids = {};
+  const auto & prev_lane_ids = path.points.at(*insert_idx - 1).lane_ids;
+  const auto & next_lane_ids = path.points.at(*insert_idx + 1).lane_ids;
+
+  for (const auto target_lane_id : prev_lane_ids) {
+    if (
+      std::find(next_lane_ids.begin(), next_lane_ids.end(), target_lane_id) !=
+      next_lane_ids.end()) {
+      path.points.at(*insert_idx).lane_ids.push_back(target_lane_id);
     }
   }
-  if (accumulated_length <= length) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-      "failed to insert stop point. length is longer than path length");
-    return PathPointWithLaneId();
+
+  // If there is no lane ids, we are going to insert prev lane ids
+  if (path.points.at(*insert_idx).lane_ids.empty()) {
+    path.points.at(*insert_idx).lane_ids = prev_lane_ids;
   }
 
-  PathPointWithLaneId stop_point;
-  stop_point.lane_ids = path->points.at(insert_idx).lane_ids;
-  stop_point.point.pose = stop_pose;
-  path->points.insert(path->points.begin() + static_cast<int>(insert_idx), stop_point);
-  for (size_t i = insert_idx; i < path->points.size(); i++) {
-    path->points.at(i).point.longitudinal_velocity_mps = 0.0;
-    path->points.at(i).point.lateral_velocity_mps = 0.0;
-  }
-  return stop_point;
+  return path.points.at(*insert_idx);
 }
 
 double getSignedDistanceFromShoulderLeftBoundary(
@@ -1834,7 +1832,7 @@ PathWithLaneId setDecelerationVelocity(
     motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) + buffer;
   constexpr double eps{0.01};
   if (std::abs(target_velocity) < eps && stop_point_length > 0.0) {
-    const auto stop_point = util::insertStopPoint(stop_point_length, &reference_path);
+    const auto stop_point = util::insertStopPoint(stop_point_length, reference_path);
   }
 
   return reference_path;
@@ -1859,7 +1857,7 @@ PathWithLaneId setDecelerationVelocityForTurnSignal(
   const auto stop_point_length =
     motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position);
   if (stop_point_length > 0) {
-    const auto stop_point = util::insertStopPoint(stop_point_length, &reference_path);
+    const auto stop_point = util::insertStopPoint(stop_point_length, reference_path);
   }
 
   return reference_path;
