@@ -758,13 +758,11 @@ void LaneChangeModule::generateExtendedDrivableArea(PathWithLaneId & path)
 {
   const auto & common_parameters = planner_data_->parameters;
   const auto & route_handler = planner_data_->route_handler;
-#ifdef USE_OLD_ARCHITECTURE
-  const auto drivable_lanes = lane_change_utils::generateDrivableLanes(
+  auto drivable_lanes = lane_change_utils::generateDrivableLanes(
     *route_handler, status_.current_lanes, status_.lane_change_lanes);
-#else
-  const auto drivable_lanes = lane_change_utils::generateDrivableLanes(
-    getPreviousModuleOutput().drivable_lanes, *route_handler, status_.current_lanes,
-    status_.lane_change_lanes);
+#ifndef USE_OLD_ARCHITECTURE
+  drivable_lanes = lane_change_utils::combineDrivableLanes(
+    getPreviousModuleOutput().drivable_lanes, drivable_lanes);
 #endif
   const auto shorten_lanes = util::cutOverlappedLanes(path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(

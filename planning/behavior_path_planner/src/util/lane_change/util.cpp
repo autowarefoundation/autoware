@@ -911,7 +911,7 @@ std::vector<DrivableLanes> generateDrivableLanes(
       return std::find_if(lanes.begin(), lanes.end(), has_same) != lanes.end();
     };
 
-  const auto checkMiddle = [&](const auto & lane) -> std::optional<DrivableLanes> {
+  const auto check_middle = [&](const auto & lane) -> std::optional<DrivableLanes> {
     for (const auto & drivable_lane : original_drivable_lanes) {
       if (has_same_lane(drivable_lane.middle_lanes, lane)) {
         return drivable_lane;
@@ -920,7 +920,7 @@ std::vector<DrivableLanes> generateDrivableLanes(
     return std::nullopt;
   };
 
-  const auto checkLeft = [&](const auto & lane) -> std::optional<DrivableLanes> {
+  const auto check_left = [&](const auto & lane) -> std::optional<DrivableLanes> {
     for (const auto & drivable_lane : original_drivable_lanes) {
       if (drivable_lane.left_lane.id() == lane.id()) {
         return drivable_lane;
@@ -929,7 +929,7 @@ std::vector<DrivableLanes> generateDrivableLanes(
     return std::nullopt;
   };
 
-  const auto checkRight = [&](const auto & lane) -> std::optional<DrivableLanes> {
+  const auto check_right = [&](const auto & lane) -> std::optional<DrivableLanes> {
     for (const auto & drivable_lane : original_drivable_lanes) {
       if (drivable_lane.right_lane.id() == lane.id()) {
         return drivable_lane;
@@ -943,17 +943,17 @@ std::vector<DrivableLanes> generateDrivableLanes(
   for (size_t i = 0; i < current_lanes.size(); ++i) {
     const auto & current_lane = current_lanes.at(i);
 
-    const auto middle_drivable_lane = checkMiddle(current_lane);
+    const auto middle_drivable_lane = check_middle(current_lane);
     if (middle_drivable_lane) {
       drivable_lanes.at(i) = *middle_drivable_lane;
     }
 
-    const auto left_drivable_lane = checkLeft(current_lane);
+    const auto left_drivable_lane = check_left(current_lane);
     if (left_drivable_lane) {
       drivable_lanes.at(i) = *left_drivable_lane;
     }
 
-    const auto right_drivable_lane = checkRight(current_lane);
+    const auto right_drivable_lane = check_right(current_lane);
     if (right_drivable_lane) {
       drivable_lanes.at(i) = *right_drivable_lane;
     }
@@ -993,17 +993,17 @@ std::vector<DrivableLanes> generateDrivableLanes(
     const auto & lc_lane = lane_change_lanes.at(i);
     DrivableLanes drivable_lane;
 
-    const auto middle_drivable_lane = checkMiddle(lc_lane);
+    const auto middle_drivable_lane = check_middle(lc_lane);
     if (middle_drivable_lane) {
       drivable_lane = *middle_drivable_lane;
     }
 
-    const auto left_drivable_lane = checkLeft(lc_lane);
+    const auto left_drivable_lane = check_left(lc_lane);
     if (left_drivable_lane) {
       drivable_lane = *left_drivable_lane;
     }
 
-    const auto right_drivable_lane = checkRight(lc_lane);
+    const auto right_drivable_lane = check_right(lc_lane);
     if (right_drivable_lane) {
       drivable_lane = *right_drivable_lane;
     }
@@ -1017,6 +1017,75 @@ std::vector<DrivableLanes> generateDrivableLanes(
   }
 
   return drivable_lanes;
+}
+
+std::vector<DrivableLanes> combineDrivableLanes(
+  const std::vector<DrivableLanes> & original_drivable_lanes_vec,
+  const std::vector<DrivableLanes> & new_drivable_lanes_vec)
+{
+  const auto has_same_lane =
+    [](const lanelet::ConstLanelet & target_lane, const lanelet::ConstLanelets & lanes) {
+      return std::find_if(lanes.begin(), lanes.end(), [&](const auto & ll) {
+               return ll.id() == target_lane.id();
+             }) != lanes.end();
+    };
+
+  const auto convert_to_lanes = [](const DrivableLanes & drivable_lanes) {
+    auto lanes = drivable_lanes.middle_lanes;
+    lanes.push_back(drivable_lanes.right_lane);
+    lanes.push_back(drivable_lanes.left_lane);
+    return lanes;
+  };
+
+  auto updated_drivable_lanes_vec = original_drivable_lanes_vec;
+  for (auto & updated_drivable_lanes : updated_drivable_lanes_vec) {
+    // calculated corresponding index of new_drivable_lanes
+    const auto new_drivable_lanes = [&]() -> std::optional<DrivableLanes> {
+      for (const auto & new_drivable_lanes : new_drivable_lanes_vec) {
+        for (const auto & ll : convert_to_lanes(updated_drivable_lanes)) {
+          if (has_same_lane(ll, convert_to_lanes(new_drivable_lanes))) {
+            return new_drivable_lanes;
+          }
+        }
+      }
+      return std::nullopt;
+    }();
+    if (!new_drivable_lanes) {
+      continue;
+    }
+
+    // update left lane
+    if (has_same_lane(updated_drivable_lanes.left_lane, convert_to_lanes(*new_drivable_lanes))) {
+      updated_drivable_lanes.left_lane = new_drivable_lanes->left_lane;
+    }
+    // update right lane
+    if (has_same_lane(updated_drivable_lanes.right_lane, convert_to_lanes(*new_drivable_lanes))) {
+      updated_drivable_lanes.right_lane = new_drivable_lanes->right_lane;
+    }
+    // update middle lanes
+    for (const auto & middle_lane : convert_to_lanes(*new_drivable_lanes)) {
+      if (!has_same_lane(middle_lane, convert_to_lanes(updated_drivable_lanes))) {
+        updated_drivable_lanes.middle_lanes.push_back(middle_lane);
+      }
+    }
+
+    // validate middle lanes
+    auto & middle_lanes = updated_drivable_lanes.middle_lanes;
+    if (has_same_lane(updated_drivable_lanes.right_lane, middle_lanes)) {
+      middle_lanes.erase(
+        std::remove(
+          std::begin(middle_lanes), std::end(middle_lanes), updated_drivable_lanes.right_lane),
+        std::cend(middle_lanes));
+    }
+    if (has_same_lane(updated_drivable_lanes.left_lane, middle_lanes)) {
+      middle_lanes.erase(
+        std::remove(
+          std::begin(middle_lanes), std::end(middle_lanes), updated_drivable_lanes.left_lane),
+        std::cend(middle_lanes));
+    }
+  }
+
+  return updated_drivable_lanes_vec;
 }
 
 std::optional<LaneChangePath> getAbortPaths(
