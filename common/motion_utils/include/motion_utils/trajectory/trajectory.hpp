@@ -1207,6 +1207,39 @@ inline boost::optional<size_t> insertStopPoint(
 }
 
 /**
+ * @brief Insert stop point from the front point of the path
+ * @param distance_to_stop_point distance to stop point from the front point of the path
+ * @param points_with_twist output points of trajectory, path, ... (with velocity)
+ * @param overlap_threshold distance threshold, used to check if the inserted point is between start
+ * and end of nominated segment to be added in.
+ * @return index of stop point
+ */
+template <class T>
+inline boost::optional<size_t> insertStopPoint(
+  const double distance_to_stop_point, T & points_with_twist, const double overlap_threshold = 1e-3)
+{
+  validateNonEmpty(points_with_twist);
+
+  if (distance_to_stop_point < 0.0) {
+    return boost::none;
+  }
+
+  double accumulated_length = 0;
+  for (size_t i = 0; i < points_with_twist.size() - 1; ++i) {
+    const auto curr_pose = tier4_autoware_utils::getPose(points_with_twist.at(i));
+    const auto next_pose = tier4_autoware_utils::getPose(points_with_twist.at(i + 1));
+    const double length = tier4_autoware_utils::calcDistance2d(curr_pose, next_pose);
+    if (accumulated_length + length + overlap_threshold > distance_to_stop_point) {
+      const double insert_length = distance_to_stop_point - accumulated_length;
+      return insertStopPoint(i, insert_length, points_with_twist, overlap_threshold);
+    }
+    accumulated_length += length;
+  }
+
+  return boost::none;
+}
+
+/**
  * @brief Insert Stop point from the source pose
  * @param src_pose source pose
  * @param distance_to_stop_point  distance to stop point from the src point
