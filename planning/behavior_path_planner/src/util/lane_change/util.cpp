@@ -360,7 +360,7 @@ std::pair<bool, bool> getLaneChangePaths(
 #else
     const auto prepare_segment = getPrepareSegment(
       original_path, original_lanelets, pose, backward_path_length, prepare_distance,
-      std::max(prepare_speed, minimum_lane_change_velocity));
+      std::max(prepare_speed, minimum_lane_changing_velocity));
 #endif
 
     if (prepare_segment.points.empty()) {

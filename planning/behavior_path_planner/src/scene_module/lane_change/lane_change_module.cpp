@@ -86,8 +86,8 @@ bool LaneChangeModule::isExecutionRequested() const
   const auto current_lanes =
     util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
   const auto lane_change_lanes = lane_change_utils::getLaneChangeLanes(
-    planner_data_, current_lanes, lane_change_lane_length_,
-    parameters_->lane_change_prepare_duration, direction_, type_);
+    planner_data_, current_lanes, lane_change_lane_length_, parameters_->prepare_duration,
+    direction_, type_);
 #endif
 
   if (lane_change_lanes.empty()) {
@@ -114,8 +114,8 @@ bool LaneChangeModule::isExecutionReady() const
   const auto current_lanes =
     util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
   const auto lane_change_lanes = lane_change_utils::getLaneChangeLanes(
-    planner_data_, current_lanes, lane_change_lane_length_,
-    parameters_->lane_change_prepare_duration, direction_, type_);
+    planner_data_, current_lanes, lane_change_lane_length_, parameters_->prepare_duration,
+    direction_, type_);
 #endif
 
   if (lane_change_lanes.empty()) {
@@ -254,8 +254,8 @@ CandidateOutput LaneChangeModule::planCandidate() const
   const auto current_lanes =
     util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
   const auto lane_change_lanes = lane_change_utils::getLaneChangeLanes(
-    planner_data_, current_lanes, lane_change_lane_length_,
-    parameters_->lane_change_prepare_duration, direction_, type_);
+    planner_data_, current_lanes, lane_change_lane_length_, parameters_->prepare_duration,
+    direction_, type_);
 #endif
 
   if (lane_change_lanes.empty()) {
@@ -334,8 +334,8 @@ void LaneChangeModule::updateLaneChangeStatus()
   status_.current_lanes =
     util::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
   status_.lane_change_lanes = lane_change_utils::getLaneChangeLanes(
-    planner_data_, status_.current_lanes, lane_change_lane_length_,
-    parameters_->lane_change_prepare_duration, direction_, type_);
+    planner_data_, status_.current_lanes, lane_change_lane_length_, parameters_->prepare_duration,
+    direction_, type_);
 #endif
 
   // Find lane change path
