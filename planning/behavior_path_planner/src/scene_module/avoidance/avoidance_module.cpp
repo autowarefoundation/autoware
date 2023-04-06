@@ -3270,6 +3270,8 @@ void AvoidanceModule::addNewShiftLines(
   }
 
   const auto current_shift_lines = path_shifter.getShiftLines();
+  const auto new_shift_length = new_shift_lines.front().end_shift_length;
+  const auto new_shift_end_idx = new_shift_lines.front().end_idx;
 
   DEBUG_PRINT("min_start_idx = %lu", min_start_idx);
 
@@ -3286,10 +3288,25 @@ void AvoidanceModule::addNewShiftLines(
     if (sl.start_idx >= min_start_idx) {
       DEBUG_PRINT(
         "sl.start_idx = %lu, this sl starts after new proposal. remove this one.", sl.start_idx);
-    } else {
-      DEBUG_PRINT("sl.start_idx = %lu, no conflict. keep this one.", sl.start_idx);
-      future.push_back(sl);
+      continue;
     }
+
+    if (sl.end_idx >= new_shift_end_idx) {
+      if (
+        sl.end_shift_length > -1e-3 && new_shift_length > -1e-3 &&
+        sl.end_shift_length < new_shift_length) {
+        continue;
+      }
+
+      if (
+        sl.end_shift_length < 1e-3 && new_shift_length < 1e-3 &&
+        sl.end_shift_length > new_shift_length) {
+        continue;
+      }
+    }
+
+    DEBUG_PRINT("sl.start_idx = %lu, no conflict. keep this one.", sl.start_idx);
+    future.push_back(sl);
   }
 
   path_shifter.setShiftLines(future);
