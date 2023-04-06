@@ -394,7 +394,7 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
     util::calcLaneChangeBuffer(common_parameters, num_lane_change, 0.0);
 
   reference_path = util::setDecelerationVelocity(
-    *route_handler, reference_path, current_lanes, parameters_->lane_change_prepare_duration,
+    *route_handler, reference_path, current_lanes, parameters_->prepare_duration,
     lane_change_buffer);
 
   const auto drivable_lanes = util::generateDrivableLanes(current_lanes);
@@ -414,8 +414,8 @@ lanelet::ConstLanelets LaneChangeModule::getLaneChangeLanes(
 {
   lanelet::ConstLanelets lane_change_lanes;
   const auto & route_handler = planner_data_->route_handler;
-  const auto minimum_lane_change_length = planner_data_->parameters.minimum_lane_change_length;
-  const auto lane_change_prepare_duration = parameters_->lane_change_prepare_duration;
+  const auto minimum_lane_changing_length = planner_data_->parameters.minimum_lane_changing_length;
+  const auto prepare_duration = parameters_->prepare_duration;
   const auto current_pose = getEgoPose();
   const auto current_twist = getEgoTwist();
 
@@ -427,7 +427,7 @@ lanelet::ConstLanelets LaneChangeModule::getLaneChangeLanes(
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
   const double lane_change_prepare_length =
-    std::max(current_twist.linear.x * lane_change_prepare_duration, minimum_lane_change_length);
+    std::max(current_twist.linear.x * prepare_duration, minimum_lane_changing_length);
   lanelet::ConstLanelets current_check_lanes =
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);
   const auto lane_change_lane = route_handler->getLaneChangeTarget(current_check_lanes);
@@ -835,7 +835,7 @@ void LaneChangeModule::calcTurnSignalInfo()
 
   turn_signal_info.desired_start_point = std::invoke([&]() {
     const auto blinker_start_duration = planner_data_->parameters.turn_signal_search_time;
-    const auto prepare_duration = parameters_->lane_change_prepare_duration;
+    const auto prepare_duration = parameters_->prepare_duration;
     const auto prepare_to_blinker_start_diff = prepare_duration - blinker_start_duration;
     if (prepare_to_blinker_start_diff < 1e-5) {
       return path.path.points.front().point.pose;

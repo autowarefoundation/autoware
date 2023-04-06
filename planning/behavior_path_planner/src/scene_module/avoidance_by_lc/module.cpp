@@ -807,7 +807,7 @@ BehaviorModuleOutput AvoidanceByLCModule::planWaitingApproval()
 
   if (!avoidance_data_.target_objects.empty()) {
     const auto to_front_object_distance = avoidance_data_.target_objects.front().longitudinal;
-    const auto lane_change_buffer = planner_data_->parameters.minimum_lane_change_length;
+    const auto lane_change_buffer = planner_data_->parameters.minimum_lane_changing_length;
 
     boost::optional<Pose> p_insert{};
     insertDecelPoint(
@@ -894,8 +894,8 @@ PathWithLaneId AvoidanceByLCModule::getReferencePath() const
     util::calcLaneChangeBuffer(common_parameters, num_lane_change, 0.0);
 
   reference_path = util::setDecelerationVelocity(
-    *route_handler, reference_path, current_lanes,
-    parameters_->lane_change->lane_change_prepare_duration, lane_change_buffer);
+    *route_handler, reference_path, current_lanes, parameters_->lane_change->prepare_duration,
+    lane_change_buffer);
 
   const auto drivable_lanes = util::generateDrivableLanes(current_lanes);
   const auto shorten_lanes = util::cutOverlappedLanes(reference_path, drivable_lanes);
@@ -914,8 +914,8 @@ lanelet::ConstLanelets AvoidanceByLCModule::getLaneChangeLanes(
 {
   lanelet::ConstLanelets lane_change_lanes;
   const auto & route_handler = planner_data_->route_handler;
-  const auto minimum_lane_change_length = planner_data_->parameters.minimum_lane_change_length;
-  const auto lane_change_prepare_duration = parameters_->lane_change->lane_change_prepare_duration;
+  const auto minimum_lane_changing_length = planner_data_->parameters.minimum_lane_changing_length;
+  const auto prepare_duration = parameters_->lane_change->prepare_duration;
   const auto current_pose = getEgoPose();
   const auto current_twist = getEgoTwist();
 
@@ -934,7 +934,7 @@ lanelet::ConstLanelets AvoidanceByLCModule::getLaneChangeLanes(
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
   const double lane_change_prepare_length =
-    std::max(current_twist.linear.x * lane_change_prepare_duration, minimum_lane_change_length);
+    std::max(current_twist.linear.x * prepare_duration, minimum_lane_changing_length);
   lanelet::ConstLanelets current_check_lanes =
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);
   lanelet::ConstLanelet lane_change_lane;

@@ -446,10 +446,9 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
   p.backward_length_buffer_for_end_of_pull_out =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_out");
-  p.minimum_lane_change_length =
-    declare_parameter<double>("lane_change.minimum_lane_change_length");
-  p.minimum_lane_change_prepare_distance =
-    declare_parameter<double>("lane_change.minimum_lane_change_prepare_distance");
+  p.minimum_lane_changing_length =
+    declare_parameter<double>("lane_change.minimum_lane_changing_length");
+  p.minimum_prepare_length = declare_parameter<double>("lane_change.minimum_prepare_length");
 
   p.minimum_pull_over_length = declare_parameter<double>("minimum_pull_over_length");
   p.refine_goal_search_radius_range = declare_parameter<double>("refine_goal_search_radius_range");
@@ -716,14 +715,13 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   const auto parameter = [](std::string && name) { return "lane_change." + name; };
 
   // trajectory generation
-  p.lane_change_prepare_duration =
-    declare_parameter<double>(parameter("lane_change_prepare_duration"));
+  p.prepare_duration = declare_parameter<double>(parameter("prepare_duration"));
   p.lane_changing_lateral_jerk = declare_parameter<double>(parameter("lane_changing_lateral_jerk"));
   p.lane_changing_lateral_acc = declare_parameter<double>(parameter("lane_changing_lateral_acc"));
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
-  p.minimum_lane_change_velocity =
-    declare_parameter<double>(parameter("minimum_lane_change_velocity"));
+  p.minimum_lane_changing_velocity =
+    declare_parameter<double>(parameter("minimum_lane_changing_velocity"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
   p.maximum_deceleration = declare_parameter<double>(parameter("maximum_deceleration"));
   p.lane_change_sampling_num = declare_parameter<int>(parameter("lane_change_sampling_num"));

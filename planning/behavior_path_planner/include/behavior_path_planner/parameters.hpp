@@ -44,8 +44,8 @@ struct BehaviorPathPlannerParameters
   double backward_length_buffer_for_end_of_lane;
   double backward_length_buffer_for_end_of_pull_over;
   double backward_length_buffer_for_end_of_pull_out;
-  double minimum_lane_change_length;
-  double minimum_lane_change_prepare_distance;
+  double minimum_lane_changing_length;
+  double minimum_prepare_length;
 
   double minimum_pull_over_length;
   double minimum_pull_out_length;

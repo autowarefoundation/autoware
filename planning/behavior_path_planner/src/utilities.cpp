@@ -2334,7 +2334,7 @@ double calcTotalLaneChangeDistance(
   const BehaviorPathPlannerParameters & common_param, const bool include_buffer)
 {
   const double minimum_lane_change_distance =
-    common_param.minimum_lane_change_prepare_distance + common_param.minimum_lane_change_length;
+    common_param.minimum_prepare_length + common_param.minimum_lane_changing_length;
   const double end_of_lane_buffer = common_param.backward_length_buffer_for_end_of_lane;
   return minimum_lane_change_distance + end_of_lane_buffer * static_cast<double>(include_buffer);
 }

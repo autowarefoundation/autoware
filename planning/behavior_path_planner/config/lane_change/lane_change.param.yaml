@@ -1,17 +1,17 @@
 /**:
   ros__parameters:
     lane_change:
-      lane_change_prepare_duration: 4.0         # [s]
+      prepare_duration: 4.0         # [s]
 
-      minimum_lane_change_prepare_distance: 2.0 # [m]
-      minimum_lane_change_length: 16.5          # [m]
+      minimum_prepare_length: 2.0 # [m]
+      minimum_lane_changing_length: 16.5          # [m]
       backward_length_buffer_for_end_of_lane: 3.0 # [m]
       lane_change_finish_judge_buffer: 2.0      # [m]
 
       lane_changing_lateral_jerk: 0.5           # [m/s3]
       lane_changing_lateral_acc: 0.5            # [m/s2]
 
-      minimum_lane_change_velocity: 2.78        # [m/s]
+      minimum_lane_changing_velocity: 2.78        # [m/s]
       prediction_time_resolution: 0.5           # [s]
       maximum_deceleration: 1.0                 # [m/s2]
       lane_change_sampling_num: 10

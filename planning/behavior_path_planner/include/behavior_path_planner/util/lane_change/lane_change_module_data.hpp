@@ -26,11 +26,11 @@ namespace behavior_path_planner
 struct LaneChangeParameters
 {
   // trajectory generation
-  double lane_change_prepare_duration{2.0};
+  double prepare_duration{2.0};
   double lane_changing_lateral_jerk{0.5};
   double lane_changing_lateral_acc{0.5};
   double lane_change_finish_judge_buffer{3.0};
-  double minimum_lane_change_velocity{5.6};
+  double minimum_lane_changing_velocity{5.6};
   double prediction_time_resolution{0.5};
   double maximum_deceleration{1.0};
   int lane_change_sampling_num{10};
