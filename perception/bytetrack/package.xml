@@ -18,7 +18,9 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>cuda_utils</depend>
   <depend>cv_bridge</depend>
+  <depend>eigen</depend>
   <depend>image_transport</depend>
+  <depend>libboost-system-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
