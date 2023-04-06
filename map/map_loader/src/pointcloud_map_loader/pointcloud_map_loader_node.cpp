@@ -96,7 +96,7 @@ std::map<std::string, PCDFileMetadata> PointCloudMapLoaderNode::getPCDMetadata(
     }
 
     pcd_metadata_dict = loadPCDMetadata(pcd_metadata_path);
-    pcd_metadata_dict = replaceWithAbsolutePath(pcd_metadata_dict_, pcd_paths);
+    pcd_metadata_dict = replaceWithAbsolutePath(pcd_metadata_dict, pcd_paths);
     RCLCPP_INFO_STREAM(get_logger(), "Loaded PCD metadata: " << pcd_metadata_path);
   } else {
     // An exception when using a single file PCD map so that the users do not have to provide
