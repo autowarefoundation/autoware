@@ -4923,3 +4923,68 @@ TEST(trajectory, cropPoints)
     EXPECT_EQ(cropped_traj_points.size(), static_cast<size_t>(4));
   }
 }
+
+TEST(Trajectory, removeInvalidOrientationPoints)
+{
+  using motion_utils::insertOrientation;
+  using motion_utils::removeInvalidOrientationPoints;
+
+  const double max_yaw_diff = M_PI_2;
+
+  auto testRemoveInvalidOrientationPoints = [&](
+                                              const Trajectory & traj,
+                                              std::function<void(Trajectory &)> modifyTrajectory,
+                                              size_t expected_size) {
+    auto modified_traj = traj;
+    insertOrientation(modified_traj.points, true);
+    modifyTrajectory(modified_traj);
+    removeInvalidOrientationPoints(modified_traj.points, max_yaw_diff);
+    EXPECT_EQ(modified_traj.points.size(), expected_size);
+    for (size_t i = 0; i < modified_traj.points.size() - 1; ++i) {
+      EXPECT_EQ(traj.points.at(i), modified_traj.points.at(i));
+      const double yaw1 = tf2::getYaw(modified_traj.points.at(i).pose.orientation);
+      const double yaw2 = tf2::getYaw(modified_traj.points.at(i + 1).pose.orientation);
+      const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(yaw1 - yaw2));
+      EXPECT_LE(yaw_diff, max_yaw_diff);
+    }
+  };
+
+  auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+
+  // no invalid points
+  testRemoveInvalidOrientationPoints(
+    traj, [](Trajectory &) {}, traj.points.size());
+
+  // invalid point at the end
+  testRemoveInvalidOrientationPoints(
+    traj,
+    [&](Trajectory & t) {
+      auto invalid_point = t.points.back();
+      invalid_point.pose.orientation =
+        tf2::toMsg(tf2::Quaternion(tf2::Vector3(0, 0, 1), 3 * M_PI_2));
+      t.points.push_back(invalid_point);
+    },
+    traj.points.size());
+
+  // invalid point in the middle
+  testRemoveInvalidOrientationPoints(
+    traj,
+    [&](Trajectory & t) {
+      auto invalid_point = t.points[4];
+      invalid_point.pose.orientation =
+        tf2::toMsg(tf2::Quaternion(tf2::Vector3(0, 0, 1), 3 * M_PI_2));
+      t.points.insert(t.points.begin() + 4, invalid_point);
+    },
+    traj.points.size());
+
+  // invalid point at the beginning
+  testRemoveInvalidOrientationPoints(
+    traj,
+    [&](Trajectory & t) {
+      auto invalid_point = t.points.front();
+      invalid_point.pose.orientation =
+        tf2::toMsg(tf2::Quaternion(tf2::Vector3(0, 0, 1), 3 * M_PI_2));
+      t.points.insert(t.points.begin(), invalid_point);
+    },
+    1);  // expected size is 1 since only the first point remains
+}

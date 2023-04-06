@@ -55,6 +55,7 @@ namespace behavior_path_planner
 
 using motion_utils::findNearestIndex;
 using motion_utils::insertOrientation;
+using motion_utils::removeInvalidOrientationPoints;
 
 void PathShifter::setPath(const PathWithLaneId & path)
 {
@@ -143,6 +144,7 @@ bool PathShifter::generate(
 
   const bool is_driving_forward = true;
   insertOrientation(shifted_path->path.points, is_driving_forward);
+  removeInvalidOrientationPoints(shifted_path->path.points);
 
   // DEBUG
   RCLCPP_DEBUG_STREAM_THROTTLE(

@@ -1352,6 +1352,28 @@ void insertOrientation(T & points, const bool is_driving_forward)
 }
 
 /**
+ * @brief Remove points with invalid orientation differences from a given points container
+ * (trajectory, path, ...)
+ * @param points Points of trajectory, path, or other point container (input / output)
+ * @param max_yaw_diff Maximum acceptable yaw angle difference between two consecutive points in
+ * radians (default: M_PI_2)
+ */
+template <class T>
+void removeInvalidOrientationPoints(T & points, const double max_yaw_diff = M_PI_2)
+{
+  for (size_t i = 1; i < points.size();) {
+    const double yaw1 = tf2::getYaw(tier4_autoware_utils::getPose(points.at(i - 1)).orientation);
+    const double yaw2 = tf2::getYaw(tier4_autoware_utils::getPose(points.at(i)).orientation);
+
+    if (max_yaw_diff < std::abs(tier4_autoware_utils::normalizeRadian(yaw1 - yaw2))) {
+      points.erase(points.begin() + i);
+    } else {
+      ++i;
+    }
+  }
+}
+
+/**
  * @brief calculate length of 2D distance between two points, specified by start point and end
  * point with their segment indices in points container
  * @param points points of trajectory, path, ...
