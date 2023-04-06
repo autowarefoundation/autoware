@@ -45,74 +45,74 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
 
   {
     auto & p = planner_param_.common;
-    p.normal_min_jerk = node.declare_parameter(".normal.min_jerk", -0.3);
-    p.normal_min_acc = node.declare_parameter(".normal.min_acc", -1.0);
-    p.limit_min_jerk = node.declare_parameter(".limit.min_jerk", -1.5);
-    p.limit_min_acc = node.declare_parameter(".limit.min_acc", -2.5);
+    p.normal_min_jerk = node.declare_parameter<double>(".normal.min_jerk");
+    p.normal_min_acc = node.declare_parameter<double>(".normal.min_acc");
+    p.limit_min_jerk = node.declare_parameter<double>(".limit.min_jerk");
+    p.limit_min_acc = node.declare_parameter<double>(".limit.min_acc");
   }
 
   {
     auto & p = planner_param_.run_out;
-    p.detection_method = node.declare_parameter(ns + ".detection_method", "Object");
-    p.use_partition_lanelet = node.declare_parameter(ns + ".use_partition_lanelet", true);
-    p.specify_decel_jerk = node.declare_parameter(ns + ".specify_decel_jerk", false);
-    p.stop_margin = node.declare_parameter(ns + ".stop_margin", 2.5);
-    p.passing_margin = node.declare_parameter(ns + ".passing_margin", 1.0);
-    p.deceleration_jerk = node.declare_parameter(ns + ".deceleration_jerk", -0.3);
-    p.detection_distance = node.declare_parameter(ns + ".detection_distance", 45.0);
-    p.detection_span = node.declare_parameter(ns + ".detection_span", 1.0);
-    p.min_vel_ego_kmph = node.declare_parameter(ns + ".min_vel_ego_kmph", 5.0);
+    p.detection_method = node.declare_parameter<std::string>(ns + ".detection_method");
+    p.use_partition_lanelet = node.declare_parameter<bool>(ns + ".use_partition_lanelet");
+    p.specify_decel_jerk = node.declare_parameter<bool>(ns + ".specify_decel_jerk");
+    p.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");
+    p.passing_margin = node.declare_parameter<double>(ns + ".passing_margin");
+    p.deceleration_jerk = node.declare_parameter<double>(ns + ".deceleration_jerk");
+    p.detection_distance = node.declare_parameter<double>(ns + ".detection_distance");
+    p.detection_span = node.declare_parameter<double>(ns + ".detection_span");
+    p.min_vel_ego_kmph = node.declare_parameter<double>(ns + ".min_vel_ego_kmph");
   }
 
   {
     auto & p = planner_param_.detection_area;
     const std::string ns_da = ns + ".detection_area";
-    p.margin_ahead = node.declare_parameter(ns_da + ".margin_ahead", 1.0);
-    p.margin_behind = node.declare_parameter(ns_da + ".margin_behind", 0.5);
+    p.margin_ahead = node.declare_parameter<double>(ns_da + ".margin_ahead");
+    p.margin_behind = node.declare_parameter<double>(ns_da + ".margin_behind");
   }
 
   {
     auto & p = planner_param_.mandatory_area;
     const std::string ns_da = ns + ".mandatory_area";
-    p.decel_jerk = node.declare_parameter(ns_da + ".decel_jerk", -1.2);
+    p.decel_jerk = node.declare_parameter<double>(ns_da + ".decel_jerk");
   }
 
   {
     auto & p = planner_param_.dynamic_obstacle;
     const std::string ns_do = ns + ".dynamic_obstacle";
-    p.use_mandatory_area = node.declare_parameter(ns_do + ".use_mandatory_area", true);
-    p.min_vel_kmph = node.declare_parameter(ns_do + ".min_vel_kmph", 0.0);
-    p.max_vel_kmph = node.declare_parameter(ns_do + ".max_vel_kmph", 5.0);
-    p.diameter = node.declare_parameter(ns_do + ".diameter", 0.1);
-    p.height = node.declare_parameter(ns_do + ".height", 2.0);
-    p.max_prediction_time = node.declare_parameter(ns_do + ".max_prediction_time", 10.0);
-    p.time_step = node.declare_parameter(ns_do + ".time_step", 0.5);
-    p.points_interval = node.declare_parameter(ns_do + ".points_interval", 0.1);
+    p.use_mandatory_area = node.declare_parameter<bool>(ns_do + ".use_mandatory_area");
+    p.min_vel_kmph = node.declare_parameter<double>(ns_do + ".min_vel_kmph");
+    p.max_vel_kmph = node.declare_parameter<double>(ns_do + ".max_vel_kmph");
+    p.diameter = node.declare_parameter<double>(ns_do + ".diameter");
+    p.height = node.declare_parameter<double>(ns_do + ".height");
+    p.max_prediction_time = node.declare_parameter<double>(ns_do + ".max_prediction_time");
+    p.time_step = node.declare_parameter<double>(ns_do + ".time_step");
+    p.points_interval = node.declare_parameter<double>(ns_do + ".points_interval");
   }
 
   {
     auto & p = planner_param_.approaching;
     const std::string ns_a = ns + ".approaching";
-    p.enable = node.declare_parameter(ns_a + ".enable", false);
-    p.margin = node.declare_parameter(ns_a + ".margin", 0.0);
-    p.limit_vel_kmph = node.declare_parameter(ns_a + ".limit_vel_kmph", 5.0);
+    p.enable = node.declare_parameter<bool>(ns_a + ".enable");
+    p.margin = node.declare_parameter<double>(ns_a + ".margin");
+    p.limit_vel_kmph = node.declare_parameter<double>(ns_a + ".limit_vel_kmph");
   }
 
   {
     auto & p = planner_param_.state_param;
     const std::string ns_s = ns + ".state";
-    p.stop_thresh = node.declare_parameter(ns_s + ".stop_thresh", 0.01);
-    p.stop_time_thresh = node.declare_parameter(ns_s + ".stop_time_thresh", 3.0);
-    p.disable_approach_dist = node.declare_parameter(ns_s + ".disable_approach_dist", 4.0);
-    p.keep_approach_duration = node.declare_parameter(ns_s + ".keep_approach_duration", 1.0);
+    p.stop_thresh = node.declare_parameter<double>(ns_s + ".stop_thresh");
+    p.stop_time_thresh = node.declare_parameter<double>(ns_s + ".stop_time_thresh");
+    p.disable_approach_dist = node.declare_parameter<double>(ns_s + ".disable_approach_dist");
+    p.keep_approach_duration = node.declare_parameter<double>(ns_s + ".keep_approach_duration");
   }
 
   {
     auto & p = planner_param_.slow_down_limit;
     const std::string ns_m = ns + ".slow_down_limit";
-    p.enable = node.declare_parameter(ns_m + ".enable", true);
-    p.max_jerk = node.declare_parameter(ns_m + ".max_jerk", -0.7);
-    p.max_acc = node.declare_parameter(ns_m + ".max_acc", -2.0);
+    p.enable = node.declare_parameter<bool>(ns_m + ".enable");
+    p.max_jerk = node.declare_parameter<double>(ns_m + ".max_jerk");
+    p.max_acc = node.declare_parameter<double>(ns_m + ".max_acc");
   }
 
   debug_ptr_ = std::make_shared<RunOutDebug>(node);

@@ -29,16 +29,16 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
-  planner_param_.use_pass_judge_line = node.declare_parameter(ns + ".use_pass_judge_line", false);
-  planner_param_.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 1.0);
-  planner_param_.backward_length = node.declare_parameter(ns + ".backward_length", 15.0);
+  planner_param_.use_pass_judge_line = node.declare_parameter<bool>(ns + ".use_pass_judge_line");
+  planner_param_.stop_line_margin = node.declare_parameter<double>(ns + ".stop_line_margin");
+  planner_param_.backward_length = node.declare_parameter<double>(ns + ".backward_length");
   planner_param_.ignore_width_from_center_line =
-    node.declare_parameter(ns + ".ignore_width_from_center_line", 1.0);
+    node.declare_parameter<double>(ns + ".ignore_width_from_center_line");
   planner_param_.max_future_movement_time =
-    node.declare_parameter(ns + ".max_future_movement_time", 10.0);
-  planner_param_.threshold_yaw_diff =
-    node.declare_parameter(ns + ".threshold_yaw_diff", M_PI / 6.0);
-  planner_param_.adjacent_extend_width = node.declare_parameter(ns + ".adjacent_extend_width", 0.5);
+    node.declare_parameter<double>(ns + ".max_future_movement_time");
+  planner_param_.threshold_yaw_diff = node.declare_parameter<double>(ns + ".threshold_yaw_diff");
+  planner_param_.adjacent_extend_width =
+    node.declare_parameter<double>(ns + ".adjacent_extend_width");
 }
 
 void BlindSpotModuleManager::launchNewModules(

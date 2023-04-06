@@ -140,7 +140,7 @@ public:
     const auto ns = std::string("~/debug/") + module_name;
     pub_debug_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(ns, 1);
     if (!node.has_parameter("is_publish_debug_path")) {
-      is_publish_debug_path_ = node.declare_parameter("is_publish_debug_path", false);
+      is_publish_debug_path_ = node.declare_parameter<bool>("is_publish_debug_path");
     } else {
       is_publish_debug_path_ = node.get_parameter("is_publish_debug_path").as_bool();
     }

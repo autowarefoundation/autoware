@@ -35,13 +35,14 @@ NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)
   const std::string ns(getModuleName());
   auto & pp = planner_param_;
   const auto & vi = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
-  pp.state_clear_time = node.declare_parameter(ns + ".state_clear_time", 2.0);
-  pp.stuck_vehicle_vel_thr = node.declare_parameter(ns + ".stuck_vehicle_vel_thr", 0.8333);
-  pp.stop_margin = node.declare_parameter(ns + ".stop_margin", 0.0);
-  pp.dead_line_margin = node.declare_parameter(ns + ".dead_line_margin", 1.0);
-  pp.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 1.0);
-  pp.detection_area_length = node.declare_parameter(ns + ".detection_area_length", 200.0);
-  pp.stuck_vehicle_front_margin = node.declare_parameter(ns + ".stuck_vehicle_front_margin", 6.0);
+  pp.state_clear_time = node.declare_parameter<double>(ns + ".state_clear_time");
+  pp.stuck_vehicle_vel_thr = node.declare_parameter<double>(ns + ".stuck_vehicle_vel_thr");
+  pp.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");
+  pp.dead_line_margin = node.declare_parameter<double>(ns + ".dead_line_margin");
+  pp.stop_line_margin = node.declare_parameter<double>(ns + ".stop_line_margin");
+  pp.detection_area_length = node.declare_parameter<double>(ns + ".detection_area_length");
+  pp.stuck_vehicle_front_margin =
+    node.declare_parameter<double>(ns + ".stuck_vehicle_front_margin");
   pp.path_expand_width = vi.vehicle_width_m * 0.5;
 }
 

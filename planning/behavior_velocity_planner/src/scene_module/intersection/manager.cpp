@@ -32,33 +32,36 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   const std::string ns(getModuleName());
   auto & ip = intersection_param_;
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
-  ip.state_transit_margin_time = node.declare_parameter(ns + ".state_transit_margin_time", 2.0);
-  ip.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 1.0);
-  ip.keep_detection_vel_thr = node.declare_parameter(ns + ".keep_detection_vel_thr", 0.833);
-  ip.stuck_vehicle_detect_dist = node.declare_parameter(ns + ".stuck_vehicle_detect_dist", 3.0);
-  ip.stuck_vehicle_ignore_dist = node.declare_parameter(ns + ".stuck_vehicle_ignore_dist", 5.0) +
+  ip.state_transit_margin_time = node.declare_parameter<double>(ns + ".state_transit_margin_time");
+  ip.stop_line_margin = node.declare_parameter<double>(ns + ".stop_line_margin");
+  ip.keep_detection_vel_thr = node.declare_parameter<double>(ns + ".keep_detection_vel_thr");
+  ip.stuck_vehicle_detect_dist = node.declare_parameter<double>(ns + ".stuck_vehicle_detect_dist");
+  ip.stuck_vehicle_ignore_dist = node.declare_parameter<double>(ns + ".stuck_vehicle_ignore_dist") +
                                  vehicle_info.max_longitudinal_offset_m;
-  ip.stuck_vehicle_vel_thr = node.declare_parameter(ns + ".stuck_vehicle_vel_thr", 3.0 / 3.6);
-  ip.intersection_velocity = node.declare_parameter(ns + ".intersection_velocity", 10.0 / 3.6);
-  ip.intersection_max_acc = node.declare_parameter(ns + ".intersection_max_accel", 0.5);
-  ip.detection_area_margin = node.declare_parameter(ns + ".detection_area_margin", 0.5);
-  ip.detection_area_right_margin = node.declare_parameter(ns + ".detection_area_right_margin", 0.5);
-  ip.detection_area_left_margin = node.declare_parameter(ns + ".detection_area_left_margin", 0.5);
-  ip.detection_area_length = node.declare_parameter(ns + ".detection_area_length", 200.0);
+  ip.stuck_vehicle_vel_thr = node.declare_parameter<double>(ns + ".stuck_vehicle_vel_thr");
+  ip.intersection_velocity = node.declare_parameter<double>(ns + ".intersection_velocity");
+  ip.intersection_max_acc = node.declare_parameter<double>(ns + ".intersection_max_accel");
+  ip.detection_area_margin = node.declare_parameter<double>(ns + ".detection_area_margin");
+  ip.detection_area_right_margin =
+    node.declare_parameter<double>(ns + ".detection_area_right_margin");
+  ip.detection_area_left_margin =
+    node.declare_parameter<double>(ns + ".detection_area_left_margin");
+  ip.detection_area_length = node.declare_parameter<double>(ns + ".detection_area_length");
   ip.detection_area_angle_thr =
-    node.declare_parameter(ns + ".detection_area_angle_threshold", M_PI / 4.0);
+    node.declare_parameter<double>(ns + ".detection_area_angle_threshold");
   ip.min_predicted_path_confidence =
-    node.declare_parameter(ns + ".min_predicted_path_confidence", 0.05);
-  ip.external_input_timeout = node.declare_parameter(ns + ".walkway.external_input_timeout", 1.0);
+    node.declare_parameter<double>(ns + ".min_predicted_path_confidence");
+  ip.external_input_timeout = node.declare_parameter<double>(ns + ".external_input_timeout");
   ip.minimum_ego_predicted_velocity =
-    node.declare_parameter(ns + ".minimum_ego_predicted_velocity", 1.388);
-  ip.collision_start_margin_time = node.declare_parameter(ns + ".collision_start_margin_time", 5.0);
-  ip.collision_end_margin_time = node.declare_parameter(ns + ".collision_end_margin_time", 2.0);
-  ip.use_stuck_stopline = node.declare_parameter(ns + ".use_stuck_stopline", true);
-  ip.assumed_front_car_decel = node.declare_parameter(ns + ".assumed_front_car_decel", 1.0);
+    node.declare_parameter<double>(ns + ".minimum_ego_predicted_velocity");
+  ip.collision_start_margin_time =
+    node.declare_parameter<double>(ns + ".collision_start_margin_time");
+  ip.collision_end_margin_time = node.declare_parameter<double>(ns + ".collision_end_margin_time");
+  ip.use_stuck_stopline = node.declare_parameter<bool>(ns + ".use_stuck_stopline");
+  ip.assumed_front_car_decel = node.declare_parameter<double>(ns + ".assumed_front_car_decel");
   ip.enable_front_car_decel_prediction =
-    node.declare_parameter(ns + ".enable_front_car_decel_prediction", false);
-  ip.stop_overshoot_margin = node.declare_parameter(ns + ".stop_overshoot_margin", 0.5);
+    node.declare_parameter<bool>(ns + ".enable_front_car_decel_prediction");
+  ip.stop_overshoot_margin = node.declare_parameter<double>(ns + ".stop_overshoot_margin");
 }
 
 MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node)
@@ -67,7 +70,7 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
   const std::string ns(getModuleName());
   auto & mp = merge_from_private_area_param_;
   mp.stop_duration_sec =
-    node.declare_parameter(ns + ".merge_from_private_area.stop_duration_sec", 1.0);
+    node.declare_parameter<double>(ns + ".merge_from_private_area.stop_duration_sec");
   mp.detection_area_length = node.get_parameter("intersection.detection_area_length").as_double();
   mp.detection_area_right_margin =
     node.get_parameter("intersection.detection_area_right_margin").as_double();

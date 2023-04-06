@@ -32,14 +32,14 @@ VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node 
 
   {
     auto & p = planner_param_;
-    p.max_delay_sec = node.declare_parameter(ns + ".max_delay_sec", 3.0);
-    p.near_line_distance = node.declare_parameter(ns + ".near_line_distance", 1.0);
-    p.dead_line_margin = node.declare_parameter(ns + ".dead_line_margin", 1.0);
-    p.hold_stop_margin_distance = node.declare_parameter(ns + ".hold_stop_margin_distance", 0.0);
+    p.max_delay_sec = node.declare_parameter<double>(ns + ".max_delay_sec");
+    p.near_line_distance = node.declare_parameter<double>(ns + ".near_line_distance");
+    p.dead_line_margin = node.declare_parameter<double>(ns + ".dead_line_margin");
+    p.hold_stop_margin_distance = node.declare_parameter<double>(ns + ".hold_stop_margin_distance");
     p.max_yaw_deviation_rad =
-      tier4_autoware_utils::deg2rad(node.declare_parameter(ns + ".max_yaw_deviation_deg", 90.0));
+      tier4_autoware_utils::deg2rad(node.declare_parameter<double>(ns + ".max_yaw_deviation_deg"));
     p.check_timeout_after_stop_line =
-      node.declare_parameter(ns + ".check_timeout_after_stop_line", true);
+      node.declare_parameter<bool>(ns + ".check_timeout_after_stop_line");
   }
 }
 

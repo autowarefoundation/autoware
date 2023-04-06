@@ -149,9 +149,10 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   debug_viz_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/path", 1);
 
   // Parameters
-  forward_path_length_ = this->declare_parameter("forward_path_length", 1000.0);
-  backward_path_length_ = this->declare_parameter("backward_path_length", 5.0);
-  planner_data_.stop_line_extend_length = this->declare_parameter("stop_line_extend_length", 5.0);
+  forward_path_length_ = this->declare_parameter<double>("forward_path_length");
+  backward_path_length_ = this->declare_parameter<double>("backward_path_length");
+  planner_data_.stop_line_extend_length =
+    this->declare_parameter<double>("stop_line_extend_length");
 
   // nearest search
   planner_data_.ego_nearest_dist_threshold =
@@ -160,43 +161,43 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     this->declare_parameter<double>("ego_nearest_yaw_threshold");
 
   // Initialize PlannerManager
-  if (this->declare_parameter("launch_crosswalk", true)) {
+  if (this->declare_parameter<bool>("launch_crosswalk")) {
     planner_manager_.launchSceneModule(std::make_shared<CrosswalkModuleManager>(*this));
     planner_manager_.launchSceneModule(std::make_shared<WalkwayModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_traffic_light", true)) {
+  if (this->declare_parameter<bool>("launch_traffic_light")) {
     planner_manager_.launchSceneModule(std::make_shared<TrafficLightModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_intersection", true)) {
+  if (this->declare_parameter<bool>("launch_intersection")) {
     // intersection module should be before merge from private to declare intersection parameters
     planner_manager_.launchSceneModule(std::make_shared<IntersectionModuleManager>(*this));
     planner_manager_.launchSceneModule(std::make_shared<MergeFromPrivateModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_blind_spot", true)) {
+  if (this->declare_parameter<bool>("launch_blind_spot")) {
     planner_manager_.launchSceneModule(std::make_shared<BlindSpotModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_detection_area", true)) {
+  if (this->declare_parameter<bool>("launch_detection_area")) {
     planner_manager_.launchSceneModule(std::make_shared<DetectionAreaModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_virtual_traffic_light", true)) {
+  if (this->declare_parameter<bool>("launch_virtual_traffic_light")) {
     planner_manager_.launchSceneModule(std::make_shared<VirtualTrafficLightModuleManager>(*this));
   }
   // this module requires all the stop line.Therefore this modules should be placed at the bottom.
-  if (this->declare_parameter("launch_no_stopping_area", true)) {
+  if (this->declare_parameter<bool>("launch_no_stopping_area")) {
     planner_manager_.launchSceneModule(std::make_shared<NoStoppingAreaModuleManager>(*this));
   }
   // permanent stop line module should be after no stopping area
-  if (this->declare_parameter("launch_stop_line", true)) {
+  if (this->declare_parameter<bool>("launch_stop_line")) {
     planner_manager_.launchSceneModule(std::make_shared<StopLineModuleManager>(*this));
   }
   // to calculate ttc it's better to be after stop line
-  if (this->declare_parameter("launch_occlusion_spot", true)) {
+  if (this->declare_parameter<bool>("launch_occlusion_spot")) {
     planner_manager_.launchSceneModule(std::make_shared<OcclusionSpotModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_run_out", false)) {
+  if (this->declare_parameter<bool>("launch_run_out")) {
     planner_manager_.launchSceneModule(std::make_shared<RunOutModuleManager>(*this));
   }
-  if (this->declare_parameter("launch_speed_bump", true)) {
+  if (this->declare_parameter<bool>("launch_speed_bump")) {
     planner_manager_.launchSceneModule(std::make_shared<SpeedBumpModuleManager>(*this));
   }
 }

@@ -60,11 +60,11 @@ struct PlannerData
   explicit PlannerData(rclcpp::Node & node)
   : vehicle_info_(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo())
   {
-    max_stop_acceleration_threshold = node.declare_parameter(
-      "max_accel", -5.0);  // TODO(someone): read min_acc in velocity_controller.param.yaml?
-    max_stop_jerk_threshold = node.declare_parameter("max_jerk", -5.0);
-    system_delay = node.declare_parameter("system_delay", 0.50);
-    delay_response_time = node.declare_parameter("delay_response_time", 0.50);
+    max_stop_acceleration_threshold = node.declare_parameter<double>(
+      "max_accel");  // TODO(someone): read min_acc in velocity_controller.param.yaml?
+    max_stop_jerk_threshold = node.declare_parameter<double>("max_jerk");
+    system_delay = node.declare_parameter<double>("system_delay");
+    delay_response_time = node.declare_parameter<double>("delay_response_time");
   }
 
   // msgs from callbacks that are used for data-ready
