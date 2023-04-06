@@ -315,7 +315,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
 
   // Start timer
   {
-    const auto planning_hz = declare_parameter("planning_hz", 10.0);
+    const auto planning_hz = declare_parameter<double>("planning_hz");
     const auto period_ns = rclcpp::Rate(planning_hz).period();
     timer_ = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&BehaviorPathPlannerNode::run, this));
@@ -438,52 +438,53 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   const double backward_offset = vehicle_info.rear_overhang_m + min_backward_offset;
 
   // ROS parameters
-  p.backward_path_length = declare_parameter("backward_path_length", 5.0) + backward_offset;
-  p.forward_path_length = declare_parameter("forward_path_length", 100.0);
+  p.backward_path_length = declare_parameter<double>("backward_path_length") + backward_offset;
+  p.forward_path_length = declare_parameter<double>("forward_path_length");
   p.backward_length_buffer_for_end_of_lane =
-    declare_parameter("lane_change.backward_length_buffer_for_end_of_lane", 5.0);
+    declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
   p.backward_length_buffer_for_end_of_pull_over =
-    declare_parameter("backward_length_buffer_for_end_of_pull_over", 5.0);
+    declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
   p.backward_length_buffer_for_end_of_pull_out =
-    declare_parameter("backward_length_buffer_for_end_of_pull_out", 5.0);
-  p.minimum_lane_change_length = declare_parameter("lane_change.minimum_lane_change_length", 8.0);
+    declare_parameter<double>("backward_length_buffer_for_end_of_pull_out");
+  p.minimum_lane_change_length =
+    declare_parameter<double>("lane_change.minimum_lane_change_length");
   p.minimum_lane_change_prepare_distance =
-    declare_parameter("lane_change.minimum_lane_change_prepare_distance", 2.0);
+    declare_parameter<double>("lane_change.minimum_lane_change_prepare_distance");
 
-  p.minimum_pull_over_length = declare_parameter("minimum_pull_over_length", 15.0);
-  p.refine_goal_search_radius_range = declare_parameter("refine_goal_search_radius_range", 7.5);
+  p.minimum_pull_over_length = declare_parameter<double>("minimum_pull_over_length");
+  p.refine_goal_search_radius_range = declare_parameter<double>("refine_goal_search_radius_range");
   p.turn_signal_intersection_search_distance =
-    declare_parameter("turn_signal_intersection_search_distance", 30.0);
+    declare_parameter<double>("turn_signal_intersection_search_distance");
   p.turn_signal_intersection_angle_threshold_deg =
-    declare_parameter("turn_signal_intersection_angle_threshold_deg", 15.0);
+    declare_parameter<double>("turn_signal_intersection_angle_threshold_deg");
   p.turn_signal_minimum_search_distance =
-    declare_parameter("turn_signal_minimum_search_distance", 10.0);
-  p.turn_signal_search_time = declare_parameter("turn_signal_search_time", 3.0);
+    declare_parameter<double>("turn_signal_minimum_search_distance");
+  p.turn_signal_search_time = declare_parameter<double>("turn_signal_search_time");
   p.turn_signal_shift_length_threshold =
-    declare_parameter("turn_signal_shift_length_threshold", 0.3);
-  p.turn_signal_on_swerving = declare_parameter("turn_signal_on_swerving", true);
+    declare_parameter<double>("turn_signal_shift_length_threshold");
+  p.turn_signal_on_swerving = declare_parameter<bool>("turn_signal_on_swerving");
 
   p.enable_akima_spline_first = declare_parameter<bool>("enable_akima_spline_first");
   p.input_path_interval = declare_parameter<double>("input_path_interval");
   p.output_path_interval = declare_parameter<double>("output_path_interval");
-  p.visualize_maximum_drivable_area = declare_parameter("visualize_maximum_drivable_area", true);
+  p.visualize_maximum_drivable_area = declare_parameter<bool>("visualize_maximum_drivable_area");
   p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
   p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
-  p.lateral_distance_max_threshold = declare_parameter("lateral_distance_max_threshold", 2.0);
+  p.lateral_distance_max_threshold = declare_parameter<double>("lateral_distance_max_threshold");
   p.longitudinal_distance_min_threshold =
-    declare_parameter("longitudinal_distance_min_threshold", 3.0);
+    declare_parameter<double>("longitudinal_distance_min_threshold");
 
-  p.expected_front_deceleration = declare_parameter("expected_front_deceleration", -0.5);
-  p.expected_rear_deceleration = declare_parameter("expected_rear_deceleration", -1.0);
+  p.expected_front_deceleration = declare_parameter<double>("expected_front_deceleration");
+  p.expected_rear_deceleration = declare_parameter<double>("expected_rear_deceleration");
 
   p.expected_front_deceleration_for_abort =
-    declare_parameter("expected_front_deceleration_for_abort", -2.0);
+    declare_parameter<double>("expected_front_deceleration_for_abort");
   p.expected_rear_deceleration_for_abort =
-    declare_parameter("expected_rear_deceleration_for_abort", -2.5);
+    declare_parameter<double>("expected_rear_deceleration_for_abort");
 
-  p.rear_vehicle_reaction_time = declare_parameter("rear_vehicle_reaction_time", 2.0);
-  p.rear_vehicle_safety_time_margin = declare_parameter("rear_vehicle_safety_time_margin", 2.0);
+  p.rear_vehicle_reaction_time = declare_parameter<double>("rear_vehicle_reaction_time");
+  p.rear_vehicle_safety_time_margin = declare_parameter<double>("rear_vehicle_safety_time_margin");
 
   if (p.backward_length_buffer_for_end_of_lane < 1.0) {
     RCLCPP_WARN_STREAM(
@@ -494,22 +495,23 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 
 SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
 {
-  const auto dp = [this](const std::string & str, auto def_val) {
-    std::string name = "side_shift." + str;
-    return this->declare_parameter(name, def_val);
-  };
-
   SideShiftParameters p{};
-  p.min_distance_to_start_shifting = dp("min_distance_to_start_shifting", 5.0);
-  p.time_to_start_shifting = dp("time_to_start_shifting", 1.0);
-  p.shifting_lateral_jerk = dp("shifting_lateral_jerk", 0.2);
-  p.min_shifting_distance = dp("min_shifting_distance", 5.0);
-  p.min_shifting_speed = dp("min_shifting_speed", 5.56);
-  p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
-  p.shift_request_time_limit = dp("shift_request_time_limit", 1.0);
-  p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+
+  std::string ns = "side_shift.";
+
+  p.min_distance_to_start_shifting =
+    declare_parameter<double>(ns + "min_distance_to_start_shifting");
+  p.time_to_start_shifting = declare_parameter<double>(ns + "time_to_start_shifting");
+  p.shifting_lateral_jerk = declare_parameter<double>(ns + "shifting_lateral_jerk");
+  p.min_shifting_distance = declare_parameter<double>(ns + "min_shifting_distance");
+  p.min_shifting_speed = declare_parameter<double>(ns + "min_shifting_speed");
+  p.drivable_area_right_bound_offset =
+    declare_parameter<double>(ns + "drivable_area_right_bound_offset");
+  p.shift_request_time_limit = declare_parameter<double>(ns + "shift_request_time_limit");
+  p.drivable_area_left_bound_offset =
+    declare_parameter<double>(ns + "drivable_area_left_bound_offset");
   p.drivable_area_types_to_skip =
-    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
+    declare_parameter<std::vector<std::string>>(ns + "drivable_area_types_to_skip");
 
   return p;
 }
@@ -698,13 +700,13 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
 {
   LaneFollowingParameters p{};
   p.drivable_area_right_bound_offset =
-    declare_parameter("lane_following.drivable_area_right_bound_offset", 0.0);
+    declare_parameter<double>("lane_following.drivable_area_right_bound_offset");
   p.drivable_area_left_bound_offset =
-    declare_parameter("lane_following.drivable_area_left_bound_offset", 0.0);
-  p.drivable_area_types_to_skip = declare_parameter(
-    "lane_following.drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
+    declare_parameter<double>("lane_following.drivable_area_left_bound_offset");
+  p.drivable_area_types_to_skip =
+    declare_parameter<std::vector<std::string>>("lane_following.drivable_area_types_to_skip");
   p.lane_change_prepare_duration =
-    declare_parameter("lane_following.lane_change_prepare_duration", 2.0);
+    declare_parameter<double>("lane_following.lane_change_prepare_duration");
   return p;
 }
 
@@ -949,47 +951,48 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
 
 PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
 {
-  const auto dp = [this](const std::string & str, auto def_val) {
-    std::string name = "pull_out." + str;
-    return this->declare_parameter(name, def_val);
-  };
-
   PullOutParameters p;
 
-  p.th_arrived_distance = dp("th_arrived_distance", 1.0);
-  p.th_stopped_velocity = dp("th_stopped_velocity", 0.01);
-  p.th_stopped_time = dp("th_stopped_time", 1.0);
-  p.collision_check_margin = dp("collision_check_margin", 1.0);
-  p.collision_check_distance_from_end = dp("collision_check_distance_from_end", 3.0);
+  std::string ns = "pull_out.";
+
+  p.th_arrived_distance = declare_parameter<double>(ns + "th_arrived_distance");
+  p.th_stopped_velocity = declare_parameter<double>(ns + "th_stopped_velocity");
+  p.th_stopped_time = declare_parameter<double>(ns + "th_stopped_time");
+  p.collision_check_margin = declare_parameter<double>(ns + "collision_check_margin");
+  p.collision_check_distance_from_end =
+    declare_parameter<double>(ns + "collision_check_distance_from_end");
   // shift pull out
-  p.enable_shift_pull_out = dp("enable_shift_pull_out", true);
-  p.shift_pull_out_velocity = dp("shift_pull_out_velocity", 8.3);
-  p.pull_out_sampling_num = dp("pull_out_sampling_num", 4);
-  p.minimum_shift_pull_out_distance = dp("minimum_shift_pull_out_distance", 20.0);
-  p.maximum_lateral_jerk = dp("maximum_lateral_jerk", 3.0);
-  p.minimum_lateral_jerk = dp("minimum_lateral_jerk", 1.0);
-  p.deceleration_interval = dp("deceleration_interval", 10.0);
+  p.enable_shift_pull_out = declare_parameter<bool>(ns + "enable_shift_pull_out");
+  p.shift_pull_out_velocity = declare_parameter<double>(ns + "shift_pull_out_velocity");
+  p.pull_out_sampling_num = declare_parameter<int>(ns + "pull_out_sampling_num");
+  p.minimum_shift_pull_out_distance =
+    declare_parameter<double>(ns + "minimum_shift_pull_out_distance");
+  p.maximum_lateral_jerk = declare_parameter<double>(ns + "maximum_lateral_jerk");
+  p.minimum_lateral_jerk = declare_parameter<double>(ns + "minimum_lateral_jerk");
+  p.deceleration_interval = declare_parameter<double>(ns + "deceleration_interval");
   // geometric pull out
-  p.enable_geometric_pull_out = dp("enable_geometric_pull_out", true);
-  p.divide_pull_out_path = dp("divide_pull_out_path", false);
-  p.geometric_pull_out_velocity = dp("geometric_pull_out_velocity", 1.0);
-  p.arc_path_interval = dp("arc_path_interval", 1.0);
-  p.lane_departure_margin = dp("lane_departure_margin", 0.2);
-  p.backward_velocity = dp("backward_velocity", -0.3);
-  p.pull_out_max_steer_angle = dp("pull_out_max_steer_angle", 0.26);  // 15deg
+  p.enable_geometric_pull_out = declare_parameter<bool>(ns + "enable_geometric_pull_out");
+  p.divide_pull_out_path = declare_parameter<bool>(ns + "divide_pull_out_path");
+  p.geometric_pull_out_velocity = declare_parameter<double>(ns + "geometric_pull_out_velocity");
+  p.arc_path_interval = declare_parameter<double>(ns + "arc_path_interval");
+  p.lane_departure_margin = declare_parameter<double>(ns + "lane_departure_margin");
+  p.backward_velocity = declare_parameter<double>(ns + "backward_velocity");
+  p.pull_out_max_steer_angle = declare_parameter<double>(ns + "pull_out_max_steer_angle");  // 15deg
   // search start pose backward
-  p.search_priority =
-    dp("search_priority", "efficient_path");  // "efficient_path" or "short_back_distance"
-  p.enable_back = dp("enable_back", true);
-  p.max_back_distance = dp("max_back_distance", 30.0);
-  p.backward_search_resolution = dp("backward_search_resolution", 2.0);
-  p.backward_path_update_duration = dp("backward_path_update_duration", 3.0);
-  p.ignore_distance_from_lane_end = dp("ignore_distance_from_lane_end", 15.0);
+  p.search_priority = declare_parameter<std::string>(
+    ns + "search_priority");  // "efficient_path" or "short_back_distance"
+  p.enable_back = declare_parameter<bool>(ns + "enable_back");
+  p.max_back_distance = declare_parameter<double>(ns + "max_back_distance");
+  p.backward_search_resolution = declare_parameter<double>(ns + "backward_search_resolution");
+  p.backward_path_update_duration = declare_parameter<double>(ns + "backward_path_update_duration");
+  p.ignore_distance_from_lane_end = declare_parameter<double>(ns + "ignore_distance_from_lane_end");
   // drivable area
-  p.drivable_area_right_bound_offset = dp("drivable_area_right_bound_offset", 0.0);
-  p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
+  p.drivable_area_right_bound_offset =
+    declare_parameter<double>(ns + "drivable_area_right_bound_offset");
+  p.drivable_area_left_bound_offset =
+    declare_parameter<double>(ns + "drivable_area_left_bound_offset");
   p.drivable_area_types_to_skip =
-    dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
+    declare_parameter<std::vector<std::string>>(ns + "drivable_area_types_to_skip");
 
   // validation of parameters
   if (p.pull_out_sampling_num < 1) {
@@ -1007,9 +1010,9 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
 BehaviorTreeManagerParam BehaviorPathPlannerNode::getBehaviorTreeManagerParam()
 {
   BehaviorTreeManagerParam p{};
-  p.bt_tree_config_path = declare_parameter("bt_tree_config_path", "default");
-  p.groot_zmq_publisher_port = declare_parameter("groot_zmq_publisher_port", 1666);
-  p.groot_zmq_server_port = declare_parameter("groot_zmq_server_port", 1667);
+  p.bt_tree_config_path = declare_parameter<std::string>("bt_tree_config_path");
+  p.groot_zmq_publisher_port = declare_parameter<int>("groot_zmq_publisher_port");
+  p.groot_zmq_server_port = declare_parameter<int>("groot_zmq_server_port");
   return p;
 }
 #endif
