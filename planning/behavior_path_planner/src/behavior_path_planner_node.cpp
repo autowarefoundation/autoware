@@ -125,6 +125,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     pull_out_param_ptr_ = std::make_shared<PullOutParameters>(getPullOutParam());
     pull_over_param_ptr_ = std::make_shared<PullOverParameters>(getPullOverParam());
     side_shift_param_ptr_ = std::make_shared<SideShiftParameters>(getSideShiftParam());
+    avoidance_by_lc_param_ptr_ = std::make_shared<AvoidanceByLCParameters>(
+      getAvoidanceByLCParam(avoidance_param_ptr_, lane_change_param_ptr_));
   }
 
   m_set_param_res = this->add_on_set_parameters_callback(
@@ -282,6 +284,18 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       path_reference_publishers_.emplace(
         "avoidance", create_publisher<Path>(path_reference_name_space + "avoidance", 1));
     }
+
+    if (p.config_avoidance_by_lc.enable_module) {
+      auto manager = std::make_shared<AvoidanceByLCModuleManager>(
+        this, "avoidance_by_lane_change", p.config_avoidance_by_lc, avoidance_by_lc_param_ptr_);
+      planner_manager_->registerSceneModuleManager(manager);
+      path_candidate_publishers_.emplace(
+        "avoidance_by_lane_change",
+        create_publisher<Path>(path_candidate_name_space + "avoidance_by_lane_change", 1));
+      path_reference_publishers_.emplace(
+        "avoidance_by_lane_change",
+        create_publisher<Path>(path_reference_name_space + "avoidance_by_lane_change", 1));
+    }
   }
 #endif
 
@@ -390,6 +404,15 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     p.config_avoidance.max_module_size = declare_parameter<int>(ns + "max_module_size");
   }
 
+  {
+    const std::string ns = "avoidance_by_lc.";
+    p.config_avoidance_by_lc.enable_module = declare_parameter<bool>(ns + "enable_module");
+    p.config_avoidance_by_lc.enable_simultaneous_execution =
+      declare_parameter<bool>(ns + "enable_simultaneous_execution");
+    p.config_avoidance_by_lc.priority = declare_parameter<int>(ns + "priority");
+    p.config_avoidance_by_lc.max_module_size = declare_parameter<int>(ns + "max_module_size");
+  }
+
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
   p.vehicle_info = vehicle_info;
@@ -487,6 +510,26 @@ SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
   p.drivable_area_left_bound_offset = dp("drivable_area_left_bound_offset", 0.0);
   p.drivable_area_types_to_skip =
     dp("drivable_area_types_to_skip", std::vector<std::string>({"road_border"}));
+
+  return p;
+}
+
+AvoidanceByLCParameters BehaviorPathPlannerNode::getAvoidanceByLCParam(
+  const std::shared_ptr<AvoidanceParameters> & avoidance_param,
+  const std::shared_ptr<LaneChangeParameters> & lane_change_param)
+{
+  AvoidanceByLCParameters p{};
+  p.avoidance = avoidance_param;
+  p.lane_change = lane_change_param;
+
+  {
+    std::string ns = "avoidance_by_lane_change.";
+    p.execute_object_num = declare_parameter<int>(ns + "execute_object_num");
+    p.execute_object_longitudinal_margin =
+      declare_parameter<double>(ns + "execute_object_longitudinal_margin");
+    p.execute_only_when_lane_change_finish_before_object =
+      declare_parameter<bool>(ns + "execute_only_when_lane_change_finish_before_object");
+  }
 
   return p;
 }

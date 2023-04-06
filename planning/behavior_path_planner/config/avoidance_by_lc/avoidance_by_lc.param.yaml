@@ -1,0 +1,6 @@
+/**:
+  ros__parameters:
+    avoidance_by_lane_change:
+      execute_object_num: 1
+      execute_object_longitudinal_margin: 0.0
+      execute_only_when_lane_change_finish_before_object: true

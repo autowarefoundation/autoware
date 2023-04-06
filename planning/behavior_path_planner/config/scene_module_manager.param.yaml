@@ -24,7 +24,7 @@
     lane_change_right:
       enable_module: true
       enable_simultaneous_execution: false
-      priority: 4
+      priority: 5
       max_module_size: 1
 
     pull_out:
@@ -47,6 +47,12 @@
 
     avoidance:
       enable_module: true
+      enable_simultaneous_execution: false
+      priority: 4
+      max_module_size: 1
+
+    avoidance_by_lc:
+      enable_module: false
       enable_simultaneous_execution: false
       priority: 3
       max_module_size: 1
