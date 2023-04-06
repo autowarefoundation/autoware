@@ -777,6 +777,7 @@ bool LaneChangeModule::isApprovedPathSafe(Pose & ego_pose_before_collision) cons
   const auto current_twist = getEgoTwist();
   const auto & dynamic_objects = planner_data_->dynamic_object;
   const auto & common_parameters = planner_data_->parameters;
+  const auto & lane_change_parameters = *parameters_;
   const auto & route_handler = planner_data_->route_handler;
   const auto & path = status_.lane_change_path;
 
@@ -785,12 +786,11 @@ bool LaneChangeModule::isApprovedPathSafe(Pose & ego_pose_before_collision) cons
     *route_handler, path.target_lanelets.front(), current_pose, check_distance_);
 
   std::unordered_map<std::string, CollisionCheckDebug> debug_data;
-  constexpr auto ignore_unknown{true};
   const auto lateral_buffer =
     lane_change_utils::calcLateralBufferForFiltering(common_parameters.vehicle_width);
   const auto dynamic_object_indices = lane_change_utils::filterObjectIndices(
     {path}, *dynamic_objects, check_lanes, current_pose, common_parameters.forward_path_length,
-    lateral_buffer, ignore_unknown);
+    lane_change_parameters, lateral_buffer);
 
   return lane_change_utils::isLaneChangePathSafe(
     path, dynamic_objects, dynamic_object_indices, current_pose, current_twist, common_parameters,

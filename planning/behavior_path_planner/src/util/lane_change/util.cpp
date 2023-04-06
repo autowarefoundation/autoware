@@ -331,7 +331,6 @@ std::pair<bool, bool> getLaneChangePaths(
 
   const auto sorted_lane_ids = getSortedLaneIds(
     route_handler, original_lanelets, target_lanelets, arc_position_from_target.distance);
-  constexpr auto ignore_unknown{false};
   const auto lateral_buffer = calcLateralBufferForFiltering(common_parameter.vehicle_width, 0.5);
 
   LaneChangeTargetObjectIndices dynamic_object_indices;
@@ -465,7 +464,7 @@ std::pair<bool, bool> getLaneChangePaths(
         route_handler, target_lanelets.front(), pose, check_distance);
       dynamic_object_indices = filterObjectIndices(
         {*candidate_path}, *dynamic_objects, backward_lanes, pose,
-        common_parameter.forward_path_length, lateral_buffer, ignore_unknown);
+        common_parameter.forward_path_length, parameter, lateral_buffer);
     }
     candidate_paths->push_back(*candidate_path);
 
@@ -1298,7 +1297,8 @@ lanelet::ConstLanelets getExtendedTargetLanesForCollisionCheck(
 LaneChangeTargetObjectIndices filterObjectIndices(
   const LaneChangePaths & lane_change_paths, const PredictedObjects & objects,
   const lanelet::ConstLanelets & target_backward_lanes, const Pose & current_pose,
-  const double forward_path_length, const double filter_width, const bool ignore_unknown_obj)
+  const double forward_path_length, const LaneChangeParameters & lane_change_parameter,
+  const double filter_width)
 {
   // Reserve maximum amount possible
 
@@ -1334,11 +1334,8 @@ LaneChangeTargetObjectIndices filterObjectIndices(
   for (size_t i = 0; i < objects.objects.size(); ++i) {
     const auto & obj = objects.objects.at(i);
 
-    if (ignore_unknown_obj) {
-      const auto t = getHighestProbLabel(obj.classification);
-      if (t == ObjectClassification::UNKNOWN) {
-        continue;
-      }
+    if (!isTargetObjectType(obj, lane_change_parameter)) {
+      continue;
     }
 
     const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj);
@@ -1376,6 +1373,23 @@ LaneChangeTargetObjectIndices filterObjectIndices(
 
   return {current_lane_obj_indices, target_lane_obj_indices, others_obj_indices};
 }
+
+bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameter)
+{
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  const auto t = util::getHighestProbLabel(object.classification);
+  const auto is_object_type =
+    ((t == ObjectClassification::CAR && parameter.check_car) ||
+     (t == ObjectClassification::TRUCK && parameter.check_truck) ||
+     (t == ObjectClassification::BUS && parameter.check_bus) ||
+     (t == ObjectClassification::TRAILER && parameter.check_trailer) ||
+     (t == ObjectClassification::UNKNOWN && parameter.check_unknown) ||
+     (t == ObjectClassification::BICYCLE && parameter.check_bicycle) ||
+     (t == ObjectClassification::MOTORCYCLE && parameter.check_motorcycle) ||
+     (t == ObjectClassification::PEDESTRIAN && parameter.check_pedestrian));
+  return is_object_type;
+}
+
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer)
 {
   return lateral_buffer + 0.5 * vehicle_width;

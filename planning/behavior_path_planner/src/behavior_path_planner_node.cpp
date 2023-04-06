@@ -718,8 +718,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   // trajectory generation
   p.lane_change_prepare_duration =
     declare_parameter<double>(parameter("lane_change_prepare_duration"));
-  p.lane_changing_safety_check_duration =
-    declare_parameter<double>(parameter("lane_changing_safety_check_duration"));
   p.lane_changing_lateral_jerk = declare_parameter<double>(parameter("lane_changing_lateral_jerk"));
   p.lane_changing_lateral_acc = declare_parameter<double>(parameter("lane_changing_lateral_acc"));
   p.lane_change_finish_judge_buffer =
@@ -738,6 +736,19 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.use_predicted_path_outside_lanelet =
     declare_parameter<bool>(parameter("use_predicted_path_outside_lanelet"));
   p.use_all_predicted_path = declare_parameter<bool>(parameter("use_all_predicted_path"));
+
+  // target object
+  {
+    std::string ns = "lane_change.target_object.";
+    p.check_car = declare_parameter<bool>(ns + "car");
+    p.check_truck = declare_parameter<bool>(ns + "truck");
+    p.check_bus = declare_parameter<bool>(ns + "bus");
+    p.check_trailer = declare_parameter<bool>(ns + "trailer");
+    p.check_unknown = declare_parameter<bool>(ns + "unknown");
+    p.check_bicycle = declare_parameter<bool>(ns + "bicycle");
+    p.check_motorcycle = declare_parameter<bool>(ns + "motorcycle");
+    p.check_pedestrian = declare_parameter<bool>(ns + "pedestrian");
+  }
 
   // abort
   p.enable_cancel_lane_change = declare_parameter<bool>(parameter("enable_cancel_lane_change"));
