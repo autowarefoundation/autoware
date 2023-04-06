@@ -1038,32 +1038,35 @@ std::vector<DrivableLanes> combineDrivableLanes(
   };
 
   auto updated_drivable_lanes_vec = original_drivable_lanes_vec;
+  size_t new_drivable_lanes_idx = 0;
   for (auto & updated_drivable_lanes : updated_drivable_lanes_vec) {
     // calculated corresponding index of new_drivable_lanes
-    const auto new_drivable_lanes = [&]() -> std::optional<DrivableLanes> {
-      for (const auto & new_drivable_lanes : new_drivable_lanes_vec) {
+    const auto opt_new_drivable_lanes_idx = [&]() -> std::optional<size_t> {
+      for (size_t n_idx = 0; n_idx < new_drivable_lanes_vec.size(); ++n_idx) {
         for (const auto & ll : convert_to_lanes(updated_drivable_lanes)) {
-          if (has_same_lane(ll, convert_to_lanes(new_drivable_lanes))) {
-            return new_drivable_lanes;
+          if (has_same_lane(ll, convert_to_lanes(new_drivable_lanes_vec.at(n_idx)))) {
+            return n_idx;
           }
         }
       }
       return std::nullopt;
     }();
-    if (!new_drivable_lanes) {
+    if (!opt_new_drivable_lanes_idx) {
       continue;
     }
+    new_drivable_lanes_idx = *opt_new_drivable_lanes_idx;
+    const auto & new_drivable_lanes = new_drivable_lanes_vec.at(new_drivable_lanes_idx);
 
     // update left lane
-    if (has_same_lane(updated_drivable_lanes.left_lane, convert_to_lanes(*new_drivable_lanes))) {
-      updated_drivable_lanes.left_lane = new_drivable_lanes->left_lane;
+    if (has_same_lane(updated_drivable_lanes.left_lane, convert_to_lanes(new_drivable_lanes))) {
+      updated_drivable_lanes.left_lane = new_drivable_lanes.left_lane;
     }
     // update right lane
-    if (has_same_lane(updated_drivable_lanes.right_lane, convert_to_lanes(*new_drivable_lanes))) {
-      updated_drivable_lanes.right_lane = new_drivable_lanes->right_lane;
+    if (has_same_lane(updated_drivable_lanes.right_lane, convert_to_lanes(new_drivable_lanes))) {
+      updated_drivable_lanes.right_lane = new_drivable_lanes.right_lane;
     }
     // update middle lanes
-    for (const auto & middle_lane : convert_to_lanes(*new_drivable_lanes)) {
+    for (const auto & middle_lane : convert_to_lanes(new_drivable_lanes)) {
       if (!has_same_lane(middle_lane, convert_to_lanes(updated_drivable_lanes))) {
         updated_drivable_lanes.middle_lanes.push_back(middle_lane);
       }
@@ -1084,6 +1087,11 @@ std::vector<DrivableLanes> combineDrivableLanes(
         std::cend(middle_lanes));
     }
   }
+  // NOTE: If original_drivable_lanes_vec is shorter than new_drivable_lanes_vec, push back remained
+  // new_drivable_lanes_vec.
+  updated_drivable_lanes_vec.insert(
+    updated_drivable_lanes_vec.end(), new_drivable_lanes_vec.begin() + new_drivable_lanes_idx + 1,
+    new_drivable_lanes_vec.end());
 
   return updated_drivable_lanes_vec;
 }
