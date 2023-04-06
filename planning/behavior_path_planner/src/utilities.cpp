@@ -145,12 +145,8 @@ PredictedPath convertToPredictedPath(
   const double initial_velocity = std::abs(vehicle_twist.linear.x);
   const double lane_change_velocity = std::max(initial_velocity + acceleration * prepare_time, 0.0);
 
-  // first point
-  predicted_path.path.push_back(
-    motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length));
-
   // prepare segment
-  for (double t = resolution; t < prepare_time; t += resolution) {
+  for (double t = 0.0; t < prepare_time; t += resolution) {
     const double length = initial_velocity * t + 0.5 * acceleration * t * t;
     predicted_path.path.push_back(
       motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
