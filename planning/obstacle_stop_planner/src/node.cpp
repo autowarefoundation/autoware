@@ -1130,12 +1130,16 @@ void ObstacleStopPlannerNode::insertVelocity(
         }
 
         size_t stop_seg_idx = 0;
-        const double lon_offset =
-          calcLongitudinalOffsetToSegment(output, stop_point.index, getPoint(stop_point.point));
-        if (lon_offset < 0) {
-          stop_seg_idx = std::max(static_cast<size_t>(0), stop_point.index - 1);
+        if (stop_point.index < output.size() - 1) {
+          const double lon_offset =
+            calcLongitudinalOffsetToSegment(output, stop_point.index, getPoint(stop_point.point));
+          if (lon_offset < 0) {
+            stop_seg_idx = std::max(static_cast<size_t>(0), stop_point.index - 1);
+          } else {
+            stop_seg_idx = std::min(output.size() - 2, stop_point.index);
+          }
         } else {
-          stop_seg_idx = std::min(output.size() - 2, stop_point.index);
+          stop_seg_idx = output.size() - 2;
         }
 
         return calcSignedArcLength(
