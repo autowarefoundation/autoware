@@ -1921,45 +1921,6 @@ lanelet::ConstLanelets calcLaneAroundPose(
   return current_lanes;
 }
 
-Polygon2d convertBoundingBoxObjectToGeometryPolygon(
-  const Pose & current_pose, const double & base_to_front, const double & base_to_rear,
-  const double & base_to_width)
-{
-  const auto mapped_point = [](const double & length_scalar, const double & width_scalar) {
-    tf2::Vector3 map;
-    map.setX(length_scalar);
-    map.setY(width_scalar);
-    map.setZ(0.0);
-    map.setW(1.0);
-    return map;
-  };
-
-  // set vertices at map coordinate
-  const tf2::Vector3 p1_map = std::invoke(mapped_point, base_to_front, -base_to_width);
-  const tf2::Vector3 p2_map = std::invoke(mapped_point, base_to_front, base_to_width);
-  const tf2::Vector3 p3_map = std::invoke(mapped_point, -base_to_rear, base_to_width);
-  const tf2::Vector3 p4_map = std::invoke(mapped_point, -base_to_rear, -base_to_width);
-
-  // transform vertices from map coordinate to object coordinate
-  tf2::Transform tf_map2obj;
-  tf2::fromMsg(current_pose, tf_map2obj);
-  const tf2::Vector3 p1_obj = tf_map2obj * p1_map;
-  const tf2::Vector3 p2_obj = tf_map2obj * p2_map;
-  const tf2::Vector3 p3_obj = tf_map2obj * p3_map;
-  const tf2::Vector3 p4_obj = tf_map2obj * p4_map;
-
-  Polygon2d object_polygon;
-  object_polygon.outer().reserve(5);
-  object_polygon.outer().emplace_back(p1_obj.x(), p1_obj.y());
-  object_polygon.outer().emplace_back(p2_obj.x(), p2_obj.y());
-  object_polygon.outer().emplace_back(p3_obj.x(), p3_obj.y());
-  object_polygon.outer().emplace_back(p4_obj.x(), p4_obj.y());
-
-  object_polygon.outer().push_back(object_polygon.outer().front());
-
-  return object_polygon;
-}
-
 std::string getUuidStr(const PredictedObject & obj)
 {
   std::stringstream hex_value;
@@ -2051,12 +2012,12 @@ boost::optional<std::pair<Pose, Polygon2d>> getEgoExpectedPoseAndConvertToPolygo
   }
 
   const auto & i = ego_info;
-  const auto & front_m = i.max_longitudinal_offset_m;
-  const auto & width_m = i.vehicle_width_m / 2.0;
-  const auto & back_m = i.rear_overhang_m;
+  const auto & base_to_front = i.max_longitudinal_offset_m;
+  const auto & base_to_rear = i.rear_overhang_m;
+  const auto & width = i.vehicle_width_m;
 
   const auto ego_polygon =
-    util::convertBoundingBoxObjectToGeometryPolygon(*interpolated_pose, front_m, back_m, width_m);
+    tier4_autoware_utils::toFootprint(*interpolated_pose, base_to_front, base_to_rear, width);
 
   return std::make_pair(*interpolated_pose, ego_polygon);
 }

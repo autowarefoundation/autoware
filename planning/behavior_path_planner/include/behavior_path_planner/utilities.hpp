@@ -356,10 +356,6 @@ lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
   const double forward_length, const double backward_length);
 
-Polygon2d convertBoundingBoxObjectToGeometryPolygon(
-  const Pose & current_pose, const double & base_to_front, const double & base_to_rear,
-  const double & base_to_width);
-
 std::string getUuidStr(const PredictedObject & obj);
 
 std::vector<PredictedPath> getPredictedPathFromObj(
