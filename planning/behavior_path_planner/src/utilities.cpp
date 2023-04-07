@@ -2305,7 +2305,7 @@ bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_thre
   return true;
 }
 
-double calcTotalLaneChangeDistance(
+double calcTotalLaneChangeLength(
   const BehaviorPathPlannerParameters & common_param, const bool include_buffer)
 {
   const double minimum_lane_change_distance =
@@ -2318,7 +2318,7 @@ double calcLaneChangeBuffer(
   const BehaviorPathPlannerParameters & common_param, const int num_lane_change,
   const double length_to_intersection)
 {
-  return num_lane_change * calcTotalLaneChangeDistance(common_param) + length_to_intersection;
+  return num_lane_change * calcTotalLaneChangeLength(common_param) + length_to_intersection;
 }
 
 lanelet::ConstLanelets getLaneletsFromPath(
