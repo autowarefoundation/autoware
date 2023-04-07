@@ -1280,6 +1280,34 @@ inline boost::optional<size_t> insertStopPoint(
 }
 
 /**
+ * @brief Insert Stop point that is in the stop segment index
+ * @param stop_seg_idx segment index of the stop pose
+ * @param stop_point stop point
+ * @param points_with_twist output points of trajectory, path, ... (with velocity)
+ * @param overlap_threshold distance threshold, used to check if the inserted point is between start
+ * and end of nominated segment to be added in.
+ * @return index of stop point
+ */
+template <class T>
+boost::optional<size_t> insertStopPoint(
+  const size_t stop_seg_idx, const geometry_msgs::msg::Point & stop_point, T & points_with_twist,
+  const double overlap_threshold = 1e-3)
+{
+  const auto insert_idx =
+    motion_utils::insertTargetPoint(stop_seg_idx, stop_point, points_with_twist, overlap_threshold);
+
+  if (!insert_idx) {
+    return boost::none;
+  }
+
+  for (size_t i = insert_idx.get(); i < points_with_twist.size(); ++i) {
+    tier4_autoware_utils::setLongitudinalVelocity(0.0, points_with_twist.at(i));
+  }
+
+  return insert_idx;
+}
+
+/**
  * @brief Insert deceleration point from the source pose
  * @param src_point source point
  * @param distance_to_decel_point  distance to deceleration point from the src point
