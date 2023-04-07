@@ -72,18 +72,6 @@
 #include <string>
 #include <vector>
 
-template <typename T>
-inline void update_param(
-  const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
-{
-  const auto it = std::find_if(
-    parameters.cbegin(), parameters.cend(),
-    [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
-  if (it != parameters.cend()) {
-    value = static_cast<T>(it->template get_value<T>());
-  }
-}
-
 namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::OperationModeState;
