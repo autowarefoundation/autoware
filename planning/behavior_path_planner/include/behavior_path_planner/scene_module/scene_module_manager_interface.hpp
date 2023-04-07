@@ -48,7 +48,10 @@ public:
     name_(name),
     max_module_num_(config.max_module_size),
     priority_(config.priority),
-    enable_simultaneous_execution_(config.enable_simultaneous_execution)
+    enable_simultaneous_execution_as_approved_module_(
+      config.enable_simultaneous_execution_as_approved_module),
+    enable_simultaneous_execution_as_candidate_module_(
+      config.enable_simultaneous_execution_as_candidate_module)
   {
     for (const auto & rtc_type : rtc_types) {
       const auto snake_case_name = util::convertToSnakeCase(name);
@@ -93,14 +96,18 @@ public:
     registered_modules_.push_back(module_ptr);
   }
 
-  void deleteModules(const SceneModulePtr & module_ptr)
+  void deleteModules(SceneModulePtr & module_ptr)
   {
     module_ptr->onExit();
     module_ptr->publishRTCStatus();
 
     const auto itr = std::find(registered_modules_.begin(), registered_modules_.end(), module_ptr);
 
-    registered_modules_.erase(itr);
+    if (itr != registered_modules_.end()) {
+      registered_modules_.erase(itr);
+    }
+
+    module_ptr.reset();
 
     pub_debug_marker_->publish(MarkerArray{});
   }
@@ -137,7 +144,15 @@ public:
 
   bool canLaunchNewModule() const { return registered_modules_.size() < max_module_num_; }
 
-  bool isSimultaneousExecutable() const { return enable_simultaneous_execution_; }
+  bool isSimultaneousExecutableAsApprovedModule() const
+  {
+    return enable_simultaneous_execution_as_approved_module_;
+  }
+
+  bool isSimultaneousExecutableAsCandidateModule() const
+  {
+    return enable_simultaneous_execution_as_candidate_module_;
+  }
 
   void setData(const std::shared_ptr<PlannerData> & planner_data) { planner_data_ = planner_data; }
 
@@ -190,7 +205,9 @@ private:
 
   size_t priority_;
 
-  bool enable_simultaneous_execution_{false};
+  bool enable_simultaneous_execution_as_approved_module_{false};
+
+  bool enable_simultaneous_execution_as_candidate_module_{false};
 };
 
 }  // namespace behavior_path_planner

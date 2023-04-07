@@ -20,7 +20,8 @@
 struct ModuleConfigParameters
 {
   bool enable_module{false};
-  bool enable_simultaneous_execution{false};
+  bool enable_simultaneous_execution_as_approved_module{false};
+  bool enable_simultaneous_execution_as_candidate_module{false};
   uint8_t priority{0};
   uint8_t max_module_size{0};
 };
