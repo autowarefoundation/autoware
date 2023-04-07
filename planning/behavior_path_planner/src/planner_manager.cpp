@@ -78,6 +78,15 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
     const auto result = run(candidate_module_opt.get(), data, approved_path_data);
     processing_time_.at(name) += stop_watch_.toc(name, true);
 
+    // if the candidate module fails to generate path, use approved modules output and discard the
+    // failed candidate module.
+    if (candidate_module_opt.get()->getCurrentStatus() == ModuleStatus::FAILURE) {
+      deleteExpiredModules(candidate_module_opt.get());
+      candidate_module_opt_ = boost::none;
+      processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+      return approved_path_data;
+    }
+
     /**
      * STEP5: if the candidate module's modification is NOT approved yet, return the result.
      * NOTE: the result is output of the candidate module, but the output path don't contains path
