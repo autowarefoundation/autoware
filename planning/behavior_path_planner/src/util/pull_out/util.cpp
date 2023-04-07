@@ -45,7 +45,9 @@ PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLa
   // skip overlapping point
   path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
 
-  return util::removeOverlappingPoints(path);
+  PathWithLaneId filtered_path = path;
+  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
+  return filtered_path;
 }
 
 PathWithLaneId getBackwardPath(

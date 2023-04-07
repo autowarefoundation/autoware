@@ -38,7 +38,6 @@
 #include <vector>
 
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using behavior_path_planner::util::removeOverlappingPoints;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
@@ -82,7 +81,9 @@ PathWithLaneId GeometricParallelParking::getFullPath() const
     path.points.insert(path.points.end(), partial_path.points.begin(), partial_path.points.end());
   }
 
-  return removeOverlappingPoints(path);
+  PathWithLaneId filtered_path = path;
+  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
+  return filtered_path;
 }
 
 PathWithLaneId GeometricParallelParking::getArcPath() const
@@ -297,7 +298,7 @@ bool GeometricParallelParking::planPullOut(
       paths.back().points.end(),
       road_center_line_path.points.begin() + 1,  // to avoid overlapped point
       road_center_line_path.points.end());
-    paths.back() = removeOverlappingPoints(paths.back());
+    paths.back().points = motion_utils::removeOverlapPoints(paths.back().points);
 
     // if the end point is the goal, set the velocity to 0
     if (!goal_is_behind) {

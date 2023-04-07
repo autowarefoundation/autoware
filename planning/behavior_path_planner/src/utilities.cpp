@@ -399,32 +399,6 @@ std::vector<double> calcObjectsDistanceToPath(
   return distance_array;
 }
 
-PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
-{
-  PathWithLaneId filtered_path;
-  for (const auto & pt : input_path.points) {
-    if (filtered_path.points.empty()) {
-      filtered_path.points.push_back(pt);
-      continue;
-    }
-
-    constexpr double min_dist = 0.001;
-    if (
-      tier4_autoware_utils::calcDistance3d(filtered_path.points.back().point, pt.point) <
-      min_dist) {
-      filtered_path.points.back().lane_ids.push_back(pt.lane_ids.front());
-      filtered_path.points.back().point.longitudinal_velocity_mps = std::min(
-        pt.point.longitudinal_velocity_mps,
-        filtered_path.points.back().point.longitudinal_velocity_mps);
-    } else {
-      filtered_path.points.push_back(pt);
-    }
-  }
-  filtered_path.left_bound = input_path.left_bound;
-  filtered_path.right_bound = input_path.right_bound;
-  return filtered_path;
-}
-
 template <typename T>
 bool exists(std::vector<T> vec, T element)
 {
@@ -598,8 +572,9 @@ PathWithLaneId refinePathForGoal(
   const double search_radius_range, const double search_rad_range, const PathWithLaneId & input,
   const Pose & goal, const int64_t goal_lane_id)
 {
-  PathWithLaneId filtered_path, path_with_goal;
-  filtered_path = removeOverlappingPoints(input);
+  PathWithLaneId filtered_path = input;
+  PathWithLaneId path_with_goal;
+  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
 
   // always set zero velocity at the end of path for safety
   if (!filtered_path.points.empty()) {
