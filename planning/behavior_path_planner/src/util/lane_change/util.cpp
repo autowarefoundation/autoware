@@ -117,12 +117,12 @@ using lanelet::ArcCoordinates;
 using util::getHighestProbLabel;
 
 inline double calcLaneChangeResampleInterval(
-  const double lane_changing_distance, const double lane_changing_speed)
+  const double lane_changing_distance, const double lane_changing_velocity)
 {
   constexpr auto min_resampling_points{30.0};
   constexpr auto resampling_dt{0.2};
   return std::max(
-    lane_changing_distance / min_resampling_points, lane_changing_speed * resampling_dt);
+    lane_changing_distance / min_resampling_points, lane_changing_velocity * resampling_dt);
 }
 
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2)
@@ -165,7 +165,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const std::vector<std::vector<int64_t>> & sorted_lane_ids, const double acceleration,
-  const LaneChangePhaseInfo distance, const LaneChangePhaseInfo speed,
+  const LaneChangePhaseInfo distance, const LaneChangePhaseInfo lane_change_velocity,
   const LaneChangeParameters & lane_change_param)
 {
   PathShifter path_shifter;
@@ -176,9 +176,9 @@ std::optional<LaneChangePath> constructCandidatePath(
   // offset front side
   bool offset_back = false;
 
-  const auto lane_changing_speed = speed.lane_changing;
+  const auto lane_changing_velocity = lane_change_velocity.lane_changing;
 
-  path_shifter.setVelocity(lane_changing_speed);
+  path_shifter.setVelocity(lane_changing_velocity);
   path_shifter.setLateralAccelerationLimit(std::abs(lane_change_param.lane_changing_lateral_acc));
 
   if (!path_shifter.generate(&shifted_path, offset_back)) {
@@ -195,12 +195,12 @@ std::optional<LaneChangePath> constructCandidatePath(
   candidate_path.length.prepare = prepare_distance;
   candidate_path.length.lane_changing = lane_change_distance;
   candidate_path.duration.prepare = std::invoke([&]() {
-    const auto duration = prepare_distance / speed.prepare;
+    const auto duration = prepare_distance / lane_change_velocity.prepare;
     return std::min(duration, lane_change_param.prepare_duration);
   });
   candidate_path.duration.lane_changing = std::invoke([&]() {
     const auto rounding_multiplier = 1.0 / lane_change_param.prediction_time_resolution;
-    return std::ceil((lane_change_distance / lane_changing_speed) * rounding_multiplier) /
+    return std::ceil((lane_change_distance / lane_changing_velocity) * rounding_multiplier) /
            rounding_multiplier;
   });
   candidate_path.shift_line = shift_line;
@@ -237,7 +237,7 @@ std::optional<LaneChangePath> constructCandidatePath(
       continue;
     }
     point.point.longitudinal_velocity_mps =
-      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_speed));
+      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_velocity));
     const auto nearest_idx =
       motion_utils::findNearestIndex(target_segment.points, point.point.pose);
     point.lane_ids = target_segment.points.at(*nearest_idx).lane_ids;
@@ -338,11 +338,11 @@ std::pair<bool, bool> getLaneChangePaths(
   candidate_paths->reserve(lane_change_sampling_num);
   for (double sampled_acc = 0.0; sampled_acc >= maximum_deceleration;
        sampled_acc -= acceleration_resolution) {
-    const auto prepare_speed =
+    const auto prepare_velocity =
       std::max(current_velocity + sampled_acc * prepare_duration, minimum_lane_changing_velocity);
 
     // compute actual acceleration
-    const double acceleration = (prepare_speed - current_velocity) / prepare_duration;
+    const double acceleration = (prepare_velocity - current_velocity) / prepare_duration;
 
     // get path on original lanes
     const double prepare_distance = std::max(
@@ -356,11 +356,11 @@ std::pair<bool, bool> getLaneChangePaths(
 #ifdef USE_OLD_ARCHITECTURE
     const auto prepare_segment = getPrepareSegment(
       route_handler, original_lanelets, arc_position_from_current.length, backward_path_length,
-      prepare_distance, prepare_speed);
+      prepare_distance, prepare_velocity);
 #else
     const auto prepare_segment = getPrepareSegment(
       original_path, original_lanelets, pose, backward_path_length, prepare_distance,
-      std::max(prepare_speed, minimum_lane_changing_velocity));
+      std::max(prepare_velocity, minimum_lane_changing_velocity));
 #endif
 
     if (prepare_segment.points.empty()) {
@@ -385,10 +385,10 @@ std::pair<bool, bool> getLaneChangePaths(
     const auto shift_length =
       lanelet::utils::getLateralDistanceToClosestLanelet(target_lanelets, lane_changing_start_pose);
 
-    // we assume constant speed during lane change
-    const auto lane_changing_speed = prepare_speed;
+    // we assume constant velocity during lane change
+    const auto lane_changing_velocity = prepare_velocity;
     const auto lane_changing_distance =
-      calcLaneChangingDistance(lane_changing_speed, shift_length, common_parameter, parameter);
+      calcLaneChangingDistance(lane_changing_velocity, shift_length, common_parameter, parameter);
 
     if (lane_changing_distance + prepare_distance > dist_to_end_of_current_lanes) {
       // total lane changing distance it too long
@@ -410,7 +410,8 @@ std::pair<bool, bool> getLaneChangePaths(
 
     const auto target_segment = getTargetSegment(
       route_handler, target_lanelets, forward_path_length, lane_changing_start_pose,
-      target_lane_length, lane_changing_distance, lane_changing_speed, required_total_min_distance);
+      target_lane_length, lane_changing_distance, lane_changing_velocity,
+      required_total_min_distance);
 
     if (target_segment.points.empty()) {
       RCLCPP_ERROR_STREAM(
@@ -420,7 +421,7 @@ std::pair<bool, bool> getLaneChangePaths(
     }
 
     const auto resample_interval =
-      calcLaneChangeResampleInterval(lane_changing_distance, lane_changing_speed);
+      calcLaneChangeResampleInterval(lane_changing_distance, lane_changing_velocity);
 
     const auto lc_dist = LaneChangePhaseInfo{prepare_distance, lane_changing_distance};
     const auto target_lane_reference_path = getReferencePathFromTargetLane(
@@ -434,11 +435,11 @@ std::pair<bool, bool> getLaneChangePaths(
     const auto shift_line = getLaneChangingShiftLine(
       prepare_segment, target_segment, target_lanelets, target_lane_reference_path, shift_length);
 
-    const auto lc_speed = LaneChangePhaseInfo{prepare_speed, lane_changing_speed};
+    const auto lc_velocity = LaneChangePhaseInfo{prepare_velocity, lane_changing_velocity};
 
     const auto candidate_path = constructCandidatePath(
       prepare_segment, target_segment, target_lane_reference_path, shift_line, original_lanelets,
-      target_lanelets, sorted_lane_ids, acceleration, lc_dist, lc_speed, parameter);
+      target_lanelets, sorted_lane_ids, acceleration, lc_dist, lc_velocity, parameter);
 
     if (!candidate_path) {
       continue;
@@ -555,7 +556,7 @@ bool isLaneChangePathSafe(
   }
 
   const double time_resolution = lane_change_parameter.prediction_time_resolution;
-  const auto check_at_prepare_phase = lane_change_parameter.enable_collision_check_at_prepare_phase;
+  const auto check_at_prepare_phase = lane_change_parameter.enable_prepare_segment_collision_check;
 
   const double check_start_time = check_at_prepare_phase ? 0.0 : lane_change_path.duration.prepare;
   const double check_end_time = lane_change_path.duration.sum();
@@ -627,8 +628,8 @@ bool isLaneChangePathSafe(
       if (!util::isSafeInLaneletCollisionCheck(
             interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
             obj, obj_path, common_parameter,
-            lane_change_parameter.prepare_phase_ignore_target_speed_thresh, front_decel, rear_decel,
-            ego_pose_before_collision, current_debug_data.second)) {
+            lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
+            rear_decel, ego_pose_before_collision, current_debug_data.second)) {
         appendDebugInfo(current_debug_data, false);
         return false;
       }
@@ -650,7 +651,7 @@ bool isLaneChangePathSafe(
 
     if (!util::isSafeInFreeSpaceCollisionCheck(
           interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare, obj,
-          common_parameter, lane_change_parameter.prepare_phase_ignore_target_speed_thresh,
+          common_parameter, lane_change_parameter.prepare_segment_ignore_object_velocity_thresh,
           front_decel, rear_decel, current_debug_data.second)) {
       appendDebugInfo(current_debug_data, false);
       return false;
@@ -690,7 +691,7 @@ ShiftLine getLaneChangingShiftLine(
 PathWithLaneId getPrepareSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const double arc_length_from_current, const double backward_path_length,
-  const double prepare_distance, const double prepare_speed)
+  const double prepare_distance, const double prepare_velocity)
 {
   if (original_lanelets.empty()) {
     return PathWithLaneId();
@@ -711,7 +712,7 @@ PathWithLaneId getPrepareSegment(
 
   prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
     prepare_segment.points.back().point.longitudinal_velocity_mps,
-    static_cast<float>(prepare_speed));
+    static_cast<float>(prepare_velocity));
 
   return prepare_segment;
 }
@@ -719,7 +720,7 @@ PathWithLaneId getPrepareSegment(
 PathWithLaneId getPrepareSegment(
   const PathWithLaneId & original_path, const lanelet::ConstLanelets & original_lanelets,
   const Pose & current_pose, const double backward_path_length, const double prepare_distance,
-  const double prepare_speed)
+  const double prepare_velocity)
 {
   if (original_lanelets.empty()) {
     return PathWithLaneId();
@@ -732,13 +733,13 @@ PathWithLaneId getPrepareSegment(
 
   prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
     prepare_segment.points.back().point.longitudinal_velocity_mps,
-    static_cast<float>(prepare_speed));
+    static_cast<float>(prepare_velocity));
 
   return prepare_segment;
 }
 
 double calcLaneChangingDistance(
-  const double lane_changing_speed, const double shift_length,
+  const double lane_changing_velocity, const double shift_length,
   const BehaviorPathPlannerParameters & com_param, const LaneChangeParameters & lc_param)
 {
   const auto required_time = PathShifter::calcShiftTimeFromJerk(
@@ -746,15 +747,15 @@ double calcLaneChangingDistance(
 
   const double & min_lane_change_length = com_param.minimum_lane_changing_length;
   const double lane_changing_distance =
-    std::max(lane_changing_speed * required_time, min_lane_change_length);
+    std::max(lane_changing_velocity * required_time, min_lane_change_length);
 
   RCLCPP_DEBUG(
     rclcpp::get_logger("behavior_path_planner")
       .get_child("lane_change")
       .get_child("util")
-      .get_child("calcLaneChangingSpeedAndDistance"),
-    "required_time: %f [s] average_speed: %f [m/s], lane_changing_distance : %f [m]", required_time,
-    lane_changing_speed, lane_changing_distance);
+      .get_child("calcLaneChangingDistance"),
+    "required_time: %f [s] lane_changing_velocity : %f [m/s], lane_changing_distance : %f [m]",
+    required_time, lane_changing_velocity, lane_changing_distance);
 
   return lane_changing_distance;
 }
@@ -763,7 +764,7 @@ PathWithLaneId getTargetSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanelets,
   const double forward_path_length, const Pose & lane_changing_start_pose,
   const double target_lane_length, const double lane_changing_distance,
-  const double lane_changing_speed, const double total_required_min_dist)
+  const double lane_changing_velocity, const double total_required_min_dist)
 {
   const double s_start = std::invoke([&lane_changing_start_pose, &target_lanelets,
                                       &lane_changing_distance, &target_lane_length,
@@ -793,7 +794,7 @@ PathWithLaneId getTargetSegment(
   PathWithLaneId target_segment = route_handler.getCenterLinePath(target_lanelets, s_start, s_end);
   for (auto & point : target_segment.points) {
     point.point.longitudinal_velocity_mps =
-      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_speed));
+      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_velocity));
   }
 
   return target_segment;
@@ -1102,7 +1103,7 @@ std::optional<LaneChangePath> getAbortPaths(
   [[maybe_unused]] const LaneChangeParameters & lane_change_param)
 {
   const auto & route_handler = planner_data->route_handler;
-  const auto current_speed = planner_data->self_odometry->twist.twist.linear.x;
+  const auto current_velocity = planner_data->self_odometry->twist.twist.linear.x;
   const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto reference_lanelets = selected_path.reference_lanelets;
 
@@ -1131,8 +1132,8 @@ std::optional<LaneChangePath> getAbortPaths(
       return std::make_pair(ego_pose_idx, turning_point_dist);
     }
 
-    constexpr auto min_speed{2.77};
-    const auto desired_distance = std::max(min_speed, current_speed) * param_time;
+    constexpr auto min_velocity{2.77};
+    const auto desired_distance = std::max(min_velocity, current_velocity) * param_time;
     const auto & points = lane_changing_path.points;
     size_t idx{0};
     for (idx = ego_pose_idx; idx < lane_changing_end_pose_idx; ++idx) {
@@ -1202,7 +1203,7 @@ std::optional<LaneChangePath> getAbortPaths(
   path_shifter.setPath(lane_changing_path);
   path_shifter.addShiftLine(shift_line);
   const auto lateral_jerk = behavior_path_planner::PathShifter::calcJerkFromLatLonDistance(
-    shift_line.end_shift_length, abort_start_dist, current_speed);
+    shift_line.end_shift_length, abort_start_dist, current_velocity);
 
   if (lateral_jerk > lane_change_param.abort_max_lateral_jerk) {
     return std::nullopt;
@@ -1415,7 +1416,7 @@ lanelet::ConstLanelets getLaneChangeLanes(
   const auto & route_handler = planner_data->route_handler;
   const auto minimum_lane_changing_length = planner_data->parameters.minimum_lane_changing_length;
   const auto current_pose = planner_data->self_odometry->pose.pose;
-  const auto current_speed = planner_data->self_odometry->twist.twist.linear.x;
+  const auto current_velocity = planner_data->self_odometry->twist.twist.linear.x;
 
   if (current_lanes.empty()) {
     return {};
@@ -1426,7 +1427,7 @@ lanelet::ConstLanelets getLaneChangeLanes(
   lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
 
   const auto lane_change_prepare_length =
-    std::max(current_speed * prepare_duration, minimum_lane_changing_length);
+    std::max(current_velocity * prepare_duration, minimum_lane_changing_length);
 
   const auto current_check_lanes =
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);

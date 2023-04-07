@@ -183,7 +183,7 @@ private:
   bool isValidPath() const;
   bool isValidPath(const PathWithLaneId & path) const;
   bool isNearEndOfLane() const;
-  bool isCurrentSpeedLow() const;
+  bool isCurrentVelocityLow() const;
   bool isAbortConditionSatisfied();
   bool hasFinishedLaneChange() const;
   bool isAbortState() const;

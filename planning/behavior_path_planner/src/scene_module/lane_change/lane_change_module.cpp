@@ -145,7 +145,7 @@ ModuleStatus LaneChangeModule::updateState()
   }
 
   if (isAbortConditionSatisfied()) {
-    if ((isNearEndOfLane() && isCurrentSpeedLow()) || !is_within_current_lane) {
+    if ((isNearEndOfLane() && isCurrentVelocityLow()) || !is_within_current_lane) {
       current_state_ = ModuleStatus::RUNNING;
       return current_state_;
     }
@@ -176,7 +176,7 @@ BehaviorModuleOutput LaneChangeModule::plan()
     status_.is_valid_path = true;
   }
 
-  if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentSpeedLow())) {
+  if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentVelocityLow())) {
     const auto stop_point = util::insertStopPoint(0.1, path);
   }
 
@@ -553,7 +553,7 @@ bool LaneChangeModule::isNearEndOfLane() const
          threshold;
 }
 
-bool LaneChangeModule::isCurrentSpeedLow() const
+bool LaneChangeModule::isCurrentVelocityLow() const
 {
   constexpr double threshold_ms = 10.0 * 1000 / 3600;
   return getEgoTwist().linear.x < threshold_ms;

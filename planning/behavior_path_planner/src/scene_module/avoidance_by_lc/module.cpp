@@ -647,7 +647,7 @@ ModuleStatus AvoidanceByLCModule::updateState()
   }
 
   if (isAbortConditionSatisfied()) {
-    if ((isNearEndOfLane() && isCurrentSpeedLow()) || !is_within_current_lane) {
+    if ((isNearEndOfLane() && isCurrentVelocityLow()) || !is_within_current_lane) {
       current_state_ = ModuleStatus::RUNNING;
       return current_state_;
     }
@@ -678,7 +678,7 @@ BehaviorModuleOutput AvoidanceByLCModule::plan()
     status_.is_valid_path = true;
   }
 
-  if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentSpeedLow())) {
+  if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentVelocityLow())) {
     const auto stop_point = util::insertStopPoint(0.1, path);
   }
 
@@ -1079,7 +1079,7 @@ bool AvoidanceByLCModule::isNearEndOfLane() const
          threshold;
 }
 
-bool AvoidanceByLCModule::isCurrentSpeedLow() const
+bool AvoidanceByLCModule::isCurrentVelocityLow() const
 {
   constexpr double threshold_ms = 10.0 * 1000 / 3600;
   return util::l2Norm(getEgoTwist().linear) < threshold_ms;

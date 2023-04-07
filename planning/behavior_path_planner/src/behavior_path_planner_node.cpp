@@ -727,10 +727,10 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.lane_change_sampling_num = declare_parameter<int>(parameter("lane_change_sampling_num"));
 
   // collision check
-  p.enable_collision_check_at_prepare_phase =
-    declare_parameter<bool>(parameter("enable_collision_check_at_prepare_phase"));
-  p.prepare_phase_ignore_target_speed_thresh =
-    declare_parameter<double>(parameter("prepare_phase_ignore_target_speed_thresh"));
+  p.enable_prepare_segment_collision_check =
+    declare_parameter<bool>(parameter("enable_prepare_segment_collision_check"));
+  p.prepare_segment_ignore_object_velocity_thresh =
+    declare_parameter<double>(parameter("prepare_segment_ignore_object_velocity_thresh"));
   p.use_predicted_path_outside_lanelet =
     declare_parameter<bool>(parameter("use_predicted_path_outside_lanelet"));
   p.use_all_predicted_path = declare_parameter<bool>(parameter("use_all_predicted_path"));

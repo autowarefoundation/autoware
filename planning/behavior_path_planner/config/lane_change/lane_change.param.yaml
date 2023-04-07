@@ -28,8 +28,8 @@
         pedestrian: true
 
       # collision check
-      enable_collision_check_at_prepare_phase: true
-      prepare_phase_ignore_target_speed_thresh: 0.1 # [m/s]
+      enable_prepare_segment_collision_check: true
+      prepare_segment_ignore_object_velocity_thresh: 0.1 # [m/s]
       use_predicted_path_outside_lanelet: true
       use_all_predicted_path: false
 

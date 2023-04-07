@@ -103,7 +103,7 @@ BT::NodeStatus ExternalRequestLaneChangeModule::updateState()
   }
 
   if (isAbortConditionSatisfied()) {
-    if (isNearEndOfLane() && isCurrentSpeedLow()) {
+    if (isNearEndOfLane() && isCurrentVelocityLow()) {
       current_state_ = BT::NodeStatus::RUNNING;
       return current_state_;
     }
@@ -132,7 +132,7 @@ BehaviorModuleOutput ExternalRequestLaneChangeModule::plan()
     return BehaviorModuleOutput{};
   }
 
-  if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentSpeedLow())) {
+  if ((is_abort_condition_satisfied_ && isNearEndOfLane() && isCurrentVelocityLow())) {
     const auto stop_point = util::insertStopPoint(0.1, path);
   }
 
@@ -444,7 +444,7 @@ bool ExternalRequestLaneChangeModule::isNearEndOfLane() const
          threshold;
 }
 
-bool ExternalRequestLaneChangeModule::isCurrentSpeedLow() const
+bool ExternalRequestLaneChangeModule::isCurrentVelocityLow() const
 {
   constexpr double threshold_ms = 10.0 * 1000 / 3600;
   return getEgoTwist().linear.x < threshold_ms;
