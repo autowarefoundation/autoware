@@ -15,6 +15,7 @@
 #include "behavior_path_planner/utilities.hpp"
 
 #include "behavior_path_planner/util/drivable_area_expansion/drivable_area_expansion.hpp"
+#include "motion_utils/trajectory/path_with_lane_id.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
@@ -1706,6 +1707,13 @@ PathWithLaneId getCenterLinePath(
     route_handler.getCenterLinePath(lanelet_sequence, s_backward, s_forward, true);
   const auto resampled_path_with_lane_id = motion_utils::resamplePath(
     raw_path_with_lane_id, parameter.input_path_interval, parameter.enable_akima_spline_first);
+
+  // convert centerline, which we consider as CoG center,  to rear wheel center
+  if (parameter.enable_cog_on_centerline) {
+    const double rear_to_cog = parameter.vehicle_length / 2 - parameter.rear_overhang;
+    return motion_utils::convertToRearWheelCenter(resampled_path_with_lane_id, rear_to_cog);
+  }
+
   return resampled_path_with_lane_id;
 }
 

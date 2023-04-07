@@ -161,3 +161,31 @@ TEST(path_with_lane_id, findNearestIndexFromLaneId)
     findNearestSegmentIndexFromLaneId(PathWithLaneId{}, createPoint(2.4, 1.3, 0.0), 100),
     std::invalid_argument);
 }
+
+// NOTE: This test is temporary for the current implementation.
+TEST(path_with_lane_id, convertToRearWheelCenter)
+{
+  using motion_utils::convertToRearWheelCenter;
+
+  PathWithLaneId path;
+
+  PathPointWithLaneId p1;
+  p1.point.pose = createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  path.points.push_back(p1);
+  PathPointWithLaneId p2;
+  p2.point.pose = createPose(1.0, 2.0, 0.0, 0.0, 0.0, 0.0);
+  path.points.push_back(p2);
+  PathPointWithLaneId p3;
+  p3.point.pose = createPose(2.0, 4.0, 0.0, 0.0, 0.0, 0.0);
+  path.points.push_back(p3);
+
+  const auto cog_path = convertToRearWheelCenter(path, 1.0);
+
+  constexpr double epsilon = 1e-6;
+  EXPECT_NEAR(cog_path.points.at(0).point.pose.position.x, -0.4472136, epsilon);
+  EXPECT_NEAR(cog_path.points.at(0).point.pose.position.y, -0.8944272, epsilon);
+  EXPECT_NEAR(cog_path.points.at(1).point.pose.position.x, 0.5527864, epsilon);
+  EXPECT_NEAR(cog_path.points.at(1).point.pose.position.y, 1.1055728, epsilon);
+  EXPECT_NEAR(cog_path.points.at(2).point.pose.position.x, 2.0, epsilon);
+  EXPECT_NEAR(cog_path.points.at(2).point.pose.position.y, 4.0, epsilon);
+}

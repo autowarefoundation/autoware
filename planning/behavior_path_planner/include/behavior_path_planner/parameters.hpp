@@ -62,6 +62,7 @@ struct BehaviorPathPlannerParameters
   bool turn_signal_on_swerving;
 
   double enable_akima_spline_first;
+  double enable_cog_on_centerline;
   double input_path_interval;
   double output_path_interval;
 

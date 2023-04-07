@@ -15,6 +15,7 @@
 #ifndef MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_
 #define MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_
 
+#include "interpolation/spline_interpolation_points_2d.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/geometry/pose_deviation.hpp"
 #include "tier4_autoware_utils/math/constants.hpp"
