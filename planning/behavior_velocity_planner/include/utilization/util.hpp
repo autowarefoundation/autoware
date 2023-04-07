@@ -195,9 +195,6 @@ void appendStopReason(const StopFactor stop_factor, StopReason * stop_reason);
 
 std::vector<geometry_msgs::msg::Point> toRosPoints(const PredictedObjects & object);
 
-geometry_msgs::msg::Point toRosPoint(const pcl::PointXYZ & pcl_point);
-geometry_msgs::msg::Point toRosPoint(const Point2d & boost_point, const double z);
-
 LineString2d extendLine(
   const lanelet::ConstPoint3d & lanelet_point1, const lanelet::ConstPoint3d & lanelet_point2,
   const double & length);

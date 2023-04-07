@@ -514,24 +514,6 @@ std::vector<geometry_msgs::msg::Point> toRosPoints(const PredictedObjects & obje
   return points;
 }
 
-geometry_msgs::msg::Point toRosPoint(const pcl::PointXYZ & pcl_point)
-{
-  geometry_msgs::msg::Point point;
-  point.x = pcl_point.x;
-  point.y = pcl_point.y;
-  point.z = pcl_point.z;
-  return point;
-}
-
-geometry_msgs::msg::Point toRosPoint(const Point2d & boost_point, const double z)
-{
-  geometry_msgs::msg::Point point;
-  point.x = boost_point.x();
-  point.y = boost_point.y();
-  point.z = z;
-  return point;
-}
-
 LineString2d extendLine(
   const lanelet::ConstPoint3d & lanelet_point1, const lanelet::ConstPoint3d & lanelet_point2,
   const double & length)
@@ -666,14 +648,10 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
 {
   const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx = motion_utils::insertTargetPoint(base_idx, stop_point, output.points);
+  const auto insert_idx = motion_utils::insertStopPoint(base_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};
-  }
-
-  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
-    output.points.at(i).point.longitudinal_velocity_mps = 0.0;
   }
 
   return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
@@ -682,14 +660,10 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
 boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, const size_t stop_seg_idx, PathWithLaneId & output)
 {
-  const auto insert_idx = motion_utils::insertTargetPoint(stop_seg_idx, stop_point, output.points);
+  const auto insert_idx = motion_utils::insertStopPoint(stop_seg_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};
-  }
-
-  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
-    output.points.at(i).point.longitudinal_velocity_mps = 0.0;
   }
 
   return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
