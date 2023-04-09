@@ -32,15 +32,7 @@ PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, con
 {
   auto lerp = [](const double a, const double b, const double t) { return a + t * (b - a); };
   PathPoint p;
-  Pose pose;
-  const auto pp0 = p0.pose.position;
-  const auto pp1 = p1.pose.position;
-  pose.position.x = lerp(pp0.x, pp1.x, ratio);
-  pose.position.y = lerp(pp0.y, pp1.y, ratio);
-  pose.position.z = lerp(pp0.z, pp1.z, ratio);
-  const double yaw = calcAzimuthAngle(pp0, pp1);
-  pose.orientation = createQuaternionFromYaw(yaw);
-  p.pose = pose;
+  p.pose = tier4_autoware_utils::calcInterpolatedPose(p0, p1, ratio);
   const double v = lerp(p0.longitudinal_velocity_mps, p1.longitudinal_velocity_mps, ratio);
   p.longitudinal_velocity_mps = v;
   return p;
