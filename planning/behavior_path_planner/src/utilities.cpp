@@ -1283,33 +1283,6 @@ std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets)
   return ids;
 }
 
-lanelet::Polygon3d getVehiclePolygon(
-  const Pose & vehicle_pose, const double vehicle_width, const double base_link2front)
-{
-  tf2::Vector3 front_left, front_right, rear_left, rear_right;
-  front_left.setValue(base_link2front, vehicle_width / 2, 0);
-  front_right.setValue(base_link2front, -vehicle_width / 2, 0);
-  rear_left.setValue(0, vehicle_width / 2, 0);
-  rear_right.setValue(0, -vehicle_width / 2, 0);
-
-  tf2::Transform tf;
-  tf2::fromMsg(vehicle_pose, tf);
-  const auto front_left_transformed = tf * front_left;
-  const auto front_right_transformed = tf * front_right;
-  const auto rear_left_transformed = tf * rear_left;
-  const auto rear_right_transformed = tf * rear_right;
-
-  lanelet::Polygon3d llt_poly;
-  auto toPoint3d = [](const tf2::Vector3 & v) { return lanelet::Point3d(0, v.x(), v.y(), v.z()); };
-  llt_poly.reserve(4);
-  llt_poly.push_back(toPoint3d(front_left_transformed));
-  llt_poly.push_back(toPoint3d(front_right_transformed));
-  llt_poly.push_back(toPoint3d(rear_right_transformed));
-  llt_poly.push_back(toPoint3d(rear_left_transformed));
-
-  return llt_poly;
-}
-
 PathPointWithLaneId insertStopPoint(const double length, PathWithLaneId & path)
 {
   const size_t original_size = path.points.size();

@@ -833,11 +833,12 @@ bool isEgoWithinOriginalLane(
 {
   const auto lane_length = lanelet::utils::getLaneletLength2d(current_lanes);
   const auto lane_poly = lanelet::utils::getPolygonFromArcLength(current_lanes, 0, lane_length);
+  const auto base_link2front = common_param.base_link2front;
+  const auto base_link2rear = common_param.base_link2rear;
+  const auto vehicle_width = common_param.vehicle_width;
   const auto vehicle_poly =
-    util::getVehiclePolygon(current_pose, common_param.vehicle_width, common_param.base_link2front);
-  return boost::geometry::within(
-    lanelet::utils::to2D(vehicle_poly).basicPolygon(),
-    lanelet::utils::to2D(lane_poly).basicPolygon());
+    tier4_autoware_utils::toFootprint(current_pose, base_link2front, base_link2rear, vehicle_width);
+  return boost::geometry::within(vehicle_poly, lanelet::utils::to2D(lane_poly).basicPolygon());
 }
 
 void get_turn_signal_info(
