@@ -439,41 +439,6 @@ double lerpShiftLengthOnArc(double arc, const AvoidLine & ap)
   return 0.0;
 }
 
-void clipByMinStartIdx(const AvoidLineArray & shift_lines, PathWithLaneId & path)
-{
-  if (path.points.empty()) {
-    return;
-  }
-
-  size_t min_start_idx = std::numeric_limits<size_t>::max();
-  for (const auto & sl : shift_lines) {
-    min_start_idx = std::min(min_start_idx, sl.start_idx);
-  }
-  min_start_idx = std::min(min_start_idx, path.points.size() - 1);
-  path.points =
-    std::vector<PathPointWithLaneId>{path.points.begin() + min_start_idx, path.points.end()};
-}
-
-void fillLongitudinalAndLengthByClosestFootprint(
-  const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos,
-  ObjectData & obj)
-{
-  const auto object_poly = tier4_autoware_utils::toPolygon2d(object);
-  const double distance = motion_utils::calcSignedArcLength(
-    path.points, ego_pos, object.kinematics.initial_pose_with_covariance.pose.position);
-  double min_distance = distance;
-  double max_distance = distance;
-  for (const auto & p : object_poly.outer()) {
-    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
-    min_distance = std::min(min_distance, arc_length);
-    max_distance = std::max(max_distance, arc_length);
-  }
-  obj.longitudinal = min_distance;
-  obj.length = max_distance - min_distance;
-  return;
-}
-
 void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
   const PathWithLaneId & path, const Point & ego_pos, ObjectData & obj)
 {
@@ -490,35 +455,6 @@ void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
   obj.longitudinal = min_distance;
   obj.length = max_distance - min_distance;
   return;
-}
-
-double calcOverhangDistance(
-  const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose)
-{
-  double largest_overhang = isOnRight(object_data) ? -100.0 : 100.0;  // large number
-
-  const auto object_poly = tier4_autoware_utils::toPolygon2d(object_data.object);
-  for (const auto & p : object_poly.outer()) {
-    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    const auto lateral = tier4_autoware_utils::calcLateralDeviation(base_pose, point);
-
-    const auto & overhang_pose_on_right = [&overhang_pose, &largest_overhang, &point, &lateral]() {
-      if (lateral > largest_overhang) {
-        overhang_pose = point;
-      }
-      return std::max(largest_overhang, lateral);
-    };
-
-    const auto & overhang_pose_on_left = [&overhang_pose, &largest_overhang, &point, &lateral]() {
-      if (lateral < largest_overhang) {
-        overhang_pose = point;
-      }
-      return std::min(largest_overhang, lateral);
-    };
-
-    largest_overhang = isOnRight(object_data) ? overhang_pose_on_right() : overhang_pose_on_left();
-  }
-  return largest_overhang;
 }
 
 double calcEnvelopeOverhangDistance(

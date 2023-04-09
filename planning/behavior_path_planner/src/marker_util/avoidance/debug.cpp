@@ -26,7 +26,6 @@ namespace marker_utils::avoidance_marker
 {
 
 using behavior_path_planner::AvoidLine;
-using behavior_path_planner::util::shiftPose;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
@@ -249,15 +248,14 @@ MarkerArray createAvoidLineMarkerArray(
       auto marker_s = basic_marker;
       marker_s.id = id++;
       marker_s.pose = sl.start;
-      // shiftPose(&marker_s.pose, current_shift);  // old
-      shiftPose(&marker_s.pose, sl.start_shift_length);
+      marker_s.pose = calcOffsetPose(marker_s.pose, 0.0, sl.start_shift_length, 0.0);
       msg.markers.push_back(marker_s);
 
       // end point
       auto marker_e = basic_marker;
       marker_e.id = id++;
       marker_e.pose = sl.end;
-      shiftPose(&marker_e.pose, sl.end_shift_length);
+      marker_e.pose = calcOffsetPose(marker_e.pose, 0.0, sl.end_shift_length, 0.0);
       msg.markers.push_back(marker_e);
 
       // start-to-end line

@@ -31,6 +31,7 @@ using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
 using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::calcDistance2d;
+using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::getPoint;
 
 #ifdef USE_OLD_ARCHITECTURE
@@ -437,7 +438,7 @@ Pose SideShiftModule::getUnshiftedEgoPose(const ShiftedPath & prev_path) const
 
   Pose unshifted_pose = ego_pose;
 
-  util::shiftPose(&unshifted_pose, -prev_path.shift_length.at(closest));
+  unshifted_pose = calcOffsetPose(unshifted_pose, 0.0, -prev_path.shift_length.at(closest), 0.0);
   unshifted_pose.orientation = ego_pose.orientation;
 
   return unshifted_pose;

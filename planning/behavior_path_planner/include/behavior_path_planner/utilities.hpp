@@ -312,8 +312,6 @@ std::vector<Polygon2d> getTargetLaneletPolygons(
   const lanelet::ConstLanelets & lanelets, const Pose & pose, const double check_length,
   const std::string & target_type);
 
-void shiftPose(Pose * pose, double shift_length);
-
 PathWithLaneId getCenterLinePathFromRootLanelet(
   const lanelet::ConstLanelet & root_lanelet,
   const std::shared_ptr<const PlannerData> & planner_data);

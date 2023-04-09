@@ -1648,13 +1648,6 @@ PredictedObjects filterObjectsByVelocity(
   return filtered;
 }
 
-void shiftPose(Pose * pose, double shift_length)
-{
-  auto yaw = tf2::getYaw(pose->orientation);
-  pose->position.x -= std::sin(yaw) * shift_length;
-  pose->position.y += std::cos(yaw) * shift_length;
-}
-
 PathWithLaneId getCenterLinePathFromRootLanelet(
   const lanelet::ConstLanelet & root_lanelet,
   const std::shared_ptr<const PlannerData> & planner_data)
