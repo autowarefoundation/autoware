@@ -92,10 +92,6 @@ void setStartData(
   AvoidLine & al, const double start_shift_length, const geometry_msgs::msg::Pose & start,
   const size_t start_idx, const double start_dist);
 
-std::string getUuidStr(const ObjectData & obj);
-
-std::vector<std::string> getUuidStr(const ObjectDataArray & objs);
-
 Polygon2d createEnvelopePolygon(
   const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer);
 

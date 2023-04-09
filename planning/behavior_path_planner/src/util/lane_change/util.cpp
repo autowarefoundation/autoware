@@ -581,10 +581,9 @@ bool isLaneChangePathSafe(
 
   const auto assignDebugData = [](const PredictedObject & obj) {
     CollisionCheckDebug debug;
-    const auto key = util::getUuidStr(obj);
     debug.current_pose = obj.kinematics.initial_pose_with_covariance.pose;
     debug.current_twist = obj.kinematics.initial_twist_with_covariance.twist;
-    return std::make_pair(key, debug);
+    return std::make_pair(tier4_autoware_utils::toHexString(obj.object_id), debug);
   };
 
   const auto appendDebugInfo =

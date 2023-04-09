@@ -56,6 +56,7 @@ using tier4_autoware_utils::calcLongitudinalDeviation;
 using tier4_autoware_utils::calcYawDeviation;
 using tier4_autoware_utils::getPoint;
 using tier4_autoware_utils::getPose;
+using tier4_autoware_utils::toHexString;
 using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 
 namespace
@@ -312,7 +313,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
 
     ObjectData object_data;
     object_data.object = object;
-    avoidance_debug_msg.object_id = getUuidStr(object_data);
+    avoidance_debug_msg.object_id = toHexString(object_data.object.object_id);
 
     if (!isTargetObjectType(object)) {
       avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE);
@@ -1063,7 +1064,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
         avoidance_debug_msg_array.push_back(avoidance_debug_msg);
       };
 
-    avoidance_debug_msg.object_id = getUuidStr(o);
+    avoidance_debug_msg.object_id = toHexString(o.object.object_id);
     avoidance_debug_msg.longitudinal_distance = o.longitudinal;
     avoidance_debug_msg.lateral_distance_from_centerline = o.lateral;
     avoidance_debug_msg.to_furthest_linestring_distance = o.to_road_shoulder_distance;
@@ -3524,7 +3525,6 @@ void AvoidanceModule::updateRegisteredObject(const ObjectDataArray & now_objects
   // -- check registered_objects, remove if lost_count exceeds limit. --
   for (int i = static_cast<int>(registered_objects_.size()) - 1; i >= 0; --i) {
     auto & r = registered_objects_.at(i);
-    const std::string s = getUuidStr(r);
 
     // registered object is not detected this time. lost count up.
     if (!updateIfDetectedNow(r)) {

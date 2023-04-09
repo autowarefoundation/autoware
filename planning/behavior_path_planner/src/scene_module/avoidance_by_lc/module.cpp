@@ -46,6 +46,7 @@ using motion_utils::findNearestIndex;
 using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcLateralDeviation;
+using tier4_autoware_utils::toHexString;
 
 AvoidanceByLCModule::AvoidanceByLCModule(
   const std::string & name, rclcpp::Node & node,
@@ -552,7 +553,6 @@ void AvoidanceByLCModule::updateRegisteredObject(const ObjectDataArray & now_obj
   // -- check registered_objects, remove if lost_count exceeds limit. --
   for (int i = static_cast<int>(registered_objects_.size()) - 1; i >= 0; --i) {
     auto & r = registered_objects_.at(i);
-    const std::string s = getUuidStr(r);
 
     // registered object is not detected this time. lost count up.
     if (!updateIfDetectedNow(r)) {

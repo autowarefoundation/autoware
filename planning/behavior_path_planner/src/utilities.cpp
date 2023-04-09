@@ -1900,15 +1900,6 @@ lanelet::ConstLanelets calcLaneAroundPose(
   return current_lanes;
 }
 
-std::string getUuidStr(const PredictedObject & obj)
-{
-  std::stringstream hex_value;
-  for (const auto & uuid : obj.object_id.uuid) {
-    hex_value << std::hex << std::setfill('0') << std::setw(2) << +uuid;
-  }
-  return hex_value.str();
-}
-
 template <typename Pythagoras>
 ProjectedDistancePoint pointToSegment(
   const Point2d & reference_point, const Point2d & point_from_ego,
