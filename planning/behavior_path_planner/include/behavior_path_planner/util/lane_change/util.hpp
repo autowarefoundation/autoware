@@ -94,20 +94,19 @@ bool isLaneChangePathSafe(
 #ifdef USE_OLD_ARCHITECTURE
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const Pose & current_pose, const Pose & goal_pose,
+  const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
   const RouteHandler & route_handler, const double minimum_lane_change_length);
 #else
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const Pose & current_pose, const Pose & goal_pose,
+  const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
   const RouteHandler & route_handler, const double minimum_lane_change_length,
   const Direction direction);
 #endif
 
 ShiftLine getLaneChangingShiftLine(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
-  const lanelet::ConstLanelets & target_lanes, const PathWithLaneId & reference_path,
-  const double shift_length);
+  const PathWithLaneId & reference_path, const double shift_length);
 
 PathWithLaneId getReferencePathFromTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,

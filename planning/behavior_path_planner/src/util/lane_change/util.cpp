@@ -313,8 +313,6 @@ std::pair<bool, bool> getLaneChangePaths(
   const auto num_to_preferred_lane = std::abs(
     route_handler.getNumLaneToPreferredLane(target_lanelets.back(), get_opposite_direction));
 #endif
-  const auto goal_pose = route_handler.getGoalPose();
-
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
   const auto required_total_min_length =
@@ -432,7 +430,7 @@ std::pair<bool, bool> getLaneChangePaths(
     }
 
     const auto shift_line = getLaneChangingShiftLine(
-      prepare_segment, target_segment, target_lanelets, target_lane_reference_path, shift_length);
+      prepare_segment, target_segment, target_lane_reference_path, shift_length);
 
     const auto lc_velocity = LaneChangePhaseInfo{prepare_velocity, lane_changing_velocity};
 
@@ -446,11 +444,11 @@ std::pair<bool, bool> getLaneChangePaths(
 
 #ifdef USE_OLD_ARCHITECTURE
     const auto is_valid = hasEnoughLength(
-      *candidate_path, original_lanelets, target_lanelets, pose, goal_pose, route_handler,
+      *candidate_path, original_lanelets, target_lanelets, pose, route_handler,
       common_parameter.minimum_lane_changing_length);
 #else
     const auto is_valid = hasEnoughLength(
-      *candidate_path, original_lanelets, target_lanelets, pose, goal_pose, route_handler,
+      *candidate_path, original_lanelets, target_lanelets, pose, route_handler,
       common_parameter.minimum_lane_changing_length, direction);
 #endif
 
@@ -490,14 +488,13 @@ std::pair<bool, bool> getLaneChangePaths(
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
   [[maybe_unused]] const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
-  const Pose & goal_pose, const RouteHandler & route_handler,
-  const double minimum_lane_change_length)
+  const RouteHandler & route_handler, const double minimum_lane_change_length)
 #else
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
   [[maybe_unused]] const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
-  const Pose & goal_pose, const RouteHandler & route_handler,
-  const double minimum_lane_change_length, const Direction direction)
+  const RouteHandler & route_handler, const double minimum_lane_change_length,
+  const Direction direction)
 #endif
 {
   const double lane_change_total_length = path.length.sum();
@@ -514,6 +511,7 @@ bool hasEnoughLength(
     return false;
   }
 
+  const auto goal_pose = route_handler.getGoalPose();
   if (
     route_handler.isInGoalRouteSection(current_lanes.back()) &&
     lane_change_total_length + lane_change_required_length >
@@ -521,7 +519,7 @@ bool hasEnoughLength(
     return false;
   }
 
-  // return is there is no target lanes. Else continue checking
+  // return if there are no target lanes
   if (target_lanes.empty()) {
     return true;
   }
@@ -656,33 +654,6 @@ bool isLaneChangePathSafe(
     appendDebugInfo(current_debug_data, true);
   }
   return true;
-}
-
-ShiftLine getLaneChangingShiftLine(
-  const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
-  const lanelet::ConstLanelets & target_lanes, const PathWithLaneId & reference_path,
-  const double shift_length)
-{
-  const Pose & lane_changing_start_pose = prepare_segment.points.back().point.pose;
-  const Pose & lane_changing_end_pose = target_segment.points.front().point.pose;
-
-  ShiftLine shift_line;
-  shift_line.end_shift_length = shift_length;
-  shift_line.start = lane_changing_start_pose;
-  shift_line.end = lane_changing_end_pose;
-  shift_line.start_idx =
-    motion_utils::findNearestIndex(reference_path.points, lane_changing_start_pose.position);
-  shift_line.end_idx =
-    motion_utils::findNearestIndex(reference_path.points, lane_changing_end_pose.position);
-
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("getLaneChangingShiftLine"),
-    "shift_line distance: %f",
-    util::getSignedDistance(shift_line.start, shift_line.end, target_lanes));
-  return shift_line;
 }
 
 PathWithLaneId getPrepareSegment(
@@ -829,6 +800,31 @@ PathWithLaneId getReferencePathFromTargetLane(
 
   return util::resamplePathWithSpline(
     lane_changing_reference_path, resample_interval, true, {0.0, lane_changing_length});
+}
+
+ShiftLine getLaneChangingShiftLine(
+  const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
+  const PathWithLaneId & reference_path, const double shift_length)
+{
+  const Pose & lane_changing_start_pose = prepare_segment.points.back().point.pose;
+  const Pose & lane_changing_end_pose = target_segment.points.front().point.pose;
+
+  ShiftLine shift_line;
+  shift_line.end_shift_length = shift_length;
+  shift_line.start = lane_changing_start_pose;
+  shift_line.end = lane_changing_end_pose;
+  shift_line.start_idx =
+    motion_utils::findNearestIndex(reference_path.points, lane_changing_start_pose.position);
+  shift_line.end_idx =
+    motion_utils::findNearestIndex(reference_path.points, lane_changing_end_pose.position);
+
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("behavior_path_planner")
+      .get_child("lane_change")
+      .get_child("util")
+      .get_child("getLaneChangingShiftLine"),
+    "shift_line distance: %f", shift_length);
+  return shift_line;
 }
 
 bool isEgoWithinOriginalLane(
