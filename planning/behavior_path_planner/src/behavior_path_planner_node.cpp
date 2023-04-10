@@ -737,6 +737,10 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.prepare_duration = declare_parameter<double>(parameter("prepare_duration"));
   p.lane_changing_lateral_jerk = declare_parameter<double>(parameter("lane_changing_lateral_jerk"));
   p.lane_changing_lateral_acc = declare_parameter<double>(parameter("lane_changing_lateral_acc"));
+  p.lane_changing_lateral_acc_at_low_velocity =
+    declare_parameter<double>(parameter("lane_changing_lateral_acc_at_low_velocity"));
+  p.lateral_acc_switching_velocity =
+    declare_parameter<double>(parameter("lateral_acc_switching_velocity"));
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
   p.minimum_lane_changing_velocity =
