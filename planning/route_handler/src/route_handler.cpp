@@ -288,6 +288,17 @@ void RouteHandler::setRouteLanelets(const lanelet::ConstLanelets & path_lanelets
   is_handler_ready_ = true;
 }
 
+void RouteHandler::clearRoute()
+{
+  route_lanelets_.clear();
+  preferred_lanelets_.clear();
+  start_lanelets_.clear();
+  goal_lanelets_.clear();
+  route_msg_ = LaneletRoute();
+  is_route_msg_ready_ = false;
+  is_handler_ready_ = false;
+}
+
 void RouteHandler::setLaneletsFromRouteMsg()
 {
   if (!is_route_msg_ready_ || !is_map_msg_ready_) {

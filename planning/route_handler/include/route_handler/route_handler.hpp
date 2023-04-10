@@ -68,6 +68,7 @@ public:
   void setMap(const HADMapBin & map_msg);
   void setRoute(const LaneletRoute & route_msg);
   void setRouteLanelets(const lanelet::ConstLanelets & path_lanelets);
+  void clearRoute();
 
   // const methods
 
