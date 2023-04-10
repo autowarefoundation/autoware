@@ -58,7 +58,8 @@ std::optional<size_t> insertPoint(
   } else {
     // copy with velocity from prior point
     const size_t prior_ind = closest_idx > 0 ? closest_idx - 1 : 0;
-    inserted_point = inout_path->points.at(prior_ind);
+    inserted_point.point.longitudinal_velocity_mps =
+      inout_path->points.at(prior_ind).point.longitudinal_velocity_mps;
   }
   inserted_point.point.pose = in_pose;
 
