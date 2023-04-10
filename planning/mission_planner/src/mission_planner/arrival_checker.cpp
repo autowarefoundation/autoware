@@ -27,10 +27,6 @@ ArrivalChecker::ArrivalChecker(rclcpp::Node * node) : vehicle_stop_checker_(node
   angle_ = tier4_autoware_utils::deg2rad(angle_deg);
   distance_ = node->declare_parameter<double>("arrival_check_distance");
   duration_ = node->declare_parameter<double>("arrival_check_duration");
-
-  sub_goal_ = node->create_subscription<PoseWithUuidStamped>(
-    "input/modified_goal", 1,
-    [this](const PoseWithUuidStamped::ConstSharedPtr msg) { modify_goal(*msg); });
 }
 
 void ArrivalChecker::set_goal()

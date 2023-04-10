@@ -33,10 +33,10 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 
 ### Subscriptions
 
-| Name                  | Type                                 | Description                 |
-| --------------------- | ------------------------------------ | --------------------------- |
-| `input/vector_map`    | autoware_auto_mapping_msgs/HADMapBin | vector map of Lanelet2      |
-| `input/modified_goal` | geometry_msgs/PoseStamped            | goal pose for arrival check |
+| Name                  | Type                                 | Description            |
+| --------------------- | ------------------------------------ | ---------------------- |
+| `input/vector_map`    | autoware_auto_mapping_msgs/HADMapBin | vector map of Lanelet2 |
+| `input/modified_goal` | geometry_msgs/PoseWithUuidStamped    | modified goal pose     |
 
 ### Publications
 

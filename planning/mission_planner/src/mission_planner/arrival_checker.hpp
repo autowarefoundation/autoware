@@ -33,6 +33,7 @@ public:
   explicit ArrivalChecker(rclcpp::Node * node);
   void set_goal();
   void set_goal(const PoseWithUuidStamped & goal);
+  void modify_goal(const PoseWithUuidStamped & modified_goal);
   bool is_arrived(const PoseStamped & pose) const;
 
 private:
@@ -42,7 +43,6 @@ private:
   std::optional<PoseWithUuidStamped> goal_with_uuid_;
   rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_goal_;
   motion_utils::VehicleStopChecker vehicle_stop_checker_;
-  void modify_goal(const PoseWithUuidStamped & modified_goal);
 };
 
 }  // namespace mission_planner
