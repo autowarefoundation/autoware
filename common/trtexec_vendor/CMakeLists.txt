@@ -17,12 +17,12 @@ find_package(CUDNN)
 find_package(tensorrt_cmake_module REQUIRED)
 find_package(TENSORRT)
 
-if(NOT (${CUDA_FOUND} AND ${CUDNN_FOUND} AND ${TENSORRT_FOUND}))
+if(NOT (CUDA_FOUND AND CUDNN_FOUND AND TENSORRT_FOUND))
   message(WARNING "cuda, cudnn, tensorrt libraries are not found")
   return()
 endif()
 
-if(${TENSORRT_VERSION} VERSION_LESS 8.2.1)
+if(TENSORRT_VERSION VERSION_LESS 8.2.1)
   message(WARNING "The tensorrt version less than 8.2.1 isn't supported.")
   return()
 endif()
@@ -30,14 +30,9 @@ endif()
 set(TRTEXEC_DEFAULT_BIN /usr/src/tensorrt/bin/trtexec)
 if(NOT EXISTS TRTEXEC_DEFAULT_BIN)
   include(FetchContent)
-  if(${TENSORRT_VERSION} VERSION_EQUAL 8.4.2)
-    set(TENSORRT_VERSION 8.4.1)
-  elseif(${TENSORRT_VERSION} VERSION_LESS_EQUAL 8.2.5 AND ${TENSORRT_VERSION} VERSION_GREATER 8.2.1)
-    set(TENSORRT_VERSION 8.2.1)
-  endif()
   fetchcontent_declare(tensorrt
     GIT_REPOSITORY https://github.com/NVIDIA/TensorRT
-    GIT_TAG ${TENSORRT_VERSION}
+    GIT_TAG release/${TENSORRT_VERSION_MAJOR}.${TENSORRT_VERSION_MINOR}
     GIT_SUBMODULES ""
   )
   fetchcontent_getproperties(tensorrt)
@@ -52,7 +47,7 @@ if(NOT EXISTS TRTEXEC_DEFAULT_BIN)
     ${tensorrt_SOURCE_DIR}/samples/common/sampleReporting.cpp
     ${tensorrt_SOURCE_DIR}/samples/common/logger.cpp
   )
-  if(${TENSORRT_VERSION} VERSION_GREATER_EQUAL 8.4)
+  if(TENSORRT_VERSION VERSION_GREATER_EQUAL 8.4)
     list(APPEND TRTEXEC_SOURCES
       ${tensorrt_SOURCE_DIR}/samples/common/sampleUtils.cpp
     )
