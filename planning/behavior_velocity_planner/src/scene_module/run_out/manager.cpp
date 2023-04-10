@@ -45,10 +45,18 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
 
   {
     auto & p = planner_param_.common;
-    p.normal_min_jerk = node.declare_parameter<double>(".normal.min_jerk");
-    p.normal_min_acc = node.declare_parameter<double>(".normal.min_acc");
-    p.limit_min_jerk = node.declare_parameter<double>(".limit.min_jerk");
-    p.limit_min_acc = node.declare_parameter<double>(".limit.min_acc");
+    p.normal_min_jerk = node.has_parameter("normal.min_jerk")
+                          ? node.get_parameter("normal.min_jerk").get_value<double>()
+                          : node.declare_parameter<double>("normal.min_jerk");
+    p.normal_min_acc = node.has_parameter("normal.min_acc")
+                         ? node.get_parameter("normal.min_acc").get_value<double>()
+                         : node.declare_parameter<double>("normal.min_acc");
+    p.limit_min_jerk = node.has_parameter("limit.min_jerk")
+                         ? node.get_parameter("limit.min_jerk").get_value<double>()
+                         : node.declare_parameter<double>("limit.min_jerk");
+    p.limit_min_acc = node.has_parameter("limit.min_acc")
+                        ? node.get_parameter("limit.min_acc").get_value<double>()
+                        : node.declare_parameter<double>("limit.min_acc");
   }
 
   {
