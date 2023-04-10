@@ -412,6 +412,7 @@ PlannerPlugin::LaneletRoute DefaultPlanner::plan(const RoutePoints & points)
     const auto local_route_sections = route_handler_.createMapSegments(path_lanelets);
     route_sections = combine_consecutive_route_sections(route_sections, local_route_sections);
   }
+  route_handler_.setRouteLanelets(all_route_lanelets);
 
   auto goal_pose = points.back();
   if (param_.enable_correct_goal_pose) {
@@ -450,6 +451,16 @@ geometry_msgs::msg::Pose DefaultPlanner::refine_goal_height(
   Pose refined_goal = goal;
   refined_goal.position.z = goal_height;
   return refined_goal;
+}
+
+void DefaultPlanner::updateRoute(const PlannerPlugin::LaneletRoute & route)
+{
+  route_handler_.setRoute(route);
+}
+
+void DefaultPlanner::clearRoute()
+{
+  route_handler_.clearRoute();
 }
 
 }  // namespace mission_planner::lanelet2

@@ -121,6 +121,7 @@ PoseStamped MissionPlanner::transform_pose(const PoseStamped & input)
 void MissionPlanner::change_route()
 {
   arrival_checker_.set_goal();
+  planner_->clearRoute();
   // TODO(Takagi, Isamu): publish an empty route here
 }
 
@@ -134,6 +135,7 @@ void MissionPlanner::change_route(const LaneletRoute & route)
   arrival_checker_.set_goal(goal);
   pub_route_->publish(route);
   pub_marker_->publish(planner_->visualize(route));
+  planner_->updateRoute(route);
 }
 
 void MissionPlanner::change_state(RouteState::Message::_state_type state)
