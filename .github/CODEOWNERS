@@ -9,7 +9,7 @@ common/autoware_auto_tf2/** jit.ray.c@gmail.com @autowarefoundation/autoware-glo
 common/autoware_point_types/** taichi.higashide@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/autoware_testing/** adam.dabrowski@robotec.ai @autowarefoundation/autoware-global-codeowners
 common/bag_time_manager_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
-common/component_interface_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/component_interface_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_tools/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -44,7 +44,7 @@ common/tier4_state_rviz_plugin/** hiroki.ota@tier4.jp isamu.takagi@tier4.jp @aut
 common/tier4_traffic_light_rviz_plugin/** satoshi.ota@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/time_utils/** christopherj.ho@gmail.com @autowarefoundation/autoware-global-codeowners
-common/trtexec_vendor/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/trtexec_vendor/** daisuke.nishimatsu@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/tvm_utility/** ambroise.vincent@arm.com xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/autonomous_emergency_braking/** takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 control/control_performance_analysis/** berkay@leodrive.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -121,7 +121,7 @@ perception/traffic_light_selector/** isamu.takagi@tier4.jp @autowarefoundation/a
 perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_visualization/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_path_planner/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/costmap_generator/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp shinnosuke.hirakawa@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/freespace_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
