@@ -23,6 +23,7 @@ set(common_src
   src/scene_module/lane_change/lane_change_module.cpp
   src/scene_module/lane_change/external_request_lane_change_module.cpp
   src/turn_signal_decider.cpp
+  src/util/safety_check.cpp
   src/util/avoidance/util.cpp
   src/util/lane_change/util.cpp
   src/util/side_shift/util.cpp

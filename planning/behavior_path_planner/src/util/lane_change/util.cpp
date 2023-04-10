@@ -19,6 +19,7 @@
 #include "behavior_path_planner/util/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/util/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner/util/safety_check.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -620,7 +621,7 @@ bool isLaneChangePathSafe(
     const auto predicted_paths =
       util::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
     for (const auto & obj_path : predicted_paths) {
-      if (!util::isSafeInLaneletCollisionCheck(
+      if (!util::safety_check::isSafeInLaneletCollisionCheck(
             interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
             obj, obj_path, common_parameter,
             lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
@@ -644,7 +645,7 @@ bool isLaneChangePathSafe(
     const auto predicted_paths =
       util::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
 
-    if (!util::isSafeInFreeSpaceCollisionCheck(
+    if (!util::safety_check::isSafeInFreeSpaceCollisionCheck(
           interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare, obj,
           common_parameter, lane_change_parameter.prepare_segment_ignore_object_velocity_thresh,
           front_decel, rear_decel, current_debug_data.second)) {
