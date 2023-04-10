@@ -36,7 +36,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::lane_change_utils
+namespace behavior_path_planner::util::lane_change
 {
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
@@ -181,5 +181,5 @@ lanelet::ConstLanelets getLaneChangeLanes(
   const std::shared_ptr<const PlannerData> & planner_data,
   const lanelet::ConstLanelets & current_lanes, const double lane_change_lane_length,
   const double prepare_duration, const Direction direction, const LaneChangeModuleType type);
-}  // namespace behavior_path_planner::lane_change_utils
+}  // namespace behavior_path_planner::util::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTIL__LANE_CHANGE__UTIL_HPP_

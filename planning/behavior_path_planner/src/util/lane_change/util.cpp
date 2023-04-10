@@ -110,7 +110,7 @@ std::vector<int64_t> replaceWithSortedIds(
 }
 }  // namespace
 
-namespace behavior_path_planner::lane_change_utils
+namespace behavior_path_planner::util::lane_change
 {
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using lanelet::ArcCoordinates;
@@ -458,7 +458,7 @@ std::pair<bool, bool> getLaneChangePaths(
 
     if (candidate_paths->empty()) {
       // only compute dynamic object indices once
-      const auto backward_lanes = lane_change_utils::getExtendedTargetLanesForCollisionCheck(
+      const auto backward_lanes = util::lane_change::getExtendedTargetLanesForCollisionCheck(
         route_handler, target_lanelets.front(), pose, check_length);
       dynamic_object_indices = filterObjectIndices(
         {*candidate_path}, *dynamic_objects, backward_lanes, pose,
@@ -1444,4 +1444,4 @@ lanelet::ConstLanelets getLaneChangeLanes(
 
   return {};
 }
-}  // namespace behavior_path_planner::lane_change_utils
+}  // namespace behavior_path_planner::util::lane_change

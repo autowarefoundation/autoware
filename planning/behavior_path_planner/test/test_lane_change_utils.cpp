@@ -22,16 +22,16 @@ TEST(BehaviorPathPlanningLaneChangeUtilsTest, testStoppingDistance)
 
   const auto negative_accel = -1.5;
   const auto distance_when_negative =
-    behavior_path_planner::lane_change_utils::stoppingDistance(vehicle_velocity, negative_accel);
+    behavior_path_planner::util::lane_change::stoppingDistance(vehicle_velocity, negative_accel);
   ASSERT_NEAR(distance_when_negative, 23.1463, 1e-3);
 
   const auto positive_accel = 1.5;
   const auto distance_when_positive =
-    behavior_path_planner::lane_change_utils::stoppingDistance(vehicle_velocity, positive_accel);
+    behavior_path_planner::util::lane_change::stoppingDistance(vehicle_velocity, positive_accel);
   ASSERT_NEAR(distance_when_positive, 34.7194, 1e-3);
 
   const auto zero_accel = 0.0;
   const auto distance_when_zero =
-    behavior_path_planner::lane_change_utils::stoppingDistance(vehicle_velocity, zero_accel);
+    behavior_path_planner::util::lane_change::stoppingDistance(vehicle_velocity, zero_accel);
   ASSERT_NEAR(distance_when_zero, 34.7194, 1e-3);
 }
