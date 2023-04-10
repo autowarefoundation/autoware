@@ -23,6 +23,7 @@ set(scene_modules
   occlusion_spot
   run_out
   speed_bump
+  out_of_lane
 )
 
 foreach(scene_module IN LISTS scene_modules)
@@ -79,6 +80,9 @@ if(BUILD_TESTING)
     test/src/test_risk_predictive_braking.cpp
     test/src/test_grid_utils.cpp
   )
+  # Gtest for out of lane
+  # ament_add_ros_isolated_gtest(out_of_lane-test
+  # )
   target_link_libraries(occlusion_spot-test
     gtest_main
     behavior_velocity_planner

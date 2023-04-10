@@ -40,6 +40,7 @@
 #include <scene_module/intersection/manager.hpp>
 #include <scene_module/no_stopping_area/manager.hpp>
 #include <scene_module/occlusion_spot/manager.hpp>
+#include <scene_module/out_of_lane/manager.hpp>
 #include <scene_module/run_out/manager.hpp>
 #include <scene_module/speed_bump/manager.hpp>
 #include <scene_module/stop_line/manager.hpp>
@@ -199,6 +200,9 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   }
   if (this->declare_parameter<bool>("launch_speed_bump")) {
     planner_manager_.launchSceneModule(std::make_shared<SpeedBumpModuleManager>(*this));
+  }
+  if (this->declare_parameter<bool>("launch_out_of_lane")) {
+    planner_manager_.launchSceneModule(std::make_shared<OutOfLaneModuleManager>(*this));
   }
 }
 
