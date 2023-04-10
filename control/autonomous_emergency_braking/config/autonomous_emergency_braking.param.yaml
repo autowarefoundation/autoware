@@ -13,4 +13,5 @@
     a_obj_min: -1.0
     prediction_time_horizon: 1.5
     prediction_time_interval: 0.1
+    collision_keeping_sec: 0.0
     aeb_hz: 10.0
