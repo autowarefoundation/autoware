@@ -152,7 +152,6 @@ void PointcloudBasedOccupancyGridMapNode::onPointcloudWithObstacleAndRaw(
     gridmap_origin.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
   single_frame_occupancy_grid_map.updateWithPointCloud(
     filtered_raw_pc, filtered_obstacle_pc_common, robot_pose, scan_origin);
-
   if (enable_single_frame_mode_) {
     // publish
     occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(

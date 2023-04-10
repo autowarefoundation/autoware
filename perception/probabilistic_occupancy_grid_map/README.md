@@ -5,6 +5,11 @@
 This package outputs the probability of having an obstacle as occupancy grid map.
 ![pointcloud_based_occupancy_grid_map_sample_image](./image/pointcloud_based_occupancy_grid_map_sample_image.gif)
 
+## References/External links
+
+- [Pointcloud based occupancy grid map](pointcloud-based-occupancy-grid-map.md)
+- [Laserscan based occupancy grid map](laserscan-based-occupancy-grid-map.md)
+
 ## Settings
 
 Occupancy grid map is generated on `map_frame`, and grid orientation is fixed.
@@ -46,7 +51,19 @@ Config parameters are managed in `config/*.yaml` and here shows its outline.
 | scan_origin_frame        | "base_link"   |
 | gridmap_origin_frame     | "base_link"   |
 
-## References/External links
+## Other parameters
 
-- [Pointcloud based occupancy grid map](pointcloud-based-occupancy-grid-map.md)
-- [Laserscan based occupancy grid map](laserscan-based-occupancy-grid-map.md)
+Additional argument is shown below:
+
+| Name                                            | Default                        | Description                                                                                                                               |
+| ----------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `use_multithread`                               | `false`                        | whether to use multithread                                                                                                                |
+| `use_intra_process`                             | `false`                        |                                                                                                                                           |
+| `map_origin`                                    | ``                             | parameter to override `map_origin_frame` which means grid map origin                                                                      |
+| `scan_origin`                                   | ``                             | parameter to override `scan_origin_frame` which means scanning center                                                                     |
+| `output`                                        | `occupancy_grid`               | output name                                                                                                                               |
+| `use_pointcloud_container`                      | `false`                        |                                                                                                                                           |
+| `container_name`                                | `occupancy_grid_map_container` |                                                                                                                                           |
+| `filter_obstacle_pointcloud_by_raw_pointcloud_` | `false`                        | only for pointcloud based method. If true, the node use raw pointcloud to filter obstacle pointcloud. Options for the limited FOV sensor. |
+| `input_obstacle_pointcloud`                     | `false`                        | only for laserscan based method. If true, the node subscribe obstacle pointcloud                                                          |
+| `input_obstacle_and_raw_pointcloud`             | `true`                         | only for laserscan based method. If true, the node subscribe both obstacle and raw pointcloud                                             |
