@@ -838,13 +838,14 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
 
   {
     std::string ns = "pull_over.";
-    p.request_length = declare_parameter<double>(ns + "request_length");
+    p.minimum_request_length = declare_parameter<double>(ns + "minimum_request_length");
     p.th_stopped_velocity = declare_parameter<double>(ns + "th_stopped_velocity");
     p.th_arrived_distance = declare_parameter<double>(ns + "th_arrived_distance");
     p.th_stopped_time = declare_parameter<double>(ns + "th_stopped_time");
     p.margin_from_boundary = declare_parameter<double>(ns + "margin_from_boundary");
     p.decide_path_distance = declare_parameter<double>(ns + "decide_path_distance");
     p.maximum_deceleration = declare_parameter<double>(ns + "maximum_deceleration");
+    p.maximum_jerk = declare_parameter<double>(ns + "maximum_jerk");
     // goal research
     p.enable_goal_research = declare_parameter<bool>(ns + "enable_goal_research");
     p.search_priority = declare_parameter<std::string>(ns + "search_priority");

@@ -1738,31 +1738,6 @@ PathWithLaneId setDecelerationVelocity(
   return reference_path;
 }
 
-// TODO(murooka) remove calcSignedArcLength using findNearestSegmentIndex inside the
-// function
-PathWithLaneId setDecelerationVelocityForTurnSignal(
-  const PathWithLaneId & input, const Pose target_pose, const double turn_light_on_threshold_time)
-{
-  auto reference_path = input;
-
-  for (auto & point : reference_path.points) {
-    const auto arclength_to_target = std::max(
-      0.0, motion_utils::calcSignedArcLength(
-             reference_path.points, point.point.pose.position, target_pose.position));
-    point.point.longitudinal_velocity_mps = std::min(
-      point.point.longitudinal_velocity_mps,
-      static_cast<float>(arclength_to_target / turn_light_on_threshold_time));
-  }
-
-  const auto stop_point_length =
-    motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position);
-  if (stop_point_length > 0) {
-    const auto stop_point = util::insertStopPoint(stop_point_length, reference_path);
-  }
-
-  return reference_path;
-}
-
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification)
 {
   std::uint8_t label = ObjectClassification::UNKNOWN;

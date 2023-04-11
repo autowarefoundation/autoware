@@ -32,13 +32,14 @@ using freespace_planning_algorithms::RRTStarParam;
 
 struct PullOverParameters
 {
-  double request_length;
+  double minimum_request_length;
   double th_arrived_distance;
   double th_stopped_velocity;
   double th_stopped_time;
   double margin_from_boundary;
   double decide_path_distance;
   double maximum_deceleration;
+  double maximum_jerk;
   // goal research
   std::string search_priority;  // "efficient_path" or "close_goal"
   bool enable_goal_research;

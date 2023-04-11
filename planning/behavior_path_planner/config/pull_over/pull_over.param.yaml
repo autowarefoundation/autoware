@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     pull_over:
-      request_length: 200.0
+      minimum_request_length: 200.0
       th_arrived_distance: 1.0
       th_stopped_velocity: 0.01
       th_stopped_time: 2.0  # It must be greater than the state_machine's.
@@ -10,6 +10,7 @@
       margin_from_boundary: 0.5
       decide_path_distance: 10.0
       maximum_deceleration: 1.0
+      maximum_jerk: 1.0
       # goal research
       enable_goal_research: true
       search_priority: "efficient_path" # "efficient_path" or "close_goal"

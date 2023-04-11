@@ -190,7 +190,7 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 
   - The goal is in shoulder lane and the ego-vehicle is in road lane.
   - The distance between the goal and ego-vehicle is somewhat close.
-    - It is shorter than `request_length`(default: < `200m`).
+    - It is shorter than `minimum_request_length`(default: < `200m`).
 
 - Pull over ready condition
 

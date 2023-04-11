@@ -34,9 +34,11 @@
 #include <utility>
 #include <vector>
 
+using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
+using motion_utils::insertDecelPoint;
 using nav_msgs::msg::OccupancyGrid;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
@@ -327,7 +329,7 @@ bool PullOverModule::isExecutionRequested() const
   }
   const double self_to_goal_arc_length =
     util::getSignedDistance(current_pose, goal_pose, current_lanes);
-  if (self_to_goal_arc_length > parameters_->request_length) {
+  if (self_to_goal_arc_length > calcModuleRequestLength()) {
     return false;
   }
 
@@ -368,6 +370,19 @@ bool PullOverModule::isExecutionRequested() const
 bool PullOverModule::isExecutionReady() const
 {
   return true;
+}
+
+double PullOverModule::calcModuleRequestLength() const
+{
+  const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
+  if (!min_stop_distance) {
+    return parameters_->minimum_request_length;
+  }
+
+  const double minimum_request_length =
+    *min_stop_distance + parameters_->backward_goal_search_length + approximate_pull_over_distance_;
+
+  return std::max(minimum_request_length, parameters_->minimum_request_length);
 }
 
 Pose PullOverModule::calcRefinedGoal(const Pose & goal_pose) const
@@ -590,11 +605,9 @@ BehaviorModuleOutput PullOverModule::plan()
         status_.pull_over_path->getFullPath().points, refined_goal_pose_.position,
         -parameters_->backward_goal_search_length - planner_data_->parameters.base_link2front);
       auto & first_path = status_.pull_over_path->partial_paths.front();
+
       if (search_start_pose) {
-        constexpr double deceleration_buffer = 15.0;
-        first_path = util::setDecelerationVelocity(
-          first_path, parameters_->pull_over_velocity, *search_start_pose, -deceleration_buffer,
-          parameters_->deceleration_interval);
+        decelerateBeforeSearchStart(*search_start_pose, first_path);
       } else {
         // if already passed the search start pose, set pull_over_velocity to first_path.
         for (auto & p : first_path.points) {
@@ -791,7 +804,7 @@ PathWithLaneId PullOverModule::generateStopPath()
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & common_parameters = planner_data_->parameters;
-  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
+  const double pull_over_velocity = parameters_->pull_over_velocity;
 
   if (status_.current_lanes.empty()) {
     return PathWithLaneId{};
@@ -812,45 +825,36 @@ PathWithLaneId PullOverModule::generateStopPath()
   // 3. search start pose
   //     (In the case of the curve lane, the position is not aligned due to the
   //     difference between the outer and inner sides)
-  // 4. emergency stop
+  // 4. feasible stop
   const auto search_start_pose = calcLongitudinalOffsetPose(
     reference_path.points, refined_goal_pose_.position,
-    -parameters_->backward_goal_search_length - planner_data_->parameters.base_link2front);
+    -parameters_->backward_goal_search_length - common_parameters.base_link2front);
   if (!status_.is_safe && !closest_start_pose_ && !search_start_pose) {
-    return generateEmergencyStopPath();
+    return generateFeasibleStopPath();
   }
   const Pose stop_pose =
     status_.is_safe ? status_.pull_over_path->start_pose
                     : (closest_start_pose_ ? closest_start_pose_.value() : *search_start_pose);
 
   // if stop pose is closer than min_stop_distance, stop as soon as possible
-  const size_t ego_idx = planner_data_->findEgoIndex(reference_path.points);
-  const size_t stop_idx = findFirstNearestSegmentIndexWithSoftConstraints(
-    reference_path.points, stop_pose, common_parameters.ego_nearest_dist_threshold,
-    common_parameters.ego_nearest_yaw_threshold);
-  const double ego_to_stop_distance = calcSignedArcLength(
-    reference_path.points, current_pose.position, ego_idx, stop_pose.position, stop_idx);
-  const double min_stop_distance = std::pow(current_vel, 2) / parameters_->maximum_deceleration / 2;
+  const double ego_to_stop_distance = calcSignedArcLengthFromEgo(reference_path, stop_pose);
+  const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
   if (ego_to_stop_distance < min_stop_distance) {
-    return generateEmergencyStopPath();
+    return generateFeasibleStopPath();
   }
 
   // slow down for turn signal, insert stop point to stop_pose
-  reference_path = util::setDecelerationVelocityForTurnSignal(
-    reference_path, stop_pose, planner_data_->parameters.turn_signal_search_time);
+  decelerateForTurnSignal(stop_pose, reference_path);
   status_.stop_pose = stop_pose;
 
   // slow down before the search area.
   if (search_start_pose) {
-    constexpr double deceleration_buffer = 15.0;
-    reference_path = util::setDecelerationVelocity(
-      reference_path, parameters_->pull_over_velocity, *search_start_pose, -deceleration_buffer,
-      parameters_->deceleration_interval);
+    decelerateBeforeSearchStart(*search_start_pose, reference_path);
   } else {
     // if already passed the search start pose, set pull_over_velocity to reference_path.
     for (auto & p : reference_path.points) {
-      p.point.longitudinal_velocity_mps = std::min(
-        p.point.longitudinal_velocity_mps, static_cast<float>(parameters_->pull_over_velocity));
+      p.point.longitudinal_velocity_mps =
+        std::min(p.point.longitudinal_velocity_mps, static_cast<float>(pull_over_velocity));
     }
   }
 
@@ -866,13 +870,11 @@ PathWithLaneId PullOverModule::generateStopPath()
   return reference_path;
 }
 
-PathWithLaneId PullOverModule::generateEmergencyStopPath()
+PathWithLaneId PullOverModule::generateFeasibleStopPath()
 {
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & common_parameters = planner_data_->parameters;
-  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
-  constexpr double eps_vel = 0.01;
 
   // generate stop reference path
   const auto s_current =
@@ -882,33 +884,16 @@ PathWithLaneId PullOverModule::generateEmergencyStopPath()
   auto stop_path = route_handler->getCenterLinePath(status_.current_lanes, s_start, s_end, true);
 
   // calc minimum stop distance under maximum deceleration
-  const double min_stop_distance = std::pow(current_vel, 2) / parameters_->maximum_deceleration / 2;
+  const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
+  if (!min_stop_distance) {
+    return stop_path;
+  }
 
   // set stop point
   const auto stop_idx =
-    motion_utils::insertStopPoint(current_pose, min_stop_distance, stop_path.points);
+    motion_utils::insertStopPoint(current_pose, *min_stop_distance, stop_path.points);
   if (stop_idx) {
     status_.stop_pose = stop_path.points.at(*stop_idx).point.pose;
-  }
-
-  // set deceleration velocity
-  const size_t ego_idx = planner_data_->findEgoIndex(stop_path.points);
-  for (auto & point : stop_path.points) {
-    auto & p = point.point;
-    const size_t target_idx = findFirstNearestSegmentIndexWithSoftConstraints(
-      stop_path.points, p.pose, common_parameters.ego_nearest_dist_threshold,
-      common_parameters.ego_nearest_yaw_threshold);
-    const double distance_to_target = calcSignedArcLength(
-      stop_path.points, current_pose.position, ego_idx, p.pose.position, target_idx);
-    if (0.0 < distance_to_target && eps_vel < current_vel) {
-      p.longitudinal_velocity_mps = std::clamp(
-        static_cast<float>(
-          current_vel * (min_stop_distance - distance_to_target) / min_stop_distance),
-        0.0f, p.longitudinal_velocity_mps);
-    } else {
-      p.longitudinal_velocity_mps =
-        std::min(p.longitudinal_velocity_mps, static_cast<float>(current_vel));
-    }
   }
 
   // generate drivable area
@@ -1027,6 +1012,153 @@ TurnSignalInfo PullOverModule::calcTurnSignalInfo() const
   return turn_signal;
 }
 
+bool PullOverModule::checkCollision(const PathWithLaneId & path) const
+{
+  if (parameters_->use_occupancy_grid || !occupancy_grid_map_) {
+    const bool check_out_of_range = false;
+    if (occupancy_grid_map_->hasObstacleOnPath(path, check_out_of_range)) {
+      return true;
+    }
+  }
+
+  if (parameters_->use_object_recognition) {
+    if (util::checkCollisionBetweenPathFootprintsAndObjects(
+          vehicle_footprint_, path, *(planner_data_->dynamic_object),
+          parameters_->object_recognition_collision_check_margin)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool PullOverModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
+{
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
+
+  // once stopped, the vehicle cannot start again if start_pose is close.
+  // so need enough distance to restart.
+  // distance to restart should be less than decide_path_distance.
+  // otherwise, the goal would change immediately after departure.
+  constexpr double eps_vel = 0.01;
+  const double distance_to_start = calcSignedArcLength(
+    pull_over_path.getFullPath().points, current_pose.position, pull_over_path.start_pose.position);
+  const double distance_to_restart = parameters_->decide_path_distance / 2;
+  if (std::abs(current_vel) < eps_vel && distance_to_start < distance_to_restart) {
+    return false;
+  }
+
+  const auto current_to_stop_distance = calcFeasibleDecelDistance(0.0);
+  if (!current_to_stop_distance) {
+    return false;
+  }
+
+  if (distance_to_start < *current_to_stop_distance) {
+    return false;
+  }
+
+  return true;
+}
+
+void PullOverModule::keepStoppedWithCurrentPath(PathWithLaneId & path)
+{
+  constexpr double keep_stop_time = 2.0;
+  constexpr double keep_current_idx_buffer_time = 2.0;
+  if (last_increment_time_) {
+    const auto time_diff = (clock_->now() - *last_increment_time_).seconds();
+    if (time_diff < keep_stop_time) {
+      status_.require_increment_ = false;
+      for (auto & p : path.points) {
+        p.point.longitudinal_velocity_mps = 0.0;
+      }
+    } else if (time_diff > keep_stop_time + keep_current_idx_buffer_time) {
+      // require increment only when the time passed is enough
+      // to prevent increment before driving
+      // when the end of the current path is close to the current pose
+      status_.require_increment_ = true;
+    }
+  }
+}
+
+boost::optional<double> PullOverModule::calcFeasibleDecelDistance(
+  const double target_velocity) const
+{
+  const auto v_now = planner_data_->self_odometry->twist.twist.linear.x;
+  const auto a_now = planner_data_->self_acceleration->accel.accel.linear.x;
+  const auto a_lim = parameters_->maximum_deceleration;  // positive value
+  const auto j_lim = parameters_->maximum_jerk;
+
+  if (v_now < target_velocity) {
+    return 0.0;
+  }
+
+  const auto min_stop_distance = calcDecelDistWithJerkAndAccConstraints(
+    v_now, target_velocity, a_now, -a_lim, j_lim, -1.0 * j_lim);
+
+  return min_stop_distance;
+}
+
+double PullOverModule::calcSignedArcLengthFromEgo(
+  const PathWithLaneId & path, const Pose & pose) const
+{
+  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const auto & p = planner_data_->parameters;
+
+  const size_t ego_idx = planner_data_->findEgoIndex(path.points);
+  const size_t target_idx = findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, pose, p.ego_nearest_dist_threshold, p.ego_nearest_yaw_threshold);
+  return calcSignedArcLength(
+    path.points, current_pose.position, ego_idx, pose.position, target_idx);
+}
+
+void PullOverModule::decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const
+{
+  const double time = planner_data_->parameters.turn_signal_search_time;
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+
+  for (auto & point : path.points) {
+    const auto distance_to_stop = std::max(
+      0.0, calcSignedArcLength(path.points, point.point.pose.position, stop_pose.position));
+    const float decel_vel =
+      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(distance_to_stop / time));
+    const double distance_from_ego = calcSignedArcLengthFromEgo(path, stop_pose);
+    const auto min_decel_distance = calcFeasibleDecelDistance(decel_vel);
+    if (!min_decel_distance) {
+      continue;
+    }
+
+    if (0.0 < *min_decel_distance && *min_decel_distance < distance_from_ego) {
+      point.point.longitudinal_velocity_mps = decel_vel;
+    } else {
+      insertDecelPoint(current_pose.position, *min_decel_distance, decel_vel, path.points);
+    }
+  }
+
+  const double stop_point_length = calcSignedArcLength(path.points, 0, stop_pose.position);
+  const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
+
+  if (*min_stop_distance && min_stop_distance < stop_point_length) {
+    const auto stop_point = util::insertStopPoint(stop_point_length, path);
+  }
+}
+
+void PullOverModule::decelerateBeforeSearchStart(
+  const Pose & search_start_pose, PathWithLaneId & path) const
+{
+  const double pull_over_velocity = parameters_->pull_over_velocity;
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+
+  // slow down before the search area.
+  const auto min_decel_distance = calcFeasibleDecelDistance(pull_over_velocity);
+  if (min_decel_distance) {
+    const double distance_to_search_start = calcSignedArcLengthFromEgo(path, search_start_pose);
+    const double distance_to_decel =
+      std::max(*min_decel_distance, distance_to_search_start - approximate_pull_over_distance_);
+    insertDecelPoint(current_pose.position, distance_to_decel, pull_over_velocity, path.points);
+  }
+}
+
 void PullOverModule::setDebugData()
 {
   debug_marker_.markers.clear();
@@ -1108,73 +1240,6 @@ void PullOverModule::setDebugData()
     add(createStopVirtualWallMarker(
       *status_.stop_pose, "pull_over", clock_->now(), 0,
       planner_data_->parameters.base_link2front));
-  }
-}
-
-bool PullOverModule::checkCollision(const PathWithLaneId & path) const
-{
-  if (parameters_->use_occupancy_grid || !occupancy_grid_map_) {
-    const bool check_out_of_range = false;
-    if (occupancy_grid_map_->hasObstacleOnPath(path, check_out_of_range)) {
-      return true;
-    }
-  }
-
-  if (parameters_->use_object_recognition) {
-    if (util::checkCollisionBetweenPathFootprintsAndObjects(
-          vehicle_footprint_, path, *(planner_data_->dynamic_object),
-          parameters_->object_recognition_collision_check_margin)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool PullOverModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
-{
-  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
-
-  // once stopped, the vehicle cannot start again if start_pose is close.
-  // so need enough distance to restart.
-  // distance to restart should be less than decide_path_distance.
-  // otherwise, the goal would change immediately after departure.
-  constexpr double eps_vel = 0.01;
-  const double distance_to_start = calcSignedArcLength(
-    pull_over_path.getFullPath().points, current_pose.position, pull_over_path.start_pose.position);
-  const double distance_to_restart = parameters_->decide_path_distance / 2;
-  if (std::abs(current_vel) < eps_vel && distance_to_start < distance_to_restart) {
-    return false;
-  }
-
-  // prevent emergency stop
-  const double current_to_stop_distance =
-    std::pow(current_vel, 2) / parameters_->maximum_deceleration / 2;
-  if (distance_to_start < current_to_stop_distance) {
-    return false;
-  }
-
-  return true;
-}
-
-void PullOverModule::keepStoppedWithCurrentPath(PathWithLaneId & path)
-{
-  constexpr double keep_stop_time = 2.0;
-  constexpr double keep_current_idx_buffer_time = 2.0;
-  if (last_increment_time_) {
-    const auto time_diff = (clock_->now() - *last_increment_time_).seconds();
-    if (time_diff < keep_stop_time) {
-      status_.require_increment_ = false;
-      for (auto & p : path.points) {
-        p.point.longitudinal_velocity_mps = 0.0;
-      }
-    } else if (time_diff > keep_stop_time + keep_current_idx_buffer_time) {
-      // require increment only when the time passed is enough
-      // to prevent increment before driving
-      // when the end of the current path is close to the current pose
-      status_.require_increment_ = true;
-    }
   }
 }
 

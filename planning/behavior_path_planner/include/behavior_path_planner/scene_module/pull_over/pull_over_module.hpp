@@ -27,6 +27,7 @@
 #include <freespace_planning_algorithms/astar_search.hpp>
 #include <freespace_planning_algorithms/rrtstar.hpp>
 #include <lane_departure_checker/lane_departure_checker.hpp>
+#include <motion_utils/distance/distance.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
@@ -151,13 +152,22 @@ private:
   std::unique_ptr<rclcpp::Time> last_increment_time_;
   std::unique_ptr<Pose> last_approved_pose_;
 
+  // approximate distance from the start point to the end point of pull_over.
+  // this is used as an assumed value to decelerate, etc., before generating the actual path.
+  double approximate_pull_over_distance_ = 20.0;
+
   bool incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
   Pose calcRefinedGoal(const Pose & goal_pose) const;
   ParallelParkingParameters getGeometricPullOverParameters() const;
+  double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
+  void decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const;
+  void decelerateBeforeSearchStart(const Pose & search_start_pose, PathWithLaneId & path) const;
   std::pair<double, double> calcDistanceToPathChange() const;
   PathWithLaneId generateStopPath();
-  PathWithLaneId generateEmergencyStopPath();
+  PathWithLaneId generateFeasibleStopPath();
+  boost::optional<double> calcFeasibleDecelDistance(const double target_velocity) const;
+  double calcModuleRequestLength() const;
   void keepStoppedWithCurrentPath(PathWithLaneId & path);
 
   bool isStopped();

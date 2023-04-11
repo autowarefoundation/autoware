@@ -309,9 +309,6 @@ PathWithLaneId setDecelerationVelocity(
   const PathWithLaneId & input, const double target_velocity, const Pose target_pose,
   const double buffer, const double deceleration_interval);
 
-PathWithLaneId setDecelerationVelocityForTurnSignal(
-  const PathWithLaneId & input, const Pose target_pose, const double turn_light_on_threshold_time);
-
 // object label
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);
 
