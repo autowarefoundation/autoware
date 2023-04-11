@@ -294,8 +294,13 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runCandidateModu
     processing_time_.at(name) += stop_watch_.toc(name, true);
   }
 
-  const auto remove_failure_modules = [this](auto & m) {
+  const auto remove_expired_modules = [this](auto & m) {
     if (m->getCurrentStatus() == ModuleStatus::FAILURE) {
+      deleteExpiredModules(m);
+      return true;
+    }
+
+    if (m->getCurrentStatus() == ModuleStatus::SUCCESS) {
       deleteExpiredModules(m);
       return true;
     }
@@ -304,7 +309,7 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runCandidateModu
   };
 
   executable_modules.erase(
-    std::remove_if(executable_modules.begin(), executable_modules.end(), remove_failure_modules),
+    std::remove_if(executable_modules.begin(), executable_modules.end(), remove_expired_modules),
     executable_modules.end());
 
   if (executable_modules.empty()) {
