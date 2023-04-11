@@ -11,6 +11,7 @@ ament_auto_add_library(pointcloud_map_loader_node SHARED
   src/pointcloud_map_loader/pointcloud_map_loader_module.cpp
   src/pointcloud_map_loader/partial_map_loader_module.cpp
   src/pointcloud_map_loader/differential_map_loader_module.cpp
+  src/pointcloud_map_loader/selected_map_loader_module.cpp
   src/pointcloud_map_loader/utils.cpp
 )
 target_link_libraries(pointcloud_map_loader_node ${PCL_LIBRARIES})
@@ -18,7 +19,7 @@ target_link_libraries(pointcloud_map_loader_node yaml-cpp)
 
 target_include_directories(pointcloud_map_loader_node
   SYSTEM PUBLIC
-    ${PCL_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 rclcpp_components_register_node(pointcloud_map_loader_node

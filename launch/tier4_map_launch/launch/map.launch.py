@@ -84,8 +84,10 @@ def launch_setup(context, *args, **kwargs):
         name="pointcloud_map_loader",
         remappings=[
             ("output/pointcloud_map", "pointcloud_map"),
+            ("output/pointcloud_map_metadata", "pointcloud_map_metadata"),
             ("service/get_partial_pcd_map", "/map/get_partial_pointcloud_map"),
             ("service/get_differential_pcd_map", "/map/get_differential_pointcloud_map"),
+            ("service/get_selected_pcd_map", "/map/get_selected_pointcloud_map"),
         ],
         parameters=[
             {"pcd_paths_or_directory": ["[", LaunchConfiguration("pointcloud_map_path"), "]"]},
