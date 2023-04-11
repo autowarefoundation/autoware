@@ -813,22 +813,19 @@ void LaneChangeModule::updateOutputTurnSignal(BehaviorModuleOutput & output)
 
 void LaneChangeModule::calcTurnSignalInfo()
 {
-  const auto get_blinker_pose =
-    [this](const PathWithLaneId & path, const lanelet::ConstLanelets & lanes, const double length) {
-      const auto & points = path.points;
-      const auto arc_front = lanelet::utils::getArcCoordinates(lanes, points.front().point.pose);
-      for (const auto & point : points) {
-        const auto & pt = point.point.pose;
-        const auto arc_current = lanelet::utils::getArcCoordinates(lanes, pt);
-        const auto diff = arc_current.length - arc_front.length;
-        if (diff > length) {
-          return pt;
-        }
+  const auto get_blinker_pose = [this](const PathWithLaneId & path, const double length) {
+    double accumulated_length = 0.0;
+    for (size_t i = 0; i < path.points.size() - 1; ++i) {
+      accumulated_length +=
+        tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+      if (accumulated_length > length) {
+        return path.points.at(i).point.pose;
       }
+    }
 
-      RCLCPP_WARN(getLogger(), "unable to determine blinker pose...");
-      return points.front().point.pose;
-    };
+    RCLCPP_WARN(getLogger(), "unable to determine blinker pose...");
+    return path.points.front().point.pose;
+  };
 
   const auto & path = status_.lane_change_path;
   TurnSignalInfo turn_signal_info{};
@@ -836,20 +833,21 @@ void LaneChangeModule::calcTurnSignalInfo()
   turn_signal_info.desired_start_point = std::invoke([&]() {
     const auto blinker_start_duration = planner_data_->parameters.turn_signal_search_time;
     const auto prepare_duration = parameters_->prepare_duration;
-    const auto prepare_to_blinker_start_diff = prepare_duration - blinker_start_duration;
-    if (prepare_to_blinker_start_diff < 1e-5) {
+    const auto diff_time = prepare_duration - blinker_start_duration;
+    if (diff_time < 1e-5) {
       return path.path.points.front().point.pose;
     }
 
-    return get_blinker_pose(path.path, path.reference_lanelets, prepare_to_blinker_start_diff);
+    const auto current_twist = getEgoTwist();
+    const auto diff_length = std::abs(current_twist.linear.x) * diff_time;
+    return get_blinker_pose(path.path, diff_length);
   });
   turn_signal_info.desired_end_point = path.shift_line.end;
 
   turn_signal_info.required_start_point = path.shift_line.start;
-  const auto mid_lane_change_length = path.length.prepare / 2;
+  const auto mid_lane_change_length = path.length.lane_changing / 2;
   const auto & shifted_path = path.shifted_path.path;
-  turn_signal_info.required_end_point =
-    get_blinker_pose(shifted_path, path.target_lanelets, mid_lane_change_length);
+  turn_signal_info.required_end_point = get_blinker_pose(shifted_path, mid_lane_change_length);
 
   status_.lane_change_path.turn_signal_info = turn_signal_info;
 }
