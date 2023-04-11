@@ -10,8 +10,6 @@ find_package(magic_enum CONFIG REQUIRED)
 set(COMPILE_WITH_OLD_ARCHITECTURE TRUE)
 
 set(common_src
-  src/utilities.cpp
-  src/path_utilities.cpp
   src/steering_factor_interface.cpp
   src/behavior_path_planner_node.cpp
   src/scene_module/scene_module_visitor.cpp
@@ -23,6 +21,8 @@ set(common_src
   src/scene_module/lane_change/lane_change_module.cpp
   src/scene_module/lane_change/external_request_lane_change_module.cpp
   src/turn_signal_decider.cpp
+  src/util/utils.cpp
+  src/util/path_utils.cpp
   src/util/safety_check.cpp
   src/util/avoidance/util.cpp
   src/util/lane_change/util.cpp
@@ -91,7 +91,7 @@ rclcpp_components_register_node(behavior_path_planner_node
 if(BUILD_TESTING)
   ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_utilities
     test/input.cpp
-    test/test_utilities.cpp
+    test/test_utils.cpp
     test/test_drivable_area_expansion.cpp
   )
   target_link_libraries(test_${CMAKE_PROJECT_NAME}_utilities

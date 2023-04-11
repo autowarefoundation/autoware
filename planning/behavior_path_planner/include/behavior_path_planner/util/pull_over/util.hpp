@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTIL__PULL_OVER__UTIL_HPP_
 
 #include "behavior_path_planner/util/pull_over/goal_searcher_base.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 

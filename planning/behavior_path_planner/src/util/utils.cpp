@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include "behavior_path_planner/util/drivable_area_expansion/drivable_area_expansion.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
@@ -524,7 +524,7 @@ bool setGoal(
     return true;
   } catch (std::out_of_range & ex) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
       "failed to set goal: " << ex.what());
     return false;
   }
@@ -1337,7 +1337,7 @@ double getSignedDistanceFromShoulderLeftBoundary(
 
   } else {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
       "closest shoulder lanelet not found.");
   }
 
@@ -1391,7 +1391,7 @@ std::optional<double> getSignedDistanceFromShoulderLeftBoundary(
 
   if (!found_neighbor_shoulder_bound) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
       "neighbor shoulder bound to footprint is not found.");
     return {};
   }
@@ -1411,7 +1411,7 @@ double getSignedDistanceFromRightBoundary(
       right_line_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
   } else {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
       "closest shoulder lanelet not found.");
   }
 
@@ -1511,7 +1511,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
     RCLCPP_ERROR(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
       "failed to find closest lanelet within route!!!");
     return {};  // TODO(Horibe) What should be returned?
   }
@@ -1548,7 +1548,7 @@ lanelet::ConstLineStrings3d getMaximumDrivableArea(
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(ego_pose, &current_lane)) {
     RCLCPP_ERROR(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"),
       "failed to find closest lanelet within route!!!");
     return {};
   }

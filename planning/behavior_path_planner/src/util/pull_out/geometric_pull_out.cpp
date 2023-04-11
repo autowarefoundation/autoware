@@ -15,7 +15,7 @@
 #include "behavior_path_planner/util/pull_out/geometric_pull_out.hpp"
 
 #include "behavior_path_planner/util/pull_out/util.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

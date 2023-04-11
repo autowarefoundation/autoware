@@ -15,8 +15,8 @@
 #include "behavior_path_planner/behavior_path_planner_node.hpp"
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
-#include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/util/drivable_area_expansion/map_utils.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
 
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>

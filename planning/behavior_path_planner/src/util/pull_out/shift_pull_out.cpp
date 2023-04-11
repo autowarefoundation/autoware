@@ -14,9 +14,9 @@
 
 #include "behavior_path_planner/util/pull_out/shift_pull_out.hpp"
 
-#include "behavior_path_planner/path_utilities.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
 #include "behavior_path_planner/util/pull_out/util.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

@@ -14,9 +14,9 @@
 
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 
-#include "behavior_path_planner/path_utilities.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
 #include "behavior_path_planner/util/side_shift/util.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

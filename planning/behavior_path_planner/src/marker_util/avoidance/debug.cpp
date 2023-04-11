@@ -14,8 +14,8 @@
 
 #include "behavior_path_planner/marker_util/avoidance/debug.hpp"
 
-#include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include <tf2/utils.h>
 

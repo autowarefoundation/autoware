@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/util/pull_over/geometric_pull_over.hpp"
 
-#include "behavior_path_planner/path_utilities.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
 #include "behavior_path_planner/util/pull_over/util.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>

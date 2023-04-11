@@ -14,8 +14,8 @@
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
 
-#include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

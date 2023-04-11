@@ -14,8 +14,8 @@
 
 #include "behavior_path_planner/util/geometric_parallel_parking/geometric_parallel_parking.hpp"
 
-#include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/utilities.hpp"
+#include "behavior_path_planner/util/path_utils.hpp"
+#include "behavior_path_planner/util/utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <interpolation/spline_interpolation.hpp>

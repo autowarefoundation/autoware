@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTIL__UTILS_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTIL__UTILS_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
@@ -351,4 +351,4 @@ lanelet::ConstLanelets getLaneletsFromPath(
 std::string convertToSnakeCase(const std::string & input_str);
 }  // namespace behavior_path_planner::util
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTIL__UTILS_HPP_
