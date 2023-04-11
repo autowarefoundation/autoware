@@ -256,7 +256,7 @@ std::optional<LaneChangePath> constructCandidatePath(
 }
 
 #ifdef USE_OLD_ARCHITECTURE
-std::pair<bool, bool> getLaneChangePaths(
+bool getLaneChangePaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
   const PredictedObjects::ConstSharedPtr dynamic_objects,
@@ -264,7 +264,7 @@ std::pair<bool, bool> getLaneChangePaths(
   const double check_length, LaneChangePaths * candidate_paths,
   std::unordered_map<std::string, CollisionCheckDebug> * debug_data)
 #else
-std::pair<bool, bool> getLaneChangePaths(
+bool getLaneChangePaths(
   const PathWithLaneId & original_path, const RouteHandler & route_handler,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const Pose & pose, const Twist & twist, const PredictedObjects::ConstSharedPtr dynamic_objects,
@@ -275,7 +275,7 @@ std::pair<bool, bool> getLaneChangePaths(
 {
   debug_data->clear();
   if (original_lanelets.empty() || target_lanelets.empty()) {
-    return {false, false};
+    return false;
   }
 
   Pose ego_pose_before_collision{};
@@ -493,16 +493,12 @@ std::pair<bool, bool> getLaneChangePaths(
       common_parameter.expected_rear_deceleration, ego_pose_before_collision, *debug_data,
       acceleration);
 
-    if (is_valid && is_safe) {
-      return {true, true};
+    if (is_safe) {
+      return true;
     }
   }
 
-  if (candidate_paths->empty()) {
-    return {false, false};
-  }
-
-  return {true, false};
+  return false;
 }
 
 #ifdef USE_OLD_ARCHITECTURE

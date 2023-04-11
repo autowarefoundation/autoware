@@ -66,7 +66,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   const LaneChangePhaseInfo lane_change_length, const LaneChangePhaseInfo lane_change_velocity,
   const LaneChangeParameters & lane_change_param);
 
-std::pair<bool, bool> getLaneChangePaths(
+bool getLaneChangePaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
   const PredictedObjects::ConstSharedPtr dynamic_objects,
@@ -74,7 +74,7 @@ std::pair<bool, bool> getLaneChangePaths(
   const double check_length, LaneChangePaths * candidate_paths,
   std::unordered_map<std::string, CollisionCheckDebug> * debug_data);
 
-std::pair<bool, bool> getLaneChangePaths(
+bool getLaneChangePaths(
   const PathWithLaneId & original_path, const RouteHandler & route_handler,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const Pose & pose, const Twist & twist, const PredictedObjects::ConstSharedPtr dynamic_objects,

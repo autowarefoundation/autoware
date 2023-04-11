@@ -465,12 +465,12 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
   // find candidate paths
   LaneChangePaths valid_paths;
 #ifdef USE_OLD_ARCHITECTURE
-  const auto [found_valid_path, found_safe_path] = util::lane_change::getLaneChangePaths(
+  const auto found_safe_path = util::lane_change::getLaneChangePaths(
     *route_handler, current_lanes, lane_change_lanes, current_pose, current_twist,
     planner_data_->dynamic_object, common_parameters, *parameters_, check_distance, &valid_paths,
     &object_debug_);
 #else
-  const auto [found_valid_path, found_safe_path] = util::lane_change::getLaneChangePaths(
+  const auto found_safe_path = util::lane_change::getLaneChangePaths(
     *getPreviousModuleOutput().path, *route_handler, current_lanes, lane_change_lanes, current_pose,
     current_twist, planner_data_->dynamic_object, common_parameters, *parameters_, check_distance,
     direction_, &valid_paths, &object_debug_);
@@ -483,7 +483,7 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
     debug_marker_.markers.clear();
   }
 
-  if (!found_valid_path) {
+  if (valid_paths.empty()) {
     return {false, false};
   }
 
@@ -494,7 +494,7 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
     safe_path = valid_paths.front();
   }
 
-  return {found_valid_path, found_safe_path};
+  return {true, found_safe_path};
 }
 
 bool LaneChangeModule::isSafe() const
