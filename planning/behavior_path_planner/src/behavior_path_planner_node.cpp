@@ -725,6 +725,14 @@ LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
     declare_parameter<std::vector<std::string>>("lane_following.drivable_area_types_to_skip");
   p.lane_change_prepare_duration =
     declare_parameter<double>("lane_following.lane_change_prepare_duration");
+
+  // finding closest lanelet
+  {
+    p.distance_threshold =
+      declare_parameter<double>("lane_following.closest_lanelet.distance_threshold");
+    p.yaw_threshold = declare_parameter<double>("lane_following.closest_lanelet.yaw_threshold");
+  }
+
   return p;
 }
 

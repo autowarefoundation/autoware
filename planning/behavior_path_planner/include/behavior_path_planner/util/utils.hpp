@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021-2023 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -328,7 +328,9 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
-  const double forward_length, const double backward_length);
+  const double forward_length, const double backward_length,
+  const double dist_threshold = std::numeric_limits<double>::max(),
+  const double yaw_threshold = std::numeric_limits<double>::max());
 
 std::vector<PredictedPath> getPredictedPathFromObj(
   const PredictedObject & obj, const bool & is_use_all_predicted_path);

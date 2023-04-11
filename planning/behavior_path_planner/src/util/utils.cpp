@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021-2023 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1849,10 +1849,11 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<RouteHandler> route_handler, const Pose & pose, const double forward_length,
-  const double backward_length)
+  const double backward_length, const double dist_threshold, const double yaw_threshold)
 {
   lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
+  if (!route_handler->getClosestLaneletWithConstrainsWithinRoute(
+        pose, &current_lane, dist_threshold, yaw_threshold)) {
     RCLCPP_ERROR(
       rclcpp::get_logger("behavior_path_planner").get_child("avoidance"),
       "failed to find closest lanelet within route!!!");

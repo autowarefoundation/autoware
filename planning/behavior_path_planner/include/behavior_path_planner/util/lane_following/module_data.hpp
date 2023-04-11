@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2021-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,10 @@ struct LaneFollowingParameters
   double drivable_area_right_bound_offset;
   double drivable_area_left_bound_offset;
   std::vector<std::string> drivable_area_types_to_skip{};
+
+  // finding closest lanelet
+  double distance_threshold;
+  double yaw_threshold;
 };
 
 }  // namespace behavior_path_planner

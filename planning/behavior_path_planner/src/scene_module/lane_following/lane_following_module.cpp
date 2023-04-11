@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021-2023 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -118,7 +118,8 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   reference_path.header = route_handler->getRouteHeader();
 
   lanelet::ConstLanelet current_lane;
-  if (!planner_data_->route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
+  if (!planner_data_->route_handler->getClosestLaneletWithConstrainsWithinRoute(
+        current_pose, &current_lane, parameters_->distance_threshold, parameters_->yaw_threshold)) {
     RCLCPP_ERROR_THROTTLE(
       getLogger(), *clock_, 5000, "failed to find closest lanelet within route!!!");
     return reference_path;  // TODO(Horibe)
@@ -135,8 +136,9 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   // calculate path with backward margin to avoid end points' instability by spline interpolation
   constexpr double extra_margin = 10.0;
   const double backward_length = p.backward_path_length + extra_margin;
-  const auto current_lanes_with_backward_margin =
-    util::calcLaneAroundPose(route_handler, current_pose, p.forward_path_length, backward_length);
+  const auto current_lanes_with_backward_margin = util::calcLaneAroundPose(
+    route_handler, current_pose, p.forward_path_length, backward_length,
+    parameters_->distance_threshold, parameters_->yaw_threshold);
   reference_path = util::getCenterLinePath(
     *route_handler, current_lanes_with_backward_margin, current_pose, backward_length,
     p.forward_path_length, p);

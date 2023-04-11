@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021-2023 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -733,6 +733,14 @@ bool RouteHandler::getClosestLaneletWithinRoute(
   const Pose & search_pose, lanelet::ConstLanelet * closest_lanelet) const
 {
   return lanelet::utils::query::getClosestLanelet(route_lanelets_, search_pose, closest_lanelet);
+}
+
+bool RouteHandler::getClosestLaneletWithConstrainsWithinRoute(
+  const Pose & search_pose, lanelet::ConstLanelet * closest_lanelet, const double dist_threshold,
+  const double yaw_threshold) const
+{
+  return lanelet::utils::query::getClosestLaneletWithConstrains(
+    route_lanelets_, search_pose, closest_lanelet, dist_threshold, yaw_threshold);
 }
 
 bool RouteHandler::getNextLaneletWithinRoute(
