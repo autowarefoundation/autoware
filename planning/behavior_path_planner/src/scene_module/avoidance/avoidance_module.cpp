@@ -2308,7 +2308,6 @@ bool AvoidanceModule::isSafePath(
     getAdjacentLane(path_shifter, forward_check_distance, backward_check_distance);
 
   auto path_with_current_velocity = shifted_path.path;
-  path_with_current_velocity = util::resamplePathWithSpline(path_with_current_velocity, 0.5);
 
   const size_t ego_idx = planner_data_->findEgoIndex(path_with_current_velocity.points);
   util::clipPathLength(path_with_current_velocity, ego_idx, forward_check_distance, 0.0);
@@ -3146,6 +3145,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
 
   output.path = std::make_shared<PathWithLaneId>(avoidance_path.path);
   output.reference_path = getPreviousModuleOutput().reference_path;
+  path_reference_ = getPreviousModuleOutput().reference_path;
 
   const size_t ego_idx = planner_data_->findEgoIndex(output.path->points);
   util::clipPathLength(*output.path, ego_idx, planner_data_->parameters);
