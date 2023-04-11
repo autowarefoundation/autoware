@@ -278,7 +278,7 @@ class TrajectoryVisualizer(Node):
         )
 
     def CalcArcLength(self, traj):
-        return self.CalcPartArcLength(traj, 0, len(traj.points))
+        return self.CalcPartArcLength(traj, 0, len(traj))
 
     def CalcPartArcLength(self, traj, start, end):
         assert start <= end
@@ -286,12 +286,12 @@ class TrajectoryVisualizer(Node):
         ds = 0.0
         s_sum = 0.0
 
-        if len(traj.points) > 0:
+        if len(traj) > 0:
             s_arr.append(s_sum)
 
         for i in range(start + 1, end):
-            p0 = traj.points[i - 1]
-            p1 = traj.points[i]
+            p0 = traj[i - 1]
+            p1 = traj[i]
             dx = p1.pose.position.x - p0.pose.position.x
             dy = p1.pose.position.y - p0.pose.position.y
             ds = np.sqrt(dx**2 + dy**2)
@@ -303,8 +303,8 @@ class TrajectoryVisualizer(Node):
         ds_arr = []
 
         for i in range(start + 1, end):
-            p0 = traj.points[i - 1]
-            p1 = traj.points[i]
+            p0 = traj[i - 1]
+            p1 = traj[i]
             dx = p1.pose.position.x - p0.pose.position.x
             dy = p1.pose.position.y - p0.pose.position.y
             ds = np.sqrt(dx**2 + dy**2)
@@ -316,11 +316,11 @@ class TrajectoryVisualizer(Node):
         t_sum = 0.0
         ds_arr = self.CalcTrajectoryInterval(traj, start, end)
 
-        if len(traj.points) > 0:
+        if len(traj) > 0:
             t_arr.append(t_sum)
 
         for i in range(start, end - 1):
-            v = traj.points[i].longitudinal_velocity_mps
+            v = traj[i].longitudinal_velocity_mps
             ds = ds_arr[i - start]
             dt = ds / max(v, 0.1)
             t_sum += dt
@@ -329,7 +329,7 @@ class TrajectoryVisualizer(Node):
 
     def ToVelList(self, traj):
         v_list = []
-        for p in traj.points:
+        for p in traj:
             v_list.append(p.longitudinal_velocity_mps)
         return v_list
 

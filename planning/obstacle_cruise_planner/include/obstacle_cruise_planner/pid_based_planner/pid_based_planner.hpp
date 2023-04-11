@@ -23,9 +23,8 @@
 
 #include "visualization_msgs/msg/marker_array.hpp"
 
-#include <boost/optional.hpp>
-
 #include <memory>
+#include <optional>
 #include <vector>
 
 class PIDBasedPlanner : public PlannerInterface
@@ -34,7 +33,7 @@ public:
   struct CruiseObstacleInfo
   {
     CruiseObstacleInfo(
-      const TargetObstacle & obstacle_arg, const double error_cruise_dist_arg,
+      const CruiseObstacle & obstacle_arg, const double error_cruise_dist_arg,
       const double dist_to_obstacle_arg, const double target_dist_to_obstacle_arg)
     : obstacle(obstacle_arg),
       error_cruise_dist(error_cruise_dist_arg),
@@ -43,7 +42,7 @@ public:
     {
     }
 
-    TargetObstacle obstacle;
+    CruiseObstacle obstacle;
     double error_cruise_dist;
     double dist_to_obstacle;
     double target_dist_to_obstacle;
@@ -51,44 +50,43 @@ public:
 
   PIDBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param);
+    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
+    const std::shared_ptr<DebugData> debug_data_ptr);
 
-  Trajectory generateCruiseTrajectory(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    DebugData & debug_data) override;
+  std::vector<TrajectoryPoint> generateCruiseTrajectory(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const std::vector<CruiseObstacle> & obstacles,
+    std::optional<VelocityLimit> & vel_limit) override;
 
   void updateParam(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
-  void calcObstaclesToCruise(
-    const ObstacleCruisePlannerData & planner_data,
-    boost::optional<CruiseObstacleInfo> & cruise_obstacle_info);
-
   Float32MultiArrayStamped getCruisePlanningDebugMessage(
     const rclcpp::Time & current_time) const override
   {
     return cruise_planning_debug_info_.convertToMessage(current_time);
   }
 
-private:
-  boost::optional<CruiseObstacleInfo> calcObstacleToCruise(
-    const ObstacleCruisePlannerData & planner_data);
-  Trajectory planCruise(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    const boost::optional<CruiseObstacleInfo> & cruise_obstacle_info, DebugData & debug_data);
+  std::optional<CruiseObstacleInfo> calcObstacleToCruise(
+    const PlannerData & planner_data, const std::vector<CruiseObstacle> & obstacles);
+
+  std::vector<TrajectoryPoint> planCruise(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    std::optional<VelocityLimit> & vel_limit,
+    const std::optional<CruiseObstacleInfo> & cruise_obstacle_info);
 
   // velocity limit based planner
   VelocityLimit doCruiseWithVelocityLimit(
-    const ObstacleCruisePlannerData & planner_data,
-    const CruiseObstacleInfo & cruise_obstacle_info);
+    const PlannerData & planner_data, const CruiseObstacleInfo & cruise_obstacle_info);
 
   // velocity insertion based planner
-  Trajectory doCruiseWithTrajectory(
-    const ObstacleCruisePlannerData & planner_data,
+  std::vector<TrajectoryPoint> doCruiseWithTrajectory(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
     const CruiseObstacleInfo & cruise_obstacle_info);
-  Trajectory getAccelerationLimitedTrajectory(
-    const Trajectory traj, const geometry_msgs::msg::Pose & start_pose, const double v0,
-    const double a0, const double target_acc, const double target_jerk_ratio) const;
+  std::vector<TrajectoryPoint> getAccelerationLimitedTrajectory(
+    const std::vector<TrajectoryPoint> traj, const geometry_msgs::msg::Pose & start_pose,
+    const double v0, const double a0, const double target_acc,
+    const double target_jerk_ratio) const;
 
   // ROS parameters
   double min_accel_during_cruise_;
@@ -121,7 +119,7 @@ private:
     std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
     stop_watch_;
 
-  boost::optional<double> prev_target_acc_;
+  std::optional<double> prev_target_acc_;
 
   // lpf for nodes's input
   std::shared_ptr<LowpassFilter1d> lpf_dist_to_obstacle_ptr_;
@@ -136,7 +134,7 @@ private:
   std::shared_ptr<LowpassFilter1d> lpf_output_acc_ptr_;
   std::shared_ptr<LowpassFilter1d> lpf_output_jerk_ptr_;
 
-  Trajectory prev_traj_;
+  std::vector<TrajectoryPoint> prev_traj_points_;
 
   bool use_velocity_limit_based_planner_{true};
 

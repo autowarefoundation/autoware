@@ -15,61 +15,122 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
 #define OBSTACLE_CRUISE_PLANNER__COMMON_STRUCTS_HPP_
 
+#include "motion_utils/motion_utils.hpp"
 #include "obstacle_cruise_planner/type_alias.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <string>
 #include <vector>
 
-struct TargetObstacle
+struct PlannerData
 {
-  TargetObstacle(
-    const rclcpp::Time & arg_time_stamp, const PredictedObject & object,
-    const double aligned_velocity,
-    const std::vector<geometry_msgs::msg::PointStamped> & arg_collision_points)
-  {
-    time_stamp = arg_time_stamp;
-    orientation_reliable = true;
-    pose = object.kinematics.initial_pose_with_covariance.pose;
-    velocity_reliable = true;
-    velocity = aligned_velocity;
-    classification = object.classification.at(0);
-    uuid = tier4_autoware_utils::toHexString(object.object_id);
+  rclcpp::Time current_time;
+  std::vector<TrajectoryPoint> traj_points;
+  geometry_msgs::msg::Pose ego_pose;
+  double ego_vel;
+  double ego_acc;
+  bool is_driving_forward;
+};
 
+struct PoseWithStamp
+{
+  rclcpp::Time stamp;
+  geometry_msgs::msg::Pose pose;
+};
+
+struct PointWithStamp
+{
+  rclcpp::Time stamp;
+  geometry_msgs::msg::Point point;
+};
+
+struct Obstacle
+{
+  Obstacle(
+    const rclcpp::Time & arg_stamp, const PredictedObject & object,
+    const geometry_msgs::msg::Pose & arg_pose)
+  : stamp(arg_stamp),
+    pose(arg_pose),
+    orientation_reliable(true),
+    twist(object.kinematics.initial_twist_with_covariance.twist),
+    twist_reliable(true),
+    classification(object.classification.at(0)),
+    uuid(tier4_autoware_utils::toHexString(object.object_id)),
+    shape(object.shape)
+  {
     predicted_paths.clear();
     for (const auto & path : object.kinematics.predicted_paths) {
       predicted_paths.push_back(path);
     }
-
-    collision_points = arg_collision_points;
-    has_stopped = false;
   }
 
-  rclcpp::Time time_stamp;
-  geometry_msgs::msg::Pose pose;
+  Polygon2d toPolygon() const { return tier4_autoware_utils::toPolygon2d(pose, shape); }
+
+  rclcpp::Time stamp;  // This is not the current stamp, but when the object was observed.
+  geometry_msgs::msg::Pose pose;  // interpolated with the current stamp
   bool orientation_reliable;
-  double velocity;
-  bool velocity_reliable;
+  Twist twist;
+  bool twist_reliable;
   ObjectClassification classification;
   std::string uuid;
+  Shape shape;
   std::vector<PredictedPath> predicted_paths;
-  std::vector<geometry_msgs::msg::PointStamped> collision_points;
-  bool has_stopped;
 };
 
-struct ObstacleCruisePlannerData
+struct TargetObstacleInterface
 {
-  rclcpp::Time current_time;
-  Trajectory traj;
-  geometry_msgs::msg::Pose current_pose;
-  double current_vel;
-  double current_acc;
-  std::vector<TargetObstacle> target_obstacles;
-  bool is_driving_forward;
+  TargetObstacleInterface(
+    const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
+    const geometry_msgs::msg::Pose & arg_pose, const double arg_velocity)
+  : uuid(arg_uuid), stamp(arg_stamp), pose(arg_pose), velocity(arg_velocity)
+  {
+  }
+  std::string uuid;
+  rclcpp::Time stamp;
+  geometry_msgs::msg::Pose pose;  // interpolated with the current stamp
+  double velocity;                // signed projected velocity to trajectory
+};
+
+struct StopObstacle : public TargetObstacleInterface
+{
+  StopObstacle(
+    const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
+    const geometry_msgs::msg::Pose & arg_pose, const double arg_velocity,
+    const geometry_msgs::msg::Point arg_collision_point)
+  : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_velocity),
+    collision_point(arg_collision_point)
+  {
+  }
+  geometry_msgs::msg::Point collision_point;
+};
+
+struct CruiseObstacle : public TargetObstacleInterface
+{
+  CruiseObstacle(
+    const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
+    const geometry_msgs::msg::Pose & arg_pose, const double arg_velocity,
+    const std::vector<PointWithStamp> & arg_collision_points)
+  : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_velocity),
+    collision_points(arg_collision_points)
+  {
+  }
+  std::vector<PointWithStamp> collision_points;  // time-series collision points
+};
+
+struct SlowDownObstacle : public TargetObstacleInterface
+{
+  SlowDownObstacle(
+    const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
+    const geometry_msgs::msg::Pose & arg_pose, const double arg_velocity,
+    const geometry_msgs::msg::Point arg_collision_point)
+  : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_velocity),
+    collision_point(arg_collision_point)
+  {
+  }
+  geometry_msgs::msg::Point collision_point;
 };
 
 struct LongitudinalInfo
@@ -139,9 +200,11 @@ struct LongitudinalInfo
 
 struct DebugData
 {
-  std::vector<PredictedObject> intentionally_ignored_obstacles;
-  std::vector<TargetObstacle> obstacles_to_stop;
-  std::vector<TargetObstacle> obstacles_to_cruise;
+  DebugData() = default;
+  std::vector<Obstacle> intentionally_ignored_obstacles;
+  std::vector<StopObstacle> obstacles_to_stop;
+  std::vector<CruiseObstacle> obstacles_to_cruise;
+  std::vector<SlowDownObstacle> obstacles_to_slow_down;
   MarkerArray stop_wall_marker;
   MarkerArray cruise_wall_marker;
   std::vector<tier4_autoware_utils::Polygon2d> detection_polygons;
@@ -155,6 +218,27 @@ struct EgoNearestParam
   {
     dist_threshold = node.declare_parameter<double>("ego_nearest_dist_threshold");
     yaw_threshold = node.declare_parameter<double>("ego_nearest_yaw_threshold");
+  }
+
+  TrajectoryPoint calcInterpolatedPoint(
+    const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & pose) const
+  {
+    return motion_utils::calcInterpolatedPoint(
+      motion_utils::convertToTrajectory(traj_points), pose, dist_threshold, yaw_threshold);
+  }
+
+  size_t findIndex(
+    const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & pose) const
+  {
+    return motion_utils::findFirstNearestIndexWithSoftConstraints(
+      traj_points, pose, dist_threshold, yaw_threshold);
+  }
+
+  size_t findSegmentIndex(
+    const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & pose) const
+  {
+    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      traj_points, pose, dist_threshold, yaw_threshold);
   }
 
   double dist_threshold;

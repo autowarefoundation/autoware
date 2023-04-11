@@ -15,7 +15,7 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_CONTROLLER_HPP_
 #define OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_CONTROLLER_HPP_
 
-#include <boost/optional.hpp>
+#include <optional>
 
 class PIDController
 {
@@ -31,7 +31,7 @@ public:
 
     // TODO(murooka) use time for d gain calculation
     const double output =
-      kp_ * error + ki_ * error_sum_ + (prev_error_ ? kd_ * (error - prev_error_.get()) : 0.0);
+      kp_ * error + ki_ * error_sum_ + (prev_error_ ? kd_ * (error - *prev_error_) : 0.0);
     prev_error_ = error;
     return output;
   }
@@ -56,7 +56,7 @@ private:
   double kd_;
 
   double error_sum_;
-  boost::optional<double> prev_error_;
+  std::optional<double> prev_error_;
 };
 
 #endif  // OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_CONTROLLER_HPP_

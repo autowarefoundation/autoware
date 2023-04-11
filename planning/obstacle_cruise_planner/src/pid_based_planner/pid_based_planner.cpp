@@ -28,7 +28,7 @@ VelocityLimit createVelocityLimitMsg(
 {
   VelocityLimit msg;
   msg.stamp = current_time;
-  msg.sender = "obstacle_cruise_planner";
+  msg.sender = "obstacle_cruise_planner.cruise";
   msg.use_constraints = true;
 
   msg.max_velocity = vel;
@@ -55,76 +55,78 @@ T getSign(const T val)
 
 PIDBasedPlanner::PIDBasedPlanner(
   rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param)
-: PlannerInterface(node, longitudinal_info, vehicle_info, ego_nearest_param)
+  const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
+  const std::shared_ptr<DebugData> debug_data_ptr)
+: PlannerInterface(node, longitudinal_info, vehicle_info, ego_nearest_param, debug_data_ptr)
 {
   min_accel_during_cruise_ =
-    node.declare_parameter<double>("pid_based_planner.min_accel_during_cruise");
+    node.declare_parameter<double>("cruise.pid_based_planner.min_accel_during_cruise");
 
   use_velocity_limit_based_planner_ =
-    node.declare_parameter<bool>("pid_based_planner.use_velocity_limit_based_planner");
+    node.declare_parameter<bool>("cruise.pid_based_planner.use_velocity_limit_based_planner");
 
   {  // velocity limit based planner
     const double kp =
-      node.declare_parameter<double>("pid_based_planner.velocity_limit_based_planner.kp");
+      node.declare_parameter<double>("cruise.pid_based_planner.velocity_limit_based_planner.kp");
     const double ki =
-      node.declare_parameter<double>("pid_based_planner.velocity_limit_based_planner.ki");
+      node.declare_parameter<double>("cruise.pid_based_planner.velocity_limit_based_planner.ki");
     const double kd =
-      node.declare_parameter<double>("pid_based_planner.velocity_limit_based_planner.kd");
+      node.declare_parameter<double>("cruise.pid_based_planner.velocity_limit_based_planner.kd");
     velocity_limit_based_planner_param_.pid_vel_controller =
       std::make_unique<PIDController>(kp, ki, kd);
 
     velocity_limit_based_planner_param_.output_ratio_during_accel = node.declare_parameter<double>(
-      "pid_based_planner.velocity_limit_based_planner.output_ratio_during_accel");
+      "cruise.pid_based_planner.velocity_limit_based_planner.output_ratio_during_accel");
     velocity_limit_based_planner_param_.vel_to_acc_weight = node.declare_parameter<double>(
-      "pid_based_planner.velocity_limit_based_planner.vel_to_acc_weight");
+      "cruise.pid_based_planner.velocity_limit_based_planner.vel_to_acc_weight");
 
     velocity_limit_based_planner_param_.enable_jerk_limit_to_output_acc =
       node.declare_parameter<bool>(
-        "pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc");
+        "cruise.pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc");
 
     velocity_limit_based_planner_param_.disable_target_acceleration = node.declare_parameter<bool>(
-      "pid_based_planner.velocity_limit_based_planner.disable_target_acceleration");
+      "cruise.pid_based_planner.velocity_limit_based_planner.disable_target_acceleration");
   }
 
   {  // velocity insertion based planner
     // pid controller for acc
-    const double kp_acc =
-      node.declare_parameter<double>("pid_based_planner.velocity_insertion_based_planner.kp_acc");
-    const double ki_acc =
-      node.declare_parameter<double>("pid_based_planner.velocity_insertion_based_planner.ki_acc");
-    const double kd_acc =
-      node.declare_parameter<double>("pid_based_planner.velocity_insertion_based_planner.kd_acc");
+    const double kp_acc = node.declare_parameter<double>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.kp_acc");
+    const double ki_acc = node.declare_parameter<double>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.ki_acc");
+    const double kd_acc = node.declare_parameter<double>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.kd_acc");
     velocity_insertion_based_planner_param_.pid_acc_controller =
       std::make_unique<PIDController>(kp_acc, ki_acc, kd_acc);
 
     // pid controller for jerk
-    const double kp_jerk =
-      node.declare_parameter<double>("pid_based_planner.velocity_insertion_based_planner.kp_jerk");
-    const double ki_jerk =
-      node.declare_parameter<double>("pid_based_planner.velocity_insertion_based_planner.ki_jerk");
-    const double kd_jerk =
-      node.declare_parameter<double>("pid_based_planner.velocity_insertion_based_planner.kd_jerk");
+    const double kp_jerk = node.declare_parameter<double>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.kp_jerk");
+    const double ki_jerk = node.declare_parameter<double>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.ki_jerk");
+    const double kd_jerk = node.declare_parameter<double>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.kd_jerk");
     velocity_insertion_based_planner_param_.pid_jerk_controller =
       std::make_unique<PIDController>(kp_jerk, ki_jerk, kd_jerk);
 
     velocity_insertion_based_planner_param_.output_acc_ratio_during_accel =
       node.declare_parameter<double>(
-        "pid_based_planner.velocity_insertion_based_planner.output_acc_ratio_during_accel");
+        "cruise.pid_based_planner.velocity_insertion_based_planner.output_acc_ratio_during_accel");
     velocity_insertion_based_planner_param_.output_jerk_ratio_during_accel =
       node.declare_parameter<double>(
-        "pid_based_planner.velocity_insertion_based_planner.output_jerk_ratio_during_accel");
+        "cruise.pid_based_planner.velocity_insertion_based_planner.output_jerk_ratio_during_accel");
 
-    velocity_insertion_based_planner_param_.enable_jerk_limit_to_output_acc =
-      node.declare_parameter<bool>(
-        "pid_based_planner.velocity_insertion_based_planner.enable_jerk_limit_to_output_acc");
+    velocity_insertion_based_planner_param_
+      .enable_jerk_limit_to_output_acc = node.declare_parameter<bool>(
+      "cruise.pid_based_planner.velocity_insertion_based_planner.enable_jerk_limit_to_output_acc");
   }
 
   min_cruise_target_vel_ =
-    node.declare_parameter<double>("pid_based_planner.min_cruise_target_vel");
-  time_to_evaluate_rss_ = node.declare_parameter<double>("pid_based_planner.time_to_evaluate_rss");
+    node.declare_parameter<double>("cruise.pid_based_planner.min_cruise_target_vel");
+  time_to_evaluate_rss_ =
+    node.declare_parameter<double>("cruise.pid_based_planner.time_to_evaluate_rss");
   const auto error_function_type =
-    node.declare_parameter<std::string>("pid_based_planner.error_function_type");
+    node.declare_parameter<std::string>("cruise.pid_based_planner.error_function_type");
   error_func_ = [&]() -> std::function<double(double)> {
     if (error_function_type == "linear") {
       return [](const double val) { return val; };
@@ -135,8 +137,8 @@ PIDBasedPlanner::PIDBasedPlanner(
   }();
 
   // low pass filter
-  const double lpf_normalized_error_cruise_dist_gain =
-    node.declare_parameter<double>("pid_based_planner.lpf_normalized_error_cruise_dist_gain");
+  const double lpf_normalized_error_cruise_dist_gain = node.declare_parameter<double>(
+    "cruise.pid_based_planner.lpf_normalized_error_cruise_dist_gain");
   lpf_normalized_error_cruise_dist_ptr_ =
     std::make_shared<LowpassFilter1d>(lpf_normalized_error_cruise_dist_gain);
   lpf_dist_to_obstacle_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
@@ -147,42 +149,43 @@ PIDBasedPlanner::PIDBasedPlanner(
   lpf_output_jerk_ptr_ = std::make_shared<LowpassFilter1d>(0.5);
 }
 
-Trajectory PIDBasedPlanner::generateCruiseTrajectory(
-  const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-  DebugData & debug_data)
+std::vector<TrajectoryPoint> PIDBasedPlanner::generateCruiseTrajectory(
+  const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+  const std::vector<CruiseObstacle> & obstacles, std::optional<VelocityLimit> & vel_limit)
 {
   stop_watch_.tic(__func__);
   cruise_planning_debug_info_.reset();
 
   // calc obstacles to cruise
-  const auto cruise_obstacle_info = calcObstacleToCruise(planner_data);
+  const auto cruise_obstacle_info = calcObstacleToCruise(planner_data, obstacles);
 
   // plan cruise
-  const auto cruise_traj = planCruise(planner_data, vel_limit, cruise_obstacle_info, debug_data);
+  const auto cruise_traj_points =
+    planCruise(planner_data, stop_traj_points, vel_limit, cruise_obstacle_info);
 
   const double calculation_time = stop_watch_.toc(__func__);
   RCLCPP_INFO_EXPRESSION(
-    rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), is_showing_debug_info_,
+    rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), enable_calculation_time_info_,
     "  %s := %f [ms]", __func__, calculation_time);
 
-  prev_traj_ = cruise_traj;
-  return cruise_traj;
+  prev_traj_points_ = cruise_traj_points;
+  return cruise_traj_points;
 }
 
-boost::optional<PIDBasedPlanner::CruiseObstacleInfo> PIDBasedPlanner::calcObstacleToCruise(
-  const ObstacleCruisePlannerData & planner_data)
+std::optional<PIDBasedPlanner::CruiseObstacleInfo> PIDBasedPlanner::calcObstacleToCruise(
+  const PlannerData & planner_data, const std::vector<CruiseObstacle> & obstacles)
 {
   cruise_planning_debug_info_.set(
-    CruisePlanningDebugInfo::TYPE::EGO_VELOCITY, planner_data.current_vel);
+    CruisePlanningDebugInfo::TYPE::EGO_VELOCITY, planner_data.ego_vel);
   cruise_planning_debug_info_.set(
-    CruisePlanningDebugInfo::TYPE::EGO_ACCELERATION, planner_data.current_acc);
+    CruisePlanningDebugInfo::TYPE::EGO_ACCELERATION, planner_data.ego_acc);
 
-  auto modified_target_obstacles = planner_data.target_obstacles;
+  auto modified_target_obstacles = obstacles;  // TODO(murooka) what is this variable?
 
   // search highest probability obstacle for cruise
-  boost::optional<CruiseObstacleInfo> cruise_obstacle_info;
-  for (size_t o_idx = 0; o_idx < planner_data.target_obstacles.size(); ++o_idx) {
-    const auto & obstacle = planner_data.target_obstacles.at(o_idx);
+  std::optional<CruiseObstacleInfo> cruise_obstacle_info;
+  for (size_t o_idx = 0; o_idx < obstacles.size(); ++o_idx) {
+    const auto & obstacle = obstacles.at(o_idx);
 
     if (obstacle.collision_points.empty()) {
       continue;
@@ -192,11 +195,11 @@ boost::optional<PIDBasedPlanner::CruiseObstacleInfo> PIDBasedPlanner::calcObstac
     // TODO(murooka) this is not dist to obstacle
     const double dist_to_obstacle =
       calcDistanceToCollisionPoint(planner_data, obstacle.collision_points.front().point) +
-      (obstacle.velocity - planner_data.current_vel) * time_to_evaluate_rss_;
+      (obstacle.velocity - planner_data.ego_vel) * time_to_evaluate_rss_;
 
     // calculate distance between ego and obstacle based on RSS
     const double target_dist_to_obstacle = calcRSSDistance(
-      planner_data.current_vel, obstacle.velocity, longitudinal_info_.safe_distance_margin);
+      planner_data.ego_vel, obstacle.velocity, longitudinal_info_.safe_distance_margin);
 
     // calculate error distance and normalized one
     const double error_cruise_dist = dist_to_obstacle - target_dist_to_obstacle;
@@ -220,10 +223,9 @@ boost::optional<PIDBasedPlanner::CruiseObstacleInfo> PIDBasedPlanner::calcObstac
   {  // debug data
     cruise_planning_debug_info_.set(
       CruisePlanningDebugInfo::TYPE::CRUISE_RELATIVE_EGO_VELOCITY,
-      planner_data.current_vel - cruise_obstacle_info->obstacle.velocity);
+      planner_data.ego_vel - cruise_obstacle_info->obstacle.velocity);
     const double non_zero_relative_vel = [&]() {
-      const double relative_vel =
-        planner_data.current_vel - cruise_obstacle_info->obstacle.velocity;
+      const double relative_vel = planner_data.ego_vel - cruise_obstacle_info->obstacle.velocity;
       constexpr double epsilon = 0.001;
       if (epsilon < std::abs(relative_vel)) {
         return relative_vel;
@@ -284,46 +286,47 @@ boost::optional<PIDBasedPlanner::CruiseObstacleInfo> PIDBasedPlanner::calcObstac
   return cruise_obstacle_info;
 }
 
-Trajectory PIDBasedPlanner::planCruise(
-  const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-  const boost::optional<CruiseObstacleInfo> & cruise_obstacle_info, DebugData & debug_data)
+std::vector<TrajectoryPoint> PIDBasedPlanner::planCruise(
+  const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+  std::optional<VelocityLimit> & vel_limit,
+  const std::optional<CruiseObstacleInfo> & cruise_obstacle_info)
 {
   // do cruise
   if (cruise_obstacle_info) {
     RCLCPP_INFO_EXPRESSION(
-      rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), is_showing_debug_info_,
+      rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), enable_debug_info_,
       "cruise planning");
 
     {  // update debug marker
       // virtual wall marker for cruise
       const double error_cruise_dist = cruise_obstacle_info->error_cruise_dist;
       const double dist_to_obstacle = cruise_obstacle_info->dist_to_obstacle;
-      const size_t ego_idx = findEgoIndex(planner_data.traj, planner_data.current_pose);
+      const size_t ego_idx = findEgoIndex(stop_traj_points, planner_data.ego_pose);
       const double abs_ego_offset = planner_data.is_driving_forward
                                       ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                       : std::abs(vehicle_info_.min_longitudinal_offset_m);
       const double dist_to_rss_wall =
         std::min(error_cruise_dist + abs_ego_offset, dist_to_obstacle + abs_ego_offset);
       const size_t wall_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
-        planner_data.traj.points, dist_to_rss_wall, ego_idx);
+        stop_traj_points, dist_to_rss_wall, ego_idx);
 
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
-        planner_data.traj.points.at(wall_idx).pose, "obstacle cruise", planner_data.current_time,
-        0);
-      tier4_autoware_utils::appendMarkerArray(markers, &debug_data.cruise_wall_marker);
+        stop_traj_points.at(wall_idx).pose, "obstacle cruise", planner_data.current_time, 0);
+      tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->cruise_wall_marker);
 
       // cruise obstacle
-      debug_data.obstacles_to_cruise.push_back(cruise_obstacle_info->obstacle);
+      debug_data_ptr_->obstacles_to_cruise.push_back(cruise_obstacle_info->obstacle);
     }
 
     // do cruise planning
     if (!use_velocity_limit_based_planner_) {
-      const auto cruise_traj = doCruiseWithTrajectory(planner_data, cruise_obstacle_info.get());
+      const auto cruise_traj =
+        doCruiseWithTrajectory(planner_data, stop_traj_points, *cruise_obstacle_info);
       return cruise_traj;
     }
 
-    vel_limit = doCruiseWithVelocityLimit(planner_data, cruise_obstacle_info.get());
-    return planner_data.traj;
+    vel_limit = doCruiseWithVelocityLimit(planner_data, *cruise_obstacle_info);
+    return stop_traj_points;
   }
 
   // reset previous cruise data if adaptive cruise is not enabled
@@ -336,13 +339,13 @@ Trajectory PIDBasedPlanner::planCruise(
   // delete marker
   const auto markers =
     motion_utils::createDeletedSlowDownVirtualWallMarker(planner_data.current_time, 0);
-  tier4_autoware_utils::appendMarkerArray(markers, &debug_data.cruise_wall_marker);
+  tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->cruise_wall_marker);
 
-  return planner_data.traj;
+  return stop_traj_points;
 }
 
 VelocityLimit PIDBasedPlanner::doCruiseWithVelocityLimit(
-  const ObstacleCruisePlannerData & planner_data, const CruiseObstacleInfo & cruise_obstacle_info)
+  const PlannerData & planner_data, const CruiseObstacleInfo & cruise_obstacle_info)
 {
   const auto & p = velocity_limit_based_planner_param_;
 
@@ -364,7 +367,7 @@ VelocityLimit PIDBasedPlanner::doCruiseWithVelocityLimit(
   }();
 
   const double positive_target_vel = lpf_output_vel_ptr_->filter(
-    std::max(min_cruise_target_vel_, planner_data.current_vel + additional_vel));
+    std::max(min_cruise_target_vel_, planner_data.ego_vel + additional_vel));
 
   // calculate target acceleration
   const double target_acc = [&]() {
@@ -382,11 +385,11 @@ VelocityLimit PIDBasedPlanner::doCruiseWithVelocityLimit(
       return lpf_output_acc_ptr_->filter(target_acc);
     }
 
-    if (p.enable_jerk_limit_to_output_acc) {                            // apply jerk limit
-      const double jerk = (target_acc - prev_target_acc_.get()) / 0.1;  // TODO(murooka) 0.1
+    if (p.enable_jerk_limit_to_output_acc) {                       // apply jerk limit
+      const double jerk = (target_acc - *prev_target_acc_) / 0.1;  // TODO(murooka) 0.1
       const double limited_jerk =
         std::clamp(jerk, longitudinal_info_.min_jerk, longitudinal_info_.max_jerk);
-      target_acc = prev_target_acc_.get() + limited_jerk * 0.1;
+      target_acc = *prev_target_acc_ + limited_jerk * 0.1;
     }
 
     return lpf_output_acc_ptr_->filter(target_acc);
@@ -399,7 +402,7 @@ VelocityLimit PIDBasedPlanner::doCruiseWithVelocityLimit(
     CruisePlanningDebugInfo::TYPE::CRUISE_TARGET_ACCELERATION, target_acc);
 
   RCLCPP_INFO_EXPRESSION(
-    rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), is_showing_debug_info_,
+    rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), enable_debug_info_,
     "target_velocity %f", positive_target_vel);
 
   // set target longitudinal motion
@@ -410,8 +413,9 @@ VelocityLimit PIDBasedPlanner::doCruiseWithVelocityLimit(
   return vel_limit;
 }
 
-Trajectory PIDBasedPlanner::doCruiseWithTrajectory(
-  const ObstacleCruisePlannerData & planner_data, const CruiseObstacleInfo & cruise_obstacle_info)
+std::vector<TrajectoryPoint> PIDBasedPlanner::doCruiseWithTrajectory(
+  const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+  const CruiseObstacleInfo & cruise_obstacle_info)
 {
   const auto & p = velocity_insertion_based_planner_param_;
 
@@ -440,10 +444,10 @@ Trajectory PIDBasedPlanner::doCruiseWithTrajectory(
     }
 
     if (p.enable_jerk_limit_to_output_acc) {
-      const double jerk = (target_acc - prev_target_acc_.get()) / 0.1;  // TODO(murooka) 0.1
+      const double jerk = (target_acc - *prev_target_acc_) / 0.1;  // TODO(murooka) 0.1
       const double limited_jerk =
         std::clamp(jerk, longitudinal_info_.min_jerk, longitudinal_info_.max_jerk);
-      target_acc = prev_target_acc_.get() + limited_jerk * 0.1;
+      target_acc = *prev_target_acc_ + limited_jerk * 0.1;
     }
 
     return target_acc;
@@ -470,34 +474,32 @@ Trajectory PIDBasedPlanner::doCruiseWithTrajectory(
   const auto prev_traj_closest_point = [&]() -> TrajectoryPoint {
     // if (smoothed_trajectory_ptr_) {
     //   return motion_utils::calcInterpolatedPoint(
-    //     *smoothed_trajectory_ptr_, planner_data.current_pose, nearest_dist_deviation_threshold_,
+    //     *smoothed_trajectory_ptr_, planner_data.ego_pose, nearest_dist_deviation_threshold_,
     //     nearest_yaw_deviation_threshold_);
     // }
-    return motion_utils::calcInterpolatedPoint(
-      prev_traj_, planner_data.current_pose, ego_nearest_param_.dist_threshold,
-      ego_nearest_param_.yaw_threshold);
+    return ego_nearest_param_.calcInterpolatedPoint(prev_traj_points_, planner_data.ego_pose);
   }();
   const double v0 = prev_traj_closest_point.longitudinal_velocity_mps;
   const double a0 = prev_traj_closest_point.acceleration_mps2;
 
-  auto cruise_traj = getAccelerationLimitedTrajectory(
-    planner_data.traj, planner_data.current_pose, v0, a0, target_acc, target_jerk_ratio);
+  auto cruise_traj_points = getAccelerationLimitedTrajectory(
+    stop_traj_points, planner_data.ego_pose, v0, a0, target_acc, target_jerk_ratio);
 
-  const auto zero_vel_idx_opt = motion_utils::searchZeroVelocityIndex(cruise_traj.points);
+  const auto zero_vel_idx_opt = motion_utils::searchZeroVelocityIndex(cruise_traj_points);
   if (!zero_vel_idx_opt) {
-    return cruise_traj;
+    return cruise_traj_points;
   }
 
-  for (size_t i = zero_vel_idx_opt.get(); i < cruise_traj.points.size(); ++i) {
-    cruise_traj.points.at(i).longitudinal_velocity_mps = 0.0;
+  for (size_t i = zero_vel_idx_opt.get(); i < cruise_traj_points.size(); ++i) {
+    cruise_traj_points.at(i).longitudinal_velocity_mps = 0.0;
   }
 
-  return cruise_traj;
+  return cruise_traj_points;
 }
 
-Trajectory PIDBasedPlanner::getAccelerationLimitedTrajectory(
-  const Trajectory traj, const geometry_msgs::msg::Pose & start_pose, const double v0,
-  const double a0, const double target_acc, const double target_jerk_ratio) const
+std::vector<TrajectoryPoint> PIDBasedPlanner::getAccelerationLimitedTrajectory(
+  const std::vector<TrajectoryPoint> traj_points, const geometry_msgs::msg::Pose & start_pose,
+  const double v0, const double a0, const double target_acc, const double target_jerk_ratio) const
 {
   // calculate vt function
   const auto & i = longitudinal_info_;
@@ -520,7 +522,7 @@ Trajectory PIDBasedPlanner::getAccelerationLimitedTrajectory(
   };
 
   // calculate sv graph
-  const double s_traj = motion_utils::calcArcLength(traj.points);
+  const double s_traj = motion_utils::calcArcLength(traj_points);
   // const double t_max = 10.0;
   const double s_max = 50.0;
   const double max_sampling_num = 100.0;
@@ -582,16 +584,16 @@ Trajectory PIDBasedPlanner::getAccelerationLimitedTrajectory(
   }
 
   if (unique_s_vec.size() < 2) {
-    return traj;
+    return traj_points;
   }
 
-  auto acc_limited_traj = traj;
-  const size_t ego_seg_idx = findEgoIndex(acc_limited_traj, start_pose);
+  auto acc_limited_traj_points = traj_points;
+  const size_t ego_seg_idx = findEgoIndex(acc_limited_traj_points, start_pose);
   double sum_dist = 0.0;
-  for (size_t i = ego_seg_idx; i < acc_limited_traj.points.size(); ++i) {
+  for (size_t i = ego_seg_idx; i < acc_limited_traj_points.size(); ++i) {
     if (i != ego_seg_idx) {
       sum_dist += tier4_autoware_utils::calcDistance2d(
-        acc_limited_traj.points.at(i - 1), acc_limited_traj.points.at(i));
+        acc_limited_traj_points.at(i - 1), acc_limited_traj_points.at(i));
     }
 
     const double vel = [&]() {
@@ -601,20 +603,20 @@ Trajectory PIDBasedPlanner::getAccelerationLimitedTrajectory(
       return interpolation::spline(unique_s_vec, unique_v_vec, {sum_dist}).front();
     }();
 
-    acc_limited_traj.points.at(i).longitudinal_velocity_mps = std::clamp(
+    acc_limited_traj_points.at(i).longitudinal_velocity_mps = std::clamp(
       vel, 0.0,
       static_cast<double>(
-        acc_limited_traj.points.at(i)
+        acc_limited_traj_points.at(i)
           .longitudinal_velocity_mps));  // TODO(murooka) this assumes forward driving
   }
 
-  return acc_limited_traj;
+  return acc_limited_traj_points;
 }
 
 void PIDBasedPlanner::updateParam(const std::vector<rclcpp::Parameter> & parameters)
 {
   tier4_autoware_utils::updateParam<double>(
-    parameters, "pid_based_planner.min_accel_during_cruise", min_accel_during_cruise_);
+    parameters, "cruise.pid_based_planner.min_accel_during_cruise", min_accel_during_cruise_);
 
   {  // velocity limit based planner
     auto & p = velocity_limit_based_planner_param_;
@@ -624,25 +626,27 @@ void PIDBasedPlanner::updateParam(const std::vector<rclcpp::Parameter> & paramet
     double kd = p.pid_vel_controller->getKd();
 
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_limit_based_planner.kp", kp);
+      parameters, "cruise.pid_based_planner.velocity_limit_based_planner.kp", kp);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_limit_based_planner.ki", ki);
+      parameters, "cruise.pid_based_planner.velocity_limit_based_planner.ki", ki);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_limit_based_planner.kd", kd);
+      parameters, "cruise.pid_based_planner.velocity_limit_based_planner.kd", kd);
     p.pid_vel_controller->updateParam(kp, ki, kd);
 
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_limit_based_planner.output_ratio_during_accel",
+      parameters, "cruise.pid_based_planner.velocity_limit_based_planner.output_ratio_during_accel",
       p.output_ratio_during_accel);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.vel_to_acc_weight", p.vel_to_acc_weight);
+      parameters, "cruise.pid_based_planner.vel_to_acc_weight", p.vel_to_acc_weight);
 
     tier4_autoware_utils::updateParam<bool>(
-      parameters, "pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc",
+      parameters,
+      "cruise.pid_based_planner.velocity_limit_based_planner.enable_jerk_limit_to_output_acc",
       p.enable_jerk_limit_to_output_acc);
 
     tier4_autoware_utils::updateParam<bool>(
-      parameters, "pid_based_planner.velocity_limit_based_planner.disable_target_acceleration",
+      parameters,
+      "cruise.pid_based_planner.velocity_limit_based_planner.disable_target_acceleration",
       p.disable_target_acceleration);
   }
 
@@ -655,11 +659,11 @@ void PIDBasedPlanner::updateParam(const std::vector<rclcpp::Parameter> & paramet
     double kd_acc = p.pid_acc_controller->getKd();
 
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_insertion_based_planner.kp_acc", kp_acc);
+      parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kp_acc", kp_acc);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_insertion_based_planner.ki_acc", ki_acc);
+      parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.ki_acc", ki_acc);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_insertion_based_planner.kd_acc", kd_acc);
+      parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kd_acc", kd_acc);
     p.pid_acc_controller->updateParam(kp_acc, ki_acc, kd_acc);
 
     // pid controller for jerk
@@ -668,31 +672,31 @@ void PIDBasedPlanner::updateParam(const std::vector<rclcpp::Parameter> & paramet
     double kd_jerk = p.pid_jerk_controller->getKd();
 
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_insertion_based_planner.kp_jerk", kp_jerk);
+      parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kp_jerk", kp_jerk);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_insertion_based_planner.ki_jerk", ki_jerk);
+      parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.ki_jerk", ki_jerk);
     tier4_autoware_utils::updateParam<double>(
-      parameters, "pid_based_planner.velocity_insertion_based_planner.kd_jerk", kd_jerk);
+      parameters, "cruise.pid_based_planner.velocity_insertion_based_planner.kd_jerk", kd_jerk);
     p.pid_jerk_controller->updateParam(kp_jerk, ki_jerk, kd_jerk);
 
     tier4_autoware_utils::updateParam<double>(
       parameters,
-      "pid_based_planner.velocity_insertion_based_planner.output_acc_ratio_during_accel",
+      "cruise.pid_based_planner.velocity_insertion_based_planner.output_acc_ratio_during_accel",
       p.output_acc_ratio_during_accel);
     tier4_autoware_utils::updateParam<double>(
       parameters,
-      "pid_based_planner.velocity_insertion_based_planner.output_jerk_ratio_during_accel",
+      "cruise.pid_based_planner.velocity_insertion_based_planner.output_jerk_ratio_during_accel",
       p.output_jerk_ratio_during_accel);
 
     tier4_autoware_utils::updateParam<bool>(
       parameters,
-      "pid_based_planner.velocity_insertion_based_planner.enable_jerk_limit_to_output_acc",
+      "cruise.pid_based_planner.velocity_insertion_based_planner.enable_jerk_limit_to_output_acc",
       p.enable_jerk_limit_to_output_acc);
   }
 
   // min_cruise_target_vel
   tier4_autoware_utils::updateParam<double>(
-    parameters, "pid_based_planner.min_cruise_target_vel", min_cruise_target_vel_);
+    parameters, "cruise.pid_based_planner.min_cruise_target_vel", min_cruise_target_vel_);
   tier4_autoware_utils::updateParam<double>(
-    parameters, "pid_based_planner.time_to_evaluate_rss", time_to_evaluate_rss_);
+    parameters, "cruise.pid_based_planner.time_to_evaluate_rss", time_to_evaluate_rss_);
 }

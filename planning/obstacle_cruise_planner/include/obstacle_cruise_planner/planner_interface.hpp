@@ -22,9 +22,8 @@
 #include "obstacle_cruise_planner/utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
-#include <boost/optional.hpp>
-
 #include <memory>
+#include <optional>
 #include <vector>
 
 class PlannerInterface
@@ -32,10 +31,12 @@ class PlannerInterface
 public:
   PlannerInterface(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param)
+    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
+    const std::shared_ptr<DebugData> debug_data_ptr)
   : longitudinal_info_(longitudinal_info),
     vehicle_info_(vehicle_info),
-    ego_nearest_param_(ego_nearest_param)
+    ego_nearest_param_(ego_nearest_param),
+    debug_data_ptr_(debug_data_ptr)
   {
     stop_reasons_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
     velocity_factors_pub_ =
@@ -46,18 +47,29 @@ public:
 
   PlannerInterface() = default;
 
-  void setParam(const bool is_showing_debug_info, const double min_behavior_stop_margin)
+  void setParam(
+    const bool enable_debug_info, const bool enable_calculation_time_info,
+    const double min_behavior_stop_margin)
   {
-    is_showing_debug_info_ = is_showing_debug_info;
+    enable_debug_info_ = enable_debug_info;
+    enable_calculation_time_info_ = enable_calculation_time_info;
     min_behavior_stop_margin_ = min_behavior_stop_margin;
   }
 
-  Trajectory generateStopTrajectory(
-    const ObstacleCruisePlannerData & planner_data, DebugData & debug_data);
+  std::vector<TrajectoryPoint> generateStopTrajectory(
+    const PlannerData & planner_data, const std::vector<StopObstacle> & stop_obstacles);
 
-  virtual Trajectory generateCruiseTrajectory(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    DebugData & debug_data) = 0;
+  virtual std::vector<TrajectoryPoint> generateCruiseTrajectory(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const std::vector<CruiseObstacle> & cruise_obstacles,
+    std::optional<VelocityLimit> & vel_limit) = 0;
+
+  std::optional<VelocityLimit> getSlowDownVelocityLimit(
+    [[maybe_unused]] const PlannerData & planner_data,
+    [[maybe_unused]] const std::vector<SlowDownObstacle> & slow_down_obstacles)
+  {
+    return std::nullopt;
+  }
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
@@ -77,7 +89,8 @@ public:
 
 protected:
   // Parameters
-  bool is_showing_debug_info_{false};
+  bool enable_debug_info_{false};
+  bool enable_calculation_time_info_{false};
   LongitudinalInfo longitudinal_info_;
   double min_behavior_stop_margin_;
 
@@ -91,20 +104,21 @@ protected:
 
   EgoNearestParam ego_nearest_param_;
 
+  mutable std::shared_ptr<DebugData> debug_data_ptr_;
+
   // debug info
   StopPlanningDebugInfo stop_planning_debug_info_;
 
   double calcDistanceToCollisionPoint(
-    const ObstacleCruisePlannerData & planner_data,
-    const geometry_msgs::msg::Point & collision_point);
+    const PlannerData & planner_data, const geometry_msgs::msg::Point & collision_point);
 
   double calcRSSDistance(
-    const double ego_vel, const double obj_vel, const double margin = 0.0) const
+    const double ego_vel, const double obstacle_vel, const double margin = 0.0) const
   {
     const auto & i = longitudinal_info_;
     const double rss_dist_with_margin =
       ego_vel * i.idling_time + std::pow(ego_vel, 2) * 0.5 / std::abs(i.min_ego_accel_for_rss) -
-      std::pow(obj_vel, 2) * 0.5 / std::abs(i.min_object_accel_for_rss) + margin;
+      std::pow(obstacle_vel, 2) * 0.5 / std::abs(i.min_object_accel_for_rss) + margin;
     return rss_dist_with_margin;
   }
 
@@ -115,20 +129,19 @@ protected:
 
   virtual void updateParam([[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters) {}
 
-  size_t findEgoIndex(const Trajectory & traj, const geometry_msgs::msg::Pose & ego_pose) const
+  size_t findEgoIndex(
+    const std::vector<TrajectoryPoint> & traj_points,
+    const geometry_msgs::msg::Pose & ego_pose) const
   {
-    const auto traj_points = motion_utils::convertToTrajectoryPointArray(traj);
-
     const auto & p = ego_nearest_param_;
     return motion_utils::findFirstNearestIndexWithSoftConstraints(
       traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);
   }
 
   size_t findEgoSegmentIndex(
-    const Trajectory & traj, const geometry_msgs::msg::Pose & ego_pose) const
+    const std::vector<TrajectoryPoint> & traj_points,
+    const geometry_msgs::msg::Pose & ego_pose) const
   {
-    const auto traj_points = motion_utils::convertToTrajectoryPointArray(traj);
-
     const auto & p = ego_nearest_param_;
     return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);

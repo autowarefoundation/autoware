@@ -40,30 +40,29 @@ A data structure for cruise and stop planning is as follows.
 This planner data is created first, and then sent to the planning algorithm.
 
 ```cpp
-struct ObstacleCruisePlannerData
+struct PlannerData
 {
   rclcpp::Time current_time;
   autoware_auto_planning_msgs::msg::Trajectory traj;
   geometry_msgs::msg::Pose current_pose;
-  double current_vel;
+  double ego_vel;
   double current_acc;
-  std::vector<TargetObstacle> target_obstacles;
+  std::vector<Obstacle> target_obstacles;
 };
 ```
 
 ```cpp
-struct TargetObstacle
+struct Obstacle
 {
-  rclcpp::Time time_stamp;
-  geometry_msgs::msg::Pose pose;
+  rclcpp::Time stamp;  // This is not the current stamp, but when the object was observed.
+  geometry_msgs::msg::Pose pose;  // interpolated with the current stamp
   bool orientation_reliable;
-  double velocity;
-  bool velocity_reliable;
+  Twist twist;
+  bool twist_reliable;
   ObjectClassification classification;
   std::string uuid;
+  Shape shape;
   std::vector<PredictedPath> predicted_paths;
-  std::vector<geometry_msgs::msg::PointStamped> collision_points;
-  bool has_stopped;
 };
 ```
 
@@ -93,9 +92,9 @@ By default, unknown and vehicles are obstacles to cruise and stop, and non vehic
 
 #### Inside the detection area
 
-To calculate obstacles inside the detection area, firstly, obstacles whose distance to the trajectory is less than `rough_detection_area_expand_width` are selected.
+To calculate obstacles inside the detection area, firstly, obstacles whose distance to the trajectory is less than `rough_max_lat_margin` are selected.
 Then, the detection area, which is a trajectory with some lateral margin, is calculated as shown in the figure.
-The detection area width is a vehicle's width + `detection_area_expand_width`, and it is represented as a polygon resampled with `decimate_trajectory_step_length` longitudinally.
+The detection area width is a vehicle's width + `max_lat_margin`, and it is represented as a polygon resampled with `decimate_trajectory_step_length` longitudinally.
 The roughly selected obstacles inside the detection area are considered as inside the detection area.
 
 ![detection_area](./image/detection_area.png)
@@ -103,13 +102,13 @@ The roughly selected obstacles inside the detection area are considered as insid
 This two-step detection is used for calculation efficiency since collision checking of polygons is heavy.
 Boost.Geometry is used as a library to check collision among polygons.
 
-In the `obstacle_filtering` namespace,
+In the `behavior_determination` namespace,
 
-| Parameter                           | Type   | Description                                                                         |
-| ----------------------------------- | ------ | ----------------------------------------------------------------------------------- |
-| `rough_detection_area_expand_width` | double | rough lateral margin for rough detection area expansion [m]                         |
-| `detection_area_expand_width`       | double | lateral margin for precise detection area expansion [m]                             |
-| `decimate_trajectory_step_length`   | double | longitudinal step length to calculate trajectory polygon for collision checking [m] |
+| Parameter                         | Type   | Description                                                                         |
+| --------------------------------- | ------ | ----------------------------------------------------------------------------------- |
+| `rough_max_lat_margin`            | double | rough lateral margin for rough detection area expansion [m]                         |
+| `max_lat_margin`                  | double | lateral margin for precise detection area expansion [m]                             |
+| `decimate_trajectory_step_length` | double | longitudinal step length to calculate trajectory polygon for collision checking [m] |
 
 #### Far crossing vehicles
 
@@ -124,7 +123,7 @@ $$
 t_1 - t_2 > \mathrm{margin\_for\_collision\_time}
 $$
 
-In the `obstacle_filtering` namespace,
+In the `behavior_determination` namespace,
 
 | Parameter                                | Type   | Description                                                                   |
 | ---------------------------------------- | ------ | ----------------------------------------------------------------------------- |
@@ -138,7 +137,7 @@ Near Cut-in vehicles are defined as vehicle objects
 
 - whose predicted path's footprints from the current time to `max_prediction_time_for_collision_check` overlap with the detection area longer than `ego_obstacle_overlap_time_threshold`.
 
-In the `obstacle_filtering` namespace,
+In the `behavior_determination` namespace,
 
 | Parameter                                 | Type   | Description                                                              |
 | ----------------------------------------- | ------ | ------------------------------------------------------------------------ |
@@ -218,16 +217,33 @@ The core algorithm implementation `generateTrajectory` depends on the designated
 
 ```plantuml
 @startuml
-title trajectoryCallback
+title onTrajectory
 start
 
-group createPlannerData
-  :filterObstacles;
+group convertToObstacles
+  :check obstacle's label;
+  :check obstacle is in front of ego;
+  :check obstacle's lateral deviation to trajectory;
+  :create obstacle instance;
 end group
 
-:generateTrajectory;
+group determineEgoBehaviorAgainstObstacles
+  :resampleExtendedTrajectory;
+  group for each obstacle
+    :createCruiseObstacle;
+    :createStopObstacle;
+    :createSlowDownObstacle;
+  end group
+  :update previous obstacles;
+end group
 
-:publishVelocityLimit;
+:createPlannerData;
+
+:generateStopTrajectory;
+
+:generateCruiseTrajectory;
+
+:getSlowDownVelocityLimit;
 
 :publish trajectory;
 
@@ -302,53 +318,13 @@ In order to keep the closest stop obstacle in the target obstacles, we check whe
 If the previous closest stop obstacle is remove from the lists, we keep it in the lists for `stop_obstacle_hold_time_threshold` seconds.
 Note that if a new stop obstacle appears and the previous closest obstacle removes from the lists, we do not add it to the target obstacles again.
 
-| Parameter                                              | Type   | Description                                        |
-| ------------------------------------------------------ | ------ | -------------------------------------------------- |
-| `obstacle_filtering.stop_obstacle_hold_time_threshold` | double | maximum time for holding closest stop obstacle [s] |
+| Parameter                                                  | Type   | Description                                        |
+| ---------------------------------------------------------- | ------ | -------------------------------------------------- |
+| `behavior_determination.stop_obstacle_hold_time_threshold` | double | maximum time for holding closest stop obstacle [s] |
 
-## Visualization for debugging
+## How To Debug
 
-### Detection area
-
-Green polygons which is a detection area is visualized by `detection_polygons` in the `~/debug/marker` topic.
-
-![detection_area](./image/detection_area.png)
-
-### Collision point
-
-Red point which is a collision point with obstacle is visualized by `collision_points` in the `~/debug/marker` topic.
-
-![collision_point](./image/collision_point.png)
-
-### Obstacle for cruise
-
-Yellow sphere which is a obstacle for cruise is visualized by `obstacles_to_cruise` in the `~/debug/marker` topic.
-
-![obstacle_to_cruise](./image/obstacle_to_cruise.png)
-
-### Obstacle for stop
-
-Red sphere which is a obstacle for stop is visualized by `obstacles_to_stop` in the `~/debug/marker` topic.
-
-![obstacle_to_stop](./image/obstacle_to_stop.png)
-
-<!-- ### Obstacle ignored to cruise or stop intentionally -->
-
-<!-- Green sphere which is a obstacle ignored intentionally to cruise or stop is visualized by `intentionally_ignored_obstacles` in the `~/debug/marker` topic. -->
-
-<!-- ![intentionally_ignored_obstacle](./image/intentionally_ignored_obstacle.png) -->
-
-### Obstacle cruise wall
-
-Yellow wall which means a safe distance to cruise if the ego's front meets the wall is visualized in the `~/debug/cruise_wall_marker` topic.
-
-![obstacle_to_cruise](./image/obstacle_to_cruise.png)
-
-### Obstacle stop wall
-
-Red wall which means a safe distance to stop if the ego's front meets the wall is visualized in the `~/debug/stop_wall_marker` topic.
-
-![obstacle_to_stop](./image/obstacle_to_stop.png)
+How to debug can be seen [here](docs/debug.md).
 
 ## Known Limits
 

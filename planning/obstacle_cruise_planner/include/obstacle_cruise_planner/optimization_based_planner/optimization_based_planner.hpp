@@ -26,9 +26,8 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <boost/optional.hpp>
-
 #include <memory>
+#include <optional>
 #include <tuple>
 #include <vector>
 
@@ -37,53 +36,58 @@ class OptimizationBasedPlanner : public PlannerInterface
 public:
   OptimizationBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param);
+    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param,
+    const std::shared_ptr<DebugData> debug_data_ptr);
 
-  Trajectory generateCruiseTrajectory(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    DebugData & debug_data) override;
+  std::vector<TrajectoryPoint> generateCruiseTrajectory(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const std::vector<CruiseObstacle> & obstacles,
+    std::optional<VelocityLimit> & vel_limit) override;
 
 private:
   // Member Functions
   std::vector<double> createTimeVector();
   std::tuple<double, double> calcInitialMotion(
-    const ObstacleCruisePlannerData & planner_data, const Trajectory & prev_traj);
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const std::vector<TrajectoryPoint> & prev_traj_points);
 
-  bool checkHasReachedGoal(const ObstacleCruisePlannerData & planner_data);
+  bool checkHasReachedGoal(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points);
 
-  boost::optional<SBoundaries> getSBoundaries(
-    const ObstacleCruisePlannerData & planner_data, const std::vector<double> & time_vec);
+  std::optional<SBoundaries> getSBoundaries(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const std::vector<CruiseObstacle> & obstacles, const std::vector<double> & time_vec);
 
-  boost::optional<SBoundaries> getSBoundaries(
-    const ObstacleCruisePlannerData & planner_data, const TargetObstacle & object,
-    const std::vector<double> & time_vec, const double traj_length);
+  std::optional<SBoundaries> getSBoundaries(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const CruiseObstacle & object, const std::vector<double> & time_vec, const double traj_length);
 
-  boost::optional<SBoundaries> getSBoundariesForOnTrajectoryObject(
-    const ObstacleCruisePlannerData & planner_data, const std::vector<double> & time_vec,
-    const double safety_distance, const TargetObstacle & object, const double traj_length);
+  std::optional<SBoundaries> getSBoundariesForOnTrajectoryObject(
+    const PlannerData & planner_data, const std::vector<double> & time_vec,
+    const double safety_distance, const CruiseObstacle & object, const double traj_length);
 
-  boost::optional<SBoundaries> getSBoundariesForOffTrajectoryObject(
-    const ObstacleCruisePlannerData & planner_data, const std::vector<double> & time_vec,
-    const double safety_distance, const TargetObstacle & object, const double traj_length);
+  std::optional<SBoundaries> getSBoundariesForOffTrajectoryObject(
+    const PlannerData & planner_data, const std::vector<double> & time_vec,
+    const double safety_distance, const CruiseObstacle & object, const double traj_length);
 
   bool checkOnTrajectory(
-    const ObstacleCruisePlannerData & planner_data, const geometry_msgs::msg::PointStamped & point);
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const PointWithStamp & point);
 
-  boost::optional<double> calcTrajectoryLengthFromCurrentPose(
-    const Trajectory & traj, const geometry_msgs::msg::Pose & current_pose);
+  std::optional<double> calcTrajectoryLengthFromCurrentPose(
+    const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & ego_pose);
 
   geometry_msgs::msg::Pose transformBaseLink2Center(
     const geometry_msgs::msg::Pose & pose_base_link);
 
-  boost::optional<VelocityOptimizer::OptimizationResult> processOptimizedResult(
+  std::optional<VelocityOptimizer::OptimizationResult> processOptimizedResult(
     const double v0, const VelocityOptimizer::OptimizationResult & opt_result, const double offset);
 
   void publishDebugTrajectory(
-    const ObstacleCruisePlannerData & planner_data, const double offset,
-    const std::vector<double> & time_vec, const SBoundaries & s_boundaries,
-    const VelocityOptimizer::OptimizationResult & opt_result);
+    const PlannerData & planner_data, const double offset, const std::vector<double> & time_vec,
+    const SBoundaries & s_boundaries, const VelocityOptimizer::OptimizationResult & opt_result);
 
-  Trajectory prev_output_;
+  std::vector<TrajectoryPoint> prev_output_;
 
   // Velocity Optimizer
   std::shared_ptr<VelocityOptimizer> velocity_optimizer_ptr_;

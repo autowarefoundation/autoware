@@ -23,7 +23,6 @@
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/accel_stamped.hpp"
 #include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
-#include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -46,6 +45,7 @@ using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using geometry_msgs::msg::AccelStamped;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
+using geometry_msgs::msg::Twist;
 using nav_msgs::msg::Odometry;
 using tier4_debug_msgs::msg::Float32Stamped;
 using tier4_planning_msgs::msg::StopFactor;
@@ -57,5 +57,8 @@ using tier4_planning_msgs::msg::VelocityLimitClearCommand;
 using vehicle_info_util::VehicleInfo;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
+namespace bg = boost::geometry;
+using tier4_autoware_utils::Point2d;
+using tier4_autoware_utils::Polygon2d;
 
 #endif  // OBSTACLE_CRUISE_PLANNER__TYPE_ALIAS_HPP_
