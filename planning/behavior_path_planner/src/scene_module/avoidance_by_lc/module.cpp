@@ -996,7 +996,7 @@ std::pair<bool, bool> AvoidanceByLCModule::getSafePath(
 #else
   const auto o_front = avoidance_data_.target_objects.front();
   const auto direction = isOnRight(o_front) ? Direction::LEFT : Direction::RIGHT;
-  const auto found_safe_path = utils::lane_change::getLaneChangePaths(
+  const auto found_safe_path = util::lane_change::getLaneChangePaths(
     *getPreviousModuleOutput().path, *route_handler, current_lanes, lane_change_lanes, current_pose,
     current_twist, planner_data_->dynamic_object, common_parameters, *parameters_->lane_change,
     check_distance, direction, &valid_paths, &object_debug_);
