@@ -328,11 +328,10 @@ private:
   lanelet::ConstLanelets start_lanelets_;
   lanelet::ConstLanelets goal_lanelets_;
   lanelet::ConstLanelets shoulder_lanelets_;
-  LaneletRoute route_msg_;
+  std::shared_ptr<LaneletRoute> route_ptr_{nullptr};
 
   rclcpp::Logger logger_{rclcpp::get_logger("route_handler")};
 
-  bool is_route_msg_ready_{false};
   bool is_map_msg_ready_{false};
   bool is_handler_ready_{false};
 

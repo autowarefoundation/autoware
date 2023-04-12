@@ -126,6 +126,7 @@ namespace route_handler
 RouteHandler::RouteHandler(const HADMapBin & map_msg)
 {
   setMap(map_msg);
+  route_ptr_ = nullptr;
 }
 
 void RouteHandler::setMap(const HADMapBin & map_msg)
@@ -172,8 +173,7 @@ bool RouteHandler::isRouteLooped(const RouteSections & route_sections)
 void RouteHandler::setRoute(const LaneletRoute & route_msg)
 {
   if (!isRouteLooped(route_msg.segments)) {
-    route_msg_ = route_msg;
-    is_route_msg_ready_ = true;
+    route_ptr_ = std::make_shared<LaneletRoute>(route_msg);
     is_handler_ready_ = false;
     setLaneletsFromRouteMsg();
   } else {
@@ -294,30 +294,29 @@ void RouteHandler::clearRoute()
   preferred_lanelets_.clear();
   start_lanelets_.clear();
   goal_lanelets_.clear();
-  route_msg_ = LaneletRoute();
-  is_route_msg_ready_ = false;
+  route_ptr_ = nullptr;
   is_handler_ready_ = false;
 }
 
 void RouteHandler::setLaneletsFromRouteMsg()
 {
-  if (!is_route_msg_ready_ || !is_map_msg_ready_) {
+  if (!route_ptr_ || !is_map_msg_ready_) {
     return;
   }
   route_lanelets_.clear();
   preferred_lanelets_.clear();
-  const bool is_route_valid = lanelet::utils::route::isRouteValid(route_msg_, lanelet_map_ptr_);
+  const bool is_route_valid = lanelet::utils::route::isRouteValid(*route_ptr_, lanelet_map_ptr_);
   if (!is_route_valid) {
     return;
   }
 
   size_t primitive_size{0};
-  for (const auto & route_section : route_msg_.segments) {
+  for (const auto & route_section : route_ptr_->segments) {
     primitive_size += route_section.primitives.size();
   }
   route_lanelets_.reserve(primitive_size);
 
-  for (const auto & route_section : route_msg_.segments) {
+  for (const auto & route_section : route_ptr_->segments) {
     for (const auto & primitive : route_section.primitives) {
       const auto id = primitive.id;
       const auto & llt = lanelet_map_ptr_->laneletLayer.get(id);
@@ -329,15 +328,15 @@ void RouteHandler::setLaneletsFromRouteMsg()
   }
   goal_lanelets_.clear();
   start_lanelets_.clear();
-  if (!route_msg_.segments.empty()) {
-    goal_lanelets_.reserve(route_msg_.segments.back().primitives.size());
-    for (const auto & primitive : route_msg_.segments.back().primitives) {
+  if (!route_ptr_->segments.empty()) {
+    goal_lanelets_.reserve(route_ptr_->segments.back().primitives.size());
+    for (const auto & primitive : route_ptr_->segments.back().primitives) {
       const auto id = primitive.id;
       const auto & llt = lanelet_map_ptr_->laneletLayer.get(id);
       goal_lanelets_.push_back(llt);
     }
-    start_lanelets_.reserve(route_msg_.segments.front().primitives.size());
-    for (const auto & primitive : route_msg_.segments.front().primitives) {
+    start_lanelets_.reserve(route_ptr_->segments.front().primitives.size());
+    for (const auto & primitive : route_ptr_->segments.front().primitives) {
       const auto id = primitive.id;
       const auto & llt = lanelet_map_ptr_->laneletLayer.get(id);
       start_lanelets_.push_back(llt);
@@ -353,12 +352,20 @@ lanelet::ConstPolygon3d RouteHandler::getIntersectionAreaById(const lanelet::Id 
 
 Header RouteHandler::getRouteHeader() const
 {
-  return route_msg_.header;
+  if (!route_ptr_) {
+    RCLCPP_WARN(logger_, "[Route Handler] getRouteHeader: Route has not been set yet");
+    return Header();
+  }
+  return route_ptr_->header;
 }
 
 UUID RouteHandler::getRouteUuid() const
 {
-  return route_msg_.uuid;
+  if (!route_ptr_) {
+    RCLCPP_WARN(logger_, "[Route Handler] getRouteUuid: Route has not been set yet");
+    UUID();
+  }
+  return route_ptr_->uuid;
 }
 
 std::vector<lanelet::ConstLanelet> RouteHandler::getLanesBeforePose(
@@ -404,16 +411,20 @@ lanelet::ConstLanelets RouteHandler::getRouteLanelets() const
 
 Pose RouteHandler::getGoalPose() const
 {
-  return route_msg_.goal_pose;
+  if (!route_ptr_) {
+    RCLCPP_WARN(logger_, "[Route Handler] getGoalPose: Route has not been set yet");
+    Pose();
+  }
+  return route_ptr_->goal_pose;
 }
 
 lanelet::Id RouteHandler::getGoalLaneId() const
 {
-  if (route_msg_.segments.empty()) {
+  if (!route_ptr_ || route_ptr_->segments.empty()) {
     return lanelet::InvalId;
   }
 
-  return route_msg_.segments.back().preferred_primitive.id;
+  return route_ptr_->segments.back().preferred_primitive.id;
 }
 
 bool RouteHandler::getGoalLanelet(lanelet::ConstLanelet * goal_lanelet) const
@@ -430,10 +441,10 @@ bool RouteHandler::getGoalLanelet(lanelet::ConstLanelet * goal_lanelet) const
 
 bool RouteHandler::isInGoalRouteSection(const lanelet::ConstLanelet & lanelet) const
 {
-  if (route_msg_.segments.empty()) {
+  if (!route_ptr_ || route_ptr_->segments.empty()) {
     return false;
   }
-  return exists(route_msg_.segments.back().primitives, lanelet.id());
+  return exists(route_ptr_->segments.back().primitives, lanelet.id());
 }
 
 lanelet::ConstLanelets RouteHandler::getLaneletsFromIds(const lanelet::Ids & ids) const
