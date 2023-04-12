@@ -270,6 +270,18 @@ public:
   int getNumLaneToPreferredLane(
     const lanelet::ConstLanelet & lanelet, const Direction direction = Direction::NONE) const;
 
+  /**
+   * Query input lanelet to see whether it exist in the preferred lane. If it doesn't exist, return
+   * the distance to the preferred lane from the give lane.
+   * The distance is computed from the front point of the centerline of the given lane to
+   * the front point of the preferred lane.
+   * @param Desired lanelet to query
+   * @param lane change direction
+   * @return number of lanes from input to the preferred lane
+   */
+  double getLateralDistanceToPreferredLane(
+    const lanelet::ConstLanelet & lanelet, const Direction direction = Direction::NONE) const;
+
   bool getClosestLaneletWithinRoute(
     const Pose & search_pose, lanelet::ConstLanelet * closest_lanelet) const;
   bool getClosestLaneletWithConstrainsWithinRoute(
