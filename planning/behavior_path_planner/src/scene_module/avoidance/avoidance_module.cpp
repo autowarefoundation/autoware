@@ -409,9 +409,12 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * if the both of following two conditions are satisfied, the module surely avoid the object.
    * Condition1: there is risk to collide with object without avoidance.
    * Condition2: there is enough space to avoid.
+   * In TOO_LARGE_JERK condition, it is possible to avoid object by deceleration even if the flag
+   * is_avoidable is FALSE. So, the module inserts stop point for such a object.
    */
   for (const auto & o : data.target_objects) {
-    if (o.avoid_required && o.is_avoidable) {
+    const auto enough_space = o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+    if (o.avoid_required && enough_space) {
       data.avoid_required = true;
       data.stop_target_object = o;
       break;
@@ -732,7 +735,11 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
       avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN);
       o.reason = AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN;
       debug.unavoidable_objects.push_back(o);
-      continue;
+      if (o.avoid_required) {
+        break;
+      } else {
+        continue;
+      }
     }
 
     const auto is_object_on_right = isOnRight(o);
@@ -741,7 +748,11 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
       avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::SAME_DIRECTION_SHIFT);
       o.reason = AvoidanceDebugFactor::SAME_DIRECTION_SHIFT;
       debug.unavoidable_objects.push_back(o);
-      continue;
+      if (o.avoid_required) {
+        break;
+      } else {
+        continue;
+      }
     }
 
     const auto avoiding_shift = shift_length - current_ego_shift;
@@ -771,7 +782,11 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
         if (!data.avoiding_now) {
           o.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
           debug.unavoidable_objects.push_back(o);
-          continue;
+          if (o.avoid_required) {
+            break;
+          } else {
+            continue;
+          }
         }
       }
 
@@ -785,7 +800,11 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
         if (!data.avoiding_now) {
           o.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
           debug.unavoidable_objects.push_back(o);
-          continue;
+          if (o.avoid_required) {
+            break;
+          } else {
+            continue;
+          }
         }
       }
     }
