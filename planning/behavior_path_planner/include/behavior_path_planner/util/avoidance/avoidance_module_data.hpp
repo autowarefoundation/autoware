@@ -483,7 +483,8 @@ struct DebugData
 {
   std::shared_ptr<lanelet::ConstLanelets> expanded_lanelets;
   std::shared_ptr<lanelet::ConstLanelets> current_lanelets;
-  std::shared_ptr<lanelet::ConstLineStrings3d> farthest_linestring_from_overhang;
+
+  lanelet::ConstLineStrings3d bounds;
 
   AvoidLineArray current_shift_lines;  // in path shifter
   AvoidLineArray new_shift_lines;      // in path shifter
@@ -525,6 +526,7 @@ struct DebugData
 
   // tmp for plot
   PathWithLaneId center_line;
+
   AvoidanceDebugMsgArray avoidance_debug_msg_array;
 };
 

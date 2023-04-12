@@ -170,13 +170,10 @@ private:
   ObjectDataArray registered_objects_;
   mutable ObjectDataArray stopped_objects_;
 
+  ObjectData createObjectData(
+    const AvoidancePlanningData & data, const PredictedObject & object) const;
+
   void fillAvoidanceTargetObjects(AvoidancePlanningData & data, DebugData & debug) const;
-  void fillObjectEnvelopePolygon(const Pose & closest_pose, ObjectData & object_data) const;
-  void fillObjectMovingTime(ObjectData & object_data) const;
-  void updateRegisteredObject(const ObjectDataArray & objects);
-  void compensateDetectionLost(
-    ObjectDataArray & target_objects, ObjectDataArray & other_objects) const;
-  bool isTargetObjectType(const PredictedObject & object) const;
 
   lanelet::ConstLanelets get_original_lanes() const;
   PathWithLaneId getReferencePath() const;

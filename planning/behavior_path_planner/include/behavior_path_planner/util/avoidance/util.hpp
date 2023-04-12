@@ -101,9 +101,33 @@ lanelet::ConstLanelets getTargetLanelets(
   const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
   const double left_offset, const double right_offset);
 
+bool isTargetObjectType(
+  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters);
+
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
   boost::optional<Pose> & p_out);
+
+void fillObjectEnvelopePolygon(
+  ObjectData & object_data, const ObjectDataArray & registered_objects, const Pose & closest_pose,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
+
+void fillObjectMovingTime(
+  ObjectData & object_data, ObjectDataArray & stopped_objects,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
+
+void updateRegisteredObject(
+  ObjectDataArray & registered_objects, const ObjectDataArray & now_objects,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
+
+void compensateDetectionLost(
+  const ObjectDataArray & registered_objects, ObjectDataArray & now_objects,
+  ObjectDataArray & other_objects);
+
+void filterTargetObjects(
+  ObjectDataArray & objects, AvoidancePlanningData & data, DebugData & debug,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTIL__AVOIDANCE__UTIL_HPP_
