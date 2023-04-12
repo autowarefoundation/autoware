@@ -20,10 +20,11 @@ Cells with No elevation value can be inpainted using the values of neighboring c
 
 ### Input
 
-| Name                   | Type                                         | Description                                |
-| ---------------------- | -------------------------------------------- | ------------------------------------------ |
-| `input/pointcloud_map` | `sensor_msgs::msg::PointCloud2`              | The point cloud map                        |
-| `input/vector_map`     | `autoware_auto_mapping_msgs::msg::HADMapBin` | (Optional) The binary data of lanelet2 map |
+| Name                            | Type                                            | Description                                |
+| ------------------------------- | ----------------------------------------------- | ------------------------------------------ |
+| `input/pointcloud_map`          | `sensor_msgs::msg::PointCloud2`                 | The point cloud map                        |
+| `input/vector_map`              | `autoware_auto_mapping_msgs::msg::HADMapBin`    | (Optional) The binary data of lanelet2 map |
+| `input/pointcloud_map_metadata` | `autoware_map_msgs::msg::PointCloudMapMetaData` | (Optional) The metadata of point cloud map |
 
 ### Output
 
@@ -32,21 +33,29 @@ Cells with No elevation value can be inpainted using the values of neighboring c
 | `output/elevation_map`       | `grid_map_msgs::msg::GridMap`   | The elevation map                                                    |
 | `output/elevation_map_cloud` | `sensor_msgs::msg::PointCloud2` | (Optional) The point cloud generated from the value of elevation map |
 
+### Service
+
+| Name                           | Type                                               | Description                                                                                                                               |
+| ------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `service/get_selected_pcd_map` | `autoware_map_msgs::srv::GetSelectedPointCloudMap` | (Optional) service to request point cloud map. If pointcloud_map_loader uses selected pointcloud map loading via ROS 2 service, use this. |
+
 ## Parameters
 
 ### Node parameters
 
-| Name                              | Type        | Description                                                                                                                       | Default value |
-| :-------------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| map_layer_name                    | std::string | elevation_map layer name                                                                                                          | elevation     |
-| param_file_path                   | std::string | GridMap parameters config                                                                                                         | path_default  |
-| elevation_map_directory           | std::string | elevation_map file (bag2)                                                                                                         | path_default  |
-| map_frame                         | std::string | map_frame when loading elevation_map file                                                                                         | map           |
-| use_inpaint                       | bool        | Whether to inpaint empty cells                                                                                                    | true          |
-| inpaint_radius                    | float       | Radius of a circular neighborhood of each point inpainted that is considered by the algorithm [m]                                 | 0.3           |
-| use_elevation_map_cloud_publisher | bool        | Whether to publish `output/elevation_map_cloud`                                                                                   | false         |
-| use_lane_filter                   | bool        | Whether to filter elevation_map with vector_map                                                                                   | false         |
-| lane_margin                       | float       | Margin distance from the lane polygon of the area to be included in the inpainting mask [m]. Used only when use_lane_filter=True. | 0.0           |
+| Name                              | Type        | Description                                                                                                                                                          | Default value |
+| :-------------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| map_layer_name                    | std::string | elevation_map layer name                                                                                                                                             | elevation     |
+| param_file_path                   | std::string | GridMap parameters config                                                                                                                                            | path_default  |
+| elevation_map_directory           | std::string | elevation_map file (bag2)                                                                                                                                            | path_default  |
+| map_frame                         | std::string | map_frame when loading elevation_map file                                                                                                                            | map           |
+| use_inpaint                       | bool        | Whether to inpaint empty cells                                                                                                                                       | true          |
+| inpaint_radius                    | float       | Radius of a circular neighborhood of each point inpainted that is considered by the algorithm [m]                                                                    | 0.3           |
+| use_elevation_map_cloud_publisher | bool        | Whether to publish `output/elevation_map_cloud`                                                                                                                      | false         |
+| use_lane_filter                   | bool        | Whether to filter elevation_map with vector_map                                                                                                                      | false         |
+| lane_margin                       | float       | Margin distance from the lane polygon of the area to be included in the inpainting mask [m]. Used only when use_lane_filter=True.                                    | 0.0           |
+| use_sequential_load               | bool        | Whether to get point cloud map by service                                                                                                                            | false         |
+| sequential_map_load_num           | int         | The number of point cloud maps to load at once (only used when use_sequential_load is set true). This should not be larger than number of all point cloud map cells. | 1             |
 
 ### GridMap parameters
 
