@@ -24,9 +24,6 @@
 #include <utility>
 #include <vector>
 
-#define DEG2RAD 3.1415926535 / 180.0
-#define RAD2DEG 180.0 / 3.1415926535
-
 namespace autoware::motion::control::mpc_lateral_controller
 {
 using namespace std::literals::chrono_literals;
@@ -297,7 +294,8 @@ bool MPC::getData(
   if (std::fabs(data->yaw_err) > m_admissible_yaw_error_rad) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       m_logger, *m_clock, duration, "yaw error is over limit. error = %f deg, limit %f deg",
-      RAD2DEG * data->yaw_err, RAD2DEG * m_admissible_yaw_error_rad);
+      tier4_autoware_utils::rad2deg(data->yaw_err),
+      tier4_autoware_utils::rad2deg(m_admissible_yaw_error_rad));
     return false;
   }
 
@@ -594,7 +592,7 @@ MPCMatrix MPC::generateMPCMatrix(
     /* get reference input (feed-forward) */
     m_vehicle_model_ptr->setCurvature(ref_smooth_k);
     m_vehicle_model_ptr->calculateReferenceInput(Uref);
-    if (std::fabs(Uref(0, 0)) < DEG2RAD * m_param.zero_ff_steer_deg) {
+    if (std::fabs(Uref(0, 0)) < tier4_autoware_utils::deg2rad(m_param.zero_ff_steer_deg)) {
       Uref(0, 0) = 0.0;  // ignore curvature noise
     }
     m.Uref_ex.block(i * DIM_U, 0, DIM_U, 1) = Uref;
