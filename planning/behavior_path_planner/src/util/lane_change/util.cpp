@@ -349,7 +349,7 @@ bool getLaneChangePaths(
       minimum_prepare_length);
 
     if (prepare_length < target_length) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "prepare length is shorter than distance to target lane!!");
       break;
@@ -366,7 +366,7 @@ bool getLaneChangePaths(
 #endif
 
     if (prepare_segment.points.empty()) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "prepare segment is empty!!");
       continue;
@@ -381,7 +381,7 @@ bool getLaneChangePaths(
     // target lanelet, even if the condition prepare_length > target_length is satisfied. In
     // that case, the lane change shouldn't be executed.
     if (target_length_from_lane_change_start_pose > 0.0) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "[only new arch] lane change start pose is behind target lanelet!!");
       break;
@@ -396,7 +396,7 @@ bool getLaneChangePaths(
       calcLaneChangingLength(lane_changing_velocity, shift_length, common_parameter, parameter);
 
     if (lane_changing_length + prepare_length > dist_to_end_of_current_lanes) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "lane changing path too long");
       continue;
@@ -411,7 +411,7 @@ bool getLaneChangePaths(
         s_start + lane_changing_length + parameter.lane_change_finish_judge_buffer +
           required_total_min_length >
         s_goal) {
-        RCLCPP_ERROR_STREAM(
+        RCLCPP_DEBUG(
           rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
           "length of lane changing path is longer than length to goal!!");
         continue;
@@ -423,7 +423,7 @@ bool getLaneChangePaths(
       target_lane_length, lane_changing_length, lane_changing_velocity, required_total_min_length);
 
     if (target_segment.points.empty()) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "target segment is empty!! something wrong...");
       continue;
@@ -438,7 +438,7 @@ bool getLaneChangePaths(
       lc_length.lane_changing, forward_path_length, resample_interval, is_goal_in_route);
 
     if (target_lane_reference_path.points.empty()) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "target_lane_reference_path is empty!!");
       continue;
@@ -454,7 +454,7 @@ bool getLaneChangePaths(
       target_lanelets, sorted_lane_ids, acceleration, lc_length, lc_velocity, parameter);
 
     if (!candidate_path) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "no candidate path!!");
       continue;
@@ -471,7 +471,7 @@ bool getLaneChangePaths(
 #endif
 
     if (!is_valid) {
-      RCLCPP_ERROR_STREAM(
+      RCLCPP_DEBUG(
         rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
         "invalid candidate path!!");
       continue;
