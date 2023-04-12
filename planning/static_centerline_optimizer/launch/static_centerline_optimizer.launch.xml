@@ -21,6 +21,7 @@
     name="obstacle_avoidance_planner_param"
     default="$(find-pkg-share autoware_launch)/config/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"
   />
+  <arg name="mission_planner_param" default="$(find-pkg-share autoware_launch)/config/planning/mission_planning/mission_planner/mission_planner.param.yaml"/>
 
   <!-- Global parameters (for PathFootprint in tier4_planning_rviz_plugin) -->
   <!-- Do not add "group" in order to propagate global parameters -->
@@ -61,6 +62,7 @@
     <!-- component param -->
     <param from="$(var map_loader_param)"/>
     <param from="$(var obstacle_avoidance_planner_param)"/>
+    <param from="$(var mission_planner_param)"/>
     <!-- node param -->
     <param from="$(find-pkg-share static_centerline_optimizer)/config/static_centerline_optimizer.param.yaml"/>
   </node>
