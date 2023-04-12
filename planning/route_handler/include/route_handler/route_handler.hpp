@@ -273,13 +273,24 @@ public:
   /**
    * Query input lanelet to see whether it exist in the preferred lane. If it doesn't exist, return
    * the distance to the preferred lane from the give lane.
-   * The distance is computed from the front point of the centerline of the given lane to
+   * The total distance is computed from the front point of the centerline of the given lane to
    * the front point of the preferred lane.
-   * @param Desired lanelet to query
-   * @param lane change direction
+   * @param lanelet lanelet to query
+   * @param direction change direction
    * @return number of lanes from input to the preferred lane
    */
-  double getLateralDistanceToPreferredLane(
+  double getTotalLateralDistanceToPreferredLane(
+    const lanelet::ConstLanelet & lanelet, const Direction direction = Direction::NONE) const;
+
+  /**
+   * Query input lanelet to see whether it exist in the preferred lane. If it doesn't exist, return
+   * the distance to the preferred lane from the give lane.
+   * This computes each lateral interval to the preferred lane from the given lanelet
+   * @param lanelet lanelet to query
+   * @param direction change direction
+   * @return number of lanes from input to the preferred lane
+   */
+  std::vector<double> getLateralIntervalsToPreferredLane(
     const lanelet::ConstLanelet & lanelet, const Direction direction = Direction::NONE) const;
 
   bool getClosestLaneletWithinRoute(

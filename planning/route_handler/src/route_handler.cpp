@@ -1330,15 +1330,22 @@ int RouteHandler::getNumLaneToPreferredLane(
   return 0;  // TODO(Horibe) check if return 0 is appropriate.
 }
 
-double RouteHandler::getLateralDistanceToPreferredLane(
+double RouteHandler::getTotalLateralDistanceToPreferredLane(
+  const lanelet::ConstLanelet & lanelet, const Direction direction) const
+{
+  const auto intervals = getLateralIntervalsToPreferredLane(lanelet, direction);
+  return std::accumulate(intervals.begin(), intervals.end(), 0);
+}
+
+std::vector<double> RouteHandler::getLateralIntervalsToPreferredLane(
   const lanelet::ConstLanelet & lanelet, const Direction direction) const
 {
   if (exists(preferred_lanelets_, lanelet)) {
-    return 0.0;
+    return {};
   }
 
   if ((direction == Direction::NONE) || (direction == Direction::RIGHT)) {
-    double accumulated_distance = 0.0;
+    std::vector<double> intervals;
     lanelet::ConstLanelet current_lanelet = lanelet;
     const auto & right_lanes =
       lanelet::utils::query::getAllNeighborsRight(routing_graph_ptr_, lanelet);
@@ -1346,21 +1353,21 @@ double RouteHandler::getLateralDistanceToPreferredLane(
       const auto & current_centerline = current_lanelet.centerline();
       const auto & next_centerline = right.centerline();
       if (current_centerline.empty() || next_centerline.empty()) {
-        return -accumulated_distance;
+        return intervals;
       }
       const auto & curr_pt = current_centerline.front();
       const auto & next_pt = next_centerline.front();
-      accumulated_distance += lanelet::geometry::distance2d(to2D(curr_pt), to2D(next_pt));
+      intervals.push_back(-lanelet::geometry::distance2d(to2D(curr_pt), to2D(next_pt)));
 
       if (exists(preferred_lanelets_, right)) {
-        return -accumulated_distance;
+        return intervals;
       }
       current_lanelet = right;
     }
   }
 
   if ((direction == Direction::NONE) || (direction == Direction::LEFT)) {
-    double accumulated_distance = 0.0;
+    std::vector<double> intervals;
     lanelet::ConstLanelet current_lanelet = lanelet;
     const auto & left_lanes =
       lanelet::utils::query::getAllNeighborsLeft(routing_graph_ptr_, lanelet);
@@ -1368,20 +1375,20 @@ double RouteHandler::getLateralDistanceToPreferredLane(
       const auto & current_centerline = current_lanelet.centerline();
       const auto & next_centerline = left.centerline();
       if (current_centerline.empty() || next_centerline.empty()) {
-        return accumulated_distance;
+        return intervals;
       }
       const auto & curr_pt = current_centerline.front();
       const auto & next_pt = next_centerline.front();
-      accumulated_distance += lanelet::geometry::distance2d(to2D(curr_pt), to2D(next_pt));
+      intervals.push_back(lanelet::geometry::distance2d(to2D(curr_pt), to2D(next_pt)));
 
       if (exists(preferred_lanelets_, left)) {
-        return accumulated_distance;
+        return intervals;
       }
       current_lanelet = left;
     }
   }
 
-  return 0.0;
+  return {};
 }
 
 bool RouteHandler::isInPreferredLane(const PoseStamped & pose) const
