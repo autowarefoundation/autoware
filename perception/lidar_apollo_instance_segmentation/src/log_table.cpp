@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ struct LogTable
 
 static ::LogTable log_table;
 
+namespace lidar_apollo_instance_segmentation
+{
 float calcApproximateLog(float num)
 {
   int integer_num = static_cast<int>(num * 10.0);
@@ -43,3 +45,4 @@ float calcApproximateLog(float num)
   }
   return std::log(static_cast<float>(1.0 + num));
 }
+}  // namespace lidar_apollo_instance_segmentation

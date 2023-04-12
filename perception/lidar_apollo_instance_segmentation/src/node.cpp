@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
+namespace lidar_apollo_instance_segmentation
+{
 LidarInstanceSegmentationNode::LidarInstanceSegmentationNode(
   const rclcpp::NodeOptions & node_options)
 : Node("lidar_apollo_instance_segmentation_node", node_options)
@@ -62,6 +64,7 @@ void LidarInstanceSegmentationNode::pointCloudCallback(
       "debug/processing_time_ms", processing_time_ms);
   }
 }
+}  // namespace lidar_apollo_instance_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(LidarInstanceSegmentationNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(lidar_apollo_instance_segmentation::LidarInstanceSegmentationNode)

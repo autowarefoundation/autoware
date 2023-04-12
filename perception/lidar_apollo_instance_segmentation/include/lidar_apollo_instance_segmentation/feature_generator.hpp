@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
+#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_
 
 #include "lidar_apollo_instance_segmentation/feature_map.hpp"
 #include "util.hpp"
@@ -22,6 +23,8 @@
 
 #include <memory>
 
+namespace lidar_apollo_instance_segmentation
+{
 class FeatureGenerator
 {
 private:
@@ -40,3 +43,6 @@ public:
   std::shared_ptr<FeatureMapInterface> generate(
     const pcl::PointCloud<pcl::PointXYZI>::Ptr & pc_ptr);
 };
+}  // namespace lidar_apollo_instance_segmentation
+
+#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__FEATURE_GENERATOR_HPP_

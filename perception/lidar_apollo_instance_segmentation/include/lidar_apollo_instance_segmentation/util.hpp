@@ -34,6 +34,8 @@
 #include <cmath>
 #include <string>
 
+namespace lidar_apollo_instance_segmentation
+{
 // project point cloud to 2d map. calc in which grid point is.
 // pointcloud to pixel
 inline int F2I(float val, float ori, float scale)
@@ -55,5 +57,6 @@ inline float Pixel2Pc(int in_pixel, float in_size, float out_range)
   float res = 2.0 * out_range / in_size;
   return out_range - (static_cast<float>(in_pixel) + 0.5f) * res;
 }
+}  // namespace lidar_apollo_instance_segmentation
 
 #endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_

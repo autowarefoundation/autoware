@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,6 +60,8 @@
 #include <memory>
 #include <vector>
 
+namespace lidar_apollo_instance_segmentation
+{
 enum MetaType {
   META_UNKNOWN,
   META_SMALL_MOT,
@@ -94,12 +96,12 @@ public:
   ~Cluster2D() {}
 
   void cluster(
-    const std::shared_ptr<float> & inferred_data,
-    const pcl::PointCloud<pcl::PointXYZI>::Ptr & pc_ptr, const pcl::PointIndices & valid_indices,
-    float objectness_thresh, bool use_all_grids_for_clustering);
+    const float * inferred_data, const pcl::PointCloud<pcl::PointXYZI>::Ptr & pc_ptr,
+    const pcl::PointIndices & valid_indices, float objectness_thresh,
+    bool use_all_grids_for_clustering);
 
-  void filter(const std::shared_ptr<float> & inferred_data);
-  void classify(const std::shared_ptr<float> & inferred_data);
+  void filter(const float * inferred_data);
+  void classify(const float * inferred_data);
 
   void getObjects(
     const float confidence_thresh, const float height_thresh, const int min_pts_num,
@@ -112,7 +114,7 @@ public:
 private:
   int rows_;
   int cols_;
-  int siz_;
+  int size_;
   float range_;
   float scale_;
   float inv_res_x_;
@@ -158,5 +160,6 @@ private:
 
   void traverse(Node * x);
 };
+}  // namespace lidar_apollo_instance_segmentation
 
 #endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__CLUSTER2D_HPP_

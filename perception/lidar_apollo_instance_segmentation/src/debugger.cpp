@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+namespace lidar_apollo_instance_segmentation
+{
 Debugger::Debugger(rclcpp::Node * node)
 {
   instance_pointcloud_pub_ =
@@ -98,3 +100,4 @@ void Debugger::publishColoredPointCloud(
   output_msg.header = input.header;
   instance_pointcloud_pub_->publish(output_msg);
 }
+}  // namespace lidar_apollo_instance_segmentation

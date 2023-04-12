@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,74 +20,44 @@
 #include <NvInfer.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+namespace lidar_apollo_instance_segmentation
+{
 LidarApolloInstanceSegmentation::LidarApolloInstanceSegmentation(rclcpp::Node * node)
 : node_(node), tf_buffer_(node_->get_clock()), tf_listener_(tf_buffer_)
 {
   int range, width, height;
   bool use_intensity_feature, use_constant_feature;
-  std::string engine_file;
-  std::string prototxt_file;
-  std::string caffemodel_file;
+  std::string onnx_file;
   score_threshold_ = node_->declare_parameter("score_threshold", 0.8);
   range = node_->declare_parameter("range", 60);
   width = node_->declare_parameter("width", 640);
   height = node_->declare_parameter("height", 640);
-  engine_file = node_->declare_parameter("engine_file", "vls-128.engine");
-  prototxt_file = node_->declare_parameter("prototxt_file", "vls-128.prototxt");
-  caffemodel_file = node_->declare_parameter("caffemodel_file", "vls-128.caffemodel");
+  onnx_file = node_->declare_parameter("onnx_file", "vls-128.onnx");
   use_intensity_feature = node_->declare_parameter("use_intensity_feature", true);
   use_constant_feature = node_->declare_parameter("use_constant_feature", true);
   target_frame_ = node_->declare_parameter("target_frame", "base_link");
   z_offset_ = node_->declare_parameter<float>("z_offset", -2.0);
+  const auto precision = node_->declare_parameter("precision", "fp32");
 
-  // load weight file
-  std::ifstream fs(engine_file);
-  if (!fs.is_open()) {
-    RCLCPP_INFO(
-      node_->get_logger(),
-      "Could not find %s. try making TensorRT engine from caffemodel and prototxt",
-      engine_file.c_str());
-    Tn::Logger logger;
-    nvinfer1::IBuilder * builder = nvinfer1::createInferBuilder(logger);
-    nvinfer1::INetworkDefinition * network = builder->createNetworkV2(0U);
-    nvcaffeparser1::ICaffeParser * parser = nvcaffeparser1::createCaffeParser();
-    nvinfer1::IBuilderConfig * config = builder->createBuilderConfig();
-    const nvcaffeparser1::IBlobNameToTensor * blob_name2tensor = parser->parse(
-      prototxt_file.c_str(), caffemodel_file.c_str(), *network, nvinfer1::DataType::kFLOAT);
-    std::string output_node = "deconv0";
-    auto output = blob_name2tensor->find(output_node.c_str());
-    if (output == nullptr) {
-      RCLCPP_ERROR(node_->get_logger(), "can not find output named %s", output_node.c_str());
-    }
-    network->markOutput(*output);
-#if (NV_TENSORRT_MAJOR * 1000) + (NV_TENSORRT_MINOR * 100) + NV_TENSOR_PATCH >= 8400
-    config->setMemoryPoolLimit(nvinfer1::MemoryPoolType::kWORKSPACE, 1 << 30);
-#else
-    config->setMaxWorkspaceSize(1 << 30);
-#endif
-    nvinfer1::IHostMemory * plan = builder->buildSerializedNetwork(*network, *config);
-    assert(plan != nullptr);
-    std::ofstream outfile(engine_file, std::ofstream::binary);
-    assert(!outfile.fail());
-    outfile.write(reinterpret_cast<char *>(plan->data()), plan->size());
-    outfile.close();
-    if (network) {
-      delete network;
-    }
-    if (parser) {
-      delete parser;
-    }
-    if (builder) {
-      delete builder;
-    }
-    if (config) {
-      delete config;
-    }
-    if (plan) {
-      delete plan;
-    }
+  trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
+    onnx_file, precision, nullptr, tensorrt_common::BatchConfig{1, 1, 1}, 1 << 30);
+  trt_common_->setup();
+
+  if (!trt_common_->isInitialized()) {
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "failed to create tensorrt engine file.");
+    return;
   }
-  net_ptr_.reset(new Tn::trtNet(engine_file));
+
+  // GPU memory allocation
+  const auto input_dims = trt_common_->getBindingDimensions(0);
+  const auto input_size =
+    std::accumulate(input_dims.d + 1, input_dims.d + input_dims.nbDims, 1, std::multiplies<int>());
+  input_d_ = cuda_utils::make_unique<float[]>(input_size);
+  const auto output_dims = trt_common_->getBindingDimensions(1);
+  output_size_ = std::accumulate(
+    output_dims.d + 1, output_dims.d + output_dims.nbDims, 1, std::multiplies<int>());
+  output_d_ = cuda_utils::make_unique<float[]>(output_size_);
+  output_h_ = cuda_utils::make_unique_host<float[]>(output_size_, cudaHostAllocPortable);
 
   // feature map generator: pre process
   feature_generator_ = std::make_shared<FeatureGenerator>(
@@ -139,6 +109,10 @@ bool LidarApolloInstanceSegmentation::detectDynamicObjects(
   const sensor_msgs::msg::PointCloud2 & input,
   tier4_perception_msgs::msg::DetectedObjectsWithFeature & output)
 {
+  if (!trt_common_->isInitialized()) {
+    return false;
+  }
+
   // move up pointcloud z_offset in z axis
   sensor_msgs::msg::PointCloud2 transformed_cloud;
   transformCloud(input, transformed_cloud, z_offset_);
@@ -151,9 +125,18 @@ bool LidarApolloInstanceSegmentation::detectDynamicObjects(
   std::shared_ptr<FeatureMapInterface> feature_map_ptr =
     feature_generator_->generate(pcl_pointcloud_raw_ptr);
 
-  // inference
-  std::shared_ptr<float> inferred_data(new float[net_ptr_->getOutputSize() / sizeof(float)]);
-  net_ptr_->doInference(feature_map_ptr->map_data.data(), inferred_data.get());
+  CHECK_CUDA_ERROR(cudaMemcpy(
+    input_d_.get(), feature_map_ptr->map_data.data(),
+    feature_map_ptr->map_data.size() * sizeof(float), cudaMemcpyHostToDevice));
+
+  std::vector<void *> buffers = {input_d_.get(), output_d_.get()};
+
+  trt_common_->enqueueV2(buffers.data(), *stream_, nullptr);
+
+  CHECK_CUDA_ERROR(cudaMemcpyAsync(
+    output_h_.get(), output_d_.get(), sizeof(float) * output_size_, cudaMemcpyDeviceToHost,
+    *stream_));
+  cudaStreamSynchronize(*stream_);
 
   // post process
   const float objectness_thresh = 0.5;
@@ -161,7 +144,7 @@ bool LidarApolloInstanceSegmentation::detectDynamicObjects(
   valid_idx.indices.resize(pcl_pointcloud_raw_ptr->size());
   std::iota(valid_idx.indices.begin(), valid_idx.indices.end(), 0);
   cluster2d_->cluster(
-    inferred_data, pcl_pointcloud_raw_ptr, valid_idx, objectness_thresh,
+    output_h_.get(), pcl_pointcloud_raw_ptr, valid_idx, objectness_thresh,
     true /*use all grids for clustering*/);
   const float height_thresh = 0.5;
   const int min_pts_num = 3;
@@ -178,3 +161,4 @@ bool LidarApolloInstanceSegmentation::detectDynamicObjects(
   output.header = transformed_cloud.header;
   return true;
 }
+}  // namespace lidar_apollo_instance_segmentation

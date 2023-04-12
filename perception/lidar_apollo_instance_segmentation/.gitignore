@@ -1,2 +1,2 @@
-data/*.caffemodel
+data/*.onnx
 data/*.engine

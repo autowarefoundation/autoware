@@ -1,4 +1,4 @@
-// Copyright 2020 TierIV
+// Copyright 2020-2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+namespace lidar_apollo_instance_segmentation
+{
 geometry_msgs::msg::Quaternion getQuaternionFromRPY(const double r, const double p, const double y)
 {
   tf2::Quaternion q;
@@ -67,13 +69,13 @@ Cluster2D::Cluster2D(const int rows, const int cols, const float range)
 {
   rows_ = rows;
   cols_ = cols;
-  siz_ = rows * cols;
+  size_ = rows * cols;
   range_ = range;
   scale_ = 0.5 * static_cast<float>(rows_) / range_;
   inv_res_x_ = 0.5 * static_cast<float>(cols_) / range_;
   inv_res_y_ = 0.5 * static_cast<float>(rows_) / range_;
   point2grid_.clear();
-  id_img_.assign(siz_, -1);
+  id_img_.assign(size_, -1);
   pc_ptr_.reset();
   valid_indices_in_pc_ = nullptr;
 }
@@ -102,13 +104,13 @@ void Cluster2D::traverse(Node * x)
 }
 
 void Cluster2D::cluster(
-  const std::shared_ptr<float> & inferred_data, const pcl::PointCloud<pcl::PointXYZI>::Ptr & pc_ptr,
+  const float * inferred_data, const pcl::PointCloud<pcl::PointXYZI>::Ptr & pc_ptr,
   const pcl::PointIndices & valid_indices, float objectness_thresh,
   bool use_all_grids_for_clustering)
 {
-  const float * category_pt_data = inferred_data.get();
-  const float * instance_pt_x_data = inferred_data.get() + siz_;
-  const float * instance_pt_y_data = inferred_data.get() + siz_ * 2;
+  const float * category_pt_data = inferred_data;
+  const float * instance_pt_x_data = inferred_data + size_;
+  const float * instance_pt_y_data = inferred_data + size_ * 2;
 
   pc_ptr_ = pc_ptr;
 
@@ -176,7 +178,7 @@ void Cluster2D::cluster(
 
   int count_obstacles = 0;
   obstacles_.clear();
-  id_img_.assign(siz_, -1);
+  id_img_.assign(size_, -1);
   for (int row = 0; row < rows_; ++row) {
     for (int col = 0; col < cols_; ++col) {
       Node * node = &nodes[row][col];
@@ -197,12 +199,12 @@ void Cluster2D::cluster(
   classify(inferred_data);
 }
 
-void Cluster2D::filter(const std::shared_ptr<float> & inferred_data)
+void Cluster2D::filter(const float * inferred_data)
 {
-  const float * confidence_pt_data = inferred_data.get() + siz_ * 3;
-  const float * heading_pt_x_data = inferred_data.get() + siz_ * 9;
-  const float * heading_pt_y_data = inferred_data.get() + siz_ * 10;
-  const float * height_pt_data = inferred_data.get() + siz_ * 11;
+  const float * confidence_pt_data = inferred_data + size_ * 3;
+  const float * heading_pt_x_data = inferred_data + size_ * 9;
+  const float * heading_pt_y_data = inferred_data + size_ * 10;
+  const float * height_pt_data = inferred_data + size_ * 11;
 
   for (size_t obstacle_id = 0; obstacle_id < obstacles_.size(); obstacle_id++) {
     Obstacle * obs = &obstacles_[obstacle_id];
@@ -223,9 +225,9 @@ void Cluster2D::filter(const std::shared_ptr<float> & inferred_data)
   }
 }
 
-void Cluster2D::classify(const std::shared_ptr<float> & inferred_data)
+void Cluster2D::classify(const float * inferred_data)
 {
-  const float * classify_pt_data = inferred_data.get() + siz_ * 4;
+  const float * classify_pt_data = inferred_data + size_ * 4;
   int num_classes = 5;
   for (size_t obs_id = 0; obs_id < obstacles_.size(); obs_id++) {
     Obstacle * obs = &obstacles_[obs_id];
@@ -233,7 +235,7 @@ void Cluster2D::classify(const std::shared_ptr<float> & inferred_data)
     for (size_t grid_id = 0; grid_id < obs->grids.size(); grid_id++) {
       int grid = obs->grids[grid_id];
       for (int k = 0; k < num_classes; k++) {
-        obs->meta_type_probs[k] += classify_pt_data[k * siz_ + grid];
+        obs->meta_type_probs[k] += classify_pt_data[k * size_ + grid];
       }
     }
     int meta_type_id = 0;
@@ -374,3 +376,4 @@ void Cluster2D::getObjects(
   }
   objects.header = in_header;
 }
+}  // namespace lidar_apollo_instance_segmentation

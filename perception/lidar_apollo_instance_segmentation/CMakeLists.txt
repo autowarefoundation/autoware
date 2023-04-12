@@ -1,173 +1,135 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.17)
 project(lidar_apollo_instance_segmentation)
 
-find_package(autoware_cmake REQUIRED)
-autoware_package()
+find_package(ament_cmake REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common)
+find_package(pcl_conversions REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(tier4_autoware_utils REQUIRED)
+find_package(tier4_debug_msgs REQUIRED)
+find_package(tier4_perception_msgs REQUIRED)
 
-option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
-
-# set flags for CUDA availability
-option(CUDA_AVAIL "CUDA available" OFF)
-find_package(CUDA)
-if(CUDA_FOUND)
-  find_library(CUBLAS_LIBRARIES cublas HINTS
-    ${CUDA_TOOLKIT_ROOT_DIR}/lib64
-    ${CUDA_TOOLKIT_ROOT_DIR}/lib
+find_package(tensorrt_common)
+if(NOT ${tensorrt_common_FOUND})
+  message(WARNING "The tensorrt_common package is not found. Please check its dependencies.")
+  # to avoid launch file missing without a gpu
+  ament_package()
+  install(
+    DIRECTORY launch
+    DESTINATION share/${PROJECT_NAME}
   )
-  if(CUDA_VERBOSE)
-    message("CUDA is available!")
-    message("CUDA Libs: ${CUDA_LIBRARIES}")
-    message("CUDA Headers: ${CUDA_INCLUDE_DIRS}")
-  endif()
-  set(CUDA_AVAIL ON)
-else()
-  message("CUDA NOT FOUND")
-  set(CUDA_AVAIL OFF)
+  return()
+endif()
+find_package(cuda_utils REQUIRED)
+
+
+# download weight files
+set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
+if(NOT EXISTS "${DATA_PATH}")
+  execute_process(COMMAND mkdir -p ${DATA_PATH})
 endif()
 
-# set flags for TensorRT availability
-option(TRT_AVAIL "TensorRT available" OFF)
-# try to find the tensorRT modules
-find_library(NVINFER NAMES nvinfer)
-find_library(NVPARSERS NAMES nvparsers)
-find_library(NVCAFFE_PARSER NAMES nvcaffe_parser)
-find_library(NVINFER_PLUGIN NAMES nvinfer_plugin)
-if(NVINFER AND NVPARSERS AND NVCAFFE_PARSER AND NVINFER_PLUGIN)
-  if(CUDA_VERBOSE)
-    message("TensorRT is available!")
-    message("NVINFER: ${NVINFER}")
-    message("NVPARSERS: ${NVPARSERS}")
-    message("NVCAFFE_PARSER: ${NVCAFFE_PARSER}")
-  endif()
-  set(TRT_AVAIL ON)
-else()
-  message("TensorRT is NOT Available")
-  set(TRT_AVAIL OFF)
-endif()
-
-# set flags for CUDNN availability
-option(CUDNN_AVAIL "CUDNN available" OFF)
-# try to find the CUDNN module
-find_library(CUDNN_LIBRARY
-  NAMES libcudnn.so${__cudnn_ver_suffix} libcudnn${__cudnn_ver_suffix}.dylib ${__cudnn_lib_win_name}
-  PATHS $ENV{LD_LIBRARY_PATH} ${__libpath_cudart} ${CUDNN_ROOT_DIR} ${PC_CUDNN_LIBRARY_DIRS} ${CMAKE_INSTALL_PREFIX}
-  PATH_SUFFIXES lib lib64 bin
-  DOC "CUDNN library."
-)
-if(CUDNN_LIBRARY)
-  if(CUDA_VERBOSE)
-    message("CUDNN is available!")
-    message("CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
-  endif()
-  set(CUDNN_AVAIL ON)
-else()
-  message("CUDNN is NOT Available")
-  set(CUDNN_AVAIL OFF)
-endif()
-
-if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
-  # download weight files
-  set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
-  if(NOT EXISTS "${DATA_PATH}")
-    execute_process(COMMAND mkdir -p ${DATA_PATH})
-  endif()
-
-  function(download FILE_NAME FILE_HASH)
-    message(STATUS "Checking and downloading ${FILE_NAME}")
-    set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-    set(STATUS_CODE 0)
-    message(STATUS "start ${FILE_NAME}")
-    if(EXISTS ${FILE_PATH})
-      message(STATUS "found ${FILE_NAME}")
-      file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-      if(${FILE_HASH} STREQUAL ${EXISTING_FILE_HASH})
-        message(STATUS "same ${FILE_NAME}")
-        message(STATUS "File already exists.")
-      else()
-        message(STATUS "diff ${FILE_NAME}")
-        message(STATUS "File hash changes. Downloading now ...")
-        file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-        list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-        list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-      endif()
+function(download FILE_NAME FILE_HASH)
+  message(STATUS "Checking and downloading ${FILE_NAME}")
+  set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
+  set(STATUS_CODE 0)
+  message(STATUS "start ${FILE_NAME}")
+  if(EXISTS ${FILE_PATH})
+    message(STATUS "found ${FILE_NAME}")
+    file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
+    if(${FILE_HASH} STREQUAL ${EXISTING_FILE_HASH})
+      message(STATUS "same ${FILE_NAME}")
+      message(STATUS "File already exists.")
     else()
-      message(STATUS "not found ${FILE_NAME}")
-      message(STATUS "File doesn't exists. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
+      message(STATUS "diff ${FILE_NAME}")
+      message(STATUS "File hash changes. Downloading now ...")
+      file(DOWNLOAD
+        https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/${FILE_NAME} ${FILE_PATH}
+        STATUS DOWNLOAD_STATUS TIMEOUT 300
+      )
       list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
       list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
     endif()
-    if(${STATUS_CODE} EQUAL 0)
-      message(STATUS "Download completed successfully!")
-    else()
-      message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
-    endif()
-  endfunction()
+  else()
+    message(STATUS "not found ${FILE_NAME}")
+    message(STATUS "File doesn't exists. Downloading now ...")
+    file(DOWNLOAD
+      https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/${FILE_NAME} ${FILE_PATH}
+      STATUS DOWNLOAD_STATUS TIMEOUT 300
+    )
+    list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+    list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
+  endif()
+  if(${STATUS_CODE} EQUAL 0)
+    message(STATUS "Download completed successfully!")
+  else()
+    message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
+  endif()
+endfunction()
 
-  download(vlp-16.caffemodel f79f56a835893eb5289182dd06ce9905)
-  download(hdl-64.caffemodel f79f56a835893eb5289182dd06ce9905)
-  download(vls-128.caffemodel e5864f65c42d7d69a58fa7b01970d078)
+download(vlp-16.onnx 63a5a1bb73f7dbb64cf70d04eca45fb4)
+download(hdl-64.onnx 009745e33b1df44b68296431cc384cd2)
+download(vls-128.onnx b2d709f56f73ae2518c9bf4d0214468f)
 
-  find_package(PCL REQUIRED)
+add_library(${PROJECT_NAME} SHARED
+  src/node.cpp
+  src/detector.cpp
+  src/log_table.cpp
+  src/feature_generator.cpp
+  src/feature_map.cpp
+  src/cluster2d.cpp
+  src/debugger.cpp
+)
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MWAITXINTRIN_H_INCLUDED")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STRICT_ANSI__")
+target_include_directories(${PROJECT_NAME} PRIVATE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  ${cuda_utils_INCLUDE_DIRS}
+  ${pcl_conversions_INCLUDE_DIRS}
+  ${tier4_autoware_utils_INCLUDE_DIRS}
+)
 
-  include_directories(
-    lib/include
-    ${CUDA_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
-  )
+target_link_libraries(${PROJECT_NAME}
+  pcl_common
+  rclcpp::rclcpp
+  rclcpp_components::component
+  tensorrt_common::tensorrt_common
+  tf2_eigen::tf2_eigen
+  ${tier4_debug_msgs_TARGETS}
+  ${tier4_perception_msgs_TARGETS}
+)
 
-  ament_auto_add_library(tensorrt_apollo_cnn_lib SHARED
-    lib/src/TrtNet.cpp
-  )
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
 
-  target_link_libraries(tensorrt_apollo_cnn_lib
-    ${NVINFER}
-    ${NVCAFFE_PARSER}
-    ${NVINFER_PLUGIN}
-    ${CUDA_LIBRARIES}
-    ${CUBLAS_LIBRARIES}
-    ${CUDNN_LIBRARY}
-    ${PCL_LIBRARIES}
-  )
+  # These don't pass yet, disable them for now
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_pep257_FOUND TRUE)
+  set(ament_cmake_uncrustify_FOUND TRUE)
 
-  target_compile_options(tensorrt_apollo_cnn_lib
-    PUBLIC
-      -Wno-deprecated-declarations
-  )
+  ament_lint_auto_find_test_dependencies()
+endif()
 
-  ament_auto_add_library(lidar_apollo_instance_segmentation SHARED
-    src/node.cpp
-    src/detector.cpp
-    src/log_table.cpp
-    src/feature_generator.cpp
-    src/feature_map.cpp
-    src/cluster2d.cpp
-    src/debugger.cpp
-  )
+install(TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
-  target_link_libraries(lidar_apollo_instance_segmentation
-    tensorrt_apollo_cnn_lib
-  )
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "lidar_apollo_instance_segmentation::LidarInstanceSegmentationNode"
+  EXECUTABLE ${PROJECT_NAME}_node
+)
 
-  rclcpp_components_register_node(lidar_apollo_instance_segmentation
-    PLUGIN "LidarInstanceSegmentationNode"
-    EXECUTABLE lidar_apollo_instance_segmentation_node
-  )
-
-  ament_auto_package(INSTALL_TO_SHARE
-    launch
+ament_package()
+install(
+  DIRECTORY
     config
     data
-  )
-
-else()
-  # to avoid launch file missing without a gpu
-  ament_auto_package(INSTALL_TO_SHARE
     launch
-  )
-
-endif()
+  DESTINATION share/${PROJECT_NAME}
+)
