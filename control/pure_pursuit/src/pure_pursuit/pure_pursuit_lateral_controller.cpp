@@ -67,25 +67,25 @@ PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node & node)
   param_.max_steering_angle = vehicle_info.max_steer_angle_rad;
 
   // Algorithm Parameters
-  param_.ld_velocity_ratio = node_->declare_parameter<double>("ld_velocity_ratio", 2.4);
-  param_.ld_lateral_error_ratio = node_->declare_parameter<double>("ld_lateral_error_ratio", 3.6);
-  param_.ld_curvature_ratio = node_->declare_parameter<double>("ld_curvature_ratio", 120.0);
+  param_.ld_velocity_ratio = node_->declare_parameter<double>("ld_velocity_ratio");
+  param_.ld_lateral_error_ratio = node_->declare_parameter<double>("ld_lateral_error_ratio");
+  param_.ld_curvature_ratio = node_->declare_parameter<double>("ld_curvature_ratio");
   param_.long_ld_lateral_error_threshold =
-    node_->declare_parameter<double>("long_ld_lateral_error_threshold", 0.5);
-  param_.min_lookahead_distance = node_->declare_parameter<double>("min_lookahead_distance", 4.35);
-  param_.max_lookahead_distance = node_->declare_parameter<double>("max_lookahead_distance", 15.0);
+    node_->declare_parameter<double>("long_ld_lateral_error_threshold");
+  param_.min_lookahead_distance = node_->declare_parameter<double>("min_lookahead_distance");
+  param_.max_lookahead_distance = node_->declare_parameter<double>("max_lookahead_distance");
   param_.reverse_min_lookahead_distance =
-    node_->declare_parameter<double>("reverse_min_lookahead_distance", 7.0);
-  param_.converged_steer_rad_ = node_->declare_parameter<double>("converged_steer_rad", 0.1);
-  param_.prediction_ds = node_->declare_parameter<double>("prediction_ds", 0.3);
+    node_->declare_parameter<double>("reverse_min_lookahead_distance");
+  param_.converged_steer_rad_ = node_->declare_parameter<double>("converged_steer_rad");
+  param_.prediction_ds = node_->declare_parameter<double>("prediction_ds");
   param_.prediction_distance_length =
-    node_->declare_parameter<double>("prediction_distance_length", 21.0);
-  param_.resampling_ds = node_->declare_parameter<double>("resampling_ds", 0.1);
+    node_->declare_parameter<double>("prediction_distance_length");
+  param_.resampling_ds = node_->declare_parameter<double>("resampling_ds");
   param_.curvature_calculation_distance =
-    node_->declare_parameter<double>("curvature_calculation_distance", 4.0);
-  param_.enable_path_smoothing = node_->declare_parameter<bool>("enable_path_smoothing", true);
+    node_->declare_parameter<double>("curvature_calculation_distance");
+  param_.enable_path_smoothing = node_->declare_parameter<bool>("enable_path_smoothing");
   param_.path_filter_moving_ave_num =
-    node_->declare_parameter<int64_t>("path_filter_moving_ave_num", 25);
+    node_->declare_parameter<int64_t>("path_filter_moving_ave_num");
 
   // Debug Publishers
   pub_debug_marker_ =

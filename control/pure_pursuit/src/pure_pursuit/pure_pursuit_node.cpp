@@ -63,14 +63,13 @@ PurePursuitNode::PurePursuitNode(const rclcpp::NodeOptions & node_options)
   param_.wheel_base = vehicle_info.wheel_base_m;
 
   // Node Parameters
-  param_.ctrl_period = this->declare_parameter<double>("control_period", 0.02);
+  param_.ctrl_period = this->declare_parameter<double>("control_period");
 
   // Algorithm Parameters
-  param_.lookahead_distance_ratio =
-    this->declare_parameter<double>("lookahead_distance_ratio", 2.2);
-  param_.min_lookahead_distance = this->declare_parameter<double>("min_lookahead_distance", 2.5);
+  param_.lookahead_distance_ratio = this->declare_parameter<double>("lookahead_distance_ratio");
+  param_.min_lookahead_distance = this->declare_parameter<double>("min_lookahead_distance");
   param_.reverse_min_lookahead_distance =
-    this->declare_parameter<double>("reverse_min_lookahead_distance", 7.0);
+    this->declare_parameter<double>("reverse_min_lookahead_distance");
 
   // Subscribers
   using std::placeholders::_1;
