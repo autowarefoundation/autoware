@@ -14,7 +14,7 @@
 
 <!-- Write additional information if necessary. It should be written if there are related PRs that should be merged at the same time. -->
 
-## Topic changes
+## Interface changes
 
 <!-- Describe if the PR changes the topic name. -->
 
