@@ -17,7 +17,7 @@
 #include "behavior_path_planner/scene_module/scene_module_bt_node_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
-#include "behavior_path_planner/util/utils.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include <algorithm>
 #include <memory>

@@ -39,13 +39,13 @@
 
 #include "behavior_path_planner/steering_factor_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
-#include "behavior_path_planner/util/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/util/avoidance_by_lc/module_data.hpp"
-#include "behavior_path_planner/util/lane_change/lane_change_module_data.hpp"
-#include "behavior_path_planner/util/lane_following/module_data.hpp"
-#include "behavior_path_planner/util/pull_out/pull_out_parameters.hpp"
-#include "behavior_path_planner/util/pull_over/pull_over_parameters.hpp"
-#include "behavior_path_planner/util/side_shift/side_shift_parameters.hpp"
+#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/utils/avoidance_by_lc/module_data.hpp"
+#include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
+#include "behavior_path_planner/utils/lane_following/module_data.hpp"
+#include "behavior_path_planner/utils/pull_out/pull_out_parameters.hpp"
+#include "behavior_path_planner/utils/pull_over/pull_over_parameters.hpp"
+#include "behavior_path_planner/utils/side_shift/side_shift_parameters.hpp"
 
 #include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>

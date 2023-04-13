@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__AVOIDANCE__DEBUG_HPP_
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
-#include "behavior_path_planner/util/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 

@@ -16,9 +16,9 @@
 
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
-#include "behavior_path_planner/util/lane_change/util.hpp"
-#include "behavior_path_planner/util/path_utils.hpp"
-#include "behavior_path_planner/util/utils.hpp"
+#include "behavior_path_planner/utils/lane_change/util.hpp"
+#include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>

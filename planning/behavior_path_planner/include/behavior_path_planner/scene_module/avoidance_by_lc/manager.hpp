@@ -17,7 +17,7 @@
 
 #include "behavior_path_planner/scene_module/avoidance_by_lc/module.hpp"
 #include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
-#include "behavior_path_planner/util/avoidance_by_lc/module_data.hpp"
+#include "behavior_path_planner/utils/avoidance_by_lc/module_data.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

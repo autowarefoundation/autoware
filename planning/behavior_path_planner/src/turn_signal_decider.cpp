@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/turn_signal_decider.hpp"
 
-#include "behavior_path_planner/util/utils.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>

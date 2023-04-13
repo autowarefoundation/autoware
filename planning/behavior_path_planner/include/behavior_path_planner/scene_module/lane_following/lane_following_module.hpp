@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_FOLLOWING__LANE_FOLLOWING_MODULE_HPP_
 
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
-#include "behavior_path_planner/util/lane_following/module_data.hpp"
+#include "behavior_path_planner/utils/lane_following/module_data.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

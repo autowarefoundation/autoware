@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/util/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
 #include <behavior_path_planner/marker_util/lane_change/debug.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

@@ -21,27 +21,27 @@ set(common_src
   src/scene_module/lane_change/lane_change_module.cpp
   src/scene_module/lane_change/external_request_lane_change_module.cpp
   src/turn_signal_decider.cpp
-  src/util/utils.cpp
-  src/util/path_utils.cpp
-  src/util/safety_check.cpp
-  src/util/avoidance/util.cpp
-  src/util/lane_change/util.cpp
-  src/util/side_shift/util.cpp
-  src/util/pull_over/util.cpp
-  src/util/pull_over/shift_pull_over.cpp
-  src/util/pull_over/geometric_pull_over.cpp
-  src/util/pull_over/freespace_pull_over.cpp
-  src/util/pull_over/goal_searcher.cpp
-  src/util/pull_out/util.cpp
-  src/util/pull_out/shift_pull_out.cpp
-  src/util/pull_out/geometric_pull_out.cpp
-  src/util/path_shifter/path_shifter.cpp
-  src/util/drivable_area_expansion/drivable_area_expansion.cpp
-  src/util/drivable_area_expansion/map_utils.cpp
-  src/util/drivable_area_expansion/footprints.cpp
-  src/util/drivable_area_expansion/expansion.cpp
-  src/util/geometric_parallel_parking/geometric_parallel_parking.cpp
-  src/util/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
+  src/utils/utils.cpp
+  src/utils/path_utils.cpp
+  src/utils/safety_check.cpp
+  src/utils/avoidance/util.cpp
+  src/utils/lane_change/util.cpp
+  src/utils/side_shift/util.cpp
+  src/utils/pull_over/util.cpp
+  src/utils/pull_over/shift_pull_over.cpp
+  src/utils/pull_over/geometric_pull_over.cpp
+  src/utils/pull_over/freespace_pull_over.cpp
+  src/utils/pull_over/goal_searcher.cpp
+  src/utils/pull_out/util.cpp
+  src/utils/pull_out/shift_pull_out.cpp
+  src/utils/pull_out/geometric_pull_out.cpp
+  src/utils/path_shifter/path_shifter.cpp
+  src/utils/drivable_area_expansion/drivable_area_expansion.cpp
+  src/utils/drivable_area_expansion/map_utils.cpp
+  src/utils/drivable_area_expansion/footprints.cpp
+  src/utils/drivable_area_expansion/expansion.cpp
+  src/utils/geometric_parallel_parking/geometric_parallel_parking.cpp
+  src/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.cpp
   src/marker_util/debug_utilities.cpp
   src/marker_util/avoidance/debug.cpp
   src/marker_util/lane_change/debug.cpp

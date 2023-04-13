@@ -14,8 +14,8 @@
 
 #include "behavior_path_planner/scene_module/lane_following/lane_following_module.hpp"
 
-#include "behavior_path_planner/util/path_utils.hpp"
-#include "behavior_path_planner/util/utils.hpp"
+#include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 

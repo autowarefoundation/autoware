@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__LANE_CHANGE__DEBUG_HPP_
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
-#include "behavior_path_planner/util/lane_change/lane_change_path.hpp"
+#include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
 
 #include <string>
 #include <unordered_map>
