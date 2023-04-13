@@ -13,7 +13,7 @@ Not applicable.
 
 <!-- Describe how this PR affects the outputs of driving behavior. -->
 
-No effects.
+Not applicable.
 
 ## Pre-review checklist for the PR author
 
