@@ -9,6 +9,12 @@
 
 Not applicable.
 
+## Effects for driving behavior
+
+<!-- Describe how this PR affects the outputs of driving behavior. -->
+
+No effects.
+
 ## Pre-review checklist for the PR author
 
 The PR author **must** check the checkboxes below when creating the PR.

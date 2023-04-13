@@ -14,6 +14,14 @@
 
 <!-- Write additional information if necessary. It should be written if there are related PRs that should be merged at the same time. -->
 
+## Topic changes
+
+<!-- Describe if the PR changes the topic name. -->
+
+## Effects for driving behavior
+
+<!-- Describe how this PR affects the outputs of driving behavior. -->
+
 ## Pre-review checklist for the PR author
 
 The PR author **must** check the checkboxes below when creating the PR.
