@@ -9,7 +9,8 @@
       <remap from="~/partial_map_load" to="/map/get_partial_pointcloud_map"/>
     </node>
     <node pkg="ad_api_adaptors" exec="routing_adaptor" name="routing_adaptor">
-      <remap from="~/input/goal" to="/planning/mission_planning/goal"/>
+      <remap from="~/input/fixed_goal" to="/planning/mission_planning/goal"/>
+      <remap from="~/input/rough_goal" to="/rviz/routing/rough_goal"/>
       <remap from="~/input/waypoint" to="/planning/mission_planning/checkpoint"/>
     </node>
   </group>

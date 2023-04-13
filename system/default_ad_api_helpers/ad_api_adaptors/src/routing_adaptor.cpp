@@ -21,10 +21,14 @@ namespace ad_api_adaptors
 
 RoutingAdaptor::RoutingAdaptor() : Node("routing_adaptor")
 {
-  sub_goal_ = create_subscription<PoseStamped>(
-    "~/input/goal", 5, std::bind(&RoutingAdaptor::on_goal, this, std::placeholders::_1));
+  using std::placeholders::_1;
+
+  sub_fixed_goal_ = create_subscription<PoseStamped>(
+    "~/input/fixed_goal", 3, std::bind(&RoutingAdaptor::on_fixed_goal, this, _1));
+  sub_rough_goal_ = create_subscription<PoseStamped>(
+    "~/input/rough_goal", 3, std::bind(&RoutingAdaptor::on_rough_goal, this, _1));
   sub_waypoint_ = create_subscription<PoseStamped>(
-    "~/input/waypoint", 5, std::bind(&RoutingAdaptor::on_waypoint, this, std::placeholders::_1));
+    "~/input/waypoint", 10, std::bind(&RoutingAdaptor::on_waypoint, this, _1));
 
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
   adaptor.init_cli(cli_route_);
@@ -65,12 +69,22 @@ void RoutingAdaptor::on_timer()
   }
 }
 
-void RoutingAdaptor::on_goal(const PoseStamped::ConstSharedPtr pose)
+void RoutingAdaptor::on_fixed_goal(const PoseStamped::ConstSharedPtr pose)
 {
   request_timing_control_ = 1;
   route_->header = pose->header;
   route_->goal = pose->pose;
   route_->waypoints.clear();
+  route_->option.allow_goal_modification = false;
+}
+
+void RoutingAdaptor::on_rough_goal(const PoseStamped::ConstSharedPtr pose)
+{
+  request_timing_control_ = 1;
+  route_->header = pose->header;
+  route_->goal = pose->pose;
+  route_->waypoints.clear();
+  route_->option.allow_goal_modification = true;
 }
 
 void RoutingAdaptor::on_waypoint(const PoseStamped::ConstSharedPtr pose)
