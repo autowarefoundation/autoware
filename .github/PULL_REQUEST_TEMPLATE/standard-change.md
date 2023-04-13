@@ -16,7 +16,7 @@
 
 ## Interface changes
 
-<!-- Describe when the PR changes the interface, such as changing the topic name or service client. -->
+<!-- Describe any changed interfaces, such as topics, services, or parameters. -->
 
 ## Effects on system behavior
 
