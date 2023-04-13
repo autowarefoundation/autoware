@@ -839,7 +839,7 @@ PathWithLaneId PullOverModule::generateStopPath()
   // if stop pose is closer than min_stop_distance, stop as soon as possible
   const double ego_to_stop_distance = calcSignedArcLengthFromEgo(reference_path, stop_pose);
   const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
-  if (ego_to_stop_distance < min_stop_distance) {
+  if (min_stop_distance && ego_to_stop_distance < *min_stop_distance) {
     return generateFeasibleStopPath();
   }
 
@@ -1093,8 +1093,14 @@ boost::optional<double> PullOverModule::calcFeasibleDecelDistance(
     return 0.0;
   }
 
-  const auto min_stop_distance = calcDecelDistWithJerkAndAccConstraints(
+  auto min_stop_distance = calcDecelDistWithJerkAndAccConstraints(
     v_now, target_velocity, a_now, -a_lim, j_lim, -1.0 * j_lim);
+
+  if (!min_stop_distance) {
+    return {};
+  }
+
+  min_stop_distance = std::max(*min_stop_distance, 0.0);
 
   return min_stop_distance;
 }
@@ -1118,17 +1124,22 @@ void PullOverModule::decelerateForTurnSignal(const Pose & stop_pose, PathWithLan
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
 
   for (auto & point : path.points) {
-    const auto distance_to_stop = std::max(
+    const double distance_to_stop = std::max(
       0.0, calcSignedArcLength(path.points, point.point.pose.position, stop_pose.position));
     const float decel_vel =
       std::min(point.point.longitudinal_velocity_mps, static_cast<float>(distance_to_stop / time));
     const double distance_from_ego = calcSignedArcLengthFromEgo(path, stop_pose);
     const auto min_decel_distance = calcFeasibleDecelDistance(decel_vel);
-    if (!min_decel_distance) {
+
+    // when current velocity already lower than decel_vel, min_decel_distance will be 0.0,
+    // and do not need to decelerate.
+    // skip next process to avoid inserting decel point at the same current position.
+    constexpr double eps_distance = 0.1;
+    if (!min_decel_distance || *min_decel_distance < eps_distance) {
       continue;
     }
 
-    if (0.0 < *min_decel_distance && *min_decel_distance < distance_from_ego) {
+    if (*min_decel_distance < distance_from_ego) {
       point.point.longitudinal_velocity_mps = decel_vel;
     } else {
       insertDecelPoint(current_pose.position, *min_decel_distance, decel_vel, path.points);
@@ -1138,7 +1149,7 @@ void PullOverModule::decelerateForTurnSignal(const Pose & stop_pose, PathWithLan
   const double stop_point_length = calcSignedArcLength(path.points, 0, stop_pose.position);
   const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
 
-  if (*min_stop_distance && min_stop_distance < stop_point_length) {
+  if (min_stop_distance && *min_stop_distance < stop_point_length) {
     const auto stop_point = util::insertStopPoint(stop_point_length, path);
   }
 }
