@@ -16,7 +16,7 @@
 
 ## Interface changes
 
-<!-- Describe if the PR changes the topic name. -->
+<!-- Describe when the PR changes the interface, such as changing the topic name or service client. -->
 
 ## Effects on driving behavior
 
