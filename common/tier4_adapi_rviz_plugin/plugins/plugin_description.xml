@@ -1,0 +1,7 @@
+<library path="tier4_adapi_rviz_plugin">
+
+  <class type="tier4_adapi_rviz_plugins::RouteTool" base_class_type="rviz_common::Tool">
+    <description>RouteTool</description>
+  </class>
+
+</library>
