@@ -11,6 +11,35 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common filters)
 find_package(OpenCV REQUIRED)
 
+# concatenate include_dirs
+set(${PROJECT_NAME}_INCLUDE_DIRS
+  ${${PROJECT_NAME}_FOUND_INCLUDE_DIRS}
+  ${BOOST_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${tf2_geometry_msgs_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+list(REMOVE_DUPLICATES ${PROJECT_NAME}_INCLUDE_DIRS)
+
+# concatenate link libraries
+set(${PROJECT_NAME}_LINK_LIBRARIES ${${PROJECT_NAME}_FOUND_LIBRARIES} ${PCL_LIBRARIES})
+list(REMOVE_DUPLICATES ${PROJECT_NAME}_LINK_LIBRARIES)
+
+# utilization library
+add_library(behavior_velocity_planner_utilization
+  SHARED
+  src/utilization/path_utilization.cpp
+  src/utilization/util.cpp
+  src/utilization/debug.cpp
+)
+target_include_directories(behavior_velocity_planner_utilization
+  SYSTEM PUBLIC
+  ${${PROJECT_NAME}_INCLUDE_DIRS}
+)
+target_link_libraries(behavior_velocity_planner_utilization ${${PROJECT_NAME}_LINK_LIBRARIES})
+
+# scene modules libraries
 set(scene_modules
   detection_area
   blind_spot
@@ -26,36 +55,30 @@ set(scene_modules
   out_of_lane
 )
 
+set(behavior_velocity_planner_scene_modules behavior_velocity_planner_utilization)
 foreach(scene_module IN LISTS scene_modules)
   file(GLOB_RECURSE scene_module_src "src/scene_module/${scene_module}/*")
-  list(APPEND scene_modules_src ${scene_module_src})
+  add_library(behavior_velocity_planner_${scene_module}
+    SHARED ${scene_module_src}
+  )
+  target_include_directories(behavior_velocity_planner_${scene_module}
+    SYSTEM PUBLIC
+    ${${PROJECT_NAME}_INCLUDE_DIRS}
+  )
+  target_link_libraries(behavior_velocity_planner_${scene_module} ${${PROJECT_NAME}_LINK_LIBRARIES} behavior_velocity_planner_utilization)
+  list(APPEND behavior_velocity_planner_scene_modules behavior_velocity_planner_${scene_module})
 endforeach()
 
-ament_auto_add_library(behavior_velocity_planner SHARED
+# node library
+add_library(behavior_velocity_planner SHARED
   src/node.cpp
   src/planner_manager.cpp
-  src/utilization/path_utilization.cpp
-  src/utilization/util.cpp
-  src/utilization/debug.cpp
-  ${scene_modules_src}
 )
-
 target_include_directories(behavior_velocity_planner
   SYSTEM PUBLIC
-    ${BOOST_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
-    ${tf2_geometry_msgs_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
+  ${${PROJECT_NAME}_INCLUDE_DIRS}
 )
-
-ament_target_dependencies(behavior_velocity_planner
-  Boost
-  Eigen3
-  PCL
-  message_filters
-)
-
-target_link_libraries(behavior_velocity_planner ${PCL_LIBRARIES})
+target_link_libraries(behavior_velocity_planner ${${PROJECT_NAME}_LINK_LIBRARIES} ${behavior_velocity_planner_scene_modules})
 
 rclcpp_components_register_node(behavior_velocity_planner
   PLUGIN "behavior_velocity_planner::BehaviorVelocityPlannerNode"
@@ -72,6 +95,7 @@ if(BUILD_TESTING)
   target_link_libraries(utilization-test
     gtest_main
     behavior_velocity_planner
+    ${${PROJECT_NAME}_LINK_LIBRARIES} ${behavior_velocity_planner_scene_modules}
   )
 
   # Gtest for occlusion spot
@@ -86,6 +110,7 @@ if(BUILD_TESTING)
   target_link_libraries(occlusion_spot-test
     gtest_main
     behavior_velocity_planner
+    ${${PROJECT_NAME}_LINK_LIBRARIES} ${behavior_velocity_planner_scene_modules}
   )
 endif()
 
