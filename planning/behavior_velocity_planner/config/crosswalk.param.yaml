@@ -29,6 +29,7 @@
       ego_yield_query_stop_duration: 0.1 # [s] the amount of time which ego should be stopping to query whether it yields or not
 
       # param for input data
+      external_input_timeout: 1.0
       tl_state_timeout: 3.0 # [s] timeout threshold for traffic light signal
 
       # param for target area & object
@@ -42,3 +43,4 @@
     walkway:
       stop_duration_sec: 1.0 # [s] stop time at stop position
       stop_line_distance: 3.5 # [m] make stop line away from crosswalk when no explicit stop line exists
+      external_input_timeout: 1.0

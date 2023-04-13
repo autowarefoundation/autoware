@@ -1,6 +1,8 @@
 /**:
   ros__parameters:
     lane_change:
+      lane_change_prepare_duration: 4.0         # [s]
+      lane_changing_safety_check_duration: 8.0  # [s]
       prepare_duration: 4.0         # [s]
 
       minimum_prepare_length: 2.0 # [m]
@@ -16,7 +18,7 @@
       minimum_lane_changing_velocity: 2.78        # [m/s]
       prediction_time_resolution: 0.5           # [s]
       maximum_deceleration: 1.0                 # [m/s2]
-      lane_change_sampling_num: 10
+      lane_change_sampling_num: 3
 
       # target object
       target_object:

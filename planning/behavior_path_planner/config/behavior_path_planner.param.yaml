@@ -1,9 +1,13 @@
 /**:
   ros__parameters:
-    planning_hz: 10.0
+    verbose: false
 
+    groot_zmq_publisher_port: 1666
+    groot_zmq_server_port: 1667
+
+    planning_hz: 10.0
     backward_path_length: 5.0
-    forward_path_length: 200.0
+    forward_path_length: 300.0
     backward_length_buffer_for_end_of_pull_over: 5.0
     backward_length_buffer_for_end_of_pull_out: 5.0
     minimum_pull_over_length: 16.0
@@ -18,7 +22,10 @@
     turn_signal_shift_length_threshold: 0.3
     turn_signal_on_swerving: true
 
-    path_interval: 2.0
+    enable_akima_spline_first: false
+    enable_cog_on_centerline: false
+    input_path_interval: 2.0
+    output_path_interval: 2.0
 
     visualize_maximum_drivable_area: true
 
@@ -28,8 +35,8 @@
     expected_front_deceleration: -1.0
     expected_rear_deceleration: -1.0
 
-    expected_front_deceleration_for_abort: -2.0
-    expected_rear_deceleration_for_abort: -2.5
+    expected_front_deceleration_for_abort: -1.0
+    expected_rear_deceleration_for_abort: -2.0
 
     rear_vehicle_reaction_time: 2.0
-    rear_vehicle_safety_time_margin: 2.0
+    rear_vehicle_safety_time_margin: 1.0

@@ -16,6 +16,7 @@
       enable_force_avoidance_for_stopped_vehicle: false
       enable_safety_check: false
       enable_yield_maneuver: false
+      disable_path_update: false
 
       # for debug
       publish_debug_marker: false
@@ -52,11 +53,11 @@
 
       # For safety check
       safety_check:
-        safety_check_backward_distance: 50.0            # [m]
-        safety_check_time_horizon: 10.0                 # [s]
-        safety_check_idling_time: 1.5                   # [s]
-        safety_check_accel_for_rss: 2.5                 # [m/ss]
-        safety_check_hysteresis_factor: 2.0             # [-]
+        safety_check_backward_distance: 100.0            # [m]
+        safety_check_time_horizon: 10.0                  # [s]
+        safety_check_idling_time: 1.5                    # [s]
+        safety_check_accel_for_rss: 2.5                  # [m/ss]
+        safety_check_hysteresis_factor: 2.0              # [-]
 
       # For avoidance maneuver
       avoidance:
@@ -65,7 +66,7 @@
           lateral_collision_margin: 1.0                 # [m]
           lateral_collision_safety_buffer: 0.7          # [m]
           lateral_passable_safety_buffer: 0.0           # [m]
-          road_shoulder_safety_margin: 0.0              # [m]
+          road_shoulder_safety_margin: 0.3              # [m]
           avoidance_execution_lateral_threshold: 0.499
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
