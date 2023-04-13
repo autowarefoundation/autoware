@@ -18,9 +18,9 @@
 
 <!-- Describe when the PR changes the interface, such as changing the topic name or service client. -->
 
-## Effects on driving behavior
+## Effects on system behavior
 
-<!-- Describe how this PR affects the outputs of driving behavior. -->
+<!-- Describe how this PR affects the system behavior. -->
 
 ## Pre-review checklist for the PR author
 
