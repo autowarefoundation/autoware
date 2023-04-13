@@ -11,7 +11,7 @@ Not applicable.
 
 ## Effects on system behavior
 
-<!-- Describe how this PR affects the outputs of driving behavior. -->
+<!-- Describe how this PR affects the system behavior. -->
 
 Not applicable.
 
