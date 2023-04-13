@@ -9,6 +9,12 @@
 
 Not applicable.
 
+## Effects on system behavior
+
+<!-- Describe how this PR affects the system behavior. -->
+
+Not applicable.
+
 ## Pre-review checklist for the PR author
 
 The PR author **must** check the checkboxes below when creating the PR.

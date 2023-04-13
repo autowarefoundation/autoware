@@ -14,6 +14,14 @@
 
 <!-- Write additional information if necessary. It should be written if there are related PRs that should be merged at the same time. -->
 
+## Interface changes
+
+<!-- Describe any changed interfaces, such as topics, services, or parameters. -->
+
+## Effects on system behavior
+
+<!-- Describe how this PR affects the system behavior. -->
+
 ## Pre-review checklist for the PR author
 
 The PR author **must** check the checkboxes below when creating the PR.
