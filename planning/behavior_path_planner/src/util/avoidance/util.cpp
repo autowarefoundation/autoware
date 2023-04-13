@@ -378,6 +378,18 @@ bool isOnRight(const ObjectData & obj)
   return obj.lateral < 0.0;
 }
 
+bool isTargetObjectType(
+  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters)
+{
+  const auto t = util::getHighestProbLabel(object.classification);
+
+  if (parameters->object_parameters.count(t) == 0) {
+    return false;
+  }
+
+  return parameters->object_parameters.at(t).enable;
+}
+
 double calcShiftLength(
   const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin)
 {
@@ -563,10 +575,10 @@ Polygon2d createEnvelopePolygon(
 }
 
 void generateDrivableArea(
-  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
-  const std::shared_ptr<const PlannerData> planner_data, const ObjectDataArray & objects,
-  const bool enable_bound_clipping, const bool disable_path_update,
-  const double original_object_buffer)
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
+  const std::shared_ptr<const PlannerData> planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters, const ObjectDataArray & objects,
+  const double vehicle_length, const bool enable_bound_clipping, const bool disable_path_update)
 {
   util::generateDrivableArea(path, lanes, vehicle_length, planner_data);
   if (objects.empty() || !enable_bound_clipping) {
@@ -589,9 +601,13 @@ void generateDrivableArea(
       continue;
     }
 
+    const auto t = util::getHighestProbLabel(object.object.classification);
+    const auto object_parameter = parameters->object_parameters.at(t);
+
     // generate obstacle polygon
     const auto & obj_pose = object.object.kinematics.initial_pose_with_covariance.pose;
-    const double diff_poly_buffer = object.avoid_margin.get() - original_object_buffer -
+    const double diff_poly_buffer = object.avoid_margin.get() -
+                                    object_parameter.envelope_buffer_margin -
                                     planner_data->parameters.vehicle_width / 2.0;
     const auto obj_poly =
       tier4_autoware_utils::expandPolygon(object.envelope_poly, diff_poly_buffer);
@@ -707,23 +723,6 @@ lanelet::ConstLanelets getTargetLanelets(
   return target_lanelets;
 }
 
-bool isTargetObjectType(
-  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters)
-{
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
-  const auto t = util::getHighestProbLabel(object.classification);
-  const auto is_object_type =
-    ((t == ObjectClassification::CAR && parameters->avoid_car) ||
-     (t == ObjectClassification::TRUCK && parameters->avoid_truck) ||
-     (t == ObjectClassification::BUS && parameters->avoid_bus) ||
-     (t == ObjectClassification::TRAILER && parameters->avoid_trailer) ||
-     (t == ObjectClassification::UNKNOWN && parameters->avoid_unknown) ||
-     (t == ObjectClassification::BICYCLE && parameters->avoid_bicycle) ||
-     (t == ObjectClassification::MOTORCYCLE && parameters->avoid_motorcycle) ||
-     (t == ObjectClassification::PEDESTRIAN && parameters->avoid_pedestrian));
-  return is_object_type;
-}
-
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
   boost::optional<Pose> & p_out)
@@ -761,6 +760,10 @@ void fillObjectEnvelopePolygon(
 {
   using boost::geometry::within;
 
+  const auto t = util::getHighestProbLabel(object_data.object.classification);
+  const auto object_parameter = parameters->object_parameters.at(t);
+  const auto & envelope_buffer_margin = object_parameter.envelope_buffer_margin;
+
   const auto id = object_data.object.object_id;
   const auto same_id_obj = std::find_if(
     registered_objects.begin(), registered_objects.end(),
@@ -768,7 +771,7 @@ void fillObjectEnvelopePolygon(
 
   if (same_id_obj == registered_objects.end()) {
     object_data.envelope_poly =
-      createEnvelopePolygon(object_data, closest_pose, parameters->object_envelope_buffer);
+      createEnvelopePolygon(object_data, closest_pose, envelope_buffer_margin);
     return;
   }
 
@@ -776,7 +779,7 @@ void fillObjectEnvelopePolygon(
 
   if (!within(object_polygon, same_id_obj->envelope_poly)) {
     object_data.envelope_poly =
-      createEnvelopePolygon(object_data, closest_pose, parameters->object_envelope_buffer);
+      createEnvelopePolygon(object_data, closest_pose, envelope_buffer_margin);
     return;
   }
 
@@ -942,6 +945,9 @@ void filterTargetObjects(
     const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
     const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
 
+    const auto t = util::getHighestProbLabel(o.object.classification);
+    const auto object_parameter = parameters->object_parameters.at(t);
+
     if (!isTargetObjectType(o.object, parameters)) {
       data.other_objects.push_back(o);
       continue;
@@ -1007,10 +1013,10 @@ void filterTargetObjects(
 
     // calculate avoid_margin dynamically
     // NOTE: This calculation must be after calculating to_road_shoulder_distance.
-    const double max_avoid_margin = parameters->lateral_collision_safety_buffer +
+    const double max_avoid_margin = object_parameter.safety_buffer_lateral +
                                     parameters->lateral_collision_margin + 0.5 * vehicle_width;
     const double min_safety_lateral_distance =
-      parameters->lateral_collision_safety_buffer + 0.5 * vehicle_width;
+      object_parameter.safety_buffer_lateral + 0.5 * vehicle_width;
     const auto max_allowable_lateral_distance =
       o.to_road_shoulder_distance - parameters->road_shoulder_safety_margin - 0.5 * vehicle_width;
 

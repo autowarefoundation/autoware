@@ -29,6 +29,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace behavior_path_planner
@@ -44,6 +45,17 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
+
+struct ObjectParameter
+{
+  bool enable{false};
+
+  double envelope_buffer_margin{0.0};
+
+  double safety_buffer_lateral{1.0};
+
+  double safety_buffer_longitudinal{0.0};
+};
 
 struct AvoidanceParameters
 {
@@ -123,9 +135,6 @@ struct AvoidanceParameters
   // minimum road shoulder width. maybe 0.5 [m]
   double object_check_min_road_shoulder_width;
 
-  // object's enveloped polygon
-  double object_envelope_buffer;
-
   // vehicles which is moving more than this parameter will not be avoided
   double threshold_time_object_is_moving;
 
@@ -134,15 +143,9 @@ struct AvoidanceParameters
 
   // we want to keep this lateral margin when avoiding
   double lateral_collision_margin;
-  // a buffer in case lateral_collision_margin is set to 0. Will throw error
-  // don't ever set this value to 0
-  double lateral_collision_safety_buffer{0.5};
 
   // if object overhang is less than this value, the ego stops behind the object.
   double lateral_passable_safety_buffer{0.5};
-
-  // margin between object back and end point of avoid shift point
-  double longitudinal_collision_safety_buffer{0.0};
 
   // when complete avoidance motion, there is a distance margin with the object
   // for longitudinal direction
@@ -241,17 +244,8 @@ struct AvoidanceParameters
   // matrix col size
   size_t col_size;
 
-  // true by default
-  bool avoid_car{true};      // avoidance is performed for type object car
-  bool avoid_truck{true};    // avoidance is performed for type object truck
-  bool avoid_bus{true};      // avoidance is performed for type object bus
-  bool avoid_trailer{true};  // avoidance is performed for type object trailer
-
-  // false by default
-  bool avoid_unknown{false};     // avoidance is performed for type object unknown
-  bool avoid_bicycle{false};     // avoidance is performed for type object bicycle
-  bool avoid_motorcycle{false};  // avoidance is performed for type object motorbike
-  bool avoid_pedestrian{false};  // avoidance is performed for type object pedestrian
+  // parameters depend on object class
+  std::unordered_map<uint8_t, ObjectParameter> object_parameters;
 
   // drivable area expansion
   double drivable_area_right_bound_offset{};
