@@ -66,6 +66,7 @@
   <exec_depend>obstacle_avoidance_planner</exec_depend>
   <exec_depend>obstacle_cruise_planner</exec_depend>
   <exec_depend>obstacle_stop_planner</exec_depend>
+  <exec_depend>planning_evaluator</exec_depend>
   <exec_depend>planning_validator</exec_depend>
   <exec_depend>rtc_auto_mode_manager</exec_depend>
   <exec_depend>scenario_selector</exec_depend>
