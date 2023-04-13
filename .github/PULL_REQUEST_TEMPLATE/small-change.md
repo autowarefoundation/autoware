@@ -9,7 +9,7 @@
 
 Not applicable.
 
-## Effects on driving behavior
+## Effects on system behavior
 
 <!-- Describe how this PR affects the outputs of driving behavior. -->
 
