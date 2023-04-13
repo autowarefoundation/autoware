@@ -328,108 +328,29 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 
   p.verbose = declare_parameter<bool>("verbose");
 
-  {
-    const std::string ns = "pull_out.";
-    p.config_pull_out.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_pull_out.enable_simultaneous_execution_as_approved_module =
+  const auto get_scene_module_manager_param = [&](std::string && ns) {
+    ModuleConfigParameters config;
+    config.enable_module = declare_parameter<bool>(ns + "enable_module");
+    config.enable_simultaneous_execution_as_approved_module =
       declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_pull_out.enable_simultaneous_execution_as_candidate_module =
+    config.enable_simultaneous_execution_as_candidate_module =
       declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_pull_out.priority = declare_parameter<int>(ns + "priority");
-    p.config_pull_out.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
+    config.priority = declare_parameter<int>(ns + "priority");
+    config.max_module_size = declare_parameter<int>(ns + "max_module_size");
+    return config;
+  };
 
-  {
-    const std::string ns = "pull_over.";
-    p.config_pull_over.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_pull_over.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_pull_over.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_pull_over.priority = declare_parameter<int>(ns + "priority");
-    p.config_pull_over.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "side_shift.";
-    p.config_side_shift.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_side_shift.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_side_shift.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_side_shift.priority = declare_parameter<int>(ns + "priority");
-    p.config_side_shift.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "lane_change_left.";
-    p.config_lane_change_left.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_lane_change_left.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_lane_change_left.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_lane_change_left.priority = declare_parameter<int>(ns + "priority");
-    p.config_lane_change_left.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "lane_change_right.";
-    p.config_lane_change_right.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_lane_change_right.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_lane_change_right.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_lane_change_right.priority = declare_parameter<int>(ns + "priority");
-    p.config_lane_change_right.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "external_request_lane_change_right.";
-    p.config_ext_request_lane_change_right.enable_module =
-      declare_parameter<bool>(ns + "enable_module");
-    p.config_ext_request_lane_change_right.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_ext_request_lane_change_right.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_ext_request_lane_change_right.priority = declare_parameter<int>(ns + "priority");
-    p.config_ext_request_lane_change_right.max_module_size =
-      declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "external_request_lane_change_left.";
-    p.config_ext_request_lane_change_left.enable_module =
-      declare_parameter<bool>(ns + "enable_module");
-    p.config_ext_request_lane_change_left.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_ext_request_lane_change_left.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_ext_request_lane_change_left.priority = declare_parameter<int>(ns + "priority");
-    p.config_ext_request_lane_change_left.max_module_size =
-      declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "avoidance.";
-    p.config_avoidance.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_avoidance.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_avoidance.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_avoidance.priority = declare_parameter<int>(ns + "priority");
-    p.config_avoidance.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
-
-  {
-    const std::string ns = "avoidance_by_lc.";
-    p.config_avoidance_by_lc.enable_module = declare_parameter<bool>(ns + "enable_module");
-    p.config_avoidance_by_lc.enable_simultaneous_execution_as_approved_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
-    p.config_avoidance_by_lc.enable_simultaneous_execution_as_candidate_module =
-      declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
-    p.config_avoidance_by_lc.priority = declare_parameter<int>(ns + "priority");
-    p.config_avoidance_by_lc.max_module_size = declare_parameter<int>(ns + "max_module_size");
-  }
+  p.config_pull_out = get_scene_module_manager_param("pull_out.");
+  p.config_pull_over = get_scene_module_manager_param("pull_over.");
+  p.config_side_shift = get_scene_module_manager_param("side_shift.");
+  p.config_lane_change_left = get_scene_module_manager_param("lane_change_left.");
+  p.config_lane_change_right = get_scene_module_manager_param("lane_change_right.");
+  p.config_ext_request_lane_change_right =
+    get_scene_module_manager_param("external_request_lane_change_right.");
+  p.config_ext_request_lane_change_left =
+    get_scene_module_manager_param("external_request_lane_change_left.");
+  p.config_avoidance = get_scene_module_manager_param("avoidance.");
+  p.config_avoidance_by_lc = get_scene_module_manager_param("avoidance_by_lc.");
 
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
