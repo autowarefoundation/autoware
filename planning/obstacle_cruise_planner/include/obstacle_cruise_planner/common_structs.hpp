@@ -125,12 +125,17 @@ struct SlowDownObstacle : public TargetObstacleInterface
   SlowDownObstacle(
     const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
     const geometry_msgs::msg::Pose & arg_pose, const double arg_velocity,
-    const geometry_msgs::msg::Point arg_collision_point)
+    const double arg_precise_lat_dist, const geometry_msgs::msg::Point & arg_front_collision_point,
+    const geometry_msgs::msg::Point & arg_back_collision_point)
   : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_velocity),
-    collision_point(arg_collision_point)
+    precise_lat_dist(arg_precise_lat_dist),
+    front_collision_point(arg_front_collision_point),
+    back_collision_point(arg_back_collision_point)
   {
   }
-  geometry_msgs::msg::Point collision_point;
+  double precise_lat_dist;  // for efficient calculation
+  geometry_msgs::msg::Point front_collision_point;
+  geometry_msgs::msg::Point back_collision_point;
 };
 
 struct LongitudinalInfo
@@ -207,8 +212,8 @@ struct DebugData
   std::vector<SlowDownObstacle> obstacles_to_slow_down;
   MarkerArray stop_wall_marker;
   MarkerArray cruise_wall_marker;
+  MarkerArray slow_down_wall_marker;
   std::vector<tier4_autoware_utils::Polygon2d> detection_polygons;
-  std::vector<geometry_msgs::msg::Point> collision_points;
 };
 
 struct EgoNearestParam

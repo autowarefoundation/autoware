@@ -36,7 +36,8 @@ public:
   : longitudinal_info_(longitudinal_info),
     vehicle_info_(vehicle_info),
     ego_nearest_param_(ego_nearest_param),
-    debug_data_ptr_(debug_data_ptr)
+    debug_data_ptr_(debug_data_ptr),
+    slow_down_param_(SlowDownParam(node))
   {
     stop_reasons_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
     velocity_factors_pub_ =
@@ -64,17 +65,16 @@ public:
     const std::vector<CruiseObstacle> & cruise_obstacles,
     std::optional<VelocityLimit> & vel_limit) = 0;
 
-  std::optional<VelocityLimit> getSlowDownVelocityLimit(
-    [[maybe_unused]] const PlannerData & planner_data,
-    [[maybe_unused]] const std::vector<SlowDownObstacle> & slow_down_obstacles)
-  {
-    return std::nullopt;
-  }
+  std::vector<TrajectoryPoint> generateSlowDownTrajectory(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & stop_traj_points,
+    const std::vector<SlowDownObstacle> & slow_down_obstacles,
+    std::optional<VelocityLimit> & vel_limit);
 
   void onParam(const std::vector<rclcpp::Parameter> & parameters)
   {
     updateCommonParam(parameters);
-    updateParam(parameters);
+    updateCruiseParam(parameters);
+    slow_down_param_.onParam(parameters);
   }
 
   Float32MultiArrayStamped getStopPlanningDebugMessage(const rclcpp::Time & current_time) const
@@ -93,6 +93,11 @@ protected:
   bool enable_calculation_time_info_{false};
   LongitudinalInfo longitudinal_info_;
   double min_behavior_stop_margin_;
+
+  // stop watch
+  tier4_autoware_utils::StopWatch<
+    std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
+    stop_watch_;
 
   // Publishers
   rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reasons_pub_;
@@ -127,7 +132,9 @@ protected:
     longitudinal_info_.onParam(parameters);
   }
 
-  virtual void updateParam([[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters) {}
+  virtual void updateCruiseParam([[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
+  {
+  }
 
   size_t findEgoIndex(
     const std::vector<TrajectoryPoint> & traj_points,
@@ -146,6 +153,52 @@ protected:
     return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
       traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);
   }
+
+private:
+  double calculateSlowDownVelocity(const SlowDownObstacle & obstacle) const;
+  double calculateDistanceToSlowDownWithAccConstraint(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & traj_points,
+    const SlowDownObstacle & obstacle, const double dist_to_ego, const double slow_down_vel) const;
+
+  struct SlowDownInfo
+  {
+    // NOTE: Acceleration limit is applied to lon_dist not to occur sudden brake.
+    const double lon_dist;  // from ego pose to slow down point
+    const double vel;       // slow down velocity
+  };
+
+  struct SlowDownParam
+  {
+    explicit SlowDownParam(rclcpp::Node & node)
+    {
+      max_lat_margin = node.declare_parameter<double>("slow_down.max_lat_margin");
+      min_lat_margin = node.declare_parameter<double>("slow_down.min_lat_margin");
+      max_ego_velocity = node.declare_parameter<double>("slow_down.max_ego_velocity");
+      min_ego_velocity = node.declare_parameter<double>("slow_down.min_ego_velocity");
+      max_deceleration = node.declare_parameter<double>("slow_down.max_deceleration");
+    }
+
+    void onParam(const std::vector<rclcpp::Parameter> & parameters)
+    {
+      tier4_autoware_utils::updateParam<double>(
+        parameters, "slow_down.max_lat_margin", max_lat_margin);
+      tier4_autoware_utils::updateParam<double>(
+        parameters, "slow_down.min_lat_margin", min_lat_margin);
+      tier4_autoware_utils::updateParam<double>(
+        parameters, "slow_down.max_ego_velocity", max_ego_velocity);
+      tier4_autoware_utils::updateParam<double>(
+        parameters, "slow_down.min_ego_velocity", min_ego_velocity);
+      tier4_autoware_utils::updateParam<double>(
+        parameters, "slow_down.max_deceleration", max_deceleration);
+    }
+
+    double max_lat_margin;
+    double min_lat_margin;
+    double max_ego_velocity;
+    double min_ego_velocity;
+    double max_deceleration;
+  };
+  SlowDownParam slow_down_param_;
 };
 
 #endif  // OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_

@@ -79,7 +79,8 @@ private:
     const std::vector<PointWithStamp> & collision_points,
     const std::vector<TrajectoryPoint> & traj_points, const bool is_driving_forward) const;
   std::optional<SlowDownObstacle> createSlowDownObstacle(
-    const Obstacle & obstacle, const double precise_lat_dist);
+    const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle,
+    const double precise_lat_dist);
   PlannerData createPlannerData(const std::vector<TrajectoryPoint> & traj_points) const;
 
   void checkConsistency(
@@ -114,6 +115,7 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_marker_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_cruise_wall_marker_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_stop_wall_marker_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_slow_down_wall_marker_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_stop_planning_info_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_cruise_planning_info_pub_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr debug_calculation_time_pub_;

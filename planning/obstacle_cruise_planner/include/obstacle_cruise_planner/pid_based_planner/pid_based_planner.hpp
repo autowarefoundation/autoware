@@ -19,7 +19,6 @@
 #include "obstacle_cruise_planner/pid_based_planner/pid_controller.hpp"
 #include "obstacle_cruise_planner/planner_interface.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
-#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include "visualization_msgs/msg/marker_array.hpp"
 
@@ -58,7 +57,7 @@ public:
     const std::vector<CruiseObstacle> & obstacles,
     std::optional<VelocityLimit> & vel_limit) override;
 
-  void updateParam(const std::vector<rclcpp::Parameter> & parameters) override;
+  void updateCruiseParam(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
   Float32MultiArrayStamped getCruisePlanningDebugMessage(
@@ -113,11 +112,6 @@ private:
     bool enable_jerk_limit_to_output_acc{false};
   };
   VelocityInsertionBasedPlannerParam velocity_insertion_based_planner_param_;
-
-  // stop watch
-  tier4_autoware_utils::StopWatch<
-    std::chrono::milliseconds, std::chrono::microseconds, std::chrono::steady_clock>
-    stop_watch_;
 
   std::optional<double> prev_target_acc_;
 
