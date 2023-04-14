@@ -93,7 +93,7 @@ These colors and shapes are assigned to the message as follows:
 
 ## Customization of CNN model
 
-Currently, in Autoware, [MobileNetV2](https://arxiv.org/abs/1801.04381v3) is used as CNN classifier by default. The corresponding onnx file is [data/traffic_light_classifier_mobilenetv2.onnx](./data/traffic_light_classifier_mobilenetv2.onnx).
+Currently, in Autoware, [MobileNetV2](https://arxiv.org/abs/1801.04381v3) is used as CNN classifier by default. The corresponding onnx file is `data/traffic_light_classifier_mobilenetv2.onnx`(This file will be downloaded during the build process).
 Also, you can apply the following models shown as below, for example.
 
 - [EfficientNet](https://arxiv.org/abs/1905.11946v5)
