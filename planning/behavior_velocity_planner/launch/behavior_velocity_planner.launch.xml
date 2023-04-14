@@ -5,7 +5,6 @@
 
   <arg name="input_route_topic_name" default="/planning/mission_planning/route"/>
   <arg name="input_traffic_light_topic_name" default="/perception/traffic_light_recognition/traffic_signals"/>
-  <arg name="external_traffic_light_topic_name" default="/external/traffic_light_recognition/traffic_signals"/>
   <arg name="virtual_traffic_light_topic_name" default="/awapi/tmp/virtual_traffic_light_states"/>
   <arg name="map_topic_name" default="/map/vector_map"/>
 
@@ -47,7 +46,6 @@
     <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects"/>
     <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
     <remap from="~/input/traffic_signals" to="$(var input_traffic_light_topic_name)"/>
-    <remap from="~/input/external_traffic_signals" to="$(var external_traffic_light_topic_name)"/>
     <remap from="~/input/virtual_traffic_light_states" to="$(var virtual_traffic_light_topic_name)"/>
     <remap from="~/input/occupancy_grid" to="/sensing/lidar/occupancy_grid"/>
     <remap from="~/output/path" to="path"/>

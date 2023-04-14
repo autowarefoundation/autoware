@@ -40,7 +40,7 @@ class TrafficLightModule : public SceneModuleInterface
 {
 public:
   enum class State { APPROACH, GO_OUT };
-  enum class Input { PERCEPTION, EXTERNAL, NONE };  // EXTERNAL: FOA, V2X, etc.
+  enum class Input { PERCEPTION, NONE };  // EXTERNAL: FOA, V2X, etc.
 
   struct DebugData
   {
@@ -61,7 +61,6 @@ public:
   {
     double stop_margin;
     double tl_state_timeout;
-    double external_tl_state_timeout;
     double yellow_lamp_period;
     bool enable_pass_judge;
   };
@@ -114,10 +113,6 @@ private:
   bool getHighestConfidenceTrafficSignal(
     const lanelet::ConstLineStringsOrPolygons3d & traffic_lights,
     autoware_auto_perception_msgs::msg::TrafficSignalStamped & highest_confidence_tl_state);
-
-  bool getExternalTrafficSignal(
-    const lanelet::ConstLineStringsOrPolygons3d & traffic_lights,
-    autoware_auto_perception_msgs::msg::TrafficSignalStamped & external_tl_state);
 
   bool updateTrafficSignal(const lanelet::ConstLineStringsOrPolygons3d & traffic_lights);
 

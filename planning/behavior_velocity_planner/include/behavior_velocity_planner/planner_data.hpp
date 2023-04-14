@@ -84,11 +84,6 @@ struct PlannerData
 
   // other internal data
   std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped> traffic_light_id_map;
-  // external data
-  std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped>
-    external_traffic_light_id_map;
-  boost::optional<tier4_api_msgs::msg::CrosswalkStatus> external_crosswalk_status_input;
-  boost::optional<tier4_api_msgs::msg::IntersectionStatus> external_intersection_status_input;
   boost::optional<tier4_planning_msgs::msg::VelocityLimit> external_velocity_limit;
   tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr virtual_traffic_light_states;
 
@@ -145,16 +140,6 @@ struct PlannerData
     }
     return std::make_shared<autoware_auto_perception_msgs::msg::TrafficSignalStamped>(
       traffic_light_id_map.at(id));
-  }
-
-  std::shared_ptr<autoware_auto_perception_msgs::msg::TrafficSignalStamped>
-  getExternalTrafficSignal(const int id) const
-  {
-    if (external_traffic_light_id_map.count(id) == 0) {
-      return {};
-    }
-    return std::make_shared<autoware_auto_perception_msgs::msg::TrafficSignalStamped>(
-      external_traffic_light_id_map.at(id));
   }
 };
 }  // namespace behavior_velocity_planner

@@ -2,10 +2,8 @@
 
 #### Role
 
-Judgement whether a vehicle can go into an intersection or not by internal and external traffic light status, and planning a velocity of the stop if necessary.
+Judgement whether a vehicle can go into an intersection or not by traffic light status, and planning a velocity of the stop if necessary.
 This module is designed for rule-based velocity decision that is easy for developers to design its behavior. It generates proper velocity for traffic light scene.
-
-In addition, the STOP/GO interface of behavior_velocity_planner allows external users / modules (e.g. remote operation) to intervene the decision of the internal perception. This function is expected to be used, for example, for remote intervention in detection failure or gathering information on operator decisions during development.
 
 ![brief](./docs/traffic_light/traffic_light.svg)
 
@@ -65,13 +63,12 @@ This module is activated when there is traffic light in ego lane.
 
 #### Module Parameters
 
-| Parameter                   | Type   | Description                                     |
-| --------------------------- | ------ | ----------------------------------------------- |
-| `stop_margin`               | double | [m] margin before stop point                    |
-| `tl_state_timeout`          | double | [s] time out for detected traffic light result. |
-| `external_tl_state_timeout` | double | [s] time out for external traffic input         |
-| `yellow_lamp_period`        | double | [s] time for yellow lamp                        |
-| `enable_pass_judge`         | bool   | [-] whether to use pass judge                   |
+| Parameter            | Type   | Description                                     |
+| -------------------- | ------ | ----------------------------------------------- |
+| `stop_margin`        | double | [m] margin before stop point                    |
+| `tl_state_timeout`   | double | [s] time out for detected traffic light result. |
+| `yellow_lamp_period` | double | [s] time for yellow lamp                        |
+| `enable_pass_judge`  | bool   | [-] whether to use pass judge                   |
 
 #### Flowchart
 

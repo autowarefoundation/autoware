@@ -51,7 +51,6 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     node.declare_parameter<double>(ns + ".detection_area_angle_threshold");
   ip.min_predicted_path_confidence =
     node.declare_parameter<double>(ns + ".min_predicted_path_confidence");
-  ip.external_input_timeout = node.declare_parameter<double>(ns + ".external_input_timeout");
   ip.minimum_ego_predicted_velocity =
     node.declare_parameter<double>(ns + ".minimum_ego_predicted_velocity");
   ip.collision_start_margin_time =
@@ -69,8 +68,7 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
 {
   const std::string ns(getModuleName());
   auto & mp = merge_from_private_area_param_;
-  mp.stop_duration_sec =
-    node.declare_parameter<double>(ns + ".merge_from_private_area.stop_duration_sec");
+  mp.stop_duration_sec = node.declare_parameter<double>(ns + ".stop_duration_sec");
   mp.detection_area_length = node.get_parameter("intersection.detection_area_length").as_double();
   mp.detection_area_right_margin =
     node.get_parameter("intersection.detection_area_right_margin").as_double();

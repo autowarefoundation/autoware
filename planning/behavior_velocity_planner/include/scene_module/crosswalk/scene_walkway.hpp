@@ -42,7 +42,6 @@ public:
   {
     double stop_line_distance;
     double stop_duration_sec;
-    double external_input_timeout;
   };
   WalkwayModule(
     const int64_t module_id, lanelet::ConstLanelet walkway, const PlannerParam & planner_param,

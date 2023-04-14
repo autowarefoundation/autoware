@@ -180,7 +180,6 @@ autoware_auto_perception_msgs::msg::LookingTrafficSignal initializeTrafficSignal
   state.header.stamp = stamp;
   state.is_module_running = true;
   state.perception.has_state = false;
-  state.external.has_state = false;
   state.result.has_state = false;
   return state;
 }
@@ -296,11 +295,9 @@ bool TrafficLightModule::updateTrafficSignal(
   const lanelet::ConstLineStringsOrPolygons3d & traffic_lights)
 {
   autoware_auto_perception_msgs::msg::TrafficSignalStamped tl_state_perception;
-  autoware_auto_perception_msgs::msg::TrafficSignalStamped tl_state_external;
   bool found_perception = getHighestConfidenceTrafficSignal(traffic_lights, tl_state_perception);
-  bool found_external = getExternalTrafficSignal(traffic_lights, tl_state_external);
 
-  if (!found_perception && !found_external) {
+  if (!found_perception) {
     // Don't stop when UNKNOWN or TIMEOUT as discussed at #508
     input_ = Input::NONE;
     return false;
@@ -310,12 +307,6 @@ bool TrafficLightModule::updateTrafficSignal(
     looking_tl_state_.perception = generateTlStateWithJudgeFromTlState(tl_state_perception.signal);
     looking_tl_state_.result = looking_tl_state_.perception;
     input_ = Input::PERCEPTION;
-  }
-
-  if (found_external) {
-    looking_tl_state_.external = generateTlStateWithJudgeFromTlState(tl_state_external.signal);
-    looking_tl_state_.result = looking_tl_state_.external;
-    input_ = Input::EXTERNAL;
   }
 
   return true;
@@ -519,46 +510,6 @@ bool TrafficLightModule::hasTrafficLightShape(
     [&lamp_shape](const auto & x) { return x.shape == lamp_shape; });
 
   return it_lamp != tl_state.lights.end();
-}
-
-bool TrafficLightModule::getExternalTrafficSignal(
-  const lanelet::ConstLineStringsOrPolygons3d & traffic_lights,
-  autoware_auto_perception_msgs::msg::TrafficSignalStamped & external_tl_state)
-{
-  // search traffic light state
-  bool found = false;
-  std::string reason;
-  for (const auto & traffic_light : traffic_lights) {
-    // traffic light must be linestrings
-    if (!traffic_light.isLineString()) {
-      reason = "NotLineString";
-      continue;
-    }
-
-    const int id = static_cast<lanelet::ConstLineString3d>(traffic_light).id();
-    const auto tl_state_stamped = planner_data_->getExternalTrafficSignal(id);
-    if (!tl_state_stamped) {
-      reason = "TrafficSignalNotFound";
-      continue;
-    }
-
-    const auto header = tl_state_stamped->header;
-    const auto tl_state = tl_state_stamped->signal;
-    if (!((clock_->now() - header.stamp).seconds() < planner_param_.external_tl_state_timeout)) {
-      reason = "TimeOut";
-      continue;
-    }
-
-    external_tl_state = *tl_state_stamped;
-    found = true;
-  }
-  if (!found) {
-    RCLCPP_DEBUG_THROTTLE(
-      logger_, *clock_, 5000 /* ms */,
-      "[traffic_light] cannot find external traffic light lamp state (%s).", reason.c_str());
-    return false;
-  }
-  return true;
 }
 
 autoware_auto_perception_msgs::msg::TrafficSignalWithJudge

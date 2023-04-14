@@ -63,12 +63,6 @@ private:
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_lanelet_map_;
   rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>::SharedPtr
     sub_traffic_signals_;
-  rclcpp::Subscription<tier4_api_msgs::msg::CrosswalkStatus>::SharedPtr
-    sub_external_crosswalk_states_;
-  rclcpp::Subscription<tier4_api_msgs::msg::IntersectionStatus>::SharedPtr
-    sub_external_intersection_states_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>::SharedPtr
-    sub_external_traffic_signals_;
   rclcpp::Subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>::SharedPtr
     sub_virtual_traffic_light_states_;
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr sub_occupancy_grid_;
@@ -84,11 +78,6 @@ private:
   void onLaneletMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
   void onTrafficSignals(
     const autoware_auto_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg);
-  void onExternalTrafficSignals(
-    const autoware_auto_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg);
-  void onExternalCrosswalkStates(const tier4_api_msgs::msg::CrosswalkStatus::ConstSharedPtr msg);
-  void onExternalIntersectionStates(
-    const tier4_api_msgs::msg::IntersectionStatus::ConstSharedPtr msg);
   void onVirtualTrafficLightStates(
     const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg);
   void onOccupancyGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);

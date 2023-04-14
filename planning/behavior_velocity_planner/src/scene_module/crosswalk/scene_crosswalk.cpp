@@ -923,21 +923,6 @@ bool CrosswalkModule::isTargetType(const PredictedObject & object) const
   return false;
 }
 
-bool CrosswalkModule::isTargetExternalInputStatus(const int target_status) const
-{
-  const auto & ex_input = planner_data_->external_crosswalk_status_input;
-  if (!ex_input) {
-    return false;
-  }
-
-  const auto time_delta = (clock_->now() - ex_input.get().header.stamp).seconds();
-  if (planner_param_.external_input_timeout < time_delta) {
-    return false;
-  }
-
-  return ex_input.get().status == target_status;
-}
-
 geometry_msgs::msg::Polygon CrosswalkModule::createObjectPolygon(
   const double width_m, const double length_m)
 {

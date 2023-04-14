@@ -82,7 +82,6 @@ public:
     double max_yield_timeout;
     double ego_yield_query_stop_duration;
     // param for input data
-    double external_input_timeout;
     double tl_state_timeout;
     // param for target area & object
     double crosswalk_attention_range;
@@ -147,8 +146,6 @@ private:
   static bool isVehicle(const PredictedObject & object);
 
   bool isTargetType(const PredictedObject & object) const;
-
-  bool isTargetExternalInputStatus(const int target_status) const;
 
   static geometry_msgs::msg::Polygon createObjectPolygon(
     const double width_m, const double length_m);

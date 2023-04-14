@@ -85,7 +85,6 @@ public:
     double detection_area_angle_thr;     //! threshold in checking the angle of detecting objects
     double min_predicted_path_confidence;
     //! minimum confidence value of predicted path to use for collision detection
-    double external_input_timeout;          //! used to disable external input
     double minimum_ego_predicted_velocity;  //! used to calculate ego's future velocity profile
     double collision_start_margin_time;     //! start margin time to check collision
     double collision_end_margin_time;       //! end margin time to check collision
@@ -207,13 +206,6 @@ private:
    */
   bool isTargetStuckVehicleType(
     const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
-
-  /**
-   * @brief Whether target tier4_api_msgs::Intersection::status is valid or not
-   * @param target_status target tier4_api_msgs::Intersection::status
-   * @return rue if the object has a target type
-   */
-  bool isTargetExternalInputStatus(const int target_status);
 
   /**
    * @brief Whether the given pose belongs to any target lanelet or not

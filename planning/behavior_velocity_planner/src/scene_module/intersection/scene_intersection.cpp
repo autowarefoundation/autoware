@@ -75,13 +75,8 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 {
   RCLCPP_DEBUG(logger_, "===== plan start =====");
 
-  const bool external_go = isTargetExternalInputStatus(tier4_api_msgs::msg::IntersectionStatus::GO);
-  const bool external_stop =
-    isTargetExternalInputStatus(tier4_api_msgs::msg::IntersectionStatus::STOP);
-  const StateMachine::State current_state = state_machine_.getState();
-
   debug_data_ = DebugData();
-
+  const StateMachine::State current_state = state_machine_.getState();
   *stop_reason = planning_utils::initializeStopReason(StopReason::INTERSECTION);
 
   RCLCPP_DEBUG(
@@ -223,14 +218,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   std::optional<size_t> stop_line_idx =
     stop_lines_idx_opt ? std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line)
                        : std::nullopt;
-  if (external_go) {
-    is_entry_prohibited = false;
-  } else if (external_stop) {
-    is_entry_prohibited = true;
-    stop_line_idx = stop_lines_idx_opt
-                      ? std::make_optional<size_t>(stop_lines_idx_opt.value().collision_stop_line)
-                      : std::nullopt;
-  } else if (is_stuck && stuck_line_idx_opt) {
+  if (is_stuck && stuck_line_idx_opt) {
     is_entry_prohibited = true;
     const size_t stuck_line_idx = stuck_line_idx_opt.value();
     const double dist_stuck_stopline = motion_utils::calcSignedArcLength(
@@ -641,14 +629,6 @@ bool IntersectionModule::isTargetStuckVehicleType(
     return true;
   }
   return false;
-}
-
-bool IntersectionModule::isTargetExternalInputStatus(const int target_status)
-{
-  return planner_data_->external_intersection_status_input &&
-         planner_data_->external_intersection_status_input.get().status == target_status &&
-         (clock_->now() - planner_data_->external_intersection_status_input.get().header.stamp)
-             .seconds() < planner_param_.external_input_timeout;
 }
 
 bool IntersectionModule::checkAngleForTargetLanelets(
