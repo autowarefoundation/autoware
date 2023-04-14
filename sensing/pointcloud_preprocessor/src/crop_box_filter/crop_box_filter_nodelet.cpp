@@ -133,7 +133,7 @@ void CropBoxFilterComponent::faster_filter(
       *reinterpret_cast<const float *>(&input->data[global_offset + z_offset]), 1);
 
     if (transform_info.need_transform) {
-      if (std::isfinite(point[0]) && std::isfinite(point[1]), std::isfinite(point[2])) {
+      if (std::isfinite(point[0]) && std::isfinite(point[1]) && std::isfinite(point[2])) {
         point = transform_info.eigen_transform * point;
       } else {
         // TODO(sykwer): Implement the appropriate logic for `max range point` and `invalid point`.
