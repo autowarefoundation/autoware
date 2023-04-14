@@ -160,9 +160,9 @@ void CropBoxFilterComponent::faster_filter(
 
   output.data.resize(output_size);
 
-  // Note that `input->header.frame_id` is data before converted when `transform_info.need_transform
-  // == true`
-  output.header.frame_id = !tf_input_frame_.empty() ? tf_input_frame_ : tf_input_orig_frame_;
+  // Note that tf_input_orig_frame_ is the input frame, while tf_input_frame_ is the frame of the
+  // crop box
+  output.header.frame_id = tf_input_frame_;
 
   output.height = 1;
   output.fields = input->fields;
