@@ -21,38 +21,39 @@
 
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInput)
+TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 {
   rclcpp::init(0, nullptr);
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningIntefaceTestManager>();
+  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
 
   auto node_options = rclcpp::NodeOptions{};
-
-  test_manager->declareVehicleInfoParams(node_options);
-  test_manager->declareNearestSearchDistanceParams(node_options);
 
   const auto obstacle_cruise_planner_dir =
     ament_index_cpp::get_package_share_directory("obstacle_cruise_planner");
 
+  const auto planning_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("planning_test_utils");
+
   node_options.arguments(
-    {"--ros-args", "--params-file",
-     obstacle_cruise_planner_dir + "/config/default_common.param.yaml", "--params-file",
-     obstacle_cruise_planner_dir + "/config/obstacle_cruise_planner.param.yaml"});
+    {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
+     "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
+     "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+     "--params-file", obstacle_cruise_planner_dir + "/config/default_common.param.yaml",
+     "--params-file", obstacle_cruise_planner_dir + "/config/obstacle_cruise_planner.param.yaml"});
 
   auto test_target_node =
     std::make_shared<motion_planning::ObstacleCruisePlannerNode>(node_options);
 
   // publish necessary topics from test_manager
   test_manager->publishOdometry(test_target_node, "obstacle_cruise_planner/input/odometry");
-  test_manager->publishPointCloud(test_target_node, "obstacle_cruise_planner/input/vector_map");
   test_manager->publishPredictedObjects(test_target_node, "obstacle_cruise_planner/input/objects");
   test_manager->publishAcceleration(test_target_node, "obstacle_cruise_planner/input/acceleration");
 
-  // set subscriber for test_target_node
+  // set subscriber with topic name: obstacle_cruise_planner → test_node_
   test_manager->setTrajectorySubscriber("obstacle_cruise_planner/output/trajectory");
 
-  // setting topic name of subscribing topic
+  // set obstacle_cruise_planners input topic name(this topic is changed to test node):
   test_manager->setTrajectoryInputTopicName("obstacle_cruise_planner/input/trajectory");
 
   // test for normal trajectory

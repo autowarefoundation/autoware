@@ -21,25 +21,28 @@
 
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInput)
+TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 {
   rclcpp::init(0, nullptr);
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningIntefaceTestManager>();
+  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
 
   auto node_options = rclcpp::NodeOptions{};
 
-  test_manager->declareVehicleInfoParams(node_options);
-  test_manager->declareNearestSearchDistanceParams(node_options);
-  node_options.append_parameter_override("enable_slow_down", false);
-
+  const auto planning_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("planning_test_utils");
   const auto obstacle_stop_planner_dir =
     ament_index_cpp::get_package_share_directory("obstacle_stop_planner");
 
+  node_options.append_parameter_override("enable_slow_down", false);
+
   node_options.arguments(
-    {"--ros-args", "--params-file", obstacle_stop_planner_dir + "/config/common.param.yaml",
-     "--params-file", obstacle_stop_planner_dir + "/config/adaptive_cruise_control.param.yaml",
-     "--params-file", obstacle_stop_planner_dir + "/config/obstacle_stop_planner.param.yaml"});
+    {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
+     "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
+     "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+     "--params-file", obstacle_stop_planner_dir + "/config/common.param.yaml", "--params-file",
+     obstacle_stop_planner_dir + "/config/adaptive_cruise_control.param.yaml", "--params-file",
+     obstacle_stop_planner_dir + "/config/obstacle_stop_planner.param.yaml"});
 
   auto test_target_node = std::make_shared<motion_planning::ObstacleStopPlannerNode>(node_options);
 
@@ -51,10 +54,10 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
   test_manager->publishExpandStopRange(
     test_target_node, "obstacle_stop_planner/input/expand_stop_range");
 
-  // set subscriber for test_target_node
+  // set subscriber with topic name: obstacle stop planner → test_node_
   test_manager->setTrajectorySubscriber("obstacle_stop_planner/output/trajectory");
 
-  // setting topic name of subscribing topic
+  // set obstacle stop planner's input topic name(this topic is changed to test node):
   test_manager->setTrajectoryInputTopicName("obstacle_stop_planner/input/trajectory");
 
   // test for normal trajectory
