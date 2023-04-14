@@ -334,7 +334,7 @@ void publishScenarioData(
 template <typename T>
 void createSubscription(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
-  std::function<void(const typename T::SharedPtr)> callback,
+  std::function<void(const typename T::ConstSharedPtr)> callback,
   std::shared_ptr<rclcpp::Subscription<T>> & subscriber)
 {
   if constexpr (std::is_same_v<T, Trajectory>) {
@@ -350,7 +350,7 @@ void setSubscriber(
   std::shared_ptr<rclcpp::Subscription<T>> & subscriber, size_t & count)
 {
   createSubscription(
-    test_node, topic_name, [&count](const typename T::SharedPtr) { count++; }, subscriber);
+    test_node, topic_name, [&count](const typename T::ConstSharedPtr) { count++; }, subscriber);
 }
 
 void updateNodeOptions(
