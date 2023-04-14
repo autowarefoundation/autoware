@@ -18,7 +18,7 @@
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utils/avoidance/util.hpp"
-#include "behavior_path_planner/utils/lane_change/util.hpp"
+#include "behavior_path_planner/utils/lane_change/utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
@@ -293,7 +293,7 @@ ModuleStatus AvoidanceByLCModule::updateState()
     }
   }
 
-  const auto is_within_current_lane = util::lane_change::isEgoWithinOriginalLane(
+  const auto is_within_current_lane = utils::lane_change::isEgoWithinOriginalLane(
     status_.current_lanes, getEgoPose(), planner_data_->parameters);
   if (isAbortState() && !is_within_current_lane) {
     current_state_ = ModuleStatus::RUNNING;
@@ -369,7 +369,7 @@ void AvoidanceByLCModule::resetPathIfAbort()
 {
   if (!is_abort_approval_requested_) {
 #ifdef USE_OLD_ARCHITECTURE
-    const auto lateral_shift = util::lane_change::getLateralShift(*abort_path_);
+    const auto lateral_shift = utils::lane_change::getLateralShift(*abort_path_);
     if (lateral_shift > 0.0) {
       removePreviousRTCStatusRight();
       uuid_map_.at("right") = generateUUID();
@@ -433,7 +433,7 @@ CandidateOutput AvoidanceByLCModule::planCandidate() const
   }
 
   output.path_candidate = selected_path.path;
-  output.lateral_shift = util::lane_change::getLateralShift(selected_path);
+  output.lateral_shift = utils::lane_change::getLateralShift(selected_path);
   output.start_distance_to_path_change = motion_utils::calcSignedArcLength(
     selected_path.path.points, getEgoPose().position, selected_path.shift_line.start.position);
   output.finish_distance_to_path_change = motion_utils::calcSignedArcLength(
@@ -446,7 +446,7 @@ CandidateOutput AvoidanceByLCModule::planCandidate() const
 BehaviorModuleOutput AvoidanceByLCModule::planWaitingApproval()
 {
 #ifdef USE_OLD_ARCHITECTURE
-  const auto is_within_current_lane = util::lane_change::isEgoWithinOriginalLane(
+  const auto is_within_current_lane = utils::lane_change::isEgoWithinOriginalLane(
     status_.current_lanes, getEgoPose(), planner_data_->parameters);
   if (is_within_current_lane) {
     prev_approved_path_ = getReferencePath();
@@ -643,14 +643,14 @@ std::pair<bool, bool> AvoidanceByLCModule::getSafePath(
   // find candidate paths
   LaneChangePaths valid_paths;
 #ifdef USE_OLD_ARCHITECTURE
-  const auto found_safe_path = util::lane_change::getLaneChangePaths(
+  const auto found_safe_path = utils::lane_change::getLaneChangePaths(
     *route_handler, current_lanes, lane_change_lanes, current_pose, current_twist,
     planner_data_->dynamic_object, common_parameters, *parameters_->lane_change, check_distance,
     &valid_paths, &object_debug_);
 #else
   const auto o_front = avoidance_data_.target_objects.front();
   const auto direction = isOnRight(o_front) ? Direction::LEFT : Direction::RIGHT;
-  const auto found_safe_path = util::lane_change::getLaneChangePaths(
+  const auto found_safe_path = utils::lane_change::getLaneChangePaths(
     *getPreviousModuleOutput().path, *route_handler, current_lanes, lane_change_lanes, current_pose,
     current_twist, planner_data_->dynamic_object, common_parameters, *parameters_->lane_change,
     check_distance, direction, &valid_paths, &object_debug_);
@@ -692,7 +692,7 @@ bool AvoidanceByLCModule::isValidPath(const PathWithLaneId & path) const
   const auto & route_handler = planner_data_->route_handler;
 
   // check lane departure
-  const auto drivable_lanes = util::lane_change::generateDrivableLanes(
+  const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
     *route_handler, util::extendLanes(route_handler, status_.current_lanes),
     util::extendLanes(route_handler, status_.lane_change_lanes));
   const auto expanded_lanes = util::expandLanelets(
@@ -757,7 +757,7 @@ bool AvoidanceByLCModule::isAbortConditionSatisfied()
 
   if (!is_path_safe) {
     const auto & common_parameters = planner_data_->parameters;
-    const bool is_within_original_lane = util::lane_change::isEgoWithinOriginalLane(
+    const bool is_within_original_lane = utils::lane_change::isEgoWithinOriginalLane(
       status_.current_lanes, getEgoPose(), common_parameters);
 
     if (is_within_original_lane) {
@@ -775,7 +775,7 @@ bool AvoidanceByLCModule::isAbortConditionSatisfied()
       return false;
     }
 
-    const auto found_abort_path = util::lane_change::getAbortPaths(
+    const auto found_abort_path = utils::lane_change::getAbortPaths(
       planner_data_, status_.lane_change_path, ego_pose_before_collision, common_parameters,
       *parameters_->lane_change);
 
@@ -937,7 +937,7 @@ void AvoidanceByLCModule::generateExtendedDrivableArea(PathWithLaneId & path)
 {
   const auto & common_parameters = planner_data_->parameters;
   const auto & route_handler = planner_data_->route_handler;
-  const auto drivable_lanes = util::lane_change::generateDrivableLanes(
+  const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
     *route_handler, status_.current_lanes, status_.lane_change_lanes);
   const auto shorten_lanes = util::cutOverlappedLanes(path, drivable_lanes);
   const auto expanded_lanes = util::expandLanelets(
@@ -957,17 +957,17 @@ bool AvoidanceByLCModule::isApprovedPathSafe(Pose & ego_pose_before_collision) c
   const auto & path = status_.lane_change_path;
 
   // get lanes used for detection
-  const auto check_lanes = util::lane_change::getExtendedTargetLanesForCollisionCheck(
+  const auto check_lanes = utils::lane_change::getExtendedTargetLanesForCollisionCheck(
     *route_handler, path.target_lanelets.front(), current_pose, check_distance_);
 
   std::unordered_map<std::string, CollisionCheckDebug> debug_data;
   const auto lateral_buffer =
-    util::lane_change::calcLateralBufferForFiltering(common_parameters.vehicle_width);
-  const auto dynamic_object_indices = util::lane_change::filterObjectIndices(
+    utils::lane_change::calcLateralBufferForFiltering(common_parameters.vehicle_width);
+  const auto dynamic_object_indices = utils::lane_change::filterObjectIndices(
     {path}, *dynamic_objects, check_lanes, current_pose, common_parameters.forward_path_length,
     *lane_change_parameters, lateral_buffer);
 
-  return util::lane_change::isLaneChangePathSafe(
+  return utils::lane_change::isLaneChangePathSafe(
     path, dynamic_objects, dynamic_object_indices, current_pose, current_twist, common_parameters,
     *parameters_->lane_change, common_parameters.expected_front_deceleration_for_abort,
     common_parameters.expected_rear_deceleration_for_abort, ego_pose_before_collision, debug_data,
@@ -982,7 +982,7 @@ void AvoidanceByLCModule::updateOutputTurnSignal(BehaviorModuleOutput & output)
     planner_data_->parameters);
   output.turn_signal_info.turn_signal.command = turn_signal_info.first.command;
 
-  util::lane_change::get_turn_signal_info(status_.lane_change_path, &output.turn_signal_info);
+  utils::lane_change::get_turn_signal_info(status_.lane_change_path, &output.turn_signal_info);
 }
 
 void AvoidanceByLCModule::resetParameters()

@@ -25,7 +25,7 @@ set(common_src
   src/utils/path_utils.cpp
   src/utils/safety_check.cpp
   src/utils/avoidance/util.cpp
-  src/utils/lane_change/util.cpp
+  src/utils/lane_change/utils.cpp
   src/utils/side_shift/util.cpp
   src/utils/pull_over/util.cpp
   src/utils/pull_over/shift_pull_over.cpp

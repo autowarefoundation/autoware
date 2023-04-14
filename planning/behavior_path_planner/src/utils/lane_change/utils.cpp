@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/lane_change/util.hpp"
+#include "behavior_path_planner/utils/lane_change/utils.hpp"
 
 #include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
@@ -40,7 +40,6 @@
 
 namespace
 {
-
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
@@ -111,7 +110,7 @@ std::vector<int64_t> replaceWithSortedIds(
 }
 }  // namespace
 
-namespace behavior_path_planner::util::lane_change
+namespace behavior_path_planner::utils::lane_change
 {
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using lanelet::ArcCoordinates;
@@ -479,7 +478,7 @@ bool getLaneChangePaths(
 
     if (candidate_paths->empty()) {
       // only compute dynamic object indices once
-      const auto backward_lanes = util::lane_change::getExtendedTargetLanesForCollisionCheck(
+      const auto backward_lanes = utils::lane_change::getExtendedTargetLanesForCollisionCheck(
         route_handler, target_lanelets.front(), pose, check_length);
       dynamic_object_indices = filterObjectIndices(
         {*candidate_path}, *dynamic_objects, backward_lanes, pose,
@@ -1461,4 +1460,4 @@ lanelet::ConstLanelets getLaneChangeLanes(
 
   return {};
 }
-}  // namespace behavior_path_planner::util::lane_change
+}  // namespace behavior_path_planner::utils::lane_change
