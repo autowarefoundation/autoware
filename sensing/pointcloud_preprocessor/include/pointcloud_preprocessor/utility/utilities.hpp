@@ -78,6 +78,14 @@ void remove_polygon_cgal_from_cloud(
 bool point_within_cgal_polys(
   const pcl::PointXYZ & point, const std::vector<PolygonCgal> & polyline_polygons);
 
+/** \brief Return whether the input PointCloud2 data has the same layout than PointXYZI. That is to
+ * say whether you can memcpy from the PointCloud2 data buffer to a PointXYZI */
+bool is_data_layout_compatible_with_PointXYZI(const sensor_msgs::msg::PointCloud2 & input);
+
+/** \brief Return whether the input PointCloud2 data has the same layout than PointXYZIRADRT. That
+ * is to say whether you can memcpy from the PointCloud2 data buffer to a PointXYZIRADRT */
+bool is_data_layout_compatible_with_PointXYZIRADRT(const sensor_msgs::msg::PointCloud2 & input);
+
 }  // namespace pointcloud_preprocessor::utils
 
 #endif  // POINTCLOUD_PREPROCESSOR__UTILITY__UTILITIES_HPP_
