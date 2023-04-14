@@ -6,7 +6,8 @@
       resample_interval_for_output: 4.0                 # [m]
       detection_area_right_expand_dist: 0.0             # [m]
       detection_area_left_expand_dist: 1.0              # [m]
-      object_envelope_buffer: 0.3                       # [m]
+      drivable_area_right_bound_offset: 0.0             # [m]
+      drivable_area_left_bound_offset: 0.0              # [m]
 
       # avoidance module common setting
       enable_bound_clipping: false
@@ -14,8 +15,8 @@
       enable_avoidance_over_opposite_direction: true
       enable_update_path_when_object_is_gone: false
       enable_force_avoidance_for_stopped_vehicle: false
-      enable_safety_check: false
-      enable_yield_maneuver: false
+      enable_safety_check: true
+      enable_yield_maneuver: true
       disable_path_update: false
 
       # for debug
@@ -24,14 +25,46 @@
 
       # avoidance is performed for the object type with true
       target_object:
-        car: true
-        truck: true
-        bus: true
-        trailer: true
-        unknown: false
-        bicycle: false
-        motorcycle: false
-        pedestrian: false
+        car:
+          enable: true
+          envelope_buffer_margin: 0.3
+          safety_buffer_lateral: 0.7
+          safety_buffer_longitudinal: 0.0
+        truck:
+          enable: true
+          envelope_buffer_margin: 0.3
+          safety_buffer_lateral: 0.7
+          safety_buffer_longitudinal: 0.0
+        bus:
+          enable: true
+          envelope_buffer_margin: 0.3
+          safety_buffer_lateral: 0.7
+          safety_buffer_longitudinal: 0.0
+        trailer:
+          enable: true
+          envelope_buffer_margin: 0.3
+          safety_buffer_lateral: 0.7
+          safety_buffer_longitudinal: 0.0
+        unknown:
+          enable: false
+          envelope_buffer_margin: 0.3
+          safety_buffer_lateral: 0.7
+          safety_buffer_longitudinal: 0.0
+        bicycle:
+          enable: false
+          envelope_buffer_margin: 0.8
+          safety_buffer_lateral: 1.0
+          safety_buffer_longitudinal: 1.0
+        motorcycle:
+          enable: false
+          envelope_buffer_margin: 0.8
+          safety_buffer_lateral: 1.0
+          safety_buffer_longitudinal: 1.0
+        pedestrian:
+          enable: false
+          envelope_buffer_margin: 0.8
+          safety_buffer_lateral: 1.0
+          safety_buffer_longitudinal: 1.0
 
       # For target object filtering
       target_filtering:
@@ -64,8 +97,7 @@
         # avoidance lateral parameters
         lateral:
           lateral_collision_margin: 1.0                 # [m]
-          lateral_collision_safety_buffer: 0.7          # [m]
-          lateral_passable_safety_buffer: 0.0           # [m]
+          lateral_passable_safety_buffer: 1.0           # [m]
           road_shoulder_safety_margin: 0.3              # [m]
           avoidance_execution_lateral_threshold: 0.499
           max_right_shift_length: 5.0
@@ -73,7 +105,6 @@
         # avoidance distance parameters
         longitudinal:
           prepare_time: 2.0                             # [s]
-          longitudinal_collision_safety_buffer: 0.0     # [m]
           min_prepare_distance: 1.0                     # [m]
           min_avoidance_distance: 10.0                  # [m]
           min_nominal_avoidance_speed: 7.0              # [m/s]
