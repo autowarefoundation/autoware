@@ -59,8 +59,16 @@ public:
     rclcpp::Node & node, const std::shared_ptr<LaneFollowingParameters> & parameters,
     const bool verbose);
 
+  /**
+   * @brief run all candidate and approved modules.
+   * @param planner data.
+   */
   BehaviorModuleOutput run(const std::shared_ptr<PlannerData> & data);
 
+  /**
+   * @brief register managers.
+   * @param manager pointer.
+   */
   void registerSceneModuleManager(const SceneModuleManagerPtr & manager_ptr)
   {
     RCLCPP_INFO(logger_, "register %s module", manager_ptr->getModuleName().c_str());
@@ -68,6 +76,10 @@ public:
     processing_time_.emplace(manager_ptr->getModuleName(), 0.0);
   }
 
+  /**
+   * @brief update module parameters. used for dynamic reconfigure.
+   * @param parameters.
+   */
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters)
   {
     std::for_each(manager_ptrs_.begin(), manager_ptrs_.end(), [&parameters](const auto & m) {
@@ -75,6 +87,9 @@ public:
     });
   }
 
+  /**
+   * @brief reset all member variables.
+   */
   void reset()
   {
     approved_module_ptrs_.clear();
@@ -84,14 +99,25 @@ public:
     resetProcessingTime();
   }
 
+  /**
+   * @brief publish all registered modules' debug markers.
+   */
   void publishDebugMarker() const
   {
     std::for_each(
       manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->publishDebugMarker(); });
   }
 
+  /**
+   * @brief get manager pointers.
+   * @return manager pointers.
+   */
   std::vector<SceneModuleManagerPtr> getSceneModuleManagers() const { return manager_ptrs_; }
 
+  /**
+   * @brief get all scene modules status (is execution request, is ready and status).
+   * @return statuses
+   */
   std::vector<std::shared_ptr<SceneModuleStatus>> getSceneModuleStatus() const
   {
     std::vector<std::shared_ptr<SceneModuleStatus>> ret;
@@ -117,15 +143,31 @@ public:
     return ret;
   }
 
+  /**
+   * @brief reset root lanelet. if there are approved modules, don't reset root lanelet.
+   * @param planner data.
+   * @details this function is called only when it is in disengage and drive by manual.
+   */
   void resetRootLanelet(const std::shared_ptr<PlannerData> & data);
 
+  /**
+   * @brief show planner manager internal condition.
+   */
   void print() const;
 
 private:
+  /**
+   * @brief run the module and publish RTC status.
+   * @param module.
+   * @param planner data.
+   * @return planning result.
+   */
   BehaviorModuleOutput run(
     const SceneModulePtr & module_ptr, const std::shared_ptr<PlannerData> & planner_data,
     const BehaviorModuleOutput & previous_module_output) const
   {
+    stop_watch_.tic(module_ptr->name());
+
     module_ptr->setData(planner_data);
     module_ptr->setPreviousModuleOutput(previous_module_output);
 
@@ -137,34 +179,46 @@ private:
 
     module_ptr->publishRTCStatus();
 
+    processing_time_.at(module_ptr->name()) += stop_watch_.toc(module_ptr->name(), true);
+
     return result;
   }
 
+  /**
+   * @brief stop and unregister the module from manager.
+   * @param module.
+   */
   void deleteExpiredModules(SceneModulePtr & module_ptr) const
   {
-    const auto itr = std::find_if(
-      manager_ptrs_.begin(), manager_ptrs_.end(),
-      [&module_ptr](const auto & m) { return m->getModuleName() == module_ptr->name(); });
-    if (itr == manager_ptrs_.end()) {
-      return;
-    }
-
-    (*itr)->deleteModules(module_ptr);
+    const auto manager = getManager(module_ptr);
+    manager->deleteModules(module_ptr);
   }
 
-  void sortByPriority(std::vector<SceneModulePtr> & request_modules) const
+  /**
+   * @brief swap the modules order based on it's priority.
+   * @param modules.
+   * @details for now, the priority is decided in config file and doesn't change runtime.
+   */
+  void sortByPriority(std::vector<SceneModulePtr> & modules) const
   {
     // TODO(someone) enhance this priority decision method.
-    std::sort(request_modules.begin(), request_modules.end(), [this](auto a, auto b) {
+    std::sort(modules.begin(), modules.end(), [this](auto a, auto b) {
       return getManager(a)->getPriority() < getManager(b)->getPriority();
     });
   }
 
+  /**
+   * @brief push back to approved_module_ptrs_.
+   * @param approved module pointer.
+   */
   void addApprovedModule(const SceneModulePtr & module_ptr)
   {
     approved_module_ptrs_.push_back(module_ptr);
   }
 
+  /**
+   * @brief reset processing time.
+   */
   void resetProcessingTime()
   {
     for (auto & t : processing_time_) {
@@ -172,14 +226,22 @@ private:
     }
   }
 
+  /**
+   * @brief stop and remove all modules in candidate_module_ptrs_.
+   */
   void clearCandidateModules()
   {
-    for (auto & m : candidate_module_ptrs_) {
+    std::for_each(candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), [this](auto & m) {
       deleteExpiredModules(m);
-    }
+    });
     candidate_module_ptrs_.clear();
   }
 
+  /**
+   * @brief get current root lanelet. the lanelet is used for reference path generation.
+   * @param planner data.
+   * @return root lanelet.
+   */
   lanelet::ConstLanelet updateRootLanelet(const std::shared_ptr<PlannerData> & data) const
   {
     lanelet::ConstLanelet ret{};
@@ -188,6 +250,11 @@ private:
     return ret;
   }
 
+  /**
+   * @brief get manager pointer from module name.
+   * @param module pointer.
+   * @return manager pointer.
+   */
   SceneModuleManagerPtr getManager(const SceneModulePtr & module_ptr) const
   {
     const auto itr = std::find_if(
@@ -201,20 +268,54 @@ private:
     return *itr;
   }
 
+  /**
+   * @brief run all modules in approved_module_ptrs_ and get a planning result as
+   * approved_modules_output.
+   * @param planner data.
+   * @return valid planning result.
+   * @details in this function, expired modules (ModuleStatus::FAILURE or ModuleStatus::SUCCESS) are
+   * removed from approved_module_ptrs_.
+   */
   BehaviorModuleOutput runApprovedModules(const std::shared_ptr<PlannerData> & data);
 
+  /**
+   * @brief get reference path from root_lanelet_ centerline.
+   * @param planner data.
+   * @return reference path.
+   */
   BehaviorModuleOutput getReferencePath(const std::shared_ptr<PlannerData> & data) const;
 
+  /**
+   * @brief select a module that should be execute at first.
+   * @param modules that make execution request.
+   * @return the highest priority module.
+   */
   SceneModulePtr selectHighestPriorityModule(std::vector<SceneModulePtr> & request_modules) const;
 
+  /**
+   * @brief update candidate_module_ptrs_ based on latest request modules.
+   * @param the highest priority module in latest request modules.
+   */
   void updateCandidateModules(
-    const std::vector<SceneModulePtr> & candidate_modules,
+    const std::vector<SceneModulePtr> & request_modules,
     const SceneModulePtr & highest_priority_module);
 
+  /**
+   * @brief get all modules that make execution request.
+   * @param decided (=approved) path.
+   * @return request modules.
+   */
   std::vector<SceneModulePtr> getRequestModules(
     const BehaviorModuleOutput & previous_module_output) const;
 
-  std::pair<SceneModulePtr, BehaviorModuleOutput> runCandidateModules(
+  /**
+   * @brief checks whether a path of trajectory has forward driving direction
+   * @param modules that make execution request.
+   * @param planner data.
+   * @param decided (=approved) path.
+   * @return the highest priority module in request modules, and it's planning result.
+   */
+  std::pair<SceneModulePtr, BehaviorModuleOutput> runRequestModules(
     const std::vector<SceneModulePtr> & request_modules, const std::shared_ptr<PlannerData> & data,
     const BehaviorModuleOutput & previous_module_output);
 
