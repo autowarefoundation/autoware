@@ -1,27 +1,32 @@
 /**:
   ros__parameters:
     intersection:
-      state_transit_margin_time: 1.0
-      stop_line_margin: 3.0
-      keep_detection_vel_thr: 0.833 # == 3.0km/h. keep detection if ego is ego.vel < keep_detection_vel_thr
-      stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
-      stuck_vehicle_ignore_dist: 10.0 # obstacle stop max distance(5.0m) + stuck vehicle size / 2 (0.0m-)
-      stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
-      intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
-      intersection_max_accel: 0.5 # m/ss
-      detection_area_margin: 0.5 # [m]
-      detection_area_right_margin: 0.5 # [m]
-      detection_area_left_margin: 0.5 # [m]
-      detection_area_length: 200.0 # [m]
-      detection_area_angle_threshold: 0.785 # [rad]
-      min_predicted_path_confidence: 0.05
-      minimum_ego_predicted_velocity: 1.388 # [m/s]
-      collision_start_margin_time: 4.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
-      collision_end_margin_time: 6.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
-      use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
-      assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
-      enable_front_car_decel_prediction: false # By default this feature is disabled
-      stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collision detection
+      common:
+        detection_area_margin: 0.5 # [m]
+        detection_area_right_margin: 0.5 # [m]
+        detection_area_left_margin: 0.5 # [m]
+        detection_area_length: 200.0 # [m]
+        detection_area_angle_threshold: 0.785 # [rad]
+        stop_line_margin: 3.0
+        intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
+        intersection_max_accel: 0.5 # m/ss
+        stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collision detection
+
+      stuck_vehicle:
+        use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
+        stuck_vehicle_ignore_dist: 10.0 # obstacle stop max distance(5.0m) + stuck vehicle size / 2 (0.0m-)
+        stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
+        stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
+        enable_front_car_decel_prediction: false # By default this feature is disabled
+        assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
+
+      collision_detection:
+        state_transit_margin_time: 1.0
+        min_predicted_path_confidence: 0.05
+        minimum_ego_predicted_velocity: 1.388 # [m/s]
+        collision_start_margin_time: 4.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
+        collision_end_margin_time: 6.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
+        keep_detection_vel_thr: 0.833 # == 3.0km/h. keep detection if ego is ego.vel < keep_detection_vel_thr
 
     merge_from_private:
       stop_duration_sec: 1.0

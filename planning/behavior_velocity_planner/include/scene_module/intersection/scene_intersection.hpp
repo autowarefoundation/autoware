@@ -67,32 +67,41 @@ public:
 public:
   struct PlannerParam
   {
-    double state_transit_margin_time;
-    double stop_line_margin;  //! distance from auto-generated stopline to detection_area boundary
-    double keep_detection_vel_thr;     //! keep detection if ego is ego.vel < keep_detection_vel_thr
-    double stuck_vehicle_detect_dist;  //! distance from end point to finish stuck vehicle check
-    double
-      stuck_vehicle_ignore_dist;   //! distance from intersection start to start stuck vehicle check
-    double stuck_vehicle_vel_thr;  //! Threshold of the speed to be recognized as stopped
-    double intersection_velocity;  //! used for intersection passing time
-    double intersection_max_acc;   //! used for calculating intersection velocity
-    double detection_area_margin;  //! used for detecting objects in detection area
-    double detection_area_right_margin;  //! used for detecting objects in detection area only right
-                                         //! direction
-    double detection_area_left_margin;   //! used for detecting objects in detection area only left
-                                         //! direction
-    double detection_area_length;        //! used to create detection area polygon
-    double detection_area_angle_thr;     //! threshold in checking the angle of detecting objects
-    double min_predicted_path_confidence;
-    //! minimum confidence value of predicted path to use for collision detection
-    double minimum_ego_predicted_velocity;  //! used to calculate ego's future velocity profile
-    double collision_start_margin_time;     //! start margin time to check collision
-    double collision_end_margin_time;       //! end margin time to check collision
-    bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
-    double
-      assumed_front_car_decel;  //! the expected deceleration of front car when front car as well
-    bool enable_front_car_decel_prediction;  //! flag for using above feature
-    double stop_overshoot_margin;            //! overshoot margin for stuck, collision detection
+    struct Common
+    {
+      double detection_area_margin;        //! used for detecting objects in detection area
+      double detection_area_right_margin;  //! used for detecting objects in detection area only
+                                           //! right direction
+      double detection_area_left_margin;  //! used for detecting objects in detection area only left
+                                          //! direction
+      double detection_area_length;       //! used to create detection area polygon
+      double detection_area_angle_thr;    //! threshold in checking the angle of detecting objects
+      double stop_line_margin;  //! distance from auto-generated stopline to detection_area boundary
+      double intersection_velocity;  //! used for intersection passing time
+      double intersection_max_acc;   //! used for calculating intersection velocity
+      double stop_overshoot_margin;  //! overshoot margin for stuck, collision detection
+    } common;
+    struct StuckVehicle
+    {
+      bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
+      double stuck_vehicle_detect_dist;  //! distance from end point to finish stuck vehicle check
+      double stuck_vehicle_ignore_dist;  //! distance from intersection start to start stuck vehicle
+                                         //! check
+      double stuck_vehicle_vel_thr;      //! Threshold of the speed to be recognized as stopped
+      double
+        assumed_front_car_decel;  //! the expected deceleration of front car when front car as well
+      bool enable_front_car_decel_prediction;  //! flag for using above feature
+    } stuck_vehicle;
+    struct CollisionDetection
+    {
+      double state_transit_margin_time;
+      double min_predicted_path_confidence;
+      //! minimum confidence value of predicted path to use for collision detection
+      double minimum_ego_predicted_velocity;  //! used to calculate ego's future velocity profile
+      double collision_start_margin_time;     //! start margin time to check collision
+      double collision_end_margin_time;       //! end margin time to check collision
+      double keep_detection_vel_thr;  //! keep detection if ego is ego.vel < keep_detection_vel_thr
+    } collision_detection;
   };
 
   IntersectionModule(

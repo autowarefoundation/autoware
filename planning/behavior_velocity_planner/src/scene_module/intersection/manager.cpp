@@ -32,35 +32,50 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   const std::string ns(getModuleName());
   auto & ip = intersection_param_;
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
-  ip.state_transit_margin_time = node.declare_parameter<double>(ns + ".state_transit_margin_time");
-  ip.stop_line_margin = node.declare_parameter<double>(ns + ".stop_line_margin");
-  ip.keep_detection_vel_thr = node.declare_parameter<double>(ns + ".keep_detection_vel_thr");
-  ip.stuck_vehicle_detect_dist = node.declare_parameter<double>(ns + ".stuck_vehicle_detect_dist");
-  ip.stuck_vehicle_ignore_dist = node.declare_parameter<double>(ns + ".stuck_vehicle_ignore_dist") +
-                                 vehicle_info.max_longitudinal_offset_m;
-  ip.stuck_vehicle_vel_thr = node.declare_parameter<double>(ns + ".stuck_vehicle_vel_thr");
-  ip.intersection_velocity = node.declare_parameter<double>(ns + ".intersection_velocity");
-  ip.intersection_max_acc = node.declare_parameter<double>(ns + ".intersection_max_accel");
-  ip.detection_area_margin = node.declare_parameter<double>(ns + ".detection_area_margin");
-  ip.detection_area_right_margin =
-    node.declare_parameter<double>(ns + ".detection_area_right_margin");
-  ip.detection_area_left_margin =
-    node.declare_parameter<double>(ns + ".detection_area_left_margin");
-  ip.detection_area_length = node.declare_parameter<double>(ns + ".detection_area_length");
-  ip.detection_area_angle_thr =
-    node.declare_parameter<double>(ns + ".detection_area_angle_threshold");
-  ip.min_predicted_path_confidence =
-    node.declare_parameter<double>(ns + ".min_predicted_path_confidence");
-  ip.minimum_ego_predicted_velocity =
-    node.declare_parameter<double>(ns + ".minimum_ego_predicted_velocity");
-  ip.collision_start_margin_time =
-    node.declare_parameter<double>(ns + ".collision_start_margin_time");
-  ip.collision_end_margin_time = node.declare_parameter<double>(ns + ".collision_end_margin_time");
-  ip.use_stuck_stopline = node.declare_parameter<bool>(ns + ".use_stuck_stopline");
-  ip.assumed_front_car_decel = node.declare_parameter<double>(ns + ".assumed_front_car_decel");
-  ip.enable_front_car_decel_prediction =
-    node.declare_parameter<bool>(ns + ".enable_front_car_decel_prediction");
-  ip.stop_overshoot_margin = node.declare_parameter<double>(ns + ".stop_overshoot_margin");
+  ip.common.detection_area_margin =
+    node.declare_parameter<double>(ns + ".common.detection_area_margin");
+  ip.common.detection_area_right_margin =
+    node.declare_parameter<double>(ns + ".common.detection_area_right_margin");
+  ip.common.detection_area_left_margin =
+    node.declare_parameter<double>(ns + ".common.detection_area_left_margin");
+  ip.common.detection_area_length =
+    node.declare_parameter<double>(ns + ".common.detection_area_length");
+  ip.common.detection_area_angle_thr =
+    node.declare_parameter<double>(ns + ".common.detection_area_angle_threshold");
+  ip.common.stop_line_margin = node.declare_parameter<double>(ns + ".common.stop_line_margin");
+  ip.common.intersection_velocity =
+    node.declare_parameter<double>(ns + ".common.intersection_velocity");
+  ip.common.intersection_max_acc =
+    node.declare_parameter<double>(ns + ".common.intersection_max_accel");
+  ip.common.stop_overshoot_margin =
+    node.declare_parameter<double>(ns + ".common.stop_overshoot_margin");
+
+  ip.stuck_vehicle.use_stuck_stopline =
+    node.declare_parameter<bool>(ns + ".stuck_vehicle.use_stuck_stopline");
+  ip.stuck_vehicle.stuck_vehicle_detect_dist =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.stuck_vehicle_detect_dist");
+  ip.stuck_vehicle.stuck_vehicle_ignore_dist =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.stuck_vehicle_ignore_dist") +
+    vehicle_info.max_longitudinal_offset_m;
+  ip.stuck_vehicle.stuck_vehicle_vel_thr =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.stuck_vehicle_vel_thr");
+  ip.stuck_vehicle.assumed_front_car_decel =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.assumed_front_car_decel");
+  ip.stuck_vehicle.enable_front_car_decel_prediction =
+    node.declare_parameter<bool>(ns + ".stuck_vehicle.enable_front_car_decel_prediction");
+
+  ip.collision_detection.state_transit_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.state_transit_margin_time");
+  ip.collision_detection.min_predicted_path_confidence =
+    node.declare_parameter<double>(ns + ".collision_detection.min_predicted_path_confidence");
+  ip.collision_detection.minimum_ego_predicted_velocity =
+    node.declare_parameter<double>(ns + ".collision_detection.minimum_ego_predicted_velocity");
+  ip.collision_detection.collision_start_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.collision_start_margin_time");
+  ip.collision_detection.collision_end_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.collision_end_margin_time");
+  ip.collision_detection.keep_detection_vel_thr =
+    node.declare_parameter<double>(ns + ".collision_detection.keep_detection_vel_thr");
 }
 
 MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node)
@@ -69,12 +84,13 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
   const std::string ns(getModuleName());
   auto & mp = merge_from_private_area_param_;
   mp.stop_duration_sec = node.declare_parameter<double>(ns + ".stop_duration_sec");
-  mp.detection_area_length = node.get_parameter("intersection.detection_area_length").as_double();
+  mp.detection_area_length =
+    node.get_parameter("intersection.common.detection_area_length").as_double();
   mp.detection_area_right_margin =
-    node.get_parameter("intersection.detection_area_right_margin").as_double();
+    node.get_parameter("intersection.common.detection_area_right_margin").as_double();
   mp.detection_area_left_margin =
-    node.get_parameter("intersection.detection_area_left_margin").as_double();
-  mp.stop_line_margin = node.get_parameter("intersection.stop_line_margin").as_double();
+    node.get_parameter("intersection.common.detection_area_left_margin").as_double();
+  mp.stop_line_margin = node.get_parameter("intersection.common.stop_line_margin").as_double();
 }
 
 void IntersectionModuleManager::launchNewModules(
