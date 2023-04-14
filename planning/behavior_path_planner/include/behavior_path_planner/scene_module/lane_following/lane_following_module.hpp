@@ -54,7 +54,7 @@ public:
 private:
   std::shared_ptr<LaneFollowingParameters> parameters_;
 
-  PathWithLaneId getReferencePath() const;
+  BehaviorModuleOutput getReferencePath() const;
   void initParam();
 };
 }  // namespace behavior_path_planner

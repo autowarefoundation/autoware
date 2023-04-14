@@ -1738,6 +1738,75 @@ PathWithLaneId setDecelerationVelocity(
   return reference_path;
 }
 
+BehaviorModuleOutput getReferencePath(
+  const lanelet::ConstLanelet & current_lane,
+  const std::shared_ptr<LaneFollowingParameters> & parameters,
+  const std::shared_ptr<const PlannerData> & planner_data)
+{
+  PathWithLaneId reference_path{};
+
+  const auto & route_handler = planner_data->route_handler;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
+  const auto p = planner_data->parameters;
+
+  // Set header
+  reference_path.header = route_handler->getRouteHeader();
+
+  // For current_lanes with desired length
+  const auto current_lanes = route_handler->getLaneletSequence(
+    current_lane, current_pose, p.backward_path_length, p.forward_path_length);
+
+  if (current_lanes.empty()) {
+    return {};
+  }
+
+  // calculate path with backward margin to avoid end points' instability by spline interpolation
+  constexpr double extra_margin = 10.0;
+  const double backward_length = p.backward_path_length + extra_margin;
+  const auto current_lanes_with_backward_margin = route_handler->getLaneletSequence(
+    current_lane, current_pose, backward_length, p.forward_path_length);
+  reference_path = getCenterLinePath(
+    *route_handler, current_lanes_with_backward_margin, current_pose, backward_length,
+    p.forward_path_length, p);
+
+  // clip backward length
+  // NOTE: In order to keep backward_path_length at least, resampling interval is added to the
+  // backward.
+  const size_t current_seg_idx = planner_data->findEgoSegmentIndex(reference_path.points);
+  reference_path.points = motion_utils::cropPoints(
+    reference_path.points, current_pose.position, current_seg_idx, p.forward_path_length,
+    p.backward_path_length + p.input_path_interval);
+
+  const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
+  const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
+
+  {
+    const int num_lane_change =
+      std::abs(route_handler->getNumLaneToPreferredLane(current_lanes.back()));
+
+    const double lane_change_buffer = calcLaneChangeBuffer(p, num_lane_change);
+
+    reference_path = setDecelerationVelocity(
+      *route_handler, reference_path, current_lanes, parameters->lane_change_prepare_duration,
+      lane_change_buffer);
+  }
+
+  const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
+
+  const auto expanded_lanes = expandLanelets(
+    shorten_lanes, parameters->drivable_area_left_bound_offset,
+    parameters->drivable_area_right_bound_offset, parameters->drivable_area_types_to_skip);
+
+  generateDrivableArea(reference_path, expanded_lanes, p.vehicle_length, planner_data);
+
+  BehaviorModuleOutput output;
+  output.path = std::make_shared<PathWithLaneId>(reference_path);
+  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.drivable_lanes = drivable_lanes;
+
+  return output;
+}
+
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification)
 {
   std::uint8_t label = ObjectClassification::UNKNOWN;
