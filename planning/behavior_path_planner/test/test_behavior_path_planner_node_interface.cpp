@@ -81,6 +81,6 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionRoute)
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test with empty route
-  // test_manager->testWithAbnormalRoute(test_target_node);
-  // rclcpp::shutdown();
+  test_manager->testWithAbnormalRoute(test_target_node);
+  rclcpp::shutdown();
 }

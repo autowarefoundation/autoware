@@ -1479,6 +1479,11 @@ void BehaviorPathPlannerNode::onMap(const HADMapBin::ConstSharedPtr msg)
 }
 void BehaviorPathPlannerNode::onRoute(const LaneletRoute::ConstSharedPtr msg)
 {
+  if (msg->segments.empty()) {
+    RCLCPP_ERROR(get_logger(), "input route is empty. ignored");
+    return;
+  }
+
   const std::lock_guard<std::mutex> lock(mutex_route_);
   route_ptr_ = msg;
   has_received_route_ = true;
