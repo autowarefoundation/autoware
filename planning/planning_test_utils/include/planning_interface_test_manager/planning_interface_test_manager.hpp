@@ -91,9 +91,6 @@ class PlanningInterfaceTestManager
 public:
   PlanningInterfaceTestManager();
 
-  void declareVehicleInfoParams(rclcpp::NodeOptions & node_options);
-  void declareNearestSearchDistanceParams(rclcpp::NodeOptions & node_options);
-
   void publishOdometry(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishInitialPose(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishMaxVelocity(rclcpp::Node::SharedPtr target_node, std::string topic_name);
