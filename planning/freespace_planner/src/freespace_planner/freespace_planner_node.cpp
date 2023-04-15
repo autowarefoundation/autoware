@@ -431,9 +431,9 @@ void FreespacePlannerNode::onTimer()
   }
 
   // Get current pose
-  constexpr const char * vehicle_frame = "base_link";
-  current_pose_ = tier4_autoware_utils::transform2pose(
-    getTransform(occupancy_grid_->header.frame_id, vehicle_frame));
+  current_pose_.pose = odom_->pose.pose;
+  current_pose_.header = odom_->header;
+
   if (current_pose_.header.frame_id == "") {
     return;
   }
