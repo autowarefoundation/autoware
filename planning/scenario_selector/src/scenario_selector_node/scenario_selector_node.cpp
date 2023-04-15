@@ -54,28 +54,6 @@ std::shared_ptr<lanelet::ConstPolygon3d> findNearestParkinglot(
   }
 }
 
-geometry_msgs::msg::PoseStamped::ConstSharedPtr getCurrentPose(
-  const tf2_ros::Buffer & tf_buffer, const rclcpp::Logger & logger)
-{
-  geometry_msgs::msg::TransformStamped tf_current_pose;
-
-  try {
-    tf_current_pose = tf_buffer.lookupTransform("map", "base_link", tf2::TimePointZero);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR(logger, "%s", ex.what());
-    return nullptr;
-  }
-
-  geometry_msgs::msg::PoseStamped::SharedPtr p(new geometry_msgs::msg::PoseStamped());
-  p->header = tf_current_pose.header;
-  p->pose.orientation = tf_current_pose.transform.rotation;
-  p->pose.position.x = tf_current_pose.transform.translation.x;
-  p->pose.position.y = tf_current_pose.transform.translation.y;
-  p->pose.position.z = tf_current_pose.transform.translation.z;
-
-  return geometry_msgs::msg::PoseStamped::ConstSharedPtr(p);
-}
-
 bool isInLane(
   const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
   const geometry_msgs::msg::Point & current_pos)
@@ -157,9 +135,9 @@ ScenarioSelectorNode::getScenarioTrajectory(const std::string & scenario)
 
 std::string ScenarioSelectorNode::selectScenarioByPosition()
 {
-  const auto is_in_lane = isInLane(lanelet_map_ptr_, current_pose_->pose.position);
+  const auto is_in_lane = isInLane(lanelet_map_ptr_, current_pose_->pose.pose.position);
   const auto is_goal_in_lane = isInLane(lanelet_map_ptr_, route_->goal_pose.position);
-  const auto is_in_parking_lot = isInParkingLot(lanelet_map_ptr_, current_pose_->pose);
+  const auto is_in_parking_lot = isInParkingLot(lanelet_map_ptr_, current_pose_->pose.pose);
 
   if (current_scenario_ == tier4_planning_msgs::msg::Scenario::EMPTY) {
     if (is_in_lane && is_goal_in_lane) {
@@ -193,7 +171,7 @@ void ScenarioSelectorNode::updateCurrentScenario()
 
   const auto scenario_trajectory = getScenarioTrajectory(current_scenario_);
   const auto is_near_trajectory_end =
-    isNearTrajectoryEnd(scenario_trajectory, current_pose_->pose, th_arrived_distance_m_);
+    isNearTrajectoryEnd(scenario_trajectory, current_pose_->pose.pose, th_arrived_distance_m_);
 
   const auto is_stopped = isStopped(twist_buffer_, th_stopped_velocity_mps_);
 
@@ -225,6 +203,7 @@ void ScenarioSelectorNode::onRoute(
 
 void ScenarioSelectorNode::onOdom(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
 {
+  current_pose_ = msg;
   auto twist = std::make_shared<geometry_msgs::msg::TwistStamped>();
   twist->header = msg->header;
   twist->twist = msg->twist.twist;
@@ -285,8 +264,6 @@ bool ScenarioSelectorNode::isDataReady()
 
 void ScenarioSelectorNode::onTimer()
 {
-  current_pose_ = getCurrentPose(tf_buffer_, this->get_logger());
-
   if (!isDataReady()) {
     return;
   }
@@ -348,8 +325,6 @@ void ScenarioSelectorNode::publishTrajectory(
 
 ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_options)
 : Node("scenario_selector", node_options),
-  tf_buffer_(this->get_clock()),
-  tf_listener_(tf_buffer_),
   current_scenario_(tier4_planning_msgs::msg::Scenario::EMPTY),
   update_rate_(this->declare_parameter<double>("update_rate")),
   th_max_message_delay_sec_(this->declare_parameter<double>("th_max_message_delay_sec")),
@@ -392,17 +367,6 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
 
   timer_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&ScenarioSelectorNode::onTimer, this));
-
-  // Wait for first tf
-  while (rclcpp::ok()) {
-    try {
-      tf_buffer_.lookupTransform("map", "base_link", tf2::TimePointZero);
-      break;
-    } catch (tf2::TransformException & ex) {
-      RCLCPP_DEBUG(this->get_logger(), "waiting for initial pose...");
-      rclcpp::sleep_for(std::chrono::milliseconds(100));
-    }
-  }
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

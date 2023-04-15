@@ -67,9 +67,6 @@ public:
 private:
   rclcpp::TimerBase::SharedPtr timer_;
 
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener tf_listener_;
-
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_lanelet_map_;
   rclcpp::Subscription<autoware_planning_msgs::msg::LaneletRoute>::SharedPtr sub_route_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
@@ -84,7 +81,7 @@ private:
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr lane_driving_trajectory_;
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr parking_trajectory_;
   autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr route_;
-  geometry_msgs::msg::PoseStamped::ConstSharedPtr current_pose_;
+  nav_msgs::msg::Odometry::ConstSharedPtr current_pose_;
   geometry_msgs::msg::TwistStamped::ConstSharedPtr twist_;
 
   std::string current_scenario_;
