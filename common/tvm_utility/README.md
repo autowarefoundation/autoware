@@ -1,7 +1,8 @@
-# TVM Utility {#tvm-utility-design}
+# TVM Utility
 
 This is the design document for the `tvm_utility` package. For instructions on how to build the tests for YOLOv2 Tiny,
-see the @subpage tvm-utility-yolo-v2-tiny-tests. For information about where to store test artifacts see the @subpage tvm-utility-artifacts-readme.
+see the [YOLOv2 Tiny Example Pipeline](tvm-utility-yolo-v2-tiny-tests.md).
+For information about where to store test artifacts see the [TVM Utility Artifacts](artifacts/README.md).
 
 ## Purpose / Use cases
 
@@ -17,7 +18,7 @@ provided.
 ### API
 
 The pre-processor and post-processor need to be implemented by the user before instantiating the pipeline. You can see example
-usage in this [example_pipeline](../test/yolo_v2_tiny).
+usage in the example pipeline at `test/yolo_v2_tiny`.
 
 Each stage in the pipeline has a `schedule` function which takes input data as a parameter and return the output data.
 Once the pipeline object is created, `pipeline.schedule` is called to run the pipeline.

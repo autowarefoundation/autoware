@@ -1,4 +1,4 @@
-# lidar_apollo_segmentation_tvm_nodes {#lidar-apollo-segmentation-tvm-nodes-design}
+# lidar_apollo_segmentation_tvm_nodes
 
 ## Purpose / Use cases
 

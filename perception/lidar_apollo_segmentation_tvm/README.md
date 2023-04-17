@@ -1,8 +1,8 @@
-# lidar_apollo_segmentation_tvm {#lidar-apollo-segmentation-tvm-design}
+# lidar_apollo_segmentation_tvm
 
 ## Design
 
-### Usage {#lidar-apollo-segmentation-tvm-design-usage}
+### Usage
 
 #### Neural network
 

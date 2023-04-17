@@ -1,4 +1,4 @@
-# YOLOv2 Tiny Example Pipeline {#tvm-utility-yolo-v2-tiny-tests}
+# YOLOv2 Tiny Example Pipeline
 
 This is an example implementation of an inference pipeline using the pipeline
 framework. This example pipeline executes the
