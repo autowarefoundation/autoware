@@ -18,7 +18,7 @@ You may need to choose `scan_origin_frame` and `gridmap_origin_frame` which mean
 
 ![image_for_frame_parameter_visualization](./image/gridmap_frame_settings.drawio.svg)
 
-### Each config paramters
+### Each config parameters
 
 Config parameters are managed in `config/*.yaml` and here shows its outline.
 

@@ -223,14 +223,14 @@ Note that the dynamic map loading may FAIL if the map is split into two or more 
 
 Here is a split PCD map for `sample-map-rosbag` from Autoware tutorial: [`sample-map-rosbag_split.zip`](https://github.com/autowarefoundation/autoware.universe/files/10349104/sample-map-rosbag_split.zip)
 
-|  PCD files  | `use_dynamic_map_loading` | `enable_differential_load` | How NDT loads map(s) |
-| :---------: | :-----------------------: | :------------------------: | :------------------: |
-| single file |           true            |            true            |  at once (standard)  |
-| single file |           true            |           false            |  **does NOT work**   |
-| single file |           false           |         true/false         |  at once (standard)  |
-|  splitted   |           true            |            true            |     dynamically      |
-|  splitted   |           true            |           false            |  **does NOT work**   |
-|  splitted   |           false           |         true/false         |  at once (standard)  |
+|   PCD files    | `use_dynamic_map_loading` | `enable_differential_load` | How NDT loads map(s) |
+| :------------: | :-----------------------: | :------------------------: | :------------------: |
+|  single file   |           true            |            true            |  at once (standard)  |
+|  single file   |           true            |           false            |  **does NOT work**   |
+|  single file   |           false           |         true/false         |  at once (standard)  |
+| multiple files |           true            |            true            |     dynamically      |
+| multiple files |           true            |           false            |  **does NOT work**   |
+| multiple files |           false           |         true/false         |  at once (standard)  |
 
 ## Scan matching score based on de-grounded LiDAR scan
 

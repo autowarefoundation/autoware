@@ -40,8 +40,8 @@ if the roi msgs can be matched, fuse them and cache the pointcloud.
 | :-----------------: | :--------: | :-------: | :-------: | :-------: |
 | subscription status | O | O | O | |
 
-If the roi msg 3 is subscribed before the next pointcloud messge coming or timeout, fuse it if matched, otherwise wait for the next roi msg 3.
-If the roi msg 3 is not subscribed before the next pointcloud messge coming or timeout, postprocess the pointcloud messege as it is.
+If the roi msg 3 is subscribed before the next pointcloud message coming or timeout, fuse it if matched, otherwise wait for the next roi msg 3.
+If the roi msg 3 is not subscribed before the next pointcloud message coming or timeout, postprocess the pointcloud message as it is.
 
 The timeout threshold should be set according to the postprocessing time.
 E.g, if the postprocessing time is around 50ms, the timeout threshold should be set smaller than 50ms, so that the whole processing time could be less than 100ms.

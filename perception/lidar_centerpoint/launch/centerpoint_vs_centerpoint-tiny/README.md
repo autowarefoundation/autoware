@@ -130,7 +130,7 @@ Then you will see two rviz window show immediately. On the left is the result fo
 
 ### Bounding Box blink on rviz
 
-To avoid Bounding Boxs blinking on rviz, you can extend bbox marker lifetime.
+To avoid Bounding Boxes blinking on rviz, you can extend bbox marker lifetime.
 
 Set `marker_ptr->lifetime` and `marker.lifetime` to a longer lifetime.
 

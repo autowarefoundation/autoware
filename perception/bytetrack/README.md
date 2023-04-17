@@ -12,6 +12,8 @@ the number of false negatives is expected to decrease by using it.
 
 ### Cite
 
+<!-- cspell: ignore Yifu Peize Jiang Dongdong Fucheng Weng Zehuan Xinggang -->
+
 - Yifu Zhang, Peize Sun, Yi Jiang, Dongdong Yu, Fucheng Weng, Zehuan Yuan, Ping Luo, Wenyu Liu, and Xinggang Wang,
   "ByteTrack: Multi-Object Tracking by Associating Every Detection Box", in the proc. of the ECCV
   2022, [[ref](https://arxiv.org/abs/2110.06864)]

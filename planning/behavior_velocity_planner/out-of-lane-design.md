@@ -27,10 +27,10 @@ In this first step, the ego footprint is projected at each path point and are ev
 #### 2. Other lanes
 
 In the second step, the set of lanes to consider for overlaps is generated.
-This set is built by selecting all lanelets within some distance from the ego vehicle, and then removing non-relevent lanelets.
-The selection distance is choosen as the maximum between the `slowdown.distance_threshold` and the `stop.distance_threshold`.
+This set is built by selecting all lanelets within some distance from the ego vehicle, and then removing non-relevant lanelets.
+The selection distance is chosen as the maximum between the `slowdown.distance_threshold` and the `stop.distance_threshold`.
 
-A lanelet is deemed non-relevent if it meets one of the following conditions.
+A lanelet is deemed non-relevant if it meets one of the following conditions.
 
 - It is part of the lanelets followed by the ego path.
 - It contains the rear point of the ego footprint.

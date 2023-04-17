@@ -28,7 +28,7 @@ The `vehicle_model` must be specified to make footprints with vehicle's size.
 
 ![path_footprint](../media/debug/path_footprint_visualization.png)
 
-- **Drivalbe Area**
+- **Drivable Area**
   - The Drivable area generated in the `behavior` planner.
   - The skyblue left and right line strings, that is visualized by default.
   - NOTE:
@@ -69,7 +69,7 @@ The `vehicle_model` must be specified to make footprints with vehicle's size.
 
 - **Vehicle Circles**
   - The vehicle's shape is represented by a set of circles.
-  - The `obstcle_avoidance_planner` will try to make the these circles inside the above boundaries' width.
+  - The `obstacle_avoidance_planner` will try to make the these circles inside the above boundaries' width.
 
 ![vehicle_circles](../media/debug/vehicle_circles_visualization.png)
 
