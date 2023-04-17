@@ -116,7 +116,7 @@ perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura
 perception/shape_estimation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/tensorrt_yolox/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/traffic_light_classifier/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/traffic_light_classifier/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_map_based_detector/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_selector/** isamu.takagi@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
