@@ -2569,7 +2569,8 @@ void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(Shifted
 
   // apply velocity limit
   constexpr size_t V_LIM_APPLY_IDX_MARGIN = 0;
-  for (size_t i = insert_idx + V_LIM_APPLY_IDX_MARGIN; i < N; ++i) {
+  for (size_t i = insert_idx + V_LIM_APPLY_IDX_MARGIN; i < std::min(path.path.points.size(), N);
+       ++i) {
     path.path.points.at(i).point.longitudinal_velocity_mps =
       std::min(path.path.points.at(i).point.longitudinal_velocity_mps, static_cast<float>(vmax));
   }
@@ -3041,7 +3042,7 @@ AvoidLineArray AvoidanceModule::findNewShiftLine(
     ss << "i = " << i << ", id = " << candidate.id;
     const auto pfx = ss.str().c_str();
 
-    if (prev_reference_.points.size() != prev_linear_shift_path_.path.points.size()) {
+    if (prev_reference_.points.size() != prev_linear_shift_path_.shift_length.size()) {
       throw std::logic_error("prev_reference_ and prev_linear_shift_path_ must have same size.");
     }
 
@@ -3449,7 +3450,7 @@ boost::optional<double> AvoidanceModule::getMildDecelDistance(const double targe
 
 double AvoidanceModule::getRelativeLengthFromPath(const AvoidLine & avoid_line) const
 {
-  if (prev_reference_.points.size() != prev_linear_shift_path_.path.points.size()) {
+  if (prev_reference_.points.size() != prev_linear_shift_path_.shift_length.size()) {
     throw std::logic_error("prev_reference_ and prev_linear_shift_path_ must have same size.");
   }
 
