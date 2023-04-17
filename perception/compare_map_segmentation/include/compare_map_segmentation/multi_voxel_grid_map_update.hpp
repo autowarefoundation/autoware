@@ -312,6 +312,6 @@ private:
   Eigen::Vector4f min_p, max_p;
 };
 
-};  // namespace compare_map_segmentation
+}  // namespace compare_map_segmentation
 
 #endif  // COMPARE_MAP_SEGMENTATION__MULTI_VOXEL_GRID_MAP_UPDATE_HPP_
