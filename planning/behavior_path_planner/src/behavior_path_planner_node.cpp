@@ -775,8 +775,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
     p.decide_path_distance = declare_parameter<double>(ns + "decide_path_distance");
     p.maximum_deceleration = declare_parameter<double>(ns + "maximum_deceleration");
     p.maximum_jerk = declare_parameter<double>(ns + "maximum_jerk");
-    // goal research
-    p.enable_goal_research = declare_parameter<bool>(ns + "enable_goal_research");
+    // goal search
     p.search_priority = declare_parameter<std::string>(ns + "search_priority");
     p.forward_goal_search_length = declare_parameter<double>(ns + "forward_goal_search_length");
     p.backward_goal_search_length = declare_parameter<double>(ns + "backward_goal_search_length");
@@ -864,6 +863,17 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
         get_logger(), "maximum_deceleration cannot be negative value. Given parameter: "
                         << p.maximum_deceleration << std::endl
                         << "Terminating the program...");
+      exit(EXIT_FAILURE);
+    }
+
+    const std::string parking_policy_name = declare_parameter<std::string>(ns + "parking_policy");
+    if (parking_policy_name == "left_side") {
+      p.parking_policy = ParkingPolicy::LEFT_SIDE;
+    } else if (parking_policy_name == "right_side") {
+      p.parking_policy = ParkingPolicy::RIGHT_SIDE;
+    } else {
+      RCLCPP_ERROR_STREAM(
+        get_logger(), "[pull_over] invalid parking_policy: " << parking_policy_name << std::endl);
       exit(EXIT_FAILURE);
     }
   }

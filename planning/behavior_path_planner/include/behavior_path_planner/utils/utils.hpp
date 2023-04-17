@@ -277,13 +277,11 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
 
 PathPointWithLaneId insertStopPoint(const double length, PathWithLaneId & path);
 
-double getSignedDistanceFromShoulderLeftBoundary(
-  const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose);
-std::optional<double> getSignedDistanceFromShoulderLeftBoundary(
+double getSignedDistanceFromBoundary(
+  const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose, const bool left_side);
+std::optional<double> getSignedDistanceFromBoundary(
   const lanelet::ConstLanelets & shoulder_lanelets, const LinearRing2d & footprint,
-  const Pose & vehicle_pose);
-double getSignedDistanceFromRightBoundary(
-  const lanelet::ConstLanelets & lanelets, const Pose & pose);
+  const Pose & vehicle_pose, const bool left_side);
 
 // misc
 
@@ -305,10 +303,6 @@ PathWithLaneId setDecelerationVelocity(
   const RouteHandler & route_handler, const PathWithLaneId & input,
   const lanelet::ConstLanelets & lanelet_sequence, const double lane_change_prepare_duration,
   const double lane_change_buffer);
-
-PathWithLaneId setDecelerationVelocity(
-  const PathWithLaneId & input, const double target_velocity, const Pose target_pose,
-  const double buffer, const double deceleration_interval);
 
 BehaviorModuleOutput getReferencePath(
   const lanelet::ConstLanelet & current_lane,

@@ -64,6 +64,7 @@ protected:
   LaneDepartureChecker lane_departure_checker_{};
   std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_;
   bool is_forward_{true};
+  bool left_side_parking_{true};
 
   GeometricParallelParking planner_;
 };

@@ -45,7 +45,7 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
 
   // prepare road nad shoulder lanes
   const auto road_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler);
+  const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler, left_side_parking_);
   if (road_lanes.empty() || shoulder_lanes.empty()) {
     return {};
   }

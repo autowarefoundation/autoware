@@ -31,7 +31,8 @@ ShiftPullOver::ShiftPullOver(
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
 : PullOverPlannerBase{node, parameters},
   lane_departure_checker_{lane_departure_checker},
-  occupancy_grid_map_{occupancy_grid_map}
+  occupancy_grid_map_{occupancy_grid_map},
+  left_side_parking_{parameters.parking_policy == ParkingPolicy::LEFT_SIDE}
 {
 }
 boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
@@ -44,7 +45,7 @@ boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
 
   // get road and shoulder lanes
   const auto road_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler);
+  const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler, left_side_parking_);
   if (road_lanes.empty() || shoulder_lanes.empty()) {
     return {};
   }
@@ -134,6 +135,8 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   ShiftedPath shifted_path{};
   const bool offset_back = true;  // offset front side from reference path
   if (!path_shifter.generate(&shifted_path, offset_back)) return {};
+  shifted_path.path.points = motion_utils::removeOverlapPoints(shifted_path.path.points);
+  motion_utils::insertOrientation(shifted_path.path.points, true);
 
   // set same orientation, because the reference center line orientation is not same to the
   shifted_path.path.points.back().point.pose.orientation = shift_end_pose.orientation;

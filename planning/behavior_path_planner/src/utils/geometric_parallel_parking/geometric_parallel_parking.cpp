@@ -403,7 +403,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
     const double R_front_left =
       std::hypot(R_E_r + common_params.vehicle_width / 2, common_params.base_link2front);
     const double distance_to_left_bound =
-      utils::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, arc_end_pose);
+      utils::getSignedDistanceFromBoundary(shoulder_lanes, arc_end_pose, true);
     const double left_deviation = R_front_left - R_E_r;
     if (std::abs(distance_to_left_bound) - left_deviation < lane_departure_margin) {
       return std::vector<PathWithLaneId>{};
@@ -413,7 +413,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
       std::hypot(R_E_l + common_params.vehicle_width / 2, common_params.base_link2front);
     const double right_deviation = R_front_right - R_E_l;
     const double distance_to_right_bound =
-      utils::getSignedDistanceFromRightBoundary(lanes, start_pose);
+      utils::getSignedDistanceFromBoundary(lanes, start_pose, false);
     if (distance_to_right_bound - right_deviation < lane_departure_margin) {
       return std::vector<PathWithLaneId>{};
     }

@@ -49,6 +49,7 @@ private:
 
   LinearRing2d vehicle_footprint_{};
   std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_{};
+  bool left_side_parking_{true};
 };
 }  // namespace behavior_path_planner
 

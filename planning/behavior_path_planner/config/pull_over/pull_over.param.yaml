@@ -12,9 +12,9 @@
       decide_path_distance: 10.0
       maximum_deceleration: 1.0
       maximum_jerk: 1.0
-      # goal research
-      enable_goal_research: true
+      # goal search
       search_priority: "efficient_path" # "efficient_path" or "close_goal"
+      parking_policy: "left_side" # "left_side" or "right_side"
       forward_goal_search_length: 20.0
       backward_goal_search_length: 20.0
       goal_search_interval: 2.0

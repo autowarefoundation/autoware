@@ -46,7 +46,7 @@ using visualization_msgs::msg::MarkerArray;
 
 // TODO(sugahara) move to util
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
-lanelet::ConstLanelets getPullOverLanes(const RouteHandler & route_handler);
+lanelet::ConstLanelets getPullOverLanes(const RouteHandler & route_handler, const bool left_side);
 PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside);

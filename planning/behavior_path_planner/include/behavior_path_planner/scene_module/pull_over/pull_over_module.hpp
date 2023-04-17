@@ -56,7 +56,7 @@ using freespace_planning_algorithms::PlannerCommonParam;
 using freespace_planning_algorithms::RRTStar;
 using freespace_planning_algorithms::RRTStarParam;
 
-enum PathType {
+enum class PathType {
   NONE = 0,
   SHIFT,
   ARC_FORWARD,
@@ -154,7 +154,10 @@ private:
 
   // approximate distance from the start point to the end point of pull_over.
   // this is used as an assumed value to decelerate, etc., before generating the actual path.
-  double approximate_pull_over_distance_ = 20.0;
+  double approximate_pull_over_distance_{20.0};
+
+  bool left_side_parking_{true};
+  bool enable_goal_search_{false};
 
   bool incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
@@ -180,6 +183,11 @@ private:
 
   bool checkCollision(const PathWithLaneId & path) const;
   bool hasEnoughDistance(const PullOverPath & pull_over_path) const;
+  bool isCrossingPossible(
+    const lanelet::ConstLanelet & start_lane, const lanelet::ConstLanelet & end_lane) const;
+  bool isCrossingPossible(
+    const Pose & start_pose, const Pose & end_pose, const lanelet::ConstLanelets lanes) const;
+  bool isCrossingPossible(const PullOverPath & pull_over_path) const;
 
   TurnSignalInfo calcTurnSignalInfo() const;
 
@@ -200,6 +208,11 @@ private:
   void onFreespaceParkingTimer();
   rclcpp::TimerBase::SharedPtr freespace_parking_timer_;
   rclcpp::CallbackGroup::SharedPtr freespace_parking_timer_cb_group_;
+
+  // temporary
+  // flag for the interface which do not support `allow_goal_modification`
+  // when the goal is in `road_shoulder`, always allow goal modification temporarily
+  bool checkOriginalGoalIsInShoulder() const;
 };
 }  // namespace behavior_path_planner
 
