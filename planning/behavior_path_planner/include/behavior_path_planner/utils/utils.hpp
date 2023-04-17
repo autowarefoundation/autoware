@@ -55,7 +55,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::util
+namespace behavior_path_planner::utils
 {
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObject;
@@ -354,6 +354,6 @@ lanelet::ConstLanelets getLaneletsFromPath(
   const PathWithLaneId & path, const std::shared_ptr<route_handler::RouteHandler> & route_handler);
 
 std::string convertToSnakeCase(const std::string & input_str);
-}  // namespace behavior_path_planner::util
+}  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__UTILS_HPP_

@@ -37,7 +37,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::util::safety_check
+namespace behavior_path_planner::utils::safety_check
 {
 
 using autoware_auto_perception_msgs::msg::PredictedObject;
@@ -126,6 +126,6 @@ bool isSafeInFreeSpaceCollisionCheck(
   const double prepare_phase_ignore_target_speed_thresh, const double front_decel,
   const double rear_decel, CollisionCheckDebug & debug);
 
-}  // namespace behavior_path_planner::util::safety_check
+}  // namespace behavior_path_planner::utils::safety_check
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__SAFETY_CHECK_HPP_

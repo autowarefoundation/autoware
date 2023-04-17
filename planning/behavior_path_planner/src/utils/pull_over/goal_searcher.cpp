@@ -52,19 +52,19 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   const double ignore_distance_from_lane_start = parameters_.ignore_distance_from_lane_start;
 
   const auto pull_over_lanes = pull_over_utils::getPullOverLanes(*route_handler);
-  auto lanes = util::getExtendedCurrentLanes(planner_data_);
+  auto lanes = utils::getExtendedCurrentLanes(planner_data_);
   lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
   const auto goal_arc_coords =
     lanelet::utils::getArcCoordinates(pull_over_lanes, original_goal_pose);
   const double s_start = std::max(0.0, goal_arc_coords.length - backward_length);
   const double s_end = goal_arc_coords.length + forward_length;
-  auto center_line_path = util::resamplePathWithSpline(
+  auto center_line_path = utils::resamplePathWithSpline(
     route_handler->getCenterLinePath(pull_over_lanes, s_start, s_end),
     parameters_.goal_search_interval);
 
   const auto [shoulder_lane_objects, others] =
-    util::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
+    utils::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
 
   std::vector<Pose> original_search_poses{};  // for search area visualizing
   size_t goal_id = 0;
@@ -78,7 +78,7 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
       continue;
     }
 
-    const auto distance_from_left_bound = util::getSignedDistanceFromShoulderLeftBoundary(
+    const auto distance_from_left_bound = utils::getSignedDistanceFromShoulderLeftBoundary(
       pull_over_lanes, vehicle_footprint_, center_pose);
     if (!distance_from_left_bound) continue;
 
@@ -139,7 +139,7 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
     // check margin with pull over lane objects
     const auto pull_over_lanes = pull_over_utils::getPullOverLanes(*(planner_data_->route_handler));
     const auto [shoulder_lane_objects, others] =
-      util::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
+      utils::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
     constexpr bool filter_inside = true;
     const auto target_objects = pull_over_utils::filterObjectsByLateralDistance(
       goal_pose, planner_data_->parameters.vehicle_width, shoulder_lane_objects,
@@ -166,7 +166,7 @@ bool GoalSearcher::checkCollision(const Pose & pose) const
   }
 
   if (parameters_.use_object_recognition) {
-    if (util::checkCollisionBetweenFootprintAndObjects(
+    if (utils::checkCollisionBetweenFootprintAndObjects(
           vehicle_footprint_, pose, *(planner_data_->dynamic_object),
           parameters_.object_recognition_collision_check_margin)) {
       return true;
@@ -208,7 +208,7 @@ bool GoalSearcher::checkCollisionWithLongitudinalDistance(
 
   if (parameters_.use_object_recognition) {
     if (
-      util::calcLongitudinalDistanceFromEgoToObjects(
+      utils::calcLongitudinalDistanceFromEgoToObjects(
         ego_pose, planner_data_->parameters.base_link2front,
         planner_data_->parameters.base_link2rear,
         dynamic_objects) < parameters_.longitudinal_margin) {

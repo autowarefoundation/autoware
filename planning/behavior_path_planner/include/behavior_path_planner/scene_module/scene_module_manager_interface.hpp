@@ -54,7 +54,7 @@ public:
       config.enable_simultaneous_execution_as_candidate_module)
   {
     for (const auto & rtc_type : rtc_types) {
-      const auto snake_case_name = util::convertToSnakeCase(name);
+      const auto snake_case_name = utils::convertToSnakeCase(name);
       const auto rtc_interface_name =
         rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
       rtc_interface_ptr_map_.emplace(

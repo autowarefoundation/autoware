@@ -57,9 +57,10 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
     return {};
   }
 
-  PathWithLaneId path = util::convertWayPointsToPathWithLaneId(planner_->getWaypoints(), velocity_);
-  const auto reverse_indices = util::getReversingIndices(path);
-  std::vector<PathWithLaneId> partial_paths = util::dividePath(path, reverse_indices);
+  PathWithLaneId path =
+    utils::convertWayPointsToPathWithLaneId(planner_->getWaypoints(), velocity_);
+  const auto reverse_indices = utils::getReversingIndices(path);
+  std::vector<PathWithLaneId> partial_paths = utils::dividePath(path, reverse_indices);
 
   // remove points which are near the goal
   PathWithLaneId & last_path = partial_paths.back();
@@ -88,7 +89,7 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
     // add interpolated poses
     auto addInterpolatedPoses = [&addPose](const Pose & pose1, const Pose & pose2) {
       constexpr double interval = 0.5;
-      std::vector<Pose> interpolated_poses = util::interpolatePose(pose1, pose2, interval);
+      std::vector<Pose> interpolated_poses = utils::interpolatePose(pose1, pose2, interval);
       for (const auto & pose : interpolated_poses) {
         addPose(pose);
       }
@@ -99,7 +100,7 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
     addPose(goal_pose);
   }
 
-  util::correctDividedPathVelocity(partial_paths);
+  utils::correctDividedPathVelocity(partial_paths);
 
   const double drivable_area_margin = planner_data_->parameters.vehicle_width;
   for (auto & path : partial_paths) {
@@ -108,7 +109,7 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
       // path points is less than 2
       return {};
     }
-    util::generateDrivableArea(
+    utils::generateDrivableArea(
       path, planner_data_->parameters.vehicle_length, planner_data_->parameters.vehicle_width,
       drivable_area_margin, *is_driving_forward);
   }

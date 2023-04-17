@@ -22,7 +22,7 @@
 namespace marker_utils
 {
 using behavior_path_planner::ShiftLine;
-using behavior_path_planner::util::calcPathArcLengthArray;
+using behavior_path_planner::utils::calcPathArcLengthArray;
 using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;

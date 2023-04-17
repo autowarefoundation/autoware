@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::util
+namespace behavior_path_planner::utils
 {
 /**
  * @brief calc path arclength on each points from start point to end point.
@@ -178,8 +178,8 @@ void clipPathLength(
     return;
   }
 
-  const auto start_idx = util::getIdxByArclength(path, target_idx, -backward);
-  const auto end_idx = util::getIdxByArclength(path, target_idx, forward);
+  const auto start_idx = utils::getIdxByArclength(path, target_idx, -backward);
+  const auto end_idx = utils::getIdxByArclength(path, target_idx, forward);
 
   const std::vector<PathPointWithLaneId> clipped_points{
     path.points.begin() + start_idx, path.points.begin() + end_idx + 1};
@@ -469,4 +469,4 @@ std::vector<Pose> interpolatePose(
   return interpolated_poses;
 }
 
-}  // namespace behavior_path_planner::util
+}  // namespace behavior_path_planner::utils

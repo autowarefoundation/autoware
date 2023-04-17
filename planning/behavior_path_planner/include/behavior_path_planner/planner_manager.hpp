@@ -206,7 +206,7 @@ private:
       return {};
     }
 
-    return util::getReferencePath(closest_lane, parameters_, data);
+    return utils::getReferencePath(closest_lane, parameters_, data);
   }
 
   /**

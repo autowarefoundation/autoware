@@ -156,7 +156,7 @@ bool PathShifter::generate(
 
 void PathShifter::applyLinearShifter(ShiftedPath * shifted_path) const
 {
-  const auto arclength_arr = util::calcPathArcLengthArray(reference_path_);
+  const auto arclength_arr = utils::calcPathArcLengthArray(reference_path_);
 
   shiftBaseLength(shifted_path, base_offset_);
 
@@ -190,7 +190,7 @@ void PathShifter::applyLinearShifter(ShiftedPath * shifted_path) const
 
 void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offset_back) const
 {
-  const auto arclength_arr = util::calcPathArcLengthArray(reference_path_);
+  const auto arclength_arr = utils::calcPathArcLengthArray(reference_path_);
 
   shiftBaseLength(shifted_path, base_offset_);
 
@@ -335,7 +335,7 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
 
 std::vector<double> PathShifter::calcLateralJerk() const
 {
-  const auto arclength_arr = util::calcPathArcLengthArray(reference_path_);
+  const auto arclength_arr = utils::calcPathArcLengthArray(reference_path_);
 
   constexpr double epsilon = 1.0e-8;  // to avoid 0 division
 

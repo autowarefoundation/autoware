@@ -1164,7 +1164,7 @@ void BehaviorPathPlannerNode::run()
 
   if (planner_data_->parameters.visualize_maximum_drivable_area) {
     const auto maximum_drivable_area = marker_utils::createFurthestLineStringMarkerArray(
-      util::getMaximumDrivableArea(planner_data_));
+      utils::getMaximumDrivableArea(planner_data_));
     debug_maximum_drivable_area_publisher_->publish(maximum_drivable_area);
   }
 
@@ -1351,7 +1351,7 @@ Path BehaviorPathPlannerNode::convertToPath(
     return output;
   }
 
-  output = util::toPath(*path_candidate_ptr);
+  output = utils::toPath(*path_candidate_ptr);
   // header is replaced by the input one, so it is substituted again
   output.header = planner_data->route_handler->getRouteHeader();
   output.header.stamp = this->now();
@@ -1395,7 +1395,7 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
     connected_path = modifyPathForSmoothGoalConnection(*path, planner_data);
   }
 
-  const auto resampled_path = util::resamplePathWithSpline(
+  const auto resampled_path = utils::resamplePathWithSpline(
     connected_path, planner_data->parameters.output_path_interval,
     keepInputPoints(module_status_ptr_vec));
   return std::make_shared<PathWithLaneId>(resampled_path);
@@ -1609,13 +1609,13 @@ PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
   {
     lanelet::ConstLanelet goal_lanelet;
     if (planner_data->route_handler->getGoalLanelet(&goal_lanelet)) {
-      refined_goal = util::refineGoal(goal, goal_lanelet);
+      refined_goal = utils::refineGoal(goal, goal_lanelet);
     } else {
       refined_goal = goal;
     }
   }
 
-  auto refined_path = util::refinePathForGoal(
+  auto refined_path = utils::refinePathForGoal(
     planner_data->parameters.refine_goal_search_radius_range, M_PI * 0.5, path, refined_goal,
     goal_lane_id);
   refined_path.header.frame_id = "map";

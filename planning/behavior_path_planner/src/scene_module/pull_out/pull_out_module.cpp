@@ -140,7 +140,7 @@ bool PullOutModule::isExecutionRequested() const
     return true;
   }
 
-  const bool is_stopped = util::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
+  const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
                           parameters_->th_arrived_distance;
   if (!is_stopped) {
     return false;
@@ -153,7 +153,7 @@ bool PullOutModule::isExecutionRequested() const
     tier4_autoware_utils::pose2transform(planner_data_->self_odometry->pose.pose));
 
   // Check if ego is not out of lanes
-  const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
   const auto pull_out_lanes = pull_out_utils::getPullOutLanes(planner_data_);
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
@@ -228,11 +228,11 @@ BehaviorModuleOutput PullOutModule::plan()
     path = status_.backward_path;
   }
 
-  const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
-  const auto expanded_lanes = util::expandLanelets(
+  const auto shorten_lanes = utils::cutOverlappedLanes(path, status_.lanes);
+  const auto expanded_lanes = utils::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
-  util::generateDrivableArea(
+  utils::generateDrivableArea(
     path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
 
   output.path = std::make_shared<PathWithLaneId>(path);
@@ -337,16 +337,16 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
     return output;
   }
 
-  const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
   const auto pull_out_lanes = pull_out_utils::getPullOutLanes(planner_data_);
   const auto drivable_lanes =
-    util::generateDrivableLanesWithShoulderLanes(current_lanes, pull_out_lanes);
-  const auto expanded_lanes = util::expandLanelets(
+    utils::generateDrivableLanesWithShoulderLanes(current_lanes, pull_out_lanes);
+  const auto expanded_lanes = utils::expandLanelets(
     drivable_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
 
   auto stop_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
-  util::generateDrivableArea(
+  utils::generateDrivableArea(
     stop_path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
   for (auto & p : stop_path.points) {
     p.point.longitudinal_velocity_mps = 0.0;
@@ -553,11 +553,11 @@ PathWithLaneId PullOutModule::generateStopPath() const
   path.points.push_back(toPathPointWithLaneId(moved_pose));
 
   // generate drivable area
-  const auto shorten_lanes = util::cutOverlappedLanes(path, status_.lanes);
-  const auto expanded_lanes = util::expandLanelets(
+  const auto shorten_lanes = utils::cutOverlappedLanes(path, status_.lanes);
+  const auto expanded_lanes = utils::expandLanelets(
     shorten_lanes, parameters_->drivable_area_left_bound_offset,
     parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
-  util::generateDrivableArea(
+  utils::generateDrivableArea(
     path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
 
   return path;
@@ -569,12 +569,12 @@ void PullOutModule::updatePullOutStatus()
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & goal_pose = planner_data_->route_handler->getGoalPose();
 
-  status_.current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  status_.current_lanes = utils::getExtendedCurrentLanes(planner_data_);
   status_.pull_out_lanes = pull_out_utils::getPullOutLanes(planner_data_);
 
   // combine road and shoulder lanes
   status_.lanes =
-    util::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_out_lanes);
+    utils::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_out_lanes);
 
   // search pull out start candidates backward
   std::vector<Pose> start_pose_candidates = searchPullOutStartPoses();
@@ -609,8 +609,8 @@ void PullOutModule::updatePullOutStatus()
   }
 
   // Update status
-  status_.lane_follow_lane_ids = util::getIds(status_.current_lanes);
-  status_.pull_out_lane_ids = util::getIds(status_.pull_out_lanes);
+  status_.lane_follow_lane_ids = utils::getIds(status_.current_lanes);
+  status_.pull_out_lane_ids = utils::getIds(status_.pull_out_lanes);
 }
 
 // make this class?
@@ -669,7 +669,7 @@ std::vector<Pose> PullOutModule::searchPullOutStartPoses()
       continue;
     }
 
-    if (util::checkCollisionBetweenFootprintAndObjects(
+    if (utils::checkCollisionBetweenFootprintAndObjects(
           local_vehicle_footprint, *backed_pose, *(planner_data_->dynamic_object),
           parameters_->collision_check_margin)) {
       break;  // poses behind this has a collision, so break.
@@ -718,7 +718,7 @@ void PullOutModule::checkBackFinished()
     tier4_autoware_utils::calcDistance2d(current_pose, status_.pull_out_start_pose);
 
   const bool is_near = distance < parameters_->th_arrived_distance;
-  const double ego_vel = util::l2Norm(planner_data_->self_odometry->twist.twist.linear);
+  const double ego_vel = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear);
   const bool is_stopped = ego_vel < parameters_->th_stopped_velocity;
 
   if (!status_.back_finished && is_near && is_stopped) {
@@ -749,7 +749,7 @@ bool PullOutModule::isStopped()
   }
   bool is_stopped = true;
   for (const auto & odometry : odometry_buffer_) {
-    const double ego_vel = util::l2Norm(odometry->twist.twist.linear);
+    const double ego_vel = utils::l2Norm(odometry->twist.twist.linear);
     if (ego_vel > parameters_->th_stopped_velocity) {
       is_stopped = false;
       break;

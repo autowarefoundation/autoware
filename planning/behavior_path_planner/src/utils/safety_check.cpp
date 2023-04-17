@@ -16,7 +16,7 @@
 
 #include "perception_utils/predicted_path_utils.hpp"
 
-namespace behavior_path_planner::util::safety_check
+namespace behavior_path_planner::utils::safety_check
 {
 template <typename Pythagoras>
 ProjectedDistancePoint pointToSegment(
@@ -289,4 +289,4 @@ bool isSafeInFreeSpaceCollisionCheck(
   }
   return true;
 }
-}  // namespace behavior_path_planner::util::safety_check
+}  // namespace behavior_path_planner::utils::safety_check

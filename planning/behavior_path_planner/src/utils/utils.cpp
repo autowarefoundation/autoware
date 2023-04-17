@@ -115,7 +115,7 @@ bool checkHasSameLane(
 }
 }  // namespace
 
-namespace behavior_path_planner::util
+namespace behavior_path_planner::utils
 {
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::Shape;
@@ -755,12 +755,12 @@ std::vector<DrivableLanes> cutOverlappedLanes(
 
   const std::vector<DrivableLanes> shorten_lanes{
     lanes.begin(), lanes.begin() + *overlapped_lanelet_id};
-  const auto shorten_lanelets = util::transformToLanelets(shorten_lanes);
+  const auto shorten_lanelets = utils::transformToLanelets(shorten_lanes);
 
   // create removed lanelets
   std::vector<int64_t> removed_lane_ids;
   for (size_t i = *overlapped_lanelet_id; i < lanes.size(); ++i) {
-    const auto target_lanelets = util::transformToLanelets(lanes.at(i));
+    const auto target_lanelets = utils::transformToLanelets(lanes.at(i));
     for (const auto & target_lanelet : target_lanelets) {
       // if target lane is inside of the shorten lanelets, we do not remove it
       if (checkHasSameLane(shorten_lanelets, target_lanelet)) {
@@ -817,7 +817,7 @@ void generateDrivableArea(
   std::vector<geometry_msgs::msg::Point> right_bound;
 
   // extract data
-  const auto transformed_lanes = util::transformToLanelets(lanes);
+  const auto transformed_lanes = utils::transformToLanelets(lanes);
   const auto current_pose = planner_data->self_odometry->pose.pose;
   const auto route_handler = planner_data->route_handler;
   constexpr double overlap_threshold = 0.01;
@@ -1531,7 +1531,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
 
   centerline_path->header = route_handler->getRouteHeader();
 
-  util::generateDrivableArea(*centerline_path, drivable_lanes, p.vehicle_length, planner_data);
+  utils::generateDrivableArea(*centerline_path, drivable_lanes, p.vehicle_length, planner_data);
 
   return centerline_path;
 }
@@ -1732,7 +1732,7 @@ PathWithLaneId setDecelerationVelocity(
     motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) + buffer;
   constexpr double eps{0.01};
   if (std::abs(target_velocity) < eps && stop_point_length > 0.0) {
-    const auto stop_point = util::insertStopPoint(stop_point_length, reference_path);
+    const auto stop_point = utils::insertStopPoint(stop_point_length, reference_path);
   }
 
   return reference_path;
@@ -2048,4 +2048,4 @@ std::string convertToSnakeCase(const std::string & input_str)
   }
   return output_str;
 }
-}  // namespace behavior_path_planner::util
+}  // namespace behavior_path_planner::utils

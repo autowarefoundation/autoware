@@ -165,15 +165,16 @@ ModuleStatus SideShiftModule::updateState()
   if (no_request && no_shifted_plan && no_offset_diff) {
     current_state_ = ModuleStatus::SUCCESS;
   } else {
-    const auto & current_lanes = util::getCurrentLanes(planner_data_);
+    const auto & current_lanes = utils::getCurrentLanes(planner_data_);
     const auto & current_pose = planner_data_->self_odometry->pose.pose;
     const auto & inserted_shift_line_start_pose = inserted_shift_line_.start;
     const auto & inserted_shift_line_end_pose = inserted_shift_line_.end;
     const double self_to_shift_line_start_arc_length =
-      behavior_path_planner::util::getSignedDistance(
+      behavior_path_planner::utils::getSignedDistance(
         current_pose, inserted_shift_line_start_pose, current_lanes);
-    const double self_to_shift_line_end_arc_length = behavior_path_planner::util::getSignedDistance(
-      current_pose, inserted_shift_line_end_pose, current_lanes);
+    const double self_to_shift_line_end_arc_length =
+      behavior_path_planner::utils::getSignedDistance(
+        current_pose, inserted_shift_line_end_pose, current_lanes);
     if (self_to_shift_line_start_arc_length >= 0) {
       shift_status_ = SideShiftStatus::BEFORE_SHIFT;
     } else if (self_to_shift_line_start_arc_length < 0 && self_to_shift_line_end_arc_length > 0) {
@@ -200,10 +201,10 @@ void SideShiftModule::updateData()
 
   constexpr double resample_interval = 1.0;
 #ifdef USE_OLD_ARCHITECTURE
-  reference_path_ = util::resamplePathWithSpline(centerline_path, resample_interval);
+  reference_path_ = utils::resamplePathWithSpline(centerline_path, resample_interval);
 #else
   const auto backward_extened_path = extendBackwardLength(*getPreviousModuleOutput().path);
-  reference_path_ = util::resamplePathWithSpline(backward_extened_path, resample_interval);
+  reference_path_ = utils::resamplePathWithSpline(backward_extened_path, resample_interval);
 #endif
 
   path_shifter_.setPath(reference_path_);
@@ -382,9 +383,9 @@ ShiftLine SideShiftModule::calcShiftLine() const
   const size_t nearest_idx = planner_data_->findEgoIndex(reference_path_.points);
   ShiftLine shift_line;
   shift_line.end_shift_length = requested_lateral_offset_;
-  shift_line.start_idx = util::getIdxByArclength(reference_path_, nearest_idx, dist_to_start);
+  shift_line.start_idx = utils::getIdxByArclength(reference_path_, nearest_idx, dist_to_start);
   shift_line.start = reference_path_.points.at(shift_line.start_idx).point.pose;
-  shift_line.end_idx = util::getIdxByArclength(reference_path_, nearest_idx, dist_to_end);
+  shift_line.end_idx = utils::getIdxByArclength(reference_path_, nearest_idx, dist_to_end);
   shift_line.end = reference_path_.points.at(shift_line.end_idx).point.pose;
 
   return shift_line;
@@ -414,14 +415,14 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
     *itr.first - (*itr.first < -threshold ? margin : 0.0),
     -parameters_->drivable_area_right_bound_offset);
 
-  const auto drivable_lanes = util::generateDrivableLanes(current_lanelets_);
-  const auto shorten_lanes = util::cutOverlappedLanes(path->path, drivable_lanes);
-  const auto expanded_lanes = util::expandLanelets(
+  const auto drivable_lanes = utils::generateDrivableLanes(current_lanelets_);
+  const auto shorten_lanes = utils::cutOverlappedLanes(path->path, drivable_lanes);
+  const auto expanded_lanes = utils::expandLanelets(
     shorten_lanes, left_offset, right_offset, parameters_->drivable_area_types_to_skip);
 
   {
     const auto & p = planner_data_->parameters;
-    util::generateDrivableArea(path->path, expanded_lanes, p.vehicle_length, planner_data_);
+    utils::generateDrivableArea(path->path, expanded_lanes, p.vehicle_length, planner_data_);
   }
 }
 
@@ -514,8 +515,8 @@ PathWithLaneId SideShiftModule::calcCenterLinePath(
     p.backward_path_length, longest_dist_to_shift_line, backward_length);
 
   const lanelet::ConstLanelets current_lanes =
-    util::calcLaneAroundPose(route_handler, pose, p.forward_path_length, backward_length);
-  centerline_path = util::getCenterLinePath(
+    utils::calcLaneAroundPose(route_handler, pose, p.forward_path_length, backward_length);
+  centerline_path = utils::getCenterLinePath(
     *route_handler, current_lanes, pose, backward_length, p.forward_path_length, p);
 
   centerline_path.header = route_handler->getRouteHeader();

@@ -22,7 +22,7 @@
 
 using behavior_path_planner::PathWithLaneId;
 using behavior_path_planner::Pose;
-using behavior_path_planner::util::FrenetPoint;
+using behavior_path_planner::utils::FrenetPoint;
 using geometry_msgs::msg::Point;
 
 TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLine)
@@ -33,7 +33,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLin
 
   const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     path.points, vehicle_pose, 3.0, 1.0);
-  const auto vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetPoint(
+  const auto vehicle_pose_frenet = behavior_path_planner::utils::convertToFrenetPoint(
     path.points, vehicle_pose.position, vehicle_seg_idx);
 
   EXPECT_NEAR(vehicle_pose_frenet.distance, -1.7f, 1e-3);
@@ -48,7 +48,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnDiagonalLin
 
   const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     path.points, vehicle_pose, 3.0, 1.0);
-  const auto vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetPoint(
+  const auto vehicle_pose_frenet = behavior_path_planner::utils::convertToFrenetPoint(
     path.points, vehicle_pose.position, vehicle_seg_idx);
 
   EXPECT_NEAR(vehicle_pose_frenet.distance, 0, 1e-2);
@@ -67,7 +67,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, setGoal)
   path.points.at(4).lane_ids.push_back(5);
 
   PathWithLaneId path_with_goal;
-  behavior_path_planner::util::setGoal(
+  behavior_path_planner::utils::setGoal(
     3.5, M_PI * 0.5, path, path.points.back().point.pose, 5, &path_with_goal);
 
   // Check if skipped lane ids by smooth skip connection are filled in output path.
@@ -81,7 +81,7 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, setGoal)
 TEST(BehaviorPathPlanningUtilitiesBehaviorTest, expandLanelets)
 {
   using behavior_path_planner::DrivableLanes;
-  using behavior_path_planner::util::expandLanelets;
+  using behavior_path_planner::utils::expandLanelets;
   std::vector<DrivableLanes> original_lanelets;
   {  // empty list of lanelets, empty output
     const auto expanded_lanelets = expandLanelets(original_lanelets, 0.0, 0.0);

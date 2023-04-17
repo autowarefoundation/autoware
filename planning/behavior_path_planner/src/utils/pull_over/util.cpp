@@ -77,7 +77,7 @@ PredictedObjects filterObjectsByLateralDistance(
   PredictedObjects filtered_objects;
   for (const auto & object : objects.objects) {
     const double distance =
-      util::calcLateralDistanceFromEgoToObject(ego_pose, vehicle_width, object);
+      utils::calcLateralDistanceFromEgoToObject(ego_pose, vehicle_width, object);
     if (filter_inside ? distance < distance_thresh : distance > distance_thresh) {
       filtered_objects.objects.push_back(object);
     }

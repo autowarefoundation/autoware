@@ -44,7 +44,7 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
   const auto & route_handler = planner_data_->route_handler;
   const auto & common_parameters = planner_data_->parameters;
   const auto & dynamic_objects = planner_data_->dynamic_object;
-  const auto & road_lanes = util::getExtendedCurrentLanes(planner_data_);
+  const auto & road_lanes = utils::getExtendedCurrentLanes(planner_data_);
   const auto & shoulder_lanes = getPullOutLanes(planner_data_);
   if (shoulder_lanes.empty()) {
     return boost::none;
@@ -60,7 +60,7 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
 
   // extract objects in shoulder lane for collision check
   const auto [shoulder_lane_objects, others] =
-    util::separateObjectsByLanelets(*dynamic_objects, shoulder_lanes);
+    utils::separateObjectsByLanelets(*dynamic_objects, shoulder_lanes);
 
   // get safe path
   for (auto & pull_out_path : pull_out_paths) {
@@ -91,25 +91,25 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
 
     // check lane departure
     const auto drivable_lanes =
-      util::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
-    const auto expanded_lanes = util::expandLanelets(
+      utils::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
+    const auto expanded_lanes = utils::expandLanelets(
       drivable_lanes, parameters_.drivable_area_left_bound_offset,
       parameters_.drivable_area_right_bound_offset);
     if (lane_departure_checker_->checkPathWillLeaveLane(
-          util::transformToLanelets(expanded_lanes), path_start_to_end)) {
+          utils::transformToLanelets(expanded_lanes), path_start_to_end)) {
       continue;
     }
 
     // check collision
-    if (util::checkCollisionBetweenPathFootprintsAndObjects(
+    if (utils::checkCollisionBetweenPathFootprintsAndObjects(
           vehicle_footprint_, path_start_to_end, shoulder_lane_objects,
           parameters_.collision_check_margin)) {
       continue;
     }
 
     // Generate drivable area
-    const auto shorten_lanes = util::cutOverlappedLanes(shift_path, drivable_lanes);
-    util::generateDrivableArea(
+    const auto shorten_lanes = utils::cutOverlappedLanes(shift_path, drivable_lanes);
+    utils::generateDrivableArea(
       shift_path, shorten_lanes, common_parameters.vehicle_length, planner_data_);
 
     shift_path.header = planner_data_->route_handler->getRouteHeader();
@@ -154,7 +154,7 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     // if goal is behind start pose,
     const bool goal_is_behind = arc_position_goal.length < s_start;
     const double s_end = goal_is_behind ? road_lanes_length : arc_position_goal.length;
-    PathWithLaneId road_lane_reference_path = util::resamplePathWithSpline(
+    PathWithLaneId road_lane_reference_path = utils::resamplePathWithSpline(
       route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
 
     PathShifter path_shifter{};
@@ -246,14 +246,14 @@ bool ShiftPullOut::hasEnoughDistance(
   const Pose & current_pose, const bool is_in_goal_route_section, const Pose & goal_pose)
 {
   // the goal is far so current_lanes do not include goal's lane
-  if (pull_out_total_distance > util::getDistanceToEndOfLane(current_pose, road_lanes)) {
+  if (pull_out_total_distance > utils::getDistanceToEndOfLane(current_pose, road_lanes)) {
     return false;
   }
 
   // current_lanes include goal's lane
   if (
     is_in_goal_route_section &&
-    pull_out_total_distance > util::getSignedDistance(current_pose, goal_pose, road_lanes)) {
+    pull_out_total_distance > utils::getSignedDistance(current_pose, goal_pose, road_lanes)) {
     return false;
   }
 

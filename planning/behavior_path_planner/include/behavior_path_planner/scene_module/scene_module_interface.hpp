@@ -67,7 +67,7 @@ public:
     rtc_interface_ptr_map_(rtc_interface_ptr_map)
   {
 #ifdef USE_OLD_ARCHITECTURE
-    const auto ns = std::string("~/debug/") + util::convertToSnakeCase(name);
+    const auto ns = std::string("~/debug/") + utils::convertToSnakeCase(name);
     pub_debug_marker_ = node.create_publisher<MarkerArray>(ns, 20);
 #endif
 
@@ -113,7 +113,7 @@ public:
   virtual BehaviorModuleOutput planWaitingApproval()
   {
     BehaviorModuleOutput out;
-    out.path = util::generateCenterLinePath(planner_data_);
+    out.path = utils::generateCenterLinePath(planner_data_);
     const auto candidate = planCandidate();
     path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
     return out;
@@ -299,7 +299,7 @@ protected:
   {
     std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map;
     for (const auto & rtc_type : rtc_types) {
-      const auto snake_case_name = util::convertToSnakeCase(name);
+      const auto snake_case_name = utils::convertToSnakeCase(name);
       const auto rtc_interface_name =
         rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
       rtc_interface_ptr_map.emplace(

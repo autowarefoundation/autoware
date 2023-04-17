@@ -31,7 +31,7 @@
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner::util
+namespace behavior_path_planner::utils
 {
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
@@ -92,6 +92,6 @@ std::vector<double> splineTwoPoints(
 std::vector<Pose> interpolatePose(
   const Pose & start_pose, const Pose & end_pose, const double resample_interval);
 
-}  // namespace behavior_path_planner::util
+}  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_UTILS_HPP_

@@ -381,7 +381,7 @@ bool isOnRight(const ObjectData & obj)
 bool isTargetObjectType(
   const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  const auto t = util::getHighestProbLabel(object.classification);
+  const auto t = utils::getHighestProbLabel(object.classification);
 
   if (parameters->object_parameters.count(t) == 0) {
     return false;
@@ -580,7 +580,7 @@ void generateDrivableArea(
   const std::shared_ptr<AvoidanceParameters> & parameters, const ObjectDataArray & objects,
   const double vehicle_length, const bool enable_bound_clipping, const bool disable_path_update)
 {
-  util::generateDrivableArea(path, lanes, vehicle_length, planner_data);
+  utils::generateDrivableArea(path, lanes, vehicle_length, planner_data);
   if (objects.empty() || !enable_bound_clipping) {
     return;
   }
@@ -601,7 +601,7 @@ void generateDrivableArea(
       continue;
     }
 
-    const auto t = util::getHighestProbLabel(object.object.classification);
+    const auto t = utils::getHighestProbLabel(object.object.classification);
     const auto object_parameter = parameters->object_parameters.at(t);
 
     // generate obstacle polygon
@@ -760,7 +760,7 @@ void fillObjectEnvelopePolygon(
 {
   using boost::geometry::within;
 
-  const auto t = util::getHighestProbLabel(object_data.object.classification);
+  const auto t = utils::getHighestProbLabel(object_data.object.classification);
   const auto object_parameter = parameters->object_parameters.at(t);
   const auto & envelope_buffer_margin = object_parameter.envelope_buffer_margin;
 
@@ -945,7 +945,7 @@ void filterTargetObjects(
     const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
     const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
 
-    const auto t = util::getHighestProbLabel(o.object.classification);
+    const auto t = utils::getHighestProbLabel(o.object.classification);
     const auto object_parameter = parameters->object_parameters.at(t);
 
     if (!isTargetObjectType(o.object, parameters)) {
@@ -1030,7 +1030,7 @@ void filterTargetObjects(
     // force avoidance for stopped vehicle
     {
       const auto to_traffic_light =
-        util::getDistanceToNextTrafficLight(object_pose, data.current_lanelets);
+        utils::getDistanceToNextTrafficLight(object_pose, data.current_lanelets);
 
       o.to_stop_factor_distance = std::min(to_traffic_light, o.to_stop_factor_distance);
     }

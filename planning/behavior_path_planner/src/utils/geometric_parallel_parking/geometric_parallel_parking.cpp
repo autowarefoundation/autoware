@@ -317,7 +317,7 @@ boost::optional<Pose> GeometricParallelParking::calcStartPose(
   const Pose & goal_pose, const double start_pose_offset, const double R_E_r, const bool is_forward)
 {
   // Not use shoulder lanes.
-  const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
   const auto arc_coordinates = lanelet::utils::getArcCoordinates(current_lanes, goal_pose);
 
   // todo
@@ -341,7 +341,7 @@ boost::optional<Pose> GeometricParallelParking::calcStartPose(
 PathWithLaneId GeometricParallelParking::generateStraightPath(const Pose & start_pose)
 {
   // get straight path before parking.
-  const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
   const auto start_arc_position = lanelet::utils::getArcCoordinates(current_lanes, start_pose);
 
   const Pose current_pose = planner_data_->self_odometry->pose.pose;
@@ -403,7 +403,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
     const double R_front_left =
       std::hypot(R_E_r + common_params.vehicle_width / 2, common_params.base_link2front);
     const double distance_to_left_bound =
-      util::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, arc_end_pose);
+      utils::getSignedDistanceFromShoulderLeftBoundary(shoulder_lanes, arc_end_pose);
     const double left_deviation = R_front_left - R_E_r;
     if (std::abs(distance_to_left_bound) - left_deviation < lane_departure_margin) {
       return std::vector<PathWithLaneId>{};
@@ -413,7 +413,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
       std::hypot(R_E_l + common_params.vehicle_width / 2, common_params.base_link2front);
     const double right_deviation = R_front_right - R_E_l;
     const double distance_to_right_bound =
-      util::getSignedDistanceFromRightBoundary(lanes, start_pose);
+      utils::getSignedDistanceFromRightBoundary(lanes, start_pose);
     if (distance_to_right_bound - right_deviation < lane_departure_margin) {
       return std::vector<PathWithLaneId>{};
     }

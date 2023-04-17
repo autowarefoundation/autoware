@@ -47,14 +47,14 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   // Get current lanelets
   const double forward_length = planner_data->parameters.forward_path_length;
   const double backward_length = 50.0;
-  const lanelet::ConstLanelets current_lanes = util::calcLaneAroundPose(
+  const lanelet::ConstLanelets current_lanes = utils::calcLaneAroundPose(
     planner_data->route_handler, current_pose, forward_length, backward_length);
 
   if (current_lanes.empty()) {
     return turn_signal_info.turn_signal;
   }
 
-  const PathWithLaneId extended_path = util::getCenterLinePath(
+  const PathWithLaneId extended_path = utils::getCenterLinePath(
     route_handler, current_lanes, current_pose, backward_length, forward_length,
     planner_data->parameters);
 

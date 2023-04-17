@@ -114,7 +114,7 @@ namespace behavior_path_planner::utils::lane_change
 {
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using lanelet::ArcCoordinates;
-using util::getHighestProbLabel;
+using utils::getHighestProbLabel;
 
 inline double calcLaneChangeResampleInterval(
   const double lane_changing_length, const double lane_changing_velocity)
@@ -302,7 +302,7 @@ bool getLaneChangePaths(
   const auto acceleration_resolution = std::abs(maximum_deceleration) / lane_change_sampling_num;
 
   const auto target_length =
-    util::getArcLengthToTargetLanelet(original_lanelets, target_lanelets.front(), pose);
+    utils::getArcLengthToTargetLanelet(original_lanelets, target_lanelets.front(), pose);
 
 #ifdef USE_OLD_ARCHITECTURE
   const auto num_to_preferred_lane =
@@ -316,10 +316,10 @@ bool getLaneChangePaths(
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
   const auto required_total_min_length =
-    util::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
+    utils::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
 
   const auto dist_to_end_of_current_lanes =
-    util::getDistanceToEndOfLane(pose, original_lanelets) - required_total_min_length;
+    utils::getDistanceToEndOfLane(pose, original_lanelets) - required_total_min_length;
 
   [[maybe_unused]] const auto arc_position_from_current =
     lanelet::utils::getArcCoordinates(original_lanelets, pose);
@@ -374,7 +374,7 @@ bool getLaneChangePaths(
     // lane changing start pose is at the end of prepare segment
     const auto & lane_changing_start_pose = prepare_segment.points.back().point.pose;
 
-    const auto target_length_from_lane_change_start_pose = util::getArcLengthToTargetLanelet(
+    const auto target_length_from_lane_change_start_pose = utils::getArcLengthToTargetLanelet(
       original_lanelets, target_lanelets.front(), lane_changing_start_pose);
     // In new architecture, there is a possibility that the lane change start pose is behind of the
     // target lanelet, even if the condition prepare_length > target_length is satisfied. In
@@ -523,7 +523,7 @@ bool hasEnoughLength(
 
   const double lane_change_required_length = static_cast<double>(num) * minimum_lane_change_length;
 
-  if (lane_change_total_length > util::getDistanceToEndOfLane(current_pose, current_lanes)) {
+  if (lane_change_total_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
     return false;
   }
 
@@ -531,7 +531,7 @@ bool hasEnoughLength(
   if (
     route_handler.isInGoalRouteSection(current_lanes.back()) &&
     lane_change_total_length + lane_change_required_length >
-      util::getSignedDistance(current_pose, goal_pose, current_lanes)) {
+      utils::getSignedDistance(current_pose, goal_pose, current_lanes)) {
     return false;
   }
 
@@ -542,7 +542,7 @@ bool hasEnoughLength(
 
   if (
     lane_change_total_length + lane_change_required_length >
-    util::getDistanceToEndOfLane(current_pose, target_lanes)) {
+    utils::getDistanceToEndOfLane(current_pose, target_lanes)) {
     return false;
   }
 
@@ -578,7 +578,7 @@ bool isLaneChangePathSafe(
     path.points, current_pose, common_parameter.ego_nearest_dist_threshold,
     common_parameter.ego_nearest_yaw_threshold);
 
-  const auto vehicle_predicted_path = util::convertToPredictedPath(
+  const auto vehicle_predicted_path = utils::convertToPredictedPath(
     path, current_twist, current_pose, current_seg_idx, check_end_time, time_resolution,
     prepare_duration, acceleration);
   const auto & vehicle_info = common_parameter.vehicle_info;
@@ -622,7 +622,7 @@ bool isLaneChangePathSafe(
   for (double t = check_start_time; t < check_end_time; t += time_resolution) {
     tier4_autoware_utils::Polygon2d ego_polygon;
     const auto result =
-      util::getEgoExpectedPoseAndConvertToPolygon(vehicle_predicted_path, t, vehicle_info);
+      utils::getEgoExpectedPoseAndConvertToPolygon(vehicle_predicted_path, t, vehicle_info);
     if (!result) {
       continue;
     }
@@ -634,9 +634,9 @@ bool isLaneChangePathSafe(
     const auto & obj = dynamic_objects->objects.at(i);
     auto current_debug_data = assignDebugData(obj);
     const auto predicted_paths =
-      util::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
+      utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
     for (const auto & obj_path : predicted_paths) {
-      if (!util::safety_check::isSafeInLaneletCollisionCheck(
+      if (!utils::safety_check::isSafeInLaneletCollisionCheck(
             interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
             obj, obj_path, common_parameter,
             lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
@@ -658,9 +658,9 @@ bool isLaneChangePathSafe(
     current_debug_data.second.ego_predicted_path.push_back(vehicle_predicted_path);
 
     const auto predicted_paths =
-      util::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
+      utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
 
-    if (!util::safety_check::isSafeInFreeSpaceCollisionCheck(
+    if (!utils::safety_check::isSafeInFreeSpaceCollisionCheck(
           interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare, obj,
           common_parameter, lane_change_parameter.prepare_segment_ignore_object_velocity_thresh,
           front_decel, rear_decel, current_debug_data.second)) {
@@ -713,7 +713,7 @@ PathWithLaneId getPrepareSegment(
   auto prepare_segment = original_path;
   const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     prepare_segment.points, current_pose, 3.0, 1.0);
-  util::clipPathLength(prepare_segment, current_seg_idx, prepare_length, backward_path_length);
+  utils::clipPathLength(prepare_segment, current_seg_idx, prepare_length, backward_path_length);
 
   prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
     prepare_segment.points.back().point.longitudinal_velocity_mps,
@@ -817,7 +817,7 @@ PathWithLaneId getReferencePathFromTargetLane(
   const auto lane_changing_reference_path =
     route_handler.getCenterLinePath(target_lanes, s_start, s_end);
 
-  return util::resamplePathWithSpline(
+  return utils::resamplePathWithSpline(
     lane_changing_reference_path, resample_interval, true, {0.0, lane_changing_length});
 }
 
@@ -1122,7 +1122,7 @@ std::optional<LaneChangePath> getAbortPaths(
 
   const auto ego_nearest_dist_threshold = planner_data->parameters.ego_nearest_dist_threshold;
   const auto ego_nearest_yaw_threshold = planner_data->parameters.ego_nearest_yaw_threshold;
-  const double minimum_lane_change_length = util::calcLaneChangeBuffer(common_param, 1);
+  const double minimum_lane_change_length = utils::calcLaneChangeBuffer(common_param, 1);
 
   const auto & lane_changing_path = selected_path.path;
   const auto lane_changing_end_pose_idx = std::invoke([&]() {
@@ -1151,7 +1151,7 @@ std::optional<LaneChangePath> getAbortPaths(
     size_t idx{0};
     for (idx = ego_pose_idx; idx < lane_changing_end_pose_idx; ++idx) {
       const auto dist_to_ego =
-        util::getSignedDistance(current_pose, points.at(idx).point.pose, reference_lanelets);
+        utils::getSignedDistance(current_pose, points.at(idx).point.pose, reference_lanelets);
       turning_point_dist = dist_to_ego;
       if (dist_to_ego > desired_distance) {
         break;
@@ -1263,14 +1263,14 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
                                           common_param.minimum_lane_changing_length +
                                           common_param.backward_length_buffer_for_end_of_lane;
   const auto abort_plus_lane_change_length = abort_return_dist + minimum_lane_change_length;
-  if (abort_plus_lane_change_length > util::getDistanceToEndOfLane(current_pose, current_lanes)) {
+  if (abort_plus_lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
     return false;
   }
 
   if (
     route_handler.isInGoalRouteSection(current_lanes.back()) &&
     abort_plus_lane_change_length >
-      util::getSignedDistance(current_pose, route_handler.getGoalPose(), current_lanes)) {
+      utils::getSignedDistance(current_pose, route_handler.getGoalPose(), current_lanes)) {
     return false;
   }
 
@@ -1392,7 +1392,7 @@ LaneChangeTargetObjectIndices filterObjectIndices(
 bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameter)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
-  const auto t = util::getHighestProbLabel(object.classification);
+  const auto t = utils::getHighestProbLabel(object.classification);
   const auto is_object_type =
     ((t == ObjectClassification::CAR && parameter.check_car) ||
      (t == ObjectClassification::TRUCK && parameter.check_truck) ||

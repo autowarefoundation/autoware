@@ -98,6 +98,6 @@ BehaviorModuleOutput LaneFollowingModule::getReferencePath() const
     return {};  // TODO(Horibe)
   }
 
-  return util::getReferencePath(current_lane, parameters_, planner_data_);
+  return utils::getReferencePath(current_lane, parameters_, planner_data_);
 }
 }  // namespace behavior_path_planner
