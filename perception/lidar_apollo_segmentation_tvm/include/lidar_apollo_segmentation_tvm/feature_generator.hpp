@@ -15,7 +15,6 @@
 #ifndef LIDAR_APOLLO_SEGMENTATION_TVM__FEATURE_GENERATOR_HPP_
 #define LIDAR_APOLLO_SEGMENTATION_TVM__FEATURE_GENERATOR_HPP_
 
-#include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/feature_map.hpp>
 #include <lidar_apollo_segmentation_tvm/util.hpp>
 #include <lidar_apollo_segmentation_tvm/visibility_control.hpp>
@@ -33,17 +32,15 @@ namespace perception
 {
 namespace lidar_apollo_segmentation_tvm
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::float32_t;
 
 /// \brief A FeatureMap generator based on channel feature information.
 class LIDAR_APOLLO_SEGMENTATION_TVM_LOCAL FeatureGenerator
 {
 private:
-  const bool8_t use_intensity_feature_;
-  const bool8_t use_constant_feature_;
-  const float32_t min_height_;
-  const float32_t max_height_;
+  const bool use_intensity_feature_;
+  const bool use_constant_feature_;
+  const float min_height_;
+  const float max_height_;
   std::shared_ptr<FeatureMapInterface> map_ptr_;
 
 public:
@@ -56,8 +53,8 @@ public:
   /// \param[in] min_height The minimum height.
   /// \param[in] max_height The maximum height.
   explicit FeatureGenerator(
-    int32_t width, int32_t height, int32_t range, bool8_t use_intensity_feature,
-    bool8_t use_constant_feature, float32_t min_height, float32_t max_height);
+    int32_t width, int32_t height, int32_t range, bool use_intensity_feature,
+    bool use_constant_feature, float min_height, float max_height);
 
   /// \brief Generate a FeatureMap based on the configured features of this object.
   /// \param[in] pc_ptr Pointcloud used to populate the generated FeatureMap.

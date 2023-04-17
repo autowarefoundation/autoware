@@ -15,20 +15,17 @@
 #ifndef LIDAR_APOLLO_SEGMENTATION_TVM__LOG_TABLE_HPP_
 #define LIDAR_APOLLO_SEGMENTATION_TVM__LOG_TABLE_HPP_
 
-#include <common/types.hpp>
-
 namespace autoware
 {
 namespace perception
 {
 namespace lidar_apollo_segmentation_tvm
 {
-using autoware::common::types::float32_t;
 
 /// \brief Use a lookup table to compute the natural logarithm of 1+num.
 /// \param[in] num
 /// \return ln(1+num)
-float32_t calcApproximateLog(float32_t num);
+float calcApproximateLog(float num);
 }  // namespace lidar_apollo_segmentation_tvm
 }  // namespace perception
 }  // namespace autoware

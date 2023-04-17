@@ -15,7 +15,6 @@
 #ifndef LIDAR_APOLLO_SEGMENTATION_TVM__CLUSTER2D_HPP_
 #define LIDAR_APOLLO_SEGMENTATION_TVM__CLUSTER2D_HPP_
 
-#include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/disjoint_set.hpp>
 #include <lidar_apollo_segmentation_tvm/util.hpp>
 #include <lidar_apollo_segmentation_tvm/visibility_control.hpp>
@@ -28,6 +27,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -37,9 +37,6 @@ namespace perception
 {
 namespace lidar_apollo_segmentation_tvm
 {
-using autoware::common::types::bool8_t;
-using autoware::common::types::char8_t;
-using autoware::common::types::float32_t;
 
 /// \brief Internal obstacle classification categories.
 enum class MetaType {
@@ -56,11 +53,11 @@ struct Obstacle
 {
   std::vector<int32_t> grids;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr;
-  float32_t score;
-  float32_t height;
-  float32_t heading;
+  float score;
+  float height;
+  float heading;
   MetaType meta_type;
-  std::vector<float32_t> meta_type_probs;
+  std::vector<float> meta_type_probs;
 
   Obstacle() : score(0.0), height(-5.0), heading(0.0), meta_type(MetaType::META_UNKNOWN)
   {
@@ -78,7 +75,7 @@ public:
   /// \param[in] rows The number of rows in the cluster.
   /// \param[in] cols The number of columns in the cluster.
   /// \param[in] range Scaling factor.
-  explicit Cluster2D(int32_t rows, int32_t cols, float32_t range);
+  explicit Cluster2D(int32_t rows, int32_t cols, float range);
 
   /// \brief Construct a directed graph and search the connected components for candidate object
   ///        clusters.
@@ -88,17 +85,17 @@ public:
   /// \param[in] objectness_thresh Threshold for filtering out non-object cells.
   /// \param[in] use_all_grids_for_clustering
   void cluster(
-    const float32_t * inferred_data, const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr,
-    const pcl::PointIndices & valid_indices, float32_t objectness_thresh,
-    bool8_t use_all_grids_for_clustering);
+    const float * inferred_data, const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr,
+    const pcl::PointIndices & valid_indices, float objectness_thresh,
+    bool use_all_grids_for_clustering);
 
   /// \brief Populate the fields of obstacles_ elements.
   /// \param[in] inferred_data Prediction information from the neural network inference.
-  void filter(const float32_t * inferred_data);
+  void filter(const float * inferred_data);
 
   /// \brief Assign a classification type to the obstacles_ elements.
   /// \param[in] inferred_data Prediction information from the neural network inference.
-  void classify(const float32_t * inferred_data);
+  void classify(const float * inferred_data);
 
   /// \brief Remove the candidate clusters that don't meet the parameters' requirements.
   /// \param[in] confidence_thresh The detection confidence score threshold.
@@ -107,7 +104,7 @@ public:
   /// \param[in] min_pts_num The candidate clusters with less than min_pts_num points are removed.
   /// \return The detected objects.
   std::shared_ptr<tier4_perception_msgs::msg::DetectedObjectsWithFeature> getObjects(
-    float32_t confidence_thresh, float32_t height_thresh, int32_t min_pts_num);
+    float confidence_thresh, float height_thresh, int32_t min_pts_num);
 
   /// \brief Transform an obstacle from the internal representation to the external one.
   /// \param[in] in_obstacle
@@ -119,10 +116,10 @@ private:
   const int32_t rows_;
   const int32_t cols_;
   const int32_t siz_;
-  const float32_t range_;
-  const float32_t scale_;
-  const float32_t inv_res_x_;
-  const float32_t inv_res_y_;
+  const float range_;
+  const float scale_;
+  const float inv_res_x_;
+  const float inv_res_y_;
   std::vector<int32_t> point2grid_;
   std::vector<Obstacle> obstacles_;
   std::vector<int32_t> id_img_;
@@ -135,10 +132,10 @@ private:
   {
     Node * center_node;
     Node * parent;
-    char8_t node_rank;
-    char8_t traversed;
-    bool8_t is_center;
-    bool8_t is_object;
+    int8_t node_rank;
+    int8_t traversed;
+    bool is_center;
+    bool is_object;
     int32_t point_num;
     int32_t obstacle_id;
 

@@ -23,6 +23,7 @@
 #include <tvm_vendor/tvm/runtime/packed_func.h>
 #include <tvm_vendor/tvm/runtime/registry.h>
 
+#include <cstdint>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -200,7 +201,7 @@ typedef struct
 typedef struct
 {
   // Network info
-  std::array<char, 3> modelzoo_version;
+  std::array<int8_t, 3> modelzoo_version;
   std::string network_name;
   std::string network_backend;
 
@@ -320,7 +321,7 @@ public:
    * @param[in] version_from Earliest supported model version.
    * @return The version status.
    */
-  Version version_check(const std::array<char, 3> & version_from) const
+  Version version_check(const std::array<int8_t, 3> & version_from) const
   {
     auto x{config_.modelzoo_version[0]};
     auto y{config_.modelzoo_version[1]};
@@ -344,7 +345,7 @@ private:
   tvm::runtime::PackedFunc execute;
   tvm::runtime::PackedFunc get_output;
   // Latest supported model version.
-  const std::array<char, 3> version_up_to{2, 1, 0};
+  const std::array<int8_t, 3> version_up_to{2, 1, 0};
 };
 
 template <

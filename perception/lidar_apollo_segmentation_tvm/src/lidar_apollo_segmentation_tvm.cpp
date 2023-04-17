@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <baidu_cnn/inference_engine_tvm_config.hpp>
-#include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/feature_map.hpp>
 #include <lidar_apollo_segmentation_tvm/lidar_apollo_segmentation_tvm.hpp>
 #include <tvm_utility/pipeline.hpp>
@@ -22,8 +21,6 @@
 #include <string>
 #include <vector>
 
-using autoware::common::types::bool8_t;
-using autoware::common::types::float32_t;
 using model_zoo::perception::lidar_obstacle_detection::baidu_cnn::onnx_bcnn::config;
 
 namespace autoware
@@ -34,8 +31,7 @@ namespace lidar_apollo_segmentation_tvm
 {
 ApolloLidarSegmentationPreProcessor::ApolloLidarSegmentationPreProcessor(
   const tvm_utility::pipeline::InferenceEngineTVMConfig & config, int32_t range,
-  bool8_t use_intensity_feature, bool8_t use_constant_feature, float32_t min_height,
-  float32_t max_height)
+  bool use_intensity_feature, bool use_constant_feature, float min_height, float max_height)
 : input_channels(config.network_inputs[0].node_shape[1]),
   input_width(config.network_inputs[0].node_shape[2]),
   input_height(config.network_inputs[0].node_shape[3]),
@@ -75,9 +71,8 @@ TVMArrayContainerVector ApolloLidarSegmentationPreProcessor::schedule(
 
 ApolloLidarSegmentationPostProcessor::ApolloLidarSegmentationPostProcessor(
   const tvm_utility::pipeline::InferenceEngineTVMConfig & config,
-  const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr, int32_t range,
-  float32_t objectness_thresh, float32_t score_threshold, float32_t height_thresh,
-  int32_t min_pts_num)
+  const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr, int32_t range, float objectness_thresh,
+  float score_threshold, float height_thresh, int32_t min_pts_num)
 : output_channels(config.network_outputs[0].node_shape[1]),
   output_width(config.network_outputs[0].node_shape[2]),
   output_height(config.network_outputs[0].node_shape[3]),
@@ -97,7 +92,7 @@ std::shared_ptr<DetectedObjectsWithFeature> ApolloLidarSegmentationPostProcessor
   pcl::PointIndices valid_idx;
   valid_idx.indices.resize(pc_ptr_->size());
   std::iota(valid_idx.indices.begin(), valid_idx.indices.end(), 0);
-  std::vector<float32_t> feature(output_channels * output_width * output_height, 0);
+  std::vector<float> feature(output_channels * output_width * output_height, 0);
   TVMArrayCopyToBytes(
     input[0].getArray(), feature.data(),
     output_channels * output_width * output_height * output_datatype_bytes);
@@ -109,9 +104,9 @@ std::shared_ptr<DetectedObjectsWithFeature> ApolloLidarSegmentationPostProcessor
 }
 
 ApolloLidarSegmentation::ApolloLidarSegmentation(
-  int32_t range, float32_t score_threshold, bool8_t use_intensity_feature,
-  bool8_t use_constant_feature, float32_t z_offset, float32_t min_height, float32_t max_height,
-  float32_t objectness_thresh, int32_t min_pts_num, float32_t height_thresh)
+  int32_t range, float score_threshold, bool use_intensity_feature, bool use_constant_feature,
+  float z_offset, float min_height, float max_height, float objectness_thresh, int32_t min_pts_num,
+  float height_thresh)
 : range_(range),
   score_threshold_(score_threshold),
   z_offset_(z_offset),
@@ -132,7 +127,7 @@ ApolloLidarSegmentation::ApolloLidarSegmentation(
 
 void ApolloLidarSegmentation::transformCloud(
   const sensor_msgs::msg::PointCloud2 & input, sensor_msgs::msg::PointCloud2 & transformed_cloud,
-  float32_t z_offset)
+  float z_offset)
 {
   if (target_frame_ == input.header.frame_id && z_offset == 0) {
     transformed_cloud = input;
@@ -149,7 +144,7 @@ void ApolloLidarSegmentation::transformCloud(
       transform_stamped =
         tf_buffer_->lookupTransform(target_frame_, input.header.frame_id, time_point);
       Eigen::Matrix4f affine_matrix =
-        tf2::transformToEigen(transform_stamped.transform).matrix().cast<float32_t>();
+        tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
       pcl::transformPointCloud(in_cluster, transformed_cloud_cluster, affine_matrix);
       transformed_cloud_cluster.header.frame_id = target_frame_;
     } else {

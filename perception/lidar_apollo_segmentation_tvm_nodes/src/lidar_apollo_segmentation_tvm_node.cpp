@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/lidar_apollo_segmentation_tvm.hpp>
 #include <lidar_apollo_segmentation_tvm_nodes/lidar_apollo_segmentation_tvm_node.hpp>
 #include <rclcpp/logging.hpp>
@@ -20,9 +19,6 @@
 
 #include <memory>
 
-using autoware::common::types::bool8_t;
-using autoware::common::types::float32_t;
-using autoware::common::types::float64_t;
 using autoware::perception::lidar_apollo_segmentation_tvm::ApolloLidarSegmentation;
 
 namespace autoware
@@ -41,15 +37,15 @@ ApolloLidarSegmentationNode::ApolloLidarSegmentationNode(const rclcpp::NodeOptio
     "objects_out", rclcpp::QoS{1})},
   m_detector_ptr{std::make_shared<lidar_apollo_segmentation_tvm::ApolloLidarSegmentation>(
     declare_parameter("range", rclcpp::ParameterValue{70}).get<int32_t>(),
-    declare_parameter("score_threshold", rclcpp::ParameterValue{0.8}).get<float32_t>(),
-    declare_parameter("use_intensity_feature", rclcpp::ParameterValue{true}).get<bool8_t>(),
-    declare_parameter("use_constant_feature", rclcpp::ParameterValue{false}).get<bool8_t>(),
-    declare_parameter("z_offset", rclcpp::ParameterValue{0.0}).get<float32_t>(),
-    declare_parameter("min_height", rclcpp::ParameterValue{-5.0}).get<float32_t>(),
-    declare_parameter("max_height", rclcpp::ParameterValue{5.0}).get<float32_t>(),
-    declare_parameter("objectness_thresh", rclcpp::ParameterValue{0.5}).get<float32_t>(),
+    declare_parameter("score_threshold", rclcpp::ParameterValue{0.8}).get<float>(),
+    declare_parameter("use_intensity_feature", rclcpp::ParameterValue{true}).get<bool>(),
+    declare_parameter("use_constant_feature", rclcpp::ParameterValue{false}).get<bool>(),
+    declare_parameter("z_offset", rclcpp::ParameterValue{0.0}).get<float>(),
+    declare_parameter("min_height", rclcpp::ParameterValue{-5.0}).get<float>(),
+    declare_parameter("max_height", rclcpp::ParameterValue{5.0}).get<float>(),
+    declare_parameter("objectness_thresh", rclcpp::ParameterValue{0.5}).get<float>(),
     declare_parameter("min_pts_num", rclcpp::ParameterValue{3}).get<int32_t>(),
-    declare_parameter("height_thresh", rclcpp::ParameterValue{0.5}).get<float32_t>())}
+    declare_parameter("height_thresh", rclcpp::ParameterValue{0.5}).get<float>())}
 {
   // Log unexpected versions of the neural network.
   auto version_status = m_detector_ptr->version_check();

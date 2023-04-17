@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <common/types.hpp>
 #include <lidar_apollo_segmentation_tvm/cluster2d.hpp>
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
@@ -33,8 +32,6 @@
 #include <vector>
 
 using Point = geometry_msgs::msg::Point32;
-using autoware::common::types::float32_t;
-using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -49,14 +46,14 @@ geometry_msgs::msg::Quaternion getQuaternionFromRPY(const double r, const double
   return tf2::toMsg(q);
 }
 
-Cluster2D::Cluster2D(const int32_t rows, const int32_t cols, const float32_t range)
+Cluster2D::Cluster2D(const int32_t rows, const int32_t cols, const float range)
 : rows_(rows),
   cols_(cols),
   siz_(rows * cols),
   range_(range),
-  scale_(0.5f * static_cast<float32_t>(rows) / range),
-  inv_res_x_(0.5f * static_cast<float32_t>(cols) / range),
-  inv_res_y_(0.5f * static_cast<float32_t>(rows) / range)
+  scale_(0.5f * static_cast<float>(rows) / range),
+  inv_res_x_(0.5f * static_cast<float>(cols) / range),
+  inv_res_y_(0.5f * static_cast<float>(rows) / range)
 {
   point2grid_.clear();
   id_img_.assign(siz_, -1);
@@ -88,13 +85,13 @@ void Cluster2D::traverse(Node * x) const
 }
 
 void Cluster2D::cluster(
-  const float32_t * inferred_data, const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr,
-  const pcl::PointIndices & valid_indices, float32_t objectness_thresh,
+  const float * inferred_data, const pcl::PointCloud<pcl::PointXYZI>::ConstPtr & pc_ptr,
+  const pcl::PointIndices & valid_indices, float objectness_thresh,
   bool use_all_grids_for_clustering)
 {
-  const float32_t * category_pt_data = inferred_data;
-  const float32_t * instance_pt_x_data = inferred_data + siz_;
-  const float32_t * instance_pt_y_data = inferred_data + siz_ * 2;
+  const float * category_pt_data = inferred_data;
+  const float * instance_pt_x_data = inferred_data + siz_;
+  const float * instance_pt_y_data = inferred_data + siz_ * 2;
 
   pc_ptr_ = pc_ptr;
 
@@ -185,35 +182,35 @@ void Cluster2D::cluster(
   classify(inferred_data);
 }
 
-void Cluster2D::filter(const float32_t * inferred_data)
+void Cluster2D::filter(const float * inferred_data)
 {
-  const float32_t * confidence_pt_data = inferred_data + siz_ * 3;
-  const float32_t * heading_pt_x_data = inferred_data + siz_ * 9;
-  const float32_t * heading_pt_y_data = inferred_data + siz_ * 10;
-  const float32_t * height_pt_data = inferred_data + siz_ * 11;
+  const float * confidence_pt_data = inferred_data + siz_ * 3;
+  const float * heading_pt_x_data = inferred_data + siz_ * 9;
+  const float * heading_pt_y_data = inferred_data + siz_ * 10;
+  const float * height_pt_data = inferred_data + siz_ * 11;
 
   for (size_t obstacle_id = 0; obstacle_id < obstacles_.size(); obstacle_id++) {
     Obstacle * obs = &obstacles_[obstacle_id];
-    float64_t score = 0.0;
-    float64_t height = 0.0;
-    float64_t vec_x = 0.0;
-    float64_t vec_y = 0.0;
+    double score = 0.0;
+    double height = 0.0;
+    double vec_x = 0.0;
+    double vec_y = 0.0;
     for (int32_t grid : obs->grids) {
-      score += static_cast<float64_t>(confidence_pt_data[grid]);
-      height += static_cast<float64_t>(height_pt_data[grid]);
+      score += static_cast<double>(confidence_pt_data[grid]);
+      height += static_cast<double>(height_pt_data[grid]);
       vec_x += heading_pt_x_data[grid];
       vec_y += heading_pt_y_data[grid];
     }
-    obs->score = static_cast<float32_t>(score / static_cast<float64_t>(obs->grids.size()));
-    obs->height = static_cast<float32_t>(height / static_cast<float64_t>(obs->grids.size()));
-    obs->heading = static_cast<float32_t>(std::atan2(vec_y, vec_x) * 0.5);
+    obs->score = static_cast<float>(score / static_cast<double>(obs->grids.size()));
+    obs->height = static_cast<float>(height / static_cast<double>(obs->grids.size()));
+    obs->heading = static_cast<float>(std::atan2(vec_y, vec_x) * 0.5);
     obs->cloud_ptr.reset(new pcl::PointCloud<pcl::PointXYZI>);
   }
 }
 
-void Cluster2D::classify(const float32_t * inferred_data)
+void Cluster2D::classify(const float * inferred_data)
 {
-  const float32_t * classify_pt_data = inferred_data + siz_ * 4;
+  const float * classify_pt_data = inferred_data + siz_ * 4;
   int num_classes = static_cast<int>(MetaType::MAX_META_TYPE);
   for (size_t obs_id = 0; obs_id < obstacles_.size(); obs_id++) {
     Obstacle * obs = &obstacles_[obs_id];
@@ -226,7 +223,7 @@ void Cluster2D::classify(const float32_t * inferred_data)
     }
     int meta_type_id = 0;
     for (int k = 0; k < num_classes; k++) {
-      obs->meta_type_probs[k] /= static_cast<float32_t>(obs->grids.size());
+      obs->meta_type_probs[k] /= static_cast<float>(obs->grids.size());
       if (obs->meta_type_probs[k] > obs->meta_type_probs[meta_type_id]) {
         meta_type_id = k;
       }
@@ -325,7 +322,7 @@ tier4_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToObjec
 }
 
 std::shared_ptr<tier4_perception_msgs::msg::DetectedObjectsWithFeature> Cluster2D::getObjects(
-  const float32_t confidence_thresh, const float32_t height_thresh, const int32_t min_pts_num)
+  const float confidence_thresh, const float height_thresh, const int32_t min_pts_num)
 {
   auto object_array = std::make_shared<tier4_perception_msgs::msg::DetectedObjectsWithFeature>();
 

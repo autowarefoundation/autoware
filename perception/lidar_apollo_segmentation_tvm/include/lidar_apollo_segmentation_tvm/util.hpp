@@ -15,8 +15,6 @@
 #ifndef LIDAR_APOLLO_SEGMENTATION_TVM__UTIL_HPP_
 #define LIDAR_APOLLO_SEGMENTATION_TVM__UTIL_HPP_
 
-#include <common/types.hpp>
-
 #include <cmath>
 #include <string>
 
@@ -26,14 +24,13 @@ namespace perception
 {
 namespace lidar_apollo_segmentation_tvm
 {
-using autoware::common::types::float32_t;
 
 /// \brief Project a point from a pointcloud to a 2D map.
 /// \param[in] val Coordinate of the point in the pointcloud.
 /// \param[in] ori Diameter of area containing the pointcloud.
 /// \param[in] scale Scaling factor from pointcloud size to grid size.
 /// \return The grid in which the point is.
-inline int32_t F2I(float32_t val, float32_t ori, float32_t scale)
+inline int32_t F2I(float val, float ori, float scale)
 {
   return static_cast<int32_t>(std::floor((ori - val) * scale));
 }
@@ -43,9 +40,9 @@ inline int32_t F2I(float32_t val, float32_t ori, float32_t scale)
 /// \param[in] in_range Range of the pointcloud.
 /// \param[in] out_size Size of the grid.
 /// \return The distance to the point in pixel scale.
-inline int32_t Pc2Pixel(float32_t in_pc, float32_t in_range, float32_t out_size)
+inline int32_t Pc2Pixel(float in_pc, float in_range, float out_size)
 {
-  float32_t inv_res = 0.5f * out_size / in_range;
+  float inv_res = 0.5f * out_size / in_range;
   return static_cast<int32_t>(std::floor((in_range - in_pc) * inv_res));
 }
 
@@ -54,10 +51,10 @@ inline int32_t Pc2Pixel(float32_t in_pc, float32_t in_range, float32_t out_size)
 /// \param[in] in_size Size of the grid.
 /// \param[in] out_range Range of the pointcloud.
 /// \return The distance to the cell in pointcloud scale.
-inline float32_t Pixel2Pc(int32_t in_pixel, float32_t in_size, float32_t out_range)
+inline float Pixel2Pc(int32_t in_pixel, float in_size, float out_range)
 {
-  float32_t res = 2.0f * out_range / in_size;
-  return out_range - (static_cast<float32_t>(in_pixel) + 0.5f) * res;
+  float res = 2.0f * out_range / in_size;
+  return out_range - (static_cast<float>(in_pixel) + 0.5f) * res;
 }
 }  // namespace lidar_apollo_segmentation_tvm
 }  // namespace perception

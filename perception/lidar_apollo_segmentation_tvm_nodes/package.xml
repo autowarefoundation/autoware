@@ -13,7 +13,6 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_auto_common</depend>
   <depend>lidar_apollo_segmentation_tvm</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

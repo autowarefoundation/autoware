@@ -13,7 +13,6 @@
   <build_depend>autoware_cmake</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
 
-  <depend>autoware_auto_common</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>pcl_conversions</depend>
