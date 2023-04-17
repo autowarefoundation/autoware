@@ -70,7 +70,7 @@ repositories:
   # sensor_kit
   sensor_kit/logiee-s-tc_sensor_kit_launch:
     type: git
-    url: https://github.com/tier4-2023-team2/logiee-s-tc_sensor_kit_launch.git
+    url: git@github.com:tier4-2023-team2/logiee-s-tc_sensor_kit_launch.git
     version: main
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
@@ -79,7 +79,7 @@ repositories:
   # vehicle
   vehicle/logiee-s-tc_launch:
     type: git
-    url: https://github.com/tier4-2023-team2/logiee-s-tc_launch.git
+    ur;: git@github.com:tier4-2023-team2/logiee-s-tc_launch.git
     version: main
   vehicle/external/pacmod_interface:
     type: git
@@ -87,7 +87,7 @@ repositories:
     version: main
   vehicle/external/jw_interface:
     type: git 
-    url: https://github.com/tier4/jw_interface.git
+    url: git@github.com:tier4/jw_interface.git
     version: tier4/universe
   # param
   param/autoware_individual_params:
