@@ -31,8 +31,7 @@ RoutingNode::RoutingNode(const rclcpp::NodeOptions & options) : Node("routing", 
   adaptor.init_sub(sub_route_, this, &RoutingNode::on_route);
   adaptor.init_cli(cli_clear_route_, group_cli_);
   adaptor.init_srv(srv_clear_route_, this, &RoutingNode::on_clear_route);
-  adaptor.init_cli(cli_set_route_, group_cli_);
-  adaptor.init_srv(srv_set_route_, this, &RoutingNode::on_set_route);
+  adaptor.relay_service(cli_set_route_, srv_set_route_, group_cli_);
   adaptor.relay_service(cli_set_route_points_, srv_set_route_points_, group_cli_);
 
   adaptor.init_cli(cli_operation_mode_, group_cli_);
@@ -80,17 +79,6 @@ void RoutingNode::on_clear_route(
 {
   change_stop_mode();
   *res = *cli_clear_route_->call(req);
-}
-
-void RoutingNode::on_set_route(
-  const autoware_ad_api::routing::SetRoute::Service::Request::SharedPtr req,
-  const autoware_ad_api::routing::SetRoute::Service::Response::SharedPtr res)
-{
-  const auto inner_req = std::make_shared<planning_interface::SetRoute::Service::Request>();
-  *inner_req = conversion::convert_set_route(*req);
-
-  const auto inner_res = cli_set_route_->call(inner_req);
-  component_interface_utils::status::copy(inner_res, res);  // NOLINT cpplint false positive
 }
 
 }  // namespace default_ad_api

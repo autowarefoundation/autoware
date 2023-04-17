@@ -19,12 +19,10 @@
 namespace
 {
 
-using ApiPrimitive = autoware_adapi_v1_msgs::msg::RoutePrimitive;
-using LaneletPrimitive = autoware_planning_msgs::msg::LaneletPrimitive;
-using HadPrimitive = autoware_planning_msgs::msg::LaneletPrimitive;
-using ApiSegment = autoware_adapi_v1_msgs::msg::RouteSegment;
-using MapSegment = autoware_planning_msgs::msg::LaneletSegment;
-using HadSegment = autoware_planning_msgs::msg::LaneletSegment;
+using autoware_adapi_v1_msgs::msg::RoutePrimitive;
+using autoware_adapi_v1_msgs::msg::RouteSegment;
+using autoware_planning_msgs::msg::LaneletPrimitive;
+using autoware_planning_msgs::msg::LaneletSegment;
 
 template <class RetT, class ArgT>
 RetT convert(const ArgT & arg);
@@ -41,45 +39,27 @@ std::vector<RetT> convert_vector(const std::vector<ArgT> & args)
 }
 
 template <>
-ApiPrimitive convert(const HadPrimitive & had)
+RoutePrimitive convert(const LaneletPrimitive & in)
 {
-  ApiPrimitive api;
-  api.id = had.id;
-  api.type = had.primitive_type;
+  RoutePrimitive api;
+  api.id = in.id;
+  api.type = in.primitive_type;
   return api;
 }
 
 template <>
-LaneletPrimitive convert(const ApiPrimitive & api)
+RouteSegment convert(const LaneletSegment & in)
 {
-  LaneletPrimitive map;
-  map.id = api.id;
-  map.primitive_type = api.type;
-  return map;
-}
-
-template <>
-ApiSegment convert(const HadSegment & had)
-{
-  ApiSegment api;
-  api.alternatives = convert_vector<ApiPrimitive>(had.primitives);
+  RouteSegment api;
+  api.alternatives = convert_vector<RoutePrimitive>(in.primitives);
   for (auto iter = api.alternatives.begin(); iter != api.alternatives.end(); ++iter) {
-    if (iter->id == had.preferred_primitive.id) {
+    if (iter->id == in.preferred_primitive.id) {
       api.preferred = *iter;
       api.alternatives.erase(iter);
       break;
     }
   }
   return api;
-}
-
-template <>
-MapSegment convert(const ApiSegment & api)
-{
-  MapSegment map;
-  map.preferred_primitive = convert<LaneletPrimitive>(api.preferred);
-  map.primitives = convert_vector<LaneletPrimitive>(api.alternatives);
-  return map;
 }
 
 }  // namespace
@@ -99,21 +79,12 @@ ExternalRoute convert_route(const InternalRoute & internal)
   autoware_adapi_v1_msgs::msg::RouteData data;
   data.start = internal.start_pose;
   data.goal = internal.goal_pose;
-  data.segments = convert_vector<ApiSegment>(internal.segments);
+  data.segments = convert_vector<RouteSegment>(internal.segments);
 
   ExternalRoute external;
   external.header = internal.header;
   external.data.push_back(data);
   return external;
-}
-
-InternalSetRoute convert_set_route(const ExternalSetRoute & external)
-{
-  InternalSetRoute internal;
-  internal.header = external.header;
-  internal.goal = external.goal;
-  internal.segments = convert_vector<MapSegment>(external.segments);
-  return internal;
 }
 
 }  // namespace default_ad_api::conversion

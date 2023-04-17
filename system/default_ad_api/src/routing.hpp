@@ -58,9 +58,6 @@ private:
   void on_clear_route(
     const autoware_ad_api::routing::ClearRoute::Service::Request::SharedPtr req,
     const autoware_ad_api::routing::ClearRoute::Service::Response::SharedPtr res);
-  void on_set_route(
-    const autoware_ad_api::routing::SetRoute::Service::Request::SharedPtr req,
-    const autoware_ad_api::routing::SetRoute::Service::Response::SharedPtr res);
 };
 
 }  // namespace default_ad_api

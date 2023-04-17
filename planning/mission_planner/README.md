@@ -29,9 +29,9 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 | ------------------------------------------------ | ----------------------------------------- | ------------------------------------------- |
 | `/planning/mission_planning/clear_route`         | autoware_adapi_v1_msgs/srv/ClearRoute     | route clear request                         |
 | `/planning/mission_planning/set_route_points`    | autoware_adapi_v1_msgs/srv/SetRoutePoints | route request with pose waypoints           |
-| `/planning/mission_planning/set_route`           | autoware_planning_msgs/srv/SetRoute       | route request with lanelet waypoints        |
+| `/planning/mission_planning/set_route`           | autoware_adapi_v1_msgs/srv/SetRoute       | route request with lanelet waypoints        |
 | `/planning/mission_planning/change_route_points` | autoware_adapi_v1_msgs/srv/SetRoutePoints | route change request with pose waypoints    |
-| `/planning/mission_planning/change_route`        | autoware_planning_msgs/srv/SetRoute       | route change request with lanelet waypoints |
+| `/planning/mission_planning/change_route`        | autoware_adapi_v1_msgs/srv/SetRoute       | route change request with lanelet waypoints |
 
 ### Subscriptions
 
