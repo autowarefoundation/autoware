@@ -54,8 +54,6 @@ AvoidanceByLCModule::AvoidanceByLCModule(
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
 {
-  steering_factor_interface_ptr_ =
-    std::make_unique<SteeringFactorInterface>(&node, "avoidance_by_lane_change");
 }
 
 void AvoidanceByLCModule::processOnEntry()

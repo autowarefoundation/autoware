@@ -40,8 +40,6 @@ ExternalRequestLaneChangeModule::ExternalRequestLaneChangeModule(
   parameters_{std::move(parameters)},
   direction_{direction}
 {
-  steering_factor_interface_ptr_ =
-    std::make_unique<SteeringFactorInterface>(&node, utils::convertToSnakeCase(name));
 }
 
 void ExternalRequestLaneChangeModule::processOnEntry()

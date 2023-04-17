@@ -41,9 +41,6 @@ LaneChangeModule::LaneChangeModule(
   const std::string & name, rclcpp::Node & node, std::shared_ptr<LaneChangeParameters> parameters)
 : SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {"left", "right"})},
   parameters_{std::move(parameters)}
-{
-  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "lane_change");
-}
 #else
 LaneChangeModule::LaneChangeModule(
   const std::string & name, rclcpp::Node & node,
@@ -54,10 +51,9 @@ LaneChangeModule::LaneChangeModule(
   parameters_{parameters},
   direction_{direction},
   type_{type}
-{
-  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, name);
-}
 #endif
+{
+}
 
 void LaneChangeModule::processOnEntry()
 {

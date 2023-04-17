@@ -31,9 +31,6 @@ LaneFollowingModule::LaneFollowingModule(
 : SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
 {
   initParam();
-  // TODO(murooka) The following is temporary implementation for new architecture's refactoring
-  steering_factor_interface_ptr_ =
-    std::make_unique<SteeringFactorInterface>(&node, "lane_following");
 }
 
 void LaneFollowingModule::initParam()

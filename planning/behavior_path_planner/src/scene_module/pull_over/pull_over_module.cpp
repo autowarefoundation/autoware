@@ -65,8 +65,6 @@ PullOverModule::PullOverModule(
   vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
 {
 #endif
-  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "pull_over");
-
   LaneDepartureChecker lane_departure_checker{};
   lane_departure_checker.setVehicleInfo(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
 
