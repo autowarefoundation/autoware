@@ -101,8 +101,8 @@ perception/ground_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp s
 perception/heatmap_visualizer/** kotaro.uetake@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/image_projection_based_fusion/** yukihiro.saito@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
-perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com @autowarefoundation/autoware-global-codeowners
+perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_centerpoint/** kenzo.lobos@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_centerpoint_tvm/** carl.liu@autocore.ai xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/map_based_prediction/** shunsuke.miura@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -160,10 +160,10 @@ simulator/fault_injection/** keisuke.shima@tier4.jp @autowarefoundation/autoware
 simulator/simple_planning_simulator/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/bluetooth_monitor/** fumihito.ito@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/component_state_monitor/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
-system/default_ad_api/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
-system/default_ad_api_helpers/ad_api_adaptors/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
-system/default_ad_api_helpers/ad_api_visualizers/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
-system/default_ad_api_helpers/automatic_pose_initializer/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+system/default_ad_api/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+system/default_ad_api_helpers/ad_api_adaptors/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+system/default_ad_api_helpers/ad_api_visualizers/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+system/default_ad_api_helpers/automatic_pose_initializer/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/dummy_diag_publisher/** akihiro.sakurai@tier4.jp fumihito.ito@tier4.jp kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/dummy_infrastructure/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
 system/emergency_handler/** kenji.miyake@tier4.jp makoto.kurihara@tier4.jp @autowarefoundation/autoware-global-codeowners
