@@ -125,10 +125,6 @@ protected:
   bool isAbortConditionSatisfied();
   bool hasFinishedLaneChange() const;
   bool isAbortState() const;
-
-  // getter
-  Pose getEgoPose() const;
-  Twist getEgoTwist() const;
   std_msgs::msg::Header getRouteHeader() const;
 
   // debug

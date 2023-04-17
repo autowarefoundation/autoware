@@ -334,11 +334,6 @@ private:
 
   // ========= helper functions ==========
 
-  double getEgoSpeed() const
-  {
-    return std::abs(planner_data_->self_odometry->twist.twist.linear.x);
-  }
-
   double getNominalAvoidanceEgoSpeed() const
   {
     return std::max(getEgoSpeed(), parameters_->min_nominal_avoidance_speed);
@@ -417,10 +412,6 @@ private:
   }
 
   double getCurrentBaseShift() const { return path_shifter_.getBaseOffset(); }
-
-  Point getEgoPosition() const { return planner_data_->self_odometry->pose.pose.position; }
-
-  Pose getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
 
   Pose getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
 

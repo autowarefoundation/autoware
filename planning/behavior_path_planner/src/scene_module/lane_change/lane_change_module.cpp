@@ -738,14 +738,6 @@ void LaneChangeModule::updateSteeringFactorPtr(
     {output.start_distance_to_path_change, output.finish_distance_to_path_change},
     SteeringFactor::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
 }
-Pose LaneChangeModule::getEgoPose() const
-{
-  return planner_data_->self_odometry->pose.pose;
-}
-Twist LaneChangeModule::getEgoTwist() const
-{
-  return planner_data_->self_odometry->twist.twist;
-}
 std_msgs::msg::Header LaneChangeModule::getRouteHeader() const
 {
   return planner_data_->route_handler->getRouteHeader();

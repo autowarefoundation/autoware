@@ -189,8 +189,6 @@ private:
   bool isAbortState() const;
 
   // getter
-  Pose getEgoPose() const;
-  Twist getEgoTwist() const;
   std_msgs::msg::Header getRouteHeader() const;
   void resetPathIfAbort();
 

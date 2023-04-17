@@ -203,9 +203,6 @@ private:
   bool isAbortState() const;
 
   // getter
-  Point getEgoPosition() const { return planner_data_->self_odometry->pose.pose.position; }
-  Pose getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
-  Twist getEgoTwist() const;
   std_msgs::msg::Header getRouteHeader() const;
   void resetPathIfAbort();
 

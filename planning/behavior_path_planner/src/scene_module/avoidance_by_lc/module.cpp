@@ -921,11 +921,6 @@ void AvoidanceByLCModule::updateSteeringFactorPtr(
     SteeringFactor::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
 }
 
-Twist AvoidanceByLCModule::getEgoTwist() const
-{
-  return planner_data_->self_odometry->twist.twist;
-}
-
 std_msgs::msg::Header AvoidanceByLCModule::getRouteHeader() const
 {
   return planner_data_->route_handler->getRouteHeader();

@@ -128,7 +128,6 @@ private:
 
   // NOTE: this function is ported from avoidance.
   Pose getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
-  inline Pose getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
   PathWithLaneId extendBackwardLength(const PathWithLaneId & original_path) const;
   PathWithLaneId calcCenterLinePath(
     const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose) const;
