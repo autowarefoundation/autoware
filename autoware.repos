@@ -68,23 +68,27 @@ repositories:
     url: https://github.com/tier4/velodyne_vls.git
     version: tier4/universe
   # sensor_kit
-  sensor_kit/sample_sensor_kit_launch:
+  sensor_kit/logiee-s-tc_sensor_kit_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    url: https://github.com/tier4-2023-team2/logiee-s-tc_sensor_kit_launch.git
     version: main
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
     version: main
   # vehicle
-  vehicle/sample_vehicle_launch:
+  vehicle/logiee-s-tc_launch:
     type: git
-    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    url: https://github.com/tier4-2023-team2/logiee-s-tc_launch.git
     version: main
   vehicle/external/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
     version: main
+  vehicle/external/jw_interface:
+    type: git 
+    url: https://github.com/tier4/jw_interface.git
+    version: tier4/universe
   # param
   param/autoware_individual_params:
     type: git
