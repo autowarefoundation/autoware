@@ -98,34 +98,6 @@ BehaviorModuleOutput PullOutModule::run()
   return plan();
 }
 
-void PullOutModule::processOnEntry()
-{
-  // initialize when receiving new route
-  if (
-    last_route_received_time_ == nullptr ||
-    *last_route_received_time_ != planner_data_->route_handler->getRouteHeader().stamp) {
-    RCLCPP_INFO(getLogger(), "Receive new route, so reset status");
-    resetStatus();
-    updatePullOutStatus();
-  }
-  last_route_received_time_ =
-    std::make_unique<rclcpp::Time>(planner_data_->route_handler->getRouteHeader().stamp);
-
-  // for preventing chattering between back and pull_out
-  if (!status_.back_finished) {
-    if (last_pull_out_start_update_time_ == nullptr) {
-      last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
-    }
-    const auto elapsed_time = (clock_->now() - *last_pull_out_start_update_time_).seconds();
-    if (elapsed_time < parameters_->backward_path_update_duration) {
-      return;
-    }
-    last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
-  }
-
-  updatePullOutStatus();
-}
-
 void PullOutModule::processOnExit()
 {
   resetPathCandidate();
@@ -320,6 +292,7 @@ PathWithLaneId PullOutModule::getFullPath() const
 
 BehaviorModuleOutput PullOutModule::planWaitingApproval()
 {
+  updatePullOutStatus();
   waitApproval();
 
   BehaviorModuleOutput output;
@@ -563,6 +536,29 @@ PathWithLaneId PullOutModule::generateStopPath() const
 
 void PullOutModule::updatePullOutStatus()
 {
+  // if new route is received, reset status
+  const bool has_received_new_route =
+    last_route_received_time_ == nullptr ||
+    *last_route_received_time_ != planner_data_->route_handler->getRouteHeader().stamp;
+  if (has_received_new_route) {
+    RCLCPP_INFO(getLogger(), "Receive new route, so reset status");
+    resetStatus();
+  }
+  last_route_received_time_ =
+    std::make_unique<rclcpp::Time>(planner_data_->route_handler->getRouteHeader().stamp);
+
+  // skip updating if enough time has not passed for preventing chattering between back and pull_out
+  if (!has_received_new_route && !status_.back_finished) {
+    if (last_pull_out_start_update_time_ == nullptr) {
+      last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+    }
+    const auto elapsed_time = (clock_->now() - *last_pull_out_start_update_time_).seconds();
+    if (elapsed_time < parameters_->backward_path_update_duration) {
+      return;
+    }
+    last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+  }
+
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & goal_pose = planner_data_->route_handler->getGoalPose();
