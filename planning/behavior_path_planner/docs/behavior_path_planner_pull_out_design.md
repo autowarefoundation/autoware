@@ -63,7 +63,7 @@ PullOutPath --o PullOutPlannerBase
 2. Calculate object's polygon which is located in shoulder lane
 3. If a distance between the footprint and the polygon is lower than the threshold (default: `1.0 m`), that is judged as a unsafe path
 
-![pull_out_collision_check](./image/pull_out_collision_check.drawio.svg)
+![pull_out_collision_check](../image/pull_out_collision_check.drawio.svg)
 
 ### **Path Generation**
 
@@ -77,7 +77,7 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 - In the section between merge start and end, path is shifted by a method that is used to generate avoidance path (four segmental constant jerk polynomials)
 - Combine this path with center line of road lane
 
-![shift_pull_out](./image/shift_pull_out.drawio.svg)
+![shift_pull_out](../image/shift_pull_out.drawio.svg)
 
 [shift pull out video](https://user-images.githubusercontent.com/39142679/187872468-6d5057ee-e039-499b-afc7-fe0dc8052a6b.mp4)
 
@@ -97,7 +97,7 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 Generate two arc paths with discontinuous curvature. Ego-vehicle stops once in the middle of the path to control the steer on the spot.
 See also [[1]](https://www.sciencedirect.com/science/article/pii/S1474667015347431) for details of the algorithm.
 
-![geometric_pull_out](./image/geometric_pull_out.drawio.svg)
+![geometric_pull_out](../image/geometric_pull_out.drawio.svg)
 
 [geometric pull out video](https://user-images.githubusercontent.com/39142679/181024707-3e7ca5ee-62de-4334-b9e9-ded313de1ea1.mp4)
 
@@ -116,7 +116,7 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 If a safe path cannot be generated from the current position, search backwards for a pull out start point at regular intervals(default: `2.0`).
 
-![pull_out_after_back](./image/pull_out_after_back.drawio.svg)
+![pull_out_after_back](../image/pull_out_after_back.drawio.svg)
 
 [pull out after backward driving video](https://user-images.githubusercontent.com/39142679/181025149-8fb9fb51-9b8f-45c4-af75-27572f4fba78.mp4)
 

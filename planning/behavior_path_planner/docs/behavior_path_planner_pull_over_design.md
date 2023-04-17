@@ -148,7 +148,7 @@ The lateral jerk is searched for among the predetermined minimum and maximum val
 2. In the section between merge start and end, path is shifted by a method that is used to generate avoidance path (four segmental constant jerk polynomials)
 3. Combine this path with center line of road lane
 
-![shift_parking](./image/shift_parking.drawio.svg)
+![shift_parking](../image/shift_parking.drawio.svg)
 
 [shift_parking video](https://user-images.githubusercontent.com/39142679/178034101-4dc61a33-bc49-41a0-a9a8-755cce53cbc6.mp4)
 
@@ -179,7 +179,7 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 Generate two forward arc paths.
 
-![arc_forward_parking](./image/arc_forward_parking.drawio.svg)
+![arc_forward_parking](../image/arc_forward_parking.drawio.svg)
 
 [how arc_forward_parking video](https://user-images.githubusercontent.com/39142679/178034128-4754c401-8aff-4745-b69a-4a69ca29ce4b.mp4)
 
@@ -196,7 +196,7 @@ Generate two forward arc paths.
 
 Generate two backward arc paths.
 
-![arc_backward_parking](./image/arc_backward_parking.drawio.svg).
+![arc_backward_parking](../image/arc_backward_parking.drawio.svg).
 
 [arc_forward_parking video](https://user-images.githubusercontent.com/39142679/178034280-4b6754fe-3981-4aee-b5e0-970f34563c6d.mp4)
 
@@ -214,7 +214,7 @@ Generate two backward arc paths.
 If the vehicle gets stuck with `lane_parking`, run `freespace_parking`.
 To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../costmap_generator/README.md) to `false` and `enable_freespace_parking` to `true`
 
-![pull_over_freespace_parking_flowchart](./image/pull_over_freespace_parking_flowchart.drawio.svg)
+![pull_over_freespace_parking_flowchart](../image/pull_over_freespace_parking_flowchart.drawio.svg)
 \*Series execution with `avoidance_module` in the flowchart is under development.
 
 <img src="https://user-images.githubusercontent.com/39142679/221167581-9a654810-2460-4a0c-8afd-7943ca877cf5.png" width="600">
@@ -231,4 +231,4 @@ To run this feature, you need to set `parking_lot` to the map, `activate_by_scen
 | :----------------------- | :--- | :--- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
 | enable_freespace_parking | [-]  | bool | This flag enables freespace parking, which runs when the vehicle is stuck due to e.g. obstacles in the parking area. | true          |
 
-See [freespace_planner](../freespace_planner/README.md) for other parameters.
+See [freespace_planner](../../freespace_planner/README.md) for other parameters.

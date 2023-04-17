@@ -70,7 +70,7 @@ struct DrivalbleLanes
 
 The image of the sorted drivable lanes is depicted in the following picture.
 
-![sorted_lanes](./image/drivable_area/sorted_lanes.drawio.svg)
+![sorted_lanes](../image/drivable_area/sorted_lanes.drawio.svg)
 
 Note that, the order of drivable lanes become
 
@@ -89,7 +89,7 @@ std::vector<geometry_msgs::msg::Point> right_bound;
 
 and each point of right bound and left bound has a position in the absolute coordinate system.
 
-![drivable_lines](./image/drivable_area/drivable_lines.drawio.svg)
+![drivable_lines](../image/drivable_area/drivable_lines.drawio.svg)
 
 ### Drivable Area Expansion
 
@@ -98,7 +98,7 @@ and each point of right bound and left bound has a position in the absolute coor
 Each module can statically expand the left and right bounds of the target lanes by the parameter defined values.
 This enables large vehicles to pass narrow curve. The image of this process can be described as
 
-![expanded_lanes](./image/drivable_area/expanded_lanes.drawio.svg)
+![expanded_lanes](../image/drivable_area/expanded_lanes.drawio.svg)
 
 Note that we only expand right bound of the rightmost lane and left bound of the leftmost lane.
 
@@ -113,11 +113,11 @@ This expansion can be summarized with the following steps:
 4. Remove the footprints from step 2 and the lines from step 3 from the ego path footprint from step 1.
 5. Expand the drivable area with the result of step 4.
 
-|                                  |                                                                                                     |
-| :------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| Inputs                           | ![drivable_area_expansion_inputs](./image/drivable_area/drivable_area_expansion_inputs.png)         |
-| Footprints and uncrossable lines | ![drivable_area_expansion_footprints](./image/drivable_area/drivable_area_expansion_footprints.png) |
-| Expanded drivable area           | ![drivable_area_expansion_result](./image/drivable_area/drivable_area_expansion_result.png)         |
+|                                  |                                                                                                      |
+| :------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| Inputs                           | ![drivable_area_expansion_inputs](../image/drivable_area/drivable_area_expansion_inputs.png)         |
+| Footprints and uncrossable lines | ![drivable_area_expansion_footprints](../image/drivable_area/drivable_area_expansion_footprints.png) |
+| Expanded drivable area           | ![drivable_area_expansion_result](../image/drivable_area/drivable_area_expansion_result.png)         |
 
 Please note that the dynamic expansion can only increase the size of the drivable area and cannot remove any part from the original drivable area.
 
@@ -129,8 +129,8 @@ For example, in the same area, one can perform avoidance and another cannot. Thi
 
 To debug the issue, the maximum drivable area boundary can be visualized.
 
-![drivable_area_boundary_marker1](./image/drivable_area/drivable_area_boundary_marker_example1.png)
+![drivable_area_boundary_marker1](../image/drivable_area/drivable_area_boundary_marker_example1.png)
 
-![drivable_area_boundary_marker2](./image/drivable_area/drivable_area_boundary_marker_example2.png)
+![drivable_area_boundary_marker2](../image/drivable_area/drivable_area_boundary_marker_example2.png)
 
 The maximum drivable area can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/maximum_drivable_area`

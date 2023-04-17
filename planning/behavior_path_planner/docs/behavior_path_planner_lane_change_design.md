@@ -15,7 +15,7 @@ The Lane Change module is activated when lane change is needed and can be safely
 
 The lane change candidate path is divided into two phases: preparation and lane-changing. The following figure illustrates each phase of the lane change candidate path.
 
-![lane-change-phases](./image/lane_change/lane_change-lane_change_phases.png)
+![lane-change-phases](../image/lane_change/lane_change-lane_change_phases.png)
 
 ### Preparation phase
 
@@ -51,7 +51,7 @@ acceleration_resolution = maximum_deceleration / lane_change_sampling_num
 
 The following figure illustrates when `lane_change_sampling_num = 4`. Assuming that `maximum_deceleration = 1.0` then `a0 == 0.0 == no deceleration`, `a1 == 0.25`, `a2 == 0.5`, `a3 == 0.75` and `a4 == 1.0 == maximum_deceleration`. `a0` is the expected lane change trajectories should ego vehicle do not decelerate, and `a1`'s path is the expected lane change trajectories should ego vehicle decelerate at `0.25 m/s^2`.
 
-![path_samples](./image/lane_change/lane_change-candidate_path_samples.png)
+![path_samples](../image/lane_change/lane_change-candidate_path_samples.png)
 
 Which path will be chosen will depend on validity and collision check.
 
@@ -262,14 +262,14 @@ The following information is required to evaluate the longitudinal distance betw
 
 The following figure illustrates how the safety check is performed on ego vs. dynamic objects.
 
-![Safety check](./image/lane_change/lane_change-collision_check.png)
+![Safety check](../image/lane_change/lane_change-collision_check.png)
 
 Let `v_front` and `a_front` be the front vehicle's velocity and deceleration, respectively, and `v_rear` and `a_rear` be the rear vehicle's velocity and deceleration, respectively.
 Front vehicle and rear vehicle assignment will depend on which predicted path's pose is currently being evaluated.
 
 The following figure illustrates front and rear vehicle velocity assignment.
 
-![front rear assignment](./image/lane_change/lane_change-collision_check_parked_vehicle.png)
+![front rear assignment](../image/lane_change/lane_change-collision_check_parked_vehicle.png)
 
 Assuming the front vehicle brakes, then `d_front` is the distance the front vehicle will travel until it comes to a complete stop. The distance is computed from the equation of motion, which yield.
 
@@ -305,7 +305,7 @@ std::max(longitudinal_distance_min_threshold, d_rear) < d_front + d_inter
 
 The ego vehicle may need to secure ample inter-vehicle distance ahead of the target vehicle before attempting a lane change. The flag `enable_collision_check_at_prepare_phase` can be enabled to gain this behavior. The following image illustrates the differences between the `false` and `true` cases.
 
-![enable collision check at prepare phase](./image/lane_change/lane_change-enable_collision_check_at_prepare_phase.png)
+![enable collision check at prepare phase](../image/lane_change/lane_change-enable_collision_check_at_prepare_phase.png)
 
 The parameter `prepare_phase_ignore_target_speed_thresh` can be configured to ignore the prepare phase collision check for targets whose speeds are less than a specific threshold, such as stationary or very slow-moving objects.
 
@@ -319,7 +319,7 @@ minimum_lane_change_distance = num_of_lane_changes * (minimum_lane_change_length
 
 The following figure illustrates when the lane is blocked in multiple lane changes cases.
 
-![multiple-lane-changes](./image/lane_change/lane_change-when_cannot_change_lanes.png)
+![multiple-lane-changes](../image/lane_change/lane_change-when_cannot_change_lanes.png)
 
 #### Intersection
 
@@ -327,7 +327,7 @@ Lane change in the intersection is prohibited following traffic regulation. Ther
 
 The following figure illustrate the intersection case.
 
-![intersection](./image/lane_change/lane_change-intersection_case.png)
+![intersection](../image/lane_change/lane_change-intersection_case.png)
 
 ### Aborting lane change
 
@@ -387,19 +387,19 @@ The function can be enabled by setting `enable_cancel_lane_change` to `true`.
 
 The following image illustrates the cancel process.
 
-![cancel](./image/lane_change/cancel_and_abort/lane_change-cancel.png)
+![cancel](../image/lane_change/cancel_and_abort/lane_change-cancel.png)
 
 #### Abort
 
 Assume the ego vehicle has already departed from the current lane. In that case, it is dangerous to cancel the path, and it will cause the ego vehicle to change the heading direction abruptly. In this case, planning a trajectory that allows the ego vehicle to return to the current path while minimizing the heading changes is necessary. In this case, the lane change module will generate an abort path. The following images show an example of the abort path. Do note that the function DOESN'T GUARANTEE a safe abort process, as it didn't check the presence of the surrounding objects and/or their reactions. The function can be enable manually by setting both `enable_cancel_lane_change` and `enable_abort_lane_change` to `true`. The parameter `abort_max_lateral_jerk` need to be set to a high value in order for it to work.
 
-![abort](./image/lane_change/cancel_and_abort/lane_change-abort.png)
+![abort](../image/lane_change/cancel_and_abort/lane_change-abort.png)
 
 #### Stop/Cruise
 
 The last behavior will also occur if the ego vehicle has departed from the current lane. If the abort function is disabled or the abort is no longer possible, the ego vehicle will attempt to stop or transition to the obstacle cruise mode. Do note that the module DOESN'T GUARANTEE safe maneuver due to the unexpected behavior that might've occurred during these critical scenarios. The following images illustrate the situation.
 
-![stop](./image/lane_change/cancel_and_abort/lane_change-cant_cancel_no_abort.png)
+![stop](../image/lane_change/cancel_and_abort/lane_change-cant_cancel_no_abort.png)
 
 ## Parameters
 
@@ -464,4 +464,4 @@ The following parameters are configurable in `lane_change.param.yaml`.
 
 To enable the debug marker, execute `ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner lane_change.publish_debug_marker true` (no restart is needed) or simply set the `publish_debug_marker` to `true` in the `lane_change.param.yaml` for permanent effect (restart is needed). Then add the marker `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/lanechange` in `rviz2`.
 
-![debug](./image/lane_change/lane_change-debug.png)
+![debug](../image/lane_change/lane_change-debug.png)
