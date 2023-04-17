@@ -70,7 +70,7 @@ In several places we have modified the external code written in BSD3 license.
 Bresenham's_line_algorithm
 
 - <https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm>
-- <https://web.archive.org/web/20080528040104/http://www.research.ibm.com/journal/sj/041/ibmsjIVRIC.pdf>
+- <https://ieeexplore.ieee.org/document/5388473>
 
 ## (Optional) Future extensions / Unimplemented parts
 
