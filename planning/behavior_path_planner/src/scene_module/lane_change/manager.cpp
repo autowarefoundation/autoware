@@ -35,6 +35,18 @@ LaneChangeModuleManager::LaneChangeModuleManager(
 {
 }
 
+std::shared_ptr<SceneModuleInterface> LaneChangeModuleManager::createNewSceneModuleInstance()
+{
+  if (type_ == LaneChangeModuleType::NORMAL) {
+    return std::make_shared<LaneChangeInterface>(
+      name_, *node_, parameters_, rtc_interface_ptr_map_,
+      std::make_unique<NormalLaneChange>(parameters_, direction_));
+  }
+  return std::make_shared<LaneChangeInterface>(
+    name_, *node_, parameters_, rtc_interface_ptr_map_,
+    std::make_unique<ExternalRequestLaneChange>(parameters_, direction_));
+}
+
 void LaneChangeModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {

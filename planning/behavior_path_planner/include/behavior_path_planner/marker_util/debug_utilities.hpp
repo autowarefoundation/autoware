@@ -28,6 +28,7 @@
 #include <lanelet2_core/geometry/Lanelet.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace marker_utils
@@ -63,6 +64,7 @@ struct CollisionCheckDebug
   Polygon2d ego_polygon{};
   Polygon2d obj_polygon{};
 };
+using CollisionCheckDebugMap = std::unordered_map<std::string, CollisionCheckDebug>;
 
 constexpr std::array<std::array<float, 3>, 10> colorsList()
 {

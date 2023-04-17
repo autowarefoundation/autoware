@@ -253,7 +253,7 @@ public:
   /**
    * @brief set planner data
    */
-  void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
+  virtual void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
 
 #ifdef USE_OLD_ARCHITECTURE
   void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }

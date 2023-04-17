@@ -29,30 +29,30 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::TurnSignalInfo;
 struct LaneChangePath
 {
-  PathWithLaneId path;
-  lanelet::ConstLanelets reference_lanelets;
-  lanelet::ConstLanelets target_lanelets;
-  ShiftedPath shifted_path;
-  ShiftLine shift_line;
+  PathWithLaneId path{};
+  lanelet::ConstLanelets reference_lanelets{};
+  lanelet::ConstLanelets target_lanelets{};
+  ShiftedPath shifted_path{};
+  ShiftLine shift_line{};
   double acceleration{0.0};
   LaneChangePhaseInfo length{};
   LaneChangePhaseInfo duration{};
-  TurnSignalInfo turn_signal_info;
-  PathWithLaneId prev_path;
+  TurnSignalInfo turn_signal_info{};
+  PathWithLaneId prev_path{};
 };
 using LaneChangePaths = std::vector<LaneChangePath>;
 
 struct LaneChangeStatus
 {
-  PathWithLaneId lane_follow_path;
-  LaneChangePath lane_change_path;
-  lanelet::ConstLanelets current_lanes;
-  lanelet::ConstLanelets lane_change_lanes;
-  std::vector<uint64_t> lane_follow_lane_ids;
-  std::vector<uint64_t> lane_change_lane_ids;
-  bool is_safe;
-  bool is_valid_path = true;
-  double start_distance;
+  PathWithLaneId lane_follow_path{};
+  LaneChangePath lane_change_path{};
+  lanelet::ConstLanelets current_lanes{};
+  lanelet::ConstLanelets lane_change_lanes{};
+  std::vector<uint64_t> lane_follow_lane_ids{};
+  std::vector<uint64_t> lane_change_lane_ids{};
+  bool is_safe{false};
+  bool is_valid_path{true};
+  double start_distance{0.0};
 };
 
 }  // namespace behavior_path_planner

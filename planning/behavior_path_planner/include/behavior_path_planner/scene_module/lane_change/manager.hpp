@@ -15,8 +15,9 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__MANAGER_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
+#include "behavior_path_planner/scene_module/lane_change/interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
+#include "route_handler/route_handler.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -27,6 +28,7 @@
 
 namespace behavior_path_planner
 {
+using route_handler::Direction;
 
 class LaneChangeModuleManager : public SceneModuleManagerInterface
 {
@@ -36,18 +38,14 @@ public:
     std::shared_ptr<LaneChangeParameters> parameters, const Direction direction,
     const LaneChangeModuleType type);
 
-  std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
-  {
-    return std::make_shared<LaneChangeModule>(
-      name_, *node_, parameters_, rtc_interface_ptr_map_, direction_, type_);
-  }
+  std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override;
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
   std::shared_ptr<LaneChangeParameters> parameters_;
 
-  std::vector<std::shared_ptr<LaneChangeModule>> registered_modules_;
+  std::vector<std::shared_ptr<LaneChangeInterface>> registered_modules_;
 
   Direction direction_;
 
