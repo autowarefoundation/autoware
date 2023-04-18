@@ -132,14 +132,13 @@ void CropBoxFilterComponent::faster_filter(
       *reinterpret_cast<const float *>(&input->data[global_offset + y_offset]),
       *reinterpret_cast<const float *>(&input->data[global_offset + z_offset]), 1);
 
+    if (!std::isfinite(point[0]) || !std::isfinite(point[1]) || !std::isfinite(point[2])) {
+      RCLCPP_WARN(this->get_logger(), "Ignoring point containing NaN values");
+      continue;
+    }
+
     if (transform_info.need_transform) {
-      if (std::isfinite(point[0]) && std::isfinite(point[1]) && std::isfinite(point[2])) {
-        point = transform_info.eigen_transform * point;
-      } else {
-        // TODO(sykwer): Implement the appropriate logic for `max range point` and `invalid point`.
-        // https://github.com/ros-perception/perception_pcl/blob/628aaec1dc73ef4adea01e9d28f11eb417b948fd/pcl_ros/src/transforms.cpp#L185-L201
-        RCLCPP_ERROR(this->get_logger(), "Not implemented logic");
-      }
+      point = transform_info.eigen_transform * point;
     }
 
     bool point_is_inside = point[2] > param_.min_z && point[2] < param_.max_z &&
