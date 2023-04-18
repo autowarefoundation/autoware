@@ -29,17 +29,21 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
 
   auto node_options = rclcpp::NodeOptions{};
 
-  test_manager->declareVehicleInfoParams(node_options);
-  test_manager->declareNearestSearchDistanceParams(node_options);
   node_options.append_parameter_override("algorithm_type", "JerkFiltered");
   node_options.append_parameter_override("publish_debug_trajs", false);
 
   const auto motion_velocity_smoother_dir =
     ament_index_cpp::get_package_share_directory("motion_velocity_smoother");
 
+  const auto planning_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("planning_test_utils");
+
   node_options.arguments(
-    {"--ros-args", "--params-file",
-     motion_velocity_smoother_dir + "/config/test_default_motion_velocity_smoother.param.yaml",
+    {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
+     "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
+     "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
+     "--params-file",
+     motion_velocity_smoother_dir + "/config/default_motion_velocity_smoother.param.yaml",
      "--params-file", motion_velocity_smoother_dir + "/config/default_common.param.yaml",
      "--params-file", motion_velocity_smoother_dir + "/config/JerkFiltered.param.yaml"});
 

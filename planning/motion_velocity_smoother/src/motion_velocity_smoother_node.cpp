@@ -402,6 +402,16 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
     return;
   }
 
+  // calculate trajectory velocity
+  auto input_points = motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
+
+  // guard for invalid trajectory
+  input_points = motion_utils::removeOverlapPoints(input_points);
+  if (input_points.size() < 2) {
+    RCLCPP_ERROR(get_logger(), "No enough points in trajectory after overlap points removal");
+    return;
+  }
+
   // calculate prev closest point
   if (!prev_output_.empty()) {
     current_closest_point_from_prev_output_ = calcProjectedTrajectoryPointFromEgo(prev_output_);
@@ -413,9 +423,6 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
 
   // ignore current external velocity limit next time
   external_velocity_limit_ptr_ = nullptr;
-
-  // calculate trajectory velocity
-  auto input_points = motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
 
   // For negative velocity handling, multiple -1 to velocity if it is for reverse.
   // NOTE: this process must be in the beginning of the process

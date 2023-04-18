@@ -52,12 +52,12 @@ if(BUILD_TESTING)
   target_link_libraries(test_smoother_functions
   smoother
   )
-  # ament_add_ros_isolated_gtest(test_${PROJECT_NAME}
-  #   test/test_motion_velocity_smoother_node_interface.cpp
-  # )
-  # target_link_libraries(test_${PROJECT_NAME}
-  #   motion_velocity_smoother_node
-  # )
+  ament_add_ros_isolated_gtest(test_${PROJECT_NAME}
+    test/test_motion_velocity_smoother_node_interface.cpp
+  )
+  target_link_libraries(test_${PROJECT_NAME}
+    motion_velocity_smoother_node
+  )
 endif()
 
 
