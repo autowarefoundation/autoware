@@ -413,12 +413,7 @@ private:
 
   double getCurrentBaseShift() const { return path_shifter_.getBaseOffset(); }
 
-  Pose getUnshiftedEgoPose(const ShiftedPath & prev_path) const;
-
   PathWithLaneId extendBackwardLength(const PathWithLaneId & original_path) const;
-
-  PathWithLaneId calcCenterLinePath(
-    const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose) const;
 
   // TODO(Horibe): think later.
   // for unique ID

@@ -469,4 +469,58 @@ std::vector<Pose> interpolatePose(
   return interpolated_poses;
 }
 
+Pose getUnshiftedEgoPose(const Pose & ego_pose, const ShiftedPath & prev_path)
+{
+  if (prev_path.path.points.empty()) {
+    return ego_pose;
+  }
+
+  // un-shifted for current ideal pose
+  const auto closest_idx = motion_utils::findNearestIndex(prev_path.path.points, ego_pose.position);
+
+  // NOTE: Considering avoidance by motion, we set unshifted_pose as previous path instead of
+  // ego_pose.
+  auto unshifted_pose = motion_utils::calcInterpolatedPoint(prev_path.path, ego_pose).point.pose;
+
+  unshifted_pose = tier4_autoware_utils::calcOffsetPose(
+    unshifted_pose, 0.0, -prev_path.shift_length.at(closest_idx), 0.0);
+  unshifted_pose.orientation = ego_pose.orientation;
+
+  return unshifted_pose;
+}
+
+// TODO(Horibe) clean up functions: there is a similar code in util as well.
+PathWithLaneId calcCenterLinePath(
+  const std::shared_ptr<const PlannerData> & planner_data, const Pose & ref_pose,
+  const double longest_dist_to_shift_line, const std::optional<PathWithLaneId> & prev_module_path)
+{
+  const auto & p = planner_data->parameters;
+  const auto & route_handler = planner_data->route_handler;
+
+  PathWithLaneId centerline_path;
+
+  const auto extra_margin = 10.0;  // Since distance does not consider arclength, but just line.
+  const auto backward_length =
+    std::max(p.backward_path_length, longest_dist_to_shift_line + extra_margin);
+
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("path_utils"),
+    "p.backward_path_length = %f, longest_dist_to_shift_line = %f, backward_length = %f",
+    p.backward_path_length, longest_dist_to_shift_line, backward_length);
+
+  const lanelet::ConstLanelets current_lanes = [&]() {
+    if (!prev_module_path) {
+      return utils::calcLaneAroundPose(
+        route_handler, ref_pose, p.forward_path_length, backward_length);
+    }
+    return utils::getCurrentLanesFromPath(*prev_module_path, planner_data);
+  }();
+
+  centerline_path = utils::getCenterLinePath(
+    *route_handler, current_lanes, ref_pose, backward_length, p.forward_path_length, p);
+
+  centerline_path.header = route_handler->getRouteHeader();
+
+  return centerline_path;
+}
 }  // namespace behavior_path_planner::utils

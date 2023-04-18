@@ -17,6 +17,7 @@
 
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
+#include <behavior_path_planner/data_manager.hpp>
 #include <behavior_path_planner/parameters.hpp>
 #include <freespace_planning_algorithms/abstract_algorithm.hpp>
 
@@ -28,6 +29,7 @@
 #include <lanelet2_core/geometry/Lanelet.h>
 
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -92,6 +94,13 @@ std::vector<double> splineTwoPoints(
 std::vector<Pose> interpolatePose(
   const Pose & start_pose, const Pose & end_pose, const double resample_interval);
 
+geometry_msgs::msg::Pose getUnshiftedEgoPose(
+  const geometry_msgs::msg::Pose & ego_pose, const ShiftedPath & prev_path);
+
+PathWithLaneId calcCenterLinePath(
+  const std::shared_ptr<const PlannerData> & planner_data, const Pose & ref_pose,
+  const double longest_dist_to_shift_line,
+  const std::optional<PathWithLaneId> & prev_module_path = std::nullopt);
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_UTILS_HPP_
