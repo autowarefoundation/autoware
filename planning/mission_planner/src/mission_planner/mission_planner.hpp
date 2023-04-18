@@ -93,6 +93,15 @@ private:
     const SetRoutePoints::Service::Request::SharedPtr req,
     const SetRoutePoints::Service::Response::SharedPtr res);
 
+  component_interface_utils::Service<SetMrmRoute>::SharedPtr srv_set_mrm_route_;
+  component_interface_utils::Service<ClearMrmRoute>::SharedPtr srv_clear_mrm_route_;
+  void on_set_mrm_route(
+    const SetMrmRoute::Service::Request::SharedPtr req,
+    const SetMrmRoute::Service::Response::SharedPtr res);
+  void on_clear_mrm_route(
+    const ClearMrmRoute::Service::Request::SharedPtr req,
+    const ClearMrmRoute::Service::Response::SharedPtr res);
+
   component_interface_utils::Subscription<ModifiedGoal>::SharedPtr sub_modified_goal_;
   void on_modified_goal(const ModifiedGoal::Message::ConstSharedPtr msg);
   void on_change_route(

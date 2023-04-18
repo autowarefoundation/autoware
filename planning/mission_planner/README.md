@@ -32,6 +32,8 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 | `/planning/mission_planning/set_route`           | autoware_adapi_v1_msgs/srv/SetRoute       | route request with lanelet waypoints        |
 | `/planning/mission_planning/change_route_points` | autoware_adapi_v1_msgs/srv/SetRoutePoints | route change request with pose waypoints    |
 | `/planning/mission_planning/change_route`        | autoware_adapi_v1_msgs/srv/SetRoute       | route change request with lanelet waypoints |
+| `~/srv/set_mrm_route`                            | autoware_adapi_v1_msgs/srv/SetRoutePoints | set emergency route                         |
+| `~/srv/clear_mrm_route`                          | std_srvs/srv/Trigger                      | clear emergency route                       |
 
 ### Subscriptions
 
@@ -42,12 +44,12 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 
 ### Publications
 
-| Name                            | Type                                  | Description              |
-| ------------------------------- | ------------------------------------- | ------------------------ |
-| `/planning/routing/route_state` | autoware_adapi_v1_msgs/msg/RouteState | route state              |
-| `/planning/routing/route`       | autoware_planning_msgs/LaneletRoute   | route                    |
-| `debug/route_marker`            | visualization_msgs/msg/MarkerArray    | route marker for debug   |
-| `debug/goal_footprint`          | visualization_msgs/msg/MarkerArray    | goal footprint for debug |
+| Name                                     | Type                                  | Description              |
+| ---------------------------------------- | ------------------------------------- | ------------------------ |
+| `/planning/mission_planning/route_state` | autoware_adapi_v1_msgs/msg/RouteState | route state              |
+| `/planning/mission_planning/route`       | autoware_planning_msgs/LaneletRoute   | route                    |
+| `debug/route_marker`                     | visualization_msgs/msg/MarkerArray    | route marker for debug   |
+| `debug/goal_footprint`                   | visualization_msgs/msg/MarkerArray    | goal footprint for debug |
 
 ## Route section
 

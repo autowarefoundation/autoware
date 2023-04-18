@@ -30,6 +30,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
+  <depend>std_srvs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tier4_autoware_utils</depend>
