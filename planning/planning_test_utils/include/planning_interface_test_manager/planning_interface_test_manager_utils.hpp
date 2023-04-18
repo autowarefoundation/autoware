@@ -120,8 +120,7 @@ T generateTrajectory(
 
 Route::Message makeNormalRoute()
 {
-  const double pi = 3.1415926;
-  const std::array<double, 4> start_pose{5.5, 4., 0., pi * 0.5};
+  const std::array<double, 4> start_pose{5.5, 4., 0., M_PI_2};
   const std::array<double, 4> goal_pose{8.0, 26.3, 0, 0};
   Route::Message route;
   route.header.frame_id = "map";
@@ -141,6 +140,8 @@ LaneletSegment createLaneletSegment(int id)
   return segment;
 }
 
+// this is for the test lanelet2_map.osm
+// file hash: a9f84cff03b55a64917bc066451276d2293b0a54f5c088febca0c7fdf2f245d5
 Route::Message makeBehaviorNormalRoute()
 {
   Route::Message route;
@@ -278,8 +279,7 @@ T generateObject(rclcpp::Node::SharedPtr target_node)
     return *trajectory;
   } else if constexpr (std::is_same_v<T, Odometry>) {
     std::shared_ptr<Odometry> current_odometry = std::make_shared<Odometry>();
-    const double pi = 3.1415926;
-    const std::array<double, 4> start_pose{5.5, 4., pi * 0.5};
+    const std::array<double, 4> start_pose{5.5, 4., M_PI_2};
     current_odometry->pose.pose = createPose(start_pose);
     current_odometry->header.frame_id = "map";
     return *current_odometry;

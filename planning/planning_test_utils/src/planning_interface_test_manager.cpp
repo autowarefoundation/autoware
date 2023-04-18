@@ -359,11 +359,8 @@ void PlanningInterfaceTestManager::testWithAbnormalRoute(rclcpp::Node::SharedPtr
 void PlanningInterfaceTestManager::testWithNominalPathWithLaneId(
   rclcpp::Node::SharedPtr target_node)
 {
-  std::cerr << __FILE__ << ": " << __LINE__ << std::endl;
   publishNominalPathWithLaneId(target_node, input_path_with_lane_id_name_);
-  std::cerr << __FILE__ << ": " << __LINE__ << std::endl;
   test_utils::spinSomeNodes(test_node_, target_node, 5);
-  std::cerr << __FILE__ << ": " << __LINE__ << std::endl;
 }
 
 // check to see if target node is dead.

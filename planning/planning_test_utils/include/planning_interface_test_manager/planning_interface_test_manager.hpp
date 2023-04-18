@@ -66,7 +66,6 @@ using autoware_auto_perception_msgs::msg::TrafficSignalArray;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_auto_vehicle_msgs::msg::SteeringReport;
 using autoware_planning_msgs::msg::LaneletRoute;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Point;
@@ -101,7 +100,6 @@ public:
   void publishOccupancyGrid(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishCostMap(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishMap(rclcpp::Node::SharedPtr target_node, std::string topic_name);
-  void publishScenario(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishLaneDrivingScenario(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishParkingScenario(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishParkingState(rclcpp::Node::SharedPtr target_node, std::string topic_name);
@@ -221,9 +219,6 @@ private:
   void publishBehaviorNominalRoute(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishNominalPathWithLaneId(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishAbNominalPathWithLaneId(rclcpp::Node::SharedPtr target_node, std::string topic_name);
-
-  void set_initial_state_with_transform(Odometry::SharedPtr & odometry);
-  TransformStamped get_transform_msg(const std::string parent_frame, const std::string child_frame);
 };  // class PlanningInterfaceTestManager
 
 }  // namespace planning_test_utils
