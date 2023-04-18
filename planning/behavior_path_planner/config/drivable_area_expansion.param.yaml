@@ -9,10 +9,6 @@
       drivable_area_right_bound_offset: 0.0
       drivable_area_left_bound_offset: 0.0
       drivable_area_types_to_skip: [road_border]
-    lane_following:
-      drivable_area_right_bound_offset: 0.0
-      drivable_area_left_bound_offset: 0.0
-      drivable_area_types_to_skip: [road_border]
     pull_out:
       drivable_area_right_bound_offset: 0.0
       drivable_area_left_bound_offset: 0.0

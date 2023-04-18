@@ -152,7 +152,6 @@ private:
   std::shared_ptr<AvoidanceByLCParameters> avoidance_by_lc_param_ptr_;
   std::shared_ptr<SideShiftParameters> side_shift_param_ptr_;
   std::shared_ptr<LaneChangeParameters> lane_change_param_ptr_;
-  std::shared_ptr<LaneFollowingParameters> lane_following_param_ptr_;
   std::shared_ptr<PullOutParameters> pull_out_param_ptr_;
   std::shared_ptr<PullOverParameters> pull_over_param_ptr_;
 
@@ -164,7 +163,6 @@ private:
 
   AvoidanceParameters getAvoidanceParam();
   LaneChangeParameters getLaneChangeParam();
-  LaneFollowingParameters getLaneFollowingParam();
   SideShiftParameters getSideShiftParam();
   PullOverParameters getPullOverParam();
   PullOutParameters getPullOutParam();

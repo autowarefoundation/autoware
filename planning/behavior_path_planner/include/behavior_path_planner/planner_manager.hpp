@@ -54,9 +54,7 @@ struct SceneModuleStatus
 class PlannerManager
 {
 public:
-  PlannerManager(
-    rclcpp::Node & node, const std::shared_ptr<LaneFollowingParameters> & parameters,
-    const bool verbose);
+  PlannerManager(rclcpp::Node & node, const bool verbose);
 
   /**
    * @brief run all candidate and approved modules.
@@ -206,7 +204,7 @@ private:
       return {};
     }
 
-    return utils::getReferencePath(closest_lane, parameters_, data);
+    return utils::getReferencePath(closest_lane, data);
   }
 
   /**
@@ -338,8 +336,6 @@ private:
     const BehaviorModuleOutput & previous_module_output);
 
   boost::optional<lanelet::ConstLanelet> root_lanelet_{boost::none};
-
-  std::shared_ptr<LaneFollowingParameters> parameters_;
 
   std::vector<SceneModuleManagerPtr> manager_ptrs_;
 

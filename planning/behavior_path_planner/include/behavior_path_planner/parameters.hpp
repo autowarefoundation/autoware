@@ -17,6 +17,9 @@
 
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
+#include <string>
+#include <vector>
+
 struct ModuleConfigParameters
 {
   bool enable_module{false};
@@ -97,6 +100,14 @@ struct BehaviorPathPlannerParameters
 
   double rear_vehicle_reaction_time;
   double rear_vehicle_safety_time_margin;
+
+  // lane following
+  double drivable_area_right_bound_offset;
+  double drivable_area_left_bound_offset;
+  std::vector<std::string> drivable_area_types_to_skip;
+
+  // lane change
+  double lane_change_prepare_duration;
 };
 
 #endif  // BEHAVIOR_PATH_PLANNER__PARAMETERS_HPP_

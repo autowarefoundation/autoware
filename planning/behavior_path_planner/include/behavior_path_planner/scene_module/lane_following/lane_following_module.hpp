@@ -33,9 +33,7 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 class LaneFollowingModule : public SceneModuleInterface
 {
 public:
-  LaneFollowingModule(
-    const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<LaneFollowingParameters> & parameters);
+  LaneFollowingModule(const std::string & name, rclcpp::Node & node);
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
@@ -52,8 +50,6 @@ public:
   }
 
 private:
-  std::shared_ptr<LaneFollowingParameters> parameters_;
-
   BehaviorModuleOutput getReferencePath() const;
   void initParam();
 };

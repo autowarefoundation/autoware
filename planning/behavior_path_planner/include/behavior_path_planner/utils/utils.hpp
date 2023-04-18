@@ -306,7 +306,6 @@ PathWithLaneId setDecelerationVelocity(
 
 BehaviorModuleOutput getReferencePath(
   const lanelet::ConstLanelet & current_lane,
-  const std::shared_ptr<LaneFollowingParameters> & parameters,
   const std::shared_ptr<const PlannerData> & planner_data);
 
 // object label

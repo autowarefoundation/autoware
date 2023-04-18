@@ -27,11 +27,8 @@
 namespace behavior_path_planner
 {
 
-PlannerManager::PlannerManager(
-  rclcpp::Node & node, const std::shared_ptr<LaneFollowingParameters> & parameters,
-  const bool verbose)
-: parameters_{parameters},
-  logger_(node.get_logger().get_child("planner_manager")),
+PlannerManager::PlannerManager(rclcpp::Node & node, const bool verbose)
+: logger_(node.get_logger().get_child("planner_manager")),
   clock_(*node.get_clock()),
   verbose_{verbose}
 {

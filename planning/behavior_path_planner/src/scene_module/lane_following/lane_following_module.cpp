@@ -24,11 +24,9 @@
 
 namespace behavior_path_planner
 {
-LaneFollowingModule::LaneFollowingModule(
-  const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<LaneFollowingParameters> & parameters)
+LaneFollowingModule::LaneFollowingModule(const std::string & name, rclcpp::Node & node)
 // RTCInterface is temporarily registered, but not used.
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
+: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}
 {
   initParam();
 }
@@ -77,24 +75,21 @@ void LaneFollowingModule::processOnExit()
   current_state_ = BT::NodeStatus::SUCCESS;
 }
 
-void LaneFollowingModule::setParameters(const std::shared_ptr<LaneFollowingParameters> & parameters)
-{
-  parameters_ = parameters;
-}
-
 BehaviorModuleOutput LaneFollowingModule::getReferencePath() const
 {
   const auto & route_handler = planner_data_->route_handler;
   const auto current_pose = planner_data_->self_odometry->pose.pose;
+  const double dist_threshold = planner_data_->parameters.ego_nearest_dist_threshold;
+  const double yaw_threshold = planner_data_->parameters.ego_nearest_yaw_threshold;
 
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithConstrainsWithinRoute(
-        current_pose, &current_lane, parameters_->distance_threshold, parameters_->yaw_threshold)) {
+        current_pose, &current_lane, dist_threshold, yaw_threshold)) {
     RCLCPP_ERROR_THROTTLE(
       getLogger(), *clock_, 5000, "failed to find closest lanelet within route!!!");
     return {};  // TODO(Horibe)
   }
 
-  return utils::getReferencePath(current_lane, parameters_, planner_data_);
+  return utils::getReferencePath(current_lane, planner_data_);
 }
 }  // namespace behavior_path_planner

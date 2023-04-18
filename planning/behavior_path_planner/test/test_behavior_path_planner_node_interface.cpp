@@ -46,7 +46,6 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionRoute)
                    behavior_path_planner_dir + "/config/drivable_area_expansion.param.yaml",
                    behavior_path_planner_dir + "/config/scene_module_manager.param.yaml",
                    behavior_path_planner_dir + "/config/avoidance/avoidance.param.yaml",
-                   behavior_path_planner_dir + "/config/lane_following/lane_following.param.yaml",
                    behavior_path_planner_dir + "/config/lane_change/lane_change.param.yaml",
                    behavior_path_planner_dir + "/config/pull_out/pull_out.param.yaml",
                    behavior_path_planner_dir + "/config/pull_over/pull_over.param.yaml",

@@ -121,7 +121,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   {
     avoidance_param_ptr_ = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
     lane_change_param_ptr_ = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
-    lane_following_param_ptr_ = std::make_shared<LaneFollowingParameters>(getLaneFollowingParam());
     pull_out_param_ptr_ = std::make_shared<PullOutParameters>(getPullOutParam());
     pull_over_param_ptr_ = std::make_shared<PullOverParameters>(getPullOverParam());
     side_shift_param_ptr_ = std::make_shared<SideShiftParameters>(getSideShiftParam());
@@ -152,8 +151,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       "Avoidance", create_publisher<Path>(path_candidate_name_space + "avoidance", 1));
     bt_manager_->registerSceneModule(avoidance_module);
 
-    auto lane_following_module =
-      std::make_shared<LaneFollowingModule>("LaneFollowing", *this, lane_following_param_ptr_);
+    auto lane_following_module = std::make_shared<LaneFollowingModule>("LaneFollowing", *this);
     bt_manager_->registerSceneModule(lane_following_module);
 
     auto ext_request_lane_change_right_module =
@@ -201,8 +199,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const std::lock_guard<std::mutex> lock(mutex_manager_);  // for planner_manager_
 
     const auto & p = planner_data_->parameters;
-    planner_manager_ =
-      std::make_shared<PlannerManager>(*this, lane_following_param_ptr_, p.verbose);
+    planner_manager_ = std::make_shared<PlannerManager>(*this, p.verbose);
 
     const auto register_and_create_publisher = [&](const auto & manager) {
       const auto & module_name = manager->getModuleName();
@@ -425,6 +422,18 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.rear_vehicle_reaction_time = declare_parameter<double>("rear_vehicle_reaction_time");
   p.rear_vehicle_safety_time_margin = declare_parameter<double>("rear_vehicle_safety_time_margin");
 
+  // lane following
+  p.drivable_area_right_bound_offset =
+    declare_parameter<double>("lane_following.drivable_area_right_bound_offset");
+  p.drivable_area_left_bound_offset =
+    declare_parameter<double>("lane_following.drivable_area_left_bound_offset");
+  p.drivable_area_types_to_skip =
+    declare_parameter<std::vector<std::string>>("lane_following.drivable_area_types_to_skip");
+
+  // lane change
+  p.lane_change_prepare_duration =
+    declare_parameter<double>("lane_change.lane_change_prepare_duration");
+
   if (p.backward_length_buffer_for_end_of_lane < 1.0) {
     RCLCPP_WARN_STREAM(
       get_logger(), "Lane change buffer must be more than 1 meter. Modifying the buffer.");
@@ -638,28 +647,6 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
     std::string ns = "avoidance.target_velocity_matrix.";
     p.col_size = declare_parameter<int>(ns + "col_size");
     p.target_velocity_matrix = declare_parameter<std::vector<double>>(ns + "matrix");
-  }
-
-  return p;
-}
-
-LaneFollowingParameters BehaviorPathPlannerNode::getLaneFollowingParam()
-{
-  LaneFollowingParameters p{};
-  p.drivable_area_right_bound_offset =
-    declare_parameter<double>("lane_following.drivable_area_right_bound_offset");
-  p.drivable_area_left_bound_offset =
-    declare_parameter<double>("lane_following.drivable_area_left_bound_offset");
-  p.drivable_area_types_to_skip =
-    declare_parameter<std::vector<std::string>>("lane_following.drivable_area_types_to_skip");
-  p.lane_change_prepare_duration =
-    declare_parameter<double>("lane_following.lane_change_prepare_duration");
-
-  // finding closest lanelet
-  {
-    p.distance_threshold =
-      declare_parameter<double>("lane_following.closest_lanelet.distance_threshold");
-    p.yaw_threshold = declare_parameter<double>("lane_following.closest_lanelet.yaw_threshold");
   }
 
   return p;

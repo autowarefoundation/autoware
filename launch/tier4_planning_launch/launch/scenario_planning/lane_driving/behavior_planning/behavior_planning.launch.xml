@@ -16,7 +16,6 @@
     <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/side_shift/side_shift.param.yaml"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml"/>
-    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_following/lane_following.param.yaml"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/behavior_path_planner.param.yaml"/>
     <param from="$(var vehicle_param_file)"/>

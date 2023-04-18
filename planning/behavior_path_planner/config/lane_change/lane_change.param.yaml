@@ -1,7 +1,6 @@
 /**:
   ros__parameters:
     lane_change:
-      lane_change_prepare_duration: 4.0         # [s]
       lane_changing_safety_check_duration: 8.0  # [s]
       prepare_duration: 4.0         # [s]
 

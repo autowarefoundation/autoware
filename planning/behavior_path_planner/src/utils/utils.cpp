@@ -1727,7 +1727,6 @@ PathWithLaneId setDecelerationVelocity(
 
 BehaviorModuleOutput getReferencePath(
   const lanelet::ConstLanelet & current_lane,
-  const std::shared_ptr<LaneFollowingParameters> & parameters,
   const std::shared_ptr<const PlannerData> & planner_data)
 {
   PathWithLaneId reference_path{};
@@ -1774,15 +1773,15 @@ BehaviorModuleOutput getReferencePath(
     const double lane_change_buffer = calcLaneChangeBuffer(p, num_lane_change);
 
     reference_path = setDecelerationVelocity(
-      *route_handler, reference_path, current_lanes, parameters->lane_change_prepare_duration,
+      *route_handler, reference_path, current_lanes, p.lane_change_prepare_duration,
       lane_change_buffer);
   }
 
   const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
 
   const auto expanded_lanes = expandLanelets(
-    shorten_lanes, parameters->drivable_area_left_bound_offset,
-    parameters->drivable_area_right_bound_offset, parameters->drivable_area_types_to_skip);
+    shorten_lanes, p.drivable_area_left_bound_offset, p.drivable_area_right_bound_offset,
+    p.drivable_area_types_to_skip);
 
   generateDrivableArea(reference_path, expanded_lanes, p.vehicle_length, planner_data);
 

@@ -22,7 +22,6 @@
   <arg name="side_shift_param_path"/>
   <arg name="avoidance_param_path"/>
   <arg name="lane_change_param_path"/>
-  <arg name="lane_following_param_path"/>
   <arg name="pull_over_param_path"/>
   <arg name="pull_out_param_path"/>
   <arg name="drivable_area_expansion_param_path"/>
