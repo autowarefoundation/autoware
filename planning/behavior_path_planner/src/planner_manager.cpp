@@ -386,10 +386,7 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
       candidate_module_ptrs_.push_back(*itr);
     }
 
-    approved_module_ptrs_.erase(
-      std::remove_if(
-        approved_module_ptrs_.begin(), approved_module_ptrs_.end(), waiting_approval_modules),
-      approved_module_ptrs_.end());
+    approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
   }
 
   /**
@@ -424,24 +421,55 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     return results.at(output_module_name);
   }();
 
+  const auto not_success_itr = std::find_if(
+    approved_module_ptrs_.rbegin(), approved_module_ptrs_.rend(),
+    [](const auto & m) { return m->getCurrentStatus() != ModuleStatus::SUCCESS; });
+
+  // convert reverse iterator -> iterator
+  const auto success_itr = std::prev(not_success_itr).base() - 1;
+
   /**
-   * 1.remove success modules. these modules' outputs are used as valid plan.
-   * 2.update root lanelet if lane change module succeeded path planning, and finished correctly.
+   * there is no succeeded module. return.
    */
-  {
-    const auto itr = std::find_if(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::SUCCESS; });
+  if (success_itr == approved_module_ptrs_.end()) {
+    return approved_modules_output;
+  }
 
-    if (itr == approved_module_ptrs_.begin()) {
-      if ((*itr)->name().find("lane_change") != std::string::npos) {
-        root_lanelet_ = updateRootLanelet(data);
-      }
+  const auto lane_change_itr = std::find_if(
+    success_itr, approved_module_ptrs_.end(),
+    [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
 
-      clearCandidateModules();
-      deleteExpiredModules(*itr);
-      approved_module_ptrs_.erase(itr);
-    }
+  /**
+   * remove success modules according to Last In First Out(LIFO) policy. when the next module is in
+   * ModuleStatus::RUNNING, the previous module keeps running even if it is in
+   * ModuleStatus::SUCCESS.
+   */
+  if (lane_change_itr == approved_module_ptrs_.end()) {
+    std::for_each(
+      success_itr, approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+
+    approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
+    clearCandidateModules();
+
+    return approved_modules_output;
+  }
+
+  /**
+   * as an exception, when there is lane change module is in succeeded modules, it doesn't remove
+   * any modules if module whose status is NOT ModuleStatus::SUCCESS exists. this is because the
+   * root lanelet is updated at the moment of lane change module's unregistering, and that causes
+   * change First In module's input.
+   */
+  if (not_success_itr == approved_module_ptrs_.rend()) {
+    std::for_each(
+      success_itr, approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+
+    approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
+    clearCandidateModules();
+
+    root_lanelet_ = updateRootLanelet(data);
+
+    return approved_modules_output;
   }
 
   return approved_modules_output;
