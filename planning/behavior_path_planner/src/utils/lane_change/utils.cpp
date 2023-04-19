@@ -436,25 +436,14 @@ bool getLaneChangePaths(
   return false;
 }
 
-#ifdef USE_OLD_ARCHITECTURE
-bool hasEnoughLength(
-  const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
-  [[maybe_unused]] const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
-  const RouteHandler & route_handler, const double minimum_lane_change_length)
-#else
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
   [[maybe_unused]] const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
   const RouteHandler & route_handler, const double minimum_lane_change_length,
   const Direction direction)
-#endif
 {
   const double lane_change_total_length = path.length.sum();
-#ifdef USE_OLD_ARCHITECTURE
-  const int num = std::abs(route_handler.getNumLaneToPreferredLane(target_lanes.back()));
-#else
   const int num = std::abs(route_handler.getNumLaneToPreferredLane(target_lanes.back(), direction));
-#endif
   const auto overall_graphs = route_handler.getOverallGraphPtr();
 
   const double lane_change_required_length = static_cast<double>(num) * minimum_lane_change_length;

@@ -28,8 +28,8 @@ namespace behavior_path_planner
 // Forward Declaration
 class AvoidanceModule;
 class AvoidanceByLCModule;
-#ifdef USE_OLD_ARCHITECTURE
 class LaneChangeModule;
+#ifdef USE_OLD_ARCHITECTURE
 class ExternalRequestLaneChangeModule;
 #else
 class LaneChangeInterface;
@@ -47,8 +47,8 @@ using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 class SceneModuleVisitor
 {
 public:
-#ifdef USE_OLD_ARCHITECTURE
   void visitLaneChangeModule(const LaneChangeModule * module) const;
+#ifdef USE_OLD_ARCHITECTURE
   void visitExternalRequestLaneChangeModule(const ExternalRequestLaneChangeModule * module) const;
 #else
   void visitLaneChangeInterface(const LaneChangeInterface * interface) const;

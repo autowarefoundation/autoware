@@ -60,41 +60,52 @@ public:
     std::unique_ptr<LaneChangeBase> && module_type);
 
   void processOnEntry() override;
+
   void processOnExit() override;
 
   bool isExecutionRequested() const override;
+
   bool isExecutionReady() const override;
 
   ModuleStatus updateState() override;
 
   BehaviorModuleOutput plan() override;
+
   BehaviorModuleOutput planWaitingApproval() override;
+
   CandidateOutput planCandidate() const override;
 
   std::shared_ptr<LaneChangeDebugMsgArray> get_debug_msg_array() const;
 
   void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
+
   void updateModuleParams(const std::shared_ptr<LaneChangeParameters> & parameters);
 
   void setData(const std::shared_ptr<const PlannerData> & data) override;
 
 private:
   std::shared_ptr<LaneChangeParameters> parameters_;
+
   std::unique_ptr<LaneChangeBase> module_type_;
 
   void resetPathIfAbort();
 
 protected:
   void setObjectDebugVisualization() const;
+
   void updateSteeringFactorPtr(const BehaviorModuleOutput & output);
 
   void updateSteeringFactorPtr(
     const CandidateOutput & output, const LaneChangePath & selected_path) const;
+
   mutable LaneChangeDebugMsgArray lane_change_debug_msg_array_;
 
   std::unique_ptr<PathWithLaneId> prev_approved_path_;
+
   void clearAbortApproval() { is_abort_path_approved_ = false; }
+
   bool is_abort_path_approved_{false};
+
   bool is_abort_approval_requested_{false};
 };
 }  // namespace behavior_path_planner

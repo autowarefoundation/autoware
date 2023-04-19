@@ -18,6 +18,9 @@ set(common_src
   src/scene_module/pull_out/pull_out_module.cpp
   src/scene_module/pull_over/pull_over_module.cpp
   src/scene_module/side_shift/side_shift_module.cpp
+  src/scene_module/lane_change/lane_change_module.cpp
+  src/scene_module/lane_change/normal.cpp
+  src/scene_module/lane_change/bt_normal.cpp
   src/turn_signal_decider.cpp
   src/utils/utils.cpp
   src/utils/path_utils.cpp
@@ -51,7 +54,6 @@ if(COMPILE_WITH_OLD_ARCHITECTURE)
     src/scene_module/scene_module_bt_node_interface.cpp
     src/scene_module/lane_following/lane_following_module.cpp
     src/scene_module/pull_over/pull_over_module.cpp
-    src/scene_module/lane_change/lane_change_module.cpp
     src/scene_module/lane_change/external_request_lane_change_module.cpp
     ${common_src}
   )
@@ -70,7 +72,6 @@ else()
     src/scene_module/side_shift/manager.cpp
     src/scene_module/lane_change/manager.cpp
     src/scene_module/lane_change/interface.cpp
-    src/scene_module/lane_change/normal.cpp
     src/scene_module/lane_change/external_request.cpp
     ${common_src}
   )

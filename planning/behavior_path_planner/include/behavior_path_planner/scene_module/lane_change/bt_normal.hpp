@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BT_NORMAL_HPP_
+#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BT_NORMAL_HPP_
 
-#include "behavior_path_planner/scene_module/lane_change/base_class.hpp"
+#include "behavior_path_planner/scene_module/lane_change/normal.hpp"
 
 #include <memory>
 #include <string>
@@ -32,38 +32,17 @@ using route_handler::Direction;
 using tier4_planning_msgs::msg::LaneChangeDebugMsg;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
-class NormalLaneChange : public LaneChangeBase
+class NormalLaneChangeBT : public NormalLaneChange
 {
 public:
-  NormalLaneChange(const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction);
+  NormalLaneChangeBT(const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction);
 
-  ~NormalLaneChange() override = default;
-
-  void updateLaneChangeStatus() override;
-
-  std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const override;
-
-  PathWithLaneId generatePlannedPath() override;
-
-  void generateExtendedDrivableArea(PathWithLaneId & path) override;
-
-  bool hasFinishedLaneChange() const override;
+  ~NormalLaneChangeBT() override = default;
 
   PathWithLaneId getReferencePath() const override;
 
-  bool isCancelConditionSatisfied() override;
-
-  bool isAbortConditionSatisfied(const Pose & pose) override;
-
-  void resetParameters() override;
-
-  TurnSignalInfo updateOutputTurnSignal() override;
-
 protected:
   lanelet::ConstLanelets getCurrentLanes() const override;
-
-  lanelet::ConstLanelets getLaneChangeLanes(
-    const lanelet::ConstLanelets & current_lanes) const override;
 
   int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const override;
 
@@ -72,18 +51,7 @@ protected:
     const double backward_path_length, const double prepare_length,
     const double prepare_velocity) const override;
 
-  bool getLaneChangePaths(
-    const lanelet::ConstLanelets & original_lanelets,
-    const lanelet::ConstLanelets & target_lanelets,
-    LaneChangePaths * candidate_paths) const override;
-
   std::vector<DrivableLanes> getDrivableLanes() const override;
-
-  bool isApprovedPathSafe(Pose & ego_pose_before_collision) const override;
-
-  void calcTurnSignalInfo() override;
-
-  bool isValidPath(const PathWithLaneId & path) const override;
 };
 }  // namespace behavior_path_planner
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BT_NORMAL_HPP_

@@ -259,7 +259,8 @@ int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) 
 }
 
 PathWithLaneId NormalLaneChange::getPrepareSegment(
-  const lanelet::ConstLanelets & current_lanes, const double backward_path_length,
+  const lanelet::ConstLanelets & current_lanes,
+  [[maybe_unused]] const double arc_length_from_current, const double backward_path_length,
   const double prepare_length, const double prepare_velocity) const
 {
   if (current_lanes.empty()) {
@@ -360,8 +361,9 @@ bool NormalLaneChange::getLaneChangePaths(
       break;
     }
 
-    const auto prepare_segment =
-      getPrepareSegment(original_lanelets, backward_path_length, prepare_length, prepare_velocity);
+    const auto prepare_segment = getPrepareSegment(
+      original_lanelets, arc_position_from_current.length, backward_path_length, prepare_length,
+      prepare_velocity);
 
     if (prepare_segment.points.empty()) {
       RCLCPP_DEBUG(
