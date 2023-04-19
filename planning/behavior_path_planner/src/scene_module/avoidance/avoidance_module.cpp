@@ -118,6 +118,11 @@ bool AvoidanceModule::isExecutionRequested() const
 #else
   fillShiftLine(avoid_data, debug_data_);
 
+  // there is object that should be avoid. return true.
+  if (!!avoid_data.stop_target_object) {
+    return true;
+  }
+
   if (avoid_data.unapproved_new_sl.empty()) {
     return false;
   }
