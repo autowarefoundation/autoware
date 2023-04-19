@@ -23,6 +23,7 @@ VoxelGridMapLoader::VoxelGridMapLoader(
 
   downsampled_map_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>(
     "debug/downsampled_map/pointcloud", rclcpp::QoS{1}.transient_local());
+  debug_ = node->declare_parameter<bool>("publish_debug_pcd");
 }
 
 bool VoxelGridMapLoader::is_close_points(
@@ -46,7 +47,7 @@ void VoxelGridMapLoader::publish_downsampled_map(
 
 bool VoxelGridMapLoader::is_close_to_neighbor_voxels(
   const pcl::PointXYZ & point, const double distance_threshold, const PointCloudPtr & map,
-  MultiVoxelGrid & voxel) const
+  VoxelGridPointXYZ & voxel) const
 {
   // check map downsampled pc
   if (map == NULL) {
@@ -202,7 +203,7 @@ bool VoxelGridMapLoader::is_close_to_neighbor_voxels(
 
 bool VoxelGridMapLoader::is_in_voxel(
   const pcl::PointXYZ & src_point, const pcl::PointXYZ & target_point,
-  const double distance_threshold, const PointCloudPtr & map, MultiVoxelGrid & voxel) const
+  const double distance_threshold, const PointCloudPtr & map, VoxelGridPointXYZ & voxel) const
 {
   int voxel_index =
     voxel.getCentroidIndexAt(voxel.getGridCoordinates(src_point.x, src_point.y, src_point.z));
@@ -244,7 +245,10 @@ void VoxelGridStaticMapLoader::onMapCallback(
   voxel_grid_.setSaveLeafLayout(true);
   voxel_grid_.filter(*voxel_map_ptr_);
   (*mutex_ptr_).unlock();
-  publish_downsampled_map(*voxel_map_ptr_);
+
+  if (debug_) {
+    publish_downsampled_map(*voxel_map_ptr_);
+  }
 }
 bool VoxelGridStaticMapLoader::is_close_to_map(
   const pcl::PointXYZ & point, const double distance_threshold)
@@ -267,6 +271,10 @@ VoxelGridDynamicMapLoader::VoxelGridDynamicMapLoader(
   auto main_sub_opt = rclcpp::SubscriptionOptions();
   main_sub_opt.callback_group = main_callback_group;
 
+  const auto localization_node = component_interface_utils::NodeAdaptor(node);
+  localization_node.init_sub(
+    sub_pose_initializer_state_, this, &VoxelGridDynamicMapLoader::onPoseInitializerCallback);
+
   sub_estimated_pose_ = node->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "pose_with_covariance", rclcpp::QoS{1},
     std::bind(&VoxelGridDynamicMapLoader::onEstimatedPoseCallback, this, std::placeholders::_1),
@@ -282,16 +290,46 @@ VoxelGridDynamicMapLoader::VoxelGridDynamicMapLoader(
     RCLCPP_INFO(logger_, "service not available, waiting again ...");
   }
 
-  timer_callback_group_ = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  map_update_timer_ = node->create_wall_timer(
-    std::chrono::milliseconds(timer_interval_ms),
-    std::bind(&VoxelGridDynamicMapLoader::timer_callback, this), timer_callback_group_);
+  const auto period_ns = rclcpp::Rate(timer_interval_ms).period();
+  map_update_timer_ = rclcpp::create_timer(
+    node, node->get_clock(), period_ns, std::bind(&VoxelGridDynamicMapLoader::timer_callback, this),
+    timer_callback_group_);
 }
-
+void VoxelGridDynamicMapLoader::onPoseInitializerCallback(
+  const InitializationState::Message::ConstSharedPtr msg)
+{
+  initialization_state_.state = msg->state;
+  if (msg->state != InitializationState::Message::INITIALIZED) {
+    current_position_ = std::nullopt;
+    last_updated_position_ = std::nullopt;
+    RCLCPP_INFO(logger_, "Initializing pose... Reset the position of Vehicle");
+  }
+}
 void VoxelGridDynamicMapLoader::onEstimatedPoseCallback(
   geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr msg)
 {
   current_position_ = msg->pose.pose.position;
+}
+bool VoxelGridDynamicMapLoader::is_close_to_next_map_grid(
+  const pcl::PointXYZ & point, const int current_map_grid_index, const double distance_threshold)
+{
+  int neighbor_map_grid_index = static_cast<int>(
+    std::floor((point.x - origin_x_) / map_grid_size_x_) +
+    map_grids_x_ * std::floor((point.y - origin_y_) / map_grid_size_y_));
+
+  if (
+    static_cast<size_t>(neighbor_map_grid_index) >= current_voxel_grid_array_.size() ||
+    neighbor_map_grid_index == current_map_grid_index ||
+    current_voxel_grid_array_.at(neighbor_map_grid_index) != NULL) {
+    return false;
+  }
+  if (is_close_to_neighbor_voxels(
+        point, distance_threshold,
+        current_voxel_grid_array_.at(neighbor_map_grid_index)->map_cell_pc_ptr,
+        current_voxel_grid_array_.at(neighbor_map_grid_index)->map_cell_voxel_grid)) {
+    return true;
+  }
+  return false;
 }
 
 bool VoxelGridDynamicMapLoader::is_close_to_map(
@@ -300,37 +338,56 @@ bool VoxelGridDynamicMapLoader::is_close_to_map(
   if (current_voxel_grid_dict_.size() == 0) {
     return false;
   }
-  std::vector<std::string> neighbor_map_cells_id;
 
-  for (auto & kv : current_voxel_grid_dict_) {
-    if (point.x < kv.second.min_b_x - distance_threshold) {
-      continue;
-    }
-    if (point.y < kv.second.min_b_y - distance_threshold) {
-      continue;
-    }
-    if (point.x > kv.second.max_b_x + distance_threshold) {
-      continue;
-    }
-    if (point.y > kv.second.max_b_y + distance_threshold) {
-      continue;
-    }
-    // the map cell is found
-    neighbor_map_cells_id.push_back(kv.first);
-    // check distance
-    if (kv.second.map_cell_pc_ptr == NULL) {
-      continue;
-    }
-    if (is_close_to_neighbor_voxels(
-          point, distance_threshold, kv.second.map_cell_pc_ptr, kv.second.map_cell_voxel_grid)) {
-      return true;
-    }
+  // Compare point with map grid that point belong to
+
+  int map_grid_index = static_cast<int>(
+    std::floor((point.x - origin_x_) / map_grid_size_x_) +
+    map_grids_x_ * std::floor((point.y - origin_y_) / map_grid_size_y_));
+
+  if (static_cast<size_t>(map_grid_index) >= current_voxel_grid_array_.size()) {
+    return false;
   }
+  if (
+    current_voxel_grid_array_.at(map_grid_index) != NULL &&
+    is_close_to_neighbor_voxels(
+      point, distance_threshold, current_voxel_grid_array_.at(map_grid_index)->map_cell_pc_ptr,
+      current_voxel_grid_array_.at(map_grid_index)->map_cell_voxel_grid)) {
+    return true;
+  }
+
+  // Compare point with the neighbor map cells if point close to map cell boundary
+
+  if (is_close_to_next_map_grid(
+        pcl::PointXYZ(point.x - distance_threshold, point.y, point.z), map_grid_index,
+        distance_threshold)) {
+    return true;
+  }
+
+  if (is_close_to_next_map_grid(
+        pcl::PointXYZ(point.x + distance_threshold, point.y, point.z), map_grid_index,
+        distance_threshold)) {
+    return true;
+  }
+
+  if (is_close_to_next_map_grid(
+        pcl::PointXYZ(point.x, point.y - distance_threshold, point.z), map_grid_index,
+        distance_threshold)) {
+    return true;
+  }
+  if (is_close_to_next_map_grid(
+        pcl::PointXYZ(point.x, point.y + distance_threshold, point.z), map_grid_index,
+        distance_threshold)) {
+    return true;
+  }
+
   return false;
 }
 void VoxelGridDynamicMapLoader::timer_callback()
 {
-  if (current_position_ == std::nullopt) {
+  if (
+    current_position_ == std::nullopt ||
+    initialization_state_.state != InitializationState::Message::INITIALIZED) {
     return;
   }
   if (last_updated_position_ == std::nullopt) {
@@ -375,14 +432,16 @@ void VoxelGridDynamicMapLoader::request_update_map(const geometry_msgs::msg::Poi
     }
     status = result.wait_for(std::chrono::seconds(1));
   }
-
   //
   if (status == std::future_status::ready) {
     if (
-      result.get()->new_pointcloud_with_ids.size() > 0 || result.get()->ids_to_remove.size() > 0) {
-      updateDifferentialMapCells(
-        result.get()->new_pointcloud_with_ids, result.get()->ids_to_remove);
+      result.get()->new_pointcloud_with_ids.size() == 0 &&
+      result.get()->ids_to_remove.size() == 0) {
+      return;
+    }
+    updateDifferentialMapCells(result.get()->new_pointcloud_with_ids, result.get()->ids_to_remove);
+    if (debug_) {
+      publish_downsampled_map(getCurrentDownsampledMapPc());
     }
   }
-  publish_downsampled_map(getCurrentDownsampledMapPc());
 }

@@ -44,6 +44,7 @@ class PointcloudMapFilterPipeline:
             "map_update_distance_threshold"
         ]
         self.map_loader_radius = self.pointcloud_map_filter_param["map_loader_radius"]
+        self.publish_debug_pcd = self.pointcloud_map_filter_param["publish_debug_pcd"]
 
     def create_pipeline(self):
         if self.use_down_sample_filter:
@@ -72,6 +73,7 @@ class PointcloudMapFilterPipeline:
                         "use_dynamic_map_loading": self.use_dynamic_map_loading,
                         "map_update_distance_threshold": self.map_update_distance_threshold,
                         "map_loader_radius": self.map_loader_radius,
+                        "publish_debug_pcd": self.publish_debug_pcd,
                         "input_frame": "map",
                     }
                 ],
@@ -127,6 +129,7 @@ class PointcloudMapFilterPipeline:
                         "use_dynamic_map_loading": self.use_dynamic_map_loading,
                         "map_update_distance_threshold": self.map_update_distance_threshold,
                         "map_loader_radius": self.map_loader_radius,
+                        "publish_debug_pcd": self.publish_debug_pcd,
                         "input_frame": "map",
                     }
                 ],

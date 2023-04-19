@@ -18,6 +18,8 @@
   <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_map_msgs</depend>
+  <depend>component_interface_specs</depend>
+  <depend>component_interface_utils</depend>
   <depend>grid_map_pcl</depend>
   <depend>grid_map_ros</depend>
   <depend>pcl_conversions</depend>

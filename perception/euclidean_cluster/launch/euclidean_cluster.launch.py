@@ -56,6 +56,19 @@ def launch_setup(context, *args, **kwargs):
             ("input", "voxel_grid_filtered/pointcloud"),
             ("map", LaunchConfiguration("input_map")),
             ("output", "compare_map_filtered/pointcloud"),
+            ("map_loader_service", "/map/get_differential_pointcloud_map"),
+            ("pose_with_covariance", "/localization/pose_estimator/pose_with_covariance"),
+        ],
+        parameters=[
+            {
+                "distance_threshold": 0.5,
+                "timer_interval_ms": 100,
+                "use_dynamic_map_loading": True,
+                "map_update_distance_threshold": 10.0,
+                "map_loader_radius": 150.0,
+                "publish_debug_pcd": True,
+                "input_frame": "map",
+            }
         ],
     )
 
