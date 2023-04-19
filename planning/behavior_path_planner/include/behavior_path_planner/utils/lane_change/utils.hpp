@@ -48,6 +48,17 @@ using marker_utils::CollisionCheckDebug;
 using route_handler::Direction;
 using tier4_autoware_utils::Polygon2d;
 
+double calcLaneChangeResampleInterval(
+  const double lane_changing_length, const double lane_changing_velocity);
+
+std::vector<int64_t> replaceWithSortedIds(
+  const std::vector<int64_t> & original_lane_ids,
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids);
+
+std::vector<std::vector<int64_t>> getSortedLaneIds(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes, const double rough_shift_length);
+
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 
 bool isPathInLanelets(
@@ -174,6 +185,8 @@ LaneChangeTargetObjectIndices filterObjectIndices(
 bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameter);
 
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
+
+double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer);
 
 std::string getStrDirection(const std::string & name, const Direction direction);
 

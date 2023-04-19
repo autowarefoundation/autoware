@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 
-namespace
+namespace behavior_path_planner::utils::lane_change
 {
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
@@ -49,74 +49,10 @@ using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 
-std::vector<std::vector<int64_t>> getSortedLaneIds(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const double rough_shift_length)
-{
-  std::vector<std::vector<int64_t>> sorted_lane_ids{};
-  sorted_lane_ids.reserve(target_lanes.size());
-  const auto get_sorted_lane_ids = [&](const lanelet::ConstLanelet & target_lane) {
-    const auto routing_graph_ptr = route_handler.getRoutingGraphPtr();
-    lanelet::ConstLanelet lane;
-    if (rough_shift_length < 0.0) {
-      // lane change to the left, so I wan to take the lane right to target
-      const auto has_target_right = routing_graph_ptr->right(target_lane);
-      if (has_target_right) {
-        lane = *has_target_right;
-      }
-    } else if (rough_shift_length > 0.0) {
-      const auto has_target_left = routing_graph_ptr->left(target_lane);
-      if (has_target_left) {
-        lane = *has_target_left;
-      }
-    } else {
-      lane = target_lane;
-    }
-
-    const auto find_same_id = std::find_if(
-      current_lanes.cbegin(), current_lanes.cend(),
-      [&lane](const lanelet::ConstLanelet & orig) { return orig.id() == lane.id(); });
-
-    if (find_same_id == current_lanes.cend()) {
-      return std::vector{target_lane.id()};
-    }
-
-    if (target_lane.id() > find_same_id->id()) {
-      return std::vector{find_same_id->id(), target_lane.id()};
-    }
-
-    return std::vector{target_lane.id(), find_same_id->id()};
-  };
-
-  std::transform(
-    target_lanes.cbegin(), target_lanes.cend(), std::back_inserter(sorted_lane_ids),
-    get_sorted_lane_ids);
-
-  return sorted_lane_ids;
-}
-
-std::vector<int64_t> replaceWithSortedIds(
-  const std::vector<int64_t> & original_lane_ids,
-  const std::vector<std::vector<int64_t>> & sorted_lane_ids)
-{
-  for (const auto original_id : original_lane_ids) {
-    for (const auto & sorted_id : sorted_lane_ids) {
-      if (std::find(sorted_id.cbegin(), sorted_id.cend(), original_id) != sorted_id.cend()) {
-        return sorted_id;
-      }
-    }
-  }
-  return original_lane_ids;
-}
-}  // namespace
-
-namespace behavior_path_planner::utils::lane_change
-{
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using lanelet::ArcCoordinates;
-using utils::getHighestProbLabel;
 
-inline double calcLaneChangeResampleInterval(
+double calcLaneChangeResampleInterval(
   const double lane_changing_length, const double lane_changing_velocity)
 {
   constexpr auto min_resampling_points{30.0};
@@ -1421,4 +1357,63 @@ std::string getStrDirection(const std::string & name, const Direction direction)
   return "";
 }
 
+std::vector<std::vector<int64_t>> getSortedLaneIds(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes, const double rough_shift_length)
+{
+  std::vector<std::vector<int64_t>> sorted_lane_ids{};
+  sorted_lane_ids.reserve(target_lanes.size());
+  const auto get_sorted_lane_ids = [&](const lanelet::ConstLanelet & target_lane) {
+    const auto routing_graph_ptr = route_handler.getRoutingGraphPtr();
+    lanelet::ConstLanelet lane;
+    if (rough_shift_length < 0.0) {
+      // lane change to the left, so i wan to take the lane right to target
+      const auto has_target_right = routing_graph_ptr->right(target_lane);
+      if (has_target_right) {
+        lane = *has_target_right;
+      }
+    } else if (rough_shift_length > 0.0) {
+      const auto has_target_left = routing_graph_ptr->left(target_lane);
+      if (has_target_left) {
+        lane = *has_target_left;
+      }
+    } else {
+      lane = target_lane;
+    }
+
+    const auto find_same_id = std::find_if(
+      current_lanes.cbegin(), current_lanes.cend(),
+      [&lane](const lanelet::ConstLanelet & orig) { return orig.id() == lane.id(); });
+
+    if (find_same_id == current_lanes.cend()) {
+      return std::vector{target_lane.id()};
+    }
+
+    if (target_lane.id() > find_same_id->id()) {
+      return std::vector{find_same_id->id(), target_lane.id()};
+    }
+
+    return std::vector{target_lane.id(), find_same_id->id()};
+  };
+
+  std::transform(
+    target_lanes.cbegin(), target_lanes.cend(), std::back_inserter(sorted_lane_ids),
+    get_sorted_lane_ids);
+
+  return sorted_lane_ids;
+}
+
+std::vector<int64_t> replaceWithSortedIds(
+  const std::vector<int64_t> & original_lane_ids,
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids)
+{
+  for (const auto original_id : original_lane_ids) {
+    for (const auto & sorted_id : sorted_lane_ids) {
+      if (std::find(sorted_id.cbegin(), sorted_id.cend(), original_id) != sorted_id.cend()) {
+        return sorted_id;
+      }
+    }
+  }
+  return original_lane_ids;
+}
 }  // namespace behavior_path_planner::utils::lane_change

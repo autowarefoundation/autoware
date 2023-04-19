@@ -39,19 +39,13 @@ public:
 
   ~NormalLaneChange() override = default;
 
-  void updateLaneChangeStatus(
-    const PathWithLaneId & prev_module_reference_path,
-    const PathWithLaneId & previous_module_path) override;
+  void updateLaneChangeStatus() override;
 
-  std::pair<bool, bool> getSafePath(
-    const PathWithLaneId & prev_module_reference_path, const PathWithLaneId & prev_module_path,
-    LaneChangePath & safe_path) const override;
+  std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const override;
 
-  PathWithLaneId generatePlannedPath(
-    const std::vector<DrivableLanes> & prev_drivable_lanes) override;
+  PathWithLaneId generatePlannedPath() override;
 
-  void generateExtendedDrivableArea(
-    const std::vector<DrivableLanes> & prev_drivable_lanes, PathWithLaneId & path) override;
+  void generateExtendedDrivableArea(PathWithLaneId & path) override;
 
   bool hasFinishedLaneChange() const override;
 
@@ -66,8 +60,23 @@ public:
   TurnSignalInfo updateOutputTurnSignal() override;
 
 protected:
+  lanelet::ConstLanelets getCurrentLanes() const override;
+
   lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes) const override;
+
+  int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const override;
+
+  PathWithLaneId getPrepareSegment(
+    const lanelet::ConstLanelets & current_lanes, const double backward_path_length,
+    const double prepare_length, const double prepare_velocity) const override;
+
+  bool getLaneChangePaths(
+    const lanelet::ConstLanelets & original_lanelets,
+    const lanelet::ConstLanelets & target_lanelets,
+    LaneChangePaths * candidate_paths) const override;
+
+  std::vector<DrivableLanes> getDrivableLanes() const override;
 
   bool isApprovedPathSafe(Pose & ego_pose_before_collision) const override;
 

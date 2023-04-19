@@ -45,8 +45,9 @@ LaneChangeInterface::LaneChangeInterface(
 void LaneChangeInterface::processOnEntry()
 {
   waitApproval();
-  module_type_->updateLaneChangeStatus(
+  module_type_->setPreviousModulePaths(
     *getPreviousModuleOutput().reference_path, *getPreviousModuleOutput().path);
+  module_type_->updateLaneChangeStatus();
 }
 
 void LaneChangeInterface::processOnExit()
@@ -62,8 +63,9 @@ bool LaneChangeInterface::isExecutionRequested() const
   }
 
   LaneChangePath selected_path;
-  const auto [found_valid_path, found_safe_path] = module_type_->getSafePath(
-    *getPreviousModuleOutput().reference_path, *getPreviousModuleOutput().path, selected_path);
+  module_type_->setPreviousModulePaths(
+    *getPreviousModuleOutput().reference_path, *getPreviousModuleOutput().path);
+  const auto [found_valid_path, found_safe_path] = module_type_->getSafePath(selected_path);
 
   return found_valid_path;
 }
@@ -75,8 +77,9 @@ bool LaneChangeInterface::isExecutionReady() const
   }
 
   LaneChangePath selected_path;
-  const auto [found_valid_path, found_safe_path] = module_type_->getSafePath(
-    *getPreviousModuleOutput().reference_path, *getPreviousModuleOutput().path, selected_path);
+  module_type_->setPreviousModulePaths(
+    *getPreviousModuleOutput().reference_path, *getPreviousModuleOutput().path);
+  const auto [found_valid_path, found_safe_path] = module_type_->getSafePath(selected_path);
 
   return found_safe_path;
 }
@@ -112,7 +115,8 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   resetPathCandidate();
   resetPathReference();
 
-  const auto path = module_type_->generatePlannedPath(getPreviousModuleOutput().drivable_lanes);
+  module_type_->setPreviousDrivableLanes(getPreviousModuleOutput().drivable_lanes);
+  const auto path = module_type_->generatePlannedPath();
 
   if (!module_type_->isValidPath()) {
     return {};
@@ -146,8 +150,9 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   out.reference_path = getPreviousModuleOutput().reference_path;
   out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
 
-  module_type_->updateLaneChangeStatus(
-    *getPreviousModuleOutput().reference_path, *prev_approved_path_);
+  module_type_->setPreviousModulePaths(
+    *getPreviousModuleOutput().reference_path, *getPreviousModuleOutput().path);
+  module_type_->updateLaneChangeStatus();
 
   if (!module_type_->isValidPath()) {
     path_candidate_ = std::make_shared<PathWithLaneId>();
