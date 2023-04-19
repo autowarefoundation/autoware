@@ -31,6 +31,11 @@ void PlanningInterfaceTestManager::publishOdometry(
   test_utils::publishData<Odometry>(test_node_, target_node, topic_name, odom_pub_);
 }
 
+void PlanningInterfaceTestManager::publishOdometry(rclcpp::Node::SharedPtr target_node)
+{
+  publishOdometry(target_node, input_odometry_name_);
+}
+
 void PlanningInterfaceTestManager::publishMaxVelocity(
   rclcpp::Node::SharedPtr target_node, std::string topic_name)
 {
@@ -100,6 +105,11 @@ void PlanningInterfaceTestManager::publishInitialPose(
   rclcpp::Node::SharedPtr target_node, std::string topic_name)
 {
   publishInitialPoseData(target_node, topic_name);
+}
+
+void PlanningInterfaceTestManager::publishInitialPose(rclcpp::Node::SharedPtr target_node)
+{
+  publishInitialPose(target_node, input_initial_pose_name_);
 }
 
 void PlanningInterfaceTestManager::publishParkingState(
@@ -172,11 +182,14 @@ void PlanningInterfaceTestManager::publishExternalIntersectionStates(
 }
 
 void PlanningInterfaceTestManager::publishInitialPoseData(
-  rclcpp::Node::SharedPtr target_node, std::string topic_name)
+  rclcpp::Node::SharedPtr target_node, std::string topic_name, double shift)
 {
   std::shared_ptr<Odometry> current_odometry = std::make_shared<Odometry>();
+  const auto yaw = 0.9724497591854532;
+  const auto shift_x = shift * std::sin(yaw);
+  const auto shift_y = shift * std::cos(yaw);
   const std::array<double, 4> start_pose{
-    3722.16015625, 73723.515625, 0.233112560494183, 0.9724497591854532};
+    3722.16015625 + shift_x, 73723.515625 + shift_y, 0.233112560494183, yaw};
   current_odometry->pose.pose = test_utils::createPose(start_pose);
   current_odometry->header.frame_id = "map";
 
@@ -234,6 +247,16 @@ void PlanningInterfaceTestManager::setRouteInputTopicName(std::string topic_name
 void PlanningInterfaceTestManager::setPathWithLaneIdTopicName(std::string topic_name)
 {
   input_path_with_lane_id_name_ = topic_name;
+}
+
+void PlanningInterfaceTestManager::setInitialPoseTopicName(std::string topic_name)
+{
+  input_initial_pose_name_ = topic_name;
+}
+
+void PlanningInterfaceTestManager::setOdometryTopicName(std::string topic_name)
+{
+  input_odometry_name_ = topic_name;
 }
 
 void PlanningInterfaceTestManager::publishNominalTrajectory(
@@ -369,6 +392,69 @@ void PlanningInterfaceTestManager::testWithAbnormalPathWithLaneId(
 {
   publishAbNominalPathWithLaneId(target_node, input_path_with_lane_id_name_);
   test_utils::spinSomeNodes(test_node_, target_node, 5);
+}
+
+// put all abnormal ego pose related tests in this functions to run all tests with one line code
+void PlanningInterfaceTestManager::testRouteWithInvalidEgoPose(rclcpp::Node::SharedPtr target_node)
+{
+  testOffTrackFromRoute(target_node);
+}
+
+// put all abnormal ego pose related tests in this functions to run all tests with one line code
+void PlanningInterfaceTestManager::testPathWithInvalidEgoPose(rclcpp::Node::SharedPtr target_node)
+{
+  testOffTrackFromPath(target_node);
+}
+
+// put all abnormal ego pose related tests in this functions to run all tests with one line code
+void PlanningInterfaceTestManager::testPathWithLaneIdWithInvalidEgoPose(
+  rclcpp::Node::SharedPtr target_node)
+{
+  testOffTrackFromPathWithLaneId(target_node);
+}
+
+// put all abnormal ego pose related tests in this functions to run all tests with one line code
+void PlanningInterfaceTestManager::testTrajectoryWithInvalidEgoPose(
+  rclcpp::Node::SharedPtr target_node)
+{
+  testOffTrackFromTrajectory(target_node);
+}
+
+void PlanningInterfaceTestManager::testOffTrackFromRoute(rclcpp::Node::SharedPtr target_node)
+{
+  if (input_route_name_.empty()) {
+    throw std::runtime_error("route topic name is not set");
+  }
+  if (input_initial_pose_name_.empty()) {
+    throw std::runtime_error("initial topic pose name is not set");
+  }
+
+  publishBehaviorNominalRoute(target_node, input_route_name_);
+
+  const std::vector<double> deviation_from_route = {0.0, 1.0, 10.0, 100.0};
+  for (const auto & deviation : deviation_from_route) {
+    publishInitialPoseData(target_node, input_initial_pose_name_, deviation);
+    test_utils::spinSomeNodes(test_node_, target_node, 5);
+  }
+}
+
+void PlanningInterfaceTestManager::testOffTrackFromPath(rclcpp::Node::SharedPtr target_node)
+{
+  // write me
+  (void)target_node;
+}
+
+void PlanningInterfaceTestManager::testOffTrackFromPathWithLaneId(
+  rclcpp::Node::SharedPtr target_node)
+{
+  // write me
+  (void)target_node;
+}
+
+void PlanningInterfaceTestManager::testOffTrackFromTrajectory(rclcpp::Node::SharedPtr target_node)
+{
+  // write me
+  (void)target_node;
 }
 
 int PlanningInterfaceTestManager::getReceivedTopicNum()
