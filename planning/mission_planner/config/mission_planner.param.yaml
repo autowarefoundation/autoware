@@ -6,3 +6,4 @@
     arrival_check_duration: 1.0
     goal_angle_threshold_deg: 45.0
     enable_correct_goal_pose: false
+    reroute_time_threshold: 10.0
