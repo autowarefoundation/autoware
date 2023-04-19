@@ -24,6 +24,7 @@
   <depend>autoware_auto_planning_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>nav_msgs</depend>
+  <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
@@ -35,6 +36,7 @@
   <exec_depend>ros2cli</exec_depend>
   <exec_depend>topic_tools</exec_depend>
 
+  <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 
