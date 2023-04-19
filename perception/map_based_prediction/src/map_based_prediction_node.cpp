@@ -188,6 +188,25 @@ void updateLateralKinematicsVector(
   }
 }
 
+/**
+ * @brief calc absolute normalized yaw difference between lanelet and object
+ *
+ * @param object
+ * @param lanelet
+ * @return double
+ */
+double calcAbsYawDiffBetweenLaneletAndObject(
+  const TrackedObject & object, const lanelet::ConstLanelet & lanelet)
+{
+  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+  const double lane_yaw =
+    lanelet::utils::getLaneletAngle(lanelet, object.kinematics.pose_with_covariance.pose.position);
+  const double delta_yaw = object_yaw - lane_yaw;
+  const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+  const double abs_norm_delta = std::fabs(normalized_delta_yaw);
+  return abs_norm_delta;
+}
+
 lanelet::ConstLanelets getLanelets(const map_based_prediction::LaneletsData & data)
 {
   lanelet::ConstLanelets lanelets;
@@ -213,7 +232,9 @@ EntryPoint getCrosswalkEntryPoint(const lanelet::ConstLanelet & crosswalk)
   return std::make_pair(front_entry_point, back_entry_point);
 }
 
-bool withinLanelet(const TrackedObject & object, const lanelet::ConstLanelet & lanelet)
+bool withinLanelet(
+  const TrackedObject & object, const lanelet::ConstLanelet & lanelet,
+  const bool use_yaw_information = false, const float yaw_threshold = 0.6)
 {
   using Point = boost::geometry::model::d2::point_xy<double>;
 
@@ -222,11 +243,24 @@ bool withinLanelet(const TrackedObject & object, const lanelet::ConstLanelet & l
 
   auto polygon = lanelet.polygon2d().basicPolygon();
   boost::geometry::correct(polygon);
+  bool with_in_polygon = boost::geometry::within(p_object, polygon);
 
-  return boost::geometry::within(p_object, polygon);
+  if (!use_yaw_information) {
+    return with_in_polygon;
+  } else {
+    // use yaw angle to compare
+    const double abs_yaw_diff = calcAbsYawDiffBetweenLaneletAndObject(object, lanelet);
+    if (abs_yaw_diff < yaw_threshold) {
+      return with_in_polygon;
+    } else {
+      return false;
+    }
+  }
 }
 
-bool withinRoadLanelet(const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr)
+bool withinRoadLanelet(
+  const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const bool use_yaw_information = false)
 {
   using Point = boost::geometry::model::d2::point_xy<double>;
 
@@ -249,7 +283,7 @@ bool withinRoadLanelet(const TrackedObject & object, const lanelet::LaneletMapPt
       }
     }
 
-    if (withinLanelet(object, lanelet.second)) {
+    if (withinLanelet(object, lanelet.second, use_yaw_information)) {
       return true;
     }
   }
@@ -387,6 +421,61 @@ bool hasPotentialToReach(
   return false;
 }
 
+/**
+ * @brief change label for prediction
+ *
+ * @param label
+ * @return ObjectClassification::_label_type
+ */
+ObjectClassification::_label_type changeLabelForPrediction(
+  const ObjectClassification::_label_type & label, const TrackedObject & object,
+  const lanelet::LaneletMapPtr & lanelet_map_ptr_)
+{
+  // for car like vehicle do not change labels
+  if (
+    label == ObjectClassification::CAR || label == ObjectClassification::BUS ||
+    label == ObjectClassification::TRUCK || label == ObjectClassification::TRAILER ||
+    label == ObjectClassification::UNKNOWN) {
+    return label;
+  } else if (  // for bicycle and motorcycle
+    label == ObjectClassification::MOTORCYCLE || label == ObjectClassification::BICYCLE) {
+    // if object is within road lanelet and satisfies yaw constraints
+    const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
+    const float high_speed_threshold = 25.0 / 18.0 * 5.0;  // High speed bycicle 25 km/h
+    const bool high_speed_object =
+      object.kinematics.twist_with_covariance.twist.linear.x > high_speed_threshold;
+
+    // if the object is within lanelet, do the same estimation with vehicle
+    if (within_road_lanelet) {
+      return ObjectClassification::MOTORCYCLE;
+    } else if (high_speed_object) {
+      // high speed object outside road lanelet will move like unknown object
+      return ObjectClassification::UNKNOWN;
+    } else {
+      return label == ObjectClassification::BICYCLE;
+    }
+  } else if (label == ObjectClassification::PEDESTRIAN) {
+    const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
+    const float max_velocity_for_human_mps =
+      25.0 / 18.0 * 5.0;  // Max human being motion speed is 25km/h
+    const bool high_speed_object =
+      object.kinematics.twist_with_covariance.twist.linear.x > max_velocity_for_human_mps;
+    // fast, human-like object: like segway
+    if (within_road_lanelet && high_speed_object) {
+      return label;  // currently do nothing
+      // return ObjectClassification::MOTORCYCLE;
+    } else if (high_speed_object) {
+      return label;  // currently do nothing
+      // fast human outside road lanelet will move like unknown object
+      // return ObjectClassification::UNKNOWN;
+    } else {
+      return label;
+    }
+  } else {
+    return label;
+  }
+}
+
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
 : Node("map_based_prediction", node_options), debug_accumulated_time_(0.0)
 {
@@ -514,7 +603,9 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
       transformed_object.kinematics.pose_with_covariance.pose = pose_in_map.pose;
     }
 
-    const auto & label = transformed_object.classification.front().label;
+    // get tracking label and update it for the prediction
+    const auto & label_ = transformed_object.classification.front().label;
+    const auto label = changeLabelForPrediction(label_, object, lanelet_map_ptr_);
 
     // For crosswalk user
     if (label == ObjectClassification::PEDESTRIAN || label == ObjectClassification::BICYCLE) {
