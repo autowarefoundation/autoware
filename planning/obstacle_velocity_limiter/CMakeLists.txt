@@ -35,6 +35,7 @@ if(BUILD_TESTING)
     test/test_obstacles.cpp
     test/test_collision_distance.cpp
     test/test_occupancy_grid_utils.cpp
+    test/test_${PROJECT_NAME}_node_interface.cpp
   )
   target_link_libraries(test_${PROJECT_NAME}
     obstacle_velocity_limiter_node

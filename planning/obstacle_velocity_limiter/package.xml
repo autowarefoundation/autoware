@@ -23,6 +23,7 @@
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>pcl_ros</depend>
+  <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
