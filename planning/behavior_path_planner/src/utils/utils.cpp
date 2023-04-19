@@ -1767,12 +1767,12 @@ BehaviorModuleOutput getReferencePath(
   const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
 
   {
-    const int num_lane_change =
-      std::abs(route_handler->getNumLaneToPreferredLane(current_lanes.back()));
+    const auto shift_intervals =
+      route_handler->getLateralIntervalsToPreferredLane(current_lanes.back());
 
-    const double lane_change_buffer = calcLaneChangeBuffer(p, num_lane_change);
+    const double lane_change_buffer = utils::calcMinimumLaneChangeLength(p, shift_intervals);
 
-    reference_path = setDecelerationVelocity(
+    reference_path = utils::setDecelerationVelocity(
       *route_handler, reference_path, current_lanes, p.lane_change_prepare_duration,
       lane_change_buffer);
   }
@@ -1991,11 +1991,39 @@ double calcTotalLaneChangeLength(
   return minimum_lane_change_distance + end_of_lane_buffer * static_cast<double>(include_buffer);
 }
 
+double calcLaneChangingTime(
+  const double lane_changing_velocity, const double shift_length,
+  const BehaviorPathPlannerParameters & common_parameter)
+{
+  const double lateral_acc =
+    lane_changing_velocity < common_parameter.lateral_acc_switching_velocity
+      ? common_parameter.lane_changing_lateral_acc_at_low_velocity
+      : common_parameter.lane_changing_lateral_acc;
+  const double & lateral_jerk = common_parameter.lane_changing_lateral_jerk;
+  return PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, lateral_acc);
+}
+
 double calcLaneChangeBuffer(
   const BehaviorPathPlannerParameters & common_param, const int num_lane_change,
   const double length_to_intersection)
 {
   return num_lane_change * calcTotalLaneChangeLength(common_param) + length_to_intersection;
+}
+
+double calcMinimumLaneChangeLength(
+  const BehaviorPathPlannerParameters & common_param, const std::vector<double> & shift_intervals,
+  const double length_to_intersection)
+{
+  const double & vel = common_param.minimum_lane_changing_velocity;
+
+  double accumulated_length =
+    length_to_intersection + common_param.backward_length_buffer_for_end_of_lane;
+  for (const auto & shift_interval : shift_intervals) {
+    const double t = calcLaneChangingTime(vel, shift_interval, common_param);
+    accumulated_length += vel * t + common_param.minimum_prepare_length;
+  }
+
+  return accumulated_length;
 }
 
 lanelet::ConstLanelets getLaneletsFromPath(

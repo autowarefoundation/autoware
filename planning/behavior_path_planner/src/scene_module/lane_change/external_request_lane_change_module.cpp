@@ -310,7 +310,7 @@ lanelet::ConstLanelets ExternalRequestLaneChangeModule::getLaneChangeLanes(
 {
   lanelet::ConstLanelets lane_change_lanes;
   const auto & route_handler = planner_data_->route_handler;
-  const auto minimum_lane_changing_length = planner_data_->parameters.minimum_lane_changing_length;
+  const auto minimum_prepare_length = planner_data_->parameters.minimum_prepare_length;
   const auto prepare_duration = parameters_->prepare_duration;
   const auto current_pose = getEgoPose();
   const auto current_twist = getEgoTwist();
@@ -323,7 +323,7 @@ lanelet::ConstLanelets ExternalRequestLaneChangeModule::getLaneChangeLanes(
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
   const double lane_change_prepare_length =
-    std::max(current_twist.linear.x * prepare_duration, minimum_lane_changing_length);
+    std::max(current_twist.linear.x * prepare_duration, minimum_prepare_length);
   lanelet::ConstLanelets current_check_lanes =
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);
   lanelet::ConstLanelet lane_change_lane;

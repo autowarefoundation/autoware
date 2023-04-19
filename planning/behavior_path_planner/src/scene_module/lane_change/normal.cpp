@@ -231,10 +231,10 @@ lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(current_lanes, getEgoPose(), &current_lane);
 
-  const auto minimum_lane_changing_length = planner_data_->parameters.minimum_lane_changing_length;
+  const auto minimum_prepare_length = planner_data_->parameters.minimum_prepare_length;
 
   const auto lane_change_prepare_length =
-    std::max(getEgoVelocity() * parameters_->prepare_duration, minimum_lane_changing_length);
+    std::max(getEgoVelocity() * parameters_->prepare_duration, minimum_prepare_length);
 
   const auto & route_handler = getRouteHandler();
 
@@ -297,7 +297,7 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto forward_path_length = common_parameter.forward_path_length;
   const auto prepare_duration = parameters_->prepare_duration;
   const auto minimum_prepare_length = common_parameter.minimum_prepare_length;
-  const auto minimum_lane_changing_velocity = parameters_->minimum_lane_changing_velocity;
+  const auto minimum_lane_changing_velocity = common_parameter.minimum_lane_changing_velocity;
   const auto lane_change_sampling_num = parameters_->lane_change_sampling_num;
 
   // get velocity
@@ -393,7 +393,7 @@ bool NormalLaneChange::getLaneChangePaths(
     // we assume constant velocity during lane change
     const auto lane_changing_velocity = prepare_velocity;
     const auto lane_changing_length = utils::lane_change::calcLaneChangingLength(
-      lane_changing_velocity, shift_length, common_parameter, *parameters_);
+      lane_changing_velocity, shift_length, common_parameter);
 
     if (lane_changing_length + prepare_length > dist_to_end_of_current_lanes) {
       RCLCPP_DEBUG(
@@ -451,7 +451,8 @@ bool NormalLaneChange::getLaneChangePaths(
 
     const auto candidate_path = utils::lane_change::constructCandidatePath(
       prepare_segment, target_segment, target_lane_reference_path, shift_line, original_lanelets,
-      target_lanelets, sorted_lane_ids, acceleration, lc_length, lc_velocity, *parameters_);
+      target_lanelets, sorted_lane_ids, acceleration, lc_length, lc_velocity, common_parameter,
+      *parameters_);
 
     if (!candidate_path) {
       RCLCPP_DEBUG(
@@ -462,7 +463,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     const auto is_valid = utils::lane_change::hasEnoughLength(
       *candidate_path, original_lanelets, target_lanelets, getEgoPose(), route_handler,
-      common_parameter.minimum_lane_changing_length, direction_);
+      minimum_lane_changing_velocity, common_parameter, direction_);
 
     if (!is_valid) {
       RCLCPP_DEBUG(

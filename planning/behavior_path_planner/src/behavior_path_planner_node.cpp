@@ -376,14 +376,26 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   // ROS parameters
   p.backward_path_length = declare_parameter<double>("backward_path_length") + backward_offset;
   p.forward_path_length = declare_parameter<double>("forward_path_length");
+
+  // lane change parameters
   p.backward_length_buffer_for_end_of_lane =
     declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
+  p.minimum_lane_changing_length =
+    declare_parameter<double>("lane_change.minimum_lane_changing_length");
+  p.lane_changing_lateral_jerk =
+    declare_parameter<double>("lane_change.lane_changing_lateral_jerk");
+  p.lane_changing_lateral_acc = declare_parameter<double>("lane_change.lane_changing_lateral_acc");
+  p.lane_changing_lateral_acc_at_low_velocity =
+    declare_parameter<double>("lane_change.lane_changing_lateral_acc_at_low_velocity");
+  p.lateral_acc_switching_velocity =
+    declare_parameter<double>("lane_change.lateral_acc_switching_velocity");
+  p.minimum_lane_changing_velocity =
+    declare_parameter<double>("lane_change.minimum_lane_changing_velocity");
+
   p.backward_length_buffer_for_end_of_pull_over =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
   p.backward_length_buffer_for_end_of_pull_out =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_out");
-  p.minimum_lane_changing_length =
-    declare_parameter<double>("lane_change.minimum_lane_changing_length");
   p.minimum_prepare_length = declare_parameter<double>("lane_change.minimum_prepare_length");
 
   p.minimum_pull_over_length = declare_parameter<double>("minimum_pull_over_length");
@@ -659,16 +671,8 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 
   // trajectory generation
   p.prepare_duration = declare_parameter<double>(parameter("prepare_duration"));
-  p.lane_changing_lateral_jerk = declare_parameter<double>(parameter("lane_changing_lateral_jerk"));
-  p.lane_changing_lateral_acc = declare_parameter<double>(parameter("lane_changing_lateral_acc"));
-  p.lane_changing_lateral_acc_at_low_velocity =
-    declare_parameter<double>(parameter("lane_changing_lateral_acc_at_low_velocity"));
-  p.lateral_acc_switching_velocity =
-    declare_parameter<double>(parameter("lateral_acc_switching_velocity"));
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
-  p.minimum_lane_changing_velocity =
-    declare_parameter<double>(parameter("minimum_lane_changing_velocity"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
   p.maximum_deceleration = declare_parameter<double>(parameter("maximum_deceleration"));
   p.lane_change_sampling_num = declare_parameter<int>(parameter("lane_change_sampling_num"));
