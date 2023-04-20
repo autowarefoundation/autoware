@@ -100,7 +100,9 @@ CarInitialPoseTool::CarInitialPoseTool()
   std_dev_y_->setMin(0);
   std_dev_z_->setMin(0);
   std_dev_theta_->setMin(0);
-  position_z_->setMin(0);
+  width_->setMin(0);
+  length_->setMin(0);
+  height_->setMin(0);
 }
 
 void CarInitialPoseTool::onInitialize()
@@ -191,7 +193,9 @@ BusInitialPoseTool::BusInitialPoseTool()
   std_dev_y_->setMin(0);
   std_dev_z_->setMin(0);
   std_dev_theta_->setMin(0);
-  position_z_->setMin(0);
+  width_->setMin(0);
+  length_->setMin(0);
+  height_->setMin(0);
 }
 
 void BusInitialPoseTool::onInitialize()
@@ -284,7 +288,9 @@ BikeInitialPoseTool::BikeInitialPoseTool()
   std_dev_y_->setMin(0);
   std_dev_z_->setMin(0);
   std_dev_theta_->setMin(0);
-  position_z_->setMin(0);
+  width_->setMin(0);
+  length_->setMin(0);
+  height_->setMin(0);
   label_->addOption("BICYCLE", ObjectClassification::BICYCLE);
   label_->addOption("MOTORCYCLE", ObjectClassification::MOTORCYCLE);
 }

@@ -89,7 +89,6 @@ UnknownInitialPoseTool::UnknownInitialPoseTool()
   std_dev_y_->setMin(0);
   std_dev_z_->setMin(0);
   std_dev_theta_->setMin(0);
-  position_z_->setMin(0);
 }
 
 void UnknownInitialPoseTool::onInitialize()
