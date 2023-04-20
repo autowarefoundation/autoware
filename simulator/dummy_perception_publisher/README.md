@@ -24,12 +24,13 @@ This node publishes the result of the dummy detection with the type of perceptio
 
 ## Parameters
 
-| Name                        | Type   | Default Value | Explanation                                 |
-| --------------------------- | ------ | ------------- | ------------------------------------------- |
-| `visible_range`             | double | 100.0         | sensor visible range [m]                    |
-| `detection_successful_rate` | double | 0.8           | sensor detection rate. (min) 0.0 - 1.0(max) |
-| `enable_ray_tracing`        | bool   | true          | if True, use ray tracking                   |
-| `use_object_recognition`    | bool   | true          | if True, publish objects topic              |
+| Name                        | Type   | Default Value | Explanation                                      |
+| --------------------------- | ------ | ------------- | ------------------------------------------------ |
+| `visible_range`             | double | 100.0         | sensor visible range [m]                         |
+| `detection_successful_rate` | double | 0.8           | sensor detection rate. (min) 0.0 - 1.0(max)      |
+| `enable_ray_tracing`        | bool   | true          | if True, use ray tracking                        |
+| `use_object_recognition`    | bool   | true          | if True, publish objects topic                   |
+| `use_base_link_z`           | bool   | true          | if True, node uses z coordinate of ego base_link |
 
 ### Node Parameters
 
