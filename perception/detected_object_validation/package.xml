@@ -5,6 +5,7 @@
   <version>1.0.0</version>
   <description>The ROS2 detected_object_validation package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
