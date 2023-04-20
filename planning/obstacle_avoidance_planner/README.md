@@ -1,3 +1,5 @@
+# Obstacle Avoidance Planner
+
 ## Purpose
 
 This package generates a trajectory that is kinematically-feasible to drive and collision-free based on the input path, drivable area.
