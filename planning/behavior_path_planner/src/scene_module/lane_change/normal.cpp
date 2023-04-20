@@ -501,7 +501,7 @@ std::vector<DrivableLanes> NormalLaneChange::getDrivableLanes() const
 {
   const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
     *getRouteHandler(), status_.current_lanes, status_.lane_change_lanes);
-  return utils::lane_change::combineDrivableLanes(*prev_drivable_lanes_, drivable_lanes);
+  return utils::combineDrivableLanes(*prev_drivable_lanes_, drivable_lanes);
 }
 
 bool NormalLaneChange::isApprovedPathSafe(Pose & ego_pose_before_collision) const
