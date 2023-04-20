@@ -434,9 +434,9 @@ bool ExternalRequestLaneChangeModule::isValidPath(const PathWithLaneId & path) c
 bool ExternalRequestLaneChangeModule::isNearEndOfLane() const
 {
   const auto & current_pose = getEgoPose();
-  const auto minimum_lane_changing_length = planner_data_->parameters.minimum_lane_changing_length;
-  const auto end_of_lane_buffer = planner_data_->parameters.backward_length_buffer_for_end_of_lane;
-  const double threshold = end_of_lane_buffer + minimum_lane_changing_length;
+  const auto & shift_length = status_.lane_change_path.shift_line.end_shift_length;
+  const auto threshold =
+    utils::calcMinimumLaneChangeLength(planner_data_->parameters, {shift_length});
 
   return std::max(0.0, utils::getDistanceToEndOfLane(current_pose, status_.current_lanes)) <
          threshold;

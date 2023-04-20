@@ -45,10 +45,10 @@ lanelet::ConstLanelets ExternalRequestLaneChange::getLaneChangeLanes(
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(current_lanes, getEgoPose(), &current_lane);
 
-  const auto minimum_lane_changing_length = planner_data_->parameters.minimum_lane_changing_length;
+  const auto minimum_prepare_length = planner_data_->parameters.minimum_prepare_length;
 
   const auto lane_change_prepare_length =
-    std::max(getEgoVelocity() * parameters_->prepare_duration, minimum_lane_changing_length);
+    std::max(getEgoVelocity() * parameters_->prepare_duration, minimum_prepare_length);
 
   const auto & route_handler = getRouteHandler();
 
