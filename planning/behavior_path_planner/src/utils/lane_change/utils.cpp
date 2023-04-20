@@ -1099,8 +1099,7 @@ std::optional<LaneChangePath> getAbortPaths(
     lanelet::utils::getArcCoordinates(reference_lanelets, abort_return_pose);
   const PathWithLaneId reference_lane_segment = std::invoke([&]() {
     const double minimum_lane_changing_length =
-      common_param.backward_length_buffer_for_end_of_lane +
-      common_param.minimum_lane_changing_length;
+      common_param.backward_length_buffer_for_end_of_lane + 16.5;
 
     const double s_start = arc_position.length;
     double s_end =
@@ -1172,8 +1171,9 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
   const Pose & current_pose, const double abort_return_dist,
   const BehaviorPathPlannerParameters & common_param)
 {
+  const double minimum_lane_changing_length = 16.5;
   const auto minimum_lane_change_length = common_param.minimum_prepare_length +
-                                          common_param.minimum_lane_changing_length +
+                                          minimum_lane_changing_length +
                                           common_param.backward_length_buffer_for_end_of_lane;
   const auto abort_plus_lane_change_length = abort_return_dist + minimum_lane_change_length;
   if (abort_plus_lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
