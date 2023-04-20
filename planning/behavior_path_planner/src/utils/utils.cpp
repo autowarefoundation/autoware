@@ -1994,13 +1994,6 @@ double calcLaneChangingTime(
   return PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, lateral_acc);
 }
 
-double calcLaneChangeBuffer(
-  const BehaviorPathPlannerParameters & common_param, const int num_lane_change,
-  const double length_to_intersection)
-{
-  return num_lane_change * calcTotalLaneChangeLength(common_param) + length_to_intersection;
-}
-
 double calcMinimumLaneChangeLength(
   const BehaviorPathPlannerParameters & common_param, const std::vector<double> & shift_intervals,
   const double length_to_intersection)

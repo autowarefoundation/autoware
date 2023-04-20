@@ -59,11 +59,10 @@ PathWithLaneId NormalLaneChangeBT::getReferencePath() const
     *route_handler, current_lanes, current_pose, common_parameters.backward_path_length,
     common_parameters.forward_path_length, common_parameters);
 
-  const auto num_lane_change =
-    std::abs(route_handler->getNumLaneToPreferredLane(current_lanes.back()));
-
-  const auto lane_change_buffer =
-    utils::calcLaneChangeBuffer(common_parameters, num_lane_change, 0.0);
+  const auto shift_intervals =
+    route_handler->getLateralIntervalsToPreferredLane(current_lanes.back());
+  const double lane_change_buffer =
+    utils::calcMinimumLaneChangeLength(common_parameters, shift_intervals);
 
   reference_path = utils::setDecelerationVelocity(
     *route_handler, reference_path, current_lanes, parameters_->prepare_duration,

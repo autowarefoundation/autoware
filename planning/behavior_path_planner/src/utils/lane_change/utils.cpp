@@ -244,18 +244,18 @@ bool getLaneChangePaths(
     utils::getArcLengthToTargetLanelet(original_lanelets, target_lanelets.front(), pose);
 
 #ifdef USE_OLD_ARCHITECTURE
-  const auto num_to_preferred_lane =
-    std::abs(route_handler.getNumLaneToPreferredLane(target_lanelets.back()));
+  const auto shift_intervals =
+    route_handler.getLateralIntervalsToPreferredLane(target_lanelets.back());
 #else
   const auto get_opposite_direction =
     (direction == Direction::RIGHT) ? Direction::LEFT : Direction::RIGHT;
-  const auto num_to_preferred_lane = std::abs(
-    route_handler.getNumLaneToPreferredLane(target_lanelets.back(), get_opposite_direction));
+  const auto shift_intervals = route_handler.getLateralIntervalsToPreferredLane(
+    target_lanelets.back(), get_opposite_direction);
 #endif
-  const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
-
   const auto required_total_min_length =
-    utils::calcLaneChangeBuffer(common_parameter, num_to_preferred_lane);
+    utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
+
+  const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
   const auto dist_to_end_of_current_lanes =
     utils::getDistanceToEndOfLane(pose, original_lanelets) - required_total_min_length;
@@ -1035,7 +1035,7 @@ std::optional<LaneChangePath> getAbortPaths(
 
   const auto ego_nearest_dist_threshold = planner_data->parameters.ego_nearest_dist_threshold;
   const auto ego_nearest_yaw_threshold = planner_data->parameters.ego_nearest_yaw_threshold;
-  const double minimum_lane_change_length = utils::calcLaneChangeBuffer(common_param, 1);
+  const double minimum_lane_change_length = 30.0;  // temporary
 
   const auto & lane_changing_path = selected_path.path;
   const auto lane_changing_end_pose_idx = std::invoke([&]() {

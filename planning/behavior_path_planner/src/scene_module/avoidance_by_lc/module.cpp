@@ -538,15 +538,14 @@ PathWithLaneId AvoidanceByLCModule::getReferencePath() const
       common_parameters.forward_path_length, common_parameters);
   }
 
-  const int num_lane_change =
-    std::abs(route_handler->getNumLaneToPreferredLane(current_lanes.back()));
-
   reference_path = utils::getCenterLinePath(
     *route_handler, current_lanes, current_pose, common_parameters.backward_path_length,
     common_parameters.forward_path_length, common_parameters, 0.0);
 
+  const auto shift_intervals =
+    route_handler->getLateralIntervalsToPreferredLane(current_lanes.back());
   const double lane_change_buffer =
-    utils::calcLaneChangeBuffer(common_parameters, num_lane_change, 0.0);
+    utils::calcMinimumLaneChangeLength(common_parameters, shift_intervals);
 
   reference_path = utils::setDecelerationVelocity(
     *route_handler, reference_path, current_lanes, parameters_->lane_change->prepare_duration,
