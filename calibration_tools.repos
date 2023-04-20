@@ -27,3 +27,7 @@ repositories:
     type: git
     url: https://github.com/tier4/image_pipeline.git
     version: 47964112293eb19f9f57254b2e6b68706954cc63
+  autoware/calibration_tools/sensor/extrinsic_calibration_manager/launch/logiee-s-tc_sensor_kit:
+    type: git 
+    url: git@github.com:tier4-2023-team2/logiee-s-tc_sensor_kit_calib_launch.git
+    version: main 
