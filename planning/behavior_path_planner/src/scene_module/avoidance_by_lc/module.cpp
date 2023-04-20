@@ -459,7 +459,10 @@ BehaviorModuleOutput AvoidanceByLCModule::planWaitingApproval()
 
   if (!avoidance_data_.target_objects.empty()) {
     const auto to_front_object_distance = avoidance_data_.target_objects.front().longitudinal;
-    const auto lane_change_buffer = planner_data_->parameters.minimum_lane_changing_length;
+    const double shift_length = status_.lane_change_path.shift_line.end_shift_length -
+                                status_.lane_change_path.shift_line.start_shift_length;
+    const double lane_change_buffer =
+      utils::calcMinimumLaneChangeLength(planner_data_->parameters, {shift_length});
 
     boost::optional<Pose> p_insert{};
     insertDecelPoint(
