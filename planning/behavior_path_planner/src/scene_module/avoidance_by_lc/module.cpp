@@ -727,7 +727,10 @@ bool AvoidanceByLCModule::isValidPath(const PathWithLaneId & path) const
 bool AvoidanceByLCModule::isNearEndOfLane() const
 {
   const auto & current_pose = getEgoPose();
-  const double threshold = utils::calcTotalLaneChangeLength(planner_data_->parameters);
+  const auto shift_intervals =
+    planner_data_->route_handler->getLateralIntervalsToPreferredLane(status_.current_lanes.back());
+  const double threshold =
+    utils::calcMinimumLaneChangeLength(planner_data_->parameters, shift_intervals);
 
   return std::max(0.0, utils::getDistanceToEndOfLane(current_pose, status_.current_lanes)) <
          threshold;

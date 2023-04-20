@@ -336,9 +336,6 @@ boost::optional<std::pair<Pose, Polygon2d>> getEgoExpectedPoseAndConvertToPolygo
 
 bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_threshold);
 
-double calcTotalLaneChangeLength(
-  const BehaviorPathPlannerParameters & common_param, const bool include_buffer = true);
-
 double calcLaneChangingTime(
   const double lane_changing_velocity, const double shift_length,
   const BehaviorPathPlannerParameters & common_parameter);
