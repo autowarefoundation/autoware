@@ -1116,22 +1116,53 @@ double getDistanceToEndOfLane(const Pose & current_pose, const lanelet::ConstLan
 double getDistanceToNextTrafficLight(
   const Pose & current_pose, const lanelet::ConstLanelets & lanelets)
 {
-  const auto & arc_coordinates = lanelet::utils::getArcCoordinates(lanelets, current_pose);
-
   lanelet::ConstLanelet current_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(lanelets, current_pose, &current_lanelet)) {
     return std::numeric_limits<double>::max();
   }
 
-  double distance = 0;
-  bool is_after_current_lanelet = false;
+  const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(current_pose.position);
+  const auto to_object = lanelet::geometry::toArcCoordinates(
+    lanelet::utils::to2D(current_lanelet.centerline()),
+    lanelet::utils::to2D(lanelet_point).basicPoint());
+
+  for (const auto & element : current_lanelet.regulatoryElementsAs<lanelet::TrafficLight>()) {
+    lanelet::ConstLineString3d lanelet_stop_lines = element->stopLine().get();
+
+    const auto to_stop_line = lanelet::geometry::toArcCoordinates(
+      lanelet::utils::to2D(current_lanelet.centerline()),
+      lanelet::utils::to2D(lanelet_stop_lines).front().basicPoint());
+
+    const auto distance_object_to_stop_line = to_stop_line.length - to_object.length;
+
+    if (distance_object_to_stop_line > 0.0) {
+      return distance_object_to_stop_line;
+    }
+  }
+
+  double distance = lanelet::utils::getLaneletLength3d(current_lanelet);
+
+  bool found_current_lane = false;
   for (const auto & llt : lanelets) {
-    if (llt == current_lanelet) {
-      is_after_current_lanelet = true;
+    if (llt.id() == current_lanelet.id()) {
+      found_current_lane = true;
+      continue;
     }
-    if (is_after_current_lanelet && !llt.regulatoryElementsAs<lanelet::TrafficLight>().empty()) {
-      return distance - arc_coordinates.length;
+
+    if (!found_current_lane) {
+      continue;
     }
+
+    for (const auto & element : llt.regulatoryElementsAs<lanelet::TrafficLight>()) {
+      lanelet::ConstLineString3d lanelet_stop_lines = element->stopLine().get();
+
+      const auto to_stop_line = lanelet::geometry::toArcCoordinates(
+        lanelet::utils::to2D(llt.centerline()),
+        lanelet::utils::to2D(lanelet_stop_lines).front().basicPoint());
+
+      return distance + to_stop_line.length - to_object.length;
+    }
+
     distance += lanelet::utils::getLaneletLength3d(llt);
   }
 

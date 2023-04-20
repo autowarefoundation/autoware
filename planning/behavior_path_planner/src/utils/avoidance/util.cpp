@@ -806,21 +806,28 @@ void fillObjectMovingTime(
     object_data.last_stop = now;
     object_data.move_time = 0.0;
     if (is_new_object) {
+      object_data.stop_time = 0.0;
+      object_data.last_move = now;
       stopped_objects.push_back(object_data);
     } else {
+      same_id_obj->stop_time = (now - same_id_obj->last_move).seconds();
       same_id_obj->last_stop = now;
       same_id_obj->move_time = 0.0;
+      object_data.stop_time = same_id_obj->stop_time;
     }
     return;
   }
 
   if (is_new_object) {
     object_data.move_time = std::numeric_limits<double>::max();
+    object_data.stop_time = 0.0;
+    object_data.last_move = now;
     return;
   }
 
   object_data.last_stop = same_id_obj->last_stop;
   object_data.move_time = (now - same_id_obj->last_stop).seconds();
+  object_data.stop_time = 0.0;
 
   if (object_data.move_time > parameters->threshold_time_object_is_moving) {
     stopped_objects.erase(same_id_obj);
