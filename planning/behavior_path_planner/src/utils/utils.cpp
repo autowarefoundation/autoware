@@ -1640,20 +1640,22 @@ PathWithLaneId getCenterLinePath(
   const double s_backward = std::max(0., s - backward_path_length);
   double s_forward = s + forward_path_length;
 
-  const int num_lane_change =
-    std::abs(route_handler.getNumLaneToPreferredLane(lanelet_sequence.back()));
   const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
+  const auto shift_intervals =
+    route_handler.getLateralIntervalsToPreferredLane(lanelet_sequence.back());
   const double lane_change_buffer =
-    calcLaneChangeBuffer(parameter, std::abs(num_lane_change), optional_length);
+    utils::calcMinimumLaneChangeLength(parameter, shift_intervals, optional_length);
 
   if (route_handler.isDeadEndLanelet(lanelet_sequence.back())) {
-    s_forward = std::min(s_forward, lane_length - lane_change_buffer);
+    const double forward_length = std::max(lane_length - lane_change_buffer, 0.0);
+    s_forward = std::min(s_forward, forward_length);
   }
 
   if (route_handler.isInGoalRouteSection(lanelet_sequence.back())) {
     const auto goal_arc_coordinates =
       lanelet::utils::getArcCoordinates(lanelet_sequence, route_handler.getGoalPose());
-    s_forward = std::min(s_forward, goal_arc_coordinates.length - lane_change_buffer);
+    const double forward_length = std::max(goal_arc_coordinates.length - lane_change_buffer, 0.0);
+    s_forward = std::min(s_forward, forward_length);
   }
 
   const auto raw_path_with_lane_id =
@@ -1765,17 +1767,6 @@ BehaviorModuleOutput getReferencePath(
 
   const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
   const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
-
-  {
-    const auto shift_intervals =
-      route_handler->getLateralIntervalsToPreferredLane(current_lanes.back());
-
-    const double lane_change_buffer = utils::calcMinimumLaneChangeLength(p, shift_intervals);
-
-    reference_path = utils::setDecelerationVelocity(
-      *route_handler, reference_path, current_lanes, p.lane_change_prepare_duration,
-      lane_change_buffer);
-  }
 
   const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
 
@@ -2014,6 +2005,10 @@ double calcMinimumLaneChangeLength(
   const BehaviorPathPlannerParameters & common_param, const std::vector<double> & shift_intervals,
   const double length_to_intersection)
 {
+  if (shift_intervals.empty()) {
+    return 0.0;
+  }
+
   const double & vel = common_param.minimum_lane_changing_velocity;
 
   double accumulated_length =
