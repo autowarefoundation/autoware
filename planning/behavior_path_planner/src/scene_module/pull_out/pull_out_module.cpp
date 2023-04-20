@@ -809,7 +809,9 @@ void PullOutModule::setDebugData() const
   };
 
   debug_marker_.markers.clear();
-  add(createPoseMarkerArray(status_.pull_out_start_pose, "pull_out_start_pose", 0, 0.9, 0.3, 0.3));
+  add(createPoseMarkerArray(status_.pull_out_start_pose, "back_end_pose", 0, 0.9, 0.3, 0.3));
+  add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
+  add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
 }
 }  // namespace behavior_path_planner
