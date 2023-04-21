@@ -1866,8 +1866,8 @@ void AvoidanceModule::addReturnShiftLineFromEgo(
     // avoidance points: No, shift points: No -> set the ego position to the last shift point
     // so that the return-shift will be generated from ego position.
     if (!has_candidate_point && !has_registered_point) {
-      last_sl.end = getEgoPose();
       last_sl.end_idx = avoidance_data_.ego_closest_path_index;
+      last_sl.end = avoidance_data_.reference_path.points.at(last_sl.end_idx).point.pose;
       last_sl.end_shift_length = getCurrentBaseShift();
     }
   }
@@ -1902,8 +1902,8 @@ void AvoidanceModule::addReturnShiftLineFromEgo(
     // set the return-shift from ego.
     DEBUG_PRINT(
       "return shift already exists, but they are all candidates. Add return shift for overwrite.");
-    last_sl.end = getEgoPose();
     last_sl.end_idx = avoidance_data_.ego_closest_path_index;
+    last_sl.end = avoidance_data_.reference_path.points.at(last_sl.end_idx).point.pose;
     last_sl.end_shift_length = current_base_shift;
   }
 
@@ -1998,7 +1998,7 @@ void AvoidanceModule::addReturnShiftLineFromEgo(
     al.start_shift_length = last_sl.end_shift_length;
     sl_candidates.push_back(al);
     printShiftLines(AvoidLineArray{al}, "return point");
-    debug_data_.extra_return_shift = AvoidLineArray{al};
+    debug_data_.extra_return_shift.push_back(al);
 
     // TODO(Horibe) think how to store the current object
     current_raw_shift_lines.push_back(al);
