@@ -60,7 +60,7 @@ visualization_msgs::msg::MarkerArray VirtualTrafficLightModule::createVirtualWal
   if (d.stop_head_pose_at_stop_line) {
     appendMarkerArray(
       virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {*d.stop_head_pose_at_stop_line}, "virtual_traffic_light", now, module_id_),
+        {*d.stop_head_pose_at_stop_line}, "virtual_traffic_light", now),
       &wall_marker, now);
   }
 
@@ -68,7 +68,7 @@ visualization_msgs::msg::MarkerArray VirtualTrafficLightModule::createVirtualWal
   if (d.stop_head_pose_at_end_line) {
     appendMarkerArray(
       virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {*d.stop_head_pose_at_end_line}, "virtual_traffic_light", now, module_id_),
+        {*d.stop_head_pose_at_end_line}, "virtual_traffic_light", now),
       &wall_marker, now);
   }
 

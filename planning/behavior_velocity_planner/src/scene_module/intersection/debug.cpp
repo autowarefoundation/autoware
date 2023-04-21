@@ -179,7 +179,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
   if (debug_data_.stop_required) {
     appendMarkerArray(
       virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {debug_data_.stop_wall_pose}, "intersection", now, module_id_),
+        {debug_data_.stop_wall_pose}, "intersection", now),
       &wall_marker, now);
   }
   return wall_marker;
@@ -212,7 +212,7 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createVirtualWa
     const std::vector<Pose> & pose = {debug_data_.virtual_wall_pose};
     appendMarkerArray(
       virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        pose, "merge_from_private_road", now, module_id_),
+        pose, "merge_from_private_road", now),
       &wall_marker, now);
   }
 

@@ -174,8 +174,6 @@ visualization_msgs::msg::MarkerArray DetectionAreaModule::createVirtualWallMarke
 
   const rclcpp::Time now = clock_->now();
 
-  auto id = getModuleId();
-
   std::vector<Pose> stop_poses;
   std::vector<Pose> dead_line_poses;
 
@@ -185,8 +183,7 @@ visualization_msgs::msg::MarkerArray DetectionAreaModule::createVirtualWallMarke
     stop_poses.push_back(p_front);
   }
   appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(
-      stop_poses, "detection_area", now, id),
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_poses, "detection_area", now),
     &wall_marker, now);
 
   for (const auto & p : debug_data_.dead_line_poses) {
@@ -196,7 +193,7 @@ visualization_msgs::msg::MarkerArray DetectionAreaModule::createVirtualWallMarke
   }
   appendMarkerArray(
     virtual_wall_marker_creator_->createDeadLineVirtualWallMarker(
-      dead_line_poses, "detection_area", now, id),
+      dead_line_poses, "detection_area", now),
     &wall_marker, now);
 
   return wall_marker;

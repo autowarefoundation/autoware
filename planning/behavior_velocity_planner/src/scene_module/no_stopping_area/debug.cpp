@@ -167,7 +167,6 @@ visualization_msgs::msg::MarkerArray NoStoppingAreaModule::createVirtualWallMark
   visualization_msgs::msg::MarkerArray wall_marker;
   const auto now = clock_->now();
 
-  auto id = module_id_;
   std::vector<Pose> stop_poses;
 
   for (const auto & p : debug_data_.stop_poses) {
@@ -176,8 +175,7 @@ visualization_msgs::msg::MarkerArray NoStoppingAreaModule::createVirtualWallMark
     stop_poses.push_back(p_front);
   }
   appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(
-      stop_poses, "no_stopping_area", now, id),
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_poses, "no_stopping_area", now),
     &wall_marker, now);
 
   return wall_marker;

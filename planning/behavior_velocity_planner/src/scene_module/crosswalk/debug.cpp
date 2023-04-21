@@ -222,7 +222,6 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArr
 //  stop_poses, const std::vector<geometry_msgs::msg::Pose> & slow_poses)
 {
   const auto now = this->clock_->now();
-  auto id = module_id_;
   std::vector<Pose> stop_poses;
   std::vector<Pose> slow_down_poses;
 
@@ -233,7 +232,7 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArr
   }
   appendMarkerArray(
     virtual_wall_marker_creator_crosswalk_->createStopVirtualWallMarker(
-      stop_poses, "crosswalk", now, id),
+      stop_poses, "crosswalk", now),
     &wall_marker);
   for (const auto & p : debug_data_.slow_poses) {
     const auto p_front = calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
@@ -241,7 +240,7 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArr
   }
   appendMarkerArray(
     virtual_wall_marker_creator_crosswalk_->createSlowDownVirtualWallMarker(
-      slow_down_poses, "crosswalk", now, id),
+      slow_down_poses, "crosswalk", now),
     &wall_marker);
 
   return wall_marker;
@@ -250,7 +249,6 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArr
 visualization_msgs::msg::MarkerArray WalkwayModule::createVirtualWallMarkerArray()
 {
   const auto now = this->clock_->now();
-  auto id = module_id_;
   std::vector<Pose> stop_poses;
 
   visualization_msgs::msg::MarkerArray wall_marker;
@@ -259,8 +257,7 @@ visualization_msgs::msg::MarkerArray WalkwayModule::createVirtualWallMarkerArray
     stop_poses.push_back(p_front);
   }
   appendMarkerArray(
-    virtual_wall_marker_creator_walkway_->createStopVirtualWallMarker(
-      stop_poses, "walkway", now, id),
+    virtual_wall_marker_creator_walkway_->createStopVirtualWallMarker(stop_poses, "walkway", now),
     &wall_marker);
   return wall_marker;
 }

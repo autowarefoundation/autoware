@@ -179,10 +179,8 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVirtualWallMarkerArray()
   visualization_msgs::msg::MarkerArray wall_marker;
   rclcpp::Time now = node_.now();
 
-  size_t id = 0;
-
   appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_pose_, "run_out", now, id),
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_pose_, "run_out", now),
     &wall_marker, now);
 
   stop_pose_.clear();

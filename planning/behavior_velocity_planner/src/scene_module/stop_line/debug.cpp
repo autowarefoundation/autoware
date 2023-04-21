@@ -106,8 +106,7 @@ visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArra
     *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
   if (state_ == State::APPROACH || state_ == State::STOPPED) {
     appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {p_front}, "stopline", now, module_id_),
+      virtual_wall_marker_creator_->createStopVirtualWallMarker({p_front}, "stopline", now),
       &wall_marker, now);
   }
 
