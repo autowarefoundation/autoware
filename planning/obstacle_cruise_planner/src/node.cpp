@@ -327,7 +327,8 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   debug_calculation_time_pub_ = create_publisher<Float32Stamped>("~/debug/calculation_time", 1);
   debug_cruise_wall_marker_pub_ = create_publisher<MarkerArray>("~/debug/cruise/virtual_wall", 1);
   debug_stop_wall_marker_pub_ = create_publisher<MarkerArray>("~/virtual_wall", 1);
-  debug_slow_down_wall_marker_pub_ = create_publisher<MarkerArray>("~/slow_down/virtual_wall", 1);
+  debug_slow_down_wall_marker_pub_ =
+    create_publisher<MarkerArray>("~/debug/slow_down/virtual_wall", 1);
   debug_marker_pub_ = create_publisher<MarkerArray>("~/debug/marker", 1);
   debug_stop_planning_info_pub_ =
     create_publisher<Float32MultiArrayStamped>("~/debug/stop_planning_info", 1);

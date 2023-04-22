@@ -5,41 +5,42 @@
 ### Detection area
 
 Green polygons which is a detection area is visualized by `detection_polygons` in the `~/debug/marker` topic.
+To determine each behavior (cruise, stop, and slow down), if `behavior_determination.*.max_lat_margin` is not zero, the polygons are expanded with the additional width.
 
-![detection_area](../image/detection_area.png)
+![detection_area](../media/detection_area.png)
 
-### Collision point
+### Collision points
 
-Red point which is a collision point with obstacle is visualized by `collision_points` in the `~/debug/marker` topic.
+Red points which are collision points with obstacle are visualized by `*_collision_points` for each behavior in the `~/debug/marker` topic.
 
-![collision_point](../image/collision_point.png)
+![collision_point](../media/collision_point.png)
 
 ### Obstacle for cruise
 
-Yellow sphere which is a obstacle for cruise is visualized by `obstacles_to_cruise` in the `~/debug/marker` topic.
+Orange sphere which is an obstacle for cruise is visualized by `obstacles_to_cruise` in the `~/debug/marker` topic.
 
-![obstacle_to_cruise](../image/obstacle_to_cruise.png)
+Orange wall which means a safe distance to cruise if the ego's front meets the wall is visualized in the `~/debug/cruise/virtual_wall` topic.
+
+![cruise_visualization](../media/cruise_visualization.png)
 
 ### Obstacle for stop
 
-Red sphere which is a obstacle for stop is visualized by `obstacles_to_stop` in the `~/debug/marker` topic.
+Red sphere which is an obstacle for stop is visualized by `obstacles_to_stop` in the `~/debug/marker` topic.
 
-![obstacle_to_stop](../image/obstacle_to_stop.png)
+Red wall which means a safe distance to stop if the ego's front meets the wall is visualized in the `~/virtual_wall` topic.
+
+![stop_visualization](../media/stop_visualization.png)
+
+### Obstacle for slow down
+
+Yellow sphere which is an obstacle for slow_down is visualized by `obstacles_to_slow_down` in the `~/debug/marker` topic.
+
+Yellow wall which means a safe distance to slow_down if the ego's front meets the wall is visualized in the `~/debug/slow_down/virtual_wall` topic.
+
+![slow_down_visualization](../media/slow_down_visualization.png)
 
 <!-- ### Obstacle ignored to cruise or stop intentionally -->
 
 <!-- Green sphere which is a obstacle ignored intentionally to cruise or stop is visualized by `intentionally_ignored_obstacles` in the `~/debug/marker` topic. -->
 
 <!-- ![intentionally_ignored_obstacle](../image/intentionally_ignored_obstacle.png) -->
-
-### Obstacle cruise wall
-
-Yellow wall which means a safe distance to cruise if the ego's front meets the wall is visualized in the `~/debug/cruise_wall_marker` topic.
-
-![obstacle_to_cruise](../image/obstacle_to_cruise.png)
-
-### Obstacle stop wall
-
-Red wall which means a safe distance to stop if the ego's front meets the wall is visualized in the `~/debug/stop_wall_marker` topic.
-
-![obstacle_to_stop](../image/obstacle_to_stop.png)
