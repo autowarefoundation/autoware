@@ -86,6 +86,11 @@ public:
   {
     return Float32MultiArrayStamped{};
   }
+  Float32MultiArrayStamped getSlowDownPlanningDebugMessage(const rclcpp::Time & current_time)
+  {
+    slow_down_debug_multi_array_.stamp = current_time;
+    return slow_down_debug_multi_array_;
+  }
 
 protected:
   // Parameters
@@ -113,6 +118,7 @@ protected:
 
   // debug info
   StopPlanningDebugInfo stop_planning_debug_info_;
+  Float32MultiArrayStamped slow_down_debug_multi_array_;
 
   double calcDistanceToCollisionPoint(
     const PlannerData & planner_data, const geometry_msgs::msg::Point & collision_point);

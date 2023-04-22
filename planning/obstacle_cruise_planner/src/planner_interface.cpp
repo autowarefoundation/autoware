@@ -282,6 +282,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
 {
   stop_watch_.tic(__func__);
   auto slow_down_traj_points = cruise_traj_points;
+  slow_down_debug_multi_array_ = Float32MultiArrayStamped();
 
   const double dist_to_ego = [&]() {
     const size_t ego_seg_idx =
@@ -329,6 +330,9 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     if (!slow_down_start_idx) {
       continue;
     }
+    slow_down_debug_multi_array_.data.push_back(obstacle.precise_lat_dist);
+    slow_down_debug_multi_array_.data.push_back(slow_down_vel);
+    slow_down_debug_multi_array_.data.push_back(*slow_down_start_idx);
 
     // calculate slow down end distance, and insert slow down velocity
     const double dist_to_slow_down_end =
@@ -346,6 +350,9 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
       for (size_t i = *slow_down_start_idx; i <= *slow_down_end_idx; ++i) {
         slow_down_traj_points.at(i).longitudinal_velocity_mps = slow_down_vel;
       }
+      slow_down_debug_multi_array_.data.push_back(*slow_down_end_idx);
+    } else {
+      slow_down_debug_multi_array_.data.push_back(-1.0);  // push back invalid value
     }
 
     debug_data_ptr_->obstacles_to_slow_down.push_back(obstacle);
