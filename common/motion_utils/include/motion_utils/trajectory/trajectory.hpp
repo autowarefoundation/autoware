@@ -1728,6 +1728,52 @@ T cropPoints(
 
   return cropped_points;
 }
+
+/**
+ * @brief Calculate the angle of the input pose with respect to the nearest trajectory segment.
+ * The function gets the nearest segment index between the points of the trajectory and the given
+ * pose's position, then calculates the azimuth angle of that segment and compares it to the yaw of
+ * the input pose. The segment is a straight path between two continuous points of the trajectory.
+ * @param points Points of the trajectory, path, ...
+ * @param pose Input pose with position and orientation (yaw)
+ * @param throw_exception Flag to enable/disable exception throwing
+ * @return Angle with respect to the trajectory segment (signed) in radians
+ */
+template <class T>
+double calcYawDeviation(
+  const T & points, const geometry_msgs::msg::Pose & pose, const bool throw_exception = false)
+{
+  const auto overlap_removed_points = removeOverlapPoints(points, 0);
+
+  if (throw_exception) {
+    validateNonEmpty(overlap_removed_points);
+  } else {
+    try {
+      validateNonEmpty(overlap_removed_points);
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << std::endl;
+      return 0.0;
+    }
+  }
+
+  if (overlap_removed_points.size() <= 1) {
+    const std::runtime_error e("points size is less than 2");
+    if (throw_exception) {
+      throw e;
+    }
+    std::cerr << e.what() << std::endl;
+    return 0.0;
+  }
+
+  const size_t seg_idx = findNearestSegmentIndex(overlap_removed_points, pose.position);
+
+  const double path_yaw = tier4_autoware_utils::calcAzimuthAngle(
+    tier4_autoware_utils::getPoint(overlap_removed_points.at(seg_idx)),
+    tier4_autoware_utils::getPoint(overlap_removed_points.at(seg_idx + 1)));
+  const double pose_yaw = tf2::getYaw(pose.orientation);
+
+  return tier4_autoware_utils::normalizeRadian(pose_yaw - path_yaw);
+}
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_
