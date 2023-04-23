@@ -105,6 +105,7 @@ public:
   AutowarePathBaseDisplay()
   :  // path
     property_path_view_{"View Path", true, "", this},
+    property_path_width_view_{"Constant Width", false, "", &property_path_view_},
     property_path_width_{"Width", 2.0, "", &property_path_view_},
     property_path_alpha_{"Alpha", 1.0, "", &property_path_view_},
     property_path_color_view_{"Constant Color", false, "", &property_path_view_},
@@ -299,6 +300,12 @@ protected:
       velocity_text_nodes_.resize(msg_ptr->points.size());
     }
 
+    const auto info = vehicle_footprint_info_;
+    const float left = property_path_width_view_.getBool() ? -property_path_width_.getFloat() / 2.0
+                                                           : -info->width / 2.0;
+    const float right = property_path_width_view_.getBool() ? property_path_width_.getFloat() / 2.0
+                                                            : info->width / 2.0;
+
     for (size_t point_idx = 0; point_idx < msg_ptr->points.size(); point_idx++) {
       const auto & path_point = msg_ptr->points.at(point_idx);
       const auto & pose = tier4_autoware_utils::getPose(path_point);
@@ -320,7 +327,7 @@ protected:
         Eigen::Vector3f vec_out;
         Eigen::Quaternionf quat_yaw_reverse(0, 0, 0, 1);
         {
-          vec_in << 0, (property_path_width_.getFloat() / 2.0), 0;
+          vec_in << 0, right, 0;
           Eigen::Quaternionf quat(
             pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
           if (!isDrivingForward(msg_ptr->points, point_idx)) {
@@ -334,7 +341,7 @@ protected:
           path_manual_object_->colour(color);
         }
         {
-          vec_in << 0, -(property_path_width_.getFloat() / 2.0), 0;
+          vec_in << 0, left, 0;
           Eigen::Quaternionf quat(
             pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
           if (!isDrivingForward(msg_ptr->points, point_idx)) {
@@ -410,9 +417,14 @@ protected:
     point_manual_object_->estimateVertexCount(msg_ptr->points.size() * 3 * 8);
     point_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
-    const float offset_from_baselink = property_offset_.getFloat();
-
     preVisualizePathFootprintDetail(msg_ptr);
+
+    const float offset_from_baselink = property_offset_.getFloat();
+    const auto info = vehicle_footprint_info_;
+    const float top = info->length - info->rear_overhang - offset_from_baselink;
+    const float bottom = -info->rear_overhang + offset_from_baselink;
+    const float left = -info->width / 2.0;
+    const float right = info->width / 2.0;
 
     for (size_t p_idx = 0; p_idx < msg_ptr->points.size(); p_idx++) {
       const auto & point = msg_ptr->points.at(p_idx);
@@ -422,12 +434,6 @@ protected:
         Ogre::ColourValue color;
         color = rviz_common::properties::qtToOgre(property_footprint_color_.getColor());
         color.a = property_footprint_alpha_.getFloat();
-
-        const auto info = vehicle_footprint_info_;
-        const float top = info->length - info->rear_overhang - offset_from_baselink;
-        const float bottom = -info->rear_overhang + offset_from_baselink;
-        const float left = -info->width / 2.0;
-        const float right = info->width / 2.0;
 
         const std::array<float, 4> lon_offset_vec{top, top, bottom, bottom};
         const std::array<float, 4> lat_offset_vec{left, right, right, left};
@@ -518,6 +524,7 @@ protected:
   std::vector<Ogre::SceneNode *> velocity_text_nodes_;
 
   rviz_common::properties::BoolProperty property_path_view_;
+  rviz_common::properties::BoolProperty property_path_width_view_;
   rviz_common::properties::FloatProperty property_path_width_;
   rviz_common::properties::FloatProperty property_path_alpha_;
   rviz_common::properties::BoolProperty property_path_color_view_;

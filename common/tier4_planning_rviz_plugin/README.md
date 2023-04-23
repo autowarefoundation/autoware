@@ -42,6 +42,7 @@ This plugin displays the path, trajectory, and maximum speed.
 | Name                            | Type   | Default Value | Description                  |
 | ------------------------------- | ------ | ------------- | ---------------------------- |
 | `property_path_view_`           | bool   | true          | Use Path property or not     |
+| `property_path_width_view_`     | bool   | false         | Use Constant Width or not    |
 | `property_path_width_`          | float  | 2.0           | Width of Path property [m]   |
 | `property_path_alpha_`          | float  | 1.0           | Alpha of Path property       |
 | `property_path_color_view_`     | bool   | false         | Use Constant Color or not    |
