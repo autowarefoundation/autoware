@@ -32,9 +32,13 @@ public:
   explicit ReplanChecker(rclcpp::Node * node, const EgoNearestParam & ego_nearest_param);
   void onParam(const std::vector<rclcpp::Parameter> & parameters);
 
-  bool isResetRequired(const PlannerData & planner_data);
+  bool isResetRequired(const PlannerData & planner_data) const;
 
-  bool isReplanRequired(const rclcpp::Time & current_time);
+  bool isReplanRequired(const PlannerData & planner_data, const rclcpp::Time & current_time) const;
+
+  void updateData(
+    const PlannerData & planner_data, const bool is_replan_required,
+    const rclcpp::Time & current_time);
 
 private:
   EgoNearestParam ego_nearest_param_;
@@ -49,11 +53,15 @@ private:
 
   // algorithm parameters
   double max_path_shape_around_ego_lat_dist_;
+  double max_path_shape_forward_lat_dist_;
+  double max_path_shape_forward_lon_dist_;
   double max_ego_moving_dist_;
   double max_goal_moving_dist_;
   double max_delta_time_sec_;
 
   bool isPathAroundEgoChanged(
+    const PlannerData & planner_data, const std::vector<TrajectoryPoint> & prev_traj_points) const;
+  bool isPathForwardChanged(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & prev_traj_points) const;
   bool isPathGoalChanged(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & prev_traj_points) const;

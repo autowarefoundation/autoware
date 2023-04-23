@@ -314,16 +314,19 @@ std::vector<TrajectoryPoint> ObstacleAvoidancePlanner::optimizeTrajectory(
   const auto & p = planner_data;
 
   // 1. check if replan (= optimization) is required
-  const bool reset_prev_optimization = replan_checker_ptr_->isResetRequired(planner_data);
-  if (enable_reset_prev_optimization_ || reset_prev_optimization) {
-    // NOTE: always replan when resetting previous optimization
-    resetPreviousData();
-  } else {
-    // check replan when not resetting previous optimization
-    const bool is_replan_required = replan_checker_ptr_->isReplanRequired(now());
-    if (!is_replan_required) {
-      return getPrevOptimizedTrajectory(p.traj_points);
+  const bool is_replan_required = [&]() {
+    const bool reset_prev_optimization = replan_checker_ptr_->isResetRequired(planner_data);
+    if (enable_reset_prev_optimization_ || reset_prev_optimization) {
+      // NOTE: always replan when resetting previous optimization
+      resetPreviousData();
+      return true;
     }
+    // check replan when not resetting previous optimization
+    return replan_checker_ptr_->isReplanRequired(planner_data, now());
+  }();
+  replan_checker_ptr_->updateData(planner_data, is_replan_required, now());
+  if (!is_replan_required) {
+    return getPrevOptimizedTrajectory(p.traj_points);
   }
 
   if (enable_skip_optimization_) {
