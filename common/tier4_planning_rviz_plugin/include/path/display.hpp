@@ -161,9 +161,10 @@ public:
   ~AutowarePathWithLaneIdDisplay();
 
 private:
-  void preprocessMessageDetail(
+  void preProcessMessageDetail() override;
+  void preVisualizePathFootprintDetail(
     const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr) override;
-  void processMessageDetail(
+  void visualizePathFootprintDetail(
     const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr,
     const size_t p_idx) override;
 
@@ -179,12 +180,16 @@ class AutowarePathDisplay
 : public AutowarePathWithDrivableAreaDisplay<autoware_auto_planning_msgs::msg::Path>
 {
   Q_OBJECT
+private:
+  void preProcessMessageDetail() override;
 };
 
 class AutowareTrajectoryDisplay
 : public AutowarePathBaseDisplay<autoware_auto_planning_msgs::msg::Trajectory>
 {
   Q_OBJECT
+private:
+  void preProcessMessageDetail() override;
 };
 }  // namespace rviz_plugins
 

@@ -23,6 +23,24 @@ AutowarePathWithLaneIdDisplay::AutowarePathWithLaneIdDisplay()
 {
 }
 
+void AutowarePathWithLaneIdDisplay::preProcessMessageDetail()
+{
+  // NOTE: This doesn't work in the constructor.
+  // NOTE: This doesn't work in the abstract class since the class has to have a "Q_Object" type.
+  if (!vehicle_info_) {
+    try {
+      vehicle_info_ = std::make_shared<VehicleInfo>(
+        VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
+      updateVehicleInfo();
+    } catch (const std::exception & e) {
+      RCLCPP_WARN_THROTTLE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
+        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+        e.what());
+    }
+  }
+}
+
 AutowarePathWithLaneIdDisplay::~AutowarePathWithLaneIdDisplay()
 {
   for (const auto & e : lane_id_obj_ptrs_) {
@@ -32,7 +50,7 @@ AutowarePathWithLaneIdDisplay::~AutowarePathWithLaneIdDisplay()
   lane_id_obj_ptrs_.shrink_to_fit();
 }
 
-void AutowarePathWithLaneIdDisplay::preprocessMessageDetail(
+void AutowarePathWithLaneIdDisplay::preVisualizePathFootprintDetail(
   const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr)
 {
   const size_t size = msg_ptr->points.size();
@@ -56,7 +74,7 @@ void AutowarePathWithLaneIdDisplay::preprocessMessageDetail(
   }
 }
 
-void AutowarePathWithLaneIdDisplay::processMessageDetail(
+void AutowarePathWithLaneIdDisplay::visualizePathFootprintDetail(
   const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr,
   const size_t p_idx)
 {
@@ -82,6 +100,42 @@ void AutowarePathWithLaneIdDisplay::processMessageDetail(
   } else {
     const auto & text_ptr = lane_id_obj_ptrs_.at(p_idx).second;
     text_ptr->setVisible(false);
+  }
+}
+
+void AutowarePathDisplay::preProcessMessageDetail()
+{
+  // NOTE: This doesn't work in the constructor.
+  // NOTE: This doesn't work in the abstract class since the class has to have a "Q_Object" type.
+  if (!vehicle_info_) {
+    try {
+      vehicle_info_ = std::make_shared<VehicleInfo>(
+        VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
+      updateVehicleInfo();
+    } catch (const std::exception & e) {
+      RCLCPP_WARN_THROTTLE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
+        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+        e.what());
+    }
+  }
+}
+
+void AutowareTrajectoryDisplay::preProcessMessageDetail()
+{
+  // NOTE: This doesn't work in the constructor.
+  // NOTE: This doesn't work in the abstract class since the class has to have a "Q_Object" type.
+  if (!vehicle_info_) {
+    try {
+      vehicle_info_ = std::make_shared<VehicleInfo>(
+        VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
+      updateVehicleInfo();
+    } catch (const std::exception & e) {
+      RCLCPP_WARN_THROTTLE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
+        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+        e.what());
+    }
   }
 }
 }  // namespace rviz_plugins
