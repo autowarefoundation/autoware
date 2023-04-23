@@ -239,6 +239,7 @@ MPTOptimizer::MPTParam::MPTParam(
   {  // avoidance
     max_longitudinal_margin_for_bound_violation =
       node->declare_parameter<double>("mpt.avoidance.max_longitudinal_margin_for_bound_violation");
+    max_bound_fixing_time = node->declare_parameter<double>("mpt.avoidance.max_bound_fixing_time");
     max_avoidance_cost = node->declare_parameter<double>("mpt.avoidance.max_avoidance_cost");
     avoidance_cost_margin = node->declare_parameter<double>("mpt.avoidance.avoidance_cost_margin");
     avoidance_cost_band_length =
@@ -382,6 +383,7 @@ void MPTOptimizer::MPTParam::onParam(const std::vector<rclcpp::Parameter> & para
     updateParam<double>(
       parameters, "mpt.avoidance.max_longitudinal_margin_for_bound_violation",
       max_longitudinal_margin_for_bound_violation);
+    updateParam<double>(parameters, "mpt.avoidance.max_bound_fixing_time", max_bound_fixing_time);
     updateParam<double>(parameters, "mpt.avoidance.max_avoidance_cost", max_avoidance_cost);
     updateParam<double>(parameters, "mpt.avoidance.avoidance_cost_margin", avoidance_cost_margin);
     updateParam<double>(
@@ -585,7 +587,7 @@ std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
 
   // 6. update bounds
   // NOTE: After this, resample must not be called since bounds are not interpolated.
-  updateBounds(ref_points, p.left_bound, p.right_bound);
+  updateBounds(ref_points, p.left_bound, p.right_bound, p.ego_pose, p.ego_vel);
   updateVehicleBounds(ref_points, ref_points_spline);
 
   // 7. update delta arc length
@@ -780,7 +782,8 @@ void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) c
 void MPTOptimizer::updateBounds(
   std::vector<ReferencePoint> & ref_points,
   const std::vector<geometry_msgs::msg::Point> & left_bound,
-  const std::vector<geometry_msgs::msg::Point> & right_bound) const
+  const std::vector<geometry_msgs::msg::Point> & right_bound,
+  const geometry_msgs::msg::Pose & ego_pose, const double ego_vel) const
 {
   time_keeper_ptr_->tic(__func__);
 
@@ -805,6 +808,9 @@ void MPTOptimizer::updateBounds(
 
   // extend violated bounds, where the input path is outside the drivable area
   ref_points = extendViolatedBounds(ref_points);
+
+  // keep previous boundary's width around ego to avoid sudden steering
+  avoidSuddenSteering(ref_points, ego_pose, ego_vel);
 
   /*
   // TODO(murooka) deal with filling data between obstacles
@@ -872,6 +878,32 @@ std::vector<ReferencePoint> MPTOptimizer::extendViolatedBounds(
   }
 
   return extended_ref_points;
+}
+
+void MPTOptimizer::avoidSuddenSteering(
+  std::vector<ReferencePoint> & ref_points, const geometry_msgs::msg::Pose & ego_pose,
+  const double ego_vel) const
+{
+  if (!prev_ref_points_ptr_) {
+    return;
+  }
+  const size_t prev_idx = trajectory_utils::findEgoIndex(
+    *prev_ref_points_ptr_, tier4_autoware_utils::getPose(ref_points.front()), ego_nearest_param_);
+
+  const double max_bound_fixing_length = ego_vel * mpt_param_.max_bound_fixing_time;
+  const int max_bound_fixing_idx =
+    std::floor(max_bound_fixing_length / mpt_param_.delta_arc_length);
+
+  const size_t ego_idx = trajectory_utils::findEgoIndex(ref_points, ego_pose, ego_nearest_param_);
+  const size_t max_fixed_bound_idx =
+    std::min(ego_idx + static_cast<size_t>(max_bound_fixing_idx), ref_points.size());
+
+  for (size_t i = 0; i < max_fixed_bound_idx; ++i) {
+    const auto & prev_bounds = prev_ref_points_ptr_->at(prev_idx + i).bounds;
+
+    ref_points.at(i).bounds.upper_bound = prev_bounds.upper_bound;
+    ref_points.at(i).bounds.lower_bound = prev_bounds.lower_bound;
+  }
 }
 
 void MPTOptimizer::updateVehicleBounds(

@@ -102,6 +102,7 @@
 
       # avoidance
       avoidance:
+        max_bound_fixing_time: 3.0 # [s]
         max_longitudinal_margin_for_bound_violation: 1.0 # [m]
         max_avoidance_cost: 0.5                          # [m]
         avoidance_cost_margin: 0.0                       # [m]
