@@ -233,7 +233,6 @@ void StaticCenterlineOptimizerNode::run()
   load_map(lanelet2_input_file_path);
   const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
   const auto optimized_traj_points = plan_path(route_lane_ids);
-  evaluate(route_lane_ids, optimized_traj_points);
   save_map(lanelet2_output_file_path, route_lane_ids, optimized_traj_points);
 }
 
@@ -445,6 +444,9 @@ void StaticCenterlineOptimizerNode::on_plan_path(
     return;
   }
 
+  // publish unsafe_footprints
+  evaluate(route_lane_ids, optimized_traj_points);
+
   // create output data
   auto target_traj_point = optimized_traj_points.cbegin();
   bool is_end_lanelet = false;
@@ -486,9 +488,13 @@ void StaticCenterlineOptimizerNode::evaluate(
   const std::vector<TrajectoryPoint> & optimized_traj_points)
 {
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
-
-  const auto dist_thresh_vec = declare_parameter<std::vector<double>>("marker_color_dist_thresh");
-  const auto marker_color_vec = declare_parameter<std::vector<std::string>>("marker_color");
+  const auto dist_thresh_vec =
+    has_parameter("marker_color_dist_thresh")
+      ? get_parameter("marker_color_dist_thresh").as_double_array()
+      : declare_parameter<std::vector<double>>("marker_color_dist_thresh");
+  const auto marker_color_vec = has_parameter("marker_color")
+                                  ? get_parameter("marker_color").as_string_array()
+                                  : declare_parameter<std::vector<std::string>>("marker_color");
   const auto get_marker_color = [&](const double dist) -> boost::optional<std::array<double, 3>> {
     for (size_t i = 0; i < dist_thresh_vec.size(); ++i) {
       const double dist_thresh = dist_thresh_vec.at(i);
