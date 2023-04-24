@@ -2514,12 +2514,6 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
     output.drivable_lanes.push_back(current_drivable_lanes);
   }
 
-  const auto shorten_lanes = utils::cutOverlappedLanes(path, output.drivable_lanes);
-
-  const auto extended_lanes = utils::expandLanelets(
-    shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
-
   {
     const auto & p = planner_data_->parameters;
     generateDrivableArea(

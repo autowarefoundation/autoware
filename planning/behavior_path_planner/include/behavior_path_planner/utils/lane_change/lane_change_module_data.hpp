@@ -55,11 +55,6 @@ struct LaneChangeParameters
   double abort_delta_time{3.0};
   double abort_max_lateral_jerk{10.0};
 
-  // drivable area expansion
-  double drivable_area_right_bound_offset{0.0};
-  double drivable_area_left_bound_offset{0.0};
-  std::vector<std::string> drivable_area_types_to_skip{};
-
   // debug marker
   bool publish_debug_marker{false};
 };

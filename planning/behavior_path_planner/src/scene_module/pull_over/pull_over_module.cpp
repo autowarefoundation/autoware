@@ -618,12 +618,9 @@ BehaviorModuleOutput PullOverModule::plan()
     for (auto & path : status_.pull_over_path->partial_paths) {
       const size_t ego_idx = planner_data_->findEgoIndex(path.points);
       utils::clipPathLength(path, ego_idx, planner_data_->parameters);
-      const auto shorten_lanes = utils::cutOverlappedLanes(path, status_.lanes);
-      const auto expanded_lanes = utils::expandLanelets(
-        shorten_lanes, parameters_->drivable_area_left_bound_offset,
-        parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
+      const auto target_drivable_lanes = getNonOverlappingExpandedLanes(path, status_.lanes);
       utils::generateDrivableArea(
-        path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
+        path, target_drivable_lanes, planner_data_->parameters.vehicle_length, planner_data_);
     }
   }
 
@@ -857,12 +854,9 @@ PathWithLaneId PullOverModule::generateStopPath()
 
   // generate drivable area
   const auto drivable_lanes = utils::generateDrivableLanes(status_.current_lanes);
-  const auto shorten_lanes = utils::cutOverlappedLanes(reference_path, drivable_lanes);
-  const auto expanded_lanes = utils::expandLanelets(
-    shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
+  const auto target_drivable_lanes = getNonOverlappingExpandedLanes(reference_path, drivable_lanes);
   utils::generateDrivableArea(
-    reference_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
+    reference_path, target_drivable_lanes, common_parameters.vehicle_length, planner_data_);
 
   return reference_path;
 }
@@ -895,12 +889,9 @@ PathWithLaneId PullOverModule::generateFeasibleStopPath()
 
   // generate drivable area
   const auto drivable_lanes = utils::generateDrivableLanes(status_.current_lanes);
-  const auto shorten_lanes = utils::cutOverlappedLanes(stop_path, drivable_lanes);
-  const auto expanded_lanes = utils::expandLanelets(
-    shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
+  const auto target_drivable_lanes = getNonOverlappingExpandedLanes(stop_path, drivable_lanes);
   utils::generateDrivableArea(
-    stop_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
+    stop_path, target_drivable_lanes, common_parameters.vehicle_length, planner_data_);
 
   return stop_path;
 }

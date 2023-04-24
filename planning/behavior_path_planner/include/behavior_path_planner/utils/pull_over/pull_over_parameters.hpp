@@ -99,10 +99,6 @@ struct PullOverParameters
   bool enable_collision_check_at_prepare_phase;
   bool use_predicted_path_outside_lanelet;
   bool use_all_predicted_path;
-  // drivable area expansion
-  double drivable_area_right_bound_offset;
-  double drivable_area_left_bound_offset;
-  std::vector<std::string> drivable_area_types_to_skip;
   // debug
   bool print_debug_info;
 

@@ -1799,11 +1799,12 @@ BehaviorModuleOutput getReferencePath(
   const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
   const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
 
-  const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
+  const auto & dp = planner_data->drivable_area_expansion_parameters;
 
+  const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
   const auto expanded_lanes = expandLanelets(
-    shorten_lanes, p.drivable_area_left_bound_offset, p.drivable_area_right_bound_offset,
-    p.drivable_area_types_to_skip);
+    shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
 
   generateDrivableArea(reference_path, expanded_lanes, p.vehicle_length, planner_data);
 

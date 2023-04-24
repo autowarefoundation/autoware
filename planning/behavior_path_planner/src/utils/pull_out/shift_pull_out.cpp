@@ -92,9 +92,10 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
     // check lane departure
     const auto drivable_lanes =
       utils::generateDrivableLanesWithShoulderLanes(road_lanes, shoulder_lanes);
+    const auto & dp = planner_data_->drivable_area_expansion_parameters;
     const auto expanded_lanes = utils::expandLanelets(
-      drivable_lanes, parameters_.drivable_area_left_bound_offset,
-      parameters_.drivable_area_right_bound_offset);
+      drivable_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+      dp.drivable_area_types_to_skip);
     if (lane_departure_checker_->checkPathWillLeaveLane(
           utils::transformToLanelets(expanded_lanes), path_start_to_end)) {
       continue;

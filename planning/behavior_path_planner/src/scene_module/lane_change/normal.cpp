@@ -103,13 +103,14 @@ PathWithLaneId NormalLaneChange::generatePlannedPath()
 
 void NormalLaneChange::generateExtendedDrivableArea(PathWithLaneId & path)
 {
+  const auto & common_parameters = planner_data_->parameters;
+  const auto & dp = planner_data_->drivable_area_expansion_parameters;
+
   const auto drivable_lanes = getDrivableLanes();
   const auto shorten_lanes = utils::cutOverlappedLanes(path, drivable_lanes);
-
-  const auto & common_parameters = planner_data_->parameters;
   const auto expanded_lanes = utils::expandLanelets(
-    shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
+    shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
   utils::generateDrivableArea(
     path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 }
@@ -575,14 +576,16 @@ void NormalLaneChange::calcTurnSignalInfo()
 bool NormalLaneChange::isValidPath(const PathWithLaneId & path) const
 {
   const auto & route_handler = planner_data_->route_handler;
+  const auto & dp = planner_data_->drivable_area_expansion_parameters;
 
   // check lane departure
   const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
     *route_handler, utils::extendLanes(route_handler, status_.current_lanes),
     utils::extendLanes(route_handler, status_.lane_change_lanes));
   const auto expanded_lanes = utils::expandLanelets(
-    drivable_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset);
+    drivable_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
+
   const auto lanelets = utils::transformToLanelets(expanded_lanes);
 
   // check path points are in any lanelets

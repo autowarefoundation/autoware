@@ -24,10 +24,6 @@ namespace behavior_path_planner
 struct LaneFollowingParameters
 {
   double lane_change_prepare_duration;
-  // drivable area expansion
-  double drivable_area_right_bound_offset;
-  double drivable_area_left_bound_offset;
-  std::vector<std::string> drivable_area_types_to_skip{};
 
   // finding closest lanelet
   double distance_threshold;

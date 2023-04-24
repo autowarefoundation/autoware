@@ -354,6 +354,18 @@ protected:
     return std::abs(planner_data_->self_odometry->twist.twist.linear.x);
   }
 
+  std::vector<DrivableLanes> getNonOverlappingExpandedLanes(
+    PathWithLaneId & path, const std::vector<DrivableLanes> & lanes) const
+  {
+    const auto & dp = planner_data_->drivable_area_expansion_parameters;
+
+    const auto shorten_lanes = utils::cutOverlappedLanes(path, lanes);
+    const auto expanded_lanes = utils::expandLanelets(
+      shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+      dp.drivable_area_types_to_skip);
+    return expanded_lanes;
+  }
+
   rclcpp::Clock::SharedPtr clock_;
 
   std::shared_ptr<const PlannerData> planner_data_;

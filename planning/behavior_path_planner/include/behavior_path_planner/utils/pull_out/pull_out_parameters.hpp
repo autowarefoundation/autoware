@@ -51,10 +51,6 @@ struct PullOutParameters
   double backward_search_resolution;
   double backward_path_update_duration;
   double ignore_distance_from_lane_end;
-  // drivable area expansion
-  double drivable_area_right_bound_offset;
-  double drivable_area_left_bound_offset;
-  std::vector<std::string> drivable_area_types_to_skip;
 };
 
 }  // namespace behavior_path_planner

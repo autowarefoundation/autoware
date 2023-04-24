@@ -68,11 +68,13 @@ PathWithLaneId NormalLaneChangeBT::getReferencePath() const
     *route_handler, reference_path, current_lanes, parameters_->prepare_duration,
     lane_change_buffer);
 
+  const auto & dp = planner_data_->drivable_area_expansion_parameters;
+
   const auto drivable_lanes = utils::generateDrivableLanes(current_lanes);
   const auto shorten_lanes = utils::cutOverlappedLanes(reference_path, drivable_lanes);
   const auto expanded_lanes = utils::expandLanelets(
-    shorten_lanes, parameters_->drivable_area_left_bound_offset,
-    parameters_->drivable_area_right_bound_offset, parameters_->drivable_area_types_to_skip);
+    shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
   utils::generateDrivableArea(
     reference_path, expanded_lanes, common_parameters.vehicle_length, planner_data_);
 
