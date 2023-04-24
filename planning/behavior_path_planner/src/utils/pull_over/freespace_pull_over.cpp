@@ -109,9 +109,10 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
       // path points is less than 2
       return {};
     }
+
+    const double offset = planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
     utils::generateDrivableArea(
-      path, planner_data_->parameters.vehicle_length, planner_data_->parameters.vehicle_width,
-      drivable_area_margin, *is_driving_forward);
+      path, planner_data_->parameters.vehicle_length, offset, *is_driving_forward);
   }
 
   PullOverPath pull_over_path{};
