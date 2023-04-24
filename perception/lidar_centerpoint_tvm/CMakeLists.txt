@@ -68,6 +68,28 @@ if((NOT NN_DEPENDENCY_ENCODER STREQUAL "") AND (NOT NN_DEPENDENCY_BACKBONE STREQ
     EXECUTABLE lidar_centerpoint_tvm_node
   )
 
+  ## single inference node ##
+  ament_auto_add_library(single_inference_lidar_centerpoint_tvm_component SHARED
+    src/single_inference_node.cpp
+  )
+
+  target_link_libraries(single_inference_lidar_centerpoint_tvm_component
+    ${tvm_runtime_LIBRARIES}
+  )
+
+
+  rclcpp_components_register_node(single_inference_lidar_centerpoint_tvm_component
+    PLUGIN "autoware::perception::lidar_centerpoint_tvm::SingleInferenceLidarCenterPointNode"
+    EXECUTABLE single_inference_lidar_centerpoint_tvm_node
+  )
+
+  install(PROGRAMS
+    scripts/lidar_centerpoint_visualizer.py
+    DESTINATION lib/${PROJECT_NAME}
+  )
+
+  ament_export_dependencies(ament_cmake_python)
+
   ament_auto_package(INSTALL_TO_SHARE
     launch
     config

@@ -45,7 +45,7 @@ boost::optional<geometry_msgs::msg::Transform> getTransform(
       target_frame_id, source_frame_id, time, rclcpp::Duration::from_seconds(0.5));
     return transform_stamped.transform;
   } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("lidar_centerpoint"), ex.what());
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("lidar_centerpoint_tvm"), ex.what());
     return boost::none;
   }
 }
@@ -77,14 +77,18 @@ bool PointCloudDensification::enqueuePointCloud(
 {
   const auto header = pointcloud_msg.header;
 
-  auto transform_world2current =
-    getTransform(tf_buffer, header.frame_id, param_.world_frame_id(), header.stamp);
-  if (!transform_world2current) {
-    return false;
-  }
-  auto affine_world2current = transformToEigen(transform_world2current.get());
+  if (param_.pointcloud_cache_size() > 1) {
+    auto transform_world2current =
+      getTransform(tf_buffer, header.frame_id, param_.world_frame_id(), header.stamp);
+    if (!transform_world2current) {
+      return false;
+    }
+    auto affine_world2current = transformToEigen(transform_world2current.get());
 
-  enqueue(pointcloud_msg, affine_world2current);
+    enqueue(pointcloud_msg, affine_world2current);
+  } else {
+    enqueue(pointcloud_msg, Eigen::Affine3f::Identity());
+  }
   dequeue();
 
   return true;
