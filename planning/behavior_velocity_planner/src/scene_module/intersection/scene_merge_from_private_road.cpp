@@ -93,18 +93,18 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area;
 
   /* set stop-line and stop-judgement-line for base_link */
-  const auto stop_lines_idx_opt =
+  const auto stop_line_idx_opt =
     first_conflicting_area
-      ? util::generateStopLine(
+      ? util::generateCollisionStopLine(
           lane_id_, first_conflicting_area.value(), planner_data_, planner_param_.stop_line_margin,
           path, path_ip, interval, lane_interval_ip, logger_.get_child("util"))
       : std::nullopt;
-  if (!stop_lines_idx_opt.has_value()) {
+  if (!stop_line_idx_opt.has_value()) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     return false;
   }
 
-  const size_t stop_line_idx = stop_lines_idx_opt.value().collision_stop_line;
+  const size_t stop_line_idx = stop_line_idx_opt.value();
   if (stop_line_idx == 0) {
     RCLCPP_DEBUG(logger_, "stop line is at path[0], ignore planning.");
     return true;

@@ -68,6 +68,8 @@ Module getModuleType(const std::string & module_name)
     module.type = Module::PULL_OVER;
   } else if (module_name == "pull_out") {
     module.type = Module::PULL_OUT;
+  } else if (module_name == "intersection_occlusion") {
+    module.type = Module::INTERSECTION_OCCLUSION;
   }
   return module;
 }

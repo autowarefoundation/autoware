@@ -15,6 +15,7 @@
 #ifndef SCENE_MODULE__INTERSECTION__SCENE_INTERSECTION_HPP_
 #define SCENE_MODULE__INTERSECTION__SCENE_INTERSECTION_HPP_
 
+#include <grid_map_core/grid_map_core.hpp>
 #include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/intersection/util_type.hpp>
@@ -27,6 +28,7 @@
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <grid_map_msgs/msg/grid_map.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -48,9 +50,9 @@ class IntersectionModule : public SceneModuleInterface
 public:
   struct DebugData
   {
-    bool stop_required = false;
-
-    geometry_msgs::msg::Pose stop_wall_pose;
+    geometry_msgs::msg::Pose collision_stop_wall_pose;
+    geometry_msgs::msg::Pose occlusion_stop_wall_pose;
+    geometry_msgs::msg::Pose occlusion_first_stop_wall_pose;
     geometry_msgs::msg::Polygon stuck_vehicle_detect_area;
     geometry_msgs::msg::Polygon candidate_collision_ego_lane_polygon;
     std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
@@ -62,6 +64,8 @@ public:
     autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
     autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
     geometry_msgs::msg::Pose predicted_obj_pose;
+    geometry_msgs::msg::Point nearest_occlusion_point;
+    geometry_msgs::msg::Point nearest_occlusion_projection_point;
   };
 
 public:
@@ -102,12 +106,33 @@ public:
       double collision_end_margin_time;       //! end margin time to check collision
       double keep_detection_vel_thr;  //! keep detection if ego is ego.vel < keep_detection_vel_thr
     } collision_detection;
+    struct Occlusion
+    {
+      bool enable;
+      double occlusion_detection_area_length;  //! used for occlusion detection
+      double occlusion_creep_velocity;         //! the creep velocity to occlusion limit stop lline
+      int free_space_max;
+      int occupied_min;
+      bool do_dp;
+      double before_creep_stop_time;
+      double min_vehicle_brake_for_rss;
+      double max_vehicle_velocity_for_rss;
+    } occlusion;
+  };
+
+  enum OcclusionState {
+    NONE,
+    BEFORE_FIRST_STOP_LINE,
+    WAIT_FIRST_STOP_LINE,
+    CREEP_SECOND_STOP_LINE,
+    CLEARED,
   };
 
   IntersectionModule(
     const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
     const PlannerParam & planner_param, const std::set<int> & assoc_ids,
-    const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock);
+    const bool enable_occlusion_detection, rclcpp::Node & node, const rclcpp::Logger logger,
+    const rclcpp::Clock::SharedPtr clock);
 
   /**
    * @brief plan go-stop velocity at traffic crossing with collision check between reference path
@@ -120,17 +145,49 @@ public:
 
   const std::set<int> & getAssocIds() const { return assoc_ids_; }
 
+  UUID getOcclusionUUID() const { return occlusion_uuid_; }
+  bool getOcclusionSafety() const { return occlusion_safety_; }
+  double getOcclusionDistance() const { return occlusion_stop_distance_; }
+  UUID getOcclusionFirstStopUUID() const { return occlusion_first_stop_uuid_; }
+  bool getOcclusionFirstStopSafety() const { return occlusion_first_stop_safety_; }
+  double getOcclusionFirstStopDistance() const { return occlusion_first_stop_distance_; }
+  void setOcclusionActivation(const bool activation) { occlusion_activated_ = activation; }
+  void setOcclusionFirstStopActivation(const bool activation)
+  {
+    occlusion_first_stop_activated_ = activation;
+  }
+
 private:
+  rclcpp::Node & node_;
   const int64_t lane_id_;
   std::string turn_direction_;
-  bool has_traffic_light_;
-  bool is_go_out_;
+  bool is_go_out_ = false;
   // Parameter
   PlannerParam planner_param_;
   std::optional<util::IntersectionLanelets> intersection_lanelets_;
   // for an intersection lane l1, its associative lanes are those that share same parent lanelet and
   // have same turn_direction
   const std::set<int> assoc_ids_;
+
+  // for occlusion detection
+  const bool enable_occlusion_detection_;
+  std::optional<std::vector<util::DetectionLaneDivision>> detection_divisions_;
+  std::optional<geometry_msgs::msg::Pose> prev_occlusion_stop_line_pose_;
+  OcclusionState occlusion_state_;
+  // NOTE: uuid_ is base member
+  // for occlusion clearance decision
+  const UUID occlusion_uuid_;
+  bool occlusion_safety_;
+  double occlusion_stop_distance_;
+  bool occlusion_activated_;
+  // for first stop in two-phase stop
+  const UUID occlusion_first_stop_uuid_;  // TODO(Mamoru Sobue): replace with uuid_
+  bool occlusion_first_stop_safety_;
+  double occlusion_first_stop_distance_;
+  bool occlusion_first_stop_activated_;
+
+  StateMachine collision_state_machine_;     //! for stable collision checking
+  StateMachine before_creep_state_machine_;  //! for two phase stop
 
   /**
    * @brief check collision for all lanelet area & predicted objects (call checkPathCollision() as
@@ -258,13 +315,22 @@ private:
     lanelet::ConstLanelets & ego_lane_with_next_lane, lanelet::ConstLanelet & closest_lanelet,
     const Polygon2d & stuck_vehicle_detect_area,
     const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
-  StateMachine state_machine_;  //! for state
+
+  std::optional<size_t> findNearestOcclusionProjectedPosition(
+    const nav_msgs::msg::OccupancyGrid & occ_grid,
+    const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
+    const lanelet::CompoundPolygon3d & first_detection_area,
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double interval,
+    const std::pair<size_t, size_t> & lane_interval,
+    const std::vector<util::DetectionLaneDivision> & lane_divisions,
+    const double occlusion_dist_thr) const;
 
   // Debug
   mutable DebugData debug_data_;
 
   std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_ =
     std::make_shared<motion_utils::VirtualWallMarkerCreator>();
+  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr occlusion_grid_pub_;
 };
 }  // namespace behavior_velocity_planner
 

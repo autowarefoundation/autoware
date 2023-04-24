@@ -60,7 +60,7 @@ IntersectionLanelets getObjectiveLanelets(
   const int lane_id, const std::set<int> & assoc_ids,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::pair<size_t, size_t> lane_interval, const double detection_area_length,
-  const bool tl_arrow_solid_on = false);
+  const double occlusion_detection_area_length, const bool tl_arrow_solid_on = false);
 
 /**
  * @brief Generate a stop line and insert it into the path. If the stop line is defined in the map,
@@ -72,7 +72,7 @@ IntersectionLanelets getObjectiveLanelets(
  " @param use_stuck_stopline if true, a stop line is generated at the beginning of intersection lane
  * @return nullopt if path is not intersecting with detection areas
  */
-std::optional<StopLineIdx> generateStopLine(
+std::optional<size_t> generateCollisionStopLine(
   const int lane_id, const lanelet::CompoundPolygon3d & first_detection_area,
   const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
@@ -93,6 +93,25 @@ std::optional<size_t> generateStuckStopLine(
   const bool use_stuck_stopline, autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double ip_interval,
   const std::pair<size_t, size_t> lane_interval, const rclcpp::Logger logger);
+
+std::optional<std::pair<size_t, size_t>> generateOcclusionStopLines(
+  const int lane_id, const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
+  const std::shared_ptr<const PlannerData> & planner_data, const double collision_stop_line_margin,
+  const size_t occlusion_projection_index, const double occlusion_extra_margin,
+  autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double interval,
+  const std::pair<size_t, size_t> lane_interaval, const rclcpp::Logger logger);
+
+std::optional<size_t> generateStaticPassJudgeLine(
+  const lanelet::CompoundPolygon3d & first_detection_area,
+  autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double ip_interval,
+  const std::pair<size_t, size_t> lane_interval,
+  const std::shared_ptr<const PlannerData> & planner_data);
+
+std::optional<size_t> getFirstPointInsidePolygon(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const std::pair<size_t, size_t> lane_interval, const lanelet::CompoundPolygon3d & polygon);
 
 /**
  * @brief Calculate first path index that is in the polygon.
@@ -159,6 +178,10 @@ bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane);
 bool isTrafficLightArrowActivated(
   lanelet::ConstLanelet lane,
   const std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped> & tl_infos);
+
+std::vector<DetectionLaneDivision> generateDetectionLaneDivisions(
+  lanelet::ConstLanelets detection_lanelets,
+  const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution);
 
 }  // namespace util
 }  // namespace behavior_velocity_planner

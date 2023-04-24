@@ -29,9 +29,11 @@ struct IntersectionLanelets
   lanelet::ConstLanelets attention;
   lanelet::ConstLanelets conflicting;
   lanelet::ConstLanelets adjacent;
+  lanelet::ConstLanelets occlusion_attention;  // for occlusion detection
   std::vector<lanelet::CompoundPolygon3d> attention_area;
   std::vector<lanelet::CompoundPolygon3d> conflicting_area;
   std::vector<lanelet::CompoundPolygon3d> adjacent_area;
+  std::vector<lanelet::CompoundPolygon3d> occlusion_attention_area;
   // the first area intersecting with the path
   // even if lane change/re-routing happened on the intersection, these areas area are supposed to
   // be invariant under the 'associative' lanes.
@@ -39,10 +41,17 @@ struct IntersectionLanelets
   std::optional<lanelet::CompoundPolygon3d> first_detection_area;
 };
 
-struct StopLineIdx
+enum class StopReason : int {
+  STUCK,
+  COLLISION,
+  OCCLUSION,
+};
+
+struct DetectionLaneDivision
 {
-  size_t pass_judge_line = 0;
-  size_t collision_stop_line = 0;
+  int lane_id;
+  // discrete fine lines from left to right
+  std::vector<lanelet::ConstLineString2d> divisions;
 };
 
 }  // namespace behavior_velocity_planner::util
