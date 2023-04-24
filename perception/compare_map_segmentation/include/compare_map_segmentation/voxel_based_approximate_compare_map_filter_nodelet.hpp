@@ -16,35 +16,52 @@
 #define COMPARE_MAP_SEGMENTATION__VOXEL_BASED_APPROXIMATE_COMPARE_MAP_FILTER_NODELET_HPP_  // NOLINT
 
 #include "pointcloud_preprocessor/filter.hpp"
+#include "voxel_grid_map_loader.hpp"
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/search/pcl_search.h>
 
+#include <memory>
+#include <string>
 #include <vector>
 
 namespace compare_map_segmentation
 {
+
+class VoxelBasedApproximateStaticMapLoader : public VoxelGridStaticMapLoader
+{
+public:
+  explicit VoxelBasedApproximateStaticMapLoader(
+    rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex)
+  : VoxelGridStaticMapLoader(node, leaf_size, tf_map_input_frame, mutex)
+  {
+    RCLCPP_INFO(logger_, "VoxelBasedApproximateStaticMapLoader initialized.\n");
+  }
+  bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) override;
+};
+
+class VoxelBasedApproximateDynamicMapLoader : public VoxelGridDynamicMapLoader
+{
+public:
+  VoxelBasedApproximateDynamicMapLoader(
+    rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex,
+    rclcpp::CallbackGroup::SharedPtr main_callback_group)
+  : VoxelGridDynamicMapLoader(node, leaf_size, tf_map_input_frame, mutex, main_callback_group)
+  {
+    RCLCPP_INFO(logger_, "VoxelBasedApproximateDynamicMapLoader initialized.\n");
+  }
+  bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) override;
+};
+
 class VoxelBasedApproximateCompareMapFilterComponent : public pointcloud_preprocessor::Filter
 {
 protected:
   virtual void filter(
     const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output);
 
-  void input_target_callback(const PointCloud2ConstPtr map);
-
 private:
-  // pcl::SegmentDifferences<pcl::PointXYZ> impl_;
-  rclcpp::Subscription<PointCloud2>::SharedPtr sub_map_;
-  PointCloudPtr voxel_map_ptr_;
   double distance_threshold_;
-  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_;
-  bool set_map_in_voxel_grid_;
-
-  /** \brief Parameter service callback result : needed to be hold */
-  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
-
-  /** \brief Parameter service callback */
-  rcl_interfaces::msg::SetParametersResult paramCallback(const std::vector<rclcpp::Parameter> & p);
+  std::unique_ptr<VoxelGridMapLoader> voxel_based_approximate_map_loader_;
 
 public:
   PCL_MAKE_ALIGNED_OPERATOR_NEW

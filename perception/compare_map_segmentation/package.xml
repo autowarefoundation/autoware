@@ -3,7 +3,7 @@
 <package format="3">
   <name>compare_map_segmentation</name>
   <version>0.1.0</version>
-  <description>The ROS2 compare_map_segmentation package</description>
+  <description>The ROS 2 compare_map_segmentation package</description>
   <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <maintainer email="dai.nguyen@tier4.jp">badai nguyen</maintainer>

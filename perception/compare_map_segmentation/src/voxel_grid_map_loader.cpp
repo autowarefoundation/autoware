@@ -46,6 +46,25 @@ void VoxelGridMapLoader::publish_downsampled_map(
 }
 
 bool VoxelGridMapLoader::is_close_to_neighbor_voxels(
+  const pcl::PointXYZ & point, const double distance_threshold, VoxelGridPointXYZ & voxel,
+  pcl::search::Search<pcl::PointXYZ>::Ptr tree) const
+{
+  const int index = voxel.getCentroidIndexAt(voxel.getGridCoordinates(point.x, point.y, point.z));
+  if (index != -1) {
+    return true;
+  }
+  if (tree == NULL) {
+    return false;
+  }
+  std::vector<int> nn_indices(1);
+  std::vector<float> nn_distances(1);
+  if (tree->radiusSearch(point, distance_threshold, nn_indices, nn_distances, 1) == 0) {
+    return false;
+  }
+  return true;
+}
+
+bool VoxelGridMapLoader::is_close_to_neighbor_voxels(
   const pcl::PointXYZ & point, const double distance_threshold, const PointCloudPtr & map,
   VoxelGridPointXYZ & voxel) const
 {
@@ -219,8 +238,6 @@ bool VoxelGridMapLoader::is_in_voxel(
   return false;
 }
 
-//*************************** for Static Map loader Voxel Grid Filter *************
-
 VoxelGridStaticMapLoader::VoxelGridStaticMapLoader(
   rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex)
 : VoxelGridMapLoader(node, leaf_size, tf_map_input_frame, mutex)
@@ -258,7 +275,6 @@ bool VoxelGridStaticMapLoader::is_close_to_map(
   }
   return false;
 }
-//*************** for Dynamic and Differential Map loader Voxel Grid Filter *************
 
 VoxelGridDynamicMapLoader::VoxelGridDynamicMapLoader(
   rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex,

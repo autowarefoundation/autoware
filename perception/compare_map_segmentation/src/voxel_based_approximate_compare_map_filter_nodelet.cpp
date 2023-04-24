@@ -22,7 +22,49 @@
 
 namespace compare_map_segmentation
 {
-using pointcloud_preprocessor::get_param;
+
+bool VoxelBasedApproximateStaticMapLoader::is_close_to_map(
+  const pcl::PointXYZ & point, [[maybe_unused]] const double distance_threshold)
+{
+  if (voxel_map_ptr_ == NULL) {
+    return false;
+  }
+  const int index =
+    voxel_grid_.getCentroidIndexAt(voxel_grid_.getGridCoordinates(point.x, point.y, point.z));
+  if (index == -1) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool VoxelBasedApproximateDynamicMapLoader::is_close_to_map(
+  const pcl::PointXYZ & point, [[maybe_unused]] const double distance_threshold)
+{
+  if (current_voxel_grid_dict_.size() == 0) {
+    return false;
+  }
+
+  const int map_grid_index = static_cast<int>(
+    std::floor((point.x - origin_x_) / map_grid_size_x_) +
+    map_grids_x_ * std::floor((point.y - origin_y_) / map_grid_size_y_));
+
+  if (static_cast<size_t>(map_grid_index) >= current_voxel_grid_array_.size()) {
+    return false;
+  }
+  if (current_voxel_grid_array_.at(map_grid_index) != NULL) {
+    const int index = current_voxel_grid_array_.at(map_grid_index)
+                        ->map_cell_voxel_grid.getCentroidIndexAt(
+                          current_voxel_grid_array_.at(map_grid_index)
+                            ->map_cell_voxel_grid.getGridCoordinates(point.x, point.y, point.z));
+    if (index == -1) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
 
 VoxelBasedApproximateCompareMapFilterComponent::VoxelBasedApproximateCompareMapFilterComponent(
   const rclcpp::NodeOptions & options)
@@ -39,17 +81,17 @@ VoxelBasedApproximateCompareMapFilterComponent::VoxelBasedApproximateCompareMapF
     stop_watch_ptr_->tic("processing_time");
   }
 
-  distance_threshold_ = static_cast<double>(declare_parameter("distance_threshold", 0.3));
-
-  set_map_in_voxel_grid_ = false;
-
-  using std::placeholders::_1;
-  sub_map_ = this->create_subscription<PointCloud2>(
-    "map", rclcpp::QoS{1}.transient_local(),
-    std::bind(&VoxelBasedApproximateCompareMapFilterComponent::input_target_callback, this, _1));
-
-  set_param_res_ = this->add_on_set_parameters_callback(
-    std::bind(&VoxelBasedApproximateCompareMapFilterComponent::paramCallback, this, _1));
+  distance_threshold_ = declare_parameter<double>("distance_threshold");
+  bool use_dynamic_map_loading = declare_parameter<bool>("use_dynamic_map_loading");
+  if (use_dynamic_map_loading) {
+    rclcpp::CallbackGroup::SharedPtr main_callback_group;
+    main_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    voxel_based_approximate_map_loader_ = std::make_unique<VoxelBasedApproximateDynamicMapLoader>(
+      this, distance_threshold_, &tf_input_frame_, &mutex_, main_callback_group);
+  } else {
+    voxel_based_approximate_map_loader_ = std::make_unique<VoxelBasedApproximateStaticMapLoader>(
+      this, distance_threshold_, &tf_input_frame_, &mutex_);
+  }
 }
 
 void VoxelBasedApproximateCompareMapFilterComponent::filter(
@@ -57,43 +99,21 @@ void VoxelBasedApproximateCompareMapFilterComponent::filter(
   PointCloud2 & output)
 {
   std::scoped_lock lock(mutex_);
-  if (voxel_map_ptr_ == NULL) {
-    output = *input;
-    return;
-  }
+  stop_watch_ptr_->toc("processing_time", true);
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromROSMsg(*input, *pcl_input);
   pcl_output->points.reserve(pcl_input->points.size());
   for (size_t i = 0; i < pcl_input->points.size(); ++i) {
-    const int index = voxel_grid_.getCentroidIndexAt(voxel_grid_.getGridCoordinates(
-      pcl_input->points.at(i).x, pcl_input->points.at(i).y, pcl_input->points.at(i).z));
-    if (index == -1) {  // empty voxel
-      // map_ptr_->points.at(index)
-      pcl_output->points.push_back(pcl_input->points.at(i));
+    if (voxel_based_approximate_map_loader_->is_close_to_map(
+          pcl_input->points.at(i), distance_threshold_)) {
+      continue;
     }
+    pcl_output->points.push_back(pcl_input->points.at(i));
   }
-
   pcl::toROSMsg(*pcl_output, output);
   output.header = input->header;
-}
 
-void VoxelBasedApproximateCompareMapFilterComponent::input_target_callback(
-  const PointCloud2ConstPtr map)
-{
-  stop_watch_ptr_->toc("processing_time", true);
-  pcl::PointCloud<pcl::PointXYZ> map_pcl;
-  pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
-  const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
-
-  std::scoped_lock lock(mutex_);
-  set_map_in_voxel_grid_ = true;
-  tf_input_frame_ = map_pcl_ptr->header.frame_id;
-  voxel_map_ptr_.reset(new pcl::PointCloud<pcl::PointXYZ>);
-  voxel_grid_.setLeafSize(distance_threshold_, distance_threshold_, distance_threshold_);
-  voxel_grid_.setInputCloud(map_pcl_ptr);
-  voxel_grid_.setSaveLeafLayout(true);
-  voxel_grid_.filter(*voxel_map_ptr_);
   // add processing time for debug
   if (debug_publisher_) {
     const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
@@ -105,27 +125,6 @@ void VoxelBasedApproximateCompareMapFilterComponent::input_target_callback(
   }
 }
 
-rcl_interfaces::msg::SetParametersResult
-VoxelBasedApproximateCompareMapFilterComponent::paramCallback(
-  const std::vector<rclcpp::Parameter> & p)
-{
-  std::scoped_lock lock(mutex_);
-
-  if (get_param(p, "distance_threshold", distance_threshold_)) {
-    voxel_grid_.setLeafSize(distance_threshold_, distance_threshold_, distance_threshold_);
-    voxel_grid_.setSaveLeafLayout(true);
-    if (set_map_in_voxel_grid_) {
-      voxel_grid_.filter(*voxel_map_ptr_);
-    }
-    RCLCPP_DEBUG(get_logger(), "Setting new distance threshold to: %f.", distance_threshold_);
-  }
-
-  rcl_interfaces::msg::SetParametersResult result;
-  result.successful = true;
-  result.reason = "success";
-
-  return result;
-}
 }  // namespace compare_map_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>

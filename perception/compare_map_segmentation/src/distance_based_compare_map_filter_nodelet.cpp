@@ -22,52 +22,17 @@
 
 namespace compare_map_segmentation
 {
-using pointcloud_preprocessor::get_param;
 
-DistanceBasedCompareMapFilterComponent::DistanceBasedCompareMapFilterComponent(
-  const rclcpp::NodeOptions & options)
-: Filter("DistanceBasedCompareMapFilter", options)
-{
-  distance_threshold_ = static_cast<double>(declare_parameter("distance_threshold", 0.3));
-
-  using std::placeholders::_1;
-  sub_map_ = this->create_subscription<PointCloud2>(
-    "map", rclcpp::QoS{1}.transient_local(),
-    std::bind(&DistanceBasedCompareMapFilterComponent::input_target_callback, this, _1));
-
-  set_param_res_ = this->add_on_set_parameters_callback(
-    std::bind(&DistanceBasedCompareMapFilterComponent::paramCallback, this, _1));
-}
-
-void DistanceBasedCompareMapFilterComponent::filter(
-  const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
-  PointCloud2 & output)
-{
-  std::scoped_lock lock(mutex_);
-  if (map_ptr_ == NULL || tree_ == NULL) {
-    output = *input;
-    return;
-  }
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*input, *pcl_input);
-  pcl_output->points.reserve(pcl_input->points.size());
-  pcl::getPointCloudDifference<pcl::PointXYZ>(
-    *pcl_input, distance_threshold_ * distance_threshold_, tree_, *pcl_output);
-
-  pcl::toROSMsg(*pcl_output, output);
-  output.header = input->header;
-}
-
-void DistanceBasedCompareMapFilterComponent::input_target_callback(const PointCloud2ConstPtr map)
+void DistanceBasedStaticMapLoader::onMapCallback(
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr map)
 {
   pcl::PointCloud<pcl::PointXYZ> map_pcl;
   pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
   const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
 
-  std::scoped_lock lock(mutex_);
+  (*mutex_ptr_).lock();
   map_ptr_ = map_pcl_ptr;
-  tf_input_frame_ = map_ptr_->header.frame_id;
+  *tf_map_input_frame_ = map_ptr_->header.frame_id;
   if (!tree_) {
     if (map_ptr_->isOrganized()) {
       tree_.reset(new pcl::search::OrganizedNeighbor<pcl::PointXYZ>());
@@ -76,23 +41,128 @@ void DistanceBasedCompareMapFilterComponent::input_target_callback(const PointCl
     }
   }
   tree_->setInputCloud(map_ptr_);
+
+  (*mutex_ptr_).unlock();
 }
 
-rcl_interfaces::msg::SetParametersResult DistanceBasedCompareMapFilterComponent::paramCallback(
-  const std::vector<rclcpp::Parameter> & p)
+bool DistanceBasedStaticMapLoader::is_close_to_map(
+  const pcl::PointXYZ & point, const double distance_threshold)
 {
-  std::scoped_lock lock(mutex_);
-
-  if (get_param(p, "distance_threshold", distance_threshold_)) {
-    RCLCPP_DEBUG(get_logger(), "Setting new distance threshold to: %f.", distance_threshold_);
+  if (map_ptr_ == NULL) {
+    return false;
+  }
+  if (tree_ == NULL) {
+    return false;
   }
 
-  rcl_interfaces::msg::SetParametersResult result;
-  result.successful = true;
-  result.reason = "success";
-
-  return result;
+  std::vector<int> nn_indices(1);
+  std::vector<float> nn_distances(1);
+  if (!isFinite(point)) {
+    return false;
+  }
+  if (!tree_->nearestKSearch(point, 1, nn_indices, nn_distances)) {
+    return false;
+  }
+  if (nn_distances[0] > distance_threshold) {
+    return false;
+  }
+  return true;
 }
+
+bool DistanceBasedDynamicMapLoader::is_close_to_map(
+  const pcl::PointXYZ & point, const double distance_threshold)
+{
+  if (current_voxel_grid_dict_.size() == 0) {
+    return false;
+  }
+  if (!isFinite(point)) {
+    return false;
+  }
+
+  const int map_grid_index = static_cast<int>(
+    std::floor((point.x - origin_x_) / map_grid_size_x_) +
+    map_grids_x_ * std::floor((point.y - origin_y_) / map_grid_size_y_));
+
+  if (static_cast<size_t>(map_grid_index) >= current_voxel_grid_array_.size()) {
+    return false;
+  }
+  if (current_voxel_grid_array_.at(map_grid_index) != NULL) {
+    if (current_voxel_grid_array_.at(map_grid_index)->map_cell_kdtree == NULL) {
+      return false;
+    }
+    std::vector<int> nn_indices(1);
+    std::vector<float> nn_distances(1);
+    if (!current_voxel_grid_array_.at(map_grid_index)
+           ->map_cell_kdtree->nearestKSearch(point, 1, nn_indices, nn_distances)) {
+      return false;
+    }
+    if (nn_distances[0] <= distance_threshold) {
+      return true;
+    }
+  }
+  return false;
+}
+
+DistanceBasedCompareMapFilterComponent::DistanceBasedCompareMapFilterComponent(
+  const rclcpp::NodeOptions & options)
+: Filter("DistanceBasedCompareMapFilter", options)
+{
+  // initialize debug tool
+  {
+    using tier4_autoware_utils::DebugPublisher;
+    using tier4_autoware_utils::StopWatch;
+    stop_watch_ptr_ = std::make_unique<StopWatch<std::chrono::milliseconds>>();
+    debug_publisher_ = std::make_unique<DebugPublisher>(this, "distance_based_compare_map_filter");
+    stop_watch_ptr_->tic("cyclic_time");
+    stop_watch_ptr_->tic("processing_time");
+  }
+
+  distance_threshold_ = declare_parameter<double>("distance_threshold");
+  bool use_dynamic_map_loading = declare_parameter<bool>("use_dynamic_map_loading");
+  if (use_dynamic_map_loading) {
+    rclcpp::CallbackGroup::SharedPtr main_callback_group;
+    main_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    distance_based_map_loader_ = std::make_unique<DistanceBasedDynamicMapLoader>(
+      this, distance_threshold_, &tf_input_frame_, &mutex_, main_callback_group);
+  } else {
+    distance_based_map_loader_ = std::make_unique<DistanceBasedStaticMapLoader>(
+      this, distance_threshold_, &tf_input_frame_, &mutex_);
+  }
+}
+
+void DistanceBasedCompareMapFilterComponent::filter(
+  const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
+  PointCloud2 & output)
+{
+  std::scoped_lock lock(mutex_);
+  stop_watch_ptr_->toc("processing_time", true);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::fromROSMsg(*input, *pcl_input);
+  pcl_output->points.reserve(pcl_input->points.size());
+
+  for (size_t i = 0; i < pcl_input->points.size(); ++i) {
+    if (distance_based_map_loader_->is_close_to_map(pcl_input->points.at(i), distance_threshold_)) {
+      continue;
+    }
+    pcl_output->points.push_back(pcl_input->points.at(i));
+  }
+
+  pcl::toROSMsg(*pcl_output, output);
+  output.header = input->header;
+
+  // add processing time for debug
+  if (debug_publisher_) {
+    const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic_time", true);
+    const double processing_time_ms = stop_watch_ptr_->toc("processing_time", true);
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/cyclic_time_ms", cyclic_time_ms);
+    debug_publisher_->publish<tier4_debug_msgs::msg::Float64Stamped>(
+      "debug/processing_time_ms", processing_time_ms);
+  }
+}
+
 }  // namespace compare_map_segmentation
 
 #include <rclcpp_components/register_node_macro.hpp>
