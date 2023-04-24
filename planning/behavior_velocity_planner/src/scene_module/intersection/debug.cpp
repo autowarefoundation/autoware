@@ -222,6 +222,14 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
         {debug_data_.occlusion_stop_wall_pose}, "intersection_occlusion", now),
       &wall_marker, now);
   }
+
+  auto id = 0;
+  for (auto & marker : wall_marker.markers) {
+    if (marker.action == visualization_msgs::msg::Marker::ADD) {
+      marker.id = id;
+      id++;
+    }
+  }
   return wall_marker;
 }
 

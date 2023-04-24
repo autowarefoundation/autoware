@@ -104,6 +104,7 @@ void IntersectionModuleManager::launchNewModules(
   const auto lanelets =
     planning_utils::getLaneletsOnPath(path, lanelet_map, planner_data_->current_odometry->pose);
   // run occlusion detection only in the first intersection
+  const bool enable_occlusion_detection = intersection_param_.occlusion.enable;
   for (size_t i = 0; i < lanelets.size(); i++) {
     const auto ll = lanelets.at(i);
     const auto lane_id = ll.id();
@@ -124,8 +125,8 @@ void IntersectionModuleManager::launchNewModules(
     const auto assoc_ids =
       planning_utils::getAssociativeIntersectionLanelets(ll, lanelet_map, routing_graph);
     const auto new_module = std::make_shared<IntersectionModule>(
-      module_id, lane_id, planner_data_, intersection_param_, assoc_ids, true, node_,
-      logger_.get_child("intersection_module"), clock_);
+      module_id, lane_id, planner_data_, intersection_param_, assoc_ids, enable_occlusion_detection,
+      node_, logger_.get_child("intersection_module"), clock_);
     registerModule(std::move(new_module));
     generateUUID(module_id);
   }
