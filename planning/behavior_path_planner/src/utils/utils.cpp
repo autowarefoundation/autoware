@@ -1118,7 +1118,7 @@ double getDistanceToNextTrafficLight(
 {
   lanelet::ConstLanelet current_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(lanelets, current_pose, &current_lanelet)) {
-    return std::numeric_limits<double>::max();
+    return std::numeric_limits<double>::infinity();
   }
 
   const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(current_pose.position);
@@ -1166,7 +1166,7 @@ double getDistanceToNextTrafficLight(
     distance += lanelet::utils::getLaneletLength3d(llt);
   }
 
-  return std::numeric_limits<double>::max();
+  return std::numeric_limits<double>::infinity();
 }
 
 double getDistanceToNextIntersection(

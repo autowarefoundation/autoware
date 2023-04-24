@@ -78,14 +78,13 @@ MarkerArray createObjectInfoMarkerArray(const ObjectDataArray & objects, std::st
 
   for (const auto & object : objects) {
     {
-      const auto to_stop_factor_distance = std::min(object.to_stop_factor_distance, 1000.0);
       marker.id = uuidToInt32(object.object.object_id);
       marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
       std::ostringstream string_stream;
       string_stream << std::fixed << std::setprecision(2);
       string_stream << "ratio:" << object.shiftable_ratio << " [-]\n"
                     << "lateral: " << object.lateral << " [-]\n"
-                    << "stop_factor:" << to_stop_factor_distance << " [m]\n"
+                    << "stop_factor:" << object.to_stop_factor_distance << " [m]\n"
                     << "move_time:" << object.move_time << " [s]\n"
                     << "stop_time:" << object.stop_time << " [s]\n";
       marker.text = string_stream.str();

@@ -819,7 +819,7 @@ void fillObjectMovingTime(
   }
 
   if (is_new_object) {
-    object_data.move_time = std::numeric_limits<double>::max();
+    object_data.move_time = std::numeric_limits<double>::infinity();
     object_data.stop_time = 0.0;
     object_data.last_move = now;
     return;

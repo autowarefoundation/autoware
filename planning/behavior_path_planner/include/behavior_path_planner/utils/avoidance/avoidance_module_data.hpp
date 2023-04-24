@@ -308,7 +308,7 @@ struct ObjectData  // avoidance target
   double to_road_shoulder_distance{0.0};
 
   // to intersection
-  double to_stop_factor_distance{std::numeric_limits<double>::max()};
+  double to_stop_factor_distance{std::numeric_limits<double>::infinity()};
 
   // if lateral margin is NOT enough, the ego must avoid the object.
   bool avoid_required{false};
