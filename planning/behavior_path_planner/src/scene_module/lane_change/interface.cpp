@@ -116,9 +116,6 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   resetPathCandidate();
   resetPathReference();
 
-  module_type_->setPreviousDrivableLanes(getPreviousModuleOutput().drivable_lanes);
-  const auto path = module_type_->generatePlannedPath();
-
   if (!module_type_->isValidPath()) {
     return {};
   }
@@ -127,14 +124,9 @@ BehaviorModuleOutput LaneChangeInterface::plan()
     resetPathIfAbort();
   }
 
-  const auto reference_path = module_type_->getReferencePath();
-
-  BehaviorModuleOutput output;
-  output.path = std::make_shared<PathWithLaneId>(path);
-  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
-  output.turn_signal_info = module_type_->updateOutputTurnSignal();
-
-  path_reference_ = std::make_shared<PathWithLaneId>(reference_path);
+  module_type_->setPreviousDrivableLanes(getPreviousModuleOutput().drivable_lanes);
+  auto output = module_type_->generateOutput();
+  path_reference_ = output.reference_path;
   *prev_approved_path_ = *getPreviousModuleOutput().path;
 
   updateSteeringFactorPtr(output);

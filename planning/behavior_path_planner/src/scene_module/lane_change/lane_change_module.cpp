@@ -113,8 +113,6 @@ BehaviorModuleOutput LaneChangeModule::plan()
   resetPathReference();
   is_activated_ = isActivated();
 
-  const auto path = module_type_->generatePlannedPath();
-
   if (!module_type_->isValidPath()) {
     return {};
   }
@@ -123,12 +121,10 @@ BehaviorModuleOutput LaneChangeModule::plan()
     resetPathIfAbort();
   }
 
-  BehaviorModuleOutput output;
-  output.path = std::make_shared<PathWithLaneId>(path);
-  output.turn_signal_info = module_type_->updateOutputTurnSignal();
+  auto output = module_type_->generateOutput();
 
   path_reference_ = getPreviousModuleOutput().reference_path;
-  prev_approved_path_ = path;
+  prev_approved_path_ = *output.path;
 
   updateSteeringFactorPtr(output);
   clearWaitingApproval();

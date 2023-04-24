@@ -66,9 +66,9 @@ public:
 
   virtual std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const = 0;
 
-  virtual PathWithLaneId generatePlannedPath() = 0;
+  virtual BehaviorModuleOutput generateOutput() = 0;
 
-  virtual void generateExtendedDrivableArea(PathWithLaneId & path) = 0;
+  virtual void extendOutputDrivableArea(BehaviorModuleOutput & output) = 0;
 
   virtual bool hasFinishedLaneChange() const = 0;
 
