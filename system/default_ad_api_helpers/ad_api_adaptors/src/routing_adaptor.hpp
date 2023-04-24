@@ -34,14 +34,17 @@ public:
 private:
   using PoseStamped = geometry_msgs::msg::PoseStamped;
   using SetRoutePoints = autoware_ad_api::routing::SetRoutePoints;
+  using ChangeRoutePoints = autoware_ad_api::routing::ChangeRoutePoints;
   using ClearRoute = autoware_ad_api::routing::ClearRoute;
   using RouteState = autoware_ad_api::routing::RouteState;
+  component_interface_utils::Client<ChangeRoutePoints>::SharedPtr cli_reroute_;
   component_interface_utils::Client<SetRoutePoints>::SharedPtr cli_route_;
   component_interface_utils::Client<ClearRoute>::SharedPtr cli_clear_;
   component_interface_utils::Subscription<RouteState>::SharedPtr sub_state_;
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_fixed_goal_;
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_rough_goal_;
   rclcpp::Subscription<PoseStamped>::SharedPtr sub_waypoint_;
+  rclcpp::Subscription<PoseStamped>::SharedPtr sub_reroute_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   bool calling_service_ = false;
@@ -53,6 +56,7 @@ private:
   void on_fixed_goal(const PoseStamped::ConstSharedPtr pose);
   void on_rough_goal(const PoseStamped::ConstSharedPtr pose);
   void on_waypoint(const PoseStamped::ConstSharedPtr pose);
+  void on_reroute(const PoseStamped::ConstSharedPtr pose);
 };
 
 }  // namespace ad_api_adaptors

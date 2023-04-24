@@ -33,6 +33,8 @@ RoutingNode::RoutingNode(const rclcpp::NodeOptions & options) : Node("routing", 
   adaptor.init_srv(srv_clear_route_, this, &RoutingNode::on_clear_route);
   adaptor.relay_service(cli_set_route_, srv_set_route_, group_cli_);
   adaptor.relay_service(cli_set_route_points_, srv_set_route_points_, group_cli_);
+  adaptor.relay_service(cli_change_route_, srv_change_route_, group_cli_);
+  adaptor.relay_service(cli_change_route_points_, srv_change_route_points_, group_cli_);
 
   adaptor.init_cli(cli_operation_mode_, group_cli_);
   adaptor.init_sub(sub_operation_mode_, this, &RoutingNode::on_operation_mode);

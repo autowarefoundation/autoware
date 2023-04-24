@@ -38,11 +38,15 @@ private:
   Pub<autoware_ad_api::routing::Route> pub_route_;
   Srv<autoware_ad_api::routing::SetRoutePoints> srv_set_route_points_;
   Srv<autoware_ad_api::routing::SetRoute> srv_set_route_;
+  Srv<autoware_ad_api::routing::ChangeRoutePoints> srv_change_route_points_;
+  Srv<autoware_ad_api::routing::ChangeRoute> srv_change_route_;
   Srv<autoware_ad_api::routing::ClearRoute> srv_clear_route_;
   Sub<planning_interface::RouteState> sub_state_;
   Sub<planning_interface::Route> sub_route_;
   Cli<planning_interface::SetRoutePoints> cli_set_route_points_;
   Cli<planning_interface::SetRoute> cli_set_route_;
+  Cli<planning_interface::ChangeRoutePoints> cli_change_route_points_;
+  Cli<planning_interface::ChangeRoute> cli_change_route_;
   Cli<planning_interface::ClearRoute> cli_clear_route_;
   Cli<system_interface::ChangeOperationMode> cli_operation_mode_;
   Sub<system_interface::OperationModeState> sub_operation_mode_;

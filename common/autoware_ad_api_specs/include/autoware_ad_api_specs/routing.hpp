@@ -38,6 +38,18 @@ struct SetRoute
   static constexpr char name[] = "/api/routing/set_route";
 };
 
+struct ChangeRoutePoints
+{
+  using Service = autoware_adapi_v1_msgs::srv::SetRoutePoints;
+  static constexpr char name[] = "/api/routing/change_route_points";
+};
+
+struct ChangeRoute
+{
+  using Service = autoware_adapi_v1_msgs::srv::SetRoute;
+  static constexpr char name[] = "/api/routing/change_route";
+};
+
 struct ClearRoute
 {
   using Service = autoware_adapi_v1_msgs::srv::ClearRoute;

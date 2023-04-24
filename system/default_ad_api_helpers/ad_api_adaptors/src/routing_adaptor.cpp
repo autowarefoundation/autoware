@@ -27,10 +27,13 @@ RoutingAdaptor::RoutingAdaptor() : Node("routing_adaptor")
     "~/input/fixed_goal", 3, std::bind(&RoutingAdaptor::on_fixed_goal, this, _1));
   sub_rough_goal_ = create_subscription<PoseStamped>(
     "~/input/rough_goal", 3, std::bind(&RoutingAdaptor::on_rough_goal, this, _1));
+  sub_reroute_ = create_subscription<PoseStamped>(
+    "~/input/reroute", 3, std::bind(&RoutingAdaptor::on_reroute, this, _1));
   sub_waypoint_ = create_subscription<PoseStamped>(
     "~/input/waypoint", 10, std::bind(&RoutingAdaptor::on_waypoint, this, _1));
 
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
+  adaptor.init_cli(cli_reroute_);
   adaptor.init_cli(cli_route_);
   adaptor.init_cli(cli_clear_);
   adaptor.init_sub(
@@ -95,6 +98,14 @@ void RoutingAdaptor::on_waypoint(const PoseStamped::ConstSharedPtr pose)
   }
   request_timing_control_ = 1;
   route_->waypoints.push_back(pose->pose);
+}
+
+void RoutingAdaptor::on_reroute(const PoseStamped::ConstSharedPtr pose)
+{
+  const auto route = std::make_shared<SetRoutePoints::Service::Request>();
+  route->header = pose->header;
+  route->goal = pose->pose;
+  cli_reroute_->async_send_request(route);
 }
 
 }  // namespace ad_api_adaptors
