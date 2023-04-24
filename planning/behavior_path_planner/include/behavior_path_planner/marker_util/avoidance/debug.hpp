@@ -64,7 +64,7 @@ MarkerArray createAvoidableTargetObjectsMarkerArray(
 MarkerArray createUnavoidableTargetObjectsMarkerArray(
   const ObjectDataArray & objects, std::string && ns);
 
-MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns);
+MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
 MarkerArray createUnsafeObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns);
 

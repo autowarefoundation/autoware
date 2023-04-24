@@ -412,18 +412,33 @@ MarkerArray createUnavoidableTargetObjectsMarkerArray(
 }
 
 MarkerArray createOtherObjectsMarkerArray(
-  const behavior_path_planner::ObjectDataArray & objects, std::string && ns)
+  const behavior_path_planner::ObjectDataArray & objects, const std::string & ns)
 {
+  using behavior_path_planner::utils::convertToSnakeCase;
+
+  const auto filtered_objects = [&objects, &ns]() {
+    ObjectDataArray ret{};
+    for (const auto & o : objects) {
+      if (o.reason != ns) {
+        continue;
+      }
+      ret.push_back(o);
+    }
+
+    return ret;
+  }();
+
   MarkerArray msg;
-  msg.markers.reserve(objects.size() * 2);
+  msg.markers.reserve(filtered_objects.size() * 2);
 
   appendMarkerArray(
     createObjectsCubeMarkerArray(
-      objects, ns + "_cube", createMarkerScale(3.0, 1.5, 1.5),
-      createMarkerColor(0.0, 1.0, 0.0, 0.8)),
+      filtered_objects, "others_" + convertToSnakeCase(ns) + "_cube",
+      createMarkerScale(3.0, 1.5, 1.5), createMarkerColor(0.0, 1.0, 0.0, 0.8)),
     &msg);
-
-  appendMarkerArray(createObjectInfoMarkerArray(objects, ns + "_info"), &msg);
+  appendMarkerArray(
+    createObjectInfoMarkerArray(filtered_objects, "others_" + convertToSnakeCase(ns) + "_info"),
+    &msg);
 
   return msg;
 }
