@@ -157,6 +157,7 @@ public:
   {
     occlusion_first_stop_activated_ = activation;
   }
+  bool isOccluded() const { return is_occluded_; }
 
 private:
   rclcpp::Node & node_;
@@ -173,19 +174,19 @@ private:
   // for occlusion detection
   const bool enable_occlusion_detection_;
   std::optional<std::vector<util::DetectionLaneDivision>> detection_divisions_;
-  std::optional<geometry_msgs::msg::Pose> prev_occlusion_stop_line_pose_;
-  OcclusionState occlusion_state_;
+  bool is_occluded_ = false;
+  OcclusionState occlusion_state_ = OcclusionState::NONE;
   // NOTE: uuid_ is base member
   // for occlusion clearance decision
   const UUID occlusion_uuid_;
-  bool occlusion_safety_;
+  bool occlusion_safety_ = true;
   double occlusion_stop_distance_;
-  bool occlusion_activated_;
+  bool occlusion_activated_ = true;
   // for first stop in two-phase stop
   const UUID occlusion_first_stop_uuid_;  // TODO(Mamoru Sobue): replace with uuid_
-  bool occlusion_first_stop_safety_;
+  bool occlusion_first_stop_safety_ = true;
   double occlusion_first_stop_distance_;
-  bool occlusion_first_stop_activated_;
+  bool occlusion_first_stop_activated_ = true;
 
   StateMachine collision_state_machine_;     //! for stable collision checking
   StateMachine before_creep_state_machine_;  //! for two phase stop

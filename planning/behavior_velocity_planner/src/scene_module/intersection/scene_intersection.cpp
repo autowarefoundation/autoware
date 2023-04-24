@@ -67,12 +67,9 @@ IntersectionModule::IntersectionModule(
 : SceneModuleInterface(module_id, logger, clock),
   node_(node),
   lane_id_(lane_id),
-  is_go_out_(false),
   assoc_ids_(assoc_ids),
   enable_occlusion_detection_(enable_occlusion_detection),
   detection_divisions_(std::nullopt),
-  prev_occlusion_stop_line_pose_(std::nullopt),
-  occlusion_state_(OcclusionState::NONE),
   occlusion_uuid_(tier4_autoware_utils::generateUUID()),
   occlusion_first_stop_uuid_(tier4_autoware_utils::generateUUID())
 {
@@ -289,8 +286,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     if (!default_stop_line_idx_opt) {
       occlusion_stop_required = true;
       stop_line_idx = occlusion_stop_line_idx = occlusion_stop_line_idx_opt;
-      prev_occlusion_stop_line_pose_ =
-        path_ip.points.at(occlusion_stop_line_idx_opt.value()).point.pose;
+      is_occluded_ = true;
       occlusion_state_ = OcclusionState::CREEP_SECOND_STOP_LINE;
       RCLCPP_WARN(logger_, "directly stop at occlusion stop line because collision line not found");
     } else if (before_creep_state_machine_.getState() == StateMachine::State::GO) {
@@ -300,8 +296,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       // insert creep velocity [closest_idx, occlusion_stop_line)
       insert_creep_during_occlusion =
         std::make_pair(closest_idx, occlusion_stop_line_idx_opt.value());
-      prev_occlusion_stop_line_pose_ =
-        path_ip.points.at(occlusion_stop_line_idx_ip_opt.value()).point.pose;
+      is_occluded_ = true;
       occlusion_state_ = OcclusionState::CREEP_SECOND_STOP_LINE;
     } else {
       const double dist_default_stop_line = motion_utils::calcSignedArcLength(
@@ -320,31 +315,31 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       // insert creep velocity [default_stop_line, occlusion_stop_line)
       insert_creep_during_occlusion =
         std::make_pair(default_stop_line_idx_opt.value(), occlusion_stop_line_idx_opt.value());
-      prev_occlusion_stop_line_pose_ =
-        path_ip.points.at(occlusion_stop_line_idx_ip_opt.value()).point.pose;
+      is_occluded_ = true;
       occlusion_state_ = OcclusionState::BEFORE_FIRST_STOP_LINE;
     }
-  } else if (prev_occlusion_stop_line_pose_) {
+  } else if (is_occluded_) {
     // previously occlusion existed, but now it is clear
-    const auto prev_occlusion_stop_pose_idx = motion_utils::findNearestIndex(
-      path->points, prev_occlusion_stop_line_pose_.value(), 3.0, M_PI_4);
     if (!util::isOverTargetIndex(
           *path, closest_idx, current_pose, default_stop_line_idx_opt.value())) {
       stop_line_idx = default_stop_line_idx_opt.value();
-      prev_occlusion_stop_line_pose_ = std::nullopt;
-    } else if (!util::isOverTargetIndex(
-                 *path, closest_idx, current_pose, prev_occlusion_stop_pose_idx.get())) {
-      stop_line_idx = prev_occlusion_stop_pose_idx.get();
-    } else {
-      // TODO(Mamoru Sobue): consider static occlusion limit stop line
-      prev_occlusion_stop_line_pose_ = std::nullopt;
+    } else if (
+      static_pass_judge_line_opt &&
+      !util::isOverTargetIndex(
+        *path, closest_idx, current_pose, static_pass_judge_line_opt.value())) {
+      stop_line_idx = static_pass_judge_line_opt;
     }
     occlusion_state_ = OcclusionState::CLEARED;
+    is_occluded_ = false;
     if (stop_line_idx && has_collision) {
       // do collision checking at previous occlusion stop line
       collision_stop_required = true;
     } else {
       collision_stop_required = false;
+    }
+    if (is_stuck && stuck_line_idx_opt) {
+      stuck_stop_required = true;
+      stop_line_idx = static_pass_judge_line_opt;
     }
   } else if (is_stuck && stuck_line_idx_opt) {
     stuck_stop_required = true;
@@ -401,7 +396,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   }
 
   /* make decision */
-  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+  const double baselink2front = planner_data_->vehicle_info_.vehicle_length_m;
   if (!occlusion_activated_) {
     is_go_out_ = false;
     /* in case of creeping */

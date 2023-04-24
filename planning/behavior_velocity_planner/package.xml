@@ -88,6 +88,7 @@
   <depend>tier4_v2x_msgs</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
+  <exec_depend>grid_map_rviz_plugin</exec_depend>
 
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
