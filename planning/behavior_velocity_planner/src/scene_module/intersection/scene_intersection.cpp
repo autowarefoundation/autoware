@@ -405,7 +405,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   if (!occlusion_activated_) {
     is_go_out_ = false;
     /* in case of creeping */
-    if (insert_creep_during_occlusion) {
+    if (insert_creep_during_occlusion && planner_param_.occlusion.enable_creeping) {
       const auto [start, end] = insert_creep_during_occlusion.value();
       for (size_t i = start; i < end; ++i) {
         planning_utils::setVelocityFromIndex(

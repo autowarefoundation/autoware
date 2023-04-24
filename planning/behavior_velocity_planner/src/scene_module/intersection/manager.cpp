@@ -81,6 +81,7 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.occlusion.enable = node.declare_parameter<bool>(ns + ".occlusion.enable");
   ip.occlusion.occlusion_detection_area_length =
     node.declare_parameter<double>(ns + ".occlusion.occlusion_detection_area_length");
+  ip.occlusion.enable_creeping = node.declare_parameter<bool>(ns + ".occlusion.enable_creeping");
   ip.occlusion.occlusion_creep_velocity =
     node.declare_parameter<double>(ns + ".occlusion.occlusion_creep_velocity");
   ip.occlusion.free_space_max = node.declare_parameter<int>(ns + ".occlusion.free_space_max");
