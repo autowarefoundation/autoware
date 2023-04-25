@@ -1,7 +1,7 @@
 ### Copied from .github/CODEOWNERS-manual ###
 
 ### Automatically generated from package.xml ###
-common/autoware_ad_api_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/autoware_ad_api_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/autoware_auto_common/** opensource@apex.ai @autowarefoundation/autoware-global-codeowners
 common/autoware_auto_geometry/** opensource@apex.ai @autowarefoundation/autoware-global-codeowners
 common/autoware_auto_perception_rviz_plugin/** opensource@apex.ai satoshi.tanaka@tier4.jp taiki.tanaka@tier4.jp takeshi.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -11,7 +11,7 @@ common/autoware_testing/** adam.dabrowski@robotec.ai @autowarefoundation/autowar
 common/bag_time_manager_rviz_plugin/** taiki.tanaka@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/component_interface_tools/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
-common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp @autowarefoundation/autoware-global-codeowners
+common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 common/fake_test_node/** opensource@apex.ai @autowarefoundation/autoware-global-codeowners
 common/global_parameter_loader/** kenji.miyake@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -69,7 +69,7 @@ launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp k
 launch/tier4_control_launch/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_localization_launch/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp ryu.yamamoto@tier4.jp yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_map_launch/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp @autowarefoundation/autoware-global-codeowners
-launch/tier4_perception_launch/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+launch/tier4_perception_launch/** shunsuke.miura@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_planning_launch/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_simulator_launch/** keisuke.shima@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -89,11 +89,11 @@ map/map_loader/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@
 map/map_tf_generator/** azumi.suzuki@tier4.jp @autowarefoundation/autoware-global-codeowners
 map/util/lanelet2_map_preprocessor/** ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/bytetrack/** manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/compare_map_segmentation/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/compare_map_segmentation/** abrahammonrroy@yahoo.com dai.nguyen@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/crosswalk_traffic_light_estimator/** satoshi.ota@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/detected_object_feature_remover/** tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/detected_object_validation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/detection_by_tracker/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/detected_object_validation/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/detection_by_tracker/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp taichi.higashide@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/euclidean_cluster/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/front_vehicle_velocity_estimator/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -105,15 +105,15 @@ perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com xinyu.wang@
 perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_centerpoint/** kenzo.lobos@tier4.jp yusuke.muramatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/lidar_centerpoint_tvm/** carl.liu@autocore.ai xinyu.wang@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/map_based_prediction/** shunsuke.miura@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/multi_object_tracker/** jilada.eccleston@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/object_merger/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/map_based_prediction/** shunsuke.miura@tier4.jp tomoya.kimura@tier4.jp yoshi.ri@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/multi_object_tracker/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/object_merger/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/object_range_splitter/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/probabilistic_occupancy_grid_map/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/probabilistic_occupancy_grid_map/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp @autowarefoundation/autoware-global-codeowners
-perception/shape_estimation/** yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
+perception/shape_estimation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/tensorrt_yolox/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp @autowarefoundation/autoware-global-codeowners
 perception/traffic_light_classifier/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp @autowarefoundation/autoware-global-codeowners
