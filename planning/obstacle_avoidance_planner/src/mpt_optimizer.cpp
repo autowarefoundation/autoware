@@ -887,7 +887,7 @@ void MPTOptimizer::avoidSuddenSteering(
   if (!prev_ref_points_ptr_) {
     return;
   }
-  const size_t prev_idx = trajectory_utils::findEgoIndex(
+  const size_t prev_ego_idx = trajectory_utils::findEgoIndex(
     *prev_ref_points_ptr_, tier4_autoware_utils::getPose(ref_points.front()), ego_nearest_param_);
 
   const double max_bound_fixing_length = ego_vel * mpt_param_.max_bound_fixing_time;
@@ -899,7 +899,9 @@ void MPTOptimizer::avoidSuddenSteering(
     std::min(ego_idx + static_cast<size_t>(max_bound_fixing_idx), ref_points.size());
 
   for (size_t i = 0; i < max_fixed_bound_idx; ++i) {
-    const auto & prev_bounds = prev_ref_points_ptr_->at(prev_idx + i).bounds;
+    const size_t prev_idx = std::min(
+      prev_ego_idx + i, static_cast<size_t>(static_cast<int>(prev_ref_points_ptr_->size()) - 1));
+    const auto & prev_bounds = prev_ref_points_ptr_->at(prev_idx).bounds;
 
     ref_points.at(i).bounds.upper_bound = prev_bounds.upper_bound;
     ref_points.at(i).bounds.lower_bound = prev_bounds.lower_bound;
