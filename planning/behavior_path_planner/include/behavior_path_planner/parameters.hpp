@@ -49,6 +49,10 @@ struct BehaviorPathPlannerParameters
   double backward_length_buffer_for_end_of_pull_over;
   double backward_length_buffer_for_end_of_pull_out;
 
+  // common parameters
+  double min_acc;
+  double max_acc;
+
   // lane change parameters
   double lane_changing_lateral_jerk{0.5};
   double lane_changing_lateral_acc{0.315};

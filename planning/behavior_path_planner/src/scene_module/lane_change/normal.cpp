@@ -310,13 +310,13 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto current_velocity = getEgoTwist().linear.x;
 
   // compute maximum_deceleration
-  const auto maximum_deceleration = std::invoke([&minimum_lane_changing_velocity, &current_velocity,
-                                                 this]() {
-    const double min_a =
-      (minimum_lane_changing_velocity - current_velocity) / parameters_->prepare_duration;
-    return std::clamp(
-      min_a, -std::abs(parameters_->maximum_deceleration), -std::numeric_limits<double>::epsilon());
-  });
+  const auto maximum_deceleration =
+    std::invoke([&minimum_lane_changing_velocity, &current_velocity, &common_parameter, this]() {
+      const double min_a =
+        (minimum_lane_changing_velocity - current_velocity) / parameters_->prepare_duration;
+      return std::clamp(
+        min_a, -std::abs(common_parameter.min_acc), -std::numeric_limits<double>::epsilon());
+    });
 
   const auto acceleration_resolution = std::abs(maximum_deceleration) / lane_change_sampling_num;
 

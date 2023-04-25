@@ -230,12 +230,12 @@ bool getLaneChangePaths(
   const auto current_velocity = twist.linear.x;
 
   // compute maximum_deceleration
-  const auto maximum_deceleration =
-    std::invoke([&minimum_lane_changing_velocity, &current_velocity, &parameter]() {
+  const auto maximum_deceleration = std::invoke(
+    [&minimum_lane_changing_velocity, &current_velocity, &common_parameter, &parameter]() {
       const double min_a =
         (minimum_lane_changing_velocity - current_velocity) / parameter.prepare_duration;
       return std::clamp(
-        min_a, -std::abs(parameter.maximum_deceleration), -std::numeric_limits<double>::epsilon());
+        min_a, -std::abs(common_parameter.min_acc), -std::numeric_limits<double>::epsilon());
     });
 
   const auto acceleration_resolution = std::abs(maximum_deceleration) / lane_change_sampling_num;

@@ -377,6 +377,10 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.backward_path_length = declare_parameter<double>("backward_path_length") + backward_offset;
   p.forward_path_length = declare_parameter<double>("forward_path_length");
 
+  // acceleration parameters
+  p.min_acc = declare_parameter<double>("normal.min_acc");
+  p.max_acc = declare_parameter<double>("normal.max_acc");
+
   // lane change parameters
   p.backward_length_buffer_for_end_of_lane =
     declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
@@ -652,7 +656,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
-  p.maximum_deceleration = declare_parameter<double>(parameter("maximum_deceleration"));
   p.lane_change_sampling_num = declare_parameter<int>(parameter("lane_change_sampling_num"));
 
   // collision check
@@ -692,13 +695,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
     RCLCPP_FATAL_STREAM(
       get_logger(), "lane_change_sampling_num must be positive integer. Given parameter: "
                       << p.lane_change_sampling_num << std::endl
-                      << "Terminating the program...");
-    exit(EXIT_FAILURE);
-  }
-  if (p.maximum_deceleration < 0.0) {
-    RCLCPP_FATAL_STREAM(
-      get_logger(), "maximum_deceleration cannot be negative value. Given parameter: "
-                      << p.maximum_deceleration << std::endl
                       << "Terminating the program...");
     exit(EXIT_FAILURE);
   }

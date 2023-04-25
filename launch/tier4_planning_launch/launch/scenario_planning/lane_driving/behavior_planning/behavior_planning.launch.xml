@@ -14,6 +14,7 @@
     <remap from="~/output/turn_indicators_cmd" to="/planning/turn_signal_cmd"/>
     <remap from="~/output/hazard_lights_cmd" to="/planning/hazard_signal_cmd"/>
     <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
+    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/common.param.yaml"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/side_shift/side_shift.param.yaml"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml"/>
     <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml"/>

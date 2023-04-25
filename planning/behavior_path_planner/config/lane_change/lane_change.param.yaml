@@ -15,7 +15,6 @@
 
       minimum_lane_changing_velocity: 2.78        # [m/s]
       prediction_time_resolution: 0.5           # [s]
-      maximum_deceleration: 1.0                 # [m/s2]
       lane_change_sampling_num: 3
 
       # target object

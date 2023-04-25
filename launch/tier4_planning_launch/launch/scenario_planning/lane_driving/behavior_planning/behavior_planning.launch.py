@@ -35,6 +35,9 @@ def launch_setup(context, *args, **kwargs):
     with open(vehicle_param_path, "r") as f:
         vehicle_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    # common parameter
+    with open(LaunchConfiguration("common_param_path").perform(context), "r") as f:
+        common_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     # nearest search parameter
     with open(LaunchConfiguration("nearest_search_param_path").perform(context), "r") as f:
         nearest_search_param = yaml.safe_load(f)["/**"]["ros__parameters"]
@@ -82,6 +85,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/output/modified_goal", "/planning/scenario_planning/modified_goal"),
         ],
         parameters=[
+            common_param,
             nearest_search_param,
             side_shift_param,
             avoidance_param,
@@ -113,8 +117,6 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # smoother param
-    with open(LaunchConfiguration("common_param_path").perform(context), "r") as f:
-        common_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(
         LaunchConfiguration("motion_velocity_smoother_param_path").perform(context), "r"
     ) as f:
