@@ -408,7 +408,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       }
     }
 
-    if (!occlusion_first_stop_activated_) {
+    if (!occlusion_first_stop_activated_ && occlusion_first_stop_line_idx) {
       planning_utils::setVelocityFromIndex(
         occlusion_first_stop_line_idx.value(), 0.0 /* [m/s] */, path);
       debug_data_.occlusion_first_stop_wall_pose =
