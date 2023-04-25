@@ -1331,7 +1331,7 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
 
   // - Combine avoid points that have almost same gradient (again)
   {
-    const auto CHANGE_SHIFT_THRESHOLD = 0.2;
+    const auto CHANGE_SHIFT_THRESHOLD = 0.5;
     trimSimilarGradShiftLine(sl_array_trimmed, CHANGE_SHIFT_THRESHOLD);
     debug.trim_similar_grad_shift_third = sl_array_trimmed;
     printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift_second");
