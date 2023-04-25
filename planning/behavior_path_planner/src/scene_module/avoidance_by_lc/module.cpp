@@ -156,21 +156,12 @@ AvoidancePlanningData AvoidanceByLCModule::calcAvoidancePlanningData(DebugData &
   AvoidancePlanningData data;
 
   // reference pose
-  const auto reference_pose = getEgoPose();
-  data.reference_pose = reference_pose;
+  data.reference_pose = getEgoPose();
+
+  data.reference_path_rough = *getPreviousModuleOutput().path;
 
   data.reference_path = utils::resamplePathWithSpline(
-    *getPreviousModuleOutput().path, parameters_->avoidance->resample_interval_for_planning);
-
-  const size_t nearest_segment_index =
-    findNearestSegmentIndex(data.reference_path.points, data.reference_pose.position);
-  data.ego_closest_path_index =
-    std::min(nearest_segment_index + 1, data.reference_path.points.size() - 1);
-
-  // arclength from ego pose (used in many functions)
-  data.arclength_from_ego = utils::calcPathArcLengthArray(
-    data.reference_path, 0, data.reference_path.points.size(),
-    calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
+    data.reference_path_rough, parameters_->avoidance->resample_interval_for_planning);
 
   // lanelet info
 #ifdef USE_OLD_ARCHITECTURE
@@ -231,10 +222,6 @@ ObjectData AvoidanceByLCModule::createObjectData(
 
   // calc object centroid.
   object_data.centroid = return_centroid<Point2d>(object_data.envelope_poly);
-
-  // calc longitudinal distance from ego to closest target object footprint point.
-  fillLongitudinalAndLengthByClosestEnvelopeFootprint(
-    data.reference_path, getEgoPosition(), object_data);
 
   // Calc moving time.
   fillObjectMovingTime(object_data, stopped_objects_, parameters_->avoidance);

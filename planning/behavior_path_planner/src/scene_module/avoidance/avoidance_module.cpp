@@ -231,13 +231,13 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
 
   // reference path
 #ifdef USE_OLD_ARCHITECTURE
-  data.reference_path =
-    utils::resamplePathWithSpline(center_path, parameters_->resample_interval_for_planning);
+  data.reference_path_rough = center_path;
 #else
-  const auto backward_extened_path = extendBackwardLength(*getPreviousModuleOutput().path);
-  data.reference_path = utils::resamplePathWithSpline(
-    backward_extened_path, parameters_->resample_interval_for_planning);
+  data.reference_path_rough = extendBackwardLength(*getPreviousModuleOutput().path);
 #endif
+
+  data.reference_path = utils::resamplePathWithSpline(
+    data.reference_path_rough, parameters_->resample_interval_for_planning);
 
   if (data.reference_path.points.size() < 2) {
     // if the resampled path has only 1 point, use original path.
@@ -342,10 +342,6 @@ ObjectData AvoidanceModule::createObjectData(
 
   // calc object centroid.
   object_data.centroid = return_centroid<Point2d>(object_data.envelope_poly);
-
-  // calc longitudinal distance from ego to closest target object footprint point.
-  fillLongitudinalAndLengthByClosestEnvelopeFootprint(
-    data.reference_path, getEgoPosition(), object_data);
 
   // Calc moving time.
   fillObjectMovingTime(object_data, stopped_objects_, parameters_);

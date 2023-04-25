@@ -462,10 +462,8 @@ double lerpShiftLengthOnArc(double arc, const AvoidLine & ap)
 void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
   const PathWithLaneId & path, const Point & ego_pos, ObjectData & obj)
 {
-  const double distance = motion_utils::calcSignedArcLength(
-    path.points, ego_pos, obj.object.kinematics.initial_pose_with_covariance.pose.position);
-  double min_distance = distance;
-  double max_distance = distance;
+  double min_distance = std::numeric_limits<double>::max();
+  double max_distance = std::numeric_limits<double>::min();
   for (const auto & p : obj.envelope_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
     const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
@@ -936,7 +934,7 @@ void filterTargetObjects(
   using lanelet::utils::to2D;
 
   const auto & rh = planner_data->route_handler;
-  const auto & path_points = data.reference_path.points;
+  const auto & path_points = data.reference_path_rough.points;
   const auto & ego_pos = planner_data->self_odometry->pose.pose.position;
   const auto & vehicle_width = planner_data->parameters.vehicle_width;
   const rclcpp::Time now = rclcpp::Clock(RCL_ROS_TIME).now();
@@ -965,6 +963,9 @@ void filterTargetObjects(
       data.other_objects.push_back(o);
       continue;
     }
+
+    // calc longitudinal distance from ego to closest target object footprint point.
+    fillLongitudinalAndLengthByClosestEnvelopeFootprint(data.reference_path_rough, ego_pos, o);
 
     // object is behind ego or too far.
     if (o.longitudinal < -parameters->object_check_backward_distance) {
@@ -1060,13 +1061,6 @@ void filterTargetObjects(
       continue;
     }
 
-    lanelet::ConstLanelet object_closest_lanelet;
-    const auto lanelet_map = rh->getLaneletMapPtr();
-    if (!lanelet::utils::query::getClosestLanelet(
-          lanelet::utils::query::laneletLayer(lanelet_map), object_pose, &object_closest_lanelet)) {
-      continue;
-    }
-
     lanelet::BasicPoint2d object_centroid(o.centroid.x(), o.centroid.y());
 
     /**
@@ -1092,7 +1086,7 @@ void filterTargetObjects(
       }
 
       const auto centerline_pose =
-        lanelet::utils::getClosestCenterPose(object_closest_lanelet, object_pose.position);
+        lanelet::utils::getClosestCenterPose(overhang_lanelet, object_pose.position);
       lanelet::BasicPoint3d centerline_point(
         centerline_pose.position.x, centerline_pose.position.y, centerline_pose.position.z);
 
@@ -1107,9 +1101,9 @@ void filterTargetObjects(
       // o: nearest point on centerline
 
       bool is_left_side_parked_vehicle = false;
-      {
+      if (!isOnRight(o)) {
         auto [object_shiftable_distance, sub_type] = [&]() {
-          const auto most_left_road_lanelet = rh->getMostLeftLanelet(object_closest_lanelet);
+          const auto most_left_road_lanelet = rh->getMostLeftLanelet(overhang_lanelet);
           const auto most_left_lanelet_candidates =
             rh->getLaneletMapPtr()->laneletLayer.findUsages(most_left_road_lanelet.leftBound());
 
@@ -1135,17 +1129,17 @@ void filterTargetObjects(
           object_shiftable_distance += parameters->object_check_min_road_shoulder_width;
         }
 
-        const auto arc_coordinates = toArcCoordinates(
-          to2D(object_closest_lanelet.centerline().basicLineString()), object_centroid);
+        const auto arc_coordinates =
+          toArcCoordinates(to2D(overhang_lanelet.centerline().basicLineString()), object_centroid);
         o.shiftable_ratio = arc_coordinates.distance / object_shiftable_distance;
 
         is_left_side_parked_vehicle = o.shiftable_ratio > parameters->object_check_shiftable_ratio;
       }
 
       bool is_right_side_parked_vehicle = false;
-      {
+      if (isOnRight(o)) {
         auto [object_shiftable_distance, sub_type] = [&]() {
-          const auto most_right_road_lanelet = rh->getMostRightLanelet(object_closest_lanelet);
+          const auto most_right_road_lanelet = rh->getMostRightLanelet(overhang_lanelet);
           const auto most_right_lanelet_candidates =
             rh->getLaneletMapPtr()->laneletLayer.findUsages(most_right_road_lanelet.rightBound());
 
@@ -1171,8 +1165,8 @@ void filterTargetObjects(
           object_shiftable_distance += parameters->object_check_min_road_shoulder_width;
         }
 
-        const auto arc_coordinates = toArcCoordinates(
-          to2D(object_closest_lanelet.centerline().basicLineString()), object_centroid);
+        const auto arc_coordinates =
+          toArcCoordinates(to2D(overhang_lanelet.centerline().basicLineString()), object_centroid);
         o.shiftable_ratio = -1.0 * arc_coordinates.distance / object_shiftable_distance;
 
         is_right_side_parked_vehicle = o.shiftable_ratio > parameters->object_check_shiftable_ratio;

@@ -378,6 +378,9 @@ struct AvoidancePlanningData
   // reference path (before shifting)
   PathWithLaneId reference_path;
 
+  // reference path (pre-resampled reference path)
+  PathWithLaneId reference_path_rough;
+
   // closest reference_path index for reference_pose
   size_t ego_closest_path_index;
 
