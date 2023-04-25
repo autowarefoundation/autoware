@@ -393,12 +393,15 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter<double>("lane_change.lateral_acc_switching_velocity");
   p.minimum_lane_changing_velocity =
     declare_parameter<double>("lane_change.minimum_lane_changing_velocity");
+  p.lane_change_prepare_duration =
+    declare_parameter<double>("lane_change.lane_change_prepare_duration");
+  p.minimum_prepare_length =
+    0.5 * p.max_acc * p.lane_change_prepare_duration * p.lane_change_prepare_duration;
 
   p.backward_length_buffer_for_end_of_pull_over =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
   p.backward_length_buffer_for_end_of_pull_out =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_out");
-  p.minimum_prepare_length = declare_parameter<double>("lane_change.minimum_prepare_length");
 
   p.minimum_pull_over_length = declare_parameter<double>("minimum_pull_over_length");
   p.refine_goal_search_radius_range = declare_parameter<double>("refine_goal_search_radius_range");
@@ -435,10 +438,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 
   p.rear_vehicle_reaction_time = declare_parameter<double>("rear_vehicle_reaction_time");
   p.rear_vehicle_safety_time_margin = declare_parameter<double>("rear_vehicle_safety_time_margin");
-
-  // lane change
-  p.lane_change_prepare_duration =
-    declare_parameter<double>("lane_change.lane_change_prepare_duration");
 
   if (p.backward_length_buffer_for_end_of_lane < 1.0) {
     RCLCPP_WARN_STREAM(

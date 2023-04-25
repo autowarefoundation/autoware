@@ -411,7 +411,6 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | :--------------------------------------- | ------ | ------ | --------------------------------------------------------------------------------------- | ------------- |
 | `lane_change_prepare_duration`           | [m]    | double | The preparation time for the ego vehicle to be ready to perform lane change.            | 4.0           |
 | `lane_changing_safety_check_duration`    | [m]    | double | The total time that is taken to complete the lane-changing task.                        | 8.0           |
-| `minimum_lane_change_prepare_distance`   | [m]    | double | Minimum prepare distance for lane change                                                | 2.0           |
 | `minimum_lane_change_length`             | [m]    | double | The minimum distance needed for changing lanes.                                         | 16.5          |
 | `backward_length_buffer_for_end_of_lane` | [m]    | double | The end of lane buffer to ensure ego vehicle has enough distance to start lane change   | 2.0           |
 | `lane_change_finish_judge_buffer`        | [m]    | double | The additional buffer used to confirm lane change process completion                    | 3.0           |
