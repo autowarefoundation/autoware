@@ -396,7 +396,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   }
 
   /* make decision */
-  const double baselink2front = planner_data_->vehicle_info_.vehicle_length_m;
+  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   if (!occlusion_activated_) {
     is_go_out_ = false;
     /* in case of creeping */
