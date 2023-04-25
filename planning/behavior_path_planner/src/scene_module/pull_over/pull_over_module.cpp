@@ -230,7 +230,7 @@ void PullOverModule::onFreespaceParkingTimer()
   const bool is_new_costmap =
     (clock_->now() - planner_data_->costmap->header.stamp).seconds() < 1.0;
   constexpr double path_update_duration = 1.0;
-  if (isStuck() && is_new_costmap && hasEnoughTimePassedSincePathUpdate(path_update_duration)) {
+  if (isStuck() && is_new_costmap && needPathUpdate(path_update_duration)) {
     planFreespacePath();
   }
 }
@@ -587,9 +587,7 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
         }
       }
     }
-  } else if (
-    !pull_over_path_candidates_.empty() &&
-    hasEnoughTimePassedSincePathUpdate(path_update_duration)) {
+  } else if (!pull_over_path_candidates_.empty() && needPathUpdate(path_update_duration)) {
     // if the final path is not decided and enough time has passed since last path update,
     // select safe path from pull over path candidates
     goal_searcher_->setPlannerData(planner_data_);
@@ -998,14 +996,16 @@ bool PullOverModule::hasFinishedCurrentPath()
   return is_near_target && isStopped();
 }
 
+bool PullOverModule::isOnGoal() const
+{
+  const auto current_pose = planner_data_->self_odometry->pose.pose;
+  return calcDistance2d(current_pose, modified_goal_pose_->goal_pose) <
+         parameters_->th_arrived_distance;
+}
+
 bool PullOverModule::hasFinishedPullOver()
 {
-  // check ego car is close enough to goal pose
-  const auto current_pose = planner_data_->self_odometry->pose.pose;
-  const bool car_is_on_goal =
-    calcDistance2d(current_pose, modified_goal_pose_->goal_pose) < parameters_->th_arrived_distance;
-
-  return car_is_on_goal && isStopped();
+  return isOnGoal() && isStopped();
 }
 
 TurnSignalInfo PullOverModule::calcTurnSignalInfo() const
@@ -1410,6 +1410,11 @@ bool PullOverModule::checkOriginalGoalIsInShoulder() const
 
   return route_handler->isShoulderLanelet(target_lane) &&
          lanelet::utils::isInLanelet(goal_pose, target_lane, 0.1);
+}
+
+bool PullOverModule::needPathUpdate(const double path_update_duration) const
+{
+  return !isOnGoal() && hasEnoughTimePassedSincePathUpdate(path_update_duration);
 }
 
 bool PullOverModule::hasEnoughTimePassedSincePathUpdate(const double duration) const

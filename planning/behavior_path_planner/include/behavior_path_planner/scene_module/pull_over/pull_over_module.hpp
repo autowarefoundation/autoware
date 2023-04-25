@@ -192,6 +192,8 @@ private:
     const Pose & start_pose, const Pose & end_pose, const lanelet::ConstLanelets lanes) const;
   bool isCrossingPossible(const PullOverPath & pull_over_path) const;
   bool hasEnoughTimePassedSincePathUpdate(const double duration) const;
+  bool isOnGoal() const;
+  bool needPathUpdate(const double path_update_duration) const;
 
   TurnSignalInfo calcTurnSignalInfo() const;
 
