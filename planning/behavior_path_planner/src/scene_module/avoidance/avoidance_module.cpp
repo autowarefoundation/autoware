@@ -97,6 +97,14 @@ bool AvoidanceModule::isExecutionRequested() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionRequested");
 
+#ifndef USE_OLD_ARCHITECTURE
+  const auto is_driving_forward =
+    motion_utils::isDrivingForward(getPreviousModuleOutput().path->points);
+  if (!is_driving_forward || !(*is_driving_forward)) {
+    return false;
+  }
+#endif
+
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
   }
@@ -2384,6 +2392,7 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
   const auto & current_lanes = avoidance_data_.current_lanelets;
   const auto & enable_opposite = parameters_->enable_avoidance_over_opposite_direction;
 
+  std::vector<DrivableLanes> current_drivable_lanes_vec{};
   for (const auto & current_lane : current_lanes) {
     DrivableLanes current_drivable_lanes;
     current_drivable_lanes.left_lane = current_lane;
@@ -2511,8 +2520,15 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
       current_drivable_lanes.middle_lanes.push_back(current_lane);
     }
 
-    output.drivable_lanes.push_back(current_drivable_lanes);
+    current_drivable_lanes_vec.push_back(current_drivable_lanes);
   }
+
+#ifdef USE_OLD_ARCHITECTURE
+  output.drivable_lanes = current_drivable_lanes_vec;
+#else
+  output.drivable_lanes = utils::combineDrivableLanes(
+    getPreviousModuleOutput().drivable_lanes, current_drivable_lanes_vec);
+#endif
 
   {
     const auto & p = planner_data_->parameters;
