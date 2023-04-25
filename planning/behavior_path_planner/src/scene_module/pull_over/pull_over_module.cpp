@@ -229,7 +229,8 @@ void PullOverModule::onFreespaceParkingTimer()
 
   const bool is_new_costmap =
     (clock_->now() - planner_data_->costmap->header.stamp).seconds() < 1.0;
-  if (isStuck() && is_new_costmap) {
+  constexpr double path_update_duration = 1.0;
+  if (isStuck() && is_new_costmap && hasEnoughTimePassedSincePathUpdate(path_update_duration)) {
     planFreespacePath();
   }
 }
@@ -467,6 +468,7 @@ bool PullOverModule::planFreespacePath()
     status_.current_path_idx = 0;
     status_.is_safe = true;
     modified_goal_pose_ = goal_candidate;
+    last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
     mutex_.unlock();
     return true;
   }
@@ -496,6 +498,7 @@ bool PullOverModule::returnToLaneParking()
   status_.has_decided_path = false;
   status_.pull_over_path = status_.lane_parking_pull_over_path;
   status_.current_path_idx = 0;
+  last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
   mutex_.unlock();
 
   return true;
@@ -515,6 +518,8 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
   const auto & route_handler = planner_data_->route_handler;
+
+  constexpr double path_update_duration = 1.0;
 
   resetPathCandidate();
   resetPathReference();
@@ -582,7 +587,10 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
         }
       }
     }
-  } else if (!pull_over_path_candidates_.empty()) {
+  } else if (
+    !pull_over_path_candidates_.empty() &&
+    hasEnoughTimePassedSincePathUpdate(path_update_duration)) {
+    // if the final path is not decided and enough time has passed since last path update,
     // select safe path from pull over path candidates
     goal_searcher_->setPlannerData(planner_data_);
     mutex_.lock();
@@ -613,6 +621,7 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
       status_.current_path_idx = 0;
       status_.lane_parking_pull_over_path = status_.pull_over_path;
       modified_goal_pose_ = *goal_candidate_it;
+      last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
       mutex_.unlock();
       break;
     }
@@ -672,6 +681,7 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
       status_.pull_over_path = std::make_shared<PullOverPath>(pull_over_path);
       status_.current_path_idx = 0;
       status_.pull_over_path->partial_paths.push_back(*output.path);
+      last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
       mutex_.unlock();
       RCLCPP_WARN_THROTTLE(
         getLogger(), *clock_, 5000, "Not found safe pull_over path, generate stop path");
@@ -1400,5 +1410,14 @@ bool PullOverModule::checkOriginalGoalIsInShoulder() const
 
   return route_handler->isShoulderLanelet(target_lane) &&
          lanelet::utils::isInLanelet(goal_pose, target_lane, 0.1);
+}
+
+bool PullOverModule::hasEnoughTimePassedSincePathUpdate(const double duration) const
+{
+  if (!last_path_update_time_) {
+    return true;
+  }
+
+  return (clock_->now() - *last_path_update_time_).seconds() > duration;
 }
 }  // namespace behavior_path_planner

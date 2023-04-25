@@ -152,6 +152,7 @@ private:
   std::unique_ptr<rclcpp::Time> last_received_time_;
   std::unique_ptr<rclcpp::Time> last_approved_time_;
   std::unique_ptr<rclcpp::Time> last_increment_time_;
+  std::unique_ptr<rclcpp::Time> last_path_update_time_;
   std::unique_ptr<Pose> last_approved_pose_;
 
   // approximate distance from the start point to the end point of pull_over.
@@ -190,6 +191,7 @@ private:
   bool isCrossingPossible(
     const Pose & start_pose, const Pose & end_pose, const lanelet::ConstLanelets lanes) const;
   bool isCrossingPossible(const PullOverPath & pull_over_path) const;
+  bool hasEnoughTimePassedSincePathUpdate(const double duration) const;
 
   TurnSignalInfo calcTurnSignalInfo() const;
 
