@@ -18,6 +18,7 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
+#include "behavior_path_planner/utils/pull_over/default_fixed_goal_planner.hpp"
 #include "behavior_path_planner/utils/pull_over/freespace_pull_over.hpp"
 #include "behavior_path_planner/utils/pull_over/geometric_pull_over.hpp"
 #include "behavior_path_planner/utils/pull_over/goal_searcher.hpp"
@@ -127,6 +128,7 @@ private:
 
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;
   std::unique_ptr<PullOverPlannerBase> freespace_planner_;
+  std::unique_ptr<FixedGoalPlannerBase> fixed_goal_planner_;
   std::shared_ptr<GoalSearcherBase> goal_searcher_;
   PullOverPath shift_parking_path_;
   vehicle_info_util::VehicleInfo vehicle_info_;
@@ -157,7 +159,7 @@ private:
   double approximate_pull_over_distance_{20.0};
 
   bool left_side_parking_{true};
-  bool enable_goal_search_{false};
+  bool allow_goal_modification_{false};
 
   bool incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
@@ -194,6 +196,9 @@ private:
   bool planFreespacePath();
   bool returnToLaneParking();
   bool isStuck();
+
+  BehaviorModuleOutput planWithGoalModification();
+  BehaviorModuleOutput planWaitingApprovalWithGoalModification();
 
   // timer for generating pull over path candidates
   void onTimer();

@@ -72,6 +72,9 @@ PullOverModule::PullOverModule(
 
   left_side_parking_ = parameters_->parking_policy == ParkingPolicy::LEFT_SIDE;
 
+  // planner when goal modification is not allowed
+  fixed_goal_planner_ = std::make_unique<DefaultFixedGoalPlanner>();
+
   // set enabled planner
   if (parameters_->enable_shift_parking) {
     pull_over_planners_.push_back(std::make_shared<ShiftPullOver>(
@@ -289,7 +292,7 @@ void PullOverModule::processOnEntry()
   // todo: remove `checkOriginalGoalIsInShoulder()`
   // the function here is temporary condition for backward compatibility.
   // if the goal is in shoulder, allow goal_modification
-  enable_goal_search_ =
+  allow_goal_modification_ =
     route_handler->isAllowedGoalModification() || checkOriginalGoalIsInShoulder();
 
   // initialize when receiving new route
@@ -301,7 +304,7 @@ void PullOverModule::processOnEntry()
     // calculate goal candidates
     const Pose goal_pose = route_handler->getGoalPose();
     refined_goal_pose_ = calcRefinedGoal(goal_pose);
-    if (enable_goal_search_) {
+    if (allow_goal_modification_) {
       goal_searcher_->setPlannerData(planner_data_);
       goal_candidates_ = goal_searcher_->search(refined_goal_pose_);
     } else {
@@ -336,15 +339,24 @@ bool PullOverModule::isExecutionRequested() const
   lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
   const double self_to_goal_arc_length =
     utils::getSignedDistance(current_pose, goal_pose, current_lanes);
-  if (self_to_goal_arc_length > calcModuleRequestLength()) {
+  const bool allow_goal_modification =
+    route_handler->isAllowedGoalModification() || checkOriginalGoalIsInShoulder();
+  const double request_length =
+    allow_goal_modification ? calcModuleRequestLength() : parameters_->minimum_request_length;
+  if (self_to_goal_arc_length > request_length) {
     return false;
   }
 
-  // check if target lane is shoulder lane and goal_pose is in the lane
-  const bool goal_is_in_shoulder = checkOriginalGoalIsInShoulder();
-  // if allow_goal_modification is set false and goal is in road lane, do not execute pull over
-  if (!route_handler->isAllowedGoalModification() && !goal_is_in_shoulder) {
-    return false;
+  // if goal modification is not allowed and goal_pose in current_lanes,
+  // plan path to the original fixed goal
+  if (!allow_goal_modification) {
+    if (std::any_of(
+          current_lanes.begin(), current_lanes.end(),
+          [&](const lanelet::ConstLanelet & current_lane) {
+            return lanelet::utils::isInLanelet(goal_pose, current_lane);
+          })) {
+      return true;
+    }
   }
 
   // if (A) or (B) is met execute pull over
@@ -490,6 +502,15 @@ bool PullOverModule::returnToLaneParking()
 }
 
 BehaviorModuleOutput PullOverModule::plan()
+{
+  if (allow_goal_modification_) {
+    return planWithGoalModification();
+  } else {
+    return fixed_goal_planner_->plan(planner_data_);
+  }
+}
+
+BehaviorModuleOutput PullOverModule::planWithGoalModification()
 {
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
@@ -686,7 +707,7 @@ BehaviorModuleOutput PullOverModule::plan()
 
   // Publish the modified goal only when it is updated
   if (
-    enable_goal_search_ && status_.is_safe && modified_goal_pose_ &&
+    allow_goal_modification_ && status_.is_safe && modified_goal_pose_ &&
     (!prev_goal_id_ || *prev_goal_id_ != modified_goal_pose_->id)) {
     PoseWithUuidStamped modified_goal{};
     modified_goal.uuid = route_handler->getRouteUuid();
@@ -731,6 +752,15 @@ CandidateOutput PullOverModule::planCandidate() const
 }
 
 BehaviorModuleOutput PullOverModule::planWaitingApproval()
+{
+  if (allow_goal_modification_) {
+    return planWaitingApprovalWithGoalModification();
+  } else {
+    return fixed_goal_planner_->plan(planner_data_);
+  }
+}
+
+BehaviorModuleOutput PullOverModule::planWaitingApprovalWithGoalModification()
 {
   updateOccupancyGrid();
   BehaviorModuleOutput out;
@@ -1215,7 +1245,7 @@ bool PullOverModule::isCrossingPossible(
       return true;
     }
 
-    // Travesing is not allowed between road lanes
+    // Traversing is not allowed between road lanes
     if (!is_shoulder_lane) {
       continue;
     }
@@ -1273,7 +1303,7 @@ void PullOverModule::setDebugData()
     tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
   };
 
-  if (enable_goal_search_) {
+  if (allow_goal_modification_) {
     // Visualize pull over areas
     const auto color = status_.has_decided_path ? createMarkerColor(1.0, 1.0, 0.0, 0.999)  // yellow
                                                 : createMarkerColor(0.0, 1.0, 0.0, 0.999);  // green

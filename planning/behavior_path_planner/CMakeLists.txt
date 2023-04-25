@@ -33,6 +33,7 @@ set(common_src
   src/utils/pull_over/geometric_pull_over.cpp
   src/utils/pull_over/freespace_pull_over.cpp
   src/utils/pull_over/goal_searcher.cpp
+  src/utils/pull_over/default_fixed_goal_planner.cpp
   src/utils/pull_out/util.cpp
   src/utils/pull_out/shift_pull_out.cpp
   src/utils/pull_out/geometric_pull_out.cpp

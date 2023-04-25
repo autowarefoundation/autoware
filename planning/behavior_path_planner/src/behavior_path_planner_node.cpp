@@ -1346,37 +1346,10 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
 #else
   const auto module_status_ptr_vec = planner_manager->getSceneModuleStatus();
 #endif
-  if (skipSmoothGoalConnection(module_status_ptr_vec)) {
-    connected_path = *path;
-  } else {
-    connected_path = modifyPathForSmoothGoalConnection(*path, planner_data);
-  }
 
   const auto resampled_path = utils::resamplePathWithSpline(
-    connected_path, planner_data->parameters.output_path_interval,
-    keepInputPoints(module_status_ptr_vec));
+    *path, planner_data->parameters.output_path_interval, keepInputPoints(module_status_ptr_vec));
   return std::make_shared<PathWithLaneId>(resampled_path);
-}
-
-bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
-  const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
-{
-#ifdef USE_OLD_ARCHITECTURE
-  const auto target_module = "PullOver";
-#else
-  const auto target_module = "pull_over";
-#endif
-
-  const auto target_status = ModuleStatus::RUNNING;
-
-  for (auto & status : statuses) {
-    if (status->is_waiting_approval || status->status == target_status) {
-      if (target_module == status->module_name) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 // This is a temporary process until motion planning can take the terminal pose into account

@@ -208,12 +208,6 @@ private:
     const std::shared_ptr<PlannerManager> & planner_manager);
 #endif
 
-  /**
-   * @brief skip smooth goal connection
-   */
-  bool skipSmoothGoalConnection(
-    const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const;
-
   bool keepInputPoints(const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const;
 
   /**
