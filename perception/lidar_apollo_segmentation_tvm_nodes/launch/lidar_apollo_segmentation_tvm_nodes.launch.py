@@ -1,4 +1,4 @@
-# Copyright 2021-2022 the Autoware Foundation
+# Copyright 2021-2023 Arm Ltd., the Autoware Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import yaml
 
 def generate_launch_description():
     param_file = os.path.join(
-        get_package_share_directory("lidar_apollo_segmentation_tvm_nodes"), "param/test.param.yaml"
+        get_package_share_directory("lidar_apollo_segmentation_tvm_nodes"),
+        "config/lidar_apollo_segmentation_tvm_nodes.param.yaml",
     )
     with open(param_file, "r") as f:
         lidar_apollo_segmentation_tvm_node_params = yaml.safe_load(f)["/**"]["ros__parameters"]

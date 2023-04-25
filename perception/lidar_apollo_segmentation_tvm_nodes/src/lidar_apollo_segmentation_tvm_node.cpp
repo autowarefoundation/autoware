@@ -1,4 +1,4 @@
-// Copyright 2020-2022 Arm Ltd., TierIV
+// Copyright 2020-2023 Arm Ltd., TierIV
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,16 +36,12 @@ ApolloLidarSegmentationNode::ApolloLidarSegmentationNode(const rclcpp::NodeOptio
   m_detected_pub_ptr{create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
     "objects_out", rclcpp::QoS{1})},
   m_detector_ptr{std::make_shared<lidar_apollo_segmentation_tvm::ApolloLidarSegmentation>(
-    declare_parameter("range", rclcpp::ParameterValue{70}).get<int32_t>(),
-    declare_parameter("score_threshold", rclcpp::ParameterValue{0.8}).get<float>(),
-    declare_parameter("use_intensity_feature", rclcpp::ParameterValue{true}).get<bool>(),
-    declare_parameter("use_constant_feature", rclcpp::ParameterValue{false}).get<bool>(),
-    declare_parameter("z_offset", rclcpp::ParameterValue{0.0}).get<float>(),
-    declare_parameter("min_height", rclcpp::ParameterValue{-5.0}).get<float>(),
-    declare_parameter("max_height", rclcpp::ParameterValue{5.0}).get<float>(),
-    declare_parameter("objectness_thresh", rclcpp::ParameterValue{0.5}).get<float>(),
-    declare_parameter("min_pts_num", rclcpp::ParameterValue{3}).get<int32_t>(),
-    declare_parameter("height_thresh", rclcpp::ParameterValue{0.5}).get<float>())}
+    declare_parameter<int64_t>("range"), declare_parameter<double>("score_threshold"),
+    declare_parameter<bool>("use_intensity_feature"),
+    declare_parameter<bool>("use_constant_feature"), declare_parameter<double>("z_offset"),
+    declare_parameter<double>("min_height"), declare_parameter<double>("max_height"),
+    declare_parameter<double>("objectness_thresh"), declare_parameter<int64_t>("min_pts_num"),
+    declare_parameter<double>("height_thresh"))}
 {
   // Log unexpected versions of the neural network.
   auto version_status = m_detector_ptr->version_check();

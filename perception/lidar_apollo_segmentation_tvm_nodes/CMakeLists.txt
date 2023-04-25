@@ -1,4 +1,4 @@
-# Copyright 2021-2022 Arm Ltd.
+# Copyright 2021-2023 Arm Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ if(lidar_apollo_segmentation_tvm_BUILT)
 
   ament_auto_package(INSTALL_TO_SHARE
     launch
-    param
+    config
   )
 else()
   message(WARNING "lidar_apollo_segmentation_tvm not built, skipping package.")
