@@ -1129,6 +1129,10 @@ void ObstacleStopPlannerNode::insertVelocity(
           return 0.0;
         }
 
+        if (ego_seg_idx == output.size() - 1) {
+          return 0.0;
+        }
+
         size_t stop_seg_idx = 0;
         if (stop_point.index < output.size() - 1) {
           const double lon_offset =
