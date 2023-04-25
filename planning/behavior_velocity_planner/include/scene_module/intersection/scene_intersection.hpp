@@ -112,6 +112,7 @@ public:
       double occlusion_detection_area_length;  //! used for occlusion detection
       bool enable_creeping;
       double occlusion_creep_velocity;  //! the creep velocity to occlusion limit stop lline
+      double peeking_offset;
       int free_space_max;
       int occupied_min;
       bool do_dp;
@@ -318,11 +319,11 @@ private:
     const Polygon2d & stuck_vehicle_detect_area,
     const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
 
-  std::optional<size_t> findNearestOcclusionProjectedPosition(
+  bool isOcclusionCleared(
     const nav_msgs::msg::OccupancyGrid & occ_grid,
     const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
     const lanelet::CompoundPolygon3d & first_detection_area,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double interval,
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip,
     const std::pair<size_t, size_t> & lane_interval,
     const std::vector<util::DetectionLaneDivision> & lane_divisions,
     const double occlusion_dist_thr) const;

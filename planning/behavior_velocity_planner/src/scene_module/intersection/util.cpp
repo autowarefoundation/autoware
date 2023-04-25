@@ -21,6 +21,8 @@
 #include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
 
+#include <boost/geometry/algorithms/intersects.hpp>
+
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -143,6 +145,47 @@ std::optional<size_t> generateStaticPassJudgeLine(
   if (idx < 0) {
     return std::nullopt;
   }
+  const auto & insert_point = path_ip.points.at(static_cast<size_t>(idx)).point.pose;
+  const auto duplicate_idx_opt = util::getDuplicatedPointIdx(*original_path, insert_point.position);
+  if (duplicate_idx_opt) {
+    return duplicate_idx_opt;
+  } else {
+    const auto insert_idx_opt = util::insertPoint(insert_point, original_path);
+    if (!insert_idx_opt) {
+      return std::nullopt;
+    }
+    return insert_idx_opt;
+  }
+}
+
+std::optional<size_t> generatePeekingLimitLine(
+  const lanelet::CompoundPolygon3d & first_detection_area,
+  autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double ip_interval,
+  const std::pair<size_t, size_t> lane_interval,
+  const std::shared_ptr<const PlannerData> & planner_data, const double offset)
+{
+  const auto local_footprint = planner_data->vehicle_info_.createFootprint(0.0, 0.0);
+  const auto area_2d = lanelet::utils::to2D(first_detection_area).basicPolygon();
+  std::optional<size_t> first_collision = std::nullopt;
+  for (size_t i = 0; i <= std::get<1>(lane_interval); ++i) {
+    const auto & base_pose = path_ip.points.at(i).point.pose;
+    const auto path_footprint = tier4_autoware_utils::transformVector(
+      local_footprint, tier4_autoware_utils::pose2transform(base_pose));
+    if (bg::intersects(path_footprint, area_2d)) {
+      first_collision = i;
+      break;
+    }
+  }
+  if (!first_collision || first_collision.value() == 0) {
+    return std::nullopt;
+  }
+
+  const int idx = first_collision.value() - 1 + std::ceil(offset / ip_interval);
+  if (idx < 0) {
+    return std::nullopt;
+  }
+
   const auto & insert_point = path_ip.points.at(static_cast<size_t>(idx)).point.pose;
   const auto duplicate_idx_opt = util::getDuplicatedPointIdx(*original_path, insert_point.position);
   if (duplicate_idx_opt) {
