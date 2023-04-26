@@ -76,6 +76,10 @@ repositories:
     type: git
     url: git@github.com:tier4-2023-team2/microstrain_inertial.git
     version: dev
+  sensor_kit/ros2_v4l2_camera:
+    type: git
+    url: git@github.com:tier4/ros2_v4l2_camera.git
+    version: galactic
   sensor_kit/external/awsim_sensor_kit_launch: # TODO: Integrate into sample_sensor_kit_launch
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
