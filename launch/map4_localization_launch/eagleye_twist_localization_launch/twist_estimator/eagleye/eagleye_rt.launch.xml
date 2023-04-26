@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="config_yaml" default="eagleye_config.param.yaml"/>
+  <arg name="config_path" default="$(find-pkg-share autoware_launch)/config/localization/$(var config_yaml)"/>
+  <arg name="output_pose_with_cov_name" default="/localization/pose_estimator/pose_with_covariance"/>
+  <arg name="output_twist_with_cov_name" default="/localization/twist_estimator/twist_with_covariance"/>
+  <arg name="directory_with_related_launches" default="$(find-pkg-share map4_localization_launch)/eagleye_twist_localization_launch/twist_estimator/eagleye"/>
+  <arg name="use_eagleye_pose" default="false"/>
+
+  <arg name="enable_additional_rolling" default="false"/>
+  <arg name="use_multi_antenna_mode" default="false"/>
+
+  <group>
+    <push-ros-namespace namespace="eagleye"/>
+
+    <node pkg="topic_tools" exec="relay" name="eagleye_output_twist_relay" args="twist_with_covariance $(var output_twist_with_cov_name)"/>
+
+    <arg name="use_rtk_dead_reckoning" default="false"/>
+    <arg name="use_rtk_heading" default="false"/>
+
+    <node pkg="eagleye_rt" name="twist_relay" exec="twist_relay">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+
+    <node pkg="eagleye_rt" name="tf_converted_imu" exec="tf_converted_imu">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="velocity_scale_factor_node" exec="velocity_scale_factor">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+      <param name="velocity_scale_factor_save_str" value="$(find-pkg-share eagleye_rt)/config/velocity_scale_factor.txt"/>
+    </node>
+    <node pkg="eagleye_rt" name="yaw_rate_offset_stop_node" exec="yaw_rate_offset_stop">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="yaw_rate_offset_node_1st" exec="yaw_rate_offset" args="1st">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="yaw_rate_offset_node_2nd" exec="yaw_rate_offset" args="2nd">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="heading_node_1st" exec="heading" args="1st" if="$(eval &quot;'$(var use_rtk_heading)'=='false'&quot;)">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+      <param name="use_multi_antenna_mode" value="$(var use_multi_antenna_mode)"/>
+    </node>
+    <node pkg="eagleye_rt" name="heading_node_2nd" exec="heading" args="2nd" if="$(eval &quot;'$(var use_rtk_heading)'=='false'&quot;)">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+      <param name="use_multi_antenna_mode" value="$(var use_multi_antenna_mode)"/>
+    </node>
+    <node pkg="eagleye_rt" name="heading_node_3rd" exec="heading" args="3rd" if="$(eval &quot;'$(var use_rtk_heading)'=='false'&quot;)">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+      <param name="use_multi_antenna_mode" value="$(var use_multi_antenna_mode)"/>
+    </node>
+    <node pkg="eagleye_rt" name="heading_interpolate_node_1st" exec="heading_interpolate" args="1st">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="heading_interpolate_node_2nd" exec="heading_interpolate" args="2nd">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="heading_interpolate_node_3rd" exec="heading_interpolate" args="3rd">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="slip_angle_node" exec="slip_angle">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="distance_node" exec="distance">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="trajectory_node" exec="trajectory">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="rtk_dead_reckoning" exec="rtk_dead_reckoning" if="$(var use_rtk_dead_reckoning)">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="rtk_heading_node_1st" exec="rtk_heading" args="1st" if="$(var use_rtk_heading)">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <node pkg="eagleye_rt" name="rtk_heading_node_2nd" exec="rtk_heading" args="2nd" if="$(var use_rtk_heading)">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <group if="$(var use_eagleye_pose)">
+      <node pkg="eagleye_rt" name="position_node" exec="position" if="$(eval &quot;'$(var use_rtk_dead_reckoning)'=='false'&quot;)">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="position_interpolate_node" exec="position_interpolate" if="$(eval &quot;'$(var use_rtk_dead_reckoning)'=='false'&quot;)">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="smoothing_node" exec="smoothing">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="height_node" exec="height">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="angular_velocity_offset_stop_node" exec="angular_velocity_offset_stop">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="correction_imu" exec="correction_imu">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="rolling" exec="rolling">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="enable_additional_rolling" exec="enable_additional_rolling" if="$(eval &quot;'$(var enable_additional_rolling)'=='true'&quot;)">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+      <node pkg="eagleye_rt" name="rtk_heading_node_3rd" exec="rtk_heading" args="3rd" if="$(var use_rtk_heading)">
+        <param from="$(var config_path)"/>
+        <param name="yaml_file" value="$(var config_path)"/>
+      </node>
+    </group>
+
+    <node pkg="eagleye_rt" name="monitor" exec="monitor">
+      <param from="$(var config_path)"/>
+      <param name="yaml_file" value="$(var config_path)"/>
+    </node>
+    <include file="$(var directory_with_related_launches)/gnss_converter.launch.xml">
+      <arg name="config_path" value="$(var config_path)"/>
+    </include>
+  </group>
+
+  <group if="$(var use_eagleye_pose)">
+    <include file="$(var directory_with_related_launches)/fix2pose.launch.xml">
+      <arg name="output_pose_with_cov_name" value="$(var output_pose_with_cov_name)"/>
+    </include>
+  </group>
+</launch>

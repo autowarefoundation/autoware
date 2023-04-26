@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <group>
+    <include file="$(find-pkg-share map4_localization_launch)/eagleye_twist_localization_launch/twist_estimator/eagleye/eagleye_rt.launch.xml">
+      <arg name="output_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
+    </include>
+  </group>
+</launch>

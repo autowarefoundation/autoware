@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <group>
+    <include file="$(find-pkg-share map4_localization_launch)/eagleye_pose_twist_localization_launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
+      <arg name="output_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
+      <arg name="output_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
+    </include>
+  </group>
+</launch>

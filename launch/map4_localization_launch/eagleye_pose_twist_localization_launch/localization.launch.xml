@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Parameter files -->
+  <arg name="localization_error_monitor_param_path"/>
+  <arg name="ekf_localizer_param_path"/>
+  <arg name="pose_initializer_param_path"/>
+  <arg name="pose_initializer_common_param_path"/>
+  <arg name="eagleye_param_path"/>
+
+  <!-- localization module -->
+  <group>
+    <push-ros-namespace namespace="localization"/>
+    <!-- util module -->
+    <group>
+      <push-ros-namespace namespace="util"/>
+      <include file="$(find-pkg-share map4_localization_launch)/eagleye_pose_twist_localization_launch/util/util.launch.xml"/>
+    </group>
+    <!-- pose_twist_estimator module -->
+    <group>
+      <push-ros-namespace namespace="pose_twist_estimator"/>
+      <include file="$(find-pkg-share map4_localization_launch)/eagleye_pose_twist_localization_launch/pose_twist_estimator/pose_twist_estimator.launch.xml"/>
+    </group>
+    <!-- pose_twist_fusion_filter module -->
+    <group>
+      <push-ros-namespace namespace="pose_twist_fusion_filter"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_fusion_filter/pose_twist_fusion_filter.launch.xml"/>
+    </group>
+    <!-- localization_error_monitor_module -->
+    <group>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/localization_error_monitor/localization_error_monitor.launch.xml"/>
+    </group>
+  </group>
+</launch>

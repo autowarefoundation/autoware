@@ -1,13 +1,14 @@
 <launch>
   <arg name="common_config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer_common.param.yaml"/>
   <arg name="config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer.param.yaml"/>
+  <arg name="sub_gnss_pose_cov" default="sub_gnss_pose_cov"/>
 
   <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
     <param from="$(var common_config_file)"/>
     <param from="$(var config_file)"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
     <remap from="stop_check_twist" to="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
-    <remap from="gnss_pose_cov" to="/sensing/gnss/pose_with_covariance"/>
+    <remap from="gnss_pose_cov" to="$(var sub_gnss_pose_cov)"/>
     <remap from="pose_reset" to="/initialpose3d"/>
     <remap from="ekf_trigger_node" to="/localization/pose_twist_fusion_filter/trigger_node"/>
     <remap from="ndt_trigger_node" to="/localization/pose_estimator/trigger_node"/>

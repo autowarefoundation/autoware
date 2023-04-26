@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- pose_initializer -->
+  <group>
+    <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+      <arg name="common_config_file" value="$(var pose_initializer_common_param_path)"/>
+      <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+      <arg name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance"/>
+    </include>
+  </group>
+
+  <!-- pose_initializer (Automatic call from AD API) -->
+  <group>
+    <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
+  </group>
+</launch>

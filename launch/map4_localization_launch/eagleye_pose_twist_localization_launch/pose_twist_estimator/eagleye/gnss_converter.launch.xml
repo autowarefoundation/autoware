@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="config_path"/>
+
+  <group>
+    <push-ros-namespace namespace="gnss"/>
+    <node pkg="eagleye_gnss_converter" name="gnss_converter_node" exec="gnss_converter">
+      <param from="$(var config_path)"/>
+    </node>
+  </group>
+</launch>
