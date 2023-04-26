@@ -535,7 +535,7 @@ PathWithLaneId AvoidanceByLCModule::getReferencePath() const
     utils::calcMinimumLaneChangeLength(common_parameters, shift_intervals);
 
   reference_path = utils::setDecelerationVelocity(
-    *route_handler, reference_path, current_lanes, parameters_->lane_change->prepare_duration,
+    *route_handler, reference_path, current_lanes, common_parameters.lane_change_prepare_duration,
     lane_change_buffer);
 
   const auto drivable_lanes = utils::generateDrivableLanes(current_lanes);
@@ -552,7 +552,7 @@ lanelet::ConstLanelets AvoidanceByLCModule::getLaneChangeLanes(
   lanelet::ConstLanelets lane_change_lanes;
   const auto & route_handler = planner_data_->route_handler;
   const auto minimum_prepare_length = planner_data_->parameters.minimum_prepare_length;
-  const auto prepare_duration = parameters_->lane_change->prepare_duration;
+  const auto prepare_duration = planner_data_->parameters.lane_change_prepare_duration;
   const auto current_pose = getEgoPose();
   const auto current_twist = getEgoTwist();
 

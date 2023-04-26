@@ -59,6 +59,7 @@ struct BehaviorPathPlannerParameters
   double lane_changing_lateral_acc_at_low_velocity{0.15};
   double lateral_acc_switching_velocity{0.4};
   double minimum_lane_changing_velocity{5.6};
+  double lane_change_prepare_duration{4.0};
   double minimum_prepare_length;
 
   double minimum_pull_over_length;
@@ -110,9 +111,6 @@ struct BehaviorPathPlannerParameters
 
   double rear_vehicle_reaction_time;
   double rear_vehicle_safety_time_margin;
-
-  // lane change
-  double lane_change_prepare_duration;
 };
 
 #endif  // BEHAVIOR_PATH_PLANNER__PARAMETERS_HPP_

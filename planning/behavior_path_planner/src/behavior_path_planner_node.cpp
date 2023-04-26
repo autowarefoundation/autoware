@@ -394,8 +394,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter<double>("lane_change.lateral_acc_switching_velocity");
   p.minimum_lane_changing_velocity =
     declare_parameter<double>("lane_change.minimum_lane_changing_velocity");
-  p.lane_change_prepare_duration =
-    declare_parameter<double>("lane_change.lane_change_prepare_duration");
+  p.lane_change_prepare_duration = declare_parameter<double>("lane_change.prepare_duration");
   p.minimum_prepare_length =
     0.5 * p.max_acc * p.lane_change_prepare_duration * p.lane_change_prepare_duration;
 
@@ -652,7 +651,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   const auto parameter = [](std::string && name) { return "lane_change." + name; };
 
   // trajectory generation
-  p.prepare_duration = declare_parameter<double>(parameter("prepare_duration"));
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));

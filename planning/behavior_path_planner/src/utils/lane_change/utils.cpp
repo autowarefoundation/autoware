@@ -136,7 +136,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   candidate_path.length.lane_changing = lane_changing_length;
   candidate_path.duration.prepare = std::invoke([&]() {
     const auto duration = prepare_length / lane_change_velocity.prepare;
-    return std::min(duration, lane_change_param.prepare_duration);
+    return std::min(duration, common_parameter.lane_change_prepare_duration);
   });
   candidate_path.duration.lane_changing = std::invoke([&]() {
     const auto rounding_multiplier = 1.0 / lane_change_param.prediction_time_resolution;
@@ -222,7 +222,7 @@ bool getLaneChangePaths(
   // rename parameter
   const auto backward_path_length = common_parameter.backward_path_length;
   const auto forward_path_length = common_parameter.forward_path_length;
-  const auto prepare_duration = parameter.prepare_duration;
+  const auto prepare_duration = common_parameter.lane_change_prepare_duration;
   const auto minimum_lane_changing_velocity = common_parameter.minimum_lane_changing_velocity;
   const auto lane_change_sampling_num = parameter.lane_change_sampling_num;
 
@@ -232,8 +232,8 @@ bool getLaneChangePaths(
   // compute maximum_deceleration
   const auto maximum_deceleration = std::invoke(
     [&minimum_lane_changing_velocity, &current_velocity, &common_parameter, &parameter]() {
-      const double min_a =
-        (minimum_lane_changing_velocity - current_velocity) / parameter.prepare_duration;
+      const double min_a = (minimum_lane_changing_velocity - current_velocity) /
+                           common_parameter.lane_change_prepare_duration;
       return std::clamp(
         min_a, -std::abs(common_parameter.min_acc), -std::numeric_limits<double>::epsilon());
     });
@@ -491,7 +491,7 @@ bool isLaneChangePathSafe(
 
   const double check_start_time = check_at_prepare_phase ? 0.0 : lane_change_path.duration.prepare;
   const double check_end_time = lane_change_path.duration.sum();
-  const double & prepare_duration = lane_change_parameter.prepare_duration;
+  const double & prepare_duration = common_parameter.lane_change_prepare_duration;
 
   const auto current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     path.points, current_pose, common_parameter.ego_nearest_dist_threshold,

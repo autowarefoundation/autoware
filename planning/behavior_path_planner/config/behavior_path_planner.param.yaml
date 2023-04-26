@@ -46,9 +46,6 @@
       drivable_area_left_bound_offset: 0.0
       drivable_area_types_to_skip: [road_border]
 
-    lane_change:
-      lane_change_prepare_duration: 4.0
-
     closest_lanelet:
       distance_threshold: 5.0 # [m]
       yaw_threshold: 0.79 # [rad]

@@ -66,7 +66,7 @@ PathWithLaneId NormalLaneChangeBT::getReferencePath() const
     utils::calcMinimumLaneChangeLength(common_parameters, shift_intervals);
 
   reference_path = utils::setDecelerationVelocity(
-    *route_handler, reference_path, current_lanes, parameters_->prepare_duration,
+    *route_handler, reference_path, current_lanes, common_parameters.lane_change_prepare_duration,
     lane_change_buffer);
 
   const auto & dp = planner_data_->drivable_area_expansion_parameters;

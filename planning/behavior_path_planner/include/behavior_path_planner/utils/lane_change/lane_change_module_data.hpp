@@ -26,7 +26,6 @@ namespace behavior_path_planner
 struct LaneChangeParameters
 {
   // trajectory generation
-  double prepare_duration{2.0};
   double lane_change_finish_judge_buffer{3.0};
   double prediction_time_resolution{0.5};
   int lane_change_sampling_num{10};
