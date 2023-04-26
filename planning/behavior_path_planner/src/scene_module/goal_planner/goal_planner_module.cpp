@@ -345,7 +345,7 @@ bool GoalPlannerModule::isExecutionRequested() const
     route_handler->isAllowedGoalModification() || checkOriginalGoalIsInShoulder();
   const double request_length =
     allow_goal_modification ? calcModuleRequestLength() : parameters_->minimum_request_length;
-  if (self_to_goal_arc_length > request_length) {
+  if (self_to_goal_arc_length < 0.0 || self_to_goal_arc_length > request_length) {
     return false;
   }
 
