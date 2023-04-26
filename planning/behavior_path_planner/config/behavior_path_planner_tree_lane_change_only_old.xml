@@ -4,9 +4,9 @@
     <BehaviorTree ID="BehaviorTree">
         <Fallback>
             <ReactiveSequence>
-                <Condition ID="PullOver_Request"/>
-                <Condition ID="PullOver_Ready"/>
-                <Action ID="PullOver_Plan" output="{output}"/>
+                <Condition ID="GoalPlanner_Request"/>
+                <Condition ID="GoalPlanner_Ready"/>
+                <Action ID="GoalPlanner_Plan" output="{output}"/>
             </ReactiveSequence>
             <ReactiveSequence>
                 <Condition ID="PullOut_Request"/>
@@ -78,11 +78,11 @@
         </Action>
         <Condition ID="PullOut_Ready"/>
         <Condition ID="PullOut_Request"/>
-        <Action ID="PullOver_Plan">
+        <Action ID="GoalPlanner_Plan">
             <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
         </Action>
-        <Condition ID="PullOver_Ready"/>
-        <Condition ID="PullOver_Request"/>
+        <Condition ID="GoalPlanner_Ready"/>
+        <Condition ID="GoalPlanner_Request"/>
         <Condition ID="SideShift_CheckApproval"/>
         <Action ID="SideShift_Plan">
             <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
