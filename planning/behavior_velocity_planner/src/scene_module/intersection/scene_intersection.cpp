@@ -327,8 +327,10 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     }
   } else if (occlusion_state_ != OcclusionState::CLEARED) {
     // previously occlusion existed, but now it is clear
-    if (!util::isOverTargetIndex(
-          *path, closest_idx, current_pose, default_stop_line_idx_opt.value())) {
+    if (
+      default_stop_line_idx_opt &&
+      !util::isOverTargetIndex(
+        *path, closest_idx, current_pose, default_stop_line_idx_opt.value())) {
       stop_line_idx = default_stop_line_idx_opt.value();
     } else if (
       static_pass_judge_line_opt &&
