@@ -12,21 +12,12 @@ ros2 bag record \
  /sensing/lidar/rear/pointcloud_raw  \
  /sensing/lidar/front/velodyne_packets \
  /sensing/lidar/rear/velodyne_packets \
- /sensing/lidar/rear/velodyne_packets \
- /sensing/lidar/rear/velodyne_packets \
- /sensing/lidar/rear/velodyne_packets \
- /sensing/camera/c1_cam/camera_info \
- /sensing/camera/c1_cam/image_raw \
- /sensing/camera/c1_cam/image_raw/compressed \
- /sensing/camera/c1_cam/image_raw/compressedDepth \
- /sensing/camera/c1_cam/image_raw/theora \
+ /sensing/camera/c1/camera_info \
+ /sensing/camera/c1/image \
+ /sensing/camera/c1/image_rect \
  /sensing/camera/default_cam/camera_info \
- /sensing/camera/default_cam/image_raw \
- /sensing/camera/default_cam/image_raw/compressed \
- /sensing/camera/default_cam/image_raw/compressedDepth \
- /sensing/camera/default_cam/image_raw/theora \
- /sensing/camera/traffic_light/camera_info \
- /sensing/camera/traffic_light/image_raw \
- /sensing/camera/traffic_light/image_raw/compressed
+ /sensing/camera/default_cam/image \
+ /sensing/camera/default_cam/image_rect \
+ /sensing/imu/imu_data
 
 cd $HOME_DIR

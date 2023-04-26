@@ -18,28 +18,21 @@ colcon build --packages-select \
  logiee-s-tc_sensor_kit_launch \
  logiee-s-tc_description \
  logiee-s-tc_sensor_kit_description \
- logiee-s-tc_sensor_kit_launch_description \
  logiee-s-tc_launch \
- logiee-s-tc_sensor_kit_launch \
- microstrain_inertial \
  individual_params \
- microstrain_inertial_driver \
  jw_interface_awiv_adapter \
  jw_interface_msgs \
  jw_interface_serial \
  common_sensor_launch \
- extrinsic_calibration_client \
- extrinsic_calibration_manager \
- extrinsic_dummy_calibrator \
- extrinsic_ground_plane_calibrator \
- extrinsic_interactive_calibrator \
- extrinsic_lidar_to_lidar_2d_calibrator \
- extrinsic_manual_calibrator \
- extrinsic_map_based_calibrator \
- extrinsic_tag_based_calibrator \
- intrinsic_camera_calibration \
- intrinsic_camera_calibrator \
- point_cloud_accumulator 
+ autoware_launch \
+ tier4_localization_launch \
+ point_cloud_accumulator \
+ vehicle_info_util \
+ pointcloud_preprocessor \
+ microstrain_inertial_driver \
+ v4l2_camera
 
+#  ndt_scan_matcher \
+#  static_centerline_optimizer \
 
 cd $HOME_DIR
