@@ -69,7 +69,7 @@ else()
     src/scene_module/avoidance/manager.cpp
     src/scene_module/avoidance_by_lc/manager.cpp
     src/scene_module/pull_out/manager.cpp
-    src/scene_module/pull_over/manager.cpp
+    src/scene_module/goal_planner/manager.cpp
     src/scene_module/side_shift/manager.cpp
     src/scene_module/lane_change/manager.cpp
     ${common_src}
