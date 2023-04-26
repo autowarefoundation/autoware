@@ -93,6 +93,21 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
     if (errors.empty()) {
       return map;
     }
+  } else if (lanelet2_map_projector_type == "local") {
+    // Use MGRSProjector as parser
+    lanelet::projection::MGRSProjector projector{};
+    const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
+
+    // overwrite local_x, local_y
+    for (lanelet::Point3d point : map->pointLayer) {
+      if (point.hasAttribute("local_x")) {
+        point.x() = point.attribute("local_x").asDouble().value();
+      }
+      if (point.hasAttribute("local_y")) {
+        point.y() = point.attribute("local_y").asDouble().value();
+      }
+    }
+    return map;
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("map_loader"), "lanelet2_map_projector_type is not supported");
     return nullptr;
