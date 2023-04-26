@@ -27,7 +27,7 @@ set(common_src
   src/utils/utils.cpp
   src/utils/path_utils.cpp
   src/utils/safety_check.cpp
-  src/utils/avoidance/util.cpp
+  src/utils/avoidance/utils.cpp
   src/utils/lane_change/utils.cpp
   src/utils/side_shift/util.cpp
   src/utils/goal_planner/util.cpp

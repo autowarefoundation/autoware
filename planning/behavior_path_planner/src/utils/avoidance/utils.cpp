@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/avoidance/util.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/utils/avoidance/utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
 
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
+namespace behavior_path_planner::utils::avoidance
 {
 
 using motion_utils::calcLongitudinalOffsetPoint;
@@ -1186,4 +1186,4 @@ void filterTargetObjects(
     data.target_objects.push_back(o);
   }
 }
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::utils::avoidance

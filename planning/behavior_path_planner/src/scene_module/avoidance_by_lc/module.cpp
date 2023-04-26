@@ -17,7 +17,7 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
-#include "behavior_path_planner/utils/avoidance/util.hpp"
+#include "behavior_path_planner/utils/avoidance/utils.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
@@ -141,9 +141,9 @@ void AvoidanceByLCModule::updateData()
   debug_data_ = DebugData();
   avoidance_data_ = calcAvoidancePlanningData(debug_data_);
 
-  updateRegisteredObject(
+  utils::avoidance::updateRegisteredObject(
     registered_objects_, avoidance_data_.target_objects, parameters_->avoidance);
-  compensateDetectionLost(
+  utils::avoidance::compensateDetectionLost(
     registered_objects_, avoidance_data_.target_objects, avoidance_data_.other_objects);
 
   std::sort(
@@ -199,7 +199,8 @@ void AvoidanceByLCModule::fillAvoidanceTargetObjects(
     objects.push_back(createObjectData(data, object));
   }
 
-  filterTargetObjects(objects, data, debug, planner_data_, parameters_->avoidance);
+  utils::avoidance::filterTargetObjects(
+    objects, data, debug, planner_data_, parameters_->avoidance);
 }
 
 ObjectData AvoidanceByLCModule::createObjectData(
@@ -217,20 +218,20 @@ ObjectData AvoidanceByLCModule::createObjectData(
   object_data.object = object;
 
   // Calc envelop polygon.
-  fillObjectEnvelopePolygon(
+  utils::avoidance::fillObjectEnvelopePolygon(
     object_data, registered_objects_, object_closest_pose, parameters_->avoidance);
 
   // calc object centroid.
   object_data.centroid = return_centroid<Point2d>(object_data.envelope_poly);
 
   // Calc moving time.
-  fillObjectMovingTime(object_data, stopped_objects_, parameters_->avoidance);
+  utils::avoidance::fillObjectMovingTime(object_data, stopped_objects_, parameters_->avoidance);
 
   // Calc lateral deviation from path to target object.
   object_data.lateral = calcLateralDeviation(object_closest_pose, object_pose.position);
 
   // Find the footprint point closest to the path, set to object_data.overhang_distance.
-  object_data.overhang_dist = calcEnvelopeOverhangDistance(
+  object_data.overhang_dist = utils::avoidance::calcEnvelopeOverhangDistance(
     object_data, object_closest_pose, object_data.overhang_pose.position);
 
   // Check whether the the ego should avoid the object.
@@ -238,8 +239,9 @@ ObjectData AvoidanceByLCModule::createObjectData(
   const auto safety_margin =
     0.5 * vehicle_width + parameters_->avoidance->lateral_passable_safety_buffer;
   object_data.avoid_required =
-    (isOnRight(object_data) && std::abs(object_data.overhang_dist) < safety_margin) ||
-    (!isOnRight(object_data) && object_data.overhang_dist < safety_margin);
+    (utils::avoidance::isOnRight(object_data) &&
+     std::abs(object_data.overhang_dist) < safety_margin) ||
+    (!utils::avoidance::isOnRight(object_data) && object_data.overhang_dist < safety_margin);
 
   return object_data;
 }
@@ -451,9 +453,8 @@ BehaviorModuleOutput AvoidanceByLCModule::planWaitingApproval()
     const double lane_change_buffer =
       utils::calcMinimumLaneChangeLength(planner_data_->parameters, {shift_length});
 
-    boost::optional<Pose> p_insert{};
-    insertDecelPoint(
-      getEgoPosition(), to_front_object_distance - lane_change_buffer, 0.0, *out.path, p_insert);
+    utils::avoidance::insertDecelPoint(
+      getEgoPosition(), to_front_object_distance - lane_change_buffer, 0.0, *out.path, stop_pose_);
   }
 
 #ifndef USE_OLD_ARCHITECTURE
@@ -576,7 +577,7 @@ lanelet::ConstLanelets AvoidanceByLCModule::getLaneChangeLanes(
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);
   lanelet::ConstLanelet lane_change_lane;
 
-  if (isOnRight(o_front)) {
+  if (utils::avoidance::isOnRight(o_front)) {
     for (const auto & lanelet : current_check_lanes) {
       const auto & left_lane = route_handler->getRoutingGraphPtr()->left(lanelet);
       if (left_lane) {
@@ -632,7 +633,7 @@ std::pair<bool, bool> AvoidanceByLCModule::getSafePath(
     &valid_paths, &object_debug_);
 #else
   const auto o_front = avoidance_data_.target_objects.front();
-  const auto direction = isOnRight(o_front) ? Direction::LEFT : Direction::RIGHT;
+  const auto direction = utils::avoidance::isOnRight(o_front) ? Direction::LEFT : Direction::RIGHT;
   const auto found_safe_path = utils::lane_change::getLaneChangePaths(
     *getPreviousModuleOutput().path, *route_handler, current_lanes, lane_change_lanes, current_pose,
     current_twist, planner_data_->dynamic_object, common_parameters, *parameters_->lane_change,
