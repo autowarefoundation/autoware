@@ -158,7 +158,7 @@ public:
   {
     occlusion_first_stop_activated_ = activation;
   }
-  bool isOccluded() const { return is_occluded_; }
+  bool isOccluded() const { return is_actually_occluded_ || is_forcefully_occluded_; }
 
 private:
   rclcpp::Node & node_;
@@ -175,7 +175,8 @@ private:
   // for occlusion detection
   const bool enable_occlusion_detection_;
   std::optional<std::vector<util::DetectionLaneDivision>> detection_divisions_;
-  bool is_occluded_ = false;
+  bool is_actually_occluded_ = false;    //! occlusion based on occupancy_grid
+  bool is_forcefully_occluded_ = false;  //! fake occlusion forced by external operator
   OcclusionState occlusion_state_ = OcclusionState::NONE;
   // NOTE: uuid_ is base member
   // for occlusion clearance decision
@@ -184,7 +185,7 @@ private:
   double occlusion_stop_distance_;
   bool occlusion_activated_ = true;
   // for first stop in two-phase stop
-  const UUID occlusion_first_stop_uuid_;  // TODO(Mamoru Sobue): replace with uuid_
+  const UUID occlusion_first_stop_uuid_;
   bool occlusion_first_stop_safety_ = true;
   double occlusion_first_stop_distance_;
   bool occlusion_first_stop_activated_ = true;

@@ -128,8 +128,17 @@ void IntersectionModuleManager::launchNewModules(
     const auto new_module = std::make_shared<IntersectionModule>(
       module_id, lane_id, planner_data_, intersection_param_, assoc_ids, enable_occlusion_detection,
       node_, logger_.get_child("intersection_module"), clock_);
-    registerModule(std::move(new_module));
     generateUUID(module_id);
+    /* set RTC status as non_occluded status initially */
+    const UUID uuid = getUUID(new_module->getModuleId());
+    const auto occlusion_uuid = new_module->getOcclusionUUID();
+    rtc_interface_.updateCooperateStatus(
+      uuid, true, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(),
+      clock_->now());
+    occlusion_rtc_interface_.updateCooperateStatus(
+      occlusion_uuid, true, std::numeric_limits<double>::lowest(),
+      std::numeric_limits<double>::lowest(), clock_->now());
+    registerModule(std::move(new_module));
   }
 }
 
