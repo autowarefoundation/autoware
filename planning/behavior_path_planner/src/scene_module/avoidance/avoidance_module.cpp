@@ -53,7 +53,6 @@ using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcInterpolatedPose;
 using tier4_autoware_utils::calcLateralDeviation;
 using tier4_autoware_utils::calcLongitudinalDeviation;
-using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::calcYawDeviation;
 using tier4_autoware_utils::getPoint;
 using tier4_autoware_utils::getPose;
@@ -507,13 +506,11 @@ void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugDat
     getNominalPrepareDistance() + object_parameter.safety_buffer_longitudinal + base_link2front;
   const auto total_avoid_distance = variable + constant;
 
-  const auto opt_feasible_bound = calcLongitudinalOffsetPose(
+  dead_pose_ = calcLongitudinalOffsetPose(
     data.reference_path.points, getEgoPosition(), o_front.longitudinal - total_avoid_distance);
 
-  if (opt_feasible_bound) {
-    debug.feasible_bound = opt_feasible_bound.get();
-  } else {
-    debug.feasible_bound = getPose(data.reference_path.points.front());
+  if (!dead_pose_) {
+    dead_pose_ = getPose(data.reference_path.points.front());
   }
 }
 
@@ -3252,14 +3249,9 @@ void AvoidanceModule::setDebugData(
   using marker_utils::avoidance_marker::createUnavoidableTargetObjectsMarkerArray;
   using marker_utils::avoidance_marker::createUnsafeObjectsMarkerArray;
   using marker_utils::avoidance_marker::makeOverhangToRoadShoulderMarkerArray;
-  using motion_utils::createDeadLineVirtualWallMarker;
-  using motion_utils::createSlowDownVirtualWallMarker;
-  using motion_utils::createStopVirtualWallMarker;
   using tier4_autoware_utils::appendMarkerArray;
-  using tier4_autoware_utils::calcOffsetPose;
 
   debug_marker_.markers.clear();
-  const auto & base_link2front = planner_data_->parameters.base_link2front;
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
 
   const auto add = [this](const MarkerArray & added) {
@@ -3285,24 +3277,6 @@ void AvoidanceModule::setDebugData(
   add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
   add(createPathMarkerArray(prev_linear_shift_path_.path, "prev_linear_shift", 0, 0.5, 0.4, 0.6));
   add(createPoseMarkerArray(data.reference_pose, "reference_pose", 0, 0.9, 0.3, 0.3));
-
-  if (debug.stop_pose) {
-    const auto p_front = calcOffsetPose(debug.stop_pose.get(), base_link2front, 0.0, 0.0);
-    appendMarkerArray(
-      createStopVirtualWallMarker(p_front, "avoidance stop", current_time, 0L), &debug_marker_);
-  }
-
-  if (debug.slow_pose) {
-    const auto p_front = calcOffsetPose(debug.slow_pose.get(), base_link2front, 0.0, 0.0);
-    appendMarkerArray(
-      createSlowDownVirtualWallMarker(p_front, "avoidance slow", current_time, 0L), &debug_marker_);
-  }
-
-  if (debug.feasible_bound) {
-    const auto p_front = calcOffsetPose(debug.feasible_bound.get(), base_link2front, 0.0, 0.0);
-    appendMarkerArray(
-      createDeadLineVirtualWallMarker(p_front, "feasible bound", current_time, 0L), &debug_marker_);
-  }
 
   add(createSafetyCheckMarkerArray(data.state, getEgoPose(), debug));
 
@@ -3465,16 +3439,14 @@ void AvoidanceModule::insertWaitPoint(
     std::clamp(variable + constant, p->stop_min_distance, p->stop_max_distance);
 
   if (!use_constraints_for_decel) {
-    insertDecelPoint(
-      getEgoPosition(), start_longitudinal, 0.0, shifted_path.path, debug_data_.stop_pose);
+    insertDecelPoint(getEgoPosition(), start_longitudinal, 0.0, shifted_path.path, stop_pose_);
     return;
   }
 
   const auto stop_distance = getMildDecelDistance(0.0);
   if (stop_distance) {
     const auto insert_distance = std::max(start_longitudinal, *stop_distance);
-    insertDecelPoint(
-      getEgoPosition(), insert_distance, 0.0, shifted_path.path, debug_data_.stop_pose);
+    insertDecelPoint(getEgoPosition(), insert_distance, 0.0, shifted_path.path, stop_pose_);
   }
 }
 
@@ -3494,8 +3466,7 @@ void AvoidanceModule::insertYieldVelocity(ShiftedPath & shifted_path) const
   const auto decel_distance = getMildDecelDistance(p->yield_velocity);
   if (decel_distance) {
     insertDecelPoint(
-      getEgoPosition(), *decel_distance, p->yield_velocity, shifted_path.path,
-      debug_data_.slow_pose);
+      getEgoPosition(), *decel_distance, p->yield_velocity, shifted_path.path, slow_pose_);
   }
 }
 
@@ -3523,8 +3494,7 @@ void AvoidanceModule::insertPrepareVelocity(const bool avoidable, ShiftedPath & 
 
   const auto decel_distance = getFeasibleDecelDistance(0.0);
   if (decel_distance) {
-    insertDecelPoint(
-      getEgoPosition(), *decel_distance, 0.0, shifted_path.path, debug_data_.slow_pose);
+    insertDecelPoint(getEgoPosition(), *decel_distance, 0.0, shifted_path.path, slow_pose_);
   }
 }
 

@@ -106,6 +106,15 @@ public:
   }
 
   /**
+   * @brief publish all registered modules' virtual wall.
+   */
+  void publishVirtualWall() const
+  {
+    std::for_each(
+      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->publishVirtualWall(); });
+  }
+
+  /**
    * @brief get manager pointers.
    * @return manager pointers.
    */

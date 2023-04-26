@@ -44,8 +44,13 @@ namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::SteeringFactor;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using motion_utils::createDeadLineVirtualWallMarker;
+using motion_utils::createSlowDownVirtualWallMarker;
+using motion_utils::createStopVirtualWallMarker;
 using rtc_interface::RTCInterface;
 using steering_factor_interface::SteeringFactorInterface;
+using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::generateUUID;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using unique_identifier_msgs::msg::UUID;
@@ -69,8 +74,15 @@ public:
       std::make_unique<SteeringFactorInterface>(&node, utils::convertToSnakeCase(name)))
   {
 #ifdef USE_OLD_ARCHITECTURE
-    const auto ns = std::string("~/debug/") + utils::convertToSnakeCase(name);
-    pub_debug_marker_ = node.create_publisher<MarkerArray>(ns, 20);
+    {
+      const auto ns = std::string("~/debug/") + utils::convertToSnakeCase(name);
+      pub_debug_marker_ = node.create_publisher<MarkerArray>(ns, 20);
+    }
+
+    {
+      const auto ns = std::string("~/virtual_wall/") + utils::convertToSnakeCase(name);
+      pub_virtual_wall_ = node.create_publisher<MarkerArray>(ns, 20);
+    }
 #endif
 
     for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
@@ -259,6 +271,36 @@ public:
 
 #ifdef USE_OLD_ARCHITECTURE
   void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
+
+  void publishVirtualWall()
+  {
+    MarkerArray markers{};
+
+    const auto opt_stop_pose = getStopPose();
+    if (!!opt_stop_pose) {
+      const auto virtual_wall = createStopVirtualWallMarker(
+        opt_stop_pose.get(), utils::convertToSnakeCase(name()), rclcpp::Clock().now(), 0);
+      appendMarkerArray(virtual_wall, &markers);
+    }
+
+    const auto opt_slow_pose = getSlowPose();
+    if (!!opt_slow_pose) {
+      const auto virtual_wall = createSlowDownVirtualWallMarker(
+        opt_slow_pose.get(), utils::convertToSnakeCase(name()), rclcpp::Clock().now(), 0);
+      appendMarkerArray(virtual_wall, &markers);
+    }
+
+    const auto opt_dead_pose = getDeadPose();
+    if (!!opt_dead_pose) {
+      const auto virtual_wall = createDeadLineVirtualWallMarker(
+        opt_dead_pose.get(), utils::convertToSnakeCase(name()), rclcpp::Clock().now(), 0);
+      appendMarkerArray(virtual_wall, &markers);
+    }
+
+    pub_virtual_wall_->publish(markers);
+
+    resetWallPoses();
+  }
 #endif
 
   bool isWaitingApproval() const { return is_waiting_approval_; }
@@ -281,6 +323,43 @@ public:
 
   std::string name() const { return name_; }
 
+  boost::optional<Pose> getStopPose() const
+  {
+    if (!stop_pose_) {
+      return {};
+    }
+
+    const auto & base_link2front = planner_data_->parameters.base_link2front;
+    return calcOffsetPose(stop_pose_.get(), base_link2front, 0.0, 0.0);
+  }
+
+  boost::optional<Pose> getSlowPose() const
+  {
+    if (!slow_pose_) {
+      return {};
+    }
+
+    const auto & base_link2front = planner_data_->parameters.base_link2front;
+    return calcOffsetPose(slow_pose_.get(), base_link2front, 0.0, 0.0);
+  }
+
+  boost::optional<Pose> getDeadPose() const
+  {
+    if (!dead_pose_) {
+      return {};
+    }
+
+    const auto & base_link2front = planner_data_->parameters.base_link2front;
+    return calcOffsetPose(dead_pose_.get(), base_link2front, 0.0, 0.0);
+  }
+
+  void resetWallPoses()
+  {
+    stop_pose_ = boost::none;
+    slow_pose_ = boost::none;
+    dead_pose_ = boost::none;
+  }
+
   rclcpp::Logger getLogger() const { return logger_; }
 
 private:
@@ -290,6 +369,7 @@ private:
 
 #ifdef USE_OLD_ARCHITECTURE
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
 #endif
 
   BehaviorModuleOutput previous_module_output_;
@@ -383,6 +463,12 @@ protected:
   std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map_;
 
   std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
+
+  mutable boost::optional<Pose> stop_pose_{boost::none};
+
+  mutable boost::optional<Pose> slow_pose_{boost::none};
+
+  mutable boost::optional<Pose> dead_pose_{boost::none};
 
   mutable MarkerArray debug_marker_;
 };

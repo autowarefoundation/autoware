@@ -498,10 +498,6 @@ struct DebugData
   std::vector<double> total_shift;
   std::vector<double> output_shift;
 
-  boost::optional<Pose> stop_pose{boost::none};
-  boost::optional<Pose> slow_pose{boost::none};
-  boost::optional<Pose> feasible_bound{boost::none};
-
   bool exist_adjacent_objects{false};
 
   // future pose

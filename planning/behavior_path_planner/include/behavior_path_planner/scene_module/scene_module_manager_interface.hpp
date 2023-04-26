@@ -32,6 +32,9 @@
 namespace behavior_path_planner
 {
 
+using motion_utils::createDeadLineVirtualWallMarker;
+using motion_utils::createSlowDownVirtualWallMarker;
+using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::toHexString;
 using unique_identifier_msgs::msg::UUID;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
@@ -62,6 +65,7 @@ public:
     }
 
     pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name, 20);
+    pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name, 20);
   }
 
   virtual ~SceneModuleManagerInterface() = default;
@@ -110,6 +114,43 @@ public:
     module_ptr.reset();
 
     pub_debug_marker_->publish(MarkerArray{});
+  }
+
+  void publishVirtualWall() const
+  {
+    using tier4_autoware_utils::appendMarkerArray;
+
+    MarkerArray markers{};
+
+    const auto marker_offset = std::numeric_limits<uint8_t>::max();
+
+    uint32_t marker_id = marker_offset;
+    for (const auto & m : registered_modules_) {
+      const auto opt_stop_pose = m->getStopPose();
+      if (!!opt_stop_pose) {
+        const auto virtual_wall = createStopVirtualWallMarker(
+          opt_stop_pose.get(), m->name(), rclcpp::Clock().now(), marker_id);
+        appendMarkerArray(virtual_wall, &markers);
+      }
+
+      const auto opt_slow_pose = m->getSlowPose();
+      if (!!opt_slow_pose) {
+        const auto virtual_wall = createSlowDownVirtualWallMarker(
+          opt_slow_pose.get(), m->name(), rclcpp::Clock().now(), marker_id);
+        appendMarkerArray(virtual_wall, &markers);
+      }
+
+      const auto opt_dead_pose = m->getDeadPose();
+      if (!!opt_dead_pose) {
+        const auto virtual_wall = createDeadLineVirtualWallMarker(
+          opt_dead_pose.get(), m->name(), rclcpp::Clock().now(), marker_id);
+        appendMarkerArray(virtual_wall, &markers);
+      }
+
+      m->resetWallPoses();
+    }
+
+    pub_virtual_wall_->publish(markers);
   }
 
   void publishDebugMarker() const
@@ -189,6 +230,8 @@ protected:
   rclcpp::Logger logger_;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
+
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
 
   std::string name_;
 
