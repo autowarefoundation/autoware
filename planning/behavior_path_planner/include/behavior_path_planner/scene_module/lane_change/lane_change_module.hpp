@@ -137,18 +137,18 @@ protected:
       "Direction is UNKNOWN, start_distance = " << candidate.start_distance_to_path_change);
   }
 
-  void removePreviousRTCStatusLeft()
+  void removeRTCStatus()
   {
-    if (rtc_interface_ptr_map_.at("left")->isRegistered(uuid_map_.at("left"))) {
-      rtc_interface_ptr_map_.at("left")->removeCooperateStatus(uuid_map_.at("left"));
-    }
-  }
+    const auto direction = std::invoke([&]() -> std::string {
+      const auto dir = module_type_->getDirection();
+      return (dir == Direction::LEFT) ? "left" : "right";
+    });
 
-  void removePreviousRTCStatusRight()
-  {
-    if (rtc_interface_ptr_map_.at("right")->isRegistered(uuid_map_.at("right"))) {
-      rtc_interface_ptr_map_.at("right")->removeCooperateStatus(uuid_map_.at("right"));
+    if (rtc_interface_ptr_map_.at(direction)->isRegistered(uuid_map_.at(direction))) {
+      rtc_interface_ptr_map_.at(direction)->removeCooperateStatus(uuid_map_.at(direction));
     }
+
+    uuid_map_.at(direction) = generateUUID();
   }
 };
 }  // namespace behavior_path_planner

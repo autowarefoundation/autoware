@@ -35,7 +35,9 @@ using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 class NormalLaneChangeBT : public NormalLaneChange
 {
 public:
-  NormalLaneChangeBT(const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction);
+  NormalLaneChangeBT(
+    const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+    Direction direction);
 
   ~NormalLaneChangeBT() override = default;
 

@@ -29,8 +29,9 @@
 namespace behavior_path_planner
 {
 NormalLaneChangeBT::NormalLaneChangeBT(
-  const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction)
-: NormalLaneChange(parameters, direction)
+  const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+  Direction direction)
+: NormalLaneChange(parameters, type, direction)
 {
 }
 

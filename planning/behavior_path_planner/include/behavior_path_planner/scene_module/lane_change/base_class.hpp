@@ -52,8 +52,10 @@ using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 class LaneChangeBase
 {
 public:
-  LaneChangeBase(const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction)
-  : parameters_{parameters}, direction_{direction}
+  LaneChangeBase(
+    const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+    Direction direction)
+  : parameters_{parameters}, direction_{direction}, type_{type}
   {
     prev_module_reference_path_ = std::make_shared<PathWithLaneId>();
     prev_module_path_ = std::make_shared<PathWithLaneId>();
@@ -83,15 +85,22 @@ public:
   virtual TurnSignalInfo updateOutputTurnSignal() = 0;
 
   virtual void setPreviousModulePaths(
-    const PathWithLaneId & prev_module_reference_path, const PathWithLaneId & prev_module_path)
+    const std::shared_ptr<PathWithLaneId> & prev_module_reference_path,
+    const std::shared_ptr<PathWithLaneId> & prev_module_path)
   {
-    *prev_module_reference_path_ = prev_module_reference_path;
-    *prev_module_path_ = prev_module_path;
+    if (prev_module_reference_path) {
+      *prev_module_reference_path_ = *prev_module_reference_path;
+    }
+    if (prev_module_path) {
+      *prev_module_path_ = *prev_module_path;
+    }
   };
 
   virtual void setPreviousDrivableLanes(const std::vector<DrivableLanes> & prev_drivable_lanes)
   {
-    *prev_drivable_lanes_ = prev_drivable_lanes;
+    if (prev_drivable_lanes_) {
+      *prev_drivable_lanes_ = prev_drivable_lanes;
+    }
   }
 
   const LaneChangeStatus & getLaneChangeStatus() const { return status_; }
@@ -152,13 +161,18 @@ public:
 
   double getEgoVelocity() const { return getEgoTwist().linear.x; }
 
-  const Direction & getDirection() const { return direction_; }
+  Direction getDirection() const
+  {
+    if (direction_ == Direction::NONE) {
+      const auto lateral_shift = utils::lane_change::getLateralShift(status_.lane_change_path);
+      return lateral_shift > 0.0 ? Direction::LEFT : Direction::RIGHT;
+    }
+
+    return direction_;
+  }
 
 protected:
   virtual lanelet::ConstLanelets getCurrentLanes() const = 0;
-
-  virtual lanelet::ConstLanelets getLaneChangeLanes(
-    const lanelet::ConstLanelets & current_lanes) const = 0;
 
   virtual int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const = 0;
 
@@ -178,6 +192,8 @@ protected:
   virtual void calcTurnSignalInfo() = 0;
 
   virtual bool isValidPath(const PathWithLaneId & path) const = 0;
+
+  lanelet::ConstLanelets getLaneChangeLanes(const lanelet::ConstLanelets & current_lanes) const;
 
   bool isNearEndOfLane() const
   {

@@ -30,8 +30,9 @@
 namespace behavior_path_planner
 {
 NormalLaneChange::NormalLaneChange(
-  const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction)
-: LaneChangeBase(parameters, direction)
+  const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+  Direction direction)
+: LaneChangeBase(parameters, type, direction)
 {
 }
 
@@ -247,11 +248,13 @@ lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
   const auto current_check_lanes =
     route_handler->getLaneletSequence(current_lane, getEgoPose(), 0.0, lane_change_prepare_length);
 
-  const auto lane_change_lane = route_handler->getLaneChangeTarget(current_check_lanes, direction_);
+  const auto lane_change_lane = utils::lane_change::getLaneChangeTargetLane(
+    *getRouteHandler(), current_lanes, type_, direction_);
 
+  const auto lane_change_lane_length = std::max(lane_change_lane_length_, getEgoVelocity() * 10.0);
   if (lane_change_lane) {
     return route_handler->getLaneletSequence(
-      lane_change_lane.get(), getEgoPose(), lane_change_lane_length_, lane_change_lane_length_);
+      lane_change_lane.get(), getEgoPose(), lane_change_lane_length, lane_change_lane_length);
   }
 
   return {};

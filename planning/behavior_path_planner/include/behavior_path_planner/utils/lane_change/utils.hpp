@@ -42,6 +42,7 @@ using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using marker_utils::CollisionCheckDebug;
@@ -181,9 +182,10 @@ double calcLateralBufferForFiltering(const double vehicle_width, const double la
 
 std::string getStrDirection(const std::string & name, const Direction direction);
 
-lanelet::ConstLanelets getLaneChangeLanes(
-  const std::shared_ptr<const PlannerData> & planner_data,
-  const lanelet::ConstLanelets & current_lanes, const double lane_change_lane_length,
-  const double prepare_duration, const Direction direction, const LaneChangeModuleType type);
+CandidateOutput assignToCandidate(
+  const LaneChangePath & lane_change_path, const Point & ego_position);
+boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const LaneChangeModuleType type, const Direction & direction);
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_

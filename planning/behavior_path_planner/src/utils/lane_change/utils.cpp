@@ -1316,4 +1316,29 @@ std::vector<int64_t> replaceWithSortedIds(
   }
   return original_lane_ids;
 }
+
+CandidateOutput assignToCandidate(
+  const LaneChangePath & lane_change_path, const Point & ego_position)
+{
+  CandidateOutput candidate_output;
+  candidate_output.path_candidate = lane_change_path.path;
+  candidate_output.lateral_shift = utils::lane_change::getLateralShift(lane_change_path);
+  candidate_output.start_distance_to_path_change = motion_utils::calcSignedArcLength(
+    lane_change_path.path.points, ego_position, lane_change_path.shift_line.start.position);
+  candidate_output.finish_distance_to_path_change = motion_utils::calcSignedArcLength(
+    lane_change_path.path.points, ego_position, lane_change_path.shift_line.end.position);
+
+  return candidate_output;
+}
+
+boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const LaneChangeModuleType type, const Direction & direction)
+{
+  if (type == LaneChangeModuleType::NORMAL) {
+    return route_handler.getLaneChangeTarget(current_lanes, direction);
+  }
+
+  return route_handler.getLaneChangeTargetExceptPreferredLane(current_lanes, direction);
+}
 }  // namespace behavior_path_planner::utils::lane_change

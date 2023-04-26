@@ -35,7 +35,9 @@ using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 class NormalLaneChange : public LaneChangeBase
 {
 public:
-  NormalLaneChange(const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction);
+  NormalLaneChange(
+    const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+    Direction direction);
 
   ~NormalLaneChange() override = default;
 
@@ -62,8 +64,7 @@ public:
 protected:
   lanelet::ConstLanelets getCurrentLanes() const override;
 
-  lanelet::ConstLanelets getLaneChangeLanes(
-    const lanelet::ConstLanelets & current_lanes) const override;
+  lanelet::ConstLanelets getLaneChangeLanes(const lanelet::ConstLanelets & current_lanes) const;
 
   int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const override;
 

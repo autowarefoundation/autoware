@@ -15,6 +15,7 @@
 #include "behavior_path_planner/behavior_path_planner_node.hpp"
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "behavior_path_planner/scene_module/lane_change/interface.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/map_utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 
@@ -155,7 +156,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     bt_manager_->registerSceneModule(lane_following_module);
 
     auto ext_request_lane_change_right_module =
-      std::make_shared<ExternalRequestLaneChangeRightModule>(
+      std::make_shared<ExternalRequestLaneChangeRightBTModule>(
         "ExternalRequestLaneChangeRight", *this, lane_change_param_ptr_);
     path_candidate_publishers_.emplace(
       "ExternalRequestLaneChangeRight",
@@ -163,7 +164,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     bt_manager_->registerSceneModule(ext_request_lane_change_right_module);
 
     auto ext_request_lane_change_left_module =
-      std::make_shared<ExternalRequestLaneChangeLeftModule>(
+      std::make_shared<ExternalRequestLaneChangeLeftBTModule>(
         "ExternalRequestLaneChangeLeft", *this, lane_change_param_ptr_);
     path_candidate_publishers_.emplace(
       "ExternalRequestLaneChangeLeft",
