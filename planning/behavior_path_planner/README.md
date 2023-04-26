@@ -16,16 +16,16 @@ The `behavior_path_planner` module is responsible to generate
 
 Behavior path planner has following scene modules.
 
-| Name                 | Description                                                                                                                                                                | Details                                                    |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------- |
-| Lane Following       | this module generates reference path from lanelet centerline.                                                                                                              | LINK                                                       |
-| Avoidance            | this module generates avoidance path when there is objects that should be avoid.                                                                                           | [LINK](./docs/behavior_path_planner_avoidance_design.md)   |
-| Avoidance By LC      | this module generates lane change path when there is objects that should be avoid.                                                                                         | LINK                                                       |
-| Lane Change          | this module is performed when it is necessary and a collision check with other vehicles is cleared.                                                                        | [LINK](./docs/behavior_path_planner_lane_change_design.md) |
-| External Lane Change | WIP                                                                                                                                                                        | LINK                                                       |
-| Pull Over            | this module is performed when ego-vehicle is in the road lane and goal is in the shoulder lane. ego-vehicle will stop at the goal.                                         | [LINK](./docs/behavior_path_planner_pull_over_design.md)   |
-| Pull Out             | this module is performed when ego-vehicle is stationary and footprint of ego-vehicle is included in shoulder lane. This module ends when ego-vehicle merges into the road. | [LINK](./docs/behavior_path_planner_pull_out_design.md)    |
-| Side Shift           | (for remote control) shift the path to left or right according to an external instruction.                                                                                 | [LINK](./docs/behavior_path_planner_side_shift_design.md)  |
+| Name                 | Description                                                                                                                                                                | Details                                                     |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------- |
+| Lane Following       | this module generates reference path from lanelet centerline.                                                                                                              | LINK                                                        |
+| Avoidance            | this module generates avoidance path when there is objects that should be avoid.                                                                                           | [LINK](./docs/behavior_path_planner_avoidance_design.md)    |
+| Avoidance By LC      | this module generates lane change path when there is objects that should be avoid.                                                                                         | LINK                                                        |
+| Lane Change          | this module is performed when it is necessary and a collision check with other vehicles is cleared.                                                                        | [LINK](./docs/behavior_path_planner_lane_change_design.md)  |
+| External Lane Change | WIP                                                                                                                                                                        | LINK                                                        |
+| Goal Planner         | this module is performed when ego-vehicle is in the road lane and goal is in the shoulder lane. ego-vehicle will stop at the goal.                                         | [LINK](./docs/behavior_path_planner_goal_planner_design.md) |
+| Pull Out             | this module is performed when ego-vehicle is stationary and footprint of ego-vehicle is included in shoulder lane. This module ends when ego-vehicle merges into the road. | [LINK](./docs/behavior_path_planner_pull_out_design.md)     |
+| Side Shift           | (for remote control) shift the path to left or right according to an external instruction.                                                                                 | [LINK](./docs/behavior_path_planner_side_shift_design.md)   |
 
 ![behavior_modules](./image/behavior_modules.png)
 
@@ -91,13 +91,13 @@ The current behavior tree structure is shown below. Each modules (LaneChange, Av
 
 ### input
 
-| Name                           | Type                                                   | Description                                                                        |
-| :----------------------------- | :----------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| ~/input/route                  | `autoware_auto_mapping_msgs::msg::LaneletRoute`        | current route from start to goal.                                                  |
-| ~/input/vector_map             | `autoware_auto_mapping_msgs::msg::HADMapBin`           | map information.                                                                   |
-| ~/input/objects                | `autoware_auto_perception_msgs::msg::PredictedObjects` | dynamic objects from perception module.                                            |
-| ~/input/occupancy_grid_map/map | `nav_msgs::msg::OccupancyGrid`                         | occupancy grid map from perception module. This is used for only Pull Over module. |
-| ~/input/kinematic_state        | `nav_msgs::msg::Odometry`                              | for ego velocity.                                                                  |
+| Name                           | Type                                                   | Description                                                                           |
+| :----------------------------- | :----------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| ~/input/route                  | `autoware_auto_mapping_msgs::msg::LaneletRoute`        | current route from start to goal.                                                     |
+| ~/input/vector_map             | `autoware_auto_mapping_msgs::msg::HADMapBin`           | map information.                                                                      |
+| ~/input/objects                | `autoware_auto_perception_msgs::msg::PredictedObjects` | dynamic objects from perception module.                                               |
+| ~/input/occupancy_grid_map/map | `nav_msgs::msg::OccupancyGrid`                         | occupancy grid map from perception module. This is used for only Goal Planner module. |
+| ~/input/kinematic_state        | `nav_msgs::msg::Odometry`                              | for ego velocity.                                                                     |
 
 ## General features of behavior path planner
 

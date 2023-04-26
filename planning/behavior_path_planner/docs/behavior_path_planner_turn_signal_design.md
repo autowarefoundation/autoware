@@ -53,7 +53,7 @@ When turning on the blinker, it decides whether or not to turn on the specified 
 
 ![activation_distance](../image/turn_signal_decider/activation_distance.drawio.svg)
 
-For left turn, right turn, avoidance, lane change, pull over and pull out, we define these two sections, which are elaborated in the following part.
+For left turn, right turn, avoidance, lane change, goal planner and pull out, we define these two sections, which are elaborated in the following part.
 
 #### 1. Left and Right turn
 
@@ -141,7 +141,7 @@ Second section
 
 ![section_pull_out](../image/turn_signal_decider/pull_out.drawio.svg)
 
-#### 5. Pull over
+#### 5. Goal Planner
 
 - desired start point  
   `v * turn_signal_search_time` meters before the start point of the pull over path.

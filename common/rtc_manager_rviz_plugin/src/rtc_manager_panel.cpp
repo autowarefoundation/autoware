@@ -63,8 +63,8 @@ std::string getModuleName(const uint8_t module_type)
     case Module::AVOIDANCE_RIGHT: {
       return "avoidance_right";
     }
-    case Module::PULL_OVER: {
-      return "pull_over";
+    case Module::GOAL_PLANNER: {
+      return "goal_planner";
     }
     case Module::PULL_OUT: {
       return "pull_out";
@@ -105,7 +105,7 @@ bool isPathChangeModule(const uint8_t module_type)
     module_type == Module::EXT_REQUEST_LANE_CHANGE_RIGHT ||
     module_type == Module::AVOIDANCE_BY_LC_LEFT || module_type == Module::AVOIDANCE_BY_LC_RIGHT ||
     module_type == Module::AVOIDANCE_LEFT || module_type == Module::AVOIDANCE_RIGHT ||
-    module_type == Module::PULL_OVER || module_type == Module::PULL_OUT) {
+    module_type == Module::GOAL_PLANNER || module_type == Module::PULL_OUT) {
     return true;
   }
   return false;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/pull_over/manager.hpp"
+#include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -23,14 +23,14 @@
 namespace behavior_path_planner
 {
 
-PullOverModuleManager::PullOverModuleManager(
+GoalPlannerModuleManager::GoalPlannerModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-  const std::shared_ptr<PullOverParameters> & parameters)
+  const std::shared_ptr<GoalPlannerParameters> & parameters)
 : SceneModuleManagerInterface(node, name, config, {""}), parameters_{parameters}
 {
 }
 
-void PullOverModuleManager::updateModuleParams(
+void GoalPlannerModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
   using tier4_autoware_utils::updateParam;

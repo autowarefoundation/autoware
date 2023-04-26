@@ -7,7 +7,7 @@
 
   <!-- lane change module -->
   <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
-  <!-- pull over module -->
+  <!-- goal planner module -->
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <!-- pull out module -->
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>

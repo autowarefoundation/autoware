@@ -40,7 +40,7 @@ steering_type_text = {
     SteeringFactor.AVOIDANCE_PATH_RETURN: "avoidance return",
     SteeringFactor.STATION: "station",
     SteeringFactor.PULL_OUT: "pull out",
-    SteeringFactor.PULL_OVER: "pull over",
+    SteeringFactor.GOAL_PLANNER: "goal planner",
     SteeringFactor.EMERGENCY_OPERATION: "emergency operation",
 }
 

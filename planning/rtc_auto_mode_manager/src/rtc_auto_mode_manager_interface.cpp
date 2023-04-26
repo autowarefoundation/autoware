@@ -51,8 +51,8 @@ Module getModuleType(const std::string & module_name)
     module.type = Module::AVOIDANCE_LEFT;
   } else if (module_name == "avoidance_right") {
     module.type = Module::AVOIDANCE_RIGHT;
-  } else if (module_name == "pull_over") {
-    module.type = Module::PULL_OVER;
+  } else if (module_name == "goal_planner") {
+    module.type = Module::GOAL_PLANNER;
   } else if (module_name == "pull_out") {
     module.type = Module::PULL_OUT;
   } else if (module_name == "intersection_occlusion") {

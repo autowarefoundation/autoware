@@ -123,7 +123,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     avoidance_param_ptr_ = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
     lane_change_param_ptr_ = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
     pull_out_param_ptr_ = std::make_shared<PullOutParameters>(getPullOutParam());
-    pull_over_param_ptr_ = std::make_shared<PullOverParameters>(getPullOverParam());
+    goal_planner_param_ptr_ = std::make_shared<GoalPlannerParameters>(getGoalPlannerParam());
     side_shift_param_ptr_ = std::make_shared<SideShiftParameters>(getSideShiftParam());
     avoidance_by_lc_param_ptr_ = std::make_shared<AvoidanceByLCParameters>(
       getAvoidanceByLCParam(avoidance_param_ptr_, lane_change_param_ptr_));
@@ -177,11 +177,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       "LaneChange", create_publisher<Path>(path_candidate_name_space + "lane_change", 1));
     bt_manager_->registerSceneModule(lane_change_module);
 
-    auto pull_over_module =
-      std::make_shared<PullOverModule>("PullOver", *this, pull_over_param_ptr_);
+    auto goal_planner =
+      std::make_shared<GoalPlannerModule>("GoalPlanner", *this, goal_planner_param_ptr_);
     path_candidate_publishers_.emplace(
-      "PullOver", create_publisher<Path>(path_candidate_name_space + "pull_over", 1));
-    bt_manager_->registerSceneModule(pull_over_module);
+      "GoalPlanner", create_publisher<Path>(path_candidate_name_space + "goal_planner", 1));
+    bt_manager_->registerSceneModule(goal_planner);
 
     auto pull_out_module = std::make_shared<PullOutModule>("PullOut", *this, pull_out_param_ptr_);
     path_candidate_publishers_.emplace(
@@ -221,14 +221,14 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         "pull_out", create_publisher<Path>(path_reference_name_space + "pull_out", 1));
     }
 
-    if (p.config_pull_over.enable_module) {
-      auto manager = std::make_shared<PullOverModuleManager>(
-        this, "pull_over", p.config_pull_over, pull_over_param_ptr_);
+    if (p.config_goal_planner.enable_module) {
+      auto manager = std::make_shared<GoalPlannerModuleManager>(
+        this, "goal_planner", p.config_goal_planner, goal_planner_param_ptr_);
       planner_manager_->registerSceneModuleManager(manager);
       path_candidate_publishers_.emplace(
-        "pull_over", create_publisher<Path>(path_candidate_name_space + "pull_over", 1));
+        "goal_planner", create_publisher<Path>(path_candidate_name_space + "goal_planner", 1));
       path_reference_publishers_.emplace(
-        "pull_over", create_publisher<Path>(path_reference_name_space + "pull_over", 1));
+        "goal_planner", create_publisher<Path>(path_reference_name_space + "goal_planner", 1));
     }
 
     if (p.config_side_shift.enable_module) {
@@ -339,7 +339,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   };
 
   p.config_pull_out = get_scene_module_manager_param("pull_out.");
-  p.config_pull_over = get_scene_module_manager_param("pull_over.");
+  p.config_goal_planner = get_scene_module_manager_param("goal_planner.");
   p.config_side_shift = get_scene_module_manager_param("side_shift.");
   p.config_lane_change_left = get_scene_module_manager_param("lane_change_left.");
   p.config_lane_change_right = get_scene_module_manager_param("lane_change_right.");
@@ -718,12 +718,12 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   return p;
 }
 
-PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
+GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
 {
-  PullOverParameters p;
+  GoalPlannerParameters p;
 
   {
-    std::string ns = "pull_over.";
+    std::string ns = "goal_planner.";
     p.minimum_request_length = declare_parameter<double>(ns + "minimum_request_length");
     p.th_stopped_velocity = declare_parameter<double>(ns + "th_stopped_velocity");
     p.th_arrived_distance = declare_parameter<double>(ns + "th_arrived_distance");
@@ -823,13 +823,14 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
       p.parking_policy = ParkingPolicy::RIGHT_SIDE;
     } else {
       RCLCPP_ERROR_STREAM(
-        get_logger(), "[pull_over] invalid parking_policy: " << parking_policy_name << std::endl);
+        get_logger(),
+        "[goal_planner] invalid parking_policy: " << parking_policy_name << std::endl);
       exit(EXIT_FAILURE);
     }
   }
 
   {
-    std::string ns = "pull_over.freespace_parking.";
+    std::string ns = "goal_planner.freespace_parking.";
     // search configs
     p.algorithm = declare_parameter<std::string>(ns + "planning_algorithm");
     p.freespace_parking_velocity = declare_parameter<double>(ns + "velocity");
@@ -858,7 +859,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   }
 
   {
-    std::string ns = "pull_over.freespace_parking.astar.";
+    std::string ns = "goal_planner.freespace_parking.astar.";
     p.astar_parameters.only_behind_solutions =
       declare_parameter<bool>(ns + "only_behind_solutions");
     p.astar_parameters.use_back = declare_parameter<bool>(ns + "use_back");
@@ -867,7 +868,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   }
 
   {
-    std::string ns = "pull_over.freespace_parking.rrtstar.";
+    std::string ns = "goal_planner.freespace_parking.rrtstar.";
     p.rrt_star_parameters.enable_update = declare_parameter<bool>(ns + "enable_update");
     p.rrt_star_parameters.use_informed_sampling =
       declare_parameter<bool>(ns + "use_informed_sampling");

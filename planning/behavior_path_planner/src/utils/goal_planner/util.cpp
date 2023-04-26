@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_over/util.hpp"
+#include "behavior_path_planner/utils/goal_planner/util.hpp"
 
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
@@ -42,7 +42,7 @@ using tier4_autoware_utils::createPoint;
 
 namespace behavior_path_planner
 {
-namespace pull_over_utils
+namespace goal_planner_utils
 {
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2)
 {
@@ -180,5 +180,5 @@ MarkerArray createGoalCandidatesMarkerArray(
 
   return marker_array;
 }
-}  // namespace pull_over_utils
+}  // namespace goal_planner_utils
 }  // namespace behavior_path_planner

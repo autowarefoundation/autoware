@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_over/goal_searcher.hpp"
+#include "behavior_path_planner/utils/goal_planner/goal_searcher.hpp"
 
+#include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/pull_over/util.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
 
 #include <boost/optional.hpp>
@@ -31,7 +31,7 @@ using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::inverseTransformPose;
 
 GoalSearcher::GoalSearcher(
-  const PullOverParameters & parameters, const LinearRing2d & vehicle_footprint,
+  const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
 : GoalSearcherBase{parameters},
   vehicle_footprint_{vehicle_footprint},
@@ -53,7 +53,7 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   const double ignore_distance_from_lane_start = parameters_.ignore_distance_from_lane_start;
 
   const auto pull_over_lanes =
-    pull_over_utils::getPullOverLanes(*route_handler, left_side_parking_);
+    goal_planner_utils::getPullOverLanes(*route_handler, left_side_parking_);
   auto lanes = utils::getExtendedCurrentLanes(planner_data_);
   lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
@@ -142,11 +142,11 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
 
     // check margin with pull over lane objects
     const auto pull_over_lanes =
-      pull_over_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
+      goal_planner_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
     const auto [shoulder_lane_objects, others] =
       utils::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_over_lanes);
     constexpr bool filter_inside = true;
-    const auto target_objects = pull_over_utils::filterObjectsByLateralDistance(
+    const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
       goal_pose, planner_data_->parameters.vehicle_width, shoulder_lane_objects,
       parameters_.object_recognition_collision_check_margin, filter_inside);
     if (checkCollisionWithLongitudinalDistance(goal_pose, target_objects)) {

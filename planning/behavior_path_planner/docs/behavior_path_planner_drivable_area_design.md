@@ -57,7 +57,7 @@ This section gives details of the generation of the drivable area (`left_bound` 
 
 ### Drivable Lanes Generation
 
-Before generating drivable areas, drivable lanes need to be sorted. Drivable Lanes are selected in each module (`Lane Follow`, `Avoidance`, `Lane Change`, `Pull Over`, `Pull Out` and etc.), so more details about selection of drivable lanes can be found in each module's document. We use the following structure to define the drivable lanes.
+Before generating drivable areas, drivable lanes need to be sorted. Drivable Lanes are selected in each module (`Lane Follow`, `Avoidance`, `Lane Change`, `Goal Planner`, `Pull Out` and etc.), so more details about selection of drivable lanes can be found in each module's document. We use the following structure to define the drivable lanes.
 
 ```cpp
 struct DrivalbleLanes

@@ -47,8 +47,8 @@ std::string getModuleName(const uint8_t module_type)
     case Module::AVOIDANCE_RIGHT: {
       return "avoidance_right";
     }
-    case Module::PULL_OVER: {
-      return "pull_over";
+    case Module::GOAL_PLANNER: {
+      return "goal_planner";
     }
     case Module::PULL_OUT: {
       return "pull_out";

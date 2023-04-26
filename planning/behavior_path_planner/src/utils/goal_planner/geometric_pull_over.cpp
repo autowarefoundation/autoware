@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_over/geometric_pull_over.hpp"
+#include "behavior_path_planner/utils/goal_planner/geometric_pull_over.hpp"
 
+#include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/pull_over/util.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -26,7 +26,7 @@
 namespace behavior_path_planner
 {
 GeometricPullOver::GeometricPullOver(
-  rclcpp::Node & node, const PullOverParameters & parameters,
+  rclcpp::Node & node, const GoalPlannerParameters & parameters,
   const ParallelParkingParameters & parallel_parking_parameters,
   const LaneDepartureChecker & lane_departure_checker,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
@@ -45,7 +45,8 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
 
   // prepare road nad shoulder lanes
   const auto road_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler, left_side_parking_);
+  const auto shoulder_lanes =
+    goal_planner_utils::getPullOverLanes(*route_handler, left_side_parking_);
   if (road_lanes.empty() || shoulder_lanes.empty()) {
     return {};
   }

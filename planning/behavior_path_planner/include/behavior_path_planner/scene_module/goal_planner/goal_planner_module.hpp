@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_MODULE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_MODULE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__GOAL_PLANNER_MODULE_HPP_
+#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__GOAL_PLANNER_MODULE_HPP_
 
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
+#include "behavior_path_planner/utils/goal_planner/default_fixed_goal_planner.hpp"
+#include "behavior_path_planner/utils/goal_planner/freespace_pull_over.hpp"
+#include "behavior_path_planner/utils/goal_planner/geometric_pull_over.hpp"
+#include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
+#include "behavior_path_planner/utils/goal_planner/goal_searcher.hpp"
+#include "behavior_path_planner/utils/goal_planner/shift_pull_over.hpp"
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
-#include "behavior_path_planner/utils/pull_over/default_fixed_goal_planner.hpp"
-#include "behavior_path_planner/utils/pull_over/freespace_pull_over.hpp"
-#include "behavior_path_planner/utils/pull_over/geometric_pull_over.hpp"
-#include "behavior_path_planner/utils/pull_over/goal_searcher.hpp"
-#include "behavior_path_planner/utils/pull_over/pull_over_parameters.hpp"
-#include "behavior_path_planner/utils/pull_over/shift_pull_over.hpp"
 
 #include <freespace_planning_algorithms/astar_search.hpp>
 #include <freespace_planning_algorithms/rrtstar.hpp>
@@ -85,20 +85,20 @@ struct PUllOverStatus
   bool during_freespace_parking{false};
 };
 
-class PullOverModule : public SceneModuleInterface
+class GoalPlannerModule : public SceneModuleInterface
 {
 public:
 #ifdef USE_OLD_ARCHITECTURE
-  PullOverModule(
+  GoalPlannerModule(
     const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<PullOverParameters> & parameters);
+    const std::shared_ptr<GoalPlannerParameters> & parameters);
 #else
-  PullOverModule(
+  GoalPlannerModule(
     const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<PullOverParameters> & parameters,
+    const std::shared_ptr<GoalPlannerParameters> & parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
-  void updateModuleParams(const std::shared_ptr<PullOverParameters> & parameters)
+  void updateModuleParams(const std::shared_ptr<GoalPlannerParameters> & parameters)
   {
     parameters_ = parameters;
   }
@@ -116,7 +116,7 @@ public:
   void processOnEntry() override;
   void processOnExit() override;
 
-  void setParameters(const std::shared_ptr<PullOverParameters> & parameters);
+  void setParameters(const std::shared_ptr<GoalPlannerParameters> & parameters);
 
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
@@ -124,7 +124,7 @@ public:
   }
 
 private:
-  std::shared_ptr<PullOverParameters> parameters_;
+  std::shared_ptr<GoalPlannerParameters> parameters_;
 
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;
   std::unique_ptr<PullOverPlannerBase> freespace_planner_;
@@ -165,7 +165,7 @@ private:
   bool incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
   Pose calcRefinedGoal(const Pose & goal_pose) const;
-  ParallelParkingParameters getGeometricPullOverParameters() const;
+  ParallelParkingParameters getGeometricGoalPlannerParameters() const;
   double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
   void decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const;
   void decelerateBeforeSearchStart(const Pose & search_start_pose, PathWithLaneId & path) const;
@@ -225,4 +225,4 @@ private:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_MODULE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__GOAL_PLANNER_MODULE_HPP_

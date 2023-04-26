@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__FREESPACE_PULL_OVER_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__FREESPACE_PULL_OVER_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FREESPACE_PULL_OVER_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FREESPACE_PULL_OVER_HPP_
 
-#include "behavior_path_planner/utils/pull_over/pull_over_planner_base.hpp"
+#include "behavior_path_planner/utils/goal_planner/pull_over_planner_base.hpp"
 
 #include <freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <freespace_planning_algorithms/astar_search.hpp>
@@ -36,7 +36,7 @@ class FreespacePullOver : public PullOverPlannerBase
 {
 public:
   FreespacePullOver(
-    rclcpp::Node & node, const PullOverParameters & parameters,
+    rclcpp::Node & node, const GoalPlannerParameters & parameters,
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
   PullOverPlannerType getPlannerType() const override { return PullOverPlannerType::FREESPACE; }
@@ -50,4 +50,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__FREESPACE_PULL_OVER_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FREESPACE_PULL_OVER_HPP_

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_over/shift_pull_over.hpp"
+#include "behavior_path_planner/utils/goal_planner/shift_pull_over.hpp"
 
+#include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/pull_over/util.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -26,7 +26,7 @@
 namespace behavior_path_planner
 {
 ShiftPullOver::ShiftPullOver(
-  rclcpp::Node & node, const PullOverParameters & parameters,
+  rclcpp::Node & node, const GoalPlannerParameters & parameters,
   const LaneDepartureChecker & lane_departure_checker,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
 : PullOverPlannerBase{node, parameters},
@@ -45,7 +45,8 @@ boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
 
   // get road and shoulder lanes
   const auto road_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler, left_side_parking_);
+  const auto shoulder_lanes =
+    goal_planner_utils::getPullOverLanes(*route_handler, left_side_parking_);
   if (road_lanes.empty() || shoulder_lanes.empty()) {
     return {};
   }

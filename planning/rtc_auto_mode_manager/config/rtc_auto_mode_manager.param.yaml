@@ -13,7 +13,7 @@
       - "lane_change_right"
       - "avoidance_left"
       - "avoidance_right"
-      - "pull_over"
+      - "goal_planner"
       - "pull_out"
       - "intersection_occlusion"
 
@@ -30,6 +30,6 @@
       - "lane_change_right"
       - "avoidance_left"
       - "avoidance_right"
-      - "pull_over"
+      - "goal_planner"
       - "pull_out"
       - "intersection_occlusion"

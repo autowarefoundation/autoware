@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__FIXED_GOAL_PLANNER_BASE_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__FIXED_GOAL_PLANNER_BASE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FIXED_GOAL_PLANNER_BASE_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FIXED_GOAL_PLANNER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/parameters.hpp"
@@ -42,4 +42,4 @@ public:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__FIXED_GOAL_PLANNER_BASE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FIXED_GOAL_PLANNER_BASE_HPP_

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__UTIL_HPP_
 
-#include "behavior_path_planner/utils/pull_over/goal_searcher_base.hpp"
+#include "behavior_path_planner/utils/goal_planner/goal_searcher_base.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
@@ -34,7 +34,7 @@
 
 namespace behavior_path_planner
 {
-namespace pull_over_utils
+namespace goal_planner_utils
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
@@ -61,7 +61,7 @@ MarkerArray createTextsMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
 MarkerArray createGoalCandidatesMarkerArray(
   GoalCandidates & goal_candidates, const std_msgs::msg::ColorRGBA & color);
-}  // namespace pull_over_utils
+}  // namespace goal_planner_utils
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__UTIL_HPP_

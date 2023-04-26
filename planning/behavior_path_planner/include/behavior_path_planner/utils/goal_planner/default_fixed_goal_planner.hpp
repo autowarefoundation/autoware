@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__DEFAULT_FIXED_GOAL_PLANNER_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__DEFAULT_FIXED_GOAL_PLANNER_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__DEFAULT_FIXED_GOAL_PLANNER_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__DEFAULT_FIXED_GOAL_PLANNER_HPP_
 
-#include "behavior_path_planner/utils/pull_over/fixed_goal_planner_base.hpp"
+#include "behavior_path_planner/utils/goal_planner/fixed_goal_planner_base.hpp"
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -39,4 +39,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__DEFAULT_FIXED_GOAL_PLANNER_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__DEFAULT_FIXED_GOAL_PLANNER_HPP_

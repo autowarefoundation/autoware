@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__GOAL_SEARCHER_BASE_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__GOAL_SEARCHER_BASE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_SEARCHER_BASE_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_SEARCHER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/parameters.hpp"
-#include "behavior_path_planner/utils/pull_over/pull_over_parameters.hpp"
+#include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -54,7 +54,7 @@ using GoalCandidates = std::vector<GoalCandidate>;
 class GoalSearcherBase
 {
 public:
-  explicit GoalSearcherBase(const PullOverParameters & parameters) { parameters_ = parameters; }
+  explicit GoalSearcherBase(const GoalPlannerParameters & parameters) { parameters_ = parameters; }
   virtual ~GoalSearcherBase() = default;
 
   void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
@@ -67,10 +67,10 @@ public:
   virtual void update([[maybe_unused]] GoalCandidates & goal_candidates) const { return; }
 
 protected:
-  PullOverParameters parameters_;
+  GoalPlannerParameters parameters_;
   std::shared_ptr<const PlannerData> planner_data_;
   MultiPolygon2d area_polygons_;
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__GOAL_SEARCHER_BASE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_SEARCHER_BASE_HPP_

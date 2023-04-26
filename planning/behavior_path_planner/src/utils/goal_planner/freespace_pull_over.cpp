@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_over/freespace_pull_over.hpp"
+#include "behavior_path_planner/utils/goal_planner/freespace_pull_over.hpp"
 
+#include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/pull_over/util.hpp"
 
 #include <memory>
 #include <vector>
@@ -23,7 +23,7 @@
 namespace behavior_path_planner
 {
 FreespacePullOver::FreespacePullOver(
-  rclcpp::Node & node, const PullOverParameters & parameters,
+  rclcpp::Node & node, const GoalPlannerParameters & parameters,
   const vehicle_info_util::VehicleInfo & vehicle_info)
 : PullOverPlannerBase{node, parameters}, velocity_{parameters.freespace_parking_velocity}
 {

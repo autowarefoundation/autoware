@@ -45,7 +45,7 @@
       priority: 2
       max_module_size: 1
 
-    pull_over:
+    goal_planner:
       enable_module: true
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false

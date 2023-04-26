@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__MANAGER_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__MANAGER_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__MANAGER_HPP_
+#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
+#include "behavior_path_planner/scene_module/goal_planner/goal_planner_module.hpp"
 #include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -27,26 +27,26 @@
 namespace behavior_path_planner
 {
 
-class PullOverModuleManager : public SceneModuleManagerInterface
+class GoalPlannerModuleManager : public SceneModuleManagerInterface
 {
 public:
-  PullOverModuleManager(
+  GoalPlannerModuleManager(
     rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-    const std::shared_ptr<PullOverParameters> & parameters);
+    const std::shared_ptr<GoalPlannerParameters> & parameters);
 
   std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
-    return std::make_shared<PullOverModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
+    return std::make_shared<GoalPlannerModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
-  std::shared_ptr<PullOverParameters> parameters_;
+  std::shared_ptr<GoalPlannerParameters> parameters_;
 
-  std::vector<std::shared_ptr<PullOverModule>> registered_modules_;
+  std::vector<std::shared_ptr<GoalPlannerModule>> registered_modules_;
 };
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__MANAGER_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__GOAL_PLANNER__MANAGER_HPP_

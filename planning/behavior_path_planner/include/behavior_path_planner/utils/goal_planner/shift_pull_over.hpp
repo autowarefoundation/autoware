@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__SHIFT_PULL_OVER_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__SHIFT_PULL_OVER_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__SHIFT_PULL_OVER_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__SHIFT_PULL_OVER_HPP_
 
+#include "behavior_path_planner/utils/goal_planner/pull_over_planner_base.hpp"
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
-#include "behavior_path_planner/utils/pull_over/pull_over_planner_base.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
@@ -33,7 +33,7 @@ class ShiftPullOver : public PullOverPlannerBase
 {
 public:
   ShiftPullOver(
-    rclcpp::Node & node, const PullOverParameters & parameters,
+    rclcpp::Node & node, const GoalPlannerParameters & parameters,
     const LaneDepartureChecker & lane_departure_checker,
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
 
@@ -62,4 +62,4 @@ protected:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OVER__SHIFT_PULL_OVER_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__SHIFT_PULL_OVER_HPP_

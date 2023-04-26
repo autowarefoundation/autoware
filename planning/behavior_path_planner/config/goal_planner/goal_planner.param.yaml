@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    pull_over:
+    goal_planner:
       minimum_request_length: 100.0
       th_arrived_distance: 1.0
       th_stopped_velocity: 0.01

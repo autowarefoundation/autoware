@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
+#include "behavior_path_planner/scene_module/goal_planner/goal_planner_module.hpp"
 
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
+#include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/pull_over/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -48,17 +48,17 @@ using tier4_autoware_utils::inverseTransformPose;
 namespace behavior_path_planner
 {
 #ifdef USE_OLD_ARCHITECTURE
-PullOverModule::PullOverModule(
+GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<PullOverParameters> & parameters)
+  const std::shared_ptr<GoalPlannerParameters> & parameters)
 : SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})},
   parameters_{parameters},
   vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
 {
 #else
-PullOverModule::PullOverModule(
+GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<PullOverParameters> & parameters,
+  const std::shared_ptr<GoalPlannerParameters> & parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map},
   parameters_{parameters},
@@ -85,13 +85,13 @@ PullOverModule::PullOverModule(
     if (parameters_->enable_arc_forward_parking) {
       constexpr bool is_forward = true;
       pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-        node, *parameters, getGeometricPullOverParameters(), lane_departure_checker,
+        node, *parameters, getGeometricGoalPlannerParameters(), lane_departure_checker,
         occupancy_grid_map_, is_forward));
     }
     if (parameters_->enable_arc_backward_parking) {
       constexpr bool is_forward = false;
       pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-        node, *parameters, getGeometricPullOverParameters(), lane_departure_checker,
+        node, *parameters, getGeometricGoalPlannerParameters(), lane_departure_checker,
         occupancy_grid_map_, is_forward));
     }
   }
@@ -114,7 +114,7 @@ PullOverModule::PullOverModule(
   lane_parking_timer_cb_group_ =
     node.create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   lane_parking_timer_ = rclcpp::create_timer(
-    &node, clock_, lane_parking_period_ns, std::bind(&PullOverModule::onTimer, this),
+    &node, clock_, lane_parking_period_ns, std::bind(&GoalPlannerModule::onTimer, this),
     lane_parking_timer_cb_group_);
 
   // freespace parking
@@ -125,13 +125,14 @@ PullOverModule::PullOverModule(
       node.create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     freespace_parking_timer_ = rclcpp::create_timer(
       &node, clock_, freespace_parking_period_ns,
-      std::bind(&PullOverModule::onFreespaceParkingTimer, this), freespace_parking_timer_cb_group_);
+      std::bind(&GoalPlannerModule::onFreespaceParkingTimer, this),
+      freespace_parking_timer_cb_group_);
   }
 
   resetStatus();
 }
 
-void PullOverModule::resetStatus()
+void GoalPlannerModule::resetStatus()
 {
   PUllOverStatus initial_status{};
   status_ = initial_status;
@@ -142,7 +143,7 @@ void PullOverModule::resetStatus()
 }
 
 // This function is needed for waiting for planner_data_
-void PullOverModule::updateOccupancyGrid()
+void GoalPlannerModule::updateOccupancyGrid()
 {
   if (!planner_data_->occupancy_grid) {
     RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 5000, "occupancy_grid is not ready");
@@ -152,7 +153,7 @@ void PullOverModule::updateOccupancyGrid()
 }
 
 // generate pull over candidate paths
-void PullOverModule::onTimer()
+void GoalPlannerModule::onTimer()
 {
   // already generated pull over candidate paths
   if (!pull_over_path_candidates_.empty()) {
@@ -218,7 +219,7 @@ void PullOverModule::onTimer()
   mutex_.unlock();
 }
 
-void PullOverModule::onFreespaceParkingTimer()
+void GoalPlannerModule::onFreespaceParkingTimer()
 {
   if (!planner_data_) {
     return;
@@ -235,7 +236,7 @@ void PullOverModule::onFreespaceParkingTimer()
   }
 }
 
-BehaviorModuleOutput PullOverModule::run()
+BehaviorModuleOutput GoalPlannerModule::run()
 {
   current_state_ = ModuleStatus::RUNNING;
   updateOccupancyGrid();
@@ -249,7 +250,7 @@ BehaviorModuleOutput PullOverModule::run()
   return plan();
 }
 
-ParallelParkingParameters PullOverModule::getGeometricPullOverParameters() const
+ParallelParkingParameters GoalPlannerModule::getGeometricGoalPlannerParameters() const
 {
   ParallelParkingParameters params{};
 
@@ -271,7 +272,7 @@ ParallelParkingParameters PullOverModule::getGeometricPullOverParameters() const
   return params;
 }
 
-void PullOverModule::processOnEntry()
+void GoalPlannerModule::processOnEntry()
 {
   const auto & route_handler = planner_data_->route_handler;
 
@@ -299,7 +300,7 @@ void PullOverModule::processOnEntry()
   // initialize when receiving new route
   if (!last_received_time_ || *last_received_time_ != route_handler->getRouteHeader().stamp) {
     // Initialize parallel parking planner status
-    parallel_parking_parameters_ = getGeometricPullOverParameters();
+    parallel_parking_parameters_ = getGeometricGoalPlannerParameters();
     resetStatus();
 
     // calculate goal candidates
@@ -318,14 +319,14 @@ void PullOverModule::processOnEntry()
   last_received_time_ = std::make_unique<rclcpp::Time>(route_handler->getRouteHeader().stamp);
 }
 
-void PullOverModule::processOnExit()
+void GoalPlannerModule::processOnExit()
 {
   resetPathCandidate();
   resetPathReference();
   debug_marker_.markers.clear();
 }
 
-bool PullOverModule::isExecutionRequested() const
+bool GoalPlannerModule::isExecutionRequested() const
 {
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
@@ -364,7 +365,7 @@ bool PullOverModule::isExecutionRequested() const
   // (A) target lane is `road` and same to the current lanes
   // (B) target lane is `road_shoulder` and neighboring to the current lanes
   const lanelet::ConstLanelets pull_over_lanes =
-    pull_over_utils::getPullOverLanes(*(route_handler), left_side_parking_);
+    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
   lanelet::ConstLanelet target_lane{};
   lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &target_lane);
   if (!isCrossingPossible(current_lane, target_lane)) {
@@ -374,12 +375,12 @@ bool PullOverModule::isExecutionRequested() const
   return true;
 }
 
-bool PullOverModule::isExecutionReady() const
+bool GoalPlannerModule::isExecutionReady() const
 {
   return true;
 }
 
-double PullOverModule::calcModuleRequestLength() const
+double GoalPlannerModule::calcModuleRequestLength() const
 {
   const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
   if (!min_stop_distance) {
@@ -392,10 +393,10 @@ double PullOverModule::calcModuleRequestLength() const
   return std::max(minimum_request_length, parameters_->minimum_request_length);
 }
 
-Pose PullOverModule::calcRefinedGoal(const Pose & goal_pose) const
+Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
 {
   const lanelet::ConstLanelets pull_over_lanes =
-    pull_over_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
+    goal_planner_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
 
   lanelet::Lanelet closest_pull_over_lanelet{};
   lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &closest_pull_over_lanelet);
@@ -439,14 +440,14 @@ Pose PullOverModule::calcRefinedGoal(const Pose & goal_pose) const
   return refined_goal_pose;
 }
 
-ModuleStatus PullOverModule::updateState()
+ModuleStatus GoalPlannerModule::updateState()
 {
   // pull_out module will be run when setting new goal, so not need finishing pull_over module.
   // Finishing it causes wrong lane_following path generation.
   return current_state_;
 }
 
-bool PullOverModule::planFreespacePath()
+bool GoalPlannerModule::planFreespacePath()
 {
   mutex_.lock();
   goal_searcher_->update(goal_candidates_);
@@ -475,7 +476,7 @@ bool PullOverModule::planFreespacePath()
   return false;
 }
 
-bool PullOverModule::returnToLaneParking()
+bool GoalPlannerModule::returnToLaneParking()
 {
   if (!status_.lane_parking_pull_over_path) {
     return false;
@@ -504,7 +505,7 @@ bool PullOverModule::returnToLaneParking()
   return true;
 }
 
-BehaviorModuleOutput PullOverModule::plan()
+BehaviorModuleOutput GoalPlannerModule::plan()
 {
   if (allow_goal_modification_) {
     return planWithGoalModification();
@@ -513,7 +514,7 @@ BehaviorModuleOutput PullOverModule::plan()
   }
 }
 
-BehaviorModuleOutput PullOverModule::planWithGoalModification()
+BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 {
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
@@ -525,7 +526,8 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
   resetPathReference();
 
   status_.current_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  status_.pull_over_lanes = pull_over_utils::getPullOverLanes(*(route_handler), left_side_parking_);
+  status_.pull_over_lanes =
+    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
   status_.lanes =
     utils::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_over_lanes);
 
@@ -740,7 +742,7 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
   // TODO(tkhmy) add handle status TRYING
   steering_factor_interface_ptr_->updateSteeringFactor(
     {status_.pull_over_path->start_pose, modified_goal_pose_->goal_pose},
-    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::PULL_OVER,
+    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::GOAL_PLANNER,
     steering_factor_direction, SteeringFactor::TURNING, "");
 
   // For evaluations
@@ -754,12 +756,12 @@ BehaviorModuleOutput PullOverModule::planWithGoalModification()
 // This const function can not change the menber variables like the goal.
 // so implement generating candidate path in planWaitingApproval().
 // No specific path for the candidate. It's same to the one generated by plan().
-CandidateOutput PullOverModule::planCandidate() const
+CandidateOutput GoalPlannerModule::planCandidate() const
 {
   return CandidateOutput{};
 }
 
-BehaviorModuleOutput PullOverModule::planWaitingApproval()
+BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
 {
   if (allow_goal_modification_) {
     return planWaitingApprovalWithGoalModification();
@@ -768,7 +770,7 @@ BehaviorModuleOutput PullOverModule::planWaitingApproval()
   }
 }
 
-BehaviorModuleOutput PullOverModule::planWaitingApprovalWithGoalModification()
+BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification()
 {
   updateOccupancyGrid();
   BehaviorModuleOutput out;
@@ -794,14 +796,14 @@ BehaviorModuleOutput PullOverModule::planWaitingApprovalWithGoalModification()
 
   steering_factor_interface_ptr_->updateSteeringFactor(
     {status_.pull_over_path->start_pose, modified_goal_pose_->goal_pose},
-    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::PULL_OVER,
+    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::GOAL_PLANNER,
     steering_factor_direction, SteeringFactor::APPROACHING, "");
   waitApproval();
 
   return out;
 }
 
-std::pair<double, double> PullOverModule::calcDistanceToPathChange() const
+std::pair<double, double> GoalPlannerModule::calcDistanceToPathChange() const
 {
   const auto & full_path = status_.pull_over_path->getFullPath();
 
@@ -826,12 +828,12 @@ std::pair<double, double> PullOverModule::calcDistanceToPathChange() const
   return {dist_to_parking_start_pose, dist_to_parking_finish_pose};
 }
 
-void PullOverModule::setParameters(const std::shared_ptr<PullOverParameters> & parameters)
+void GoalPlannerModule::setParameters(const std::shared_ptr<GoalPlannerParameters> & parameters)
 {
   parameters_ = parameters;
 }
 
-PathWithLaneId PullOverModule::generateStopPath()
+PathWithLaneId GoalPlannerModule::generateStopPath()
 {
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
@@ -899,7 +901,7 @@ PathWithLaneId PullOverModule::generateStopPath()
   return reference_path;
 }
 
-PathWithLaneId PullOverModule::generateFeasibleStopPath()
+PathWithLaneId GoalPlannerModule::generateFeasibleStopPath()
 {
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
@@ -934,7 +936,7 @@ PathWithLaneId PullOverModule::generateFeasibleStopPath()
   return stop_path;
 }
 
-bool PullOverModule::incrementPathIndex()
+bool GoalPlannerModule::incrementPathIndex()
 {
   if (status_.current_path_idx == status_.pull_over_path->partial_paths.size() - 1) {
     return false;
@@ -943,12 +945,12 @@ bool PullOverModule::incrementPathIndex()
   return true;
 }
 
-PathWithLaneId PullOverModule::getCurrentPath() const
+PathWithLaneId GoalPlannerModule::getCurrentPath() const
 {
   return status_.pull_over_path->partial_paths.at(status_.current_path_idx);
 }
 
-bool PullOverModule::isStopped(
+bool GoalPlannerModule::isStopped(
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> & odometry_buffer, const double time)
 {
   odometry_buffer.push_back(planner_data_->self_odometry);
@@ -972,12 +974,12 @@ bool PullOverModule::isStopped(
   return is_stopped;
 }
 
-bool PullOverModule::isStopped()
+bool GoalPlannerModule::isStopped()
 {
   return isStopped(odometry_buffer_stopped_, parameters_->th_stopped_time);
 }
 
-bool PullOverModule::isStuck()
+bool GoalPlannerModule::isStuck()
 {
   if (!status_.pull_over_path) {
     return false;
@@ -986,7 +988,7 @@ bool PullOverModule::isStuck()
   return isStopped(odometry_buffer_stuck_, stuck_time) && checkCollision(getCurrentPath());
 }
 
-bool PullOverModule::hasFinishedCurrentPath()
+bool GoalPlannerModule::hasFinishedCurrentPath()
 {
   const auto & current_path_end = getCurrentPath().points.back();
   const auto & self_pose = planner_data_->self_odometry->pose.pose;
@@ -996,19 +998,19 @@ bool PullOverModule::hasFinishedCurrentPath()
   return is_near_target && isStopped();
 }
 
-bool PullOverModule::isOnGoal() const
+bool GoalPlannerModule::isOnGoal() const
 {
   const auto current_pose = planner_data_->self_odometry->pose.pose;
   return calcDistance2d(current_pose, modified_goal_pose_->goal_pose) <
          parameters_->th_arrived_distance;
 }
 
-bool PullOverModule::hasFinishedPullOver()
+bool GoalPlannerModule::hasFinishedPullOver()
 {
   return isOnGoal() && isStopped();
 }
 
-TurnSignalInfo PullOverModule::calcTurnSignalInfo() const
+TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo() const
 {
   TurnSignalInfo turn_signal{};  // output
 
@@ -1040,7 +1042,7 @@ TurnSignalInfo PullOverModule::calcTurnSignalInfo() const
   return turn_signal;
 }
 
-bool PullOverModule::checkCollision(const PathWithLaneId & path) const
+bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
 {
   if (parameters_->use_occupancy_grid || !occupancy_grid_map_) {
     const bool check_out_of_range = false;
@@ -1060,7 +1062,7 @@ bool PullOverModule::checkCollision(const PathWithLaneId & path) const
   return false;
 }
 
-bool PullOverModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
+bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
 {
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
@@ -1089,7 +1091,7 @@ bool PullOverModule::hasEnoughDistance(const PullOverPath & pull_over_path) cons
   return true;
 }
 
-void PullOverModule::keepStoppedWithCurrentPath(PathWithLaneId & path)
+void GoalPlannerModule::keepStoppedWithCurrentPath(PathWithLaneId & path)
 {
   constexpr double keep_stop_time = 2.0;
   constexpr double keep_current_idx_buffer_time = 2.0;
@@ -1109,7 +1111,7 @@ void PullOverModule::keepStoppedWithCurrentPath(PathWithLaneId & path)
   }
 }
 
-boost::optional<double> PullOverModule::calcFeasibleDecelDistance(
+boost::optional<double> GoalPlannerModule::calcFeasibleDecelDistance(
   const double target_velocity) const
 {
   const auto v_now = planner_data_->self_odometry->twist.twist.linear.x;
@@ -1133,7 +1135,7 @@ boost::optional<double> PullOverModule::calcFeasibleDecelDistance(
   return min_stop_distance;
 }
 
-double PullOverModule::calcSignedArcLengthFromEgo(
+double GoalPlannerModule::calcSignedArcLengthFromEgo(
   const PathWithLaneId & path, const Pose & pose) const
 {
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
@@ -1146,7 +1148,7 @@ double PullOverModule::calcSignedArcLengthFromEgo(
     path.points, current_pose.position, ego_idx, pose.position, target_idx);
 }
 
-void PullOverModule::decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const
+void GoalPlannerModule::decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const
 {
   const double time = planner_data_->parameters.turn_signal_search_time;
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
@@ -1182,7 +1184,7 @@ void PullOverModule::decelerateForTurnSignal(const Pose & stop_pose, PathWithLan
   }
 }
 
-void PullOverModule::decelerateBeforeSearchStart(
+void GoalPlannerModule::decelerateBeforeSearchStart(
   const Pose & search_start_pose, PathWithLaneId & path) const
 {
   const double pull_over_velocity = parameters_->pull_over_velocity;
@@ -1198,7 +1200,7 @@ void PullOverModule::decelerateBeforeSearchStart(
   }
 }
 
-bool PullOverModule::isCrossingPossible(
+bool GoalPlannerModule::isCrossingPossible(
   const lanelet::ConstLanelet & start_lane, const lanelet::ConstLanelet & end_lane) const
 {
   if (start_lane.centerline().empty() || end_lane.centerline().empty()) {
@@ -1275,7 +1277,7 @@ bool PullOverModule::isCrossingPossible(
   return false;
 }
 
-bool PullOverModule::isCrossingPossible(
+bool GoalPlannerModule::isCrossingPossible(
   const Pose & start_pose, const Pose & end_pose, const lanelet::ConstLanelets lanes) const
 {
   lanelet::ConstLanelet start_lane{};
@@ -1287,7 +1289,7 @@ bool PullOverModule::isCrossingPossible(
   return isCrossingPossible(start_lane, end_lane);
 }
 
-bool PullOverModule::isCrossingPossible(const PullOverPath & pull_over_path) const
+bool GoalPlannerModule::isCrossingPossible(const PullOverPath & pull_over_path) const
 {
   const lanelet::ConstLanelets lanes = utils::transformToLanelets(status_.lanes);
   const Pose & start_pose = pull_over_path.start_pose;
@@ -1296,7 +1298,7 @@ bool PullOverModule::isCrossingPossible(const PullOverPath & pull_over_path) con
   return isCrossingPossible(start_pose, end_pose, lanes);
 }
 
-void PullOverModule::setDebugData()
+void GoalPlannerModule::setDebugData()
 {
   debug_marker_.markers.clear();
 
@@ -1318,11 +1320,11 @@ void PullOverModule::setDebugData()
     const auto color = status_.has_decided_path ? createMarkerColor(1.0, 1.0, 0.0, 0.999)  // yellow
                                                 : createMarkerColor(0.0, 1.0, 0.0, 0.999);  // green
     const double z = refined_goal_pose_.position.z;
-    add(pull_over_utils::createPullOverAreaMarkerArray(
+    add(goal_planner_utils::createPullOverAreaMarkerArray(
       goal_searcher_->getAreaPolygons(), header, color, z));
 
     // Visualize goal candidates
-    add(pull_over_utils::createGoalCandidatesMarkerArray(goal_candidates_, color));
+    add(goal_planner_utils::createGoalCandidatesMarkerArray(goal_candidates_, color));
   }
 
   // Visualize path and related pose
@@ -1380,7 +1382,7 @@ void PullOverModule::setDebugData()
   }
 }
 
-void PullOverModule::printParkingPositionError() const
+void GoalPlannerModule::printParkingPositionError() const
 {
   const auto current_pose = planner_data_->self_odometry->pose.pose;
   const double real_shoulder_to_map_shoulder = 0.0;
@@ -1398,13 +1400,13 @@ void PullOverModule::printParkingPositionError() const
     distance_from_real_shoulder);
 }
 
-bool PullOverModule::checkOriginalGoalIsInShoulder() const
+bool GoalPlannerModule::checkOriginalGoalIsInShoulder() const
 {
   const auto & route_handler = planner_data_->route_handler;
   const Pose & goal_pose = route_handler->getGoalPose();
 
   const lanelet::ConstLanelets pull_over_lanes =
-    pull_over_utils::getPullOverLanes(*(route_handler), left_side_parking_);
+    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
   lanelet::ConstLanelet target_lane{};
   lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &target_lane);
 
@@ -1412,12 +1414,12 @@ bool PullOverModule::checkOriginalGoalIsInShoulder() const
          lanelet::utils::isInLanelet(goal_pose, target_lane, 0.1);
 }
 
-bool PullOverModule::needPathUpdate(const double path_update_duration) const
+bool GoalPlannerModule::needPathUpdate(const double path_update_duration) const
 {
   return !isOnGoal() && hasEnoughTimePassedSincePathUpdate(path_update_duration);
 }
 
-bool PullOverModule::hasEnoughTimePassedSincePathUpdate(const double duration) const
+bool GoalPlannerModule::hasEnoughTimePassedSincePathUpdate(const double duration) const
 {
   if (!last_path_update_time_) {
     return true;

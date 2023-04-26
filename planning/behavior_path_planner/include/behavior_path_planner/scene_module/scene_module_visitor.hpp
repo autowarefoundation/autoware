@@ -34,7 +34,7 @@ class LaneChangeInterface;
 class LaneChangeBTInterface;
 class LaneFollowingModule;
 class PullOutModule;
-class PullOverModule;
+class GoalPlannerModule;
 class SideShiftModule;
 
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;

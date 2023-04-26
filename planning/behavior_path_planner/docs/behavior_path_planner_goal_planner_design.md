@@ -1,14 +1,14 @@
-# Pull Over design
+# Goal Planner design
 
 ## Purpose / Role
 
-Search for a space where there are no objects and pull over there.
+Search for a space where there are no objects and goal planner there.
 
 ## Design
 
 ```plantuml
 @startuml
-package pull_over{
+package goal_planner{
     abstract class PullOverPlannerBase {
     }
     abstract class GoalSeacherBase {
@@ -29,7 +29,7 @@ package pull_over{
     class GoalSeacher {
     }
 
-    class PullOverModule {
+    class GoalPlannerModule {
     }
 
 
@@ -54,7 +54,7 @@ package freespace_planning_algorithms
     class RRTStar{}
 }
 
-' pull over
+' goal planner
 ShiftPullOver --|> PullOverPlannerBase
 GeometricPullOver --|> PullOverPlannerBase
 FreeSpacePullOver --|> PullOverPlannerBase
@@ -65,8 +65,8 @@ GeometricParallelParking --o GeometricPullOver
 AstarSearch --o FreeSpacePullOver
 RRTStar --o FreeSpacePullOver
 
-PullOverPlannerBase --o PullOverModule
-GoalSeacherBase --o PullOverModule
+PullOverPlannerBase --o GoalPlannerModule
+GoalSeacherBase --o GoalPlannerModule
 
 PullOverPath --o PullOverPlannerBase
 GoalCandidates --o GoalSeacherBase
@@ -74,7 +74,7 @@ GoalCandidates --o GoalSeacherBase
 @enduml
 ```
 
-## General parameters for pull_over
+## General parameters for goal_planner
 
 | Name                       | Unit   | Type   | Description                                                                                                                             | Default value |
 | :------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |

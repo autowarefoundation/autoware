@@ -21,18 +21,18 @@
 #ifdef USE_OLD_ARCHITECTURE
 #include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
+#include "behavior_path_planner/scene_module/goal_planner/goal_planner_module.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_following/lane_following_module.hpp"
 #include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
-#include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 #else
 #include "behavior_path_planner/planner_manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance/manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance_by_lc/manager.hpp"
+#include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
 #include "behavior_path_planner/scene_module/lane_change/manager.hpp"
 #include "behavior_path_planner/scene_module/pull_out/manager.hpp"
-#include "behavior_path_planner/scene_module/pull_over/manager.hpp"
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 #endif
 
@@ -40,10 +40,10 @@
 #include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/avoidance_by_lc/module_data.hpp"
+#include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/utils/lane_following/module_data.hpp"
 #include "behavior_path_planner/utils/pull_out/pull_out_parameters.hpp"
-#include "behavior_path_planner/utils/pull_over/pull_over_parameters.hpp"
 #include "behavior_path_planner/utils/side_shift/side_shift_parameters.hpp"
 
 #include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
@@ -152,7 +152,7 @@ private:
   std::shared_ptr<SideShiftParameters> side_shift_param_ptr_;
   std::shared_ptr<LaneChangeParameters> lane_change_param_ptr_;
   std::shared_ptr<PullOutParameters> pull_out_param_ptr_;
-  std::shared_ptr<PullOverParameters> pull_over_param_ptr_;
+  std::shared_ptr<GoalPlannerParameters> goal_planner_param_ptr_;
 
   BehaviorPathPlannerParameters getCommonParam();
 
@@ -163,7 +163,7 @@ private:
   AvoidanceParameters getAvoidanceParam();
   LaneChangeParameters getLaneChangeParam();
   SideShiftParameters getSideShiftParam();
-  PullOverParameters getPullOverParam();
+  GoalPlannerParameters getGoalPlannerParam();
   PullOutParameters getPullOutParam();
   AvoidanceByLCParameters getAvoidanceByLCParam(
     const std::shared_ptr<AvoidanceParameters> & avoidance_param,
