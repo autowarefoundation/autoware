@@ -826,19 +826,23 @@ void MotionVelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & t
   trajectory_utils::applyMaximumVelocityLimit(
     0, traj.size(), max_velocity_with_deceleration_, traj);
 
-  const size_t closest_idx = findNearestIndexFromEgo(traj);
-
-  double dist = 0.0;
-  for (size_t idx = closest_idx; idx < traj.size() - 1; ++idx) {
-    dist += tier4_autoware_utils::calcDistance2d(traj.at(idx), traj.at(idx + 1));
-    if (dist > external_velocity_limit_.dist) {
-      trajectory_utils::applyMaximumVelocityLimit(
-        idx + 1, traj.size(), external_velocity_limit_.velocity, traj);
-      return;
-    }
+  // insert the point at the distance of external velocity limit
+  const auto & current_pose = current_odometry_ptr_->pose.pose;
+  const size_t closest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    traj, current_pose, node_param_.ego_nearest_dist_threshold,
+    node_param_.ego_nearest_yaw_threshold);
+  const auto inserted_index =
+    motion_utils::insertTargetPoint(closest_seg_idx, external_velocity_limit_.dist, traj);
+  if (!inserted_index) {
+    traj.back().longitudinal_velocity_mps = std::min(
+      traj.back().longitudinal_velocity_mps, static_cast<float>(external_velocity_limit_.velocity));
+    return;
   }
-  traj.back().longitudinal_velocity_mps = std::min(
-    traj.back().longitudinal_velocity_mps, static_cast<float>(external_velocity_limit_.velocity));
+
+  // apply external velocity limit from the inserted point
+  trajectory_utils::applyMaximumVelocityLimit(
+    *inserted_index, traj.size(), external_velocity_limit_.velocity, traj);
+
   RCLCPP_DEBUG(
     get_logger(), "externalVelocityLimit : limit_vel = %.3f", external_velocity_limit_.velocity);
 }
