@@ -258,16 +258,11 @@ rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr)
 }
 
 bool withinPolygon(
-  const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
+  const Polygon2d & boost_polygon, const double radius, const Point2d & prev_point,
   const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
   PointCloud::Ptr within_points_ptr)
 {
-  Polygon2d boost_polygon;
   bool find_within_points = false;
-  for (const auto & point : cv_polygon) {
-    boost_polygon.outer().push_back(bg::make<Point2d>(point.x, point.y));
-  }
-  boost_polygon.outer().push_back(bg::make<Point2d>(cv_polygon.front().x, cv_polygon.front().y));
 
   for (size_t j = 0; j < candidate_points_ptr->size(); ++j) {
     Point2d point(candidate_points_ptr->at(j).x, candidate_points_ptr->at(j).y);
@@ -282,16 +277,11 @@ bool withinPolygon(
 }
 
 bool withinPolyhedron(
-  const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
+  const Polygon2d & boost_polygon, const double radius, const Point2d & prev_point,
   const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
   PointCloud::Ptr within_points_ptr, double z_min, double z_max)
 {
-  Polygon2d boost_polygon;
   bool find_within_points = false;
-  for (const auto & point : cv_polygon) {
-    boost_polygon.outer().push_back(bg::make<Point2d>(point.x, point.y));
-  }
-  boost_polygon.outer().push_back(bg::make<Point2d>(cv_polygon.front().x, cv_polygon.front().y));
 
   for (const auto & candidate_point : *candidate_points_ptr) {
     Point2d point(candidate_point.x, candidate_point.y);
@@ -307,79 +297,62 @@ bool withinPolyhedron(
   return find_within_points;
 }
 
-bool convexHull(
-  const std::vector<cv::Point2d> & pointcloud, std::vector<cv::Point2d> & polygon_points)
+void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point)
 {
-  cv::Point2d centroid;
-  centroid.x = 0;
-  centroid.y = 0;
-  for (const auto & point : pointcloud) {
-    centroid.x += point.x;
-    centroid.y += point.y;
-  }
-  centroid.x = centroid.x / static_cast<double>(pointcloud.size());
-  centroid.y = centroid.y / static_cast<double>(pointcloud.size());
+  Point2d point;
+  point.x() = geom_point.x;
+  point.y() = geom_point.y;
 
-  std::vector<cv::Point> normalized_pointcloud;
-  std::vector<cv::Point> normalized_polygon_points;
-  for (const auto & p : pointcloud) {
-    normalized_pointcloud.emplace_back(
-      cv::Point((p.x - centroid.x) * 1000.0, (p.y - centroid.y) * 1000.0));
-  }
-  cv::convexHull(normalized_pointcloud, normalized_polygon_points);
-
-  for (const auto & p : normalized_polygon_points) {
-    cv::Point2d polygon_point;
-    polygon_point.x = (p.x / 1000.0 + centroid.x);
-    polygon_point.y = (p.y / 1000.0 + centroid.y);
-    polygon_points.push_back(polygon_point);
-  }
-  return true;
+  boost::geometry::append(polygon.outer(), point);
 }
 
 void createOneStepPolygon(
-  const Pose & base_step_pose, const Pose & next_step_pose, std::vector<cv::Point2d> & polygon,
+  const Pose & base_step_pose, const Pose & next_step_pose, Polygon2d & hull_polygon,
   const VehicleInfo & vehicle_info, const double expand_width)
 {
-  std::vector<cv::Point2d> one_step_move_vehicle_corner_points;
+  Polygon2d polygon;
 
-  const auto & i = vehicle_info;
-  const auto & front_m = i.max_longitudinal_offset_m;
-  const auto & width_m = i.vehicle_width_m / 2.0 + expand_width;
-  const auto & back_m = i.rear_overhang_m;
-  // start step
-  {
-    const auto yaw = getRPY(base_step_pose).z;
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      base_step_pose.position.x + std::cos(yaw) * front_m - std::sin(yaw) * width_m,
-      base_step_pose.position.y + std::sin(yaw) * front_m + std::cos(yaw) * width_m));
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      base_step_pose.position.x + std::cos(yaw) * front_m - std::sin(yaw) * -width_m,
-      base_step_pose.position.y + std::sin(yaw) * front_m + std::cos(yaw) * -width_m));
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      base_step_pose.position.x + std::cos(yaw) * -back_m - std::sin(yaw) * -width_m,
-      base_step_pose.position.y + std::sin(yaw) * -back_m + std::cos(yaw) * -width_m));
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      base_step_pose.position.x + std::cos(yaw) * -back_m - std::sin(yaw) * width_m,
-      base_step_pose.position.y + std::sin(yaw) * -back_m + std::cos(yaw) * width_m));
+  const double longitudinal_offset = vehicle_info.max_longitudinal_offset_m;
+  const double width = vehicle_info.vehicle_width_m / 2.0 + expand_width;
+  const double rear_overhang = vehicle_info.rear_overhang_m;
+
+  {  // base step
+    appendPointToPolygon(
+      polygon, tier4_autoware_utils::calcOffsetPose(base_step_pose, longitudinal_offset, width, 0.0)
+                 .position);
+    appendPointToPolygon(
+      polygon,
+      tier4_autoware_utils::calcOffsetPose(base_step_pose, longitudinal_offset, -width, 0.0)
+        .position);
+    appendPointToPolygon(
+      polygon,
+      tier4_autoware_utils::calcOffsetPose(base_step_pose, -rear_overhang, -width, 0.0).position);
+    appendPointToPolygon(
+      polygon,
+      tier4_autoware_utils::calcOffsetPose(base_step_pose, -rear_overhang, width, 0.0).position);
   }
-  // next step
-  {
-    const auto yaw = getRPY(next_step_pose).z;
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      next_step_pose.position.x + std::cos(yaw) * front_m - std::sin(yaw) * width_m,
-      next_step_pose.position.y + std::sin(yaw) * front_m + std::cos(yaw) * width_m));
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      next_step_pose.position.x + std::cos(yaw) * front_m - std::sin(yaw) * -width_m,
-      next_step_pose.position.y + std::sin(yaw) * front_m + std::cos(yaw) * -width_m));
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      next_step_pose.position.x + std::cos(yaw) * -back_m - std::sin(yaw) * -width_m,
-      next_step_pose.position.y + std::sin(yaw) * -back_m + std::cos(yaw) * -width_m));
-    one_step_move_vehicle_corner_points.emplace_back(cv::Point2d(
-      next_step_pose.position.x + std::cos(yaw) * -back_m - std::sin(yaw) * width_m,
-      next_step_pose.position.y + std::sin(yaw) * -back_m + std::cos(yaw) * width_m));
+
+  {  // next step
+    appendPointToPolygon(
+      polygon, tier4_autoware_utils::calcOffsetPose(next_step_pose, longitudinal_offset, width, 0.0)
+                 .position);
+    appendPointToPolygon(
+      polygon,
+      tier4_autoware_utils::calcOffsetPose(next_step_pose, longitudinal_offset, -width, 0.0)
+        .position);
+    appendPointToPolygon(
+      polygon,
+      tier4_autoware_utils::calcOffsetPose(next_step_pose, -rear_overhang, -width, 0.0).position);
+    appendPointToPolygon(
+      polygon,
+      tier4_autoware_utils::calcOffsetPose(next_step_pose, -rear_overhang, width, 0.0).position);
   }
-  convexHull(one_step_move_vehicle_corner_points, polygon);
+
+  polygon = tier4_autoware_utils::isClockwise(polygon)
+              ? polygon
+              : tier4_autoware_utils::inverseClockwise(polygon);
+
+  boost::geometry::convex_hull(polygon, hull_polygon);
 }
 
 void insertStopPoint(
@@ -637,7 +610,9 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   object_polygon.outer().emplace_back(p4_obj.x(), p4_obj.y());
 
   object_polygon.outer().push_back(object_polygon.outer().front());
-
+  object_polygon = tier4_autoware_utils::isClockwise(object_polygon)
+                     ? object_polygon
+                     : tier4_autoware_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
 
@@ -658,7 +633,9 @@ Polygon2d convertCylindricalObjectToGeometryPolygon(
   }
 
   object_polygon.outer().push_back(object_polygon.outer().front());
-
+  object_polygon = tier4_autoware_utils::isClockwise(object_polygon)
+                     ? object_polygon
+                     : tier4_autoware_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
 
@@ -676,7 +653,9 @@ Polygon2d convertPolygonObjectToGeometryPolygon(
     object_polygon.outer().emplace_back(tf_obj.x(), tf_obj.y());
   }
   object_polygon.outer().push_back(object_polygon.outer().front());
-
+  object_polygon = tier4_autoware_utils::isClockwise(object_polygon)
+                     ? object_polygon
+                     : tier4_autoware_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
 }  // namespace motion_planning

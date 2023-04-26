@@ -5,7 +5,6 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
 ament_auto_add_library(obstacle_stop_planner SHARED
@@ -17,13 +16,11 @@ ament_auto_add_library(obstacle_stop_planner SHARED
 
 target_include_directories(obstacle_stop_planner
   SYSTEM PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
 )
 
 target_link_libraries(obstacle_stop_planner
-    ${OpenCV_LIBRARIES}
     ${PCL_LIBRARIES}
 )
 

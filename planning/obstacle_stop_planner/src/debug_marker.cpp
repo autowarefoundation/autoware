@@ -53,12 +53,12 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
-  const std::vector<cv::Point2d> & polygon, const double z, const PolygonType & type)
+  const tier4_autoware_utils::Polygon2d & polygon, const double z, const PolygonType & type)
 {
   std::vector<Eigen::Vector3d> eigen_polygon;
-  for (const auto & point : polygon) {
+  for (const auto & point : polygon.outer()) {
     Eigen::Vector3d eigen_point;
-    eigen_point << point.x, point.y, z;
+    eigen_point << point.x(), point.y(), z;
     eigen_polygon.push_back(eigen_point);
   }
   return pushPolygon(eigen_polygon, type);
@@ -99,13 +99,13 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolyhedron(
-  const std::vector<cv::Point2d> & polyhedron, const double z_min, const double z_max,
+  const tier4_autoware_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
   const PolygonType & type)
 {
   std::vector<Eigen::Vector3d> eigen_polyhedron;
-  for (const auto & point : polyhedron) {
-    eigen_polyhedron.emplace_back(point.x, point.y, z_min);
-    eigen_polyhedron.emplace_back(point.x, point.y, z_max);
+  for (const auto & point : polyhedron.outer()) {
+    eigen_polyhedron.emplace_back(point.x(), point.y(), z_min);
+    eigen_polyhedron.emplace_back(point.x(), point.y(), z_max);
   }
 
   return pushPolyhedron(eigen_polyhedron, type);

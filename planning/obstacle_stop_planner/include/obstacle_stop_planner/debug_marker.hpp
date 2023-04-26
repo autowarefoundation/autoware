@@ -14,9 +14,6 @@
 #ifndef OBSTACLE_STOP_PLANNER__DEBUG_MARKER_HPP_
 #define OBSTACLE_STOP_PLANNER__DEBUG_MARKER_HPP_
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
@@ -35,6 +32,7 @@
 #define EIGEN_MPL2_ONLY
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 namespace motion_planning
 {
 
@@ -108,10 +106,10 @@ public:
   explicit ObstacleStopPlannerDebugNode(rclcpp::Node * node, const double base_link2front);
   ~ObstacleStopPlannerDebugNode() {}
   bool pushPolygon(
-    const std::vector<cv::Point2d> & polygon, const double z, const PolygonType & type);
+    const tier4_autoware_utils::Polygon2d & polygon, const double z, const PolygonType & type);
   bool pushPolygon(const std::vector<Eigen::Vector3d> & polygon, const PolygonType & type);
   bool pushPolyhedron(
-    const std::vector<cv::Point2d> & polyhedron, const double z_min, const double z_max,
+    const tier4_autoware_utils::Polygon2d & polyhedron, const double z_min, const double z_max,
     const PolygonType & type);
   bool pushPolyhedron(const std::vector<Eigen::Vector3d> & polyhedron, const PolygonType & type);
   bool pushPose(const Pose & pose, const PoseType & type);

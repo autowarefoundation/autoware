@@ -21,9 +21,6 @@
 
 #include <motion_utils/trajectory/tmp_conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>

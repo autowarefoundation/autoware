@@ -18,9 +18,6 @@
 
 #include "obstacle_stop_planner/planner_data.hpp"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -79,20 +76,19 @@ bool isInFrontOfTargetPoint(const Pose & pose, const Point & point);
 bool checkValidIndex(const Pose & p_base, const Pose & p_next, const Pose & p_target);
 
 bool withinPolygon(
-  const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
+  const Polygon2d & boost_polygon, const double radius, const Point2d & prev_point,
   const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
   PointCloud::Ptr within_points_ptr);
 
 bool withinPolyhedron(
-  const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
+  const Polygon2d & boost_polygon, const double radius, const Point2d & prev_point,
   const Point2d & next_point, PointCloud::Ptr candidate_points_ptr,
   PointCloud::Ptr within_points_ptr, double z_min, double z_max);
 
-bool convexHull(
-  const std::vector<cv::Point2d> & pointcloud, std::vector<cv::Point2d> & polygon_points);
+void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point);
 
 void createOneStepPolygon(
-  const Pose & base_step_pose, const Pose & next_step_pose, std::vector<cv::Point2d> & polygon,
+  const Pose & base_step_pose, const Pose & next_step_pose, Polygon2d & hull_polygon,
   const VehicleInfo & vehicle_info, const double expand_width = 0.0);
 
 bool getSelfPose(const Header & header, const tf2_ros::Buffer & tf_buffer, Pose & self_pose);
