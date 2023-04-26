@@ -297,11 +297,10 @@ BehaviorModuleOutput SideShiftModule::plan()
   // Reset orientation
   setOrientation(&shifted_path.path);
 
-  adjustDrivableArea(&shifted_path);
-
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(shifted_path.path);
   output.reference_path = getPreviousModuleOutput().reference_path;
+  adjustDrivableArea(&shifted_path, output.drivable_area_info);
 
   prev_output_ = shifted_path;
   path_reference_ = getPreviousModuleOutput().reference_path;
@@ -334,11 +333,11 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
   // Reset orientation
   setOrientation(&shifted_path.path);
 
-  adjustDrivableArea(&shifted_path);
-
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(shifted_path.path);
   output.reference_path = getPreviousModuleOutput().reference_path;
+  adjustDrivableArea(&shifted_path, output.drivable_area_info);
+
   path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
   path_reference_ = getPreviousModuleOutput().reference_path;
 
@@ -417,7 +416,7 @@ double SideShiftModule::getClosestShiftLength() const
   return prev_output_.shift_length.at(closest);
 }
 
-void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
+void SideShiftModule::adjustDrivableArea(ShiftedPath * path, DrivableAreaInfo & out) const
 {
   const auto & dp = planner_data_->drivable_area_expansion_parameters;
   const auto itr = std::minmax_element(path->shift_length.begin(), path->shift_length.end());
@@ -434,9 +433,16 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
   const auto expanded_lanes =
     utils::expandLanelets(shorten_lanes, left_offset, right_offset, dp.drivable_area_types_to_skip);
 
-  {
+  {  // for old architecture
     const auto & p = planner_data_->parameters;
     utils::generateDrivableArea(path->path, expanded_lanes, p.vehicle_length, planner_data_);
+  }
+
+  {  // for new architecture
+    // NOTE: side shift module is not launched with other modules. Therefore, drivable_lanes can be
+    // assigned without combining.
+    out.drivable_lanes = expanded_lanes;
+    out.is_already_expanded = true;
   }
 }
 

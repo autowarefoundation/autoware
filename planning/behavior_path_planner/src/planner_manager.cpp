@@ -47,56 +47,96 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
   std::for_each(
     manager_ptrs_.begin(), manager_ptrs_.end(), [&data](const auto & m) { m->setData(data); });
 
-  while (rclcpp::ok()) {
-    /**
-     * STEP1: get approved modules' output
-     */
-    const auto approved_modules_output = runApprovedModules(data);
+  auto result_output = [&]() {
+    while (rclcpp::ok()) {
+      /**
+       * STEP1: get approved modules' output
+       */
+      const auto approved_modules_output = runApprovedModules(data);
 
-    /**
-     * STEP2: check modules that need to be launched
-     */
-    const auto request_modules = getRequestModules(approved_modules_output);
+      /**
+       * STEP2: check modules that need to be launched
+       */
+      const auto request_modules = getRequestModules(approved_modules_output);
 
-    /**
-     * STEP3: if there is no module that need to be launched, return approved modules' output
-     */
-    if (request_modules.empty()) {
-      processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-      return approved_modules_output;
+      /**
+       * STEP3: if there is no module that need to be launched, return approved modules' output
+       */
+      if (request_modules.empty()) {
+        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        return approved_modules_output;
+      }
+
+      /**
+       * STEP4: if there is module that should be launched, execute the module
+       */
+      const auto [highest_priority_module, candidate_modules_output] =
+        runRequestModules(request_modules, data, approved_modules_output);
+      if (!highest_priority_module) {
+        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        return approved_modules_output;
+      }
+
+      /**
+       * STEP5: if the candidate module's modification is NOT approved yet, return the result.
+       * NOTE: the result is output of the candidate module, but the output path don't contains path
+       * shape modification that needs approval. On the other hand, it could include velocity
+       * profile modification.
+       */
+      if (highest_priority_module->isWaitingApproval()) {
+        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        return candidate_modules_output;
+      }
+
+      /**
+       * STEP6: if the candidate module is approved, push the module into approved_module_ptrs_
+       */
+      addApprovedModule(highest_priority_module);
+      clearCandidateModules();
     }
+    return BehaviorModuleOutput{};
+  }();
 
-    /**
-     * STEP4: if there is module that should be launched, execute the module
-     */
-    const auto [highest_priority_module, candidate_modules_output] =
-      runRequestModules(request_modules, data, approved_modules_output);
-    if (!highest_priority_module) {
-      processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-      return approved_modules_output;
-    }
+  generateCombinedDrivableArea(result_output, data);
 
-    /**
-     * STEP5: if the candidate module's modification is NOT approved yet, return the result.
-     * NOTE: the result is output of the candidate module, but the output path don't contains path
-     * shape modification that needs approval. On the other hand, it could include velocity profile
-     * modification.
-     */
-    if (highest_priority_module->isWaitingApproval()) {
-      processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-      return candidate_modules_output;
-    }
+  return result_output;
+}
 
-    /**
-     * STEP6: if the candidate module is approved, push the module into approved_module_ptrs_
-     */
-    addApprovedModule(highest_priority_module);
-    clearCandidateModules();
+// NOTE: To deal with some policies about drivable area generation, currently DrivableAreaInfo is
+// quite messy. Needs to be refactored.
+void PlannerManager::generateCombinedDrivableArea(
+  BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & data) const
+{
+  constexpr double epsilon = 1e-3;
+  if (epsilon < std::abs(output.drivable_area_info.drivable_margin)) {
+    // for single free space pull over
+    const auto is_driving_forward_opt = motion_utils::isDrivingForward(output.path->points);
+    const bool is_driving_forward = is_driving_forward_opt ? *is_driving_forward_opt : true;
+
+    utils::generateDrivableArea(
+      *output.path, data->parameters.vehicle_length, output.drivable_area_info.drivable_margin,
+      is_driving_forward);
+  } else if (output.drivable_area_info.is_already_expanded) {
+    // for single side shift
+    utils::generateDrivableArea(
+      *output.path, output.drivable_area_info.drivable_lanes, data->parameters.vehicle_length,
+      data);
+  } else {
+    const auto shorten_lanes =
+      utils::cutOverlappedLanes(*output.path, output.drivable_area_info.drivable_lanes);
+
+    const auto & dp = data->drivable_area_expansion_parameters;
+    const auto expanded_lanes = utils::expandLanelets(
+      shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+      dp.drivable_area_types_to_skip);
+
+    // for other modules where multiple modules may be launched
+    utils::generateDrivableArea(
+      *output.path, expanded_lanes, data->parameters.vehicle_length, data);
   }
 
-  processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
-
-  return {};
+  // extract obstacles from drivable area
+  utils::extractObstaclesFromDrivableArea(*output.path, output.drivable_area_info.obstacle_polys);
 }
 
 std::vector<SceneModulePtr> PlannerManager::getRequestModules(

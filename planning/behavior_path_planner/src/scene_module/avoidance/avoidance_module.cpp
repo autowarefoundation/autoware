@@ -2385,8 +2385,6 @@ ObjectDataArray AvoidanceModule::getAdjacentLaneObjects(
 // two lanes since which way to avoid is not obvious
 void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output) const
 {
-  auto & path = *output.path;
-
   const auto has_same_lane =
     [](const lanelet::ConstLanelets lanes, const lanelet::ConstLanelet & lane) {
       if (lanes.empty()) return false;
@@ -2397,15 +2395,15 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_lanes = avoidance_data_.current_lanelets;
   const auto & enable_opposite = parameters_->enable_avoidance_over_opposite_direction;
+  std::vector<DrivableLanes> drivable_lanes;
 
-  std::vector<DrivableLanes> current_drivable_lanes_vec{};
   for (const auto & current_lane : current_lanes) {
     DrivableLanes current_drivable_lanes;
     current_drivable_lanes.left_lane = current_lane;
     current_drivable_lanes.right_lane = current_lane;
 
     if (!parameters_->enable_avoidance_over_same_direction) {
-      output.drivable_lanes.push_back(current_drivable_lanes);
+      drivable_lanes.push_back(current_drivable_lanes);
       continue;
     }
 
@@ -2526,21 +2524,23 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
       current_drivable_lanes.middle_lanes.push_back(current_lane);
     }
 
-    current_drivable_lanes_vec.push_back(current_drivable_lanes);
+    drivable_lanes.push_back(current_drivable_lanes);
   }
 
-#ifdef USE_OLD_ARCHITECTURE
-  output.drivable_lanes = current_drivable_lanes_vec;
-#else
-  output.drivable_lanes = utils::combineDrivableLanes(
-    getPreviousModuleOutput().drivable_lanes, current_drivable_lanes_vec);
-#endif
+  {  // for new architecture
+    // generate drivable lanes
+    output.drivable_area_info.drivable_lanes = utils::combineDrivableLanes(
+      getPreviousModuleOutput().drivable_area_info.drivable_lanes, drivable_lanes);
+    // generate obstacle polygons
+    output.drivable_area_info.obstacle_polys =
+      utils::avoidance::generateObstaclePolygonsForDrivableArea(
+        avoidance_data_.target_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
+  }
 
-  {
-    const auto & p = planner_data_->parameters;
-    utils::avoidance::generateDrivableArea(
-      path, output.drivable_lanes, planner_data_, parameters_, avoidance_data_.target_objects,
-      p.vehicle_length, parameters_->enable_bound_clipping, parameters_->disable_path_update);
+  {  // for old architecture
+    // NOTE: Obstacles to avoid are not extracted from the drivable area with an old architecture.
+    utils::generateDrivableArea(
+      *output.path, drivable_lanes, planner_data_->parameters.vehicle_length, planner_data_);
   }
 }
 

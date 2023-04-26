@@ -130,6 +130,13 @@ public:
     out.path = utils::generateCenterLinePath(planner_data_);
     const auto candidate = planCandidate();
     path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+
+    // for new architecture
+    const auto lanes = utils::getLaneletsFromPath(*out.path, planner_data_->route_handler);
+    const auto drivable_lanes = utils::generateDrivableLanes(lanes);
+    out.drivable_area_info.drivable_lanes =
+      getNonOverlappingExpandedLanes(*out.path, drivable_lanes);
+
     return out;
   }
 

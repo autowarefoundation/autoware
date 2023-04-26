@@ -77,6 +77,30 @@ using tier4_autoware_utils::LineString2d;
 using tier4_autoware_utils::Polygon2d;
 using vehicle_info_util::VehicleInfo;
 
+struct PolygonPoint
+{
+  geometry_msgs::msg::Point point;
+  size_t bound_seg_idx;
+  double lon_dist_to_segment;
+  double lat_dist_to_bound;
+
+  bool is_after(const PolygonPoint & other_point) const
+  {
+    if (bound_seg_idx == other_point.bound_seg_idx) {
+      return other_point.lon_dist_to_segment < lon_dist_to_segment;
+    }
+    return other_point.bound_seg_idx < bound_seg_idx;
+  }
+
+  bool is_outside_bounds(const bool is_on_right) const
+  {
+    if (is_on_right) {
+      return lat_dist_to_bound < 0.0;
+    }
+    return 0.0 < lat_dist_to_bound;
+  };
+};
+
 struct FrenetPoint
 {
   double length{0.0};    // longitudinal
@@ -352,6 +376,9 @@ std::string convertToSnakeCase(const std::string & input_str);
 std::vector<DrivableLanes> combineDrivableLanes(
   const std::vector<DrivableLanes> & original_drivable_lanes_vec,
   const std::vector<DrivableLanes> & new_drivable_lanes_vec);
+
+void extractObstaclesFromDrivableArea(
+  PathWithLaneId & path, const std::vector<tier4_autoware_utils::Polygon2d> & obj_polys);
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__UTILS_HPP_

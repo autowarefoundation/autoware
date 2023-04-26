@@ -446,6 +446,16 @@ BehaviorModuleOutput AvoidanceByLCModule::planWaitingApproval()
   out.reference_path = getPreviousModuleOutput().reference_path;
   out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
 
+  // for new architecture
+#ifndef USE_OLD_ARCHITECTURE
+  const auto current_lanes =
+    utils::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
+  const auto drivable_lanes = utils::generateDrivableLanes(current_lanes);
+  const auto target_drivable_lanes = getNonOverlappingExpandedLanes(*out.path, drivable_lanes);
+  out.drivable_area_info.drivable_lanes = utils::combineDrivableLanes(
+    getPreviousModuleOutput().drivable_area_info.drivable_lanes, target_drivable_lanes);
+#endif
+
   if (!avoidance_data_.target_objects.empty()) {
     const auto to_front_object_distance = avoidance_data_.target_objects.front().longitudinal;
     const double shift_length = status_.lane_change_path.shift_line.end_shift_length -

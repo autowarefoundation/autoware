@@ -110,6 +110,8 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
       return {};
     }
 
+    // for old architecture
+    // NOTE: drivable_area_info is assigned outside this function.
     const double offset = planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
     utils::generateDrivableArea(
       path, planner_data_->parameters.vehicle_length, offset, *is_driving_forward);

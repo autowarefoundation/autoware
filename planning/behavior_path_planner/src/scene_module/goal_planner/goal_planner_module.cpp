@@ -695,6 +695,17 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
   }
   status_.prev_is_safe = status_.is_safe;
 
+  // generate drivable area info for new architecture
+  if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
+    const double drivable_area_margin = planner_data_->parameters.vehicle_width;
+    output.drivable_area_info.drivable_margin =
+      planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
+  } else {
+    const auto target_drivable_lanes = getNonOverlappingExpandedLanes(*output.path, status_.lanes);
+    output.drivable_area_info.drivable_lanes = utils::combineDrivableLanes(
+      getPreviousModuleOutput().drivable_area_info.drivable_lanes, target_drivable_lanes);
+  }
+
   // return to lane parking if it is possible
   if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
     // return only before starting free space parking
@@ -799,6 +810,17 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
     {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::GOAL_PLANNER,
     steering_factor_direction, SteeringFactor::APPROACHING, "");
   waitApproval();
+
+  // generate drivable area info for new architecture
+  if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
+    const double drivable_area_margin = planner_data_->parameters.vehicle_width;
+    out.drivable_area_info.drivable_margin =
+      planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
+  } else {
+    const auto target_drivable_lanes = getNonOverlappingExpandedLanes(*out.path, status_.lanes);
+    out.drivable_area_info.drivable_lanes = utils::combineDrivableLanes(
+      getPreviousModuleOutput().drivable_area_info.drivable_lanes, target_drivable_lanes);
+  }
 
   return out;
 }

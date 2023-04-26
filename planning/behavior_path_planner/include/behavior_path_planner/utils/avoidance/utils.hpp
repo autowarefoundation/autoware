@@ -26,30 +26,6 @@ namespace behavior_path_planner::utils::avoidance
 {
 using behavior_path_planner::PlannerData;
 
-struct PolygonPoint
-{
-  geometry_msgs::msg::Point point;
-  size_t bound_seg_idx;
-  double lon_dist_to_segment;
-  double lat_dist_to_bound;
-
-  bool is_after(const PolygonPoint & other_point) const
-  {
-    if (bound_seg_idx == other_point.bound_seg_idx) {
-      return other_point.lon_dist_to_segment < lon_dist_to_segment;
-    }
-    return other_point.bound_seg_idx < bound_seg_idx;
-  }
-
-  bool is_outside_bounds(const bool is_on_right) const
-  {
-    if (is_on_right) {
-      return lat_dist_to_bound < 0.0;
-    }
-    return 0.0 < lat_dist_to_bound;
-  };
-};
-
 bool isOnRight(const ObjectData & obj);
 
 bool isTargetObjectType(
@@ -89,11 +65,9 @@ void setStartData(
 Polygon2d createEnvelopePolygon(
   const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer);
 
-void generateDrivableArea(
-  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
-  const std::shared_ptr<const PlannerData> planner_data,
-  const std::shared_ptr<AvoidanceParameters> & parameters, const ObjectDataArray & objects,
-  const double vehicle_length, const bool enable_bound_clipping, const bool disable_path_update);
+std::vector<tier4_autoware_utils::Polygon2d> generateObstaclePolygonsForDrivableArea(
+  const ObjectDataArray & objects, const std::shared_ptr<AvoidanceParameters> & parameters,
+  const double vehicle_width);
 
 double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const double v);
 

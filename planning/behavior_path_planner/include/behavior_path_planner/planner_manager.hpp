@@ -190,6 +190,9 @@ private:
     return result;
   }
 
+  void generateCombinedDrivableArea(
+    BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & data) const;
+
   /**
    * @brief get reference path from root_lanelet_ centerline.
    * @param planner data.
