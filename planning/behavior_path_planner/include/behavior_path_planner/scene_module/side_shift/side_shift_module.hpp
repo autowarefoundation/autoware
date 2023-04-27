@@ -85,7 +85,7 @@ private:
 #endif
 
   // non-const methods
-  void adjustDrivableArea(ShiftedPath * path, DrivableAreaInfo & out) const;
+  BehaviorModuleOutput adjustDrivableArea(const ShiftedPath & path) const;
 
   ShiftLine calcShiftLine() const;
 
