@@ -252,13 +252,13 @@ bool getLaneChangePaths(
   const auto shift_intervals = route_handler.getLateralIntervalsToPreferredLane(
     target_lanelets.back(), get_opposite_direction);
 #endif
-  const auto required_total_min_length =
+  const auto next_lane_change_buffer =
     utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
 
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
   const auto dist_to_end_of_current_lanes =
-    utils::getDistanceToEndOfLane(pose, original_lanelets) - required_total_min_length;
+    utils::getDistanceToEndOfLane(pose, original_lanelets) - next_lane_change_buffer;
 
   [[maybe_unused]] const auto arc_position_from_current =
     lanelet::utils::getArcCoordinates(original_lanelets, pose);
@@ -342,7 +342,7 @@ bool getLaneChangePaths(
 
     const auto target_segment = getTargetSegment(
       route_handler, target_lanelets, forward_path_length, lane_changing_start_pose,
-      target_lane_length, lane_changing_length, lane_changing_velocity, required_total_min_length);
+      target_lane_length, lane_changing_length, lane_changing_velocity, next_lane_change_buffer);
 
     if (target_segment.points.empty()) {
       RCLCPP_DEBUG(
@@ -357,7 +357,8 @@ bool getLaneChangePaths(
     const auto lc_length = LaneChangePhaseInfo{prepare_length, lane_changing_length};
     const auto target_lane_reference_path = getReferencePathFromTargetLane(
       route_handler, target_lanelets, lane_changing_start_pose, target_lane_length,
-      lc_length.lane_changing, forward_path_length, resample_interval, is_goal_in_route);
+      lc_length.lane_changing, forward_path_length, resample_interval, is_goal_in_route,
+      next_lane_change_buffer);
 
     if (target_lane_reference_path.points.empty()) {
       RCLCPP_DEBUG(
@@ -704,7 +705,7 @@ PathWithLaneId getReferencePathFromTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & lane_changing_start_pose, const double target_lane_length,
   const double lane_changing_length, const double forward_path_length,
-  const double resample_interval, const bool is_goal_in_route)
+  const double resample_interval, const bool is_goal_in_route, const double next_lane_change_buffer)
 {
   const ArcCoordinates lane_change_start_arc_position =
     lanelet::utils::getArcCoordinates(target_lanes, lane_changing_start_pose);
@@ -714,7 +715,8 @@ PathWithLaneId getReferencePathFromTargetLane(
     const auto dist_from_lc_start = s_start + lane_changing_length + forward_path_length;
     if (is_goal_in_route) {
       const double s_goal =
-        lanelet::utils::getArcCoordinates(target_lanes, route_handler.getGoalPose()).length;
+        lanelet::utils::getArcCoordinates(target_lanes, route_handler.getGoalPose()).length -
+        next_lane_change_buffer;
       return std::min(dist_from_lc_start, s_goal);
     }
     return std::min(dist_from_lc_start, target_lane_length);

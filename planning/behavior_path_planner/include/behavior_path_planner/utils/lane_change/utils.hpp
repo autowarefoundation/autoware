@@ -119,7 +119,8 @@ PathWithLaneId getReferencePathFromTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & lane_changing_start_pose, const double target_lane_length,
   const double lane_changing_length, const double forward_path_length,
-  const double resample_interval, const bool is_goal_in_route);
+  const double resample_interval, const bool is_goal_in_route,
+  const double next_lane_change_buffer);
 
 PathWithLaneId getPrepareSegment(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
