@@ -65,6 +65,7 @@ evaluator/diagnostic_converter/** kyoichi.sugahara@tier4.jp maxime.clement@tier4
 evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai @autowarefoundation/autoware-global-codeowners
 evaluator/localization_evaluator/** dominik.jargot@robotec.ai @autowarefoundation/autoware-global-codeowners
 evaluator/planning_evaluator/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp @autowarefoundation/autoware-global-codeowners
+launch/map4_localization_launch/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp ryohei.sasaki@map.jp ryu.yamamoto@tier4.jp yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp kenji.miyake@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_control_launch/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 launch/tier4_localization_launch/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp ryu.yamamoto@tier4.jp yamato.ando@tier4.jp @autowarefoundation/autoware-global-codeowners
@@ -131,7 +132,7 @@ planning/mission_planner/** isamu.takagi@tier4.jp kosuke.takeuchi@tier4.jp ryohs
 planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp makoto.kurihara@tier4.jp takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_avoidance_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/obstacle_stop_planner/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/obstacle_stop_planner/** berkay@leodrive.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/planning_debug_tools/** taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/planning_test_utils/** kyoichi.sugahara@tier4.jp takamasa.horibe@tier4.jp @autowarefoundation/autoware-global-codeowners
