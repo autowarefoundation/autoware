@@ -390,7 +390,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       occlusion_first_stop_safety_ = false;
       occlusion_first_stop_distance_ = dist_1st_stopline;
     }
-    occlusion_safety_ = false;
+    occlusion_safety_ = is_occlusion_cleared;
     occlusion_stop_distance_ = dist_2nd_stopline;
   } else {
     /* collision */
