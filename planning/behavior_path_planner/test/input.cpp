@@ -32,7 +32,7 @@ PathWithLaneId generateStraightSamplePathWithLaneId(
 
     PathPointWithLaneId path_point_with_lane_id;
     path_point_with_lane_id.point = point;
-    path_point_with_lane_id.lane_ids = std::vector<int64>();
+    path_point_with_lane_id.lane_ids = std::vector<int64_t>();
 
     path.header.frame_id = "map";
     path.points.push_back(path_point_with_lane_id);
@@ -56,7 +56,7 @@ PathWithLaneId generateDiagonalSamplePathWithLaneId(
 
     PathPointWithLaneId path_point_with_lane_id;
     path_point_with_lane_id.point = point;
-    path_point_with_lane_id.lane_ids = std::vector<int64>();
+    path_point_with_lane_id.lane_ids = std::vector<int64_t>();
 
     path.header.frame_id = "map";
     path.points.push_back(path_point_with_lane_id);

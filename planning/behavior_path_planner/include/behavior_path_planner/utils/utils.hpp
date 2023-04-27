@@ -23,7 +23,6 @@
 #include "motion_utils/motion_utils.hpp"
 #include "perception_utils/predicted_path_utils.hpp"
 
-#include <opencv2/opencv.hpp>
 #include <route_handler/route_handler.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
