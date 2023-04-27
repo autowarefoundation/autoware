@@ -19,9 +19,7 @@ set(common_src
   src/scene_module/goal_planner/goal_planner_module.cpp
   src/scene_module/side_shift/side_shift_module.cpp
   src/scene_module/lane_change/interface.cpp
-  src/scene_module/lane_change/lane_change_module.cpp
   src/scene_module/lane_change/normal.cpp
-  src/scene_module/lane_change/bt_normal.cpp
   src/scene_module/lane_change/external_request.cpp
   src/turn_signal_decider.cpp
   src/utils/utils.cpp

@@ -39,6 +39,10 @@ public:
     const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
     Direction direction);
 
+  NormalLaneChange(const NormalLaneChange &) = delete;
+  NormalLaneChange(NormalLaneChange &&) = delete;
+  NormalLaneChange & operator=(const NormalLaneChange &) = delete;
+  NormalLaneChange & operator=(NormalLaneChange &&) = delete;
   ~NormalLaneChange() override = default;
 
   void updateLaneChangeStatus() override;
@@ -85,6 +89,34 @@ protected:
   void calcTurnSignalInfo() override;
 
   bool isValidPath(const PathWithLaneId & path) const override;
+};
+
+class NormalLaneChangeBT : public NormalLaneChange
+{
+public:
+  NormalLaneChangeBT(
+    const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+    Direction direction);
+
+  NormalLaneChangeBT(const NormalLaneChangeBT &) = delete;
+  NormalLaneChangeBT(NormalLaneChangeBT &&) = delete;
+  NormalLaneChangeBT & operator=(const NormalLaneChangeBT &) = delete;
+  NormalLaneChangeBT & operator=(NormalLaneChangeBT &&) = delete;
+  ~NormalLaneChangeBT() override = default;
+
+  PathWithLaneId getReferencePath() const override;
+
+protected:
+  lanelet::ConstLanelets getCurrentLanes() const override;
+
+  int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const override;
+
+  PathWithLaneId getPrepareSegment(
+    const lanelet::ConstLanelets & current_lanes, const double arc_length_from_current,
+    const double backward_path_length, const double prepare_length,
+    const double prepare_velocity) const override;
+
+  std::vector<DrivableLanes> getDrivableLanes() const override;
 };
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_

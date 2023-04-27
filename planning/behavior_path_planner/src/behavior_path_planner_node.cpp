@@ -172,7 +172,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     bt_manager_->registerSceneModule(ext_request_lane_change_left_module);
 
     auto lane_change_module =
-      std::make_shared<LaneChangeModule>("LaneChange", *this, lane_change_param_ptr_);
+      std::make_shared<LaneChangeBTModule>("LaneChange", *this, lane_change_param_ptr_);
     path_candidate_publishers_.emplace(
       "LaneChange", create_publisher<Path>(path_candidate_name_space + "lane_change", 1));
     bt_manager_->registerSceneModule(lane_change_module);

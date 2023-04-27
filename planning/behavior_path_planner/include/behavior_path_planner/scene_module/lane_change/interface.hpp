@@ -142,6 +142,26 @@ protected:
   bool is_activated_{false};
 };
 
+class LaneChangeBTModule : public LaneChangeBTInterface
+{
+public:
+  LaneChangeBTModule(
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<LaneChangeParameters> & parameters);
+
+protected:
+  void updateRTCStatus(const double start_distance, const double finish_distance) override
+  {
+    const auto direction = std::invoke([&]() -> std::string {
+      const auto dir = module_type_->getDirection();
+      return (dir == Direction::LEFT) ? "left" : "right";
+    });
+
+    rtc_interface_ptr_map_.at(direction)->updateCooperateStatus(
+      uuid_map_.at(direction), isExecutionReady(), start_distance, finish_distance, clock_->now());
+  }
+};
+
 class ExternalRequestLaneChangeLeftBTModule : public LaneChangeBTInterface
 {
 public:

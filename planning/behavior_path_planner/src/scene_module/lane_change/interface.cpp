@@ -406,6 +406,14 @@ void SceneModuleVisitor::visitLaneChangeBTInterface(const LaneChangeBTInterface 
   external_request_lane_change_bt_visitor_ = module->get_debug_msg_array();
 }
 
+LaneChangeBTModule::LaneChangeBTModule(
+  const std::string & name, rclcpp::Node & node,
+  const std::shared_ptr<LaneChangeParameters> & parameters)
+: LaneChangeBTInterface{
+    name, node, parameters, createRTCInterfaceMap(node, name, {"left", "right"}),
+    std::make_unique<NormalLaneChangeBT>(parameters, LaneChangeModuleType::NORMAL, Direction::NONE)}
+{
+}
 ExternalRequestLaneChangeLeftBTModule::ExternalRequestLaneChangeLeftBTModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<LaneChangeParameters> & parameters)

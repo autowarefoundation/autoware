@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__EXTERNAL_REQUEST_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__EXTERNAL_REQUEST_HPP_
 
-#include "behavior_path_planner/scene_module/lane_change/bt_normal.hpp"
 #include "behavior_path_planner/scene_module/lane_change/normal.hpp"
 
 #include <memory>

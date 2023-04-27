@@ -22,7 +22,6 @@
 #include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 #include "behavior_path_planner/scene_module/goal_planner/goal_planner_module.hpp"
-#include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_following/lane_following_module.hpp"
 #include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"

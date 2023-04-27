@@ -390,14 +390,14 @@ protected:
     for (const auto & rtc_type : rtc_types) {
       const auto snake_case_name = utils::convertToSnakeCase(name);
       const auto rtc_interface_name =
-        rtc_type == "" ? snake_case_name : snake_case_name + "_" + rtc_type;
+        rtc_type.empty() ? snake_case_name : (snake_case_name + "_" + rtc_type);
       rtc_interface_ptr_map.emplace(
         rtc_type, std::make_shared<RTCInterface>(&node, rtc_interface_name));
     }
     return rtc_interface_ptr_map;
   }
 
-  void updateRTCStatus(const double start_distance, const double finish_distance)
+  virtual void updateRTCStatus(const double start_distance, const double finish_distance)
   {
     for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
       if (itr->second) {

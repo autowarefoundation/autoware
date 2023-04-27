@@ -53,15 +53,19 @@ class LaneChangeBase
 {
 public:
   LaneChangeBase(
-    const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
+    std::shared_ptr<LaneChangeParameters> parameters, LaneChangeModuleType type,
     Direction direction)
-  : parameters_{parameters}, direction_{direction}, type_{type}
+  : parameters_{std::move(parameters)}, direction_{direction}, type_{type}
   {
     prev_module_reference_path_ = std::make_shared<PathWithLaneId>();
     prev_module_path_ = std::make_shared<PathWithLaneId>();
     prev_drivable_lanes_ = std::make_shared<std::vector<DrivableLanes>>();
   }
 
+  LaneChangeBase(const LaneChangeBase &) = delete;
+  LaneChangeBase(LaneChangeBase &&) = delete;
+  LaneChangeBase & operator=(const LaneChangeBase &) = delete;
+  LaneChangeBase & operator=(LaneChangeBase &&) = delete;
   virtual ~LaneChangeBase() = default;
 
   virtual void updateLaneChangeStatus() = 0;
