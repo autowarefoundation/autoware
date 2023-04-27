@@ -2091,14 +2091,6 @@ BehaviorModuleOutput getReferencePath(
   // Set header
   reference_path.header = route_handler->getRouteHeader();
 
-  // For current_lanes with desired length
-  const auto current_lanes = route_handler->getLaneletSequence(
-    current_lane, current_pose, p.backward_path_length, p.forward_path_length);
-
-  if (current_lanes.empty()) {
-    return {};
-  }
-
   // calculate path with backward margin to avoid end points' instability by spline interpolation
   constexpr double extra_margin = 10.0;
   const double backward_length = p.backward_path_length + extra_margin;
