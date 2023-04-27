@@ -323,6 +323,7 @@ private:
   bool isOcclusionCleared(
     const nav_msgs::msg::OccupancyGrid & occ_grid,
     const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
+    lanelet::ConstLanelets adjacent_lanelets,
     const lanelet::CompoundPolygon3d & first_detection_area,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip,
     const std::pair<size_t, size_t> & lane_interval,
