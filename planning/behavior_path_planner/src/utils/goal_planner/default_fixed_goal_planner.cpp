@@ -50,12 +50,16 @@ boost::optional<BehaviorModuleOutput> DefaultFixedGoalPlanner::getReferencePath(
   const double yaw_threshold = planner_data->parameters.ego_nearest_yaw_threshold;
 
   lanelet::ConstLanelet current_lane{};
-  if (!route_handler->getClosestLaneletWithConstrainsWithinRoute(
+  if (route_handler->getClosestLaneletWithConstrainsWithinRoute(
         current_pose, &current_lane, dist_threshold, yaw_threshold)) {
-    return {};  // TODO(Horibe)
+    return utils::getReferencePath(current_lane, planner_data);
   }
 
-  return utils::getReferencePath(current_lane, planner_data);
+  if (route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
+    return utils::getReferencePath(current_lane, planner_data);
+  }
+
+  return {};  // something wrong
 }
 
 PathWithLaneId DefaultFixedGoalPlanner::modifyPathForSmoothGoalConnection(
