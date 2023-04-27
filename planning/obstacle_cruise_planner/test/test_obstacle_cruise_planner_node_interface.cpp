@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,20 +28,16 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
 
   auto node_options = rclcpp::NodeOptions{};
-
   const auto obstacle_cruise_planner_dir =
     ament_index_cpp::get_package_share_directory("obstacle_cruise_planner");
-
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
-
   node_options.arguments(
     {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
      "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
      "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
      "--params-file", obstacle_cruise_planner_dir + "/config/default_common.param.yaml",
      "--params-file", obstacle_cruise_planner_dir + "/config/obstacle_cruise_planner.param.yaml"});
-
   auto test_target_node =
     std::make_shared<motion_planning::ObstacleCruisePlannerNode>(node_options);
 
@@ -58,9 +54,8 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
   // test for normal trajectory
   ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
-
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  test_manager->testWithAbnormalTrajectory(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
 }

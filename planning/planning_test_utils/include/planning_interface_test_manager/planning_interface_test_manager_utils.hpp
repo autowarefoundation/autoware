@@ -118,17 +118,6 @@ T generateTrajectory(
   return traj;
 }
 
-Route::Message makeNormalRoute()
-{
-  const std::array<double, 4> start_pose{5.5, 4., 0., M_PI_2};
-  const std::array<double, 4> goal_pose{8.0, 26.3, 0, 0};
-  Route::Message route;
-  route.header.frame_id = "map";
-  route.start_pose = createPose(start_pose);
-  route.goal_pose = createPose(goal_pose);
-  return route;
-}
-
 LaneletSegment createLaneletSegment(int id)
 {
   LaneletPrimitive primitive;
@@ -138,6 +127,49 @@ LaneletSegment createLaneletSegment(int id)
   segment.preferred_primitive.id = id;
   segment.primitives.push_back(primitive);
   return segment;
+}
+
+lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename)
+{
+  lanelet::ErrorMessages errors{};
+  lanelet::projection::MGRSProjector projector{};
+  const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
+  if (errors.empty()) {
+    return map;
+  }
+
+  for (const auto & error : errors) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("map_loader"), error);
+  }
+  return nullptr;
+}
+
+HADMapBin convertToMapBinMsg(
+  const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename, const rclcpp::Time & now)
+{
+  std::string format_version{}, map_version{};
+  lanelet::io_handlers::AutowareOsmParser::parseVersions(
+    lanelet2_filename, &format_version, &map_version);
+
+  HADMapBin map_bin_msg;
+  map_bin_msg.header.stamp = now;
+  map_bin_msg.header.frame_id = "map";
+  map_bin_msg.format_version = format_version;
+  map_bin_msg.map_version = map_version;
+  lanelet::utils::conversion::toBinMsg(map, &map_bin_msg);
+
+  return map_bin_msg;
+}
+
+Route::Message makeNormalRoute()
+{
+  const std::array<double, 4> start_pose{5.5, 4., 0., M_PI_2};
+  const std::array<double, 4> goal_pose{8.0, 26.3, 0, 0};
+  Route::Message route;
+  route.header.frame_id = "map";
+  route.start_pose = createPose(start_pose);
+  route.goal_pose = createPose(goal_pose);
+  return route;
 }
 
 // this is for the test lanelet2_map.osm
@@ -164,11 +196,12 @@ Route::Message makeBehaviorNormalRoute()
   return route;
 }
 
-OccupancyGrid constructCostMap(size_t width, size_t height, double resolution)
+OccupancyGrid makeCostMapMsg(size_t width = 150, size_t height = 150, double resolution = 0.2)
 {
-  nav_msgs::msg::OccupancyGrid costmap_msg{};
+  nav_msgs::msg::OccupancyGrid costmap_msg;
 
   // create info
+  costmap_msg.header.frame_id = "map";
   costmap_msg.info.width = width;
   costmap_msg.info.height = height;
   costmap_msg.info.resolution = resolution;
@@ -181,48 +214,78 @@ OccupancyGrid constructCostMap(size_t width, size_t height, double resolution)
   return costmap_msg;
 }
 
-void spinSomeNodes(
-  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node,
-  const int repeat_count = 1)
+HADMapBin makeMapBinMsg()
 {
-  for (int i = 0; i < repeat_count; i++) {
-    rclcpp::spin_some(test_node);
-    rclcpp::sleep_for(std::chrono::milliseconds(100));
-    rclcpp::spin_some(target_node);
-    rclcpp::sleep_for(std::chrono::milliseconds(100));
-  }
-}
-
-lanelet::LaneletMapPtr loadMap(const std::string & lanelet2_filename)
-{
-  lanelet::ErrorMessages errors{};
-  lanelet::projection::MGRSProjector projector{};
-  const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
-  if (errors.empty()) {
-    return map;
+  const auto planning_test_utils_dir =
+    ament_index_cpp::get_package_share_directory("planning_test_utils");
+  const auto lanelet2_path = planning_test_utils_dir + "/test_map/lanelet2_map.osm";
+  double center_line_resolution = 5.0;
+  // load map from file
+  const auto map = loadMap(lanelet2_path);
+  if (!map) {
+    return autoware_auto_mapping_msgs::msg::HADMapBin_<std::allocator<void>>{};
   }
 
-  for (const auto & error : errors) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("map_loader"), error);
-  }
-  return nullptr;
-}
+  // overwrite centerline
+  lanelet::utils::overwriteLaneletsCenterline(map, center_line_resolution, false);
 
-HADMapBin createMapBinMsg(
-  const lanelet::LaneletMapPtr map, const std::string & lanelet2_filename, const rclcpp::Time & now)
-{
-  std::string format_version{}, map_version{};
-  lanelet::io_handlers::AutowareOsmParser::parseVersions(
-    lanelet2_filename, &format_version, &map_version);
-
-  HADMapBin map_bin_msg;
-  map_bin_msg.header.stamp = now;
-  map_bin_msg.header.frame_id = "map";
-  map_bin_msg.format_version = format_version;
-  map_bin_msg.map_version = map_version;
-  lanelet::utils::conversion::toBinMsg(map, &map_bin_msg);
-
+  // create map bin msg
+  const auto map_bin_msg =
+    convertToMapBinMsg(map, lanelet2_path, rclcpp::Clock(RCL_ROS_TIME).now());
   return map_bin_msg;
+}
+
+Odometry makeOdometry()
+{
+  Odometry odometry;
+  const std::array<double, 4> start_pose{5.5, 4., M_PI_2};
+  odometry.pose.pose = createPose(start_pose);
+  odometry.header.frame_id = "map";
+  return odometry;
+}
+
+Odometry makeInitialPose(const double shift = 0.0)
+{
+  Odometry current_odometry;
+  const auto yaw = 0.9724497591854532;
+  const auto shift_x = shift * std::sin(yaw);
+  const auto shift_y = shift * std::cos(yaw);
+  const std::array<double, 4> start_pose{
+    3722.16015625 + shift_x, 73723.515625 + shift_y, 0.233112560494183, yaw};
+  current_odometry.pose.pose = test_utils::createPose(start_pose);
+  current_odometry.header.frame_id = "map";
+  return current_odometry;
+}
+
+TFMessage makeTFMsg(
+  rclcpp::Node::SharedPtr target_node, std::string frame_id = "", std::string child_frame_id = "")
+{
+  TFMessage tf_msg;
+  geometry_msgs::msg::Quaternion quaternion;
+  quaternion.x = 0.;
+  quaternion.y = 0.;
+  quaternion.z = 0.23311256049418302;
+  quaternion.w = 0.9724497591854532;
+
+  TransformStamped tf;
+  tf.header.stamp = target_node->get_clock()->now();
+  tf.header.frame_id = frame_id;
+  tf.child_frame_id = child_frame_id;
+  tf.transform.translation.x = 3722.16015625;
+  tf.transform.translation.y = 73723.515625;
+  tf.transform.translation.z = 0;
+  tf.transform.rotation = quaternion;
+
+  tf_msg.transforms.emplace_back(std::move(tf));
+  return tf_msg;
+}
+
+Scenario makeScenarioMsg(const std::string scenario)
+{
+  Scenario scenario_msg;
+  scenario_msg.current_scenario = scenario;
+  scenario_msg.activating_scenarios = {scenario};
+  return scenario_msg;
 }
 
 template <typename T>
@@ -254,84 +317,6 @@ void setPublisher(
 }
 
 template <typename T>
-T generateObject(rclcpp::Node::SharedPtr target_node)
-{
-  if constexpr (std::is_same_v<T, HADMapBin>) {
-    const auto planning_test_utils_dir =
-      ament_index_cpp::get_package_share_directory("planning_test_utils");
-    const auto lanelet2_path = planning_test_utils_dir + "/test_map/lanelet2_map.osm";
-    double center_line_resolution = 5.0;
-    // load map from file
-    const auto map = loadMap(lanelet2_path);
-    if (!map) {
-      return autoware_auto_mapping_msgs::msg::HADMapBin_<std::allocator<void>>{};
-    }
-
-    // overwrite centerline
-    lanelet::utils::overwriteLaneletsCenterline(map, center_line_resolution, false);
-
-    // create map bin msg
-    const auto map_bin_msg = createMapBinMsg(map, lanelet2_path, rclcpp::Clock(RCL_ROS_TIME).now());
-    return map_bin_msg;
-  } else if constexpr (std::is_same_v<T, Trajectory>) {
-    std::shared_ptr<Trajectory> trajectory = std::make_shared<Trajectory>();
-    trajectory->header.stamp = target_node->now();
-    return *trajectory;
-  } else if constexpr (std::is_same_v<T, Odometry>) {
-    std::shared_ptr<Odometry> current_odometry = std::make_shared<Odometry>();
-    const std::array<double, 4> start_pose{5.5, 4., M_PI_2};
-    current_odometry->pose.pose = createPose(start_pose);
-    current_odometry->header.frame_id = "map";
-    return *current_odometry;
-  } else if constexpr (std::is_same_v<T, OccupancyGrid>) {
-    auto costmap_msg = constructCostMap(150, 150, 0.2);
-    costmap_msg.header.frame_id = "map";
-    return costmap_msg;
-  } else if constexpr (std::is_same_v<T, LaneletRoute>) {
-    return makeNormalRoute();
-  } else if constexpr (std::is_same_v<T, TFMessage>) {
-    TransformStamped tf;
-    tf.header.stamp = rclcpp::Clock(RCL_ROS_TIME).now();
-    tf.header.frame_id = "base_link";
-    tf.child_frame_id = "map";
-
-    TFMessage tf_msg{};
-    tf_msg.transforms.emplace_back(std::move(tf));
-    return tf_msg;
-  } else if constexpr (std::is_same_v<T, PointCloud2>) {
-    PointCloud2 point_cloud_msg{};
-    point_cloud_msg.header.frame_id = "base_link";
-    return point_cloud_msg;
-  } else {
-    return T{};
-  }
-}
-
-template <typename T>
-void publishData(
-  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node, std::string topic_name,
-  typename rclcpp::Publisher<T>::SharedPtr publisher)
-{
-  setPublisher(test_node, topic_name, publisher);
-  T object = generateObject<T>(target_node);
-  publisher->publish(object);
-  spinSomeNodes(test_node, target_node);
-}
-
-void publishScenarioData(
-  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node, std::string topic_name,
-  rclcpp::Publisher<Scenario>::SharedPtr publisher, const std::string scenario)
-{
-  auto scenario_msg = std::make_shared<Scenario>();
-  scenario_msg->current_scenario = scenario;
-  scenario_msg->activating_scenarios = {scenario};
-  setPublisher(test_node, topic_name, publisher);
-  publisher->publish(*scenario_msg);
-
-  spinSomeNodes(test_node, target_node);
-}
-
-template <typename T>
 void createSubscription(
   rclcpp::Node::SharedPtr test_node, std::string topic_name,
   std::function<void(const typename T::ConstSharedPtr)> callback,
@@ -351,6 +336,35 @@ void setSubscriber(
 {
   createSubscription(
     test_node, topic_name, [&count](const typename T::ConstSharedPtr) { count++; }, subscriber);
+}
+
+void spinSomeNodes(
+  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node,
+  const int repeat_count = 1)
+{
+  for (int i = 0; i < repeat_count; i++) {
+    rclcpp::spin_some(test_node);
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
+    rclcpp::spin_some(target_node);
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
+  }
+}
+
+template <typename T>
+void publishToTargetNode(
+  rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node, std::string topic_name,
+  typename rclcpp::Publisher<T>::SharedPtr publisher, T data, const int repeat_count = 1)
+{
+  test_utils::setPublisher<T>(test_node, topic_name, publisher);
+  publisher->publish(data);
+  if (topic_name.empty()) {
+    throw std::runtime_error(
+      std::string("Topic name for ") + typeid(*publisher).name() + " is empty");
+  }
+  if (target_node->count_subscribers(topic_name) == 0) {
+    throw std::runtime_error("No subscriber for " + topic_name);
+  }
+  test_utils::spinSomeNodes(test_node, target_node, repeat_count);
 }
 
 void updateNodeOptions(

@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionRoute)
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test with empty route
-  test_manager->testWithAbnormalRoute(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalRoute(test_target_node));
   rclcpp::shutdown();
 }
 

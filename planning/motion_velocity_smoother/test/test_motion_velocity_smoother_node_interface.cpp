@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,16 +28,12 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
   auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
 
   auto node_options = rclcpp::NodeOptions{};
-
   node_options.append_parameter_override("algorithm_type", "JerkFiltered");
   node_options.append_parameter_override("publish_debug_trajs", false);
-
-  const auto motion_velocity_smoother_dir =
-    ament_index_cpp::get_package_share_directory("motion_velocity_smoother");
-
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
-
+  const auto motion_velocity_smoother_dir =
+    ament_index_cpp::get_package_share_directory("motion_velocity_smoother");
   node_options.arguments(
     {"--ros-args", "--params-file", planning_test_utils_dir + "/config/test_common.param.yaml",
      "--params-file", planning_test_utils_dir + "/config/test_nearest_search.param.yaml",
@@ -66,5 +62,5 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  test_manager->testWithAbnormalTrajectory(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
 }

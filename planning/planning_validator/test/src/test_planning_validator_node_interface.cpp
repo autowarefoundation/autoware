@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,18 +26,14 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
 
   auto node_options = rclcpp::NodeOptions{};
-
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
-
   const auto planning_validator_dir =
     ament_index_cpp::get_package_share_directory("planning_validator");
-
   node_options.arguments(
     {"--ros-args", "--params-file",
      planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
      planning_validator_dir + "/config/planning_validator.param.yaml"});
-
   auto test_target_node = std::make_shared<planning_validator::PlanningValidator>(node_options);
 
   // publish necessary topics from test_manager
@@ -54,5 +50,7 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  test_manager->testWithAbnormalTrajectory(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
+
+  rclcpp::shutdown();
 }

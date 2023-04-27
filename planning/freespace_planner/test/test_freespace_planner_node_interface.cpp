@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,18 +28,14 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
   auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
 
   auto node_options = rclcpp::NodeOptions{};
-
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
-
   const auto freespace_planner_dir =
     ament_index_cpp::get_package_share_directory("freespace_planner");
-
   node_options.arguments(
     {"--ros-args", "--params-file",
      planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
      freespace_planner_dir + "/config/freespace_planner.param.yaml"});
-
   auto test_target_node = std::make_shared<freespace_planner::FreespacePlannerNode>(node_options);
 
   // publish necessary topics from test_manager
@@ -59,5 +55,5 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test with empty route
-  test_manager->testWithAbnormalRoute(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalRoute(test_target_node));
 }

@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,7 +45,8 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
   // publish necessary topics from test_manager
   test_manager->publishOdometry(test_target_node, "obstacle_velocity_limiter/input/odometry");
-  test_manager->publishPointCloud(test_target_node, "obstacle_velocity_limiter/input/pointcloud");
+  test_manager->publishPointCloud(
+    test_target_node, "obstacle_velocity_limiter/input/obstacle_pointcloud");
   test_manager->publishOccupancyGrid(
     test_target_node, "obstacle_velocity_limiter/input/occupancy_grid");
   test_manager->publishPredictedObjects(
@@ -64,5 +65,5 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  test_manager->testWithAbnormalTrajectory(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
 }

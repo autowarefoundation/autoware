@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -90,11 +90,10 @@ class PlanningInterfaceTestManager
 public:
   PlanningInterfaceTestManager();
 
-  void publishOdometry(rclcpp::Node::SharedPtr target_node);
   void publishOdometry(rclcpp::Node::SharedPtr target_node, std::string topic_name);
 
-  void publishInitialPose(rclcpp::Node::SharedPtr target_node);
-  void publishInitialPose(rclcpp::Node::SharedPtr target_node, std::string topic_name);
+  void publishInitialPose(
+    rclcpp::Node::SharedPtr target_node, std::string topic_name, const double shift = 0.0);
 
   void publishMaxVelocity(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishPointCloud(rclcpp::Node::SharedPtr target_node, std::string topic_name);
@@ -119,8 +118,6 @@ public:
   void publishExternalCrosswalkStates(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishExternalIntersectionStates(
     rclcpp::Node::SharedPtr target_node, std::string topic_name);
-  void publishInitialPoseData(
-    rclcpp::Node::SharedPtr target_node, std::string topic_name, double shift = 0.0);
 
   void setTrajectoryInputTopicName(std::string topic_name);
   void setParkingTrajectoryInputTopicName(std::string topic_name);

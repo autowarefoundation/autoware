@@ -22,12 +22,20 @@
 #include <cmath>
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryLaneDrivingMode)
+using planning_test_utils::PlanningInterfaceTestManager;
+
+std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
-  rclcpp::init(0, nullptr);
+  auto test_manager = std::make_shared<PlanningInterfaceTestManager>();
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
+  // set subscriber with topic name: scenario_selector → test_node_
+  test_manager->setScenarioSubscriber("output/scenario");
 
+  return test_manager;
+}
+
+std::shared_ptr<ScenarioSelectorNode> generateNode()
+{
   auto node_options = rclcpp::NodeOptions{};
   node_options.append_parameter_override("update_rate", 10.0);
   node_options.append_parameter_override("th_max_message_delay_sec", INFINITY);
@@ -36,16 +44,28 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryLaneDrivingMode
   node_options.append_parameter_override("th_stopped_velocity_mps", 0.01);
   auto test_target_node = std::make_shared<ScenarioSelectorNode>(node_options);
 
+  return std::make_shared<ScenarioSelectorNode>(node_options);
+}
+
+void publishMandatoryTopics(
+  std::shared_ptr<PlanningInterfaceTestManager> test_manager,
+  std::shared_ptr<ScenarioSelectorNode> test_target_node)
+{
   // publish necessary topics from test_manager
   test_manager->publishOdometry(test_target_node, "input/odometry");
-  test_manager->publishAcceleration(test_target_node, "input/acceleration");
   test_manager->publishParkingState(test_target_node, "is_parking_completed");
   test_manager->publishTrajectory(test_target_node, "input/parking/trajectory");
   test_manager->publishMap(test_target_node, "input/lanelet_map");
   test_manager->publishRoute(test_target_node, "input/route");
+}
 
-  // set subscriber with topic name: scenario_selector → test_node_
-  test_manager->setScenarioSubscriber("output/scenario");
+TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryLaneDrivingMode)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
 
   // set scenario_selector's input topic name(this topic is changed to test node)
   test_manager->setTrajectoryInputTopicName("input/lane_driving/trajectory");
@@ -55,7 +75,7 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryLaneDrivingMode
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  test_manager->testWithAbnormalTrajectory(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
   rclcpp::shutdown();
 }
 
@@ -63,36 +83,19 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryParkingMode)
 {
   rclcpp::init(0, nullptr);
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
 
-  auto node_options = rclcpp::NodeOptions{};
-  node_options.append_parameter_override("update_rate", 10.0);
-  node_options.append_parameter_override("th_max_message_delay_sec", INFINITY);
-  node_options.append_parameter_override("th_arrived_distance_m", 1.0);
-  node_options.append_parameter_override("th_stopped_time_sec", 1.0);
-  node_options.append_parameter_override("th_stopped_velocity_mps", 0.01);
-  auto test_target_node = std::make_shared<ScenarioSelectorNode>(node_options);
-
-  // publish necessary topics from test_manager
-  test_manager->publishOdometry(test_target_node, "input/odometry");
-  test_manager->publishAcceleration(test_target_node, "input/acceleration");
-  test_manager->publishParkingState(test_target_node, "is_parking_completed");
-  test_manager->publishTrajectory(test_target_node, "input/lane_driving/trajectory");
-  test_manager->publishMap(test_target_node, "input/lanelet_map");
-  test_manager->publishRoute(test_target_node, "input/route");
-
-  // set subscriber with topic name: scenario_selector → test_node_
-  test_manager->setScenarioSubscriber("output/scenario");
+  publishMandatoryTopics(test_manager, test_target_node);
 
   // set scenario_selector's input topic name(this topic is changed to test node)
   test_manager->setTrajectoryInputTopicName("input/parking/trajectory");
 
   // test for normal trajectory
   ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
-
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  test_manager->testWithAbnormalTrajectory(test_target_node);
+  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
   rclcpp::shutdown();
 }
