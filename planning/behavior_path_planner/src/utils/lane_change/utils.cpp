@@ -257,8 +257,7 @@ bool getLaneChangePaths(
 
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
-  const auto dist_to_end_of_current_lanes =
-    utils::getDistanceToEndOfLane(pose, original_lanelets) - next_lane_change_buffer;
+  const auto dist_to_end_of_current_lanes = utils::getDistanceToEndOfLane(pose, original_lanelets);
 
   [[maybe_unused]] const auto arc_position_from_current =
     lanelet::utils::getArcCoordinates(original_lanelets, pose);

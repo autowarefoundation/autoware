@@ -341,7 +341,7 @@ bool NormalLaneChange::getLaneChangePaths(
     utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
 
   const auto dist_to_end_of_current_lanes =
-    utils::getDistanceToEndOfLane(getEgoPose(), original_lanelets) - next_lane_change_buffer;
+    utils::getDistanceToEndOfLane(getEgoPose(), original_lanelets);
 
   [[maybe_unused]] const auto arc_position_from_current =
     lanelet::utils::getArcCoordinates(original_lanelets, getEgoPose());
