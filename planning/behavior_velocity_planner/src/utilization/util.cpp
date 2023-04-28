@@ -677,6 +677,7 @@ std::set<int> getAssociativeIntersectionLanelets(
     for (const auto & neighbor : neighbors) parent_neighbors.insert(neighbor.id());
   }
   std::set<int> assocs;
+  assocs.insert(lane.id());
   for (const auto & parent_neighbor_id : parent_neighbors) {
     const auto parent_neighbor = lanelet_map->laneletLayer.get(parent_neighbor_id);
     const auto followings = routing_graph->following(parent_neighbor);
