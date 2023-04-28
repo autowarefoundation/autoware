@@ -497,7 +497,7 @@ bool isLaneChangePathSafe(
     path.points, current_pose, common_parameter.ego_nearest_dist_threshold,
     common_parameter.ego_nearest_yaw_threshold);
 
-  const auto vehicle_predicted_path = utils::convertToPredictedPath(
+  const auto ego_predicted_path = utils::convertToPredictedPath(
     path, current_twist, current_pose, current_seg_idx, check_end_time, time_resolution,
     prepare_duration, acceleration);
   const auto & vehicle_info = common_parameter.vehicle_info;
@@ -541,7 +541,7 @@ bool isLaneChangePathSafe(
   for (double t = check_start_time; t < check_end_time; t += time_resolution) {
     tier4_autoware_utils::Polygon2d ego_polygon;
     const auto result =
-      utils::getEgoExpectedPoseAndConvertToPolygon(vehicle_predicted_path, t, vehicle_info);
+      utils::getEgoExpectedPoseAndConvertToPolygon(ego_predicted_path, t, vehicle_info);
     if (!result) {
       continue;
     }
@@ -552,9 +552,9 @@ bool isLaneChangePathSafe(
   for (const auto & i : in_lane_object_indices) {
     const auto & obj = dynamic_objects->objects.at(i);
     auto current_debug_data = assignDebugData(obj);
-    const auto predicted_paths =
+    const auto obj_predicted_paths =
       utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
-    for (const auto & obj_path : predicted_paths) {
+    for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::safety_check::isSafeInLaneletCollisionCheck(
             interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
             obj, obj_path, common_parameter,
@@ -574,7 +574,7 @@ bool isLaneChangePathSafe(
   for (const auto & i : dynamic_objects_indices.other_lane) {
     const auto & obj = dynamic_objects->objects.at(i);
     auto current_debug_data = assignDebugData(obj);
-    current_debug_data.second.ego_predicted_path.push_back(vehicle_predicted_path);
+    current_debug_data.second.ego_predicted_path.push_back(ego_predicted_path);
 
     const auto predicted_paths =
       utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);

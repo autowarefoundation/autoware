@@ -199,16 +199,15 @@ bool isSafeInLaneletCollisionCheck(
       continue;
     }
 
-    const auto found_expected_obj_pose =
+    auto expected_obj_pose =
       perception_utils::calcInterpolatedPose(target_object_path, current_time);
 
-    if (!found_expected_obj_pose) {
+    if (!expected_obj_pose) {
       continue;
     }
 
-    auto expected_obj_pose = *found_expected_obj_pose;
     const auto & obj_polygon =
-      tier4_autoware_utils::toPolygon2d(expected_obj_pose, target_object.shape);
+      tier4_autoware_utils::toPolygon2d(*expected_obj_pose, target_object.shape);
     const auto & ego_info = interpolated_ego.at(i);
     auto expected_ego_pose = ego_info.first;
     const auto & ego_polygon = ego_info.second;
@@ -223,12 +222,12 @@ bool isSafeInLaneletCollisionCheck(
     debug.lerped_path.push_back(expected_ego_pose);
 
     getProjectedDistancePointFromPolygons(
-      ego_polygon, obj_polygon, expected_ego_pose, expected_obj_pose);
+      ego_polygon, obj_polygon, expected_ego_pose, *expected_obj_pose);
     debug.expected_ego_pose = expected_ego_pose;
-    debug.expected_obj_pose = expected_obj_pose;
+    debug.expected_obj_pose = *expected_obj_pose;
 
     if (!hasEnoughDistance(
-          expected_ego_pose, ego_current_twist, expected_obj_pose, object_twist, common_parameters,
+          expected_ego_pose, ego_current_twist, *expected_obj_pose, object_twist, common_parameters,
           front_decel, rear_decel, debug)) {
       debug.failed_reason = "not_enough_longitudinal";
       return false;
