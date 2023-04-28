@@ -3328,7 +3328,6 @@ void AvoidanceModule::setDebugData(
   add(createOverhangFurthestLineStringMarkerArray(
     debug.bounds, "farthest_linestring_from_overhang", 1.0, 0.0, 1.0));
 
-  add(createUnavoidableObjectsMarkerArray(debug.unavoidable_objects, "unavoidable_objects"));
   add(createUnsafeObjectsMarkerArray(debug.unsafe_objects, "unsafe_objects"));
 
   // parent object info
