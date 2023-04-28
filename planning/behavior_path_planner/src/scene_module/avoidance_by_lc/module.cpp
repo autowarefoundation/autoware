@@ -948,15 +948,15 @@ bool AvoidanceByLCModule::isApprovedPathSafe(Pose & ego_pose_before_collision) c
   const auto & path = status_.lane_change_path;
 
   // get lanes used for detection
-  const auto check_lanes = utils::lane_change::getExtendedTargetLanesForCollisionCheck(
-    *route_handler, path.target_lanelets.front(), current_pose, check_distance_);
+  const auto backward_target_lanes_for_object_filtering = utils::lane_change::getBackwardLanelets(
+    *route_handler, path.target_lanelets, current_pose, check_distance_);
 
   std::unordered_map<std::string, CollisionCheckDebug> debug_data;
   const auto lateral_buffer =
     utils::lane_change::calcLateralBufferForFiltering(common_parameters.vehicle_width);
   const auto dynamic_object_indices = utils::lane_change::filterObjectIndices(
-    {path}, *dynamic_objects, check_lanes, current_pose, common_parameters.forward_path_length,
-    *lane_change_parameters, lateral_buffer);
+    {path}, *dynamic_objects, backward_target_lanes_for_object_filtering, current_pose,
+    common_parameters.forward_path_length, *lane_change_parameters, lateral_buffer);
 
   return utils::lane_change::isLaneChangePathSafe(
     path, dynamic_objects, dynamic_object_indices, current_pose, current_twist, common_parameters,

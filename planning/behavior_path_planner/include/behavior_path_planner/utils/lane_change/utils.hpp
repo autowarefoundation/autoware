@@ -165,8 +165,8 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
   const Pose & curent_pose, const double abort_return_dist,
   const BehaviorPathPlannerParameters & common_param);
 
-lanelet::ConstLanelets getExtendedTargetLanesForCollisionCheck(
-  const RouteHandler & route_handler, const lanelet::ConstLanelet & target_lanes,
+lanelet::ConstLanelets getBackwardLanelets(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & current_pose, const double backward_length);
 
 LaneChangeTargetObjectIndices filterObjectIndices(

@@ -402,10 +402,10 @@ bool getLaneChangePaths(
 
     if (candidate_paths->empty()) {
       // only compute dynamic object indices once
-      const auto backward_lanes = utils::lane_change::getExtendedTargetLanesForCollisionCheck(
-        route_handler, target_lanelets.front(), pose, check_length);
+      const auto backward_target_lanes_for_object_filtering =
+        utils::lane_change::getBackwardLanelets(route_handler, target_lanelets, pose, check_length);
       dynamic_object_indices = filterObjectIndices(
-        {*candidate_path}, *dynamic_objects, backward_lanes, pose,
+        {*candidate_path}, *dynamic_objects, backward_target_lanes_for_object_filtering, pose,
         common_parameter.forward_path_length, parameter, lateral_buffer);
     }
     candidate_paths->push_back(*candidate_path);
@@ -1115,18 +1115,23 @@ bool hasEnoughLengthToLaneChangeAfterAbort(
 }
 
 // TODO(Azu): In the future, get back lanelet within `to_back_dist` [m] from queried lane
-lanelet::ConstLanelets getExtendedTargetLanesForCollisionCheck(
-  const RouteHandler & route_handler, const lanelet::ConstLanelet & target_lane,
+lanelet::ConstLanelets getBackwardLanelets(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & current_pose, const double backward_length)
 {
-  const auto arc_length = lanelet::utils::getArcCoordinates({target_lane}, current_pose);
+  if (target_lanes.empty()) {
+    return {};
+  }
+
+  const auto arc_length = lanelet::utils::getArcCoordinates(target_lanes, current_pose);
 
   if (arc_length.length >= backward_length) {
     return {};
   }
 
+  const auto & front_lane = target_lanes.front();
   const auto preceding_lanes = route_handler.getPrecedingLaneletSequence(
-    target_lane, std::abs(backward_length - arc_length.length), {target_lane});
+    front_lane, std::abs(backward_length - arc_length.length), {front_lane});
 
   lanelet::ConstLanelets backward_lanes{};
   const auto num_of_lanes = std::invoke([&preceding_lanes]() {
