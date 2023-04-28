@@ -88,7 +88,8 @@ RadarTracksMsgsConverterNode::RadarTracksMsgsConverterNode(const rclcpp::NodeOpt
   transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
 
   // Publisher
-  pub_radar_ = create_publisher<TrackedObjects>("~/output/radar_objects", 1);
+  pub_tracked_objects_ = create_publisher<TrackedObjects>("~/output/radar_tracked_objects", 1);
+  pub_detected_objects_ = create_publisher<DetectedObjects>("~/output/radar_detected_objects", 1);
 
   // Timer
   const auto update_period_ns = rclcpp::Rate(node_param_.update_rate_hz).period();
@@ -152,9 +153,97 @@ void RadarTracksMsgsConverterNode::onTimer()
     node_param_.new_frame_id, header.frame_id, header.stamp, rclcpp::Duration::from_seconds(0.01));
 
   TrackedObjects tracked_objects = convertRadarTrackToTrackedObjects();
+  DetectedObjects detected_objects = convertRadarTrackToDetectedObjects();
   if (!tracked_objects.objects.empty()) {
-    pub_radar_->publish(tracked_objects);
+    pub_tracked_objects_->publish(tracked_objects);
+    pub_detected_objects_->publish(detected_objects);
   }
+}
+
+DetectedObjects RadarTracksMsgsConverterNode::convertRadarTrackToDetectedObjects()
+{
+  DetectedObjects detected_objects;
+  detected_objects.header = radar_data_->header;
+  detected_objects.header.frame_id = node_param_.new_frame_id;
+  using POSE_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
+  using RADAR_IDX = tier4_autoware_utils::xyz_upper_covariance_index::XYZ_UPPER_COV_IDX;
+
+  for (auto & radar_track : radar_data_->tracks) {
+    DetectedObject detected_object;
+
+    detected_object.existence_probability = 1.0;
+
+    detected_object.shape.type = Shape::BOUNDING_BOX;
+    detected_object.shape.dimensions = radar_track.size;
+
+    // kinematics
+    DetectedObjectKinematics kinematics;
+    kinematics.has_twist = true;
+    kinematics.has_twist_covariance = true;
+
+    // convert by tf
+    geometry_msgs::msg::PoseStamped radar_pose_stamped{};
+    radar_pose_stamped.pose.position = radar_track.position;
+    geometry_msgs::msg::PoseStamped transformed_pose_stamped{};
+    tf2::doTransform(radar_pose_stamped, transformed_pose_stamped, *transform_);
+    kinematics.pose_with_covariance.pose = transformed_pose_stamped.pose;
+
+    {
+      auto & pose_cov = kinematics.pose_with_covariance.covariance;
+      auto & radar_position_cov = radar_track.position_covariance;
+      pose_cov[POSE_IDX::X_X] = radar_position_cov[RADAR_IDX::X_X];
+      pose_cov[POSE_IDX::X_Y] = radar_position_cov[RADAR_IDX::X_Y];
+      pose_cov[POSE_IDX::X_Z] = radar_position_cov[RADAR_IDX::X_Z];
+      pose_cov[POSE_IDX::Y_X] = radar_position_cov[RADAR_IDX::X_Y];
+      pose_cov[POSE_IDX::Y_Y] = radar_position_cov[RADAR_IDX::Y_Y];
+      pose_cov[POSE_IDX::Y_Z] = radar_position_cov[RADAR_IDX::Y_Z];
+      pose_cov[POSE_IDX::Z_X] = radar_position_cov[RADAR_IDX::X_Z];
+      pose_cov[POSE_IDX::Z_Y] = radar_position_cov[RADAR_IDX::Y_Z];
+      pose_cov[POSE_IDX::Z_Z] = radar_position_cov[RADAR_IDX::Z_Z];
+    }
+
+    // convert by tf
+    geometry_msgs::msg::Vector3Stamped radar_velocity_stamped{};
+    radar_velocity_stamped.vector = radar_track.velocity;
+    geometry_msgs::msg::Vector3Stamped transformed_vector3_stamped{};
+    tf2::doTransform(radar_velocity_stamped, transformed_vector3_stamped, *transform_);
+    kinematics.twist_with_covariance.twist.linear = transformed_vector3_stamped.vector;
+
+    // twist compensation
+    if (node_param_.use_twist_compensation) {
+      if (odometry_data_) {
+        kinematics.twist_with_covariance.twist.linear.x += odometry_data_->twist.twist.linear.x;
+        kinematics.twist_with_covariance.twist.linear.y += odometry_data_->twist.twist.linear.y;
+        kinematics.twist_with_covariance.twist.linear.z += odometry_data_->twist.twist.linear.z;
+      } else {
+        RCLCPP_INFO(get_logger(), "Odometry data is not coming");
+      }
+    }
+
+    {
+      auto & twist_cov = kinematics.twist_with_covariance.covariance;
+      auto & radar_vel_cov = radar_track.velocity_covariance;
+      twist_cov[POSE_IDX::X_X] = radar_vel_cov[RADAR_IDX::X_X];
+      twist_cov[POSE_IDX::X_Y] = radar_vel_cov[RADAR_IDX::X_Y];
+      twist_cov[POSE_IDX::X_Z] = radar_vel_cov[RADAR_IDX::X_Z];
+      twist_cov[POSE_IDX::Y_X] = radar_vel_cov[RADAR_IDX::X_Y];
+      twist_cov[POSE_IDX::Y_Y] = radar_vel_cov[RADAR_IDX::Y_Y];
+      twist_cov[POSE_IDX::Y_Z] = radar_vel_cov[RADAR_IDX::Y_Z];
+      twist_cov[POSE_IDX::Z_X] = radar_vel_cov[RADAR_IDX::X_Z];
+      twist_cov[POSE_IDX::Z_Y] = radar_vel_cov[RADAR_IDX::Y_Z];
+      twist_cov[POSE_IDX::Z_Z] = radar_vel_cov[RADAR_IDX::Z_Z];
+    }
+    detected_object.kinematics = kinematics;
+
+    // classification
+    ObjectClassification classification;
+    classification.probability = 1.0;
+    classification.label = convertClassification(radar_track.classification);
+    detected_object.classification.emplace_back(classification);
+
+    detected_objects.objects.emplace_back(detected_object);
+  }
+  return detected_objects;
 }
 
 TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()

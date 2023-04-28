@@ -1,6 +1,6 @@
 # radar_tracks_msgs_converter
 
-This package convert from [radar_msgs/msg/RadarTracks](https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg) into [autoware_auto_perception_msgs/msg/TrackedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/TrackedObject.idl).
+This package convert from [radar_msgs/msg/RadarTracks](https://github.com/ros-perception/radar_msgs/blob/ros2/msg/RadarTracks.msg) into [autoware_auto_perception_msgs/msg/DetectedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/DetectedObject.idl) and [autoware_auto_perception_msgs/msg/TrackedObject](https://gitlab.com/autowarefoundation/autoware.auto/autoware_auto_msgs/-/blob/master/autoware_auto_perception_msgs/msg/TrackedObject.idl).
 
 - Calculation cost is O(n).
   - n: The number of radar objects
@@ -13,7 +13,8 @@ This package convert from [radar_msgs/msg/RadarTracks](https://github.com/ros-pe
   - `~/input/radar_objects` (radar_msgs/msg/RadarTracks.msg): Input radar topic
   - `~/input/odometry` (nav_msgs/msg/Odometry.msg): Ego vehicle odometry topic
 - Output
-  - `~/output/radar_objects` (autoware_auto_perception_msgs/msg/TrackedObject.msg): The topic converted to Autoware's message
+  - `~/output/radar_detected_objects` (autoware_auto_perception_msgs/msg/DetectedObject.idl): The topic converted to Autoware's message
+  - `~/output/radar_tracked_objects` (autoware_auto_perception_msgs/msg/TrackedObject.idl): The topic converted to Autoware's message
 
 ### Parameters
 
