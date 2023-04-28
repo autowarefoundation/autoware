@@ -385,17 +385,17 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     logger_.get_child("collision state_machine"), *clock_);
 
   /* set RTC safety respectively */
+  occlusion_first_stop_distance_ = dist_1st_stopline;
+  occlusion_stop_distance_ = dist_2nd_stopline;
+  setDistance(dist_1st_stopline);
   if (occlusion_stop_required) {
     if (first_phase_stop_required) {
       occlusion_first_stop_safety_ = false;
-      occlusion_first_stop_distance_ = dist_1st_stopline;
     }
     occlusion_safety_ = is_occlusion_cleared;
-    occlusion_stop_distance_ = dist_2nd_stopline;
   } else {
     /* collision */
     setSafe(collision_state_machine_.getState() == StateMachine::State::GO);
-    setDistance(dist_1st_stopline);
   }
 
   /* make decision */

@@ -189,17 +189,16 @@ void IntersectionModuleManager::sendRTC(const Time & stamp)
     const bool is_occluded = intersection_module->isOccluded();
     const UUID uuid = getUUID(scene_module->getModuleId());
     const auto occlusion_uuid = intersection_module->getOcclusionUUID();
+    const auto occlusion_distance = intersection_module->getOcclusionDistance();
     const auto occlusion_first_stop_uuid = intersection_module->getOcclusionFirstStopUUID();
     if (!is_occluded) {
       // default
       updateRTCStatus(uuid, scene_module->isSafe(), scene_module->getDistance(), stamp);
       occlusion_rtc_interface_.updateCooperateStatus(
-        occlusion_uuid, true, std::numeric_limits<double>::lowest(),
-        std::numeric_limits<double>::lowest(), stamp);
+        occlusion_uuid, true, occlusion_distance, occlusion_distance, stamp);
     } else {
       // occlusion
       const auto occlusion_safety = intersection_module->getOcclusionSafety();
-      const auto occlusion_distance = intersection_module->getOcclusionDistance();
       occlusion_rtc_interface_.updateCooperateStatus(
         occlusion_uuid, occlusion_safety, occlusion_distance, occlusion_distance, stamp);
 
