@@ -33,9 +33,8 @@ void AutowarePathWithLaneIdDisplay::preProcessMessageDetail()
         VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
       updateVehicleInfo();
     } catch (const std::exception & e) {
-      RCLCPP_WARN_THROTTLE(
-        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
-        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+      RCLCPP_WARN_ONCE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(), "Failed to get vehicle_info: %s",
         e.what());
     }
   }
@@ -113,9 +112,8 @@ void AutowarePathDisplay::preProcessMessageDetail()
         VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
       updateVehicleInfo();
     } catch (const std::exception & e) {
-      RCLCPP_WARN_THROTTLE(
-        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
-        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+      RCLCPP_WARN_ONCE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(), "Failed to get vehicle_info: %s",
         e.what());
     }
   }
@@ -131,9 +129,8 @@ void AutowareTrajectoryDisplay::preProcessMessageDetail()
         VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
       updateVehicleInfo();
     } catch (const std::exception & e) {
-      RCLCPP_WARN_THROTTLE(
-        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
-        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+      RCLCPP_WARN_ONCE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(), "Failed to get vehicle_info: %s",
         e.what());
     }
   }
