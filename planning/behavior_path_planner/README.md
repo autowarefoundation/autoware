@@ -43,10 +43,10 @@ The role of manager is to launch the appropriate scene module according to the s
 
 Now, it is able to select two managers with different architecture.
 
-| Name                                  | Description                                                                                                                                                                | Details   |
-| :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------- |
-| Behavior Tree based manager (default) | this manager launches scene modules based on Behavior Tree. all scene modules run exclusively.                                                                             | LINK(WIP) |
-| BT-free manager (unstable)            | this manager is developed in order to achieve complex scenario, and launches scene modules without Behavior Tree. multiple modules can run simultaneously on this manager. | LINK(WIP) |
+| Name                                  | Description                                                                                                                                                                | Details                                                |
+| :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
+| Behavior Tree based manager (default) | this manager launches scene modules based on Behavior Tree. all scene modules run exclusively.                                                                             | LINK(WIP)                                              |
+| BT-free manager (unstable)            | this manager is developed in order to achieve complex scenario, and launches scene modules without Behavior Tree. multiple modules can run simultaneously on this manager. | [LINK](./docs/behavior_path_planner_manager_design.md) |
 
 The manager is switched by flag `COMPILE_WITH_OLD_ARCHITECTURE` in CmakeLists.txt of `behavior_path_planner` package. Please set the flag **FALSE** if you try to use BT-free manager.
 
