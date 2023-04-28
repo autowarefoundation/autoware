@@ -43,6 +43,7 @@
 namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::OperationModeState;
+using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;

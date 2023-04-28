@@ -21,6 +21,7 @@
   <!-- behavior path planner -->
   <arg name="side_shift_param_path"/>
   <arg name="avoidance_param_path"/>
+  <arg name="dynamic_avoidance_param_path"/>
   <arg name="lane_change_param_path"/>
   <arg name="goal_planner_param_path"/>
   <arg name="pull_out_param_path"/>
