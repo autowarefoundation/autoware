@@ -136,7 +136,7 @@ void PlannerManager::generateCombinedDrivableArea(
   }
 
   // extract obstacles from drivable area
-  utils::extractObstaclesFromDrivableArea(*output.path, output.drivable_area_info.obstacle_polys);
+  utils::extractObstaclesFromDrivableArea(*output.path, output.drivable_area_info.obstacles);
 }
 
 std::vector<SceneModulePtr> PlannerManager::getRequestModules(

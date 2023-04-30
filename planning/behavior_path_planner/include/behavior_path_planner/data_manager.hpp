@@ -81,8 +81,13 @@ struct DrivableLanes
 // quite messy. Needs to be refactored.
 struct DrivableAreaInfo
 {
+  struct Obstacle
+  {
+    geometry_msgs::msg::Pose pose;
+    tier4_autoware_utils::Polygon2d poly;
+  };
   std::vector<DrivableLanes> drivable_lanes;
-  std::vector<tier4_autoware_utils::Polygon2d> obstacle_polys;
+  std::vector<Obstacle> obstacles;  // obstacles to extract from the drivable area
 
   // temporary only for pull over's freespace planning
   double drivable_margin{0.0};

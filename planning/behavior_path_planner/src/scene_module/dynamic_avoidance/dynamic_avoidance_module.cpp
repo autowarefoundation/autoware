@@ -168,12 +168,12 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   // 2. get drivable lanes from previous module
   const auto drivable_lanes = getPreviousModuleOutput().drivable_area_info.drivable_lanes;
 
-  // 3. create obstacle polygons to avoid
-  std::vector<tier4_autoware_utils::Polygon2d> obstacle_polys;
+  // 3. create obstacles to avoid (= extract from the drivable area)
+  std::vector<DrivableAreaInfo::Obstacle> obstacles_for_drivable_area;
   for (const auto & object : target_objects_) {
     const auto obstacle_poly = calcDynamicObstaclePolygon(*prev_module_path, object);
     if (obstacle_poly) {
-      obstacle_polys.push_back(obstacle_poly.value());
+      obstacles_for_drivable_area.push_back({object.pose, obstacle_poly.value()});
     }
   }
 
@@ -182,7 +182,7 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   output.reference_path = getPreviousModuleOutput().reference_path;
   // for new architecture
   output.drivable_area_info.drivable_lanes = drivable_lanes;
-  output.drivable_area_info.obstacle_polys = obstacle_polys;
+  output.drivable_area_info.obstacles = obstacles_for_drivable_area;
   output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
 
   return output;
