@@ -1493,12 +1493,17 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
     return result;
   }
 
+#ifndef USE_OLD_ARCHITECTURE
+  {
+    const std::lock_guard<std::mutex> lock(mutex_manager_);  // for planner_manager_
+    planner_manager_->updateModuleParams(parameters);
+  }
+#endif
+
   result.successful = true;
   result.reason = "success";
 
   try {
-    updateParam(
-      parameters, "avoidance.publish_debug_marker", avoidance_param_ptr_->publish_debug_marker);
     updateParam(
       parameters, "lane_change.publish_debug_marker", lane_change_param_ptr_->publish_debug_marker);
     // Drivable area expansion parameters
