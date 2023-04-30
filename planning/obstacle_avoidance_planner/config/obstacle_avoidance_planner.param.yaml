@@ -110,6 +110,7 @@
         avoidance_cost_margin: 0.0                       # [m]
         avoidance_cost_band_length: 5.0                  # [m]
         avoidance_cost_decrease_rate: 0.05               # decreased cost per point interval
+        min_drivable_width: 0.2                          # [m] The vehicle width and this parameter is guaranteed to keep for collision free constraint.
 
         weight:
           lat_error_weight: 0.0     # weight for lateral error

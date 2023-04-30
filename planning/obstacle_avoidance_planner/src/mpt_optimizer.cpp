@@ -246,6 +246,7 @@ MPTOptimizer::MPTParam::MPTParam(
       node->declare_parameter<double>("mpt.avoidance.avoidance_cost_band_length");
     avoidance_cost_decrease_rate =
       node->declare_parameter<double>("mpt.avoidance.avoidance_cost_decrease_rate");
+    min_drivable_width = node->declare_parameter<double>("mpt.avoidance.min_drivable_width");
 
     avoidance_lat_error_weight =
       node->declare_parameter<double>("mpt.avoidance.weight.lat_error_weight");
@@ -384,6 +385,7 @@ void MPTOptimizer::MPTParam::onParam(const std::vector<rclcpp::Parameter> & para
       parameters, "mpt.avoidance.max_longitudinal_margin_for_bound_violation",
       max_longitudinal_margin_for_bound_violation);
     updateParam<double>(parameters, "mpt.avoidance.max_bound_fixing_time", max_bound_fixing_time);
+    updateParam<double>(parameters, "mpt.avoidance.min_drivable_width", min_drivable_width);
     updateParam<double>(parameters, "mpt.avoidance.max_avoidance_cost", max_avoidance_cost);
     updateParam<double>(parameters, "mpt.avoidance.avoidance_cost_margin", avoidance_cost_margin);
     updateParam<double>(
@@ -802,9 +804,14 @@ void MPTOptimizer::updateBounds(
       ref_point_for_bound_search.pose, left_bound, soft_road_clearance, true);
     const double dist_to_right_bound = calcLateralDistToBounds(
       ref_point_for_bound_search.pose, right_bound, soft_road_clearance, false);
-
     ref_points.at(i).bounds = Bounds{dist_to_right_bound, dist_to_left_bound};
   }
+
+  // keep vehicle width + margin
+  // NOTE: The drivable area's width is sometimes narrower than the vehicle width which means
+  // infeasible to run especially when obstacles are extracted from the drivable area.
+  //       In this case, the drivable area's width is forced to be wider.
+  keepMinimumBoundsWidth(ref_points);
 
   // extend violated bounds, where the input path is outside the drivable area
   ref_points = extendViolatedBounds(ref_points);
@@ -831,6 +838,160 @@ void MPTOptimizer::updateBounds(
 
   time_keeper_ptr_->toc(__func__, "          ");
   return;
+}
+
+void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_points) const
+{
+  // 1. calculate start and end sections which are out of bounds
+  std::vector<std::pair<size_t, size_t>> out_of_upper_bound_sections;
+  std::vector<std::pair<size_t, size_t>> out_of_lower_bound_sections;
+  std::optional<size_t> out_of_upper_bound_start_idx = std::nullopt;
+  std::optional<size_t> out_of_lower_bound_start_idx = std::nullopt;
+  for (size_t i = 0; i < ref_points.size(); ++i) {
+    const auto & b = ref_points.at(i).bounds;
+    // const double drivable_width = b.upper_bound - b.lower_bound;
+    // const bool is_infeasible_to_drive = drivable_width < mpt_param_.min_drivable_width;
+
+    // NOTE: The following condition should be uncommented to see obstacles outside the path.
+    //       However, on a narrow road, the ego may go outside the road border with this condition.
+    //       Currently, we cannot distinguish obstacles and road border
+    if (/*is_infeasible_to_drive ||*/ b.upper_bound < 0.0) {  // out of upper bound
+      if (!out_of_upper_bound_start_idx) {
+        out_of_upper_bound_start_idx = i;
+      }
+    } else {
+      if (out_of_upper_bound_start_idx) {
+        out_of_upper_bound_sections.push_back({*out_of_upper_bound_start_idx, i - 1});
+        out_of_upper_bound_start_idx = std::nullopt;
+      }
+    }
+    if (/*is_infeasible_to_drive ||*/ 0.0 < b.lower_bound) {  // out of lower bound
+      if (!out_of_lower_bound_start_idx) {
+        out_of_lower_bound_start_idx = i;
+      }
+    } else {
+      if (out_of_lower_bound_start_idx) {
+        out_of_lower_bound_sections.push_back({*out_of_lower_bound_start_idx, i - 1});
+        out_of_lower_bound_start_idx = std::nullopt;
+      }
+    }
+  }
+  if (out_of_upper_bound_start_idx) {
+    out_of_upper_bound_sections.push_back({*out_of_upper_bound_start_idx, ref_points.size() - 1});
+  }
+  if (out_of_lower_bound_start_idx) {
+    out_of_lower_bound_sections.push_back({*out_of_lower_bound_start_idx, ref_points.size() - 1});
+  }
+
+  auto original_ref_points = ref_points;
+  const auto is_inside_sections = [&](const size_t target_idx, const auto & sections) {
+    for (const auto & section : sections) {
+      if (section.first <= target_idx && target_idx <= section.second) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // lower bound
+  for (const auto & out_of_lower_bound_section : out_of_lower_bound_sections) {
+    std::optional<size_t> upper_bound_start_idx = std::nullopt;
+    std::optional<size_t> upper_bound_end_idx = std::nullopt;
+    for (size_t p_idx = out_of_lower_bound_section.first;
+         p_idx <= out_of_lower_bound_section.second; ++p_idx) {
+      const bool is_out_of_upper_bound = is_inside_sections(p_idx, out_of_upper_bound_sections);
+
+      const auto & original_b = original_ref_points.at(p_idx).bounds;
+      auto & b = ref_points.at(p_idx).bounds;
+      if (is_out_of_upper_bound) {
+        if (!upper_bound_start_idx) {
+          upper_bound_start_idx = p_idx;
+        }
+        upper_bound_end_idx = p_idx;
+
+        // It seems both bounds are cut out. Widen the bounds towards the both side.
+        const double center_dist_to_bounds =
+          (original_b.upper_bound + original_b.lower_bound) / 2.0;
+        b.upper_bound =
+          std::max(b.upper_bound, center_dist_to_bounds + mpt_param_.min_drivable_width / 2.0);
+        b.lower_bound =
+          std::min(b.lower_bound, center_dist_to_bounds - mpt_param_.min_drivable_width / 2.0);
+        continue;
+      }
+      // Only the Lower bound is cut out. Widen the bounds towards the lower bound since cut out too
+      // much.
+      b.lower_bound =
+        std::min(b.lower_bound, original_b.upper_bound + mpt_param_.min_drivable_width);
+      continue;
+    }
+    // extend longitudinal if it overlaps out_of_upper_bound_sections
+    if (upper_bound_start_idx) {
+      for (size_t p_idx = out_of_lower_bound_section.first; p_idx < *upper_bound_start_idx;
+           ++p_idx) {
+        auto & b = ref_points.at(p_idx).bounds;
+        b.lower_bound =
+          std::min(b.lower_bound, ref_points.at(*upper_bound_start_idx).bounds.lower_bound);
+      }
+    }
+    if (upper_bound_end_idx) {
+      for (size_t p_idx = *upper_bound_end_idx + 1; p_idx <= out_of_lower_bound_section.second;
+           ++p_idx) {
+        auto & b = ref_points.at(p_idx).bounds;
+        b.lower_bound =
+          std::min(b.lower_bound, ref_points.at(*upper_bound_end_idx).bounds.lower_bound);
+      }
+    }
+  }
+
+  // upper bound
+  for (const auto & out_of_upper_bound_section : out_of_upper_bound_sections) {
+    std::optional<size_t> lower_bound_start_idx = std::nullopt;
+    std::optional<size_t> lower_bound_end_idx = std::nullopt;
+    for (size_t p_idx = out_of_upper_bound_section.first;
+         p_idx <= out_of_upper_bound_section.second; ++p_idx) {
+      const bool is_out_of_lower_bound = is_inside_sections(p_idx, out_of_lower_bound_sections);
+
+      const auto & original_b = original_ref_points.at(p_idx).bounds;
+      auto & b = ref_points.at(p_idx).bounds;
+      if (is_out_of_lower_bound) {
+        if (!lower_bound_start_idx) {
+          lower_bound_start_idx = p_idx;
+        }
+        lower_bound_end_idx = p_idx;
+
+        // It seems both bounds are cut out. Widen the bounds towards the both side.
+        const double center_dist_to_bounds =
+          (original_b.upper_bound + original_b.lower_bound) / 2.0;
+        b.upper_bound =
+          std::max(b.upper_bound, center_dist_to_bounds + mpt_param_.min_drivable_width / 2.0);
+        b.lower_bound =
+          std::min(b.lower_bound, center_dist_to_bounds - mpt_param_.min_drivable_width / 2.0);
+        continue;
+      }
+      // Only the Upper bound is cut out. Widen the bounds towards the upper bound since cut out too
+      // much.
+      b.upper_bound =
+        std::max(b.upper_bound, original_b.lower_bound - mpt_param_.min_drivable_width);
+      continue;
+    }
+    // extend longitudinal if it overlaps out_of_lower_bound_sections
+    if (lower_bound_start_idx) {
+      for (size_t p_idx = out_of_upper_bound_section.first; p_idx < *lower_bound_start_idx;
+           ++p_idx) {
+        auto & b = ref_points.at(p_idx).bounds;
+        b.upper_bound =
+          std::max(b.upper_bound, ref_points.at(*lower_bound_start_idx).bounds.upper_bound);
+      }
+    }
+    if (lower_bound_end_idx) {
+      for (size_t p_idx = *lower_bound_end_idx + 1; p_idx <= out_of_upper_bound_section.second;
+           ++p_idx) {
+        auto & b = ref_points.at(p_idx).bounds;
+        b.upper_bound =
+          std::max(b.upper_bound, ref_points.at(*lower_bound_end_idx).bounds.upper_bound);
+      }
+    }
+  }
 }
 
 std::vector<ReferencePoint> MPTOptimizer::extendViolatedBounds(

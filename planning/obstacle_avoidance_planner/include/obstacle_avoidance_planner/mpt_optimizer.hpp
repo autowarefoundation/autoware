@@ -184,6 +184,7 @@ private:
     double avoidance_cost_margin;
     double avoidance_cost_band_length;
     double avoidance_cost_decrease_rate;
+    double min_drivable_width;
     double avoidance_lat_error_weight;
     double avoidance_yaw_error_weight;
     double avoidance_steer_input_weight;
@@ -251,6 +252,7 @@ private:
     const std::vector<geometry_msgs::msg::Point> & left_bound,
     const std::vector<geometry_msgs::msg::Point> & right_bound,
     const geometry_msgs::msg::Pose & ego_pose, const double ego_vel) const;
+  void keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_points) const;
   std::vector<ReferencePoint> extendViolatedBounds(
     const std::vector<ReferencePoint> & ref_points) const;
   void avoidSuddenSteering(
