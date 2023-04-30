@@ -15,6 +15,7 @@
         min_obstacle_vel: 1.0 # [m/s]
 
       drivable_area_generation:
-        lat_offset_from_obstacle: 0.8 # [m]
-        time_to_avoid: 5.0 # [s]
-        max_lat_offset_to_avoid: 1.0 # [m]
+        lat_offset_from_obstacle: 2.0 # [m]
+        time_to_avoid_same_directional_object: 5.0 # [s]
+        time_to_avoid_opposite_directional_object: 6.0 # [s]
+        max_lat_offset_to_avoid: 2.0 # [m]

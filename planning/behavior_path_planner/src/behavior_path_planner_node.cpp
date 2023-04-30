@@ -676,7 +676,10 @@ DynamicAvoidanceParameters BehaviorPathPlannerNode::getDynamicAvoidanceParam()
   {  // drivable_area_generation
     std::string ns = "dynamic_avoidance.drivable_area_generation.";
     p.lat_offset_from_obstacle = declare_parameter<double>(ns + "lat_offset_from_obstacle");
-    p.time_to_avoid = declare_parameter<double>(ns + "time_to_avoid");
+    p.time_to_avoid_same_directional_object =
+      declare_parameter<double>(ns + "time_to_avoid_same_directional_object");
+    p.time_to_avoid_opposite_directional_object =
+      declare_parameter<double>(ns + "time_to_avoid_opposite_directional_object");
     p.max_lat_offset_to_avoid = declare_parameter<double>(ns + "max_lat_offset_to_avoid");
   }
 

@@ -50,7 +50,8 @@ struct DynamicAvoidanceParameters
 
   // drivable area generation
   double lat_offset_from_obstacle{0.0};
-  double time_to_avoid{0.0};
+  double time_to_avoid_same_directional_object{0.0};
+  double time_to_avoid_opposite_directional_object{0.0};
   double max_lat_offset_to_avoid{0.0};
 };
 

@@ -307,25 +307,27 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
   }();
 
   // calculate bound start and end index
-  const double length_to_avoid = object.path_projected_vel * parameters_->time_to_avoid;
-  [[maybe_unused]] const auto lon_bound_start_idx_opt = motion_utils::insertTargetPoint(
+  const double length_to_avoid = [&]() {
+    if (0.0 <= object.path_projected_vel) {
+      return object.path_projected_vel * parameters_->time_to_avoid_same_directional_object;
+    }
+    return object.path_projected_vel * parameters_->time_to_avoid_opposite_directional_object;
+  }();
+  const auto lon_bound_start_idx_opt = motion_utils::insertTargetPoint(
     obj_seg_idx, min_obj_lon_offset + (length_to_avoid < 0 ? length_to_avoid : 0.0),
     path_for_bound.points);
   const auto lon_bound_end_idx_opt = motion_utils::insertTargetPoint(
-    obj_seg_idx, max_obj_lon_offset + (0 < length_to_avoid ? length_to_avoid : 0.0),
+    obj_seg_idx, max_obj_lon_offset + (0 <= length_to_avoid ? length_to_avoid : 0.0),
     path_for_bound.points);
-  const size_t lon_bound_start_idx = obj_seg_idx;
+  if (!lon_bound_start_idx_opt && !lon_bound_end_idx_opt) {
+    // NOTE: The obstacle is longitudinally out of the ego's trajectory.
+    return std::nullopt;
+  }
+  const size_t lon_bound_start_idx =
+    lon_bound_start_idx_opt ? lon_bound_start_idx_opt.value() : static_cast<size_t>(0);
   const size_t lon_bound_end_idx = lon_bound_end_idx_opt
                                      ? lon_bound_end_idx_opt.value()
                                      : static_cast<size_t>(path_for_bound.points.size() - 1);
-
-  // TODO(murooka) insertTargetPoint does not work well with a negative offset for now.
-  //               When a offset is negative, the bound will be weird.
-  if (
-    lon_bound_start_idx == 0 &&
-    lon_bound_end_idx == static_cast<size_t>(path_for_bound.points.size() - 1)) {
-    return std::nullopt;
-  }
 
   // calculate bound min and max lateral offset
   const double min_bound_lat_offset = [&]() {
