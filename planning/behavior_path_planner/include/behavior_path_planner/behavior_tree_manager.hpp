@@ -19,6 +19,9 @@
 #include "behavior_path_planner/scene_module/scene_module_bt_node_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 
+#include <lanelet2_extension/utility/query.hpp>
+#include <lanelet2_extension/utility/utilities.hpp>
+
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <behaviortree_cpp_v3/behavior_tree.h>
@@ -81,6 +84,8 @@ private:
     uint16_t max_msg_per_second = 25);
 
   void resetGrootMonitor();
+
+  bool isEgoOutOfRoute(const std::shared_ptr<PlannerData> & data) const;
 };
 }  // namespace behavior_path_planner
 

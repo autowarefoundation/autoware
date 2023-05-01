@@ -1152,6 +1152,7 @@ void BehaviorPathPlannerNode::run()
   if (output.modified_goal) {
     PoseWithUuidStamped modified_goal = *(output.modified_goal);
     modified_goal.header.stamp = path->header.stamp;
+    planner_data_->prev_modified_goal = modified_goal;
     modified_goal_publisher_->publish(modified_goal);
   }
 

@@ -921,6 +921,43 @@ bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal
   return false;
 }
 
+PathWithLaneId createGoalAroundPath(
+  const std::shared_ptr<RouteHandler> & route_handler,
+  const std::optional<PoseWithUuidStamped> & modified_goal)
+{
+  const Pose goal_pose = modified_goal ? modified_goal->pose : route_handler->getGoalPose();
+  const auto shoulder_lanes = route_handler->getShoulderLanelets();
+
+  lanelet::ConstLanelet goal_lane;
+  const bool is_failed_getting_lanelet = std::invoke([&]() {
+    if (isInLanelets(goal_pose, shoulder_lanes)) {
+      return !lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &goal_lane);
+    }
+    return !route_handler->getGoalLanelet(&goal_lane);
+  });
+  if (is_failed_getting_lanelet) {
+    PathWithLaneId path{};
+    return path;
+  }
+
+  constexpr double backward_length = 1.0;
+  const auto arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, goal_pose);
+  const double s_start = std::max(arc_coord.length - backward_length, 0.0);
+  const double s_end = arc_coord.length;
+
+  return route_handler->getCenterLinePath({goal_lane}, s_start, s_end);
+}
+
+bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes)
+{
+  for (const auto & lane : lanes) {
+    if (lanelet::utils::isInLanelet(pose, lane)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 lanelet::ConstLanelets transformToLanelets(const DrivableLanes & drivable_lanes)
 {
   lanelet::ConstLanelets lanes;

@@ -292,6 +292,12 @@ PathWithLaneId refinePathForGoal(
 
 bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal_id);
 
+PathWithLaneId createGoalAroundPath(
+  const std::shared_ptr<RouteHandler> & route_handler,
+  const std::optional<PoseWithUuidStamped> & modified_goal);
+
+bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes);
+
 // path management
 
 // TODO(Horibe) There is a similar function in route_handler. Check.

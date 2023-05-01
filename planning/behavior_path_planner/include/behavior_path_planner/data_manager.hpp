@@ -154,6 +154,7 @@ struct PlannerData
   OperationModeState::ConstSharedPtr operation_mode{};
   PathWithLaneId::SharedPtr reference_path{std::make_shared<PathWithLaneId>()};
   PathWithLaneId::SharedPtr prev_output_path{std::make_shared<PathWithLaneId>()};
+  std::optional<PoseWithUuidStamped> prev_modified_goal{};
   lanelet::ConstLanelets current_lanes{};
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};
   BehaviorPathPlannerParameters parameters{};
