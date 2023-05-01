@@ -55,6 +55,10 @@ struct ProjectedDistancePoint
   double distance{0.0};
 };
 
+bool isTargetObjectFront(
+  const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
+  const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon);
+
 /**
  * @brief Project nearest point on a line segment.
  * @param [in] reference_point point to project

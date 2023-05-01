@@ -14,10 +14,30 @@
 
 #include "behavior_path_planner/utils/safety_check.hpp"
 
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "perception_utils/predicted_path_utils.hpp"
 
 namespace behavior_path_planner::utils::safety_check
 {
+bool isTargetObjectFront(
+  const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
+  const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon)
+{
+  const double base_to_front = vehicle_info.max_longitudinal_offset_m;
+  const auto ego_point =
+    tier4_autoware_utils::calcOffsetPose(ego_pose, base_to_front, 0.0, 0.0).position;
+
+  // check all edges in the polygon
+  for (const auto & obj_edge : obj_polygon.outer()) {
+    const auto obj_point = tier4_autoware_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
+    if (motion_utils::isTargetPointFront(path.points, ego_point, obj_point)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 template <typename Pythagoras>
 ProjectedDistancePoint pointToSegment(
   const Point2d & reference_point, const Point2d & polygon_segment_start,
