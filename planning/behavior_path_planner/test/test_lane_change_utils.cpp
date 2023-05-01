@@ -11,27 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "behavior_path_planner/scene_module/lane_change/utils.hpp"
+#include "behavior_path_planner/utils/safety_check.hpp"
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-TEST(BehaviorPathPlanningLaneChangeUtilsTest, testStoppingDistance)
+constexpr double epsilon = 1e-6;
+
+TEST(BehaviorPathPlanningLaneChangeUtilsTest, projectCurrentPoseToTarget)
 {
-  const auto vehicle_velocity = 8.333;
+  geometry_msgs::msg::Pose ego_pose;
+  const auto ego_yaw = tier4_autoware_utils::deg2rad(0.0);
+  ego_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(ego_yaw);
+  ego_pose.position = tier4_autoware_utils::createPoint(0, 0, 0);
 
-  const auto negative_accel = -1.5;
-  const auto distance_when_negative =
-    behavior_path_planner::utils::lane_change::stoppingDistance(vehicle_velocity, negative_accel);
-  ASSERT_NEAR(distance_when_negative, 23.1463, 1e-3);
+  geometry_msgs::msg::Pose obj_pose;
+  obj_pose.position = tier4_autoware_utils::createPoint(-4, 3, 0);
+  const auto obj_yaw = tier4_autoware_utils::deg2rad(0.0);
+  ego_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(obj_yaw);
 
-  const auto positive_accel = 1.5;
-  const auto distance_when_positive =
-    behavior_path_planner::utils::lane_change::stoppingDistance(vehicle_velocity, positive_accel);
-  ASSERT_NEAR(distance_when_positive, 34.7194, 1e-3);
+  const auto result =
+    behavior_path_planner::utils::safety_check::projectCurrentPoseToTarget(ego_pose, obj_pose);
 
-  const auto zero_accel = 0.0;
-  const auto distance_when_zero =
-    behavior_path_planner::utils::lane_change::stoppingDistance(vehicle_velocity, zero_accel);
-  ASSERT_NEAR(distance_when_zero, 34.7194, 1e-3);
+  EXPECT_NEAR(result.position.x, -4, epsilon);
+  EXPECT_NEAR(result.position.y, 3, epsilon);
 }

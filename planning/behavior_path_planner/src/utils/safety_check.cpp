@@ -23,24 +23,18 @@ ProjectedDistancePoint pointToSegment(
   const Point2d & reference_point, const Point2d & polygon_segment_start,
   const Point2d & polygon_segment_end)
 {
-  auto copied_point_from_object = polygon_segment_end;
-  auto copied_point_from_reference = reference_point;
-  bg::subtract_point(copied_point_from_object, polygon_segment_start);
-  bg::subtract_point(copied_point_from_reference, polygon_segment_start);
+  auto segment_vec = polygon_segment_end;
+  auto segment_start_to_reference_vec = reference_point;
+  bg::subtract_point(segment_vec, polygon_segment_start);
+  bg::subtract_point(segment_start_to_reference_vec, polygon_segment_start);
 
-  const auto c1 = bg::dot_product(copied_point_from_reference, copied_point_from_object);
-  if (!(c1 > 0)) {
-    return {polygon_segment_start, Pythagoras::apply(reference_point, polygon_segment_start)};
-  }
-
-  const auto c2 = bg::dot_product(copied_point_from_object, copied_point_from_object);
-  if (!(c2 > c1)) {
-    return {polygon_segment_end, Pythagoras::apply(reference_point, polygon_segment_end)};
-  }
+  const auto c1 = bg::dot_product(segment_vec, segment_start_to_reference_vec);
+  const auto c2 = bg::dot_product(segment_vec, segment_vec);
+  const auto ratio = std::clamp(c1 / c2, 0.0, 1.0);
 
   Point2d projected = polygon_segment_start;
-  bg::multiply_value(copied_point_from_object, c1 / c2);
-  bg::add_point(projected, copied_point_from_object);
+  bg::multiply_value(segment_vec, ratio);
+  bg::add_point(projected, segment_vec);
 
   return {projected, Pythagoras::apply(reference_point, projected)};
 }
