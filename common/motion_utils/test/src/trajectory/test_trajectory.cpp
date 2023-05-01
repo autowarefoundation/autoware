@@ -5452,3 +5452,101 @@ TEST(trajectory, calcYawDeviation)
     EXPECT_NEAR(yaw_deviation, expected_yaw_deviation, tolerance);
   }
 }
+
+TEST(trajectory, isTargetPointFront)
+{
+  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  using motion_utils::isTargetPointFront;
+  using tier4_autoware_utils::createPoint;
+
+  // Generate test trajectory
+  const auto trajectory = generateTestTrajectory<Trajectory>(10, 1.0);
+
+  // Front point is base
+  {
+    const auto base_point = createPoint(5.0, 0.0, 0.0);
+    const auto target_point = createPoint(1.0, 0.0, 0.0);
+
+    EXPECT_FALSE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  // Front point is target
+  {
+    const auto base_point = createPoint(1.0, 0.0, 0.0);
+    const auto target_point = createPoint(3.0, 0.0, 0.0);
+
+    EXPECT_TRUE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  // boundary condition
+  {
+    const auto base_point = createPoint(1.0, 0.0, 0.0);
+    const auto target_point = createPoint(1.0, 0.0, 0.0);
+
+    EXPECT_FALSE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  // before the start point
+  {
+    const auto base_point = createPoint(1.0, 0.0, 0.0);
+    const auto target_point = createPoint(-3.0, 0.0, 0.0);
+
+    EXPECT_FALSE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  {
+    const auto base_point = createPoint(-5.0, 0.0, 0.0);
+    const auto target_point = createPoint(1.0, 0.0, 0.0);
+
+    EXPECT_TRUE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  // after the end point
+  {
+    const auto base_point = createPoint(10.0, 0.0, 0.0);
+    const auto target_point = createPoint(3.0, 0.0, 0.0);
+
+    EXPECT_FALSE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  {
+    const auto base_point = createPoint(2.0, 0.0, 0.0);
+    const auto target_point = createPoint(14.0, 0.0, 0.0);
+
+    EXPECT_TRUE(isTargetPointFront(trajectory.points, base_point, target_point));
+  }
+
+  // empty point
+  {
+    const Trajectory traj;
+    const auto base_point = createPoint(2.0, 0.0, 0.0);
+    const auto target_point = createPoint(5.0, 0.0, 0.0);
+    EXPECT_FALSE(isTargetPointFront(traj.points, base_point, target_point));
+  }
+
+  // non-default threshold
+  {
+    const double threshold = 3.0;
+
+    {
+      const auto base_point = createPoint(5.0, 0.0, 0.0);
+      const auto target_point = createPoint(3.0, 0.0, 0.0);
+
+      EXPECT_FALSE(isTargetPointFront(trajectory.points, base_point, target_point, threshold));
+    }
+
+    {
+      const auto base_point = createPoint(1.0, 0.0, 0.0);
+      const auto target_point = createPoint(4.0, 0.0, 0.0);
+
+      EXPECT_FALSE(isTargetPointFront(trajectory.points, base_point, target_point, threshold));
+    }
+
+    {
+      const auto base_point = createPoint(1.0, 0.0, 0.0);
+      const auto target_point = createPoint(4.1, 0.0, 0.0);
+
+      EXPECT_TRUE(isTargetPointFront(trajectory.points, base_point, target_point, threshold));
+    }
+  }
+}

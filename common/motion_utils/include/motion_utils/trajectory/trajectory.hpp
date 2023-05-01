@@ -1784,6 +1784,30 @@ double calcYawDeviation(
 
   return tier4_autoware_utils::normalizeRadian(pose_yaw - path_yaw);
 }
+
+/**
+ * @brief Check if the given target point is in front of the based pose from the trajectory.
+ * if the points is empty, the function returns false
+ * @param points Points of the trajectory, path, ...
+ * @param base_point Base point
+ * @param target_point Target point
+ * @param threshold threshold for judging front point
+ * @return true if the target pose is in front of the base pose
+ */
+template <class T>
+bool isTargetPointFront(
+  const T & points, const geometry_msgs::msg::Point & base_point,
+  const geometry_msgs::msg::Point & target_point, const double threshold = 0.0)
+{
+  if (points.empty()) {
+    return false;
+  }
+
+  const double s_base = calcSignedArcLength(points, 0, base_point);
+  const double s_target = calcSignedArcLength(points, 0, target_point);
+
+  return s_target - s_base > threshold;
+}
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_
