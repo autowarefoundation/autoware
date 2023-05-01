@@ -212,11 +212,17 @@ private:
       root_lanelet_.get(), pose, backward_length, std::numeric_limits<double>::max());
 
     lanelet::ConstLanelet closest_lane{};
-    if (!lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane)) {
-      return {};
+    if (lanelet::utils::query::getClosestLaneletWithConstrains(
+          lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
+          p.ego_nearest_yaw_threshold)) {
+      return utils::getReferencePath(closest_lane, data);
     }
 
-    return utils::getReferencePath(closest_lane, data);
+    if (lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane)) {
+      return utils::getReferencePath(closest_lane, data);
+    }
+
+    return {};  // something wrong.
   }
 
   /**
