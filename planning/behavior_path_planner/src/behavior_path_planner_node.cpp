@@ -1166,7 +1166,7 @@ void BehaviorPathPlannerNode::run()
 
 #ifndef USE_OLD_ARCHITECTURE
   planner_manager_->print();
-  planner_manager_->publishDebugMarker();
+  planner_manager_->publishMarker();
   planner_manager_->publishVirtualWall();
   lk_manager.unlock();  // release planner_manager_
 #endif

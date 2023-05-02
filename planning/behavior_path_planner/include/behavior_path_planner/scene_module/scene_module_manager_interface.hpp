@@ -64,6 +64,7 @@ public:
         rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name));
     }
 
+    pub_info_marker_ = node->create_publisher<MarkerArray>("~/info/" + name, 20);
     pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name, 20);
     pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name, 20);
   }
@@ -153,28 +154,37 @@ public:
     pub_virtual_wall_->publish(markers);
   }
 
-  void publishDebugMarker() const
+  void publishMarker() const
   {
     using tier4_autoware_utils::appendMarkerArray;
 
-    MarkerArray markers{};
+    MarkerArray info_markers{};
+    MarkerArray debug_markers{};
 
     const auto marker_offset = std::numeric_limits<uint8_t>::max();
 
     uint32_t marker_id = marker_offset;
     for (const auto & m : registered_modules_) {
+      for (auto & marker : m->getInfoMarkers().markers) {
+        marker.id += marker_id;
+        info_markers.markers.push_back(marker);
+      }
+
       for (auto & marker : m->getDebugMarkers().markers) {
         marker.id += marker_id;
-        markers.markers.push_back(marker);
+        debug_markers.markers.push_back(marker);
       }
+
       marker_id += marker_offset;
     }
 
     if (registered_modules_.empty() && idling_module_ != nullptr) {
-      appendMarkerArray(idling_module_->getDebugMarkers(), &markers);
+      appendMarkerArray(idling_module_->getInfoMarkers(), &info_markers);
+      appendMarkerArray(idling_module_->getDebugMarkers(), &debug_markers);
     }
 
-    pub_debug_marker_->publish(markers);
+    pub_info_marker_->publish(info_markers);
+    pub_debug_marker_->publish(debug_markers);
   }
 
   bool exist(const SceneModulePtr & module_ptr) const
@@ -228,6 +238,8 @@ protected:
   rclcpp::Clock clock_;
 
   rclcpp::Logger logger_;
+
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_info_marker_;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
 

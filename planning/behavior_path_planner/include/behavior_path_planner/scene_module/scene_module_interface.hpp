@@ -80,6 +80,11 @@ public:
     }
 
     {
+      const auto ns = std::string("~/info/") + utils::convertToSnakeCase(name);
+      pub_info_marker_ = node.create_publisher<MarkerArray>(ns, 20);
+    }
+
+    {
       const auto ns = std::string("~/virtual_wall/") + utils::convertToSnakeCase(name);
       pub_virtual_wall_ = node.create_publisher<MarkerArray>(ns, 20);
     }
@@ -277,6 +282,8 @@ public:
   virtual void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
 
 #ifdef USE_OLD_ARCHITECTURE
+  void publishInfoMarker() { pub_info_marker_->publish(info_marker_); }
+
   void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
 
   void publishVirtualWall()
@@ -322,7 +329,9 @@ public:
 
   PlanResult getPathReference() const { return path_reference_; }
 
-  MarkerArray getDebugMarkers() { return debug_marker_; }
+  MarkerArray getInfoMarkers() const { return info_marker_; }
+
+  MarkerArray getDebugMarkers() const { return debug_marker_; }
 
   ModuleStatus getCurrentStatus() const { return current_state_; }
 
@@ -375,6 +384,7 @@ private:
   rclcpp::Logger logger_;
 
 #ifdef USE_OLD_ARCHITECTURE
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_info_marker_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
 #endif
@@ -476,6 +486,8 @@ protected:
   mutable boost::optional<Pose> slow_pose_{boost::none};
 
   mutable boost::optional<Pose> dead_pose_{boost::none};
+
+  mutable MarkerArray info_marker_;
 
   mutable MarkerArray debug_marker_;
 };

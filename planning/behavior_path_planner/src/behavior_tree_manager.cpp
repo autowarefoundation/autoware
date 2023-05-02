@@ -117,6 +117,7 @@ BehaviorModuleOutput BehaviorTreeManager::run(const std::shared_ptr<PlannerData>
   resetNotRunningModulePathCandidate();
 
   std::for_each(scene_modules_.begin(), scene_modules_.end(), [](const auto & m) {
+    m->publishInfoMarker();
     m->publishDebugMarker();
     m->publishVirtualWall();
     if (!m->isExecutionRequested()) {

@@ -98,12 +98,12 @@ public:
   }
 
   /**
-   * @brief publish all registered modules' debug markers.
+   * @brief publish all registered modules' markers.
    */
-  void publishDebugMarker() const
+  void publishMarker() const
   {
     std::for_each(
-      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->publishDebugMarker(); });
+      manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->publishMarker(); });
   }
 
   /**
