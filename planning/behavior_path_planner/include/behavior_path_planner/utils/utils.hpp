@@ -298,6 +298,10 @@ PathWithLaneId createGoalAroundPath(
 
 bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes);
 
+bool isEgoOutOfRoute(
+  const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
+  const std::shared_ptr<RouteHandler> & route_handler);
+
 // path management
 
 // TODO(Horibe) There is a similar function in route_handler. Check.

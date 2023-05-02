@@ -89,7 +89,14 @@ BehaviorModuleOutput BehaviorTreeManager::run(const std::shared_ptr<PlannerData>
     *s = SceneModuleStatus{s->module_name};
   });
 
-  if (isEgoOutOfRoute(data)) {
+  const bool is_any_module_running = std::any_of(
+    scene_modules_.begin(), scene_modules_.end(),
+    [](const auto & module) { return module->getCurrentStatus() == BT::NodeStatus::RUNNING; });
+
+  if (
+    !is_any_module_running &&
+    utils::isEgoOutOfRoute(
+      data->self_odometry->pose.pose, data->prev_modified_goal, data->route_handler)) {
     BehaviorModuleOutput output{};
     const auto output_path =
       utils::createGoalAroundPath(data->route_handler, data->prev_modified_goal);
@@ -157,51 +164,6 @@ void BehaviorTreeManager::resetGrootMonitor()
   if (groot_monitor_) {
     groot_monitor_.reset();
   }
-}
-
-bool BehaviorTreeManager::isEgoOutOfRoute(const std::shared_ptr<PlannerData> & data) const
-{
-  const auto self_pose = data->self_odometry->pose.pose;
-  const Pose goal_pose =
-    data->prev_modified_goal ? data->prev_modified_goal->pose : data->route_handler->getGoalPose();
-  const auto shoulder_lanes = data->route_handler->getShoulderLanelets();
-
-  lanelet::ConstLanelet goal_lane;
-  const bool is_failed_getting_lanelet = std::invoke([&]() {
-    if (utils::isInLanelets(goal_pose, shoulder_lanes)) {
-      return !lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &goal_lane);
-    }
-    return !data->route_handler->getGoalLanelet(&goal_lane);
-  });
-  if (is_failed_getting_lanelet) {
-    RCLCPP_WARN_STREAM(logger_, "cannot find goal lanelet");
-    return true;
-  }
-
-  // If ego vehicle is over goal on goal lane, return true
-  if (lanelet::utils::isInLanelet(self_pose, goal_lane)) {
-    constexpr double buffer = 1.0;
-    const auto ego_arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, self_pose);
-    const auto goal_arc_coord =
-      lanelet::utils::getArcCoordinates({goal_lane}, data->route_handler->getGoalPose());
-    if (ego_arc_coord.length > goal_arc_coord.length + buffer) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  // If ego vehicle is out of the closest lanelet, return true
-  lanelet::ConstLanelet closest_lane;
-  if (!data->route_handler->getClosestLaneletWithinRoute(self_pose, &closest_lane)) {
-    RCLCPP_WARN_STREAM(logger_, "cannot find closest lanelet");
-    return true;
-  }
-  if (!lanelet::utils::isInLanelet(self_pose, closest_lane)) {
-    return true;
-  }
-
-  return false;
 }
 
 std::shared_ptr<SceneModuleVisitor> BehaviorTreeManager::getAllSceneModuleDebugMsgData()

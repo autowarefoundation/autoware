@@ -958,6 +958,67 @@ bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes)
   return false;
 }
 
+bool isEgoOutOfRoute(
+  const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
+  const std::shared_ptr<RouteHandler> & route_handler)
+{
+  const Pose & goal_pose = modified_goal ? modified_goal->pose : route_handler->getGoalPose();
+  const auto shoulder_lanes = route_handler->getShoulderLanelets();
+
+  lanelet::ConstLanelet goal_lane;
+  const bool is_failed_getting_lanelet = std::invoke([&]() {
+    if (utils::isInLanelets(goal_pose, shoulder_lanes)) {
+      return !lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &goal_lane);
+    }
+    return !route_handler->getGoalLanelet(&goal_lane);
+  });
+  if (is_failed_getting_lanelet) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("behavior_path_planner").get_child("util"), "cannot find goal lanelet");
+    return true;
+  }
+
+  // If ego vehicle is over goal on goal lane, return true
+  if (lanelet::utils::isInLanelet(self_pose, goal_lane)) {
+    constexpr double buffer = 1.0;
+    const auto ego_arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, self_pose);
+    const auto goal_arc_coord =
+      lanelet::utils::getArcCoordinates({goal_lane}, route_handler->getGoalPose());
+    if (ego_arc_coord.length > goal_arc_coord.length + buffer) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // If ego vehicle is out of the closest lanelet, return true
+  // Check if ego vehicle is in shoulder lane
+  const bool is_in_shoulder_lane = std::invoke([&]() {
+    lanelet::Lanelet closest_shoulder_lanelet;
+    if (!lanelet::utils::query::getClosestLanelet(
+          shoulder_lanes, self_pose, &closest_shoulder_lanelet)) {
+      return false;
+    }
+    return lanelet::utils::isInLanelet(self_pose, closest_shoulder_lanelet);
+  });
+  // Check if ego vehicle is in road lane
+  const bool is_in_road_lane = std::invoke([&]() {
+    lanelet::ConstLanelet closest_road_lane;
+    if (!route_handler->getClosestLaneletWithinRoute(self_pose, &closest_road_lane)) {
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("behavior_path_planner").get_child("util"),
+        "cannot find closest road lanelet");
+      return false;
+    }
+    return lanelet::utils::isInLanelet(self_pose, closest_road_lane);
+  });
+  if (!is_in_shoulder_lane && !is_in_road_lane) {
+    return true;
+  }
+
+  return false;
+}
+
 lanelet::ConstLanelets transformToLanelets(const DrivableLanes & drivable_lanes)
 {
   lanelet::ConstLanelets lanes;

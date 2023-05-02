@@ -354,8 +354,6 @@ private:
     const std::vector<SceneModulePtr> & request_modules, const std::shared_ptr<PlannerData> & data,
     const BehaviorModuleOutput & previous_module_output);
 
-  bool isEgoOutOfRoute(const std::shared_ptr<PlannerData> & data) const;
-
   boost::optional<lanelet::ConstLanelet> root_lanelet_{boost::none};
 
   std::vector<SceneModuleManagerPtr> manager_ptrs_;
