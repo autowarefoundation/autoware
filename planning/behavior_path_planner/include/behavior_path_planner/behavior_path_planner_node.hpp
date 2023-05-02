@@ -185,12 +185,6 @@ private:
   void onLateralOffset(const LateralOffset::ConstSharedPtr msg);
   SetParametersResult onSetParam(const std::vector<rclcpp::Parameter> & parameters);
 
-  /**
-   * @brief Modify the path points near the goal to smoothly connect the lanelet and the goal point.
-   */
-  PathWithLaneId modifyPathForSmoothGoalConnection(
-    const PathWithLaneId & path,
-    const std::shared_ptr<PlannerData> & planner_data) const;  // (TODO) move to util
   OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
 
   /**

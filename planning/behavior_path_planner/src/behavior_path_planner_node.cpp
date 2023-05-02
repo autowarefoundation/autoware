@@ -1580,31 +1580,6 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
 
   return result;
 }
-
-PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
-  const PathWithLaneId & path, const std::shared_ptr<PlannerData> & planner_data) const
-{
-  const auto goal = planner_data->route_handler->getGoalPose();
-  const auto goal_lane_id = planner_data->route_handler->getGoalLaneId();
-
-  Pose refined_goal{};
-  {
-    lanelet::ConstLanelet goal_lanelet;
-    if (planner_data->route_handler->getGoalLanelet(&goal_lanelet)) {
-      refined_goal = utils::refineGoal(goal, goal_lanelet);
-    } else {
-      refined_goal = goal;
-    }
-  }
-
-  auto refined_path = utils::refinePathForGoal(
-    planner_data->parameters.refine_goal_search_radius_range, M_PI * 0.5, path, refined_goal,
-    goal_lane_id);
-  refined_path.header.frame_id = "map";
-  refined_path.header.stamp = this->now();
-
-  return refined_path;
-}
 }  // namespace behavior_path_planner
 
 #include <rclcpp_components/register_node_macro.hpp>
