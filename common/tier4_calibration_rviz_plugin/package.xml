@@ -10,8 +10,7 @@
   <author email="tomoya.kimura@tier4.jp">Tomoya Kimura</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-
-  <build_depend>autoware_cmake</build_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>libqt5-core</depend>
   <depend>libqt5-widgets</depend>

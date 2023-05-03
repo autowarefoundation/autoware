@@ -10,6 +10,7 @@
   <author email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_auto_perception_msgs</depend>
   <depend>eigen</depend>
@@ -20,7 +21,6 @@
   <depend>std_msgs</depend>
   <depend>tier4_autoware_utils</depend>
 
-  <build_depend>autoware_cmake</build_depend>
   <test_depend>ament_lint_common</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 

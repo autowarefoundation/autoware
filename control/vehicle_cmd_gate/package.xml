@@ -11,8 +11,7 @@
   <author email="hiroki.ota@tier4.jp">Hiroki OTA</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <build_depend>autoware_cmake</build_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_control_msgs</depend>

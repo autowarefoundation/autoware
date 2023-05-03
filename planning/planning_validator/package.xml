@@ -12,7 +12,7 @@
   <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-  <build_depend>autoware_cmake</build_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
   <build_depend>rosidl_default_generators</build_depend>
 
   <depend>autoware_auto_planning_msgs</depend>

@@ -12,8 +12,8 @@
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <build_depend>autoware_cmake</build_depend>
   <build_depend>libboost-dev</build_depend>
   <build_depend>qtbase5-dev</build_depend>
 

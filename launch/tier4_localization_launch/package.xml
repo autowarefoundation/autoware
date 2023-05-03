@@ -12,8 +12,7 @@
   <author email="yamato.ando@tier4.jp">Yamato Ando</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-
-  <build_depend>autoware_cmake</build_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <exec_depend>automatic_pose_initializer</exec_depend>
   <exec_depend>ekf_localizer</exec_depend>

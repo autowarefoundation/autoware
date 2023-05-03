@@ -12,8 +12,8 @@
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <build_depend>autoware_cmake</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>eigen3_cmake_module</build_depend>
 

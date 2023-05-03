@@ -10,9 +10,8 @@
   <author email="satoshi.ota@tier4.jp">Satoshi Ota</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
-
-  <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>

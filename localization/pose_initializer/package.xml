@@ -11,8 +11,7 @@
   <author email="isamu.takagi@tier4.jp">Takagi, Isamu</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <build_depend>autoware_cmake</build_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>

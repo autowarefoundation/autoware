@@ -8,11 +8,11 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <buildtool_export_depend>eigen3_cmake_module</buildtool_export_depend>
 
-  <build_depend>autoware_cmake</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>range-v3</build_depend>
 
