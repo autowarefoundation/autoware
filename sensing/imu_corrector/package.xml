@@ -3,7 +3,7 @@
 <package format="3">
   <name>imu_corrector</name>
   <version>1.0.0</version>
-  <description>The ROS2 imu_corrector package</description>
+  <description>The ROS 2 imu_corrector package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <license>Apache License 2.0</license>
   <author email="yamato.ando@tier4.jp">Yamato Ando</author>

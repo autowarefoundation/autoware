@@ -18,4 +18,4 @@ You can include as follows in `*.launch.xml` to use `autoware_api.launch.xml`.
 
 ## Notes
 
-For reducing processing load, we use the [Component](https://docs.ros.org/en/galactic/Concepts/About-Composition.html) feature in ROS2 (similar to Nodelet in ROS1 )
+For reducing processing load, we use the [Component](https://docs.ros.org/en/galactic/Concepts/About-Composition.html) feature in ROS 2 (similar to Nodelet in ROS 1 )

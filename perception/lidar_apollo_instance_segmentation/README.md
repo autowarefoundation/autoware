@@ -140,4 +140,4 @@ Supported lidars are velodyne 16, 64 and 128, but you can also use velodyne 32 a
 - [Apollo Project](https://github.com/ApolloAuto/apollo)
 - [lewes6369](https://github.com/lewes6369)
 - [Autoware Foundation](https://github.com/autowarefoundation/autoware)
-- [Kosuke Takeuchi](https://github.com/kosuke55) (TierIV Part timer)
+- [Kosuke Takeuchi](https://github.com/kosuke55) (TIER IV)

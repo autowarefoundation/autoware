@@ -3,7 +3,7 @@
 <package format="3">
   <name>geo_pos_conv</name>
   <version>2.0.0</version>
-  <description>The ROS2 geo_pos_conv package</description>
+  <description>The ROS 2 geo_pos_conv package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
 
   <license>Apache License 2.0</license>

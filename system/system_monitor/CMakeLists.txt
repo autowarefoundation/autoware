@@ -186,7 +186,7 @@ rclcpp_components_register_node(voltage_monitor_lib
   EXECUTABLE voltage_monitor
 )
 
-# TODO(yunus.caliskan): Port the tests to ROS2, robustify the tests.
+# TODO(yunus.caliskan): Port the tests to ROS 2, robustify the tests.
 if(BUILD_TESTING)
   # ament_add_ros_isolated_gtest(test_cpu_monitor
   #   test/src/cpu_monitor/test_${CMAKE_CPU_PLATFORM}_cpu_monitor.cpp

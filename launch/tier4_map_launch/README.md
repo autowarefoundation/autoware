@@ -32,4 +32,4 @@ Note that you should provide parameter paths as `PACKAGE_param_path`. The list o
 
 ## Notes
 
-For reducing processing load, we use the [Component](https://docs.ros.org/en/galactic/Concepts/About-Composition.html) feature in ROS2 (similar to Nodelet in ROS1 )
+For reducing processing load, we use the [Component](https://docs.ros.org/en/galactic/Concepts/About-Composition.html) feature in ROS 2 (similar to Nodelet in ROS 1 )

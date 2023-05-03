@@ -274,7 +274,7 @@ def generate_launch_description():
         "cruise_planner_type"
     )  # select from "obstacle_stop_planner", "obstacle_cruise_planner", "none"
 
-    add_launch_arg("use_intra_process", "false", "use ROS2 component container communication")
+    add_launch_arg("use_intra_process", "false", "use ROS 2 component container communication")
     add_launch_arg("use_multithread", "false", "use multithread")
 
     set_container_executable = SetLaunchConfiguration(

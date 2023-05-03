@@ -244,7 +244,7 @@ void RayGroundFilterComponent::ClassifyPointCloud(
   }
 }
 
-// [ROS2-port]: removed
+// [ROS 2-port]: removed
 // bool RayGroundFilterComponent::child_init()
 // {
 //   // Enable the dynamic reconfigure service

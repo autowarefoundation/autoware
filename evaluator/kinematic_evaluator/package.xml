@@ -2,7 +2,7 @@
 <package format="3">
   <name>kinematic_evaluator</name>
   <version>0.1.0</version>
-  <description>kinematic evaluator ROS2 node</description>
+  <description>kinematic evaluator ROS 2 node</description>
 
   <maintainer email="dominik.jargot@robotec.ai">Dominik Jargot</maintainer>
 

@@ -51,7 +51,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[load_composable_node_param("compare_map_param_path")],
     )
 
-    # separate range of poincloud when map_filter used
+    # separate range of pointcloud when map_filter used
     use_map_short_range_crop_box_filter_component = ComposableNode(
         package="pointcloud_preprocessor",
         namespace=ns,

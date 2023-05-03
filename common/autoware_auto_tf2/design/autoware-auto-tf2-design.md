@@ -8,7 +8,7 @@ In general, users of ROS rely on tf (and its successor, tf2) for publishing and 
 frame transforms. This is true even to the extent that the tf2 contains the packages
 `tf2_geometry_msgs` and `tf2_sensor_msgs` which allow for easy conversion to and from the message
 types defined in `geometry_msgs` and `sensor_msgs`, respectively. However, AutowareAuto contains
-some specialized message types which are not transformable between frames using the ROS2 library.
+some specialized message types which are not transformable between frames using the ROS 2 library.
 The `autoware_auto_tf2` package aims to provide developers with tools to transform applicable
 `autoware_auto_msgs` types. In addition to this, this package also provides transform tools for
 messages types in `geometry_msgs` missing in `tf2_geometry_msgs`.
@@ -49,7 +49,7 @@ const ros::Time& tf2::getTimestamp(const T& t);
 
 ## Current Implementation of tf2_geometry_msgs
 
-In both ROS1 and ROS2 stamped msgs like `Vector3Stamped`, `QuaternionStamped` have associated
+In both ROS 1 and ROS 2 stamped msgs like `Vector3Stamped`, `QuaternionStamped` have associated
 functions like:
 
 - `getTimestamp`
@@ -58,13 +58,13 @@ functions like:
 - `toMsg`
 - `fromMsg`
 
-In ROS1, to support `tf2::convert` and need in `doTransform` of the stamped data, non-stamped
+In ROS 1, to support `tf2::convert` and need in `doTransform` of the stamped data, non-stamped
 underlying data like `Vector3`, `Point`, have implementations of the following functions:
 
 - `toMsg`
 - `fromMsg`
 
-In ROS2, much of the `doTransform` method is not using `toMsg` and `fromMsg` as data types from tf2
+In ROS 2, much of the `doTransform` method is not using `toMsg` and `fromMsg` as data types from tf2
 are not used. Instead `doTransform` is done using `KDL`, thus functions relating to underlying data
 were not added; such as `Vector3`, `Point`, or ported in this commit ros/geometry2/commit/6f2a82.
 The non-stamped data with `toMsg` and `fromMsg` are `Quaternion`, `Transform`. `Pose` has the

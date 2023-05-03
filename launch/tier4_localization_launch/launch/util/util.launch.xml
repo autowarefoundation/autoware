@@ -9,7 +9,7 @@
   <arg name="pointcloud_container_name" default="/pointcloud_container" description="container name"/>
 
   <!-- option -->
-  <arg name="use_intra_process" default="true" description="use ROS2 component container communication"/>
+  <arg name="use_intra_process" default="true" description="use ROS 2 component container communication"/>
 
   <!-- pose_initializer -->
   <group>

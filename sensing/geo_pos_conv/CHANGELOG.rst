@@ -4,7 +4,7 @@ Changelog for package geo_pos_conv
 
 2.0.0 (2020-10-03)
 ------------------
-* Convert package to ROS2
+* Convert package to ROS 2
 
 1.11.0 (2019-03-21)
 -------------------

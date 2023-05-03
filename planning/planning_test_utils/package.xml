@@ -3,7 +3,7 @@
 <package format="3">
   <name>planning_test_utils</name>
   <version>0.1.0</version>
-  <description>ROS2 node for testing interface of the nodes in planning module</description>
+  <description>ROS 2 node for testing interface of the nodes in planning module</description>
   <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <license>Apache License 2.0</license>

@@ -12,7 +12,7 @@ The model is based on [pytorch-ssd](https://github.com/qfgaohao/pytorch-ssd) and
 
 ### Training Data
 
-The model was fine-tuned on 1750 TierIV internal images of Japanese traffic lights.
+The model was fine-tuned on 1750 TIER IV internal images of Japanese traffic lights.
 
 ### Trained Onnx model
 

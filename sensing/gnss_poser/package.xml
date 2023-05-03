@@ -3,7 +3,7 @@
 <package format="3">
   <name>gnss_poser</name>
   <version>1.0.0</version>
-  <description>The ROS2 gnss_poser package</description>
+  <description>The ROS 2 gnss_poser package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <license>Apache License 2.0</license>
   <author email="ryo.watanabe@tier4.jp">Ryo Watanabe</author>

@@ -321,7 +321,7 @@ def generate_launch_description():
     add_launch_arg("use_experimental_lane_change_function")
 
     # component
-    add_launch_arg("use_intra_process", "false", "use ROS2 component container communication")
+    add_launch_arg("use_intra_process", "false", "use ROS 2 component container communication")
     add_launch_arg("use_multithread", "false", "use multithread")
 
     # for points filter of run out module

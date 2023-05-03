@@ -3,7 +3,7 @@
 <package format="3">
   <name>pointcloud_preprocessor</name>
   <version>0.1.0</version>
-  <description>The ROS2 pointcloud_preprocessor package</description>
+  <description>The ROS 2 pointcloud_preprocessor package</description>
   <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
