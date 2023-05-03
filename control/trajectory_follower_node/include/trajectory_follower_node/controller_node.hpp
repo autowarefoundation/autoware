@@ -15,8 +15,6 @@
 #ifndef TRAJECTORY_FOLLOWER_NODE__CONTROLLER_NODE_HPP_
 #define TRAJECTORY_FOLLOWER_NODE__CONTROLLER_NODE_HPP_
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
@@ -25,6 +23,9 @@
 #include "trajectory_follower_base/longitudinal_controller_base.hpp"
 #include "trajectory_follower_node/visibility_control.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
 #include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"

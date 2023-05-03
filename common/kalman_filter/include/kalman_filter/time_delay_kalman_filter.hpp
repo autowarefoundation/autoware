@@ -17,8 +17,8 @@
 
 #include "kalman_filter/kalman_filter.hpp"
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 #include <iostream>
 

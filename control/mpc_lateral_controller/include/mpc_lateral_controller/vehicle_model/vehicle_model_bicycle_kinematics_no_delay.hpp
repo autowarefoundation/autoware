@@ -38,9 +38,10 @@
 #ifndef MPC_LATERAL_CONTROLLER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_NO_DELAY_HPP_
 #define MPC_LATERAL_CONTROLLER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_NO_DELAY_HPP_
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/LU"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_interface.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 namespace autoware::motion::control::mpc_lateral_controller
 {

@@ -14,7 +14,7 @@
 
 #include "obstacle_cruise_planner/optimization_based_planner/velocity_optimizer.hpp"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <iostream>
 

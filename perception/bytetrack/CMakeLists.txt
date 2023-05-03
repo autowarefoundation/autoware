@@ -29,6 +29,7 @@ target_include_directories(bytetrack_lib
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
   $<INSTALL_INTERFACE:include>
 )
+target_link_libraries(bytetrack_lib Eigen3::Eigen)
 
 #
 # ROS node

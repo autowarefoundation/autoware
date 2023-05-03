@@ -15,7 +15,7 @@
 #ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_INTERFACE_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_INTERFACE_HPP_
 
-#include "eigen3/Eigen/Core"
+#include <Eigen/Core>
 
 #include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
 

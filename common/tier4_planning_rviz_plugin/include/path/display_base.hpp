@@ -40,8 +40,8 @@
 #include <vector>
 
 #define EIGEN_MPL2_ONLY
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <utils.hpp>
 
 namespace

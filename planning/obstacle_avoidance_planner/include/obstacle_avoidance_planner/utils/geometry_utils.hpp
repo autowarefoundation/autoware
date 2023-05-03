@@ -15,7 +15,6 @@
 #ifndef OBSTACLE_AVOIDANCE_PLANNER__UTILS__GEOMETRY_UTILS_HPP_
 #define OBSTACLE_AVOIDANCE_PLANNER__UTILS__GEOMETRY_UTILS_HPP_
 
-#include "eigen3/Eigen/Core"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/spline_interpolation_points_2d.hpp"
@@ -23,6 +22,8 @@
 #include "obstacle_avoidance_planner/common_structs.hpp"
 #include "obstacle_avoidance_planner/type_alias.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
+
+#include <Eigen/Core>
 
 #include "autoware_auto_planning_msgs/msg/path_point.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"

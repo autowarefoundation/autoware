@@ -15,12 +15,12 @@
 #ifndef PID_LONGITUDINAL_CONTROLLER__LONGITUDINAL_CONTROLLER_UTILS_HPP_
 #define PID_LONGITUDINAL_CONTROLLER__LONGITUDINAL_CONTROLLER_UTILS_HPP_
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
 #include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <experimental/optional>  // NOLINT
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"

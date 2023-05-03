@@ -15,7 +15,7 @@
 #ifndef MPC_LATERAL_CONTROLLER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_
 #define MPC_LATERAL_CONTROLLER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_
 
-#include "eigen3/Eigen/Core"
+#include <Eigen/Core>
 
 namespace autoware::motion::control::mpc_lateral_controller
 {

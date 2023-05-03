@@ -16,8 +16,6 @@
 #define PID_LONGITUDINAL_CONTROLLER__PID_LONGITUDINAL_CONTROLLER_HPP_
 
 #include "diagnostic_updater/diagnostic_updater.hpp"
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
 #include "pid_longitudinal_controller/debug_values.hpp"
 #include "pid_longitudinal_controller/longitudinal_controller_utils.hpp"
 #include "pid_longitudinal_controller/lowpass_filter.hpp"
@@ -29,6 +27,9 @@
 #include "tf2_ros/transform_listener.h"
 #include "trajectory_follower_base/longitudinal_controller_base.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
 #include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"

@@ -15,7 +15,7 @@
 #ifndef NDT_SCAN_MATCHER__MATRIX_TYPE_HPP_
 #define NDT_SCAN_MATCHER__MATRIX_TYPE_HPP_
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;

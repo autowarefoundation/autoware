@@ -15,9 +15,9 @@
 #ifndef MPC_LATERAL_CONTROLLER__QP_SOLVER__QP_SOLVER_INTERFACE_HPP_
 #define MPC_LATERAL_CONTROLLER__QP_SOLVER__QP_SOLVER_INTERFACE_HPP_
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/LU"
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/LU>
 
 namespace autoware::motion::control::mpc_lateral_controller
 {

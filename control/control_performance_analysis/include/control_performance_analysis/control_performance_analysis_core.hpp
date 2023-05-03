@@ -21,7 +21,7 @@
 #include "control_performance_analysis/msg/float_stamped.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include <rclcpp/time.hpp>
 
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>

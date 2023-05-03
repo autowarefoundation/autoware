@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "eigen3/Eigen/Core"
 #include "gtest/gtest.h"
 #include "osqp_interface/osqp_interface.hpp"
+
+#include <Eigen/Core>
 
 #include <tuple>
 #include <vector>

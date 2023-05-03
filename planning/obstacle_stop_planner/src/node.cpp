@@ -24,8 +24,8 @@
 #include "obstacle_stop_planner/node.hpp"
 #include "obstacle_stop_planner/planner_utils.hpp"
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <pcl/filters/voxel_grid.h>
 #include <tf2/utils.h>

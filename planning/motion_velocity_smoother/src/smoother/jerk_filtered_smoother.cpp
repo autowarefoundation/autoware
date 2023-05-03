@@ -14,8 +14,9 @@
 
 #include "motion_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
 
-#include "eigen3/Eigen/Core"
 #include "motion_velocity_smoother/trajectory_utils.hpp"
+
+#include <Eigen/Core>
 
 #include <algorithm>
 #include <chrono>

@@ -14,8 +14,8 @@
 
 #include "ekf_localizer/ekf_localizer.hpp"
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
+#include <Eigen/Core>
+#include <Eigen/LU>
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>

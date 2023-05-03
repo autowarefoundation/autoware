@@ -15,9 +15,10 @@
 #ifndef OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
 #define OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/LU"
 #include "obstacle_avoidance_planner/vehicle_model/vehicle_model_interface.hpp"
+
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 #include <vector>
 

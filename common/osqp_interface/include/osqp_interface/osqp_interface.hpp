@@ -15,11 +15,11 @@
 #ifndef OSQP_INTERFACE__OSQP_INTERFACE_HPP_
 #define OSQP_INTERFACE__OSQP_INTERFACE_HPP_
 
-#include "eigen3/Eigen/Core"
 #include "osqp/osqp.h"
 #include "osqp_interface/csc_matrix_conv.hpp"
 #include "osqp_interface/visibility_control.hpp"
 
+#include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
 
 #include <limits>

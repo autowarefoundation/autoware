@@ -15,11 +15,12 @@
 #ifndef MPC_LATERAL_CONTROLLER__MPC_UTILS_HPP_
 #define MPC_LATERAL_CONTROLLER__MPC_UTILS_HPP_
 
-#include "eigen3/Eigen/Core"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
+
+#include <Eigen/Core>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"

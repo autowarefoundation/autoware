@@ -15,8 +15,8 @@
 #ifndef KALMAN_FILTER__KALMAN_FILTER_HPP_
 #define KALMAN_FILTER__KALMAN_FILTER_HPP_
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 /**
  * @file kalman_filter.h

@@ -17,8 +17,8 @@
 
 #include "updater/occupancy_grid_map_updater_interface.hpp"
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 namespace costmap_2d
 {
