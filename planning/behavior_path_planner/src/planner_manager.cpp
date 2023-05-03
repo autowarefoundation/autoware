@@ -48,12 +48,13 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
 
   auto result_output = [&]() {
     const bool is_any_module_running = std::any_of(
-      scene_modules_.begin(), scene_modules_.end(),
-      [](const auto & module) { return module->getCurrentStatus() == BT::NodeStatus::RUNNING; });
-    if (
-      !is_any_module_running &&
-      utils::isEgoOutOfRoute(
-        data->self_odometry->pose.pose, data->prev_modified_goal, data->route_handler)) {
+      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+      [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::RUNNING; });
+
+    const bool is_out_of_route = utils::isEgoOutOfRoute(
+      data->self_odometry->pose.pose, data->prev_modified_goal, data->route_handler);
+
+    if (!is_any_module_running && is_out_of_route) {
       BehaviorModuleOutput output{};
       const auto output_path =
         utils::createGoalAroundPath(data->route_handler, data->prev_modified_goal);
@@ -61,6 +62,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       output.reference_path = std::make_shared<PathWithLaneId>(output_path);
       return output;
     }
+
     while (rclcpp::ok()) {
       /**
        * STEP1: get approved modules' output
