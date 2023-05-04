@@ -26,9 +26,7 @@ namespace behavior_path_planner
 class GeometricPullOut : public PullOutPlannerBase
 {
 public:
-  explicit GeometricPullOut(
-    rclcpp::Node & node, const PullOutParameters & parameters,
-    const ParallelParkingParameters & parallel_parking_parameters);
+  explicit GeometricPullOut(rclcpp::Node & node, const PullOutParameters & parameters);
 
   PlannerType getPlannerType() override { return PlannerType::GEOMETRIC; };
   boost::optional<PullOutPath> plan(Pose start_pose, Pose goal_pose) override;

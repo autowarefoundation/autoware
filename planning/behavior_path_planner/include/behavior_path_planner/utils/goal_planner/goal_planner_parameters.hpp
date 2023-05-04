@@ -16,6 +16,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_PLANNER_PARAMETERS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_PLANNER_PARAMETERS_HPP_
 
+#include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
+
 #include <freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <freespace_planning_algorithms/astar_search.hpp>
 #include <freespace_planning_algorithms/rrtstar.hpp>
@@ -37,14 +39,12 @@ enum class ParkingPolicy {
 
 struct GoalPlannerParameters
 {
+  // general  params
   double minimum_request_length;
   double th_arrived_distance;
   double th_stopped_velocity;
   double th_stopped_time;
-  double margin_from_boundary;
-  double decide_path_distance;
-  double maximum_deceleration;
-  double maximum_jerk;
+
   // goal search
   std::string search_priority;   // "efficient_path" or "close_goal"
   ParkingPolicy parking_policy;  // "left_side" or "right_side"
@@ -55,60 +55,50 @@ struct GoalPlannerParameters
   double max_lateral_offset;
   double lateral_offset_interval;
   double ignore_distance_from_lane_start;
+  double margin_from_boundary;
+
   // occupancy grid map
   bool use_occupancy_grid;
   bool use_occupancy_grid_for_longitudinal_margin;
   double occupancy_grid_collision_check_margin;
   int theta_size;
   int obstacle_threshold;
+
   // object recognition
   bool use_object_recognition;
   double object_recognition_collision_check_margin;
+
+  // pull over general params
+  double pull_over_velocity;
+  double pull_over_minimum_velocity;
+  double decide_path_distance;
+  double maximum_deceleration;
+  double maximum_jerk;
+
   // shift path
   bool enable_shift_parking;
-  int pull_over_sampling_num;
+  int shift_sampling_num;
   double maximum_lateral_jerk;
   double minimum_lateral_jerk;
   double deceleration_interval;
-  double pull_over_velocity;
-  double pull_over_minimum_velocity;
-  double after_pull_over_straight_distance;
+  double after_shift_straight_distance;
+
   // parallel parking
   bool enable_arc_forward_parking;
   bool enable_arc_backward_parking;
-  double after_forward_parking_straight_distance;
-  double after_backward_parking_straight_distance;
-  double forward_parking_velocity;
-  double backward_parking_velocity;
-  double forward_parking_lane_departure_margin;
-  double backward_parking_lane_departure_margin;
-  double arc_path_interval;
-  double pull_over_max_steer_angle;
+  ParallelParkingParameters parallel_parking_parameters;
+
   // freespace parking
   bool enable_freespace_parking;
-  // hazard
-  double hazard_on_threshold_distance;
-  double hazard_on_threshold_velocity;
-  // check safety with dynamic objects. Not used now.
-  double pull_over_duration;
-  double pull_over_prepare_duration;
-  double min_stop_distance;
-  double stop_time;
-  double hysteresis_buffer_distance;
-  double prediction_time_resolution;
-  bool enable_collision_check_at_prepare_phase;
-  bool use_predicted_path_outside_lanelet;
-  bool use_all_predicted_path;
-  // debug
-  bool print_debug_info;
-
-  // freespace pull over
-  std::string algorithm;
+  std::string freespace_parking_algorithm;
   double freespace_parking_velocity;
   double vehicle_shape_margin;
-  PlannerCommonParam common_parameters;
+  PlannerCommonParam freespace_parking_common_parameters;
   AstarParam astar_parameters;
   RRTStarParam rrt_star_parameters;
+
+  // debug
+  bool print_debug_info;
 };
 }  // namespace behavior_path_planner
 

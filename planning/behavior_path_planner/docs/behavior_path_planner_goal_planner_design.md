@@ -153,14 +153,14 @@ The lateral jerk is searched for among the predetermined minimum and maximum val
 
 #### Parameters for shift parking
 
-| Name                              | Unit   | Type   | Description                                                         | Default value |
-| :-------------------------------- | :----- | :----- | :------------------------------------------------------------------ | :------------ |
-| enable_shift_parking              | [-]    | bool   | flag whether to enable shift parking                                | true          |
-| pull_over_sampling_num            | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk | 4             |
-| maximum_lateral_jerk              | [m/s3] | double | maximum lateral jerk                                                | 2.0           |
-| minimum_lateral_jerk              | [m/s3] | double | minimum lateral jerk                                                | 0.5           |
-| deceleration_interval             | [m]    | double | distance of deceleration section                                    | 15.0          |
-| after_pull_over_straight_distance | [m]    | double | straight line distance after pull over end point                    | 5.0           |
+| Name                          | Unit   | Type   | Description                                                         | Default value |
+| :---------------------------- | :----- | :----- | :------------------------------------------------------------------ | :------------ |
+| enable_shift_parking          | [-]    | bool   | flag whether to enable shift parking                                | true          |
+| shift_sampling_num            | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk | 4             |
+| maximum_lateral_jerk          | [m/s3] | double | maximum lateral jerk                                                | 2.0           |
+| minimum_lateral_jerk          | [m/s3] | double | minimum lateral jerk                                                | 0.5           |
+| deceleration_interval         | [m]    | double | distance of deceleration section                                    | 15.0          |
+| after_shift_straight_distance | [m]    | double | straight line distance after pull over end point                    | 5.0           |
 
 ### **geometric parallel parking**
 

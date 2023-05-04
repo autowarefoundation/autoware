@@ -16,6 +16,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PARAMETERS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PARAMETERS_HPP_
 
+#include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
+
 #include <string>
 #include <vector>
 
@@ -39,14 +41,11 @@ struct PullOutParameters
   // geometric pull out
   bool enable_geometric_pull_out;
   bool divide_pull_out_path;
-  double geometric_pull_out_velocity;
-  double arc_path_interval;
-  double lane_departure_margin;
-  double backward_velocity;
-  double pull_out_max_steer_angle;
+  ParallelParkingParameters parallel_parking_parameters;
   // search start pose backward
   std::string search_priority;  // "efficient_path" or "short_back_distance"
   bool enable_back;
+  double backward_velocity;
   double max_back_distance;
   double backward_search_resolution;
   double backward_path_update_duration;

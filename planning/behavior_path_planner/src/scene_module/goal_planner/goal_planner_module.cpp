@@ -85,14 +85,12 @@ GoalPlannerModule::GoalPlannerModule(
     if (parameters_->enable_arc_forward_parking) {
       constexpr bool is_forward = true;
       pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-        node, *parameters, getGeometricGoalPlannerParameters(), lane_departure_checker,
-        occupancy_grid_map_, is_forward));
+        node, *parameters, lane_departure_checker, occupancy_grid_map_, is_forward));
     }
     if (parameters_->enable_arc_backward_parking) {
       constexpr bool is_forward = false;
       pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-        node, *parameters, getGeometricGoalPlannerParameters(), lane_departure_checker,
-        occupancy_grid_map_, is_forward));
+        node, *parameters, lane_departure_checker, occupancy_grid_map_, is_forward));
     }
   }
   if (pull_over_planners_.empty()) {
@@ -250,28 +248,6 @@ BehaviorModuleOutput GoalPlannerModule::run()
   return plan();
 }
 
-ParallelParkingParameters GoalPlannerModule::getGeometricGoalPlannerParameters() const
-{
-  ParallelParkingParameters params{};
-
-  params.th_arrived_distance = parameters_->th_arrived_distance;
-  params.th_stopped_velocity = parameters_->th_stopped_velocity;
-  params.after_forward_parking_straight_distance =
-    parameters_->after_forward_parking_straight_distance;
-  params.after_backward_parking_straight_distance =
-    parameters_->after_backward_parking_straight_distance;
-  params.forward_parking_velocity = parameters_->forward_parking_velocity;
-  params.backward_parking_velocity = parameters_->backward_parking_velocity;
-  params.forward_parking_lane_departure_margin = parameters_->forward_parking_lane_departure_margin;
-  params.backward_parking_lane_departure_margin =
-    parameters_->backward_parking_lane_departure_margin;
-  params.arc_path_interval = parameters_->arc_path_interval;
-  params.maximum_deceleration = parameters_->maximum_deceleration;
-  params.max_steer_angle = parameters_->pull_over_max_steer_angle;
-
-  return params;
-}
-
 void GoalPlannerModule::processOnEntry()
 {
   const auto & route_handler = planner_data_->route_handler;
@@ -300,7 +276,6 @@ void GoalPlannerModule::processOnEntry()
   // initialize when receiving new route
   if (!last_received_time_ || *last_received_time_ != route_handler->getRouteHeader().stamp) {
     // Initialize parallel parking planner status
-    parallel_parking_parameters_ = getGeometricGoalPlannerParameters();
     resetStatus();
 
     // calculate goal candidates

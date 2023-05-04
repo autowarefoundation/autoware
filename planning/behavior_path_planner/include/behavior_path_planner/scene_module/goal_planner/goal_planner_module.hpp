@@ -165,7 +165,6 @@ private:
   bool incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
   Pose calcRefinedGoal(const Pose & goal_pose) const;
-  ParallelParkingParameters getGeometricGoalPlannerParameters() const;
   double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
   void decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const;
   void decelerateBeforeSearchStart(const Pose & search_start_pose, PathWithLaneId & path) const;

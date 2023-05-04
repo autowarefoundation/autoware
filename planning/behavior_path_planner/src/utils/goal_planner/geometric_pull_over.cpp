@@ -27,16 +27,16 @@ namespace behavior_path_planner
 {
 GeometricPullOver::GeometricPullOver(
   rclcpp::Node & node, const GoalPlannerParameters & parameters,
-  const ParallelParkingParameters & parallel_parking_parameters,
   const LaneDepartureChecker & lane_departure_checker,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
   const bool is_forward)
 : PullOverPlannerBase{node, parameters},
-  parallel_parking_parameters_{parallel_parking_parameters},
+  parallel_parking_parameters_{parameters.parallel_parking_parameters},
   lane_departure_checker_{lane_departure_checker},
   occupancy_grid_map_{occupancy_grid_map},
   is_forward_{is_forward}
 {
+  planner_.setParameters(parallel_parking_parameters_);
 }
 
 boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
@@ -53,8 +53,12 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
   auto lanes = road_lanes;
   lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
 
-  // todo: set param only once
-  planner_.setData(planner_data_, parallel_parking_parameters_);
+  const auto & p = parallel_parking_parameters_;
+  const double max_steer_angle =
+    is_forward_ ? p.forward_parking_max_steer_angle : p.backward_parking_max_steer_angle;
+  planner_.setTurningRadius(planner_data_->parameters, max_steer_angle);
+  planner_.setPlannerData(planner_data_);
+
   const bool found_valid_path =
     planner_.planPullOver(goal_pose, road_lanes, shoulder_lanes, is_forward_);
   if (!found_valid_path) {

@@ -34,7 +34,6 @@ class GeometricPullOver : public PullOverPlannerBase
 public:
   GeometricPullOver(
     rclcpp::Node & node, const GoalPlannerParameters & parameters,
-    const ParallelParkingParameters & parallel_parking_parameters,
     const LaneDepartureChecker & lane_departure_checker,
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map,
     const bool is_forward);

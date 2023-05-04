@@ -49,17 +49,27 @@ struct ParallelParkingParameters
 {
   double th_arrived_distance;
   double th_stopped_velocity;
-  double after_forward_parking_straight_distance;
-  double after_backward_parking_straight_distance;
-  double forward_parking_velocity;
-  double backward_parking_velocity;
-  double departing_velocity;
-  double backward_parking_lane_departure_margin;
-  double forward_parking_lane_departure_margin;
-  double departing_lane_departure_margin;
-  double arc_path_interval;
   double maximum_deceleration;
-  double max_steer_angle;
+
+  // forward parking
+  double after_forward_parking_straight_distance;
+  double forward_parking_velocity;
+  double forward_parking_lane_departure_margin;
+  double forward_parking_path_interval;
+  double forward_parking_max_steer_angle;
+
+  // backward parking
+  double after_backward_parking_straight_distance;
+  double backward_parking_velocity;
+  double backward_parking_lane_departure_margin;
+  double backward_parking_path_interval;
+  double backward_parking_max_steer_angle;
+
+  // pull_out
+  double pull_out_velocity;
+  double pull_out_lane_departure_margin;
+  double pull_out_path_interval;
+  double pull_out_max_steer_angle;
 };
 
 class GeometricParallelParking
@@ -72,9 +82,14 @@ public:
   bool planPullOut(
     const Pose & start_pose, const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
     const lanelet::ConstLanelets & shoulder_lanes);
-  void setData(
-    const std::shared_ptr<const PlannerData> & planner_data,
-    const ParallelParkingParameters & parameters);
+  void setParameters(const ParallelParkingParameters & parameters) { parameters_ = parameters; }
+  void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
+  {
+    planner_data_ = planner_data;
+  }
+  void setTurningRadius(
+    const BehaviorPathPlannerParameters & common_params, const double max_steer_angle);
+
   void incrementPathIndex();
 
   std::vector<PathWithLaneId> getArcPaths() const { return arc_paths_; }
@@ -103,10 +118,11 @@ private:
   std::vector<PathWithLaneId> planOneTrial(
     const Pose & start_pose, const Pose & goal_pose, const double R_E_r,
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
-    bool is_forward, const double end_pose_offset, const double lane_departure_margin);
+    bool is_forward, const double end_pose_offset, const double lane_departure_margin,
+    const double arc_path_interval);
   PathWithLaneId generateArcPath(
     const Pose & center, const double radius, const double start_yaw, double end_yaw,
-    const bool is_left_turn, const bool is_forward);
+    const double arc_path_interval, const bool is_left_turn, const bool is_forward);
   PathPointWithLaneId generateArcPathPoint(
     const Pose & center, const double radius, const double yaw, const bool is_left_turn,
     const bool is_forward);

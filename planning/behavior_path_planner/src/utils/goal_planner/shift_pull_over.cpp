@@ -40,8 +40,8 @@ boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
   const auto & route_handler = planner_data_->route_handler;
   const double min_jerk = parameters_.minimum_lateral_jerk;
   const double max_jerk = parameters_.maximum_lateral_jerk;
-  const int pull_over_sampling_num = parameters_.pull_over_sampling_num;
-  const double jerk_resolution = std::abs(max_jerk - min_jerk) / pull_over_sampling_num;
+  const int shift_sampling_num = parameters_.shift_sampling_num;
+  const double jerk_resolution = std::abs(max_jerk - min_jerk) / shift_sampling_num;
 
   // get road and shoulder lanes
   const auto road_lanes = utils::getExtendedCurrentLanes(planner_data_);
@@ -99,10 +99,10 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   const Pose & goal_pose, const double lateral_jerk) const
 {
   const double pull_over_velocity = parameters_.pull_over_velocity;
-  const double after_pull_over_straight_distance = parameters_.after_pull_over_straight_distance;
+  const double after_shift_straight_distance = parameters_.after_shift_straight_distance;
 
   const Pose shift_end_pose =
-    tier4_autoware_utils::calcOffsetPose(goal_pose, -after_pull_over_straight_distance, 0, 0);
+    tier4_autoware_utils::calcOffsetPose(goal_pose, -after_shift_straight_distance, 0, 0);
 
   // generate road lane reference path to shift end
   const auto road_lane_reference_path_to_shift_end = utils::resamplePathWithSpline(

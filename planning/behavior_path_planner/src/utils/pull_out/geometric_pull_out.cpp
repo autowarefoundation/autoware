@@ -28,11 +28,11 @@ namespace behavior_path_planner
 using pull_out_utils::combineReferencePath;
 using pull_out_utils::getPullOutLanes;
 
-GeometricPullOut::GeometricPullOut(
-  rclcpp::Node & node, const PullOutParameters & parameters,
-  const ParallelParkingParameters & parallel_parking_parameters)
-: PullOutPlannerBase{node, parameters}, parallel_parking_parameters_{parallel_parking_parameters}
+GeometricPullOut::GeometricPullOut(rclcpp::Node & node, const PullOutParameters & parameters)
+: PullOutPlannerBase{node, parameters},
+  parallel_parking_parameters_{parameters.parallel_parking_parameters}
 {
+  planner_.setParameters(parallel_parking_parameters_);
 }
 
 boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_pose)
@@ -45,8 +45,9 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
   auto lanes = road_lanes;
   lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
 
-  // todo: set params only once?
-  planner_.setData(planner_data_, parallel_parking_parameters_);
+  planner_.setTurningRadius(
+    planner_data_->parameters, parallel_parking_parameters_.pull_out_max_steer_angle);
+  planner_.setPlannerData(planner_data_);
   const bool found_valid_path =
     planner_.planPullOut(start_pose, goal_pose, road_lanes, shoulder_lanes);
   if (!found_valid_path) {
@@ -68,7 +69,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
     auto partial_paths = planner_.getPaths();
     // remove stop velocity of first arc path
     partial_paths.front().points.back().point.longitudinal_velocity_mps =
-      parameters_.geometric_pull_out_velocity;
+      parallel_parking_parameters_.pull_out_velocity;
     const auto combined_path = combineReferencePath(partial_paths.at(0), partial_paths.at(1));
     output.partial_paths.push_back(combined_path);
   }

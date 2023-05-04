@@ -761,17 +761,18 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
 {
   GoalPlannerParameters p;
 
+  // general params
   {
     std::string ns = "goal_planner.";
     p.minimum_request_length = declare_parameter<double>(ns + "minimum_request_length");
     p.th_stopped_velocity = declare_parameter<double>(ns + "th_stopped_velocity");
     p.th_arrived_distance = declare_parameter<double>(ns + "th_arrived_distance");
     p.th_stopped_time = declare_parameter<double>(ns + "th_stopped_time");
-    p.margin_from_boundary = declare_parameter<double>(ns + "margin_from_boundary");
-    p.decide_path_distance = declare_parameter<double>(ns + "decide_path_distance");
-    p.maximum_deceleration = declare_parameter<double>(ns + "maximum_deceleration");
-    p.maximum_jerk = declare_parameter<double>(ns + "maximum_jerk");
-    // goal search
+  }
+
+  // goal search
+  {
+    std::string ns = "goal_planner.goal_search.";
     p.search_priority = declare_parameter<std::string>(ns + "search_priority");
     p.forward_goal_search_length = declare_parameter<double>(ns + "forward_goal_search_length");
     p.backward_goal_search_length = declare_parameter<double>(ns + "backward_goal_search_length");
@@ -781,79 +782,7 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
     p.lateral_offset_interval = declare_parameter<double>(ns + "lateral_offset_interval");
     p.ignore_distance_from_lane_start =
       declare_parameter<double>(ns + "ignore_distance_from_lane_start");
-    // occupancy grid map
-    p.use_occupancy_grid = declare_parameter<bool>(ns + "use_occupancy_grid");
-    p.use_occupancy_grid_for_longitudinal_margin =
-      declare_parameter<bool>(ns + "use_occupancy_grid_for_longitudinal_margin");
-    p.occupancy_grid_collision_check_margin =
-      declare_parameter<double>(ns + "occupancy_grid_collision_check_margin");
-    p.theta_size = declare_parameter<int>(ns + "theta_size");
-    p.obstacle_threshold = declare_parameter<int>(ns + "obstacle_threshold");
-    // object recognition
-    p.use_object_recognition = declare_parameter<bool>(ns + "use_object_recognition");
-    p.object_recognition_collision_check_margin =
-      declare_parameter<double>(ns + "object_recognition_collision_check_margin");
-    // shift path
-    p.enable_shift_parking = declare_parameter<bool>(ns + "enable_shift_parking");
-    p.pull_over_sampling_num = declare_parameter<int>(ns + "pull_over_sampling_num");
-    p.maximum_lateral_jerk = declare_parameter<double>(ns + "maximum_lateral_jerk");
-    p.minimum_lateral_jerk = declare_parameter<double>(ns + "minimum_lateral_jerk");
-    p.deceleration_interval = declare_parameter<double>(ns + "deceleration_interval");
-    p.pull_over_velocity = declare_parameter<double>(ns + "pull_over_velocity");
-    p.pull_over_minimum_velocity = declare_parameter<double>(ns + "pull_over_minimum_velocity");
-    p.after_pull_over_straight_distance =
-      declare_parameter<double>(ns + "after_pull_over_straight_distance");
-    // parallel parking
-    p.enable_arc_forward_parking = declare_parameter<bool>(ns + "enable_arc_forward_parking");
-    p.enable_arc_backward_parking = declare_parameter<bool>(ns + "enable_arc_backward_parking");
-    p.after_forward_parking_straight_distance =
-      declare_parameter<double>(ns + "after_forward_parking_straight_distance");
-    p.after_backward_parking_straight_distance =
-      declare_parameter<double>(ns + "after_backward_parking_straight_distance");
-    p.forward_parking_velocity = declare_parameter<double>(ns + "forward_parking_velocity");
-    p.backward_parking_velocity = declare_parameter<double>(ns + "backward_parking_velocity");
-    p.forward_parking_lane_departure_margin =
-      declare_parameter<double>(ns + "forward_parking_lane_departure_margin");
-    p.backward_parking_lane_departure_margin =
-      declare_parameter<double>(ns + "backward_parking_lane_departure_margin");
-    p.arc_path_interval = declare_parameter<double>(ns + "arc_path_interval");
-    p.pull_over_max_steer_angle =
-      declare_parameter<double>(ns + "pull_over_max_steer_angle");  // 20deg
-                                                                    // freespace parking
-    p.enable_freespace_parking = declare_parameter<bool>(ns + "enable_freespace_parking");
-    // hazard
-    p.hazard_on_threshold_distance = declare_parameter<double>(ns + "hazard_on_threshold_distance");
-    p.hazard_on_threshold_velocity = declare_parameter<double>(ns + "hazard_on_threshold_velocity");
-    // safety with dynamic objects. Not used now.
-    p.pull_over_duration = declare_parameter<double>(ns + "pull_over_duration");
-    p.pull_over_prepare_duration = declare_parameter<double>(ns + "pull_over_prepare_duration");
-    p.min_stop_distance = declare_parameter<double>(ns + "min_stop_distance");
-    p.stop_time = declare_parameter<double>(ns + "stop_time");
-    p.hysteresis_buffer_distance = declare_parameter<double>(ns + "hysteresis_buffer_distance");
-    p.prediction_time_resolution = declare_parameter<double>(ns + "prediction_time_resolution");
-    p.enable_collision_check_at_prepare_phase =
-      declare_parameter<bool>(ns + "enable_collision_check_at_prepare_phase");
-    p.use_predicted_path_outside_lanelet =
-      declare_parameter<bool>(ns + "use_predicted_path_outside_lanelet");
-    p.use_all_predicted_path = declare_parameter<bool>(ns + "use_all_predicted_path");
-    // debug
-    p.print_debug_info = declare_parameter<bool>(ns + "print_debug_info");
-
-    // validation of parameters
-    if (p.pull_over_sampling_num < 1) {
-      RCLCPP_FATAL_STREAM(
-        get_logger(), "pull_over_sampling_num must be positive integer. Given parameter: "
-                        << p.pull_over_sampling_num << std::endl
-                        << "Terminating the program...");
-      exit(EXIT_FAILURE);
-    }
-    if (p.maximum_deceleration < 0.0) {
-      RCLCPP_FATAL_STREAM(
-        get_logger(), "maximum_deceleration cannot be negative value. Given parameter: "
-                        << p.maximum_deceleration << std::endl
-                        << "Terminating the program...");
-      exit(EXIT_FAILURE);
-    }
+    p.margin_from_boundary = declare_parameter<double>(ns + "margin_from_boundary");
 
     const std::string parking_policy_name = declare_parameter<std::string>(ns + "parking_policy");
     if (parking_policy_name == "left_side") {
@@ -868,37 +797,128 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
     }
   }
 
+  // occupancy grid map
   {
-    std::string ns = "goal_planner.freespace_parking.";
-    // search configs
-    p.algorithm = declare_parameter<std::string>(ns + "planning_algorithm");
-    p.freespace_parking_velocity = declare_parameter<double>(ns + "velocity");
-    p.vehicle_shape_margin = declare_parameter<double>(ns + "vehicle_shape_margin");
-    p.common_parameters.time_limit = declare_parameter<double>(ns + "time_limit");
-    p.common_parameters.minimum_turning_radius =
-      declare_parameter<double>(ns + "minimum_turning_radius");
-    p.common_parameters.maximum_turning_radius =
-      declare_parameter<double>(ns + "maximum_turning_radius");
-    p.common_parameters.turning_radius_size = declare_parameter<int>(ns + "turning_radius_size");
-    p.common_parameters.maximum_turning_radius = std::max(
-      p.common_parameters.maximum_turning_radius, p.common_parameters.minimum_turning_radius);
-    p.common_parameters.turning_radius_size = std::max(p.common_parameters.turning_radius_size, 1);
-
-    p.common_parameters.theta_size = declare_parameter<int>(ns + "theta_size");
-    p.common_parameters.angle_goal_range = declare_parameter<double>(ns + "angle_goal_range");
-
-    p.common_parameters.curve_weight = declare_parameter<double>(ns + "curve_weight");
-    p.common_parameters.reverse_weight = declare_parameter<double>(ns + "reverse_weight");
-    p.common_parameters.lateral_goal_range = declare_parameter<double>(ns + "lateral_goal_range");
-    p.common_parameters.longitudinal_goal_range =
-      declare_parameter<double>(ns + "longitudinal_goal_range");
-
-    // costmap configs
-    p.common_parameters.obstacle_threshold = declare_parameter<int>(ns + "obstacle_threshold");
+    std::string ns = "goal_planner.occupancy_grid.";
+    p.use_occupancy_grid = declare_parameter<bool>(ns + "use_occupancy_grid");
+    p.use_occupancy_grid_for_longitudinal_margin =
+      declare_parameter<bool>(ns + "use_occupancy_grid_for_longitudinal_margin");
+    p.occupancy_grid_collision_check_margin =
+      declare_parameter<double>(ns + "occupancy_grid_collision_check_margin");
+    p.theta_size = declare_parameter<int>(ns + "theta_size");
+    p.obstacle_threshold = declare_parameter<int>(ns + "obstacle_threshold");
   }
 
+  // object recognition
   {
-    std::string ns = "goal_planner.freespace_parking.astar.";
+    std::string ns = "goal_planner.object_recognition.";
+    p.use_object_recognition = declare_parameter<bool>(ns + "use_object_recognition");
+    p.object_recognition_collision_check_margin =
+      declare_parameter<double>(ns + "object_recognition_collision_check_margin");
+  }
+
+  // pull over general params
+  {
+    std::string ns = "goal_planner.pull_over.";
+    p.pull_over_velocity = declare_parameter<double>(ns + "pull_over_velocity");
+    p.pull_over_minimum_velocity = declare_parameter<double>(ns + "pull_over_minimum_velocity");
+    p.decide_path_distance = declare_parameter<double>(ns + "decide_path_distance");
+    p.maximum_deceleration = declare_parameter<double>(ns + "maximum_deceleration");
+    p.maximum_jerk = declare_parameter<double>(ns + "maximum_jerk");
+  }
+
+  // shift parking
+  {
+    std::string ns = "goal_planner.pull_over.shift_parking.";
+    p.enable_shift_parking = declare_parameter<bool>(ns + "enable_shift_parking");
+    p.shift_sampling_num = declare_parameter<int>(ns + "shift_sampling_num");
+    p.maximum_lateral_jerk = declare_parameter<double>(ns + "maximum_lateral_jerk");
+    p.minimum_lateral_jerk = declare_parameter<double>(ns + "minimum_lateral_jerk");
+    p.deceleration_interval = declare_parameter<double>(ns + "deceleration_interval");
+    p.after_shift_straight_distance =
+      declare_parameter<double>(ns + "after_shift_straight_distance");
+  }
+
+  // forward parallel parking forward
+  {
+    std::string ns = "goal_planner.pull_over.parallel_parking.forward.";
+    p.enable_arc_forward_parking = declare_parameter<bool>(ns + "enable_arc_forward_parking");
+    p.parallel_parking_parameters.after_forward_parking_straight_distance =
+      declare_parameter<double>(ns + "after_forward_parking_straight_distance");
+    p.parallel_parking_parameters.forward_parking_velocity =
+      declare_parameter<double>(ns + "forward_parking_velocity");
+    p.parallel_parking_parameters.forward_parking_lane_departure_margin =
+      declare_parameter<double>(ns + "forward_parking_lane_departure_margin");
+    p.parallel_parking_parameters.forward_parking_path_interval =
+      declare_parameter<double>(ns + "forward_parking_path_interval");
+    p.parallel_parking_parameters.forward_parking_max_steer_angle =
+      declare_parameter<double>(ns + "forward_parking_max_steer_angle");  // 20deg
+  }
+
+  // forward parallel parking backward
+  {
+    std::string ns = "goal_planner.pull_over.parallel_parking.backward.";
+    p.enable_arc_backward_parking = declare_parameter<bool>(ns + "enable_arc_backward_parking");
+    p.parallel_parking_parameters.after_backward_parking_straight_distance =
+      declare_parameter<double>(ns + "after_backward_parking_straight_distance");
+    p.parallel_parking_parameters.backward_parking_velocity =
+      declare_parameter<double>(ns + "backward_parking_velocity");
+    p.parallel_parking_parameters.backward_parking_lane_departure_margin =
+      declare_parameter<double>(ns + "backward_parking_lane_departure_margin");
+    p.parallel_parking_parameters.backward_parking_path_interval =
+      declare_parameter<double>(ns + "backward_parking_path_interval");
+    p.parallel_parking_parameters.backward_parking_max_steer_angle =
+      declare_parameter<double>(ns + "backward_parking_max_steer_angle");  // 20deg
+  }
+
+  // freespace parking general params
+  {
+    std::string ns = "goal_planner.pull_over.freespace_parking.";
+    p.enable_freespace_parking = declare_parameter<bool>(ns + "enable_freespace_parking");
+    p.freespace_parking_algorithm =
+      declare_parameter<std::string>(ns + "freespace_parking_algorithm");
+    p.freespace_parking_velocity = declare_parameter<double>(ns + "velocity");
+    p.vehicle_shape_margin = declare_parameter<double>(ns + "vehicle_shape_margin");
+    p.freespace_parking_common_parameters.time_limit = declare_parameter<double>(ns + "time_limit");
+    p.freespace_parking_common_parameters.minimum_turning_radius =
+      declare_parameter<double>(ns + "minimum_turning_radius");
+    p.freespace_parking_common_parameters.maximum_turning_radius =
+      declare_parameter<double>(ns + "maximum_turning_radius");
+    p.freespace_parking_common_parameters.turning_radius_size =
+      declare_parameter<int>(ns + "turning_radius_size");
+    p.freespace_parking_common_parameters.maximum_turning_radius = std::max(
+      p.freespace_parking_common_parameters.maximum_turning_radius,
+      p.freespace_parking_common_parameters.minimum_turning_radius);
+    p.freespace_parking_common_parameters.turning_radius_size =
+      std::max(p.freespace_parking_common_parameters.turning_radius_size, 1);
+  }
+
+  //  freespace parking search config
+  {
+    std::string ns = "goal_planner.pull_over.freespace_parking.search_configs.";
+    p.freespace_parking_common_parameters.theta_size = declare_parameter<int>(ns + "theta_size");
+    p.freespace_parking_common_parameters.angle_goal_range =
+      declare_parameter<double>(ns + "angle_goal_range");
+    p.freespace_parking_common_parameters.curve_weight =
+      declare_parameter<double>(ns + "curve_weight");
+    p.freespace_parking_common_parameters.reverse_weight =
+      declare_parameter<double>(ns + "reverse_weight");
+    p.freespace_parking_common_parameters.lateral_goal_range =
+      declare_parameter<double>(ns + "lateral_goal_range");
+    p.freespace_parking_common_parameters.longitudinal_goal_range =
+      declare_parameter<double>(ns + "longitudinal_goal_range");
+  }
+
+  //  freespace parking costmap configs
+  {
+    std::string ns = "goal_planner.pull_over.freespace_parking.costmap_configs.";
+    p.freespace_parking_common_parameters.obstacle_threshold =
+      declare_parameter<int>(ns + "obstacle_threshold");
+  }
+
+  //  freespace parking astar
+  {
+    std::string ns = "goal_planner.pull_over.freespace_parking.astar.";
     p.astar_parameters.only_behind_solutions =
       declare_parameter<bool>(ns + "only_behind_solutions");
     p.astar_parameters.use_back = declare_parameter<bool>(ns + "use_back");
@@ -906,14 +926,37 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
       declare_parameter<double>(ns + "distance_heuristic_weight");
   }
 
+  //   freespace parking rrtstar
   {
-    std::string ns = "goal_planner.freespace_parking.rrtstar.";
+    std::string ns = "goal_planner.pull_over.freespace_parking.rrtstar.";
     p.rrt_star_parameters.enable_update = declare_parameter<bool>(ns + "enable_update");
     p.rrt_star_parameters.use_informed_sampling =
       declare_parameter<bool>(ns + "use_informed_sampling");
     p.rrt_star_parameters.max_planning_time = declare_parameter<double>(ns + "max_planning_time");
     p.rrt_star_parameters.neighbor_radius = declare_parameter<double>(ns + "neighbor_radius");
     p.rrt_star_parameters.margin = declare_parameter<double>(ns + "margin");
+  }
+
+  // debug
+  {
+    std::string ns = "goal_planner.debug.";
+    p.print_debug_info = declare_parameter<bool>(ns + "print_debug_info");
+  }
+
+  // validation of parameters
+  if (p.shift_sampling_num < 1) {
+    RCLCPP_FATAL_STREAM(
+      get_logger(), "shift_sampling_num must be positive integer. Given parameter: "
+                      << p.shift_sampling_num << std::endl
+                      << "Terminating the program...");
+    exit(EXIT_FAILURE);
+  }
+  if (p.maximum_deceleration < 0.0) {
+    RCLCPP_FATAL_STREAM(
+      get_logger(), "maximum_deceleration cannot be negative value. Given parameter: "
+                      << p.maximum_deceleration << std::endl
+                      << "Terminating the program...");
+    exit(EXIT_FAILURE);
   }
 
   return p;
@@ -943,15 +986,19 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
   // geometric pull out
   p.enable_geometric_pull_out = declare_parameter<bool>(ns + "enable_geometric_pull_out");
   p.divide_pull_out_path = declare_parameter<bool>(ns + "divide_pull_out_path");
-  p.geometric_pull_out_velocity = declare_parameter<double>(ns + "geometric_pull_out_velocity");
-  p.arc_path_interval = declare_parameter<double>(ns + "arc_path_interval");
-  p.lane_departure_margin = declare_parameter<double>(ns + "lane_departure_margin");
-  p.backward_velocity = declare_parameter<double>(ns + "backward_velocity");
-  p.pull_out_max_steer_angle = declare_parameter<double>(ns + "pull_out_max_steer_angle");  // 15deg
+  p.parallel_parking_parameters.pull_out_velocity =
+    declare_parameter<double>(ns + "geometric_pull_out_velocity");
+  p.parallel_parking_parameters.pull_out_path_interval =
+    declare_parameter<double>(ns + "arc_path_interval");
+  p.parallel_parking_parameters.pull_out_lane_departure_margin =
+    declare_parameter<double>(ns + "lane_departure_margin");
+  p.parallel_parking_parameters.pull_out_max_steer_angle =
+    declare_parameter<double>(ns + "pull_out_max_steer_angle");  // 15deg
   // search start pose backward
   p.search_priority = declare_parameter<std::string>(
     ns + "search_priority");  // "efficient_path" or "short_back_distance"
   p.enable_back = declare_parameter<bool>(ns + "enable_back");
+  p.backward_velocity = declare_parameter<double>(ns + "backward_velocity");
   p.max_back_distance = declare_parameter<double>(ns + "max_back_distance");
   p.backward_search_resolution = declare_parameter<double>(ns + "backward_search_resolution");
   p.backward_path_update_duration = declare_parameter<double>(ns + "backward_path_update_duration");

@@ -51,8 +51,7 @@ PullOutModule::PullOutModule(
       std::make_shared<ShiftPullOut>(node, *parameters, lane_departure_checker_));
   }
   if (parameters_->enable_geometric_pull_out) {
-    pull_out_planners_.push_back(
-      std::make_shared<GeometricPullOut>(node, *parameters, getGeometricPullOutParameters()));
+    pull_out_planners_.push_back(std::make_shared<GeometricPullOut>(node, *parameters));
   }
   if (pull_out_planners_.empty()) {
     RCLCPP_ERROR(getLogger(), "Not found enabled planner");
@@ -76,8 +75,7 @@ PullOutModule::PullOutModule(
       std::make_shared<ShiftPullOut>(node, *parameters, lane_departure_checker_));
   }
   if (parameters_->enable_geometric_pull_out) {
-    pull_out_planners_.push_back(
-      std::make_shared<GeometricPullOut>(node, *parameters, getGeometricPullOutParameters()));
+    pull_out_planners_.push_back(std::make_shared<GeometricPullOut>(node, *parameters));
   }
   if (pull_out_planners_.empty()) {
     RCLCPP_ERROR(getLogger(), "Not found enabled planner");
@@ -374,20 +372,6 @@ void PullOutModule::resetStatus()
 {
   PullOutStatus initial_status;
   status_ = initial_status;
-}
-
-ParallelParkingParameters PullOutModule::getGeometricPullOutParameters() const
-{
-  ParallelParkingParameters params{};
-
-  params.th_arrived_distance = parameters_->th_arrived_distance;
-  params.th_stopped_velocity = parameters_->th_stopped_velocity;
-  params.arc_path_interval = parameters_->arc_path_interval;
-  params.departing_velocity = parameters_->geometric_pull_out_velocity;
-  params.departing_lane_departure_margin = parameters_->lane_departure_margin;
-  params.max_steer_angle = parameters_->pull_out_max_steer_angle;
-
-  return params;
 }
 
 void PullOutModule::incrementPathIndex()

@@ -29,14 +29,15 @@ FreespacePullOver::FreespacePullOver(
 {
   freespace_planning_algorithms::VehicleShape vehicle_shape(
     vehicle_info, parameters.vehicle_shape_margin);
-  if (parameters.algorithm == "astar") {
+  if (parameters.freespace_parking_algorithm == "astar") {
     use_back_ = parameters.astar_parameters.use_back;
     planner_ = std::make_unique<AstarSearch>(
-      parameters.common_parameters, vehicle_shape, parameters.astar_parameters);
-  } else if (parameters.algorithm == "rrtstar") {
+      parameters.freespace_parking_common_parameters, vehicle_shape, parameters.astar_parameters);
+  } else if (parameters.freespace_parking_algorithm == "rrtstar") {
     use_back_ = true;  // no option for disabling back in rrtstar
     planner_ = std::make_unique<RRTStar>(
-      parameters.common_parameters, vehicle_shape, parameters.rrt_star_parameters);
+      parameters.freespace_parking_common_parameters, vehicle_shape,
+      parameters.rrt_star_parameters);
   }
 }
 
