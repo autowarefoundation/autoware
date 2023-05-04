@@ -1,9 +1,9 @@
 site_name: Autoware Universe Documentation
 site_url: https://autowarefoundation.github.io/autoware.universe
 repo_url: https://github.com/autowarefoundation/autoware.universe
-edit_uri: edit/main/
+edit_uri: https://github.com/autowarefoundation/autoware.universe/edit/main/
 docs_dir: .
-copyright: Copyright &copy; 2022 The Autoware Foundation
+copyright: Copyright &copy; 2023 The Autoware Foundation
 
 theme:
   name: material
@@ -54,10 +54,12 @@ plugins:
         - ^(?!(.*/)?assets/).*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?gif|(.*\.)?jpg).*$
         - ^(.*/)?[^.]*$
   - macros
+  - mkdocs-video
   - same-dir
   - search
 
 markdown_extensions:
+  - abbr
   - admonition
   - attr_list
   - codehilite:
@@ -72,7 +74,14 @@ markdown_extensions:
       server: http://www.plantuml.com/plantuml
       format: svg
   - pymdownx.arithmatex
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.highlight
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -80,3 +89,4 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: "#"
+      toc_depth: 3
