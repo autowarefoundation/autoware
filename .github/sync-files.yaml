@@ -89,3 +89,11 @@
   files:
     - source: .github/workflows/deploy-docs.yaml
     - source: .github/workflows/delete-closed-pr-docs.yaml
+    - source: mkdocs.yaml
+      pre-commands: |
+        sd "Autoware Documentation" "Autoware Universe Documentation" {source}
+        sd "autoware-documentation" "autoware.universe" {source}
+        sd "repo_url: .*" "repo_url: https://github.com/autowarefoundation/autoware.universe" {source}
+        sd "/edit/main/docs/" "/edit/main/" {source}
+        sd "docs_dir: .*" "docs_dir: ." {source}
+        sd "assets/(\w+)" "docs/assets/\$1" {source}
