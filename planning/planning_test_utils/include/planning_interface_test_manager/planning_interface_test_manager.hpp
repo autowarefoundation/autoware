@@ -90,7 +90,8 @@ class PlanningInterfaceTestManager
 public:
   PlanningInterfaceTestManager();
 
-  void publishOdometry(rclcpp::Node::SharedPtr target_node, std::string topic_name);
+  void publishOdometry(
+    rclcpp::Node::SharedPtr target_node, std::string topic_name, const double shift = 0.0);
 
   void publishInitialPose(
     rclcpp::Node::SharedPtr target_node, std::string topic_name, const double shift = 0.0);

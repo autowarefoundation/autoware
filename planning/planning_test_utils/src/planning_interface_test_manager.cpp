@@ -26,10 +26,10 @@ PlanningInterfaceTestManager::PlanningInterfaceTestManager()
 }
 
 void PlanningInterfaceTestManager::publishOdometry(
-  rclcpp::Node::SharedPtr target_node, std::string topic_name)
+  rclcpp::Node::SharedPtr target_node, std::string topic_name, const double shift)
 {
   test_utils::publishToTargetNode(
-    test_node_, target_node, topic_name, odom_pub_, test_utils::makeOdometry());
+    test_node_, target_node, topic_name, odom_pub_, test_utils::makeOdometry(shift));
 }
 
 void PlanningInterfaceTestManager::publishMaxVelocity(
@@ -388,7 +388,6 @@ void PlanningInterfaceTestManager::testOffTrackFromRoute(rclcpp::Node::SharedPtr
   const std::vector<double> deviation_from_route = {0.0, 1.0, 10.0, 100.0};
   for (const auto & deviation : deviation_from_route) {
     publishInitialPose(target_node, input_initial_pose_name_, deviation);
-    test_utils::spinSomeNodes(test_node_, target_node, 5);
   }
 }
 
@@ -401,14 +400,22 @@ void PlanningInterfaceTestManager::testOffTrackFromPath(rclcpp::Node::SharedPtr 
 void PlanningInterfaceTestManager::testOffTrackFromPathWithLaneId(
   rclcpp::Node::SharedPtr target_node)
 {
-  // write me
-  (void)target_node;
+  publishNominalPathWithLaneId(target_node, input_path_with_lane_id_name_);
+
+  const std::vector<double> deviation_from_path = {0.0, 1.0, 10.0, 100.0};
+  for (const auto & deviation : deviation_from_path) {
+    publishOdometry(target_node, input_odometry_name_, deviation);
+  }
 }
 
 void PlanningInterfaceTestManager::testOffTrackFromTrajectory(rclcpp::Node::SharedPtr target_node)
 {
-  // write me
-  (void)target_node;
+  publishNominalTrajectory(target_node, input_trajectory_name_);
+
+  const std::vector<double> deviation_from_traj = {0.0, 1.0, 10.0, 100.0};
+  for (const auto & deviation : deviation_from_traj) {
+    publishOdometry(target_node, input_odometry_name_, deviation);
+  }
 }
 
 int PlanningInterfaceTestManager::getReceivedTopicNum()

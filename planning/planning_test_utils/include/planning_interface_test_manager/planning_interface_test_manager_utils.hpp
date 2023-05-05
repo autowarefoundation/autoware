@@ -235,10 +235,10 @@ HADMapBin makeMapBinMsg()
   return map_bin_msg;
 }
 
-Odometry makeOdometry()
+Odometry makeOdometry(const double shift = 0.0)
 {
   Odometry odometry;
-  const std::array<double, 4> start_pose{5.5, 4., M_PI_2};
+  const std::array<double, 4> start_pose{0.0, shift, 0.0, 0.0};
   odometry.pose.pose = createPose(start_pose);
   odometry.header.frame_id = "map";
   return odometry;
@@ -353,14 +353,15 @@ void spinSomeNodes(
 template <typename T>
 void publishToTargetNode(
   rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node, std::string topic_name,
-  typename rclcpp::Publisher<T>::SharedPtr publisher, T data, const int repeat_count = 1)
+  typename rclcpp::Publisher<T>::SharedPtr publisher, T data, const int repeat_count = 3)
 {
+  if (topic_name.empty()) {
+    throw std::runtime_error(std::string("Topic name for ") + typeid(data).name() + " is empty");
+  }
+
   test_utils::setPublisher<T>(test_node, topic_name, publisher);
   publisher->publish(data);
-  if (topic_name.empty()) {
-    throw std::runtime_error(
-      std::string("Topic name for ") + typeid(*publisher).name() + " is empty");
-  }
+
   if (target_node->count_subscribers(topic_name) == 0) {
     throw std::runtime_error("No subscriber for " + topic_name);
   }
