@@ -21,12 +21,21 @@
 
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInput)
+using freespace_planner::FreespacePlannerNode;
+using planning_test_utils::PlanningInterfaceTestManager;
+
+std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
-  rclcpp::init(0, nullptr);
+  auto test_manager = std::make_shared<PlanningInterfaceTestManager>();
+  test_manager->setRouteInputTopicName("freespace_planner/input/route");
+  test_manager->setTrajectorySubscriber("freespace_planner/output/trajectory");
+  test_manager->setOdometryTopicName("freespace_planner/input/odometry");
+  test_manager->setInitialPoseTopicName("freespace_planner/input/odometry");
+  return test_manager;
+}
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
-
+std::shared_ptr<FreespacePlannerNode> generateNode()
+{
   auto node_options = rclcpp::NodeOptions{};
   const auto planning_test_utils_dir =
     ament_index_cpp::get_package_share_directory("planning_test_utils");
@@ -36,19 +45,27 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
     {"--ros-args", "--params-file",
      planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
      freespace_planner_dir + "/config/freespace_planner.param.yaml"});
-  auto test_target_node = std::make_shared<freespace_planner::FreespacePlannerNode>(node_options);
+  return std::make_shared<FreespacePlannerNode>(node_options);
+}
 
+void publishMandatoryTopics(
+  std::shared_ptr<PlanningInterfaceTestManager> test_manager,
+  rclcpp::Node::SharedPtr test_target_node)
+{
   // publish necessary topics from test_manager
   test_manager->publishTF(test_target_node, "/tf");
   test_manager->publishOdometry(test_target_node, "freespace_planner/input/odometry");
   test_manager->publishOccupancyGrid(test_target_node, "freespace_planner/input/occupancy_grid");
   test_manager->publishParkingScenario(test_target_node, "freespace_planner/input/scenario");
+}
 
-  // set subscriber with topic name: freespace_planner → test_node_
-  test_manager->setRouteInputTopicName("freespace_planner/input/route");
+TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInput)
+{
+  rclcpp::init(0, nullptr);
 
-  // set freespace_planner's input topic name(this topic is changed to test node)
-  test_manager->setTrajectorySubscriber("freespace_planner/output/trajectory");
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+  publishMandatoryTopics(test_manager, test_target_node);
 
   // test with normal route
   ASSERT_NO_THROW(test_manager->testWithBehaviorNominalRoute(test_target_node));
@@ -56,4 +73,22 @@ TEST(PlanningModuleInterfaceTest, testPlanningInterfaceWithVariousTrajectoryInpu
 
   // test with empty route
   ASSERT_NO_THROW(test_manager->testWithAbnormalRoute(test_target_node));
+  rclcpp::shutdown();
+}
+
+TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
+
+  // test for normal route
+  ASSERT_NO_THROW(test_manager->testWithBehaviorNominalRoute(test_target_node));
+  EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
+
+  ASSERT_NO_THROW(test_manager->testRouteWithInvalidEgoPose(test_target_node));
+
+  rclcpp::shutdown();
 }
