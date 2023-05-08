@@ -202,6 +202,7 @@ void VelocitySteeringFactorsPanel::onVelocityFactors(const VelocityFactorArray::
       velocity_factors_table_->setCellWidget(i, 3, label);
     }
   }
+  velocity_factors_table_->update();
 }
 
 void VelocitySteeringFactorsPanel::onSteeringFactors(const SteeringFactorArray::ConstSharedPtr msg)
@@ -317,6 +318,7 @@ void VelocitySteeringFactorsPanel::onSteeringFactors(const SteeringFactorArray::
       steering_factors_table_->setCellWidget(i, 5, label);
     }
   }
+  steering_factors_table_->update();
 }
 }  // namespace rviz_plugins
 

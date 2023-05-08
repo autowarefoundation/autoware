@@ -360,6 +360,7 @@ void TrafficLightPublishPanel::onTimer()
     traffic_table_->setCellWidget(i, 3, status_label);
     traffic_table_->setCellWidget(i, 4, confidence_label);
   }
+  traffic_table_->update();
 }
 
 void TrafficLightPublishPanel::onVectorMap(const HADMapBin::ConstSharedPtr msg)
