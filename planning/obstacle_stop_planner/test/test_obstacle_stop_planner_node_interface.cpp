@@ -21,12 +21,20 @@
 
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
+using motion_planning::ObstacleStopPlannerNode;
+using planning_test_utils::PlanningInterfaceTestManager;
+
+std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
-  rclcpp::init(0, nullptr);
+  auto test_manager = std::make_shared<PlanningInterfaceTestManager>();
+  test_manager->setTrajectorySubscriber("obstacle_stop_planner/output/trajectory");
+  test_manager->setTrajectoryInputTopicName("obstacle_stop_planner/input/trajectory");
+  test_manager->setOdometryTopicName("obstacle_stop_planner/input/odometry");
+  return test_manager;
+}
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
-
+std::shared_ptr<ObstacleStopPlannerNode> generateNode()
+{
   auto node_options = rclcpp::NodeOptions{};
 
   const auto planning_test_utils_dir =
@@ -44,8 +52,13 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
      obstacle_stop_planner_dir + "/config/adaptive_cruise_control.param.yaml", "--params-file",
      obstacle_stop_planner_dir + "/config/obstacle_stop_planner.param.yaml"});
 
-  auto test_target_node = std::make_shared<motion_planning::ObstacleStopPlannerNode>(node_options);
+  return std::make_shared<motion_planning::ObstacleStopPlannerNode>(node_options);
+}
 
+void publishMandatoryTopics(
+  std::shared_ptr<PlanningInterfaceTestManager> test_manager,
+  std::shared_ptr<ObstacleStopPlannerNode> test_target_node)
+{
   // publish necessary topics from test_manager
   test_manager->publishOdometry(test_target_node, "obstacle_stop_planner/input/odometry");
   test_manager->publishPointCloud(test_target_node, "obstacle_stop_planner/input/pointcloud");
@@ -53,12 +66,16 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   test_manager->publishPredictedObjects(test_target_node, "obstacle_stop_planner/input/objects");
   test_manager->publishExpandStopRange(
     test_target_node, "obstacle_stop_planner/input/expand_stop_range");
+}
 
-  // set subscriber with topic name: obstacle stop planner → test_node_
-  test_manager->setTrajectorySubscriber("obstacle_stop_planner/output/trajectory");
+TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
+{
+  rclcpp::init(0, nullptr);
 
-  // set obstacle stop planner's input topic name(this topic is changed to test node):
-  test_manager->setTrajectoryInputTopicName("obstacle_stop_planner/input/trajectory");
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
   ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
@@ -67,4 +84,24 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
   // test for trajectory with empty/one point/overlapping point
   test_manager->testWithAbnormalTrajectory(test_target_node);
+
+  rclcpp::shutdown();
+}
+
+TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
+
+  // test for normal trajectory
+  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
+  EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
+
+  // test for trajectory with empty/one point/overlapping point
+  ASSERT_NO_THROW(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
+
+  rclcpp::shutdown();
 }
