@@ -79,22 +79,6 @@ std::optional<LaneChangePath> constructCandidatePath(
   const BehaviorPathPlannerParameters & common_parameter,
   const LaneChangeParameters & lane_change_param);
 
-bool getLaneChangePaths(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
-  const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
-  const PredictedObjects::ConstSharedPtr dynamic_objects,
-  const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter,
-  const double check_length, LaneChangePaths * candidate_paths,
-  std::unordered_map<std::string, CollisionCheckDebug> * debug_data);
-
-bool getLaneChangePaths(
-  const PathWithLaneId & original_path, const RouteHandler & route_handler,
-  const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const Pose & pose, const Twist & twist, const PredictedObjects::ConstSharedPtr dynamic_objects,
-  const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter,
-  const double check_length, const Direction direction, LaneChangePaths * candidate_paths,
-  std::unordered_map<std::string, CollisionCheckDebug> * debug_data);
-
 bool isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
   const LaneChangeTargetObjectIndices & dynamic_object_indices, const Pose & current_pose,

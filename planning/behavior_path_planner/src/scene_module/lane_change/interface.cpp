@@ -110,6 +110,13 @@ ModuleStatus LaneChangeInterface::updateState()
   return current_state_;
 }
 
+void LaneChangeInterface::updateData()
+{
+  module_type_->setPreviousModulePaths(
+    getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
+  module_type_->updateSpecialData();
+}
+
 BehaviorModuleOutput LaneChangeInterface::plan()
 {
   resetPathCandidate();
@@ -310,6 +317,57 @@ void SceneModuleVisitor::visitLaneChangeInterface(const LaneChangeInterface * in
   lane_change_visitor_ = interface->get_debug_msg_array();
 }
 
+AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(
+  const std::string & name, rclcpp::Node & node,
+  const std::shared_ptr<LaneChangeParameters> & parameters,
+  const std::shared_ptr<AvoidanceParameters> & avoidance_parameters,
+  const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
+  const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
+: LaneChangeInterface{
+    name, node, parameters, rtc_interface_ptr_map,
+    std::make_unique<AvoidanceByLaneChange>(
+      parameters, avoidance_parameters, avoidance_by_lane_change_parameters)}
+{
+}
+
+ModuleStatus AvoidanceByLaneChangeInterface::updateState()
+{
+  if (!module_type_->isValidPath()) {
+    current_state_ = ModuleStatus::FAILURE;
+    return current_state_;
+  }
+
+  if (module_type_->isAbortState()) {
+    current_state_ = ModuleStatus::RUNNING;
+    return current_state_;
+  }
+
+  if (module_type_->isCancelConditionSatisfied()) {
+    current_state_ = ModuleStatus::FAILURE;
+    return current_state_;
+  }
+
+  if (module_type_->hasFinishedLaneChange()) {
+    current_state_ = ModuleStatus::SUCCESS;
+    return current_state_;
+  }
+
+  current_state_ = ModuleStatus::RUNNING;
+  return current_state_;
+}
+
+void AvoidanceByLaneChangeInterface::updateRTCStatus(
+  const double start_distance, const double finish_distance)
+{
+  const auto direction = std::invoke([&]() -> std::string {
+    const auto dir = module_type_->getDirection();
+    return (dir == Direction::LEFT) ? "left" : "right";
+  });
+
+  rtc_interface_ptr_map_.at(direction)->updateCooperateStatus(
+    uuid_map_.at(direction), isExecutionReady(), start_distance, finish_distance, clock_->now());
+}
+
 LaneChangeBTInterface::LaneChangeBTInterface(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<LaneChangeParameters> & parameters,
@@ -414,6 +472,18 @@ LaneChangeBTModule::LaneChangeBTModule(
     std::make_unique<NormalLaneChangeBT>(parameters, LaneChangeModuleType::NORMAL, Direction::NONE)}
 {
 }
+
+void LaneChangeBTModule::updateRTCStatus(const double start_distance, const double finish_distance)
+{
+  const auto direction = std::invoke([&]() -> std::string {
+    const auto dir = module_type_->getDirection();
+    return (dir == Direction::LEFT) ? "left" : "right";
+  });
+
+  rtc_interface_ptr_map_.at(direction)->updateCooperateStatus(
+    uuid_map_.at(direction), isExecutionReady(), start_distance, finish_distance, clock_->now());
+}
+
 ExternalRequestLaneChangeLeftBTModule::ExternalRequestLaneChangeLeftBTModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<LaneChangeParameters> & parameters)

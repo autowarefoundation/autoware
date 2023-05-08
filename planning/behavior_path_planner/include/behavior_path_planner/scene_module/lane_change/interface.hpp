@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 
 #include "behavior_path_planner/marker_util/lane_change/debug.hpp"
+#include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
 #include "behavior_path_planner/scene_module/lane_change/base_class.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request.hpp"
 #include "behavior_path_planner/scene_module/lane_change/normal.hpp"
@@ -74,6 +75,8 @@ public:
 
   ModuleStatus updateState() override;
 
+  void updateData() override;
+
   BehaviorModuleOutput plan() override;
 
   BehaviorModuleOutput planWaitingApproval() override;
@@ -113,6 +116,22 @@ protected:
   bool is_abort_approval_requested_{false};
 };
 
+class AvoidanceByLaneChangeInterface : public LaneChangeInterface
+{
+public:
+  AvoidanceByLaneChangeInterface(
+    const std::string & name, rclcpp::Node & node,
+    const std::shared_ptr<LaneChangeParameters> & parameters,
+    const std::shared_ptr<AvoidanceParameters> & avoidance_parameters,
+    const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
+    const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
+
+  ModuleStatus updateState() override;
+
+protected:
+  void updateRTCStatus(const double start_distance, const double finish_distance) override;
+};
+
 class LaneChangeBTInterface : public LaneChangeInterface
 {
 public:
@@ -150,16 +169,7 @@ public:
     const std::shared_ptr<LaneChangeParameters> & parameters);
 
 protected:
-  void updateRTCStatus(const double start_distance, const double finish_distance) override
-  {
-    const auto direction = std::invoke([&]() -> std::string {
-      const auto dir = module_type_->getDirection();
-      return (dir == Direction::LEFT) ? "left" : "right";
-    });
-
-    rtc_interface_ptr_map_.at(direction)->updateCooperateStatus(
-      uuid_map_.at(direction), isExecutionReady(), start_distance, finish_distance, clock_->now());
-  }
+  void updateRTCStatus(const double start_distance, const double finish_distance) override;
 };
 
 class ExternalRequestLaneChangeLeftBTModule : public LaneChangeBTInterface

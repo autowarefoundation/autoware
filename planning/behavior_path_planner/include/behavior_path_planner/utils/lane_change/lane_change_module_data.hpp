@@ -14,10 +14,12 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_
 
+#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "lanelet2_core/geometry/Lanelet.h"
 
 #include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -79,7 +81,26 @@ struct LaneChangeTargetObjectIndices
   std::vector<size_t> other_lane{};
 };
 
-enum class LaneChangeModuleType { NORMAL = 0, EXTERNAL_REQUEST };
+enum class LaneChangeModuleType {
+  NORMAL = 0,
+  EXTERNAL_REQUEST,
+  AVOIDANCE_BY_LANE_CHANGE,
+};
+
+struct AvoidanceByLCParameters
+{
+  std::shared_ptr<AvoidanceParameters> avoidance{};
+  std::shared_ptr<LaneChangeParameters> lane_change{};
+
+  // execute if the target object number is larger than this param.
+  size_t execute_object_num{1};
+
+  // execute only when the target object longitudinal distance is larger than this param.
+  double execute_object_longitudinal_margin{0.0};
+
+  // execute only when lane change end point is before the object.
+  bool execute_only_when_lane_change_finish_before_object{false};
+};
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_

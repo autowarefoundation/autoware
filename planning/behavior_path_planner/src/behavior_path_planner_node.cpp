@@ -286,8 +286,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     }
 
     if (p.config_avoidance_by_lc.enable_module) {
-      auto manager = std::make_shared<AvoidanceByLCModuleManager>(
-        this, "avoidance_by_lane_change", p.config_avoidance_by_lc, avoidance_by_lc_param_ptr_);
+      auto manager = std::make_shared<AvoidanceByLaneChangeModuleManager>(
+        this, "avoidance_by_lane_change", p.config_avoidance_by_lc, lane_change_param_ptr_,
+        avoidance_param_ptr_, avoidance_by_lc_param_ptr_);
       planner_manager_->registerSceneModuleManager(manager);
       path_candidate_publishers_.emplace(
         "avoidance_by_lane_change",
@@ -491,6 +492,9 @@ AvoidanceByLCParameters BehaviorPathPlannerNode::getAvoidanceByLCParam(
       declare_parameter<bool>(ns + "execute_only_when_lane_change_finish_before_object");
   }
 
+  if (p.execute_object_num < 1) {
+    RCLCPP_WARN_STREAM(get_logger(), "execute_object_num cannot be lesser than 1.");
+  }
   return p;
 }
 

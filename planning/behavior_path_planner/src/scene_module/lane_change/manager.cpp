@@ -24,6 +24,7 @@
 namespace behavior_path_planner
 {
 using route_handler::Direction;
+using utils::convertToSnakeCase;
 LaneChangeModuleManager::LaneChangeModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
   std::shared_ptr<LaneChangeParameters> parameters, const Direction direction,
@@ -60,6 +61,35 @@ void LaneChangeModuleManager::updateModuleParams(
   std::for_each(registered_modules_.begin(), registered_modules_.end(), [&p](const auto & m) {
     m->updateModuleParams(p);
   });
+}
+
+AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
+  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
+  std::shared_ptr<LaneChangeParameters> parameters,
+  std::shared_ptr<AvoidanceParameters> avoidance_parameters,
+  std::shared_ptr<AvoidanceByLCParameters> avoidance_by_lane_change_parameters)
+: LaneChangeModuleManager(
+    node, name, config, std::move(parameters), Direction::NONE,
+    LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE),
+  avoidance_parameters_(std::move(avoidance_parameters)),
+  avoidance_by_lane_change_parameters_(std::move(avoidance_by_lane_change_parameters))
+{
+  rtc_interface_ptr_map_.clear();
+  const std::vector<std::string> rtc_types = {"left", "right"};
+  for (const auto & rtc_type : rtc_types) {
+    const auto snake_case_name = convertToSnakeCase(name);
+    const std::string rtc_interface_name = snake_case_name + "_" + rtc_type;
+    rtc_interface_ptr_map_.emplace(
+      rtc_type, std::make_shared<RTCInterface>(node, rtc_interface_name));
+  }
+}
+
+std::shared_ptr<SceneModuleInterface>
+AvoidanceByLaneChangeModuleManager::createNewSceneModuleInstance()
+{
+  return std::make_shared<AvoidanceByLaneChangeInterface>(
+    name_, *node_, parameters_, avoidance_parameters_, avoidance_by_lane_change_parameters_,
+    rtc_interface_ptr_map_);
 }
 
 }  // namespace behavior_path_planner

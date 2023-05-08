@@ -55,7 +55,7 @@ public:
   LaneChangeBase(
     std::shared_ptr<LaneChangeParameters> parameters, LaneChangeModuleType type,
     Direction direction)
-  : parameters_{std::move(parameters)}, direction_{direction}, type_{type}
+  : lane_change_parameters_{std::move(parameters)}, direction_{direction}, type_{type}
   {
     prev_module_reference_path_ = std::make_shared<PathWithLaneId>();
     prev_module_path_ = std::make_shared<PathWithLaneId>();
@@ -107,6 +107,8 @@ public:
     }
   }
 
+  virtual void updateSpecialData() {}
+
   const LaneChangeStatus & getLaneChangeStatus() const { return status_; }
 
   LaneChangePath getLaneChangePath() const
@@ -120,7 +122,7 @@ public:
 
   bool isAbortState() const
   {
-    if (!parameters_->enable_abort_lane_change) {
+    if (!lane_change_parameters_->enable_abort_lane_change) {
       return false;
     }
 
@@ -167,7 +169,7 @@ public:
 
   Direction getDirection() const
   {
-    if (direction_ == Direction::NONE) {
+    if (direction_ == Direction::NONE && !status_.lane_change_path.path.points.empty()) {
       const auto lateral_shift = utils::lane_change::getLateralShift(status_.lane_change_path);
       return lateral_shift > 0.0 ? Direction::LEFT : Direction::RIGHT;
     }
@@ -187,7 +189,8 @@ protected:
 
   virtual bool getLaneChangePaths(
     const lanelet::ConstLanelets & original_lanelets,
-    const lanelet::ConstLanelets & target_lanelets, LaneChangePaths * candidate_paths) const = 0;
+    const lanelet::ConstLanelets & target_lanelets, Direction direction,
+    LaneChangePaths * candidate_paths) const = 0;
 
   virtual std::vector<DrivableLanes> getDrivableLanes() const = 0;
 
@@ -197,7 +200,8 @@ protected:
 
   virtual bool isValidPath(const PathWithLaneId & path) const = 0;
 
-  lanelet::ConstLanelets getLaneChangeLanes(const lanelet::ConstLanelets & current_lanes) const;
+  virtual lanelet::ConstLanelets getLaneChangeLanes(
+    const lanelet::ConstLanelets & current_lanes, Direction direction) const = 0;
 
   bool isNearEndOfLane() const
   {
@@ -222,7 +226,7 @@ protected:
 
   LaneChangeStates current_lane_change_state_{};
 
-  std::shared_ptr<LaneChangeParameters> parameters_{};
+  std::shared_ptr<LaneChangeParameters> lane_change_parameters_{};
   std::shared_ptr<LaneChangePath> abort_path_{};
   std::shared_ptr<const PlannerData> planner_data_{};
   std::shared_ptr<PathWithLaneId> prev_module_reference_path_{};
