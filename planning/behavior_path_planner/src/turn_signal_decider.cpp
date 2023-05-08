@@ -28,6 +28,16 @@
 
 namespace behavior_path_planner
 {
+double calc_distance(
+  const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
+  const Pose & input_point, const double nearest_dist_threshold, const double nearest_yaw_threshold)
+{
+  const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
+  return motion_utils::calcSignedArcLength(
+    path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
+}
+
 TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   const std::shared_ptr<const PlannerData> & planner_data, const PathWithLaneId & path,
   const TurnSignalInfo & turn_signal_info)
@@ -73,6 +83,16 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
 
   if (!intersection_turn_signal_info) {
     initialize_intersection_info();
+    const auto & desired_end_point = turn_signal_info.desired_end_point;
+    const double dist_to_end_point = calc_distance(
+      extended_path, current_pose, ego_seg_idx, desired_end_point, nearest_dist_threshold,
+      nearest_yaw_threshold);
+    if (dist_to_end_point < 0.0) {
+      TurnIndicatorsCommand updated_turn_signal;
+      updated_turn_signal.stamp = turn_signal_info.turn_signal.stamp;
+      updated_turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+      return updated_turn_signal;
+    }
     return turn_signal_info.turn_signal;
   } else if (
     turn_signal_info.turn_signal.command == TurnIndicatorsCommand::NO_COMMAND ||
@@ -224,10 +244,9 @@ TurnIndicatorsCommand TurnSignalDecider::resolve_turn_signal(
   const double nearest_dist_threshold, const double nearest_yaw_threshold)
 {
   const auto get_distance = [&](const Pose & input_point) {
-    const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-      path.points, input_point, nearest_dist_threshold, nearest_yaw_threshold);
-    return motion_utils::calcSignedArcLength(
-      path.points, current_pose.position, current_seg_idx, input_point.position, nearest_seg_idx);
+    return calc_distance(
+      path, current_pose, current_seg_idx, input_point, nearest_dist_threshold,
+      nearest_yaw_threshold);
   };
 
   const auto & inter_desired_start_point = intersection_signal_info.desired_start_point;
