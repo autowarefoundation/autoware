@@ -4,8 +4,12 @@
 
 The manager launches and executes scene modules in `behavior_path_planner` depending on the use case, and has been developed to achieve following features:
 
-- Multiple modules can run simultaneously in series in order to achieve more complex use cases.
+- Multiple modules can run simultaneously in series in order to achieve more complex use cases. For example, as shown in the following video, this manager make it possible to avoid a parked vehicle during lane change maneuver.
 - Flexible development by not relying on framework from external libraries.
+
+![example](../image/manager/example_behavior.svg)
+
+[Movie](https://user-images.githubusercontent.com/44889564/231639251-6631dc4e-1861-47e7-9c51-6df1b666ce9b.mp4)
 
 Support status:
 
@@ -51,7 +55,10 @@ The sub-manager's main task is
 - delete expired scene module instance from `registered_modules_`.
 - publish debug markers.
 
-![sub_managers](../image/manager/sub_managers.svg)
+<figure markdown>
+  ![sub_managers](../image/manager/sub_managers.svg){width=1000}
+  <figcaption>sub-managers</figcaption>
+</figure>
 
 Sub-manager is registered on the manager with the following function.
 
@@ -68,6 +75,8 @@ void registerSceneModuleManager(const SceneModuleManagerPtr & manager_ptr)
 }
 ```
 
+Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b1734916e3efd9786507a271e0fe829dd37476c8/planning/behavior_path_planner/include/behavior_path_planner/planner_manager.hpp#L66-L75)
+
 Sub-manager has the following parameters that are needed by the manager to manage the launched modules, and these parameters can be set for each module.
 
 ```c++
@@ -81,6 +90,8 @@ struct ModuleConfigParameters
 };
 ```
 
+Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b1734916e3efd9786507a271e0fe829dd37476c8/planning/behavior_path_planner/include/behavior_path_planner/parameters.hpp#L23-L30)
+
 | Name                                                | Type    | Description                                                                                                            |
 | :-------------------------------------------------- | :------ | :--------------------------------------------------------------------------------------------------------------------- |
 | `enable_module`                                     | bool    | if true, the sub-manager is registered on the manager.                                                                 |
@@ -93,7 +104,10 @@ struct ModuleConfigParameters
 
 Scene modules receives necessary data and RTC command, and outputs candidate path(s), reference path and RTC cooperate status. When multiple modules run in series, the output of the previous module is received as input and the information is used to generate a new modified path, as shown in the following figure. And, when one module is running alone, it receives a reference path generated from the centerline of the lane in which Ego is currently driving as previous module output.
 
-![scene_module](../image/manager/scene_module.svg)
+<figure markdown>
+  ![scene_module](../image/manager/scene_module.svg){width=1000}
+  <figcaption>scene module</figcaption>
+</figure>
 
 | I/O | Type                                          | Description                                                                                                                                                                     |
 | :-- | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -115,29 +129,43 @@ Scene modules running on the manager are stored on the **candidate modules stack
 
 ## Process flow
 
-There are 5 steps in one process:
+There are 6 steps in one process:
 
-**Step1.** At first, the manager set latest planner data, and run all approved modules and get output path. At this time, the manager checks module status and removes expired modules from approved modules stack.
+### Step1
+
+At first, the manager set latest planner data, and run all approved modules and get output path. At this time, the manager checks module status and removes expired modules from approved modules stack.
 
 ![process_step1](../image/manager/process_step1.svg)
 
-**Step2.** Input approved modules output and necessary data to all registered modules, and the modules judge the necessity of path modification based on it. The manager checks which module makes execution request.
+### Step2
+
+Input approved modules output and necessary data to all registered modules, and the modules judge the necessity of path modification based on it. The manager checks which module makes execution request.
 
 ![process_step2](../image/manager/process_step2.svg)
 
-**Step3.** Check request module existence.
+### Step3
 
-**Step4.** The manager decides which module to execute as candidate modules from the modules that requested to execute path modification.
+Check request module existence.
+
+### Step4
+
+The manager decides which module to execute as candidate modules from the modules that requested to execute path modification.
 
 ![process_step4](../image/manager/process_step4.svg)
 
-**Step5.** Decides the priority order of execution among candidate modules. And, run all candidate modules. Each modules outputs reference path and RTC cooperate status.
+### Step5
+
+Decides the priority order of execution among candidate modules. And, run all candidate modules. Each modules outputs reference path and RTC cooperate status.
 
 ![process_step5](../image/manager/process_step5.svg)
 
-**Step6.** Move approved module to approved modules stack from candidate modules stack.
+### Step6
+
+Move approved module to approved modules stack from candidate modules stack.
 
 ![process_step6](../image/manager/process_step6.svg)
+
+---
 
 and, within a single planning cycle, these steps are repeated until the following conditions are satisfied.
 
@@ -259,6 +287,8 @@ detach
   }
 ```
 
+Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b1734916e3efd9786507a271e0fe829dd37476c8/planning/behavior_path_planner/src/planner_manager.cpp#L66-L111)
+
 ## Priority of execution request
 
 Compare priorities parameter among sub-managers to determine the order of execution based on config. Therefore, the priority between sub-modules does **NOT** change at runtime.
@@ -278,15 +308,23 @@ Compare priorities parameter among sub-managers to determine the order of execut
   }
 ```
 
+Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b1734916e3efd9786507a271e0fe829dd37476c8/planning/behavior_path_planner/include/behavior_path_planner/planner_manager.hpp#L239-L250)
+
 In the future, however, we are considering having the priorities change dynamically depending on the situation in order to achieve more complex use cases.
 
 ## How to decide which request modules to run?
 
 On this manager, it is possible that multiple scene modules may request path modification at same time. In that case, the modules to be executed as candidate module is determined in the following order.
 
-**Step1.** Push back the modules that make a request to `request_modules`.
+### Step1
 
-**Step2.** Check approved modules stack, and remove non-executable modules from`request_modules` based on the following condition.
+Push back the modules that make a request to `request_modules`.
+
+![request_step1](../image/manager/request_step1.svg)
+
+### Step2
+
+Check approved modules stack, and remove non-executable modules from`request_modules` based on the following condition.
 
 - **Condition A.** approved module stack is empty.
 - **Condition B.** all modules in approved modules stack support simultaneous execution as approved module (`enable_simultaneous_execution_as_approved_module` is `true`).
@@ -336,9 +374,26 @@ Executable or not:
 
 If a module that doesn't support simultaneous execution exists in approved modules stack (**NOT** satisfy Condition B), no more modules can be added to the stack, and therefore none of the modules can be executed as candidate.
 
-**Step3.** Sort `request_modules` by priority.
+For example, if approved module's setting of `enable_simultaneous_execution_as_approved_module` is **ENABLE**, then only modules whose the setting is **ENABLE** proceed to the next step.
 
-**Step4.** Check and pick up executable modules as candidate in order of priority based on the following conditions.
+![request_step2](../image/manager/request_step2.svg)
+
+Other examples:
+
+| Process                                                  | Description                                                                                                                                                             |
+| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![request_step2-2](../image/manager/request_step2-2.svg) | If approved modules stack is empty, then all request modules proceed to the next step, regardless of the setting of `enable_simultaneous_execution_as_approved_module`. |
+| ![request_step2-3](../image/manager/request_step2-3.svg) | If approved module's setting of `enable_simultaneous_execution_as_approved_module` is **DISABLE**, then all request modules are discarded.                              |
+
+### Step3
+
+Sort `request_modules` by priority.
+
+![request_step3](../image/manager/request_step3.svg)
+
+### Step4
+
+Check and pick up executable modules as candidate in order of priority based on the following conditions.
 
 - **Condition A.** candidate module stack is empty.
 - **Condition B.** all modules in candidate modules stack support simultaneous execution as candidate module (`enable_simultaneous_execution_as_candidate_module` is `true`).
@@ -386,13 +441,30 @@ Executable or not:
 |     NO      |     NO      |     YES     |                NO                |
 |     NO      |     NO      |     NO      |                NO                |
 
-**Step5.** Run all candidate modules.
+For example, if the highest priority module's setting of `enable_simultaneous_execution_as_candidate_module` is **DISABLE**, then all modules after the second priority are discarded.
+
+![request_step4](../image/manager/request_step4.svg)
+
+Other examples:
+
+| Process                                                  | Description                                                                                                                                                          |
+| :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![request_step4-2](../image/manager/request_step4-2.svg) | If a module with a higher priority exists, lower priority modules whose setting of `enable_simultaneous_execution_as_candidate_module` is **DISABLE** are discarded. |
+| ![request_step4-3](../image/manager/request_step4-3.svg) | If all modules' setting of `enable_simultaneous_execution_as_candidate_module` is **ENABLE**, then all modules proceed to the next step.                             |
+
+### Step5
+
+Run all candidate modules.
+
+![request_step5](../image/manager/request_step5.svg)
 
 ## How to decide which module's output to use?
 
-Additionally, the manager selects a candidate modules which output path is used as `behavior_path_planner` output by approval condition in the following order.
+Sometimes, multiple candidate modules are running simultaneously.
 
-**Step1.** Check all candidate modules' approval condition, and sort the priority based on the following rules.
+![multiple_candidates](../image/manager/multiple_candidates.svg)
+
+In this case, the manager selects a candidate modules which output path is used as `behavior_path_planner` output by approval condition in the following rules.
 
 - **Rule A.** Regardless of the priority in the sub-manager (`priority`), approved modules always have a higher priority than unapproved modules.
 - **Rule B.** If the approval status is the same, sort according to the sub-manager's priority.
@@ -408,9 +480,14 @@ Additionally, the manager selects a candidate modules which output path is used 
 
     The smaller the number is, the higher the priority is.
 
-**Step2.** Select the highest priority module.
+<figure markdown>
+  ![module_select](../image/manager/module_select.svg){width=1000}
+  <figcaption>module priority</figcaption>
+</figure>
 
-**Step3.** Move the highest priority module to approved modules stack if it is already approved.
+![output_module](../image/manager/output_module.svg)
+
+Additionally, the manager moves the highest priority module to approved modules stack if it is already approved.
 
 ## Scene module unregister process
 
@@ -452,11 +529,31 @@ When the manager removes succeeded modules, the last added module's output is us
 
 ## Reference path generation
 
-The manager generates root reference path from the centerline of the ego driving lanes. The root reference path is not only used as an input to the first added module of approved modules stack, but also used as the output of `behavior_path_planner` if none of the modules are running.
+The root reference path is generated from the centerline of the **lanelet sequence** that obtained from the **root lanelet**, and it is not only used as an input to the first added module of approved modules stack, but also used as the output of `behavior_path_planner` if none of the modules are running.
 
-Additionally, the manager samples Ego's closest lanelet when removing a succeeded **Lane Change** module from approved modules stack.
+<figure markdown>
+  ![root_generation](../image/manager/root_generation.svg){width=500}
+  <figcaption>root reference path generation</figcaption>
+</figure>
 
-This closest lanelet is used for root reference path generation.
+The root lanelet is the closest lanelet within the route, and the update timing is based on Ego's operation mode state.
+
+- the state is `OperationModeState::AUTONOMOUS`: Update only when the ego moves to right or left lane by lane change module.
+- the state is **NOT** `OperationModeState::AUTONOMOUS`: Update at the beginning of every planning cycle.
+
+![root_lanelet](../image/manager/root_lanelet.svg)
+
+The manager needs to know the ego behavior and then generate a root reference path from the lanes that Ego should follow.
+
+For example, during autonomous driving, even if Ego moves into the next lane in order to avoid a parked vehicle, the target lanes that Ego should follow will **NOT** change because Ego will return to the original lane after the avoidance maneuver. Therefore, the manager does **NOT** update **root lanelet** even if the avoidance maneuver is finished.
+
+![avoidance](../image/manager/avoidance.svg)
+
+On the other hand, if the lane change is successful, the manager updates **root lanelet** because the lane that Ego should follow changes.
+
+![lane_change](../image/manager/lane_change.svg)
+
+In addition, while manual driving, the manager always updates **root lanelet** because the pilot may move to an adjacent lane regardless of the decision of the autonomous driving system.
 
 ```c++
   /**
@@ -478,10 +575,30 @@ This closest lanelet is used for root reference path generation.
       root_lanelet_.get(), pose, backward_length, std::numeric_limits<double>::max());
 
     lanelet::ConstLanelet closest_lane{};
-    if (!lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane)) {
-      return {};
+    if (lanelet::utils::query::getClosestLaneletWithConstrains(
+          lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
+          p.ego_nearest_yaw_threshold)) {
+      return utils::getReferencePath(closest_lane, data);
     }
 
-    return utils::getReferencePath(closest_lane, data);
+    if (lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane)) {
+      return utils::getReferencePath(closest_lane, data);
+    }
+
+    return {};  // something wrong.
   }
 ```
+
+Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b1734916e3efd9786507a271e0fe829dd37476c8/planning/behavior_path_planner/include/behavior_path_planner/planner_manager.hpp#L202-L227)
+
+## Drivable area generation
+
+!!! warning
+
+    Under Construction
+
+## Turn signal management
+
+!!! warning
+
+    Under Construction
