@@ -223,7 +223,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
       &wall_marker, now);
   }
 
-  auto id = 0;
+  auto id = planning_utils::bitShift(module_id_);
   for (auto & marker : wall_marker.markers) {
     if (marker.action == visualization_msgs::msg::Marker::ADD) {
       marker.id = id;
