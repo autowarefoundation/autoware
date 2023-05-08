@@ -3313,6 +3313,7 @@ void AvoidanceModule::updateDebugMarker(
   add(createOtherObjectsMarkerArray(data.other_objects, AvoidanceDebugFactor::NOT_PARKING_OBJECT));
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("MovingObject")));
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("OutOfTargetArea")));
+  add(createOtherObjectsMarkerArray(data.other_objects, std::string("NotNeedAvoidance")));
 
   add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
   add(createOverhangFurthestLineStringMarkerArray(

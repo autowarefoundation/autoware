@@ -96,6 +96,32 @@ double calcShiftLength(
   return std::fabs(shift_length) > 1e-3 ? shift_length : 0.0;
 }
 
+bool isShiftNecessary(const bool & is_object_on_right, const double & shift_length)
+{
+  /**
+   *   ^
+   *   |
+   * --+----x-------------------------------x--->
+   *   |                 x     x
+   *   |                 ==obj==
+   */
+  if (is_object_on_right && shift_length < 0.0) {
+    return false;
+  }
+
+  /**
+   *   ^                 ==obj==
+   *   |                 x     x
+   * --+----x-------------------------------x--->
+   *   |
+   */
+  if (!is_object_on_right && shift_length > 0.0) {
+    return false;
+  }
+
+  return true;
+}
+
 bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_length)
 {
   return (is_object_on_right == std::signbit(shift_length));
@@ -682,6 +708,15 @@ void filterTargetObjects(
       }
       return std::min(max_allowable_lateral_distance, max_avoid_margin);
     }();
+
+    if (!!avoid_margin) {
+      const auto shift_length = calcShiftLength(isOnRight(o), o.overhang_dist, avoid_margin.get());
+      if (!isShiftNecessary(isOnRight(o), shift_length)) {
+        o.reason = "NotNeedAvoidance";
+        data.other_objects.push_back(o);
+        continue;
+      }
+    }
 
     // force avoidance for stopped vehicle
     {

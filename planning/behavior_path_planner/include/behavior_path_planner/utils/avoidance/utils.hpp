@@ -34,6 +34,8 @@ bool isTargetObjectType(
 double calcShiftLength(
   const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin);
 
+bool isShiftNecessary(const bool & is_object_on_right, const double & shift_length);
+
 bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_length);
 
 size_t findPathIndexFromArclength(
