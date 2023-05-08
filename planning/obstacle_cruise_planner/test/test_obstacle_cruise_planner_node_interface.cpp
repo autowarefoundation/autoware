@@ -21,12 +21,26 @@
 
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
+using motion_planning::ObstacleCruisePlannerNode;
+using planning_test_utils::PlanningInterfaceTestManager;
+
+std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
-  rclcpp::init(0, nullptr);
+  auto test_manager = std::make_shared<PlanningInterfaceTestManager>();
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
+  // set subscriber with topic name: obstacle_cruise_planner → test_node_
+  test_manager->setTrajectorySubscriber("obstacle_cruise_planner/output/trajectory");
 
+  // set obstacle_cruise_planners input topic name(this topic is changed to test node):
+  test_manager->setTrajectoryInputTopicName("obstacle_cruise_planner/input/trajectory");
+
+  test_manager->setOdometryTopicName("obstacle_cruise_planner/input/odometry");
+
+  return test_manager;
+}
+
+std::shared_ptr<ObstacleCruisePlannerNode> generateNode()
+{
   auto node_options = rclcpp::NodeOptions{};
   const auto obstacle_cruise_planner_dir =
     ament_index_cpp::get_package_share_directory("obstacle_cruise_planner");
@@ -38,19 +52,27 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
      "--params-file", planning_test_utils_dir + "/config/test_vehicle_info.param.yaml",
      "--params-file", obstacle_cruise_planner_dir + "/config/default_common.param.yaml",
      "--params-file", obstacle_cruise_planner_dir + "/config/obstacle_cruise_planner.param.yaml"});
-  auto test_target_node =
-    std::make_shared<motion_planning::ObstacleCruisePlannerNode>(node_options);
 
+  return std::make_shared<motion_planning::ObstacleCruisePlannerNode>(node_options);
+}
+
+void publishMandatoryTopics(
+  std::shared_ptr<PlanningInterfaceTestManager> test_manager,
+  std::shared_ptr<ObstacleCruisePlannerNode> test_target_node)
+{
   // publish necessary topics from test_manager
   test_manager->publishOdometry(test_target_node, "obstacle_cruise_planner/input/odometry");
   test_manager->publishPredictedObjects(test_target_node, "obstacle_cruise_planner/input/objects");
   test_manager->publishAcceleration(test_target_node, "obstacle_cruise_planner/input/acceleration");
+}
 
-  // set subscriber with topic name: obstacle_cruise_planner → test_node_
-  test_manager->setTrajectorySubscriber("obstacle_cruise_planner/output/trajectory");
+TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
 
-  // set obstacle_cruise_planners input topic name(this topic is changed to test node):
-  test_manager->setTrajectoryInputTopicName("obstacle_cruise_planner/input/trajectory");
+  publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
   ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
@@ -58,4 +80,24 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
   // test for trajectory with empty/one point/overlapping point
   ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
+
+  rclcpp::shutdown();
+}
+
+TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
+
+  // test for normal trajectory
+  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
+  EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
+
+  // test for trajectory with empty/one point/overlapping point
+  ASSERT_NO_THROW(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
+
+  rclcpp::shutdown();
 }
