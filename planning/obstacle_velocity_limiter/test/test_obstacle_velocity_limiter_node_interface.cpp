@@ -21,12 +21,20 @@
 
 #include <vector>
 
-TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
+using obstacle_velocity_limiter::ObstacleVelocityLimiterNode;
+using planning_test_utils::PlanningInterfaceTestManager;
+
+std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
 {
-  rclcpp::init(0, nullptr);
+  auto test_manager = std::make_shared<PlanningInterfaceTestManager>();
+  test_manager->setTrajectorySubscriber("obstacle_velocity_limiter/output/trajectory");
+  test_manager->setTrajectoryInputTopicName("obstacle_velocity_limiter/input/trajectory");
+  test_manager->setOdometryTopicName("obstacle_velocity_limiter/input/odometry");
+  return test_manager;
+}
 
-  auto test_manager = std::make_shared<planning_test_utils::PlanningInterfaceTestManager>();
-
+std::shared_ptr<ObstacleVelocityLimiterNode> generateNode()
+{
   auto node_options = rclcpp::NodeOptions{};
 
   const auto planning_test_utils_dir =
@@ -40,9 +48,13 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
      planning_test_utils_dir + "/config/test_vehicle_info.param.yaml", "--params-file",
      obstacle_velocity_limiter_dir + "/config/default_obstacle_velocity_limiter.param.yaml"});
 
-  auto test_target_node =
-    std::make_shared<obstacle_velocity_limiter::ObstacleVelocityLimiterNode>(node_options);
+  return std::make_shared<obstacle_velocity_limiter::ObstacleVelocityLimiterNode>(node_options);
+}
 
+void publishMandatoryTopics(
+  std::shared_ptr<PlanningInterfaceTestManager> test_manager,
+  rclcpp::Node::SharedPtr test_target_node)
+{
   // publish necessary topics from test_manager
   test_manager->publishOdometry(test_target_node, "obstacle_velocity_limiter/input/odometry");
   test_manager->publishPointCloud(
@@ -52,12 +64,15 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   test_manager->publishPredictedObjects(
     test_target_node, "obstacle_velocity_limiter/input/dynamic_obstacles");
   test_manager->publishMap(test_target_node, "obstacle_velocity_limiter/input/map");
+}
 
-  // set subscriber with topic name: obstacle_velocity_limiter → test_node_
-  test_manager->setTrajectorySubscriber("obstacle_velocity_limiter/output/trajectory");
+TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
 
-  // set obstacle_velocity_limiter's input topic name(this topic is changed to test node):
-  test_manager->setTrajectoryInputTopicName("obstacle_velocity_limiter/input/trajectory");
+  publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
   ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
@@ -66,4 +81,23 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
 
   // test for trajectory with empty/one point/overlapping point
   ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
+  rclcpp::shutdown();
+}
+
+TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
+
+  // test for normal trajectory
+  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
+  EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
+
+  // test for trajectory with empty/one point/overlapping point
+  ASSERT_NO_THROW(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
+
+  rclcpp::shutdown();
 }
