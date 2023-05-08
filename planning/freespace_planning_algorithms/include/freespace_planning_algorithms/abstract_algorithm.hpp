@@ -120,6 +120,7 @@ public:
     const PlannerCommonParam & planner_common_param, const VehicleShape & collision_vehicle_shape)
   : planner_common_param_(planner_common_param), collision_vehicle_shape_(collision_vehicle_shape)
   {
+    is_collision_table_initialized = false;
   }
 
   AbstractPlanningAlgorithm(
@@ -178,6 +179,9 @@ protected:
   // pose in costmap frame
   geometry_msgs::msg::Pose start_pose_;
   geometry_msgs::msg::Pose goal_pose_;
+
+  // Is collision table initalized
+  bool is_collision_table_initialized;
 
   // result path
   PlannerWaypoints waypoints_;
