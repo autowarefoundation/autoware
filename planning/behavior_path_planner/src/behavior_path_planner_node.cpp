@@ -313,7 +313,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const double turn_signal_intersection_angle_threshold_deg =
       planner_data_->parameters.turn_signal_intersection_angle_threshold_deg;
     const double turn_signal_search_time = planner_data_->parameters.turn_signal_search_time;
-    turn_signal_decider_.setParameters(
+    planner_data_->turn_signal_decider.setParameters(
       planner_data_->parameters.base_link2front, turn_signal_intersection_search_distance,
       turn_signal_search_time, turn_signal_intersection_angle_threshold_deg);
   }
@@ -1249,7 +1249,7 @@ void BehaviorPathPlannerNode::computeTurnSignal(
     turn_signal.command = TurnIndicatorsCommand::DISABLE;
     hazard_signal.command = output.turn_signal_info.hazard_signal.command;
   } else {
-    turn_signal = turn_signal_decider_.getTurnSignal(planner_data, path, output.turn_signal_info);
+    turn_signal = planner_data->getTurnSignal(path, output.turn_signal_info);
     hazard_signal.command = HazardLightsCommand::DISABLE;
   }
   turn_signal.stamp = get_clock()->now();
@@ -1257,13 +1257,14 @@ void BehaviorPathPlannerNode::computeTurnSignal(
   turn_signal_publisher_->publish(turn_signal);
   hazard_signal_publisher_->publish(hazard_signal);
 
-  publish_steering_factor(turn_signal);
+  publish_steering_factor(planner_data, turn_signal);
 }
 
-void BehaviorPathPlannerNode::publish_steering_factor(const TurnIndicatorsCommand & turn_signal)
+void BehaviorPathPlannerNode::publish_steering_factor(
+  const std::shared_ptr<PlannerData> & planner_data, const TurnIndicatorsCommand & turn_signal)
 {
   const auto [intersection_flag, approaching_intersection_flag] =
-    turn_signal_decider_.getIntersectionTurnSignalFlag();
+    planner_data->turn_signal_decider.getIntersectionTurnSignalFlag();
   if (intersection_flag || approaching_intersection_flag) {
     const uint16_t steering_factor_direction = std::invoke([&turn_signal]() {
       if (turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
@@ -1273,7 +1274,7 @@ void BehaviorPathPlannerNode::publish_steering_factor(const TurnIndicatorsComman
     });
 
     const auto [intersection_pose, intersection_distance] =
-      turn_signal_decider_.getIntersectionPoseAndDistance();
+      planner_data->turn_signal_decider.getIntersectionPoseAndDistance();
     const uint16_t steering_factor_state = std::invoke([&intersection_flag]() {
       if (intersection_flag) {
         return SteeringFactor::TURNING;

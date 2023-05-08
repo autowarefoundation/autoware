@@ -37,7 +37,6 @@
 #endif
 
 #include "behavior_path_planner/steering_factor_interface.hpp"
-#include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
@@ -136,8 +135,6 @@ private:
   bool has_received_map_{false};
   bool has_received_route_{false};
 
-  TurnSignalDecider turn_signal_decider_;
-
   std::mutex mutex_pd_;       // mutex for planner_data_
   std::mutex mutex_manager_;  // mutex for bt_manager_ or planner_manager_
   std::mutex mutex_map_;      // mutex for has_received_map_ and map_ptr_
@@ -220,7 +217,8 @@ private:
   /**
    * @brief publish steering factor from intersection
    */
-  void publish_steering_factor(const TurnIndicatorsCommand & turn_signal);
+  void publish_steering_factor(
+    const std::shared_ptr<PlannerData> & planner_data, const TurnIndicatorsCommand & turn_signal);
 
   /**
    * @brief publish left and right bound
