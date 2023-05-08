@@ -125,9 +125,8 @@ bool AvoidanceModule::isExecutionRequested() const
   const auto avoid_data = avoidance_data_;
 #endif
 
-  if (parameters_->publish_debug_marker) {
-    setDebugData(avoid_data, path_shifter_, debug_data_);
-  }
+  updateInfoMarker(avoid_data);
+  updateDebugMarker(avoid_data, path_shifter_, debug_data_);
 
 #ifndef USE_OLD_ARCHITECTURE
   // there is object that should be avoid. return true.
@@ -2800,11 +2799,8 @@ BehaviorModuleOutput AvoidanceModule::plan()
     updateEgoBehavior(data, avoidance_path);
   }
 
-  if (parameters_->publish_debug_marker) {
-    setDebugData(avoidance_data_, path_shifter_, debug_data_);
-  } else {
-    debug_marker_.markers.clear();
-  }
+  updateInfoMarker(avoidance_data_);
+  updateDebugMarker(avoidance_data_, path_shifter_, debug_data_);
 
   output.path = std::make_shared<PathWithLaneId>(avoidance_path.path);
   output.reference_path = getPreviousModuleOutput().reference_path;
@@ -3242,7 +3238,16 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
   return turn_signal_info;
 }
 
-void AvoidanceModule::setDebugData(
+void AvoidanceModule::updateInfoMarker(const AvoidancePlanningData & data) const
+{
+  using marker_utils::avoidance_marker::createTargetObjectsMarkerArray;
+
+  info_marker_.markers.clear();
+  appendMarkerArray(
+    createTargetObjectsMarkerArray(data.target_objects, "target_objects"), &info_marker_);
+}
+
+void AvoidanceModule::updateDebugMarker(
   const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug) const
 {
   using marker_utils::createLaneletsAreaMarkerArray;
@@ -3251,25 +3256,25 @@ void AvoidanceModule::setDebugData(
   using marker_utils::createPoseMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
   using marker_utils::createShiftLineMarkerArray;
-  using marker_utils::avoidance_marker::createAvoidableTargetObjectsMarkerArray;
   using marker_utils::avoidance_marker::createAvoidLineMarkerArray;
   using marker_utils::avoidance_marker::createEgoStatusMarkerArray;
   using marker_utils::avoidance_marker::createOtherObjectsMarkerArray;
   using marker_utils::avoidance_marker::createOverhangFurthestLineStringMarkerArray;
   using marker_utils::avoidance_marker::createPredictedVehiclePositions;
   using marker_utils::avoidance_marker::createSafetyCheckMarkerArray;
-  using marker_utils::avoidance_marker::createUnavoidableObjectsMarkerArray;
-  using marker_utils::avoidance_marker::createUnavoidableTargetObjectsMarkerArray;
   using marker_utils::avoidance_marker::createUnsafeObjectsMarkerArray;
   using marker_utils::avoidance_marker::makeOverhangToRoadShoulderMarkerArray;
   using tier4_autoware_utils::appendMarkerArray;
 
   debug_marker_.markers.clear();
+
+  if (!parameters_->publish_debug_marker) {
+    return;
+  }
+
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
 
-  const auto add = [this](const MarkerArray & added) {
-    tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
-  };
+  const auto add = [this](const MarkerArray & added) { appendMarkerArray(added, &debug_marker_); };
 
   const auto addAvoidLine =
     [&](const AvoidLineArray & al_arr, const auto & ns, auto r, auto g, auto b, double w = 0.1) {
@@ -3293,22 +3298,8 @@ void AvoidanceModule::setDebugData(
 
   add(createSafetyCheckMarkerArray(data.state, getEgoPose(), debug));
 
-  std::vector<ObjectData> avoidable_target_objects;
-  std::vector<ObjectData> unavoidable_target_objects;
-  for (const auto & object : data.target_objects) {
-    if (object.is_avoidable) {
-      avoidable_target_objects.push_back(object);
-    } else {
-      unavoidable_target_objects.push_back(object);
-    }
-  }
-
   add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
   add(createLaneletsAreaMarkerArray(*debug.expanded_lanelets, "expanded_lanelet", 0.8, 0.8, 0.0));
-  add(
-    createAvoidableTargetObjectsMarkerArray(avoidable_target_objects, "avoidable_target_objects"));
-  add(createUnavoidableTargetObjectsMarkerArray(
-    unavoidable_target_objects, "unavoidable_target_objects"));
 
   add(createOtherObjectsMarkerArray(
     data.other_objects, AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD));

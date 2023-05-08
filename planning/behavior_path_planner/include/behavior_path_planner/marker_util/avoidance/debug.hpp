@@ -58,17 +58,11 @@ MarkerArray createAvoidLineMarkerArray(
 
 MarkerArray createPredictedVehiclePositions(const PathWithLaneId & path, std::string && ns);
 
-MarkerArray createAvoidableTargetObjectsMarkerArray(
-  const ObjectDataArray & objects, std::string && ns);
-
-MarkerArray createUnavoidableTargetObjectsMarkerArray(
-  const ObjectDataArray & objects, std::string && ns);
+MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
 MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
 MarkerArray createUnsafeObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns);
-
-MarkerArray createUnavoidableObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns);
 
 MarkerArray makeOverhangToRoadShoulderMarkerArray(
   const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
