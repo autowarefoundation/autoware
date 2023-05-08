@@ -248,29 +248,35 @@ VelocityOptimizer::OptimizationResult VelocityOptimizer::optimize(const Optimiza
   const std::vector<double> optval = std::get<0>(result);
 
   const int status_val = std::get<3>(result);
-  if (status_val != 1) {
+  if (status_val != 1)
     std::cerr << "optimization failed : " << qp_solver_.getStatusMessage().c_str() << std::endl;
-  }
 
-  std::vector<double> opt_time = time_vec;
-  std::vector<double> opt_pos(N);
-  std::vector<double> opt_vel(N);
-  std::vector<double> opt_acc(N);
-  std::vector<double> opt_jerk(N);
-  for (size_t i = 0; i < N; ++i) {
-    opt_pos.at(i) = optval.at(IDX_S0 + i);
-    opt_vel.at(i) = std::max(optval.at(IDX_V0 + i), 0.0);
-    opt_acc.at(i) = optval.at(IDX_A0 + i);
-    opt_jerk.at(i) = optval.at(IDX_J0 + i);
-  }
-  opt_vel.back() = 0.0;
+  const auto has_nan =
+    std::any_of(optval.begin(), optval.end(), [](const auto v) { return std::isnan(v); });
+  if (has_nan) std::cerr << "optimization failed : result contains NaN values\n";
 
   OptimizationResult optimized_result;
-  optimized_result.t = opt_time;
-  optimized_result.s = opt_pos;
-  optimized_result.v = opt_vel;
-  optimized_result.a = opt_acc;
-  optimized_result.j = opt_jerk;
+  const auto is_optimization_failed = status_val != 1 || has_nan;
+  if (!is_optimization_failed) {
+    std::vector<double> opt_time = time_vec;
+    std::vector<double> opt_pos(N);
+    std::vector<double> opt_vel(N);
+    std::vector<double> opt_acc(N);
+    std::vector<double> opt_jerk(N);
+    for (size_t i = 0; i < N; ++i) {
+      opt_pos.at(i) = optval.at(IDX_S0 + i);
+      opt_vel.at(i) = std::max(optval.at(IDX_V0 + i), 0.0);
+      opt_acc.at(i) = optval.at(IDX_A0 + i);
+      opt_jerk.at(i) = optval.at(IDX_J0 + i);
+    }
+    opt_vel.back() = 0.0;
+
+    optimized_result.t = opt_time;
+    optimized_result.s = opt_pos;
+    optimized_result.v = opt_vel;
+    optimized_result.a = opt_acc;
+    optimized_result.j = opt_jerk;
+  }
 
   return optimized_result;
 }

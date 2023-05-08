@@ -1540,6 +1540,13 @@ std::optional<Eigen::VectorXd> MPTOptimizer::calcOptimizedSteerAngles(
   // get optimization result
   auto optimization_result =
     std::get<0>(result);  // NOTE: const cannot be added due to the next operation.
+  const auto has_nan = std::any_of(
+    optimization_result.begin(), optimization_result.end(),
+    [](const auto v) { return std::isnan(v); });
+  if (has_nan) {
+    RCLCPP_WARN(logger_, "optimization failed: result contains NaN values");
+    return std::nullopt;
+  }
   const Eigen::VectorXd optimized_steer_angles =
     Eigen::Map<Eigen::VectorXd>(&optimization_result[0], D_un);
 

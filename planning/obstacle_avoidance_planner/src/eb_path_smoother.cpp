@@ -380,6 +380,12 @@ std::optional<std::vector<double>> EBPathSmoother::optimizeTrajectory()
     osqp_solver_ptr_->logUnsolvedStatus("[EB]");
     return std::nullopt;
   }
+  const auto has_nan = std::any_of(
+    optimized_points.begin(), optimized_points.end(), [](const auto v) { return std::isnan(v); });
+  if (has_nan) {
+    RCLCPP_WARN(logger_, "optimization failed: result contains NaN values");
+    return std::nullopt;
+  }
 
   time_keeper_ptr_->toc(__func__, "        ");
   return optimized_points;
