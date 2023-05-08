@@ -59,7 +59,7 @@ public:
   {
     prev_module_reference_path_ = std::make_shared<PathWithLaneId>();
     prev_module_path_ = std::make_shared<PathWithLaneId>();
-    prev_drivable_lanes_ = std::make_shared<std::vector<DrivableLanes>>();
+    prev_drivable_area_info_ = std::make_shared<DrivableAreaInfo>();
   }
 
   LaneChangeBase(const LaneChangeBase &) = delete;
@@ -100,10 +100,10 @@ public:
     }
   };
 
-  virtual void setPreviousDrivableLanes(const std::vector<DrivableLanes> & prev_drivable_lanes)
+  virtual void setPreviousDrivableAreaInfo(const DrivableAreaInfo & prev_drivable_area_info)
   {
-    if (prev_drivable_lanes_) {
-      *prev_drivable_lanes_ = prev_drivable_lanes;
+    if (prev_drivable_area_info_) {
+      *prev_drivable_area_info_ = prev_drivable_area_info;
     }
   }
 
@@ -231,7 +231,7 @@ protected:
   std::shared_ptr<const PlannerData> planner_data_{};
   std::shared_ptr<PathWithLaneId> prev_module_reference_path_{};
   std::shared_ptr<PathWithLaneId> prev_module_path_{};
-  std::shared_ptr<std::vector<DrivableLanes>> prev_drivable_lanes_{};
+  std::shared_ptr<DrivableAreaInfo> prev_drivable_area_info_{};
 
   PathWithLaneId prev_approved_path_{};
 
