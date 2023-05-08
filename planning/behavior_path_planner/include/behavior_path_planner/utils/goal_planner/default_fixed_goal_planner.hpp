@@ -32,8 +32,10 @@ public:
   BehaviorModuleOutput plan(const std::shared_ptr<const PlannerData> & planner_data) const override;
 
 protected:
+#ifdef USE_OLD_ARCHITECTURE
   boost::optional<BehaviorModuleOutput> getReferencePath(
     const std::shared_ptr<const PlannerData> & planner_data) const;
+#endif
   PathWithLaneId modifyPathForSmoothGoalConnection(
     const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data) const;
 };

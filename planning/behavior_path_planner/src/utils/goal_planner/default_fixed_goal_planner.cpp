@@ -29,18 +29,28 @@ namespace behavior_path_planner
 BehaviorModuleOutput DefaultFixedGoalPlanner::plan(
   const std::shared_ptr<const PlannerData> & planner_data) const
 {
-  auto output = getReferencePath(planner_data);
-  if (!output) {
-    return {};
-  }
+  BehaviorModuleOutput output =
+#ifdef USE_OLD_ARCHITECTURE
+    // generate reference path in this planner
+    std::invoke([this, &planner_data]() {
+      auto path = getReferencePath(planner_data);
+      if (!path) {
+        return BehaviorModuleOutput{};
+      }
+      return *path;
+    });
+#else
+    // use planner previous module reference path
+    getPreviousModuleOutput();
+#endif
   const PathWithLaneId smoothed_path =
-    modifyPathForSmoothGoalConnection(*(output->path), planner_data);
-
-  output->path = std::make_shared<PathWithLaneId>(smoothed_path);
-  output->reference_path = std::make_shared<PathWithLaneId>(smoothed_path);
-  return *output;
+    modifyPathForSmoothGoalConnection(*(output.path), planner_data);
+  output.path = std::make_shared<PathWithLaneId>(smoothed_path);
+  output.reference_path = std::make_shared<PathWithLaneId>(smoothed_path);
+  return output;
 }
 
+#ifdef USE_OLD_ARCHITECTURE
 boost::optional<BehaviorModuleOutput> DefaultFixedGoalPlanner::getReferencePath(
   const std::shared_ptr<const PlannerData> & planner_data) const
 {
@@ -61,6 +71,7 @@ boost::optional<BehaviorModuleOutput> DefaultFixedGoalPlanner::getReferencePath(
 
   return {};  // something wrong
 }
+#endif
 
 PathWithLaneId DefaultFixedGoalPlanner::modifyPathForSmoothGoalConnection(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data) const

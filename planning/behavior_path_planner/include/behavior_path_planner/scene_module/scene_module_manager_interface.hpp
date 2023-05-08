@@ -94,6 +94,10 @@ public:
   void registerNewModule(
     const SceneModulePtr & module_ptr, const BehaviorModuleOutput & previous_module_output)
   {
+    module_ptr->setIsSimultaneousExecutableAsApprovedModule(
+      enable_simultaneous_execution_as_approved_module_);
+    module_ptr->setIsSimultaneousExecutableAsCandidateModule(
+      enable_simultaneous_execution_as_candidate_module_);
     module_ptr->setData(planner_data_);
     module_ptr->setPreviousModuleOutput(previous_module_output);
     module_ptr->onEntry();
@@ -197,12 +201,18 @@ public:
 
   bool isSimultaneousExecutableAsApprovedModule() const
   {
-    return enable_simultaneous_execution_as_approved_module_;
+    return std::all_of(
+      registered_modules_.begin(), registered_modules_.end(), [](const SceneModulePtr & module) {
+        return module->isSimultaneousExecutableAsApprovedModule();
+      });
   }
 
   bool isSimultaneousExecutableAsCandidateModule() const
   {
-    return enable_simultaneous_execution_as_candidate_module_;
+    return std::all_of(
+      registered_modules_.begin(), registered_modules_.end(), [](const SceneModulePtr & module) {
+        return module->isSimultaneousExecutableAsCandidateModule();
+      });
   }
 
   void setData(const std::shared_ptr<PlannerData> & planner_data) { planner_data_ = planner_data; }

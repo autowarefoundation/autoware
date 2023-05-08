@@ -39,6 +39,16 @@ public:
 
   virtual BehaviorModuleOutput plan(
     const std::shared_ptr<const PlannerData> & planner_data) const = 0;
+
+  void setPreviousModuleOutput(const BehaviorModuleOutput & previous_module_output)
+  {
+    previous_module_output_ = previous_module_output;
+  }
+
+  BehaviorModuleOutput getPreviousModuleOutput() const { return previous_module_output_; }
+
+protected:
+  BehaviorModuleOutput previous_module_output_;
 };
 }  // namespace behavior_path_planner
 

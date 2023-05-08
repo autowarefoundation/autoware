@@ -421,6 +421,11 @@ Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
 
 ModuleStatus GoalPlannerModule::updateState()
 {
+  // finish module only when the goal is fixed
+  if (!allow_goal_modification_ && hasFinishedGoalPlanner()) {
+    current_state_ = ModuleStatus::SUCCESS;
+  }
+
   // pull_out module will be run when setting new goal, so not need finishing pull_over module.
   // Finishing it causes wrong lane_following path generation.
   return current_state_;
@@ -489,6 +494,11 @@ BehaviorModuleOutput GoalPlannerModule::plan()
   if (allow_goal_modification_) {
     return planWithGoalModification();
   } else {
+    // for fixed goals, only minor path refinements are made,
+    // so other modules are always allowed to run.
+    setIsSimultaneousExecutableAsApprovedModule(true);
+    setIsSimultaneousExecutableAsCandidateModule(true);
+    fixed_goal_planner_->setPreviousModuleOutput(getPreviousModuleOutput());
     return fixed_goal_planner_->plan(planner_data_);
   }
 }
@@ -756,6 +766,11 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
   if (allow_goal_modification_) {
     return planWaitingApprovalWithGoalModification();
   } else {
+    // for fixed goals, only minor path refinements are made,
+    // so other modules are always allowed to run.
+    setIsSimultaneousExecutableAsApprovedModule(true);
+    setIsSimultaneousExecutableAsCandidateModule(true);
+    fixed_goal_planner_->setPreviousModuleOutput(getPreviousModuleOutput());
     return fixed_goal_planner_->plan(planner_data_);
   }
 }
@@ -1001,12 +1016,13 @@ bool GoalPlannerModule::hasFinishedCurrentPath()
 
 bool GoalPlannerModule::isOnGoal() const
 {
-  const auto current_pose = planner_data_->self_odometry->pose.pose;
-  return calcDistance2d(current_pose, modified_goal_pose_->goal_pose) <
-         parameters_->th_arrived_distance;
+  const Pose current_pose = planner_data_->self_odometry->pose.pose;
+  const Pose goal_pose = modified_goal_pose_ ? modified_goal_pose_->goal_pose
+                                             : planner_data_->route_handler->getGoalPose();
+  return calcDistance2d(current_pose, goal_pose) < parameters_->th_arrived_distance;
 }
 
-bool GoalPlannerModule::hasFinishedPullOver()
+bool GoalPlannerModule::hasFinishedGoalPlanner()
 {
   return isOnGoal() && isStopped();
 }
