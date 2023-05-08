@@ -31,6 +31,8 @@ std::shared_ptr<PlanningInterfaceTestManager> generateTestManager()
   // set subscriber with topic name: scenario_selector → test_node_
   test_manager->setScenarioSubscriber("output/scenario");
 
+  test_manager->setOdometryTopicName("input/odometry");
+
   return test_manager;
 }
 
@@ -97,5 +99,24 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectoryParkingMode)
 
   // test for trajectory with empty/one point/overlapping point
   ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
+  rclcpp::shutdown();
+}
+
+TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
+{
+  rclcpp::init(0, nullptr);
+  auto test_manager = generateTestManager();
+  auto test_target_node = generateNode();
+
+  publishMandatoryTopics(test_manager, test_target_node);
+
+  // set scenario_selector's input topic name(this topic is changed to test node)
+  test_manager->setTrajectoryInputTopicName("input/lane_driving/trajectory");
+
+  // test for normal trajectory
+  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
+  EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
+
+  ASSERT_NO_THROW(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
   rclcpp::shutdown();
 }
