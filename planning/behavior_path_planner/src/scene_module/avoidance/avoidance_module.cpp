@@ -1288,8 +1288,8 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
   // - Combine avoid points that have almost same gradient.
   // this is to remove the noise.
   {
-    const auto CHANGE_SHIFT_THRESHOLD_FOR_NOISE = 0.1;
-    trimSimilarGradShiftLine(sl_array_trimmed, CHANGE_SHIFT_THRESHOLD_FOR_NOISE);
+    const auto THRESHOLD = parameters_->same_grad_filter_1_threshold;
+    trimSimilarGradShiftLine(sl_array_trimmed, THRESHOLD);
     debug.trim_similar_grad_shift = sl_array_trimmed;
     printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift");
   }
@@ -1297,8 +1297,8 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
   // - Quantize the shift length to reduce the shift point noise
   // This is to remove the noise coming from detection accuracy, interpolation, resampling, etc.
   {
-    constexpr double QUANTIZATION_DISTANCE = 0.2;
-    quantizeShiftLine(sl_array_trimmed, QUANTIZATION_DISTANCE);
+    const auto THRESHOLD = parameters_->quantize_filter_threshold;
+    quantizeShiftLine(sl_array_trimmed, THRESHOLD);
     printShiftLines(sl_array_trimmed, "after sl_array_trimmed");
     debug.quantized = sl_array_trimmed;
   }
@@ -1313,8 +1313,8 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
 
   // - Combine avoid points that have almost same gradient (again)
   {
-    const auto CHANGE_SHIFT_THRESHOLD = 0.2;
-    trimSimilarGradShiftLine(sl_array_trimmed, CHANGE_SHIFT_THRESHOLD);
+    const auto THRESHOLD = parameters_->same_grad_filter_2_threshold;
+    trimSimilarGradShiftLine(sl_array_trimmed, THRESHOLD);
     debug.trim_similar_grad_shift_second = sl_array_trimmed;
     printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift_second");
   }
@@ -1323,15 +1323,16 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
   // Check if it is not too sharp for the return-to-center shift point.
   // If the shift is sharp, it is combined with the next shift point until it gets non-sharp.
   {
-    trimSharpReturn(sl_array_trimmed);
+    const auto THRESHOLD = parameters_->sharp_shift_filter_threshold;
+    trimSharpReturn(sl_array_trimmed, THRESHOLD);
     debug.trim_too_sharp_shift = sl_array_trimmed;
     printShiftLines(sl_array_trimmed, "after trimSharpReturn");
   }
 
   // - Combine avoid points that have almost same gradient (again)
   {
-    const auto CHANGE_SHIFT_THRESHOLD = 0.5;
-    trimSimilarGradShiftLine(sl_array_trimmed, CHANGE_SHIFT_THRESHOLD);
+    const auto THRESHOLD = parameters_->same_grad_filter_3_threshold;
+    trimSimilarGradShiftLine(sl_array_trimmed, THRESHOLD);
     debug.trim_similar_grad_shift_third = sl_array_trimmed;
     printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift_second");
   }
@@ -1362,21 +1363,20 @@ void AvoidanceModule::alignShiftLinesOrder(
   }
 }
 
-void AvoidanceModule::quantizeShiftLine(AvoidLineArray & shift_lines, const double interval) const
+void AvoidanceModule::quantizeShiftLine(AvoidLineArray & shift_lines, const double threshold) const
 {
-  if (interval < 1.0e-5) {
+  if (threshold < 1.0e-5) {
     return;  // no need to process
   }
 
   for (auto & sl : shift_lines) {
-    sl.end_shift_length = std::round(sl.end_shift_length / interval) * interval;
+    sl.end_shift_length = std::round(sl.end_shift_length / threshold) * threshold;
   }
 
   alignShiftLinesOrder(shift_lines);
 }
 
-void AvoidanceModule::trimSmallShiftLine(
-  AvoidLineArray & shift_lines, const double shift_diff_thres) const
+void AvoidanceModule::trimSmallShiftLine(AvoidLineArray & shift_lines, const double threshold) const
 {
   AvoidLineArray shift_lines_orig = shift_lines;
   shift_lines.clear();
@@ -1391,7 +1391,7 @@ void AvoidanceModule::trimSmallShiftLine(
     auto sl_modified = sl_now;
 
     // remove the shift point if the length is almost same as the previous one.
-    if (std::abs(shift_diff) < shift_diff_thres) {
+    if (std::abs(shift_diff) < threshold) {
       sl_modified.end_shift_length = sl_prev.end_shift_length;
       sl_modified.start_shift_length = sl_prev.end_shift_length;
       DEBUG_PRINT(
@@ -1409,7 +1409,7 @@ void AvoidanceModule::trimSmallShiftLine(
 }
 
 void AvoidanceModule::trimSimilarGradShiftLine(
-  AvoidLineArray & avoid_lines, const double change_shift_dist_threshold) const
+  AvoidLineArray & avoid_lines, const double threshold) const
 {
   AvoidLineArray avoid_lines_orig = avoid_lines;
   avoid_lines.clear();
@@ -1436,8 +1436,7 @@ void AvoidanceModule::trimSimilarGradShiftLine(
         const auto longitudinal = original.end_longitudinal - combined_al.start_longitudinal;
         const auto new_length =
           combined_al.getGradient() * longitudinal + combined_al.start_shift_length;
-        const bool has_large_change =
-          std::abs(new_length - original.end_shift_length) > change_shift_dist_threshold;
+        const bool has_large_change = std::abs(new_length - original.end_shift_length) > threshold;
 
         DEBUG_PRINT(
           "original.end_shift_length: %f, original.end_longitudinal: %f, "
@@ -1446,7 +1445,7 @@ void AvoidanceModule::trimSimilarGradShiftLine(
           original.end_shift_length, original.end_longitudinal, combined_al.start_longitudinal,
           combined_al.getGradient(), new_length, has_large_change);
 
-        if (std::abs(new_length - original.end_shift_length) > change_shift_dist_threshold) {
+        if (std::abs(new_length - original.end_shift_length) > threshold) {
           return true;
         }
       }
@@ -1620,7 +1619,7 @@ void AvoidanceModule::trimMomentaryReturn(AvoidLineArray & shift_lines) const
   DEBUG_PRINT("trimMomentaryReturn: size %lu -> %lu", shift_lines_orig.size(), shift_lines.size());
 }
 
-void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
+void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines, const double threshold) const
 {
   AvoidLineArray shift_lines_orig = shift_lines;
   shift_lines.clear();
@@ -1651,17 +1650,14 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
   };
 
   // Check if the merged shift has a conflict with the original shifts.
-  const auto hasViolation = [this](const auto & combined, const auto & combined_src) {
-    constexpr auto VIOLATION_SHIFT_THR = 0.3;
+  const auto hasViolation = [&threshold](const auto & combined, const auto & combined_src) {
     for (const auto & sl : combined_src) {
       const auto combined_shift =
         utils::avoidance::lerpShiftLengthOnArc(sl.end_longitudinal, combined);
-      if (
-        sl.end_shift_length < -0.01 && combined_shift > sl.end_shift_length + VIOLATION_SHIFT_THR) {
+      if (sl.end_shift_length < -0.01 && combined_shift > sl.end_shift_length + threshold) {
         return true;
       }
-      if (
-        sl.end_shift_length > 0.01 && combined_shift < sl.end_shift_length - VIOLATION_SHIFT_THR) {
+      if (sl.end_shift_length > 0.01 && combined_shift < sl.end_shift_length - threshold) {
         return true;
       }
     }

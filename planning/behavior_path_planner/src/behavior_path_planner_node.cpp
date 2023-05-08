@@ -657,6 +657,20 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
     p.target_velocity_matrix = declare_parameter<std::vector<double>>(ns + "matrix");
   }
 
+  // shift line pipeline
+  {
+    std::string ns = "avoidance.shift_line_pipeline.";
+    p.quantize_filter_threshold = declare_parameter<double>(ns + "trim.quantize_filter_threshold");
+    p.same_grad_filter_1_threshold =
+      declare_parameter<double>(ns + "trim.same_grad_filter_1_threshold");
+    p.same_grad_filter_2_threshold =
+      declare_parameter<double>(ns + "trim.same_grad_filter_2_threshold");
+    p.same_grad_filter_3_threshold =
+      declare_parameter<double>(ns + "trim.same_grad_filter_3_threshold");
+    p.sharp_shift_filter_threshold =
+      declare_parameter<double>(ns + "trim.sharp_shift_filter_threshold");
+  }
+
   return p;
 }
 

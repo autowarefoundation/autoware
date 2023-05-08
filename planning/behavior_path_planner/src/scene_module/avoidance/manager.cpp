@@ -95,6 +95,20 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     updateParam<double>(parameters, ns + "max_lateral_jerk", p->max_lateral_jerk);
   }
 
+  {
+    const std::string ns = "avoidance.shift_line_pipeline.";
+    updateParam<double>(
+      parameters, ns + "trim.quantize_filter_threshold", p->quantize_filter_threshold);
+    updateParam<double>(
+      parameters, ns + "trim.same_grad_filter_1_threshold", p->same_grad_filter_1_threshold);
+    updateParam<double>(
+      parameters, ns + "trim.same_grad_filter_2_threshold", p->same_grad_filter_2_threshold);
+    updateParam<double>(
+      parameters, ns + "trim.same_grad_filter_3_threshold", p->same_grad_filter_3_threshold);
+    updateParam<double>(
+      parameters, ns + "trim.sharp_shift_filter_threshold", p->sharp_shift_filter_threshold);
+  }
+
   std::for_each(registered_modules_.begin(), registered_modules_.end(), [&p](const auto & m) {
     m->updateModuleParams(p);
   });

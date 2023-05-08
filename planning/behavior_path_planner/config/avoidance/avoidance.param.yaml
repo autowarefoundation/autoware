@@ -143,3 +143,11 @@
         matrix:
           [2.78, 13.9,                                  # velocity [m/s]
            0.50, 1.00]                                  # margin [m]
+
+      shift_line_pipeline:
+        trim:
+          quantize_filter_threshold: 0.2
+          same_grad_filter_1_threshold: 0.1
+          same_grad_filter_2_threshold: 0.2
+          same_grad_filter_3_threshold: 0.5
+          sharp_shift_filter_threshold: 0.2

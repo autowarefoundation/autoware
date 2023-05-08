@@ -228,12 +228,12 @@ private:
 
   // shift point generation: trimmers
   AvoidLineArray trimShiftLine(const AvoidLineArray & shift_lines, DebugData & debug) const;
-  void quantizeShiftLine(AvoidLineArray & shift_lines, const double interval) const;
-  void trimSmallShiftLine(AvoidLineArray & shift_lines, const double shift_diff_thres) const;
+  void quantizeShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
+  void trimSmallShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
   void trimSimilarGradShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
   void trimMomentaryReturn(AvoidLineArray & shift_lines) const;
   void trimTooSharpShift(AvoidLineArray & shift_lines) const;
-  void trimSharpReturn(AvoidLineArray & shift_lines) const;
+  void trimSharpReturn(AvoidLineArray & shift_lines, const double threshold) const;
 
   // shift point generation: return-shift generator
   void addReturnShiftLineFromEgo(
