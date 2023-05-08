@@ -326,8 +326,8 @@ bool isLaneChangePathSafe(
       utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::safety_check::isSafeInLaneletCollisionCheck(
-            interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
-            obj, obj_path, common_parameter,
+            path, interpolated_ego, current_twist, check_durations,
+            lane_change_path.duration.prepare, obj, obj_path, common_parameter,
             lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
             rear_decel, ego_pose_before_collision, current_debug_data.second)) {
         appendDebugInfo(current_debug_data, false);
@@ -350,9 +350,10 @@ bool isLaneChangePathSafe(
       utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
 
     if (!utils::safety_check::isSafeInFreeSpaceCollisionCheck(
-          interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare, obj,
-          common_parameter, lane_change_parameter.prepare_segment_ignore_object_velocity_thresh,
-          front_decel, rear_decel, current_debug_data.second)) {
+          path, interpolated_ego, current_twist, check_durations, lane_change_path.duration.prepare,
+          obj, common_parameter,
+          lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
+          rear_decel, current_debug_data.second)) {
       appendDebugInfo(current_debug_data, false);
       return false;
     }
