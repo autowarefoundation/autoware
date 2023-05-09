@@ -94,6 +94,9 @@ struct AvoidanceParameters
   // disable path update
   bool disable_path_update{false};
 
+  // use hatched road markings for avoidance
+  bool use_hatched_road_markings{false};
+
   // constrains
   bool use_constraints_for_decel{false};
 

@@ -199,7 +199,7 @@ BehaviorModuleOutput PullOutModule::plan()
 
   const auto target_drivable_lanes = getNonOverlappingExpandedLanes(path, status_.lanes);
   utils::generateDrivableArea(
-    path, target_drivable_lanes, planner_data_->parameters.vehicle_length, planner_data_);
+    path, target_drivable_lanes, false, planner_data_->parameters.vehicle_length, planner_data_);
   output.drivable_area_info.drivable_lanes = utils::combineDrivableLanes(
     getPreviousModuleOutput().drivable_area_info.drivable_lanes, target_drivable_lanes);
 
@@ -317,7 +317,7 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
     drivable_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
     dp.drivable_area_types_to_skip);
   utils::generateDrivableArea(
-    stop_path, expanded_lanes, planner_data_->parameters.vehicle_length, planner_data_);
+    stop_path, expanded_lanes, false, planner_data_->parameters.vehicle_length, planner_data_);
   for (auto & p : stop_path.points) {
     p.point.longitudinal_velocity_mps = 0.0;
   }
@@ -517,7 +517,7 @@ PathWithLaneId PullOutModule::generateStopPath() const
 
   // for old architecture
   utils::generateDrivableArea(
-    path, target_drivable_lanes, planner_data_->parameters.vehicle_length, planner_data_);
+    path, target_drivable_lanes, false, planner_data_->parameters.vehicle_length, planner_data_);
 
   return path;
 }

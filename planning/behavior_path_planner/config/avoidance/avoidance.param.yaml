@@ -18,6 +18,7 @@
       enable_safety_check: true
       enable_yield_maneuver: true
       disable_path_update: false
+      use_hatched_road_markings: false
 
       # for debug
       publish_debug_marker: false

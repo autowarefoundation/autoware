@@ -129,23 +129,22 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
 void PlannerManager::generateCombinedDrivableArea(
   BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & data) const
 {
+  const auto & di = output.drivable_area_info;
   constexpr double epsilon = 1e-3;
-  if (epsilon < std::abs(output.drivable_area_info.drivable_margin)) {
+
+  if (epsilon < std::abs(di.drivable_margin)) {
     // for single free space pull over
     const auto is_driving_forward_opt = motion_utils::isDrivingForward(output.path->points);
     const bool is_driving_forward = is_driving_forward_opt ? *is_driving_forward_opt : true;
 
     utils::generateDrivableArea(
-      *output.path, data->parameters.vehicle_length, output.drivable_area_info.drivable_margin,
-      is_driving_forward);
-  } else if (output.drivable_area_info.is_already_expanded) {
+      *output.path, data->parameters.vehicle_length, di.drivable_margin, is_driving_forward);
+  } else if (di.is_already_expanded) {
     // for single side shift
     utils::generateDrivableArea(
-      *output.path, output.drivable_area_info.drivable_lanes, data->parameters.vehicle_length,
-      data);
+      *output.path, di.drivable_lanes, false, data->parameters.vehicle_length, data);
   } else {
-    const auto shorten_lanes =
-      utils::cutOverlappedLanes(*output.path, output.drivable_area_info.drivable_lanes);
+    const auto shorten_lanes = utils::cutOverlappedLanes(*output.path, di.drivable_lanes);
 
     const auto & dp = data->drivable_area_expansion_parameters;
     const auto expanded_lanes = utils::expandLanelets(
@@ -154,11 +153,12 @@ void PlannerManager::generateCombinedDrivableArea(
 
     // for other modules where multiple modules may be launched
     utils::generateDrivableArea(
-      *output.path, expanded_lanes, data->parameters.vehicle_length, data);
+      *output.path, expanded_lanes, di.enable_expanding_hatched_road_markings,
+      data->parameters.vehicle_length, data);
   }
 
   // extract obstacles from drivable area
-  utils::extractObstaclesFromDrivableArea(*output.path, output.drivable_area_info.obstacles);
+  utils::extractObstaclesFromDrivableArea(*output.path, di.obstacles);
 }
 
 std::vector<SceneModulePtr> PlannerManager::getRequestModules(

@@ -229,13 +229,18 @@ boost::optional<lanelet::ConstLanelet> getLeftLanelet(
 std::vector<DrivableLanes> generateDrivableLanes(const lanelet::ConstLanelets & current_lanes);
 std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & shoulder_lanes);
+std::vector<geometry_msgs::msg::Point> calcBound(
+  const std::shared_ptr<RouteHandler> route_handler,
+  const std::vector<DrivableLanes> & drivable_lanes, const bool enable_expanding_polygon,
+  const bool is_left);
 
 boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
 std::vector<DrivableLanes> cutOverlappedLanes(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes);
 
 void generateDrivableArea(
-  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes, const double vehicle_length,
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
+  const bool enable_expanding_polygon, const double vehicle_length,
   const std::shared_ptr<const PlannerData> planner_data, const bool is_driving_forward = true);
 
 void generateDrivableArea(
@@ -388,6 +393,12 @@ std::vector<DrivableLanes> combineDrivableLanes(
 
 void extractObstaclesFromDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableAreaInfo::Obstacle> & obstacles);
+
+void makeBoundLongitudinallyMonotonic(PathWithLaneId & path, const bool is_bound_left);
+
+std::optional<lanelet::Polygon3d> getPolygonByPoint(
+  const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstPoint3d & point,
+  const std::string & polygon_name);
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__UTILS_HPP_

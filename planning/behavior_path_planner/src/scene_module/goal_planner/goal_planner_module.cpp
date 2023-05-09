@@ -639,7 +639,8 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
       utils::clipPathLength(path, ego_idx, planner_data_->parameters);
       const auto target_drivable_lanes = getNonOverlappingExpandedLanes(path, status_.lanes);
       utils::generateDrivableArea(
-        path, target_drivable_lanes, planner_data_->parameters.vehicle_length, planner_data_);
+        path, target_drivable_lanes, false, planner_data_->parameters.vehicle_length,
+        planner_data_);
     }
   }
 
@@ -918,7 +919,7 @@ PathWithLaneId GoalPlannerModule::generateStopPath()
   const auto drivable_lanes = utils::generateDrivableLanes(status_.current_lanes);
   const auto target_drivable_lanes = getNonOverlappingExpandedLanes(reference_path, drivable_lanes);
   utils::generateDrivableArea(
-    reference_path, target_drivable_lanes, common_parameters.vehicle_length, planner_data_);
+    reference_path, target_drivable_lanes, false, common_parameters.vehicle_length, planner_data_);
 
   return reference_path;
 }
@@ -953,7 +954,7 @@ PathWithLaneId GoalPlannerModule::generateFeasibleStopPath()
   const auto drivable_lanes = utils::generateDrivableLanes(status_.current_lanes);
   const auto target_drivable_lanes = getNonOverlappingExpandedLanes(stop_path, drivable_lanes);
   utils::generateDrivableArea(
-    stop_path, target_drivable_lanes, common_parameters.vehicle_length, planner_data_);
+    stop_path, target_drivable_lanes, false, common_parameters.vehicle_length, planner_data_);
 
   return stop_path;
 }
