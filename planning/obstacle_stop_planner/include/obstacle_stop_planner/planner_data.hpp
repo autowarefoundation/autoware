@@ -17,6 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -248,6 +249,8 @@ struct PlannerData
   pcl::PointXYZ nearest_slow_down_point;
 
   pcl::PointXYZ lateral_nearest_slow_down_point;
+
+  autoware_auto_perception_msgs::msg::Shape slow_down_object_shape{};
 
   Pose nearest_collision_point_pose{};
 

@@ -21,6 +21,7 @@
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
+#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -28,6 +29,7 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 
 #include <map>
 #include <string>
@@ -54,6 +56,9 @@ using vehicle_info_util::VehicleInfo;
 
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
+using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_auto_perception_msgs::msg::PredictedObjects;
+using PointVariant = boost::variant<float, double>;
 
 boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
   const SlowDownParam & slow_down_param, const double dist_baselink_to_obstacle,
@@ -101,12 +106,12 @@ void getLateralNearestPoint(
   const PointCloud & pointcloud, const Pose & base_pose, pcl::PointXYZ * lateral_nearest_point,
   double * deviation);
 
-void getNearestPointForPredictedObject(
-  const PoseArray & object, const Pose & base_pose, Pose * nearest_collision_point,
-  rclcpp::Time * nearest_collision_point_time);
+double getNearestPointAndDistanceForPredictedObject(
+  const geometry_msgs::msg::PoseArray & points, const Pose & base_pose,
+  geometry_msgs::msg::Point * nearest_collision_point);
 
 void getLateralNearestPointForPredictedObject(
-  const PoseArray & object, const Pose & base_pose, Pose * lateral_nearest_point,
+  const PoseArray & object, const Pose & base_pose, pcl::PointXYZ * lateral_nearest_point,
   double * deviation);
 
 Pose getVehicleCenterFromBase(const Pose & base_pose, const VehicleInfo & vehicle_info);
@@ -136,6 +141,13 @@ TrajectoryPoints extendTrajectory(const TrajectoryPoints & input, const double e
 
 TrajectoryPoint getExtendTrajectoryPoint(
   double extend_distance, const TrajectoryPoint & goal_point);
+
+bool intersectsInZAxis(const PredictedObject & object, const double z_min, const double z_max);
+
+pcl::PointXYZ pointToPcl(const double x, const double y, const double z);
+
+boost::optional<PredictedObject> getObstacleFromUuid(
+  const PredictedObjects & obstacles, const unique_identifier_msgs::msg::UUID & target_object_id);
 
 rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr);
 

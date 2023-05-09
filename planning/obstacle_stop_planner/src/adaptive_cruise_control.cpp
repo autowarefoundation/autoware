@@ -273,6 +273,68 @@ void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   *need_to_stop = false;
 }
 
+void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
+  const TrajectoryPoints & trajectory, const int nearest_collision_point_idx,
+  const geometry_msgs::msg::Pose self_pose, const pcl::PointXYZ & nearest_collision_point,
+  const rclcpp::Time nearest_collision_point_time,
+  const nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_ptr, bool * need_to_stop,
+  TrajectoryPoints * output_trajectory, const std_msgs::msg::Header trajectory_header,
+  const PredictedObject & target_object)
+{
+  debug_values_.data.clear();
+  debug_values_.data.resize(num_debug_values_, 0.0);
+
+  const double current_velocity = current_odometry_ptr->twist.twist.linear.x;
+  double col_point_distance;
+  double point_velocity;
+  /*
+   * calc distance to collision point
+   */
+  calcDistanceToNearestPointOnPath(
+    trajectory, nearest_collision_point_idx, self_pose, nearest_collision_point,
+    nearest_collision_point_time, &col_point_distance, trajectory_header);
+
+  /*
+   * calc yaw of trajectory at collision point
+   */
+  const double traj_yaw = calcTrajYaw(trajectory, nearest_collision_point_idx);
+
+  /*
+   * estimate velocity of collision point
+   */
+  calculateProjectedVelocityFromObject(target_object, traj_yaw, &point_velocity);
+
+  // calculate max(target) velocity of self
+  const double upper_velocity =
+    calcUpperVelocity(col_point_distance, point_velocity, current_velocity);
+  pub_debug_->publish(debug_values_);
+
+  if (target_object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    // if the target object is obstacle return stop true
+    RCLCPP_DEBUG_THROTTLE(
+      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      "Target object is pedestrian. Insert stop line.");
+    *need_to_stop = true;
+    return;
+  }
+
+  if (upper_velocity <= param_.thresh_vel_to_stop) {
+    // if upper velocity is too low, need to stop
+    RCLCPP_DEBUG_THROTTLE(
+      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      "Upper velocity is too low. Insert stop line.");
+    *need_to_stop = true;
+    return;
+  }
+
+  /*
+   * insert max velocity
+   */
+  insertMaxVelocityToPath(
+    self_pose, current_velocity, upper_velocity, col_point_distance, output_trajectory);
+  *need_to_stop = false;
+}
+
 void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   const TrajectoryPoints & trajectory, const int nearest_point_idx,
   const geometry_msgs::msg::Pose & self_pose, const pcl::PointXYZ & nearest_collision_point,
@@ -374,6 +436,17 @@ bool AdaptiveCruiseController::estimatePointVelocityFromObject(
   } else {
     return false;
   }
+}
+
+void AdaptiveCruiseController::calculateProjectedVelocityFromObject(
+  const PredictedObject & object, const double traj_yaw, double * velocity)
+{
+  /* get object velocity, and current yaw */
+  double obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear.x;
+  double obj_yaw = tf2::getYaw(object.kinematics.initial_pose_with_covariance.pose.orientation);
+
+  *velocity = obj_vel * std::cos(tier4_autoware_utils::normalizeRadian(obj_yaw - traj_yaw));
+  debug_values_.data.at(DBGVAL::ESTIMATED_VEL_OBJ) = *velocity;
 }
 
 bool AdaptiveCruiseController::estimatePointVelocityFromPcl(

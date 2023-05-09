@@ -27,6 +27,8 @@
 namespace motion_planning
 {
 
+using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_auto_perception_msgs::msg::PredictedObjects;
 using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::findFirstNearestIndexWithSoftConstraints;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
@@ -467,6 +469,31 @@ TrajectoryPoints extendTrajectory(const TrajectoryPoints & input, const double e
   return output;
 }
 
+bool intersectsInZAxis(const PredictedObject & object, const double z_min, const double z_max)
+{
+  const auto & obj_pose = object.kinematics.initial_pose_with_covariance;
+  const auto & obj_height = object.shape.dimensions.z;
+  return obj_pose.pose.position.z - obj_height / 2.0 <= z_max &&
+         obj_pose.pose.position.z + obj_height / 2.0 >= z_min;
+}
+
+pcl::PointXYZ pointToPcl(const double x, const double y, const double z)
+{
+  // Store the point components in a variant
+  PointVariant x_variant = x;
+  PointVariant y_variant = y;
+  PointVariant z_variant = z;
+
+  // Extract the corresponding components from the variant
+  auto extract_float = [](const auto & variant) { return boost::get<float>(variant); };
+  float pcl_x = boost::apply_visitor(extract_float, x_variant);
+  float pcl_y = boost::apply_visitor(extract_float, y_variant);
+  float pcl_z = boost::apply_visitor(extract_float, z_variant);
+
+  // Create a new pcl::PointXYZ object
+  return {pcl_x, pcl_y, pcl_z};
+}
+
 bool getSelfPose(const Header & header, const tf2_ros::Buffer & tf_buffer, Pose & self_pose)
 {
   try {
@@ -527,34 +554,34 @@ void getLateralNearestPoint(
   *deviation = min_norm;
 }
 
-void getNearestPointForPredictedObject(
-  const PoseArray & object, const Pose & base_pose, Pose * nearest_collision_point,
-  rclcpp::Time * nearest_collision_point_time)
+double getNearestPointAndDistanceForPredictedObject(
+  const geometry_msgs::msg::PoseArray & points, const Pose & base_pose,
+  geometry_msgs::msg::Point * nearest_collision_point)
 {
   double min_norm = 0.0;
   bool is_init = false;
 
-  for (const auto & p : object.poses) {
-    double norm = calcDistance2d(p, base_pose);
+  for (const auto & p : points.poses) {
+    double norm = tier4_autoware_utils::calcDistance2d(p, base_pose);
     if (norm < min_norm || !is_init) {
       min_norm = norm;
-      *nearest_collision_point = p;
-      *nearest_collision_point_time = (object.header).stamp;
+      *nearest_collision_point = p.position;
       is_init = true;
     }
   }
+  return min_norm;
 }
 
 void getLateralNearestPointForPredictedObject(
-  const PoseArray & object, const Pose & base_pose, Pose * lateral_nearest_point,
+  const PoseArray & object, const Pose & base_pose, pcl::PointXYZ * lateral_nearest_point,
   double * deviation)
 {
   double min_norm = std::numeric_limits<double>::max();
-  for (size_t i = 0; i < object.poses.size(); ++i) {
-    double norm = calcDistance2d(object.poses.at(i), base_pose);
+  for (const auto & pose : object.poses) {
+    double norm = calcDistance2d(pose, base_pose);
     if (norm < min_norm) {
       min_norm = norm;
-      *lateral_nearest_point = object.poses.at(i);
+      *lateral_nearest_point = pointToPcl(pose.position.x, pose.position.y, base_pose.position.z);
     }
   }
   *deviation = min_norm;
@@ -658,4 +685,19 @@ Polygon2d convertPolygonObjectToGeometryPolygon(
                      : tier4_autoware_utils::inverseClockwise(object_polygon);
   return object_polygon;
 }
+
+boost::optional<PredictedObject> getObstacleFromUuid(
+  const PredictedObjects & obstacles, const unique_identifier_msgs::msg::UUID & target_object_id)
+{
+  const auto itr = std::find_if(
+    obstacles.objects.begin(), obstacles.objects.end(), [&](PredictedObject predicted_object) {
+      return predicted_object.object_id == target_object_id;
+    });
+
+  if (itr == obstacles.objects.end()) {
+    return boost::none;
+  }
+  return boost::make_optional(*itr);
+}
+
 }  // namespace motion_planning
