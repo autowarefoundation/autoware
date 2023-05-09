@@ -187,7 +187,7 @@ void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
   const PathWithLaneId & path, const Point & ego_pos, ObjectData & obj)
 {
   double min_distance = std::numeric_limits<double>::max();
-  double max_distance = std::numeric_limits<double>::min();
+  double max_distance = std::numeric_limits<double>::lowest();
   for (const auto & p : obj.envelope_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
     const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
