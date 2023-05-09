@@ -60,6 +60,7 @@ public:
     prev_module_reference_path_ = std::make_shared<PathWithLaneId>();
     prev_module_path_ = std::make_shared<PathWithLaneId>();
     prev_drivable_area_info_ = std::make_shared<DrivableAreaInfo>();
+    prev_turn_signal_info_ = std::make_shared<TurnSignalInfo>();
   }
 
   LaneChangeBase(const LaneChangeBase &) = delete;
@@ -105,6 +106,11 @@ public:
     if (prev_drivable_area_info_) {
       *prev_drivable_area_info_ = prev_drivable_area_info;
     }
+  }
+
+  virtual void setPreviousTurnSignalInfo(const TurnSignalInfo & prev_turn_signal_info)
+  {
+    *prev_turn_signal_info_ = prev_turn_signal_info;
   }
 
   virtual void updateSpecialData() {}
@@ -232,6 +238,7 @@ protected:
   std::shared_ptr<PathWithLaneId> prev_module_reference_path_{};
   std::shared_ptr<PathWithLaneId> prev_module_path_{};
   std::shared_ptr<DrivableAreaInfo> prev_drivable_area_info_{};
+  std::shared_ptr<TurnSignalInfo> prev_turn_signal_info_{};
 
   PathWithLaneId prev_approved_path_{};
 

@@ -131,6 +131,7 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   }
 
   module_type_->setPreviousDrivableAreaInfo(getPreviousModuleOutput().drivable_area_info);
+  module_type_->setPreviousTurnSignalInfo(getPreviousModuleOutput().turn_signal_info);
   auto output = module_type_->generateOutput();
   path_reference_ = output.reference_path;
   *prev_approved_path_ = *getPreviousModuleOutput().path;
