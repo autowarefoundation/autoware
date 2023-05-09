@@ -385,11 +385,11 @@ int get_nvme_smart_data(int fd, HddInfo * info)
   // is from 1 to 1,000, three indicates that the number of 512 byte data
   // units written is from 2,001 to 3,000)
   info->is_valid_total_data_written_ = true;
-  info->total_data_written_ = *(reinterpret_cast<uint64_t *>(&data[48]));
+  std::memcpy(&info->total_data_written_, &data[48], sizeof(info->total_data_written_));
 
   // Bytes 143:128 Power On Hours
   info->is_valid_power_on_hours_ = true;
-  info->power_on_hours_ = *(reinterpret_cast<uint64_t *>(&data[128]));
+  std::memcpy(&info->power_on_hours_, &data[128], sizeof(info->power_on_hours_));
 
   // NVMe S.M.A.R.T has no information of recovered error count
   info->is_valid_recovered_error_ = false;

@@ -39,10 +39,10 @@
 
 #include <cuda_runtime_api.h>
 #include <stdio.h>
-#include <string.h>
 
 #include <cassert>
 #include <cmath>
+#include <cstring>
 
 using nvinfer1::DataType;
 using nvinfer1::DimsExprs;
@@ -62,14 +62,14 @@ const char * NMS_PLUGIN_NAMESPACE{""};
 template <typename T>
 void write(char *& buffer, const T & val)
 {
-  *reinterpret_cast<T *>(buffer) = val;
+  std::memcpy(buffer, &val, sizeof(T));
   buffer += sizeof(T);
 }
 
 template <typename T>
 void read(const char *& buffer, T & val)
 {
-  val = *reinterpret_cast<const T *>(buffer);
+  std::memcpy(&val, buffer, sizeof(T));
   buffer += sizeof(T);
 }
 
