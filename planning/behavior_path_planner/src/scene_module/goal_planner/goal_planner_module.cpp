@@ -707,7 +707,13 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 
   // set hazard and turn signal
   if (status_.has_decided_path) {
-    output.turn_signal_info = calcTurnSignalInfo();
+    const auto original_signal = getPreviousModuleOutput().turn_signal_info;
+    const auto new_signal = calcTurnSignalInfo();
+    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path->points);
+    output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+      *output.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
+      planner_data_->parameters.ego_nearest_dist_threshold,
+      planner_data_->parameters.ego_nearest_yaw_threshold);
   }
 
   const auto distance_to_path_change = calcDistanceToPathChange();
