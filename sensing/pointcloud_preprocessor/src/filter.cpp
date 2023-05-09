@@ -56,6 +56,7 @@
 #include <pcl/io/io.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -123,8 +124,10 @@ void pointcloud_preprocessor::Filter::subscribe(const std::string & filter_name)
   // TODO(sykwer): Change the corresponding node to subscribe to `faster_input_indices_callback`
   // each time a child class supports the faster version.
   // When all the child classes support the faster version, this workaround is deleted.
-  auto callback = filter_name == "CropBoxFilter" ? &Filter::faster_input_indices_callback
-                                                 : &Filter::input_indices_callback;
+  std::set<std::string> supported_nodes = {"CropBoxFilter", "RingOutlierFilter"};
+  auto callback = supported_nodes.find(filter_name) != supported_nodes.end()
+                    ? &Filter::faster_input_indices_callback
+                    : &Filter::input_indices_callback;
 
   if (use_indices_) {
     // Subscribe to the input using a filter
