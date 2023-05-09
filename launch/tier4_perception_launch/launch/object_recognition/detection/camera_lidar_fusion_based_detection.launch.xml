@@ -230,7 +230,7 @@
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="$(var merger/input/objects)"/>
       <arg name="input/object1" value="clustering/camera_lidar_fusion/objects"/>
-      <arg name="output/object" value="camera_lidar_fusion/objects"/>
+      <arg name="output/object" value="$(var lidar_detection_model)_roi_cluster_fusion/objects"/>
       <arg name="priority_mode" value="0"/>
     </include>
   </group>
@@ -239,7 +239,7 @@
     <let name="merger/output/objects" value="objects_before_filter" if="$(var use_object_filter)"/>
     <let name="merger/output/objects" value="$(var output/objects)" unless="$(var use_object_filter)"/>
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
-      <arg name="input/object0" value="camera_lidar_fusion/objects"/>
+      <arg name="input/object0" value="$(var lidar_detection_model)_roi_cluster_fusion/objects"/>
       <arg name="input/object1" value="detection_by_tracker/objects"/>
       <arg name="output/object" value="$(var merger/output/objects)"/>
     </include>
