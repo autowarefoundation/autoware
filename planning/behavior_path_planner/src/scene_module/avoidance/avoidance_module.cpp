@@ -2523,15 +2523,19 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
   }
 
   {  // for new architecture
+    DrivableAreaInfo current_drivable_area_info;
     // generate drivable lanes
-    output.drivable_area_info.drivable_lanes = utils::combineDrivableLanes(
-      getPreviousModuleOutput().drivable_area_info.drivable_lanes, drivable_lanes);
+    current_drivable_area_info.drivable_lanes = drivable_lanes;
     // generate obstacle polygons
-    output.drivable_area_info.obstacles = utils::avoidance::generateObstaclePolygonsForDrivableArea(
-      avoidance_data_.target_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
+    current_drivable_area_info.obstacles =
+      utils::avoidance::generateObstaclePolygonsForDrivableArea(
+        avoidance_data_.target_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
     // expand hatched road markings
-    output.drivable_area_info.enable_expanding_hatched_road_markings =
+    current_drivable_area_info.enable_expanding_hatched_road_markings =
       parameters_->use_hatched_road_markings;
+
+    output.drivable_area_info = utils::combineDrivableAreaInfo(
+      current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
   }
 
   {  // for old architecture

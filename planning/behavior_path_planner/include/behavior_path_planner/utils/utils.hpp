@@ -391,6 +391,9 @@ std::vector<DrivableLanes> combineDrivableLanes(
   const std::vector<DrivableLanes> & original_drivable_lanes_vec,
   const std::vector<DrivableLanes> & new_drivable_lanes_vec);
 
+DrivableAreaInfo combineDrivableAreaInfo(
+  const DrivableAreaInfo & drivable_area_info1, const DrivableAreaInfo & drivable_area_info2);
+
 void extractObstaclesFromDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableAreaInfo::Obstacle> & obstacles);
 

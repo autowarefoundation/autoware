@@ -130,7 +130,14 @@ void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output)
     dp.drivable_area_types_to_skip);
 
   // for new architecture
-  output.drivable_area_info.drivable_lanes = expanded_lanes;
+  DrivableAreaInfo current_drivable_area_info;
+  current_drivable_area_info.drivable_lanes = expanded_lanes;
+  if (prev_drivable_area_info_) {
+    output.drivable_area_info =
+      utils::combineDrivableAreaInfo(current_drivable_area_info, *prev_drivable_area_info_);
+  } else {
+    output.drivable_area_info = current_drivable_area_info;
+  }
 
   // for old architecture
   utils::generateDrivableArea(

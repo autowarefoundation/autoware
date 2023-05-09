@@ -2762,6 +2762,31 @@ std::vector<DrivableLanes> combineDrivableLanes(
   return updated_drivable_lanes_vec;
 }
 
+DrivableAreaInfo combineDrivableAreaInfo(
+  const DrivableAreaInfo & drivable_area_info1, const DrivableAreaInfo & drivable_area_info2)
+{
+  DrivableAreaInfo combined_drivable_area_info;
+
+  // drivable lanes
+  combined_drivable_area_info.drivable_lanes =
+    combineDrivableLanes(drivable_area_info1.drivable_lanes, drivable_area_info2.drivable_lanes);
+
+  // obstacles
+  for (const auto & obstacle : drivable_area_info1.obstacles) {
+    combined_drivable_area_info.obstacles.push_back(obstacle);
+  }
+  for (const auto & obstacle : drivable_area_info2.obstacles) {
+    combined_drivable_area_info.obstacles.push_back(obstacle);
+  }
+
+  // enable expanding hatched road markings
+  combined_drivable_area_info.enable_expanding_hatched_road_markings =
+    drivable_area_info1.enable_expanding_hatched_road_markings ||
+    drivable_area_info2.enable_expanding_hatched_road_markings;
+
+  return combined_drivable_area_info;
+}
+
 // NOTE: Assuming that path.right/left_bound is already created.
 void extractObstaclesFromDrivableArea(
   PathWithLaneId & path, const std::vector<DrivableAreaInfo::Obstacle> & obstacles)
