@@ -446,6 +446,9 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     if (itr != approved_module_ptrs_.end()) {
       clearCandidateModules();
       candidate_module_ptrs_.push_back(*itr);
+
+      std::for_each(
+        std::next(itr), approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
     }
 
     approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
