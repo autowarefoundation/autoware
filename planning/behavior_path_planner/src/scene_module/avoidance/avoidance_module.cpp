@@ -2790,7 +2790,18 @@ BehaviorModuleOutput AvoidanceModule::plan()
   }
 
   BehaviorModuleOutput output;
-  output.turn_signal_info = calcTurnSignalInfo(avoidance_path);
+
+  // turn signal info
+  {
+    const auto original_signal = getPreviousModuleOutput().turn_signal_info;
+    const auto new_signal = calcTurnSignalInfo(avoidance_path);
+    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(avoidance_path.path.points);
+    output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+      avoidance_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
+      planner_data_->parameters.ego_nearest_dist_threshold,
+      planner_data_->parameters.ego_nearest_yaw_threshold);
+  }
+
   // sparse resampling for computational cost
   {
     avoidance_path.path =
