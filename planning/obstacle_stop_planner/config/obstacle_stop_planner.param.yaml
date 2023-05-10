@@ -1,15 +1,16 @@
 /**:
   ros__parameters:
-    chattering_threshold: 0.5                # even if the obstacle disappears, the stop judgment continues for chattering_threshold [s]
-    max_velocity: 20.0                       # max velocity [m/s]
-    enable_slow_down: False                  # whether to use slow down planner [-]
-    enable_z_axis_obstacle_filtering: True   # filter obstacles in z axis (height) [-]
-    z_axis_filtering_buffer: 0.0             # additional buffer for z axis filtering [m]
-    voxel_grid_x: 0.05                       # voxel grid x parameter for filtering pointcloud [m]
-    voxel_grid_y: 0.05                       # voxel grid y parameter for filtering pointcloud [m]
-    voxel_grid_z: 100000.0                   # voxel grid z parameter for filtering pointcloud [m]
-    use_predicted_objects : False            # whether to use predicted objects [-]
-    publish_obstacle_polygon: False          # whether to publish obstacle polygon [-]
+    chattering_threshold: 0.5                 # even if the obstacle disappears, the stop judgment continues for chattering_threshold [s]
+    max_velocity: 20.0                        # max velocity [m/s]
+    enable_slow_down: False                   # whether to use slow down planner [-]
+    enable_z_axis_obstacle_filtering: True    # filter obstacles in z axis (height) [-]
+    z_axis_filtering_buffer: 0.0              # additional buffer for z axis filtering [m]
+    voxel_grid_x: 0.05                        # voxel grid x parameter for filtering pointcloud [m]
+    voxel_grid_y: 0.05                        # voxel grid y parameter for filtering pointcloud [m]
+    voxel_grid_z: 100000.0                    # voxel grid z parameter for filtering pointcloud [m]
+    use_predicted_objects : False             # whether to use predicted objects [-]
+    publish_obstacle_polygon: False           # whether to publish obstacle polygon [-]
+    predicted_object_filtering_threshold: 1.5 # threshold for filtering predicted objects (valid only publish_obstacle_polygon true) [m]
 
     stop_planner:
       # params for stop position

@@ -159,6 +159,8 @@ private:
 
   bool set_velocity_limit_{false};
 
+  double object_filtering_margin_{};  // only valid if use_predicted_objects is true
+
   VehicleInfo vehicle_info_;
   NodeParam node_param_;
   StopParam stop_param_;
@@ -217,6 +219,10 @@ private:
 
   void publishDebugData(
     const PlannerData & planner_data, const double current_acc, const double current_vel);
+
+  void filterObstacles(
+    const PredictedObjects & input_objects, const Pose & ego_pose, const TrajectoryPoints & traj,
+    const double dist_threshold, PredictedObjects & filtered_objects);
 
   // Callback
   void onTrigger(const Trajectory::ConstSharedPtr input_msg);

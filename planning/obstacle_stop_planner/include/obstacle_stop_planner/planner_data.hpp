@@ -87,8 +87,14 @@ struct NodeParam
   // voxel grid z parameter for filtering pointcloud [m]
   double voxel_grid_z;
 
+  // It uses only predicted objects for slowdown and collision checking
   bool use_predicted_objects;
 
+  // If use_predicted_objects is true, objects are ignored if distance to trajectory is larger than
+  // this value [m]
+  double predicted_object_filtering_threshold;
+
+  // If use_predicted_objects is true, node publishes collision polygon
   bool publish_obstacle_polygon;
 };
 

@@ -149,6 +149,10 @@ pcl::PointXYZ pointToPcl(const double x, const double y, const double z);
 boost::optional<PredictedObject> getObstacleFromUuid(
   const PredictedObjects & obstacles, const unique_identifier_msgs::msg::UUID & target_object_id);
 
+bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos);
+
+double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape);
+
 rclcpp::SubscriptionOptions createSubscriptionOptions(rclcpp::Node * node_ptr);
 
 }  // namespace motion_planning

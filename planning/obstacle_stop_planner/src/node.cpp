@@ -77,6 +77,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     p.voxel_grid_z = declare_parameter<double>("voxel_grid_z");
     p.use_predicted_objects = declare_parameter<bool>("use_predicted_objects");
     p.publish_obstacle_polygon = declare_parameter<bool>("publish_obstacle_polygon");
+    p.predicted_object_filtering_threshold =
+      declare_parameter<double>("predicted_object_filtering_threshold");
   }
 
   {
@@ -168,6 +170,22 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     p.slow_down_search_radius =
       stop_param_.step_length +
       std::hypot(i.vehicle_width_m / 2.0 + p.lateral_margin, i.vehicle_length_m / 2.0);
+  }
+
+  if (node_param_.use_predicted_objects) {
+    // Search the maximum lateral margin
+    std::vector<double> lateral_margins{
+      stop_param_.pedestrian_lateral_margin, stop_param_.vehicle_lateral_margin,
+      stop_param_.unknown_lateral_margin};
+    if (node_param_.enable_slow_down) {
+      lateral_margins.push_back(slow_down_param_.pedestrian_lateral_margin);
+      lateral_margins.push_back(slow_down_param_.vehicle_lateral_margin);
+      lateral_margins.push_back(slow_down_param_.unknown_lateral_margin);
+    }
+    const double max_lateral_margin =
+      *std::max_element(lateral_margins.begin(), lateral_margins.end());
+    object_filtering_margin_ =
+      max_lateral_margin + node_param_.predicted_object_filtering_threshold;
   }
 
   // Initializer
@@ -580,9 +598,13 @@ void ObstacleStopPlannerNode::searchPredictedObject(
 {
   mutex_.lock();
   const auto object_ptr = object_ptr_;
+  const auto current_odometry_pointer = current_odometry_ptr_;
   mutex_.unlock();
 
-  // TODO(brkay54): Add filtering function here!
+  const auto ego_pose = current_odometry_pointer->pose.pose;
+  PredictedObjects filtered_objects;
+  filterObstacles(
+    *object_ptr.get(), ego_pose, decimate_trajectory, object_filtering_margin_, filtered_objects);
 
   const auto now = this->now();
 
@@ -602,8 +624,8 @@ void ObstacleStopPlannerNode::searchPredictedObject(
       geometry_msgs::msg::Point nearest_slow_down_point;
       geometry_msgs::msg::PoseArray slow_down_points;
 
-      for (size_t j = 0; j < object_ptr->objects.size(); ++j) {
-        const auto & obj = object_ptr->objects.at(j);
+      for (size_t j = 0; j < filtered_objects.objects.size(); ++j) {
+        const auto & obj = filtered_objects.objects.at(j);
         if (node_param_.enable_z_axis_obstacle_filtering) {
           if (!intersectsInZAxis(obj, z_axis_min, z_axis_max)) {
             continue;
@@ -692,9 +714,9 @@ void ObstacleStopPlannerNode::searchPredictedObject(
         planner_data.slow_down_require = true;
         planner_data.nearest_slow_down_point =
           pointToPcl(nearest_slow_down_point.x, nearest_slow_down_point.y, p_front.position.z);
-        planner_data.nearest_collision_point_time = object_ptr->header.stamp;
+        planner_data.nearest_collision_point_time = filtered_objects.header.stamp;
         planner_data.slow_down_object_shape =
-          object_ptr->objects.at(nearest_slow_down_object_index).shape;
+          filtered_objects.objects.at(nearest_slow_down_object_index).shape;
 
         // TODO(brkay54): lateral_nearest_slow_down_point_pose and nearest_slow_down_point_pose are
         // not used
@@ -705,7 +727,7 @@ void ObstacleStopPlannerNode::searchPredictedObject(
         // Push slow down debugging points
         Polygon2d one_step_move_slow_down_vehicle_polygon;
 
-        const auto & obj = object_ptr->objects.at(nearest_slow_down_object_index);
+        const auto & obj = filtered_objects.objects.at(nearest_slow_down_object_index);
         if (obj.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
           createOneStepPolygon(
             p_front, p_back, one_step_move_slow_down_vehicle_polygon, vehicle_info,
@@ -741,8 +763,8 @@ void ObstacleStopPlannerNode::searchPredictedObject(
       size_t nearest_collision_object_index = 0;
       geometry_msgs::msg::Point nearest_collision_point;
 
-      for (size_t j = 0; j < object_ptr->objects.size(); ++j) {
-        const auto & obj = object_ptr->objects.at(j);
+      for (size_t j = 0; j < filtered_objects.objects.size(); ++j) {
+        const auto & obj = filtered_objects.objects.at(j);
         if (node_param_.enable_z_axis_obstacle_filtering) {
           if (!intersectsInZAxis(obj, z_axis_min, z_axis_max)) {
             continue;
@@ -818,7 +840,8 @@ void ObstacleStopPlannerNode::searchPredictedObject(
       }
       if (is_init) {
         predicted_object_history_.emplace_back(
-          now, nearest_collision_point, object_ptr->objects.at(nearest_collision_object_index));
+          now, nearest_collision_point,
+          filtered_objects.objects.at(nearest_collision_object_index));
         break;
       }
 
@@ -955,7 +978,7 @@ void ObstacleStopPlannerNode::searchPredictedObject(
       const auto current_odometry_ptr = current_odometry_ptr_;
       const auto latest_object_ptr = object_ptr_;
       mutex_.unlock();
-      // find latest state of predicted object
+      // find latest state of predicted object to get latest velocity and acceleration values
       auto obj_latest_state = getObstacleFromUuid(*latest_object_ptr, obj.object_id);
       if (!obj_latest_state) {
         // Can not find the object in the latest object list. Send previous state.
@@ -1528,6 +1551,46 @@ void ObstacleStopPlannerNode::resetExternalVelocityLimit(
   set_velocity_limit_ = false;
 
   RCLCPP_INFO(get_logger(), "reset velocity limit");
+}
+
+void ObstacleStopPlannerNode::filterObstacles(
+  const PredictedObjects & input_objects, const Pose & ego_pose, const TrajectoryPoints & traj,
+  const double dist_threshold, PredictedObjects & filtered_objects)
+{
+  filtered_objects.header = input_objects.header;
+
+  for (auto & object : input_objects.objects) {
+    // Check is it in front of ego vehicle
+    if (!isFrontObstacle(ego_pose, object.kinematics.initial_pose_with_covariance.pose.position)) {
+      continue;
+    }
+
+    // Check is it near to trajectory
+    const double max_length = calcObstacleMaxLength(object.shape);
+    const size_t seg_idx = motion_utils::findNearestSegmentIndex(
+      traj, object.kinematics.initial_pose_with_covariance.pose.position);
+    const auto p_front = tier4_autoware_utils::getPoint(traj.at(seg_idx));
+    const auto p_back = tier4_autoware_utils::getPoint(traj.at(seg_idx + 1));
+    const auto & p_target = object.kinematics.initial_pose_with_covariance.pose.position;
+    const Eigen::Vector3d segment_vec{p_back.x - p_front.x, p_back.y - p_front.y, 0.0};
+    const Eigen::Vector3d target_vec{p_target.x - p_front.x, p_target.y - p_front.y, 0.0};
+
+    if (seg_idx == traj.size() - 2) {
+      // Calculate longitudinal offset
+      const auto longitudinal_dist = std::abs(segment_vec.dot(target_vec) / segment_vec.norm());
+      if (
+        longitudinal_dist - max_length - vehicle_info_.max_longitudinal_offset_m - dist_threshold >
+        0.0) {
+        continue;
+      }
+    }
+    const auto lateral_dist = std::abs(segment_vec.cross(target_vec)(2) / segment_vec.norm());
+    if (lateral_dist - max_length - vehicle_info_.max_lateral_offset_m - dist_threshold > 0.0) {
+      continue;
+    }
+    PredictedObject filtered_object = object;
+    filtered_objects.objects.push_back(filtered_object);
+  }
 }
 
 void ObstacleStopPlannerNode::publishDebugData(

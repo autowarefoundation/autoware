@@ -700,4 +700,34 @@ boost::optional<PredictedObject> getObstacleFromUuid(
   return boost::make_optional(*itr);
 }
 
+bool isFrontObstacle(const Pose & ego_pose, const geometry_msgs::msg::Point & obstacle_pos)
+{
+  const auto yaw = tier4_autoware_utils::getRPY(ego_pose).z;
+  const Eigen::Vector2d base_pose_vec(std::cos(yaw), std::sin(yaw));
+  const Eigen::Vector2d obstacle_vec(
+    obstacle_pos.x - ego_pose.position.x, obstacle_pos.y - ego_pose.position.y);
+
+  return base_pose_vec.dot(obstacle_vec) >= 0;
+}
+
+double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
+{
+  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    return std::hypot(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
+  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    return shape.dimensions.x / 2.0;
+  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+    double max_length_to_point = 0.0;
+    for (const auto rel_point : shape.footprint.points) {
+      const double length_to_point = std::hypot(rel_point.x, rel_point.y);
+      if (max_length_to_point < length_to_point) {
+        max_length_to_point = length_to_point;
+      }
+    }
+    return max_length_to_point;
+  }
+
+  throw std::logic_error("The shape type is not supported in obstacle_cruise_planner.");
+}
+
 }  // namespace motion_planning
