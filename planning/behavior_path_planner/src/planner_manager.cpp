@@ -62,11 +62,8 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       data->self_odometry->pose.pose, data->prev_modified_goal, data->route_handler);
 
     if (!is_any_module_running && is_out_of_route) {
-      BehaviorModuleOutput output{};
-      const auto output_path =
-        utils::createGoalAroundPath(data->route_handler, data->prev_modified_goal);
-      output.path = std::make_shared<PathWithLaneId>(output_path);
-      output.reference_path = std::make_shared<PathWithLaneId>(output_path);
+      BehaviorModuleOutput output = utils::createGoalAroundPath(data);
+      generateCombinedDrivableArea(output, data);
       return output;
     }
 
@@ -129,6 +126,11 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
 void PlannerManager::generateCombinedDrivableArea(
   BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & data) const
 {
+  if (output.path->points.empty()) {
+    RCLCPP_ERROR_STREAM(logger_, "[generateCombinedDrivableArea] Output path is empty!");
+    return;
+  }
+
   const auto & di = output.drivable_area_info;
   constexpr double epsilon = 1e-3;
 

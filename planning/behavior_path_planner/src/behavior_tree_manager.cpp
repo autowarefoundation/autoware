@@ -97,11 +97,7 @@ BehaviorModuleOutput BehaviorTreeManager::run(const std::shared_ptr<PlannerData>
     !is_any_module_running &&
     utils::isEgoOutOfRoute(
       data->self_odometry->pose.pose, data->prev_modified_goal, data->route_handler)) {
-    BehaviorModuleOutput output{};
-    const auto output_path =
-      utils::createGoalAroundPath(data->route_handler, data->prev_modified_goal);
-    output.path = std::make_shared<PathWithLaneId>(output_path);
-    output.reference_path = std::make_shared<PathWithLaneId>(output_path);
+    BehaviorModuleOutput output = utils::createGoalAroundPath(data);
     return output;
   }
 

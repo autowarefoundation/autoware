@@ -936,10 +936,14 @@ bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal
   return false;
 }
 
-PathWithLaneId createGoalAroundPath(
-  const std::shared_ptr<RouteHandler> & route_handler,
-  const std::optional<PoseWithUuidStamped> & modified_goal)
+BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerData> & planner_data)
 {
+  BehaviorModuleOutput output;
+
+  const auto & p = planner_data->parameters;
+  const auto & route_handler = planner_data->route_handler;
+  const auto & modified_goal = planner_data->prev_modified_goal;
+
   const Pose goal_pose = modified_goal ? modified_goal->pose : route_handler->getGoalPose();
   const auto shoulder_lanes = route_handler->getShoulderLanelets();
 
@@ -951,8 +955,7 @@ PathWithLaneId createGoalAroundPath(
     return !route_handler->getGoalLanelet(&goal_lane);
   });
   if (is_failed_getting_lanelet) {
-    PathWithLaneId path{};
-    return path;
+    return output;
   }
 
   constexpr double backward_length = 1.0;
@@ -960,7 +963,26 @@ PathWithLaneId createGoalAroundPath(
   const double s_start = std::max(arc_coord.length - backward_length, 0.0);
   const double s_end = arc_coord.length;
 
-  return route_handler->getCenterLinePath({goal_lane}, s_start, s_end);
+  auto reference_path = route_handler->getCenterLinePath({goal_lane}, s_start, s_end);
+
+  const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
+  const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
+
+  const auto & dp = planner_data->drivable_area_expansion_parameters;
+
+  const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
+  const auto expanded_lanes = expandLanelets(
+    shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
+
+  // for old architecture
+  generateDrivableArea(reference_path, expanded_lanes, false, p.vehicle_length, planner_data);
+
+  output.path = std::make_shared<PathWithLaneId>(reference_path);
+  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.drivable_area_info.drivable_lanes = drivable_lanes;
+
+  return output;
 }
 
 bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes)
@@ -1531,7 +1553,7 @@ void makeBoundLongitudinallyMonotonic(PathWithLaneId & path, const bool is_bound
         }
         monotonic_bound.push_back(original_bound.at(b_idx));
 
-        // caculate bound pose and its laterally offset pose.
+        // calculate bound pose and its laterally offset pose.
         const auto bound_pose = [&]() {
           geometry_msgs::msg::Pose pose;
           pose.position = original_bound.at(b_idx);

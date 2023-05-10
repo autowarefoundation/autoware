@@ -297,9 +297,7 @@ PathWithLaneId refinePathForGoal(
 
 bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal_id);
 
-PathWithLaneId createGoalAroundPath(
-  const std::shared_ptr<RouteHandler> & route_handler,
-  const std::optional<PoseWithUuidStamped> & modified_goal);
+BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerData> & planner_data);
 
 bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes);
 
