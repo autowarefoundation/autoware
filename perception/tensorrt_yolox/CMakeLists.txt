@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.17)
 project(tensorrt_yolox)
 
 find_package(tensorrt_common)
@@ -11,6 +11,13 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 find_package(OpenCV REQUIRED)
+include(CheckLanguage)
+check_language(CUDA)
+if(CMAKE_CUDA_COMPILER)
+  enable_language(CUDA)
+else()
+  message(WARNING "CUDA is not found. preprocess acceleration using CUDA will not be available.")
+endif()
 find_package(OpenMP)
 if(OpenMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -68,9 +75,31 @@ ament_target_dependencies(${PROJECT_NAME}
   OpenCV
 )
 
-target_link_libraries(${PROJECT_NAME}
-  ${tensorrt_common_LIBRARIES}
-)
+if(CMAKE_CUDA_COMPILER)
+  # Officially, add_library supports .cu file compilation.
+  # However, as of cmake 3.22.1, it seems to fail compilation because compiler flags for
+  # C++ are directly passed to nvcc (they are originally space separated
+  # but nvcc assume comma separated as argument of `-Xcompiler` option).
+  # That is why `cuda_add_library` is used here.
+  cuda_add_library(${PROJECT_NAME}_gpu_preprocess
+    SHARED
+    src/preprocess.cu
+  )
+
+  target_include_directories(${PROJECT_NAME}_gpu_preprocess PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  )
+
+  target_link_libraries(${PROJECT_NAME}
+    ${tensorrt_common_LIBRARIES}
+    ${PROJECT_NAME}_gpu_preprocess
+  )
+else()
+  target_link_libraries(${PROJECT_NAME}
+    ${tensorrt_common_LIBRARIES}
+  )
+endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
   TENSORRT_VERSION_MAJOR=${TENSORRT_VERSION_MAJOR}

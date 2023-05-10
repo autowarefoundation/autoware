@@ -18,6 +18,7 @@ endif()
 
 add_library(${PROJECT_NAME} SHARED
   src/tensorrt_common.cpp
+  src/simple_profiler.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

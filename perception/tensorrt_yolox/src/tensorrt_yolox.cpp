@@ -1,4 +1,4 @@
-// Copyright 2022 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 #include "cuda_utils/cuda_check_error.hpp"
 #include "cuda_utils/cuda_unique_ptr.hpp"
 
+#include <tensorrt_yolox/calibrator.hpp>
+#include <tensorrt_yolox/preprocess.hpp>
 #include <tensorrt_yolox/tensorrt_yolox.hpp>
 
 #include <algorithm>
@@ -25,16 +27,139 @@
 #include <string>
 #include <vector>
 
+namespace
+{
+static void trimLeft(std::string & s)
+{
+  s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) { return !isspace(ch); }));
+}
+
+static void trimRight(std::string & s)
+{
+  s.erase(find_if(s.rbegin(), s.rend(), [](int ch) { return !isspace(ch); }).base(), s.end());
+}
+
+std::string trim(std::string & s)
+{
+  trimLeft(s);
+  trimRight(s);
+  return s;
+}
+
+bool existFile(const std::string & file_name, bool verbose)
+{
+  if (!std::experimental::filesystem::exists(std::experimental::filesystem::path(file_name))) {
+    if (verbose) {
+      std::cout << "File does not exist : " << file_name << std::endl;
+    }
+    return false;
+  }
+  return true;
+}
+
+std::vector<std::string> loadListFromTextFile(const std::string & filename)
+{
+  assert(existFile(filename, true));
+  std::vector<std::string> list;
+
+  std::ifstream f(filename);
+  if (!f) {
+    std::cout << "failed to open " << filename << std::endl;
+    assert(0);
+  }
+
+  std::string line;
+  while (std::getline(f, line)) {
+    if (line.empty()) {
+      continue;
+    } else {
+      list.push_back(trim(line));
+    }
+  }
+
+  return list;
+}
+
+std::vector<std::string> loadImageList(const std::string & filename, const std::string & prefix)
+{
+  std::vector<std::string> fileList = loadListFromTextFile(filename);
+  for (auto & file : fileList) {
+    if (existFile(file, false)) {
+      continue;
+    } else {
+      std::string prefixed = prefix + file;
+      if (existFile(prefixed, false))
+        file = prefixed;
+      else
+        std::cerr << "WARNING: couldn't find: " << prefixed << " while loading: " << filename
+                  << std::endl;
+    }
+  }
+  return fileList;
+}
+}  // anonymous namespace
+
 namespace tensorrt_yolox
 {
 TrtYoloX::TrtYoloX(
   const std::string & model_path, const std::string & precision, const int num_class,
-  const float score_threshold, const float nms_threshold,
-  [[maybe_unused]] const std::string & cache_dir, const tensorrt_common::BatchConfig & batch_config,
-  const size_t max_workspace_size)
+  const float score_threshold, const float nms_threshold, tensorrt_common::BuildConfig build_config,
+  const bool use_gpu_preprocess, const std::string & calibration_image_list_file,
+  const double norm_factor, [[maybe_unused]] const std::string & cache_dir,
+  const tensorrt_common::BatchConfig & batch_config, const size_t max_workspace_size)
 {
-  trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
-    model_path, precision, nullptr, batch_config, max_workspace_size);
+  src_width_ = -1;
+  src_height_ = -1;
+  norm_factor_ = norm_factor;
+  if (precision == "int8") {
+    if (calibration_image_list_file.empty()) {
+      throw std::runtime_error(
+        "calibration_image_list_file should be passed to generate int8 engine.");
+    }
+    int max_batch_size = 1;
+    nvinfer1::Dims input_dims = tensorrt_common::get_input_dims(model_path);
+    std::vector<std::string> calibration_images = loadImageList(calibration_image_list_file, "");
+    tensorrt_yolox::ImageStream stream(max_batch_size, input_dims, calibration_images);
+    fs::path calibration_table{model_path};
+    std::string calibName = "";
+    std::string ext = "";
+    if (build_config.calib_type_str == "Entropy") {
+      ext = "EntropyV2-";
+    } else if (
+      build_config.calib_type_str == "Legacy" || build_config.calib_type_str == "Percentile") {
+      ext = "Legacy-";
+    } else {
+      ext = "MinMax-";
+    }
+
+    ext += "calibration.table";
+    calibration_table.replace_extension(ext);
+    fs::path histogram_table{model_path};
+    ext = "histogram.table";
+    histogram_table.replace_extension(ext);
+
+    std::unique_ptr<nvinfer1::IInt8Calibrator> calibrator;
+    if (build_config.calib_type_str == "Entropy") {
+      calibrator.reset(
+        new tensorrt_yolox::Int8EntropyCalibrator(stream, calibration_table, norm_factor_));
+
+    } else if (
+      build_config.calib_type_str == "Legacy" || build_config.calib_type_str == "Percentile") {
+      const double quantile = 0.999999;
+      const double cutoff = 0.999999;
+      calibrator.reset(new tensorrt_yolox::Int8LegacyCalibrator(
+        stream, calibration_table, histogram_table, norm_factor_, true, quantile, cutoff));
+    } else {
+      calibrator.reset(
+        new tensorrt_yolox::Int8MinMaxCalibrator(stream, calibration_table, norm_factor_));
+    }
+
+    trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
+      model_path, precision, std::move(calibrator), batch_config, max_workspace_size, build_config);
+  } else {
+    trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
+      model_path, precision, nullptr, batch_config, max_workspace_size, build_config);
+  }
   trt_common_->setup();
 
   if (!trt_common_->isInitialized()) {
@@ -62,7 +187,7 @@ TrtYoloX::TrtYoloX(
     default:
       std::stringstream s;
       s << "\"" << model_path << "\" is unsupported format";
-      std::runtime_error{s.str()};
+      throw std::runtime_error{s.str()};
   }
 
   // GPU memory allocation
@@ -77,6 +202,17 @@ TrtYoloX::TrtYoloX(
     out_elem_num_per_batch_ = static_cast<int>(out_elem_num_ / batch_config[2]);
     out_prob_d_ = cuda_utils::make_unique<float[]>(out_elem_num_);
     out_prob_h_ = cuda_utils::make_unique_host<float[]>(out_elem_num_, cudaHostAllocPortable);
+    int w = input_dims.d[3];
+    int h = input_dims.d[2];
+    int sum_tensors = (w / 8) * (h / 8) + (w / 16) * (h / 16) + (w / 32) * (h / 32);
+    if (sum_tensors == output_dims.d[1]) {
+      // 3head (8,16,32)
+      output_strides_ = {8, 16, 32};
+    } else {
+      // 4head (8,16,32.4)
+      // last is additional head for high resolution outputs
+      output_strides_ = {8, 16, 32, 4};
+    }
   } else {
     const auto out_scores_dims = trt_common_->getBindingDimensions(3);
     max_detections_ = out_scores_dims.d[1];
@@ -85,6 +221,104 @@ TrtYoloX::TrtYoloX(
     out_boxes_d_ = cuda_utils::make_unique<float[]>(batch_config[2] * max_detections_ * 4);
     out_scores_d_ = cuda_utils::make_unique<float[]>(batch_config[2] * max_detections_);
     out_classes_d_ = cuda_utils::make_unique<int32_t[]>(batch_config[2] * max_detections_);
+  }
+  if (use_gpu_preprocess) {
+    use_gpu_preprocess_ = true;
+    image_buf_h_ = nullptr;
+    image_buf_d_ = nullptr;
+  } else {
+    use_gpu_preprocess_ = false;
+  }
+}
+
+void TrtYoloX::initPreprocesBuffer(int width, int height)
+{
+  // if size of source input has benn changed...
+  if (src_width_ != -1 || src_height_ != -1) {
+    if (width != src_width_ || height != src_height_) {
+      // Free cuda memory to reallocate
+      if (image_buf_h_) {
+        image_buf_h_.reset();
+      }
+      if (image_buf_d_) {
+        image_buf_d_.reset();
+      }
+    }
+  }
+  src_width_ = width;
+  src_height_ = height;
+  if (use_gpu_preprocess_) {
+    auto input_dims = trt_common_->getBindingDimensions(0);
+    if (!image_buf_h_) {
+      trt_common_->setBindingDimensions(0, input_dims);
+      scales_.clear();
+    }
+    const float input_height = static_cast<float>(input_dims.d[2]);
+    const float input_width = static_cast<float>(input_dims.d[3]);
+    if (!image_buf_h_) {
+      const float scale = std::min(input_width / width, input_height / height);
+      scales_.emplace_back(scale);
+      image_buf_h_ = cuda_utils::make_unique_host<unsigned char[]>(
+        width * height * 3, cudaHostAllocWriteCombined);
+      image_buf_d_ = cuda_utils::make_unique<unsigned char[]>(width * height * 3);
+    }
+  }
+}
+
+void TrtYoloX::printProfiling(void)
+{
+  trt_common_->printProfiling();
+}
+
+void TrtYoloX::preprocessGpu(const std::vector<cv::Mat> & images)
+{
+  const auto batch_size = images.size();
+  // Currently only supports single batch in cuda preprocessing
+  assert(batch_size == 1);
+  auto input_dims = trt_common_->getBindingDimensions(0);
+  input_dims.d[0] = batch_size;
+  for (const auto & image : images) {
+    // if size of source input has been changed...
+    int width = image.cols;
+    int height = image.rows;
+    if (src_width_ != -1 || src_height_ != -1) {
+      if (width != src_width_ || height != src_height_) {
+        // Free cuda memory to reallocate
+        if (image_buf_h_) {
+          image_buf_h_.reset();
+        }
+        if (image_buf_d_) {
+          image_buf_d_.reset();
+        }
+      }
+    }
+    src_width_ = width;
+    src_height_ = height;
+  }
+  if (!image_buf_h_) {
+    trt_common_->setBindingDimensions(0, input_dims);
+    scales_.clear();
+  }
+  const float input_height = static_cast<float>(input_dims.d[2]);
+  const float input_width = static_cast<float>(input_dims.d[3]);
+  for (const auto & image : images) {
+    if (!image_buf_h_) {
+      const float scale = std::min(input_width / image.cols, input_height / image.rows);
+      scales_.emplace_back(scale);
+      image_buf_h_ = cuda_utils::make_unique_host<unsigned char[]>(
+        image.cols * image.rows * 3, cudaHostAllocWriteCombined);
+      image_buf_d_ = cuda_utils::make_unique<unsigned char[]>(image.cols * image.rows * 3);
+    }
+    // Copy into pinned memory
+    memcpy(image_buf_h_.get(), &image.data[0], image.cols * image.rows * 3 * sizeof(unsigned char));
+    // Copy into device memory
+    CHECK_CUDA_ERROR(cudaMemcpyAsync(
+      image_buf_d_.get(), image_buf_h_.get(), image.cols * image.rows * 3 * sizeof(unsigned char),
+      cudaMemcpyHostToDevice, *stream_));
+    // Preprcess on GPU
+    resize_bilinear_letterbox_nhwc_to_nchw32_gpu(
+      input_d_.get(), image_buf_d_.get(), input_width, input_height, 3, image.cols, image.rows, 3,
+      static_cast<float>(norm_factor_), *stream_);
   }
 }
 
@@ -98,24 +332,39 @@ void TrtYoloX::preprocess(const std::vector<cv::Mat> & images)
   const float input_width = static_cast<float>(input_dims.d[3]);
   std::vector<cv::Mat> dst_images;
   scales_.clear();
-  for (const auto & image : images) {
-    cv::Mat dst_image;
-    const float scale = std::min(input_width / image.cols, input_height / image.rows);
-    scales_.emplace_back(scale);
-    const auto scale_size = cv::Size(image.cols * scale, image.rows * scale);
-    cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
-    const auto bottom = input_height - dst_image.rows;
-    const auto right = input_width - dst_image.cols;
-    copyMakeBorder(dst_image, dst_image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {114, 114, 114});
-    dst_images.emplace_back(dst_image);
+  bool letterbox = true;
+  if (letterbox) {
+    for (const auto & image : images) {
+      cv::Mat dst_image;
+      const float scale = std::min(input_width / image.cols, input_height / image.rows);
+      scales_.emplace_back(scale);
+      const auto scale_size = cv::Size(image.cols * scale, image.rows * scale);
+      cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
+      const auto bottom = input_height - dst_image.rows;
+      const auto right = input_width - dst_image.cols;
+      copyMakeBorder(
+        dst_image, dst_image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {114, 114, 114});
+      dst_images.emplace_back(dst_image);
+    }
+  } else {
+    for (const auto & image : images) {
+      cv::Mat dst_image;
+      const float scale = -1.0;
+      scales_.emplace_back(scale);
+      const auto scale_size = cv::Size(input_width, input_height);
+      cv::resize(image, dst_image, scale_size, 0, 0, cv::INTER_CUBIC);
+      dst_images.emplace_back(dst_image);
+    }
   }
-  const auto chw_images =
-    cv::dnn::blobFromImages(dst_images, 1.0, cv::Size(), cv::Scalar(), false, false, CV_32F);
+  const auto chw_images = cv::dnn::blobFromImages(
+    dst_images, norm_factor_, cv::Size(), cv::Scalar(), false, false, CV_32F);
 
   const auto data_length = chw_images.total();
   input_h_.reserve(data_length);
   const auto flat = chw_images.reshape(1, data_length);
   input_h_ = chw_images.isContinuous() ? flat : flat.clone();
+  CHECK_CUDA_ERROR(cudaMemcpy(
+    input_d_.get(), input_h_.data(), input_h_.size() * sizeof(float), cudaMemcpyHostToDevice));
 }
 
 bool TrtYoloX::doInference(const std::vector<cv::Mat> & images, ObjectArrays & objects)
@@ -124,10 +373,11 @@ bool TrtYoloX::doInference(const std::vector<cv::Mat> & images, ObjectArrays & o
     return false;
   }
 
-  preprocess(images);
-
-  CHECK_CUDA_ERROR(cudaMemcpy(
-    input_d_.get(), input_h_.data(), input_h_.size() * sizeof(float), cudaMemcpyHostToDevice));
+  if (use_gpu_preprocess_) {
+    preprocessGpu(images);
+  } else {
+    preprocess(images);
+  }
 
   if (needs_output_decode_) {
     return feedforwardAndDecode(images, objects);
@@ -219,9 +469,8 @@ void TrtYoloX::decodeOutputs(
   auto input_dims = trt_common_->getBindingDimensions(0);
   const float input_height = static_cast<float>(input_dims.d[2]);
   const float input_width = static_cast<float>(input_dims.d[3]);
-  std::vector<int> strides = {8, 16, 32};
   std::vector<GridAndStride> grid_strides;
-  generateGridsAndStride(input_width, input_height, strides, grid_strides);
+  generateGridsAndStride(input_width, input_height, output_strides_, grid_strides);
   generateYoloxProposals(grid_strides, prob, score_threshold_, proposals);
 
   qsortDescentInplace(proposals);
@@ -232,15 +481,24 @@ void TrtYoloX::decodeOutputs(
 
   int count = static_cast<int>(picked.size());
   objects.resize(count);
+  float scale_x = input_width / static_cast<float>(img_size.width);
+  float scale_y = input_height / static_cast<float>(img_size.height);
   for (int i = 0; i < count; i++) {
     objects[i] = proposals[picked[i]];
 
+    float x0, y0, x1, y1;
     // adjust offset to original unpadded
-    float x0 = (objects[i].x_offset) / scale;
-    float y0 = (objects[i].y_offset) / scale;
-    float x1 = (objects[i].x_offset + objects[i].width) / scale;
-    float y1 = (objects[i].y_offset + objects[i].height) / scale;
-
+    if (scale == -1.0) {
+      x0 = (objects[i].x_offset) / scale_x;
+      y0 = (objects[i].y_offset) / scale_y;
+      x1 = (objects[i].x_offset + objects[i].width) / scale_x;
+      y1 = (objects[i].y_offset + objects[i].height) / scale_y;
+    } else {
+      x0 = (objects[i].x_offset) / scale;
+      y0 = (objects[i].y_offset) / scale;
+      x1 = (objects[i].x_offset + objects[i].width) / scale;
+      y1 = (objects[i].y_offset + objects[i].height) / scale;
+    }
     // clip
     x0 = std::clamp(x0, 0.f, static_cast<float>(img_size.width - 1));
     y0 = std::clamp(y0, 0.f, static_cast<float>(img_size.height - 1));
@@ -255,7 +513,7 @@ void TrtYoloX::decodeOutputs(
 }
 
 void TrtYoloX::generateGridsAndStride(
-  const int target_w, const int target_h, std::vector<int> & strides,
+  const int target_w, const int target_h, const std::vector<int> & strides,
   std::vector<GridAndStride> & grid_strides) const
 {
   for (auto stride : strides) {
@@ -287,10 +545,12 @@ void TrtYoloX::generateYoloxProposals(
     // (i.e., `decode_in_inference` should be False)
     float x_center = (feat_blob[basic_pos + 0] + grid0) * stride;
     float y_center = (feat_blob[basic_pos + 1] + grid1) * stride;
-    float w = exp(feat_blob[basic_pos + 2]) * stride;
-    float h = exp(feat_blob[basic_pos + 3]) * stride;
-    float x0 = x_center - w * 0.5f;
-    float y0 = y_center - h * 0.5f;
+
+    // exp is complex for embedded processors
+    // float w = exp(feat_blob[basic_pos + 2]) * stride;
+    // float h = exp(feat_blob[basic_pos + 3]) * stride;
+    // float x0 = x_center - w * 0.5f;
+    // float y0 = y_center - h * 0.5f;
 
     float box_objectness = feat_blob[basic_pos + 4];
     for (int class_idx = 0; class_idx < num_class_; class_idx++) {
@@ -298,6 +558,11 @@ void TrtYoloX::generateYoloxProposals(
       float box_prob = box_objectness * box_cls_score;
       if (box_prob > prob_threshold) {
         Object obj;
+        // On-demand applying for exp
+        float w = exp(feat_blob[basic_pos + 2]) * stride;
+        float h = exp(feat_blob[basic_pos + 3]) * stride;
+        float x0 = x_center - w * 0.5f;
+        float y0 = y_center - h * 0.5f;
         obj.x_offset = x0;
         obj.y_offset = y0;
         obj.height = h;
