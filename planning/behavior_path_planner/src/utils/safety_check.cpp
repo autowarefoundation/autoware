@@ -129,9 +129,9 @@ void getTransformedPolygon(
 double calcLateralDistance(
   const Polygon2d & front_object_polygon, const Polygon2d & rear_object_polygon)
 {
-  double min_dist = 0.0;
+  double min_dist = std::numeric_limits<double>::max();
   for (const auto & rear_point : rear_object_polygon.outer()) {
-    double max_lateral_dist = std::numeric_limits<double>::min();
+    double max_lateral_dist = std::numeric_limits<double>::lowest();
     double min_lateral_dist = std::numeric_limits<double>::max();
     for (const auto & front_point : front_object_polygon.outer()) {
       const double lat_dist = front_point.y() - rear_point.y();
