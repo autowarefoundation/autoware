@@ -2768,8 +2768,10 @@ DrivableAreaInfo combineDrivableAreaInfo(
   DrivableAreaInfo combined_drivable_area_info;
 
   // drivable lanes
+#ifndef USE_OLD_ARCHITECTURE
   combined_drivable_area_info.drivable_lanes =
     combineDrivableLanes(drivable_area_info1.drivable_lanes, drivable_area_info2.drivable_lanes);
+#endif
 
   // obstacles
   for (const auto & obstacle : drivable_area_info1.obstacles) {

@@ -87,8 +87,8 @@ struct DrivableAreaInfo
     geometry_msgs::msg::Pose pose;
     tier4_autoware_utils::Polygon2d poly;
   };
-  std::vector<DrivableLanes> drivable_lanes;
-  std::vector<Obstacle> obstacles;  // obstacles to extract from the drivable area
+  std::vector<DrivableLanes> drivable_lanes{};
+  std::vector<Obstacle> obstacles{};  // obstacles to extract from the drivable area
   bool enable_expanding_hatched_road_markings{false};
 
   // temporary only for pull over's freespace planning
