@@ -411,8 +411,8 @@ bool getStopLineIndexFromMap(
 
 IntersectionLanelets getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const std::set<int> & assoc_ids,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const int lane_id, const lanelet::ConstLanelets & lanelets_on_path,
+  const std::set<int> & assoc_ids, const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::pair<size_t, size_t> lane_interval, const double detection_area_length,
   const double occlusion_detection_area_length, const bool tl_arrow_solid_on)
 {
@@ -445,7 +445,7 @@ IntersectionLanelets getObjectiveLanelets(
   }
 
   // get all following lanes of previous lane
-  lanelet::ConstLanelets ego_lanelets{};
+  lanelet::ConstLanelets ego_lanelets = lanelets_on_path;
   for (const auto & previous_lanelet : routing_graph_ptr->previous(assigned_lanelet)) {
     ego_lanelets.push_back(previous_lanelet);
     for (const auto & following_lanelet : routing_graph_ptr->following(previous_lanelet)) {

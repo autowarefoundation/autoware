@@ -57,8 +57,8 @@ std::optional<size_t> getDuplicatedPointIdx(
  */
 IntersectionLanelets getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const std::set<int> & assoc_ids,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const int lane_id, const lanelet::ConstLanelets & lanelets_on_path,
+  const std::set<int> & assoc_ids, const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::pair<size_t, size_t> lane_interval, const double detection_area_length,
   const double occlusion_detection_area_length, const bool tl_arrow_solid_on = false);
 
