@@ -57,6 +57,7 @@ public:
     const double & min_request_time_sec, bool override_requests = false) const noexcept;
   ModuleStatus updateState() override;
   void updateData() override;
+  ModuleStatus getNodeStatusWhileWaitingApproval() const override { return ModuleStatus::SUCCESS; }
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
