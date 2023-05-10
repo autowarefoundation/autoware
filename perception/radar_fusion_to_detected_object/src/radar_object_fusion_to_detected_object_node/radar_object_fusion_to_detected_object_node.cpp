@@ -51,7 +51,6 @@ namespace radar_fusion_to_detected_object
 {
 using autoware_auto_perception_msgs::msg::DetectedObject;
 using autoware_auto_perception_msgs::msg::DetectedObjects;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
 
 RadarObjectFusionToDetectedObjectNode::RadarObjectFusionToDetectedObjectNode(
   const rclcpp::NodeOptions & node_options)
@@ -181,7 +180,7 @@ bool RadarObjectFusionToDetectedObjectNode::isDataReady()
 }
 
 void RadarObjectFusionToDetectedObjectNode::onData(
-  const DetectedObjects::ConstSharedPtr object_msg, const TrackedObjects::ConstSharedPtr radar_msg)
+  const DetectedObjects::ConstSharedPtr object_msg, const DetectedObjects::ConstSharedPtr radar_msg)
 {
   detected_objects_ = object_msg;
   radar_objects_ = radar_msg;
@@ -211,7 +210,7 @@ void RadarObjectFusionToDetectedObjectNode::onData(
 }
 
 RadarFusionToDetectedObject::RadarInput RadarObjectFusionToDetectedObjectNode::setRadarInput(
-  const TrackedObject & radar_object, const std_msgs::msg::Header & header_)
+  const DetectedObject & radar_object, const std_msgs::msg::Header & header_)
 {
   RadarFusionToDetectedObject::RadarInput output{};
   output.pose_with_covariance = radar_object.kinematics.pose_with_covariance;

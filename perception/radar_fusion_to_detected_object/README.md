@@ -56,10 +56,10 @@ ros2 launch radar_fusion_to_detected_object radar_object_to_detected_object.laun
 
 ### Input
 
-| Name                    | Type                                                 | Description                                                            |
-| ----------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
-| `~/input/objects`       | autoware_auto_perception_msgs/msg/DetectedObject.msg | 3D detected objects.                                                   |
-| `~/input/radar_objects` | autoware_auto_perception_msgs/msg/TrackedObjects.msg | Radar objects. Note that frame_id need to be same as `~/input/objects` |
+| Name                    | Type                                                  | Description                                                            |
+| ----------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------- |
+| `~/input/objects`       | autoware_auto_perception_msgs/msg/DetectedObject.msg  | 3D detected objects.                                                   |
+| `~/input/radar_objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | Radar objects. Note that frame_id need to be same as `~/input/objects` |
 
 ### Output
 

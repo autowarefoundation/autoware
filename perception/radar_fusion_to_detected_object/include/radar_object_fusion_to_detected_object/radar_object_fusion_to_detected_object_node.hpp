@@ -23,7 +23,6 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
-#include "autoware_auto_perception_msgs/msg/tracked_objects.hpp"
 
 #include <chrono>
 #include <memory>
@@ -34,8 +33,6 @@ namespace radar_fusion_to_detected_object
 {
 using autoware_auto_perception_msgs::msg::DetectedObject;
 using autoware_auto_perception_msgs::msg::DetectedObjects;
-using autoware_auto_perception_msgs::msg::TrackedObject;
-using autoware_auto_perception_msgs::msg::TrackedObjects;
 
 class RadarObjectFusionToDetectedObjectNode : public rclcpp::Node
 {
@@ -50,22 +47,22 @@ public:
 private:
   // Subscriber
   message_filters::Subscriber<DetectedObjects> sub_object_{};
-  message_filters::Subscriber<TrackedObjects> sub_radar_{};
+  message_filters::Subscriber<DetectedObjects> sub_radar_{};
 
   using SyncPolicy =
-    message_filters::sync_policies::ApproximateTime<DetectedObjects, TrackedObjects>;
+    message_filters::sync_policies::ApproximateTime<DetectedObjects, DetectedObjects>;
   using Sync = message_filters::Synchronizer<SyncPolicy>;
   typename std::shared_ptr<Sync> sync_ptr_;
 
   // Callback
   void onData(
     const DetectedObjects::ConstSharedPtr object_msg,
-    const TrackedObjects::ConstSharedPtr radar_msg);
+    const DetectedObjects::ConstSharedPtr radar_msg);
   bool isDataReady();
 
   // Data Buffer
   DetectedObjects::ConstSharedPtr detected_objects_{};
-  TrackedObjects::ConstSharedPtr radar_objects_{};
+  DetectedObjects::ConstSharedPtr radar_objects_{};
 
   // Publisher
   rclcpp::Publisher<DetectedObjects>::SharedPtr pub_objects_{};
@@ -87,7 +84,7 @@ private:
 
   // Lapper
   RadarFusionToDetectedObject::RadarInput setRadarInput(
-    const TrackedObject & radar_object, const std_msgs::msg::Header & header_);
+    const DetectedObject & radar_object, const std_msgs::msg::Header & header_);
 };
 
 }  // namespace radar_fusion_to_detected_object
