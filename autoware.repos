@@ -102,3 +102,8 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware_individual_params.git
     version: main
+  # middleware
+  middleware/external/heaphook:
+    type: git
+    url: https://github.com/tier4/heaphook.git
+    version: main
