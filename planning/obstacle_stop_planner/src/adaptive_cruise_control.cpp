@@ -341,7 +341,7 @@ void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   const rclcpp::Time & nearest_collision_point_time, double * distance,
   const std_msgs::msg::Header & trajectory_header)
 {
-  if (trajectory.size() == 0) {
+  if (trajectory.empty()) {
     RCLCPP_DEBUG_THROTTLE(
       node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
       "input path is too short(size=0)");

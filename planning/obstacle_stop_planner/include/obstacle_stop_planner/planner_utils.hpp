@@ -96,8 +96,6 @@ void createOneStepPolygon(
   const Pose & base_step_pose, const Pose & next_step_pose, Polygon2d & hull_polygon,
   const VehicleInfo & vehicle_info, const double expand_width = 0.0);
 
-bool getSelfPose(const Header & header, const tf2_ros::Buffer & tf_buffer, Pose & self_pose);
-
 void getNearestPoint(
   const PointCloud & pointcloud, const Pose & base_pose, pcl::PointXYZ * nearest_collision_point,
   rclcpp::Time * nearest_collision_point_time);

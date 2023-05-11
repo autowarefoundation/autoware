@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -382,7 +381,6 @@ void ObstacleStopPlannerNode::searchObstacle(
   PlannerData & planner_data, const Header & trajectory_header, const VehicleInfo & vehicle_info,
   const StopParam & stop_param, const PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr)
 {
-  const auto object_ptr = object_ptr_;
   // search candidate obstacle pointcloud
   PointCloud::Ptr slow_down_pointcloud_ptr(new PointCloud);
   PointCloud::Ptr obstacle_candidate_pointcloud_ptr(new PointCloud);
@@ -485,22 +483,6 @@ void ObstacleStopPlannerNode::searchObstacle(
           *collision_pointcloud_ptr, p_front, &nearest_collision_point,
           &nearest_collision_point_time);
 
-        if (node_param_.enable_z_axis_obstacle_filtering) {
-          debug_ptr_->pushPolyhedron(
-            one_step_move_vehicle_polygon, z_axis_min, z_axis_max, PolygonType::Collision);
-          if (
-            (pub_collision_pointcloud_debug_->get_subscription_count() +
-             pub_collision_pointcloud_debug_->get_intra_process_subscription_count()) > 0) {
-            auto obstacle_ros_pointcloud_debug_ptr = std::make_shared<PointCloud2>();
-            pcl::toROSMsg(*collision_pointcloud_ptr, *obstacle_ros_pointcloud_debug_ptr);
-            obstacle_ros_pointcloud_debug_ptr->header.frame_id = trajectory_header.frame_id;
-            pub_collision_pointcloud_debug_->publish(*obstacle_ros_pointcloud_debug_ptr);
-          }
-        } else {
-          debug_ptr_->pushObstaclePoint(planner_data.nearest_collision_point, PointType::Stop);
-          debug_ptr_->pushPolygon(
-            one_step_move_vehicle_polygon, p_front.position.z, PolygonType::Collision);
-        }
         obstacle_history_.emplace_back(now, nearest_collision_point);
 
         break;
@@ -509,6 +491,12 @@ void ObstacleStopPlannerNode::searchObstacle(
   }
 
   for (size_t i = 0; i < decimate_trajectory.size() - 1; ++i) {
+    const auto old_point_cloud_ptr = getOldPointCloudPtr();
+    if (old_point_cloud_ptr->empty()) {
+      // no need to check collision
+      break;
+    }
+
     // create one step circle center for vehicle
     const auto & p_front = decimate_trajectory.at(i).pose;
     const auto & p_back = decimate_trajectory.at(i + 1).pose;
@@ -525,14 +513,6 @@ void ObstacleStopPlannerNode::searchObstacle(
     createOneStepPolygon(
       p_front, p_back, one_step_move_vehicle_polygon, vehicle_info, stop_param.lateral_margin);
 
-    if (node_param_.enable_z_axis_obstacle_filtering) {
-      debug_ptr_->pushPolyhedron(
-        one_step_move_vehicle_polygon, z_axis_min, z_axis_max, PolygonType::Vehicle);
-    } else {
-      debug_ptr_->pushPolygon(
-        one_step_move_vehicle_polygon, p_front.position.z, PolygonType::Vehicle);
-    }
-
     PointCloud::Ptr collision_pointcloud_ptr(new PointCloud);
     collision_pointcloud_ptr->header = obstacle_candidate_pointcloud_ptr->header;
 
@@ -540,11 +520,11 @@ void ObstacleStopPlannerNode::searchObstacle(
     if (node_param_.enable_z_axis_obstacle_filtering) {
       planner_data.found_collision_points = withinPolyhedron(
         one_step_move_vehicle_polygon, stop_param.stop_search_radius, prev_center_point,
-        next_center_point, getOldPointCloudPtr(), collision_pointcloud_ptr, z_axis_min, z_axis_max);
+        next_center_point, old_point_cloud_ptr, collision_pointcloud_ptr, z_axis_min, z_axis_max);
     } else {
       planner_data.found_collision_points = withinPolygon(
         one_step_move_vehicle_polygon, stop_param.stop_search_radius, prev_center_point,
-        next_center_point, getOldPointCloudPtr(), collision_pointcloud_ptr);
+        next_center_point, old_point_cloud_ptr, collision_pointcloud_ptr);
     }
 
     if (planner_data.found_collision_points) {
@@ -574,6 +554,7 @@ void ObstacleStopPlannerNode::searchObstacle(
 
       mutex_.lock();
       const auto current_odometry_ptr = current_odometry_ptr_;
+      const auto object_ptr = object_ptr_;
       mutex_.unlock();
 
       acc_controller_->insertAdaptiveCruiseVelocity(
@@ -585,7 +566,6 @@ void ObstacleStopPlannerNode::searchObstacle(
       if (!planner_data.stop_require) {
         obstacle_history_.clear();
       }
-
       break;
     }
   }

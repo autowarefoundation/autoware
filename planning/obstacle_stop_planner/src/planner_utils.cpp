@@ -494,25 +494,6 @@ pcl::PointXYZ pointToPcl(const double x, const double y, const double z)
   return {pcl_x, pcl_y, pcl_z};
 }
 
-bool getSelfPose(const Header & header, const tf2_ros::Buffer & tf_buffer, Pose & self_pose)
-{
-  try {
-    TransformStamped transform;
-    transform = tf_buffer.lookupTransform(
-      header.frame_id, "base_link", header.stamp, rclcpp::Duration::from_seconds(0.1));
-    self_pose.position.x = transform.transform.translation.x;
-    self_pose.position.y = transform.transform.translation.y;
-    self_pose.position.z = transform.transform.translation.z;
-    self_pose.orientation.x = transform.transform.rotation.x;
-    self_pose.orientation.y = transform.transform.rotation.y;
-    self_pose.orientation.z = transform.transform.rotation.z;
-    self_pose.orientation.w = transform.transform.rotation.w;
-    return true;
-  } catch (tf2::TransformException & ex) {
-    return false;
-  }
-}
-
 void getNearestPoint(
   const PointCloud & pointcloud, const Pose & base_pose, pcl::PointXYZ * nearest_collision_point,
   rclcpp::Time * nearest_collision_point_time)

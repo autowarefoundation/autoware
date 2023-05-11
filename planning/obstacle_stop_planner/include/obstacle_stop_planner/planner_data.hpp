@@ -258,12 +258,6 @@ struct PlannerData
 
   autoware_auto_perception_msgs::msg::Shape slow_down_object_shape{};
 
-  Pose nearest_collision_point_pose{};
-
-  Pose nearest_slow_down_point_pose{};
-
-  Pose lateral_nearest_slow_down_point_pose{};
-
   rclcpp::Time nearest_collision_point_time{};
 
   double lateral_deviation{0.0};
