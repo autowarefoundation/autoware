@@ -60,36 +60,20 @@ bool isTargetObjectFront(
   const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
   const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon);
 
-/**
- * @brief find which vehicle is front and rear and check for lateral,
- *        longitudinal physical and longitudinal expected stopping distance between two points
- * @param [in] expected_ego_pose ego vehicle's pose
- * @param [in] ego_current_twist ego vehicle's twist
- * @param [in] expected_object_pose object vehicle's pose
- * @param [in] object_current_twist object vehicle's twist
- * @param [in] param common behavior path planner parameters
- * @param [in] front_decel expected deceleration of front vehicle
- * @param [in] rear_decel expected deceleration of rear vehicle
- * @param [in] debug debug data
- * @return true if distance is safe.
- */
-bool hasEnoughDistance(
-  const Polygon2d & front_object_polygon, const double front_object_velocity,
-  const Polygon2d & rear_object_polygon, const double rear_object_velocity,
-  const bool is_object_front, const BehaviorPathPlannerParameters & param,
-  const double front_object_deceleration, const double rear_object_deceleration);
+Polygon2d createExtendedPolygon(
+  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
+  const double lon_length, const double lat_margin);
+Polygon2d createExtendedPolygon(
+  const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin);
 
-void getTransformedPolygon(
-  const Pose & front_object_pose, const Pose & rear_object_pose,
-  const vehicle_info_util::VehicleInfo & ego_vehicle_info, const Shape & object_shape,
-  const bool is_object_front, Polygon2d & transformed_front_object_polygon,
-  Polygon2d & transformed_rear_object_polygon);
+double calcRssDistance(
+  const double front_object_velocity, const double rear_object_velocity,
+  const double front_object_deceleration, const double rear_object_deceleration,
+  const BehaviorPathPlannerParameters & params);
 
-double calcLateralDistance(
-  const Polygon2d & front_object_polygon, const Polygon2d & rear_object_polygon);
-
-double calcLongitudinalDistance(
-  const Polygon2d & front_object_polygon, const Polygon2d & rear_object_polygon);
+double calcMinimumLongitudinalLength(
+  const double front_object_velocity, const double rear_object_velocity,
+  const BehaviorPathPlannerParameters & params);
 
 /**
  * @brief Iterate the points in the ego and target's predicted path and

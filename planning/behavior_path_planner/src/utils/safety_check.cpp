@@ -19,6 +19,15 @@
 
 namespace behavior_path_planner::utils::safety_check
 {
+void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point)
+{
+  Point2d point;
+  point.x() = geom_point.x;
+  point.y() = geom_point.y;
+
+  bg::append(polygon.outer(), point);
+}
+
 bool isTargetObjectFront(
   const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
   const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon)
@@ -38,138 +47,106 @@ bool isTargetObjectFront(
   return false;
 }
 
-bool hasEnoughDistance(
-  const Polygon2d & front_object_polygon, const double front_object_velocity,
-  const Polygon2d & rear_object_polygon, const double rear_object_velocity,
-  const bool is_object_front, const BehaviorPathPlannerParameters & param,
-  const double front_object_deceleration, const double rear_object_deceleration)
+Polygon2d createExtendedPolygon(
+  const Pose & base_link_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
+  const double lon_length, const double lat_margin)
 {
-  // 1. Check lateral distance between ego and target object
-  const double lat_dist = calcLateralDistance(front_object_polygon, rear_object_polygon);
-  if (lat_dist > param.lateral_distance_max_threshold) {
-    return true;
+  const double & base_to_front = vehicle_info.max_longitudinal_offset_m;
+  const double & width = vehicle_info.vehicle_width_m;
+  const double & base_to_rear = vehicle_info.rear_overhang_m;
+
+  const double lon_offset = std::max(lon_length + base_to_front, base_to_front);
+  const double lat_offset = width / 2.0 + lat_margin;
+  const auto p1 = tier4_autoware_utils::calcOffsetPose(base_link_pose, lon_offset, lat_offset, 0.0);
+  const auto p2 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, lon_offset, -lat_offset, 0.0);
+  const auto p3 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, -base_to_rear, -lat_offset, 0.0);
+  const auto p4 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, -base_to_rear, lat_offset, 0.0);
+
+  Polygon2d polygon;
+  appendPointToPolygon(polygon, p1.position);
+  appendPointToPolygon(polygon, p2.position);
+  appendPointToPolygon(polygon, p3.position);
+  appendPointToPolygon(polygon, p4.position);
+  appendPointToPolygon(polygon, p1.position);
+  return tier4_autoware_utils::isClockwise(polygon)
+           ? polygon
+           : tier4_autoware_utils::inverseClockwise(polygon);
+}
+
+Polygon2d createExtendedPolygon(
+  const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin)
+{
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, shape);
+  if (obj_polygon.outer().empty()) {
+    return obj_polygon;
   }
 
-  // 2. Check physical distance between ego and target object
-  const double lon_dist = calcLongitudinalDistance(front_object_polygon, rear_object_polygon);
-  const auto is_unsafe_dist_between_vehicle = std::invoke([&]() {
-    // ignore this for parked vehicle.
-    const double object_velocity = is_object_front ? front_object_velocity : rear_object_velocity;
-    if (object_velocity < 0.1) {
-      return false;
-    }
+  double max_x = std::numeric_limits<double>::lowest();
+  double min_x = std::numeric_limits<double>::max();
+  double max_y = std::numeric_limits<double>::lowest();
+  double min_y = std::numeric_limits<double>::max();
+  for (const auto & polygon_p : obj_polygon.outer()) {
+    const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+    const auto transformed_p = tier4_autoware_utils::inverseTransformPoint(obj_p, obj_pose);
 
-    // the value guarantee distance between vehicles are always more than dist
-    const auto max_vel = std::max(front_object_velocity, rear_object_velocity);
-    constexpr auto scale = 0.8;
-    const auto dist = scale * std::abs(max_vel) + param.longitudinal_distance_min_threshold;
-
-    // return value rounded to the nearest two floating point
-    return lon_dist < dist;
-  });
-
-  if (is_unsafe_dist_between_vehicle) {
-    return false;
+    max_x = std::max(transformed_p.x, max_x);
+    min_x = std::min(transformed_p.x, min_x);
+    max_y = std::max(transformed_p.y, max_y);
+    min_y = std::min(transformed_p.y, min_y);
   }
 
-  // 3. Check longitudinal distance after deceleration
+  const double lon_offset = max_x + lon_length;
+  const double left_lat_offset = max_y + lat_margin;
+  const double right_lat_offset = min_y - lat_margin;
+  const auto p1 = tier4_autoware_utils::calcOffsetPose(obj_pose, lon_offset, left_lat_offset, 0.0);
+  const auto p2 = tier4_autoware_utils::calcOffsetPose(obj_pose, lon_offset, right_lat_offset, 0.0);
+  const auto p3 = tier4_autoware_utils::calcOffsetPose(obj_pose, min_x, right_lat_offset, 0.0);
+  const auto p4 = tier4_autoware_utils::calcOffsetPose(obj_pose, min_x, left_lat_offset, 0.0);
+
+  Polygon2d polygon;
+  appendPointToPolygon(polygon, p1.position);
+  appendPointToPolygon(polygon, p2.position);
+  appendPointToPolygon(polygon, p3.position);
+  appendPointToPolygon(polygon, p4.position);
+  appendPointToPolygon(polygon, p1.position);
+  return tier4_autoware_utils::isClockwise(polygon)
+           ? polygon
+           : tier4_autoware_utils::inverseClockwise(polygon);
+}
+
+double calcRssDistance(
+  const double front_object_velocity, const double rear_object_velocity,
+  const double front_object_deceleration, const double rear_object_deceleration,
+  const BehaviorPathPlannerParameters & params)
+{
   const auto stoppingDistance = [](const auto vehicle_velocity, const auto vehicle_accel) {
     // compensate if user accidentally set the deceleration to some positive value
     const auto deceleration = (vehicle_accel < -1e-3) ? vehicle_accel : -1.0;
     return -std::pow(vehicle_velocity, 2) / (2.0 * deceleration);
   };
 
-  const auto front_vehicle_stop_threshold =
-    stoppingDistance(front_object_velocity, front_object_deceleration) + lon_dist;
+  const double & reaction_time =
+    params.rear_vehicle_reaction_time + params.rear_vehicle_safety_time_margin;
 
-  // longitudinal_distance_min_threshold here guarantee future stopping distance must be more than
-  // longitudinal_distance_min_threshold
-  const auto rear_vehicle_stop_threshold = std::invoke([&]() {
-    const auto reaction_buffer = rear_object_velocity * param.rear_vehicle_reaction_time;
-    const auto safety_buffer = rear_object_velocity * param.rear_vehicle_safety_time_margin;
-    return std::max(
-      reaction_buffer + safety_buffer +
-        stoppingDistance(rear_object_velocity, rear_object_deceleration),
-      param.longitudinal_distance_min_threshold);
-  });
-
-  return rear_vehicle_stop_threshold <= front_vehicle_stop_threshold;
+  const double front_object_stop_length =
+    stoppingDistance(front_object_velocity, front_object_deceleration);
+  const double rear_object_stop_length =
+    rear_object_velocity * reaction_time +
+    stoppingDistance(rear_object_velocity, rear_object_deceleration);
+  return rear_object_stop_length - front_object_stop_length;
 }
 
-void getTransformedPolygon(
-  const Pose & front_object_pose, const Pose & rear_object_pose,
-  const vehicle_info_util::VehicleInfo & ego_vehicle_info, const Shape & object_shape,
-  const bool is_object_front, Polygon2d & transformed_front_object_polygon,
-  Polygon2d & transformed_rear_object_polygon)
+double calcMinimumLongitudinalLength(
+  const double front_object_velocity, const double rear_object_velocity,
+  const BehaviorPathPlannerParameters & params)
 {
-  // transform from map to base_link based on rear pose
-  const auto transformed_front_pose =
-    tier4_autoware_utils::inverseTransformPose(front_object_pose, rear_object_pose);
-  Pose transformed_rear_pose;
-  transformed_rear_pose.position = tier4_autoware_utils::createPoint(0.0, 0.0, 0.0);
-  transformed_rear_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(0.0);
-
-  if (is_object_front) {
-    transformed_front_object_polygon =
-      tier4_autoware_utils::toPolygon2d(transformed_front_pose, object_shape);
-    transformed_rear_object_polygon = tier4_autoware_utils::toFootprint(
-      transformed_rear_pose, ego_vehicle_info.max_longitudinal_offset_m,
-      ego_vehicle_info.rear_overhang_m, ego_vehicle_info.vehicle_width_m);
-  } else {
-    transformed_front_object_polygon = tier4_autoware_utils::toFootprint(
-      transformed_front_pose, ego_vehicle_info.max_longitudinal_offset_m,
-      ego_vehicle_info.rear_overhang_m, ego_vehicle_info.vehicle_width_m);
-    transformed_rear_object_polygon =
-      tier4_autoware_utils::toPolygon2d(transformed_rear_pose, object_shape);
-  }
-
-  return;
-}
-
-double calcLateralDistance(
-  const Polygon2d & front_object_polygon, const Polygon2d & rear_object_polygon)
-{
-  double min_dist = std::numeric_limits<double>::max();
-  for (const auto & rear_point : rear_object_polygon.outer()) {
-    double max_lateral_dist = std::numeric_limits<double>::lowest();
-    double min_lateral_dist = std::numeric_limits<double>::max();
-    for (const auto & front_point : front_object_polygon.outer()) {
-      const double lat_dist = front_point.y() - rear_point.y();
-      max_lateral_dist = std::max(max_lateral_dist, lat_dist);
-      min_lateral_dist = std::min(min_lateral_dist, lat_dist);
-    }
-
-    // sort lateral distance
-    if (max_lateral_dist * min_lateral_dist < 0) {
-      // if the sign is different, it means the object is crossing
-      return 0.0;
-    }
-
-    const double dist = std::min(std::abs(max_lateral_dist), std::abs(min_lateral_dist));
-    min_dist = std::min(min_dist, dist);
-  }
-
-  return min_dist;
-}
-
-double calcLongitudinalDistance(
-  const Polygon2d & front_object_polygon, const Polygon2d & rear_object_polygon)
-{
-  double min_dist = std::numeric_limits<double>::max();
-  for (const auto & rear_point : rear_object_polygon.outer()) {
-    double min_lon_dist = std::numeric_limits<double>::max();
-    for (const auto & front_point : front_object_polygon.outer()) {
-      const double lon_dist = front_point.x() - rear_point.x();
-      if (lon_dist < 0.0) {
-        return 0.0;
-      }
-      min_lon_dist = std::min(lon_dist, min_lon_dist);
-    }
-
-    min_dist = std::min(min_dist, min_lon_dist);
-  }
-
-  return min_dist;
+  const double & lon_threshold = params.longitudinal_distance_min_threshold;
+  const auto max_vel = std::max(front_object_velocity, rear_object_velocity);
+  constexpr auto scale = 0.8;
+  return scale * std::abs(max_vel) + lon_threshold;
 }
 
 bool isSafeInLaneletCollisionCheck(
@@ -217,33 +194,40 @@ bool isSafeInLaneletCollisionCheck(
     // compute which one is at the front of the other
     const bool is_object_front =
       isTargetObjectFront(path, ego_pose, common_parameters.vehicle_info, obj_polygon);
-    const auto & [front_object_pose, rear_object_pose] =
-      is_object_front ? std::make_pair(*obj_pose, ego_pose) : std::make_pair(ego_pose, *obj_pose);
     const auto & [front_object_velocity, rear_object_velocity] =
       is_object_front ? std::make_pair(object_velocity, ego_velocity)
                       : std::make_pair(ego_velocity, object_velocity);
 
-    // get front and rear object polygon
-    Polygon2d front_object_polygon;
-    Polygon2d rear_object_polygon;
-    getTransformedPolygon(
-      front_object_pose, rear_object_pose, common_parameters.vehicle_info, target_object.shape,
-      is_object_front, front_object_polygon, rear_object_polygon);
+    // compute rss dist
+    const auto rss_dist = calcRssDistance(
+      front_object_velocity, rear_object_velocity, front_object_deceleration,
+      rear_object_deceleration, common_parameters);
+
+    // minimum longitudinal length
+    const auto min_lon_length =
+      calcMinimumLongitudinalLength(front_object_velocity, rear_object_velocity, common_parameters);
+
+    const auto & lon_offset = std::max(rss_dist, min_lon_length);
+    const auto & ego_vehicle_info = common_parameters.vehicle_info;
+    const auto & lat_margin = common_parameters.lateral_distance_max_threshold;
+    const auto & extended_ego_polygon =
+      is_object_front ? createExtendedPolygon(ego_pose, ego_vehicle_info, lon_offset, lat_margin)
+                      : ego_polygon;
+    const auto & extended_obj_polygon =
+      is_object_front
+        ? obj_polygon
+        : createExtendedPolygon(*obj_pose, target_object.shape, lon_offset, lat_margin);
 
     debug.lerped_path.push_back(ego_pose);
     debug.expected_ego_pose = ego_pose;
     debug.expected_obj_pose = *obj_pose;
-    debug.relative_to_ego = front_object_pose;
     debug.is_front = is_object_front;
 
-    if (!hasEnoughDistance(
-          front_object_polygon, front_object_velocity, rear_object_polygon, rear_object_velocity,
-          is_object_front, common_parameters, front_object_deceleration,
-          rear_object_deceleration)) {
-      debug.failed_reason = "not_enough_longitudinal";
+    if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
+      debug.failed_reason = "overlap_extended_polygon";
+      ego_pose_before_collision = ego_pose;
       return false;
     }
-    ego_pose_before_collision = ego_pose;
   }
   return true;
 }
@@ -288,24 +272,36 @@ bool isSafeInFreeSpaceCollisionCheck(
     // compute which one is at the front of the other
     const bool is_object_front =
       isTargetObjectFront(path, ego_pose, common_parameters.vehicle_info, obj_polygon);
-    const auto & [front_object_pose, rear_object_pose] =
-      is_object_front ? std::make_pair(obj_pose, ego_pose) : std::make_pair(ego_pose, obj_pose);
     const auto & [front_object_velocity, rear_object_velocity] =
       is_object_front ? std::make_pair(object_velocity, ego_velocity)
                       : std::make_pair(ego_velocity, object_velocity);
+    // compute rss dist
+    const auto rss_dist = calcRssDistance(
+      front_object_velocity, rear_object_velocity, front_object_deceleration,
+      rear_object_deceleration, common_parameters);
 
-    // get front and rear object polygon
-    Polygon2d front_object_polygon;
-    Polygon2d rear_object_polygon;
-    getTransformedPolygon(
-      front_object_pose, rear_object_pose, common_parameters.vehicle_info, target_object.shape,
-      is_object_front, front_object_polygon, rear_object_polygon);
+    // minimum longitudinal length
+    const auto min_lon_length =
+      calcMinimumLongitudinalLength(front_object_velocity, rear_object_velocity, common_parameters);
 
-    if (!hasEnoughDistance(
-          front_object_polygon, front_object_velocity, rear_object_polygon, rear_object_velocity,
-          is_object_front, common_parameters, front_object_deceleration,
-          rear_object_deceleration)) {
-      debug.failed_reason = "not_enough_longitudinal";
+    const auto & lon_offset = std::max(rss_dist, min_lon_length);
+    const auto & ego_vehicle_info = common_parameters.vehicle_info;
+    const auto & lat_margin = common_parameters.lateral_distance_max_threshold;
+    const auto & extended_ego_polygon =
+      is_object_front ? createExtendedPolygon(ego_pose, ego_vehicle_info, lon_offset, lat_margin)
+                      : ego_polygon;
+    const auto & extended_obj_polygon =
+      is_object_front
+        ? obj_polygon
+        : createExtendedPolygon(obj_pose, target_object.shape, lon_offset, lat_margin);
+
+    debug.lerped_path.push_back(ego_pose);
+    debug.expected_ego_pose = ego_pose;
+    debug.expected_obj_pose = obj_pose;
+    debug.is_front = is_object_front;
+
+    if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
+      debug.failed_reason = "overlap_extended_polygon";
       return false;
     }
   }
