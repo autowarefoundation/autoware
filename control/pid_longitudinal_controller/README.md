@@ -68,6 +68,13 @@ There are two sources of the slope information, which can be switched by a param
   - Cons: z-coordinates of high-precision map is needed.
   - Cons: Does not support free space planning (for now)
 
+**Notation:** This function works correctly only in a vehicle system that does not have acceleration feedback in the low-level control system.
+
+This compensation adds gravity correction to the target acceleration, resulting in an output value that is no longer equal to the target acceleration that the autonomous driving system desires. Therefore, it conflicts with the role of the acceleration feedback in the low-level controller.
+For instance, if the vehicle is attempting to start with an acceleration of `1.0 m/s^2` and a gravity correction of `-1.0 m/s^2` is applied, the output value will be `0`. If this output value is mistakenly treated as the target acceleration, the vehicle will not start.
+
+A suitable example of a vehicle system for the slope compensation function is one in which the output acceleration from the longitudinal_controller is converted into target accel/brake pedal input without any feedbacks. In this case, the output acceleration is just used as a feedforward term to calculate the target pedal, and hence the issue mentioned above does not arise.
+
 #### PID control
 
 For deviations that cannot be handled by FeedForward control, such as model errors, PID control is used to construct a feedback system.
