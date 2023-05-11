@@ -103,11 +103,11 @@ If you have multiple rosbags, an example directory structure would be as follows
 ```bash
 sample-map-rosbag
 ├── lanelet2_map.osm
-├── pointcloud_map
-├── pcd_00.pcd
-├── pcd_01.pcd
-├── pcd_02.pcd
-├── ...
+├── pointcloud_map.pcd
+│ ├── A.pcd
+│ ├── B.pcd
+│ ├── C.pcd
+│ └── ...
 └── pointcloud_map_metadata.yaml
 ```
 
