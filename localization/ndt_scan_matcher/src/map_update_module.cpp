@@ -260,7 +260,8 @@ geometry_msgs::msg::PoseWithCovarianceStamped MapUpdateModule::align_using_monte
     ndt_monte_carlo_initial_pose_marker_pub_->publish(marker_array);
 
     auto sensor_points_mapTF_ptr = std::make_shared<pcl::PointCloud<PointSource>>();
-    pcl::transformPointCloud(*ndt_ptr->getInputSource(), *sensor_points_mapTF_ptr, ndt_result.pose);
+    tier4_autoware_utils::transformPointCloud(
+      *ndt_ptr->getInputSource(), *sensor_points_mapTF_ptr, ndt_result.pose);
     publish_point_cloud(initial_pose_with_cov.header.stamp, map_frame_, sensor_points_mapTF_ptr);
   }
 

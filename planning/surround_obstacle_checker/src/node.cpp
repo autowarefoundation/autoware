@@ -346,7 +346,8 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPoint
   Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.get().transform).cast<float>();
   pcl::PointCloud<pcl::PointXYZ> transformed_pointcloud;
   pcl::fromROSMsg(*pointcloud_ptr_, transformed_pointcloud);
-  pcl::transformPointCloud(transformed_pointcloud, transformed_pointcloud, isometry);
+  tier4_autoware_utils::transformPointCloud(
+    transformed_pointcloud, transformed_pointcloud, isometry);
 
   const auto ego_polygon = createSelfPolygon(vehicle_info_);
 

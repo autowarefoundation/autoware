@@ -38,5 +38,6 @@
 #include "tier4_autoware_utils/ros/uuid_helper.hpp"
 #include "tier4_autoware_utils/ros/wait_for_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
+#include "tier4_autoware_utils/transform/transforms.hpp"
 
 #endif  // TIER4_AUTOWARE_UTILS__TIER4_AUTOWARE_UTILS_HPP_

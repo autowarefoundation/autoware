@@ -252,7 +252,8 @@ pcl::PointCloud<pcl::PointXYZ> transformPointCloud(
   pcl::PointCloud<pcl::PointXYZ> pointcloud_pcl;
   pcl::fromROSMsg(input_pointcloud, pointcloud_pcl);
   pcl::PointCloud<pcl::PointXYZ> pointcloud_pcl_transformed;
-  pcl::transformPointCloud(pointcloud_pcl, pointcloud_pcl_transformed, transform_matrix);
+  tier4_autoware_utils::transformPointCloud(
+    pointcloud_pcl, pointcloud_pcl_transformed, transform_matrix);
 
   return pointcloud_pcl_transformed;
 }

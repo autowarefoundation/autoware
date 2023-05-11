@@ -20,6 +20,7 @@
 #include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/transform/transforms.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>

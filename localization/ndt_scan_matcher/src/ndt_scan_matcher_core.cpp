@@ -20,6 +20,7 @@
 #include "ndt_scan_matcher/util_func.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/transform/transforms.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -437,7 +438,7 @@ void NDTScanMatcher::callback_sensor_points(
 
   pcl::shared_ptr<pcl::PointCloud<PointSource>> sensor_points_mapTF_ptr(
     new pcl::PointCloud<PointSource>);
-  pcl::transformPointCloud(
+  tier4_autoware_utils::transformPointCloud(
     *sensor_points_baselinkTF_ptr, *sensor_points_mapTF_ptr, ndt_result.pose);
   publish_point_cloud(sensor_ros_time, map_frame_, sensor_points_mapTF_ptr);
 
@@ -495,7 +496,7 @@ void NDTScanMatcher::transform_sensor_measurement(
     tier4_autoware_utils::transform2pose(*TF_target_to_source_ptr);
   const Eigen::Matrix4f base_to_sensor_matrix =
     pose_to_matrix4f(target_to_source_pose_stamped.pose);
-  pcl::transformPointCloud(
+  tier4_autoware_utils::transformPointCloud(
     *sensor_points_input_ptr, *sensor_points_output_ptr, base_to_sensor_matrix);
 }
 

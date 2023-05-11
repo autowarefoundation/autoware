@@ -145,7 +145,8 @@ void ApolloLidarSegmentation::transformCloud(
         tf_buffer_->lookupTransform(target_frame_, input.header.frame_id, time_point);
       Eigen::Matrix4f affine_matrix =
         tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
-      pcl::transformPointCloud(in_cluster, transformed_cloud_cluster, affine_matrix);
+      tier4_autoware_utils::transformPointCloud(
+        in_cluster, transformed_cloud_cluster, affine_matrix);
       transformed_cloud_cluster.header.frame_id = target_frame_;
     } else {
       transformed_cloud_cluster = in_cluster;
@@ -155,7 +156,7 @@ void ApolloLidarSegmentation::transformCloud(
     if (z_offset != 0) {
       Eigen::Affine3f z_up_translation(Eigen::Translation3f(0, 0, z_offset));
       Eigen::Matrix4f z_up_transform = z_up_translation.matrix();
-      pcl::transformPointCloud(
+      tier4_autoware_utils::transformPointCloud(
         transformed_cloud_cluster, transformed_cloud_cluster, z_up_transform);
     }
 
