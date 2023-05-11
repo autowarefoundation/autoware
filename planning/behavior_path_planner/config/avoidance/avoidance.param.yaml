@@ -98,9 +98,8 @@
         # avoidance lateral parameters
         lateral:
           lateral_collision_margin: 1.0                 # [m]
-          lateral_passable_safety_buffer: 1.0           # [m]
+          lateral_execution_threshold: 0.499            # [m]
           road_shoulder_safety_margin: 0.3              # [m]
-          avoidance_execution_lateral_threshold: 0.499
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
         # avoidance distance parameters

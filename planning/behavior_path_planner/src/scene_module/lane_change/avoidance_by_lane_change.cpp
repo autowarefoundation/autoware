@@ -211,9 +211,10 @@ ObjectData AvoidanceByLaneChange::createObjectData(
     object_data, object_closest_pose, object_data.overhang_pose.position);
 
   // Check whether the the ego should avoid the object.
+  const auto t = utils::getHighestProbLabel(object.classification);
+  const auto object_parameter = avoidance_parameters_->object_parameters.at(t);
   const auto vehicle_width = planner_data_->parameters.vehicle_width;
-  const auto safety_margin =
-    0.5 * vehicle_width + avoidance_parameters_->lateral_passable_safety_buffer;
+  const auto safety_margin = 0.5 * vehicle_width + object_parameter.safety_buffer_lateral;
   object_data.avoid_required =
     (utils::avoidance::isOnRight(object_data) &&
      std::abs(object_data.overhang_dist) < safety_margin) ||
