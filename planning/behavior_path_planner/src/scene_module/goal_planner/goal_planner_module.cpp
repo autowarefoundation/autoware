@@ -176,8 +176,8 @@ void GoalPlannerModule::onTimer()
                                     const GoalCandidate & goal_candidate) {
     planner->setPlannerData(planner_data_);
     auto pull_over_path = planner->plan(goal_candidate.goal_pose);
-    pull_over_path->goal_id = goal_candidate.id;
     if (pull_over_path && isCrossingPossible(*pull_over_path)) {
+      pull_over_path->goal_id = goal_candidate.id;
       path_candidates.push_back(*pull_over_path);
       // calculate closest pull over start pose for stop path
       const double start_arc_length =
