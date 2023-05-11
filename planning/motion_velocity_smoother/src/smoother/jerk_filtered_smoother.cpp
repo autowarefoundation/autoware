@@ -329,7 +329,7 @@ bool JerkFilteredSmoother::apply(
     const auto msg = status_polish == 0    ? "unperformed"
                      : status_polish == -1 ? "unsuccessful"
                                            : "unknown";
-    RCLCPP_WARN(logger_, "osqp polish process failed : %s. The result may be inaccurate", msg);
+    RCLCPP_DEBUG(logger_, "osqp polish process failed : %s. The result may be inaccurate", msg);
   }
 
   if (VERBOSE_TRAJECTORY_VELOCITY) {
