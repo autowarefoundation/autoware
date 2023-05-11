@@ -26,7 +26,7 @@ namespace behavior_path_planner
 {
 LaneFollowingModule::LaneFollowingModule(const std::string & name, rclcpp::Node & node)
 // RTCInterface is temporarily registered, but not used.
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}
+: SceneModuleInterface{name, node, {}}
 {
   initParam();
 }

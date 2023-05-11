@@ -39,7 +39,7 @@ using tier4_autoware_utils::getPoint;
 SideShiftModule::SideShiftModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<SideShiftParameters> & parameters)
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
+: SceneModuleInterface{name, node, {}}, parameters_{parameters}
 {
   using std::placeholders::_1;
   lateral_offset_subscriber_ = node.create_subscription<LateralOffset>(

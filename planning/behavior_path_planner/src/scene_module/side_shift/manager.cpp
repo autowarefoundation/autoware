@@ -26,7 +26,7 @@ namespace behavior_path_planner
 SideShiftModuleManager::SideShiftModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
   const std::shared_ptr<SideShiftParameters> & parameters)
-: SceneModuleManagerInterface(node, name, config, {""}), parameters_{parameters}
+: SceneModuleManagerInterface(node, name, config, {}), parameters_{parameters}
 {
 }
 
