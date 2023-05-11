@@ -2879,24 +2879,35 @@ CandidateOutput AvoidanceModule::planCandidate() const
 
 BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
 {
+  const auto & data = avoidance_data_;
+
   // we can execute the plan() since it handles the approval appropriately.
   BehaviorModuleOutput out = plan();
+
 #ifndef USE_OLD_ARCHITECTURE
   if (path_shifter_.getShiftLines().empty()) {
     out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   }
 #endif
+
+  const auto all_unavoidable = std::all_of(
+    data.target_objects.begin(), data.target_objects.end(),
+    [](const auto & o) { return !o.is_avoidable; });
+
   const auto candidate = planCandidate();
-  constexpr double threshold_to_update_status = -1.0e-03;
-  if (candidate.start_distance_to_path_change > threshold_to_update_status) {
+  if (!avoidance_data_.safe_new_sl.empty()) {
     updateCandidateRTCStatus(candidate);
+    waitApproval();
+  } else if (all_unavoidable) {
     waitApproval();
   } else {
     clearWaitingApproval();
     removeCandidateRTCStatus();
   }
+
   path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
   path_reference_ = getPreviousModuleOutput().reference_path;
+
   return out;
 }
 
@@ -3144,6 +3155,7 @@ void AvoidanceModule::updateData()
 void AvoidanceModule::processOnEntry()
 {
   initVariables();
+  waitApproval();
 }
 
 void AvoidanceModule::processOnExit()
