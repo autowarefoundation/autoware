@@ -48,6 +48,7 @@ def generate_launch_description():
     add_launch_arg(
         "label_file", os.path.join(ssd_fine_detector_share_dir, "data", "voc_labels_tl.txt")
     )
+    add_launch_arg("dnn_header_type", "pytorch")
     add_launch_arg("fine_detector_precision", "FP32")
     add_launch_arg("score_thresh", "0.7")
     add_launch_arg("max_batch_size", "8")
@@ -197,6 +198,7 @@ def generate_launch_description():
     ssd_fine_detector_param = create_parameter_dict(
         "onnx_file",
         "label_file",
+        "dnn_header_type",
         "score_thresh",
         "max_batch_size",
         "approximate_sync",

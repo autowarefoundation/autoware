@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2020 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <trt_ssd.hpp>
+#include "trt_ssd.hpp"
+
+#include "gather_topk.hpp"
+#include "grid_priors.hpp"
 
 #include <NvOnnxConfig.h>
 #include <NvOnnxParser.h>
@@ -169,33 +172,11 @@ void Net::infer(std::vector<void *> & buffers, const int batch_size)
   if (!context_) {
     throw std::runtime_error("Fail to create context");
   }
-  auto input_dims = engine_->getBindingDimensions(0);
+  auto input_dims = getTensorShape("input");
   context_->setBindingDimensions(
     0, nvinfer1::Dims4(batch_size, input_dims.d[1], input_dims.d[2], input_dims.d[3]));
   context_->enqueueV2(buffers.data(), stream_, nullptr);
   cudaStreamSynchronize(stream_);
-}
-
-std::vector<int> Net::getInputSize()
-{
-  auto dims = engine_->getBindingDimensions(0);
-  return {dims.d[1], dims.d[2], dims.d[3]};
-}
-
-std::vector<int> Net::getOutputScoreSize()
-{
-  auto dims = engine_->getBindingDimensions(1);
-  return {dims.d[1], dims.d[2]};
-}
-
-int Net::getMaxBatchSize()
-{
-  return engine_->getProfileDimensions(0, 0, nvinfer1::OptProfileSelector::kMAX).d[0];
-}
-
-int Net::getMaxDetections()
-{
-  return engine_->getBindingDimensions(1).d[1];
 }
 
 }  // namespace ssd

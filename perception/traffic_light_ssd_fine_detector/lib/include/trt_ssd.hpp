@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2020 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -55,6 +55,20 @@ private:
   bool verbose_{false};
 };
 
+struct Shape
+{
+  int channel, width, height;
+  inline int size() const { return channel * width * height; }
+  inline int area() const { return width * height; }
+};
+
+class Dims2 : public nvinfer1::Dims2
+{
+public:
+  Dims2(const int32_t d0, const int32_t d1) : nvinfer1::Dims2(d0, d1) {}
+  inline int size() const { return d[0] * d[1]; }
+};
+
 class Net
 {
 public:
@@ -75,15 +89,37 @@ public:
   void infer(std::vector<void *> & buffers, const int batch_size);
 
   // Get (c, h, w) size of the fixed input
-  std::vector<int> getInputSize();
+  inline Shape getInputShape() const
+  {
+    auto dims = getTensorShape("input");
+    return {dims.d[1], dims.d[2], dims.d[3]};
+  }
 
-  std::vector<int> getOutputScoreSize();
+  // Get output dimensions by name
+  inline Dims2 getOutputDimensions(const char * name) const
+  {
+    auto dims = getTensorShape(name);
+    return Dims2(dims.d[1], dims.d[2]);
+  }
 
   // Get max allowed batch size
-  int getMaxBatchSize();
+  inline int getMaxBatchSize() const
+  {
+    return engine_->getProfileDimensions(0, 0, nvinfer1::OptProfileSelector::kMAX).d[0];
+  }
 
   // Get max number of detections
-  int getMaxDetections();
+  inline int getMaxDetections() const { return getTensorShape("boxes").d[1]; }
+
+  // Get specified name of tensor shape
+  inline nvinfer1::Dims getTensorShape(const char * name) const
+  {
+#if (NV_TENSORRT_MAJOR * 10000) + (NV_TENSORRT_MINOR * 100) + NV_TENSOR_PATCH >= 80500
+    return engine_->getTensorShape(name);
+#else
+    return engine_->getBindingDimensions(engine_->getBindingIndex(name));
+#endif
+  }
 
 private:
   unique_ptr<nvinfer1::IRuntime> runtime_ = nullptr;

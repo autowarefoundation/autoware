@@ -2,6 +2,7 @@
   <arg name="onnx_file" default="$(find-pkg-share traffic_light_ssd_fine_detector)/data/mb2-ssd-lite-tlr.onnx"/>
   <arg name="label_file" default="$(find-pkg-share traffic_light_ssd_fine_detector)/data/voc_labels_tl.txt"/>
   <arg name="mode" default="FP32"/>
+  <arg name="dnn_header_type" default="pytorch" description="pytorch or mmdetection"/>
   <arg name="input/image" default="/image_raw"/>
   <arg name="input/rois" default="/traffic_light_map_based_detector/output/rois"/>
   <arg name="output/rois" default="~/output/rois"/>
@@ -20,6 +21,7 @@
     <remap from="~/output/rois" to="$(var output/rois)"/>
     <param name="onnx_file" type="str" value="$(var onnx_file)"/>
     <param name="label_file" type="str" value="$(var label_file)"/>
+    <param name="dnn_header_type" type="str" value="$(var dnn_header_type)"/>
     <param name="mode" type="str" value="$(var mode)"/>
     <param name="score_thresh" value="$(var score_thresh)"/>
     <param name="max_batch_size" value="$(var max_batch_size)"/>
