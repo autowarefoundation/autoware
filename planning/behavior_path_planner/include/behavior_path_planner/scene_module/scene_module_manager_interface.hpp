@@ -225,9 +225,11 @@ public:
     });
     registered_modules_.clear();
 
-    idling_module_->onExit();
-    idling_module_->publishRTCStatus();
-    idling_module_.reset();
+    if (idling_module_ != nullptr) {
+      idling_module_->onExit();
+      idling_module_->publishRTCStatus();
+      idling_module_.reset();
+    }
 
     pub_debug_marker_->publish(MarkerArray{});
   }
