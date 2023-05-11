@@ -342,10 +342,11 @@ void spinSomeNodes(
   rclcpp::Node::SharedPtr test_node, rclcpp::Node::SharedPtr target_node,
   const int repeat_count = 1)
 {
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(test_node);
+  executor.add_node(target_node);
   for (int i = 0; i < repeat_count; i++) {
-    rclcpp::spin_some(test_node);
-    rclcpp::sleep_for(std::chrono::milliseconds(100));
-    rclcpp::spin_some(target_node);
+    executor.spin_some(std::chrono::milliseconds(100));
     rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
 }
