@@ -471,6 +471,7 @@ SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
   p.min_shifting_distance = declare_parameter<double>(ns + "min_shifting_distance");
   p.min_shifting_speed = declare_parameter<double>(ns + "min_shifting_speed");
   p.shift_request_time_limit = declare_parameter<double>(ns + "shift_request_time_limit");
+  p.publish_debug_marker = declare_parameter<bool>(ns + "publish_debug_marker");
 
   return p;
 }

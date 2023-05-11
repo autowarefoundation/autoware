@@ -132,6 +132,10 @@ private:
   mutable rclcpp::Time last_requested_shift_change_time_{clock_->now()};
 
   rclcpp::Time latest_lateral_offset_stamp_;
+
+  // debug
+  mutable SideShiftDebugData debug_data_;
+  void setDebugMarkersVisualization() const;
 };
 
 }  // namespace behavior_path_planner
