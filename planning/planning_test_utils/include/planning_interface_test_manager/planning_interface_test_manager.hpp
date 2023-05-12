@@ -114,11 +114,7 @@ public:
   void publishLateralOffset(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishOperationModeState(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishTrafficSignals(rclcpp::Node::SharedPtr target_node, std::string topic_name);
-  void publishExternalTrafficSignals(rclcpp::Node::SharedPtr target_node, std::string topic_name);
   void publishVirtualTrafficLightState(rclcpp::Node::SharedPtr target_node, std::string topic_name);
-  void publishExternalCrosswalkStates(rclcpp::Node::SharedPtr target_node, std::string topic_name);
-  void publishExternalIntersectionStates(
-    rclcpp::Node::SharedPtr target_node, std::string topic_name);
 
   void setTrajectoryInputTopicName(std::string topic_name);
   void setParkingTrajectoryInputTopicName(std::string topic_name);
@@ -188,10 +184,7 @@ private:
   rclcpp::Publisher<LateralOffset>::SharedPtr lateral_offset_pub_;
   rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_state_pub_;
   rclcpp::Publisher<TrafficSignalArray>::SharedPtr traffic_signals_pub_;
-  rclcpp::Publisher<TrafficSignalArray>::SharedPtr external_traffic_signals_pub_;
   rclcpp::Publisher<VirtualTrafficLightStateArray>::SharedPtr virtual_traffic_light_states_pub_;
-  rclcpp::Publisher<CrosswalkStatus>::SharedPtr external_crosswalk_states_pub_;
-  rclcpp::Publisher<IntersectionStatus>::SharedPtr external_intersection_states_pub_;
 
   // Subscriber
   rclcpp::Subscription<Trajectory>::SharedPtr traj_sub_;

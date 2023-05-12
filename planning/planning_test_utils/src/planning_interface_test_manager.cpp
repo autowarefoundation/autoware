@@ -163,30 +163,12 @@ void PlanningInterfaceTestManager::publishTrafficSignals(
     test_node_, target_node, topic_name, traffic_signals_pub_, TrafficSignalArray{});
 }
 
-void PlanningInterfaceTestManager::publishExternalTrafficSignals(
-  rclcpp::Node::SharedPtr target_node, std::string topic_name)
-{
-  test_utils::publishToTargetNode(
-    test_node_, target_node, topic_name, external_traffic_signals_pub_, TrafficSignalArray{});
-}
 void PlanningInterfaceTestManager::publishVirtualTrafficLightState(
   rclcpp::Node::SharedPtr target_node, std::string topic_name)
 {
   test_utils::publishToTargetNode(
     test_node_, target_node, topic_name, virtual_traffic_light_states_pub_,
     VirtualTrafficLightStateArray{});
-}
-void PlanningInterfaceTestManager::publishExternalCrosswalkStates(
-  rclcpp::Node::SharedPtr target_node, std::string topic_name)
-{
-  test_utils::publishToTargetNode(
-    test_node_, target_node, topic_name, external_crosswalk_states_pub_, CrosswalkStatus{});
-}
-void PlanningInterfaceTestManager::publishExternalIntersectionStates(
-  rclcpp::Node::SharedPtr target_node, std::string topic_name)
-{
-  test_utils::publishToTargetNode(
-    test_node_, target_node, topic_name, external_intersection_states_pub_, IntersectionStatus{});
 }
 
 void PlanningInterfaceTestManager::publishInitialPoseTF(
