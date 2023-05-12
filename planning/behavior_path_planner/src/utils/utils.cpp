@@ -999,7 +999,9 @@ bool isEgoOutOfRoute(
   const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
   const std::shared_ptr<RouteHandler> & route_handler)
 {
-  const Pose & goal_pose = modified_goal ? modified_goal->pose : route_handler->getGoalPose();
+  const Pose & goal_pose = (modified_goal && modified_goal->uuid == route_handler->getRouteUuid())
+                             ? modified_goal->pose
+                             : route_handler->getGoalPose();
   const auto shoulder_lanes = route_handler->getShoulderLanelets();
 
   lanelet::ConstLanelet goal_lane;
