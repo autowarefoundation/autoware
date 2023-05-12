@@ -75,10 +75,10 @@ repositories:
     type: git
     url: https://github.com/tier4/tamagawa_imu_driver.git
     version: ros2
-  sensor_component/external/velodyne_vls:
+  sensor_component/external/awf_velodyne:
     type: git
-    url: https://github.com/tier4/velodyne_vls.git
-    version: tier4/universe
+    url: https://github.com/autowarefoundation/awf_velodyne.git
+    version: awf/main
   # sensor_kit
   sensor_kit/sample_sensor_kit_launch:
     type: git
