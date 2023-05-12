@@ -97,7 +97,8 @@ ModuleStatus LaneChangeInterface::updateState()
   }
 
   if (module_type_->isCancelConditionSatisfied()) {
-    current_state_ = ModuleStatus::FAILURE;
+    current_state_ =
+      module_type_->isCancelEnabled() ? ModuleStatus::FAILURE : ModuleStatus::RUNNING;
     return current_state_;
   }
 

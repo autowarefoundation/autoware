@@ -150,6 +150,8 @@ public:
 
   bool isValidPath() const { return status_.is_valid_path; }
 
+  bool isCancelEnabled() const { return lane_change_parameters_->enable_cancel_lane_change; }
+
   std_msgs::msg::Header getRouteHeader() const
   {
     return planner_data_->route_handler->getRouteHeader();

@@ -155,10 +155,6 @@ bool NormalLaneChange::isCancelConditionSatisfied()
 {
   current_lane_change_state_ = LaneChangeStates::Normal;
 
-  if (!lane_change_parameters_->enable_cancel_lane_change) {
-    return false;
-  }
-
   Pose ego_pose_before_collision;
   const auto is_path_safe = isApprovedPathSafe(ego_pose_before_collision);
 
