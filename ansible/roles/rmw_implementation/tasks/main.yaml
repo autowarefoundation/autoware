@@ -3,7 +3,7 @@
   register: dash_case_rmw_implementation
   changed_when: false
 
-- name: Install ros-{{ rosdistro }}-{{ dash_case_rmw_implementation.stdout }}
+- name: Install ros-{{ rosdistro + '-' + dash_case_rmw_implementation.stdout }}
   become: true
   ansible.builtin.apt:
     name: ros-{{ rosdistro }}-{{ dash_case_rmw_implementation.stdout }}

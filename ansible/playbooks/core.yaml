@@ -1,4 +1,5 @@
-- hosts: localhost
+- name: Set up source development environments for Autoware Core
+  hosts: localhost
   connection: local
   pre_tasks:
     - name: Verify OS
