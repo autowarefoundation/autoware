@@ -329,6 +329,11 @@ void NDTScanMatcher::callback_regularization_pose(
 void NDTScanMatcher::callback_sensor_points(
   sensor_msgs::msg::PointCloud2::ConstSharedPtr sensor_points_sensorTF_msg_ptr)
 {
+  if (sensor_points_sensorTF_msg_ptr->data.empty()) {
+    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1, "Empty sensor points!");
+    return;
+  }
+
   // mutex ndt_ptr_
   std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);
 
