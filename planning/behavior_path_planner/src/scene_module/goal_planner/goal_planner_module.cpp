@@ -51,18 +51,14 @@ namespace behavior_path_planner
 GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<GoalPlannerParameters> & parameters)
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})},
-  parameters_{parameters},
-  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
+: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
 {
 #else
 GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<GoalPlannerParameters> & parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
-: SceneModuleInterface{name, node, rtc_interface_ptr_map},
-  parameters_{parameters},
-  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
+: SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
 {
 #endif
   LaneDepartureChecker lane_departure_checker{};
@@ -99,13 +95,10 @@ GoalPlannerModule::GoalPlannerModule(
 
   // set selected goal searcher
   // currently there is only one goal_searcher_type
-  const auto & vehicle_footprint =
-    createVehicleFootprint(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
+  vehicle_footprint_ = createVehicleFootprint(vehicle_info);
   goal_searcher_ =
-    std::make_shared<GoalSearcher>(*parameters, vehicle_footprint, occupancy_grid_map_);
-
-  // for collision check with objects
-  vehicle_footprint_ = createVehicleFootprint(vehicle_info_);
+    std::make_shared<GoalSearcher>(*parameters, vehicle_footprint_, occupancy_grid_map_);
 
   // timer callback for generating lane parking candidate paths
   const auto lane_parking_period_ns = rclcpp::Rate(1.0).period();
@@ -117,7 +110,7 @@ GoalPlannerModule::GoalPlannerModule(
 
   // freespace parking
   if (parameters_->enable_freespace_parking) {
-    freespace_planner_ = std::make_unique<FreespacePullOver>(node, *parameters, vehicle_info_);
+    freespace_planner_ = std::make_unique<FreespacePullOver>(node, *parameters, vehicle_info);
     const auto freespace_parking_period_ns = rclcpp::Rate(1.0).period();
     freespace_parking_timer_cb_group_ =
       node.create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -248,30 +241,29 @@ BehaviorModuleOutput GoalPlannerModule::run()
   return plan();
 }
 
+void GoalPlannerModule::initializeOccupancyGridMap()
+{
+  OccupancyGridMapParam occupancy_grid_map_param{};
+  const double margin = parameters_->occupancy_grid_collision_check_margin;
+  occupancy_grid_map_param.vehicle_shape.length =
+    planner_data_->parameters.vehicle_length + 2 * margin;
+  occupancy_grid_map_param.vehicle_shape.width =
+    planner_data_->parameters.vehicle_width + 2 * margin;
+  occupancy_grid_map_param.vehicle_shape.base2back =
+    planner_data_->parameters.base_link2rear + margin;
+  occupancy_grid_map_param.theta_size = parameters_->theta_size;
+  occupancy_grid_map_param.obstacle_threshold = parameters_->obstacle_threshold;
+  occupancy_grid_map_->setParam(occupancy_grid_map_param);
+}
+
 void GoalPlannerModule::processOnEntry()
 {
   const auto & route_handler = planner_data_->route_handler;
 
   // Initialize occupancy grid map
   if (parameters_->use_occupancy_grid) {
-    OccupancyGridMapParam occupancy_grid_map_param{};
-    const double margin = parameters_->occupancy_grid_collision_check_margin;
-    occupancy_grid_map_param.vehicle_shape.length =
-      planner_data_->parameters.vehicle_length + 2 * margin;
-    occupancy_grid_map_param.vehicle_shape.width =
-      planner_data_->parameters.vehicle_width + 2 * margin;
-    occupancy_grid_map_param.vehicle_shape.base2back =
-      planner_data_->parameters.base_link2rear + margin;
-    occupancy_grid_map_param.theta_size = parameters_->theta_size;
-    occupancy_grid_map_param.obstacle_threshold = parameters_->obstacle_threshold;
-    occupancy_grid_map_->setParam(occupancy_grid_map_param);
+    initializeOccupancyGridMap();
   }
-
-  // todo: remove `checkOriginalGoalIsInShoulder()`
-  // the function here is temporary condition for backward compatibility.
-  // if the goal is in shoulder, allow goal_modification
-  allow_goal_modification_ =
-    route_handler->isAllowedGoalModification() || checkOriginalGoalIsInShoulder();
 
   // initialize when receiving new route
   if (!last_received_time_ || *last_received_time_ != route_handler->getRouteHeader().stamp) {
@@ -316,12 +308,12 @@ bool GoalPlannerModule::isExecutionRequested() const
   lanelet::utils::query::getClosestLanelet(current_lanes, current_pose, &current_lane);
   const double self_to_goal_arc_length =
     utils::getSignedDistance(current_pose, goal_pose, current_lanes);
-  const bool allow_goal_modification =
+  allow_goal_modification_ =
     route_handler->isAllowedGoalModification() || checkOriginalGoalIsInShoulder();
   const double request_length =
-    allow_goal_modification ? calcModuleRequestLength() : parameters_->minimum_request_length;
+    allow_goal_modification_ ? calcModuleRequestLength() : parameters_->minimum_request_length;
   const double backward_goal_search_length =
-    allow_goal_modification ? parameters_->backward_goal_search_length : 0.0;
+    allow_goal_modification_ ? parameters_->backward_goal_search_length : 0.0;
   if (
     self_to_goal_arc_length < -backward_goal_search_length ||
     self_to_goal_arc_length > request_length) {
@@ -330,7 +322,7 @@ bool GoalPlannerModule::isExecutionRequested() const
 
   // if goal modification is not allowed and goal_pose in current_lanes,
   // plan path to the original fixed goal
-  if (!allow_goal_modification) {
+  if (!allow_goal_modification_) {
     if (std::any_of(
           current_lanes.begin(), current_lanes.end(),
           [&](const lanelet::ConstLanelet & current_lane) {
@@ -460,15 +452,20 @@ bool GoalPlannerModule::planFreespacePath()
   return false;
 }
 
-bool GoalPlannerModule::returnToLaneParking()
+void GoalPlannerModule::returnToLaneParking()
 {
+  // return only before starting free space parking
+  if (!isStopped()) {
+    return;
+  }
+
   if (!status_.lane_parking_pull_over_path) {
-    return false;
+    return;
   }
 
   const PathWithLaneId path = status_.lane_parking_pull_over_path->getFullPath();
   if (checkCollision(path)) {
-    return false;
+    return;
   }
 
   const Point & current_point = planner_data_->self_odometry->pose.pose.position;
@@ -476,17 +473,18 @@ bool GoalPlannerModule::returnToLaneParking()
   const bool is_close_to_path =
     std::abs(motion_utils::calcLateralOffset(path.points, current_point)) < th_distance;
   if (!is_close_to_path) {
-    return false;
+    return;
   }
 
   mutex_.lock();
+  status_.is_safe = true;
   status_.has_decided_path = false;
   status_.pull_over_path = status_.lane_parking_pull_over_path;
   status_.current_path_idx = 0;
   last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
   mutex_.unlock();
 
-  return true;
+  RCLCPP_INFO(getLogger(), "return to lane parking");
 }
 
 BehaviorModuleOutput GoalPlannerModule::plan()
@@ -503,148 +501,82 @@ BehaviorModuleOutput GoalPlannerModule::plan()
   }
 }
 
-BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
+void GoalPlannerModule::selectSafePullOverPath()
 {
-  const auto & current_pose = planner_data_->self_odometry->pose.pose;
-  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
-  const auto & route_handler = planner_data_->route_handler;
+  // select safe lane pull over path from candidates
+  mutex_.lock();
+  goal_searcher_->setPlannerData(planner_data_);
+  goal_searcher_->update(goal_candidates_);
+  const auto pull_over_path_candidates = pull_over_path_candidates_;
+  const auto goal_candidates = goal_candidates_;
+  mutex_.unlock();
+  status_.is_safe = false;
+  for (const auto & pull_over_path : pull_over_path_candidates) {
+    // check if goal is safe
+    const auto goal_candidate_it = std::find_if(
+      goal_candidates.begin(), goal_candidates.end(),
+      [pull_over_path](const auto & goal_candidate) {
+        return goal_candidate.id == pull_over_path.goal_id;
+      });
+    if (goal_candidate_it != goal_candidates.end() && !goal_candidate_it->is_safe) {
+      continue;
+    }
 
-  constexpr double path_update_duration = 1.0;
+    // check if path is valid and safe
+    if (!hasEnoughDistance(pull_over_path) || checkCollision(pull_over_path.getParkingPath())) {
+      continue;
+    }
 
-  resetPathCandidate();
-  resetPathReference();
+    status_.is_safe = true;
+    mutex_.lock();
+    status_.pull_over_path = std::make_shared<PullOverPath>(pull_over_path);
+    status_.current_path_idx = 0;
+    status_.lane_parking_pull_over_path = status_.pull_over_path;
+    modified_goal_pose_ = *goal_candidate_it;
+    last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+    mutex_.unlock();
+    break;
+  }
 
+  // decelerate before the search area start
+  if (status_.is_safe) {
+    const auto search_start_pose = calcLongitudinalOffsetPose(
+      status_.pull_over_path->getFullPath().points, refined_goal_pose_.position,
+      -parameters_->backward_goal_search_length - planner_data_->parameters.base_link2front);
+    auto & first_path = status_.pull_over_path->partial_paths.front();
+
+    if (search_start_pose) {
+      decelerateBeforeSearchStart(*search_start_pose, first_path);
+    } else {
+      // if already passed the search start pose, set pull_over_velocity to first_path.
+      for (auto & p : first_path.points) {
+        p.point.longitudinal_velocity_mps = std::min(
+          p.point.longitudinal_velocity_mps, static_cast<float>(parameters_->pull_over_velocity));
+      }
+    }
+  }
+
+  // generate drivable area for each partial path
+  for (auto & path : status_.pull_over_path->partial_paths) {
+    const size_t ego_idx = planner_data_->findEgoIndex(path.points);
+    utils::clipPathLength(path, ego_idx, planner_data_->parameters);
+    const auto target_drivable_lanes = getNonOverlappingExpandedLanes(path, status_.lanes);
+    utils::generateDrivableArea(
+      path, target_drivable_lanes, false, planner_data_->parameters.vehicle_length, planner_data_);
+  }
+}
+
+void GoalPlannerModule::setLanes()
+{
   status_.current_lanes = utils::getExtendedCurrentLanes(planner_data_);
   status_.pull_over_lanes =
-    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
+    goal_planner_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
   status_.lanes =
     utils::generateDrivableLanesWithShoulderLanes(status_.current_lanes, status_.pull_over_lanes);
+}
 
-  // Check if it needs to decide path
-  if (status_.is_safe) {
-    const auto ego_segment_idx = motion_utils::findNearestSegmentIndex(
-      getCurrentPath().points, current_pose, std::numeric_limits<double>::max(), M_PI_2);
-    if (ego_segment_idx) {
-      const size_t start_pose_segment_idx = motion_utils::findNearestSegmentIndex(
-        getCurrentPath().points, status_.pull_over_path->start_pose.position);
-      const auto dist_to_parking_start_pose = calcSignedArcLength(
-        getCurrentPath().points, current_pose.position, *ego_segment_idx,
-        status_.pull_over_path->start_pose.position, start_pose_segment_idx);
-      if (dist_to_parking_start_pose < parameters_->decide_path_distance) {
-        status_.has_decided_path = true;
-      }
-    }
-  }
-
-  if (status_.has_decided_path) {
-    // Use decided path
-    if (!status_.has_requested_approval) {
-      // request approval again one the final path is decided
-      waitApproval();
-      removeRTCStatus();
-      steering_factor_interface_ptr_->clearSteeringFactors();
-      for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
-        itr->second = generateUUID();
-      }
-      current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
-      status_.has_requested_approval = true;
-    } else if (isActivated() && isWaitingApproval()) {
-      // When it is approved again after path is decided
-      clearWaitingApproval();
-      last_approved_time_ = std::make_unique<rclcpp::Time>(clock_->now());
-      last_approved_pose_ = std::make_unique<Pose>(current_pose);
-
-      // decide velocity to guarantee turn signal lighting time
-      if (!status_.has_decided_velocity) {
-        auto & first_path = status_.pull_over_path->partial_paths.front();
-        const auto vel =
-          static_cast<float>(std::max(current_vel, parameters_->pull_over_minimum_velocity));
-        for (auto & p : first_path.points) {
-          p.point.longitudinal_velocity_mps = std::min(p.point.longitudinal_velocity_mps, vel);
-        }
-      }
-      status_.has_decided_velocity = true;
-    }
-
-    if (isActivated() && last_approved_time_ != nullptr) {
-      // if using arc_path and finishing current_path, get next path
-      // enough time for turn signal
-      const bool has_passed_enough_time = (clock_->now() - *last_approved_time_).seconds() >
-                                          planner_data_->parameters.turn_signal_search_time;
-
-      if (hasFinishedCurrentPath() && has_passed_enough_time && status_.require_increment_) {
-        if (incrementPathIndex()) {
-          last_increment_time_ = std::make_unique<rclcpp::Time>(clock_->now());
-        }
-      }
-    }
-  } else if (!pull_over_path_candidates_.empty() && needPathUpdate(path_update_duration)) {
-    // if the final path is not decided and enough time has passed since last path update,
-    // select safe path from pull over path candidates
-    goal_searcher_->setPlannerData(planner_data_);
-    mutex_.lock();
-    goal_searcher_->update(goal_candidates_);
-    const auto pull_over_path_candidates = pull_over_path_candidates_;
-    const auto goal_candidates = goal_candidates_;
-    mutex_.unlock();
-    status_.is_safe = false;
-    for (const auto & pull_over_path : pull_over_path_candidates) {
-      // check if goal is safe
-      const auto goal_candidate_it = std::find_if(
-        goal_candidates.begin(), goal_candidates.end(),
-        [pull_over_path](const auto & goal_candidate) {
-          return goal_candidate.id == pull_over_path.goal_id;
-        });
-      if (goal_candidate_it != goal_candidates.end() && !goal_candidate_it->is_safe) {
-        continue;
-      }
-
-      // check if path is valid and safe
-      if (!hasEnoughDistance(pull_over_path) || checkCollision(pull_over_path.getParkingPath())) {
-        continue;
-      }
-
-      status_.is_safe = true;
-      mutex_.lock();
-      status_.pull_over_path = std::make_shared<PullOverPath>(pull_over_path);
-      status_.current_path_idx = 0;
-      status_.lane_parking_pull_over_path = status_.pull_over_path;
-      modified_goal_pose_ = *goal_candidate_it;
-      last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
-      mutex_.unlock();
-      break;
-    }
-
-    // decelerate before the search area start
-    if (status_.is_safe) {
-      const auto search_start_pose = calcLongitudinalOffsetPose(
-        status_.pull_over_path->getFullPath().points, refined_goal_pose_.position,
-        -parameters_->backward_goal_search_length - planner_data_->parameters.base_link2front);
-      auto & first_path = status_.pull_over_path->partial_paths.front();
-
-      if (search_start_pose) {
-        decelerateBeforeSearchStart(*search_start_pose, first_path);
-      } else {
-        // if already passed the search start pose, set pull_over_velocity to first_path.
-        for (auto & p : first_path.points) {
-          p.point.longitudinal_velocity_mps = std::min(
-            p.point.longitudinal_velocity_mps, static_cast<float>(parameters_->pull_over_velocity));
-        }
-      }
-    }
-
-    // generate drivable area for each partial path
-    for (auto & path : status_.pull_over_path->partial_paths) {
-      const size_t ego_idx = planner_data_->findEgoIndex(path.points);
-      utils::clipPathLength(path, ego_idx, planner_data_->parameters);
-      const auto target_drivable_lanes = getNonOverlappingExpandedLanes(path, status_.lanes);
-      utils::generateDrivableArea(
-        path, target_drivable_lanes, false, planner_data_->parameters.vehicle_length,
-        planner_data_);
-    }
-  }
-
-  BehaviorModuleOutput output;
+void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
+{
   if (status_.is_safe) {
     // safe: use pull over path
     status_.stop_pose.reset();
@@ -656,36 +588,54 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 
     output.path = std::make_shared<PathWithLaneId>(current_path);
     output.reference_path = getPreviousModuleOutput().reference_path;
-    path_candidate_ = std::make_shared<PathWithLaneId>(status_.pull_over_path->getFullPath());
-    path_reference_ = getPreviousModuleOutput().reference_path;
   } else {
     // not safe: use stop_path
-    if (status_.prev_is_safe || status_.prev_stop_path == nullptr) {
-      // safe -> not_safe or no prev_stop_path: generate new stop_path
-      output.path = std::make_shared<PathWithLaneId>(generateStopPath());
-      output.reference_path = getPreviousModuleOutput().reference_path;
-      status_.prev_stop_path = output.path;
-      // set stop path as pull over path
-      PullOverPath pull_over_path{};
-      mutex_.lock();
-      status_.pull_over_path = std::make_shared<PullOverPath>(pull_over_path);
-      status_.current_path_idx = 0;
-      status_.pull_over_path->partial_paths.push_back(*output.path);
-      last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
-      mutex_.unlock();
-      RCLCPP_WARN_THROTTLE(
-        getLogger(), *clock_, 5000, "Not found safe pull_over path, generate stop path");
-    } else {
-      // not_safe -> not_safe: use previous stop path
-      output.path = status_.prev_stop_path;
-      output.reference_path = getPreviousModuleOutput().reference_path;
-      RCLCPP_WARN_THROTTLE(
-        getLogger(), *clock_, 5000, "Not found safe pull_over path, use previous stop path");
-    }
+    setStopPath(output);
   }
-  status_.prev_is_safe = status_.is_safe;
 
-  // generate drivable area info for new architecture
+  setDrivableAreaInfo(output);
+
+  setModifiedGoal(output);
+  prev_goal_id_ = modified_goal_pose_->id;
+
+  // set hazard and turn signal
+  if (status_.has_decided_path) {
+    setTurnSignalInfo(output);
+  }
+
+  // for the next loop setOutput().
+  // this is used to determine whether to generate a new stop path or keep the current stop path.
+  status_.prev_is_safe = status_.is_safe;
+}
+
+void GoalPlannerModule::setStopPath(BehaviorModuleOutput & output)
+{
+  if (status_.prev_is_safe || status_.prev_stop_path == nullptr) {
+    // safe -> not_safe or no prev_stop_path: generate new stop_path
+    output.path = std::make_shared<PathWithLaneId>(generateStopPath());
+    output.reference_path = getPreviousModuleOutput().reference_path;
+    status_.prev_stop_path = output.path;
+    // set stop path as pull over path
+    mutex_.lock();
+    PullOverPath pull_over_path{};
+    status_.pull_over_path = std::make_shared<PullOverPath>(pull_over_path);
+    status_.current_path_idx = 0;
+    status_.pull_over_path->partial_paths.push_back(*output.path);
+    last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+    mutex_.unlock();
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Not found safe pull_over path, generate stop path");
+  } else {
+    // not_safe -> not_safe: use previous stop path
+    output.path = status_.prev_stop_path;
+    output.reference_path = getPreviousModuleOutput().reference_path;
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Not found safe pull_over path, use previous stop path");
+  }
+}
+
+void GoalPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) const
+{
   if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
     const double drivable_area_margin = planner_data_->parameters.vehicle_width;
     output.drivable_area_info.drivable_margin =
@@ -698,47 +648,39 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
     output.drivable_area_info = utils::combineDrivableAreaInfo(
       current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
   }
+}
 
-  // return to lane parking if it is possible
-  if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
-    // return only before starting free space parking
-    if (!isStopped() || status_.during_freespace_parking) {
-      status_.during_freespace_parking = true;
-    } else if (returnToLaneParking()) {
-      RCLCPP_INFO(getLogger(), "return to lane parking");
-    }
-  }
-
-  // set hazard and turn signal
-  if (status_.has_decided_path) {
-    const auto original_signal = getPreviousModuleOutput().turn_signal_info;
-    const auto new_signal = calcTurnSignalInfo();
-    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path->points);
-    output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
-      *output.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
-      planner_data_->parameters.ego_nearest_dist_threshold,
-      planner_data_->parameters.ego_nearest_yaw_threshold);
-  }
-
-  const auto distance_to_path_change = calcDistanceToPathChange();
-  updateRTCStatus(distance_to_path_change.first, distance_to_path_change.second);
-
-  setDebugData();
-
-  // Publish the modified goal only when it is updated
-  if (
-    allow_goal_modification_ && status_.is_safe && modified_goal_pose_ &&
-    (!prev_goal_id_ || *prev_goal_id_ != modified_goal_pose_->id)) {
+void GoalPlannerModule::setModifiedGoal(BehaviorModuleOutput & output) const
+{
+  // set the modified goal only when it is updated
+  const auto & route_handler = planner_data_->route_handler;
+  const bool has_changed_goal =
+    modified_goal_pose_ && (!prev_goal_id_ || *prev_goal_id_ != modified_goal_pose_->id);
+  if (status_.is_safe && has_changed_goal) {
     PoseWithUuidStamped modified_goal{};
     modified_goal.uuid = route_handler->getRouteUuid();
     modified_goal.pose = modified_goal_pose_->goal_pose;
     modified_goal.header = route_handler->getRouteHeader();
     output.modified_goal = modified_goal;
-    prev_goal_id_ = modified_goal_pose_->id;
   } else {
     output.modified_goal = {};
   }
+}
 
+void GoalPlannerModule::setTurnSignalInfo(BehaviorModuleOutput & output) const
+{
+  const auto original_signal = getPreviousModuleOutput().turn_signal_info;
+  const auto new_signal = calcTurnSignalInfo();
+  const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path->points);
+  output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
+    *output.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
+    planner_data_->parameters.ego_nearest_dist_threshold,
+    planner_data_->parameters.ego_nearest_yaw_threshold);
+}
+
+void GoalPlannerModule::updateSteeringFactor(
+  const std::array<Pose, 2> & pose, const std::array<double, 2> distance, const uint16_t type)
+{
   const uint16_t steering_factor_direction = std::invoke([this]() {
     const auto turn_signal = calcTurnSignalInfo();
     if (turn_signal.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
@@ -751,24 +693,121 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 
   // TODO(tkhmy) add handle status TRYING
   steering_factor_interface_ptr_->updateSteeringFactor(
-    {status_.pull_over_path->start_pose, modified_goal_pose_->goal_pose},
-    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::GOAL_PLANNER,
-    steering_factor_direction, SteeringFactor::TURNING, "");
+    pose, distance, SteeringFactor::GOAL_PLANNER, steering_factor_direction, type, "");
+}
 
-  // For evaluations
+bool GoalPlannerModule::hasDecidedPath() const
+{
+  // once decided, keep the decision
+  if (status_.has_decided_path) {
+    return true;
+  }
+
+  // if path is not safe, not decided
+  if (!status_.is_safe) {
+    return false;
+  }
+
+  // if ego is sufficiently close to the start of the nearest candidate path, the path is decided
+  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const auto ego_segment_idx = motion_utils::findNearestSegmentIndex(
+    getCurrentPath().points, current_pose, std::numeric_limits<double>::max(), M_PI_2);
+  if (!ego_segment_idx) {
+    return false;
+  }
+  const size_t start_pose_segment_idx = motion_utils::findNearestSegmentIndex(
+    getCurrentPath().points, status_.pull_over_path->start_pose.position);
+  const double dist_to_parking_start_pose = calcSignedArcLength(
+    getCurrentPath().points, current_pose.position, *ego_segment_idx,
+    status_.pull_over_path->start_pose.position, start_pose_segment_idx);
+  return dist_to_parking_start_pose < parameters_->decide_path_distance;
+}
+
+void GoalPlannerModule::requestApproval()
+{
+  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
+
+  if (!status_.has_requested_approval) {
+    // request approval again one the final path is decided
+    waitApproval();
+    removeRTCStatus();
+    steering_factor_interface_ptr_->clearSteeringFactors();
+    for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
+      itr->second = generateUUID();
+    }
+    current_state_ = ModuleStatus::SUCCESS;  // for breaking loop to request again
+    status_.has_requested_approval = true;
+  } else if (isActivated() && isWaitingApproval()) {
+    // When it is approved again after path is decided
+    clearWaitingApproval();
+    last_approved_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+    last_approved_pose_ = std::make_unique<Pose>(current_pose);
+
+    // decide velocity to guarantee turn signal lighting time
+    if (!status_.has_decided_velocity) {
+      auto & first_path = status_.pull_over_path->partial_paths.front();
+      const auto vel =
+        static_cast<float>(std::max(current_vel, parameters_->pull_over_minimum_velocity));
+      for (auto & p : first_path.points) {
+        p.point.longitudinal_velocity_mps = std::min(p.point.longitudinal_velocity_mps, vel);
+      }
+    }
+    status_.has_decided_velocity = true;
+  }
+}
+
+BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
+{
+  constexpr double path_update_duration = 1.0;
+
+  resetPathCandidate();
+  resetPathReference();
+
+  // set current road lanes, pull over lanes, and drivable lane
+  setLanes();
+
+  // Check if it needs to decide path
+  status_.has_decided_path = hasDecidedPath();
+
+  // Use decided path
+  if (status_.has_decided_path) {
+    requestApproval();
+    transitionToNextPathIfFinishingCurrentPath();
+  } else if (!pull_over_path_candidates_.empty() && needPathUpdate(path_update_duration)) {
+    // if the final path is not decided and enough time has passed since last path update,
+    // select safe path from lane parking pull over path candidates
+    // and set it to status_.pull_over_path
+    selectSafePullOverPath();
+  }
+  // else: stop path is generated and set by setOutput()
+
+  // set output and status
+  BehaviorModuleOutput output{};
+  setOutput(output);
+  path_candidate_ = std::make_shared<PathWithLaneId>(status_.pull_over_path->getFullPath());
+  path_reference_ = getPreviousModuleOutput().reference_path;
+
+  // return to lane parking if it is possible
+  if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
+    returnToLaneParking();
+  }
+
+  const auto distance_to_path_change = calcDistanceToPathChange();
+  updateRTCStatus(distance_to_path_change.first, distance_to_path_change.second);
+  // TODO(tkhmy) add handle status TRYING
+  updateSteeringFactor(
+    {status_.pull_over_path->start_pose, modified_goal_pose_->goal_pose},
+    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::TURNING);
+
+  // For debug
+  setDebugData();
   if (parameters_->print_debug_info) {
+    // For evaluations
     printParkingPositionError();
   }
 
   return output;
-}
-
-// This const function can not change the menber variables like the goal.
-// so implement generating candidate path in planWaitingApproval().
-// No specific path for the candidate. It's same to the one generated by plan().
-CandidateOutput GoalPlannerModule::planCandidate() const
-{
-  return CandidateOutput{};
 }
 
 BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
@@ -787,6 +826,8 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
 
 BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification()
 {
+  waitApproval();
+
   updateOccupancyGrid();
   BehaviorModuleOutput out;
   out.modified_goal = plan().modified_goal;  // update status_
@@ -797,23 +838,11 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
                       : out.path;
   path_reference_ = getPreviousModuleOutput().reference_path;
   const auto distance_to_path_change = calcDistanceToPathChange();
+
   updateRTCStatus(distance_to_path_change.first, distance_to_path_change.second);
-
-  const uint16_t steering_factor_direction = std::invoke([this]() {
-    const auto turn_signal = calcTurnSignalInfo();
-    if (turn_signal.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
-      return SteeringFactor::LEFT;
-    } else if (turn_signal.turn_signal.command == TurnIndicatorsCommand::ENABLE_RIGHT) {
-      return SteeringFactor::RIGHT;
-    }
-    return SteeringFactor::STRAIGHT;
-  });
-
-  steering_factor_interface_ptr_->updateSteeringFactor(
+  updateSteeringFactor(
     {status_.pull_over_path->start_pose, modified_goal_pose_->goal_pose},
-    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::GOAL_PLANNER,
-    steering_factor_direction, SteeringFactor::APPROACHING, "");
-  waitApproval();
+    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::APPROACHING);
 
   // generate drivable area info for new architecture
   if (status_.pull_over_path->type == PullOverPlannerType::FREESPACE) {
@@ -963,6 +992,22 @@ PathWithLaneId GoalPlannerModule::generateFeasibleStopPath()
     stop_path, target_drivable_lanes, false, common_parameters.vehicle_length, planner_data_);
 
   return stop_path;
+}
+
+void GoalPlannerModule::transitionToNextPathIfFinishingCurrentPath()
+{
+  if (isActivated() && last_approved_time_ != nullptr) {
+    // if using arc_path and finishing current_path, get next path
+    // enough time for turn signal
+    const bool has_passed_enough_time = (clock_->now() - *last_approved_time_).seconds() >
+                                        planner_data_->parameters.turn_signal_search_time;
+
+    if (hasFinishedCurrentPath() && has_passed_enough_time && status_.require_increment_) {
+      if (incrementPathIndex()) {
+        last_increment_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+      }
+    }
+  }
 }
 
 bool GoalPlannerModule::incrementPathIndex()
