@@ -70,8 +70,7 @@ IntersectionModule::IntersectionModule(
   assoc_ids_(assoc_ids),
   enable_occlusion_detection_(enable_occlusion_detection),
   detection_divisions_(std::nullopt),
-  occlusion_uuid_(tier4_autoware_utils::generateUUID()),
-  occlusion_first_stop_uuid_(tier4_autoware_utils::generateUUID())
+  occlusion_uuid_(tier4_autoware_utils::generateUUID())
 {
   velocity_factor_.init(VelocityFactor::INTERSECTION);
   planner_param_ = planner_param;
@@ -104,8 +103,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   // occlusion
   occlusion_safety_ = true;
   occlusion_stop_distance_ = std::numeric_limits<double>::lowest();
-  occlusion_first_stop_safety_ = true;
-  occlusion_first_stop_distance_ = std::numeric_limits<double>::lowest();
+  occlusion_first_stop_required_ = false;
 
   /* get current pose */
   const geometry_msgs::msg::Pose current_pose = planner_data_->current_odometry->pose;
@@ -266,7 +264,9 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   /* calculate final stop lines */
   std::optional<size_t> stop_line_idx = default_stop_line_idx_opt;
   std::optional<size_t> occlusion_peeking_line_idx =
-    occlusion_peeking_line_idx_opt;  // TODO(Mamoru Sobue): different position depending on the flag
+    occlusion_peeking_line_idx_opt
+      ? std::make_optional<size_t>(occlusion_peeking_line_idx_opt.value())
+      : std::nullopt;
   std::optional<size_t> occlusion_first_stop_line_idx = default_stop_line_idx_opt;
   std::optional<std::pair<size_t, size_t>> insert_creep_during_occlusion = std::nullopt;
 
@@ -299,11 +299,10 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       RCLCPP_DEBUG(logger_, "===== plan end =====");
       return true;
     }
-    if (
-      before_creep_state_machine_.getState() == StateMachine::State::GO &&
-      !ext_occlusion_requested) {
+    if (before_creep_state_machine_.getState() == StateMachine::State::GO) {
       occlusion_stop_required = true;
-      stop_line_idx = occlusion_peeking_line_idx = occlusion_peeking_line_idx_opt;
+      occlusion_peeking_line_idx = occlusion_peeking_line_idx_opt;
+
       // clear first stop line
       // insert creep velocity [closest_idx, occlusion_stop_line)
       insert_creep_during_occlusion =
@@ -311,7 +310,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       occlusion_state_ = OcclusionState::CREEP_SECOND_STOP_LINE;
     } else {
       const bool approached_stop_line =
-        (dist_1st_stopline < planner_param_.common.stop_overshoot_margin);
+        (std::fabs(dist_1st_stopline) < planner_param_.common.stop_overshoot_margin);
       const bool is_stopped = planner_data_->isVehicleStopped();
       if (is_stopped && approached_stop_line) {
         // start waiting at the first stop line
@@ -387,13 +386,10 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     logger_.get_child("collision state_machine"), *clock_);
 
   /* set RTC safety respectively */
-  occlusion_first_stop_distance_ = dist_1st_stopline;
   occlusion_stop_distance_ = dist_2nd_stopline;
   setDistance(dist_1st_stopline);
   if (occlusion_stop_required) {
-    if (first_phase_stop_required) {
-      occlusion_first_stop_safety_ = false;
-    }
+    occlusion_first_stop_required_ = first_phase_stop_required;
     occlusion_safety_ = is_occlusion_cleared;
   } else {
     /* collision */
@@ -414,7 +410,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       }
     }
 
-    if (!occlusion_first_stop_activated_ && occlusion_first_stop_line_idx) {
+    if (!isActivated() && occlusion_first_stop_required_ && occlusion_first_stop_line_idx) {
       planning_utils::setVelocityFromIndex(
         occlusion_first_stop_line_idx.value(), 0.0 /* [m/s] */, path);
       debug_data_.occlusion_first_stop_wall_pose =
@@ -427,10 +423,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       debug_data_.occlusion_stop_wall_pose =
         planning_utils::getAheadPose(occlusion_peeking_line_idx.value(), baselink2front, *path);
     }
-
-    RCLCPP_DEBUG(logger_, "not activated. stop at the line.");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
-    return true;
   }
 
   if (!isActivated() /* collision*/) {
@@ -455,6 +448,8 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       velocity_factor_.set(
         path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::UNKNOWN);
     }
+    RCLCPP_DEBUG(logger_, "===== plan end =====");
+    return true;
   }
 
   is_go_out_ = true;

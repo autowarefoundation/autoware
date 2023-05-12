@@ -183,32 +183,17 @@ bool IntersectionModuleManager::hasSameParentLaneletAndTurnDirectionWithRegister
 
 void IntersectionModuleManager::sendRTC(const Time & stamp)
 {
-  rtc_interface_.clearCooperateStatus();
   for (const auto & scene_module : scene_modules_) {
     const auto intersection_module = std::dynamic_pointer_cast<IntersectionModule>(scene_module);
-    const bool is_occluded = intersection_module->isOccluded();
     const UUID uuid = getUUID(scene_module->getModuleId());
+    const bool safety =
+      scene_module->isSafe() && (!intersection_module->isOcclusionFirstStopRequired());
+    updateRTCStatus(uuid, safety, scene_module->getDistance(), stamp);
     const auto occlusion_uuid = intersection_module->getOcclusionUUID();
     const auto occlusion_distance = intersection_module->getOcclusionDistance();
-    const auto occlusion_first_stop_uuid = intersection_module->getOcclusionFirstStopUUID();
-    if (!is_occluded) {
-      // default
-      updateRTCStatus(uuid, scene_module->isSafe(), scene_module->getDistance(), stamp);
-      occlusion_rtc_interface_.updateCooperateStatus(
-        occlusion_uuid, true, occlusion_distance, occlusion_distance, stamp);
-    } else {
-      // occlusion
-      const auto occlusion_safety = intersection_module->getOcclusionSafety();
-      occlusion_rtc_interface_.updateCooperateStatus(
-        occlusion_uuid, occlusion_safety, occlusion_distance, occlusion_distance, stamp);
-
-      const auto occlusion_first_stop_safety = intersection_module->getOcclusionFirstStopSafety();
-      const auto occlusion_first_stop_distance =
-        intersection_module->getOcclusionFirstStopDistance();
-      rtc_interface_.updateCooperateStatus(
-        occlusion_first_stop_uuid, occlusion_first_stop_safety, occlusion_first_stop_distance,
-        occlusion_first_stop_distance, stamp);
-    }
+    const auto occlusion_safety = intersection_module->getOcclusionSafety();
+    occlusion_rtc_interface_.updateCooperateStatus(
+      occlusion_uuid, occlusion_safety, occlusion_distance, occlusion_distance, stamp);
   }
   rtc_interface_.publishCooperateStatus(stamp);  // publishRTCStatus()
   occlusion_rtc_interface_.publishCooperateStatus(stamp);
@@ -219,20 +204,9 @@ void IntersectionModuleManager::setActivation()
   for (const auto & scene_module : scene_modules_) {
     const auto intersection_module = std::dynamic_pointer_cast<IntersectionModule>(scene_module);
     const auto occlusion_uuid = intersection_module->getOcclusionUUID();
-    const auto occlusion_first_stop_uuid = intersection_module->getOcclusionFirstStopUUID();
-    const bool is_occluded = intersection_module->isOccluded();
-    if (!is_occluded) {
-      // default
-      scene_module->setActivation(rtc_interface_.isActivated(getUUID(scene_module->getModuleId())));
-      intersection_module->setOcclusionActivation(
-        occlusion_rtc_interface_.isActivated(occlusion_uuid));
-    } else {
-      // occlusion
-      intersection_module->setOcclusionActivation(
-        occlusion_rtc_interface_.isActivated(occlusion_uuid));
-      intersection_module->setOcclusionFirstStopActivation(
-        rtc_interface_.isActivated(occlusion_first_stop_uuid));
-    }
+    scene_module->setActivation(rtc_interface_.isActivated(getUUID(scene_module->getModuleId())));
+    intersection_module->setOcclusionActivation(
+      occlusion_rtc_interface_.isActivated(occlusion_uuid));
   }
 }
 
@@ -253,9 +227,7 @@ void IntersectionModuleManager::deleteExpiredModules(
       // occlusion
       const auto intersection_module = std::dynamic_pointer_cast<IntersectionModule>(scene_module);
       const auto occlusion_uuid = intersection_module->getOcclusionUUID();
-      const auto occlusion_first_uuid = intersection_module->getOcclusionFirstStopUUID();
       occlusion_rtc_interface_.removeCooperateStatus(occlusion_uuid);
-      rtc_interface_.removeCooperateStatus(occlusion_first_uuid);
       unregisterModule(scene_module);
     }
   }

@@ -210,7 +210,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
         {debug_data_.collision_stop_wall_pose}, "intersection", now),
       &wall_marker, now);
   }
-  if (!occlusion_first_stop_activated_) {
+  if (!activated_ && occlusion_first_stop_required_) {
     appendMarkerArray(
       virtual_wall_marker_creator_->createStopVirtualWallMarker(
         {debug_data_.occlusion_first_stop_wall_pose}, "intersection", now),

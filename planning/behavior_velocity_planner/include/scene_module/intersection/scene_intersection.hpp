@@ -150,15 +150,9 @@ public:
   UUID getOcclusionUUID() const { return occlusion_uuid_; }
   bool getOcclusionSafety() const { return occlusion_safety_; }
   double getOcclusionDistance() const { return occlusion_stop_distance_; }
-  UUID getOcclusionFirstStopUUID() const { return occlusion_first_stop_uuid_; }
-  bool getOcclusionFirstStopSafety() const { return occlusion_first_stop_safety_; }
-  double getOcclusionFirstStopDistance() const { return occlusion_first_stop_distance_; }
   void setOcclusionActivation(const bool activation) { occlusion_activated_ = activation; }
-  void setOcclusionFirstStopActivation(const bool activation)
-  {
-    occlusion_first_stop_activated_ = activation;
-  }
   bool isOccluded() const { return is_actually_occluded_ || is_forcefully_occluded_; }
+  bool isOcclusionFirstStopRequired() { return occlusion_first_stop_required_; }
 
 private:
   rclcpp::Node & node_;
@@ -186,9 +180,7 @@ private:
   bool occlusion_activated_ = true;
   // for first stop in two-phase stop
   const UUID occlusion_first_stop_uuid_;
-  bool occlusion_first_stop_safety_ = true;
-  double occlusion_first_stop_distance_;
-  bool occlusion_first_stop_activated_ = true;
+  bool occlusion_first_stop_required_ = false;
 
   StateMachine collision_state_machine_;     //! for stable collision checking
   StateMachine before_creep_state_machine_;  //! for two phase stop
