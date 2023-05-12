@@ -56,6 +56,7 @@
 namespace test_utils
 {
 using autoware_auto_mapping_msgs::msg::HADMapBin;
+using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_planning_msgs::msg::Trajectory;
@@ -382,6 +383,19 @@ void updateNodeOptions(
   arguments.pop_back();
 
   node_options.arguments(std::vector<std::string>{arguments.begin(), arguments.end()});
+}
+
+Path toPath(const PathWithLaneId & input)
+{
+  Path output{};
+  output.header = input.header;
+  output.left_bound = input.left_bound;
+  output.right_bound = input.right_bound;
+  output.points.resize(input.points.size());
+  for (size_t i = 0; i < input.points.size(); ++i) {
+    output.points.at(i) = input.points.at(i).point;
+  }
+  return output;
 }
 
 PathWithLaneId loadPathWithLaneIdInYaml()
