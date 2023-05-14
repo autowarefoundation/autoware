@@ -54,20 +54,55 @@ void visualizeBound(
   bound_object->estimateVertexCount(bound.size() * 2);
   bound_object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
 
+  // calculate normal vector of bound and widths depending on the normal vector
+  std::vector<float> normal_vector_angles;
+  std::vector<float> adaptive_widths;
   for (size_t i = 0; i < bound.size(); ++i) {
-    const auto & curr_p = i == bound.size() - 1 ? bound.at(i - 1) : bound.at(i);
-    const auto & next_p = i == bound.size() - 1 ? bound.at(i) : bound.at(i + 1);
-    const auto yaw = tier4_autoware_utils::calcAzimuthAngle(curr_p, next_p);
-    const auto x_offset = static_cast<float>(width * 0.5 * std::sin(yaw));
-    const auto y_offset = static_cast<float>(width * 0.5 * std::cos(yaw));
+    const auto [normal_vector_angle, adaptive_width] = [&]() -> std::pair<float, float> {
+      if (i == 0) {
+        return std::make_pair(
+          tier4_autoware_utils::calcAzimuthAngle(bound.at(i), bound.at(i + 1)) + M_PI_2, width);
+      }
+      if (i == bound.size() - 1) {
+        return std::make_pair(
+          tier4_autoware_utils::calcAzimuthAngle(bound.at(i - 1), bound.at(i)) + M_PI_2, width);
+      }
+      const auto & prev_p = bound.at(i - 1);
+      const auto & curr_p = bound.at(i);
+      const auto & next_p = bound.at(i + 1);
+
+      const float curr_to_prev_angle = tier4_autoware_utils::calcAzimuthAngle(curr_p, prev_p);
+      const float curr_to_next_angle = tier4_autoware_utils::calcAzimuthAngle(curr_p, next_p);
+      const float normal_vector_angle = (curr_to_prev_angle + curr_to_next_angle) / 2.0;
+
+      const float diff_angle =
+        tier4_autoware_utils::normalizeRadian(normal_vector_angle - curr_to_next_angle);
+      if (diff_angle == 0.0) {
+        return std::make_pair(normal_vector_angle, width);
+      }
+
+      return std::make_pair(normal_vector_angle, width / std::sin(diff_angle));
+    }();
+
+    normal_vector_angles.push_back(normal_vector_angle);
+    adaptive_widths.push_back(adaptive_width);
+  }
+
+  // calculate triangle
+  for (size_t i = 0; i < bound.size(); ++i) {
+    const float normal_vector_angle = normal_vector_angles.at(i);
+    const float adaptive_width = adaptive_widths.at(i);
+
+    const auto x_offset = static_cast<float>(adaptive_width * 0.5 * std::cos(normal_vector_angle));
+    const auto y_offset = static_cast<float>(adaptive_width * 0.5 * std::sin(normal_vector_angle));
     auto target_lp = bound.at(i);
-    target_lp.x = target_lp.x - x_offset;
+    target_lp.x = target_lp.x + x_offset;
     target_lp.y = target_lp.y + y_offset;
     target_lp.z = target_lp.z;
     bound_object->position(target_lp.x, target_lp.y, target_lp.z);
     bound_object->colour(color);
     auto target_rp = bound.at(i);
-    target_rp.x = target_rp.x + x_offset;
+    target_rp.x = target_rp.x - x_offset;
     target_rp.y = target_rp.y - y_offset;
     target_rp.z = target_rp.z;
     bound_object->position(target_rp.x, target_rp.y, target_rp.z);
