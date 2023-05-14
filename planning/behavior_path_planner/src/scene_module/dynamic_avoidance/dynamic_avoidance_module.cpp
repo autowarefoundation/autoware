@@ -226,7 +226,33 @@ DynamicAvoidanceModule::calcTargetObjects() const
 
   // 2. filter obstacles for dynamic avoidance
   const auto & predicted_objects = planner_data_->dynamic_object->objects;
-  const auto target_predicted_objects = getObjectsInLanes(predicted_objects, target_lanes);
+  const auto predicted_objects_in_target_lanes = getObjectsInLanes(predicted_objects, target_lanes);
+
+  // check if object will cut into the ego lane.
+  std::vector<PredictedObject> target_predicted_objects;
+  constexpr double epsilon_path_lat_diff = 0.3;
+  for (const auto & object : predicted_objects_in_target_lanes) {
+    const auto reliable_predicted_path = std::max_element(
+      object.kinematics.predicted_paths.begin(), object.kinematics.predicted_paths.end(),
+      [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
+
+    // Ignore object since it will cut into the ego lane
+    const bool will_object_cut_in = [&]() {
+      for (const auto & predicted_path_point : reliable_predicted_path->path) {
+        const double paths_lat_diff =
+          motion_utils::calcLateralOffset(prev_module_path->points, predicted_path_point.position);
+        if (std::abs(paths_lat_diff) < epsilon_path_lat_diff) {
+          return true;
+        }
+      }
+      return false;
+    }();
+    if (will_object_cut_in) {
+      continue;
+    }
+
+    target_predicted_objects.push_back(object);
+  }
 
   // 3. convert predicted objects to dynamic avoidance objects
   std::vector<DynamicAvoidanceObject> target_avoidance_objects;
