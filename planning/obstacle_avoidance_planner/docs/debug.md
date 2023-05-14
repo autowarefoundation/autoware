@@ -147,7 +147,7 @@ onPath:= 20.737 [ms]
 With the following script, any calculation time of the above functions can be plot.
 
 ```sh
-ros2 run obstacle_avoidance_planner calclation_time_plotter.py
+ros2 run obstacle_avoidance_planner calculation_time_plotter.py
 ```
 
 ![calculation_time_plot](../media/debug/calculation_time_plot.png)
@@ -155,7 +155,7 @@ ros2 run obstacle_avoidance_planner calclation_time_plotter.py
 You can specify functions to plot with the `-f` option.
 
 ```sh
-ros2 run obstacle_avoidance_planner calclation_time_plotter.py -f "onPath, generateOptimizedTrajectory, calcReferencePoints"
+ros2 run obstacle_avoidance_planner calculation_time_plotter.py -f "onPath, generateOptimizedTrajectory, calcReferencePoints"
 ```
 
 ## Q&A for Debug

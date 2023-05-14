@@ -63,6 +63,6 @@ ament_auto_package(
 )
 
 install(PROGRAMS
-  scripts/calclation_time_plotter.py
+  scripts/calculation_time_plotter.py
   DESTINATION lib/${PROJECT_NAME}
 )
