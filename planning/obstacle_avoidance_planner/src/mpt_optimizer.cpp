@@ -921,7 +921,7 @@ void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_poin
       // Only the Lower bound is cut out. Widen the bounds towards the lower bound since cut out too
       // much.
       b.lower_bound =
-        std::min(b.lower_bound, original_b.upper_bound + mpt_param_.min_drivable_width);
+        std::min(b.lower_bound, original_b.upper_bound - mpt_param_.min_drivable_width);
       continue;
     }
     // extend longitudinal if it overlaps out_of_upper_bound_sections
@@ -971,7 +971,7 @@ void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_poin
       // Only the Upper bound is cut out. Widen the bounds towards the upper bound since cut out too
       // much.
       b.upper_bound =
-        std::max(b.upper_bound, original_b.lower_bound - mpt_param_.min_drivable_width);
+        std::max(b.upper_bound, original_b.lower_bound + mpt_param_.min_drivable_width);
       continue;
     }
     // extend longitudinal if it overlaps out_of_lower_bound_sections
