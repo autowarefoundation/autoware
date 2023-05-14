@@ -675,21 +675,58 @@ void filterTargetObjects(
       o.overhang_lanelet = overhang_lanelet;
       lanelet::BasicPoint3d overhang_basic_pose(
         o.overhang_pose.position.x, o.overhang_pose.position.y, o.overhang_pose.position.z);
+
       const bool get_left = isOnRight(o) && parameters->enable_avoidance_over_same_direction;
       const bool get_right = !isOnRight(o) && parameters->enable_avoidance_over_same_direction;
+      const bool get_opposite = parameters->enable_avoidance_over_opposite_direction;
 
-      const auto target_lines = rh->getFurthestLinestring(
-        overhang_lanelet, get_right, get_left,
-        parameters->enable_avoidance_over_opposite_direction);
+      lanelet::ConstLineString3d target_line{};
+      {
+        const auto lines =
+          rh->getFurthestLinestring(overhang_lanelet, get_right, get_left, get_opposite);
+        if (isOnRight(o)) {
+          o.to_road_shoulder_distance =
+            distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
+          debug.bounds.push_back(lines.back());
+        } else {
+          o.to_road_shoulder_distance =
+            distance2d(to2D(overhang_basic_pose), to2D(lines.front().basicLineString()));
+          debug.bounds.push_back(lines.front());
+        }
+      }
 
-      if (isOnRight(o)) {
-        o.to_road_shoulder_distance =
-          distance2d(to2D(overhang_basic_pose), to2D(target_lines.back().basicLineString()));
-        debug.bounds.push_back(target_lines.back());
-      } else {
-        o.to_road_shoulder_distance =
-          distance2d(to2D(overhang_basic_pose), to2D(target_lines.front().basicLineString()));
-        debug.bounds.push_back(target_lines.front());
+      lanelet::ConstLanelets previous_lanelet{};
+      if (rh->getPreviousLaneletsWithinRoute(overhang_lanelet, &previous_lanelet)) {
+        const auto lines =
+          rh->getFurthestLinestring(previous_lanelet.front(), get_right, get_left, get_opposite);
+        if (isOnRight(o)) {
+          const auto d =
+            distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
+          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
+          debug.bounds.push_back(lines.back());
+        } else {
+          const auto d =
+            distance2d(to2D(overhang_basic_pose), to2D(lines.front().basicLineString()));
+          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
+          debug.bounds.push_back(lines.front());
+        }
+      }
+
+      lanelet::ConstLanelet next_lanelet{};
+      if (rh->getNextLaneletWithinRoute(overhang_lanelet, &next_lanelet)) {
+        const auto lines =
+          rh->getFurthestLinestring(next_lanelet, get_right, get_left, get_opposite);
+        if (isOnRight(o)) {
+          const auto d =
+            distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
+          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
+          debug.bounds.push_back(lines.back());
+        } else {
+          const auto d =
+            distance2d(to2D(overhang_basic_pose), to2D(lines.front().basicLineString()));
+          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
+          debug.bounds.push_back(lines.front());
+        }
       }
     }
 

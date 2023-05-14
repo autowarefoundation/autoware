@@ -3344,8 +3344,7 @@ void AvoidanceModule::updateDebugMarker(
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("NotNeedAvoidance")));
 
   add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
-  add(createOverhangFurthestLineStringMarkerArray(
-    debug.bounds, "farthest_linestring_from_overhang", 1.0, 0.0, 1.0));
+  add(createOverhangFurthestLineStringMarkerArray(debug.bounds, "bounds", 1.0, 0.0, 1.0));
 
   add(createUnsafeObjectsMarkerArray(debug.unsafe_objects, "unsafe_objects"));
 
