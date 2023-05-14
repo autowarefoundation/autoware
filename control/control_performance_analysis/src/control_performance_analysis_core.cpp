@@ -14,6 +14,7 @@
 
 #include "control_performance_analysis/control_performance_analysis_core.hpp"
 
+#include "motion_utils/trajectory/interpolation.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <algorithm>
@@ -57,6 +58,7 @@ void ControlPerformanceAnalysisCore::setCurrentWaypoints(const Trajectory & traj
     current_waypoints_ptr_->poses.emplace_back(point.pose);
     current_waypoints_vel_ptr_->emplace_back(point.longitudinal_velocity_mps);
   }
+  current_trajectory_ptr_ = std::make_shared<Trajectory>(trajectory);
 }
 
 void ControlPerformanceAnalysisCore::setOdomHistory(const Odometry & odom)
@@ -94,19 +96,17 @@ std::pair<bool, int32_t> ControlPerformanceAnalysisCore::findClosestPrevWayPoint
     current_waypoints_ptr_->poses, *current_vec_pose_ptr_, p_.acceptable_max_distance_to_waypoint_,
     p_.acceptable_max_yaw_difference_rad_);
 
+  if (!closest_idx) {  // fail to find closest idx
+    return std::make_pair(false, std::numeric_limits<int32_t>::quiet_NaN());
+  }
+
   // find the prev and next waypoint
 
   if (*closest_idx != 0 && (*closest_idx + 1) != current_waypoints_ptr_->poses.size()) {
-    const double dist_to_prev = std::hypot(
-      current_vec_pose_ptr_->position.x -
-        current_waypoints_ptr_->poses.at(*closest_idx - 1).position.x,
-      current_vec_pose_ptr_->position.y -
-        current_waypoints_ptr_->poses.at(*closest_idx - 1).position.y);
-    const double dist_to_next = std::hypot(
-      current_vec_pose_ptr_->position.x -
-        current_waypoints_ptr_->poses.at(*closest_idx + 1).position.x,
-      current_vec_pose_ptr_->position.y -
-        current_waypoints_ptr_->poses.at(*closest_idx + 1).position.y);
+    const auto dist_to_prev = tier4_autoware_utils::calcDistance2d(
+      *current_vec_pose_ptr_, current_waypoints_ptr_->poses.at(*closest_idx - 1));
+    const auto dist_to_next = tier4_autoware_utils::calcDistance2d(
+      *current_vec_pose_ptr_, current_waypoints_ptr_->poses.at(*closest_idx + 1));
     if (dist_to_next > dist_to_prev) {
       idx_prev_wp_ = std::make_unique<int32_t>(*closest_idx - 1);
       idx_next_wp_ = std::make_unique<int32_t>(*closest_idx);
@@ -229,11 +229,8 @@ bool ControlPerformanceAnalysisCore::calculateErrorVars()
 
   const double & Vx = odom_history_ptr_->at(odom_size - 2).twist.twist.linear.x;
   // Current acceleration calculation
-  const double & d_x = odom_history_ptr_->at(odom_size - 1).pose.pose.position.x -
-                       odom_history_ptr_->at(odom_size - 2).pose.pose.position.x;
-  const double & d_y = odom_history_ptr_->at(odom_size - 1).pose.pose.position.y -
-                       odom_history_ptr_->at(odom_size - 2).pose.pose.position.y;
-  const double & ds = std::hypot(d_x, d_y);
+  const auto ds = tier4_autoware_utils::calcDistance2d(
+    odom_history_ptr_->at(odom_size - 1).pose.pose, odom_history_ptr_->at(odom_size - 2).pose.pose);
 
   const double & vel_mean = (odom_history_ptr_->at(odom_size - 1).twist.twist.linear.x +
                              odom_history_ptr_->at(odom_size - 2).twist.twist.linear.x) /
@@ -492,145 +489,16 @@ void ControlPerformanceAnalysisCore::findCurveRefIdx()
 
 std::pair<bool, Pose> ControlPerformanceAnalysisCore::calculateClosestPose()
 {
-  Pose temp_interpolated_pose;
-
-  // Get index of prev waypoint and sanity check.
-  if (!idx_prev_wp_ && !idx_next_wp_) {
-    RCLCPP_ERROR(logger_, "Cannot find the previous and next waypoints.");
-    return std::make_pair(false, temp_interpolated_pose);
-  }
-
-  // Define the next waypoint - so that we can define an interval in which the car follow a line.
-  double next_wp_acc = 0.0;
-  double prev_wp_acc = 0.0;
-
-  /*
-   *  Create two vectors originating from the previous waypoints to the next waypoint and the
-   *  vehicle position and find projection of vehicle vector on the the trajectory section,
-   *
-   * */
-
-  // First get te yaw angles of all three poses.
-  const double & prev_yaw =
-    tf2::getYaw(current_waypoints_ptr_->poses.at(*idx_prev_wp_).orientation);
-  const double & prev_velocity = current_waypoints_vel_ptr_->at(*idx_prev_wp_);
-  const double & next_velocity = current_waypoints_vel_ptr_->at(*idx_next_wp_);
-
-  // Previous waypoint to next waypoint.
-  const double & dx_prev2next = current_waypoints_ptr_->poses.at(*idx_next_wp_).position.x -
-                                current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.x;
-
-  const double & dy_prev2next = current_waypoints_ptr_->poses.at(*idx_next_wp_).position.y -
-                                current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.y;
-
-  const double & delta_psi_prev2next = tf2::getYaw(
-    current_waypoints_ptr_->poses.at(*idx_next_wp_).orientation -
-    current_waypoints_ptr_->poses.at(*idx_prev_wp_).orientation);
-  const double & d_vel_prev2next = next_velocity - prev_velocity;
-
-  // Create a vector from p0 (prev) --> p1 (to next wp)
-  const std::vector<double> v_prev2next_wp{dx_prev2next, dy_prev2next};
-
-  // Previous waypoint to the vehicle pose
-  /*
-   *   p0:previous waypoint ----> p1 next waypoint
-   *   vector = p1 - p0. We project vehicle vector on this interval to
-   *
-   * */
-
-  const double & dx_prev2vehicle =
-    current_vec_pose_ptr_->position.x - current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.x;
-
-  const double & dy_prev2vehicle =
-    current_vec_pose_ptr_->position.y - current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.y;
-
-  // Vector from p0 to p_vehicle
-  const std::vector<double> v_prev2vehicle{dx_prev2vehicle, dy_prev2vehicle};
-
-  // Compute the length of v_prev2next_wp : vector from p0 --> p1
-  const double & distance_p02p1 = std::hypot(dx_prev2next, dy_prev2next);
-
-  // Compute how far the car is away from p0 in p1 direction. p_interp is the location of the
-  // interpolated waypoint. This is the dot product normalized by the length of the interval.
-  // a.b = |a|.|b|.cos(alpha) -- > |a|.cos(alpha) = a.b / |b| where b is the path interval,
-
-  const double & distance_p02p_interp =
-    (dx_prev2next * dx_prev2vehicle + dy_prev2next * dy_prev2vehicle) / distance_p02p1;
-
-  //  const double & distance_p_interp2p1 = distance_p02p1 - distance_p02p_interp;
-  /*
-   * We use the following linear interpolation
-   *  pi = p0 + ratio_t * (p1 - p0)
-   * */
-
-  const double & ratio_t = distance_p02p_interp / distance_p02p1;
-
-  // Interpolate pose.position and pose.orientation
-  temp_interpolated_pose.position.x =
-    current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.x + ratio_t * dx_prev2next;
-
-  temp_interpolated_pose.position.y =
-    current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.y + ratio_t * dy_prev2next;
-
-  temp_interpolated_pose.position.z = 0.0;
-
-  // Interpolate the yaw angle of pi : interpolated waypoint
-  const double & interp_yaw_angle = prev_yaw + ratio_t * delta_psi_prev2next;
-  const double & interp_velocity = prev_velocity + ratio_t * d_vel_prev2next;
-
-  const Quaternion & orient_msg = utils::createOrientationMsgFromYaw(interp_yaw_angle);
-  temp_interpolated_pose.orientation = orient_msg;
-
-  /* interpolated acceleration calculation */
-
-  if (
-    *idx_prev_wp_ == 0 ||
-    static_cast<size_t>(*idx_prev_wp_ + 1) == current_waypoints_ptr_->poses.size()) {
-    prev_wp_acc = 0.0;
-  } else {
-    const double & d_x = current_waypoints_ptr_->poses.at(*idx_next_wp_).position.x -
-                         current_waypoints_ptr_->poses.at(*idx_prev_wp_ - 1).position.x;
-    const double & d_y = current_waypoints_ptr_->poses.at(*idx_next_wp_).position.y -
-                         current_waypoints_ptr_->poses.at(*idx_prev_wp_ - 1).position.y;
-    const double & ds = std::hypot(d_x, d_y);
-    const double & vel_mean = (current_waypoints_vel_ptr_->at(*idx_next_wp_) +
-                               current_waypoints_vel_ptr_->at(*idx_prev_wp_ - 1)) /
-                              2.0;
-    const double & dv = current_waypoints_vel_ptr_->at(*idx_next_wp_) -
-                        current_waypoints_vel_ptr_->at(*idx_prev_wp_ - 1);
-    const double & dt = ds / std::max(vel_mean, p_.prevent_zero_division_value_);
-    prev_wp_acc = dv / std::max(dt, p_.prevent_zero_division_value_);
-  }
-
-  if (static_cast<size_t>(*idx_next_wp_ + 1) == current_waypoints_ptr_->poses.size()) {
-    next_wp_acc = 0.0;
-  } else {
-    const double & d_x = current_waypoints_ptr_->poses.at(*idx_next_wp_ + 1).position.x -
-                         current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.x;
-    const double & d_y = current_waypoints_ptr_->poses.at(*idx_next_wp_ + 1).position.y -
-                         current_waypoints_ptr_->poses.at(*idx_prev_wp_).position.y;
-    const double & ds = std::hypot(d_x, d_y);
-    const double & vel_mean = (current_waypoints_vel_ptr_->at(*idx_next_wp_ + 1) +
-                               current_waypoints_vel_ptr_->at(*idx_prev_wp_)) /
-                              2.0;
-    const double & dv = current_waypoints_vel_ptr_->at(*idx_next_wp_ + 1) -
-                        current_waypoints_vel_ptr_->at(*idx_prev_wp_);
-    const double & dt = ds / std::max(vel_mean, p_.prevent_zero_division_value_);
-    next_wp_acc = dv / std::max(dt, p_.prevent_zero_division_value_);
-  }
-  const double & d_acc_prev2next = next_wp_acc - prev_wp_acc;
-  const double & interp_acceleration = prev_wp_acc + ratio_t * d_acc_prev2next;
-
-  const Pose interpolated_pose = temp_interpolated_pose;
-
-  /* desired steering calculation */
+  const auto interp_point =
+    motion_utils::calcInterpolatedPoint(*current_trajectory_ptr_, *current_vec_pose_ptr_);
 
   const double interp_steering_angle = std::atan(p_.wheelbase_ * estimateCurvature());
 
   setInterpolatedVars(
-    interpolated_pose, interp_velocity, interp_acceleration, interp_steering_angle);
+    interp_point.pose, interp_point.longitudinal_velocity_mps, interp_point.acceleration_mps2,
+    interp_steering_angle);
 
-  return std::make_pair(true, interpolated_pose);
+  return std::make_pair(true, interp_point.pose);
 }
 
 // Sets interpolated waypoint_ptr_.
