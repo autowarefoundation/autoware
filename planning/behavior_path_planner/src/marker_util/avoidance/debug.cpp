@@ -55,11 +55,25 @@ MarkerArray createObjectsCubeMarkerArray(
   const ObjectDataArray & objects, std::string && ns, const Vector3 & scale,
   const ColorRGBA & color)
 {
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+
   MarkerArray msg;
 
-  auto marker = createDefaultMarker(
-    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::CUBE, scale, color);
+  const auto is_small_object = [](const auto & o) {
+    const auto t = behavior_path_planner::utils::getHighestProbLabel(o.classification);
+    return t == ObjectClassification::PEDESTRIAN || t == ObjectClassification::BICYCLE ||
+           t == ObjectClassification::MOTORCYCLE || t == ObjectClassification::UNKNOWN;
+  };
+
   for (const auto & object : objects) {
+    auto marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::CUBE, scale, color);
+
+    if (is_small_object(object.object)) {
+      marker.scale = createMarkerScale(0.5, 0.5, 1.5);
+      marker.type = Marker::CYLINDER;
+    }
+
     marker.id = uuidToInt32(object.object.object_id);
     marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
     msg.markers.push_back(marker);
