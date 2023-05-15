@@ -13,15 +13,16 @@ The manager launches and executes scene modules in `behavior_path_planner` depen
 
 Support status:
 
-| Name                     | Simple exclusive execution | Advanced simultaneous execution |
-| :----------------------- | :------------------------: | :-----------------------------: |
-| Avoidance                |     :heavy_check_mark:     |       :heavy_check_mark:        |
-| Avoidance By Lane Change |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
-| Lane Change              |     :heavy_check_mark:     |       :heavy_check_mark:        |
-| External Lane Change     |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
-| Pull Over                |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
-| Pull Out                 |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
-| Side Shift               |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
+| Name                                     | Simple exclusive execution | Advanced simultaneous execution |
+| :--------------------------------------- | :------------------------: | :-----------------------------: |
+| Avoidance                                |     :heavy_check_mark:     |       :heavy_check_mark:        |
+| Avoidance By Lane Change                 |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
+| Lane Change                              |     :heavy_check_mark:     |       :heavy_check_mark:        |
+| External Lane Change                     |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
+| Goal Planner (without goal modification) |     :heavy_check_mark:     |       :heavy_check_mark:        |
+| Goal Planner (with goal modification)    |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
+| Pull Out                                 |     :heavy_check_mark:     |       :heavy_check_mark:        |
+| Side Shift                               |     :heavy_check_mark:     |    :heavy_multiplication_x:     |
 
 Click [here](../README.md) for supported scene modules.
 
