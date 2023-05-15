@@ -14,6 +14,7 @@
 
 #include "behavior_path_planner/scene_module/lane_change/interface.hpp"
 
+#include "behavior_path_planner/module_status.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
@@ -72,10 +73,6 @@ bool LaneChangeInterface::isExecutionRequested() const
 
 bool LaneChangeInterface::isExecutionReady() const
 {
-  if (current_state_ == ModuleStatus::RUNNING) {
-    return true;
-  }
-
   LaneChangePath selected_path;
   module_type_->setPreviousModulePaths(
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
@@ -97,8 +94,11 @@ ModuleStatus LaneChangeInterface::updateState()
   }
 
   if (module_type_->isCancelConditionSatisfied()) {
-    current_state_ =
-      module_type_->isCancelEnabled() ? ModuleStatus::FAILURE : ModuleStatus::RUNNING;
+    if (module_type_->isCancelEnabled()) {
+      current_state_ = isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::FAILURE;
+    } else {
+      current_state_ = ModuleStatus::RUNNING;
+    }
     return current_state_;
   }
 
@@ -472,6 +472,33 @@ LaneChangeBTModule::LaneChangeBTModule(
     name, node, parameters, createRTCInterfaceMap(node, name, {"left", "right"}),
     std::make_unique<NormalLaneChangeBT>(parameters, LaneChangeModuleType::NORMAL, Direction::NONE)}
 {
+}
+
+ModuleStatus LaneChangeBTModule::updateState()
+{
+  if (!module_type_->isValidPath()) {
+    current_state_ = ModuleStatus::FAILURE;
+    return current_state_;
+  }
+
+  if (module_type_->isAbortState()) {
+    current_state_ = ModuleStatus::RUNNING;
+    return current_state_;
+  }
+
+  if (module_type_->isCancelConditionSatisfied()) {
+    current_state_ =
+      module_type_->isCancelEnabled() ? ModuleStatus::FAILURE : ModuleStatus::RUNNING;
+    return current_state_;
+  }
+
+  if (module_type_->hasFinishedLaneChange()) {
+    current_state_ = ModuleStatus::SUCCESS;
+    return current_state_;
+  }
+
+  current_state_ = ModuleStatus::RUNNING;
+  return current_state_;
 }
 
 void LaneChangeBTModule::updateRTCStatus(const double start_distance, const double finish_distance)
