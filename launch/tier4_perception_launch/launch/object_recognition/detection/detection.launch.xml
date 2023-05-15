@@ -27,7 +27,7 @@
   <arg name="camera_info6" default=""/>
   <arg name="image_raw7" default=""/>
   <arg name="camera_info7" default=""/>
-  <arg name="image_number" default="1" description="choose image raw number(0-7)"/>
+  <arg name="image_number" default="1" description="choose image raw number(1-8)"/>
 
   <!-- camera lidar fusion param -->
   <arg name="remove_unknown" default="true"/>

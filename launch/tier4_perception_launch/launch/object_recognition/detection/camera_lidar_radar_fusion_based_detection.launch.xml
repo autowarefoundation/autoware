@@ -26,7 +26,7 @@
   <arg name="camera_info6" default="/camera_info6"/>
   <arg name="image_raw7" default="/image_raw7"/>
   <arg name="camera_info7" default="/camera_info7"/>
-  <arg name="image_number" default="1" description="choose image raw number(0-7)"/>
+  <arg name="image_number" default="1" description="choose image raw number(1-8)"/>
 
   <!-- camera lidar fusion based detection-->
   <group>
