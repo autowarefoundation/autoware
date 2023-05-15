@@ -74,6 +74,7 @@ public:
   SceneModulePtr getNewModule()
   {
     if (idling_module_ != nullptr) {
+      idling_module_->onEntry();
       return idling_module_;
     }
 
