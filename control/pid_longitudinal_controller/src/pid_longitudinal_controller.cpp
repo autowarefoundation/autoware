@@ -526,6 +526,11 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     RCLCPP_INFO_SKIPFIRST_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000, "%s", s);
   };
 
+  // if current operation mode is not autonomous mode, then change state to stopped
+  if (m_current_operation_mode.mode != OperationModeState::AUTONOMOUS) {
+    return changeState(ControlState::STOPPED);
+  }
+
   // transit state
   // in DRIVE state
   if (m_control_state == ControlState::DRIVE) {
