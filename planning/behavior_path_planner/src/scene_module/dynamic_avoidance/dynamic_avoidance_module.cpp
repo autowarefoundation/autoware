@@ -106,6 +106,28 @@ void appendObjectMarker(MarkerArray & marker_array, const geometry_msgs::msg::Po
 
   marker_array.markers.push_back(marker);
 }
+
+void appendExtractedPolygonMarker(
+  MarkerArray & marker_array, const tier4_autoware_utils::Polygon2d & obj_poly)
+{
+  auto marker = tier4_autoware_utils::createDefaultMarker(
+    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "extracted_polygons", marker_array.markers.size(),
+    visualization_msgs::msg::Marker::LINE_STRIP,
+    tier4_autoware_utils::createMarkerScale(0.05, 0.0, 0.0),
+    tier4_autoware_utils::createMarkerColor(1.0, 0.5, 0.6, 0.8));
+
+  // NOTE: obj_poly.outer() has already duplicated points to close the polygon.
+  for (size_t i = 0; i < obj_poly.outer().size(); ++i) {
+    const auto & bound_point = obj_poly.outer().at(i);
+
+    geometry_msgs::msg::Point bound_geom_point;
+    bound_geom_point.x = bound_point.x();
+    bound_geom_point.y = bound_point.y();
+    marker.points.push_back(bound_geom_point);
+  }
+
+  marker_array.markers.push_back(marker);
+}
 }  // namespace
 
 #ifdef USE_OLD_ARCHITECTURE
@@ -175,6 +197,7 @@ ModuleStatus DynamicAvoidanceModule::updateState()
 BehaviorModuleOutput DynamicAvoidanceModule::plan()
 {
   info_marker_.markers.clear();
+  debug_marker_.markers.clear();
 
   // 1. get reference path from previous module
   const auto prev_module_path = getPreviousModuleOutput().path;
@@ -190,6 +213,7 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
       obstacles_for_drivable_area.push_back({object.pose, obstacle_poly.value()});
 
       appendObjectMarker(info_marker_, object.pose);
+      appendExtractedPolygonMarker(debug_marker_, obstacle_poly.value());
     }
   }
 
