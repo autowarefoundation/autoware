@@ -17,7 +17,9 @@
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 
 #include <algorithm>
@@ -247,30 +249,40 @@ lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
     return {};
   }
   // Get lane change lanes
-  lanelet::ConstLanelet current_lane;
-  lanelet::utils::query::getClosestLanelet(current_lanes, getEgoPose(), &current_lane);
-
-  const auto minimum_prepare_length = planner_data_->parameters.minimum_prepare_length;
-
-  const auto lane_change_prepare_length = std::max(
-    getEgoVelocity() * planner_data_->parameters.lane_change_prepare_duration,
-    minimum_prepare_length);
-
   const auto & route_handler = getRouteHandler();
-
-  const auto current_check_lanes =
-    route_handler->getLaneletSequence(current_lane, getEgoPose(), 0.0, lane_change_prepare_length);
 
   const auto lane_change_lane = utils::lane_change::getLaneChangeTargetLane(
     *getRouteHandler(), current_lanes, type_, direction);
 
-  const auto lane_change_lane_length = std::max(lane_change_lane_length_, getEgoVelocity() * 10.0);
-  if (lane_change_lane) {
-    return route_handler->getLaneletSequence(
-      lane_change_lane.get(), getEgoPose(), lane_change_lane_length, lane_change_lane_length);
+  if (!lane_change_lane) {
+    return {};
   }
 
-  return {};
+  const auto front_pose = std::invoke([&lane_change_lane]() {
+    const auto & p = lane_change_lane->centerline().front();
+    const auto front_point = lanelet::utils::conversion::toGeomMsgPt(p);
+    const auto front_yaw = lanelet::utils::getLaneletAngle(*lane_change_lane, front_point);
+    geometry_msgs::msg::Pose front_pose;
+    front_pose.position = front_point;
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, front_yaw);
+    front_pose.orientation = tf2::toMsg(quat);
+    return front_pose;
+  });
+
+  const auto forward_length = std::invoke([&]() {
+    const auto signed_distance = utils::getSignedDistance(front_pose, getEgoPose(), current_lanes);
+    const auto forward_path_length = planner_data_->parameters.forward_path_length;
+    if (signed_distance <= 0.0) {
+      return forward_path_length;
+    }
+
+    return signed_distance + forward_path_length;
+  });
+  const auto backward_length = lane_change_parameters_->backward_lane_length;
+
+  return route_handler->getLaneletSequence(
+    lane_change_lane.get(), getEgoPose(), backward_length, forward_length);
 }
 
 int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) const
@@ -498,9 +510,10 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (candidate_paths->empty()) {
       // only compute dynamic object indices once
+      const auto backward_length = lane_change_parameters_->backward_lane_length;
       const auto backward_target_lanes_for_object_filtering =
         utils::lane_change::getBackwardLanelets(
-          route_handler, target_lanelets, getEgoPose(), check_length_);
+          route_handler, target_lanelets, getEgoPose(), backward_length);
       dynamic_object_indices = utils::lane_change::filterObjectIndices(
         {*candidate_path}, *dynamic_objects, backward_target_lanes_for_object_filtering,
         getEgoPose(), common_parameter.forward_path_length, *lane_change_parameters_,
@@ -541,7 +554,8 @@ bool NormalLaneChange::isApprovedPathSafe(Pose & ego_pose_before_collision) cons
 
   // get lanes used for detection
   const auto backward_target_lanes_for_object_filtering = utils::lane_change::getBackwardLanelets(
-    *route_handler, path.target_lanelets, current_pose, check_length_);
+    *route_handler, path.target_lanelets, current_pose,
+    lane_change_parameters.backward_lane_length);
 
   CollisionCheckDebugMap debug_data;
   const auto lateral_buffer =

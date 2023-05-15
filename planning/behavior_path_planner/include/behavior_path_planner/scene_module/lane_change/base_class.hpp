@@ -238,9 +238,6 @@ protected:
 
   PathWithLaneId prev_approved_path_{};
 
-  double lane_change_lane_length_{200.0};
-  double check_length_{100.0};
-
   bool is_abort_path_approved_{false};
   bool is_abort_approval_requested_{false};
   bool is_activated_{false};

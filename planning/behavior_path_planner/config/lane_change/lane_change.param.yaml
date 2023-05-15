@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     lane_change:
-      lane_changing_safety_check_duration: 8.0  # [s]
+      backward_lane_length: 200.0 #[m]
       prepare_duration: 4.0         # [s]
 
       backward_length_buffer_for_end_of_lane: 3.0 # [m]

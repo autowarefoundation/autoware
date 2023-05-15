@@ -709,6 +709,7 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   const auto parameter = [](std::string && name) { return "lane_change." + name; };
 
   // trajectory generation
+  p.backward_lane_length = declare_parameter<double>(parameter("backward_lane_length"));
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
