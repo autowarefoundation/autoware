@@ -1018,7 +1018,10 @@ bool isEgoOutOfRoute(
   }
 
   // If ego vehicle is over goal on goal lane, return true
-  if (lanelet::utils::isInLanelet(self_pose, goal_lane)) {
+  lanelet::ConstLanelet closest_lane;
+  const double yaw_threshold = tier4_autoware_utils::deg2rad(90);
+  if (lanelet::utils::query::getClosestLaneletWithConstrains(
+        {goal_lane}, self_pose, &closest_lane, 0.0, yaw_threshold)) {
     constexpr double buffer = 1.0;
     const auto ego_arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, self_pose);
     const auto goal_arc_coord =
