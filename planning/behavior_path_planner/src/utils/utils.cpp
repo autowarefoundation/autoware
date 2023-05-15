@@ -169,14 +169,49 @@ boost::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
   return boost::none;
 }
 
-PolygonPoint transformBoundFrenetCoordinate(
-  const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Point & point)
+double calcDistanceFromPointToSegment(
+  const geometry_msgs::msg::Point & segment_start_point,
+  const geometry_msgs::msg::Point & segment_end_point,
+  const geometry_msgs::msg::Point & target_point)
 {
-  const size_t seg_idx = motion_utils::findNearestSegmentIndex(points, point);
+  const auto & a = segment_start_point;
+  const auto & b = segment_end_point;
+  const auto & p = target_point;
+
+  const double dot_val = (b.x - a.x) * (p.x - a.x) + (b.y - a.y) * (p.y - a.y);
+  const double squared_segment_length = tier4_autoware_utils::calcSquaredDistance2d(a, b);
+  if (0 <= dot_val && dot_val <= squared_segment_length) {
+    const double numerator = std::abs((p.x - a.x) * (a.y - b.y) - (p.y - a.y) * (a.x - b.x));
+    const double denominator = std::sqrt(std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2));
+    return numerator / denominator;
+  }
+
+  // target_point is outside the segment.
+  return std::min(
+    tier4_autoware_utils::calcDistance2d(a, p), tier4_autoware_utils::calcDistance2d(b, p));
+}
+
+PolygonPoint transformBoundFrenetCoordinate(
+  const std::vector<geometry_msgs::msg::Point> & bound_points,
+  const geometry_msgs::msg::Point & target_point)
+{
+  // NOTE: findNearestSegmentIndex cannot be used since a bound's interval is sometimes too large to
+  // find wrong nearest index.
+  std::vector<double> dist_to_bound_segment_vec;
+  for (size_t i = 0; i < bound_points.size() - 1; ++i) {
+    const double dist_to_bound_segment =
+      calcDistanceFromPointToSegment(bound_points.at(i), bound_points.at(i + 1), target_point);
+    dist_to_bound_segment_vec.push_back(dist_to_bound_segment);
+  }
+
+  const size_t min_dist_seg_idx = std::distance(
+    dist_to_bound_segment_vec.begin(),
+    std::min_element(dist_to_bound_segment_vec.begin(), dist_to_bound_segment_vec.end()));
   const double lon_dist_to_segment =
-    motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, point);
-  const double lat_dist = motion_utils::calcLateralOffset(points, point, seg_idx);
-  return PolygonPoint{point, seg_idx, lon_dist_to_segment, lat_dist};
+    motion_utils::calcLongitudinalOffsetToSegment(bound_points, min_dist_seg_idx, target_point);
+  const double lat_dist_to_segment =
+    motion_utils::calcLateralOffset(bound_points, target_point, min_dist_seg_idx);
+  return PolygonPoint{target_point, min_dist_seg_idx, lon_dist_to_segment, lat_dist_to_segment};
 }
 
 std::vector<PolygonPoint> generatePolygonInsideBounds(
@@ -2857,8 +2892,7 @@ void extractObstaclesFromDrivableArea(
     }
   }
 
-  for (size_t i = 0; i < 2; ++i) {  // for loop for right and left
-    const bool is_object_right = (i == 0);
+  for (const bool is_object_right : {true, false}) {
     const auto & polygons = is_object_right ? right_polygons : left_polygons;
     if (polygons.empty()) {
       continue;
