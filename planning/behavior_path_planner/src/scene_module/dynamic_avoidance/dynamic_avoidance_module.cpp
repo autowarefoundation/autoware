@@ -222,7 +222,7 @@ DynamicAvoidanceModule::calcTargetObjects() const
   const auto prev_module_path = getPreviousModuleOutput().path;
 
   // 1. calculate target lanes to filter obstacles
-  const auto target_lanes = getAdjacentLanes(100.0, 10.0);
+  const auto target_lanes = getAdjacentLanes(100.0, 50.0);
 
   // 2. filter obstacles for dynamic avoidance
   const auto & predicted_objects = planner_data_->dynamic_object->objects;
