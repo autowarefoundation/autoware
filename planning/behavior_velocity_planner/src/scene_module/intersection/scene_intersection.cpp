@@ -328,7 +328,10 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       stop_line_idx = occlusion_first_stop_line_idx;
       // insert creep velocity [default_stop_line, occlusion_stop_line)
       insert_creep_during_occlusion =
-        std::make_pair(default_stop_line_idx_opt.value(), occlusion_peeking_line_idx_opt.value());
+        default_stop_line_idx_opt && occlusion_peeking_line_idx_opt
+          ? std::make_optional<std::pair<size_t, size_t>>(
+              default_stop_line_idx_opt.value(), occlusion_peeking_line_idx_opt.value())
+          : std::nullopt;
       occlusion_state_ = OcclusionState::BEFORE_FIRST_STOP_LINE;
     }
   } else if (occlusion_state_ != OcclusionState::CLEARED) {
