@@ -352,7 +352,9 @@ PathWithLaneId GeometricParallelParking::generateStraightPath(const Pose & start
   auto path = planner_data_->route_handler->getCenterLinePath(
     current_lanes, current_arc_position.length, start_arc_position.length, true);
   path.header = planner_data_->route_handler->getRouteHeader();
-  path.points.back().point.longitudinal_velocity_mps = 0;
+  if (!path.points.empty()) {
+    path.points.back().point.longitudinal_velocity_mps = 0;
+  }
 
   return path;
 }
