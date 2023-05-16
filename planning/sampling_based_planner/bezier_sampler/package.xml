@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>bezier_sampler</name>
+  <version>0.0.1</version>
+  <description>Package to sample trajectories using Bézier curves</description>
+  <author email="maxime.clement@tier4.jp">Maxime CLEMENT</author>
+  <maintainer email="maxime.clement@tier4.jp">Maxime CLEMENT</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <build_depend>autoware_cmake</build_depend>
+
+  <depend>eigen</depend>
+  <depend>sampler_common</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
