@@ -1461,9 +1461,9 @@ bool BehaviorPathPlannerNode::keepInputPoints(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
 #ifdef USE_OLD_ARCHITECTURE
-  const std::vector<std::string> target_modules = {"PullOver", "Avoidance"};
+  const std::vector<std::string> target_modules = {"GoalPlanner", "Avoidance"};
 #else
-  const std::vector<std::string> target_modules = {"pull_over", "avoidance"};
+  const std::vector<std::string> target_modules = {"goal_planner", "avoidance"};
 #endif
 
   const auto target_status = ModuleStatus::RUNNING;
