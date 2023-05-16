@@ -126,8 +126,6 @@ public:
     const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
 
-  ModuleStatus updateState() override;
-
 protected:
   void updateRTCStatus(const double start_distance, const double finish_distance) override;
 };
@@ -167,8 +165,6 @@ public:
   LaneChangeBTModule(
     const std::string & name, rclcpp::Node & node,
     const std::shared_ptr<LaneChangeParameters> & parameters);
-
-  ModuleStatus updateState() override;
 
 protected:
   void updateRTCStatus(const double start_distance, const double finish_distance) override;

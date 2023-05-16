@@ -42,6 +42,7 @@ using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
@@ -79,14 +80,17 @@ std::optional<LaneChangePath> constructCandidatePath(
   const BehaviorPathPlannerParameters & common_parameter,
   const LaneChangeParameters & lane_change_param);
 
-bool isLaneChangePathSafe(
+PathSafetyStatus isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
   const LaneChangeTargetObjectIndices & dynamic_object_indices, const Pose & current_pose,
   const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameter,
   const behavior_path_planner::LaneChangeParameters & lane_change_parameter,
-  const double front_decel, const double rear_decel, Pose & ego_pose_before_collision,
+  const double front_decel, const double rear_decel,
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data,
   const double acceleration = 0.0);
+
+bool isObjectIndexIncluded(
+  const size_t & index, const std::vector<size_t> & dynamic_objects_indices);
 
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
@@ -137,17 +141,12 @@ std::vector<DrivableLanes> generateDrivableLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & lane_change_lanes);
 
-std::optional<LaneChangePath> getAbortPaths(
-  const std::shared_ptr<const PlannerData> & planner_data, const LaneChangePath & selected_path,
-  const Pose & ego_lerp_pose_before_collision, const BehaviorPathPlannerParameters & common_param,
-  const LaneChangeParameters & lane_change_param);
-
 double getLateralShift(const LaneChangePath & path);
 
 bool hasEnoughLengthToLaneChangeAfterAbort(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const Pose & curent_pose, const double abort_return_dist,
-  const BehaviorPathPlannerParameters & common_param);
+  const BehaviorPathPlannerParameters & common_param, const Direction direction);
 
 lanelet::ConstLanelets getBackwardLanelets(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,

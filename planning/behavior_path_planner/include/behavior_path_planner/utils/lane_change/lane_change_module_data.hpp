@@ -53,7 +53,8 @@ struct LaneChangeParameters
   bool enable_cancel_lane_change{true};
   bool enable_abort_lane_change{false};
 
-  double abort_delta_time{3.0};
+  double abort_delta_time{1.0};
+  double aborting_time{5.0};
   double abort_max_lateral_jerk{10.0};
 
   // debug marker
@@ -103,5 +104,14 @@ struct AvoidanceByLCParameters
   bool execute_only_when_lane_change_finish_before_object{false};
 };
 }  // namespace behavior_path_planner
+
+namespace behavior_path_planner::data::lane_change
+{
+struct PathSafetyStatus
+{
+  bool is_safe{true};
+  bool is_object_coming_from_rear{false};
+};
+}  // namespace behavior_path_planner::data::lane_change
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_

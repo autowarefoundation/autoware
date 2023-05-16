@@ -37,7 +37,8 @@
       enable_cancel_lane_change: true
       enable_abort_lane_change: false
 
-      abort_delta_time: 3.0                      # [s]
+      abort_delta_time: 1.0                      # [s]
+      aborting_time: 5.0                         # [s]
       abort_max_lateral_jerk: 1000.0             # [m/s3]
 
       # debug

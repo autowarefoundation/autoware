@@ -49,21 +49,37 @@ public:
 
   std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const override;
 
+  LaneChangePath getLaneChangePath() const override;
+
   BehaviorModuleOutput generateOutput() override;
 
   void extendOutputDrivableArea(BehaviorModuleOutput & output) override;
 
-  bool hasFinishedLaneChange() const override;
-
   PathWithLaneId getReferencePath() const override;
-
-  bool isCancelConditionSatisfied() override;
-
-  bool isAbortConditionSatisfied(const Pose & pose) override;
 
   void resetParameters() override;
 
   TurnSignalInfo updateOutputTurnSignal() override;
+
+  bool getAbortPath() override;
+
+  PathSafetyStatus isApprovedPathSafe() const override;
+
+  bool isRequiredStop(const bool is_object_coming_from_rear) const override;
+
+  bool isNearEndOfLane() const override;
+
+  bool hasFinishedLaneChange() const override;
+
+  bool isAbleToReturnCurrentLane() const override;
+
+  bool isEgoOnPreparePhase() const override;
+
+  bool isAbleToStopSafely() const override;
+
+  bool hasFinishedAbort() const override;
+
+  bool isAbortState() const override;
 
 protected:
   lanelet::ConstLanelets getCurrentLanes() const override;
@@ -84,8 +100,6 @@ protected:
     LaneChangePaths * candidate_paths) const override;
 
   std::vector<DrivableLanes> getDrivableLanes() const override;
-
-  bool isApprovedPathSafe(Pose & ego_pose_before_collision) const override;
 
   void calcTurnSignalInfo() override;
 

@@ -243,22 +243,25 @@ bool hasEnoughLength(
   return true;
 }
 
-bool isLaneChangePathSafe(
+PathSafetyStatus isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
   const LaneChangeTargetObjectIndices & dynamic_objects_indices, const Pose & current_pose,
   const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameter,
   const LaneChangeParameters & lane_change_parameter, const double front_decel,
-  const double rear_decel, Pose & ego_pose_before_collision,
-  std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const double acceleration)
+  const double rear_decel, std::unordered_map<std::string, CollisionCheckDebug> & debug_data,
+  const double acceleration)
 {
+  PathSafetyStatus path_safety_status;
+
   if (dynamic_objects == nullptr) {
-    return true;
+    return path_safety_status;
   }
 
   const auto & path = lane_change_path.path;
 
   if (path.points.empty()) {
-    return false;
+    path_safety_status.is_safe = false;
+    return path_safety_status;
   }
 
   const double time_resolution = lane_change_parameter.prediction_time_resolution;
@@ -334,16 +337,23 @@ bool isLaneChangePathSafe(
             path, interpolated_ego, current_twist, check_durations,
             lane_change_path.duration.prepare, obj, obj_path, common_parameter,
             lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
-            rear_decel, ego_pose_before_collision, current_debug_data.second)) {
+            rear_decel, current_debug_data.second)) {
+        path_safety_status.is_safe = false;
         appendDebugInfo(current_debug_data, false);
-        return false;
+        if (isObjectIndexIncluded(i, dynamic_objects_indices.target_lane)) {
+          const auto & obj_pose = obj.kinematics.initial_pose_with_covariance.pose;
+          const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
+          path_safety_status.is_object_coming_from_rear |=
+            !utils::safety_check::isTargetObjectFront(
+              path, current_pose, common_parameter.vehicle_info, obj_polygon);
+        }
       }
     }
     appendDebugInfo(current_debug_data, true);
   }
 
   if (!lane_change_parameter.use_predicted_path_outside_lanelet) {
-    return true;
+    return path_safety_status;
   }
 
   for (const auto & i : dynamic_objects_indices.other_lane) {
@@ -359,12 +369,22 @@ bool isLaneChangePathSafe(
           obj, common_parameter,
           lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
           rear_decel, current_debug_data.second)) {
+      path_safety_status.is_safe = false;
       appendDebugInfo(current_debug_data, false);
-      return false;
+      const auto & obj_pose = obj.kinematics.initial_pose_with_covariance.pose;
+      const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
+      path_safety_status.is_object_coming_from_rear |= !utils::safety_check::isTargetObjectFront(
+        path, current_pose, common_parameter.vehicle_info, obj_polygon);
     }
     appendDebugInfo(current_debug_data, true);
   }
-  return true;
+  return path_safety_status;
+}
+
+bool isObjectIndexIncluded(
+  const size_t & index, const std::vector<size_t> & dynamic_objects_indices)
+{
+  return std::count(dynamic_objects_indices.begin(), dynamic_objects_indices.end(), index) != 0;
 }
 
 PathWithLaneId getPrepareSegment(
@@ -722,142 +742,6 @@ std::vector<DrivableLanes> generateDrivableLanes(
   return drivable_lanes;
 }
 
-std::optional<LaneChangePath> getAbortPaths(
-  const std::shared_ptr<const PlannerData> & planner_data, const LaneChangePath & selected_path,
-  [[maybe_unused]] const Pose & ego_pose_before_collision,
-  const BehaviorPathPlannerParameters & common_param,
-  [[maybe_unused]] const LaneChangeParameters & lane_change_param)
-{
-  const auto & route_handler = planner_data->route_handler;
-  const auto current_velocity = planner_data->self_odometry->twist.twist.linear.x;
-  const auto current_pose = planner_data->self_odometry->pose.pose;
-  const auto reference_lanelets = selected_path.reference_lanelets;
-
-  const auto ego_nearest_dist_threshold = planner_data->parameters.ego_nearest_dist_threshold;
-  const auto ego_nearest_yaw_threshold = planner_data->parameters.ego_nearest_yaw_threshold;
-  const double minimum_lane_change_length = 30.0;  // temporary
-
-  const auto & lane_changing_path = selected_path.path;
-  const auto lane_changing_end_pose_idx = std::invoke([&]() {
-    constexpr double s_start = 0.0;
-    const double s_end =
-      lanelet::utils::getLaneletLength2d(reference_lanelets) - minimum_lane_change_length;
-
-    const auto ref = route_handler->getCenterLinePath(reference_lanelets, s_start, s_end);
-    return motion_utils::findFirstNearestIndexWithSoftConstraints(
-      lane_changing_path.points, ref.points.back().point.pose, ego_nearest_dist_threshold,
-      ego_nearest_yaw_threshold);
-  });
-
-  const auto ego_pose_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    lane_changing_path.points, current_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
-
-  const auto get_abort_idx_and_distance = [&](const double param_time) {
-    double turning_point_dist{0.0};
-    if (ego_pose_idx > lane_changing_end_pose_idx) {
-      return std::make_pair(ego_pose_idx, turning_point_dist);
-    }
-
-    constexpr auto min_velocity{2.77};
-    const auto desired_distance = std::max(min_velocity, current_velocity) * param_time;
-    const auto & points = lane_changing_path.points;
-    size_t idx{0};
-    for (idx = ego_pose_idx; idx < lane_changing_end_pose_idx; ++idx) {
-      const auto dist_to_ego =
-        utils::getSignedDistance(current_pose, points.at(idx).point.pose, reference_lanelets);
-      turning_point_dist = dist_to_ego;
-      if (dist_to_ego > desired_distance) {
-        break;
-      }
-    }
-    return std::make_pair(idx, turning_point_dist);
-  };
-
-  const auto abort_delta_time = lane_change_param.abort_delta_time;
-  const auto [abort_start_idx, abort_start_dist] = get_abort_idx_and_distance(abort_delta_time);
-  const auto [abort_return_idx, abort_return_dist] =
-    get_abort_idx_and_distance(abort_delta_time * 2);
-
-  if (abort_start_idx >= abort_return_idx) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
-      "abort start idx and return idx is equal. can't compute abort path.");
-    return std::nullopt;
-  }
-
-  if (!hasEnoughLengthToLaneChangeAfterAbort(
-        *route_handler, reference_lanelets, current_pose, abort_return_dist, common_param)) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
-      "insufficient distance to abort.");
-    return std::nullopt;
-  }
-
-  const auto abort_start_pose = lane_changing_path.points.at(abort_start_idx).point.pose;
-  const auto abort_return_pose = lane_changing_path.points.at(abort_return_idx).point.pose;
-  const auto arc_position =
-    lanelet::utils::getArcCoordinates(reference_lanelets, abort_return_pose);
-  const PathWithLaneId reference_lane_segment = std::invoke([&]() {
-    const double minimum_lane_changing_length =
-      common_param.backward_length_buffer_for_end_of_lane + 16.5;
-
-    const double s_start = arc_position.length;
-    double s_end =
-      lanelet::utils::getLaneletLength2d(reference_lanelets) - minimum_lane_changing_length;
-
-    if (route_handler->isInGoalRouteSection(selected_path.target_lanelets.back())) {
-      const auto goal_arc_coordinates = lanelet::utils::getArcCoordinates(
-        selected_path.target_lanelets, route_handler->getGoalPose());
-      s_end = std::min(s_end, goal_arc_coordinates.length) - minimum_lane_changing_length;
-    }
-    PathWithLaneId ref = route_handler->getCenterLinePath(reference_lanelets, s_start, s_end);
-    ref.points.back().point.longitudinal_velocity_mps = std::min(
-      ref.points.back().point.longitudinal_velocity_mps,
-      static_cast<float>(common_param.minimum_lane_changing_velocity));
-    return ref;
-  });
-
-  ShiftLine shift_line;
-  shift_line.start = abort_start_pose;
-  shift_line.end = abort_return_pose;
-  shift_line.end_shift_length = -arc_position.distance;
-  shift_line.start_idx = abort_start_idx;
-  shift_line.end_idx = abort_return_idx;
-
-  PathShifter path_shifter;
-  path_shifter.setPath(lane_changing_path);
-  path_shifter.addShiftLine(shift_line);
-  const auto lateral_jerk = behavior_path_planner::PathShifter::calcJerkFromLatLonDistance(
-    shift_line.end_shift_length, abort_start_dist, current_velocity);
-
-  if (lateral_jerk > lane_change_param.abort_max_lateral_jerk) {
-    return std::nullopt;
-  }
-
-  ShiftedPath shifted_path;
-  // offset front side
-  // bool offset_back = false;
-  if (!path_shifter.generate(&shifted_path)) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
-      "failed to generate abort shifted path.");
-  }
-
-  PathWithLaneId start_to_abort_return_pose;
-  start_to_abort_return_pose.points.insert(
-    start_to_abort_return_pose.points.end(), shifted_path.path.points.begin(),
-    shifted_path.path.points.begin() + abort_return_idx);
-  start_to_abort_return_pose.points.insert(
-    start_to_abort_return_pose.points.end(), reference_lane_segment.points.begin(),
-    reference_lane_segment.points.end());
-
-  auto abort_path = selected_path;
-  abort_path.shifted_path = shifted_path;
-  abort_path.path = start_to_abort_return_pose;
-  abort_path.shift_line = shift_line;
-  return std::optional<LaneChangePath>{abort_path};
-}
-
 double getLateralShift(const LaneChangePath & path)
 {
   const auto start_idx = path.shift_line.start_idx;
@@ -869,12 +753,12 @@ double getLateralShift(const LaneChangePath & path)
 bool hasEnoughLengthToLaneChangeAfterAbort(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const Pose & current_pose, const double abort_return_dist,
-  const BehaviorPathPlannerParameters & common_param)
+  const BehaviorPathPlannerParameters & common_param, const Direction direction)
 {
-  const double minimum_lane_changing_length = 16.5;
-  const auto minimum_lane_change_length = common_param.minimum_prepare_length +
-                                          minimum_lane_changing_length +
-                                          common_param.backward_length_buffer_for_end_of_lane;
+  const auto shift_intervals =
+    route_handler.getLateralIntervalsToPreferredLane(current_lanes.back(), direction);
+  const double minimum_lane_change_length =
+    utils::calcMinimumLaneChangeLength(common_param, shift_intervals);
   const auto abort_plus_lane_change_length = abort_return_dist + minimum_lane_change_length;
   if (abort_plus_lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
     return false;

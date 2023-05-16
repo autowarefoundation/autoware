@@ -742,6 +742,7 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.enable_abort_lane_change = declare_parameter<bool>(parameter("enable_abort_lane_change"));
 
   p.abort_delta_time = declare_parameter<double>(parameter("abort_delta_time"));
+  p.aborting_time = declare_parameter<double>(parameter("aborting_time"));
   p.abort_max_lateral_jerk = declare_parameter<double>(parameter("abort_max_lateral_jerk"));
 
   // debug marker

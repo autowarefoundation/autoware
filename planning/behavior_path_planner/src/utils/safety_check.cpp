@@ -156,8 +156,7 @@ bool isSafeInLaneletCollisionCheck(
   const double prepare_duration, const PredictedObject & target_object,
   const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters,
   const double prepare_phase_ignore_target_velocity_thresh, const double front_object_deceleration,
-  const double rear_object_deceleration, Pose & ego_pose_before_collision,
-  CollisionCheckDebug & debug)
+  const double rear_object_deceleration, CollisionCheckDebug & debug)
 {
   debug.lerped_path.reserve(check_duration.size());
 
@@ -225,7 +224,6 @@ bool isSafeInLaneletCollisionCheck(
 
     if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
       debug.failed_reason = "overlap_extended_polygon";
-      ego_pose_before_collision = ego_pose;
       return false;
     }
   }

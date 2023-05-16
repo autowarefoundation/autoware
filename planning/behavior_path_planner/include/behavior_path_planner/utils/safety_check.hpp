@@ -87,7 +87,7 @@ bool isSafeInLaneletCollisionCheck(
   const double prepare_duration, const PredictedObject & target_object,
   const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters,
   const double prepare_phase_ignore_target_speed_thresh, const double front_decel,
-  const double rear_decel, Pose & ego_pose_before_collision, CollisionCheckDebug & debug);
+  const double rear_decel, CollisionCheckDebug & debug);
 
 /**
  * @brief Iterate the points in the ego and target's predicted path and
