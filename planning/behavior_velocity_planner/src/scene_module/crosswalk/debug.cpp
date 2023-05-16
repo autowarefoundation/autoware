@@ -232,7 +232,7 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArr
   }
   appendMarkerArray(
     virtual_wall_marker_creator_crosswalk_->createStopVirtualWallMarker(
-      stop_poses, "crosswalk", now),
+      stop_poses, "crosswalk", now, 0.0, std::to_string(module_id_) + "_"),
     &wall_marker);
   for (const auto & p : debug_data_.slow_poses) {
     const auto p_front = calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
@@ -240,7 +240,7 @@ visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArr
   }
   appendMarkerArray(
     virtual_wall_marker_creator_crosswalk_->createSlowDownVirtualWallMarker(
-      slow_down_poses, "crosswalk", now),
+      slow_down_poses, "crosswalk", now, 0.0, std::to_string(module_id_) + "_"),
     &wall_marker);
 
   return wall_marker;
