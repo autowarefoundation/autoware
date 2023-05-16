@@ -205,7 +205,7 @@ private:
   bool needPathUpdate(const double path_update_duration) const;
   bool isStuck();
   bool hasDecidedPath() const;
-  void requestApproval();
+  void decideVelocity();
 
   // validation
   bool hasEnoughDistance(const PullOverPath & pull_over_path) const;
