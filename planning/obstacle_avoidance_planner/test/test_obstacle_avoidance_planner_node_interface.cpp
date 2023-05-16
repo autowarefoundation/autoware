@@ -54,12 +54,12 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   test_manager->setPathInputTopicName("obstacle_avoidance_planner/input/path");
 
   // test with normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithNominalPath(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithNominalPath(test_target_node));
 
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test with trajectory with empty/one point/overlapping point
-  ASSERT_NO_THROW(test_manager->testWithAbnormalPath(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithAbnormalPath(test_target_node));
 
   rclcpp::shutdown();
 }

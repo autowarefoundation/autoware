@@ -128,11 +128,11 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionPathWithLaneID)
   publishMandatoryTopics(test_manager, test_target_node);
 
   // test with nominal path_with_lane_id
-  ASSERT_NO_THROW(test_manager->testWithNominalPathWithLaneId(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithNominalPathWithLaneId(test_target_node));
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test with empty path_with_lane_id
-  ASSERT_NO_THROW(test_manager->testWithAbnormalPathWithLaneId(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithAbnormalPathWithLaneId(test_target_node));
   rclcpp::shutdown();
 }
 
@@ -145,12 +145,12 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
   publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithNominalPathWithLaneId(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithNominalPathWithLaneId(test_target_node));
 
   // make sure behavior_path_planner is running
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
-  ASSERT_NO_THROW(test_manager->testOffTrackFromPathWithLaneId(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testOffTrackFromPathWithLaneId(test_target_node));
 
   rclcpp::shutdown();
 }

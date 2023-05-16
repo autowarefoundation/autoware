@@ -75,11 +75,11 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionTrajectory)
   publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithNominalTrajectory(test_target_node));
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  ASSERT_NO_THROW(test_manager->testWithAbnormalTrajectory(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithAbnormalTrajectory(test_target_node));
 
   rclcpp::shutdown();
 }
@@ -93,11 +93,11 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
   publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithNominalTrajectory(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithNominalTrajectory(test_target_node));
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test for trajectory with empty/one point/overlapping point
-  ASSERT_NO_THROW(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testTrajectoryWithInvalidEgoPose(test_target_node));
 
   rclcpp::shutdown();
 }

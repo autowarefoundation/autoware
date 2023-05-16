@@ -41,6 +41,7 @@
 
 #include <boost/optional.hpp>
 
+#include <cxxabi.h>
 #include <lanelet2_io/Io.h>
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
@@ -358,7 +359,13 @@ void publishToTargetNode(
   typename rclcpp::Publisher<T>::SharedPtr publisher, T data, const int repeat_count = 3)
 {
   if (topic_name.empty()) {
-    throw std::runtime_error(std::string("Topic name for ") + typeid(data).name() + " is empty");
+    int status;
+    char * demangled_name = abi::__cxa_demangle(typeid(data).name(), nullptr, nullptr, &status);
+    if (status == 0) {
+      throw std::runtime_error(std::string("Topic name for ") + demangled_name + " is empty");
+    } else {
+      throw std::runtime_error(std::string("Topic name for ") + typeid(data).name() + " is empty");
+    }
   }
 
   test_utils::setPublisher<T>(test_node, topic_name, publisher);

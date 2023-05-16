@@ -98,11 +98,11 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithExceptionRoute)
   publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithBehaviorNominalRoute(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithBehaviorNominalRoute(test_target_node));
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
   // test with empty route
-  ASSERT_NO_THROW(test_manager->testWithAbnormalRoute(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithAbnormalRoute(test_target_node));
   rclcpp::shutdown();
 }
 
@@ -115,12 +115,12 @@ TEST(PlanningModuleInterfaceTest, NodeTestWithOffTrackEgoPose)
   publishMandatoryTopics(test_manager, test_target_node);
 
   // test for normal trajectory
-  ASSERT_NO_THROW(test_manager->testWithBehaviorNominalRoute(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testWithBehaviorNominalRoute(test_target_node));
 
   // make sure behavior_path_planner is running
   EXPECT_GE(test_manager->getReceivedTopicNum(), 1);
 
-  ASSERT_NO_THROW(test_manager->testRouteWithInvalidEgoPose(test_target_node));
+  ASSERT_NO_THROW_WITH_ERROR_MSG(test_manager->testRouteWithInvalidEgoPose(test_target_node));
 
   rclcpp::shutdown();
 }

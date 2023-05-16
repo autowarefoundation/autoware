@@ -15,6 +15,21 @@
 #ifndef PLANNING_INTERFACE_TEST_MANAGER__PLANNING_INTERFACE_TEST_MANAGER_HPP_
 #define PLANNING_INTERFACE_TEST_MANAGER__PLANNING_INTERFACE_TEST_MANAGER_HPP_
 
+// since ASSERT_NO_THROW in gtest masks the exception message, redefine it.
+#define ASSERT_NO_THROW_WITH_ERROR_MSG(statement)                                                \
+  try {                                                                                          \
+    statement;                                                                                   \
+    SUCCEED();                                                                                   \
+  } catch (const std::exception & e) {                                                           \
+    FAIL() << "Expected: " << #statement                                                         \
+           << " doesn't throw an exception.\nActual: it throws. Error message: " << e.what()     \
+           << std::endl;                                                                         \
+  } catch (...) {                                                                                \
+    FAIL() << "Expected: " << #statement                                                         \
+           << " doesn't throw an exception.\nActual: it throws. Error message is not available." \
+           << std::endl;                                                                         \
+  }
+
 #include <component_interface_specs/planning.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
