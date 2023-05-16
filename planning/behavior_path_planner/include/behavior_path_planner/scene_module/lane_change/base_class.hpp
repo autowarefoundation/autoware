@@ -163,6 +163,8 @@ public:
 
   std_msgs::msg::Header getRouteHeader() const { return getRouteHandler()->getRouteHeader(); }
 
+  std::string getModuleTypeStr() const { return std::string{magic_enum::enum_name(type_)}; }
+
   Direction getDirection() const
   {
     if (direction_ == Direction::NONE && !status_.lane_change_path.path.points.empty()) {
@@ -198,8 +200,6 @@ protected:
 
   virtual lanelet::ConstLanelets getLaneChangeLanes(
     const lanelet::ConstLanelets & current_lanes, Direction direction) const = 0;
-
-  std::string getModuleTypeStr() const { return std::string{magic_enum::enum_name(type_)}; }
 
   LaneChangeStatus status_{};
   PathShifter path_shifter_{};

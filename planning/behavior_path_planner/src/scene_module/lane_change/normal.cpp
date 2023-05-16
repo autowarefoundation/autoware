@@ -465,7 +465,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (prepare_length < target_length) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "prepare length is shorter than distance to target lane!!");
       break;
     }
@@ -476,7 +476,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (prepare_segment.points.empty()) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "prepare segment is empty!!");
       continue;
     }
@@ -491,7 +491,7 @@ bool NormalLaneChange::getLaneChangePaths(
     // that case, the lane change shouldn't be executed.
     if (target_length_from_lane_change_start_pose > 0.0) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "[only new arch] lane change start getEgoPose() is behind target lanelet!!");
       break;
     }
@@ -506,7 +506,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (lane_changing_length + prepare_length > dist_to_end_of_current_lanes) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "lane changing path too long");
       continue;
     }
@@ -521,7 +521,7 @@ bool NormalLaneChange::getLaneChangePaths(
           next_lane_change_buffer >
         s_goal) {
         RCLCPP_DEBUG(
-          rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+          rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
           "length of lane changing path is longer than length to goal!!");
         continue;
       }
@@ -533,7 +533,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (target_segment.points.empty()) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "target segment is empty!! something wrong...");
       continue;
     }
@@ -549,7 +549,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (target_lane_reference_path.points.empty()) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "target_lane_reference_path is empty!!");
       continue;
     }
@@ -566,8 +566,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (!candidate_path) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
-        "no candidate path!!");
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()), "no candidate path!!");
       continue;
     }
 
@@ -577,7 +576,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     if (!is_valid) {
       RCLCPP_DEBUG(
-        rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+        rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
         "invalid candidate path!!");
       continue;
     }
@@ -788,7 +787,7 @@ bool NormalLaneChange::getAbortPath()
 
   if (abort_start_idx >= abort_return_idx) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+      rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
       "abort start idx and return idx is equal. can't compute abort path.");
     return false;
   }
@@ -797,7 +796,7 @@ bool NormalLaneChange::getAbortPath()
         *route_handler, reference_lanelets, current_pose, abort_return_dist, common_param,
         direction)) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+      rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
       "insufficient distance to abort.");
     return false;
   }
@@ -824,7 +823,7 @@ bool NormalLaneChange::getAbortPath()
 
   if (lateral_jerk > lane_change_parameters_->abort_max_lateral_jerk) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+      rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
       "Aborting jerk is too strong. lateral_jerk = " << lateral_jerk);
     return false;
   }
@@ -834,7 +833,7 @@ bool NormalLaneChange::getAbortPath()
   // bool offset_back = false;
   if (!path_shifter.generate(&shifted_path)) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),
+      rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()),
       "failed to generate abort shifted path.");
   }
 
@@ -954,10 +953,7 @@ PathWithLaneId NormalLaneChangeBT::getPrepareSegment(
   const double s_end = arc_length_from_current + prepare_length;
 
   RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("getPrepareSegment"),
+    rclcpp::get_logger("lane_change").get_child(getModuleTypeStr()).get_child("getPrepareSegment"),
     "start: %f, end: %f", s_start, s_end);
 
   PathWithLaneId prepare_segment =
