@@ -1035,6 +1035,19 @@ bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes)
   return false;
 }
 
+bool isInLaneletWithYawThreshold(
+  const Pose & current_pose, const lanelet::ConstLanelet & lanelet, const double yaw_threshold,
+  const double radius)
+{
+  const double pose_yaw = tf2::getYaw(current_pose.orientation);
+  const double lanelet_angle = lanelet::utils::getLaneletAngle(lanelet, current_pose.position);
+  const double angle_diff =
+    std::abs(tier4_autoware_utils::normalizeRadian(lanelet_angle - pose_yaw));
+
+  return (angle_diff < std::abs(yaw_threshold)) &&
+         lanelet::utils::isInLanelet(current_pose, lanelet, radius);
+}
+
 bool isEgoOutOfRoute(
   const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
   const std::shared_ptr<RouteHandler> & route_handler)
@@ -1058,10 +1071,8 @@ bool isEgoOutOfRoute(
   }
 
   // If ego vehicle is over goal on goal lane, return true
-  lanelet::ConstLanelet closest_lane;
   const double yaw_threshold = tier4_autoware_utils::deg2rad(90);
-  if (lanelet::utils::query::getClosestLaneletWithConstrains(
-        {goal_lane}, self_pose, &closest_lane, 0.0, yaw_threshold)) {
+  if (isInLaneletWithYawThreshold(self_pose, goal_lane, yaw_threshold)) {
     constexpr double buffer = 1.0;
     const auto ego_arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, self_pose);
     const auto goal_arc_coord =

@@ -301,6 +301,10 @@ BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerDat
 
 bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes);
 
+bool isInLaneletWithYawThreshold(
+  const Pose & current_pose, const lanelet::ConstLanelet & lanelet, const double yaw_threshold,
+  const double radius = 0.0);
+
 bool isEgoOutOfRoute(
   const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
   const std::shared_ptr<RouteHandler> & route_handler);
