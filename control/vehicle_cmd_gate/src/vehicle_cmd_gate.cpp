@@ -88,8 +88,6 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ = *msg; });
   mrm_state_sub_ = create_subscription<MrmState>(
     "input/mrm_state", 1, std::bind(&VehicleCmdGate::onMrmState, this, _1));
-  gear_status_sub_ = create_subscription<GearReport>(
-    "input/gear_status", 1, [this](GearReport::SharedPtr msg) { current_gear_ptr_ = msg; });
 
   // Subscriber for auto
   auto_control_cmd_sub_ = create_subscription<AckermannControlCommand>(
@@ -321,15 +319,6 @@ void VehicleCmdGate::onTimer()
     return;
   }
 
-  if (is_gate_mode_changed_) {
-    // If gate mode is external, is_engaged_ is always true
-    // While changing gate mode external to auto, the first is_engaged_ is always true for the first
-    // loop in this scope. So we need to wait for the second loop
-    // after gate mode is changed.
-    is_gate_mode_changed_ = false;
-    return;
-  }
-
   // Select commands
   TurnIndicatorsCommand turn_indicator;
   HazardLightsCommand hazard_light;
@@ -346,11 +335,6 @@ void VehicleCmdGate::onTimer()
 
       // Don't send turn signal when autoware is not engaged
       if (!is_engaged_) {
-        if (!current_gear_ptr_) {
-          gear.command = GearCommand::NONE;
-        } else {
-          gear.command = current_gear_ptr_.get()->report;
-        }
         turn_indicator.command = TurnIndicatorsCommand::NO_COMMAND;
         hazard_light.command = HazardLightsCommand::NO_COMMAND;
       }
@@ -577,7 +561,7 @@ void VehicleCmdGate::onGateMode(GateMode::ConstSharedPtr msg)
 {
   const auto prev_gate_mode = current_gate_mode_;
   current_gate_mode_ = *msg;
-  is_gate_mode_changed_ = true;
+
   if (current_gate_mode_.data != prev_gate_mode.data) {
     RCLCPP_INFO(
       get_logger(), "GateMode changed: %s -> %s", getGateModeName(prev_gate_mode.data),
