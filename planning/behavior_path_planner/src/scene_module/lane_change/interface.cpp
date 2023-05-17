@@ -224,9 +224,7 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   out.path = std::make_shared<PathWithLaneId>(*getPreviousModuleOutput().path);
   out.reference_path = getPreviousModuleOutput().reference_path;
   out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
-
-  out.drivable_area_info.drivable_lanes =
-    getPreviousModuleOutput().drivable_area_info.drivable_lanes;
+  out.drivable_area_info = getPreviousModuleOutput().drivable_area_info;
 
   module_type_->setPreviousModulePaths(
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
