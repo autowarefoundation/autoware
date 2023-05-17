@@ -121,6 +121,7 @@ def launch_setup(context, *args, **kwargs):
         remappings=[
             ("input/control_cmd", "/control/trajectory_follower/control_cmd"),
             ("input/state", "/autoware/state"),
+            ("input/current_gear", "/vehicle/status/gear_status"),
             ("output/gear_cmd", "/control/shift_decider/gear_cmd"),
         ],
         parameters=[

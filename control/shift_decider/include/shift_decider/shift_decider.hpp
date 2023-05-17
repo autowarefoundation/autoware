@@ -20,6 +20,7 @@
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_system_msgs/msg/autoware_state.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_command.hpp>
+#include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
 
 #include <memory>
 
@@ -32,6 +33,7 @@ private:
   void onTimer();
   void onControlCmd(autoware_auto_control_msgs::msg::AckermannControlCommand::SharedPtr msg);
   void onAutowareState(autoware_auto_system_msgs::msg::AutowareState::SharedPtr msg);
+  void onCurrentGear(autoware_auto_vehicle_msgs::msg::GearReport::SharedPtr msg);
   void updateCurrentShiftCmd();
   void initTimer(double period_s);
 
@@ -40,11 +42,15 @@ private:
     sub_control_cmd_;
   rclcpp::Subscription<autoware_auto_system_msgs::msg::AutowareState>::SharedPtr
     sub_autoware_state_;
+  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearReport>::SharedPtr sub_current_gear_;
+
   rclcpp::TimerBase::SharedPtr timer_;
 
   autoware_auto_control_msgs::msg::AckermannControlCommand::SharedPtr control_cmd_;
   autoware_auto_system_msgs::msg::AutowareState::SharedPtr autoware_state_;
   autoware_auto_vehicle_msgs::msg::GearCommand shift_cmd_;
+  autoware_auto_vehicle_msgs::msg::GearReport::SharedPtr current_gear_ptr_;
+
   bool park_on_goal_;
 };
 
