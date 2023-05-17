@@ -332,7 +332,6 @@ class TrajectoryVisualizer(Node):
             self.update_behavior_path_planner_path = False
             if len(y) != 0:
                 self.max_vel = max(10.0, np.max(y))
-                self.min_vel = np.min(y)
 
         if self.update_behavior_velocity_planner_path:
             x = self.CalcArcLengthPath(behavior_velocity_planner_path)
@@ -395,6 +394,9 @@ class TrajectoryVisualizer(Node):
                 x = [PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH]
                 y = [self.velocity_limit, self.velocity_limit]
                 self.im12.set_data(x, y)
+
+            if len(y) != 0:
+                self.min_vel = np.min(y)
 
         # change y-range
         self.ax1.set_ylim([self.min_vel - 1.0, self.max_vel + 1.0])
