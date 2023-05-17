@@ -387,56 +387,6 @@ bool isObjectIndexIncluded(
   return std::count(dynamic_objects_indices.begin(), dynamic_objects_indices.end(), index) != 0;
 }
 
-PathWithLaneId getPrepareSegment(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
-  const double arc_length_from_current, const double backward_path_length,
-  const double prepare_length, const double prepare_velocity)
-{
-  if (original_lanelets.empty()) {
-    return PathWithLaneId();
-  }
-
-  const double s_start = arc_length_from_current - backward_path_length;
-  const double s_end = arc_length_from_current + prepare_length;
-
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("behavior_path_planner")
-      .get_child("lane_change")
-      .get_child("util")
-      .get_child("getPrepareSegment"),
-    "start: %f, end: %f", s_start, s_end);
-
-  PathWithLaneId prepare_segment =
-    route_handler.getCenterLinePath(original_lanelets, s_start, s_end);
-
-  prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
-    prepare_segment.points.back().point.longitudinal_velocity_mps,
-    static_cast<float>(prepare_velocity));
-
-  return prepare_segment;
-}
-
-PathWithLaneId getPrepareSegment(
-  const PathWithLaneId & original_path, const lanelet::ConstLanelets & original_lanelets,
-  const Pose & current_pose, const double backward_path_length, const double prepare_length,
-  const double prepare_velocity)
-{
-  if (original_lanelets.empty()) {
-    return PathWithLaneId();
-  }
-
-  auto prepare_segment = original_path;
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    prepare_segment.points, current_pose, 3.0, 1.0);
-  utils::clipPathLength(prepare_segment, current_seg_idx, prepare_length, backward_path_length);
-
-  prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
-    prepare_segment.points.back().point.longitudinal_velocity_mps,
-    static_cast<float>(prepare_velocity));
-
-  return prepare_segment;
-}
-
 double calcLaneChangingLength(
   const double lane_changing_velocity, const double shift_length, const double lateral_acc,
   const double lateral_jerk)
