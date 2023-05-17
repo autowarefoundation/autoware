@@ -1,4 +1,5 @@
-- hosts: localhost
+- name: Set up source development environments for Autoware Universe
+  hosts: localhost
   connection: local
   vars_prompt:
     - name: prompt_install_nvidia

@@ -13,6 +13,7 @@
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
     dest: /usr/share/keyrings/ros-archive-keyring.gpg
+    mode: 644
 
 - name: Save result of 'dpkg --print-architecture'
   ansible.builtin.command: dpkg --print-architecture
@@ -33,7 +34,7 @@
     state: present
     update_cache: true
 
-- name: Install ros-{{ rosdistro }}-{{ installation_type }}
+- name: Install ros-{{ rosdistro + '-' + installation_type }}
   become: true
   ansible.builtin.apt:
     name: ros-{{ rosdistro }}-{{ installation_type }}
