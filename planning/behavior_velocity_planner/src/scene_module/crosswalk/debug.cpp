@@ -257,7 +257,8 @@ visualization_msgs::msg::MarkerArray WalkwayModule::createVirtualWallMarkerArray
     stop_poses.push_back(p_front);
   }
   appendMarkerArray(
-    virtual_wall_marker_creator_walkway_->createStopVirtualWallMarker(stop_poses, "walkway", now),
+    virtual_wall_marker_creator_walkway_->createStopVirtualWallMarker(
+      stop_poses, "walkway", now, 0.0, std::to_string(module_id_) + "_"),
     &wall_marker);
   return wall_marker;
 }
