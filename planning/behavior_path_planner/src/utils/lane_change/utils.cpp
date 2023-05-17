@@ -100,8 +100,9 @@ std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const std::vector<std::vector<int64_t>> & sorted_lane_ids, const double acceleration,
-  const LaneChangePhaseInfo lane_change_length, const LaneChangePhaseInfo lane_change_velocity,
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids, const double longitudinal_acceleration,
+  const double lateral_acceleration, const LaneChangePhaseInfo lane_change_length,
+  const LaneChangePhaseInfo lane_change_velocity,
   const BehaviorPathPlannerParameters & common_parameter,
   const LaneChangeParameters & lane_change_param)
 {
@@ -114,12 +115,8 @@ std::optional<LaneChangePath> constructCandidatePath(
   bool offset_back = false;
 
   const auto lane_changing_velocity = lane_change_velocity.lane_changing;
-  const auto lateral_acc = lane_changing_velocity < common_parameter.lateral_acc_switching_velocity
-                             ? common_parameter.lane_changing_lateral_acc_at_low_velocity
-                             : common_parameter.lane_changing_lateral_acc;
-
   path_shifter.setVelocity(lane_changing_velocity);
-  path_shifter.setLateralAccelerationLimit(std::abs(lateral_acc));
+  path_shifter.setLateralAccelerationLimit(std::abs(lateral_acceleration));
 
   if (!path_shifter.generate(&shifted_path, offset_back)) {
     RCLCPP_DEBUG(
@@ -131,7 +128,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   const auto & lane_changing_length = lane_change_length.lane_changing;
 
   LaneChangePath candidate_path;
-  candidate_path.acceleration = acceleration;
+  candidate_path.acceleration = longitudinal_acceleration;
   candidate_path.length.prepare = prepare_length;
   candidate_path.length.lane_changing = lane_changing_length;
   candidate_path.duration.prepare = std::invoke([&]() {
@@ -206,13 +203,16 @@ bool hasEnoughLength(
   const BehaviorPathPlannerParameters & common_parameter, const Direction direction)
 {
   const double lane_change_length = path.length.sum();
+  const double & lateral_jerk = common_parameter.lane_changing_lateral_jerk;
+  const double max_lat_acc =
+    common_parameter.lane_change_lat_acc_map.find(minimum_lane_changing_velocity).second;
   const auto shift_intervals =
     route_handler.getLateralIntervalsToPreferredLane(target_lanes.back(), direction);
 
   double minimum_lane_change_length_to_preferred_lane = 0.0;
   for (const auto & shift_length : shift_intervals) {
     const auto lane_changing_time =
-      utils::calcLaneChangingTime(minimum_lane_changing_velocity, shift_length, common_parameter);
+      PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, max_lat_acc);
     minimum_lane_change_length_to_preferred_lane +=
       minimum_lane_changing_velocity * lane_changing_time + common_parameter.minimum_prepare_length;
   }
@@ -438,11 +438,11 @@ PathWithLaneId getPrepareSegment(
 }
 
 double calcLaneChangingLength(
-  const double lane_changing_velocity, const double shift_length,
-  const BehaviorPathPlannerParameters & common_parameter)
+  const double lane_changing_velocity, const double shift_length, const double lateral_acc,
+  const double lateral_jerk)
 {
   const auto required_time =
-    utils::calcLaneChangingTime(lane_changing_velocity, shift_length, common_parameter);
+    PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, lateral_acc);
   const auto lane_changing_length = lane_changing_velocity * required_time;
 
   RCLCPP_DEBUG(

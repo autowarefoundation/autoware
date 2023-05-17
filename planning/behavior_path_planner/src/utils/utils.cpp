@@ -2694,18 +2694,6 @@ bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_thre
   return true;
 }
 
-double calcLaneChangingTime(
-  const double lane_changing_velocity, const double shift_length,
-  const BehaviorPathPlannerParameters & common_parameter)
-{
-  const double lateral_acc =
-    lane_changing_velocity < common_parameter.lateral_acc_switching_velocity
-      ? common_parameter.lane_changing_lateral_acc_at_low_velocity
-      : common_parameter.lane_changing_lateral_acc;
-  const double & lateral_jerk = common_parameter.lane_changing_lateral_jerk;
-  return PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, lateral_acc);
-}
-
 double calcMinimumLaneChangeLength(
   const BehaviorPathPlannerParameters & common_param, const std::vector<double> & shift_intervals,
   const double length_to_intersection)
@@ -2715,11 +2703,15 @@ double calcMinimumLaneChangeLength(
   }
 
   const double & vel = common_param.minimum_lane_changing_velocity;
+  const auto lat_acc = common_param.lane_change_lat_acc_map.find(vel);
+  const double & max_lateral_acc = lat_acc.second;
+  const double & lateral_jerk = common_param.lane_changing_lateral_jerk;
 
   double accumulated_length =
     length_to_intersection + common_param.backward_length_buffer_for_end_of_lane;
   for (const auto & shift_interval : shift_intervals) {
-    const double t = calcLaneChangingTime(vel, shift_interval, common_param);
+    const double t =
+      PathShifter::calcShiftTimeFromJerk(shift_interval, lateral_jerk, max_lateral_acc);
     accumulated_length += vel * t + common_param.minimum_prepare_length;
   }
 

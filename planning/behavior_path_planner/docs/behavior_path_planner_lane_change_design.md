@@ -241,7 +241,6 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | `backward_length_buffer_for_end_of_lane` | [m]    | double | The end of lane buffer to ensure ego vehicle has enough distance to start lane change   | 2.0           |
 | `lane_change_finish_judge_buffer`        | [m]    | double | The additional buffer used to confirm lane change process completion                    | 3.0           |
 | `lane_changing_lateral_jerk`             | [m/s3] | double | Lateral jerk value for lane change path generation                                      | 0.5           |
-| `lane_changing_lateral_acc`              | [m/s2] | double | Lateral acceleration value for lane change path generation                              | 0.5           |
 | `minimum_lane_changing_velocity`         | [m/s]  | double | Minimum speed during lane changing process.                                             | 2.78          |
 | `prediction_time_resolution`             | [s]    | double | Time resolution for object's path interpolation and collision check.                    | 0.5           |
 | `lane_change_sampling_num`               | [-]    | int    | Number of possible lane-changing trajectories that are being influenced by deceleration | 10            |

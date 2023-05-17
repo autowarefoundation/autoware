@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace behavior_path_planner
@@ -31,7 +32,8 @@ struct LaneChangeParameters
   double backward_lane_length{200.0};
   double lane_change_finish_judge_buffer{3.0};
   double prediction_time_resolution{0.5};
-  int lane_change_sampling_num{10};
+  int longitudinal_acc_sampling_num{10};
+  int lateral_acc_sampling_num{10};
 
   // collision check
   bool enable_prepare_segment_collision_check{true};

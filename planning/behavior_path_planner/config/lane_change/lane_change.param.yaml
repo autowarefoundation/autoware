@@ -8,13 +8,18 @@
       lane_change_finish_judge_buffer: 2.0      # [m]
 
       lane_changing_lateral_jerk: 0.5              # [m/s3]
-      lane_changing_lateral_acc: 0.315             # [m/s2]
-      lane_changing_lateral_acc_at_low_velocity: 0.15 # [m/s2]
       lateral_acc_switching_velocity: 4.0          #[m/s]
 
       minimum_lane_changing_velocity: 2.78        # [m/s]
       prediction_time_resolution: 0.5           # [s]
-      lane_change_sampling_num: 3
+      longitudinal_acceleration_sampling_num: 3
+      lateral_acceleration_sampling_num: 3
+
+      # lateral acceleration map
+      lateral_acceleration:
+        velocity: [0.0, 4.0, 10.0]
+        min_values: [0.15, 0.15, 0.15]
+        max_values: [0.5, 0.5, 0.5]
 
       # target object
       target_object:

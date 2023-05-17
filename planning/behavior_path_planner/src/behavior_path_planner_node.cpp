@@ -397,9 +397,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
   p.lane_changing_lateral_jerk =
     declare_parameter<double>("lane_change.lane_changing_lateral_jerk");
-  p.lane_changing_lateral_acc = declare_parameter<double>("lane_change.lane_changing_lateral_acc");
-  p.lane_changing_lateral_acc_at_low_velocity =
-    declare_parameter<double>("lane_change.lane_changing_lateral_acc_at_low_velocity");
   p.lateral_acc_switching_velocity =
     declare_parameter<double>("lane_change.lateral_acc_switching_velocity");
   p.lane_change_prepare_duration = declare_parameter<double>("lane_change.prepare_duration");
@@ -409,6 +406,24 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     std::min(p.minimum_lane_changing_velocity, p.max_acc * p.lane_change_prepare_duration);
   p.minimum_prepare_length =
     0.5 * p.max_acc * p.lane_change_prepare_duration * p.lane_change_prepare_duration;
+
+  // lateral acceleration map for lane change
+  const auto lateral_acc_velocity =
+    declare_parameter<std::vector<double>>("lane_change.lateral_acceleration.velocity");
+  const auto min_lateral_acc =
+    declare_parameter<std::vector<double>>("lane_change.lateral_acceleration.min_values");
+  const auto max_lateral_acc =
+    declare_parameter<std::vector<double>>("lane_change.lateral_acceleration.max_values");
+  if (
+    lateral_acc_velocity.size() != min_lateral_acc.size() ||
+    lateral_acc_velocity.size() != max_lateral_acc.size()) {
+    RCLCPP_ERROR(get_logger(), "Lane change lateral acceleration map has invalid size.");
+    exit(EXIT_FAILURE);
+  }
+  for (size_t i = 0; i < lateral_acc_velocity.size(); ++i) {
+    p.lane_change_lat_acc_map.add(
+      lateral_acc_velocity.at(i), min_lateral_acc.at(i), max_lateral_acc.at(i));
+  }
 
   p.backward_length_buffer_for_end_of_pull_over =
     declare_parameter<double>("backward_length_buffer_for_end_of_pull_over");
@@ -713,7 +728,10 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
-  p.lane_change_sampling_num = declare_parameter<int>(parameter("lane_change_sampling_num"));
+  p.longitudinal_acc_sampling_num =
+    declare_parameter<int>(parameter("longitudinal_acceleration_sampling_num"));
+  p.lateral_acc_sampling_num =
+    declare_parameter<int>(parameter("lateral_acceleration_sampling_num"));
 
   // collision check
   p.enable_prepare_segment_collision_check =
@@ -749,11 +767,13 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.publish_debug_marker = declare_parameter<bool>(parameter("publish_debug_marker"));
 
   // validation of parameters
-  if (p.lane_change_sampling_num < 1) {
+  if (p.longitudinal_acc_sampling_num < 1 || p.lateral_acc_sampling_num < 1) {
     RCLCPP_FATAL_STREAM(
-      get_logger(), "lane_change_sampling_num must be positive integer. Given parameter: "
-                      << p.lane_change_sampling_num << std::endl
-                      << "Terminating the program...");
+      get_logger(),
+      "lane_change_sampling_num must be positive integer. Given longitudinal parameter: "
+        << p.longitudinal_acc_sampling_num
+        << "Given lateral parameter: " << p.lateral_acc_sampling_num << std::endl
+        << "Terminating the program...");
     exit(EXIT_FAILURE);
   }
 
