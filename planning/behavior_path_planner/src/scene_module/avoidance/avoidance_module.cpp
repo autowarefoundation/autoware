@@ -2585,6 +2585,11 @@ void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(Shifted
     *ego_velocity_starting_avoidance_ptr_ = getEgoSpeed();
   }
 
+  // update ego velocity if the ego is faster than saved velocity.
+  if (*ego_velocity_starting_avoidance_ptr_ < getEgoSpeed()) {
+    *ego_velocity_starting_avoidance_ptr_ = getEgoSpeed();
+  }
+
   // calc index and velocity to NO_ACCEL_TIME_THR
   const auto v0 = *ego_velocity_starting_avoidance_ptr_;
   auto vmax = 0.0;
