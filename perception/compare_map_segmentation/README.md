@@ -78,7 +78,7 @@ This filter is a combination of the distance_based_compare_map_filter and voxel_
 
 | Name                            | Type  | Description                                                                                                                             | Default value |
 | :------------------------------ | :---- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| `use_dynamic_map_loading`       | bool  | map loading mode selection, `true` for dynamic map loading, `false` for static map loading                                              | true          |
+| `use_dynamic_map_loading`       | bool  | map loading mode selection, `true` for dynamic map loading, `false` for static map loading, recommended for no-split map pointcloud     | true          |
 | `distance_threshold`            | float | Threshold distance to compare input points with map points [m]                                                                          | 0.5           |
 | `map_update_distance_threshold` | float | Threshold of vehicle movement distance when map update is necessary (in dynamic map loading) [m]                                        | 10.0          |
 | `map_loader_radius`             | float | Radius of map need to be loaded (in dynamic map loading) [m]                                                                            | 150.0         |

@@ -173,6 +173,9 @@ protected:
   double map_grid_size_x_ = -1.0;
   double map_grid_size_y_ = -1.0;
 
+  double origin_x_remainder_ = 0.0;
+  double origin_y_remainder_ = 0.0;
+
   /** \brief Array to hold loaded map grid positions for fast map grid searching.
    */
   std::vector<std::shared_ptr<MapGridVoxelInfo>> current_voxel_grid_array_;
@@ -236,9 +239,11 @@ public:
   virtual inline void updateVoxelGridArray()
   {
     origin_x_ = std::floor((current_position_.value().x - map_loader_radius_) / map_grid_size_x_) *
-                map_grid_size_x_;
+                  map_grid_size_x_ +
+                origin_x_remainder_;
     origin_y_ = std::floor((current_position_.value().y - map_loader_radius_) / map_grid_size_y_) *
-                map_grid_size_y_;
+                  map_grid_size_y_ +
+                origin_y_remainder_;
 
     map_grids_x_ = static_cast<int>(
       std::ceil((current_position_.value().x + map_loader_radius_ - origin_x_) / map_grid_size_x_));
@@ -276,6 +281,10 @@ public:
   {
     map_grid_size_x_ = map_cell_to_add.metadata.max_x - map_cell_to_add.metadata.min_x;
     map_grid_size_y_ = map_cell_to_add.metadata.max_y - map_cell_to_add.metadata.min_y;
+
+    origin_x_remainder_ = std::remainder(map_cell_to_add.metadata.min_x, map_grid_size_x_);
+    origin_y_remainder_ = std::remainder(map_cell_to_add.metadata.min_y, map_grid_size_y_);
+
     pcl::PointCloud<pcl::PointXYZ> map_cell_pc_tmp;
     pcl::fromROSMsg(map_cell_to_add.pointcloud, map_cell_pc_tmp);
 
