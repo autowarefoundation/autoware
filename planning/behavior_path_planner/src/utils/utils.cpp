@@ -224,6 +224,7 @@ std::vector<PolygonPoint> generatePolygonInsideBounds(
     full_polygon.push_back(polygon_point);
   }
 
+  // 1. check the case where the polygon intersects the bound
   std::vector<PolygonPoint> inside_poly;
   bool has_intersection = false;  // NOTE: between obstacle polygon and bound
   for (int i = 0; i < static_cast<int>(full_polygon.size()); ++i) {
@@ -262,10 +263,24 @@ std::vector<PolygonPoint> generatePolygonInsideBounds(
     inside_poly.push_back(intersect_point);
     continue;
   }
-
   if (has_intersection) {
     return inside_poly;
   }
+
+  // 2. check the case where the polygon does not intersect the bound
+  const bool is_polygon_fully_inside_bounds = [&]() {
+    for (const auto & curr_poly : full_polygon) {
+      const bool is_curr_outside = curr_poly.is_outside_bounds(is_object_right);
+      if (is_curr_outside) {
+        return false;
+      }
+    }
+    return true;
+  }();
+  if (is_polygon_fully_inside_bounds) {
+    return full_polygon;
+  }
+
   return std::vector<PolygonPoint>{};
 }
 
