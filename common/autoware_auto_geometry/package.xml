@@ -4,8 +4,10 @@
   <name>autoware_auto_geometry</name>
   <version>1.0.0</version>
   <description>Geometry related algorithms</description>
-  <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <license>Apache License 2.0</license>
+
+  <author email="opensource@apex.ai">Apex.AI, Inc.</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
