@@ -17,6 +17,8 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
+#include <magic_enum.hpp>
+
 #include <tf2/utils.h>
 
 #include <string>
@@ -208,29 +210,7 @@ MarkerArray createEgoStatusMarkerArray(
   {
     std::ostringstream string_stream;
     string_stream << "ego_state:";
-    switch (data.state) {
-      case AvoidanceState::NOT_AVOID:
-        string_stream << "NOT_AVOID";
-        break;
-      case AvoidanceState::AVOID_PATH_NOT_READY:
-        string_stream << "AVOID_PATH_NOT_READY";
-        marker.color = createMarkerColor(1.0, 0.0, 0.0, 0.999);
-        break;
-      case AvoidanceState::YIELD:
-        string_stream << "YIELD";
-        marker.color = createMarkerColor(1.0, 1.0, 0.0, 0.999);
-        break;
-      case AvoidanceState::AVOID_PATH_READY:
-        string_stream << "AVOID_PATH_READY";
-        marker.color = createMarkerColor(0.0, 1.0, 0.0, 0.999);
-        break;
-      case AvoidanceState::AVOID_EXECUTE:
-        string_stream << "AVOID_EXECUTE";
-        marker.color = createMarkerColor(0.0, 1.0, 0.0, 0.999);
-        break;
-      default:
-        throw std::domain_error("invalid behavior");
-    }
+    string_stream << magic_enum::enum_name(data.state);
     marker.text = string_stream.str();
     marker.pose.position.z += 2.0;
     marker.id++;
