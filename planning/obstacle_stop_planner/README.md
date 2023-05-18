@@ -37,10 +37,10 @@
 | `max_velocity`                         | double | max velocity [m/s]                                                                        |
 | `chattering_threshold`                 | double | even if the obstacle disappears, the stop judgment continues for chattering_threshold [s] |
 | `enable_z_axis_obstacle_filtering`     | bool   | filter obstacles in z axis (height) [-]                                                   |
-| `z_axis_filtering_buffer`              | double | additional buffer for z axis filtering [m]]                                               |
-| `use_predicted_objects`                | bool   | whether to use predicted objects for collision and slowdown detection [-]]                |
-| `predicted_object_filtering_threshold` | double | threshold for filtering predicted objects [valid only publish_obstacle_polygon true](m)]  |
-| `publish_obstacle_polygon`             | bool   | if use_predicted_objects is true, node publishes collision polygon [-]]                   |
+| `z_axis_filtering_buffer`              | double | additional buffer for z axis filtering [m]                                                |
+| `use_predicted_objects`                | bool   | whether to use predicted objects for collision and slowdown detection [-]                 |
+| `predicted_object_filtering_threshold` | double | threshold for filtering predicted objects [valid only publish_obstacle_polygon true] [m]  |
+| `publish_obstacle_polygon`             | bool   | if use_predicted_objects is true, node publishes collision polygon [-]                    |
 
 ## Obstacle Stop Planner
 
