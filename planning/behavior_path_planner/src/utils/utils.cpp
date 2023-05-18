@@ -1376,6 +1376,14 @@ void generateDrivableArea(
   auto left_bound = calcBound(route_handler, lanes, enable_expanding_polygon, true);
   auto right_bound = calcBound(route_handler, lanes, enable_expanding_polygon, false);
 
+  if (left_bound.empty() || right_bound.empty()) {
+    auto clock{rclcpp::Clock{RCL_ROS_TIME}};
+    RCLCPP_ERROR_STREAM_THROTTLE(
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"), clock, 1000,
+      "The right or left bound of drivable area is empty");
+    return;
+  }
+
   // Insert points after goal
   lanelet::ConstLanelet goal_lanelet;
   if (
