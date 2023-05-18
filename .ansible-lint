@@ -1,5 +1,8 @@
 exclude_paths:
   - src/
+  - build/
+  - install/
+  - log/
 
 skip_list:
   - galaxy # We don't publish to Ansible Galaxy.
