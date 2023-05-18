@@ -38,22 +38,22 @@
 
 - name: Get dash-case name of cuda_version
   ansible.builtin.shell: bash -c 'sed -e "s/\./-/g" <<< $(echo {{ cuda_version }})'
-  register: dash_case_cuda_version
+  register: cuda__dash_case_cuda_version
   changed_when: false
 
 - name: Install CUDA libraries except for cuda-drivers
   become: true
   ansible.builtin.apt:
     name:
-      - cuda-cudart-dev-{{ dash_case_cuda_version.stdout }}
-      - cuda-command-line-tools-{{ dash_case_cuda_version.stdout }}
-      - cuda-minimal-build-{{ dash_case_cuda_version.stdout }}
-      - cuda-libraries-dev-{{ dash_case_cuda_version.stdout }}
-      - cuda-nvml-dev-{{ dash_case_cuda_version.stdout }}
-      - cuda-nvprof-{{ dash_case_cuda_version.stdout }}
-      - libnpp-dev-{{ dash_case_cuda_version.stdout }}
-      - libcusparse-dev-{{ dash_case_cuda_version.stdout }}
-      - libcublas-dev-{{ dash_case_cuda_version.stdout }}
+      - cuda-cudart-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - cuda-command-line-tools-{{ cuda__dash_case_cuda_version.stdout }}
+      - cuda-minimal-build-{{ cuda__dash_case_cuda_version.stdout }}
+      - cuda-libraries-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - cuda-nvml-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - cuda-nvprof-{{ cuda__dash_case_cuda_version.stdout }}
+      - libnpp-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - libcusparse-dev-{{ cuda__dash_case_cuda_version.stdout }}
+      - libcublas-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - libnccl-dev
     update_cache: true
 

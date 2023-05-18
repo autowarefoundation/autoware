@@ -5,12 +5,12 @@
 
 - name: Save result of '. /etc/os-release;echo $ID$VERSION_ID'
   ansible.builtin.shell: . /etc/os-release;echo $ID$VERSION_ID
-  register: distribution
+  register: nvidia_docker__distribution
   changed_when: false
 
 - name: Save result of 'curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list'
   ansible.builtin.uri:
-    url: https://nvidia.github.io/nvidia-docker/{{ distribution.stdout }}/nvidia-docker.list
+    url: https://nvidia.github.io/nvidia-docker/{{ nvidia_docker__distribution.stdout }}/nvidia-docker.list
     return_content: true
   register: nvidia_docker_list
 

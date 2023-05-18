@@ -37,24 +37,24 @@
 
 - name: Save result of 'dpkg --print-architecture'
   ansible.builtin.command: dpkg --print-architecture
-  register: deb_architecture
+  register: docker_engine__deb_architecture
   changed_when: false
 
 - name: Save result of 'lsb_release -cs'
   ansible.builtin.command: lsb_release -cs
-  register: lsb_release_cs
+  register: docker_engine__lsb_release_cs
   changed_when: false
 
 - name: Save result of 'lsb_release -is'
   ansible.builtin.command: lsb_release -is
-  register: lsb_release_is
+  register: docker_engine__lsb_release_is
   changed_when: false
 
 # echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 - name: Add Docker apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ lsb_release_is.stdout | lower }} {{ lsb_release_cs.stdout }} stable
+    repo: deb [arch={{ docker_engine__deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ docker_engine__lsb_release_is.stdout | lower }} {{ docker_engine__lsb_release_cs.stdout }} stable
     filename: docker
     state: present
     update_cache: true
