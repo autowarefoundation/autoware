@@ -49,6 +49,10 @@ repositories:
     type: git
     url: https://github.com/tier4/pointcloud_to_laserscan.git
     version: tier4/main
+  universe/external/yabloc:
+    type: git
+    url: https://github.com/tier4/YabLoc.git
+    version: main
   universe/external/eagleye:
     type: git
     url: https://github.com/MapIV/eagleye.git
