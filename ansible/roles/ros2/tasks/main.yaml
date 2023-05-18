@@ -29,7 +29,7 @@
 - name: Add ROS 2 apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb [arch={{ ros2__deb_architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ubuntu_codename.stdout }} main
+    repo: deb [arch={{ ros2__deb_architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ros2__ubuntu_codename.stdout }} main
     filename: ros2
     state: present
     update_cache: true
