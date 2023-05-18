@@ -173,8 +173,6 @@ std::optional<LaneChangePath> constructCandidatePath(
         lane_changing_start_point.point.longitudinal_velocity_mps);
       continue;
     }
-    point.point.longitudinal_velocity_mps =
-      std::min(point.point.longitudinal_velocity_mps, static_cast<float>(lane_changing_velocity));
     const auto nearest_idx =
       motion_utils::findNearestIndex(target_segment.points, point.point.pose);
     point.lane_ids = target_segment.points.at(*nearest_idx).lane_ids;
