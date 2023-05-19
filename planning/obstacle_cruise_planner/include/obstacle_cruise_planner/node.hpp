@@ -185,6 +185,7 @@ private:
     double max_lat_margin_for_stop;
     double max_lat_margin_for_cruise;
     double max_lat_margin_for_slow_down;
+    double lat_hysteresis_margin_for_slow_down;
   };
   BehaviorDeterminationParam behavior_determination_param_;
 

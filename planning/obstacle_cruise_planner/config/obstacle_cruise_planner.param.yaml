@@ -86,14 +86,15 @@
           collision_time_margin : 4.0 # time threshold of collision between obstacle adn ego for cruise or stop [s]
 
       cruise:
-        max_lat_margin: 0.5 # lateral margin between obstacle and trajectory band with ego's width
+        max_lat_margin: 0.8 # lateral margin between obstacle and trajectory band with ego's width
         outside_obstacle:
           obstacle_velocity_threshold : 3.0 # minimum velocity threshold of obstacles outside the trajectory to cruise or stop [m/s]
           ego_obstacle_overlap_time_threshold : 1.0 #  time threshold to decide cut-in obstacle for cruise or stop [s]
           max_prediction_time_for_collision_check : 20.0 # prediction time to check collision between obstacle and ego
 
       slow_down:
-        max_lat_margin: 1.0  # lateral margin between obstacle and trajectory band with ego's width
+        max_lat_margin: 0.7  # lateral margin between obstacle and trajectory band with ego's width
+        lat_hysteresis_margin: 0.1
 
     cruise:
       pid_based_planner:
