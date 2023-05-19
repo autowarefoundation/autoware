@@ -119,8 +119,14 @@ struct AvoidanceParameters
   // vehicles with speed greater than this will not be avoided
   double threshold_speed_object_is_stopped;
 
-  // execute only when there is no intersection or crosswalk behind of the stopped vehicle.
-  double object_check_force_avoidance_clearance;
+  // execute only when there is no intersection behind of the stopped vehicle.
+  double object_ignore_distance_traffic_light;
+
+  // execute only when there is no crosswalk near the stopped vehicle.
+  double object_ignore_distance_crosswalk_forward;
+
+  // execute only when there is no crosswalk near the stopped vehicle.
+  double object_ignore_distance_crosswalk_backward;
 
   // distance to avoid object detection
   double object_check_forward_distance;

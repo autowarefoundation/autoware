@@ -74,7 +74,9 @@
         threshold_time_object_is_moving: 1.0            # [s]
         threshold_time_force_avoidance_for_stopped_vehicle: 10.0 # [s]
         # detection range
-        object_check_force_avoidance_clearance: 30.0    # [m]
+        object_ignore_distance_traffic_light: 30.0      # [m]
+        object_ignore_distance_crosswalk_forward: 30.0  # [m]
+        object_ignore_distance_crosswalk_backward: 30.0 # [m]
         object_check_forward_distance: 150.0            # [m]
         object_check_backward_distance: 2.0             # [m]
         object_check_goal_distance: 20.0                # [m]

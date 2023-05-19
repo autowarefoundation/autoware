@@ -579,8 +579,12 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       declare_parameter<double>(ns + "threshold_time_object_is_moving");
     p.threshold_time_force_avoidance_for_stopped_vehicle =
       declare_parameter<double>(ns + "threshold_time_force_avoidance_for_stopped_vehicle");
-    p.object_check_force_avoidance_clearance =
-      declare_parameter<double>(ns + "object_check_force_avoidance_clearance");
+    p.object_ignore_distance_traffic_light =
+      declare_parameter<double>(ns + "object_ignore_distance_traffic_light");
+    p.object_ignore_distance_crosswalk_forward =
+      declare_parameter<double>(ns + "object_ignore_distance_crosswalk_forward");
+    p.object_ignore_distance_crosswalk_backward =
+      declare_parameter<double>(ns + "object_ignore_distance_crosswalk_backward");
     p.object_check_forward_distance =
       declare_parameter<double>(ns + "object_check_forward_distance");
     p.object_check_backward_distance =
