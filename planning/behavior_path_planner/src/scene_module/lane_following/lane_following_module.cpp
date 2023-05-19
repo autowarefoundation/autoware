@@ -48,8 +48,7 @@ bool LaneFollowingModule::isExecutionReady() const
 
 BT::NodeStatus LaneFollowingModule::updateState()
 {
-  current_state_ = BT::NodeStatus::SUCCESS;
-  return current_state_;
+  return BT::NodeStatus::SUCCESS;
 }
 
 BehaviorModuleOutput LaneFollowingModule::plan()

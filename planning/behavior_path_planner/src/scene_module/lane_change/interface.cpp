@@ -88,22 +88,18 @@ ModuleStatus LaneChangeInterface::updateState()
   }
 
   if (module_type_->isAbortState()) {
-    current_state_ =
-      module_type_->hasFinishedAbort() ? ModuleStatus::FAILURE : ModuleStatus::RUNNING;
-    return current_state_;
+    return module_type_->hasFinishedAbort() ? ModuleStatus::FAILURE : ModuleStatus::RUNNING;
   }
 
   if (module_type_->hasFinishedLaneChange()) {
-    current_state_ = ModuleStatus::SUCCESS;
-    return current_state_;
+    return ModuleStatus::SUCCESS;
   }
 
   const auto [is_safe, is_object_coming_from_rear] = module_type_->isApprovedPathSafe();
 
   if (is_safe) {
     module_type_->toNormalState();
-    current_state_ = ModuleStatus::RUNNING;
-    return current_state_;
+    return ModuleStatus::RUNNING;
   }
 
   if (!module_type_->isCancelEnabled()) {
@@ -115,8 +111,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    current_state_ = ModuleStatus::RUNNING;
-    return current_state_;
+    return ModuleStatus::RUNNING;
   }
 
   if (!module_type_->isAbleToReturnCurrentLane()) {
@@ -128,8 +123,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    current_state_ = ModuleStatus::RUNNING;
-    return current_state_;
+    return ModuleStatus::RUNNING;
   }
 
   if (module_type_->isNearEndOfLane()) {
@@ -149,8 +143,7 @@ ModuleStatus LaneChangeInterface::updateState()
       getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000,
       "Lane change path is unsafe. Cancel lane change.");
     module_type_->toCancelState();
-    current_state_ = isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::FAILURE;
-    return current_state_;
+    return isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::FAILURE;
   }
 
   if (!module_type_->isAbortEnabled()) {
@@ -162,8 +155,7 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    current_state_ = ModuleStatus::RUNNING;
-    return current_state_;
+    return ModuleStatus::RUNNING;
   }
 
   const auto found_abort_path = module_type_->getAbortPath();
@@ -176,16 +168,14 @@ ModuleStatus LaneChangeInterface::updateState()
     } else {
       module_type_->toNormalState();
     }
-    current_state_ = ModuleStatus::RUNNING;
-    return current_state_;
+    return ModuleStatus::RUNNING;
   }
 
   RCLCPP_WARN_STREAM_THROTTLE(
     getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000,
     "Lane change path is unsafe. Abort lane change.");
   module_type_->toAbortState();
-  current_state_ = ModuleStatus::RUNNING;
-  return current_state_;
+  return ModuleStatus::RUNNING;
 }
 
 void LaneChangeInterface::updateData()

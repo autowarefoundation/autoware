@@ -186,12 +186,10 @@ ModuleStatus DynamicAvoidanceModule::updateState()
   const bool has_avoidance_target = !target_objects_.empty();
 
   if (!has_avoidance_target) {
-    current_state_ = ModuleStatus::SUCCESS;
-  } else {
-    current_state_ = ModuleStatus::RUNNING;
+    return ModuleStatus::SUCCESS;
   }
 
-  return current_state_;
+  return ModuleStatus::RUNNING;
 }
 
 BehaviorModuleOutput DynamicAvoidanceModule::plan()

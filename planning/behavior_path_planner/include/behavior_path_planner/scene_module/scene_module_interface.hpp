@@ -109,6 +109,11 @@ public:
   virtual ModuleStatus updateState() = 0;
 
   /**
+   * @brief Set the current_state_ based on updateState output.
+   */
+  virtual void updateCurrentState() { current_state_ = updateState(); }
+
+  /**
    * @brief If the module plan customized reference path while waiting approval, it should output
    * SUCCESS. Otherwise, it should output FAILURE to check execution request of next module.
    */
@@ -507,7 +512,11 @@ protected:
   PlanResult path_candidate_;
   PlanResult path_reference_;
 
-  ModuleStatus current_state_;
+#ifdef USE_OLD_ARCHITECTURE
+  ModuleStatus current_state_{ModuleStatus::SUCCESS};
+#else
+  ModuleStatus current_state_{ModuleStatus::IDLE};
+#endif
 
   std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map_;
 

@@ -182,7 +182,7 @@ private:
     const auto result = module_ptr->run();
     module_ptr->unlockRTCCommand();
 
-    module_ptr->updateState();
+    module_ptr->updateCurrentState();
 
     module_ptr->publishRTCStatus();
 

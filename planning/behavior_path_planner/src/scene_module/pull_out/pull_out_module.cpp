@@ -153,8 +153,7 @@ ModuleStatus PullOutModule::updateState()
   RCLCPP_DEBUG(getLogger(), "PULL_OUT updateState");
 
   if (hasFinishedPullOut()) {
-    current_state_ = ModuleStatus::SUCCESS;
-    return current_state_;
+    return ModuleStatus::SUCCESS;
   }
 
   checkBackFinished();

@@ -162,29 +162,26 @@ ModuleStatus SideShiftModule::updateState()
     no_shifted_plan);
 
   if (no_request && no_shifted_plan && no_offset_diff) {
-    current_state_ = ModuleStatus::SUCCESS;
-  } else {
-    const auto & current_lanes = utils::getCurrentLanes(planner_data_);
-    const auto & current_pose = planner_data_->self_odometry->pose.pose;
-    const auto & inserted_shift_line_start_pose = inserted_shift_line_.start;
-    const auto & inserted_shift_line_end_pose = inserted_shift_line_.end;
-    const double self_to_shift_line_start_arc_length =
-      behavior_path_planner::utils::getSignedDistance(
-        current_pose, inserted_shift_line_start_pose, current_lanes);
-    const double self_to_shift_line_end_arc_length =
-      behavior_path_planner::utils::getSignedDistance(
-        current_pose, inserted_shift_line_end_pose, current_lanes);
-    if (self_to_shift_line_start_arc_length >= 0) {
-      shift_status_ = SideShiftStatus::BEFORE_SHIFT;
-    } else if (self_to_shift_line_start_arc_length < 0 && self_to_shift_line_end_arc_length > 0) {
-      shift_status_ = SideShiftStatus::SHIFTING;
-    } else {
-      shift_status_ = SideShiftStatus::AFTER_SHIFT;
-    }
-    current_state_ = ModuleStatus::RUNNING;
+    return ModuleStatus::SUCCESS;
   }
 
-  return current_state_;
+  const auto & current_lanes = utils::getCurrentLanes(planner_data_);
+  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const auto & inserted_shift_line_start_pose = inserted_shift_line_.start;
+  const auto & inserted_shift_line_end_pose = inserted_shift_line_.end;
+  const double self_to_shift_line_start_arc_length =
+    behavior_path_planner::utils::getSignedDistance(
+      current_pose, inserted_shift_line_start_pose, current_lanes);
+  const double self_to_shift_line_end_arc_length = behavior_path_planner::utils::getSignedDistance(
+    current_pose, inserted_shift_line_end_pose, current_lanes);
+  if (self_to_shift_line_start_arc_length >= 0) {
+    shift_status_ = SideShiftStatus::BEFORE_SHIFT;
+  } else if (self_to_shift_line_start_arc_length < 0 && self_to_shift_line_end_arc_length > 0) {
+    shift_status_ = SideShiftStatus::SHIFTING;
+  } else {
+    shift_status_ = SideShiftStatus::AFTER_SHIFT;
+  }
+  return ModuleStatus::RUNNING;
 }
 
 void SideShiftModule::updateData()

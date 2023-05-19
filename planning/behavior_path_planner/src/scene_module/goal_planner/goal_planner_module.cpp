@@ -415,7 +415,7 @@ ModuleStatus GoalPlannerModule::updateState()
 {
   // finish module only when the goal is fixed
   if (!allow_goal_modification_ && hasFinishedGoalPlanner()) {
-    current_state_ = ModuleStatus::SUCCESS;
+    return ModuleStatus::SUCCESS;
   }
 
   // pull_out module will be run when setting new goal, so not need finishing pull_over module.

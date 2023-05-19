@@ -81,7 +81,8 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
         RCLCPP_ERROR_STREAM(scene_module_->getLogger(), "setOutput() failed : " << res.error());
       }
 
-      current_status = scene_module_->updateState();
+      scene_module_->updateCurrentState();
+      current_status = scene_module_->getCurrentStatus();
 
       // for data output
       module_status_->status = current_status;
