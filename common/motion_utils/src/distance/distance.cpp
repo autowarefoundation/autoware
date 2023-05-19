@@ -88,12 +88,12 @@ std::tuple<double, double, double> update(
  * @param (am) minimum deceleration [m/ss]
  * @param (ja) maximum jerk [m/sss]
  * @param (jd) minimum jerk [m/sss]
- * @param (t_min) duration of constant deceleration [s]
+ * @param (t_during_min_acc) duration of constant deceleration [s]
  * @return moving distance until velocity is reached vt [m]
  */
 boost::optional<double> calcDecelDistPlanType1(
   const double v0, const double vt, const double a0, const double am, const double ja,
-  const double jd, const double t_min)
+  const double jd, const double t_during_min_acc)
 {
   constexpr double epsilon = 1e-3;
 
@@ -103,7 +103,7 @@ boost::optional<double> calcDecelDistPlanType1(
   const auto [x1, v1, a1] = update(0.0, v0, a0, j1, t1);
 
   // zero jerk time
-  const double t2 = epsilon < t_min ? t_min : 0.0;
+  const double t2 = epsilon < t_during_min_acc ? t_during_min_acc : 0.0;
   const auto [x2, v2, a2] = update(x1, v1, a1, 0.0, t2);
 
   // positive jerk time
@@ -238,22 +238,30 @@ boost::optional<double> calcDecelDistWithJerkAndAccConstraints(
   const double current_vel, const double target_vel, const double current_acc, const double acc_min,
   const double jerk_acc, const double jerk_dec)
 {
+  if (current_vel < target_vel) {
+    return {};
+  }
+
   constexpr double epsilon = 1e-3;
-  const double t_dec =
-    acc_min < current_acc ? (acc_min - current_acc) / jerk_dec : (acc_min - current_acc) / jerk_acc;
-  const double t_acc = (0.0 - acc_min) / jerk_acc;
-  const double t_min = (target_vel - current_vel - current_acc * t_dec -
-                        0.5 * jerk_dec * t_dec * t_dec - 0.5 * acc_min * t_acc) /
-                       acc_min;
+  const double jerk_before_min_acc = acc_min < current_acc ? jerk_dec : jerk_acc;
+  const double t_before_min_acc = (acc_min - current_acc) / jerk_before_min_acc;
+  const double jerk_after_min_acc = jerk_acc;
+  const double t_after_min_acc = (0.0 - acc_min) / jerk_after_min_acc;
+
+  const double t_during_min_acc =
+    (target_vel - current_vel - current_acc * t_before_min_acc -
+     0.5 * jerk_before_min_acc * std::pow(t_before_min_acc, 2) - acc_min * t_after_min_acc -
+     0.5 * jerk_after_min_acc * std::pow(t_after_min_acc, 2)) /
+    acc_min;
 
   // check if it is possible to decelerate to the target velocity
   // by simply bringing the current acceleration to zero.
   const auto is_decel_needed =
     0.5 * (0.0 - current_acc) / jerk_acc * current_acc > target_vel - current_vel;
 
-  if (t_min > epsilon) {
+  if (t_during_min_acc > epsilon) {
     return calcDecelDistPlanType1(
-      current_vel, target_vel, current_acc, acc_min, jerk_acc, jerk_dec, t_min);
+      current_vel, target_vel, current_acc, acc_min, jerk_acc, jerk_dec, t_during_min_acc);
   } else if (is_decel_needed || current_acc > epsilon) {
     return calcDecelDistPlanType2(current_vel, target_vel, current_acc, jerk_acc, jerk_dec);
   }

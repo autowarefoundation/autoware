@@ -37,21 +37,6 @@ TEST(distance, calcDecelDistWithJerkAndAccConstraints)
     EXPECT_FALSE(dist);
   }
 
-  // invalid deceleration
-  {
-    constexpr double current_vel = 16.7;
-    constexpr double target_vel = 0.0;
-    constexpr double current_acc = -2.5;
-    constexpr double acc_min = -0.5;
-    constexpr double jerk_acc = 1.0;
-    constexpr double jerk_dec = -0.5;
-
-    const auto dist = calcDecelDistWithJerkAndAccConstraints(
-      current_vel, target_vel, current_acc, acc_min, jerk_acc, jerk_dec);
-
-    EXPECT_FALSE(dist);
-  }
-
   // normal stop
   {
     constexpr double current_vel = 16.7;
@@ -107,6 +92,21 @@ TEST(distance, calcDecelDistWithJerkAndAccConstraints)
     constexpr double jerk_dec = -1.5;
 
     constexpr double expected_dist = 58.028;
+    const auto dist = calcDecelDistWithJerkAndAccConstraints(
+      current_vel, target_vel, current_acc, acc_min, jerk_acc, jerk_dec);
+    EXPECT_NEAR(expected_dist, *dist, epsilon);
+  }
+
+  // current_acc is lower than acc_min
+  {
+    constexpr double current_vel = 16.7;
+    constexpr double target_vel = 0.0;
+    constexpr double current_acc = -2.5;
+    constexpr double acc_min = -0.5;
+    constexpr double jerk_acc = 1.0;
+    constexpr double jerk_dec = -0.5;
+
+    constexpr double expected_dist = 217.429;
     const auto dist = calcDecelDistWithJerkAndAccConstraints(
       current_vel, target_vel, current_acc, acc_min, jerk_acc, jerk_dec);
     EXPECT_NEAR(expected_dist, *dist, epsilon);
