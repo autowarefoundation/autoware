@@ -753,6 +753,12 @@ void filterTargetObjects(
         data.other_objects.push_back(o);
         continue;
       }
+
+      if (std::abs(shift_length) < parameters->lateral_execution_threshold) {
+        o.reason = "LessThanExecutionThreshold";
+        data.other_objects.push_back(o);
+        continue;
+      }
     }
 
     const auto stop_time_longer_than_threshold =
