@@ -124,7 +124,7 @@ Either one is activated when all conditions are met.
 | th_arrived_distance        | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
 | th_stopped_velocity        | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
 | th_stopped_time            | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
-| pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 2.0           |
+| pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 3.0           |
 | pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 1.38          |
 | margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
 | decide_path_distance       | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
@@ -171,8 +171,8 @@ searched for in certain range of the shoulder lane.
 | backward_goal_search_length     | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
 | goal_search_interval            | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 2.0            |
 | longitudinal_margin             | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
-| max_lateral_offset              | [m]  | double | maximum offset of goal search in the lateral direction                                                                                                                                                                   | 3.0            |
-| lateral_offset_interval         | [m]  | double | distance interval of goal search in the lateral direction                                                                                                                                                                | 3.0            |
+| max_lateral_offset              | [m]  | double | maximum offset of goal search in the lateral direction                                                                                                                                                                   | 0.5            |
+| lateral_offset_interval         | [m]  | double | distance interval of goal search in the lateral direction                                                                                                                                                                | 0.25           |
 | ignore_distance_from_lane_start | [m]  | double | distance from start of pull over lanes for ignoring goal candidates                                                                                                                                                      | 15.0           |
 
 ## **Path Generation**
@@ -202,7 +202,7 @@ The lateral jerk is searched for among the predetermined minimum and maximum val
 | maximum_lateral_jerk          | [m/s3] | double | maximum lateral jerk                                                | 2.0           |
 | minimum_lateral_jerk          | [m/s3] | double | minimum lateral jerk                                                | 0.5           |
 | deceleration_interval         | [m]    | double | distance of deceleration section                                    | 15.0          |
-| after_shift_straight_distance | [m]    | double | straight line distance after pull over end point                    | 5.0           |
+| after_shift_straight_distance | [m]    | double | straight line distance after pull over end point                    | 1.0           |
 
 ### **geometric parallel parking**
 
