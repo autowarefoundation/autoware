@@ -69,9 +69,14 @@ void PathShifter::setVelocity(const double velocity)
   velocity_ = velocity;
 }
 
-void PathShifter::setLateralAccelerationLimit(const double acc)
+void PathShifter::setLateralAccelerationLimit(const double lateral_acc)
 {
-  acc_limit_ = acc;
+  lateral_acc_limit_ = lateral_acc;
+}
+
+void PathShifter::setLongitudinalAcceleration(const double longitudinal_acc)
+{
+  longitudinal_acc_ = longitudinal_acc;
 }
 
 void PathShifter::addShiftLine(const ShiftLine & line)
@@ -271,60 +276,103 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::getBaseLengthsW
   return std::pair{base_lon, base_lat};
 }
 
+std::pair<std::vector<double>, std::vector<double>> PathShifter::getBaseLengthsWithoutAccelLimit(
+  const double arclength, const double shift_length, const double velocity,
+  const double longitudinal_acc, const double total_time, const bool offset_back) const
+{
+  const auto & s = arclength;
+  const auto & l = shift_length;
+  const auto & v0 = velocity;
+  const auto & a = longitudinal_acc;
+  const auto & T = total_time;
+  const double t = T / 4;
+
+  const double s1 = v0 * t + 0.5 * a * t * t;
+  const double v1 = v0 + a * t;
+  const double s2 = s1 + 2 * v1 * t + 2 * a * t * t;
+  std::vector<double> base_lon = {0.0, s1, s2, s};
+  std::vector<double> base_lat = {0.0, 1.0 / 12.0 * l, 11.0 / 12.0 * l, l};
+
+  if (!offset_back) std::reverse(base_lat.begin(), base_lat.end());
+
+  return std::pair{base_lon, base_lat};
+}
+
 std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths(
   const double arclength, const double shift_length, const bool offset_back) const
 {
-  const auto speed = std::abs(velocity_);
+  const auto v0 = std::abs(velocity_);
 
-  if (speed < 1.0e-5) {
+  // For longitudinal acceleration, we only consider positive side
+  // negative acceleration (deceleration) is treated as 0.0
+  const double acc_threshold = 0.0001;
+  const auto & a = longitudinal_acc_ > acc_threshold ? longitudinal_acc_ : 0.0;
+
+  if (v0 < 1.0e-5 && a < acc_threshold) {
     // no need to consider acceleration limit
-    RCLCPP_DEBUG(logger_, "set velocity is zero. acc limit is ignored");
+    RCLCPP_DEBUG(logger_, "set velocity is zero. lateral acc limit is ignored");
     return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
   }
 
-  const auto T = arclength / speed;
+  const auto & S = arclength;
   const auto L = std::abs(shift_length);
-  const auto a_max = 8.0 * L / (T * T);
+  const auto T = a > acc_threshold ? (-v0 + std::sqrt(v0 * v0 + 2 * a * S)) / a : S / v0;
+  const auto lateral_a_max = 8.0 * L / (T * T);
 
-  if (a_max < acc_limit_) {
+  if (lateral_a_max < lateral_acc_limit_) {
     // no need to consider acceleration limit
     RCLCPP_WARN_THROTTLE(
-      logger_, clock_, 3000, "No need to consider acc limit. max: %f, limit: %f", a_max,
-      acc_limit_);
-    return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
+      logger_, clock_, 3000, "No need to consider lateral acc limit. max: %f, limit: %f",
+      lateral_a_max, lateral_acc_limit_);
+    return getBaseLengthsWithoutAccelLimit(S, shift_length, v0, a, T, offset_back);
   }
 
-  const auto tj = T / 2.0 - 2.0 * L / (acc_limit_ * T);
-  const auto ta = 4.0 * L / (acc_limit_ * T) - T / 2.0;
-  const auto jerk = (2.0 * acc_limit_ * acc_limit_ * T) / (acc_limit_ * T * T - 4.0 * L);
+  const auto tj = T / 2.0 - 2.0 * L / (lateral_acc_limit_ * T);
+  const auto ta = 4.0 * L / (lateral_acc_limit_ * T) - T / 2.0;
+  const auto lat_jerk =
+    (2.0 * lateral_acc_limit_ * lateral_acc_limit_ * T) / (lateral_acc_limit_ * T * T - 4.0 * L);
 
-  if (tj < 0.0 || ta < 0.0 || jerk < 0.0 || tj / T < 0.1) {
+  if (tj < 0.0 || ta < 0.0 || lat_jerk < 0.0 || tj / T < 0.1) {
     // no need to consider acceleration limit
     RCLCPP_WARN_THROTTLE(
       logger_, clock_, 3000,
       "Acc limit is too small to be applied. Tj: %f, Ta: %f, j: %f, a_max: %f, acc_limit: %f", tj,
-      ta, jerk, a_max, acc_limit_);
-    return getBaseLengthsWithoutAccelLimit(arclength, shift_length, offset_back);
+      ta, lat_jerk, lateral_a_max, lateral_acc_limit_);
+    return getBaseLengthsWithoutAccelLimit(S, shift_length, offset_back);
   }
 
   const auto tj3 = tj * tj * tj;
   const auto ta2_tj = ta * ta * tj;
   const auto ta_tj2 = ta * tj * tj;
 
-  const auto s1 = tj * speed;
-  const auto s2 = s1 + ta * speed;
-  const auto s3 = s2 + tj * speed;  // = s4
-  const auto s5 = s3 + tj * speed;
-  const auto s6 = s5 + ta * speed;
-  const auto s7 = s6 + tj * speed;
+  const auto s1 = tj * v0 + 0.5 * a * tj * tj;
+  const auto v1 = v0 + a * tj;
+
+  const auto s2 = s1 + ta * v1 + 0.5 * a * ta * ta;
+  const auto v2 = v1 + a * ta;
+
+  const auto s3 = s2 + tj * v2 + 0.5 * a * tj * tj;  // = s4
+  const auto v3 = v2 + a * tj;
+
+  const auto s5 = s3 + tj * v3 + 0.5 * a * tj * tj;
+  const auto v5 = v3 + a * tj;
+
+  const auto s6 = s5 + ta * v5 + 0.5 * a * ta * ta;
+  const auto v6 = v5 + a * ta;
+
+  const auto s7 = s6 + tj * v6 + 0.5 * a * tj * tj;
 
   const auto sign = shift_length > 0.0 ? 1.0 : -1.0;
-  const auto l1 = sign * (1.0 / 6.0 * jerk * tj3);
-  const auto l2 = sign * (1.0 / 6.0 * jerk * tj3 + 0.5 * jerk * ta_tj2 + 0.5 * jerk * ta2_tj);
-  const auto l3 = sign * (jerk * tj3 + 1.5 * jerk * ta_tj2 + 0.5 * jerk * ta2_tj);  // = l4
-  const auto l5 = sign * (11.0 / 6.0 * jerk * tj3 + 2.5 * jerk * ta_tj2 + 0.5 * jerk * ta2_tj);
-  const auto l6 = sign * (11.0 / 6.0 * jerk * tj3 + 3.0 * jerk * ta_tj2 + jerk * ta2_tj);
-  const auto l7 = sign * (2.0 * jerk * tj3 + 3.0 * jerk * ta_tj2 + jerk * ta2_tj);
+  const auto l1 = sign * (1.0 / 6.0 * lat_jerk * tj3);
+  const auto l2 =
+    sign * (1.0 / 6.0 * lat_jerk * tj3 + 0.5 * lat_jerk * ta_tj2 + 0.5 * lat_jerk * ta2_tj);
+  const auto l3 =
+    sign * (lat_jerk * tj3 + 1.5 * lat_jerk * ta_tj2 + 0.5 * lat_jerk * ta2_tj);  // = l4
+  const auto l5 =
+    sign * (11.0 / 6.0 * lat_jerk * tj3 + 2.5 * lat_jerk * ta_tj2 + 0.5 * lat_jerk * ta2_tj);
+  const auto l6 =
+    sign * (11.0 / 6.0 * lat_jerk * tj3 + 3.0 * lat_jerk * ta_tj2 + lat_jerk * ta2_tj);
+  const auto l7 = sign * (2.0 * lat_jerk * tj3 + 3.0 * lat_jerk * ta_tj2 + lat_jerk * ta2_tj);
 
   std::vector<double> base_lon = {0.0, s1, s2, s3, s5, s6, s7};
   std::vector<double> base_lat = {0.0, l1, l2, l3, l5, l6, l7};
