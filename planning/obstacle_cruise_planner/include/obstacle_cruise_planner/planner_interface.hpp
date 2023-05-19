@@ -162,7 +162,7 @@ protected:
 
 private:
   double calculateSlowDownVelocity(const SlowDownObstacle & obstacle) const;
-  double calculateDistanceToSlowDownWithAccConstraint(
+  double calculateDistanceToSlowDownWithConstraints(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & traj_points,
     const SlowDownObstacle & obstacle, const double dist_to_ego, const double slow_down_vel) const;
 
@@ -181,7 +181,6 @@ private:
       min_lat_margin = node.declare_parameter<double>("slow_down.min_lat_margin");
       max_ego_velocity = node.declare_parameter<double>("slow_down.max_ego_velocity");
       min_ego_velocity = node.declare_parameter<double>("slow_down.min_ego_velocity");
-      max_deceleration = node.declare_parameter<double>("slow_down.max_deceleration");
       time_margin_on_target_velocity =
         node.declare_parameter<double>("slow_down.time_margin_on_target_velocity");
     }
@@ -197,8 +196,6 @@ private:
       tier4_autoware_utils::updateParam<double>(
         parameters, "slow_down.min_ego_velocity", min_ego_velocity);
       tier4_autoware_utils::updateParam<double>(
-        parameters, "slow_down.max_deceleration", max_deceleration);
-      tier4_autoware_utils::updateParam<double>(
         parameters, "slow_down.time_margin_on_target_velocity", time_margin_on_target_velocity);
     }
 
@@ -206,7 +203,6 @@ private:
     double min_lat_margin;
     double max_ego_velocity;
     double min_ego_velocity;
-    double max_deceleration;
     double time_margin_on_target_velocity;
   };
   SlowDownParam slow_down_param_;
