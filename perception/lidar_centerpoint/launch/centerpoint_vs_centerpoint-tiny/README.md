@@ -124,7 +124,7 @@ ros2 launch lidar_centerpoint centerpoint_vs_centerpoint-tiny.launch.xml
 
 Then you will see two rviz window show immediately. On the left is the result for lidar centerpoint tiny, and on the right is the result for lidar centerpoint.
 
-![two rviz2 display centerpoint and centerpoint_tiny](https://i.imgur.com/YAYehrf.jpg)
+![two rviz2 display centerpoint and centerpoint_tiny](https://github.com/autowarefoundation/autoware.universe/assets/58775300/2a89063a-8e0e-4f59-8d48-f339d4f7c0ff)
 
 ## Troubleshooting
 
