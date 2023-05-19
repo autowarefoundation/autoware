@@ -854,7 +854,7 @@ std::vector<DetectionLaneDivision> generateDetectionLaneDivisions(
     merged_branches[src] = std::make_pair(merged, area);
   }
 
-  // (3) descritize each merged lanelet
+  // (3) discretize each merged lanelet
   std::vector<DetectionLaneDivision> detection_divisions;
   for (const auto & [last_lane_id, branch] : merged_branches) {
     DetectionLaneDivision detection_division;

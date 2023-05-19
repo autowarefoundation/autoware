@@ -974,7 +974,7 @@ bool IntersectionModule::isOcclusionCleared(
 
   const int width = occ_grid.info.width;
   const int height = occ_grid.info.height;
-  const double reso = occ_grid.info.resolution;
+  const double resolution = occ_grid.info.resolution;
   const auto & origin = occ_grid.info.origin.position;
 
   // NOTE: interesting area is set to 0 for later masking
@@ -984,9 +984,10 @@ bool IntersectionModule::isOcclusionCleared(
   // (1) prepare detection area mask
   Polygon2d grid_poly;
   grid_poly.outer().emplace_back(origin.x, origin.y);
-  grid_poly.outer().emplace_back(origin.x + (width - 1) * reso, origin.y);
-  grid_poly.outer().emplace_back(origin.x + (width - 1) * reso, origin.y + (height - 1) * reso);
-  grid_poly.outer().emplace_back(origin.x, origin.y + (height - 1) * reso);
+  grid_poly.outer().emplace_back(origin.x + (width - 1) * resolution, origin.y);
+  grid_poly.outer().emplace_back(
+    origin.x + (width - 1) * resolution, origin.y + (height - 1) * resolution);
+  grid_poly.outer().emplace_back(origin.x, origin.y + (height - 1) * resolution);
   grid_poly.outer().emplace_back(origin.x, origin.y);
   bg::correct(grid_poly);
 
@@ -1011,8 +1012,8 @@ bool IntersectionModule::isOcclusionCleared(
     for (const auto & common_area : common_areas) {
       std::vector<cv::Point> detection_area_cv_polygon;
       for (const auto & p : common_area.outer()) {
-        const int idx_x = static_cast<int>((p.x() - origin.x) / reso);
-        const int idx_y = static_cast<int>((p.y() - origin.y) / reso);
+        const int idx_x = static_cast<int>((p.x() - origin.x) / resolution);
+        const int idx_y = static_cast<int>((p.y() - origin.y) / resolution);
         detection_area_cv_polygon.emplace_back(idx_x, height - 1 - idx_y);
       }
       detection_area_cv_polygons.push_back(detection_area_cv_polygon);
@@ -1044,8 +1045,8 @@ bool IntersectionModule::isOcclusionCleared(
     for (const auto & common_area : common_areas) {
       std::vector<cv::Point> adjacent_lane_cv_polygon;
       for (const auto & p : common_area.outer()) {
-        const int idx_x = static_cast<int>((p.x() - origin.x) / reso);
-        const int idx_y = static_cast<int>((p.y() - origin.y) / reso);
+        const int idx_x = static_cast<int>((p.x() - origin.x) / resolution);
+        const int idx_y = static_cast<int>((p.y() - origin.y) / resolution);
         adjacent_lane_cv_polygon.emplace_back(idx_x, height - 1 - idx_y);
       }
       adjacent_lane_cv_polygons.push_back(adjacent_lane_cv_polygon);
@@ -1056,7 +1057,7 @@ bool IntersectionModule::isOcclusionCleared(
   }
 
   // (2) prepare unknown mask
-  // In OpenCV the pixel at (X=x, Y=y) (with left-upper origin) is accesed by img[y, x]
+  // In OpenCV the pixel at (X=x, Y=y) (with left-upper origin) is accessed by img[y, x]
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
       const int idx = y * width + x;
@@ -1074,15 +1075,15 @@ bool IntersectionModule::isOcclusionCleared(
   cv::bitwise_and(detection_mask, unknown_mask, occlusion_mask_raw);
   // (3.1) apply morphologyEx
   cv::Mat occlusion_mask;
-  const int morph_size = std::ceil(planner_param_.occlusion.denoise_kernel / reso);
+  const int morph_size = std::ceil(planner_param_.occlusion.denoise_kernel / resolution);
   cv::morphologyEx(
     occlusion_mask_raw, occlusion_mask, cv::MORPH_OPEN,
     cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morph_size, morph_size)));
 
   // (4) create distance grid
-  // value: 0 - 254: signed distance representing [distamce_min, distance_max]
+  // value: 0 - 254: signed distance representing [distance_min, distance_max]
   // 255: undefined value
-  const double distance_max = std::hypot(width * reso / 2, height * reso / 2);
+  const double distance_max = std::hypot(width * resolution / 2, height * resolution / 2);
   const double distance_min = -distance_max;
   const int undef_pixel = 255;
   const int max_cost_pixel = 254;
@@ -1099,8 +1100,8 @@ bool IntersectionModule::isOcclusionCleared(
   const int zero_dist_pixel = dist2pixel(0.0);
 
   auto coord2index = [&](const double x, const double y) {
-    const int idx_x = (x - origin.x) / reso;
-    const int idx_y = (y - origin.y) / reso;
+    const int idx_x = (x - origin.x) / resolution;
+    const int idx_y = (y - origin.y) / resolution;
     if (idx_x < 0 || idx_x >= width) return std::make_tuple(false, -1, -1);
     if (idx_y < 0 || idx_y >= height) return std::make_tuple(false, -1, -1);
     return std::make_tuple(true, idx_x, idx_y);
@@ -1112,8 +1113,8 @@ bool IntersectionModule::isOcclusionCleared(
   const auto [lane_start, lane_end] = lane_detection_interval_ip;
   for (int i = static_cast<int>(lane_end); i >= static_cast<int>(lane_start); i--) {
     const auto & path_pos = path_ip.points.at(i).point.pose.position;
-    const int idx_x = (path_pos.x - origin.x) / reso;
-    const int idx_y = (path_pos.y - origin.y) / reso;
+    const int idx_x = (path_pos.x - origin.x) / resolution;
+    const int idx_y = (path_pos.y - origin.y) / resolution;
     if (idx_x < 0 || idx_x >= width) continue;
     if (idx_y < 0 || idx_y >= height) continue;
     distance_grid.at<unsigned char>(height - 1 - idx_y, idx_x) = zero_dist_pixel;
@@ -1204,8 +1205,8 @@ bool IntersectionModule::isOcclusionCleared(
         assert(projection_ind >= 0);
         min_cost = pixel;
         min_cost_projection_ind = projection_ind;
-        nearest_occlusion_point.x = origin.x + i * reso;
-        nearest_occlusion_point.y = origin.y + j * reso;
+        nearest_occlusion_point.x = origin.x + i * resolution;
+        nearest_occlusion_point.y = origin.y + j * resolution;
         nearest_occlusion_point.z = origin.z + distance_max * pixel / max_cost_pixel;
       }
     }
@@ -1222,8 +1223,8 @@ bool IntersectionModule::isOcclusionCleared(
   grid_map::GridMap occlusion_grid({"elevation"});
   occlusion_grid.setFrameId("map");
   occlusion_grid.setGeometry(
-    grid_map::Length(width * reso, height * reso), reso,
-    grid_map::Position(origin.x + width * reso / 2, origin.y + height * reso / 2));
+    grid_map::Length(width * resolution, height * resolution), resolution,
+    grid_map::Position(origin.x + width * resolution / 2, origin.y + height * resolution / 2));
   cv::rotate(distance_grid, distance_grid, cv::ROTATE_90_COUNTERCLOCKWISE);
   cv::rotate(distance_grid_heatmap, distance_grid_heatmap, cv::ROTATE_90_COUNTERCLOCKWISE);
   grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 1>(

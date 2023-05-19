@@ -166,7 +166,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
     debug_marker_array.markers.push_back(createPointMarkerArray(
       debug_data_.nearest_occlusion_point, "nearest_occlusion", module_id_, 0.5, 0.5, 0.0));
     debug_marker_array.markers.push_back(createPointMarkerArray(
-      debug_data_.nearest_occlusion_projection_point, "nearest_occluison_projection", module_id_,
+      debug_data_.nearest_occlusion_projection_point, "nearest_occlusion_projection", module_id_,
       0.5, 0.5, 0.0));
   }
 

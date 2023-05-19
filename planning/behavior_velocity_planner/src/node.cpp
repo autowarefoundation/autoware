@@ -321,9 +321,9 @@ void BehaviorVelocityPlannerNode::onAcceleration(
 
 void BehaviorVelocityPlannerNode::onParam()
 {
-  // Note(vrichard): mutex lock is not necessary as onParam is only called once in the constructed.
-  // It would be required if it was a callback.
-  // std::lock_guard<std::mutex> lock(mutex_);
+  // Note(VRichardJP): mutex lock is not necessary as onParam is only called once in the
+  // constructed. It would be required if it was a callback. std::lock_guard<std::mutex>
+  // lock(mutex_);
   planner_data_.velocity_smoother_ =
     std::make_unique<motion_velocity_smoother::AnalyticalJerkConstrainedSmoother>(*this);
 }

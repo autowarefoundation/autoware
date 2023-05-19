@@ -676,18 +676,18 @@ std::set<int> getAssociativeIntersectionLanelets(
     const auto neighbors = routing_graph->besides(parent);
     for (const auto & neighbor : neighbors) parent_neighbors.insert(neighbor.id());
   }
-  std::set<int> assocs;
-  assocs.insert(lane.id());
+  std::set<int> associative_intersection_lanelets;
+  associative_intersection_lanelets.insert(lane.id());
   for (const auto & parent_neighbor_id : parent_neighbors) {
     const auto parent_neighbor = lanelet_map->laneletLayer.get(parent_neighbor_id);
     const auto followings = routing_graph->following(parent_neighbor);
     for (const auto & following : followings) {
       if (following.attributeOr("turn_direction", "else") == turn_direction) {
-        assocs.insert(following.id());
+        associative_intersection_lanelets.insert(following.id());
       }
     }
   }
-  return assocs;
+  return associative_intersection_lanelets;
 }
 
 }  // namespace planning_utils

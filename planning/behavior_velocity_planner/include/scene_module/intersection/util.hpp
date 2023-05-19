@@ -100,7 +100,7 @@ std::optional<std::pair<size_t, size_t>> generateOcclusionStopLines(
   const size_t occlusion_projection_index, const double occlusion_extra_margin,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path_ip, const double interval,
-  const std::pair<size_t, size_t> lane_interaval, const rclcpp::Logger logger);
+  const std::pair<size_t, size_t> lane_interval, const rclcpp::Logger logger);
 
 std::optional<size_t> generateStaticPassJudgeLine(
   const lanelet::CompoundPolygon3d & first_detection_area,
