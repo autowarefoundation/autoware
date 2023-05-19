@@ -396,16 +396,20 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
       return signed_lon_length / relative_velocity;
     }();
 
-    if (time_to_collision < 0) {
+    if (time_to_collision < -parameters_->duration_to_hold_avoidance_overtaking_object) {
       return std::nullopt;
     }
 
-    const double limited_time_to_collision = std::min(3.0, time_to_collision);
     if (0 <= object.path_projected_vel) {
+      const double limited_time_to_collision =
+        std::min(parameters_->max_time_to_collision_overtaking_object, time_to_collision);
       return std::make_pair(
         raw_min_obj_lon_offset + object.path_projected_vel * limited_time_to_collision,
         raw_max_obj_lon_offset + object.path_projected_vel * limited_time_to_collision);
     }
+
+    const double limited_time_to_collision =
+      std::min(parameters_->max_time_to_collision_oncoming_object, time_to_collision);
     return std::make_pair(
       raw_min_obj_lon_offset + object.path_projected_vel * limited_time_to_collision,
       raw_max_obj_lon_offset);
@@ -418,21 +422,22 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
   const double max_obj_lon_offset = obj_lon_offset->second;
 
   // calculate bound start and end index
-  const double length_to_avoid = [&]() {
-    if (0.0 <= object.path_projected_vel) {
-      return object.path_projected_vel * parameters_->time_to_avoid_same_directional_object;
-    }
-    return object.path_projected_vel * parameters_->time_to_avoid_opposite_directional_object;
-  }();
+  const bool is_object_overtaking = (0.0 <= object.path_projected_vel);
+  const double start_length_to_avoid =
+    std::abs(object.path_projected_vel) *
+    (is_object_overtaking ? parameters_->start_duration_to_avoid_overtaking_object
+                          : parameters_->start_duration_to_avoid_oncoming_object);
+  const double end_length_to_avoid =
+    std::abs(object.path_projected_vel) * (is_object_overtaking
+                                             ? parameters_->end_duration_to_avoid_overtaking_object
+                                             : parameters_->end_duration_to_avoid_oncoming_object);
   const auto lon_bound_start_idx_opt = motion_utils::insertTargetPoint(
-    obj_seg_idx, min_obj_lon_offset + (length_to_avoid < 0 ? length_to_avoid : 0.0),
-    path_for_bound.points);
+    obj_seg_idx, min_obj_lon_offset - start_length_to_avoid, path_for_bound.points);
   const size_t updated_obj_seg_idx =
     (lon_bound_start_idx_opt && lon_bound_start_idx_opt.value() <= obj_seg_idx) ? obj_seg_idx + 1
                                                                                 : obj_seg_idx;
   const auto lon_bound_end_idx_opt = motion_utils::insertTargetPoint(
-    updated_obj_seg_idx, max_obj_lon_offset + (0 <= length_to_avoid ? length_to_avoid : 0.0),
-    path_for_bound.points);
+    updated_obj_seg_idx, max_obj_lon_offset + end_length_to_avoid, path_for_bound.points);
 
   if (!lon_bound_start_idx_opt && !lon_bound_end_idx_opt) {
     // NOTE: The obstacle is longitudinally out of the ego's trajectory.

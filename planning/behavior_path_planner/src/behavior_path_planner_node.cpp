@@ -712,11 +712,23 @@ DynamicAvoidanceParameters BehaviorPathPlannerNode::getDynamicAvoidanceParam()
   {  // drivable_area_generation
     std::string ns = "dynamic_avoidance.drivable_area_generation.";
     p.lat_offset_from_obstacle = declare_parameter<double>(ns + "lat_offset_from_obstacle");
-    p.time_to_avoid_same_directional_object =
-      declare_parameter<double>(ns + "time_to_avoid_same_directional_object");
-    p.time_to_avoid_opposite_directional_object =
-      declare_parameter<double>(ns + "time_to_avoid_opposite_directional_object");
     p.max_lat_offset_to_avoid = declare_parameter<double>(ns + "max_lat_offset_to_avoid");
+
+    p.max_time_to_collision_overtaking_object =
+      declare_parameter<double>(ns + "overtaking_object.max_time_to_collision");
+    p.start_duration_to_avoid_overtaking_object =
+      declare_parameter<double>(ns + "overtaking_object.start_duration_to_avoid");
+    p.end_duration_to_avoid_overtaking_object =
+      declare_parameter<double>(ns + "overtaking_object.end_duration_to_avoid");
+    p.duration_to_hold_avoidance_overtaking_object =
+      declare_parameter<double>(ns + "overtaking_object.duration_to_hold_avoidance");
+
+    p.max_time_to_collision_oncoming_object =
+      declare_parameter<double>(ns + "oncoming_object.max_time_to_collision");
+    p.start_duration_to_avoid_oncoming_object =
+      declare_parameter<double>(ns + "oncoming_object.start_duration_to_avoid");
+    p.end_duration_to_avoid_oncoming_object =
+      declare_parameter<double>(ns + "oncoming_object.end_duration_to_avoid");
   }
 
   return p;

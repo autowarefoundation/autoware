@@ -15,7 +15,18 @@
         min_obstacle_vel: 1.0 # [m/s]
 
       drivable_area_generation:
-        lat_offset_from_obstacle: 2.0 # [m]
-        time_to_avoid_same_directional_object: 5.0 # [s]
-        time_to_avoid_opposite_directional_object: 6.0 # [s]
-        max_lat_offset_to_avoid: 2.0 # [m]
+        lat_offset_from_obstacle: 1.3 # [m]
+        max_lat_offset_to_avoid: 0.5 # [m]
+
+        # for same directional object
+        overtaking_object:
+          max_time_to_collision: 3.0 # [s]
+          start_duration_to_avoid: 4.0  # [s]
+          end_duration_to_avoid: 5.0  # [s]
+          duration_to_hold_avoidance: 3.0 # [s]
+
+        # for opposite directional object
+        oncoming_object:
+          max_time_to_collision: 3.0 # [s]
+          start_duration_to_avoid: 9.0  # [s]
+          end_duration_to_avoid: 0.0  # [s]

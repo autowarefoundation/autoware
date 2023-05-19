@@ -34,10 +34,52 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
   using tier4_autoware_utils::updateParam;
-
   auto & p = parameters_;
 
-  [[maybe_unused]] std::string ns = name_ + ".";
+  {  // target object
+    const std::string ns = "dynamic_avoidance.target_object.";
+
+    updateParam<bool>(parameters, ns + "car", p->avoid_car);
+    updateParam<bool>(parameters, ns + "truck", p->avoid_truck);
+    updateParam<bool>(parameters, ns + "bus", p->avoid_bus);
+    updateParam<bool>(parameters, ns + "trailer", p->avoid_trailer);
+    updateParam<bool>(parameters, ns + "unknown", p->avoid_unknown);
+    updateParam<bool>(parameters, ns + "bicycle", p->avoid_bicycle);
+    updateParam<bool>(parameters, ns + "motorcycle", p->avoid_motorcycle);
+    updateParam<bool>(parameters, ns + "pedestrian", p->avoid_pedestrian);
+
+    updateParam<double>(parameters, ns + "min_obstacle_vel", p->min_obstacle_vel);
+  }
+
+  {  // drivable_area_generation
+    const std::string ns = "dynamic_avoidance.drivable_area_generation.";
+
+    updateParam<double>(parameters, ns + "lat_offset_from_obstacle", p->lat_offset_from_obstacle);
+    updateParam<double>(parameters, ns + "max_lat_offset_to_avoid", p->max_lat_offset_to_avoid);
+
+    updateParam<double>(
+      parameters, ns + "overtaking_object.max_time_to_collision",
+      p->max_time_to_collision_overtaking_object);
+    updateParam<double>(
+      parameters, ns + "overtaking_object.start_duration_to_avoid",
+      p->start_duration_to_avoid_overtaking_object);
+    updateParam<double>(
+      parameters, ns + "overtaking_object.end_duration_to_avoid",
+      p->end_duration_to_avoid_overtaking_object);
+    updateParam<double>(
+      parameters, ns + "overtaking_object.duration_to_hold_avoidance",
+      p->duration_to_hold_avoidance_overtaking_object);
+
+    updateParam<double>(
+      parameters, ns + "oncoming_object.max_time_to_collision",
+      p->max_time_to_collision_oncoming_object);
+    updateParam<double>(
+      parameters, ns + "oncoming_object.start_duration_to_avoid",
+      p->start_duration_to_avoid_oncoming_object);
+    updateParam<double>(
+      parameters, ns + "oncoming_object.end_duration_to_avoid",
+      p->end_duration_to_avoid_oncoming_object);
+  }
 
   std::for_each(registered_modules_.begin(), registered_modules_.end(), [&p](const auto & m) {
     m->updateModuleParams(p);

@@ -45,13 +45,18 @@ Opposite directional obstacles
 
 ## Parameters
 
-| Name                                                               | Unit  | Type   | Description                                                 | Default value |
-| :----------------------------------------------------------------- | :---- | :----- | :---------------------------------------------------------- | :------------ |
-| target_object.car                                                  | [-]   | bool   | The flag whether to avoid cars or not                       | true          |
-| target_object.truck                                                | [-]   | bool   | The flag whether to avoid trucks or not                     | true          |
-| ...                                                                | [-]   | bool   | ...                                                         | ...           |
-| target_object.min_obstacle_vel                                     | [m/s] | double | Minimum obstacle velocity to avoid                          | 1.0           |
-| drivable_area_generation.lat_offset_from_obstacle                  | [m]   | double | Lateral offset to avoid from obstacles                      | 0.8           |
-| drivable_area_generation.time_to_avoid_same_directional_object     | [s]   | double | Elapsed time for avoiding the same directional obstacle     | 5.0           |
-| drivable_area_generation.time_to_avoid_opposite_directional_object | [s]   | double | Elapsed time for avoiding the opposite directional obstacle | 6.0           |
-| drivable_area_generation.max_lat_offset_to_avoid                   | [m]   | double | Maximum lateral offset to avoid                             | 0.5           |
+| Name                                                                  | Unit  | Type   | Description                                                | Default value |
+| :-------------------------------------------------------------------- | :---- | :----- | :--------------------------------------------------------- | :------------ |
+| target_object.car                                                     | [-]   | bool   | The flag whether to avoid cars or not                      | true          |
+| target_object.truck                                                   | [-]   | bool   | The flag whether to avoid trucks or not                    | true          |
+| ...                                                                   | [-]   | bool   | ...                                                        | ...           |
+| target_object.min_obstacle_vel                                        | [m/s] | double | Minimum obstacle velocity to avoid                         | 1.0           |
+| drivable_area_generation.lat_offset_from_obstacle                     | [m]   | double | Lateral offset to avoid from obstacles                     | 0.8           |
+| drivable_area_generation.max_lat_offset_to_avoid                      | [m]   | double | Maximum lateral offset to avoid                            | 0.5           |
+| drivable_area_generation.overtaking_object.max_time_to_collision      | [s]   | double | Maximum value when calculating time to collision           | 3.0           |
+| drivable_area_generation.overtaking_object.start_duration_to_avoid    | [s]   | double | Duration to consider avoidance before passing by obstacles | 4.0           |
+| drivable_area_generation.overtaking_object.end_duration_to_avoid      | [s]   | double | Duration to consider avoidance after passing by obstacles  | 5.0           |
+| drivable_area_generation.overtaking_object.duration_to_hold_avoidance | [s]   | double | Duration to hold avoidance after passing by obstacles      | 3.0           |
+| drivable_area_generation.oncoming_object.max_time_to_collision        | [s]   | double | Maximum value when calculating time to collision           | 3.0           |
+| drivable_area_generation.oncoming_object.start_duration_to_avoid      | [s]   | double | Duration to consider avoidance before passing by obstacles | 9.0           |
+| drivable_area_generation.oncoming_object.end_duration_to_avoid        | [s]   | double | Duration to consider avoidance after passing by obstacles  | 0.0           |

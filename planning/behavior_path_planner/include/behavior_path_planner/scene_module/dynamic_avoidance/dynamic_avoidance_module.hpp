@@ -50,9 +50,16 @@ struct DynamicAvoidanceParameters
 
   // drivable area generation
   double lat_offset_from_obstacle{0.0};
-  double time_to_avoid_same_directional_object{0.0};
-  double time_to_avoid_opposite_directional_object{0.0};
   double max_lat_offset_to_avoid{0.0};
+
+  double max_time_to_collision_overtaking_object{0.0};
+  double start_duration_to_avoid_overtaking_object{0.0};
+  double end_duration_to_avoid_overtaking_object{0.0};
+  double duration_to_hold_avoidance_overtaking_object{0.0};
+
+  double max_time_to_collision_oncoming_object{0.0};
+  double start_duration_to_avoid_oncoming_object{0.0};
+  double end_duration_to_avoid_oncoming_object{0.0};
 };
 
 class DynamicAvoidanceModule : public SceneModuleInterface
