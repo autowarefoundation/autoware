@@ -9,6 +9,9 @@
     },
     {
       "pattern": "^https://github.com/.*/discussions/new"
+    },
+    {
+      "pattern": "^https://doi.org/10.2172/7309916"
     }
   ],
   "retryOn429": true,
