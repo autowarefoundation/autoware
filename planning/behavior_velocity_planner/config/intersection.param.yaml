@@ -40,6 +40,7 @@
         before_creep_stop_time: 1.0 # [s]
         min_vehicle_brake_for_rss: -2.5 # [m/s^2]
         max_vehicle_velocity_for_rss: 16.66 # [m/s] == 60kmph
+        denoise_kernel: 1.0 # [m]
 
     merge_from_private:
       stop_duration_sec: 1.0

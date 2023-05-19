@@ -1070,8 +1070,14 @@ bool IntersectionModule::isOcclusionCleared(
   }
 
   // (3) occlusion mask
-  cv::Mat occlusion_mask(width, height, CV_8UC1, cv::Scalar(0));
-  cv::bitwise_and(detection_mask, unknown_mask, occlusion_mask);
+  cv::Mat occlusion_mask_raw(width, height, CV_8UC1, cv::Scalar(0));
+  cv::bitwise_and(detection_mask, unknown_mask, occlusion_mask_raw);
+  // (3.1) apply morphologyEx
+  cv::Mat occlusion_mask;
+  const int morph_size = std::ceil(planner_param_.occlusion.denoise_kernel / reso);
+  cv::morphologyEx(
+    occlusion_mask_raw, occlusion_mask, cv::MORPH_OPEN,
+    cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morph_size, morph_size)));
 
   // (4) create distance grid
   // value: 0 - 254: signed distance representing [distamce_min, distance_max]
