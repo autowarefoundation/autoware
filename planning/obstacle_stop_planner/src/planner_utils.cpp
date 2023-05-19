@@ -455,9 +455,9 @@ TrajectoryPoints extendTrajectory(const TrajectoryPoints & input, const double e
   }
 
   const auto goal_point = input.back();
-  double interpolation_distance = 0.1;
+  constexpr double interpolation_distance = 0.1;
 
-  double extend_sum = 0.0;
+  double extend_sum = interpolation_distance;
   while (extend_sum <= (extend_distance - interpolation_distance)) {
     const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_sum, goal_point);
     output.push_back(extend_trajectory_point);
