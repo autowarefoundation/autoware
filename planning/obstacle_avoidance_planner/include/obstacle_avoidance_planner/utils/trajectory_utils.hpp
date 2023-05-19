@@ -54,7 +54,7 @@ namespace trajectory_utils
 template <typename T>
 std::optional<size_t> getPointIndexAfter(
   const T & points, const geometry_msgs::msg::Point & target_pos, const size_t target_seg_idx,
-  const double offset)
+  const double max_offset, const double min_offset)
 {
   if (points.empty()) {
     return std::nullopt;
@@ -63,28 +63,35 @@ std::optional<size_t> getPointIndexAfter(
   double sum_length =
     -motion_utils::calcLongitudinalOffsetToSegment(points, target_seg_idx, target_pos);
 
+  std::optional<size_t> output_idx{std::nullopt};
+
   // search forward
-  if (sum_length < offset) {
+  if (sum_length < min_offset) {
     for (size_t i = target_seg_idx + 1; i < points.size(); ++i) {
       sum_length += tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i - 1));
-      if (offset < sum_length) {
-        return i - 1;
+      if (min_offset < sum_length) {
+        output_idx = i - 1;
+      }
+      if (max_offset < sum_length) {
+        break;
       }
     }
-
-    return std::nullopt;
+    return output_idx;
   }
 
   // search backward
   for (size_t i = target_seg_idx; 0 < i;
        --i) {  // NOTE: use size_t since i is always positive value
     sum_length -= tier4_autoware_utils::calcDistance2d(points.at(i), points.at(i - 1));
-    if (sum_length < offset) {
-      return i - 1;
+    if (sum_length < min_offset) {
+      output_idx = i - 1;
+    }
+    if (sum_length < max_offset) {
+      break;
     }
   }
 
-  return 0;
+  return output_idx;
 }
 
 template <typename T>

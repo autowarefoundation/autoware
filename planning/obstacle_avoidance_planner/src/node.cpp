@@ -512,26 +512,37 @@ std::vector<TrajectoryPoint> ObstacleAvoidancePlanner::extendTrajectory(
     trajectory_utils::findEgoSegmentIndex(traj_points, joint_start_pose, ego_nearest_param_);
 
   // crop trajectory for extension
-  constexpr double joint_traj_length_for_smoothing = 5.0;
+  constexpr double joint_traj_max_length_for_smoothing = 15.0;
+  constexpr double joint_traj_min_length_for_smoothing = 5.0;
   const auto joint_end_traj_point_idx = trajectory_utils::getPointIndexAfter(
     traj_points, joint_start_pose.position, joint_start_traj_seg_idx,
-    joint_traj_length_for_smoothing);
+    joint_traj_max_length_for_smoothing, joint_traj_min_length_for_smoothing);
 
   // calculate full trajectory points
   const auto full_traj_points = [&]() {
     if (!joint_end_traj_point_idx) {
       return optimized_traj_points;
     }
+
     const auto extended_traj_points = std::vector<TrajectoryPoint>{
       traj_points.begin() + *joint_end_traj_point_idx, traj_points.end()};
-    return concatVectors(optimized_traj_points, extended_traj_points);
+
+    // NOTE: if optimized_traj_points's back is non zero velocity and extended_traj_points' front is
+    // zero velocity, the zero velocity will be inserted in the whole joint trajectory.
+    auto modified_optimized_traj_points = optimized_traj_points;
+    if (!extended_traj_points.empty() && !modified_optimized_traj_points.empty()) {
+      modified_optimized_traj_points.back().longitudinal_velocity_mps =
+        extended_traj_points.front().longitudinal_velocity_mps;
+    }
+
+    return concatVectors(modified_optimized_traj_points, extended_traj_points);
   }();
 
   // resample trajectory points
   auto resampled_traj_points = trajectory_utils::resampleTrajectoryPoints(
     full_traj_points, traj_param_.output_delta_arc_length);
 
-  // update velocity on joint
+  // update stop velocity on joint
   for (size_t i = joint_start_traj_seg_idx + 1; i <= joint_end_traj_point_idx; ++i) {
     if (hasZeroVelocity(traj_points.at(i))) {
       if (i != 0 && !hasZeroVelocity(traj_points.at(i - 1))) {
