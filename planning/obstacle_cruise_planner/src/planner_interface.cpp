@@ -327,12 +327,6 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
       planner_data, slow_down_traj_points, obstacle, dist_to_ego, slow_down_vel);
     const auto slow_down_start_idx =
       insert_slow_down_to_trajectory(dist_to_slow_down_start, slow_down_vel);
-    if (!slow_down_start_idx) {
-      continue;
-    }
-    slow_down_debug_multi_array_.data.push_back(obstacle.precise_lat_dist);
-    slow_down_debug_multi_array_.data.push_back(slow_down_vel);
-    slow_down_debug_multi_array_.data.push_back(*slow_down_start_idx);
 
     // calculate slow down end distance, and insert slow down velocity
     const double dist_to_slow_down_end =
@@ -344,22 +338,30 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
       dist_to_slow_down_start < dist_to_slow_down_end
         ? insert_slow_down_to_trajectory(dist_to_slow_down_end, slow_down_vel)
         : std::nullopt;
+    if (!slow_down_end_idx) {
+      continue;
+    }
 
     // insert slow down velocity between slow start and end
+    for (size_t i = (slow_down_start_idx ? *slow_down_start_idx : 0); i <= *slow_down_end_idx;
+         ++i) {
+      slow_down_traj_points.at(i).longitudinal_velocity_mps = slow_down_vel;
+    }
+
+    // add debug data and virtual wall
+    slow_down_debug_multi_array_.data.push_back(obstacle.precise_lat_dist);
+    slow_down_debug_multi_array_.data.push_back(slow_down_vel);
+    if (slow_down_start_idx) {
+      slow_down_debug_multi_array_.data.push_back(
+        slow_down_start_idx ? *slow_down_start_idx : -1.0);
+      add_slow_down_marker(i, slow_down_start_idx, true);
+    }
     if (slow_down_end_idx) {
-      for (size_t i = *slow_down_start_idx; i <= *slow_down_end_idx; ++i) {
-        slow_down_traj_points.at(i).longitudinal_velocity_mps = slow_down_vel;
-      }
-      slow_down_debug_multi_array_.data.push_back(*slow_down_end_idx);
-    } else {
-      slow_down_debug_multi_array_.data.push_back(-1.0);  // push back invalid value
+      slow_down_debug_multi_array_.data.push_back(slow_down_end_idx ? *slow_down_end_idx : -1.0);
+      add_slow_down_marker(i, slow_down_end_idx, false);
     }
 
     debug_data_ptr_->obstacles_to_slow_down.push_back(obstacle);
-
-    // virtual wall marker for stop obstacle
-    add_slow_down_marker(i, slow_down_start_idx, true);
-    add_slow_down_marker(i, slow_down_end_idx, false);
   }
 
   const double calculation_time = stop_watch_.toc(__func__);
@@ -396,7 +398,10 @@ double PlannerInterface::calculateDistanceToSlowDownWithAccConstraint(
   // calculate distance between start of path and slow down point
   const double dist_to_slow_down =
     motion_utils::calcSignedArcLength(traj_points, 0, obstacle.front_collision_point) -
-    abs_ego_offset;
+    abs_ego_offset - slow_down_vel * p.time_margin_on_target_velocity;
+  if (dist_to_slow_down < dist_to_ego) {
+    return dist_to_slow_down;
+  }
   if (std::abs(planner_data.ego_vel) < std::abs(slow_down_vel)) {
     return dist_to_slow_down;
   }

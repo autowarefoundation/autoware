@@ -182,6 +182,8 @@ private:
       max_ego_velocity = node.declare_parameter<double>("slow_down.max_ego_velocity");
       min_ego_velocity = node.declare_parameter<double>("slow_down.min_ego_velocity");
       max_deceleration = node.declare_parameter<double>("slow_down.max_deceleration");
+      time_margin_on_target_velocity =
+        node.declare_parameter<double>("slow_down.time_margin_on_target_velocity");
     }
 
     void onParam(const std::vector<rclcpp::Parameter> & parameters)
@@ -196,6 +198,8 @@ private:
         parameters, "slow_down.min_ego_velocity", min_ego_velocity);
       tier4_autoware_utils::updateParam<double>(
         parameters, "slow_down.max_deceleration", max_deceleration);
+      tier4_autoware_utils::updateParam<double>(
+        parameters, "slow_down.time_margin_on_target_velocity", time_margin_on_target_velocity);
     }
 
     double max_lat_margin;
@@ -203,6 +207,7 @@ private:
     double max_ego_velocity;
     double min_ego_velocity;
     double max_deceleration;
+    double time_margin_on_target_velocity;
   };
   SlowDownParam slow_down_param_;
 };

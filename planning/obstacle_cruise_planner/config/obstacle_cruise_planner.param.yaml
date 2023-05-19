@@ -167,5 +167,7 @@
       min_ego_velocity: 2.0
       max_ego_velocity: 8.0
 
+      time_margin_on_target_velocity: 1.5 # [s]
+
       # max deceleration during slow down
       max_deceleration: -1.0
