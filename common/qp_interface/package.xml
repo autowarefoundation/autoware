@@ -15,6 +15,7 @@
 
   <depend>eigen</depend>
   <depend>osqp_vendor</depend>
+  <depend>proxsuite</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
 

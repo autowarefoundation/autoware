@@ -14,18 +14,9 @@
 
 #include "qp_interface/osqp_interface.hpp"
 
-#include "osqp/osqp.h"
 #include "qp_interface/osqp_csc_matrix_conv.hpp"
 
 #include <rclcpp/rclcpp.hpp>
-
-#include <chrono>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <string>
-#include <tuple>
-#include <vector>
 
 namespace qp
 {

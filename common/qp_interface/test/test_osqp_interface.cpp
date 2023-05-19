@@ -162,7 +162,8 @@ TEST(TestOsqpInterface, BasicQp)
     }
 
     // NOTE: This should be true, but currently optimize function reset the workspace, which
-    // disables warm start. EXPECT_EQ(osqp.getTakenIter(), 1);
+    // disables warm start.
+    // EXPECT_EQ(osqp.getTakenIter(), 1);
   }
 }
 }  // namespace

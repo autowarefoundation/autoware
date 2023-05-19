@@ -19,12 +19,9 @@
 #include "qp_interface/osqp_csc_matrix_conv.hpp"
 #include "qp_interface/qp_interface.hpp"
 
-#include <Eigen/Core>
-
 #include <limits>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 namespace qp

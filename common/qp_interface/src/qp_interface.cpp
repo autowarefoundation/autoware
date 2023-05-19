@@ -14,12 +14,8 @@
 
 #include "qp_interface/qp_interface.hpp"
 
-#include <chrono>
 #include <iostream>
-#include <limits>
-#include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 namespace qp
@@ -57,6 +53,9 @@ void QPInterface::initializeProblem(
   }
 
   initializeProblemImpl(P, A, q, l, u);
+
+  m_variables_num = q.size();
+  m_constraints_num = l.size();
 }
 
 std::vector<double> QPInterface::optimize(
