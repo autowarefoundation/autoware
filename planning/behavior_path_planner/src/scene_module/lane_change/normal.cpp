@@ -371,7 +371,7 @@ int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) 
 PathWithLaneId NormalLaneChange::getPrepareSegment(
   const lanelet::ConstLanelets & current_lanes,
   [[maybe_unused]] const double arc_length_from_current, const double backward_path_length,
-  const double prepare_length, const double prepare_velocity) const
+  const double prepare_length, const double current_velocity, const double prepare_velocity) const
 {
   if (current_lanes.empty()) {
     return PathWithLaneId();
@@ -382,9 +382,7 @@ PathWithLaneId NormalLaneChange::getPrepareSegment(
     prepare_segment.points, getEgoPose(), 3.0, 1.0);
   utils::clipPathLength(prepare_segment, current_seg_idx, prepare_length, backward_path_length);
 
-  prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
-    prepare_segment.points.back().point.longitudinal_velocity_mps,
-    static_cast<float>(prepare_velocity));
+  utils::lane_change::setPrepareVelocity(prepare_segment, current_velocity, prepare_velocity);
 
   return prepare_segment;
 }
@@ -412,7 +410,7 @@ bool NormalLaneChange::getLaneChangePaths(
   // get velocity
   const auto current_velocity = getEgoTwist().linear.x;
 
-  // compute maximum longitudinal deceleration
+  // compute maximum longitudinal deceleration and acceleration
   const auto maximum_deceleration =
     std::invoke([&minimum_lane_changing_velocity, &current_velocity, &common_parameter, this]() {
       const double min_a = (minimum_lane_changing_velocity - current_velocity) /
@@ -420,9 +418,12 @@ bool NormalLaneChange::getLaneChangePaths(
       return std::clamp(
         min_a, -std::abs(common_parameter.min_acc), -std::numeric_limits<double>::epsilon());
     });
+  const auto maximum_acceleration = utils::lane_change::calcMaximumAcceleration(
+    prev_module_path_, getEgoPose(), current_velocity, common_parameter);
 
-  const auto longitudinal_acc_resolution =
-    std::abs(maximum_deceleration) / longitudinal_acc_sampling_num;
+  // get sampling acceleration values
+  const auto longitudinal_acc_sampling_values = utils::lane_change::getAccelerationValues(
+    maximum_deceleration, maximum_acceleration, longitudinal_acc_sampling_num);
 
   const auto target_length =
     utils::getArcLengthToTargetLanelet(original_lanelets, target_lanelets.front(), getEgoPose());
@@ -451,9 +452,8 @@ bool NormalLaneChange::getLaneChangePaths(
 
   LaneChangeTargetObjectIndices dynamic_object_indices;
 
-  candidate_paths->reserve(longitudinal_acc_sampling_num * lateral_acc_sampling_num);
-  for (double sampled_longitudinal_acc = 0.0; sampled_longitudinal_acc >= maximum_deceleration;
-       sampled_longitudinal_acc -= longitudinal_acc_resolution) {
+  candidate_paths->reserve(longitudinal_acc_sampling_values.size() * lateral_acc_sampling_num);
+  for (const auto & sampled_longitudinal_acc : longitudinal_acc_sampling_values) {
     const auto prepare_velocity = std::max(
       current_velocity + sampled_longitudinal_acc * prepare_duration,
       minimum_lane_changing_velocity);
@@ -475,7 +475,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
     const auto prepare_segment = getPrepareSegment(
       original_lanelets, arc_position_from_current.length, backward_path_length, prepare_length,
-      prepare_velocity);
+      current_velocity, prepare_velocity);
 
     if (prepare_segment.points.empty()) {
       RCLCPP_DEBUG(
@@ -960,7 +960,7 @@ int NormalLaneChangeBT::getNumToPreferredLane(const lanelet::ConstLanelet & lane
 
 PathWithLaneId NormalLaneChangeBT::getPrepareSegment(
   const lanelet::ConstLanelets & current_lanes, const double arc_length_from_current,
-  const double backward_path_length, const double prepare_length,
+  const double backward_path_length, const double prepare_length, const double current_velocity,
   const double prepare_velocity) const
 {
   if (current_lanes.empty()) {
@@ -977,9 +977,7 @@ PathWithLaneId NormalLaneChangeBT::getPrepareSegment(
   PathWithLaneId prepare_segment =
     getRouteHandler()->getCenterLinePath(current_lanes, s_start, s_end);
 
-  prepare_segment.points.back().point.longitudinal_velocity_mps = std::min(
-    prepare_segment.points.back().point.longitudinal_velocity_mps,
-    static_cast<float>(prepare_velocity));
+  utils::lane_change::setPrepareVelocity(prepare_segment, current_velocity, prepare_velocity);
 
   return prepare_segment;
 }

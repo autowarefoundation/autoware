@@ -182,7 +182,7 @@ protected:
 
   virtual PathWithLaneId getPrepareSegment(
     const lanelet::ConstLanelets & current_lanes, const double arc_length_from_current,
-    const double backward_path_length, const double prepare_length,
+    const double backward_path_length, const double prepare_length, const double current_velocity,
     const double prepare_velocity) const = 0;
 
   virtual bool getLaneChangePaths(
