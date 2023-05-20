@@ -86,6 +86,7 @@ struct DrivableAreaInfo
   {
     geometry_msgs::msg::Pose pose;
     tier4_autoware_utils::Polygon2d poly;
+    bool is_left;
   };
   std::vector<DrivableLanes> drivable_lanes{};
   std::vector<Obstacle> obstacles{};  // obstacles to extract from the drivable area

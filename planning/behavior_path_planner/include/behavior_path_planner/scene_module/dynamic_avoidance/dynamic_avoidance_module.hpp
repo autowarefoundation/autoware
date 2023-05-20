@@ -73,11 +73,17 @@ public:
       path_projected_vel(arg_path_projected_vel),
       shape(predicted_object.shape)
     {
+      for (const auto & path : predicted_object.kinematics.predicted_paths) {
+        predicted_paths.push_back(path);
+      }
     }
 
-    geometry_msgs::msg::Pose pose;
-    double path_projected_vel;
-    autoware_auto_perception_msgs::msg::Shape shape;
+    const geometry_msgs::msg::Pose pose;
+    const double path_projected_vel;
+    const autoware_auto_perception_msgs::msg::Shape shape;
+    std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
+
+    bool is_left;
   };
 
 #ifdef USE_OLD_ARCHITECTURE
@@ -111,10 +117,10 @@ public:
 
 private:
   std::vector<DynamicAvoidanceObject> calcTargetObjects() const;
-  lanelet::ConstLanelets getAdjacentLanes(
+  std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
   std::optional<tier4_autoware_utils::Polygon2d> calcDynamicObstaclePolygon(
-    const PathWithLaneId & path, const DynamicAvoidanceObject & object) const;
+    const DynamicAvoidanceObject & object) const;
 
   std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> target_objects_;
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;
