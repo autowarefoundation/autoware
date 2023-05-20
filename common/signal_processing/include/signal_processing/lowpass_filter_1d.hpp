@@ -17,6 +17,11 @@
 
 #include <boost/optional.hpp>
 
+namespace signal_processing
+{
+double lowpassFilter(const double current_val, const double prev_val, const double gain);
+}
+
 /**
  * @class First-order low-pass filter
  * @brief filtering values

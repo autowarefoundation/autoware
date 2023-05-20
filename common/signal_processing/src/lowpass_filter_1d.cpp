@@ -14,6 +14,14 @@
 
 #include "signal_processing/lowpass_filter_1d.hpp"
 
+namespace signal_processing
+{
+double lowpassFilter(const double current_val, const double prev_val, const double gain)
+{
+  return gain * prev_val + (1.0 - gain) * current_val;
+}
+}  // namespace signal_processing
+
 LowpassFilter1d::LowpassFilter1d(const double gain) : gain_(gain)
 {
 }
