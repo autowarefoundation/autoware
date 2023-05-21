@@ -15,6 +15,7 @@
 #include "obstacle_cruise_planner/planner_interface.hpp"
 
 #include "motion_utils/distance/distance.hpp"
+#include "signal_processing/lowpass_filter_1d.hpp"
 
 namespace
 {
@@ -101,6 +102,107 @@ double calcMinimumDistanceToStop(
   }
 
   return -std::pow(initial_vel, 2) / 2.0 / min_acc;
+}
+
+template <typename T>
+std::optional<T> getObjectFromUuid(const std::vector<T> & objects, const std::string & target_uuid)
+{
+  const auto itr = std::find_if(objects.begin(), objects.end(), [&](const auto & object) {
+    return object.uuid == target_uuid;
+  });
+
+  if (itr == objects.end()) {
+    return std::nullopt;
+  }
+  return *itr;
+}
+
+// TODO(murooka) following two functions are copied from behavior_velocity_planner.
+// These should be refactored.
+double findReachTime(
+  const double jerk, const double accel, const double velocity, const double distance,
+  const double t_min, const double t_max)
+{
+  const double j = jerk;
+  const double a = accel;
+  const double v = velocity;
+  const double d = distance;
+  const double min = t_min;
+  const double max = t_max;
+  auto f = [](const double t, const double j, const double a, const double v, const double d) {
+    return j * t * t * t / 6.0 + a * t * t / 2.0 + v * t - d;
+  };
+  if (f(min, j, a, v, d) > 0 || f(max, j, a, v, d) < 0) {
+    std::logic_error("[obstacle_cruise_planner](findReachTime): search range is invalid");
+  }
+  const double eps = 1e-5;
+  const int warn_iter = 100;
+  double lower = min;
+  double upper = max;
+  double t;
+  int iter = 0;
+  for (int i = 0;; i++) {
+    t = 0.5 * (lower + upper);
+    const double fx = f(t, j, a, v, d);
+    // std::cout<<"fx: "<<fx<<" up: "<<upper<<" lo: "<<lower<<" t: "<<t<<std::endl;
+    if (std::abs(fx) < eps) {
+      break;
+    } else if (fx > 0.0) {
+      upper = t;
+    } else {
+      lower = t;
+    }
+    iter++;
+    if (iter > warn_iter)
+      std::cerr << "[obstacle_cruise_planner](findReachTime): current iter is over warning"
+                << std::endl;
+  }
+  return t;
+}
+
+double calcDecelerationVelocityFromDistanceToTarget(
+  const double max_slowdown_jerk, const double max_slowdown_accel, const double current_accel,
+  const double current_velocity, const double distance_to_target)
+{
+  if (max_slowdown_jerk > 0 || max_slowdown_accel > 0) {
+    std::logic_error("max_slowdown_jerk and max_slowdown_accel should be negative");
+  }
+  // case0: distance to target is behind ego
+  if (distance_to_target <= 0) return current_velocity;
+  auto ft = [](const double t, const double j, const double a, const double v, const double d) {
+    return j * t * t * t / 6.0 + a * t * t / 2.0 + v * t - d;
+  };
+  auto vt = [](const double t, const double j, const double a, const double v) {
+    return j * t * t / 2.0 + a * t + v;
+  };
+  const double j_max = max_slowdown_jerk;
+  const double a0 = current_accel;
+  const double a_max = max_slowdown_accel;
+  const double v0 = current_velocity;
+  const double l = distance_to_target;
+  const double t_const_jerk = (a_max - a0) / j_max;
+  const double d_const_jerk_stop = ft(t_const_jerk, j_max, a0, v0, 0.0);
+  const double d_const_acc_stop = l - d_const_jerk_stop;
+
+  if (d_const_acc_stop < 0) {
+    // case0: distance to target is within constant jerk deceleration
+    // use binary search instead of solving cubic equation
+    const double t_jerk = findReachTime(j_max, a0, v0, l, 0, t_const_jerk);
+    const double velocity = vt(t_jerk, j_max, a0, v0);
+    return velocity;
+  } else {
+    const double v1 = vt(t_const_jerk, j_max, a0, v0);
+    const double discriminant_of_stop = 2.0 * a_max * d_const_acc_stop + v1 * v1;
+    // case3: distance to target is farther than distance to stop
+    if (discriminant_of_stop <= 0) {
+      return 0.0;
+    }
+    // case2: distance to target is within constant accel deceleration
+    // solve d = 0.5*a^2+v*t by t
+    const double t_acc = (-v1 + std::sqrt(discriminant_of_stop)) / a_max;
+    return vt(t_acc, 0.0, a_max, v1);
+  }
+  return current_velocity;
 }
 }  // namespace
 
@@ -297,11 +399,14 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
 
   // define function to insert slow down velocity to trajectory
-  const auto insert_slow_down_to_trajectory =
-    [&](const double lon_dist, const double slow_down_vel) -> std::optional<size_t> {
+  const auto insert_point_in_trajectory = [&](const double lon_dist) -> std::optional<size_t> {
     const auto inserted_idx = motion_utils::insertTargetPoint(0, lon_dist, slow_down_traj_points);
     if (inserted_idx) {
-      slow_down_traj_points.at(inserted_idx.get()).longitudinal_velocity_mps = slow_down_vel;
+      if (inserted_idx.get() + 1 <= slow_down_traj_points.size() - 1) {
+        // zero-order hold for velocity interpolation
+        slow_down_traj_points.at(inserted_idx.get()).longitudinal_velocity_mps =
+          slow_down_traj_points.at(inserted_idx.get() + 1).longitudinal_velocity_mps;
+      }
       return inserted_idx.get();
     }
     return std::nullopt;
@@ -318,41 +423,47 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
       tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->slow_down_wall_marker);
     };
 
+  std::vector<SlowDownOutput> new_prev_slow_down_output;
   for (size_t i = 0; i < obstacles.size(); ++i) {
     const auto & obstacle = obstacles.at(i);
-
-    // calculate slow down velocity
-    const double slow_down_vel = calculateSlowDownVelocity(obstacle);
+    const auto prev_output = getObjectFromUuid(prev_slow_down_output_, obstacle.uuid);
 
     // calculate slow down start distance, and insert slow down velocity
-    const double dist_to_slow_down_start = calculateDistanceToSlowDownWithConstraints(
-      planner_data, slow_down_traj_points, obstacle, dist_to_ego, slow_down_vel);
-    const auto slow_down_start_idx =
-      insert_slow_down_to_trajectory(dist_to_slow_down_start, slow_down_vel);
+    const auto [dist_to_slow_down_start, dist_to_slow_down_end, feasible_slow_down_vel] =
+      calculateDistanceToSlowDownWithConstraints(
+        planner_data, slow_down_traj_points, obstacle, prev_output, dist_to_ego);
 
     // calculate slow down end distance, and insert slow down velocity
-    const double dist_to_slow_down_end =
-      motion_utils::calcSignedArcLength(slow_down_traj_points, 0, obstacle.back_collision_point) -
-      abs_ego_offset;
     // NOTE: slow_down_start_idx will not be wrong since inserted back point is after inserted
     // front point.
-    const auto slow_down_end_idx =
-      dist_to_slow_down_start < dist_to_slow_down_end
-        ? insert_slow_down_to_trajectory(dist_to_slow_down_end, slow_down_vel)
-        : std::nullopt;
+    const auto slow_down_start_idx = insert_point_in_trajectory(dist_to_slow_down_start);
+    const auto slow_down_end_idx = dist_to_slow_down_start < dist_to_slow_down_end
+                                     ? insert_point_in_trajectory(dist_to_slow_down_end)
+                                     : std::nullopt;
     if (!slow_down_end_idx) {
       continue;
     }
 
+    // calculate slow down velocity
+    const double stable_slow_down_vel = [&]() {
+      if (prev_output) {
+        return signal_processing::lowpassFilter(
+          feasible_slow_down_vel, prev_output->target_vel, slow_down_param_.lpf_gain_slow_down_vel);
+      }
+      return feasible_slow_down_vel;
+    }();
+
     // insert slow down velocity between slow start and end
     for (size_t i = (slow_down_start_idx ? *slow_down_start_idx : 0); i <= *slow_down_end_idx;
          ++i) {
-      slow_down_traj_points.at(i).longitudinal_velocity_mps = slow_down_vel;
+      auto & traj_point = slow_down_traj_points.at(i);
+      traj_point.longitudinal_velocity_mps =
+        std::min(traj_point.longitudinal_velocity_mps, static_cast<float>(stable_slow_down_vel));
     }
 
     // add debug data and virtual wall
     slow_down_debug_multi_array_.data.push_back(obstacle.precise_lat_dist);
-    slow_down_debug_multi_array_.data.push_back(slow_down_vel);
+    slow_down_debug_multi_array_.data.push_back(stable_slow_down_vel);
     if (slow_down_start_idx) {
       slow_down_debug_multi_array_.data.push_back(
         slow_down_start_idx ? *slow_down_start_idx : -1.0);
@@ -364,7 +475,15 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     }
 
     debug_data_ptr_->obstacles_to_slow_down.push_back(obstacle);
+
+    // update prev_slow_down_output_
+    new_prev_slow_down_output.push_back(SlowDownOutput{
+      obstacle.uuid, slow_down_traj_points, slow_down_start_idx, slow_down_end_idx,
+      stable_slow_down_vel, obstacle.precise_lat_dist});
   }
+
+  // update prev_slow_down_output_
+  prev_slow_down_output_ = new_prev_slow_down_output;
 
   const double calculation_time = stop_watch_.toc(__func__);
   RCLCPP_INFO_EXPRESSION(
@@ -374,13 +493,22 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
   return slow_down_traj_points;
 }
 
-double PlannerInterface::calculateSlowDownVelocity(const SlowDownObstacle & obstacle) const
+double PlannerInterface::calculateSlowDownVelocity(
+  const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output) const
 {
   const auto & p = slow_down_param_;
 
+  const double stable_precise_lat_dist = [&]() {
+    if (prev_output) {
+      return signal_processing::lowpassFilter(
+        obstacle.precise_lat_dist, prev_output->precise_lat_dist,
+        slow_down_param_.lpf_gain_lat_dist);
+    }
+    return obstacle.precise_lat_dist;
+  }();
+
   const double ratio = std::clamp(
-    (std::abs(obstacle.precise_lat_dist) - p.min_lat_margin) /
-      (p.max_lat_margin - p.min_lat_margin),
+    (std::abs(stable_precise_lat_dist) - p.min_lat_margin) / (p.max_lat_margin - p.min_lat_margin),
     0.0, 1.0);
   const double slow_down_vel =
     p.min_ego_velocity + ratio * (p.max_ego_velocity - p.min_ego_velocity);
@@ -388,25 +516,79 @@ double PlannerInterface::calculateSlowDownVelocity(const SlowDownObstacle & obst
   return slow_down_vel;
 }
 
-double PlannerInterface::calculateDistanceToSlowDownWithConstraints(
+std::tuple<double, double, double> PlannerInterface::calculateDistanceToSlowDownWithConstraints(
   const PlannerData & planner_data, const std::vector<TrajectoryPoint> & traj_points,
-  const SlowDownObstacle & obstacle, const double dist_to_ego, const double slow_down_vel) const
+  const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
+  const double dist_to_ego) const
 {
   const auto & p = slow_down_param_;
   const double abs_ego_offset = planner_data.is_driving_forward
                                   ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
 
+  // calculate slow down velocity
+  const double slow_down_vel = calculateSlowDownVelocity(obstacle, prev_output);
+
+  // calculate distance to collision points
+  const double dist_to_front_collision =
+    motion_utils::calcSignedArcLength(traj_points, 0, obstacle.front_collision_point);
+  const double dist_to_back_collision =
+    motion_utils::calcSignedArcLength(traj_points, 0, obstacle.back_collision_point);
+
+  // calculate distance during deceleration, slow down preparation, and slow down
+  const double slow_down_prepare_dist = slow_down_vel * p.time_margin_on_target_velocity;
   const double deceleration_dist =
-    motion_utils::calcSignedArcLength(traj_points, 0, obstacle.front_collision_point) -
-    abs_ego_offset - dist_to_ego - slow_down_vel * p.time_margin_on_target_velocity;
+    dist_to_front_collision - abs_ego_offset - dist_to_ego - slow_down_prepare_dist;
+  const double slow_down_dist =
+    dist_to_back_collision - dist_to_front_collision + slow_down_prepare_dist;
 
-  const auto deceleration_min_dist = motion_utils::calcDecelDistWithJerkAndAccConstraints(
-    planner_data.ego_vel, slow_down_vel, planner_data.ego_acc, longitudinal_info_.min_accel,
-    longitudinal_info_.max_jerk, longitudinal_info_.min_jerk);
-  if (!deceleration_min_dist) {
-    return dist_to_ego + deceleration_dist;
-  }
+  // calculate distance to start/end slow down
+  const double dist_to_slow_down_start = dist_to_ego + deceleration_dist;
+  const double dist_to_slow_down_end = dist_to_ego + deceleration_dist + slow_down_dist;
 
-  return dist_to_ego + std::max(deceleration_dist, *deceleration_min_dist);
+  // apply low-pass filter to distance to start/end slow down
+  const auto apply_lowpass_filter = [&](const double dist_to_slow_down, const auto prev_point) {
+    if (prev_output && prev_point) {
+      const size_t seg_idx =
+        motion_utils::findNearestSegmentIndex(traj_points, prev_point->position);
+      const double prev_dist_to_slow_down =
+        motion_utils::calcSignedArcLength(traj_points, 0, prev_point->position, seg_idx);
+      return signal_processing::lowpassFilter(
+        dist_to_slow_down, prev_dist_to_slow_down, slow_down_param_.lpf_gain_dist_to_slow_down);
+    }
+    return dist_to_slow_down;
+  };
+  const double filtered_dist_to_slow_down_start =
+    apply_lowpass_filter(dist_to_slow_down_start, prev_output->start_point);
+  const double filtered_dist_to_slow_down_end =
+    apply_lowpass_filter(dist_to_slow_down_end, prev_output->end_point);
+
+  // calculate velocity considering constraints
+  const double feasible_slow_down_vel = [&]() {
+    if (deceleration_dist < 0) {
+      if (prev_output) {
+        return prev_output->target_vel;
+      }
+      return slow_down_vel;
+    }
+    if (planner_data.ego_vel < slow_down_vel) {
+      return slow_down_vel;
+    }
+    if (planner_data.ego_acc < longitudinal_info_.min_accel) {
+      const double squared_vel =
+        std::pow(planner_data.ego_vel, 2) + 2 * deceleration_dist * longitudinal_info_.min_accel;
+      if (squared_vel < 0) {
+        return slow_down_vel;
+      }
+      return std::max(std::sqrt(squared_vel), slow_down_vel);
+    }
+    // TODO(murooka) Calculate more precisely. Final acceleration should be zero.
+    const double min_feasible_slow_down_vel = calcDecelerationVelocityFromDistanceToTarget(
+      longitudinal_info_.min_jerk, longitudinal_info_.min_accel, planner_data.ego_acc,
+      planner_data.ego_vel, deceleration_dist);
+    return std::max(min_feasible_slow_down_vel, slow_down_vel);
+  }();
+
+  return std::make_tuple(
+    filtered_dist_to_slow_down_start, filtered_dist_to_slow_down_end, feasible_slow_down_vel);
 }
