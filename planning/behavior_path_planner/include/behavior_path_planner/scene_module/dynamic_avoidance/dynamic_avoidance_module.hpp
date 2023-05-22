@@ -116,6 +116,7 @@ public:
   }
 
 private:
+  bool isLabelTargetObstacle(const uint8_t label) const;
   std::vector<DynamicAvoidanceObject> calcTargetObjects() const;
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;

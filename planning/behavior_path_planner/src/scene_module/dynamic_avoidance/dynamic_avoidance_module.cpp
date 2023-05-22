@@ -238,6 +238,37 @@ BehaviorModuleOutput DynamicAvoidanceModule::planWaitingApproval()
   return out;
 }
 
+bool DynamicAvoidanceModule::isLabelTargetObstacle(const uint8_t label) const
+{
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+
+  if (label == ObjectClassification::CAR && parameters_->avoid_car) {
+    return true;
+  }
+  if (label == ObjectClassification::TRUCK && parameters_->avoid_truck) {
+    return true;
+  }
+  if (label == ObjectClassification::BUS && parameters_->avoid_bus) {
+    return true;
+  }
+  if (label == ObjectClassification::TRAILER && parameters_->avoid_trailer) {
+    return true;
+  }
+  if (label == ObjectClassification::UNKNOWN && parameters_->avoid_unknown) {
+    return true;
+  }
+  if (label == ObjectClassification::BICYCLE && parameters_->avoid_bicycle) {
+    return true;
+  }
+  if (label == ObjectClassification::MOTORCYCLE && parameters_->avoid_motorcycle) {
+    return true;
+  }
+  if (label == ObjectClassification::PEDESTRIAN && parameters_->avoid_pedestrian) {
+    return true;
+  }
+  return false;
+}
+
 std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject>
 DynamicAvoidanceModule::calcTargetObjects() const
 {
@@ -247,6 +278,13 @@ DynamicAvoidanceModule::calcTargetObjects() const
   // 1. convert predicted objects to dynamic avoidance objects
   std::vector<DynamicAvoidanceObject> input_objects;
   for (const auto & predicted_object : predicted_objects) {
+    // check label
+    const bool is_label_target_obstacle =
+      isLabelTargetObstacle(predicted_object.classification.front().label);
+    if (!is_label_target_obstacle) {
+      continue;
+    }
+
     const double path_projected_vel =
       calcObstacleProjectedVelocity(prev_module_path->points, predicted_object);
     // check if velocity is high enough
