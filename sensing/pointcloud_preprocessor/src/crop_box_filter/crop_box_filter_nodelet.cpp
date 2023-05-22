@@ -112,11 +112,15 @@ void CropBoxFilterComponent::filter(
 // TODO(sykwer): Temporary Implementation: Rename this function to `filter()` when all the filter
 // nodes conform to new API. Then delete the old `filter()` defined above.
 void CropBoxFilterComponent::faster_filter(
-  const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
-  PointCloud2 & output, const TransformInfo & transform_info)
+  const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output,
+  const TransformInfo & transform_info)
 {
   std::scoped_lock lock(mutex_);
   stop_watch_ptr_->toc("processing_time", true);
+
+  if (indices) {
+    RCLCPP_WARN(get_logger(), "Indices are not supported and will be ignored");
+  }
 
   int x_offset = input->fields[pcl::getFieldIndex(*input, "x")].offset;
   int y_offset = input->fields[pcl::getFieldIndex(*input, "y")].offset;

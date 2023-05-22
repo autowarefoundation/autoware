@@ -34,10 +34,12 @@ PointcloudAccumulatorComponent::PointcloudAccumulatorComponent(const rclcpp::Nod
 }
 
 void PointcloudAccumulatorComponent::filter(
-  const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
-  PointCloud2 & output)
+  const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output)
 {
   std::scoped_lock lock(mutex_);
+  if (indices) {
+    RCLCPP_WARN(get_logger(), "Indices are not supported and will be ignored");
+  }
   pointcloud_buffer_.push_front(input);
   rclcpp::Time last_time = input->header.stamp;
   pcl::PointCloud<pcl::PointXYZ> pcl_input;
