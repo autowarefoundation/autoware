@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_velocity_planner/planner_manager.hpp"
+#include "planner_manager.hpp"
 
 #include <boost/format.hpp>
 
@@ -49,10 +49,21 @@ diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
 }
 }  // namespace
 
-void BehaviorVelocityPlannerManager::launchSceneModule(
-  const std::shared_ptr<SceneModuleManagerInterface> & scene_module_manager_ptr)
+BehaviorVelocityPlannerManager::BehaviorVelocityPlannerManager()
+: plugin_loader_("behavior_velocity_planner", "behavior_velocity_planner::PluginInterface")
 {
-  scene_manager_ptrs_.push_back(scene_module_manager_ptr);
+}
+
+void BehaviorVelocityPlannerManager::launchScenePlugin(
+  rclcpp::Node & node, const std::string & name)
+{
+  if (plugin_loader_.isClassAvailable(name)) {
+    const auto plugin = plugin_loader_.createSharedInstance(name);
+    plugin->init(node);
+    scene_manager_plugins_.push_back(plugin);
+  } else {
+    RCLCPP_ERROR_STREAM(node.get_logger(), "The scene plugin '" << name << "' is not available.");
+  }
 }
 
 autoware_auto_planning_msgs::msg::PathWithLaneId BehaviorVelocityPlannerManager::planPathVelocity(
@@ -64,15 +75,15 @@ autoware_auto_planning_msgs::msg::PathWithLaneId BehaviorVelocityPlannerManager:
   int first_stop_path_point_index = static_cast<int>(output_path_msg.points.size() - 1);
   std::string stop_reason_msg("path_end");
 
-  for (const auto & scene_manager_ptr : scene_manager_ptrs_) {
-    scene_manager_ptr->updateSceneModuleInstances(planner_data, input_path_msg);
-    scene_manager_ptr->plan(&output_path_msg);
-    boost::optional<int> firstStopPathPointIndex = scene_manager_ptr->getFirstStopPathPointIndex();
+  for (const auto & plugin : scene_manager_plugins_) {
+    plugin->updateSceneModuleInstances(planner_data, input_path_msg);
+    plugin->plan(&output_path_msg);
+    boost::optional<int> firstStopPathPointIndex = plugin->getFirstStopPathPointIndex();
 
     if (firstStopPathPointIndex) {
       if (firstStopPathPointIndex.get() < first_stop_path_point_index) {
         first_stop_path_point_index = firstStopPathPointIndex.get();
-        stop_reason_msg = scene_manager_ptr->getModuleName();
+        stop_reason_msg = plugin->getModuleName();
       }
     }
   }

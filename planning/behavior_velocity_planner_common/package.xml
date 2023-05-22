@@ -1,54 +1,49 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>behavior_velocity_planner</name>
+  <name>behavior_velocity_planner_common</name>
   <version>0.1.0</version>
-  <description>The behavior_velocity_planner package</description>
+  <description>The behavior_velocity_planner_common package</description>
 
-  <maintainer email="mamoru.sobue@tier4.jp">Mamoru Sobue</maintainer>
-  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
-  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
-  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
-  <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
-  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
-  <maintainer email="tomohito.ando@tier4.jp">Tomohito Ando</maintainer>
-  <maintainer email="makoto.kurihara@tier4.jp">Makoto Kurihara</maintainer>
-  <maintainer email="maxime.clement@tier4.jp">Maxime Clement</maintainer>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
   <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+  <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
 
   <license>Apache License 2.0</license>
 
-  <author email="taiki.tanaka@tier4.jp">Taiki Tanaka</author>
-  <author email="mamoru.sobue@tier4.jp">Mamoru Sobue</author>
-  <author email="satoshi.ota@tier4.jp">Satoshi Ota</author>
-  <author email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</author>
-  <author email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</author>
-  <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
-  <author email="tomohito.ando@tier4.jp">Tomohito Ando</author>
   <author email="yukihiro.saito@tier4.jp">Yukihiro Saito</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
+  <depend>autoware_adapi_v1_msgs</depend>
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>behavior_velocity_planner_common</depend>
+  <depend>autoware_auto_tf2</depend>
+  <depend>cv_bridge</depend>
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
+  <depend>grid_map_cv</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_utils</depend>
+  <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
+  <depend>libopencv-dev</depend>
+  <depend>magic_enum</depend>
+  <depend>message_filters</depend>
   <depend>motion_utils</depend>
   <depend>motion_velocity_smoother</depend>
+  <depend>nav_msgs</depend>
+  <depend>nlohmann-json-dev</depend>
   <depend>pcl_conversions</depend>
-  <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
+  <depend>rtc_interface</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
@@ -58,6 +53,7 @@
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_planning_msgs</depend>
   <depend>tier4_v2x_msgs</depend>
+  <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_ros</test_depend>

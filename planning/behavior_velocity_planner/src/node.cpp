@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_velocity_planner/node.hpp"
+#include "node.hpp"
 
+#include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <tier4_autoware_utils/ros/wait_for_param.hpp>
-#include <utilization/path_utilization.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <lanelet2_routing/Route.h>
 #include <pcl/common/transforms.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
@@ -32,20 +33,6 @@
 
 #include <functional>
 #include <memory>
-
-// Scene modules
-#include <scene_module/blind_spot/manager.hpp>
-#include <scene_module/crosswalk/manager.hpp>
-#include <scene_module/detection_area/manager.hpp>
-#include <scene_module/intersection/manager.hpp>
-#include <scene_module/no_stopping_area/manager.hpp>
-#include <scene_module/occlusion_spot/manager.hpp>
-#include <scene_module/out_of_lane/manager.hpp>
-#include <scene_module/run_out/manager.hpp>
-#include <scene_module/speed_bump/manager.hpp>
-#include <scene_module/stop_line/manager.hpp>
-#include <scene_module/traffic_light/manager.hpp>
-#include <scene_module/virtual_traffic_light/manager.hpp>
 
 namespace
 {
@@ -150,46 +137,53 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
 
   // Initialize PlannerManager
   if (this->declare_parameter<bool>("launch_crosswalk")) {
-    planner_manager_.launchSceneModule(std::make_shared<CrosswalkModuleManager>(*this));
-    planner_manager_.launchSceneModule(std::make_shared<WalkwayModuleManager>(*this));
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::CrosswalkModulePlugin");
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::WalkwayModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_traffic_light")) {
-    planner_manager_.launchSceneModule(std::make_shared<TrafficLightModuleManager>(*this));
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::TrafficLightModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_intersection")) {
     // intersection module should be before merge from private to declare intersection parameters
-    planner_manager_.launchSceneModule(std::make_shared<IntersectionModuleManager>(*this));
-    planner_manager_.launchSceneModule(std::make_shared<MergeFromPrivateModuleManager>(*this));
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::IntersectionModulePlugin");
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::MergeFromPrivateModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_blind_spot")) {
-    planner_manager_.launchSceneModule(std::make_shared<BlindSpotModuleManager>(*this));
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::BlindSpotModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_detection_area")) {
-    planner_manager_.launchSceneModule(std::make_shared<DetectionAreaModuleManager>(*this));
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::DetectionAreaModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_virtual_traffic_light")) {
-    planner_manager_.launchSceneModule(std::make_shared<VirtualTrafficLightModuleManager>(*this));
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::VirtualTrafficLightModulePlugin");
   }
   // this module requires all the stop line.Therefore this modules should be placed at the bottom.
   if (this->declare_parameter<bool>("launch_no_stopping_area")) {
-    planner_manager_.launchSceneModule(std::make_shared<NoStoppingAreaModuleManager>(*this));
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::NoStoppingAreaModulePlugin");
   }
   // permanent stop line module should be after no stopping area
   if (this->declare_parameter<bool>("launch_stop_line")) {
-    planner_manager_.launchSceneModule(std::make_shared<StopLineModuleManager>(*this));
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::StopLineModulePlugin");
   }
   // to calculate ttc it's better to be after stop line
   if (this->declare_parameter<bool>("launch_occlusion_spot")) {
-    planner_manager_.launchSceneModule(std::make_shared<OcclusionSpotModuleManager>(*this));
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::OcclusionSpotModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_run_out")) {
-    planner_manager_.launchSceneModule(std::make_shared<RunOutModuleManager>(*this));
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::RunOutModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_speed_bump")) {
-    planner_manager_.launchSceneModule(std::make_shared<SpeedBumpModuleManager>(*this));
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::SpeedBumpModulePlugin");
   }
   if (this->declare_parameter<bool>("launch_out_of_lane")) {
-    planner_manager_.launchSceneModule(std::make_shared<OutOfLaneModuleManager>(*this));
+    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::OutOfLaneModulePlugin");
   }
 }
 

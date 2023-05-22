@@ -1,0 +1,4 @@
+<library path="behavior_velocity_intersection_module">
+  <class type="behavior_velocity_planner::IntersectionModulePlugin" base_class_type="behavior_velocity_planner::PluginInterface"/>
+  <class type="behavior_velocity_planner::MergeFromPrivateModulePlugin" base_class_type="behavior_velocity_planner::PluginInterface"/>
+</library>
