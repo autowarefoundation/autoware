@@ -11,6 +11,7 @@
         intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
         intersection_max_accel: 0.5 # m/ss
         stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collision detection
+        use_intersection_area: false
 
       stuck_vehicle:
         use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck

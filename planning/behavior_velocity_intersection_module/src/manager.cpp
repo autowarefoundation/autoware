@@ -53,6 +53,8 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     node.declare_parameter<double>(ns + ".common.intersection_max_accel");
   ip.common.stop_overshoot_margin =
     node.declare_parameter<double>(ns + ".common.stop_overshoot_margin");
+  ip.common.use_intersection_area =
+    node.declare_parameter<bool>(ns + ".common.use_intersection_area");
 
   ip.stuck_vehicle.use_stuck_stopline =
     node.declare_parameter<bool>(ns + ".stuck_vehicle.use_stuck_stopline");

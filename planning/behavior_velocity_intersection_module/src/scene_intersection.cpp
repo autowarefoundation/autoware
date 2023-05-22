@@ -163,7 +163,9 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   debug_data_.adjacent_area = intersection_lanelets_.value().adjacent_area;
 
   /* get intersection area */
-  const auto intersection_area = util::getIntersectionArea(assigned_lanelet, lanelet_map_ptr);
+  const auto intersection_area = planner_param_.common.use_intersection_area
+                                   ? util::getIntersectionArea(assigned_lanelet, lanelet_map_ptr)
+                                   : std::nullopt;
   if (intersection_area) {
     const auto intersection_area_2d = intersection_area.value();
     debug_data_.intersection_area = toGeomPoly(intersection_area_2d);

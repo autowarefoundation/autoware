@@ -85,6 +85,7 @@ public:
       double intersection_velocity;  //! used for intersection passing time
       double intersection_max_acc;   //! used for calculating intersection velocity
       double stop_overshoot_margin;  //! overshoot margin for stuck, collision detection
+      bool use_intersection_area;
     } common;
     struct StuckVehicle
     {
