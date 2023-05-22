@@ -1955,7 +1955,7 @@ double getDistanceToCrosswalk(
 
   lanelet::ConstLanelet current_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(lanelets, current_pose, &current_lanelet)) {
-    return std::numeric_limits<double>::max();
+    return std::numeric_limits<double>::infinity();
   }
 
   double distance = 0;
@@ -1964,24 +1964,8 @@ double getDistanceToCrosswalk(
     if (llt == current_lanelet) {
       is_after_current_lanelet = true;
     }
-    // check lane change tag
-    bool is_lane_change_yes = false;
-    const auto right_line = llt.rightBound();
-    if (right_line.hasAttribute(lanelet::AttributeNamesString::LaneChange)) {
-      const auto attr = right_line.attribute(lanelet::AttributeNamesString::LaneChange);
-      if (attr.value() == std::string("yes")) {
-        is_lane_change_yes = true;
-      }
-    }
-    const auto left_line = llt.leftBound();
-    if (left_line.hasAttribute(lanelet::AttributeNamesString::LaneChange)) {
-      const auto attr = left_line.attribute(lanelet::AttributeNamesString::LaneChange);
-      if (attr.value() == std::string("yes")) {
-        is_lane_change_yes = true;
-      }
-    }
 
-    if (is_after_current_lanelet && !is_lane_change_yes) {
+    if (is_after_current_lanelet) {
       const auto conflicting_crosswalks = overall_graphs.conflictingInGraph(llt, 1);
       if (!(conflicting_crosswalks.empty())) {
         // create centerline
@@ -1993,7 +1977,7 @@ double getDistanceToCrosswalk(
         }
 
         // create crosswalk polygon and calculate distance
-        double min_distance_to_crosswalk = std::numeric_limits<double>::max();
+        double min_distance_to_crosswalk = std::numeric_limits<double>::infinity();
         for (const auto & crosswalk : conflicting_crosswalks) {
           lanelet::CompoundPolygon2d lanelet_crosswalk_polygon = crosswalk.polygon2d();
           Polygon2d polygon;
@@ -2028,7 +2012,7 @@ double getDistanceToCrosswalk(
     distance += lanelet::utils::getLaneletLength3d(llt);
   }
 
-  return std::numeric_limits<double>::max();
+  return std::numeric_limits<double>::infinity();
 }
 
 double getSignedDistance(
