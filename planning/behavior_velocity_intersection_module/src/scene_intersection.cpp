@@ -303,24 +303,34 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   is_actually_occluded_ = !is_occlusion_cleared;
   is_forcefully_occluded_ = ext_occlusion_requested;
   if (!is_occlusion_cleared || ext_occlusion_requested) {
+    const bool approached_stop_line =
+      (std::fabs(dist_1st_stopline) < planner_param_.common.stop_overshoot_margin);
+    const bool is_stopped = planner_data_->isVehicleStopped();
     if (!default_stop_line_idx_opt) {
       RCLCPP_DEBUG(logger_, "occlusion is detected but default stop line is not set or generated");
       RCLCPP_DEBUG(logger_, "===== plan end =====");
       return true;
-    }
-    if (before_creep_state_machine_.getState() == StateMachine::State::GO) {
-      occlusion_stop_required = true;
-      occlusion_peeking_line_idx = occlusion_peeking_line_idx_opt;
-
-      // clear first stop line
-      // insert creep velocity [closest_idx, occlusion_stop_line)
-      insert_creep_during_occlusion =
-        std::make_pair(closest_idx, occlusion_peeking_line_idx_opt.value());
-      occlusion_state_ = OcclusionState::CREEP_SECOND_STOP_LINE;
+    } else if (before_creep_state_machine_.getState() == StateMachine::State::GO) {
+      if (!has_collision) {
+        occlusion_stop_required = true;
+        occlusion_peeking_line_idx = occlusion_peeking_line_idx_opt;
+        // clear first stop line
+        // insert creep velocity [closest_idx, occlusion_stop_line)
+        insert_creep_during_occlusion =
+          std::make_pair(closest_idx, occlusion_peeking_line_idx_opt.value());
+        occlusion_state_ = OcclusionState::CREEP_SECOND_STOP_LINE;
+      } else {
+        collision_stop_required = true;
+        stop_line_idx = default_stop_line_idx_opt;
+        occlusion_stop_required = true;
+        occlusion_peeking_line_idx = occlusion_peeking_line_idx_opt;
+        // clear first stop line
+        // insert creep velocity [closest_idx, occlusion_stop_line)
+        insert_creep_during_occlusion =
+          std::make_pair(closest_idx, occlusion_peeking_line_idx_opt.value());
+        occlusion_state_ = OcclusionState::COLLISION_DETECTED;
+      }
     } else {
-      const bool approached_stop_line =
-        (std::fabs(dist_1st_stopline) < planner_param_.common.stop_overshoot_margin);
-      const bool is_stopped = planner_data_->isVehicleStopped();
       if (is_stopped && approached_stop_line) {
         // start waiting at the first stop line
         before_creep_state_machine_.setStateWithMarginTime(
@@ -403,10 +413,9 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   if (occlusion_stop_required) {
     occlusion_first_stop_required_ = first_phase_stop_required;
     occlusion_safety_ = is_occlusion_cleared;
-  } else {
-    /* collision */
-    setSafe(collision_state_machine_.getState() == StateMachine::State::GO);
   }
+  /* collision */
+  setSafe(collision_state_machine_.getState() == StateMachine::State::GO);
 
   /* make decision */
   const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
