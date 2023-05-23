@@ -59,6 +59,13 @@ struct LateralKinematicsToLanelet
   double filtered_right_lateral_velocity;
 };
 
+enum class Maneuver {
+  UNINITIALIZED = 0,
+  LANE_FOLLOW = 1,
+  LEFT_LANE_CHANGE = 2,
+  RIGHT_LANE_CHANGE = 3,
+};
+
 struct ObjectData
 {
   std_msgs::msg::Header header;
@@ -69,12 +76,9 @@ struct ObjectData
   double time_delay;
   // for lane change prediction
   std::unordered_map<lanelet::ConstLanelet, LateralKinematicsToLanelet> lateral_kinematics_set;
-};
-
-enum class Maneuver {
-  LANE_FOLLOW = 0,
-  LEFT_LANE_CHANGE = 1,
-  RIGHT_LANE_CHANGE = 2,
+  Maneuver one_shot_maneuver{Maneuver::UNINITIALIZED};
+  Maneuver output_maneuver{
+    Maneuver::UNINITIALIZED};  // output maneuver considering previous one shot maneuvers
 };
 
 struct LaneletData
@@ -153,6 +157,7 @@ private:
   double dist_ratio_threshold_to_right_bound_;
   double diff_dist_threshold_to_left_bound_;
   double diff_dist_threshold_to_right_bound_;
+  int num_continuous_state_transition_;
   double reference_path_resolution_;
 
   // Stop watch

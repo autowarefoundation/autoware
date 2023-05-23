@@ -517,6 +517,9 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
       "lane_change_detection.lat_diff_distance.diff_dist_threshold_to_left_bound");
     diff_dist_threshold_to_right_bound_ = declare_parameter<double>(
       "lane_change_detection.lat_diff_distance.diff_dist_threshold_to_right_bound");
+
+    num_continuous_state_transition_ =
+      declare_parameter<int>("lane_change_detection.num_continuous_state_transition");
   }
   reference_path_resolution_ = declare_parameter("reference_path_resolution", 0.5);
 
@@ -1170,14 +1173,50 @@ Maneuver MapBasedPredictionNode::predictObjectManeuver(
   const TrackedObject & object, const LaneletData & current_lanelet_data,
   const double object_detected_time)
 {
-  if (lane_change_detection_method_ == "time_to_change_lane") {
-    return predictObjectManeuverByTimeToLaneChange(
-      object, current_lanelet_data, object_detected_time);
-  } else if (lane_change_detection_method_ == "lat_diff_distance") {
-    return predictObjectManeuverByLatDiffDistance(
-      object, current_lanelet_data, object_detected_time);
+  // calculate maneuver
+  const auto current_maneuver = [&]() {
+    if (lane_change_detection_method_ == "time_to_change_lane") {
+      return predictObjectManeuverByTimeToLaneChange(
+        object, current_lanelet_data, object_detected_time);
+    } else if (lane_change_detection_method_ == "lat_diff_distance") {
+      return predictObjectManeuverByLatDiffDistance(
+        object, current_lanelet_data, object_detected_time);
+    }
+    throw std::logic_error("Lane change detection method is invalid.");
+  }();
+
+  const std::string object_id = tier4_autoware_utils::toHexString(object.object_id);
+  if (objects_history_.count(object_id) == 0) {
+    return current_maneuver;
   }
-  throw std::logic_error("Lane change detection method is invalid.");
+  auto & object_info = objects_history_.at(object_id);
+
+  // update maneuver in object history
+  if (!object_info.empty()) {
+    object_info.back().one_shot_maneuver = current_maneuver;
+  }
+
+  // decide maneuver considering previous results
+  if (object_info.size() < 2) {
+    object_info.back().output_maneuver = current_maneuver;
+    return current_maneuver;
+  }
+  // NOTE: The index of previous maneuver is not object_info.size() - 1
+  const auto prev_output_maneuver =
+    object_info.at(static_cast<int>(object_info.size()) - 2).output_maneuver;
+
+  for (int i = 0;
+       i < std::min(num_continuous_state_transition_, static_cast<int>(object_info.size())); ++i) {
+    const auto & tmp_maneuver =
+      object_info.at(static_cast<int>(object_info.size()) - 1 - i).one_shot_maneuver;
+    if (tmp_maneuver != current_maneuver) {
+      object_info.back().output_maneuver = prev_output_maneuver;
+      return prev_output_maneuver;
+    }
+  }
+
+  object_info.back().output_maneuver = current_maneuver;
+  return current_maneuver;
 }
 
 Maneuver MapBasedPredictionNode::predictObjectManeuverByTimeToLaneChange(

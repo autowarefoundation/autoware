@@ -23,5 +23,6 @@
         dist_ratio_threshold_to_right_bound: 0.5 #[ratio
         diff_dist_threshold_to_left_bound: 0.29 #[m]
         diff_dist_threshold_to_right_bound: -0.29 #[m]
+      num_continuous_state_transition: 3
 
     reference_path_resolution: 0.5 #[m]
