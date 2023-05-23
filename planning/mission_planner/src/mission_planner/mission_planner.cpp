@@ -74,7 +74,9 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   arrival_checker_(this),
   plugin_loader_("mission_planner", "mission_planner::PlannerPlugin"),
   tf_buffer_(get_clock()),
-  tf_listener_(tf_buffer_)
+  tf_listener_(tf_buffer_),
+  original_route_(nullptr),
+  normal_route_(nullptr)
 {
   map_frame_ = declare_parameter<std::string>("map_frame");
   reroute_time_threshold_ = declare_parameter<double>("reroute_time_threshold");
@@ -89,7 +91,7 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
 
   auto qos_transient_local = rclcpp::QoS{1}.transient_local();
   vector_map_subscriber_ = create_subscription<HADMapBin>(
-    "~/input/vector_map", qos_transient_local,
+    "input/vector_map", qos_transient_local,
     std::bind(&MissionPlanner::onMap, this, std::placeholders::_1));
 
   const auto durable_qos = rclcpp::QoS(1).transient_local();
@@ -143,10 +145,11 @@ PoseStamped MissionPlanner::transform_pose(const PoseStamped & input)
   }
 }
 
-void MissionPlanner::change_route()
+void MissionPlanner::clear_route()
 {
   arrival_checker_.set_goal();
   planner_->clearRoute();
+  normal_route_ = nullptr;
   // TODO(Takagi, Isamu): publish an empty route here
 }
 
@@ -161,6 +164,9 @@ void MissionPlanner::change_route(const LaneletRoute & route)
   pub_route_->publish(route);
   pub_marker_->publish(planner_->visualize(route));
   planner_->updateRoute(route);
+
+  // update normal route
+  normal_route_ = std::make_shared<LaneletRoute>(route);
 }
 
 void MissionPlanner::change_state(RouteState::Message::_state_type state)
@@ -174,7 +180,7 @@ void MissionPlanner::change_state(RouteState::Message::_state_type state)
 void MissionPlanner::on_clear_route(
   const ClearRoute::Service::Request::SharedPtr, const ClearRoute::Service::Response::SharedPtr res)
 {
-  change_route();
+  clear_route();
   change_state(RouteState::Message::UNSET);
   res->status.success = true;
 }
@@ -214,6 +220,7 @@ void MissionPlanner::on_set_route(
   // Update route.
   change_route(route);
   change_state(RouteState::Message::SET);
+  original_route_ = std::make_shared<LaneletRoute>(route);
   res->status.success = true;
 }
 
@@ -265,6 +272,7 @@ void MissionPlanner::on_set_route_points(
   // Update route.
   change_route(route);
   change_state(RouteState::Message::SET);
+  original_route_ = std::make_shared<LaneletRoute>(route);
   res->status.success = true;
 }
 
@@ -297,9 +305,50 @@ void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPt
 void MissionPlanner::on_change_route(
   const SetRoute::Service::Request::SharedPtr req, const SetRoute::Service::Response::SharedPtr res)
 {
-  // TODO(Yutaka Shimizu): reroute
-  (void)req;
-  (void)res;
+  using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoute::Response;
+
+  if (state_.state != RouteState::Message::SET) {
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_INVALID_STATE, "The route hasn't set yet. Cannot reroute.");
+  }
+  if (!odometry_) {
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
+  }
+
+  change_state(RouteState::Message::CHANGING);
+
+  // Use temporary pose stamped for transform.
+  PoseStamped pose;
+  pose.header = req->header;
+  pose.pose = req->goal;
+
+  // Convert route.
+  LaneletRoute new_route;
+  new_route.start_pose = odometry_->pose.pose;
+  new_route.goal_pose = transform_pose(pose).pose;
+  for (const auto & segment : req->segments) {
+    new_route.segments.push_back(convert(segment));
+  }
+  new_route.header.stamp = req->header.stamp;
+  new_route.header.frame_id = map_frame_;
+  new_route.uuid.uuid = generate_random_id();
+  new_route.allow_modification = req->option.allow_goal_modification;
+
+  // check route safety
+  if (checkRerouteSafety(*normal_route_, new_route)) {
+    // sucess to reroute
+    change_route(new_route);
+    change_state(RouteState::Message::SET);
+    res->status.success = true;
+  } else {
+    // failed to reroute
+    change_route(*normal_route_);
+    change_state(RouteState::Message::SET);
+    res->status.success = false;
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_REROUTE_FAILED, "New route is not safe. Reroute failed.");
+  }
 }
 
 // NOTE: The route interface should be mutually exclusive by callback group.
@@ -307,9 +356,63 @@ void MissionPlanner::on_change_route_points(
   const SetRoutePoints::Service::Request::SharedPtr req,
   const SetRoutePoints::Service::Response::SharedPtr res)
 {
-  // TODO(Yutaka Shimizu): reroute
-  (void)req;
-  (void)res;
+  using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoutePoints::Response;
+
+  if (state_.state != RouteState::Message::SET) {
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_INVALID_STATE, "The route hasn't set yet. Cannot reroute.");
+  }
+  if (!planner_->ready()) {
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_PLANNER_UNREADY, "The planner is not ready.");
+  }
+  if (!odometry_) {
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
+  }
+
+  change_state(RouteState::Message::CHANGING);
+
+  // Use temporary pose stamped for transform.
+  PoseStamped pose;
+  pose.header = req->header;
+
+  // Convert route points.
+  PlannerPlugin::RoutePoints points;
+  points.push_back(odometry_->pose.pose);
+  for (const auto & waypoint : req->waypoints) {
+    pose.pose = waypoint;
+    points.push_back(transform_pose(pose).pose);
+  }
+  pose.pose = req->goal;
+  points.push_back(transform_pose(pose).pose);
+
+  // Plan route.
+  LaneletRoute new_route = planner_->plan(points);
+  if (new_route.segments.empty()) {
+    change_state(RouteState::Message::SET);
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_PLANNER_FAILED, "The planned route is empty.");
+  }
+  new_route.header.stamp = req->header.stamp;
+  new_route.header.frame_id = map_frame_;
+  new_route.uuid.uuid = generate_random_id();
+  new_route.allow_modification = req->option.allow_goal_modification;
+
+  // check route safety
+  if (checkRerouteSafety(*normal_route_, new_route)) {
+    // sucess to reroute
+    change_route(new_route);
+    change_state(RouteState::Message::SET);
+    res->status.success = true;
+  } else {
+    // failed to reroute
+    change_route(*normal_route_);
+    change_state(RouteState::Message::SET);
+    res->status.success = false;
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_REROUTE_FAILED, "New route is not safe. Reroute failed.");
+  }
 }
 
 bool MissionPlanner::checkRerouteSafety(
@@ -351,17 +454,16 @@ bool MissionPlanner::checkRerouteSafety(
   // find last idx that matches the target primitives
   size_t end_idx = start_idx;
   for (size_t i = 1; i < target_route.segments.size(); ++i) {
-    const size_t original_route_idx = start_idx + i;
-    if (original_route_idx > original_route.segments.size() - 1) {
+    if (start_idx + i > original_route.segments.size() - 1) {
       break;
     }
 
-    const auto & original_primitives = original_route.segments.at(original_route_idx).primitives;
+    const auto & original_primitives = original_route.segments.at(start_idx + i).primitives;
     const auto & target_primitives = target_route.segments.at(i).primitives;
     if (!hasSamePrimitives(original_primitives, target_primitives)) {
-      end_idx = original_route_idx + 1;
       break;
     }
+    end_idx = start_idx + i;
   }
 
   // create map
@@ -392,16 +494,17 @@ bool MissionPlanner::checkRerouteSafety(
   double accumulated_length = lanelet_length - dist_to_current_pose;
 
   // compute distance from the start_idx+1 to end_idx
-  for (size_t i = start_idx + 1; i < end_idx; ++i) {
+  for (size_t i = start_idx + 1; i <= end_idx; ++i) {
     const auto primitives = original_route.segments.at(i).primitives;
     if (primitives.empty()) {
       break;
     }
 
     std::vector<double> lanelets_length(primitives.size());
-    for (const auto & primitive : primitives) {
+    for (size_t primitive_idx = 0; primitive_idx < primitives.size(); ++primitive_idx) {
+      const auto & primitive = primitives.at(primitive_idx);
       const auto & lanelet = lanelet_map_ptr_->laneletLayer.get(primitive.id);
-      lanelets_length.push_back(lanelet::utils::getLaneletLength2d(lanelet));
+      lanelets_length.at(primitive_idx) = (lanelet::utils::getLaneletLength2d(lanelet));
     }
     accumulated_length += *std::min_element(lanelets_length.begin(), lanelets_length.end());
   }
