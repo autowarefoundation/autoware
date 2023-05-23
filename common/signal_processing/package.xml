@@ -5,6 +5,9 @@
   <version>0.1.0</version>
   <description>The signal processing package</description>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <maintainer email="ali.boyali@tier4.jp">Ali Boyali</maintainer>
 
   <license>Apache License 2.0</license>
