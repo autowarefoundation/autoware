@@ -371,7 +371,7 @@ int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) 
 PathWithLaneId NormalLaneChange::getPrepareSegment(
   const lanelet::ConstLanelets & current_lanes,
   [[maybe_unused]] const double arc_length_from_current, const double backward_path_length,
-  const double prepare_length, const double current_velocity, const double prepare_velocity) const
+  const double prepare_length) const
 {
   if (current_lanes.empty()) {
     return PathWithLaneId();
@@ -381,8 +381,6 @@ PathWithLaneId NormalLaneChange::getPrepareSegment(
   const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     prepare_segment.points, getEgoPose(), 3.0, 1.0);
   utils::clipPathLength(prepare_segment, current_seg_idx, prepare_length, backward_path_length);
-
-  utils::lane_change::setPrepareVelocity(prepare_segment, current_velocity, prepare_velocity);
 
   return prepare_segment;
 }
@@ -406,20 +404,24 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto minimum_lane_changing_velocity = common_parameter.minimum_lane_changing_velocity;
   const auto longitudinal_acc_sampling_num = lane_change_parameters_->longitudinal_acc_sampling_num;
   const auto lateral_acc_sampling_num = lane_change_parameters_->lateral_acc_sampling_num;
+  const auto min_longitudinal_acc =
+    std::max(common_parameter.min_acc, lane_change_parameters_->min_longitudinal_acc);
+  const auto max_longitudinal_acc =
+    std::min(common_parameter.max_acc, lane_change_parameters_->max_longitudinal_acc);
 
   // get velocity
   const auto current_velocity = getEgoTwist().linear.x;
 
   // compute maximum longitudinal deceleration and acceleration
-  const auto maximum_deceleration =
-    std::invoke([&minimum_lane_changing_velocity, &current_velocity, &common_parameter, this]() {
-      const double min_a = (minimum_lane_changing_velocity - current_velocity) /
-                           common_parameter.lane_change_prepare_duration;
-      return std::clamp(
-        min_a, -std::abs(common_parameter.min_acc), -std::numeric_limits<double>::epsilon());
-    });
+  const auto maximum_deceleration = std::invoke([&minimum_lane_changing_velocity, &current_velocity,
+                                                 &min_longitudinal_acc, &common_parameter, this]() {
+    const double min_a = (minimum_lane_changing_velocity - current_velocity) /
+                         common_parameter.lane_change_prepare_duration;
+    return std::clamp(
+      min_a, -std::abs(min_longitudinal_acc), -std::numeric_limits<double>::epsilon());
+  });
   const auto maximum_acceleration = utils::lane_change::calcMaximumAcceleration(
-    prev_module_path_, getEgoPose(), current_velocity, common_parameter);
+    prev_module_path_, getEgoPose(), current_velocity, max_longitudinal_acc, common_parameter);
 
   // get sampling acceleration values
   const auto longitudinal_acc_sampling_values = utils::lane_change::getAccelerationValues(
@@ -473,9 +475,8 @@ bool NormalLaneChange::getLaneChangePaths(
       break;
     }
 
-    const auto prepare_segment = getPrepareSegment(
-      original_lanelets, arc_position_from_current.length, backward_path_length, prepare_length,
-      current_velocity, prepare_velocity);
+    auto prepare_segment = getPrepareSegment(
+      original_lanelets, arc_position_from_current.length, backward_path_length, prepare_length);
 
     if (prepare_segment.points.empty()) {
       RCLCPP_DEBUG(
@@ -502,21 +503,30 @@ bool NormalLaneChange::getLaneChangePaths(
     const auto shift_length =
       lanelet::utils::getLateralDistanceToClosestLanelet(target_lanelets, lane_changing_start_pose);
 
-    // we assume constant velocity during lane change
-    const auto lane_changing_velocity = prepare_velocity;
+    const auto initial_lane_changing_velocity = prepare_velocity;
+    const auto & max_path_velocity = prepare_segment.points.back().point.longitudinal_velocity_mps;
 
     // get lateral acceleration range
     const auto [min_lateral_acc, max_lateral_acc] =
-      common_parameter.lane_change_lat_acc_map.find(lane_changing_velocity);
+      common_parameter.lane_change_lat_acc_map.find(initial_lane_changing_velocity);
     const auto lateral_acc_resolution =
       std::abs(max_lateral_acc - min_lateral_acc) / lateral_acc_sampling_num;
     constexpr double lateral_acc_epsilon = 0.01;
 
     for (double lateral_acc = min_lateral_acc; lateral_acc < max_lateral_acc + lateral_acc_epsilon;
          lateral_acc += lateral_acc_resolution) {
-      const auto lane_changing_length = utils::lane_change::calcLaneChangingLength(
-        lane_changing_velocity, shift_length, lateral_acc,
-        common_parameter.lane_changing_lateral_jerk);
+      const auto lane_changing_time = PathShifter::calcShiftTimeFromJerk(
+        shift_length, common_parameter.lane_changing_lateral_jerk, lateral_acc);
+      const double lane_changing_lon_acc = utils::lane_change::calcLaneChangingAcceleration(
+        initial_lane_changing_velocity, max_path_velocity, lane_changing_time,
+        sampled_longitudinal_acc);
+      const auto lane_changing_length =
+        initial_lane_changing_velocity * lane_changing_time +
+        0.5 * lane_changing_lon_acc * lane_changing_time * lane_changing_time;
+      const auto terminal_lane_changing_velocity =
+        initial_lane_changing_velocity + lane_changing_lon_acc * lane_changing_time;
+      utils::lane_change::setPrepareVelocity(
+        prepare_segment, current_velocity, terminal_lane_changing_velocity);
 
       if (lane_changing_length + prepare_length > dist_to_end_of_current_lanes) {
         RCLCPP_DEBUG(
@@ -543,7 +553,8 @@ bool NormalLaneChange::getLaneChangePaths(
 
       const auto target_segment = utils::lane_change::getTargetSegment(
         route_handler, target_lanelets, forward_path_length, lane_changing_start_pose,
-        target_lane_length, lane_changing_length, lane_changing_velocity, next_lane_change_buffer);
+        target_lane_length, lane_changing_length, initial_lane_changing_velocity,
+        next_lane_change_buffer);
 
       if (target_segment.points.empty()) {
         RCLCPP_DEBUG(
@@ -553,7 +564,7 @@ bool NormalLaneChange::getLaneChangePaths(
       }
 
       const auto resample_interval = utils::lane_change::calcLaneChangeResampleInterval(
-        lane_changing_length, lane_changing_velocity);
+        lane_changing_length, initial_lane_changing_velocity);
 
       const auto lc_length = LaneChangePhaseInfo{prepare_length, lane_changing_length};
       const auto target_lane_reference_path = utils::lane_change::getReferencePathFromTargetLane(
@@ -571,12 +582,15 @@ bool NormalLaneChange::getLaneChangePaths(
       const auto shift_line = utils::lane_change::getLaneChangingShiftLine(
         prepare_segment, target_segment, target_lane_reference_path, shift_length);
 
-      const auto lc_velocity = LaneChangePhaseInfo{prepare_velocity, lane_changing_velocity};
+      const auto lc_velocity =
+        LaneChangePhaseInfo{prepare_velocity, initial_lane_changing_velocity};
+
+      const auto lc_time = LaneChangePhaseInfo{prepare_duration, lane_changing_time};
 
       const auto candidate_path = utils::lane_change::constructCandidatePath(
         prepare_segment, target_segment, target_lane_reference_path, shift_line, original_lanelets,
-        target_lanelets, sorted_lane_ids, longitudinal_acc, lateral_acc, lc_length, lc_velocity,
-        common_parameter, *lane_change_parameters_);
+        target_lanelets, sorted_lane_ids, lane_changing_lon_acc, lateral_acc, lc_length,
+        lc_velocity, terminal_lane_changing_velocity, lc_time);
 
       if (!candidate_path) {
         RCLCPP_DEBUG(
@@ -612,7 +626,8 @@ bool NormalLaneChange::getLaneChangePaths(
       const auto [is_safe, is_object_coming_from_rear] = utils::lane_change::isLaneChangePathSafe(
         *candidate_path, dynamic_objects, dynamic_object_indices, getEgoPose(), getEgoTwist(),
         common_parameter, *lane_change_parameters_, common_parameter.expected_front_deceleration,
-        common_parameter.expected_rear_deceleration, object_debug_, longitudinal_acc);
+        common_parameter.expected_rear_deceleration, object_debug_, longitudinal_acc,
+        lane_changing_lon_acc);
 
       if (is_safe) {
         return true;
@@ -960,8 +975,7 @@ int NormalLaneChangeBT::getNumToPreferredLane(const lanelet::ConstLanelet & lane
 
 PathWithLaneId NormalLaneChangeBT::getPrepareSegment(
   const lanelet::ConstLanelets & current_lanes, const double arc_length_from_current,
-  const double backward_path_length, const double prepare_length, const double current_velocity,
-  const double prepare_velocity) const
+  const double backward_path_length, const double prepare_length) const
 {
   if (current_lanes.empty()) {
     return PathWithLaneId();
@@ -976,8 +990,6 @@ PathWithLaneId NormalLaneChangeBT::getPrepareSegment(
 
   PathWithLaneId prepare_segment =
     getRouteHandler()->getCenterLinePath(current_lanes, s_start, s_end);
-
-  utils::lane_change::setPrepareVelocity(prepare_segment, current_velocity, prepare_velocity);
 
   return prepare_segment;
 }

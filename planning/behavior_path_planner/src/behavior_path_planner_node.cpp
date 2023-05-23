@@ -749,6 +749,10 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.lateral_acc_sampling_num =
     declare_parameter<int>(parameter("lateral_acceleration_sampling_num"));
 
+  // acceleration
+  p.min_longitudinal_acc = declare_parameter<double>(parameter("min_longitudinal_acc"));
+  p.max_longitudinal_acc = declare_parameter<double>(parameter("max_longitudinal_acc"));
+
   // collision check
   p.enable_prepare_segment_collision_check =
     declare_parameter<bool>(parameter("enable_prepare_segment_collision_check"));

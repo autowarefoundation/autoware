@@ -15,6 +15,10 @@
       longitudinal_acceleration_sampling_num: 5
       lateral_acceleration_sampling_num: 3
 
+      # longitudinal acceleration
+      min_longitudinal_acc: -1.0
+      max_longitudinal_acc: 1.0
+
       # lateral acceleration map
       lateral_acceleration:
         velocity: [0.0, 4.0, 10.0]

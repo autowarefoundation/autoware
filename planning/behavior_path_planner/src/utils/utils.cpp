@@ -527,43 +527,6 @@ double l2Norm(const Vector3 vector)
   return std::sqrt(std::pow(vector.x, 2) + std::pow(vector.y, 2) + std::pow(vector.z, 2));
 }
 
-PredictedPath convertToPredictedPath(
-  const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & vehicle_pose,
-  const size_t nearest_seg_idx, const double duration, const double resolution,
-  const double prepare_time, const double acceleration)
-{
-  PredictedPath predicted_path{};
-  predicted_path.time_step = rclcpp::Duration::from_seconds(resolution);
-  predicted_path.path.reserve(std::min(path.points.size(), static_cast<size_t>(100)));
-
-  if (path.points.empty()) {
-    return predicted_path;
-  }
-
-  FrenetPoint vehicle_pose_frenet =
-    convertToFrenetPoint(path.points, vehicle_pose.position, nearest_seg_idx);
-  const double initial_velocity = std::abs(vehicle_twist.linear.x);
-  const double lane_change_velocity = std::max(initial_velocity + acceleration * prepare_time, 0.0);
-
-  // prepare segment
-  for (double t = 0.0; t < prepare_time; t += resolution) {
-    const double length = initial_velocity * t + 0.5 * acceleration * t * t;
-    predicted_path.path.push_back(
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
-  }
-
-  // lane changing segment
-  const double offset =
-    initial_velocity * prepare_time + 0.5 * acceleration * prepare_time * prepare_time;
-  for (double t = prepare_time; t < duration; t += resolution) {
-    const double length = lane_change_velocity * (t - prepare_time) + offset;
-    predicted_path.path.push_back(
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
-  }
-
-  return predicted_path;
-}
-
 double getDistanceBetweenPredictedPaths(
   const PredictedPath & object_path, const PredictedPath & ego_path, const double start_time,
   const double end_time, const double resolution)

@@ -55,7 +55,11 @@ double calcLaneChangeResampleInterval(
 
 double calcMaximumAcceleration(
   const PathWithLaneId & path, const Pose & current_pose, const double current_velocity,
-  const BehaviorPathPlannerParameters & params);
+  const double max_longitudinal_acc, const BehaviorPathPlannerParameters & params);
+
+double calcLaneChangingAcceleration(
+  const double initial_lane_changing_velocity, const double max_path_velocity,
+  const double lane_changing_time, const double prepare_longitudinal_acc);
 
 void setPrepareVelocity(
   PathWithLaneId & prepare_segment, const double current_velocity, const double prepare_velocity);
@@ -77,19 +81,14 @@ bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets);
 
-double calcLaneChangingLength(
-  const double lane_changing_velocity, const double shift_length, const double lateral_acc,
-  const double lateral_jerk);
-
 std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const std::vector<std::vector<int64_t>> & sorted_lane_ids, const double longitudinal_acceleration,
   const double lateral_acceleration, const LaneChangePhaseInfo lane_change_length,
-  const LaneChangePhaseInfo lane_change_velocity,
-  const BehaviorPathPlannerParameters & common_parameter,
-  const LaneChangeParameters & lane_change_param);
+  const LaneChangePhaseInfo lane_change_velocity, const double terminal_lane_changing_velocity,
+  const LaneChangePhaseInfo lane_change_time);
 
 PathSafetyStatus isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const PredictedObjects::ConstSharedPtr dynamic_objects,
@@ -97,8 +96,8 @@ PathSafetyStatus isLaneChangePathSafe(
   const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameter,
   const behavior_path_planner::LaneChangeParameters & lane_change_parameter,
   const double front_decel, const double rear_decel,
-  std::unordered_map<std::string, CollisionCheckDebug> & debug_data,
-  const double acceleration = 0.0);
+  std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const double prepare_acc = 0.0,
+  const double lane_changing_acc = 0.0);
 
 bool isObjectIndexIncluded(
   const size_t & index, const std::vector<size_t> & dynamic_objects_indices);
@@ -172,5 +171,10 @@ CandidateOutput assignToCandidate(
 boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const LaneChangeModuleType type, const Direction & direction);
+
+PredictedPath convertToPredictedPath(
+  const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & pose,
+  const size_t nearest_seg_idx, const double duration, const double resolution,
+  const double prepare_time, const double prepare_acc, const double lane_changing_acc);
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_

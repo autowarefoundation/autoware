@@ -107,11 +107,6 @@ struct FrenetPoint
 };
 
 // data conversions
-PredictedPath convertToPredictedPath(
-  const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & pose,
-  const size_t nearest_seg_idx, const double duration, const double resolution,
-  const double prepare_time, const double acceleration);
-
 template <class T>
 FrenetPoint convertToFrenetPoint(
   const T & points, const Point & search_point_geom, const size_t seg_idx)
