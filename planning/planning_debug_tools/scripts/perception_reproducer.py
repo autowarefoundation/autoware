@@ -24,9 +24,11 @@ import time
 
 from autoware_auto_perception_msgs.msg import DetectedObjects
 from autoware_auto_perception_msgs.msg import PredictedObjects
+from autoware_auto_perception_msgs.msg import TrackedObjects
 from autoware_auto_perception_msgs.msg import TrafficSignalArray
 from geometry_msgs.msg import Quaternion
 from nav_msgs.msg import Odometry
+import numpy as np
 import psutil
 import rclpy
 from rclpy.node import Node
@@ -112,14 +114,19 @@ class PerceptionReproducer(Node):
         )
 
         # publisher
-        if self.args.predicted_object:
-            self.objects_pub = self.create_publisher(
-                PredictedObjects, "/perception/object_recognition/objects", 1
-            )
-        else:
+        if self.args.detected_object:
             self.objects_pub = self.create_publisher(
                 DetectedObjects, "/perception/object_recognition/detection/objects", 1
             )
+        elif self.args.tracked_object:
+            self.objects_pub = self.create_publisher(
+                TrackedObjects, "/perception/object_recognition/tracking/objects", 1
+            )
+        else:
+            self.objects_pub = self.create_publisher(
+                PredictedObjects, "/perception/object_recognition/objects", 1
+            )
+
         self.pointcloud_pub = self.create_publisher(
             PointCloud2, "/perception/obstacle_segmentation/pointcloud", 1
         )
@@ -138,11 +145,11 @@ class PerceptionReproducer(Node):
 
         # load rosbag
         print("Stared loading rosbag")
-        if args.bag:
-            self.load_rosbag(args.bag)
-        elif args.directory:
+        if os.path.isdir(args.bag):
             for bag_file in sorted(os.listdir(args.directory)):
                 self.load_rosbag(args.directory + "/" + bag_file)
+        else:
+            self.load_rosbag(args.bag)
         print("Ended loading rosbag")
 
         # wait for ready to publish/subscribe
@@ -157,10 +164,12 @@ class PerceptionReproducer(Node):
     def on_timer(self):
         # kill node if required
         kill_process_name = None
-        if self.args.predicted_object:
-            kill_process_name = "map_based_prediction"
-        else:
+        if self.args.detected_object:
             kill_process_name = "dummy_perception_publisher_node"
+        elif self.args.tracked_object:
+            kill_process_name = "multi_object_tracker"
+        else:
+            kill_process_name = "map_based_prediction"
         if kill_process_name:
             try:
                 pid = check_output(["pidof", kill_process_name])
@@ -171,7 +180,7 @@ class PerceptionReproducer(Node):
 
         timestamp = self.get_clock().now().to_msg()
 
-        if not self.args.predicted_object:
+        if self.args.detected_object:
             pointcloud_msg = create_empty_pointcloud(timestamp)
             self.pointcloud_pub.publish(pointcloud_msg)
 
@@ -185,23 +194,47 @@ class PerceptionReproducer(Node):
             traffic_signals_msg = msgs[1]
             if objects_msg:
                 objects_msg.header.stamp = timestamp
-                if not self.args.predicted_object:
-                    objects_msg.header.frame_id = "map"
+                if self.args.detected_object:
+                    log_ego_yaw = get_yaw_from_quaternion(log_ego_pose.orientation)
+                    log_ego_pose_trans_mat = np.array(
+                        [
+                            [
+                                math.cos(log_ego_yaw),
+                                -math.sin(log_ego_yaw),
+                                log_ego_pose.position.x,
+                            ],
+                            [math.sin(log_ego_yaw), math.cos(log_ego_yaw), log_ego_pose.position.y],
+                            [0.0, 0.0, 1.0],
+                        ]
+                    )
+
+                    ego_yaw = get_yaw_from_quaternion(self.ego_pose.orientation)
+                    ego_pose_trans_mat = np.array(
+                        [
+                            [math.cos(ego_yaw), -math.sin(ego_yaw), self.ego_pose.position.x],
+                            [math.sin(ego_yaw), math.cos(ego_yaw), self.ego_pose.position.y],
+                            [0.0, 0.0, 1.0],
+                        ]
+                    )
+
                     for o in objects_msg.objects:
+                        log_object_pose = o.kinematics.pose_with_covariance.pose
+                        log_object_yaw = get_yaw_from_quaternion(log_object_pose.orientation)
+                        log_object_pos_vec = np.array(
+                            [log_object_pose.position.x, log_object_pose.position.y, 1.0]
+                        )
+
+                        # translate object pose from ego pose in log to ego pose in simulation
+                        object_pos_vec = np.linalg.inv(ego_pose_trans_mat).dot(
+                            log_ego_pose_trans_mat.dot(log_object_pos_vec.T)
+                        )
+
                         object_pose = o.kinematics.pose_with_covariance.pose
-                        ego_yaw = get_yaw_from_quaternion(log_ego_pose.orientation)
-                        theta = math.atan2(object_pose.position.x, object_pose.position.y)
-                        length = math.hypot(object_pose.position.x, object_pose.position.y)
-
-                        object_pose.position.x = log_ego_pose.position.x + length * math.cos(
-                            ego_yaw + theta
+                        object_pose.position.x = object_pos_vec[0]
+                        object_pose.position.y = object_pos_vec[1]
+                        object_pose.orientation = get_quaternion_from_yaw(
+                            log_object_yaw + log_ego_yaw - ego_yaw
                         )
-                        object_pose.position.y = log_ego_pose.position.y + length * math.sin(
-                            ego_yaw + theta
-                        )
-
-                        obj_yaw = get_yaw_from_quaternion(object_pose.orientation)
-                        object_pose.orientation = get_quaternion_from_yaw(ego_yaw + obj_yaw)
 
                 self.objects_pub.publish(objects_msg)
             if traffic_signals_msg:
@@ -256,9 +289,11 @@ class PerceptionReproducer(Node):
         type_map = {topic_types[i].name: topic_types[i].type for i in range(len(topic_types))}
 
         objects_topic = (
-            "/perception/object_recognition/objects"
-            if self.args.predicted_object
-            else "/perception/object_recognition/detection/objects"
+            "/perception/object_recognition/detection/objects"
+            if self.args.detected_object
+            else "/perception/object_recognition/tracking/objects"
+            if self.args.tracked_object
+            else "/perception/object_recognition/objects"
         )
         ego_odom_topic = "/localization/kinematic_state"
         traffic_signals_topic = "/perception/traffic_light_recognition/traffic_signals"
@@ -280,9 +315,11 @@ class PerceptionReproducer(Node):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--bag", help="rosbag", default=None)
-    parser.add_argument("-d", "--directory", help="directory of rosbags", default=None)
     parser.add_argument(
-        "-p", "--predicted-object", help="publish predicted object", action="store_true"
+        "-d", "--detected-object", help="publish detected object", action="store_true"
+    )
+    parser.add_argument(
+        "-t", "--tracked-object", help="publish tracked object", action="store_true"
     )
     args = parser.parse_args()
 

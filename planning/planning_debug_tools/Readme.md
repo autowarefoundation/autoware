@@ -185,3 +185,29 @@ PlotYawOverArclength('yaw_occlusion', occlusion_spot, tracker_time)
 
 PlotCurrentVelocity('localization_kinematic_state', '/localization/kinematic_state', tracker_time)
 ```
+
+## Perception reproducer
+
+This script can overlay the perception results from the rosbag on the planning simulator.
+
+In detail, the ego pose in the rosbag which is closest to the current ego pose in the simulator is calculated.
+The perception results at the timestamp of the closest ego pose is extracted, and published.
+
+### How to use
+
+First, launch the planning simulator, and put the ego pose.
+Then, run the script according to the following command.
+
+By designating a rosbag, perception reproducer can be launched.
+
+```bash
+ros2 run planning_debug_tools perception_reproducer.py -b <bag-file>
+```
+
+You can designate multiple rosbags in the directory.
+
+```bash
+ros2 run planning_debug_tools perception_reproducer.py -b <dir-to-bag-files>
+```
+
+Instead of publishing predicted objects, you can publish detected/tracked objects by designating `-d` or `-t`, respectively.
