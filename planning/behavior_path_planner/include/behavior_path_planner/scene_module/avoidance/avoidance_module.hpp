@@ -199,6 +199,7 @@ private:
 
   // -- for pre-processing --
   void initVariables();
+  void initRTCStatus();
   AvoidancePlanningData calcAvoidancePlanningData(DebugData & debug) const;
 
   ObjectDataArray registered_objects_;

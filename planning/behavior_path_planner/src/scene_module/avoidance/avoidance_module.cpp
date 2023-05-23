@@ -540,6 +540,10 @@ AvoidanceState AvoidanceModule::updateEgoState(const AvoidancePlanningData & dat
 
 void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, ShiftedPath & path)
 {
+  if (parameters_->disable_path_update) {
+    return;
+  }
+
   switch (data.state) {
     case AvoidanceState::NOT_AVOID: {
       break;
@@ -547,10 +551,9 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     case AvoidanceState::YIELD: {
       insertYieldVelocity(path);
       insertWaitPoint(parameters_->use_constraints_for_decel, path);
+      initRTCStatus();
       removeAllRegisteredShiftPoints(path_shifter_);
-      clearWaitingApproval();
       unlockNewModuleLaunch();
-      removeRTCStatus();
       break;
     }
     case AvoidanceState::AVOID_PATH_NOT_READY: {
@@ -2816,12 +2819,13 @@ BehaviorModuleOutput AvoidanceModule::plan()
   }
 
   avoidance_data_.state = updateEgoState(data);
-  if (!parameters_->disable_path_update) {
-    updateEgoBehavior(data, avoidance_path);
-  }
 
-  updateInfoMarker(avoidance_data_);
-  updateDebugMarker(avoidance_data_, path_shifter_, debug_data_);
+  // update output data
+  {
+    updateEgoBehavior(data, avoidance_path);
+    updateInfoMarker(avoidance_data_);
+    updateDebugMarker(avoidance_data_, path_shifter_, debug_data_);
+  }
 
   output.path = std::make_shared<PathWithLaneId>(avoidance_path.path);
   output.reference_path = getPreviousModuleOutput().reference_path;
@@ -3160,12 +3164,14 @@ void AvoidanceModule::updateData()
 void AvoidanceModule::processOnEntry()
 {
   initVariables();
+  initRTCStatus();
   waitApproval();
 }
 
 void AvoidanceModule::processOnExit()
 {
   initVariables();
+  initRTCStatus();
 }
 
 void AvoidanceModule::initVariables()
@@ -3174,8 +3180,6 @@ void AvoidanceModule::initVariables()
   prev_linear_shift_path_ = ShiftedPath();
   prev_reference_ = PathWithLaneId();
   path_shifter_ = PathShifter{};
-  left_shift_array_.clear();
-  right_shift_array_.clear();
 
   debug_data_ = DebugData();
   debug_marker_.markers.clear();
@@ -3185,6 +3189,17 @@ void AvoidanceModule::initVariables()
   current_raw_shift_lines_ = {};
   original_unique_id = 0;
   is_avoidance_maneuver_starts = false;
+}
+
+void AvoidanceModule::initRTCStatus()
+{
+  removeRTCStatus();
+  clearWaitingApproval();
+  left_shift_array_.clear();
+  right_shift_array_.clear();
+  uuid_map_.at("left") = generateUUID();
+  uuid_map_.at("right") = generateUUID();
+  candidate_uuid_ = generateUUID();
 }
 
 TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) const
