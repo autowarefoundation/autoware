@@ -1424,6 +1424,11 @@ std::vector<double> RouteHandler::getLateralIntervalsToPreferredLane(
   return {};
 }
 
+bool RouteHandler::isPreferredLane(const lanelet::ConstLanelet & lanelet) const
+{
+  return exists(preferred_lanelets_, lanelet);
+}
+
 bool RouteHandler::isInPreferredLane(const PoseStamped & pose) const
 {
   lanelet::ConstLanelet lanelet;
@@ -1432,6 +1437,7 @@ bool RouteHandler::isInPreferredLane(const PoseStamped & pose) const
   }
   return exists(preferred_lanelets_, lanelet);
 }
+
 bool RouteHandler::isInTargetLane(
   const PoseStamped & pose, const lanelet::ConstLanelets & target) const
 {

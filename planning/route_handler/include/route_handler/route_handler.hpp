@@ -348,6 +348,7 @@ public:
   bool getRightShoulderLanelet(
     const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * right_lanelet) const;
   lanelet::ConstPolygon3d getIntersectionAreaById(const lanelet::Id id) const;
+  bool isPreferredLane(const lanelet::ConstLanelet & lanelet) const;
 
 private:
   // MUST
