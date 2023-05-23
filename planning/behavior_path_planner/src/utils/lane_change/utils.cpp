@@ -515,8 +515,12 @@ PathWithLaneId getReferencePathFromTargetLane(
         next_lane_change_buffer;
       return std::min(dist_from_lc_start, s_goal);
     }
-    return std::min(dist_from_lc_start, target_lane_length);
+    return std::min(dist_from_lc_start, target_lane_length - next_lane_change_buffer);
   });
+
+  if (s_end - s_start < lane_changing_length) {
+    return PathWithLaneId();
+  }
 
   RCLCPP_DEBUG(
     rclcpp::get_logger("behavior_path_planner")
