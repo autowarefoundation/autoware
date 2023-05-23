@@ -57,9 +57,6 @@ private:
   rclcpp::Subscription<Odometry>::SharedPtr sub_velocity_;  // subscribe to velocity
   rclcpp::Subscription<SteeringReport>::SharedPtr sub_vehicle_steering_;
 
-  // Self Pose listener.
-  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};  // subscribe to pose listener.
-
   // Publishers
   rclcpp::Publisher<ErrorStamped>::SharedPtr pub_error_msg_;  // publish error message
   rclcpp::Publisher<DrivingMonitorStamped>::SharedPtr
@@ -78,7 +75,7 @@ private:
   // Parameters
   Params param_{};  // wheelbase, control period and feedback coefficients.
   // State holder
-  std_msgs::msg::Header last_control_cmd_;
+  AckermannControlCommand::ConstSharedPtr last_control_cmd_;
   double d_control_cmd_{0};
 
   // Subscriber Parameters
