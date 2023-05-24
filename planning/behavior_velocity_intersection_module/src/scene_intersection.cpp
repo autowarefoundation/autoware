@@ -112,6 +112,7 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   occlusion_stop_distance_ = std::numeric_limits<double>::lowest();
   occlusion_first_stop_required_ = false;
 
+  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   /* get current pose */
   const geometry_msgs::msg::Pose current_pose = planner_data_->current_odometry->pose;
 
@@ -182,6 +183,45 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
       planner_data_->occupancy_grid->info.resolution / std::sqrt(2.0));
   }
 
+  const std::optional<size_t> stuck_line_idx_opt =
+    first_conflicting_area
+      ? util::generateStuckStopLine(
+          first_conflicting_area.value(), planner_data_, planner_param_.common.stop_line_margin,
+          planner_param_.stuck_vehicle.use_stuck_stopline, path, path_ip, interval,
+          lane_interval_ip, logger_.get_child("util"))
+      : std::nullopt;
+
+  auto default_stop_line_idx_opt = first_detection_area
+                                     ? util::generateCollisionStopLine(
+                                         lane_id_, first_detection_area.value(), planner_data_,
+                                         planner_param_.common.stop_line_margin, path, path_ip,
+                                         interval, lane_interval_ip, logger_.get_child("util"))
+                                     : std::nullopt;
+
+  auto occlusion_peeking_line_idx_opt =
+    first_detection_area
+      ? util::generatePeekingLimitLine(
+          first_detection_area.value(), path, path_ip, interval, lane_interval_ip, planner_data_,
+          planner_param_.occlusion.peeking_offset)
+      : std::nullopt;
+
+  const auto static_pass_judge_line_opt =
+    first_detection_area
+      ? util::generateStaticPassJudgeLine(
+          first_detection_area.value(), path, path_ip, interval, lane_interval_ip, planner_data_)
+      : std::nullopt;
+  // TODO(Mamoru Sobue): check the ordering of these stop lines and refactor
+  if (static_pass_judge_line_opt && default_stop_line_idx_opt) {
+    if (static_pass_judge_line_opt.value() < default_stop_line_idx_opt.value()) {
+      default_stop_line_idx_opt = default_stop_line_idx_opt.value() + 1;
+    }
+  }
+  if (static_pass_judge_line_opt && occlusion_peeking_line_idx_opt) {
+    if (static_pass_judge_line_opt.value() < occlusion_peeking_line_idx_opt.value()) {
+      occlusion_peeking_line_idx_opt = occlusion_peeking_line_idx_opt.value() + 1;
+    }
+  }
+
   /* calc closest index */
   const auto closest_idx_opt =
     motion_utils::findNearestIndex(path->points, current_pose, 3.0, M_PI_4);
@@ -193,20 +233,22 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   }
   const size_t closest_idx = closest_idx_opt.get();
 
-  const auto static_pass_judge_line_opt =
-    first_detection_area
-      ? util::generateStaticPassJudgeLine(
-          first_detection_area.value(), path, path_ip, interval, lane_interval_ip, planner_data_)
-      : std::nullopt;
-
-  if (static_pass_judge_line_opt) {
+  if (static_pass_judge_line_opt && default_stop_line_idx_opt) {
     const auto pass_judge_line_idx = static_pass_judge_line_opt.value();
+    debug_data_.pass_judge_wall_pose =
+      planning_utils::getAheadPose(pass_judge_line_idx, baselink2front, *path);
     const bool is_over_pass_judge_line =
-      util::isOverTargetIndex(*path, closest_idx, current_pose, pass_judge_line_idx);
+      util::isOverTargetIndex(*path, closest_idx, current_pose, static_pass_judge_line_opt.value());
+    const bool is_over_default_stop_line =
+      util::isOverTargetIndex(*path, closest_idx, current_pose, default_stop_line_idx_opt.value());
     const double vel = std::fabs(planner_data_->current_velocity->twist.linear.x);
     const bool keep_detection = (vel < planner_param_.collision_detection.keep_detection_vel_thr);
     // if ego is over the pass judge line and not stopped
-    if (is_over_pass_judge_line && is_go_out_ && !keep_detection) {
+    if (is_over_default_stop_line && !is_over_pass_judge_line && keep_detection) {
+      RCLCPP_DEBUG(
+        logger_, "is_over_default_stop_line && !is_over_pass_judge_line && keep_detection");
+      /* do nothing */
+    } else if (is_over_pass_judge_line && !keep_detection && is_go_out_) {
       RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
       RCLCPP_DEBUG(logger_, "===== plan end =====");
       return true;
@@ -228,22 +270,9 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
     generateStuckVehicleDetectAreaPolygon(*path, ego_lane_with_next_lane, closest_idx);
   const bool is_stuck = checkStuckVehicleInIntersection(objects_ptr, stuck_vehicle_detect_area);
   debug_data_.stuck_vehicle_detect_area = toGeomPoly(stuck_vehicle_detect_area);
-  const std::optional<size_t> stuck_line_idx_opt =
-    first_conflicting_area
-      ? util::generateStuckStopLine(
-          first_conflicting_area.value(), planner_data_, planner_param_.common.stop_line_margin,
-          planner_param_.stuck_vehicle.use_stuck_stopline, path, path_ip, interval,
-          lane_interval_ip, logger_.get_child("util"))
-      : std::nullopt;
 
   /* calculate dynamic collision around detection area */
   /* set stop lines for base_link */
-  const auto default_stop_line_idx_opt =
-    first_detection_area ? util::generateCollisionStopLine(
-                             lane_id_, first_detection_area.value(), planner_data_,
-                             planner_param_.common.stop_line_margin, path, path_ip, interval,
-                             lane_interval_ip, logger_.get_child("util"))
-                         : std::nullopt;
   const double time_delay = is_go_out_
                               ? 0.0
                               : (planner_param_.collision_detection.state_transit_margin_time -
@@ -263,12 +292,6 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
           first_detection_area.value(), path_ip, lane_interval_ip, detection_divisions_.value(),
           occlusion_dist_thr)
       : true;
-  const auto occlusion_peeking_line_idx_opt =
-    first_detection_area
-      ? util::generatePeekingLimitLine(
-          first_detection_area.value(), path, path_ip, interval, lane_interval_ip, planner_data_,
-          planner_param_.occlusion.peeking_offset)
-      : std::nullopt;
 
   /* calculate final stop lines */
   std::optional<size_t> stop_line_idx = default_stop_line_idx_opt;
@@ -417,8 +440,14 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   /* collision */
   setSafe(collision_state_machine_.getState() == StateMachine::State::GO);
 
+  RCLCPP_DEBUG(
+    logger_,
+    "has_collision = %d, is_occlusion_cleared = %d, collision_stop_required = %d, "
+    "first_phase_stop_required = %d, occlusion_stop_required = %d",
+    has_collision, is_occlusion_cleared, collision_stop_required, first_phase_stop_required,
+    occlusion_stop_required);
+
   /* make decision */
-  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   if (!occlusion_activated_) {
     is_go_out_ = false;
 

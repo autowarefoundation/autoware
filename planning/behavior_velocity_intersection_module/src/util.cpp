@@ -136,28 +136,42 @@ std::optional<size_t> generateStaticPassJudgeLine(
   const std::pair<size_t, size_t> lane_interval,
   const std::shared_ptr<const PlannerData> & planner_data)
 {
-  const auto pass_judge_line_idx_ip =
-    util::getFirstPointInsidePolygon(path_ip, lane_interval, first_detection_area);
-  if (!pass_judge_line_idx_ip) {
+  const double velocity = planner_data->current_velocity->twist.linear.x;
+  const double acceleration = planner_data->current_acceleration->accel.accel.linear.x;
+  const double max_stop_acceleration = planner_data->max_stop_acceleration_threshold;
+  const double max_stop_jerk = planner_data->max_stop_jerk_threshold;
+  const double delay_response_time = planner_data->delay_response_time;
+  const double braking_dist = planning_utils::calcJudgeLineDistWithJerkLimit(
+    velocity, acceleration, max_stop_acceleration, max_stop_jerk, delay_response_time);
+
+  const auto first_inside_detection_idx_ip_opt =
+    getFirstPointInsidePolygon(path_ip, lane_interval, first_detection_area);
+  if (!first_inside_detection_idx_ip_opt) {
     return std::nullopt;
   }
+
   const int base2front_idx_dist =
-    std::ceil(planner_data->vehicle_info_.vehicle_length_m / ip_interval);
-  const int idx = static_cast<int>(pass_judge_line_idx_ip.value()) - base2front_idx_dist;
-  if (idx < 0) {
-    return std::nullopt;
+    std::ceil(planner_data->vehicle_info_.max_longitudinal_offset_m / ip_interval);
+  const auto pass_judge_idx_ip = static_cast<int>(first_inside_detection_idx_ip_opt.value()) -
+                                 base2front_idx_dist - std::ceil(braking_dist / ip_interval);
+  if (pass_judge_idx_ip <= 0) {
+    return 0;
   }
-  const auto & insert_point = path_ip.points.at(static_cast<size_t>(idx)).point.pose;
+
+  std::optional<size_t> pass_judge_line = std::nullopt;
+  const auto & insert_point = path_ip.points.at(pass_judge_idx_ip).point.pose;
   const auto duplicate_idx_opt = util::getDuplicatedPointIdx(*original_path, insert_point.position);
   if (duplicate_idx_opt) {
-    return duplicate_idx_opt;
+    pass_judge_line = duplicate_idx_opt.value();
   } else {
     const auto insert_idx_opt = util::insertPoint(insert_point, original_path);
     if (!insert_idx_opt) {
       return std::nullopt;
+    } else {
+      pass_judge_line = insert_idx_opt.value();
     }
-    return insert_idx_opt;
   }
+  return pass_judge_line;
 }
 
 std::optional<size_t> generatePeekingLimitLine(

@@ -195,6 +195,11 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       debug_data_.predicted_obj_pose, "predicted_obj_pose", module_id_, 0.7, 0.85, 0.9),
     &debug_marker_array, now);
 
+  appendMarkerArray(
+    createPoseMarkerArray(
+      debug_data_.pass_judge_wall_pose, "pass_judge_wall_pose", module_id_, 0.7, 0.85, 0.9),
+    &debug_marker_array, now);
+
   return debug_marker_array;
 }
 
