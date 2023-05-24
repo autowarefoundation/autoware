@@ -3164,7 +3164,6 @@ void AvoidanceModule::updateData()
 void AvoidanceModule::processOnEntry()
 {
   initVariables();
-  initRTCStatus();
   waitApproval();
 }
 
