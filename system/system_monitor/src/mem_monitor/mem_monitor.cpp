@@ -38,6 +38,11 @@ MemMonitor::MemMonitor(const rclcpp::NodeOptions & options)
   gethostname(hostname_, sizeof(hostname_));
   updater_.setHardwareID(hostname_);
   updater_.add("Memory Usage", this, &MemMonitor::checkUsage);
+
+  // Enable ECC error detection if edac-utils package is installed
+  if (!bp::search_path("edac-util").empty()) {
+    updater_.add("Memory ECC", this, &MemMonitor::checkEcc);
+  }
 }
 
 void MemMonitor::update()
@@ -154,6 +159,57 @@ void MemMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
 
   // Measure elapsed time since start time and report
   SystemMonitorUtility::stopMeasurement(t_start, stat);
+}
+
+void MemMonitor::checkEcc(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  int out_fd[2];
+  if (pipe2(out_fd, O_CLOEXEC) != 0) {
+    stat.summary(DiagStatus::ERROR, "pipe2 error");
+    stat.add("pipe2", strerror(errno));
+    return;
+  }
+  bp::pipe out_pipe{out_fd[0], out_fd[1]};
+  bp::ipstream is_out{std::move(out_pipe)};
+
+  int err_fd[2];
+  if (pipe2(err_fd, O_CLOEXEC) != 0) {
+    stat.summary(DiagStatus::ERROR, "pipe2 error");
+    stat.add("pipe2", strerror(errno));
+    return;
+  }
+  bp::pipe err_pipe{err_fd[0], err_fd[1]};
+  bp::ipstream is_err{std::move(err_pipe)};
+
+  bp::child c("edac-util --quiet", bp::std_out > is_out, bp::std_err > is_err);
+  c.wait();
+  if (c.exit_code() != 0) {
+    std::ostringstream os;
+    is_err >> os.rdbuf();
+    stat.summary(DiagStatus::ERROR, "edac-util error");
+    stat.add("edac-util", os.str().c_str());
+    return;
+  }
+
+  std::string line;
+
+  /*
+   Output example of `edac-util --quiet`
+   edac-util generates output if error occurred, otherwise no output
+   mc0: 3 Uncorrected Errors with no DIMM info
+   mc0: 3 Corrected Errors with no DIMM info
+   */
+  while (std::getline(is_out, line)) {
+    if (line.find("Uncorrected") != std::string::npos) {
+      stat.summary(DiagStatus::ERROR, line);
+      return;
+    } else if (line.find("Corrected") != std::string::npos) {
+      stat.summary(DiagStatus::WARN, line);
+      return;
+    }
+  }
+
+  stat.summary(DiagStatus::OK, "OK");
 }
 
 std::string MemMonitor::toHumanReadable(const std::string & str)

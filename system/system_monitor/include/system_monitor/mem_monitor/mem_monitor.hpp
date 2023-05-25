@@ -53,6 +53,12 @@ protected:
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
+   * @brief check Memory ECC
+   * @param [out] stat diagnostic message passed directly to diagnostic publish calls
+   */
+  void checkEcc(diagnostic_updater::DiagnosticStatusWrapper & stat);
+
+  /**
    * @brief get human-readable output for memory size
    * @param [in] str size with bytes
    * @return human-readable output
