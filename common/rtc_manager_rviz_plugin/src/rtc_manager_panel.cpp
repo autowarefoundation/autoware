@@ -255,14 +255,14 @@ void RTCManagerPanel::onInitialize()
 {
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
-  client_rtc_commands_ = raw_node_->create_client<CooperateCommands>(
-    "/api/external/set/rtc_commands", rmw_qos_profile_services_default);
+  client_rtc_commands_ =
+    raw_node_->create_client<CooperateCommands>("/api/external/set/rtc_commands");
 
   for (size_t i = 0; i < auto_modes_.size(); i++) {
     auto & a = auto_modes_.at(i);
     // auto mode
-    a->enable_auto_mode_cli = raw_node_->create_client<AutoMode>(
-      enable_auto_mode_namespace_ + "/" + a->module_name, rmw_qos_profile_services_default);
+    a->enable_auto_mode_cli =
+      raw_node_->create_client<AutoMode>(enable_auto_mode_namespace_ + "/" + a->module_name);
   }
 
   sub_rtc_status_ = raw_node_->create_subscription<CooperateStatusArray>(

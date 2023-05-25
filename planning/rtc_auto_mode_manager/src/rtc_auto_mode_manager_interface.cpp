@@ -71,8 +71,8 @@ RTCAutoModeManagerInterface::RTCAutoModeManagerInterface(
   using std::placeholders::_2;
 
   // Service client
-  enable_cli_ = node->create_client<AutoMode>(
-    enable_auto_mode_namespace_ + "/internal/" + module_name, rmw_qos_profile_services_default);
+  enable_cli_ =
+    node->create_client<AutoMode>(enable_auto_mode_namespace_ + "/internal/" + module_name);
 
   while (!enable_cli_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {

@@ -176,8 +176,7 @@ void ManualController::onInitialize()
   sub_gear_ = raw_node_->create_subscription<GearReport>(
     "/vehicle/status/gear_status", 10, std::bind(&ManualController::onGear, this, _1));
 
-  client_engage_ = raw_node_->create_client<EngageSrv>(
-    "/api/autoware/set/engage", rmw_qos_profile_services_default);
+  client_engage_ = raw_node_->create_client<EngageSrv>("/api/autoware/set/engage");
 
   pub_gate_mode_ = raw_node_->create_publisher<GateMode>("/control/gate_mode_cmd", rclcpp::QoS(1));
 

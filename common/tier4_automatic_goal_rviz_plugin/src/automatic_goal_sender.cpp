@@ -61,22 +61,20 @@ void AutowareAutomaticGoalSender::initCommunication(rclcpp::Node * node)
     "/api/operation_mode/state", rclcpp::QoS{1}.transient_local(),
     std::bind(&AutowareAutomaticGoalSender::onOperationMode, this, std::placeholders::_1));
 
-  cli_change_to_autonomous_ = node->create_client<ChangeOperationMode>(
-    "/api/operation_mode/change_to_autonomous", rmw_qos_profile_services_default);
+  cli_change_to_autonomous_ =
+    node->create_client<ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
 
-  cli_change_to_stop_ = node->create_client<ChangeOperationMode>(
-    "/api/operation_mode/change_to_stop", rmw_qos_profile_services_default);
+  cli_change_to_stop_ =
+    node->create_client<ChangeOperationMode>("/api/operation_mode/change_to_stop");
 
   // Planning
   sub_route_ = node->create_subscription<RouteState>(
     "/api/routing/state", rclcpp::QoS{1}.transient_local(),
     std::bind(&AutowareAutomaticGoalSender::onRoute, this, std::placeholders::_1));
 
-  cli_clear_route_ =
-    node->create_client<ClearRoute>("/api/routing/clear_route", rmw_qos_profile_services_default);
+  cli_clear_route_ = node->create_client<ClearRoute>("/api/routing/clear_route");
 
-  cli_set_route_ = node->create_client<SetRoutePoints>(
-    "/api/routing/set_route_points", rmw_qos_profile_services_default);
+  cli_set_route_ = node->create_client<SetRoutePoints>("/api/routing/set_route_points");
 }
 
 // Sub

@@ -92,8 +92,7 @@ RTCReplayerNode::RTCReplayerNode(const rclcpp::NodeOptions & node_options)
 {
   sub_statuses_ = create_subscription<CooperateStatusArray>(
     "/debug/rtc_status", 1, std::bind(&RTCReplayerNode::onCooperateStatus, this, _1));
-  client_rtc_commands_ = create_client<CooperateCommands>(
-    "/api/external/set/rtc_commands", rmw_qos_profile_services_default);
+  client_rtc_commands_ = create_client<CooperateCommands>("/api/external/set/rtc_commands");
 }
 
 void RTCReplayerNode::onCooperateStatus(const CooperateStatusArray::ConstSharedPtr msg)

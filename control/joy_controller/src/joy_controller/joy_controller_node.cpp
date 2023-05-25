@@ -511,8 +511,8 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
     RCLCPP_INFO(get_logger(), "Waiting for emergency_stop service connection...");
   }
 
-  client_autoware_engage_ = this->create_client<tier4_external_api_msgs::srv::Engage>(
-    "service/autoware_engage", rmw_qos_profile_services_default);
+  client_autoware_engage_ =
+    this->create_client<tier4_external_api_msgs::srv::Engage>("service/autoware_engage");
 
   // Timer
   initTimer(1.0 / update_rate_);
