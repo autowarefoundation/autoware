@@ -154,7 +154,21 @@ void AEB::onVelocity(const VelocityReport::ConstSharedPtr input_msg)
 
 void AEB::onImu(const Imu::ConstSharedPtr input_msg)
 {
-  imu_ptr_ = input_msg;
+  // transform imu
+  geometry_msgs::msg::TransformStamped transform_stamped{};
+  try {
+    transform_stamped = tf_buffer_.lookupTransform(
+      "base_link", input_msg->header.frame_id, input_msg->header.stamp,
+      rclcpp::Duration::from_seconds(0.5));
+  } catch (tf2::TransformException & ex) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(),
+      "[AEB] Failed to look up transform from base_link to" << input_msg->header.frame_id);
+    return;
+  }
+
+  angular_velocity_ptr_ = std::make_shared<Vector3>();
+  tf2::doTransform(input_msg->angular_velocity, *angular_velocity_ptr_, transform_stamped);
 }
 
 void AEB::onPredictedTrajectory(
@@ -225,7 +239,7 @@ bool AEB::isDataReady()
     return missing("object pointcloud");
   }
 
-  if (use_imu_path_ && !imu_ptr_) {
+  if (use_imu_path_ && !angular_velocity_ptr_) {
     return missing("imu");
   }
 
@@ -286,7 +300,7 @@ bool AEB::checkCollision(MarkerArray & debug_markers)
   if (use_imu_path_) {
     Path ego_path;
     std::vector<Polygon2d> ego_polys;
-    const double current_w = imu_ptr_->angular_velocity.z;
+    const double current_w = angular_velocity_ptr_->z;
     constexpr double color_r = 0.0 / 256.0;
     constexpr double color_g = 148.0 / 256.0;
     constexpr double color_b = 205.0 / 256.0;
