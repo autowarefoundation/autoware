@@ -572,6 +572,8 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     default:
       throw std::domain_error("invalid behavior");
   }
+
+  setStopReason(StopReason::AVOIDANCE, path.path);
 }
 
 /**

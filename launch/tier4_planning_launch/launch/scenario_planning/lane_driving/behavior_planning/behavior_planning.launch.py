@@ -85,6 +85,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/output/turn_indicators_cmd", "/planning/turn_indicators_cmd"),
             ("~/output/hazard_lights_cmd", "/planning/hazard_lights_cmd"),
             ("~/output/modified_goal", "/planning/scenario_planning/modified_goal"),
+            ("~/output/stop_reasons", "/planning/scenario_planning/status/stop_reasons"),
         ],
         parameters=[
             common_param,
