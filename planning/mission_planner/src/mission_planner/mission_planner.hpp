@@ -76,6 +76,8 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   void clear_route();
   void change_route(const LaneletRoute & route);
+  LaneletRoute create_route(const SetRoute::Service::Request::SharedPtr req);
+  LaneletRoute create_route(const SetRoutePoints::Service::Request::SharedPtr req);
 
   RouteState::Message state_;
   component_interface_utils::Publisher<RouteState>::SharedPtr pub_state_;

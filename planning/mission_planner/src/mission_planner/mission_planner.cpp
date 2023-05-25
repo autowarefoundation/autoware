@@ -169,6 +169,59 @@ void MissionPlanner::change_route(const LaneletRoute & route)
   normal_route_ = std::make_shared<LaneletRoute>(route);
 }
 
+LaneletRoute MissionPlanner::create_route(const SetRoute::Service::Request::SharedPtr req)
+{
+  PoseStamped goal_pose;
+  goal_pose.header = req->header;
+  goal_pose.pose = req->goal;
+
+  // Convert route.
+  LaneletRoute route;
+  route.start_pose = odometry_->pose.pose;
+  route.goal_pose = transform_pose(goal_pose).pose;
+  for (const auto & segment : req->segments) {
+    route.segments.push_back(convert(segment));
+  }
+  route.header.stamp = req->header.stamp;
+  route.header.frame_id = map_frame_;
+  route.uuid.uuid = generate_random_id();
+  route.allow_modification = req->option.allow_goal_modification;
+
+  return route;
+}
+
+LaneletRoute MissionPlanner::create_route(const SetRoutePoints::Service::Request::SharedPtr req)
+{
+  using ResponseCode = autoware_adapi_v1_msgs::srv::SetRoute::Response;
+
+  // Use temporary pose stamped for transform.
+  PoseStamped pose;
+  pose.header = req->header;
+
+  // Convert route points.
+  PlannerPlugin::RoutePoints points;
+  points.push_back(odometry_->pose.pose);
+  for (const auto & waypoint : req->waypoints) {
+    pose.pose = waypoint;
+    points.push_back(transform_pose(pose).pose);
+  }
+  pose.pose = req->goal;
+  points.push_back(transform_pose(pose).pose);
+
+  // Plan route.
+  LaneletRoute route = planner_->plan(points);
+  if (route.segments.empty()) {
+    throw component_interface_utils::ServiceException(
+      ResponseCode::ERROR_PLANNER_FAILED, "The planned route is empty.");
+  }
+  route.header.stamp = req->header.stamp;
+  route.header.frame_id = map_frame_;
+  route.uuid.uuid = generate_random_id();
+  route.allow_modification = req->option.allow_goal_modification;
+
+  return route;
+}
+
 void MissionPlanner::change_state(RouteState::Message::_state_type state)
 {
   state_.stamp = now();
@@ -200,22 +253,8 @@ void MissionPlanner::on_set_route(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
 
-  // Use temporary pose stamped for transform.
-  PoseStamped pose;
-  pose.header = req->header;
-  pose.pose = req->goal;
-
-  // Convert route.
-  LaneletRoute route;
-  route.start_pose = odometry_->pose.pose;
-  route.goal_pose = transform_pose(pose).pose;
-  for (const auto & segment : req->segments) {
-    route.segments.push_back(convert(segment));
-  }
-  route.header.stamp = req->header.stamp;
-  route.header.frame_id = map_frame_;
-  route.uuid.uuid = generate_random_id();
-  route.allow_modification = req->option.allow_goal_modification;
+  // Convert request to a new route.
+  const auto route = create_route(req);
 
   // Update route.
   change_route(route);
@@ -244,30 +283,8 @@ void MissionPlanner::on_set_route_points(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
 
-  // Use temporary pose stamped for transform.
-  PoseStamped pose;
-  pose.header = req->header;
-
-  // Convert route points.
-  PlannerPlugin::RoutePoints points;
-  points.push_back(odometry_->pose.pose);
-  for (const auto & waypoint : req->waypoints) {
-    pose.pose = waypoint;
-    points.push_back(transform_pose(pose).pose);
-  }
-  pose.pose = req->goal;
-  points.push_back(transform_pose(pose).pose);
-
   // Plan route.
-  LaneletRoute route = planner_->plan(points);
-  if (route.segments.empty()) {
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_FAILED, "The planned route is empty.");
-  }
-  route.header.stamp = req->header.stamp;
-  route.header.frame_id = map_frame_;
-  route.uuid.uuid = generate_random_id();
-  route.allow_modification = req->option.allow_goal_modification;
+  const auto route = create_route(req);
 
   // Update route.
   change_route(route);
@@ -316,24 +333,11 @@ void MissionPlanner::on_change_route(
       ResponseCode::ERROR_PLANNER_UNREADY, "The vehicle pose is not received.");
   }
 
+  // set to changing state
   change_state(RouteState::Message::CHANGING);
 
-  // Use temporary pose stamped for transform.
-  PoseStamped pose;
-  pose.header = req->header;
-  pose.pose = req->goal;
-
-  // Convert route.
-  LaneletRoute new_route;
-  new_route.start_pose = odometry_->pose.pose;
-  new_route.goal_pose = transform_pose(pose).pose;
-  for (const auto & segment : req->segments) {
-    new_route.segments.push_back(convert(segment));
-  }
-  new_route.header.stamp = req->header.stamp;
-  new_route.header.frame_id = map_frame_;
-  new_route.uuid.uuid = generate_random_id();
-  new_route.allow_modification = req->option.allow_goal_modification;
+  // Convert request to a new route.
+  const auto new_route = create_route(req);
 
   // check route safety
   if (checkRerouteSafety(*normal_route_, new_route)) {
@@ -373,31 +377,8 @@ void MissionPlanner::on_change_route_points(
 
   change_state(RouteState::Message::CHANGING);
 
-  // Use temporary pose stamped for transform.
-  PoseStamped pose;
-  pose.header = req->header;
-
-  // Convert route points.
-  PlannerPlugin::RoutePoints points;
-  points.push_back(odometry_->pose.pose);
-  for (const auto & waypoint : req->waypoints) {
-    pose.pose = waypoint;
-    points.push_back(transform_pose(pose).pose);
-  }
-  pose.pose = req->goal;
-  points.push_back(transform_pose(pose).pose);
-
   // Plan route.
-  LaneletRoute new_route = planner_->plan(points);
-  if (new_route.segments.empty()) {
-    change_state(RouteState::Message::SET);
-    throw component_interface_utils::ServiceException(
-      ResponseCode::ERROR_PLANNER_FAILED, "The planned route is empty.");
-  }
-  new_route.header.stamp = req->header.stamp;
-  new_route.header.frame_id = map_frame_;
-  new_route.uuid.uuid = generate_random_id();
-  new_route.allow_modification = req->option.allow_goal_modification;
+  const auto new_route = create_route(req);
 
   // check route safety
   if (checkRerouteSafety(*normal_route_, new_route)) {
