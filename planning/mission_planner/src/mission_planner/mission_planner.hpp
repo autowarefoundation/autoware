@@ -121,6 +121,7 @@ private:
     const SetRoutePoints::Service::Response::SharedPtr res);
 
   double reroute_time_threshold_{10.0};
+  double minimum_reroute_length_{30.0};
   bool checkRerouteSafety(const LaneletRoute & original_route, const LaneletRoute & target_route);
 
   std::shared_ptr<LaneletRoute> original_route_{nullptr};

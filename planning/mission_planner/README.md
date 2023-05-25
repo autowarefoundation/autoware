@@ -24,6 +24,7 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 | `enable_correct_goal_pose` | bool   | Enabling correction of goal pose according to the closest lanelet orientation                                    |
 | `enable_correct_goal_pose` | bool   | Enabling correction of goal pose according to the closest lanelet orientation                                    |
 | `reroute_time_threshold`   | double | If the time to the rerouting point at the current velocity is greater than this threshold, rerouting is possible |
+| `minimum_reroute_length`   | double | Minimum Length for publishing a new route                                                                        |
 
 ### Services
 

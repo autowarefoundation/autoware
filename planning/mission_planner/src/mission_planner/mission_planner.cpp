@@ -80,6 +80,7 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
 {
   map_frame_ = declare_parameter<std::string>("map_frame");
   reroute_time_threshold_ = declare_parameter<double>("reroute_time_threshold");
+  minimum_reroute_length_ = declare_parameter<double>("minimum_reroute_length");
 
   planner_ = plugin_loader_.createSharedInstance("mission_planner::lanelet2::DefaultPlanner");
   planner_->initialize(this);
@@ -492,7 +493,9 @@ bool MissionPlanner::checkRerouteSafety(
 
   // check safety
   const auto current_velocity = odometry_->twist.twist.linear.x;
-  if (accumulated_length > current_velocity * reroute_time_threshold_) {
+  const double safety_length =
+    std::max(current_velocity * reroute_time_threshold_, minimum_reroute_length_);
+  if (accumulated_length > safety_length) {
     return true;
   }
 
