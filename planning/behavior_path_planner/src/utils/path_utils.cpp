@@ -101,14 +101,18 @@ PathWithLaneId resamplePathWithSpline(
 
   const auto start_s = std::max(target_section.first, 0.0);
   const auto end_s = std::min(target_section.second, s_vec.back());
-  for (double s = start_s; s < end_s - epsilon; s += interval) {
+  for (double s = start_s; s < end_s; s += interval) {
     if (!has_almost_same_value(s_out, s)) {
       s_out.push_back(s);
     }
   }
 
   // Insert Terminal Point
-  s_out.push_back(end_s);
+  if (!has_almost_same_value(s_out, end_s)) {
+    s_out.push_back(end_s);
+  } else {
+    s_out.back() = end_s;
+  }
 
   // Insert Stop Point
   const auto closest_stop_dist = motion_utils::calcDistanceToForwardStopPoint(transformed_path);
