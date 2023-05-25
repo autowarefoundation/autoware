@@ -327,6 +327,13 @@ void PointCloudConcatenateDataSynchronizerComponent::convertToXYZICloud(
   sensor_msgs::msg::PointCloud2::SharedPtr & output_ptr)
 {
   output_ptr->header = input_ptr->header;
+
+  if (input_ptr->data.empty()) {
+    RCLCPP_WARN_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
+    return;
+  }
+
   PointCloud2Modifier<PointXYZI> output_modifier{*output_ptr, input_ptr->header.frame_id};
   output_modifier.reserve(input_ptr->width);
 
