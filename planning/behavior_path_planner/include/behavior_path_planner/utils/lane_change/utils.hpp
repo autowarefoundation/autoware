@@ -77,6 +77,11 @@ std::vector<std::vector<int64_t>> getSortedLaneIds(
 
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 
+lanelet::ConstLanelets getTargetPreferredLanes(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes, const Direction & direction,
+  const LaneChangeModuleType & type);
+
 bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets);
