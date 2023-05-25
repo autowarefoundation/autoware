@@ -491,6 +491,25 @@ bool MissionPlanner::checkRerouteSafety(
     accumulated_length += *std::min_element(lanelets_length.begin(), lanelets_length.end());
   }
 
+  // check if the goal is inside of the target terminal lanelet
+  const auto & target_end_primitives = target_route.segments.at(end_idx - start_idx).primitives;
+  const auto & target_goal = target_route.goal_pose;
+  for (const auto & target_end_primitive : target_end_primitives) {
+    const auto lanelet = lanelet_map_ptr_->laneletLayer.get(target_end_primitive.id);
+    if (lanelet::utils::isInLanelet(target_goal, lanelet)) {
+      const auto target_goal_position =
+        lanelet::utils::conversion::toLaneletPoint(target_goal.position);
+      const double dist_to_goal = lanelet::geometry::toArcCoordinates(
+                                    lanelet::utils::to2D(lanelet.centerline()),
+                                    lanelet::utils::to2D(target_goal_position).basicPoint())
+                                    .length;
+      const double target_lanelet_length = lanelet::utils::getLaneletLength2d(lanelet);
+      const double dist = target_lanelet_length - dist_to_goal;
+      accumulated_length = std::max(accumulated_length - dist, 0.0);
+      break;
+    }
+  }
+
   // check safety
   const auto current_velocity = odometry_->twist.twist.linear.x;
   const double safety_length =
