@@ -72,6 +72,7 @@ private:
 
   // Debug
   DebugData debug_data_;
+  motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
 
   bool applySlowDownSpeed(
     PathWithLaneId & output, const float speed_bump_speed,

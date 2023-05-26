@@ -95,17 +95,9 @@ visualization_msgs::msg::MarkerArray createSpeedBumpMarkers(
 
 visualization_msgs::msg::MarkerArray SpeedBumpModule::createVirtualWallMarkerArray()
 {
-  const auto now = this->clock_->now();
-  auto id = module_id_;
-
-  visualization_msgs::msg::MarkerArray wall_marker;
-  for (const auto & p : debug_data_.slow_start_poses) {
-    const auto & p_front = calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
-    appendMarkerArray(
-      createSlowDownVirtualWallMarker(p_front, "speed_bump", now, id++), &wall_marker);
-  }
-
-  return wall_marker;
+  return virtual_wall_marker_creator_.createSlowDownVirtualWallMarker(
+    debug_data_.slow_start_poses, "speed_bump", clock_->now(), debug_data_.base_link2front,
+    std::to_string(module_id_));
 }
 
 visualization_msgs::msg::MarkerArray SpeedBumpModule::createDebugMarkerArray()
