@@ -1256,26 +1256,24 @@ bool IntersectionModule::isOcclusionCleared(
   }
   debug_data_.nearest_occlusion_point = nearest_occlusion_point;
 
-  cv::Mat distance_grid_heatmap;
-  cv::applyColorMap(distance_grid, distance_grid_heatmap, cv::COLORMAP_JET);
-  /*
-  cv::namedWindow("distance_grid_viz" + std::to_string(lane_id_), cv::WINDOW_NORMAL);
-  cv::imshow("distance_grid_viz" + std::to_string(lane_id_), distance_grid_heatmap);
-  cv::waitKey(1);
-  */
-  grid_map::GridMap occlusion_grid({"elevation"});
-  occlusion_grid.setFrameId("map");
-  occlusion_grid.setGeometry(
-    grid_map::Length(width * resolution, height * resolution), resolution,
-    grid_map::Position(origin.x + width * resolution / 2, origin.y + height * resolution / 2));
-  cv::rotate(distance_grid, distance_grid, cv::ROTATE_90_COUNTERCLOCKWISE);
-  cv::rotate(distance_grid_heatmap, distance_grid_heatmap, cv::ROTATE_90_COUNTERCLOCKWISE);
-  grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 1>(
-    distance_grid, "elevation", occlusion_grid, origin.z /* elevation for 0 */,
-    origin.z + distance_max /* elevation for 255 */);
-  grid_map::GridMapCvConverter::addColorLayerFromImage<unsigned char, 3>(
-    distance_grid_heatmap, "color", occlusion_grid);
-  occlusion_grid_pub_->publish(grid_map::GridMapRosConverter::toMessage(occlusion_grid));
+  if (planner_param_.occlusion.pub_debug_grid) {
+    cv::Mat distance_grid_heatmap;
+    cv::applyColorMap(distance_grid, distance_grid_heatmap, cv::COLORMAP_JET);
+    grid_map::GridMap occlusion_grid({"elevation"});
+    occlusion_grid.setFrameId("map");
+    occlusion_grid.setGeometry(
+      grid_map::Length(width * resolution, height * resolution), resolution,
+      grid_map::Position(origin.x + width * resolution / 2, origin.y + height * resolution / 2));
+    cv::rotate(distance_grid, distance_grid, cv::ROTATE_90_COUNTERCLOCKWISE);
+    cv::rotate(distance_grid_heatmap, distance_grid_heatmap, cv::ROTATE_90_COUNTERCLOCKWISE);
+    grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 1>(
+      distance_grid, "elevation", occlusion_grid, origin.z /* elevation for 0 */,
+      origin.z + distance_max /* elevation for 255 */);
+    grid_map::GridMapCvConverter::addColorLayerFromImage<unsigned char, 3>(
+      distance_grid_heatmap, "color", occlusion_grid);
+    occlusion_grid_pub_->publish(grid_map::GridMapRosConverter::toMessage(occlusion_grid));
+  }
+
   if (min_cost > min_cost_thr || !min_cost_projection_ind.has_value()) {
     return true;
   } else {
