@@ -145,6 +145,8 @@ private:
 
   // Traffic Light State
   autoware_auto_perception_msgs::msg::LookingTrafficSignal looking_tl_state_;
+
+  motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
 };
 }  // namespace behavior_velocity_planner
 
