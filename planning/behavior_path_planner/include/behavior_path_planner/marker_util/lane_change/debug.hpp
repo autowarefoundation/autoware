@@ -39,5 +39,8 @@ MarkerArray showPolygon(
   const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
 MarkerArray showPolygonPose(
   const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
+MarkerArray createLaneChangingVirtualWallMarker(
+  const geometry_msgs::msg::Pose & lane_changing_pose, const std::string & module_name,
+  const rclcpp::Time & now, const std::string & ns);
 }  // namespace marker_utils::lane_change_markers
 #endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTIL__LANE_CHANGE__DEBUG_HPP_

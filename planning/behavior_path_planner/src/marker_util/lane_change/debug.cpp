@@ -19,7 +19,9 @@
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <visualization_msgs/msg/detail/marker__struct.hpp>
 
+#include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <string>
@@ -235,4 +237,34 @@ MarkerArray showPolygonPose(
 
   return marker_array;
 }
+
+MarkerArray createLaneChangingVirtualWallMarker(
+  const geometry_msgs::msg::Pose & lane_changing_pose, const std::string & module_name,
+  const rclcpp::Time & now, const std::string & ns)
+{
+  int32_t id{0};
+  MarkerArray marker_array{};
+  marker_array.markers.reserve(2);
+  {
+    auto wall_marker = createDefaultMarker(
+      "map", now, ns + "virtual_wall", id, visualization_msgs::msg::Marker::CUBE,
+      createMarkerScale(0.1, 5.0, 2.0), createMarkerColor(0.0, 1.0, 0.0, 0.5));
+    wall_marker.pose = lane_changing_pose;
+    wall_marker.pose.position.z += 1.0;
+    marker_array.markers.push_back(wall_marker);
+  }
+
+  {
+    auto text_marker = createDefaultMarker(
+      "map", now, ns + "_text", id, visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 1.0));
+    text_marker.pose = lane_changing_pose;
+    text_marker.pose.position.z += 2.0;
+    text_marker.text = module_name;
+    marker_array.markers.push_back(text_marker);
+  }
+
+  return marker_array;
+}
+
 }  // namespace marker_utils::lane_change_markers

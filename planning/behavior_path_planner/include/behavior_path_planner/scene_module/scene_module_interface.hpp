@@ -25,6 +25,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
 #include <rtc_interface/rtc_interface.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -33,6 +34,7 @@
 #include <tier4_planning_msgs/msg/stop_reason.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
+#include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -356,6 +358,9 @@ public:
       appendMarkerArray(virtual_wall, &markers);
     }
 
+    const auto module_specific_wall = getModuleVirtualWall();
+    appendMarkerArray(module_specific_wall, &markers);
+
     pub_virtual_wall_->publish(markers);
 
     resetWallPoses();
@@ -377,6 +382,8 @@ public:
   MarkerArray getInfoMarkers() const { return info_marker_; }
 
   MarkerArray getDebugMarkers() const { return debug_marker_; }
+
+  virtual MarkerArray getModuleVirtualWall() { return MarkerArray(); }
 
   ModuleStatus getCurrentStatus() const { return current_state_; }
 

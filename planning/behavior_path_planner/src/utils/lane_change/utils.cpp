@@ -254,10 +254,10 @@ std::optional<LaneChangePath> constructCandidatePath(
       .get_child("constructCandidatePath"),
     "prepare_length: %f, lane_change: %f", prepare_length, lane_changing_length);
 
-  const PathPointWithLaneId & lane_changing_end_point = target_segment.points.front();
-  const Pose & lane_changing_end_pose = lane_changing_end_point.point.pose;
+  candidate_path.lane_changing_start = prepare_segment.points.back().point.pose;
+  candidate_path.lane_changing_end = target_segment.points.front().point.pose;
   const auto lane_change_end_idx =
-    motion_utils::findNearestIndex(shifted_path.path.points, lane_changing_end_pose);
+    motion_utils::findNearestIndex(shifted_path.path.points, candidate_path.lane_changing_end);
 
   if (!lane_change_end_idx) {
     RCLCPP_ERROR_STREAM(
