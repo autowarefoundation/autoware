@@ -53,23 +53,21 @@ void AutowarePathWithLaneIdDisplay::preVisualizePathFootprintDetail(
   const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr msg_ptr)
 {
   const size_t size = msg_ptr->points.size();
-  if (size > lane_id_obj_ptrs_.size()) {
-    for (std::size_t i = lane_id_obj_ptrs_.size(); i < size; i++) {
-      std::unique_ptr<Ogre::SceneNode> node_ptr;
-      node_ptr.reset(scene_node_->createChildSceneNode());
-      auto text_ptr =
-        std::make_unique<rviz_rendering::MovableText>("not initialized", "Liberation Sans", 0.1);
-      text_ptr->setVisible(false);
-      text_ptr->setTextAlignment(
-        rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_ABOVE);
-      node_ptr->attachObject(text_ptr.get());
-      lane_id_obj_ptrs_.push_back(std::make_pair(std::move(node_ptr), std::move(text_ptr)));
-    }
-  } else {
-    for (std::size_t i = lane_id_obj_ptrs_.size() - 1; i >= size; i--) {
-      scene_node_->removeChild(lane_id_obj_ptrs_.at(i).first.get());
-    }
-    lane_id_obj_ptrs_.resize(size);
+  // clear previous text
+  for (const auto & [node_ptr, text_ptr] : lane_id_obj_ptrs_) {
+    scene_node_->removeChild(node_ptr.get());
+  }
+  lane_id_obj_ptrs_.clear();
+  for (std::size_t i = 0; i < size; i++) {
+    std::unique_ptr<Ogre::SceneNode> node_ptr;
+    node_ptr.reset(scene_node_->createChildSceneNode());
+    auto text_ptr =
+      std::make_unique<rviz_rendering::MovableText>("not initialized", "Liberation Sans", 0.1);
+    text_ptr->setVisible(false);
+    text_ptr->setTextAlignment(
+      rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_ABOVE);
+    node_ptr->attachObject(text_ptr.get());
+    lane_id_obj_ptrs_.push_back(std::make_pair(std::move(node_ptr), std::move(text_ptr)));
   }
 }
 
