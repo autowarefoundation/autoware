@@ -174,7 +174,8 @@ visualization_msgs::msg::MarkerArray NoStoppingAreaModule::createVirtualWallMark
     stop_poses.push_back(p_front);
   }
   appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_poses, "no_stopping_area", now),
+    virtual_wall_marker_creator_->createStopVirtualWallMarker(
+      stop_poses, "no_stopping_area", now, 0.0, std::to_string(module_id_) + "_"),
     &wall_marker, now);
 
   return wall_marker;
