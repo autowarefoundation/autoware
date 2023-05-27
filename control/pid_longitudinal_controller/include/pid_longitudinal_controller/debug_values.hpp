@@ -56,6 +56,7 @@ public:
     PITCH_RAW_TRAJ_DEG = 27,
     STOP_DIST = 28,
     FF_SCALE = 29,
+    ACC_CMD_FF = 30,
     SIZE  // this is the number of enum elements
   };
 

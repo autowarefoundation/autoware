@@ -946,7 +946,8 @@ double PidLongitudinalController::applyVelocityFeedback(
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_P_CONTRIBUTION, pid_contributions.at(0));
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_I_CONTRIBUTION, pid_contributions.at(1));
   m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FB_D_CONTRIBUTION, pid_contributions.at(2));
-  m_debug_values.setValues(DebugValues::TYPE::FF_SCALE, ff_acc);
+  m_debug_values.setValues(DebugValues::TYPE::FF_SCALE, ff_scale);
+  m_debug_values.setValues(DebugValues::TYPE::ACC_CMD_FF, ff_acc);
 
   return feedback_acc;
 }
