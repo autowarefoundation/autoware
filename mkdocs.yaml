@@ -45,7 +45,9 @@ extra_css:
   - https://use.fontawesome.com/releases/v5.15.4/css/all.css
 
 extra_javascript:
-  - https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - docs/assets/js/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:
   - awesome-pages
@@ -73,7 +75,8 @@ markdown_extensions:
   - plantuml_markdown:
       server: http://www.plantuml.com/plantuml
       format: svg
-  - pymdownx.arithmatex
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.details
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
