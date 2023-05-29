@@ -1090,7 +1090,20 @@ bool isEgoOutOfRoute(
         "cannot find closest road lanelet");
       return false;
     }
-    return lanelet::utils::isInLanelet(self_pose, closest_road_lane);
+
+    if (lanelet::utils::isInLanelet(self_pose, closest_road_lane)) {
+      return true;
+    }
+
+    // check previous lanes for backward driving (e.g. pull out)
+    const auto prev_lanes = route_handler->getPreviousLanelets(closest_road_lane);
+    for (const auto & lane : prev_lanes) {
+      if (lanelet::utils::isInLanelet(self_pose, lane)) {
+        return true;
+      }
+    }
+
+    return false;
   });
   if (!is_in_shoulder_lane && !is_in_road_lane) {
     return true;
