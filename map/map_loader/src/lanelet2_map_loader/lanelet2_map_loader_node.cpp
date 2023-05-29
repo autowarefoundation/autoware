@@ -41,6 +41,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/LineString.h>
 #include <lanelet2_io/Io.h>
 #include <lanelet2_projection/UTM.h>
 
@@ -107,6 +108,16 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
         point.y() = point.attribute("local_y").asDouble().value();
       }
     }
+
+    // realign lanelet borders using updated points
+    for (lanelet::Lanelet lanelet : map->laneletLayer) {
+      auto left = lanelet.leftBound();
+      auto right = lanelet.rightBound();
+      std::tie(left, right) = lanelet::geometry::align(left, right);
+      lanelet.setLeftBound(left);
+      lanelet.setRightBound(right);
+    }
+
     return map;
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("map_loader"), "lanelet2_map_projector_type is not supported");
