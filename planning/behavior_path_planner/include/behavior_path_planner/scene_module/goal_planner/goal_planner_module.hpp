@@ -185,6 +185,7 @@ private:
 
   // goal seach
   Pose calcRefinedGoal(const Pose & goal_pose) const;
+  void generateGoalCandidates();
 
   // stop or decelerate
   void decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const;
