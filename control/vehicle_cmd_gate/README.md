@@ -52,6 +52,7 @@
 | `external_emergency_stop_heartbeat_timeout` | double | timeout for external emergency                                              |
 | `stop_hold_acceleration`                    | double | longitudinal acceleration cmd when vehicle should stop                      |
 | `emergency_acceleration`                    | double | longitudinal acceleration cmd when vehicle stop with emergency              |
+| `moderate_stop_service_acceleration`        | double | longitudinal acceleration cmd when vehicle stop with moderate stop service  |
 | `nominal.vel_lim`                           | double | limit of longitudinal velocity (activated in AUTONOMOUS operation mode)     |
 | `nominal.lon_acc_lim`                       | double | limit of longitudinal acceleration (activated in AUTONOMOUS operation mode) |
 | `nominal.lon_jerk_lim`                      | double | limit of longitudinal jerk (activated in AUTONOMOUS operation mode)         |

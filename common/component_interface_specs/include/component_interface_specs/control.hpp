@@ -19,7 +19,9 @@
 
 #include <tier4_control_msgs/msg/is_paused.hpp>
 #include <tier4_control_msgs/msg/is_start_requested.hpp>
+#include <tier4_control_msgs/msg/is_stopped.hpp>
 #include <tier4_control_msgs/srv/set_pause.hpp>
+#include <tier4_control_msgs/srv/set_stop.hpp>
 
 namespace control_interface
 {
@@ -43,6 +45,21 @@ struct IsStartRequested
 {
   using Message = tier4_control_msgs::msg::IsStartRequested;
   static constexpr char name[] = "/control/vehicle_cmd_gate/is_start_requested";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+};
+
+struct SetStop
+{
+  using Service = tier4_control_msgs::srv::SetStop;
+  static constexpr char name[] = "/control/vehicle_cmd_gate/set_stop";
+};
+
+struct IsStopped
+{
+  using Message = tier4_control_msgs::msg::IsStopped;
+  static constexpr char name[] = "/control/vehicle_cmd_gate/is_stopped";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
