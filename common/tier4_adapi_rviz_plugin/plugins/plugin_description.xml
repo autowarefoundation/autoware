@@ -4,4 +4,8 @@
     <description>RouteTool</description>
   </class>
 
+  <class type="tier4_adapi_rviz_plugins::RoutePanel" base_class_type="rviz_common::Panel">
+    <description>RoutePanel</description>
+  </class>
+
 </library>

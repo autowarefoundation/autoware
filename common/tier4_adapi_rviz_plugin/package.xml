@@ -12,6 +12,9 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <depend>autoware_ad_api_specs</depend>
+  <depend>component_interface_utils</depend>
+  <depend>geometry_msgs</depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
   <depend>libqt5-widgets</depend>
