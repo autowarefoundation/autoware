@@ -11,6 +11,14 @@ ament_auto_add_library(elevation_map_loader_node SHARED
 )
 target_link_libraries(elevation_map_loader_node ${PCL_LIBRARIES})
 
+# TODO(wep21): workaround for iron.
+# remove this block and update package.xml after iron.
+find_package(rosbag2_storage_sqlite3)
+target_include_directories(elevation_map_loader_node
+  PRIVATE
+    ${rosbag2_storage_sqlite3_INCLUDE_DIRS}
+)
+
 rclcpp_components_register_node(elevation_map_loader_node
   PLUGIN "ElevationMapLoaderNode"
   EXECUTABLE elevation_map_loader
