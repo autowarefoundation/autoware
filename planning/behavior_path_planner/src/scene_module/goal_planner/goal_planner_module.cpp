@@ -1020,6 +1020,9 @@ bool GoalPlannerModule::incrementPathIndex()
 
 PathWithLaneId GoalPlannerModule::getCurrentPath() const
 {
+  if (status_.pull_over_path->partial_paths.size() <= status_.current_path_idx) {
+    return PathWithLaneId{};
+  }
   return status_.pull_over_path->partial_paths.at(status_.current_path_idx);
 }
 
