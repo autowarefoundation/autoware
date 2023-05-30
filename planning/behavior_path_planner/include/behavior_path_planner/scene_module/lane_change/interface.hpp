@@ -100,6 +100,8 @@ protected:
 
   void resetPathIfAbort();
 
+  void resetLaneChangeModule();
+
   void setObjectDebugVisualization() const;
 
   void updateSteeringFactorPtr(const BehaviorModuleOutput & output);
