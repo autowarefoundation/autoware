@@ -33,7 +33,6 @@ private:
   double m_y2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
   double m_u1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
   double m_u2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
-  double m_a0;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
   double m_a1;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
   double m_a2;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time
   double m_b0;  //!< @brief filter coefficient calculated with cutoff frequency and sampling time

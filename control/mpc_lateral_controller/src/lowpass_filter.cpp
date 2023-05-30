@@ -34,20 +34,21 @@ void Butterworth2dFilter::initialize(const double & dt, const double & f_cutoff_
   m_u2 = 0.0;
   m_u1 = 0.0;
 
-  /* 2d butterworth lowpass filter with bi-linear transformation */
-  double wc = 2.0 * M_PI * f_cutoff_hz;
-  double n = 2 / dt;
-  m_a0 = n * n + sqrt(2) * wc * n + wc * wc;
-  m_a1 = 2 * wc * wc - 2 * n * n;
-  m_a2 = n * n - sqrt(2) * wc * n + wc * wc;
-  m_b0 = wc * wc;
-  m_b1 = 2 * m_b0;
+  // 2d Butterworth low pass filter with bi-linear transformation
+  const double f_sampling_hz = 1.0 / dt;
+  const double xi = 1.0 / std::tan(M_PI * f_cutoff_hz / f_sampling_hz);
+  const double xi_2 = xi * xi;
+  const double q = std::sqrt(2);
+  m_b0 = 1.0 / (1.0 + q * xi + xi_2);
+  m_b1 = 2.0 * m_b0;
   m_b2 = m_b0;
+  m_a1 = 2.0 * (xi_2 - 1.0) * m_b0;
+  m_a2 = -(1.0 - q * xi + xi_2) * m_b0;
 }
 
 double Butterworth2dFilter::filter(const double & u0)
 {
-  double y0 = (m_b2 * m_u2 + m_b1 * m_u1 + m_b0 * u0 - m_a2 * m_y2 - m_a1 * m_y1) / m_a0;
+  double y0 = m_b2 * m_u2 + m_b1 * m_u1 + m_b0 * u0 + m_a2 * m_y2 + m_a1 * m_y1;
   m_y2 = m_y1;
   m_y1 = y0;
   m_u2 = m_u1;
@@ -66,7 +67,7 @@ void Butterworth2dFilter::filt_vector(const std::vector<double> & t, std::vector
   double u0 = 0.0;
   for (size_t i = 0; i < t.size(); ++i) {
     u0 = t.at(i);
-    y0 = (m_b2 * u2 + m_b1 * u1 + m_b0 * u0 - m_a2 * y2 - m_a1 * y1) / m_a0;
+    y0 = m_b2 * u2 + m_b1 * u1 + m_b0 * u0 + m_a2 * y2 + m_a1 * y1;
     y2 = y1;
     y1 = y0;
     u2 = u1;
@@ -100,7 +101,6 @@ void Butterworth2dFilter::filtfilt_vector(
 void Butterworth2dFilter::getCoefficients(std::vector<double> & coeffs) const
 {
   coeffs.clear();
-  coeffs.push_back(m_a0);
   coeffs.push_back(m_a1);
   coeffs.push_back(m_a2);
   coeffs.push_back(m_b0);

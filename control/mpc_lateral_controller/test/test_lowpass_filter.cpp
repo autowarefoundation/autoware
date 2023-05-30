@@ -76,7 +76,7 @@ TEST(TestLowpassFilter, Butterworth2dFilter)
   std::vector<double> filtered_vec;
   filter.filt_vector(original_vec, filtered_vec);
   ASSERT_EQ(filtered_vec.size(), original_vec.size());
-  EXPECT_EQ(filtered_vec[0], original_vec[0]);
+  EXPECT_NEAR(filtered_vec[0], original_vec[0], 1.0e-10);
   for (size_t i = 1; i < filtered_vec.size(); ++i) {
     EXPECT_LT(filtered_vec[i], original_vec[i]);
   }
@@ -87,5 +87,51 @@ TEST(TestLowpassFilter, Butterworth2dFilter)
 
   std::vector<double> coefficients;
   filter.getCoefficients(coefficients);
-  EXPECT_EQ(coefficients.size(), size_t(6));
+  EXPECT_EQ(coefficients.size(), size_t(5));
+}
+
+// Comparison of the coefficients
+TEST(TestLowpassFilter, Butterworth2dFilterCoeffs)
+{
+  using autoware::motion::control::mpc_lateral_controller::Butterworth2dFilter;
+
+  // Case 1:
+  // cutoff_frequency = 1.0 [Hz], sampling_time = 0.033
+  //
+  //   0.0093487 +0.0186974z +0.0093487z²
+  //   ----------------------------------
+  //       0.7458606 -1.7084658z +z²
+  {
+    const double sampling_time = 0.033;
+    const double f_cutoff_hz = 1.0;
+    Butterworth2dFilter butt_filter(sampling_time, f_cutoff_hz);
+    std::vector<double> coeff;
+    butt_filter.getCoefficients(coeff);
+    constexpr double ep = 1.0e-6;
+    EXPECT_NEAR(coeff.at(0), 1.7084658, ep);   // a1
+    EXPECT_NEAR(coeff.at(1), -0.7458606, ep);  // a2
+    EXPECT_NEAR(coeff.at(2), 0.0093487, ep);   // b0
+    EXPECT_NEAR(coeff.at(3), 0.0186974, ep);   // b1
+    EXPECT_NEAR(coeff.at(4), 0.0093487, ep);   // b2
+  }
+
+  // Case 1:
+  // cutoff_frequency = 2.0 [Hz], sampling_time = 0.05
+  //
+  //    0.0674553 +0.1349105z +0.0674553z²
+  //    ----------------------------------
+  //        0.4128016 -1.1429805z +z²
+  {
+    const double sampling_time = 0.05;
+    const double f_cutoff_hz = 2.0;
+    Butterworth2dFilter butt_filter(sampling_time, f_cutoff_hz);
+    std::vector<double> coeff;
+    butt_filter.getCoefficients(coeff);
+    constexpr double ep = 1.0e-6;
+    EXPECT_NEAR(coeff.at(0), 1.1429805, ep);   // a1
+    EXPECT_NEAR(coeff.at(1), -0.4128016, ep);  // a2
+    EXPECT_NEAR(coeff.at(2), 0.0674553, ep);   // b0
+    EXPECT_NEAR(coeff.at(3), 0.1349105, ep);   // b1
+    EXPECT_NEAR(coeff.at(4), 0.0674553, ep);   // b2
+  }
 }
