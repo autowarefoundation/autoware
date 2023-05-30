@@ -214,22 +214,17 @@ MarkerArray OcclusionSpotModule::createDebugMarkerArray()
   return debug_marker_array;
 }
 
-MarkerArray OcclusionSpotModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls OcclusionSpotModule::createVirtualWalls()
 {
-  const auto current_time = this->clock_->now();
-
-  MarkerArray wall_marker;
-  std::string module_name = "occlusion_spot";
-  std::vector<Pose> slow_down_poses;
+  motion_utils::VirtualWalls virtual_walls;
+  motion_utils::VirtualWall wall;
+  wall.text = "occlusion_spot";
+  wall.style = motion_utils::VirtualWallType::slowdown;
   for (size_t id = 0; id < debug_data_.debug_poses.size(); id++) {
-    const auto p_front =
+    wall.pose =
       calcOffsetPose(debug_data_.debug_poses.at(id), debug_data_.baselink_to_front, 0.0, 0.0);
-    slow_down_poses.push_back(p_front);
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createSlowDownVirtualWallMarker(
-        slow_down_poses, module_name, current_time),
-      &wall_marker, current_time);
+    virtual_walls.push_back(wall);
   }
-  return wall_marker;
+  return virtual_walls;
 }
 }  // namespace behavior_velocity_planner

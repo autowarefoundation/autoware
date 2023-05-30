@@ -16,6 +16,8 @@
 
 #include "utils.hpp"
 
+#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -115,7 +117,7 @@ public:
   void publishEmptyPointCloud();
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArray();
   void setHeight(const double height);
-  visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray();
+  motion_utils::VirtualWalls createVirtualWalls();
 
 private:
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArrayFromDebugData(
@@ -139,8 +141,6 @@ private:
   DebugValues debug_values_;
   AccelReason accel_reason_;
   double height_{0};
-  std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_ =
-    std::make_shared<motion_utils::VirtualWallMarkerCreator>();
 };
 
 }  // namespace behavior_velocity_planner

@@ -19,6 +19,7 @@
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <behavior_velocity_planner_common/velocity_factor_interface.hpp>
 #include <builtin_interfaces/msg/time.hpp>
+#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rtc_interface/rtc_interface.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
@@ -78,7 +79,7 @@ public:
   virtual bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) = 0;
 
   virtual visualization_msgs::msg::MarkerArray createDebugMarkerArray() = 0;
-  virtual visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() = 0;
+  virtual std::vector<motion_utils::VirtualWall> createVirtualWalls() = 0;
 
   int64_t getModuleId() const { return module_id_; }
   void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
@@ -188,7 +189,6 @@ protected:
     StopWatch<std::chrono::milliseconds> stop_watch;
     stop_watch.tic("Total");
     visualization_msgs::msg::MarkerArray debug_marker_array;
-    visualization_msgs::msg::MarkerArray virtual_wall_marker_array;
     tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
     autoware_adapi_v1_msgs::msg::VelocityFactorArray velocity_factor_array;
     stop_reason_array.header.frame_id = "map";
@@ -227,9 +227,7 @@ protected:
         debug_marker_array.markers.push_back(marker);
       }
 
-      for (const auto & marker : scene_module->createVirtualWallMarkerArray().markers) {
-        virtual_wall_marker_array.markers.push_back(marker);
-      }
+      virtual_wall_marker_creator_.add_virtual_walls(scene_module->createVirtualWalls());
     }
 
     if (!stop_reason_array.stop_reasons.empty()) {
@@ -244,7 +242,7 @@ protected:
       debug_path.points = path->points;
       pub_debug_path_->publish(debug_path);
     }
-    pub_virtual_wall_->publish(virtual_wall_marker_array);
+    pub_virtual_wall_->publish(virtual_wall_marker_creator_.create_markers(clock_->now()));
     processing_time_publisher_->publish<Float64Stamped>(
       std::string(getModuleName()) + "/processing_time_ms", stop_watch.toc("Total"));
   }
@@ -305,6 +303,7 @@ protected:
   std::set<int64_t> registered_module_id_set_;
 
   std::shared_ptr<const PlannerData> planner_data_;
+  motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
 
   boost::optional<int> first_stop_path_point_index_;
   rclcpp::Node & node_;

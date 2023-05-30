@@ -83,7 +83,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
+  std::vector<motion_utils::VirtualWall> createVirtualWalls() override;
 
 private:
   const int64_t lane_id_;
@@ -223,9 +223,6 @@ private:
 
   // Debug
   mutable DebugData debug_data_;
-
-  std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_ =
-    std::make_shared<motion_utils::VirtualWallMarkerCreator>();
 };
 }  // namespace behavior_velocity_planner
 

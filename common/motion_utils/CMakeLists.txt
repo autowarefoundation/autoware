@@ -10,6 +10,7 @@ ament_auto_add_library(motion_utils SHARED
   src/motion_utils.cpp
   src/distance/distance.cpp
   src/marker/marker_helper.cpp
+  src/marker/virtual_wall_marker_creator.cpp
   src/resample/resample.cpp
   src/trajectory/interpolation.cpp
   src/trajectory/path_with_lane_id.cpp

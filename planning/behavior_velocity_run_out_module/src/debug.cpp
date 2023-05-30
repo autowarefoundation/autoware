@@ -174,18 +174,17 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArray
   return visualization_marker_array;
 }
 
-visualization_msgs::msg::MarkerArray RunOutDebug::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
 {
-  visualization_msgs::msg::MarkerArray wall_marker;
-  rclcpp::Time now = node_.now();
-
-  appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_pose_, "run_out", now),
-    &wall_marker, now);
-
-  stop_pose_.clear();
-
-  return wall_marker;
+  motion_utils::VirtualWalls virtual_walls;
+  motion_utils::VirtualWall wall;
+  wall.text = "run_out";
+  wall.style = motion_utils::VirtualWallType::stop;
+  for (const auto & p : stop_pose_) {
+    wall.pose = p;
+    virtual_walls.push_back(wall);
+  }
+  return virtual_walls;
 }
 
 visualization_msgs::msg::MarkerArray RunOutDebug::createVisualizationMarkerArrayFromDebugData(
@@ -345,9 +344,9 @@ visualization_msgs::msg::MarkerArray RunOutModule::createDebugMarkerArray()
   return debug_ptr_->createVisualizationMarkerArray();
 }
 
-visualization_msgs::msg::MarkerArray RunOutModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls RunOutModule::createVirtualWalls()
 {
-  return debug_ptr_->createVirtualWallMarkerArray();
+  return debug_ptr_->createVirtualWalls();
 }
 
 }  // namespace behavior_velocity_planner

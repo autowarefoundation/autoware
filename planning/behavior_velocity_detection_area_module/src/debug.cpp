@@ -169,35 +169,24 @@ visualization_msgs::msg::MarkerArray DetectionAreaModule::createDebugMarkerArray
   return wall_marker;
 }
 
-visualization_msgs::msg::MarkerArray DetectionAreaModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls DetectionAreaModule::createVirtualWalls()
 {
-  visualization_msgs::msg::MarkerArray wall_marker;
+  motion_utils::VirtualWalls virtual_walls;
+  motion_utils::VirtualWall wall;
+  wall.text = "detection_area";
 
-  const rclcpp::Time now = clock_->now();
-
-  std::vector<Pose> stop_poses;
-  std::vector<Pose> dead_line_poses;
-
+  wall.style = motion_utils::VirtualWallType::stop;
   for (const auto & p : debug_data_.stop_poses) {
-    const auto p_front =
-      tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
-    stop_poses.push_back(p_front);
+    wall.pose = tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
+    virtual_walls.push_back(wall);
   }
-  appendMarkerArray(
-    virtual_wall_marker_creator_->createStopVirtualWallMarker(stop_poses, "detection_area", now),
-    &wall_marker, now);
 
+  wall.style = motion_utils::VirtualWallType::deadline;
   for (const auto & p : debug_data_.dead_line_poses) {
-    const auto p_front =
-      tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
-    dead_line_poses.push_back(p_front);
+    wall.pose = tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
+    virtual_walls.push_back(wall);
   }
-  appendMarkerArray(
-    virtual_wall_marker_creator_->createDeadLineVirtualWallMarker(
-      dead_line_poses, "detection_area", now),
-    &wall_marker, now);
-
-  return wall_marker;
+  return virtual_walls;
 }
 
 }  // namespace behavior_velocity_planner

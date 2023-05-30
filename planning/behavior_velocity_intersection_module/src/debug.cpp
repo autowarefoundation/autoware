@@ -203,43 +203,32 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
   return debug_marker_array;
 }
 
-visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls IntersectionModule::createVirtualWalls()
 {
-  visualization_msgs::msg::MarkerArray wall_marker;
-
-  const auto now = this->clock_->now();
-
   // TODO(Mamoru Sobue): collision stop pose depends on before/after occlusion clearance
+  motion_utils::VirtualWalls virtual_walls;
+  motion_utils::VirtualWall wall;
+  wall.style = motion_utils::VirtualWallType::stop;
+
   if (!activated_) {
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {debug_data_.collision_stop_wall_pose}, "intersection", now, 0.0,
-        "intersection" + std::to_string(module_id_) + "_"),
-      &wall_marker, now);
+    wall.text = "intersection";
+    wall.ns = "intersection" + std::to_string(module_id_) + "_";
+    wall.pose = debug_data_.collision_stop_wall_pose;
+    virtual_walls.push_back(wall);
   }
   if (!activated_ && occlusion_first_stop_required_) {
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {debug_data_.occlusion_first_stop_wall_pose}, "intersection", now, 0.0,
-        "intersection_occlusion_first_stop" + std::to_string(module_id_) + "_"),
-      &wall_marker, now);
+    wall.text = "intersection";
+    wall.ns = "intersection_occlusion_first_stop" + std::to_string(module_id_) + "_";
+    wall.pose = debug_data_.occlusion_first_stop_wall_pose;
+    virtual_walls.push_back(wall);
   }
   if (!occlusion_activated_) {
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {debug_data_.occlusion_stop_wall_pose}, "intersection_occlusion", now, 0.0,
-        "intersection_occlusion" + std::to_string(module_id_) + "_"),
-      &wall_marker, now);
+    wall.text = "intersection_occlusion";
+    wall.ns = "intersection_occlusion" + std::to_string(module_id_) + "_";
+    wall.pose = debug_data_.occlusion_stop_wall_pose;
+    virtual_walls.push_back(wall);
   }
-
-  auto id = planning_utils::bitShift(module_id_);
-  for (auto & marker : wall_marker.markers) {
-    if (marker.action == visualization_msgs::msg::Marker::ADD) {
-      marker.id = id;
-      id++;
-    }
-  }
-  return wall_marker;
+  return virtual_walls;
 }
 
 visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMarkerArray()
@@ -259,20 +248,16 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMark
   return debug_marker_array;
 }
 
-visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls MergeFromPrivateRoadModule::createVirtualWalls()
 {
-  visualization_msgs::msg::MarkerArray wall_marker;
-
+  motion_utils::VirtualWalls virtual_walls;
   const auto state = state_machine_.getState();
-  const auto now = this->clock_->now();
   if (state == StateMachine::State::STOP) {
-    const std::vector<Pose> & pose = {debug_data_.virtual_wall_pose};
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        pose, "merge_from_private_road", now),
-      &wall_marker, now);
+    motion_utils::VirtualWall wall;
+    wall.style = motion_utils::VirtualWallType::stop;
+    wall.pose = debug_data_.virtual_wall_pose;
+    wall.text = "merge_from_private_road";
   }
-
-  return wall_marker;
+  return virtual_walls;
 }
 }  // namespace behavior_velocity_planner

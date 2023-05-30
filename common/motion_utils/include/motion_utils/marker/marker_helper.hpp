@@ -46,49 +46,6 @@ visualization_msgs::msg::MarkerArray createDeletedSlowDownVirtualWallMarker(
 
 visualization_msgs::msg::MarkerArray createDeletedDeadLineVirtualWallMarker(
   const rclcpp::Time & now, const int32_t id);
-
-visualization_msgs::msg::MarkerArray createVirtualWallMarkerFromPreviousPoses(
-  const std::vector<Pose> & stop_poses, const std::vector<Pose> & previous_poses,
-  const rclcpp::Time & now, int32_t id);
-
-class VirtualWallMarkerCreator
-{
-public:
-  virtual ~VirtualWallMarkerCreator() = default;
-
-  using create_wall_function = std::function<visualization_msgs::msg::MarkerArray(
-    const geometry_msgs::msg::Pose & pose, const std::string & module_name,
-    const rclcpp::Time & now, const int32_t id, const double longitudinal_offset,
-    const std::string & ns_prefix)>;
-
-  using delete_wall_function =
-    std::function<visualization_msgs::msg::MarkerArray(const rclcpp::Time & now, const int32_t id)>;
-
-  visualization_msgs::msg::MarkerArray createStopVirtualWallMarker(
-    const std::vector<Pose> & stop_poses, const std::string & module_name, const rclcpp::Time & now,
-    const double longitudinal_offset = 0.0, const std::string & ns_prefix = "");
-
-  visualization_msgs::msg::MarkerArray createSlowDownVirtualWallMarker(
-    const std::vector<Pose> & slow_down_poses, const std::string & module_name,
-    const rclcpp::Time & now, const double longitudinal_offset = 0.0,
-    const std::string & ns_prefix = "");
-
-  visualization_msgs::msg::MarkerArray createDeadLineVirtualWallMarker(
-    const std::vector<Pose> & dead_line_poses, const std::string & module_name,
-    const rclcpp::Time & now, const double longitudinal_offset = 0.0,
-    const std::string & ns_prefix = "");
-
-private:
-  visualization_msgs::msg::MarkerArray handleVirtualWallMarker(
-    const std::vector<Pose> & poses, const std::string & module_name, const rclcpp::Time & now,
-    create_wall_function function_create_wall_marker,
-    delete_wall_function function_delete_wall_marker, size_t & previous_virtual_walls_nb,
-    const double longitudinal_offset = 0.0, const std::string & ns_prefix = "");
-
-  size_t previous_stop_poses_nb_ = 0UL;
-  size_t previous_slow_down_poses_nb_ = 0UL;
-  size_t previous_dead_line_poses_nb_ = 0UL;
-};
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__MARKER__MARKER_HELPER_HPP_

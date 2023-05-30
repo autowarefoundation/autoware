@@ -44,7 +44,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
+  motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
   // Parameter
@@ -55,9 +55,6 @@ protected:
 
   // Debug
   mutable DebugData debug_data_;
-
-  std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_ =
-    std::make_shared<motion_utils::VirtualWallMarkerCreator>();
 };
 
 /// @brief calculate points along the path where we want ego to slowdown/stop

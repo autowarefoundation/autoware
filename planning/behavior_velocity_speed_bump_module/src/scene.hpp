@@ -58,7 +58,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
+  motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
   int64_t module_id_;
@@ -72,7 +72,6 @@ private:
 
   // Debug
   DebugData debug_data_;
-  motion_utils::VirtualWallMarkerCreator virtual_wall_marker_creator_;
 
   bool applySlowDownSpeed(
     PathWithLaneId & output, const float speed_bump_speed,

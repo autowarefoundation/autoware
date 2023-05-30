@@ -99,7 +99,7 @@ public:
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
-  visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
+  motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
   int64_t module_id_;
@@ -173,9 +173,6 @@ private:
 
   // whether ego passed safety_slow_point
   bool passed_safety_slow_point_;
-
-  std::shared_ptr<motion_utils::VirtualWallMarkerCreator> virtual_wall_marker_creator_crosswalk_ =
-    std::make_shared<motion_utils::VirtualWallMarkerCreator>();
 };
 }  // namespace behavior_velocity_planner
 

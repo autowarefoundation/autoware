@@ -163,13 +163,18 @@ MarkerArray OutOfLaneModule::createDebugMarkerArray()
   return debug_marker_array;
 }
 
-MarkerArray OutOfLaneModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls OutOfLaneModule::createVirtualWalls()
 {
-  std::vector<Pose> slow_down_poses;
-  for (const auto & slowdown : debug_data_.slowdowns)
-    slow_down_poses.push_back(slowdown.point.point.pose);
-  return virtual_wall_marker_creator_->createSlowDownVirtualWallMarker(
-    slow_down_poses, "out_of_lane", clock_->now(), params_.front_offset);
+  motion_utils::VirtualWalls virtual_walls;
+  motion_utils::VirtualWall wall;
+  wall.text = "out_of_lane";
+  wall.longitudinal_offset = params_.front_offset;
+  wall.style = motion_utils::VirtualWallType::slowdown;
+  for (const auto & slowdown : debug_data_.slowdowns) {
+    wall.pose = slowdown.point.point.pose;
+    virtual_walls.push_back(wall);
+  }
+  return virtual_walls;
 }
 
 std::vector<SlowdownToInsert> calculate_slowdown_points(

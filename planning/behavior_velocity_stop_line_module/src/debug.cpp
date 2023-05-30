@@ -95,23 +95,19 @@ visualization_msgs::msg::MarkerArray StopLineModule::createDebugMarkerArray()
   return debug_marker_array;
 }
 
-visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArray()
+motion_utils::VirtualWalls StopLineModule::createVirtualWalls()
 {
-  const auto now = this->clock_->now();
-  visualization_msgs::msg::MarkerArray wall_marker;
+  motion_utils::VirtualWalls virtual_walls;
 
-  if (!debug_data_.stop_pose) {
-    return wall_marker;
+  if (!debug_data_.stop_pose && (state_ == State::APPROACH || state_ == State::STOPPED)) {
+    motion_utils::VirtualWall wall;
+    wall.text = "stopline";
+    wall.style = motion_utils::VirtualWallType::stop;
+    wall.ns = std::to_string(module_id_) + "_";
+    wall.pose = tier4_autoware_utils::calcOffsetPose(
+      *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
+    virtual_walls.push_back(wall);
   }
-  const auto p_front = tier4_autoware_utils::calcOffsetPose(
-    *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
-  if (state_ == State::APPROACH || state_ == State::STOPPED) {
-    appendMarkerArray(
-      virtual_wall_marker_creator_->createStopVirtualWallMarker(
-        {p_front}, "stopline", now, 0.0, std::to_string(module_id_) + "_"),
-      &wall_marker, now);
-  }
-
-  return wall_marker;
+  return virtual_walls;
 }
 }  // namespace behavior_velocity_planner
