@@ -21,6 +21,8 @@
         <param name="use_object_recognition" value="$(var use_object_recognition)"/>
         <param name="object_centric_pointcloud" value="false"/>
         <param name="use_base_link_z" value="$(var use_base_link_z)"/>
+        <param name="publish_ground_truth" value="true"/>
+        <remap from="output/debug/ground_truth_objects" to="debug/ground_truth_objects"/>
       </node>
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="input/objects" value="/perception/object_recognition/detection/labeled_clusters"/>

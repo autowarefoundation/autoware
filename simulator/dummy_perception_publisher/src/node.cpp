@@ -33,6 +33,9 @@
 #include <utility>
 #include <vector>
 
+using autoware_auto_perception_msgs::msg::TrackedObject;
+using autoware_auto_perception_msgs::msg::TrackedObjects;
+
 ObjectInfo::ObjectInfo(
   const dummy_perception_publisher::msg::Object & object, const rclcpp::Time & current_time)
 : length(object.shape.dimensions.x),
@@ -41,7 +44,9 @@ ObjectInfo::ObjectInfo(
   std_dev_x(std::sqrt(object.initial_state.pose_covariance.covariance[0])),
   std_dev_y(std::sqrt(object.initial_state.pose_covariance.covariance[7])),
   std_dev_z(std::sqrt(object.initial_state.pose_covariance.covariance[14])),
-  std_dev_yaw(std::sqrt(object.initial_state.pose_covariance.covariance[35]))
+  std_dev_yaw(std::sqrt(object.initial_state.pose_covariance.covariance[35])),
+  twist_covariance_(object.initial_state.twist_covariance),
+  pose_covariance_(object.initial_state.pose_covariance)
 {
   // calculate current pose
   const auto & initial_pose = object.initial_state.pose_covariance.pose;
@@ -53,10 +58,10 @@ ObjectInfo::ObjectInfo(
   const double elapsed_time = current_time.seconds() - rclcpp::Time(object.header.stamp).seconds();
 
   double move_distance;
+  double current_vel = initial_vel + initial_acc * elapsed_time;
   if (initial_acc == 0.0) {
     move_distance = initial_vel * elapsed_time;
   } else {
-    double current_vel = initial_vel + initial_acc * elapsed_time;
     if (initial_acc < 0 && 0 < initial_vel) {
       current_vel = std::max(current_vel, 0.0);
     }
@@ -97,6 +102,24 @@ ObjectInfo::ObjectInfo(
   ros_map2moved_object.translation.z = current_pose.position.z;
   ros_map2moved_object.rotation = current_pose.orientation;
   tf2::fromMsg(ros_map2moved_object, tf_map2moved_object);
+  // set twist and pose information
+  twist_covariance_.twist.linear.x = current_vel;
+  pose_covariance_.pose = current_pose;
+}
+
+TrackedObject ObjectInfo::toTrackedObject(
+  const dummy_perception_publisher::msg::Object & object) const
+{
+  TrackedObject tracked_object;
+  tracked_object.kinematics.pose_with_covariance = pose_covariance_;
+  tracked_object.kinematics.twist_with_covariance = twist_covariance_;
+  tracked_object.classification.push_back(object.classification);
+  tracked_object.shape.type = object.shape.type;
+  tracked_object.shape.dimensions.x = length;
+  tracked_object.shape.dimensions.y = width;
+  tracked_object.shape.dimensions.z = height;
+  tracked_object.object_id = object.id;
+  return tracked_object;
 }
 
 DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
@@ -109,6 +132,10 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   use_base_link_z_ = this->declare_parameter("use_base_link_z", true);
   const bool object_centric_pointcloud =
     this->declare_parameter("object_centric_pointcloud", false);
+  publish_ground_truth_objects_ = this->declare_parameter("publish_ground_truth", false);
+  const unsigned int random_seed =
+    static_cast<unsigned int>(this->declare_parameter("random_seed", 0));
+  const bool use_fixed_random_seed = this->declare_parameter("use_fixed_random_seed", false);
 
   if (object_centric_pointcloud) {
     pointcloud_creator_ =
@@ -121,9 +148,14 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   // parameters for vehicle centric point cloud generation
   angle_increment_ = this->declare_parameter("angle_increment", 0.25 * M_PI / 180.0);
 
-  std::random_device seed_gen;
-  random_generator_.seed(seed_gen());
+  if (use_fixed_random_seed) {
+    random_generator_.seed(random_seed);
+  } else {
+    std::random_device seed_gen;
+    random_generator_.seed(seed_gen());
+  }
 
+  // create subscriber and publisher
   rclcpp::QoS qos{1};
   qos.transient_local();
   detected_object_with_feature_pub_ =
@@ -134,6 +166,13 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
     "input/object", 100,
     std::bind(&DummyPerceptionPublisherNode::objectCallback, this, std::placeholders::_1));
 
+  // optional ground truth publisher
+  if (publish_ground_truth_objects_) {
+    ground_truth_objects_pub_ =
+      this->create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>(
+        "~output/debug/ground_truth_objects", qos);
+  }
+
   using std::chrono_literals::operator""ms;
   timer_ = rclcpp::create_timer(
     this, get_clock(), 100ms, std::bind(&DummyPerceptionPublisherNode::timerCallback, this));
@@ -143,6 +182,7 @@ void DummyPerceptionPublisherNode::timerCallback()
 {
   // output msgs
   tier4_perception_msgs::msg::DetectedObjectsWithFeature output_dynamic_object_msg;
+  autoware_auto_perception_msgs::msg::TrackedObjects output_ground_truth_objects_msg;
   geometry_msgs::msg::PoseStamped output_moved_object_pose;
   sensor_msgs::msg::PointCloud2 output_pointcloud_msg;
   std_msgs::msg::Header header;
@@ -183,6 +223,18 @@ void DummyPerceptionPublisherNode::timerCallback()
     obj_infos.push_back(obj_info);
   }
 
+  // publish ground truth
+  // add Tracked Object
+  if (publish_ground_truth_objects_) {
+    for (auto object : objects_) {
+      const auto object_info = ObjectInfo(object, current_time);
+      TrackedObject gt_tracked_object = object_info.toTrackedObject(object);
+      gt_tracked_object.existence_probability = 1.0;
+      output_ground_truth_objects_msg.objects.push_back(gt_tracked_object);
+    }
+  }
+
+  // publish noised detected objects
   pcl::PointCloud<pcl::PointXYZ>::Ptr merged_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr detected_merged_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
@@ -223,6 +275,7 @@ void DummyPerceptionPublisherNode::timerCallback()
       tf_base_link2noised_moved_object =
         tf_base_link2map * object_info.tf_map2moved_object * tf_moved_object2noised_moved_object;
 
+      // add DetectedObjectWithFeature
       tier4_perception_msgs::msg::DetectedObjectWithFeature feature_object;
       feature_object.object.classification.push_back(object.classification);
       feature_object.object.kinematics.pose_with_covariance = object.initial_state.pose_covariance;
@@ -262,11 +315,16 @@ void DummyPerceptionPublisherNode::timerCallback()
   output_dynamic_object_msg.header.stamp = current_time;
   output_pointcloud_msg.header.frame_id = "base_link";
   output_pointcloud_msg.header.stamp = current_time;
+  output_ground_truth_objects_msg.header.frame_id = "map";
+  output_ground_truth_objects_msg.header.stamp = current_time;
 
   // publish
   pointcloud_pub_->publish(output_pointcloud_msg);
   if (use_object_recognition_) {
     detected_object_with_feature_pub_->publish(output_dynamic_object_msg);
+  }
+  if (publish_ground_truth_objects_) {
+    ground_truth_objects_pub_->publish(output_ground_truth_objects_msg);
   }
 }
 
