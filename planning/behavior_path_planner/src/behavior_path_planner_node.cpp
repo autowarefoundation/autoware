@@ -330,6 +330,26 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   }
 }
 
+std::vector<std::string> BehaviorPathPlannerNode::getWaitingApprovalModules()
+{
+#ifdef USE_OLD_ARCHITECTURE
+  auto registered_modules_ptr = bt_manager_->getSceneModules();
+  std::vector<std::string> waiting_approval_modules;
+  for (const auto & module : registered_modules_ptr) {
+    if (module->isWaitingApproval() == true) {
+      waiting_approval_modules.push_back(module->name());
+#else
+  auto all_scene_module_ptr = planner_manager_->getSceneModuleStatus();
+  std::vector<std::string> waiting_approval_modules;
+  for (const auto & module : all_scene_module_ptr) {
+    if (module->is_waiting_approval == true) {
+      waiting_approval_modules.push_back(module->module_name);
+#endif
+    }
+  }
+  return waiting_approval_modules;
+}
+
 BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
 {
   BehaviorPathPlannerParameters p{};

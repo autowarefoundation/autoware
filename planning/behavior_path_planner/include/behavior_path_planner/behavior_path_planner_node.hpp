@@ -100,6 +100,9 @@ class BehaviorPathPlannerNode : public rclcpp::Node
 public:
   explicit BehaviorPathPlannerNode(const rclcpp::NodeOptions & node_options);
 
+  // Getter method for waiting approval modules
+  std::vector<std::string> getWaitingApprovalModules();
+
 private:
   rclcpp::Subscription<LaneletRoute>::SharedPtr route_subscriber_;
   rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_;
