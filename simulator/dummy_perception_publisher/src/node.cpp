@@ -170,7 +170,7 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   if (publish_ground_truth_objects_) {
     ground_truth_objects_pub_ =
       this->create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>(
-        "~output/debug/ground_truth_objects", qos);
+        "~/output/debug/ground_truth_objects", qos);
   }
 
   using std::chrono_literals::operator""ms;
