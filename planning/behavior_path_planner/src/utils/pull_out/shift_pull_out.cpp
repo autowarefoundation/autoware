@@ -144,22 +144,22 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const double jerk_resolution =
     std::abs(maximum_lateral_jerk - minimum_lateral_jerk) / pull_out_sampling_num;
 
+  // generate road lane reference path
+  const auto arc_position_start = getArcCoordinates(road_lanes, start_pose);
+  const double s_start = std::max(arc_position_start.length - backward_path_length, 0.0);
+  const auto arc_position_goal = getArcCoordinates(road_lanes, goal_pose);
+  const double road_lanes_length = std::accumulate(
+    road_lanes.begin(), road_lanes.end(), 0.0, [](const double sum, const auto & lane) {
+      return sum + lanelet::utils::getLaneletLength2d(lane);
+    });
+  // if goal is behind start pose,
+  const bool goal_is_behind = arc_position_goal.length < s_start;
+  const double s_end = goal_is_behind ? road_lanes_length : arc_position_goal.length;
+  PathWithLaneId road_lane_reference_path =
+    utils::resamplePathWithSpline(route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
+
   for (double lateral_jerk = minimum_lateral_jerk; lateral_jerk <= maximum_lateral_jerk;
        lateral_jerk += jerk_resolution) {
-    // generate road lane reference path
-    const auto arc_position_start = getArcCoordinates(road_lanes, start_pose);
-    const double s_start = std::max(arc_position_start.length - backward_path_length, 0.0);
-    const auto arc_position_goal = getArcCoordinates(road_lanes, goal_pose);
-    const double road_lanes_length = std::accumulate(
-      road_lanes.begin(), road_lanes.end(), 0.0, [](const double sum, const auto & lane) {
-        return sum + lanelet::utils::getLaneletLength2d(lane);
-      });
-    // if goal is behind start pose,
-    const bool goal_is_behind = arc_position_goal.length < s_start;
-    const double s_end = goal_is_behind ? road_lanes_length : arc_position_goal.length;
-    PathWithLaneId road_lane_reference_path = utils::resamplePathWithSpline(
-      route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
-
     PathShifter path_shifter{};
     path_shifter.setPath(road_lane_reference_path);
 
