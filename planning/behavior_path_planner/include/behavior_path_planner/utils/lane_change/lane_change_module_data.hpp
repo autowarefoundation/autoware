@@ -63,6 +63,8 @@ struct LaneChangeParameters
   double aborting_time{5.0};
   double abort_max_lateral_jerk{10.0};
 
+  double finish_judge_lateral_threshold{0.2};
+
   // debug marker
   bool publish_debug_marker{false};
 };

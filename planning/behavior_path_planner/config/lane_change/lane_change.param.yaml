@@ -50,5 +50,7 @@
       aborting_time: 5.0                         # [s]
       abort_max_lateral_jerk: 1000.0             # [m/s3]
 
+      finish_judge_lateral_threshold: 0.2        # [m]
+
       # debug
       publish_debug_marker: false

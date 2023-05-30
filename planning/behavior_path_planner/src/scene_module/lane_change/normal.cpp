@@ -261,10 +261,22 @@ bool NormalLaneChange::hasFinishedLaneChange() const
   const auto & lane_change_end = status_.lane_change_path.shift_line.end;
   const double dist_to_lane_change_end = motion_utils::calcSignedArcLength(
     lane_change_path.points, current_pose.position, lane_change_end.position);
-  if (dist_to_lane_change_end + lane_change_parameters_->lane_change_finish_judge_buffer < 0.0) {
-    return true;
+
+  const auto reach_lane_change_end =
+    dist_to_lane_change_end + lane_change_parameters_->lane_change_finish_judge_buffer < 0.0;
+  if (!reach_lane_change_end) {
+    return false;
   }
-  return false;
+
+  const auto arc_length =
+    lanelet::utils::getArcCoordinates(status_.lane_change_lanes, current_pose);
+  const auto reach_target_lane =
+    std::abs(arc_length.distance) < lane_change_parameters_->finish_judge_lateral_threshold;
+  if (!reach_target_lane) {
+    return false;
+  }
+
+  return true;
 }
 
 bool NormalLaneChange::isAbleToReturnCurrentLane() const
