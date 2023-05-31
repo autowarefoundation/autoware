@@ -17,6 +17,7 @@
   <arg name="buff_epoch" default="1"/>
   <arg name="use_gnss_ins_orientation" default="true"/>
   <arg name="plane_zone" default="9"/>
+  <arg name="height_system" default="1" description="0:Orthometric Height 1:Ellipsoid Height"/>
 
   <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="screen">
     <remap from="fix" to="$(var input_topic_fix)"/>
@@ -35,5 +36,6 @@
     <param name="plane_zone" value="$(var plane_zone)"/>
     <param name="use_gnss_ins_orientation" value="$(var use_gnss_ins_orientation)"/>
     <param from="$(var param_file)"/>
+    <param name="height_system" value="$(var height_system)"/>
   </node>
 </launch>
