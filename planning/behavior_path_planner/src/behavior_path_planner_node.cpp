@@ -1054,6 +1054,7 @@ PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
   p.th_arrived_distance = declare_parameter<double>(ns + "th_arrived_distance");
   p.th_stopped_velocity = declare_parameter<double>(ns + "th_stopped_velocity");
   p.th_stopped_time = declare_parameter<double>(ns + "th_stopped_time");
+  p.th_blinker_on_lateral_offset = declare_parameter<double>(ns + "th_blinker_on_lateral_offset");
   p.collision_check_margin = declare_parameter<double>(ns + "collision_check_margin");
   p.collision_check_distance_from_end =
     declare_parameter<double>(ns + "collision_check_distance_from_end");
@@ -1286,6 +1287,8 @@ void BehaviorPathPlannerNode::run()
     planner_data_->prev_modified_goal = modified_goal;
     modified_goal_publisher_->publish(modified_goal);
   }
+
+  planner_data_->prev_route_id = planner_data_->route_handler->getRouteUuid();
 
   if (planner_data_->parameters.visualize_maximum_drivable_area) {
     const auto maximum_drivable_area = marker_utils::createFurthestLineStringMarkerArray(

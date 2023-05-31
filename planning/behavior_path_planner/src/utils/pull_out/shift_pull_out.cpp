@@ -158,6 +158,7 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   PathWithLaneId road_lane_reference_path =
     utils::resamplePathWithSpline(route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
 
+  bool has_non_shifted_path = false;
   for (double lateral_jerk = minimum_lateral_jerk; lateral_jerk <= maximum_lateral_jerk;
        lateral_jerk += jerk_resolution) {
     PathShifter path_shifter{};
@@ -165,7 +166,19 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
 
     // calculate after/before shifted pull out distance
     // lateral distance from road center to start pose
+    constexpr double minimum_shift_length = 0.01;
     const double shift_length = getArcCoordinates(road_lanes, start_pose).distance;
+    // if shift length is too short, add non sifted path
+    if (std::abs(shift_length) < minimum_shift_length && !has_non_shifted_path) {
+      PullOutPath non_shifted_path{};
+      non_shifted_path.partial_paths.push_back(road_lane_reference_path);
+      non_shifted_path.start_pose = start_pose;
+      non_shifted_path.end_pose = start_pose;
+      candidate_paths.push_back(non_shifted_path);
+      has_non_shifted_path = true;
+      continue;
+    }
+
     const double pull_out_distance = std::max(
       PathShifter::calcLongitudinalDistFromJerk(
         abs(shift_length), lateral_jerk, shift_pull_out_velocity),

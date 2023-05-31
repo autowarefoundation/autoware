@@ -31,6 +31,7 @@
 
 using motion_utils::calcLongitudinalOffsetPose;
 using tier4_autoware_utils::calcOffsetPose;
+using tier4_autoware_utils::inverseTransformPoint;
 
 namespace behavior_path_planner
 {
@@ -104,13 +105,33 @@ void PullOutModule::processOnExit()
 
 bool PullOutModule::isExecutionRequested() const
 {
+  has_received_new_route_ =
+    !planner_data_->prev_route_id ||
+    *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
+
+#ifdef USE_OLD_ARCHITECTURE
+  if (is_executed_) {
+    return true;
+  }
+#endif
+
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
+  }
+
+  if (!has_received_new_route_) {
+#ifdef USE_OLD_ARCHITECTURE
+    is_executed_ = false;
+#endif
+    return false;
   }
 
   const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
                           parameters_->th_arrived_distance;
   if (!is_stopped) {
+#ifdef USE_OLD_ARCHITECTURE
+    is_executed_ = false;
+#endif
     return false;
   }
 
@@ -126,19 +147,15 @@ bool PullOutModule::isExecutionRequested() const
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
   if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
+#ifdef USE_OLD_ARCHITECTURE
+    is_executed_ = false;
+#endif
     return false;
   }
 
-  // Check if any of the footprint points are in the shoulder lane
-  lanelet::Lanelet closest_shoulder_lanelet;
-  if (!lanelet::utils::query::getClosestLanelet(
-        pull_out_lanes, planner_data_->self_odometry->pose.pose, &closest_shoulder_lanelet)) {
-    return false;
-  }
-  if (!isOverlappedWithLane(closest_shoulder_lanelet, vehicle_footprint)) {
-    return false;
-  }
-
+#ifdef USE_OLD_ARCHITECTURE
+  is_executed_ = true;
+#endif
   return true;
 }
 
@@ -535,28 +552,21 @@ PathWithLaneId PullOutModule::generateStopPath() const
 
 void PullOutModule::updatePullOutStatus()
 {
-  // if new route is received, reset status
-  const bool has_received_new_route =
-    last_route_received_time_ == nullptr ||
-    *last_route_received_time_ != planner_data_->route_handler->getRouteHeader().stamp;
-  if (has_received_new_route) {
-    RCLCPP_INFO(getLogger(), "Receive new route, so reset status");
-    resetStatus();
+  if (has_received_new_route_) {
+    status_ = PullOutStatus();
   }
-  last_route_received_time_ =
-    std::make_unique<rclcpp::Time>(planner_data_->route_handler->getRouteHeader().stamp);
 
   // skip updating if enough time has not passed for preventing chattering between back and pull_out
-  if (!has_received_new_route && !status_.back_finished) {
-    if (last_pull_out_start_update_time_ == nullptr) {
+  if (!has_received_new_route_ && !last_pull_out_start_update_time_ && !status_.back_finished) {
+    if (!last_pull_out_start_update_time_) {
       last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
     }
     const auto elapsed_time = (clock_->now() - *last_pull_out_start_update_time_).seconds();
     if (elapsed_time < parameters_->backward_path_update_duration) {
       return;
     }
-    last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
   }
+  last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
 
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
@@ -714,7 +724,14 @@ bool PullOutModule::hasFinishedPullOut() const
     lanelet::utils::getArcCoordinates(status_.current_lanes, current_pose);
   const auto arclength_pull_out_end =
     lanelet::utils::getArcCoordinates(status_.current_lanes, status_.pull_out_path.end_pose);
-  return arclength_current.length - arclength_pull_out_end.length > 0.0;
+
+  const bool has_finished = arclength_current.length - arclength_pull_out_end.length > 0.0;
+
+#ifdef USE_OLD_ARCHITECTURE
+  is_executed_ = !has_finished;
+#endif
+
+  return has_finished;
 }
 
 void PullOutModule::checkBackFinished()
@@ -779,7 +796,10 @@ bool PullOutModule::hasFinishedCurrentPath()
 TurnSignalInfo PullOutModule::calcTurnSignalInfo() const
 {
   TurnSignalInfo turn_signal{};  // output
-  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+  const Pose & start_pose = status_.pull_out_path.start_pose;
+  const Pose & end_pose = status_.pull_out_path.end_pose;
 
   // turn on hazard light when backward driving
   if (!status_.back_finished) {
@@ -788,26 +808,31 @@ TurnSignalInfo PullOutModule::calcTurnSignalInfo() const
     turn_signal.desired_start_point = back_start_pose;
     turn_signal.required_start_point = back_start_pose;
     // pull_out start_pose is same to backward driving end_pose
-    turn_signal.required_end_point = status_.pull_out_path.start_pose;
-    turn_signal.desired_end_point = status_.pull_out_path.start_pose;
+    turn_signal.required_end_point = start_pose;
+    turn_signal.desired_end_point = start_pose;
     return turn_signal;
   }
 
   // turn on right signal until passing pull_out end point
   const auto path = getFullPath();
   // pull out path does not overlap
-  const double distance_from_end = motion_utils::calcSignedArcLength(
-    path.points, status_.pull_out_path.end_pose.position, current_pose.position);
-  if (distance_from_end < 0.0) {
+  const double distance_from_end =
+    motion_utils::calcSignedArcLength(path.points, end_pose.position, current_pose.position);
+  const double lateral_offset = inverseTransformPoint(end_pose.position, start_pose).y;
+
+  if (distance_from_end < 0.0 && lateral_offset > parameters_->th_blinker_on_lateral_offset) {
+    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+  } else if (
+    distance_from_end < 0.0 && lateral_offset < -parameters_->th_blinker_on_lateral_offset) {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
   } else {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::DISABLE;
   }
 
-  turn_signal.desired_start_point = status_.pull_out_path.start_pose;
-  turn_signal.required_start_point = status_.pull_out_path.start_pose;
-  turn_signal.required_end_point = status_.pull_out_path.end_pose;
-  turn_signal.desired_end_point = status_.pull_out_path.end_pose;
+  turn_signal.desired_start_point = start_pose;
+  turn_signal.required_start_point = start_pose;
+  turn_signal.required_end_point = end_pose;
+  turn_signal.desired_end_point = end_pose;
 
   return turn_signal;
 }

@@ -54,6 +54,7 @@ PullOutPath --o PullOutPlannerBase
 | th_arrived_distance_m             | [m]   | double | distance threshold for arrival of path termination                   | 1.0           |
 | th_stopped_velocity_mps           | [m/s] | double | velocity threshold for arrival of path termination                   | 0.01          |
 | th_stopped_time_sec               | [s]   | double | time threshold for arrival of path termination                       | 1.0           |
+| th_blinker_on_lateral_offset      | [m]   | double | lateral distance threshold for turning on blinker                    | 1.0           |
 | collision_check_margin            | [m]   | double | Obstacle collision check margin                                      | 1.0           |
 | collision_check_distance_from_end | [m]   | double | collision check distance from end point. currently only for pull out | 15.0          |
 
@@ -89,8 +90,8 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 | shift_pull_out_velocity         | [m/s]  | double | velocity of shift pull out                                                                                           | 2.0           |
 | pull_out_sampling_num           | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                                  | 4             |
 | maximum_lateral_jerk            | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
-| minimum_lateral_jerk            | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.5           |
-| minimum_shift_pull_out_distance | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 20.0          |
+| minimum_lateral_jerk            | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.1           |
+| minimum_shift_pull_out_distance | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 0.0           |
 
 #### **geometric pull out**
 

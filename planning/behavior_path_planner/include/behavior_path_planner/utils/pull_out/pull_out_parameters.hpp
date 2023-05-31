@@ -28,6 +28,7 @@ struct PullOutParameters
   double th_arrived_distance;
   double th_stopped_velocity;
   double th_stopped_time;
+  double th_blinker_on_lateral_offset;
   double collision_check_margin;
   double collision_check_distance_from_end;
   // shift pull out

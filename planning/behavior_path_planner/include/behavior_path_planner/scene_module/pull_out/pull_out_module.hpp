@@ -47,18 +47,20 @@ using lane_departure_checker::LaneDepartureChecker;
 
 struct PullOutStatus
 {
-  PullOutPath pull_out_path;
-  size_t current_path_idx = 0;
-  PlannerType planner_type = PlannerType::NONE;
-  PathWithLaneId backward_path;
-  lanelet::ConstLanelets current_lanes;
-  lanelet::ConstLanelets pull_out_lanes;
-  std::vector<DrivableLanes> lanes;
-  std::vector<uint64_t> lane_follow_lane_ids;
-  std::vector<uint64_t> pull_out_lane_ids;
-  bool is_safe = false;
-  bool back_finished = false;
-  Pose pull_out_start_pose;
+  PullOutPath pull_out_path{};
+  size_t current_path_idx{0};
+  PlannerType planner_type{PlannerType::NONE};
+  PathWithLaneId backward_path{};
+  lanelet::ConstLanelets current_lanes{};
+  lanelet::ConstLanelets pull_out_lanes{};
+  std::vector<DrivableLanes> lanes{};
+  std::vector<uint64_t> lane_follow_lane_ids{};
+  std::vector<uint64_t> pull_out_lane_ids{};
+  bool is_safe{false};
+  bool back_finished{false};
+  Pose pull_out_start_pose{};
+
+  PullOutStatus() {}
 };
 
 class PullOutModule : public SceneModuleInterface
@@ -114,6 +116,7 @@ private:
   std::unique_ptr<rclcpp::Time> last_route_received_time_;
   std::unique_ptr<rclcpp::Time> last_pull_out_start_update_time_;
   std::unique_ptr<Pose> last_approved_pose_;
+  mutable bool has_received_new_route_{false};
 
   std::shared_ptr<PullOutPlannerBase> getCurrentPlanner() const;
   PathWithLaneId getFullPath() const;
@@ -141,6 +144,11 @@ private:
   bool hasFinishedCurrentPath();
 
   void setDebugData() const;
+
+// temporary for old architecture
+#ifdef USE_OLD_ARCHITECTURE
+  mutable bool is_executed_{false};
+#endif
 };
 }  // namespace behavior_path_planner
 

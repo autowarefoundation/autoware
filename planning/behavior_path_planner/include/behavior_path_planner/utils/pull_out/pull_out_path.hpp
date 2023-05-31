@@ -26,9 +26,9 @@ namespace behavior_path_planner
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 struct PullOutPath
 {
-  std::vector<PathWithLaneId> partial_paths;
-  Pose start_pose;
-  Pose end_pose;
+  std::vector<PathWithLaneId> partial_paths{};
+  Pose start_pose{};
+  Pose end_pose{};
 };
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PATH_HPP_

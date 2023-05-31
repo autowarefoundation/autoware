@@ -44,6 +44,7 @@ struct GoalPlannerParameters
   double th_arrived_distance;
   double th_stopped_velocity;
   double th_stopped_time;
+  double th_blinker_on_lateral_offset;
 
   // goal search
   std::string search_priority;   // "efficient_path" or "close_goal"
