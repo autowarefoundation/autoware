@@ -6,14 +6,14 @@
 
 - name: Save result of 'lsb_release -sc'
   ansible.builtin.command: lsb_release -sc
-  register: lsb_release
+  register: pacmod__lsb_release
   changed_when: false
 
 # echo "deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/autonomoustuff-public.list
 - name: Add AutonomouStuff apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ {{ lsb_release.stdout }} main
+    repo: deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ {{ pacmod__lsb_release.stdout }} main
     filename: autonomoustuff-public
     state: present
     update_cache: true

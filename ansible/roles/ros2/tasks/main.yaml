@@ -13,27 +13,28 @@
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
     dest: /usr/share/keyrings/ros-archive-keyring.gpg
+    mode: 644
 
 - name: Save result of 'dpkg --print-architecture'
   ansible.builtin.command: dpkg --print-architecture
-  register: deb_architecture
+  register: ros2__deb_architecture
   changed_when: false
 
 - name: Save result of 'source /etc/os-release && echo $UBUNTU_CODENAME'
   ansible.builtin.shell: bash -c 'source /etc/os-release && echo $UBUNTU_CODENAME'
-  register: ubuntu_codename
+  register: ros2__ubuntu_codename
   changed_when: false
 
 # echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 - name: Add ROS 2 apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb [arch={{ deb_architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ubuntu_codename.stdout }} main
+    repo: deb [arch={{ ros2__deb_architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ ros2__ubuntu_codename.stdout }} main
     filename: ros2
     state: present
     update_cache: true
 
-- name: Install ros-{{ rosdistro }}-{{ installation_type }}
+- name: Install ros-{{ rosdistro + '-' + installation_type }}
   become: true
   ansible.builtin.apt:
     name: ros-{{ rosdistro }}-{{ installation_type }}

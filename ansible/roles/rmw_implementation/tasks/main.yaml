@@ -1,12 +1,12 @@
 - name: Get dash-case name of rmw_implementation
   ansible.builtin.shell: bash -c 'sed -e "s/_/-/g" <<< $(echo {{ rmw_implementation }})'
-  register: dash_case_rmw_implementation
+  register: rmw_implementation__dash_case_rmw_implementation
   changed_when: false
 
-- name: Install ros-{{ rosdistro }}-{{ dash_case_rmw_implementation.stdout }}
+- name: Install ros-{{ rosdistro + '-' + rmw_implementation__dash_case_rmw_implementation.stdout }}
   become: true
   ansible.builtin.apt:
-    name: ros-{{ rosdistro }}-{{ dash_case_rmw_implementation.stdout }}
+    name: ros-{{ rosdistro }}-{{ rmw_implementation__dash_case_rmw_implementation.stdout }}
     state: latest
     update_cache: true
 
