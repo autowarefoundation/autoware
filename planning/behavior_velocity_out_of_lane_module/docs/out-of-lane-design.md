@@ -18,7 +18,7 @@ The algorithm is made of the following steps.
 4. For each overlapping range, decide if a stop or slow down action must be taken.
 5. For each action, insert the corresponding stop or slow down point in the path.
 
-![overview](./docs/out_of_lane/out_of_lane-footprints_other_lanes_overlaps_ranges.png)
+![overview](./out_of_lane-footprints_other_lanes_overlaps_ranges.png)
 
 #### 1. Ego Path Footprints
 
@@ -61,10 +61,10 @@ If the distance is bellow the `actions.stop.threshold`, a velocity of `0`m/s wil
 <table width="100%">
   <tr>
   <td>
-    <img src="./docs/out_of_lane/out_of_lane_slow.png" width="550px"/>
+    <img src="./out_of_lane_slow.png" width="550px"/>
   </td>
   <td>
-    <img src="./docs/out_of_lane/out_of_lane_stop.png" width="550px"/>
+    <img src="./out_of_lane_stop.png" width="550px"/>
   </td>
   </tr>
 </table>

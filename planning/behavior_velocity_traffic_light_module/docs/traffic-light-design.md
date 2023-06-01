@@ -5,7 +5,7 @@
 Judgement whether a vehicle can go into an intersection or not by traffic light status, and planning a velocity of the stop if necessary.
 This module is designed for rule-based velocity decision that is easy for developers to design its behavior. It generates proper velocity for traffic light scene.
 
-![brief](./docs/traffic_light/traffic_light.svg)
+![brief](./traffic_light.svg)
 
 ### Limitations
 
@@ -35,7 +35,7 @@ This module is activated when there is traffic light in ego lane.
 
 #### Dilemma Zone
 
-![brief](./docs/traffic_light/traffic_light_dilemma.svg)
+![brief](./traffic_light_dilemma.svg)
 
 - yellow lamp line
 

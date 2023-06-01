@@ -3,23 +3,23 @@
 ## Overview
 
 `behavior_velocity_planner` is a planner that adjust velocity based on the traffic rules.
-It consists of several modules. Please refer to the links listed below for detail on each module.
+It loads modules as plugins. Please refer to the links listed below for detail on each module.
 
 ![Architecture](./docs/BehaviorVelocityPlanner-Architecture.drawio.svg)
 
-- [Blind Spot](blind-spot-design.md)
-- [Crosswalk](crosswalk-design.md)
-- [Detection Area](detection-area-design.md)
-- [Intersection](intersection-design.md)
-- [MergeFromPrivate](merge-from-private-design.md)
-- [Stop Line](stop-line-design.md)
-- [Virtual Traffic Light](virtual-traffic-light-design.md)
-- [Traffic Light](traffic-light-design.md)
-- [Occlusion Spot](occlusion-spot-design.md)
-- [No Stopping Area](no-stopping-area-design.md)
-- [Run Out](run-out-design.md)
-- [Speed Bump](speed-bump-design.md)
-- [Out of Lane](out-of-lane-design.md)
+- [Blind Spot](../behavior_velocity_blind_spot_module/docs/blind-spot-design.md)
+- [Crosswalk](../behavior_velocity_crosswalk_module/docs/crosswalk-design.md)
+- [Detection Area](../behavior_velocity_detection_area_module/docs/detection-area-design.md)
+- [Intersection](../behavior_velocity_intersection_module/docs/intersection-design.md)
+- [MergeFromPrivate](../behavior_velocity_intersection_module/docs/merge-from-private-design.md)
+- [Stop Line](../behavior_velocity_stop_line_module/docs/stop-line-design.md)
+- [Virtual Traffic Light](../behavior_velocity_virtual_traffic_light_module/docs/virtual-traffic-light-design.md)
+- [Traffic Light](../behavior_velocity_traffic_light_module/docs/traffic-light-design.md)
+- [Occlusion Spot](../behavior_velocity_occlusion_spot_module/docs/occlusion-spot-design.md)
+- [No Stopping Area](../behavior_velocity_no_stopping_area_module/docs/no-stopping-area-design.md)
+- [Run Out](../behavior_velocity_run_out_module/docs/run-out-design.md)
+- [Speed Bump](../behavior_velocity_speed_bump_module/docs/speed-bump-design.md)
+- [Out of Lane](../behavior_velocity_out_of_lane_module/docs/out-of-lane-design.md)
 
 When each module plans velocity, it considers based on `base_link`(center of rear-wheel axis) pose.
 So for example, in order to stop at a stop line with the vehicles' front on the stop line, it calculates `base_link` position from the distance between `base_link` to front and modifies path velocity from the `base_link` position.
@@ -47,19 +47,11 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 
 ## Node parameters
 
-| Parameter               | Type   | Description                                                                         |
-| ----------------------- | ------ | ----------------------------------------------------------------------------------- |
-| `launch_blind_spot`     | bool   | whether to launch blind_spot module                                                 |
-| `launch_crosswalk`      | bool   | whether to launch crosswalk module                                                  |
-| `launch_detection_area` | bool   | whether to launch detection_area module                                             |
-| `launch_intersection`   | bool   | whether to launch intersection module                                               |
-| `launch_traffic_light`  | bool   | whether to launch traffic light module                                              |
-| `launch_stop_line`      | bool   | whether to launch stop_line module                                                  |
-| `launch_occlusion_spot` | bool   | whether to launch occlusion_spot module                                             |
-| `launch_run_out`        | bool   | whether to launch run_out module                                                    |
-| `launch_speed_bump`     | bool   | whether to launch speed_bump module                                                 |
-| `forward_path_length`   | double | forward path length                                                                 |
-| `backward_path_length`  | double | backward path length                                                                |
-| `max_accel`             | double | (to be a global parameter) max acceleration of the vehicle                          |
-| `system_delay`          | double | (to be a global parameter) delay time until output control command                  |
-| `delay_response_time`   | double | (to be a global parameter) delay time of the vehicle's response to control commands |
+| Parameter              | Type                 | Description                                                                         |
+| ---------------------- | -------------------- | ----------------------------------------------------------------------------------- |
+| `launch_modules`       | vector&lt;string&gt; | module names to launch                                                              |
+| `forward_path_length`  | double               | forward path length                                                                 |
+| `backward_path_length` | double               | backward path length                                                                |
+| `max_accel`            | double               | (to be a global parameter) max acceleration of the vehicle                          |
+| `system_delay`         | double               | (to be a global parameter) delay time until output control command                  |
+| `delay_response_time`  | double               | (to be a global parameter) delay time of the vehicle's response to control commands |

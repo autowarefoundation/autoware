@@ -4,7 +4,7 @@
 
 Blind spot module checks possible collisions with bicycles and pedestrians running on its left/right side while turing left/right before junctions.
 
-![brief](./docs/blind_spot/blind-spot.drawio.svg)
+![brief](./blind-spot.drawio.svg)
 
 ### Activation Timing
 

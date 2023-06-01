@@ -4,7 +4,7 @@
 
 This module plans velocity so that the vehicle can stop right before stop lines and restart driving after stopped.
 
-![stop line](docs/stop_line/stop_line.svg)
+![stop line](stop_line.svg)
 
 ### Activation Timing
 
@@ -70,22 +70,22 @@ stop
 This algorithm is based on `segment`.
 `segment` consists of two node points. It's useful for removing boundary conditions because if `segment(i)` exists we can assume `node(i)` and `node(i+1)` exist.
 
-![node_and_segment](./docs/stop_line/node_and_segment.drawio.svg)
+![node_and_segment](./node_and_segment.drawio.svg)
 
 First, this algorithm finds a collision between reference path and stop line.
 Then, we can get `collision segment` and `collision point`.
 
-![find_collision_segment](./docs/stop_line/find_collision_segment.drawio.svg)
+![find_collision_segment](./find_collision_segment.drawio.svg)
 
 Next, based on `collision point`, it finds `offset segment` by iterating backward points up to a specific offset length.
 The offset length is `stop_margin`(parameter) + `base_link to front`(to adjust head pose to stop line).
 Then, we can get `offset segment` and `offset from segment start`.
 
-![find_offset_segment](./docs/stop_line/find_offset_segment.drawio.svg)
+![find_offset_segment](./find_offset_segment.drawio.svg)
 
 After that, we can calculate a offset point from `offset segment` and `offset`. This will be `stop_pose`.
 
-![calculate_stop_pose](./docs/stop_line/calculate_stop_pose.drawio.svg)
+![calculate_stop_pose](./calculate_stop_pose.drawio.svg)
 
 #### Restart prevention
 
@@ -94,16 +94,16 @@ If it needs X meters (e.g. 0.5 meters) to stop once the vehicle starts moving du
 This module has parameter `hold_stop_margin_distance` in order to prevent from these redundant restart. If the vehicle is stopped within `hold_stop_margin_distance` meters from stop point of the module (\_front_to_stop_line < hold_stop_margin_distance), the module judges that the vehicle has already stopped for the module's stop point and plans to keep stopping current position even if the vehicle is stopped due to other factors.
 
 <figure markdown>
-  ![example](docs/stop_line/restart_prevention.svg){width=1000}
+  ![example](restart_prevention.svg){width=1000}
   <figcaption>parameters</figcaption>
 </figure>
 
 <figure markdown>
-  ![example](docs/stop_line/restart.svg){width=1000}
+  ![example](restart.svg){width=1000}
   <figcaption>outside the hold_stop_margin_distance</figcaption>
 </figure>
 
 <figure markdown>
-  ![example](docs/stop_line/keep_stopping.svg){width=1000}
+  ![example](keep_stopping.svg){width=1000}
   <figcaption>inside the hold_stop_margin_distance</figcaption>
 </figure>

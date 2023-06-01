@@ -4,7 +4,7 @@
 
 `run_out` is the module that decelerates and stops for dynamic obstacles such as pedestrians and bicycles.
 
-![brief](./docs/run_out/run_out_overview.svg)
+![brief](./run_out_overview.svg)
 
 ### Activation Timing
 
@@ -50,7 +50,7 @@ stop
 Calculate the expected target velocity for the ego vehicle path to calculate time to collision with obstacles more precisely.
 The expected target velocity is calculated with [motion velocity smoother module](https://github.com/autowarefoundation/autoware.universe/tree/main/planning/motion_velocity_smoother) by using current velocity, current acceleration and velocity limits directed by the map and external API.
 
-![brief](./docs/run_out/calculate_expected_target_velocity.svg)
+![brief](./calculate_expected_target_velocity.svg)
 
 ##### Extend the path
 
@@ -97,7 +97,7 @@ Method of `ObjectWithoutPath` has the characteristics of an intermediate of `Obj
 | ObjectWithoutPath | use an object but not use the predicted path for collision detection. replace the path assuming that an object jumps out to the lane at specified velocity.           |
 | Points            | use filtered points for collision detection. the path is created assuming that points jump out to the lane. points are regarded as an small circular shaped obstacle. |
 
-![brief](./docs/run_out/create_dynamic_obstacle.svg)
+![brief](./create_dynamic_obstacle.svg)
 
 ##### Exclude obstacles outside of partition
 
@@ -106,7 +106,7 @@ We need lanelet map that has the information of partition to use this feature.
 By this feature, we can reduce unnecessary deceleration by obstacles that are unlikely to jump out to the lane.
 You can choose whether to use this feature by parameter of `use_partition_lanelet`.
 
-![brief](./docs/run_out/exclude_obstacles_by_partition.svg)
+![brief](./exclude_obstacles_by_partition.svg)
 
 #### Collision detection
 
@@ -116,18 +116,18 @@ Along the ego vehicle path, determine the points where collision detection is to
 
 The travel times to the each points are calculated from [the expected target velocity](./run-out-design.md#Calculate-the-expected-target-velocity-for-ego-vehicle).
 
-![brief](./docs/run_out/create_polygon_on_path_point.svg)
+![brief](./create_polygon_on_path_point.svg)
 
 For the each points, collision detection is performed using the footprint polygon of the ego vehicle and the polygon of the predicted location of the obstacles.
 The predicted location of the obstacles is described as rectangle or polygon that has the range calculated by min velocity, max velocity and the ego vehicle's travel time to the point.
 If the input type of the dynamic obstacle is `Points`, the obstacle shape is defined as a small cylinder.
 
-![brief](./docs/run_out/collision_detection_for_shape.svg)
+![brief](./collision_detection_for_shape.svg)
 
 Multiple points are detected as collision points because collision detection is calculated between two polygons.
 So we select the point that is on the same side as the obstacle and close to ego vehicle as the collision point.
 
-![brief](./docs/run_out/collision_points.svg)
+![brief](./collision_points.svg)
 
 #### Insert velocity
 
@@ -135,7 +135,7 @@ So we select the point that is on the same side as the obstacle and close to ego
 
 If the collision is detected, stop point is inserted on distance of base link to front + stop margin from the selected collision point. The base link to front means the distance between base_link (center of rear-wheel axis) and front of the car. Stop margin is determined by the parameter of `stop_margin`.
 
-![brief](./docs/run_out/insert_velocity.svg)
+![brief](./insert_velocity.svg)
 
 #### Insert velocity to approach the obstacles
 
@@ -145,7 +145,7 @@ If the parameter of `approaching.enable` is set to true, ego will approach the o
 The maximum velocity of approaching can be specified by the parameter of `approaching.limit_vel_kmph`.
 The decision to approach the obstacle is determined by a simple state transition as following image.
 
-![brief](./docs/run_out/insert_velocity_to_approach.svg)
+![brief](./insert_velocity_to_approach.svg)
 
 ```plantuml
 @startuml
@@ -166,7 +166,7 @@ APPROACH --> APPROACH : Approach duration is less than threshold
 ##### Limit velocity with specified jerk and acc limit
 
 The maximum slowdown velocity is calculated in order not to slowdown too much.
-See the [Occlusion Spot document](./occlusion-spot-design.md#maximum-slowdown-velocity) for more details.
+See the [Occlusion Spot document](../../behavior_velocity_occlusion_spot_module/docs/occlusion-spot-design.md#maximum-slowdown-velocity) for more details.
 You can choose whether to use this feature by parameter of `slow_down_limit.enable`.
 
 ### Module Parameters

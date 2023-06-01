@@ -7,7 +7,7 @@ This module is designed for rule-based intersection velocity decision that is ea
 
 In addition, the external users / modules (e.g. remote operation) to can intervene the STOP/GO decision for the vehicle behavior. The override interface is expected to be used, for example, for remote intervention in emergency situations or gathering information on operator decisions during development.
 
-![brief](./docs/intersection/intersection.drawio.svg)
+![brief](./intersection.drawio.svg)
 
 ### Activation Timing
 
@@ -41,11 +41,11 @@ Target objects are limited by lanelets to prevent unexpected behavior. A lane th
 
 See the following figures to know how to create an attention area and its rationale.
 
-![intersection_straight](docs/intersection/intersection_straight.png)
+![intersection_straight](intersection_straight.png)
 
-![intersection_turn_right](docs/intersection/intersection_turn_right.png)
+![intersection_turn_right](intersection_turn_right.png)
 
-![intersection_turn_left](docs/intersection/intersection_turn_left.png)
+![intersection_turn_left](intersection_turn_left.png)
 
 Note: the case `traffic light, turn right only` is not currently implemented.
 
@@ -207,7 +207,7 @@ NOTE current state is treated as `STOP` if `is_entry_prohibited` = `true` else `
 
 ### How to Set Lanelet Map fot Intersection
 
-![intersection_fig](docs/intersection/intersection_fig.png)
+![intersection_fig](intersection_fig.png)
 
 #### Set a turn_direction tag (Fig. 1)
 
