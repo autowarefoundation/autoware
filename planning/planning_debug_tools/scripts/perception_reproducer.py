@@ -146,8 +146,8 @@ class PerceptionReproducer(Node):
         # load rosbag
         print("Stared loading rosbag")
         if os.path.isdir(args.bag):
-            for bag_file in sorted(os.listdir(args.directory)):
-                self.load_rosbag(args.directory + "/" + bag_file)
+            for bag_file in sorted(os.listdir(args.bag)):
+                self.load_rosbag(args.bag + "/" + bag_file)
         else:
             self.load_rosbag(args.bag)
         print("Ended loading rosbag")
