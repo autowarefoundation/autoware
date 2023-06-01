@@ -16,9 +16,9 @@ The figure below represents the reception time of each sensor data and how it is
 
 ### Input
 
-| Name            | Type                                              | Description                                                                   |
-| --------------- | ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `~/input/twist` | `autoware_auto_vehicle_msgs::msg::VelocityReport` | The vehicle odometry is used to interpolate the timestamp of each sensor data |
+| Name            | Type                                             | Description                                                                   |
+| --------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `~/input/twist` | `geometry_msgs::msg::TwistWithCovarianceStamped` | The vehicle odometry is used to interpolate the timestamp of each sensor data |
 
 ### Output
 
