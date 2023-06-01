@@ -185,6 +185,7 @@ private:
   ShiftedPath prev_output_;
   ShiftedPath prev_linear_shift_path_;  // used for shift point check
   PathWithLaneId prev_reference_;
+  lanelet::ConstLanelets prev_driving_lanes_;
 
   // for raw_shift_line registration
   AvoidLineArray registered_raw_shift_lines_;
