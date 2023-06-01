@@ -684,7 +684,7 @@ void filterTargetObjects(
       lanelet::ConstLineString3d target_line{};
       {
         const auto lines =
-          rh->getFurthestLinestring(overhang_lanelet, get_right, get_left, get_opposite);
+          rh->getFurthestLinestring(overhang_lanelet, get_right, get_left, get_opposite, true);
         if (isOnRight(o)) {
           o.to_road_shoulder_distance =
             distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
@@ -698,8 +698,8 @@ void filterTargetObjects(
 
       lanelet::ConstLanelets previous_lanelet{};
       if (rh->getPreviousLaneletsWithinRoute(overhang_lanelet, &previous_lanelet)) {
-        const auto lines =
-          rh->getFurthestLinestring(previous_lanelet.front(), get_right, get_left, get_opposite);
+        const auto lines = rh->getFurthestLinestring(
+          previous_lanelet.front(), get_right, get_left, get_opposite, true);
         if (isOnRight(o)) {
           const auto d =
             distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
@@ -716,7 +716,7 @@ void filterTargetObjects(
       lanelet::ConstLanelet next_lanelet{};
       if (rh->getNextLaneletWithinRoute(overhang_lanelet, &next_lanelet)) {
         const auto lines =
-          rh->getFurthestLinestring(next_lanelet, get_right, get_left, get_opposite);
+          rh->getFurthestLinestring(next_lanelet, get_right, get_left, get_opposite, true);
         if (isOnRight(o)) {
           const auto d =
             distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));

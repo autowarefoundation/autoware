@@ -911,7 +911,7 @@ bool RouteHandler::isBijectiveConnection(
 }
 
 boost::optional<lanelet::ConstLanelet> RouteHandler::getRightLanelet(
-  const lanelet::ConstLanelet & lanelet) const
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const
 {
   // routable lane
   const auto & right_lane = routing_graph_ptr_->right(lanelet);
@@ -921,6 +921,38 @@ boost::optional<lanelet::ConstLanelet> RouteHandler::getRightLanelet(
 
   // non-routable lane (e.g. lane change infeasible)
   const auto & adjacent_right_lane = routing_graph_ptr_->adjacentRight(lanelet);
+  if (adjacent_right_lane) {
+    return adjacent_right_lane;
+  }
+
+  // same root right lanelet
+  if (!enable_same_root) {
+    return adjacent_right_lane;
+  }
+
+  lanelet::ConstLanelet next_lanelet;
+  if (!getNextLaneletWithinRoute(lanelet, &next_lanelet)) {
+    return adjacent_right_lane;
+  }
+
+  lanelet::ConstLanelets prev_lanelet;
+  if (!getPreviousLaneletsWithinRoute(lanelet, &prev_lanelet)) {
+    return adjacent_right_lane;
+  }
+
+  const auto next_right_lane = getRightLanelet(next_lanelet, false);
+  if (!next_right_lane) {
+    return adjacent_right_lane;
+  }
+
+  for (const auto & lane : getNextLanelets(prev_lanelet.front())) {
+    for (const auto & target_lane : getNextLanelets(lane)) {
+      if (next_right_lane.get().id() == target_lane.id()) {
+        return lane;
+      }
+    }
+  }
+
   return adjacent_right_lane;
 }
 
@@ -936,7 +968,7 @@ bool RouteHandler::getLeftLaneletWithinRoute(
 }
 
 boost::optional<lanelet::ConstLanelet> RouteHandler::getLeftLanelet(
-  const lanelet::ConstLanelet & lanelet) const
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const
 {
   // routable lane
   const auto & left_lane = routing_graph_ptr_->left(lanelet);
@@ -946,6 +978,38 @@ boost::optional<lanelet::ConstLanelet> RouteHandler::getLeftLanelet(
 
   // non-routable lane (e.g. lane change infeasible)
   const auto & adjacent_left_lane = routing_graph_ptr_->adjacentLeft(lanelet);
+  if (adjacent_left_lane) {
+    return adjacent_left_lane;
+  }
+
+  // same root right lanelet
+  if (!enable_same_root) {
+    return adjacent_left_lane;
+  }
+
+  lanelet::ConstLanelet next_lanelet;
+  if (!getNextLaneletWithinRoute(lanelet, &next_lanelet)) {
+    return adjacent_left_lane;
+  }
+
+  lanelet::ConstLanelets prev_lanelet;
+  if (!getPreviousLaneletsWithinRoute(lanelet, &prev_lanelet)) {
+    return adjacent_left_lane;
+  }
+
+  const auto next_left_lane = getLeftLanelet(next_lanelet, false);
+  if (!next_left_lane) {
+    return adjacent_left_lane;
+  }
+
+  for (const auto & lane : getNextLanelets(prev_lanelet.front())) {
+    for (const auto & target_lane : getNextLanelets(lane)) {
+      if (next_left_lane.get().id() == target_lane.id()) {
+        return lane;
+      }
+    }
+  }
+
   return adjacent_left_lane;
 }
 
@@ -1075,113 +1139,118 @@ lanelet::Lanelets RouteHandler::getLeftOppositeLanelets(const lanelet::ConstLane
   return opposite_lanelets;
 }
 
-lanelet::ConstLanelet RouteHandler::getMostRightLanelet(const lanelet::ConstLanelet & lanelet) const
+lanelet::ConstLanelet RouteHandler::getMostRightLanelet(
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const
 {
   // recursively compute the width of the lanes
-  const auto & same = getRightLanelet(lanelet);
+  const auto & same = getRightLanelet(lanelet, enable_same_root);
 
   if (same) {
-    return getMostRightLanelet(same.get());
+    return getMostRightLanelet(same.get(), enable_same_root);
   }
+
   return lanelet;
 }
 
-lanelet::ConstLanelet RouteHandler::getMostLeftLanelet(const lanelet::ConstLanelet & lanelet) const
+lanelet::ConstLanelet RouteHandler::getMostLeftLanelet(
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const
 {
   // recursively compute the width of the lanes
-  const auto & same = getLeftLanelet(lanelet);
+  const auto & same = getLeftLanelet(lanelet, enable_same_root);
 
   if (same) {
-    return getMostLeftLanelet(same.get());
+    return getMostLeftLanelet(same.get(), enable_same_root);
   }
+
   return lanelet;
 }
 
 lanelet::ConstLineString3d RouteHandler::getRightMostSameDirectionLinestring(
-  const lanelet::ConstLanelet & lanelet) const noexcept
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const noexcept
 {
   // recursively compute the width of the lanes
-  const auto & same = getRightLanelet(lanelet);
+  const auto & same = getRightLanelet(lanelet, enable_same_root);
 
   if (same) {
-    return getRightMostSameDirectionLinestring(same.get());
+    return getRightMostSameDirectionLinestring(same.get(), enable_same_root);
   }
+
   return lanelet.rightBound();
 }
 
 lanelet::ConstLineString3d RouteHandler::getRightMostLinestring(
-  const lanelet::ConstLanelet & lanelet) const noexcept
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const noexcept
 {
-  const auto & same = getRightLanelet(lanelet);
+  const auto & same = getRightLanelet(lanelet, enable_same_root);
   const auto & opposite = getRightOppositeLanelets(lanelet);
   if (!same && opposite.empty()) {
     return lanelet.rightBound();
   }
 
   if (same) {
-    return getRightMostLinestring(same.get());
+    return getRightMostLinestring(same.get(), enable_same_root);
   }
 
   if (!opposite.empty()) {
-    return getLeftMostLinestring(lanelet::ConstLanelet(opposite.front()));
+    return getLeftMostLinestring(lanelet::ConstLanelet(opposite.front()), false);
   }
 
   return lanelet.rightBound();
 }
 
 lanelet::ConstLineString3d RouteHandler::getLeftMostSameDirectionLinestring(
-  const lanelet::ConstLanelet & lanelet) const noexcept
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const noexcept
 {
   // recursively compute the width of the lanes
-  const auto & same = getLeftLanelet(lanelet);
+  const auto & same = getLeftLanelet(lanelet, enable_same_root);
 
   if (same) {
-    return getLeftMostSameDirectionLinestring(same.get());
+    return getLeftMostSameDirectionLinestring(same.get(), enable_same_root);
   }
+
   return lanelet.leftBound();
 }
 
 lanelet::ConstLineString3d RouteHandler::getLeftMostLinestring(
-  const lanelet::ConstLanelet & lanelet) const noexcept
+  const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const noexcept
 {
   // recursively compute the width of the lanes
-  const auto & same = getLeftLanelet(lanelet);
+  const auto & same = getLeftLanelet(lanelet, enable_same_root);
   const auto & opposite = getLeftOppositeLanelets(lanelet);
-
   if (!same && opposite.empty()) {
     return lanelet.leftBound();
   }
 
   if (same) {
-    return getLeftMostLinestring(same.get());
+    return getLeftMostLinestring(same.get(), enable_same_root);
   }
 
   if (!opposite.empty()) {
-    return getRightMostLinestring(lanelet::ConstLanelet(opposite.front()));
+    return getRightMostLinestring(lanelet::ConstLanelet(opposite.front()), false);
   }
 
   return lanelet.leftBound();
 }
 
 lanelet::ConstLineStrings3d RouteHandler::getFurthestLinestring(
-  const lanelet::ConstLanelet & lanelet, bool is_right, bool is_left,
-  bool is_opposite) const noexcept
+  const lanelet::ConstLanelet & lanelet, bool is_right, bool is_left, bool is_opposite,
+  bool enable_same_root) const noexcept
 {
   lanelet::ConstLineStrings3d linestrings;
   linestrings.reserve(2);
 
   if (is_right && is_opposite) {
-    linestrings.emplace_back(getRightMostLinestring(lanelet));
+    linestrings.emplace_back(getRightMostLinestring(lanelet, enable_same_root));
   } else if (is_right && !is_opposite) {
-    linestrings.emplace_back(getRightMostSameDirectionLinestring(lanelet));
+    linestrings.emplace_back(getRightMostSameDirectionLinestring(lanelet, enable_same_root));
   } else {
     linestrings.emplace_back(lanelet.rightBound());
   }
 
   if (is_left && is_opposite) {
-    linestrings.emplace_back(getLeftMostLinestring(lanelet));
+    linestrings.emplace_back(getLeftMostLinestring(lanelet, enable_same_root));
   } else if (is_left && !is_opposite) {
-    linestrings.emplace_back(getLeftMostSameDirectionLinestring(lanelet));
+    linestrings.emplace_back(getLeftMostSameDirectionLinestring(lanelet, enable_same_root));
   } else {
     linestrings.emplace_back(lanelet.leftBound());
   }
