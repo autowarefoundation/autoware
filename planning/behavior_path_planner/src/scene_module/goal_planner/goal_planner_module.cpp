@@ -552,8 +552,13 @@ void GoalPlannerModule::selectSafePullOverPath()
     if (search_start_offset_pose) {
       decelerateBeforeSearchStart(*search_start_offset_pose, first_path);
     } else {
-      // if already passed the search start pose, set pull_over_velocity to first_path.
+      // if already passed the search start offset pose, set pull_over_velocity to first_path.
+      const auto min_decel_distance = calcFeasibleDecelDistance(parameters_->pull_over_velocity);
       for (auto & p : first_path.points) {
+        const double distance_from_ego = calcSignedArcLengthFromEgo(first_path, p.point.pose);
+        if (min_decel_distance && distance_from_ego < *min_decel_distance) {
+          continue;
+        }
         p.point.longitudinal_velocity_mps = std::min(
           p.point.longitudinal_velocity_mps, static_cast<float>(parameters_->pull_over_velocity));
       }
@@ -942,8 +947,13 @@ PathWithLaneId GoalPlannerModule::generateStopPath()
   if (search_start_offset_pose) {
     decelerateBeforeSearchStart(*search_start_offset_pose, reference_path);
   } else {
-    // if already passed the search start pose, set pull_over_velocity to reference_path.
+    // if already passed the search start offset pose, set pull_over_velocity to reference_path.
+    const auto min_decel_distance = calcFeasibleDecelDistance(pull_over_velocity);
     for (auto & p : reference_path.points) {
+      const double distance_from_ego = calcSignedArcLengthFromEgo(reference_path, p.point.pose);
+      if (min_decel_distance && distance_from_ego < *min_decel_distance) {
+        continue;
+      }
       p.point.longitudinal_velocity_mps =
         std::min(p.point.longitudinal_velocity_mps, static_cast<float>(pull_over_velocity));
     }
@@ -1239,7 +1249,7 @@ void GoalPlannerModule::decelerateForTurnSignal(const Pose & stop_pose, PathWith
       0.0, calcSignedArcLength(path.points, point.point.pose.position, stop_pose.position));
     const float decel_vel =
       std::min(point.point.longitudinal_velocity_mps, static_cast<float>(distance_to_stop / time));
-    const double distance_from_ego = calcSignedArcLengthFromEgo(path, stop_pose);
+    const double distance_from_ego = calcSignedArcLengthFromEgo(path, point.point.pose);
     const auto min_decel_distance = calcFeasibleDecelDistance(decel_vel);
 
     // when current velocity already lower than decel_vel, min_decel_distance will be 0.0,
