@@ -63,57 +63,39 @@ std::map<std::string, PCDFileMetadata> replaceWithAbsolutePath(
   return absolute_path_map;
 }
 
-bool sphereAndBoxOverlapExists(
-  const geometry_msgs::msg::Point center, const double radius, const pcl::PointXYZ box_min_point,
-  const pcl::PointXYZ box_max_point)
+bool cylinderAndBoxOverlapExists(
+  const double center_x, const double center_y, const double radius,
+  const pcl::PointXYZ box_min_point, const pcl::PointXYZ box_max_point)
 {
-  // Collision detection with x-axis plane
+  // Collision detection with x-y plane (circular base of the cylinder)
   if (
-    box_min_point.x - radius <= center.x && center.x <= box_max_point.x + radius &&
-    box_min_point.y <= center.y && center.y <= box_max_point.y && box_min_point.z <= center.z &&
-    center.z <= box_max_point.z) {
-    return true;
-  }
-
-  // Collision detection with y-axis plane
-  if (
-    box_min_point.x <= center.x && center.x <= box_max_point.x &&
-    box_min_point.y - radius <= center.y && center.y <= box_max_point.y + radius &&
-    box_min_point.z <= center.z && center.z <= box_max_point.z) {
-    return true;
-  }
-
-  // Collision detection with z-axis plane
-  if (
-    box_min_point.x <= center.x && center.x <= box_max_point.x && box_min_point.y <= center.y &&
-    center.y <= box_max_point.y && box_min_point.z - radius <= center.z &&
-    center.z <= box_max_point.z + radius) {
+    box_min_point.x - radius <= center_x && center_x <= box_max_point.x + radius &&
+    box_min_point.y - radius <= center_y && center_y <= box_max_point.y + radius) {
     return true;
   }
 
   // Collision detection with box edges
-  const double dx0 = center.x - box_min_point.x;
-  const double dx1 = center.x - box_max_point.x;
-  const double dy0 = center.y - box_min_point.y;
-  const double dy1 = center.y - box_max_point.y;
-  const double dz0 = center.z - box_min_point.z;
-  const double dz1 = center.z - box_max_point.z;
+  const double dx0 = center_x - box_min_point.x;
+  const double dx1 = center_x - box_max_point.x;
+  const double dy0 = center_y - box_min_point.y;
+  const double dy1 = center_y - box_max_point.y;
+
   if (
-    std::hypot(dx0, dy0, dz0) <= radius || std::hypot(dx1, dy0, dz0) <= radius ||
-    std::hypot(dx0, dy1, dz0) <= radius || std::hypot(dx0, dy0, dz1) <= radius ||
-    std::hypot(dx0, dy1, dz1) <= radius || std::hypot(dx1, dy0, dz1) <= radius ||
-    std::hypot(dx1, dy1, dz0) <= radius || std::hypot(dx1, dy1, dz1) <= radius) {
+    std::hypot(dx0, dy0) <= radius || std::hypot(dx1, dy0) <= radius ||
+    std::hypot(dx0, dy1) <= radius || std::hypot(dx1, dy1) <= radius) {
     return true;
   }
+
   return false;
 }
 
 bool isGridWithinQueriedArea(
   const autoware_map_msgs::msg::AreaInfo area, const PCDFileMetadata metadata)
 {
-  // Currently, the area load only supports spherical area
-  geometry_msgs::msg::Point center = area.center;
+  // Currently, the area load only supports cylindrical area
+  double center_x = area.center_x;
+  double center_y = area.center_y;
   double radius = area.radius;
-  bool res = sphereAndBoxOverlapExists(center, radius, metadata.min, metadata.max);
+  bool res = cylinderAndBoxOverlapExists(center_x, center_y, radius, metadata.min, metadata.max);
   return res;
 }

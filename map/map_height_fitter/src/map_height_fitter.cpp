@@ -97,7 +97,8 @@ void MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
   }
 
   const auto req = std::make_shared<autoware_map_msgs::srv::GetPartialPointCloudMap::Request>();
-  req->area.center = point;
+  req->area.center_x = point.x;
+  req->area.center_y = point.y;
   req->area.radius = 50;
 
   RCLCPP_INFO(logger, "Send request to map_loader");

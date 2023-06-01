@@ -73,9 +73,8 @@ TEST_F(TestDifferentialMapLoaderModule, LoadDifferentialPCDFiles)
 
   // Prepare a request for the service
   auto request = std::make_shared<GetDifferentialPointCloudMap::Request>();
-  request->area.center.x = 0;
-  request->area.center.y = 0;
-  request->area.center.z = 0;
+  request->area.center_x = 0;
+  request->area.center_y = 0;
   request->area.radius = 2;
   request->cached_ids.clear();
 

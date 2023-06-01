@@ -432,7 +432,8 @@ bool VoxelGridDynamicMapLoader::should_update_map() const
 void VoxelGridDynamicMapLoader::request_update_map(const geometry_msgs::msg::Point & position)
 {
   auto request = std::make_shared<autoware_map_msgs::srv::GetDifferentialPointCloudMap::Request>();
-  request->area.center = position;
+  request->area.center_x = position.x;
+  request->area.center_y = position.y;
   request->area.radius = map_loader_radius_;
   request->cached_ids = getCurrentMapIDs();
 
