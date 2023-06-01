@@ -394,6 +394,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
 {
   constexpr double AVOIDING_SHIFT_THR = 0.1;
   data.avoiding_now = std::abs(getCurrentShift()) > AVOIDING_SHIFT_THR;
+  data.candidate_path = utils::avoidance::toShiftedPath(data.reference_path);
 
   auto path_shifter = path_shifter_;
 
@@ -468,7 +469,6 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    */
   if (!data.safe && data.avoid_required) {
     data.yield_required = data.found_avoidance_path && data.avoid_required;
-    data.candidate_path = utils::avoidance::toShiftedPath(data.reference_path);
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "not found safe avoidance path. transit yield maneuver...");
   }
@@ -479,7 +479,6 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    */
   if (!data.safe && registered) {
     data.yield_required = true;
-    data.candidate_path = utils::avoidance::toShiftedPath(data.reference_path);
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000,
       "found safe avoidance path, but it is not safe. canceling avoidance path...");
