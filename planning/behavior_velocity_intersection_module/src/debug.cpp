@@ -257,6 +257,7 @@ motion_utils::VirtualWalls MergeFromPrivateRoadModule::createVirtualWalls()
     wall.style = motion_utils::VirtualWallType::stop;
     wall.pose = debug_data_.virtual_wall_pose;
     wall.text = "merge_from_private_road";
+    virtual_walls.push_back(wall);
   }
   return virtual_walls;
 }
