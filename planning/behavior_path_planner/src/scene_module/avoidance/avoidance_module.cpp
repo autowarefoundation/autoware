@@ -3186,6 +3186,12 @@ void AvoidanceModule::updateData()
   if (prev_reference_.points.empty()) {
     prev_reference_ = avoidance_data_.reference_path;
   }
+  if (prev_driving_lanes_.empty()) {
+    prev_driving_lanes_ = utils::calcLaneAroundPose(
+      planner_data_->route_handler, avoidance_data_.reference_pose,
+      planner_data_->parameters.forward_path_length,
+      planner_data_->parameters.backward_path_length);
+  }
 #endif
 
   fillShiftLine(avoidance_data_, debug_data_);
