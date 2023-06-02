@@ -40,6 +40,19 @@ def resolve_node(context, *args, **kwargs):
         for file_name in shlex.split(LaunchConfiguration("arg_param_filenames").perform(context))
     ]
 
+    parameters_test = [
+        os.path.join(
+            get_package_share_directory(LaunchConfiguration("arg_package").perform(context)),
+            "test",
+            file_name,
+        )
+        for file_name in shlex.split(
+            LaunchConfiguration("arg_test_param_filenames").perform(context)
+        )
+    ]
+
+    parameters.extend(parameters_test)
+
     smoke_test_node = Node(
         package=LaunchConfiguration("arg_package"),
         executable=LaunchConfiguration("arg_package_exe"),
@@ -61,6 +74,11 @@ def generate_test_description():
     arg_param_filenames = DeclareLaunchArgument(
         "arg_param_filenames", default_value=["test.param.yaml"], description="Test param file"
     )
+    arg_test_param_filenames = DeclareLaunchArgument(
+        "arg_test_param_filenames",
+        default_value=["test.param.yaml"],
+        description="Test only param file",
+    )
     arg_executable_arguments = DeclareLaunchArgument(
         "arg_executable_arguments", default_value=[""], description="Tested executable arguments"
     )
@@ -70,6 +88,7 @@ def generate_test_description():
             arg_package,
             arg_package_exe,
             arg_param_filenames,
+            arg_test_param_filenames,
             arg_executable_arguments,
             OpaqueFunction(function=resolve_node),
             launch_testing.actions.ReadyToTest(),
@@ -82,9 +101,15 @@ class DummyTest(unittest.TestCase):
         """Waiting for the node is ready."""
         rclpy.init()
         test_node = rclpy.create_node("test_node")
-        while len(test_node.get_node_names()) == 0:
+        # Wait until both dummy node "test_node" and real tested node are registered and then kill
+        # both of them, if tested node does not register within `timeout` seconds test will fail
+        start_time = time.time()
+        timeout = 2  # seconds
+        timeout_msg = "Smoke test timeout has been reached ({}s)".format(timeout)
+        print("waiting for Nodes to be ready")
+        while len(test_node.get_node_names()) < 2:
+            assert time.time() - start_time < timeout, timeout_msg
             time.sleep(0.1)
-            print("waiting for Node to be ready")
         rclpy.shutdown()
 
 

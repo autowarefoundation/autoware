@@ -25,12 +25,22 @@
 # :type EXECUTABLE_ARGUMENTS: string
 
 function(add_smoke_test package_name executable_name)
-  cmake_parse_arguments(PARSE_ARGV 2 smoke_test "" "PARAM_FILENAMES;EXECUTABLE_ARGUMENTS" "")
+  cmake_parse_arguments(PARSE_ARGV 2 smoke_test "" "PARAM_FILENAMES;TEST_PARAM_FILENAMES;
+EXECUTABLE_ARGUMENTS;TARGET_INFIX" "")
 
   set(ARGUMENTS "arg_package:=${package_name}" "arg_package_exe:=${executable_name}")
 
+  set(TARGET_INFIX "")  # OPTIONAL infix to distinguish multiple smoke tests for one node
+  if(smoke_test_TARGET_INFIX)
+    set(TARGET_INFIX "_${smoke_test_TARGET_INFIX}")
+  endif()
+
   if(smoke_test_PARAM_FILENAMES)
     list(APPEND ARGUMENTS "arg_param_filenames:=${smoke_test_PARAM_FILENAMES}")
+  endif()
+
+  if(smoke_test_TEST_PARAM_FILENAMES)
+    list(APPEND ARGUMENTS "arg_test_param_filenames:=${smoke_test_TEST_PARAM_FILENAMES}")
   endif()
 
   if(smoke_test_EXECUTABLE_ARGUMENTS)
@@ -39,7 +49,7 @@ function(add_smoke_test package_name executable_name)
 
   add_ros_test(
     ${autoware_testing_DIR}/../autoware_testing/smoke_test.py
-    TARGET "${executable_name}_smoke_test"
+    TARGET "${executable_name}${TARGET_INFIX}_smoke_test"
     ARGS "${ARGUMENTS}"
     TIMEOUT "30"
   )
