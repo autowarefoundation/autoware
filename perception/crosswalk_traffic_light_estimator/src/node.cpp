@@ -82,6 +82,7 @@ CrosswalkTrafficLightEstimatorNode::CrosswalkTrafficLightEstimatorNode(
   using std::placeholders::_1;
 
   use_last_detect_color_ = this->declare_parameter("use_last_detect_color", true);
+  last_detect_color_hold_time_ = this->declare_parameter("last_detect_color_hold_time", 2.0);
 
   sub_map_ = create_subscription<HADMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
@@ -157,9 +158,10 @@ void CrosswalkTrafficLightEstimatorNode::onTrafficLightArray(
 
   TrafficSignalArray output = *msg;
 
-  std::unordered_map<lanelet::Id, TrafficSignal> traffic_light_id_map;
+  TrafficLightIdMap traffic_light_id_map;
   for (const auto & traffic_signal : msg->signals) {
-    traffic_light_id_map[traffic_signal.map_primitive_id] = traffic_signal;
+    traffic_light_id_map[traffic_signal.map_primitive_id] =
+      std::pair<TrafficSignal, rclcpp::Time>(traffic_signal, get_clock()->now());
   }
 
   for (const auto & crosswalk : conflicting_crosswalks_) {
@@ -183,7 +185,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
   const TrafficLightIdMap & traffic_light_id_map)
 {
   for (const auto & input_traffic_signal : traffic_light_id_map) {
-    const auto & lights = input_traffic_signal.second.lights;
+    const auto & lights = input_traffic_signal.second.first.lights;
 
     if (lights.empty()) {
       continue;
@@ -193,7 +195,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
       continue;
     }
 
-    const auto & id = input_traffic_signal.second.map_primitive_id;
+    const auto & id = input_traffic_signal.second.first.map_primitive_id;
 
     if (last_detect_color_.count(id) == 0) {
       last_detect_color_.insert(std::make_pair(id, input_traffic_signal.second));
@@ -205,10 +207,15 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
 
   std::vector<int32_t> erase_id_list;
   for (auto & last_traffic_signal : last_detect_color_) {
-    const auto & id = last_traffic_signal.second.map_primitive_id;
+    const auto & id = last_traffic_signal.second.first.map_primitive_id;
 
     if (traffic_light_id_map.count(id) == 0) {
-      erase_id_list.emplace_back(id);
+      // hold signal recognition results for [last_detect_color_hold_time_] seconds.
+      const auto time_from_last_detected =
+        (get_clock()->now() - last_traffic_signal.second.second).seconds();
+      if (time_from_last_detected > last_detect_color_hold_time_) {
+        erase_id_list.emplace_back(id);
+      }
     }
   }
   for (const auto id : erase_id_list) last_detect_color_.erase(id);
@@ -254,12 +261,17 @@ lanelet::ConstLanelets CrosswalkTrafficLightEstimatorNode::getNonRedLanelets(
     const auto current_detected_signal =
       getHighestConfidenceTrafficSignal(traffic_lights_for_vehicle, traffic_light_id_map);
 
-    if (!current_detected_signal) {
+    if (!current_detected_signal && !use_last_detect_color_) {
       continue;
     }
 
-    const auto is_not_read = current_detected_signal.get() == TrafficLight::GREEN ||
-                             current_detected_signal.get() == TrafficLight::AMBER;
+    const auto current_is_not_red = current_detected_signal
+                                      ? current_detected_signal.get() == TrafficLight::GREEN ||
+                                          current_detected_signal.get() == TrafficLight::AMBER
+                                      : true;
+
+    const auto current_is_unknown_or_none =
+      current_detected_signal ? current_detected_signal.get() == TrafficLight::UNKNOWN : true;
 
     const auto last_detected_signal =
       getHighestConfidenceTrafficSignal(traffic_lights_for_vehicle, last_detect_color_);
@@ -268,12 +280,12 @@ lanelet::ConstLanelets CrosswalkTrafficLightEstimatorNode::getNonRedLanelets(
       continue;
     }
 
-    const auto was_not_read = current_detected_signal.get() == TrafficLight::UNKNOWN &&
-                              (last_detected_signal.get() == TrafficLight::GREEN ||
-                               last_detected_signal.get() == TrafficLight::AMBER) &&
-                              use_last_detect_color_;
+    const auto was_not_red = current_is_unknown_or_none &&
+                             (last_detected_signal.get() == TrafficLight::GREEN ||
+                              last_detected_signal.get() == TrafficLight::AMBER) &&
+                             use_last_detect_color_;
 
-    if (!is_not_read && !was_not_read) {
+    if (!current_is_not_red && !was_not_red) {
       continue;
     }
 
@@ -336,7 +348,7 @@ boost::optional<uint8_t> CrosswalkTrafficLightEstimatorNode::getHighestConfidenc
       continue;
     }
 
-    const auto & lights = traffic_light_id_map.at(id).lights;
+    const auto & lights = traffic_light_id_map.at(id).first.lights;
     if (lights.empty()) {
       continue;
     }
