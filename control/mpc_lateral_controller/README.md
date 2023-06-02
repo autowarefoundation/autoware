@@ -34,12 +34,15 @@ For the optimization, a Quadratic Programming (QP) solver is used and two option
 <!-- cspell: ignore ADMM -->
 
 - unconstraint_fast : use least square method to solve unconstraint QP with eigen.
-- [osqp](https://osqp.org/): run the [following ADMM](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) algorithm (for more details see the related papers at the [Citing OSQP](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) section):
+- [osqp](https://osqp.org/): run the [following ADMM](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html)
+  algorithm (for more details see the related papers at
+  the [Citing OSQP](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) section):
 
 ### Filtering
 
 Filtering is required for good noise reduction.
-A [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is used for the yaw and lateral errors used as input of the MPC as well as for
+A [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is used for the yaw and lateral errors used as
+input of the MPC as well as for
 the output steering angle.
 Other filtering methods can be considered as long as the noise reduction performances are good
 enough.
@@ -105,6 +108,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | keep_steer_control_until_converged           | bool   | keep steer control until steer is converged                                                                                                       | true          |
 | new_traj_duration_time                       | double | threshold value of the time to be considered as new trajectory                                                                                    | 1.0           |
 | new_traj_end_dist                            | double | threshold value of the distance between trajectory ends to be considered as new trajectory                                                        | 0.3           |
+| mpc_converged_threshold_rps                  | double | threshold value to be sure output of the optimization is converged, it is used in stopped state                                                   | 0.3           |
 
 (\*1) To prevent unnecessary steering movement, the steering command is fixed to the previous value in the stop state.
 
@@ -143,11 +147,13 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 ### How to tune MPC parameters
 
 1. Set appropriate vehicle kinematics parameters for distance to front and rear axle and max steer angle.
-   Also check that the input `VehicleKinematicState` has appropriate values (speed: vehicle rear-wheels-center velocity [km/h], angle: steering (tire) angle [rad]).
+   Also check that the input `VehicleKinematicState` has appropriate values (speed: vehicle rear-wheels-center
+   velocity [km/h], angle: steering (tire) angle [rad]).
    These values give a vehicle information to the controller for path following.
    Errors in these values cause fundamental tracking error.
 
-2. Set appropriate vehicle dynamics parameters of `steering_tau`, which is the approximated delay from steering angle command to actual steering angle.
+2. Set appropriate vehicle dynamics parameters of `steering_tau`, which is the approximated delay from steering angle
+   command to actual steering angle.
 
 3. Set `weight_steering_input` = 1.0, `weight_lat_error` = 0.1, and other weights to 0.
    If the vehicle oscillates when driving with low speed, set `weight_lat_error` smaller.
@@ -156,7 +162,8 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
    One of the simple way for tuning is to increase `weight_lat_error` until oscillation occurs.
    If the vehicle is unstable with very small `weight_lat_error`, increase terminal weight :
    `weight_terminal_lat_error` and `weight_terminal_heading_error` to improve tracking stability.
-   Larger `prediction_horizon` and smaller `prediction_sampling_time` is effective for tracking performance, but it is a trade-off between computational costs.
+   Larger `prediction_horizon` and smaller `prediction_sampling_time` is effective for tracking performance, but it is a
+   trade-off between computational costs.
    Other parameters can be adjusted like below.
 
 - `weight_lat_error`: Reduce lateral tracking error. This acts like P gain in PID.
@@ -165,8 +172,10 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 - `weight_steering_input`: Reduce oscillation of tracking.
 - `weight_steering_input_squared_vel_coeff`: Reduce oscillation of tracking in high speed range.
 - `weight_lat_jerk`: Reduce lateral jerk.
-- `weight_terminal_lat_error`: Preferable to set a higher value than normal lateral weight `weight_lat_error` for stability.
-- `weight_terminal_heading_error`: Preferable to set a higher value than normal heading weight `weight_heading_error` for stability.
+- `weight_terminal_lat_error`: Preferable to set a higher value than normal lateral weight `weight_lat_error` for
+  stability.
+- `weight_terminal_heading_error`: Preferable to set a higher value than normal heading weight `weight_heading_error`
+  for stability.
 
 ## References / External links
 

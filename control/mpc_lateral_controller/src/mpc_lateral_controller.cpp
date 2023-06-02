@@ -69,6 +69,8 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
     node_->declare_parameter<bool>("keep_steer_control_until_converged");
   m_new_traj_duration_time = node_->declare_parameter<double>("new_traj_duration_time");  // [s]
   m_new_traj_end_dist = node_->declare_parameter<double>("new_traj_end_dist");            // [m]
+  m_mpc_converged_threshold_rps =
+    node_->declare_parameter<double>("mpc_converged_threshold_rps");  // [rad/s]
 
   /* mpc parameters */
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo();
@@ -76,7 +78,7 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
   const double steer_rate_lim_dps = node_->declare_parameter<double>("steer_rate_lim_dps");
   constexpr double deg2rad = static_cast<double>(M_PI) / 180.0;
   m_mpc.m_steer_lim = vehicle_info.max_steer_angle_rad;
-  m_mpc.m_steer_rate_lim = steer_rate_lim_dps * deg2rad;
+  m_steer_rate_lim = steer_rate_lim_dps * deg2rad;
 
   /* vehicle model setup */
   const std::string vehicle_model_type =
@@ -202,6 +204,17 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     m_is_ctrl_cmd_prev_initialized = true;
   }
 
+  const bool is_vehicle_stopped = std::fabs(m_current_kinematic_state.twist.twist.linear.x) < 0.01;
+
+  // if the vehicle is stopped, set steering angle rate limit to a large value to get a proper
+  // steering value from mpc.
+  // TODO(someone): solve mpc cannot create output in low steering rate limit problem
+  if (is_vehicle_stopped) {
+    m_mpc.m_steer_rate_lim = std::numeric_limits<double>::max();
+  } else {
+    m_mpc.m_steer_rate_lim = m_steer_rate_lim;
+  }
+
   const bool is_mpc_solved = m_mpc.calculateMPC(
     m_current_steering, m_current_kinematic_state.twist.twist.linear.x,
     m_current_kinematic_state.pose.pose, ctrl_cmd, predicted_traj, debug_values);
@@ -213,6 +226,8 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   // the actual steer angle, and it may make the optimization result unstable.
   if (!is_mpc_solved) {
     m_mpc.resetPrevResult(m_current_steering);
+  } else {
+    setSteeringToHistory(ctrl_cmd);
   }
 
   if (enable_auto_steering_offset_removal_) {
@@ -225,10 +240,17 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   publishPredictedTraj(predicted_traj);
   publishDebugValues(debug_values);
 
-  const auto createLateralOutput = [this](const auto & cmd) {
+  const auto createLateralOutput = [this](const auto & cmd, const bool is_mpc_solved) {
     trajectory_follower::LateralOutput output;
     output.control_cmd = createCtrlCmdMsg(cmd);
-    output.sync_data.is_steer_converged = isSteerConverged(cmd);
+    // To be sure current steering of the vehicle is desired steering angle, we need to check
+    // following conditions.
+    // 1. At the last loop, mpc should be solved because command should be optimized output.
+    // 2. The mpc should be converged.
+    // 3. The steer angle should be converged.
+    output.sync_data.is_steer_converged =
+      is_mpc_solved && isMpcConverged() && isSteerConverged(cmd);
+
     return output;
   };
 
@@ -239,7 +261,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
     }
     // Use previous command value as previous raw steer command
     m_mpc.m_raw_steer_cmd_prev = m_ctrl_cmd_prev.steering_tire_angle;
-    return createLateralOutput(m_ctrl_cmd_prev);
+    return createLateralOutput(m_ctrl_cmd_prev, false);
   }
 
   if (!is_mpc_solved) {
@@ -250,7 +272,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   }
 
   m_ctrl_cmd_prev = ctrl_cmd;
-  return createLateralOutput(ctrl_cmd);
+  return createLateralOutput(ctrl_cmd, is_mpc_solved);
 }
 
 bool MpcLateralController::isSteerConverged(
@@ -408,6 +430,61 @@ void MpcLateralController::publishDebugValues(
   offset.stamp = node_->now();
   offset.data = steering_offset_->getOffset();
   m_pub_steer_offset->publish(offset);
+}
+
+void MpcLateralController::setSteeringToHistory(
+  const autoware_auto_control_msgs::msg::AckermannLateralCommand & steering)
+{
+  const auto time = node_->now();
+  if (m_mpc_steering_history.empty()) {
+    m_mpc_steering_history.emplace_back(steering, time);
+    m_is_mpc_history_filled = false;
+    return;
+  }
+
+  m_mpc_steering_history.emplace_back(steering, time);
+
+  // Check the history is filled or not.
+  if (rclcpp::Duration(time - m_mpc_steering_history.begin()->second).seconds() >= 1.0) {
+    m_is_mpc_history_filled = true;
+    // remove old data that is older than 1 sec
+    for (auto itr = m_mpc_steering_history.begin(); itr != m_mpc_steering_history.end(); ++itr) {
+      if (rclcpp::Duration(time - itr->second).seconds() > 1.0) {
+        m_mpc_steering_history.erase(m_mpc_steering_history.begin());
+      } else {
+        break;
+      }
+    }
+  } else {
+    m_is_mpc_history_filled = false;
+  }
+}
+
+bool MpcLateralController::isMpcConverged()
+{
+  // If the number of variable below the 2, there is no enough data so MPC is not converged.
+  if (m_mpc_steering_history.size() < 2) {
+    return false;
+  }
+
+  // If the history is not filled, return false.
+
+  if (!m_is_mpc_history_filled) {
+    return false;
+  }
+
+  // Find the maximum and minimum values of the steering angle in the past 1 second.
+  double min_steering_value = m_mpc_steering_history[0].first.steering_tire_angle;
+  double max_steering_value = m_mpc_steering_history[0].first.steering_tire_angle;
+  for (size_t i = 1; i < m_mpc_steering_history.size(); i++) {
+    if (m_mpc_steering_history[i].first.steering_tire_angle < min_steering_value) {
+      min_steering_value = m_mpc_steering_history[i].first.steering_tire_angle;
+    }
+    if (m_mpc_steering_history[i].first.steering_tire_angle > max_steering_value) {
+      max_steering_value = m_mpc_steering_history[i].first.steering_tire_angle;
+    }
+  }
+  return (max_steering_value - min_steering_value) < m_mpc_converged_threshold_rps;
 }
 
 void MpcLateralController::declareMPCparameters()

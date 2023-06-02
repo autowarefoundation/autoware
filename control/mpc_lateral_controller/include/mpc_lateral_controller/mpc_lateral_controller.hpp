@@ -47,6 +47,7 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace autoware::motion::control::mpc_lateral_controller
@@ -99,15 +100,31 @@ private:
   double m_stop_state_entry_ego_speed;
   double m_stop_state_entry_target_speed;
   double m_converged_steer_rad;
-  double m_new_traj_duration_time;  // check trajectory shape change
-  double m_new_traj_end_dist;       // check trajectory shape change
+  double m_mpc_converged_threshold_rps;  // max mpc output change threshold for 1 sec
+  double m_new_traj_duration_time;       // check trajectory shape change
+  double m_new_traj_end_dist;            // check trajectory shape change
   bool m_keep_steer_control_until_converged;
+
+  /* parameter to store the actual steering rate limit */
+  double m_steer_rate_lim;
 
   // trajectory buffer for detecting new trajectory
   std::deque<autoware_auto_planning_msgs::msg::Trajectory> m_trajectory_buffer;
 
   // MPC object
   MPC m_mpc;
+
+  // Check is mpc output converged
+  bool m_is_mpc_history_filled{false};
+
+  //!< @brief store the last mpc outputs for 1 sec
+  std::vector<std::pair<autoware_auto_control_msgs::msg::AckermannLateralCommand, rclcpp::Time>>
+    m_mpc_steering_history{};
+  //!< @brief set the mpc steering output to history
+  void setSteeringToHistory(
+    const autoware_auto_control_msgs::msg::AckermannLateralCommand & steering);
+  //!< @brief check if the mpc steering output is converged
+  bool isMpcConverged();
 
   //!< @brief measured kinematic state
   nav_msgs::msg::Odometry m_current_kinematic_state;
