@@ -682,53 +682,32 @@ void filterTargetObjects(
       const bool get_opposite = parameters->enable_avoidance_over_opposite_direction;
 
       lanelet::ConstLineString3d target_line{};
-      {
+      o.to_road_shoulder_distance = std::numeric_limits<double>::max();
+      const auto update_road_to_shoulder_distance = [&](const auto & target_lanelet) {
         const auto lines =
-          rh->getFurthestLinestring(overhang_lanelet, get_right, get_left, get_opposite, true);
-        if (isOnRight(o)) {
-          o.to_road_shoulder_distance =
-            distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
-          debug.bounds.push_back(lines.back());
-        } else {
-          o.to_road_shoulder_distance =
-            distance2d(to2D(overhang_basic_pose), to2D(lines.front().basicLineString()));
-          debug.bounds.push_back(lines.front());
+          rh->getFurthestLinestring(target_lanelet, get_right, get_left, get_opposite, true);
+        const auto & line = isOnRight(o) ? lines.back() : lines.front();
+        const auto d = distance2d(to2D(overhang_basic_pose), to2D(line.basicLineString()));
+        if (d < o.to_road_shoulder_distance) {
+          o.to_road_shoulder_distance = d;
+          target_line = line;
         }
-      }
+      };
 
+      // current lanelet
+      update_road_to_shoulder_distance(overhang_lanelet);
+      // previous lanelet
       lanelet::ConstLanelets previous_lanelet{};
       if (rh->getPreviousLaneletsWithinRoute(overhang_lanelet, &previous_lanelet)) {
-        const auto lines = rh->getFurthestLinestring(
-          previous_lanelet.front(), get_right, get_left, get_opposite, true);
-        if (isOnRight(o)) {
-          const auto d =
-            distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
-          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
-          debug.bounds.push_back(lines.back());
-        } else {
-          const auto d =
-            distance2d(to2D(overhang_basic_pose), to2D(lines.front().basicLineString()));
-          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
-          debug.bounds.push_back(lines.front());
-        }
+        update_road_to_shoulder_distance(previous_lanelet.front());
       }
-
+      // next lanelet
       lanelet::ConstLanelet next_lanelet{};
       if (rh->getNextLaneletWithinRoute(overhang_lanelet, &next_lanelet)) {
-        const auto lines =
-          rh->getFurthestLinestring(next_lanelet, get_right, get_left, get_opposite, true);
-        if (isOnRight(o)) {
-          const auto d =
-            distance2d(to2D(overhang_basic_pose), to2D(lines.back().basicLineString()));
-          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
-          debug.bounds.push_back(lines.back());
-        } else {
-          const auto d =
-            distance2d(to2D(overhang_basic_pose), to2D(lines.front().basicLineString()));
-          o.to_road_shoulder_distance = std::min(d, o.to_road_shoulder_distance);
-          debug.bounds.push_back(lines.front());
-        }
+        update_road_to_shoulder_distance(next_lanelet);
       }
+
+      debug.bounds.push_back(target_line);
     }
 
     // calculate avoid_margin dynamically
