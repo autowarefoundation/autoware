@@ -133,6 +133,29 @@ public:
       rclcpp::WallRate(10).sleep();
     }
   }
+
+  void publishOldOdometry(const double publish_duration)
+  {
+    const auto start_time = this->now();
+    while (true) {
+      const auto now = this->now();
+
+      const auto time_diff = now - start_time;
+      if (publish_duration < time_diff.seconds()) {
+        break;
+      }
+
+      Odometry odometry;
+      odometry.header.stamp = now - rclcpp::Duration(15, 0);  // 15 seconds old data
+      odometry.pose.pose.position = createPoint(0.0, 0.0, 0.0);
+      odometry.pose.pose.orientation = createQuaternion(0.0, 0.0, 0.0, 1.0);
+      odometry.twist.twist.linear = createTranslation(0.0, 0.0, 0.0);
+      odometry.twist.twist.angular = createTranslation(0.0, 0.0, 0.0);
+      this->pub_odom_->publish(odometry);
+
+      rclcpp::WallRate(10).sleep();
+    }
+  }
 };
 
 TEST(vehicle_stop_checker, isVehicleStopped)
@@ -217,6 +240,37 @@ TEST(vehicle_stop_checker, isVehicleStopped)
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_400_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_600_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_800_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_1000_MS));
+
+    executor.cancel();
+    spin_thread.join();
+    checker.reset();
+    manager.reset();
+  }
+
+  // check if the old data will be discarded
+  {
+    auto checker = std::make_shared<CheckerNode>();
+    auto manager = std::make_shared<PubManager>();
+    EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
+
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped());
+
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(checker);
+    executor.add_node(manager);
+
+    std::thread spin_thread =
+      std::thread(std::bind(&rclcpp::executors::SingleThreadedExecutor::spin, &executor));
+
+    manager->publishOldOdometry(ODOMETRY_HISTORY_500_MS);
+
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped());
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_400_MS));
     EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_600_MS));
     EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_800_MS));
     EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_1000_MS));

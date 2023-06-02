@@ -31,7 +31,7 @@ void VehicleStopCheckerBase::addTwist(const TwistStamped & twist)
   twist_buffer_.push_front(twist);
 
   const auto now = clock_->now();
-  while (true) {
+  while (!twist_buffer_.empty()) {
     // Check oldest data time
     const auto time_diff = now - twist_buffer_.back().header.stamp;
 
