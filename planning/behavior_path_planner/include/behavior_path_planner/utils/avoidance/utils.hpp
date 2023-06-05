@@ -104,6 +104,12 @@ void filterTargetObjects(
   ObjectDataArray & objects, AvoidancePlanningData & data, DebugData & debug,
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
+
+double extendToRoadShoulderDistanceWithPolygon(
+  const std::shared_ptr<route_handler::RouteHandler> & rh,
+  const lanelet::ConstLineString3d & target_line, const double to_road_shoulder_distance,
+  const geometry_msgs::msg::Point & overhang_pos,
+  const lanelet::BasicPoint3d & overhang_basic_pose);
 }  // namespace behavior_path_planner::utils::avoidance
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__UTILS_HPP_
