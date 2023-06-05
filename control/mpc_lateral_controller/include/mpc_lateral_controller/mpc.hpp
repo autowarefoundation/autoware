@@ -39,6 +39,7 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace autoware::motion::control::mpc_lateral_controller
@@ -226,7 +227,7 @@ private:
    */
   bool executeOptimization(
     const MPCMatrix & mpc_matrix, const Eigen::VectorXd & x0, const double prediction_dt,
-    Eigen::VectorXd * Uex);
+    Eigen::VectorXd * Uex, const MPCTrajectory & traj, const double current_velocity);
   /**
    * @brief resample trajectory with mpc resampling time
    */
@@ -352,8 +353,10 @@ public:
   double m_admissible_yaw_error_rad;
   //!< @brief steering command limit [rad]
   double m_steer_lim;
-  //!< @brief steering rate limit [rad/s]
-  double m_steer_rate_lim;
+  //!< @brief steering rate limit list depending on curvature [/m], [rad/s]
+  std::vector<std::pair<double, double>> m_steer_rate_lim_map_by_curvature{};
+  //!< @brief steering rate limit list depending on velocity [m/s], [rad/s]
+  std::vector<std::pair<double, double>> m_steer_rate_lim_map_by_velocity{};
   //!< @brief control frequency [s]
   double m_ctrl_period;
   /* parameters for path smoothing */

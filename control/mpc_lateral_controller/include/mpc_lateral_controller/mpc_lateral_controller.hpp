@@ -105,9 +105,6 @@ private:
   double m_new_traj_end_dist;            // check trajectory shape change
   bool m_keep_steer_control_until_converged;
 
-  /* parameter to store the actual steering rate limit */
-  double m_steer_rate_lim;
-
   // trajectory buffer for detecting new trajectory
   std::deque<autoware_auto_planning_msgs::msg::Trajectory> m_trajectory_buffer;
 
