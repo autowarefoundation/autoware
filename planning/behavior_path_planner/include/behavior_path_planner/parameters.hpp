@@ -118,8 +118,8 @@ struct BehaviorPathPlannerParameters
   double turn_signal_shift_length_threshold;
   bool turn_signal_on_swerving;
 
-  double enable_akima_spline_first;
-  double enable_cog_on_centerline;
+  bool enable_akima_spline_first;
+  bool enable_cog_on_centerline;
   double input_path_interval;
   double output_path_interval;
 
