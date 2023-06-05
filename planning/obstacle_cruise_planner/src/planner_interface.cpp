@@ -479,7 +479,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     // update prev_slow_down_output_
     new_prev_slow_down_output.push_back(SlowDownOutput{
       obstacle.uuid, slow_down_traj_points, slow_down_start_idx, slow_down_end_idx,
-      stable_slow_down_vel, obstacle.precise_lat_dist});
+      stable_slow_down_vel, feasible_slow_down_vel, obstacle.precise_lat_dist});
   }
 
   // update prev_slow_down_output_
@@ -574,19 +574,31 @@ std::tuple<double, double, double> PlannerInterface::calculateDistanceToSlowDown
     if (planner_data.ego_vel < slow_down_vel) {
       return slow_down_vel;
     }
-    if (planner_data.ego_acc < longitudinal_info_.min_accel) {
-      const double squared_vel =
-        std::pow(planner_data.ego_vel, 2) + 2 * deceleration_dist * longitudinal_info_.min_accel;
-      if (squared_vel < 0) {
-        return slow_down_vel;
+
+    const double one_shot_feasible_slow_down_vel = [&]() {
+      if (planner_data.ego_acc < longitudinal_info_.min_accel) {
+        const double squared_vel =
+          std::pow(planner_data.ego_vel, 2) + 2 * deceleration_dist * longitudinal_info_.min_accel;
+        if (squared_vel < 0) {
+          return slow_down_vel;
+        }
+        return std::max(std::sqrt(squared_vel), slow_down_vel);
       }
-      return std::max(std::sqrt(squared_vel), slow_down_vel);
+      // TODO(murooka) Calculate more precisely. Final acceleration should be zero.
+      const double min_feasible_slow_down_vel = calcDecelerationVelocityFromDistanceToTarget(
+        longitudinal_info_.min_jerk, longitudinal_info_.min_accel, planner_data.ego_acc,
+        planner_data.ego_vel, deceleration_dist);
+      return min_feasible_slow_down_vel;
+    }();
+    if (prev_output) {
+      // NOTE: If longitudinal controllability is not good, one_shot_slow_down_vel may be getting
+      // larger since we use actual ego's velocity and acceleration for its calculation.
+      //       Suppress one_shot_slow_down_vel getting larger here.
+      const double feasible_slow_down_vel =
+        std::min(one_shot_feasible_slow_down_vel, prev_output->feasible_target_vel);
+      return std::max(slow_down_vel, feasible_slow_down_vel);
     }
-    // TODO(murooka) Calculate more precisely. Final acceleration should be zero.
-    const double min_feasible_slow_down_vel = calcDecelerationVelocityFromDistanceToTarget(
-      longitudinal_info_.min_jerk, longitudinal_info_.min_accel, planner_data.ego_acc,
-      planner_data.ego_vel, deceleration_dist);
-    return std::max(min_feasible_slow_down_vel, slow_down_vel);
+    return std::max(slow_down_vel, one_shot_feasible_slow_down_vel);
   }();
 
   return std::make_tuple(
