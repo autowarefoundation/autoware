@@ -263,6 +263,10 @@ ObstacleCruisePlannerNode::BehaviorDeterminationParam::BehaviorDeterminationPara
     node.declare_parameter<double>("behavior_determination.slow_down.max_lat_margin");
   lat_hysteresis_margin_for_slow_down =
     node.declare_parameter<double>("behavior_determination.slow_down.lat_hysteresis_margin");
+  successive_num_to_entry_slow_down_condition = node.declare_parameter<int>(
+    "behavior_determination.slow_down.successive_num_to_entry_slow_down_condition");
+  successive_num_to_exit_slow_down_condition = node.declare_parameter<int>(
+    "behavior_determination.slow_down.successive_num_to_exit_slow_down_condition");
 }
 
 void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
@@ -315,6 +319,12 @@ void ObstacleCruisePlannerNode::BehaviorDeterminationParam::onParam(
   tier4_autoware_utils::updateParam<double>(
     parameters, "behavior_determination.slow_down.lat_hysteresis_margin",
     lat_hysteresis_margin_for_slow_down);
+  tier4_autoware_utils::updateParam<int>(
+    parameters, "behavior_determination.slow_down.successive_num_to_entry_slow_down_condition",
+    successive_num_to_entry_slow_down_condition);
+  tier4_autoware_utils::updateParam<int>(
+    parameters, "behavior_determination.slow_down.successive_num_to_exit_slow_down_condition",
+    successive_num_to_exit_slow_down_condition);
 }
 
 ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions & node_options)
@@ -621,6 +631,7 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
   std::vector<StopObstacle> stop_obstacles;
   std::vector<CruiseObstacle> cruise_obstacles;
   std::vector<SlowDownObstacle> slow_down_obstacles;
+  slow_down_condition_counter_.resetCurrentUuids();
   for (const auto & obstacle : obstacles) {
     const auto obstacle_poly = obstacle.toPolygon();
 
@@ -651,6 +662,7 @@ ObstacleCruisePlannerNode::determineEgoBehaviorAgainstObstacles(
       continue;
     }
   }
+  slow_down_condition_counter_.removeCounterUnlessUpdated();
 
   // Check target obstacles' consistency
   checkConsistency(objects_ptr_->header.stamp, *objects_ptr_, traj_points, stop_obstacles);
@@ -953,9 +965,9 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
   const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle,
   const double precise_lat_dist)
 {
-  std::cerr << precise_lat_dist << std::endl;
   const auto & object_id = obstacle.uuid.substr(0, 4);
   const auto & p = behavior_determination_param_;
+  slow_down_condition_counter_.addCurrentUuid(obstacle.uuid);
 
   const bool is_prev_obstacle_slow_down =
     getObstacleFromUuid(prev_slow_down_obstacles_, obstacle.uuid).has_value();
@@ -969,7 +981,30 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
     precise_lat_dist, is_prev_obstacle_slow_down,
     p.max_lat_margin_for_slow_down + p.lat_hysteresis_margin_for_slow_down / 2.0,
     p.max_lat_margin_for_slow_down - p.lat_hysteresis_margin_for_slow_down / 2.0);
-  if (!is_lat_dist_low) {
+
+  const bool is_slow_down_required = [&]() {
+    if (is_prev_obstacle_slow_down) {
+      // check if exiting slow down
+      if (!is_lat_dist_low) {
+        const int count = slow_down_condition_counter_.decreaseCounter(obstacle.uuid);
+        if (count <= -p.successive_num_to_exit_slow_down_condition) {
+          slow_down_condition_counter_.reset(obstacle.uuid);
+          return false;
+        }
+      }
+      return true;
+    }
+    // check if entrying slow down
+    if (is_lat_dist_low) {
+      const int count = slow_down_condition_counter_.increaseCounter(obstacle.uuid);
+      if (p.successive_num_to_entry_slow_down_condition <= count) {
+        slow_down_condition_counter_.reset(obstacle.uuid);
+        return true;
+      }
+    }
+    return false;
+  }();
+  if (!is_slow_down_required) {
     RCLCPP_INFO_EXPRESSION(
       get_logger(), enable_debug_info_,
       "[SlowDown] Ignore obstacle (%s) since it's far from trajectory. (%f [m])", object_id.c_str(),

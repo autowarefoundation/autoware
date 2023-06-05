@@ -96,6 +96,9 @@
         max_lat_margin: 1.1  # lateral margin between obstacle and trajectory band with ego's width
         lat_hysteresis_margin: 0.2
 
+        successive_num_to_entry_slow_down_condition: 5
+        successive_num_to_exit_slow_down_condition: 5
+
     cruise:
       pid_based_planner:
         use_velocity_limit_based_planner: true

@@ -471,14 +471,16 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
 
     // add debug data and virtual wall
     slow_down_debug_multi_array_.data.push_back(obstacle.precise_lat_dist);
+    slow_down_debug_multi_array_.data.push_back(dist_to_slow_down_start);
+    slow_down_debug_multi_array_.data.push_back(dist_to_slow_down_end);
+    slow_down_debug_multi_array_.data.push_back(feasible_slow_down_vel);
     slow_down_debug_multi_array_.data.push_back(stable_slow_down_vel);
+    slow_down_debug_multi_array_.data.push_back(slow_down_start_idx ? *slow_down_start_idx : -1.0);
+    slow_down_debug_multi_array_.data.push_back(slow_down_end_idx ? *slow_down_end_idx : -1.0);
     if (slow_down_start_idx) {
-      slow_down_debug_multi_array_.data.push_back(
-        slow_down_start_idx ? *slow_down_start_idx : -1.0);
       add_slow_down_marker(i, slow_down_start_idx, true);
     }
     if (slow_down_end_idx) {
-      slow_down_debug_multi_array_.data.push_back(slow_down_end_idx ? *slow_down_end_idx : -1.0);
       add_slow_down_marker(i, slow_down_end_idx, false);
     }
 
@@ -548,20 +550,27 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
   // calculate offset distance to first collision considering relative velocity
   const double relative_vel = planner_data.ego_vel - obstacle.velocity;
   const double offset_dist_to_collision = [&]() {
-    if (relative_vel < 0) {
-      return 100.0;
+    if (dist_to_front_collision < dist_to_ego + abs_ego_offset) {
+      return 0.0;
     }
-    const double time_to_collision = [&]() {
-      if (dist_to_front_collision < dist_to_ego + abs_ego_offset) {
-        return 0.0;
-      }
-      return (dist_to_front_collision - dist_to_ego - abs_ego_offset) / std::max(1.0, relative_vel);
-    }();
-    return obstacle_vel * time_to_collision;
+
+    // NOTE: This min_relative_vel forces the relative velocity positive if the ego velocity is
+    // lower than the obstacle velocity. Without this, the slow down feature will flicker where the
+    // ego velocity is very close to the obstacle velocity.
+    constexpr double min_relative_vel = 1.0;
+    const double time_to_collision = (dist_to_front_collision - dist_to_ego - abs_ego_offset) /
+                                     std::max(min_relative_vel, relative_vel);
+
+    constexpr double time_to_collision_margin = 1.0;
+    const double cropped_time_to_collision =
+      std::max(0.0, time_to_collision - time_to_collision_margin);
+    return obstacle_vel * cropped_time_to_collision;
   }();
 
   // calculate distance during deceleration, slow down preparation, and slow down
-  const double slow_down_prepare_dist = slow_down_vel * p.time_margin_on_target_velocity;
+  const double min_slow_down_prepare_dist = 3.0;
+  const double slow_down_prepare_dist =
+    std::max(min_slow_down_prepare_dist, slow_down_vel * p.time_margin_on_target_velocity);
   const double deceleration_dist = offset_dist_to_collision + dist_to_front_collision -
                                    abs_ego_offset - dist_to_ego - slow_down_prepare_dist;
   const double slow_down_dist =
