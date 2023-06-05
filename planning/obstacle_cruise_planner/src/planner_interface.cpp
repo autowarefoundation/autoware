@@ -429,9 +429,17 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     const auto prev_output = getObjectFromUuid(prev_slow_down_output_, obstacle.uuid);
 
     // calculate slow down start distance, and insert slow down velocity
+    const auto dist_vec_to_slow_down = calculateDistanceToSlowDownWithConstraints(
+      planner_data, slow_down_traj_points, obstacle, prev_output, dist_to_ego);
+    if (!dist_vec_to_slow_down) {
+      RCLCPP_INFO_EXPRESSION(
+        rclcpp::get_logger("ObstacleCruisePlanner::Plannerinterface"), enable_debug_info_,
+        "[SlowDown] Ignore obstacle (%s) since distance to slow down is not valid",
+        obstacle.uuid.c_str());
+      continue;
+    }
     const auto [dist_to_slow_down_start, dist_to_slow_down_end, feasible_slow_down_vel] =
-      calculateDistanceToSlowDownWithConstraints(
-        planner_data, slow_down_traj_points, obstacle, prev_output, dist_to_ego);
+      *dist_vec_to_slow_down;
 
     // calculate slow down end distance, and insert slow down velocity
     // NOTE: slow_down_start_idx will not be wrong since inserted back point is after inserted
@@ -516,7 +524,8 @@ double PlannerInterface::calculateSlowDownVelocity(
   return slow_down_vel;
 }
 
-std::tuple<double, double, double> PlannerInterface::calculateDistanceToSlowDownWithConstraints(
+std::optional<std::tuple<double, double, double>>
+PlannerInterface::calculateDistanceToSlowDownWithConstraints(
   const PlannerData & planner_data, const std::vector<TrajectoryPoint> & traj_points,
   const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
   const double dist_to_ego) const
@@ -525,6 +534,7 @@ std::tuple<double, double, double> PlannerInterface::calculateDistanceToSlowDown
   const double abs_ego_offset = planner_data.is_driving_forward
                                   ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
+  const double obstacle_vel = obstacle.velocity;
 
   // calculate slow down velocity
   const double slow_down_vel = calculateSlowDownVelocity(obstacle, prev_output);
@@ -535,16 +545,35 @@ std::tuple<double, double, double> PlannerInterface::calculateDistanceToSlowDown
   const double dist_to_back_collision =
     motion_utils::calcSignedArcLength(traj_points, 0, obstacle.back_collision_point);
 
+  // calculate offset distance to first collision considering relative velocity
+  const double relative_vel = planner_data.ego_vel - obstacle.velocity;
+  const double offset_dist_to_collision = [&]() {
+    if (relative_vel < 0) {
+      return 100.0;
+    }
+    const double time_to_collision = [&]() {
+      if (dist_to_front_collision < dist_to_ego + abs_ego_offset) {
+        return 0.0;
+      }
+      return (dist_to_front_collision - dist_to_ego - abs_ego_offset) / std::max(1.0, relative_vel);
+    }();
+    return obstacle_vel * time_to_collision;
+  }();
+
   // calculate distance during deceleration, slow down preparation, and slow down
   const double slow_down_prepare_dist = slow_down_vel * p.time_margin_on_target_velocity;
-  const double deceleration_dist =
-    dist_to_front_collision - abs_ego_offset - dist_to_ego - slow_down_prepare_dist;
+  const double deceleration_dist = offset_dist_to_collision + dist_to_front_collision -
+                                   abs_ego_offset - dist_to_ego - slow_down_prepare_dist;
   const double slow_down_dist =
     dist_to_back_collision - dist_to_front_collision + slow_down_prepare_dist;
 
   // calculate distance to start/end slow down
   const double dist_to_slow_down_start = dist_to_ego + deceleration_dist;
   const double dist_to_slow_down_end = dist_to_ego + deceleration_dist + slow_down_dist;
+  if (100.0 < dist_to_slow_down_start) {
+    // NOTE: distance to slow down is too far.
+    return std::nullopt;
+  }
 
   // apply low-pass filter to distance to start/end slow down
   const auto apply_lowpass_filter = [&](const double dist_to_slow_down, const auto prev_point) {
