@@ -607,7 +607,7 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
       if (prev_output) {
         return prev_output->target_vel;
       }
-      return slow_down_vel;
+      return std::max(planner_data.ego_vel, slow_down_vel);
     }
     if (planner_data.ego_vel < slow_down_vel) {
       return slow_down_vel;
