@@ -418,7 +418,11 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * STEP 3
    * Find new shift point
    */
-  data.unapproved_new_sl = findNewShiftLine(processed_raw_sp, path_shifter);
+  const auto new_sp = findNewShiftLine(processed_raw_sp, path_shifter);
+  if (isValidShiftLine(new_sp, path_shifter)) {
+    data.unapproved_new_sl = new_sp;
+  }
+
   const auto found_new_sl = data.unapproved_new_sl.size() > 0;
   const auto registered = path_shifter.getShiftLines().size() > 0;
   data.found_avoidance_path = found_new_sl || registered;
@@ -1227,6 +1231,10 @@ AvoidLineArray AvoidanceModule::mergeShiftLines(
     debug.pos_shift = shift_line_data.pos_shift_line;
     debug.neg_shift = shift_line_data.neg_shift_line;
     debug.total_shift = shift_line_data.shift_line;
+    debug.pos_shift_grad = shift_line_data.pos_shift_line_grad;
+    debug.neg_shift_grad = shift_line_data.neg_shift_line_grad;
+    debug.total_forward_grad = shift_line_data.forward_grad;
+    debug.total_backward_grad = shift_line_data.backward_grad;
   }
 
   // debug print
@@ -3006,6 +3014,39 @@ AvoidLineArray AvoidanceModule::findNewShiftLine(
   return {};
 }
 
+bool AvoidanceModule::isValidShiftLine(
+  const AvoidLineArray & shift_lines, const PathShifter & shifter) const
+{
+  if (shift_lines.empty()) {
+    return false;
+  }
+
+  auto shifter_for_validate = shifter;
+
+  addNewShiftLines(shifter_for_validate, shift_lines);
+
+  ShiftedPath proposed_shift_path;
+  shifter_for_validate.generate(&proposed_shift_path);
+
+  // check offset between new shift path and ego position.
+  {
+    const auto new_idx = planner_data_->findEgoIndex(proposed_shift_path.path.points);
+    const auto new_shift_length = proposed_shift_path.shift_length.at(new_idx);
+
+    constexpr double THRESHOLD = 0.1;
+    const auto offset = std::abs(new_shift_length - helper_.getEgoShift());
+    if (offset > THRESHOLD) {
+      RCLCPP_WARN_THROTTLE(
+        getLogger(), *clock_, 1000, "new shift line is invalid. [HUGE OFFSET (%.2f)]", offset);
+      return false;
+    }
+  }
+
+  debug_data_.proposed_spline_shift = proposed_shift_path.shift_length;
+
+  return true;  // valid shift line.
+}
+
 ShiftedPath AvoidanceModule::generateAvoidancePath(PathShifter & path_shifter) const
 {
   DEBUG_PRINT("path_shifter: base shift = %f", getCurrentBaseShift());
@@ -3203,6 +3244,7 @@ void AvoidanceModule::updateDebugMarker(
   using marker_utils::createObjectsMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
+  using marker_utils::createShiftGradMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
   using marker_utils::createShiftLineMarkerArray;
   using marker_utils::avoidance_marker::createAvoidLineMarkerArray;
@@ -3276,14 +3318,36 @@ void AvoidanceModule::updateDebugMarker(
   addAvoidLine(debug.current_raw_shift, "p_current_raw_shift", 0.5, 0.2, 0.2);
   addAvoidLine(debug.extra_return_shift, "p_extra_return_shift", 0.0, 0.5, 0.8);
 
-  // merged shift
-  add(createShiftLengthMarkerArray(debug.pos_shift, path, "m_pos_shift_line", 0, 0.7, 0.5));
-  add(createShiftLengthMarkerArray(debug.neg_shift, path, "m_neg_shift_line", 0, 0.5, 0.7));
-  add(createShiftLengthMarkerArray(debug.total_shift, path, "m_total_shift_line", 0.99, 0.4, 0.2));
-  add(createShiftLengthMarkerArray(debug.output_shift, path, "m_output_shift_line", 0.8, 0.8, 0.2));
-  add(createShiftLengthMarkerArray(
-    helper_.getPreviousLinearShiftPath().shift_length, path, "m_output_linear_line", 0.9, 0.3,
-    0.3));
+  // shift length
+  {
+    const std::string ns = "shift_length";
+    add(createShiftLengthMarkerArray(debug.pos_shift, path, ns + "_pos", 0.0, 0.7, 0.5));
+    add(createShiftLengthMarkerArray(debug.neg_shift, path, ns + "_neg", 0.0, 0.5, 0.7));
+    add(createShiftLengthMarkerArray(debug.total_shift, path, ns + "_total", 0.99, 0.4, 0.2));
+  }
+
+  // shift grad
+  {
+    const std::string ns = "shift_grad";
+    add(createShiftGradMarkerArray(
+      debug.pos_shift_grad, debug.pos_shift, path, ns + "_pos", 0.0, 0.7, 0.5));
+    add(createShiftGradMarkerArray(
+      debug.neg_shift_grad, debug.neg_shift, path, ns + "_neg", 0.0, 0.5, 0.7));
+    add(createShiftGradMarkerArray(
+      debug.total_forward_grad, debug.total_shift, path, ns + "_total_forward", 0.99, 0.4, 0.2));
+    add(createShiftGradMarkerArray(
+      debug.total_backward_grad, debug.total_shift, path, ns + "_total_backward", 0.4, 0.2, 0.99));
+  }
+
+  // shift path
+  {
+    const std::string ns = "shift_line";
+    add(createShiftLengthMarkerArray(
+      helper_.getPreviousLinearShiftPath().shift_length, path, ns + "_linear_registered", 0.9, 0.3,
+      0.3));
+    add(createShiftLengthMarkerArray(
+      debug.proposed_spline_shift, path, ns + "_spline_proposed", 1.0, 1.0, 1.0));
+  }
 
   // child shift points
   addAvoidLine(debug.merged, "c_0_merged", 0.345, 0.968, 1.0);

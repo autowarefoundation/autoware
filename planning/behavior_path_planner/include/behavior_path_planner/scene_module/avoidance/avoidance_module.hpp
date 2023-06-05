@@ -496,6 +496,14 @@ private:
    */
   void addNewShiftLines(PathShifter & path_shifter, const AvoidLineArray & shift_lines) const;
 
+  /**
+   * @brief validate shift lines.
+   * @param new shift lines.
+   * @param path shifter.
+   * @return result. if there is huge gap between the ego position and candidate path, return false.
+   */
+  bool isValidShiftLine(const AvoidLineArray & shift_lines, const PathShifter & shifter) const;
+
   // generate output data
 
   /**

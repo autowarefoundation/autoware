@@ -139,8 +139,7 @@ MarkerArray createShiftLineMarkerArray(
 }
 
 MarkerArray createShiftLengthMarkerArray(
-  const std::vector<double> & shift_distance,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & reference, std::string && ns,
+  const std::vector<double> & shift_distance, const PathWithLaneId & reference, std::string && ns,
   const float & r, const float & g, const float & b)
 {
   if (shift_distance.size() != reference.points.size()) {
@@ -162,6 +161,38 @@ MarkerArray createShiftLengthMarkerArray(
   }
 
   msg.markers.push_back(marker);
+  return msg;
+}
+
+MarkerArray createShiftGradMarkerArray(
+  const std::vector<double> & grad, const std::vector<double> & shift_distance,
+  const PathWithLaneId & reference, std::string && ns, const float & r, const float & g,
+  const float & b)
+{
+  if (grad.size() != reference.points.size()) {
+    return MarkerArray{};
+  }
+
+  if (shift_distance.size() != reference.points.size()) {
+    return MarkerArray{};
+  }
+
+  MarkerArray msg;
+
+  Marker marker = createDefaultMarker(
+    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::TEXT_VIEW_FACING,
+    createMarkerScale(0.1, 0.1, 0.1), createMarkerColor(r, g, b, 0.9));
+
+  for (size_t i = 0; i < grad.size(); ++i) {
+    std::ostringstream string_stream;
+    string_stream << "Grad:" << grad.at(i);
+    marker.text = string_stream.str();
+    marker.pose = calcOffsetPose(reference.points.at(i).point.pose, 0.0, shift_distance.at(i), 0.0);
+    marker.id = i;
+
+    msg.markers.push_back(marker);
+  }
+
   return msg;
 }
 

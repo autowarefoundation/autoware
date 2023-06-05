@@ -514,10 +514,21 @@ struct DebugData
   AvoidLineArray trim_similar_grad_shift_third;
   AvoidLineArray trim_momentary_return;
   AvoidLineArray trim_too_sharp_shift;
+
+  // shift length
   std::vector<double> pos_shift;
   std::vector<double> neg_shift;
   std::vector<double> total_shift;
   std::vector<double> output_shift;
+
+  // shift grad
+  std::vector<double> pos_shift_grad;
+  std::vector<double> neg_shift_grad;
+  std::vector<double> total_forward_grad;
+  std::vector<double> total_backward_grad;
+
+  // shift path
+  std::vector<double> proposed_spline_shift;
 
   bool exist_adjacent_objects{false};
 

@@ -100,9 +100,13 @@ MarkerArray createShiftLineMarkerArray(
   const float & g, const float & b, const float & w);
 
 MarkerArray createShiftLengthMarkerArray(
-  const std::vector<double> & shift_distance,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & reference, std::string && ns,
+  const std::vector<double> & shift_distance, const PathWithLaneId & reference, std::string && ns,
   const float & r, const float & g, const float & b);
+
+MarkerArray createShiftGradMarkerArray(
+  const std::vector<double> & grad, const std::vector<double> & shift_distance,
+  const PathWithLaneId & reference, std::string && ns, const float & r, const float & g,
+  const float & b);
 
 MarkerArray createLaneletsAreaMarkerArray(
   const std::vector<lanelet::ConstLanelet> & lanelets, std::string && ns, const float & r,
