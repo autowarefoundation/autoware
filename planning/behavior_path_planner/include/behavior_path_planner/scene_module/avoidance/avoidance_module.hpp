@@ -296,13 +296,6 @@ private:
   // shift line generation
 
   /**
-   * @brief extract non straight shift line.
-   * @param candidate shift lines.
-   * @return shift line that has non zero relative length.
-   */
-  AvoidLine getNonStraightShiftLine(const AvoidLineArray & shift_lines) const;
-
-  /**
    * @brief fill index and longitudinal.
    * @param target shift line.
    * @return processed shift line.
@@ -384,8 +377,7 @@ private:
    * @param candidate shift lines.
    * @return new shift lines.
    */
-  AvoidLineArray findNewShiftLine(
-    const AvoidLineArray & shift_lines, const PathShifter & shifter) const;
+  AvoidLineArray findNewShiftLine(const AvoidLineArray & shift_lines) const;
 
   /*
    * @brief calculate parent ids.

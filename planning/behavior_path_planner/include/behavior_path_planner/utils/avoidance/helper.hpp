@@ -156,6 +156,20 @@ public:
                        : std::max(shift_length, getRightShiftBound());
   }
 
+  AvoidLine getMainShiftLine(const AvoidLineArray & lines) const
+  {
+    const auto itr =
+      std::max_element(lines.begin(), lines.end(), [this](const auto & a, const auto & b) {
+        return std::abs(getRelativeShiftToPath(a)) < std::abs(getRelativeShiftToPath(b));
+      });
+
+    if (itr == lines.end()) {
+      return {};
+    }
+
+    return *itr;
+  }
+
   boost::optional<double> getFeasibleDecelDistance(const double target_velocity) const
   {
     const auto & a_now = data_->self_acceleration->accel.accel.linear.x;

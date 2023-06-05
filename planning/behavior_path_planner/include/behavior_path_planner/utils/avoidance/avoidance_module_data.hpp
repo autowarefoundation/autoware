@@ -244,6 +244,10 @@ struct AvoidanceParameters
   // avoidance path will be generated unless their lateral margin difference exceeds this value.
   double lateral_execution_threshold;
 
+  // shift lines whose shift length is less than threshold is added a request with other large shift
+  // line.
+  double lateral_small_shift_threshold;
+
   // For shift line generation process. The continuous shift length is quantized by this value.
   double quantize_filter_threshold;
 

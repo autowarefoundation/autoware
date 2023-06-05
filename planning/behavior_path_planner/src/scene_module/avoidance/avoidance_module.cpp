@@ -418,7 +418,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * STEP 3
    * Find new shift point
    */
-  const auto new_sp = findNewShiftLine(processed_raw_sp, path_shifter);
+  const auto new_sp = findNewShiftLine(processed_raw_sp);
   if (isValidShiftLine(new_sp, path_shifter)) {
     data.unapproved_new_sl = new_sp;
   }
@@ -962,17 +962,6 @@ AvoidLine AvoidanceModule::fillAdditionalInfo(const AvoidLine & shift_line) cons
 {
   const auto ret = fillAdditionalInfo(AvoidLineArray{shift_line});
   return ret.front();
-}
-
-AvoidLine AvoidanceModule::getNonStraightShiftLine(const AvoidLineArray & shift_lines) const
-{
-  for (const auto & sl : shift_lines) {
-    if (fabs(helper_.getRelativeShiftToPath(sl)) > 0.01) {
-      return sl;
-    }
-  }
-
-  return {};
 }
 
 void AvoidanceModule::fillAdditionalInfoFromPoint(AvoidLineArray & shift_lines) const
@@ -2690,7 +2679,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
     DEBUG_PRINT("new_shift_lines size = %lu", data.safe_new_sl.size());
     printShiftLines(data.safe_new_sl, "new_shift_lines");
 
-    const auto sl = getNonStraightShiftLine(data.safe_new_sl);
+    const auto sl = helper_.getMainShiftLine(data.safe_new_sl);
     if (helper_.getRelativeShiftToPath(sl) > 0.0) {
       removePreviousRTCStatusRight();
     } else if (helper_.getRelativeShiftToPath(sl) < 0.0) {
@@ -2783,7 +2772,7 @@ CandidateOutput AvoidanceModule::planCandidate() const
       shifted_path.path, data.safe_new_sl.front().start_idx, std::numeric_limits<double>::max(),
       0.0);
 
-    const auto sl = getNonStraightShiftLine(data.safe_new_sl);
+    const auto sl = helper_.getMainShiftLine(data.safe_new_sl);
     const auto sl_front = data.safe_new_sl.front();
     const auto sl_back = data.safe_new_sl.back();
 
@@ -2858,7 +2847,7 @@ void AvoidanceModule::addShiftLineIfApproved(const AvoidLineArray & shift_lines)
     // register original points for consistency
     registerRawShiftLines(shift_lines);
 
-    const auto sl = getNonStraightShiftLine(shift_lines);
+    const auto sl = helper_.getMainShiftLine(shift_lines);
     const auto sl_front = shift_lines.front();
     const auto sl_back = shift_lines.back();
 
@@ -2937,44 +2926,68 @@ void AvoidanceModule::addNewShiftLines(
   path_shifter.setShiftLines(future);
 }
 
-AvoidLineArray AvoidanceModule::findNewShiftLine(
-  const AvoidLineArray & candidates, const PathShifter & shifter) const
+AvoidLineArray AvoidanceModule::findNewShiftLine(const AvoidLineArray & candidates) const
 {
-  (void)shifter;
-
   if (candidates.empty()) {
-    DEBUG_PRINT("shift candidates is empty. return None.");
     return {};
   }
 
-  printShiftLines(candidates, "findNewShiftLine: candidates");
+  // add small shift lines.
+  const auto add_straight_shift =
+    [&, this](auto & subsequent, bool has_large_shift, const size_t start_idx) {
+      for (size_t i = start_idx; i < candidates.size(); ++i) {
+        if (
+          std::abs(candidates.at(i).getRelativeLength()) >
+          parameters_->lateral_small_shift_threshold) {
+          if (has_large_shift) {
+            break;
+          }
 
-  // Retrieve the subsequent linear shift point from the given index point.
-  const auto getShiftLineWithSubsequentStraight = [this, &candidates](size_t i) {
-    AvoidLineArray subsequent{candidates.at(i)};
-    for (size_t j = i + 1; j < candidates.size(); ++j) {
-      const auto next_shift = candidates.at(j);
-      if (std::abs(next_shift.getRelativeLength()) < 1.0e-2) {
-        subsequent.push_back(next_shift);
-        DEBUG_PRINT("j = %lu, relative shift is zero. add together.", j);
-      } else {
-        DEBUG_PRINT("j = %lu, relative shift is not zero = %f.", j, next_shift.getRelativeLength());
-        break;
+          has_large_shift = true;
+        }
+
+        subsequent.push_back(candidates.at(i));
       }
+    };
+
+  // get subsequent shift lines.
+  const auto get_subsequent_shift = [&, this](size_t i) {
+    AvoidLineArray subsequent{candidates.at(i)};
+
+    if (candidates.size() == i + 1) {
+      return subsequent;
     }
+
+    if (
+      std::abs(candidates.at(i).getRelativeLength()) < parameters_->lateral_small_shift_threshold) {
+      const auto has_large_shift =
+        candidates.at(i + 1).getRelativeLength() > parameters_->lateral_small_shift_threshold;
+
+      // candidate.at(i) is small length shift line. add large length shift line.
+      subsequent.push_back(candidates.at(i + 1));
+      add_straight_shift(subsequent, has_large_shift, i + 2);
+    } else {
+      // candidate.at(i) is large length shift line. add small length shift lines.
+      add_straight_shift(subsequent, true, i + 1);
+    }
+
     return subsequent;
   };
 
-  const auto calcJerk = [this](const auto & al) {
-    return path_shifter_.calcJerkFromLatLonDistance(
-      al.getRelativeLength(), al.getRelativeLongitudinal(), helper_.getSharpAvoidanceEgoSpeed());
+  // check jerk limit.
+  const auto is_large_jerk = [this](const auto & s) {
+    const auto jerk = PathShifter::calcJerkFromLatLonDistance(
+      s.getRelativeLength(), s.getRelativeLongitudinal(), helper_.getSharpAvoidanceEgoSpeed());
+    return jerk > parameters_->max_lateral_jerk;
+  };
+
+  // check ignore or not.
+  const auto is_ignore_shift = [this](const auto & s) {
+    return std::abs(helper_.getRelativeShiftToPath(s)) < parameters_->lateral_execution_threshold;
   };
 
   for (size_t i = 0; i < candidates.size(); ++i) {
     const auto & candidate = candidates.at(i);
-    std::stringstream ss;
-    ss << "i = " << i << ", id = " << candidate.id;
-    const auto pfx = ss.str().c_str();
 
     // new shift points must exist in front of Ego
     // this value should be larger than -eps consider path shifter calculation error.
@@ -2983,30 +2996,12 @@ AvoidLineArray AvoidanceModule::findNewShiftLine(
       continue;
     }
 
-    // TODO(Horibe): this code prohibits the changes on ego pose. Think later.
-    // if (candidate.start_idx < avoidance_data_.ego_closest_path_index) {
-    //   DEBUG_PRINT("%s, start_idx is behind ego. skip.", pfx);
-    //   continue;
-    // }
-
-    const auto current_shift = helper_.getLinearShift(candidate.end.position);
-
-    // TODO(Horibe) test fails with this print. why?
-    // DEBUG_PRINT("%s, shift current: %f, candidate: %f", pfx, current_shift,
-    // candidate.end_shift_length);
-
-    const auto new_point_threshold = parameters_->lateral_execution_threshold;
-    if (std::abs(candidate.end_shift_length - current_shift) > new_point_threshold) {
-      if (calcJerk(candidate) > parameters_->max_lateral_jerk) {
-        DEBUG_PRINT(
-          "%s, Failed to find new shift: jerk limit over (%f).", pfx, calcJerk(candidate));
+    if (!is_ignore_shift(candidate)) {
+      if (is_large_jerk(candidate)) {
         break;
       }
 
-      DEBUG_PRINT(
-        "%s, New shift point is found!!! shift change: %f -> %f", pfx, current_shift,
-        candidate.end_shift_length);
-      return getShiftLineWithSubsequentStraight(i);
+      return get_subsequent_shift(i);
     }
   }
 

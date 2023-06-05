@@ -101,6 +101,7 @@
         lateral:
           lateral_collision_margin: 1.0                 # [m]
           lateral_execution_threshold: 0.499            # [m]
+          lateral_small_shift_threshold: 0.101          # [m]
           road_shoulder_safety_margin: 0.3              # [m]
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
