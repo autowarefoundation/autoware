@@ -134,3 +134,10 @@ To debug the issue, the maximum drivable area boundary can be visualized.
 ![drivable_area_boundary_marker2](../image/drivable_area/drivable_area_boundary_marker_example2.png)
 
 The maximum drivable area can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/maximum_drivable_area`
+
+#### Expansion with hatched road markings area
+
+If the hatched road markings area is defined in the lanelet map, the area can be used as a drivable area.
+Since the area is expressed as a polygon format of Lanelet2, several steps are required for correct expansion.
+
+![hatched_road_markings_drivable_area_expansion](../image/drivable_area/hatched_road_markings_drivable_area_expansion.drawio.svg)
