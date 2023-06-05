@@ -1521,17 +1521,18 @@ std::vector<geometry_msgs::msg::Point> calcBound(
     }
     return points;
   };
-  // a function to get polygon with a designated id
-  const auto get_corresponding_polygon_index = [&](const auto & polygon, const auto & target_id) {
-    for (size_t poly_idx = 0; poly_idx < polygon.size(); ++poly_idx) {
-      if (polygon[poly_idx].id() == target_id) {
-        // NOTE: If there are duplicated points in polygon, the early one will be returned.
-        return poly_idx;
+  // a function to get polygon with a designated point id
+  const auto get_corresponding_polygon_index =
+    [&](const auto & polygon, const auto & target_point_id) {
+      for (size_t poly_point_idx = 0; poly_point_idx < polygon.size(); ++poly_point_idx) {
+        if (polygon[poly_point_idx].id() == target_point_id) {
+          // NOTE: If there are duplicated points in polygon, the early one will be returned.
+          return poly_point_idx;
+        }
       }
-    }
-    // This means calculation has some errors.
-    return polygon.size() - 1;
-  };
+      // This means calculation has some errors.
+      return polygon.size() - 1;
+    };
   const auto mod = [&](const int a, const int b) {
     return (a + b) % b;  // NOTE: consider negative value
   };
@@ -1548,52 +1549,57 @@ std::vector<geometry_msgs::msg::Point> calcBound(
 
   std::optional<lanelet::Polygon3d> current_polygon{std::nullopt};
   std::vector<size_t> current_polygon_border_indices;
-  for (size_t point_idx = 0; point_idx < bound_points.size(); ++point_idx) {
-    const auto & point = bound_points.at(point_idx);
-    const auto polygon = getPolygonByPoint(route_handler, point, "hatched_road_markings");
+  for (size_t bound_point_idx = 0; bound_point_idx < bound_points.size(); ++bound_point_idx) {
+    const auto & bound_point = bound_points.at(bound_point_idx);
+    const auto polygon = getPolygonByPoint(route_handler, bound_point, "hatched_road_markings");
 
     bool will_close_polygon{false};
     if (!current_polygon) {
       if (!polygon) {
-        output_points.push_back(lanelet::utils::conversion::toGeomMsgPt(point));
+        output_points.push_back(lanelet::utils::conversion::toGeomMsgPt(bound_point));
       } else {
         // There is a new additional polygon to expand
         current_polygon = polygon;
         current_polygon_border_indices.push_back(
-          get_corresponding_polygon_index(*current_polygon, point.id()));
+          get_corresponding_polygon_index(*current_polygon, bound_point.id()));
       }
     } else {
       if (!polygon) {
         will_close_polygon = true;
       } else {
         current_polygon_border_indices.push_back(
-          get_corresponding_polygon_index(*current_polygon, point.id()));
+          get_corresponding_polygon_index(*current_polygon, bound_point.id()));
       }
     }
 
-    if (point_idx == bound_points.size() - 1 && current_polygon) {
+    if (bound_point_idx == bound_points.size() - 1 && current_polygon) {
       // If drivable lanes ends earlier than polygon, close the polygon
       will_close_polygon = true;
     }
 
     if (will_close_polygon) {
       // The current additional polygon ends to expand
-      const size_t current_polygon_points_num = current_polygon->size();
-      const bool is_polygon_opposite_direction = [&]() {
-        const size_t modulo_diff = mod(
-          static_cast<int>(current_polygon_border_indices[1]) -
-            static_cast<int>(current_polygon_border_indices[0]),
-          current_polygon_points_num);
-        return modulo_diff == 1;
-      }();
-
-      const int target_points_num =
-        current_polygon_points_num - current_polygon_border_indices.size() + 1;
-      for (int poly_idx = 0; poly_idx <= target_points_num; ++poly_idx) {
-        const int target_poly_idx = current_polygon_border_indices.front() +
-                                    poly_idx * (is_polygon_opposite_direction ? -1 : 1);
+      if (current_polygon_border_indices.size() == 1) {
         output_points.push_back(lanelet::utils::conversion::toGeomMsgPt(
-          (*current_polygon)[mod(target_poly_idx, current_polygon_points_num)]));
+          (*current_polygon)[current_polygon_border_indices.front()]));
+      } else {
+        const size_t current_polygon_points_num = current_polygon->size();
+        const bool is_polygon_opposite_direction = [&]() {
+          const size_t modulo_diff = mod(
+            static_cast<int>(current_polygon_border_indices[1]) -
+              static_cast<int>(current_polygon_border_indices[0]),
+            current_polygon_points_num);
+          return modulo_diff == 1;
+        }();
+
+        const int target_points_num =
+          current_polygon_points_num - current_polygon_border_indices.size() + 1;
+        for (int poly_idx = 0; poly_idx <= target_points_num; ++poly_idx) {
+          const int target_poly_idx = current_polygon_border_indices.front() +
+                                      poly_idx * (is_polygon_opposite_direction ? -1 : 1);
+          output_points.push_back(lanelet::utils::conversion::toGeomMsgPt(
+            (*current_polygon)[mod(target_poly_idx, current_polygon_points_num)]));
+        }
       }
       current_polygon = std::nullopt;
       current_polygon_border_indices.clear();
@@ -1641,20 +1647,27 @@ void makeBoundLongitudinallyMonotonic(PathWithLaneId & path, const bool is_bound
         const auto bound_pose_with_lat_offset =
           tier4_autoware_utils::calcOffsetPose(bound_pose, 0.0, lat_offset, 0.0);
 
-        // skip non monotonic points
-        for (size_t candidate_idx = b_idx + 1; candidate_idx < original_bound.size() - 1;
-             ++candidate_idx) {
-          const auto intersect_point = drivable_area_processing::intersect(
-            bound_pose.position, bound_pose_with_lat_offset.position,
-            original_bound.at(candidate_idx), original_bound.at(candidate_idx + 1));
+        const bool maybe_monotonic = [&]() {
+          if (b_idx == original_bound.size() - 1) {
+            return true;
+          }
+          const double theta = tier4_autoware_utils::normalizeRadian(
+            tier4_autoware_utils::calcAzimuthAngle(
+              original_bound.at(b_idx), original_bound.at(b_idx + 1)) -
+            tier4_autoware_utils::calcAzimuthAngle(
+              bound_pose.position, bound_pose_with_lat_offset.position));
+          return (is_points_left && 0 < theta) || (!is_points_left && theta < 0);
+        }();
 
-          if (intersect_point) {
-            const double theta = tier4_autoware_utils::normalizeRadian(
-              tier4_autoware_utils::calcAzimuthAngle(
-                bound_pose.position, original_bound.at(candidate_idx)) -
-              tier4_autoware_utils::calcAzimuthAngle(
-                bound_pose.position, bound_pose_with_lat_offset.position));
-            if ((is_points_left && 0 < theta) || (!is_points_left && theta < 0)) {
+        // skip non monotonic points
+        if (maybe_monotonic) {
+          for (size_t candidate_idx = b_idx + 1; candidate_idx < original_bound.size() - 1;
+               ++candidate_idx) {
+            const auto intersect_point = drivable_area_processing::intersect(
+              bound_pose.position, bound_pose_with_lat_offset.position,
+              original_bound.at(candidate_idx), original_bound.at(candidate_idx + 1));
+
+            if (intersect_point) {
               monotonic_bound.push_back(*intersect_point);
               b_idx = candidate_idx;
               break;
