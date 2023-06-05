@@ -608,14 +608,38 @@ void AvoidanceModule::updateRegisteredRawShiftLines()
   fillAdditionalInfoFromPoint(registered_raw_shift_lines_);
 
   AvoidLineArray avoid_lines;
-  const int margin = 0;
-  const auto deadline = static_cast<size_t>(
-    std::max(static_cast<int>(avoidance_data_.ego_closest_path_index) - margin, 0));
 
-  for (const auto & al : registered_raw_shift_lines_) {
-    if (al.end_idx > deadline) {
-      avoid_lines.push_back(al);
+  const auto has_large_offset = [this](const auto & s) {
+    constexpr double THRESHOLD = 0.1;
+    const auto ego_shift_length = helper_.getEgoLinearShift();
+
+    const auto start_to_ego_longitudinal = -1.0 * s.start_longitudinal;
+
+    if (start_to_ego_longitudinal < 0.0) {
+      return false;
     }
+
+    const auto reg_shift_length =
+      s.getGradient() * start_to_ego_longitudinal + s.start_shift_length;
+
+    return std::abs(ego_shift_length - reg_shift_length) > THRESHOLD;
+  };
+
+  const auto ego_idx = avoidance_data_.ego_closest_path_index;
+
+  for (const auto & s : registered_raw_shift_lines_) {
+    // invalid
+    if (s.end_idx < ego_idx) {
+      continue;
+    }
+
+    // invalid
+    if (has_large_offset(s)) {
+      continue;
+    }
+
+    // valid
+    avoid_lines.push_back(s);
   }
 
   DEBUG_PRINT(
