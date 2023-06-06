@@ -38,7 +38,7 @@ repositories:
   calibration_tools:
     type: git
     url: https://github.com/tier4/CalibrationTools.git
-    version: main
+    version: tier4/universe
   nebula:
     type: git
     url: git@github.com:tier4/nebula.git
