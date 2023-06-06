@@ -145,6 +145,7 @@ struct BehaviorPathPlannerParameters
   // collision check
   double lateral_distance_max_threshold;
   double longitudinal_distance_min_threshold;
+  double longitudinal_velocity_delta_time;
 
   double expected_front_deceleration;  // brake parameter under normal lane change
   double expected_rear_deceleration;   // brake parameter under normal lane change

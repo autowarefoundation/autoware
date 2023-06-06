@@ -31,6 +31,7 @@
 
     lateral_distance_max_threshold: 2.0
     longitudinal_distance_min_threshold: 3.0
+    longitudinal_velocity_delta_time: 0.8 # [s]
 
     expected_front_deceleration: -1.0
     expected_rear_deceleration: -1.0

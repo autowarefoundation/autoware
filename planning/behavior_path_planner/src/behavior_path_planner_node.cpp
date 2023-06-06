@@ -475,6 +475,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.lateral_distance_max_threshold = declare_parameter<double>("lateral_distance_max_threshold");
   p.longitudinal_distance_min_threshold =
     declare_parameter<double>("longitudinal_distance_min_threshold");
+  p.longitudinal_velocity_delta_time =
+    declare_parameter<double>("longitudinal_velocity_delta_time");
 
   p.expected_front_deceleration = declare_parameter<double>("expected_front_deceleration");
   p.expected_rear_deceleration = declare_parameter<double>("expected_rear_deceleration");

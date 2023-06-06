@@ -145,8 +145,7 @@ double calcMinimumLongitudinalLength(
 {
   const double & lon_threshold = params.longitudinal_distance_min_threshold;
   const auto max_vel = std::max(front_object_velocity, rear_object_velocity);
-  constexpr auto scale = 0.8;
-  return scale * std::abs(max_vel) + lon_threshold;
+  return params.longitudinal_velocity_delta_time * std::abs(max_vel) + lon_threshold;
 }
 
 bool isSafeInLaneletCollisionCheck(
