@@ -81,14 +81,14 @@ public:
     m_default_topic{default_topic}
   {
     m_display_type_property = new rviz_common::properties::EnumProperty(
-      "Polygon Type", "3d", "Type of the polygon to display object.");
+      "Polygon Type", "3d", "Type of the polygon to display object.", this);
     // Option values here must correspond to indices in palette_textures_ array in onInitialize()
     // below.
     m_display_type_property->addOption("3d", 0);
     m_display_type_property->addOption("2d", 1);
     m_display_type_property->addOption("Disable", 2);
     m_simple_visualize_mode_property = new rviz_common::properties::EnumProperty(
-      "Visualization Type", "Normal", "Simplicity of the polygon to display object.");
+      "Visualization Type", "Normal", "Simplicity of the polygon to display object.", this);
     m_simple_visualize_mode_property->addOption("Normal", 0);
     m_simple_visualize_mode_property->addOption("Simple", 1);
     // iterate over default values to create and initialize the properties.
