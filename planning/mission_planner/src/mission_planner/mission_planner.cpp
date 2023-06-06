@@ -351,8 +351,43 @@ void MissionPlanner::on_clear_mrm_route(
 
 void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPtr msg)
 {
-  // TODO(Yutaka Shimizu): reroute if the goal is outside the lane.
-  arrival_checker_.modify_goal(*msg);
+  if (state_.state != RouteState::Message::SET) {
+    RCLCPP_ERROR(get_logger(), "The route hasn't set yet. Cannot reroute.");
+    return;
+  }
+  if (!planner_->ready()) {
+    RCLCPP_ERROR(get_logger(), "The planner is not ready.");
+    return;
+  }
+  if (!odometry_) {
+    RCLCPP_ERROR(get_logger(), "The vehicle pose is not received.");
+    return;
+  }
+  if (!normal_route_) {
+    RCLCPP_ERROR(get_logger(), "Normal route has not set yet.");
+    return;
+  }
+
+  if (normal_route_->uuid == msg->uuid) {
+    // set to changing state
+    change_state(RouteState::Message::CHANGING);
+
+    const std::vector<geometry_msgs::msg::Pose> empty_waypoints;
+    const auto new_route =
+      create_route(msg->header, empty_waypoints, msg->pose, normal_route_->allow_modification);
+    if (new_route.segments.empty()) {
+      change_route(*normal_route_);
+      change_state(RouteState::Message::SET);
+      RCLCPP_ERROR(get_logger(), "The planned route is empty.");
+      return;
+    }
+
+    change_route(new_route);
+    change_state(RouteState::Message::SET);
+    return;
+  }
+
+  RCLCPP_ERROR(get_logger(), "Goal uuid is incorrect.");
 }
 
 void MissionPlanner::on_change_route(
