@@ -30,6 +30,34 @@ void MPCTrajectory::push_back(
   relative_time.push_back(tp);
 }
 
+void MPCTrajectory::push_back(const MPCTrajectoryPoint & p)
+{
+  x.push_back(p.x);
+  y.push_back(p.y);
+  z.push_back(p.z);
+  yaw.push_back(p.yaw);
+  vx.push_back(p.vx);
+  k.push_back(p.k);
+  smooth_k.push_back(p.smooth_k);
+  relative_time.push_back(p.relative_time);
+}
+
+MPCTrajectoryPoint MPCTrajectory::back()
+{
+  MPCTrajectoryPoint p;
+
+  p.x = x.back();
+  p.y = y.back();
+  p.z = z.back();
+  p.yaw = yaw.back();
+  p.vx = vx.back();
+  p.k = k.back();
+  p.smooth_k = smooth_k.back();
+  p.relative_time = relative_time.back();
+
+  return p;
+}
+
 void MPCTrajectory::clear()
 {
   x.clear();

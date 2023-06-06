@@ -15,24 +15,12 @@
 #ifndef MPC_LATERAL_CONTROLLER__MPC_LATERAL_CONTROLLER_HPP_
 #define MPC_LATERAL_CONTROLLER__MPC_LATERAL_CONTROLLER_HPP_
 
-#include "mpc_lateral_controller/interpolate.hpp"
-#include "mpc_lateral_controller/lowpass_filter.hpp"
 #include "mpc_lateral_controller/mpc.hpp"
 #include "mpc_lateral_controller/mpc_trajectory.hpp"
 #include "mpc_lateral_controller/mpc_utils.hpp"
-#include "mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
-#include "mpc_lateral_controller/qp_solver/qp_solver_unconstr_fast.hpp"
 #include "mpc_lateral_controller/steering_offset/steering_offset.hpp"
-#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
-#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
-#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
-#include "osqp_interface/osqp_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tf2/utils.h"
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
 #include "trajectory_follower_base/lateral_controller_base.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
@@ -41,8 +29,8 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "tf2_msgs/msg/tf_message.hpp"
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
+#include "tier4_debug_msgs/msg/float32_stamped.hpp"
 
 #include <deque>
 #include <memory>
@@ -54,177 +42,236 @@ namespace autoware::motion::control::mpc_lateral_controller
 {
 
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
+using autoware_auto_control_msgs::msg::AckermannLateralCommand;
+using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_vehicle_msgs::msg::SteeringReport;
+using nav_msgs::msg::Odometry;
+using tier4_debug_msgs::msg::Float32MultiArrayStamped;
+using tier4_debug_msgs::msg::Float32Stamped;
 
 class MpcLateralController : public trajectory_follower::LateralControllerBase
 {
 public:
-  /**
-   * @brief constructor
-   */
   explicit MpcLateralController(rclcpp::Node & node);
-
-  /**
-   * @brief destructor
-   */
   virtual ~MpcLateralController();
 
 private:
   rclcpp::Node * node_;
 
-  //!< @brief topic publisher for predicted trajectory
-  rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr m_pub_predicted_traj;
-  //!< @brief topic publisher for control debug values
-  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr m_pub_debug_values;
-  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr m_pub_steer_offset;
-  //!< @brief subscription for transform messages
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_sub;
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_static_sub;
+  rclcpp::Publisher<Trajectory>::SharedPtr m_pub_predicted_traj;
+  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr m_pub_debug_values;
+  rclcpp::Publisher<Float32Stamped>::SharedPtr m_pub_steer_offset;
 
-  /* parameters for path smoothing */
-  //!< @brief flag for path smoothing
-  bool m_enable_path_smoothing;
-  //!< @brief param of moving average filter for path smoothing
-  int m_path_filter_moving_ave_num;
-  //!< @brief point-to-point index distance for curvature calculation for trajectory  //NOLINT
-  int m_curvature_smoothing_num_traj;
-  //!< @brief point-to-point index distance for curvature calculation for reference steer command
-  //!< //NOLINT
-  int m_curvature_smoothing_num_ref_steer;
-  //!< @brief path resampling interval [m]
-  double m_traj_resample_dist;
+  //!< @brief parameters for path smoothing
+  TrajectoryFilteringParam m_trajectory_filtering_param;
 
-  //!< @brief flag of traj extending for terminal yaw
-  bool m_extend_trajectory_for_end_yaw_control;
-
-  /* parameters for stop state */
+  // Ego vehicle speed threshold to enter the stop state.
   double m_stop_state_entry_ego_speed;
+
+  // Target vehicle speed threshold to enter the stop state.
   double m_stop_state_entry_target_speed;
+
+  // Convergence threshold for steering control.
   double m_converged_steer_rad;
-  double m_mpc_converged_threshold_rps;  // max mpc output change threshold for 1 sec
-  double m_new_traj_duration_time;       // check trajectory shape change
-  double m_new_traj_end_dist;            // check trajectory shape change
+
+  // max mpc output change threshold for 1 sec
+  double m_mpc_converged_threshold_rps;
+
+  // Time duration threshold to check if the trajectory shape has changed.
+  double m_new_traj_duration_time;
+
+  // Distance threshold to check if the trajectory shape has changed.
+  double m_new_traj_end_dist;
+
+  // Flag indicating whether to keep the steering control until it converges.
   bool m_keep_steer_control_until_converged;
 
   // trajectory buffer for detecting new trajectory
-  std::deque<autoware_auto_planning_msgs::msg::Trajectory> m_trajectory_buffer;
+  std::deque<Trajectory> m_trajectory_buffer;
 
-  // MPC object
-  MPC m_mpc;
+  MPC m_mpc;  // MPC object for trajectory following.
 
   // Check is mpc output converged
   bool m_is_mpc_history_filled{false};
 
-  //!< @brief store the last mpc outputs for 1 sec
-  std::vector<std::pair<autoware_auto_control_msgs::msg::AckermannLateralCommand, rclcpp::Time>>
-    m_mpc_steering_history{};
-  //!< @brief set the mpc steering output to history
-  void setSteeringToHistory(
-    const autoware_auto_control_msgs::msg::AckermannLateralCommand & steering);
-  //!< @brief check if the mpc steering output is converged
+  // store the last mpc outputs for 1 sec
+  std::vector<std::pair<AckermannLateralCommand, rclcpp::Time>> m_mpc_steering_history{};
+
+  // set the mpc steering output to history
+  void setSteeringToHistory(const AckermannLateralCommand & steering);
+
+  // check if the mpc steering output is converged
   bool isMpcConverged();
 
-  //!< @brief measured kinematic state
-  nav_msgs::msg::Odometry m_current_kinematic_state;
-  //!< @brief measured steering
-  autoware_auto_vehicle_msgs::msg::SteeringReport m_current_steering;
-  //!< @brief reference trajectory
-  autoware_auto_planning_msgs::msg::Trajectory m_current_trajectory;
+  // measured kinematic state
+  Odometry m_current_kinematic_state;
 
-  //!< @brief mpc filtered output in previous period
-  double m_steer_cmd_prev = 0.0;
+  SteeringReport m_current_steering;  // Measured steering information.
 
-  //!< @brief flag of m_ctrl_cmd_prev initialization
+  Trajectory m_current_trajectory;  // Current reference trajectory for path following.
+
+  double m_steer_cmd_prev = 0.0;  // MPC output in the previous period.
+
+  // Flag indicating whether the previous control command is initialized.
   bool m_is_ctrl_cmd_prev_initialized = false;
-  //!< @brief previous control command
-  autoware_auto_control_msgs::msg::AckermannLateralCommand m_ctrl_cmd_prev;
 
-  //!< @brief flag whether the first trajectory has been received
+  // Previous control command for path following.
+  AckermannLateralCommand m_ctrl_cmd_prev;
+
+  //  Flag indicating whether the first trajectory has been received.
   bool m_has_received_first_trajectory = false;
 
-  // ego nearest index search
+  // Threshold distance for the ego vehicle in nearest index search.
   double m_ego_nearest_dist_threshold;
+
+  // Threshold yaw for the ego vehicle in nearest index search.
   double m_ego_nearest_yaw_threshold;
 
-  // for steering offset compensation
+  // Flag indicating whether auto steering offset removal is enabled.
   bool enable_auto_steering_offset_removal_;
+
+  // Steering offset estimator for offset compensation.
   std::shared_ptr<SteeringOffsetEstimator> steering_offset_;
 
-  //!< initialize timer to work in real, simulation, and replay
+  /**
+   * @brief Initialize the timer
+   * @param period_s Control period in seconds.
+   */
   void initTimer(double period_s);
 
+  /**
+   * @brief Create the vehicle model based on the provided parameters.
+   * @param wheelbase Vehicle's wheelbase.
+   * @param steer_lim Steering command limit.
+   * @param steer_tau Steering time constant.
+   * @return Pointer to the created vehicle model.
+   */
+  std::shared_ptr<VehicleModelInterface> createVehicleModel(
+    const double wheelbase, const double steer_lim, const double steer_tau);
+
+  /**
+   * @brief Create the quadratic problem solver interface.
+   * @return Pointer to the created QP solver interface.
+   */
+  std::shared_ptr<QPSolverInterface> createQPSolverInterface();
+
+  /**
+   * @brief Create the steering offset estimator for offset compensation.
+   * @param wheelbase Vehicle's wheelbase.
+   * @return Pointer to the created steering offset estimator.
+   */
+  std::shared_ptr<SteeringOffsetEstimator> createSteerOffsetEstimator(const double wheelbase);
+
+  /**
+   * @brief Check if all necessary data is received and ready to run the control.
+   * @param input_data Input data required for control calculation.
+   * @return True if the data is ready, false otherwise.
+   */
   bool isReady(const trajectory_follower::InputData & input_data) override;
 
   /**
-   * @brief compute control command for path follow with a constant control period
+   * @brief Compute the control command for path following with a constant control period.
+   * @param input_data Input data required for control calculation.
+   * @return Lateral output control command.
    */
   trajectory_follower::LateralOutput run(
     trajectory_follower::InputData const & input_data) override;
 
   /**
-   * @brief set m_current_trajectory with received message
+   * @brief Set the current trajectory using the received message.
+   * @param msg Received trajectory message.
    */
-  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & msg);
+  void setTrajectory(const Trajectory & msg);
 
   /**
-   * @brief check if the received data is valid.
+   * @brief Check if the received data is valid.
+   * @return True if the data is valid, false otherwise.
    */
   bool checkData() const;
 
   /**
-   * @brief create control command
-   * @param [in] ctrl_cmd published control command
+   * @brief Create the control command.
+   * @param ctrl_cmd Control command to be created.
+   * @return Created control command.
    */
-  autoware_auto_control_msgs::msg::AckermannLateralCommand createCtrlCmdMsg(
-    autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd);
+  AckermannLateralCommand createCtrlCmdMsg(const AckermannLateralCommand & ctrl_cmd);
 
   /**
-   * @brief publish predicted future trajectory
-   * @param [in] predicted_traj published predicted trajectory
+   * @brief Publish the predicted future trajectory.
+   * @param predicted_traj Predicted future trajectory to be published.
    */
-  void publishPredictedTraj(autoware_auto_planning_msgs::msg::Trajectory & predicted_traj) const;
+  void publishPredictedTraj(Trajectory & predicted_traj) const;
 
   /**
-   * @brief publish diagnostic message
-   * @param [in] diagnostic published diagnostic
+   * @brief Publish diagnostic message.
+   * @param diagnostic Diagnostic message to be published.
    */
-  void publishDebugValues(tier4_debug_msgs::msg::Float32MultiArrayStamped & diagnostic) const;
+  void publishDebugValues(Float32MultiArrayStamped & diagnostic) const;
 
   /**
-   * @brief get stop command
+   * @brief Get the stop control command.
+   * @return Stop control command.
    */
-  autoware_auto_control_msgs::msg::AckermannLateralCommand getStopControlCommand() const;
+  AckermannLateralCommand getStopControlCommand() const;
 
   /**
-   * @brief get initial command
+   * @brief Get the control command applied before initialization.
+   * @return Initial control command.
    */
-  autoware_auto_control_msgs::msg::AckermannLateralCommand getInitialControlCommand() const;
+  AckermannLateralCommand getInitialControlCommand() const;
 
   /**
-   * @brief check ego car is in stopped state
+   * @brief Check if the ego car is in a stopped state.
+   * @return True if the ego car is stopped, false otherwise.
    */
   bool isStoppedState() const;
 
   /**
-   * @brief check if the trajectory has valid value
+   * @brief Check if the trajectory has a valid value.
+   * @param traj Trajectory to be checked.
+   * @return True if the trajectory is valid, false otherwise.
    */
-  bool isValidTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & traj) const;
+  bool isValidTrajectory(const Trajectory & traj) const;
 
+  /**
+   * @brief Check if the trajectory shape has changed.
+   * @return True if the trajectory shape has changed, false otherwise.
+   */
   bool isTrajectoryShapeChanged() const;
 
-  bool isSteerConverged(const autoware_auto_control_msgs::msg::AckermannLateralCommand & cmd) const;
+  /**
+   * @brief Check if the steering control is converged and stable now.
+   * @param cmd Steering control command to be checked.
+   * @return True if the steering control is converged and stable, false otherwise.
+   */
+  bool isSteerConverged(const AckermannLateralCommand & cmd) const;
 
   rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
 
   /**
-   * @brief Declare MPC parameters as ROS parameters to allow tuning on the fly
+   * @brief Declare MPC parameters as ROS parameters to allow tuning on the fly.
    */
   void declareMPCparameters();
 
   /**
-   * @brief Called when parameters are changed outside of node
+   * @brief Callback function called when parameters are changed outside of the node.
+   * @param parameters Vector of changed parameters.
+   * @return Result of the parameter callback.
    */
   rcl_interfaces::msg::SetParametersResult paramCallback(
     const std::vector<rclcpp::Parameter> & parameters);
+
+  template <typename... Args>
+  inline void info_throttle(Args &&... args)
+  {
+    RCLCPP_INFO_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000, args...);
+  }
+
+  template <typename... Args>
+  inline void warn_throttle(Args &&... args)
+  {
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000, args...);
+  }
 };
 }  // namespace autoware::motion::control::mpc_lateral_controller
 

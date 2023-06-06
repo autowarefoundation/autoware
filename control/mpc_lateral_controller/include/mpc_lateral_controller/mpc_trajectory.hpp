@@ -15,7 +15,7 @@
 #ifndef MPC_LATERAL_CONTROLLER__MPC_TRAJECTORY_HPP_
 #define MPC_LATERAL_CONTROLLER__MPC_TRAJECTORY_HPP_
 
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include "geometry_msgs/msg/point.hpp"
 
@@ -29,6 +29,22 @@ namespace autoware::motion::control::mpc_lateral_controller
  * Trajectory class for mpc follower
  * @brief calculate control command to follow reference waypoints
  */
+
+class MPCTrajectoryPoint
+{
+public:
+  double x;
+  double y;
+  double z;
+  double yaw;
+  double vx;
+  double k;
+  double smooth_k;
+  double relative_time;
+};
+
+// This class individually maintains an array of each element. This allows for easy application of
+// filtering processes. For example: filter_vector(mpc_trajectory.x).
 class MPCTrajectory
 {
 public:
@@ -47,6 +63,17 @@ public:
   void push_back(
     const double & xp, const double & yp, const double & zp, const double & yawp,
     const double & vxp, const double & kp, const double & smooth_kp, const double & tp);
+
+  /**
+   * @brief push_back for all values
+   */
+  void push_back(const MPCTrajectoryPoint & p);
+
+  /**
+   * @brief Get the last element. Apply back() for all vectors.
+   */
+  MPCTrajectoryPoint back();
+
   /**
    * @brief clear for all values
    */
@@ -57,6 +84,7 @@ public:
    * @return size, or 0 if the size for each components are inconsistent
    */
   size_t size() const;
+
   /**
    * @return true if the components sizes are all 0 or are inconsistent
    */

@@ -15,8 +15,6 @@
 #ifndef MPC_LATERAL_CONTROLLER__MPC_UTILS_HPP_
 #define MPC_LATERAL_CONTROLLER__MPC_UTILS_HPP_
 
-#include "interpolation/linear_interpolation.hpp"
-#include "interpolation/spline_interpolation.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 
@@ -28,7 +26,6 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #endif
 
-#include "mpc_lateral_controller/interpolate.hpp"
 #include "mpc_lateral_controller/mpc_trajectory.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
@@ -38,6 +35,7 @@
 
 #include <cmath>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace autoware::motion::control::mpc_lateral_controller
@@ -45,55 +43,64 @@ namespace autoware::motion::control::mpc_lateral_controller
 namespace MPCUtils
 {
 
+using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using geometry_msgs::msg::Pose;
+
 /**
- * @brief convert from yaw to ros-Quaternion
- * @param [in] yaw input yaw angle
- * @return quaternion
+ * @brief calculate 2d distance from trajectory[idx1] to trajectory[idx2]
  */
-geometry_msgs::msg::Quaternion getQuaternionFromYaw(const double & yaw);
+double calcDistance2d(const MPCTrajectory & trajectory, const size_t idx1, const size_t idx2);
+
+/**
+ * @brief calculate 3d distance from trajectory[idx1] to trajectory[idx2]
+ */
+double calcDistance3d(const MPCTrajectory & trajectory, const size_t idx1, const size_t idx2);
+
 /**
  * @brief convert Euler angle vector including +-2pi to 0 jump to continuous series data
- * @param [inout] a input angle vector
+ * @param [inout] angle_vector input angle vector
  */
-void convertEulerAngleToMonotonic(std::vector<double> * a);
+void convertEulerAngleToMonotonic(std::vector<double> & angle_vector);
+
 /**
  * @brief calculate the lateral error of the given pose relative to the given reference pose
  * @param [in] ego_pose pose to check for error
  * @param [in] ref_pose reference pose
  * @return lateral distance between the two poses
  */
-double calcLateralError(
-  const geometry_msgs::msg::Pose & ego_pose, const geometry_msgs::msg::Pose & ref_pose);
+double calcLateralError(const Pose & ego_pose, const Pose & ref_pose);
+
 /**
  * @brief convert the given Trajectory msg to a MPCTrajectory object
  * @param [in] input trajectory to convert
- * @param [out] output resulting MPCTrajectory
- * @return true if the conversion was successful
+ * @return resulting MPCTrajectory
  */
-bool convertToMPCTrajectory(
-  const autoware_auto_planning_msgs::msg::Trajectory & input, MPCTrajectory & output);
+MPCTrajectory convertToMPCTrajectory(const Trajectory & input);
+
 /**
  * @brief convert the given MPCTrajectory to a Trajectory msg
- * @param [in] input MPCTrajectory to convert
- * @param [out] output resulting Trajectory msg
- * @return true if the conversion was successful
+ * @param [in] input MPCTrajectory to be converted
+ * @return output converted Trajectory msg
  */
-bool convertToAutowareTrajectory(
-  const MPCTrajectory & input, autoware_auto_planning_msgs::msg::Trajectory & output);
+Trajectory convertToAutowareTrajectory(const MPCTrajectory & input);
+
 /**
  * @brief calculate the arc length at each point of the given trajectory
  * @param [in] trajectory trajectory for which to calculate the arc length
- * @param [out] arclength the cumulative arc length at each point of the trajectory
+ * @param [out] arc_length the cumulative arc length at each point of the trajectory
  */
-void calcMPCTrajectoryArclength(const MPCTrajectory & trajectory, std::vector<double> * arclength);
+void calcMPCTrajectoryArcLength(const MPCTrajectory & trajectory, std::vector<double> & arc_length);
+
 /**
  * @brief resample the given trajectory with the given fixed interval
  * @param [in] input trajectory to resample
  * @param [in] resample_interval_dist the desired distance between two successive trajectory points
- * @param [out] output the resampled trajectory
+ * @return The pair contains the successful flag and the resultant resampled trajectory
  */
-bool resampleMPCTrajectoryByDistance(
-  const MPCTrajectory & input, const double resample_interval_dist, MPCTrajectory * output);
+std::pair<bool, MPCTrajectory> resampleMPCTrajectoryByDistance(
+  const MPCTrajectory & input, const double resample_interval_dist);
+
 /**
  * @brief linearly interpolate the given trajectory assuming a base indexing and a new desired
  * indexing
@@ -104,13 +111,15 @@ bool resampleMPCTrajectoryByDistance(
  */
 bool linearInterpMPCTrajectory(
   const std::vector<double> & in_index, const MPCTrajectory & in_traj,
-  const std::vector<double> & out_index, MPCTrajectory * out_traj);
+  const std::vector<double> & out_index, MPCTrajectory & out_traj);
+
 /**
  * @brief fill the relative_time field of the given MPCTrajectory
  * @param [in] traj MPCTrajectory for which to fill in the relative_time
  * @return true if the calculation was successful
  */
 bool calcMPCTrajectoryTime(MPCTrajectory & traj);
+
 /**
  * @brief recalculate the velocity field (vx) of the MPCTrajectory with dynamic smoothing
  * @param [in] start_idx index of the trajectory point from which to start smoothing
@@ -122,12 +131,14 @@ bool calcMPCTrajectoryTime(MPCTrajectory & traj);
 void dynamicSmoothingVelocity(
   const size_t start_idx, const double start_vel, const double acc_lim, const double tau,
   MPCTrajectory & traj);
+
 /**
  * @brief calculate yaw angle in MPCTrajectory from xy vector
  * @param [inout] traj object trajectory
  * @param [in] shift is forward or not
  */
-void calcTrajectoryYawFromXY(MPCTrajectory * traj, const bool is_forward_shift);
+void calcTrajectoryYawFromXY(MPCTrajectory & traj, const bool is_forward_shift);
+
 /**
  * @brief Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3
  * points when num = 1)
@@ -136,9 +147,10 @@ void calcTrajectoryYawFromXY(MPCTrajectory * traj, const bool is_forward_shift);
  * calculation
  * @param [inout] traj object trajectory
  */
-bool calcTrajectoryCurvature(
-  const size_t curvature_smoothing_num_traj, const size_t curvature_smoothing_num_ref_steer,
-  MPCTrajectory * traj);
+void calcTrajectoryCurvature(
+  const int curvature_smoothing_num_traj, const int curvature_smoothing_num_ref_steer,
+  MPCTrajectory & traj);
+
 /**
  * @brief Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3
  * points when num = 1)
@@ -147,7 +159,8 @@ bool calcTrajectoryCurvature(
  * @return vector of curvatures at each point of the given trajectory
  */
 std::vector<double> calcTrajectoryCurvature(
-  const size_t curvature_smoothing_num, const MPCTrajectory & traj);
+  const int curvature_smoothing_num, const MPCTrajectory & traj);
+
 /**
  * @brief calculate nearest pose on MPCTrajectory with linear interpolation
  * @param [in] traj reference trajectory
@@ -155,20 +168,16 @@ std::vector<double> calcTrajectoryCurvature(
  * @param [out] nearest_pose nearest pose on path
  * @param [out] nearest_index path index of nearest pose
  * @param [out] nearest_time time of nearest pose on trajectory
- * @param [out] logger to output the reason for failure
- * @param [in] clock to throttle log output
  * @return false when nearest pose couldn't find for some reasons
  */
 bool calcNearestPoseInterp(
-  const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose,
-  geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, double * nearest_time,
-  const double max_dist, const double max_yaw, const rclcpp::Logger & logger,
-  rclcpp::Clock & clock);
-// /**
-//  * @brief calculate distance to stopped point
-//  */
-double calcStopDistance(
-  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int origin);
+  const MPCTrajectory & traj, const Pose & self_pose, Pose * nearest_pose, size_t * nearest_index,
+  double * nearest_time, const double max_dist, const double max_yaw);
+
+/**
+ * @brief calculate distance to stopped point
+ */
+double calcStopDistance(const Trajectory & current_trajectory, const int origin);
 
 /**
  * @brief extend terminal points
@@ -183,6 +192,25 @@ double calcStopDistance(
  */
 void extendTrajectoryInYawDirection(
   const double yaw, const double interval, const bool is_forward_shift, MPCTrajectory & traj);
+
+/**
+ * @brief Updates the value of a parameter with the given name.
+ * @tparam T The type of the parameter value.
+ * @param parameters A vector of rclcpp::Parameter objects.
+ * @param name The name of the parameter to update.
+ * @param value A reference variable to store the updated parameter value.
+ */
+template <typename T>
+void update_param(
+  const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
+{
+  auto it = std::find_if(
+    parameters.cbegin(), parameters.cend(),
+    [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
+  if (it != parameters.cend()) {
+    value = static_cast<T>(it->template get_value<T>());
+  }
+}
 
 }  // namespace MPCUtils
 }  // namespace autoware::motion::control::mpc_lateral_controller

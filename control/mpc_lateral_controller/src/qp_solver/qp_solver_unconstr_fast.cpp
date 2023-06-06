@@ -14,6 +14,8 @@
 
 #include "mpc_lateral_controller/qp_solver/qp_solver_unconstr_fast.hpp"
 
+#include <Eigen/Dense>
+
 namespace autoware::motion::control::mpc_lateral_controller
 {
 QPSolverEigenLeastSquareLLT::QPSolverEigenLeastSquareLLT()

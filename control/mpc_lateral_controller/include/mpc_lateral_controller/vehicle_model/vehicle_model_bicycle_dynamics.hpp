@@ -52,6 +52,8 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
+#include <string>
+
 namespace autoware::motion::control::mpc_lateral_controller
 {
 
@@ -98,6 +100,8 @@ public:
    * @param [out] u_ref input
    */
   void calculateReferenceInput(Eigen::MatrixXd & u_ref) override;
+
+  std::string modelName() override { return "dynamics"; };
 
 private:
   double m_lf;    //!< @brief length from center of mass to front wheel [m]

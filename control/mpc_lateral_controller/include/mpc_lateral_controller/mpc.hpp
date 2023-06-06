@@ -15,25 +15,18 @@
 #ifndef MPC_LATERAL_CONTROLLER__MPC_HPP_
 #define MPC_LATERAL_CONTROLLER__MPC_HPP_
 
-#include "mpc_lateral_controller/interpolate.hpp"
 #include "mpc_lateral_controller/lowpass_filter.hpp"
 #include "mpc_lateral_controller/mpc_trajectory.hpp"
-#include "mpc_lateral_controller/mpc_utils.hpp"
-#include "mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
-#include "mpc_lateral_controller/qp_solver/qp_solver_unconstr_fast.hpp"
-#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
-#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
-#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
-#include "osqp_interface/osqp_interface.hpp"
+#include "mpc_lateral_controller/qp_solver/qp_solver_interface.hpp"
+#include "mpc_lateral_controller/steering_predictor.hpp"
+#include "mpc_lateral_controller/vehicle_model/vehicle_model_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "geometry_msgs/msg/pose.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
 
 #include <deque>
@@ -49,94 +42,153 @@ using autoware_auto_control_msgs::msg::AckermannLateralCommand;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_vehicle_msgs::msg::SteeringReport;
 using geometry_msgs::msg::Pose;
+using nav_msgs::msg::Odometry;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
+
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+
+// Weight factors used in Model Predictive Control
+struct MPCWeight
+{
+  // Weight for lateral tracking error. A larger weight leads to less lateral tracking error.
+  double lat_error;
+
+  // Weight for heading tracking error. A larger weight reduces heading tracking error.
+  double heading_error;
+
+  // Weight combining heading error and velocity. Adjusts the influence of heading error based on
+  // velocity.
+  double heading_error_squared_vel;
+
+  // Weight for lateral tracking error at the terminal state of the trajectory. This improves the
+  // stability of MPC.
+  double terminal_lat_error;
+
+  // Weight for heading tracking error at the terminal state of the trajectory. This improves the
+  // stability of MPC.
+  double terminal_heading_error;
+
+  // Weight for the steering input. This surpress the deviation between the steering command and
+  // reference steering angle calculated from curvature.
+  double steering_input;
+
+  // Adjusts the influence of steering_input weight based on velocity.
+  double steering_input_squared_vel;
+
+  // Weight for lateral jerk. Penalizes sudden changes in lateral acceleration.
+  double lat_jerk;
+
+  // Weight for steering rate. Penalizes the speed of steering angle change.
+  double steer_rate;
+
+  // Weight for steering angle acceleration. Regulates the rate of change of steering rate.
+  double steer_acc;
+};
 
 struct MPCParam
 {
-  //!< @brief prediction horizon step
+  // Number of steps in the prediction horizon.
   int prediction_horizon;
-  //!< @brief prediction horizon sampling time
+
+  // Sampling time for the prediction horizon.
   double prediction_dt;
-  //!< @brief threshold that feed-forward angle becomes zero
+
+  // Threshold at which the feed-forward steering angle becomes zero.
   double zero_ff_steer_deg;
-  //!< @brief delay time for steering input to be compensated
+
+  // Time delay for compensating the steering input.
   double input_delay;
-  //!< @brief for trajectory velocity calculation
+
+  // Limit for calculating trajectory velocity.
   double acceleration_limit;
-  //!< @brief for trajectory velocity calculation
+
+  // Time constant for calculating trajectory velocity.
   double velocity_time_constant;
-  //!< @brief minimum prediction dist for low velocity
+
+  // Minimum prediction distance used for low velocity case.
   double min_prediction_length;
-  //!< @brief time constant for steer model
+
+  // Time constant for the steer model.
   double steer_tau;
-  // for weight matrix Q
-  //!< @brief lateral error weight
-  double weight_lat_error;
-  //!< @brief heading error weight
-  double weight_heading_error;
-  //!< @brief heading error * velocity weight
-  double weight_heading_error_squared_vel;
-  //!< @brief terminal lateral error weight
-  double weight_terminal_lat_error;
-  //!< @brief terminal heading error weight
-  double weight_terminal_heading_error;
-  //!< @brief lateral error weight in matrix Q in low curvature point
-  double low_curvature_weight_lat_error;
-  //!< @brief heading error weight in matrix Q in low curvature point
-  double low_curvature_weight_heading_error;
-  //!< @brief heading error * velocity weight in matrix Q in low curvature point
-  double low_curvature_weight_heading_error_squared_vel;
-  // for weight matrix R
-  //!< @brief steering error weight
-  double weight_steering_input;
-  //!< @brief steering error * velocity weight
-  double weight_steering_input_squared_vel;
-  //!< @brief lateral jerk weight
-  double weight_lat_jerk;
-  //!< @brief steering rate weight
-  double weight_steer_rate;
-  //!< @brief steering angle acceleration weight
-  double weight_steer_acc;
-  //!< @brief steering error weight in matrix R in low curvature point
-  double low_curvature_weight_steering_input;
-  //!< @brief steering error * velocity weight in matrix R in low curvature point
-  double low_curvature_weight_steering_input_squared_vel;
-  //!< @brief lateral jerk weight in matrix R in low curvature point
-  double low_curvature_weight_lat_jerk;
-  //!< @brief steering rate weight in matrix R in low curvature point
-  double low_curvature_weight_steer_rate;
-  //!< @brief steering angle acceleration weight in matrix R in low curvature
-  double low_curvature_weight_steer_acc;
-  //!< @brief threshold of curvature to use "low curvature" parameter
+
+  // Weight parameters for the MPC in nominal conditions.
+  MPCWeight nominal_weight;
+
+  // Weight parameters for the MPC in low curvature path conditions.
+  MPCWeight low_curvature_weight;
+
+  // Curvature threshold to determine when to use "low curvature" parameter settings.
   double low_curvature_thresh_curvature;
 };
-/**
- * MPC problem data
- */
+
+struct TrajectoryFilteringParam
+{
+  // path resampling interval [m]
+  double traj_resample_dist;
+
+  // flag of traj extending for terminal yaw
+  bool extend_trajectory_for_end_yaw_control;
+
+  // flag for path smoothing
+  bool enable_path_smoothing;
+
+  // param of moving average filter for path smoothing
+  int path_filter_moving_ave_num;
+
+  // point-to-point index distance for curvature calculation for trajectory
+  int curvature_smoothing_num_traj;
+
+  // point-to-point index distance for curvature calculation for reference steer command
+  int curvature_smoothing_num_ref_steer;
+};
+
 struct MPCData
 {
-  int nearest_idx;
-  double nearest_time;
-  Pose nearest_pose;
-  double steer;
-  double predicted_steer;
-  double lateral_err;
-  double yaw_err;
+  // Index of the nearest point in the trajectory.
+  size_t nearest_idx{};
+
+  // Time stamp of the nearest point in the trajectory.
+  double nearest_time{};
+
+  // Pose (position and orientation) of the nearest point in the trajectory.
+  Pose nearest_pose{};
+
+  // Current steering angle.
+  double steer{};
+
+  // Predicted steering angle based on the vehicle model.
+  double predicted_steer{};
+
+  // Lateral tracking error.
+  double lateral_err{};
+
+  // Yaw (heading) tracking error.
+  double yaw_err{};
+
+  MPCData() = default;
 };
+
 /**
- * Matrices used for MPC optimization
+ * MPC matrix with the following format:
+ * Xex = Aex * X0 + Bex * Uex * Wex
+ * Yex = Cex * Xex
+ * Cost = Xex' * Qex * Xex + (Uex - Uref_ex)' * R1ex * (Uex - Uref_ex) +  Uex' * R2ex * Uex
  */
 struct MPCMatrix
 {
-  Eigen::MatrixXd Aex;
-  Eigen::MatrixXd Bex;
-  Eigen::MatrixXd Wex;
-  Eigen::MatrixXd Cex;
-  Eigen::MatrixXd Qex;
-  Eigen::MatrixXd R1ex;
-  Eigen::MatrixXd R2ex;
-  Eigen::MatrixXd Uref_ex;
+  MatrixXd Aex;
+  MatrixXd Bex;
+  MatrixXd Wex;
+  MatrixXd Cex;
+  MatrixXd Qex;
+  MatrixXd R1ex;
+  MatrixXd R2ex;
+  MatrixXd Uref_ex;
+
+  MPCMatrix() = default;
 };
+
 /**
  * MPC-based waypoints follower class
  * @brief calculate control command to follow reference waypoints
@@ -144,278 +196,288 @@ struct MPCMatrix
 class MPC
 {
 private:
-  //!< @brief ROS logger used for debug logging
-  rclcpp::Logger m_logger = rclcpp::get_logger("mpc_logger");
-  //!< @brief ROS clock
-  rclcpp::Clock::SharedPtr m_clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
+  rclcpp::Logger m_logger = rclcpp::get_logger("mpc_logger");  // ROS logger used for debug logging.
+  rclcpp::Clock::SharedPtr m_clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);  // ROS clock.
 
-  //!< @brief vehicle model type for MPC
-  std::string m_vehicle_model_type;
-  //!< @brief vehicle model for MPC
+  // Vehicle model used for MPC.
   std::shared_ptr<VehicleModelInterface> m_vehicle_model_ptr;
-  //!< @brief qp solver for MPC
+
+  // QP solver used for MPC.
   std::shared_ptr<QPSolverInterface> m_qpsolver_ptr;
-  //!< @brief lowpass filter for steering command
-  Butterworth2dFilter m_lpf_steering_cmd;
-  //!< @brief lowpass filter for lateral error
-  Butterworth2dFilter m_lpf_lateral_error;
-  //!< @brief lowpass filter for heading error
-  Butterworth2dFilter m_lpf_yaw_error;
 
-  //!< @brief raw output computed two iterations ago
-  double m_raw_steer_cmd_pprev = 0.0;
-  //!< @brief previous lateral error for derivative
-  double m_lateral_error_prev = 0.0;
-  //!< @brief previous lateral error for derivative
-  double m_yaw_error_prev = 0.0;
-  //!< @brief previous predicted steering
-  std::shared_ptr<double> m_steer_prediction_prev;
-  //!< @brief previous computation time
-  rclcpp::Time m_time_prev = rclcpp::Time(0, 0, RCL_ROS_TIME);
-  //!< @brief shift is forward or not.
-  bool m_is_forward_shift = true;
-  //!< @brief buffer of sent command
-  std::vector<AckermannLateralCommand> m_ctrl_cmd_vec;
-  //!< @brief minimum prediction distance
-  double m_min_prediction_length = 5.0;
+  // Calculate predicted steering angle based on the steering dynamics. The predicted value should
+  // fit to the actual steering angle if the vehicle model is accurate enough.
+  std::shared_ptr<SteeringPredictor> m_steering_predictor;
+
+  Butterworth2dFilter m_lpf_steering_cmd;   // Low-pass filter for smoothing the steering command.
+  Butterworth2dFilter m_lpf_lateral_error;  // Low-pass filter for smoothing the lateral error.
+  Butterworth2dFilter m_lpf_yaw_error;      // Low-pass filter for smoothing the heading error.
+
+  double m_raw_steer_cmd_pprev = 0.0;  // Raw output computed two iterations ago.
+  double m_lateral_error_prev = 0.0;   // Previous lateral error for derivative calculation.
+  double m_yaw_error_prev = 0.0;       // Previous heading error for derivative calculation.
+
+  bool m_is_forward_shift = true;  // Flag indicating if the shift is in the forward direction.
+
+  double m_min_prediction_length = 5.0;  // Minimum prediction distance.
 
   /**
-   * @brief get variables for mpc calculation
+   * @brief Get variables for MPC calculation.
+   * @param trajectory The reference trajectory.
+   * @param current_steer The current steering report.
+   * @param current_kinematics The current vehicle kinematics.
+   * @return A pair of a boolean flag indicating success and the MPC data.
    */
-  bool getData(
-    const MPCTrajectory & traj, const SteeringReport & current_steer, const Pose & current_pose,
-    MPCData * data);
-  /**
-   * @brief calculate predicted steering
-   */
-  double calcSteerPrediction();
-  /**
-   * @brief get the sum of all steering commands over the given time range
-   */
-  double getSteerCmdSum(
-    const rclcpp::Time & t_start, const rclcpp::Time & t_end, const double time_constant) const;
-  /**
-   * @brief set the reference trajectory to follow
-   */
-  void storeSteerCmd(const double steer);
+  std::pair<bool, MPCData> getData(
+    const MPCTrajectory & trajectory, const SteeringReport & current_steer,
+    const Odometry & current_kinematics);
 
   /**
-   * @brief set initial condition for mpc
-   * @param [in] data mpc data
+   * @brief Get the initial state for MPC.
+   * @param data The MPC data.
+   * @return The initial state as a vector.
    */
-  Eigen::VectorXd getInitialState(const MPCData & data);
+  VectorXd getInitialState(const MPCData & data);
+
   /**
-   * @brief update status for delay compensation
-   * @param [in] traj MPCTrajectory to follow
-   * @param [in] start_time start time for update
-   * @param [out] x updated state at delayed_time
+   * @brief Update the state for delay compensation.
+   * @param traj The reference trajectory to follow.
+   * @param start_time The time where x0_orig is defined.
+   * @param x0_orig The original initial state vector.
+   * @return A pair of a boolean flag indicating success and the updated state at delayed_time.
    */
-  bool updateStateForDelayCompensation(
-    const MPCTrajectory & traj, const double & start_time, Eigen::VectorXd * x);
+  std::pair<bool, VectorXd> updateStateForDelayCompensation(
+    const MPCTrajectory & traj, const double & start_time, const VectorXd & x0_orig);
+
   /**
-   * @brief generate MPC matrix with trajectory and vehicle model
-   * @param [in] reference_trajectory used for linearization around reference trajectory
+   * @brief Generate the MPC matrix using the reference trajectory and vehicle model.
+   * @param reference_trajectory The reference trajectory used for linearization.
+   * @param prediction_dt The prediction time step.
+   * @return The generated MPC matrix.
    */
   MPCMatrix generateMPCMatrix(
     const MPCTrajectory & reference_trajectory, const double prediction_dt);
+
   /**
-   * @brief generate MPC matrix with trajectory and vehicle model
-   * @param [in] mpc_matrix parameters matrix to use for optimization
-   * @param [in] x0 initial state vector
-   * @param [in] prediction_dt prediction delta time
-   * @param [out] Uex optimized input vector
+   * @brief Execute the optimization using the provided MPC matrix, initial state, and prediction
+   * time step.
+   * @param mpc_matrix The parameters matrix used for optimization.
+   * @param x0 The initial state vector.
+   * @param prediction_dt The prediction time step.
+   * @param [in] trajectory mpc reference trajectory
+   * @param [in] current_velocity current ego velocity
+   * @return A pair of a boolean flag indicating success and the optimized input vector.
    */
-  bool executeOptimization(
-    const MPCMatrix & mpc_matrix, const Eigen::VectorXd & x0, const double prediction_dt,
-    Eigen::VectorXd * Uex, const MPCTrajectory & traj, const double current_velocity);
+  std::pair<bool, VectorXd> executeOptimization(
+    const MPCMatrix & mpc_matrix, const VectorXd & x0, const double prediction_dt,
+    const MPCTrajectory & trajectory, const double current_velocity);
+
   /**
-   * @brief resample trajectory with mpc resampling time
+   * @brief Resample the trajectory with the MPC resampling time.
+   * @param start_time The start time for resampling.
+   * @param prediction_dt The prediction time step.
+   * @param input The input trajectory.
+   * @return A pair of a boolean flag indicating success and the resampled trajectory.
    */
-  bool resampleMPCTrajectoryByTime(
-    const double start_time, const double prediction_dt, const MPCTrajectory & input,
-    MPCTrajectory * output) const;
+  std::pair<bool, MPCTrajectory> resampleMPCTrajectoryByTime(
+    const double start_time, const double prediction_dt, const MPCTrajectory & input) const;
+
   /**
-   * @brief apply velocity dynamics filter with v0 from closest index
+   * @brief Apply the velocity dynamics filter to the trajectory using the current kinematics.
+   * @param trajectory The input trajectory.
+   * @param current_kinematics The current vehicle kinematics.
+   * @return The filtered trajectory.
    */
   MPCTrajectory applyVelocityDynamicsFilter(
-    const MPCTrajectory & trajectory, const Pose & current_pose, const double v0) const;
+    const MPCTrajectory & trajectory, const Odometry & current_kinematics) const;
+
   /**
-   * @brief get prediction delta time of mpc.
-   * If trajectory length is shorter than min_prediction length, adjust delta time.
+   * @brief Get the prediction time step for MPC. If the trajectory length is shorter than
+   * min_prediction_length, adjust the time step.
+   * @param start_time The start time of the trajectory.
+   * @param input The input trajectory.
+   * @param current_kinematics The current vehicle kinematics.
+   * @return The prediction time step.
    */
   double getPredictionDeltaTime(
-    const double start_time, const MPCTrajectory & input, const Pose & current_pose) const;
-  /**
-   * @brief add weights related to lateral_jerk, steering_rate, steering_acc into R
-   */
-  void addSteerWeightR(const double prediction_dt, Eigen::MatrixXd * R) const;
-  /**
-   * @brief add weights related to lateral_jerk, steering_rate, steering_acc into f
-   */
-  void addSteerWeightF(const double prediction_dt, Eigen::MatrixXd * f) const;
+    const double start_time, const MPCTrajectory & input,
+    const Odometry & current_kinematics) const;
 
   /**
-   * @brief calculate desired steering rate.
+   * @brief Add weights related to lateral jerk, steering rate, and steering acceleration to the R
+   * matrix.
+   * @param prediction_dt The prediction time step.
+   * @param R The R matrix to modify.
+   */
+  void addSteerWeightR(const double prediction_dt, MatrixXd & R) const;
+
+  /**
+   * @brief Add weights related to lateral jerk, steering rate, and steering acceleration to the f
+   * matrix.
+   * @param prediction_dt The prediction time step.
+   * @param f The f matrix to modify.
+   */
+  void addSteerWeightF(const double prediction_dt, MatrixXd & f) const;
+
+  /**
+   * @brief Calculate the desired steering rate for the steering_rate command.
+   * @param m The MPC matrix used for optimization.
+   * @param x0 The initial state matrix.
+   * @param Uex The input matrix.
+   * @param u_filtered The filtered input.
+   * @param current_steer The current steering angle.
+   * @param predict_dt The prediction time step.
+   * @return The desired steering rate.
    */
   double calcDesiredSteeringRate(
-    const MPCMatrix & m, const Eigen::MatrixXd & x0, const Eigen::MatrixXd & Uex,
-    const double u_filtered, const float current_steer, const double predict_dt) const;
+    const MPCMatrix & m, const MatrixXd & x0, const MatrixXd & Uex, const double u_filtered,
+    const float current_steer, const double predict_dt) const;
 
   /**
-   * @brief check if the matrix has invalid value
+   * @brief Check if the MPC matrix has any invalid values.
+   * @param m The MPC matrix to check.
+   * @return True if the matrix is valid, false otherwise.
    */
   bool isValid(const MPCMatrix & m) const;
+
   /**
-   * @brief return true if the given curvature is considered low
+   * @brief Get the weight for the MPC optimization based on the curvature.
+   * @param curvature The curvature value.
+   * @return The weight for the MPC optimization.
    */
-  inline bool isLowCurvature(const double curvature)
+  inline MPCWeight getWeight(const double curvature)
   {
-    return std::fabs(curvature) < m_param.low_curvature_thresh_curvature;
+    return std::fabs(curvature) < m_param.low_curvature_thresh_curvature
+             ? m_param.low_curvature_weight
+             : m_param.nominal_weight;
   }
+
   /**
-   * @brief return the weight of the lateral error for the given curvature
+   * @brief Calculate the predicted trajectory for the ego vehicle based on the MPC result.
+   * @param mpc_resampled_reference_trajectory The resampled reference trajectory.
+   * @param mpc_matrix The MPC matrix used for optimization.
+   * @param x0_delayed The delayed initial state vector.
+   * @param Uex The optimized input vector.
+   * @return The predicted trajectory.
    */
-  inline double getWeightLatError(const double curvature)
+  Trajectory calcPredictedTrajectory(
+    const MPCTrajectory & mpc_resampled_reference_trajectory, const MPCMatrix & mpc_matrix,
+    const VectorXd & x0_delayed, const VectorXd & Uex) const;
+
+  /**
+   * @brief Generate diagnostic data for debugging purposes.
+   * @param reference_trajectory The reference trajectory.
+   * @param mpc_data The MPC data.
+   * @param mpc_matrix The MPC matrix.
+   * @param ctrl_cmd The control command.
+   * @param Uex The optimized input vector.
+   * @param current_kinematics The current vehicle kinematics.
+   * @return The generated diagnostic data.
+   */
+  Float32MultiArrayStamped generateDiagData(
+    const MPCTrajectory & reference_trajectory, const MPCData & mpc_data,
+    const MPCMatrix & mpc_matrix, const AckermannLateralCommand & ctrl_cmd, const VectorXd & Uex,
+    const Odometry & current_kinematics) const;
+
+  //!< @brief logging with warn and return false
+  template <typename... Args>
+  inline bool fail_warn_throttle(Args &&... args) const
   {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_lat_error
-                                     : m_param.weight_lat_error;
+    RCLCPP_WARN_THROTTLE(m_logger, *m_clock, 3000, args...);
+    return false;
   }
-  /**
-   * @brief return the weight of the heading error for the given curvature
-   */
-  inline double getWeightHeadingError(const double curvature)
+
+  //!< @brief logging with warn
+  template <typename... Args>
+  inline void warn_throttle(Args &&... args) const
   {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_heading_error
-                                     : m_param.weight_heading_error;
-  }
-  /**
-   * @brief return the squared velocity weight of the heading error for the given curvature
-   */
-  inline double getWeightHeadingErrorSqVel(const double curvature)
-  {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_heading_error_squared_vel
-                                     : m_param.weight_heading_error_squared_vel;
-  }
-  /**
-   * @brief return the weight of the steer input for the given curvature
-   */
-  inline double getWeightSteerInput(const double curvature)
-  {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_steering_input
-                                     : m_param.weight_steering_input;
-  }
-  /**
-   * @brief return the squared velocity weight of the steer input for the given curvature
-   */
-  inline double getWeightSteerInputSqVel(const double curvature)
-  {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_steering_input_squared_vel
-                                     : m_param.weight_steering_input_squared_vel;
-  }
-  /**
-   * @brief return the weight of the lateral jerk for the given curvature
-   */
-  inline double getWeightLatJerk(const double curvature)
-  {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_lat_jerk
-                                     : m_param.weight_lat_jerk;
-  }
-  /**
-   * @brief return the weight of the steering rate for the given curvature
-   */
-  inline double getWeightSteerRate(const double curvature)
-  {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_steer_rate
-                                     : m_param.weight_steer_rate;
-  }
-  /**
-   * @brief return the weight of the steering acceleration for the given curvature
-   */
-  inline double getWeightSteerAcc(const double curvature)
-  {
-    return isLowCurvature(curvature) ? m_param.low_curvature_weight_steer_acc
-                                     : m_param.weight_steer_acc;
+    RCLCPP_WARN_THROTTLE(m_logger, *m_clock, 3000, args...);
   }
 
 public:
-  //!< @brief reference trajectory to be followed
-  MPCTrajectory m_ref_traj;
-  //!< @brief MPC design parameter
-  MPCParam m_param;
-  //!< @brief mpc_output buffer for delay time compensation
-  std::deque<double> m_input_buffer;
-  //!< @brief mpc raw output in previous period
-  double m_raw_steer_cmd_prev = 0.0;
-  /* parameters for control*/
-  //!< @brief use stop cmd when lateral error exceeds this [m]
-  double m_admissible_position_error;
-  //!< @brief use stop cmd when yaw error exceeds this [rad]
-  double m_admissible_yaw_error_rad;
-  //!< @brief steering command limit [rad]
-  double m_steer_lim;
+  MPCTrajectory m_reference_trajectory;  // Reference trajectory to be followed.
+  MPCParam m_param;                      // MPC design parameters.
+  std::deque<double> m_input_buffer;     // MPC output buffer for delay time compensation.
+  double m_raw_steer_cmd_prev = 0.0;     // Previous MPC raw output.
+
+  /* Parameters for control */
+  double m_admissible_position_error;  // Threshold for lateral error to trigger stop command [m].
+  double m_admissible_yaw_error_rad;   // Threshold for yaw error to trigger stop command [rad].
+  double m_steer_lim;                  // Steering command limit [rad].
+  double m_ctrl_period;                // Control frequency [s].
+
   //!< @brief steering rate limit list depending on curvature [/m], [rad/s]
   std::vector<std::pair<double, double>> m_steer_rate_lim_map_by_curvature{};
+
   //!< @brief steering rate limit list depending on velocity [m/s], [rad/s]
   std::vector<std::pair<double, double>> m_steer_rate_lim_map_by_velocity{};
-  //!< @brief control frequency [s]
-  double m_ctrl_period;
-  /* parameters for path smoothing */
-  //!< @brief flag to use predicted steer, not measured steer.
-  bool m_use_steer_prediction;
-  //!< @brief parameters for nearest index search
-  double ego_nearest_dist_threshold;
-  double ego_nearest_yaw_threshold;
+
+  bool m_use_steer_prediction;        // Flag to use predicted steer instead of measured steer.
+  double ego_nearest_dist_threshold;  // Threshold for nearest index search based on distance.
+  double ego_nearest_yaw_threshold;   // Threshold for nearest index search based on yaw.
+
+  //!< Constructor.
+  MPC() = default;
 
   /**
-   * @brief constructor
-   */
-  MPC() = default;
-  /**
-   * @brief calculate control command by MPC algorithm
-   * @param [in] current_steer current steering of the vehicle
-   * @param [in] current_velocity current velocity of the vehicle [m/s]
-   * @param [in] current_pose current pose of the vehicle
-   * @param [out] ctrl_cmd control command calculated with mpc algorithm
-   * @param [out] predicted_traj predicted MPC trajectory
-   * @param [out] diagnostic diagnostic msg to be filled-out
+   * @brief Calculate control command using the MPC algorithm.
+   * @param current_steer Current steering report.
+   * @param current_kinematics Current vehicle kinematics.
+   * @param ctrl_cmd Computed lateral control command.
+   * @param predicted_trajectory Predicted trajectory based on MPC result.
+   * @param diagnostic Diagnostic data for debugging purposes.
+   * @return True if the MPC calculation is successful, false otherwise.
    */
   bool calculateMPC(
-    const SteeringReport & current_steer, const double current_velocity, const Pose & current_pose,
-    AckermannLateralCommand & ctrl_cmd, Trajectory & predicted_traj,
+    const SteeringReport & current_steer, const Odometry & current_kinematics,
+    AckermannLateralCommand & ctrl_cmd, Trajectory & predicted_trajectory,
     Float32MultiArrayStamped & diagnostic);
-  /**
-   * @brief set the reference trajectory to follow
-   */
-  void setReferenceTrajectory(
-    const Trajectory & trajectory_msg, const double traj_resample_dist,
-    const bool enable_path_smoothing, const int path_filter_moving_ave_num,
-    const int curvature_smoothing_num_traj, const int curvature_smoothing_num_ref_steer,
-    const bool extend_trajectory_for_end_yaw_control);
 
   /**
-   * @brief reset previous result of MPC
+   * @brief Set the reference trajectory to be followed.
+   * @param trajectory_msg The reference trajectory message.
+   * @param param Trajectory filtering parameters.
+   */
+  void setReferenceTrajectory(
+    const Trajectory & trajectory_msg, const TrajectoryFilteringParam & param);
+
+  /**
+   * @brief Reset the previous result of MPC.
+   * @param current_steer Current steering report.
    */
   void resetPrevResult(const SteeringReport & current_steer);
 
   /**
-   * @brief set the vehicle model of this MPC
+   * @brief Set the vehicle model for this MPC.
+   * @param vehicle_model_ptr Pointer to the vehicle model.
    */
-  inline void setVehicleModel(
-    std::shared_ptr<VehicleModelInterface> vehicle_model_ptr,
-    const std::string & vehicle_model_type)
+  inline void setVehicleModel(std::shared_ptr<VehicleModelInterface> vehicle_model_ptr)
   {
     m_vehicle_model_ptr = vehicle_model_ptr;
-    m_vehicle_model_type = vehicle_model_type;
   }
+
   /**
-   * @brief set the QP solver of this MPC
+   * @brief Set the QP solver for this MPC.
+   * @param qpsolver_ptr Pointer to the QP solver.
    */
   inline void setQPSolver(std::shared_ptr<QPSolverInterface> qpsolver_ptr)
   {
     m_qpsolver_ptr = qpsolver_ptr;
   }
+
   /**
-   * @brief initialize low pass filters
+   * @brief Initialize the steering predictor for this MPC.
+   */
+  inline void initializeSteeringPredictor()
+  {
+    m_steering_predictor =
+      std::make_shared<SteeringPredictor>(m_param.steer_tau, m_param.input_delay);
+  }
+
+  /**
+   * @brief Initialize the low-pass filters.
+   * @param steering_lpf_cutoff_hz Cutoff frequency for the steering command low-pass filter.
+   * @param error_deriv_lpf_cutoff_hz Cutoff frequency for the error derivative low-pass filter.
    */
   inline void initializeLowPassFilters(
     const double steering_lpf_cutoff_hz, const double error_deriv_lpf_cutoff_hz)
@@ -424,20 +486,28 @@ public:
     m_lpf_lateral_error.initialize(m_ctrl_period, error_deriv_lpf_cutoff_hz);
     m_lpf_yaw_error.initialize(m_ctrl_period, error_deriv_lpf_cutoff_hz);
   }
+
   /**
-   * @brief return true if the vehicle model of this MPC is set
+   * @brief Check if the MPC has a vehicle model set.
+   * @return True if the vehicle model is set, false otherwise.
    */
   inline bool hasVehicleModel() const { return m_vehicle_model_ptr != nullptr; }
+
   /**
-   * @brief return true if the QP solver of this MPC is set
+   * @brief Check if the MPC has a QP solver set.
+   * @return True if the QP solver is set, false otherwise.
    */
   inline bool hasQPSolver() const { return m_qpsolver_ptr != nullptr; }
+
   /**
-   * @brief set the RCLCPP logger to use for logging
+   * @brief Set the RCLCPP logger to be used for logging.
+   * @param logger The RCLCPP logger object.
    */
   inline void setLogger(rclcpp::Logger logger) { m_logger = logger; }
+
   /**
-   * @brief set the RCLCPP clock to use for time keeping
+   * @brief Set the RCLCPP clock to be used for time keeping.
+   * @param clock The shared pointer to the RCLCPP clock.
    */
   inline void setClock(rclcpp::Clock::SharedPtr clock) { m_clock = clock; }
 };  // class MPC

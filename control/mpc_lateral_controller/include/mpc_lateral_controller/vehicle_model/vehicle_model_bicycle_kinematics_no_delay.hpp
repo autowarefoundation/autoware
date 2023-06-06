@@ -43,6 +43,8 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
+#include <string>
+
 namespace autoware::motion::control::mpc_lateral_controller
 {
 
@@ -82,6 +84,8 @@ public:
    * @param [out] u_ref input
    */
   void calculateReferenceInput(Eigen::MatrixXd & u_ref) override;
+
+  std::string modelName() override { return "kinematics_no_delay"; };
 
 private:
   double m_steer_lim;  //!< @brief steering angle limit [rad]

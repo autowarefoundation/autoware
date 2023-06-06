@@ -16,7 +16,9 @@
 #include "mpc_lateral_controller/mpc.hpp"
 #include "mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
 #include "mpc_lateral_controller/qp_solver/qp_solver_unconstr_fast.hpp"
+#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
+#include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
@@ -35,30 +37,29 @@
 #include <string>
 #include <vector>
 
-namespace
+namespace autoware::motion::control::mpc_lateral_controller
 {
 
-namespace mpc_lateral_controller = ::autoware::motion::control::mpc_lateral_controller;
-typedef autoware_auto_planning_msgs::msg::Trajectory Trajectory;
-typedef autoware_auto_planning_msgs::msg::TrajectoryPoint TrajectoryPoint;
-typedef autoware_auto_vehicle_msgs::msg::SteeringReport SteeringReport;
-typedef geometry_msgs::msg::Pose Pose;
-typedef geometry_msgs::msg::PoseStamped PoseStamped;
-typedef autoware_auto_control_msgs::msg::AckermannLateralCommand AckermannLateralCommand;
-typedef tier4_debug_msgs::msg::Float32MultiArrayStamped Float32MultiArrayStamped;
+using autoware_auto_control_msgs::msg::AckermannLateralCommand;
+using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+using autoware_auto_vehicle_msgs::msg::SteeringReport;
+using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::PoseStamped;
+using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 
 class MPCTest : public ::testing::Test
 {
 protected:
-  mpc_lateral_controller::MPCParam param;
+  MPCParam param;
   // Test inputs
   Trajectory dummy_straight_trajectory;
   Trajectory dummy_right_turn_trajectory;
   SteeringReport neutral_steer;
   Pose pose_zero;
-  PoseStamped::SharedPtr pose_zero_ptr;
   double default_velocity = 1.0;
   rclcpp::Logger logger = rclcpp::get_logger("mpc_test_logger");
+
   // Vehicle model parameters
   double wheelbase = 2.7;
   double steer_limit = 1.0;
@@ -69,22 +70,30 @@ protected:
   double mass_rr = 600.0;
   double cf = 155494.663;
   double cr = 155494.663;
+
   // Filters parameter
   double steering_lpf_cutoff_hz = 3.0;
   double error_deriv_lpf_cutoff_hz = 5.0;
+
   // Test Parameters
   double admissible_position_error = 5.0;
   double admissible_yaw_error_rad = M_PI_2;
   double steer_lim = 0.610865;      // 35 degrees
   double steer_rate_lim = 2.61799;  // 150 degrees
   double ctrl_period = 0.03;
-  double traj_resample_dist = 0.1;
-  int path_filter_moving_ave_num = 35;
-  int curvature_smoothing_num_traj = 1;
-  int curvature_smoothing_num_ref_steer = 35;
-  bool enable_path_smoothing = true;
+
   bool use_steer_prediction = true;
-  bool extend_trajectory_for_end_yaw_control = true;
+
+  TrajectoryFilteringParam trajectory_param;
+
+  TrajectoryPoint makePoint(const double x, const double y, const float vx)
+  {
+    TrajectoryPoint p;
+    p.pose.position.x = x;
+    p.pose.position.y = y;
+    p.longitudinal_velocity_mps = vx;
+    return p;
+  }
 
   void SetUp() override
   {
@@ -96,70 +105,47 @@ protected:
     param.velocity_time_constant = 0.3;
     param.min_prediction_length = 5.0;
     param.steer_tau = 0.1;
-    param.weight_lat_error = 1.0;
-    param.weight_heading_error = 1.0;
-    param.weight_heading_error_squared_vel = 1.0;
-    param.weight_terminal_lat_error = 1.0;
-    param.weight_terminal_heading_error = 0.1;
-    param.low_curvature_weight_lat_error = 0.1;
-    param.low_curvature_weight_heading_error = 0.0;
-    param.low_curvature_weight_heading_error_squared_vel = 0.3;
-    param.weight_steering_input = 1.0;
-    param.weight_steering_input_squared_vel = 0.25;
-    param.weight_lat_jerk = 0.0;
-    param.weight_steer_rate = 0.0;
-    param.weight_steer_acc = 0.000001;
-    param.low_curvature_weight_steering_input = 1.0;
-    param.low_curvature_weight_steering_input_squared_vel = 0.25;
-    param.low_curvature_weight_lat_jerk = 0.0;
-    param.low_curvature_weight_steer_rate = 0.0;
-    param.low_curvature_weight_steer_acc = 0.000001;
+    param.nominal_weight.lat_error = 1.0;
+    param.nominal_weight.heading_error = 1.0;
+    param.nominal_weight.heading_error_squared_vel = 1.0;
+    param.nominal_weight.terminal_lat_error = 1.0;
+    param.nominal_weight.terminal_heading_error = 0.1;
+    param.low_curvature_weight.lat_error = 0.1;
+    param.low_curvature_weight.heading_error = 0.0;
+    param.low_curvature_weight.heading_error_squared_vel = 0.3;
+    param.nominal_weight.steering_input = 1.0;
+    param.nominal_weight.steering_input_squared_vel = 0.25;
+    param.nominal_weight.lat_jerk = 0.0;
+    param.nominal_weight.steer_rate = 0.0;
+    param.nominal_weight.steer_acc = 0.000001;
+    param.low_curvature_weight.steering_input = 1.0;
+    param.low_curvature_weight.steering_input_squared_vel = 0.25;
+    param.low_curvature_weight.lat_jerk = 0.0;
+    param.low_curvature_weight.steer_rate = 0.0;
+    param.low_curvature_weight.steer_acc = 0.000001;
     param.low_curvature_thresh_curvature = 0.0;
 
-    TrajectoryPoint p;
-    p.pose.position.x = 0.0;
-    p.pose.position.y = 0.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_straight_trajectory.points.push_back(p);
-    p.pose.position.x = 1.0;
-    p.pose.position.y = 0.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_straight_trajectory.points.push_back(p);
-    p.pose.position.x = 2.0;
-    p.pose.position.y = 0.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_straight_trajectory.points.push_back(p);
-    p.pose.position.x = 3.0;
-    p.pose.position.y = 0.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_straight_trajectory.points.push_back(p);
-    p.pose.position.x = 4.0;
-    p.pose.position.y = 0.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_straight_trajectory.points.push_back(p);
+    trajectory_param.traj_resample_dist = 0.1;
+    trajectory_param.path_filter_moving_ave_num = 35;
+    trajectory_param.curvature_smoothing_num_traj = 1;
+    trajectory_param.curvature_smoothing_num_ref_steer = 35;
+    trajectory_param.enable_path_smoothing = true;
+    trajectory_param.extend_trajectory_for_end_yaw_control = true;
 
-    p.pose.position.x = -1.0;
-    p.pose.position.y = -1.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_right_turn_trajectory.points.push_back(p);
-    p.pose.position.x = 0.0;
-    p.pose.position.y = 0.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_right_turn_trajectory.points.push_back(p);
-    p.pose.position.x = 1.0;
-    p.pose.position.y = -1.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_right_turn_trajectory.points.push_back(p);
-    p.pose.position.x = 2.0;
-    p.pose.position.y = -2.0;
-    p.longitudinal_velocity_mps = 1.0f;
-    dummy_right_turn_trajectory.points.push_back(p);
+    dummy_straight_trajectory.points.push_back(makePoint(0.0, 0.0, 1.0f));
+    dummy_straight_trajectory.points.push_back(makePoint(1.0, 0.0, 1.0f));
+    dummy_straight_trajectory.points.push_back(makePoint(2.0, 0.0, 1.0f));
+    dummy_straight_trajectory.points.push_back(makePoint(3.0, 0.0, 1.0f));
+    dummy_straight_trajectory.points.push_back(makePoint(4.0, 0.0, 1.0f));
+
+    dummy_right_turn_trajectory.points.push_back(makePoint(-1.0, -1.0, 1.0f));
+    dummy_right_turn_trajectory.points.push_back(makePoint(0.0, 0.0, 1.0f));
+    dummy_right_turn_trajectory.points.push_back(makePoint(1.0, -1.0, 1.0f));
+    dummy_right_turn_trajectory.points.push_back(makePoint(2.0, -2.0, 1.0f));
 
     neutral_steer.steering_tire_angle = 0.0;
     pose_zero.position.x = 0.0;
     pose_zero.position.y = 0.0;
-    pose_zero_ptr = std::make_shared<PoseStamped>();
-    pose_zero_ptr->pose = pose_zero;
   }
 
   void initializeMPC(mpc_lateral_controller::MPC & mpc)
@@ -172,32 +158,36 @@ protected:
     mpc.m_steer_rate_lim_map_by_velocity.emplace_back(0.0, steer_rate_lim);
     mpc.m_ctrl_period = ctrl_period;
     mpc.m_use_steer_prediction = use_steer_prediction;
-    // Init filters
+
     mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
+    mpc.initializeSteeringPredictor();
+
     // Init trajectory
-    mpc.setReferenceTrajectory(
-      dummy_straight_trajectory, traj_resample_dist, enable_path_smoothing,
-      path_filter_moving_ave_num, curvature_smoothing_num_traj, curvature_smoothing_num_ref_steer,
-      extend_trajectory_for_end_yaw_control);
+    mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param);
+  }
+
+  nav_msgs::msg::Odometry makeOdometry(const geometry_msgs::msg::Pose & pose, const double velocity)
+  {
+    nav_msgs::msg::Odometry odometry;
+    odometry.pose.pose = pose;
+    odometry.twist.twist.linear.x = velocity;
+    return odometry;
   }
 };  // class MPCTest
 
 /* cppcheck-suppress syntaxError */
 TEST_F(MPCTest, InitializeAndCalculate)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   EXPECT_FALSE(mpc.hasVehicleModel());
   EXPECT_FALSE(mpc.hasQPSolver());
 
-  const std::string vehicle_model_type = "kinematics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-      wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
@@ -208,65 +198,53 @@ TEST_F(MPCTest, InitializeAndCalculate)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, InitializeAndCalculateRightTurn)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   EXPECT_FALSE(mpc.hasVehicleModel());
   EXPECT_FALSE(mpc.hasQPSolver());
 
-  const std::string vehicle_model_type = "kinematics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-      wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
   // Init parameters and reference trajectory
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(
-    dummy_right_turn_trajectory, traj_resample_dist, enable_path_smoothing,
-    path_filter_moving_ave_num, curvature_smoothing_num_traj, curvature_smoothing_num_ref_steer,
-    extend_trajectory_for_end_yaw_control);
+  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param);
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_LT(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_LT(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, OsqpCalculate)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(
-    dummy_straight_trajectory, traj_resample_dist, enable_path_smoothing,
-    path_filter_moving_ave_num, curvature_smoothing_num_traj, curvature_smoothing_num_ref_steer,
-    extend_trajectory_for_end_yaw_control);
+  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param);
 
-  const std::string vehicle_model_type = "kinematics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-      wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverOSQP>(logger);
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverOSQP>(logger);
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
@@ -275,30 +253,24 @@ TEST_F(MPCTest, OsqpCalculate)
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
   // with OSQP this function returns false despite finding correct solutions
-  EXPECT_FALSE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  EXPECT_FALSE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, OsqpCalculateRightTurn)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(
-    dummy_right_turn_trajectory, traj_resample_dist, enable_path_smoothing,
-    path_filter_moving_ave_num, curvature_smoothing_num_traj, curvature_smoothing_num_ref_steer,
-    extend_trajectory_for_end_yaw_control);
+  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param);
 
-  const std::string vehicle_model_type = "kinematics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-      wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverOSQP>(logger);
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverOSQP>(logger);
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
@@ -306,62 +278,52 @@ TEST_F(MPCTest, OsqpCalculateRightTurn)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_LT(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_LT(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, KinematicsNoDelayCalculate)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   initializeMPC(mpc);
 
-  const std::string vehicle_model_type = "kinematics_no_delay";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
   // Init filters
   mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
   // Init trajectory
-  mpc.setReferenceTrajectory(
-    dummy_straight_trajectory, traj_resample_dist, enable_path_smoothing,
-    path_filter_moving_ave_num, curvature_smoothing_num_traj, curvature_smoothing_num_ref_steer,
-    extend_trajectory_for_end_yaw_control);
+  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param);
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, KinematicsNoDelayCalculateRightTurn)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(
-    dummy_right_turn_trajectory, traj_resample_dist, enable_path_smoothing,
-    path_filter_moving_ave_num, curvature_smoothing_num_traj, curvature_smoothing_num_ref_steer,
-    extend_trajectory_for_end_yaw_control);
+  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param);
 
-  const std::string vehicle_model_type = "kinematics_no_delay";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
@@ -372,26 +334,23 @@ TEST_F(MPCTest, KinematicsNoDelayCalculateRightTurn)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_LT(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_LT(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, DynamicCalculate)
 {
-  mpc_lateral_controller::MPC mpc;
+  MPC mpc;
   initializeMPC(mpc);
 
-  const std::string vehicle_model_type = "dynamics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::DynamicsBicycleModel>(
-      wheelbase, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<DynamicsBicycleModel>(wheelbase, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
+  mpc.setVehicleModel(vehicle_model_ptr);
   ASSERT_TRUE(mpc.hasVehicleModel());
 
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
   ASSERT_TRUE(mpc.hasQPSolver());
 
@@ -399,22 +358,19 @@ TEST_F(MPCTest, DynamicCalculate)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
 
 TEST_F(MPCTest, MultiSolveWithBuffer)
 {
-  mpc_lateral_controller::MPC mpc;
-  const std::string vehicle_model_type = "kinematics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-      wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  MPC mpc;
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
+  mpc.setVehicleModel(vehicle_model_ptr);
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
 
   // Init parameters and reference trajectory
@@ -425,23 +381,21 @@ TEST_F(MPCTest, MultiSolveWithBuffer)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_zero, default_velocity);
+
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
   EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
   EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
   EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
-  ASSERT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  ASSERT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
   EXPECT_EQ(mpc.m_input_buffer.size(), size_t(3));
@@ -449,14 +403,11 @@ TEST_F(MPCTest, MultiSolveWithBuffer)
 
 TEST_F(MPCTest, FailureCases)
 {
-  mpc_lateral_controller::MPC mpc;
-  const std::string vehicle_model_type = "kinematics";
-  std::shared_ptr<mpc_lateral_controller::VehicleModelInterface> vehicle_model_ptr =
-    std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-      wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
-  std::shared_ptr<mpc_lateral_controller::QPSolverInterface> qpsolver_ptr =
-    std::make_shared<mpc_lateral_controller::QPSolverEigenLeastSquareLLT>();
+  MPC mpc;
+  std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
+    std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
+  mpc.setVehicleModel(vehicle_model_ptr);
+  std::shared_ptr<QPSolverInterface> qpsolver_ptr = std::make_shared<QPSolverEigenLeastSquareLLT>();
   mpc.setQPSolver(qpsolver_ptr);
 
   // Init parameters and reference trajectory
@@ -469,19 +420,11 @@ TEST_F(MPCTest, FailureCases)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  EXPECT_FALSE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_far, ctrl_cmd, pred_traj, diag));
+  const auto odom = makeOdometry(pose_far, default_velocity);
+  EXPECT_FALSE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
 
   // Calculate MPC with a fast velocity to make the prediction go further than the reference path
-  EXPECT_FALSE(
-    mpc.calculateMPC(neutral_steer, default_velocity + 10.0, pose_far, ctrl_cmd, pred_traj, diag));
-
-  // Set a wrong vehicle model (not a failure but generates an error message)
-  const std::string wrong_vehicle_model_type = "wrong_model";
-  vehicle_model_ptr = std::make_shared<mpc_lateral_controller::KinematicsBicycleModel>(
-    wheelbase, steer_limit, steer_tau);
-  mpc.setVehicleModel(vehicle_model_ptr, wrong_vehicle_model_type);
-  EXPECT_TRUE(
-    mpc.calculateMPC(neutral_steer, default_velocity, pose_zero, ctrl_cmd, pred_traj, diag));
+  EXPECT_FALSE(mpc.calculateMPC(
+    neutral_steer, makeOdometry(pose_far, default_velocity + 10.0), ctrl_cmd, pred_traj, diag));
 }
-}  // namespace
+}  // namespace autoware::motion::control::mpc_lateral_controller

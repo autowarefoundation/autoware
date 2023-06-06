@@ -17,6 +17,8 @@
 
 #include <Eigen/Core>
 
+#include <string>
+
 namespace autoware::motion::control::mpc_lateral_controller
 {
 
@@ -102,6 +104,11 @@ public:
    * @param [out] u_ref input
    */
   virtual void calculateReferenceInput(Eigen::MatrixXd & u_ref) = 0;
+
+  /**
+   * @brief returns model name e.g. kinematics, dynamics
+   */
+  virtual std::string modelName() = 0;
 };
 }  // namespace autoware::motion::control::mpc_lateral_controller
 #endif  // MPC_LATERAL_CONTROLLER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_

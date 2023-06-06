@@ -18,66 +18,40 @@
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
-#include "geometry_msgs/msg/pose.hpp"
 
 #include <memory>
 #include <vector>
 
 namespace
 {
-namespace MPCUtils = ::autoware::motion::control::mpc_lateral_controller::MPCUtils;
-typedef autoware_auto_planning_msgs::msg::Trajectory Trajectory;
-typedef autoware_auto_planning_msgs::msg::TrajectoryPoint TrajectoryPoint;
-typedef geometry_msgs::msg::Pose Pose;
+namespace MPCUtils = autoware::motion::control::mpc_lateral_controller::MPCUtils;
+using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+
+TrajectoryPoint makePoint(const double x, const double y, const float vx)
+{
+  TrajectoryPoint p;
+  p.pose.position.x = x;
+  p.pose.position.y = y;
+  p.longitudinal_velocity_mps = vx;
+  return p;
+}
 
 /* cppcheck-suppress syntaxError */
 TEST(TestMPC, CalcStopDistance)
 {
-  using autoware_auto_planning_msgs::msg::Trajectory;
-  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  constexpr float MOVE = 1.0f;
+  constexpr float STOP = 0.0f;
 
   Trajectory trajectory_msg;
-  TrajectoryPoint p;
-  // Point 0
-  p.pose.position.x = 0.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 1
-  p.pose.position.x = 1.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 2 - STOP
-  p.pose.position.x = 2.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 0.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 3
-  p.pose.position.x = 3.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 4
-  p.pose.position.x = 4.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 5
-  p.pose.position.x = 5.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 6 - STOP
-  p.pose.position.x = 6.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 0.0f;
-  trajectory_msg.points.push_back(p);
-  // Point 7 - STOP
-  p.pose.position.x = 7.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 0.0f;
-  trajectory_msg.points.push_back(p);
+  trajectory_msg.points.push_back(makePoint(0.0, 0.0, MOVE));
+  trajectory_msg.points.push_back(makePoint(1.0, 0.0, MOVE));
+  trajectory_msg.points.push_back(makePoint(2.0, 0.0, STOP));  // STOP
+  trajectory_msg.points.push_back(makePoint(3.0, 0.0, MOVE));
+  trajectory_msg.points.push_back(makePoint(4.0, 0.0, MOVE));
+  trajectory_msg.points.push_back(makePoint(5.0, 0.0, MOVE));
+  trajectory_msg.points.push_back(makePoint(6.0, 0.0, STOP));  // STOP
+  trajectory_msg.points.push_back(makePoint(7.0, 0.0, STOP));  // STOP
 
   EXPECT_EQ(MPCUtils::calcStopDistance(trajectory_msg, 0), 2.0);
   EXPECT_EQ(MPCUtils::calcStopDistance(trajectory_msg, 1), 1.0);
