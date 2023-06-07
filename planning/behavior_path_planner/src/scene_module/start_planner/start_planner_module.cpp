@@ -686,13 +686,13 @@ bool StartPlannerModule::hasFinishedPullOut() const
   // are also running at the same time.
   const double lateral_offset_to_path =
     motion_utils::calcLateralOffset(getCurrentPath().points, current_pose.position);
-  constexpr double lateral_offset_threshold = 0.5;
+  constexpr double lateral_offset_threshold = 0.2;
   if (std::abs(lateral_offset_to_path) > lateral_offset_threshold) {
     return false;
   }
   const double yaw_deviation =
     motion_utils::calcYawDeviation(getCurrentPath().points, current_pose);
-  constexpr double yaw_deviation_threshold = 0.5;
+  constexpr double yaw_deviation_threshold = 0.087;  // 5deg
   if (std::abs(yaw_deviation) > yaw_deviation_threshold) {
     return false;
   }
