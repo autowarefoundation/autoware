@@ -20,6 +20,7 @@ It loads modules as plugins. Please refer to the links listed below for detail o
 - [Run Out](../behavior_velocity_run_out_module/docs/run-out-design.md)
 - [Speed Bump](../behavior_velocity_speed_bump_module/docs/speed-bump-design.md)
 - [Out of Lane](../behavior_velocity_out_of_lane_module/docs/out-of-lane-design.md)
+- [No Drivable Lane](../behavior_velocity_no_drivable_lane_module/docs/no-drivable-lane-design.md)
 
 When each module plans velocity, it considers based on `base_link`(center of rear-wheel axis) pose.
 So for example, in order to stop at a stop line with the vehicles' front on the stop line, it calculates `base_link` position from the distance between `base_link` to front and modifies path velocity from the `base_link` position.

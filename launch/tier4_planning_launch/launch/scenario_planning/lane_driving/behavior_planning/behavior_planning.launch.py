@@ -155,6 +155,8 @@ def launch_setup(context, *args, **kwargs):
         speed_bump_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("out_of_lane_param_path").perform(context), "r") as f:
         out_of_lane_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(LaunchConfiguration("no_drivable_lane_param_path").perform(context), "r") as f:
+        no_drivable_lane_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(
         LaunchConfiguration("behavior_velocity_planner_param_path").perform(context), "r"
     ) as f:
@@ -224,6 +226,7 @@ def launch_setup(context, *args, **kwargs):
             run_out_param,
             speed_bump_param,
             out_of_lane_param,
+            no_drivable_lane_param,
             common_param,
             motion_velocity_smoother_param,
             behavior_velocity_smoother_type_param,

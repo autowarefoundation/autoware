@@ -185,6 +185,10 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   if (this->declare_parameter<bool>("launch_out_of_lane")) {
     planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::OutOfLaneModulePlugin");
   }
+  if (this->declare_parameter<bool>("launch_no_drivable_lane")) {
+    planner_manager_.launchScenePlugin(
+      *this, "behavior_velocity_planner::NoDrivableLaneModulePlugin");
+  }
 }
 
 // NOTE: argument planner_data must not be referenced for multithreading

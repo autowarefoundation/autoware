@@ -12,6 +12,7 @@
     launch_run_out: false
     launch_speed_bump: false
     launch_out_of_lane: true
+    launch_no_drivable_lane: true
     forward_path_length: 1000.0
     backward_path_length: 5.0
     stop_line_extend_length: 5.0
