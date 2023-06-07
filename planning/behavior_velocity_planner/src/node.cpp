@@ -33,6 +33,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 namespace
 {
@@ -136,58 +137,8 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     this->declare_parameter<double>("ego_nearest_yaw_threshold");
 
   // Initialize PlannerManager
-  if (this->declare_parameter<bool>("launch_crosswalk")) {
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::CrosswalkModulePlugin");
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::WalkwayModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_traffic_light")) {
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::TrafficLightModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_intersection")) {
-    // intersection module should be before merge from private to declare intersection parameters
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::IntersectionModulePlugin");
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::MergeFromPrivateModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_blind_spot")) {
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::BlindSpotModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_detection_area")) {
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::DetectionAreaModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_virtual_traffic_light")) {
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::VirtualTrafficLightModulePlugin");
-  }
-  // this module requires all the stop line.Therefore this modules should be placed at the bottom.
-  if (this->declare_parameter<bool>("launch_no_stopping_area")) {
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::NoStoppingAreaModulePlugin");
-  }
-  // permanent stop line module should be after no stopping area
-  if (this->declare_parameter<bool>("launch_stop_line")) {
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::StopLineModulePlugin");
-  }
-  // to calculate ttc it's better to be after stop line
-  if (this->declare_parameter<bool>("launch_occlusion_spot")) {
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::OcclusionSpotModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_run_out")) {
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::RunOutModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_speed_bump")) {
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::SpeedBumpModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_out_of_lane")) {
-    planner_manager_.launchScenePlugin(*this, "behavior_velocity_planner::OutOfLaneModulePlugin");
-  }
-  if (this->declare_parameter<bool>("launch_no_drivable_lane")) {
-    planner_manager_.launchScenePlugin(
-      *this, "behavior_velocity_planner::NoDrivableLaneModulePlugin");
+  for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
+    planner_manager_.launchScenePlugin(*this, name);
   }
 }
 

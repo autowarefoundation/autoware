@@ -29,17 +29,8 @@
   <arg name="behavior_path_planner_param_path"/>
   <!-- behavior velocity planner -->
   <arg name="behavior_velocity_smoother_type_param_path"/>
-  <arg name="blind_spot_param_path"/>
-  <arg name="crosswalk_param_path"/>
-  <arg name="detection_area_param_path"/>
-  <arg name="intersection_param_path"/>
-  <arg name="stop_line_param_path"/>
-  <arg name="traffic_light_param_path"/>
-  <arg name="virtual_traffic_light_param_path"/>
-  <arg name="occlusion_spot_param_path"/>
-  <arg name="no_stopping_area_param_path"/>
-  <arg name="run_out_param_path"/>
-  <arg name="behavior_velocity_planner_param_path"/>
+  <arg name="behavior_velocity_planner_common_param_path"/>
+  <arg name="behavior_velocity_planner_module_param_paths"/>
   <!-- parking -->
   <arg name="freespace_planner_param_path"/>
   <!-- motion -->
