@@ -222,6 +222,14 @@ private:
   void insertWaitPoint(const bool use_constraints_for_decel, ShiftedPath & shifted_path) const;
 
   /**
+   * @brief insert stop point to yield. (stop in the lane if possible, even if the shift has
+   * initiated.)
+   * @param flag. if it is true, the ego decelerates within accel/jerk constraints.
+   * @param target path.
+   */
+  void insertStopPoint(const bool use_constraints_for_decel, ShiftedPath & shifted_path) const;
+
+  /**
    * @brief insert stop point in output path.
    * @param flag. if it is true, the ego decelerates within accel/jerk constraints.
    * @param target path.
@@ -234,6 +242,12 @@ private:
    * @param target path.
    */
   void insertYieldVelocity(ShiftedPath & shifted_path) const;
+
+  /**
+   * @brief calculate stop distance based on object's overhang.
+   * @param stop distance.
+   */
+  double calcDistanceToStopLine(const ObjectData & object) const;
 
   // avoidance data preparation
 
@@ -275,6 +289,13 @@ private:
   void fillShiftLine(AvoidancePlanningData & data, DebugData & debug) const;
 
   /**
+   * @brief fill ego status based on the candidate path safety check result.
+   * @param avoidance data.
+   * @param debug data.
+   */
+  void fillEgoStatus(AvoidancePlanningData & data, DebugData & debug) const;
+
+  /**
    * @brief fill debug data.
    * @param avoidance data.
    * @param debug data.
@@ -292,6 +313,12 @@ private:
    * behind ego pose.
    */
   void updateRegisteredRawShiftLines();
+
+  /**
+   * @brief check whether the ego can transit yield maneuver.
+   * @param avoidance data.
+   */
+  bool canYieldManeuver(const AvoidancePlanningData & data) const;
 
   // shift line generation
 
@@ -652,6 +679,8 @@ private:
 
   bool is_avoidance_maneuver_starts;
 
+  bool arrived_path_end_{false};
+
   std::shared_ptr<AvoidanceParameters> parameters_;
 
   std::shared_ptr<double> ego_velocity_starting_avoidance_ptr_;
@@ -673,6 +702,8 @@ private:
   UUID candidate_uuid_;
 
   ObjectDataArray registered_objects_;
+
+  mutable ObjectDataArray ego_stopped_objects_;
 
   mutable ObjectDataArray stopped_objects_;
 

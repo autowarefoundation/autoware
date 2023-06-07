@@ -563,6 +563,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       declare_parameter<bool>(ns + "enable_force_avoidance_for_stopped_vehicle");
     p.enable_safety_check = declare_parameter<bool>(ns + "enable_safety_check");
     p.enable_yield_maneuver = declare_parameter<bool>(ns + "enable_yield_maneuver");
+    p.enable_yield_maneuver_during_shifting =
+      declare_parameter<bool>(ns + "enable_yield_maneuver_during_shifting");
     p.disable_path_update = declare_parameter<bool>(ns + "disable_path_update");
     p.use_hatched_road_markings = declare_parameter<bool>(ns + "use_hatched_road_markings");
     p.publish_debug_marker = declare_parameter<bool>(ns + "publish_debug_marker");

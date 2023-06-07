@@ -300,7 +300,7 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
     dist += motion_utils::calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
     if (dist > estimated_travel_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
-      return utils::lane_change::isEgoWithinOriginalLane(
+      return utils::isEgoWithinOriginalLane(
         status_.current_lanes, estimated_pose, planner_data_->parameters);
     }
   }
@@ -335,7 +335,7 @@ bool NormalLaneChange::isAbleToStopSafely() const
     dist += motion_utils::calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
     if (dist > stop_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
-      return utils::lane_change::isEgoWithinOriginalLane(
+      return utils::isEgoWithinOriginalLane(
         status_.current_lanes, estimated_pose, planner_data_->parameters);
     }
   }
@@ -947,7 +947,7 @@ NormalLaneChangeBT::NormalLaneChangeBT(
 PathWithLaneId NormalLaneChangeBT::getReferencePath() const
 {
   PathWithLaneId reference_path;
-  if (!utils::lane_change::isEgoWithinOriginalLane(
+  if (!utils::isEgoWithinOriginalLane(
         status_.current_lanes, getEgoPose(), planner_data_->parameters)) {
     return reference_path;
   }

@@ -304,6 +304,10 @@ bool isEgoOutOfRoute(
   const Pose & self_pose, const std::optional<PoseWithUuidStamped> & modified_goal,
   const std::shared_ptr<RouteHandler> & route_handler);
 
+bool isEgoWithinOriginalLane(
+  const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
+  const BehaviorPathPlannerParameters & common_param);
+
 // path management
 
 // TODO(Horibe) There is a similar function in route_handler. Check.

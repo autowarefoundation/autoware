@@ -17,6 +17,7 @@
       enable_force_avoidance_for_stopped_vehicle: false
       enable_safety_check: true
       enable_yield_maneuver: true
+      enable_yield_maneuver_during_shifting: false
       disable_path_update: false
       use_hatched_road_markings: false
 

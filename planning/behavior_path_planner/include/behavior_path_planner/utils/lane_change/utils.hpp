@@ -131,10 +131,6 @@ PathWithLaneId getTargetSegment(
   const double target_lane_length, const double lane_changing_length,
   const double lane_changing_velocity, const double total_required_min_dist);
 
-bool isEgoWithinOriginalLane(
-  const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
-  const BehaviorPathPlannerParameters & common_param);
-
 void get_turn_signal_info(
   const LaneChangePath & lane_change_path, TurnSignalInfo * turn_signal_info);
 
