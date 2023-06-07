@@ -55,8 +55,8 @@ def launch_setup(context, *args, **kwargs):
         lane_change_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("goal_planner_param_path").perform(context), "r") as f:
         goal_planner_param = yaml.safe_load(f)["/**"]["ros__parameters"]
-    with open(LaunchConfiguration("pull_out_param_path").perform(context), "r") as f:
-        pull_out_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(LaunchConfiguration("start_planner_param_path").perform(context), "r") as f:
+        start_planner_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("drivable_area_expansion_param_path").perform(context), "r") as f:
         drivable_area_expansion_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("scene_module_manager_param_path").perform(context), "r") as f:
@@ -96,7 +96,7 @@ def launch_setup(context, *args, **kwargs):
             dynamic_avoidance_param,
             lane_change_param,
             goal_planner_param,
-            pull_out_param,
+            start_planner_param,
             drivable_area_expansion_param,
             scene_module_manager_param,
             behavior_path_planner_param,

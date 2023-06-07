@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_out/geometric_pull_out.hpp"
+#include "behavior_path_planner/utils/start_planner/geometric_pull_out.hpp"
 
-#include "behavior_path_planner/utils/pull_out/util.hpp"
+#include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -25,10 +25,10 @@ using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
 namespace behavior_path_planner
 {
-using pull_out_utils::combineReferencePath;
-using pull_out_utils::getPullOutLanes;
+using start_planner_utils::combineReferencePath;
+using start_planner_utils::getPullOutLanes;
 
-GeometricPullOut::GeometricPullOut(rclcpp::Node & node, const PullOutParameters & parameters)
+GeometricPullOut::GeometricPullOut(rclcpp::Node & node, const StartPlannerParameters & parameters)
 : PullOutPlannerBase{node, parameters},
   parallel_parking_parameters_{parameters.parallel_parking_parameters}
 {

@@ -8,8 +8,8 @@
                 <Action ID="GoalPlanner_Plan" output="{output}"/>
             </ReactiveSequence>
             <ReactiveSequence>
-                <Condition ID="PullOut_Request"/>
-                <Action ID="PullOut_Plan" output="{output}"/>
+                <Condition ID="StartPlanner_Request"/>
+                <Action ID="StartPlanner_Plan" output="{output}"/>
             </ReactiveSequence>
             <ReactiveSequence>
                 <Condition ID="SideShift_Request"/>
@@ -57,10 +57,10 @@
             <output_port name="output" type="boost::optional&lt;tier4_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
         </Action>
         <Condition ID="LaneFollowing_Request"/>
-        <Action ID="PullOut_Plan">
+        <Action ID="StartPlanner_Plan">
             <output_port name="output"/>
         </Action>
-        <Condition ID="PullOut_Request"/>
+        <Condition ID="StartPlanner_Request"/>
         <Action ID="GoalPlanner_Plan">
             <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
         </Action>

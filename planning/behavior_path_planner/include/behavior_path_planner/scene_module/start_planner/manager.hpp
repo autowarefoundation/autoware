@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__MANAGER_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__MANAGER_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__MANAGER_HPP_
+#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__MANAGER_HPP_
 
-#include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
 #include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
+#include "behavior_path_planner/scene_module/start_planner/start_planner_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -27,26 +27,26 @@
 namespace behavior_path_planner
 {
 
-class PullOutModuleManager : public SceneModuleManagerInterface
+class StartPlannerModuleManager : public SceneModuleManagerInterface
 {
 public:
-  PullOutModuleManager(
+  StartPlannerModuleManager(
     rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-    const std::shared_ptr<PullOutParameters> & parameters);
+    const std::shared_ptr<StartPlannerParameters> & parameters);
 
   std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
-    return std::make_shared<PullOutModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
+    return std::make_shared<StartPlannerModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
-  std::shared_ptr<PullOutParameters> parameters_;
+  std::shared_ptr<StartPlannerParameters> parameters_;
 
-  std::vector<std::shared_ptr<PullOutModule>> registered_modules_;
+  std::vector<std::shared_ptr<StartPlannerModule>> registered_modules_;
 };
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__MANAGER_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__MANAGER_HPP_

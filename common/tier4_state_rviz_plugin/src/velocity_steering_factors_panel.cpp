@@ -232,8 +232,8 @@ void VelocitySteeringFactorsPanel::onSteeringFactors(const SteeringFactorArray::
         case SteeringFactor::STATION:
           label->setText("STATION");
           break;
-        case SteeringFactor::PULL_OUT:
-          label->setText("PULL_OUT");
+        case SteeringFactor::START_PLANNER:
+          label->setText("START_PLANNER");
           break;
         case SteeringFactor::GOAL_PLANNER:
           label->setText("GOAL_PLANNER");

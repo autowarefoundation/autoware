@@ -15,7 +15,7 @@ set(common_src
   src/scene_module/scene_module_visitor.cpp
   src/scene_module/avoidance/avoidance_module.cpp
   src/scene_module/dynamic_avoidance/dynamic_avoidance_module.cpp
-  src/scene_module/pull_out/pull_out_module.cpp
+  src/scene_module/start_planner/start_planner_module.cpp
   src/scene_module/goal_planner/goal_planner_module.cpp
   src/scene_module/side_shift/side_shift_module.cpp
   src/scene_module/lane_change/interface.cpp
@@ -35,9 +35,9 @@ set(common_src
   src/utils/goal_planner/freespace_pull_over.cpp
   src/utils/goal_planner/goal_searcher.cpp
   src/utils/goal_planner/default_fixed_goal_planner.cpp
-  src/utils/pull_out/util.cpp
-  src/utils/pull_out/shift_pull_out.cpp
-  src/utils/pull_out/geometric_pull_out.cpp
+  src/utils/start_planner/util.cpp
+  src/utils/start_planner/shift_pull_out.cpp
+  src/utils/start_planner/geometric_pull_out.cpp
   src/utils/path_shifter/path_shifter.cpp
   src/utils/drivable_area_expansion/drivable_area_expansion.cpp
   src/utils/drivable_area_expansion/map_utils.cpp
@@ -67,7 +67,7 @@ else()
     src/planner_manager.cpp
     src/scene_module/avoidance/manager.cpp
     src/scene_module/dynamic_avoidance/manager.cpp
-    src/scene_module/pull_out/manager.cpp
+    src/scene_module/start_planner/manager.cpp
     src/scene_module/goal_planner/manager.cpp
     src/scene_module/side_shift/manager.cpp
     src/scene_module/lane_change/manager.cpp

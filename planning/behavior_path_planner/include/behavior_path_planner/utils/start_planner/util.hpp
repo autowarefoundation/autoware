@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__UTIL_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__UTIL_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__UTIL_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__UTIL_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
 
@@ -30,7 +30,7 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner::pull_out_utils
+namespace behavior_path_planner::start_planner_utils
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
@@ -46,6 +46,6 @@ PathWithLaneId getBackwardPath(
 lanelet::ConstLanelets getPullOutLanes(const std::shared_ptr<const PlannerData> & planner_data);
 Pose getBackedPose(
   const Pose & current_pose, const double & yaw_shoulder_lane, const double & back_distance);
-}  // namespace behavior_path_planner::pull_out_utils
+}  // namespace behavior_path_planner::start_planner_utils
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__UTIL_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__UTIL_HPP_

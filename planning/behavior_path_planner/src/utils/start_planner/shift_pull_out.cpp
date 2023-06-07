@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_out/shift_pull_out.hpp"
+#include "behavior_path_planner/utils/start_planner/shift_pull_out.hpp"
 
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/pull_out/util.hpp"
+#include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -29,11 +29,11 @@ using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
 namespace behavior_path_planner
 {
-using pull_out_utils::combineReferencePath;
-using pull_out_utils::getPullOutLanes;
+using start_planner_utils::combineReferencePath;
+using start_planner_utils::getPullOutLanes;
 
 ShiftPullOut::ShiftPullOut(
-  rclcpp::Node & node, const PullOutParameters & parameters,
+  rclcpp::Node & node, const StartPlannerParameters & parameters,
   std::shared_ptr<LaneDepartureChecker> & lane_departure_checker)
 : PullOutPlannerBase{node, parameters}, lane_departure_checker_{lane_departure_checker}
 {
@@ -126,7 +126,7 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
 std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
   const lanelet::ConstLanelets & shoulder_lanes, const Pose & start_pose, const Pose & goal_pose,
-  const BehaviorPathPlannerParameters & common_parameter, const PullOutParameters & parameter)
+  const BehaviorPathPlannerParameters & common_parameter, const StartPlannerParameters & parameter)
 {
   std::vector<PullOutPath> candidate_paths{};
 

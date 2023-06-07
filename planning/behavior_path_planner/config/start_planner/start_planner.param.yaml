@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    pull_out:
+    start_planner:
       th_arrived_distance: 1.0
       th_stopped_velocity: 0.01
       th_stopped_time: 1.0

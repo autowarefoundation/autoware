@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__SHIFT_PULL_OUT_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__SHIFT_PULL_OUT_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__SHIFT_PULL_OUT_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__SHIFT_PULL_OUT_HPP_
 
-#include "behavior_path_planner/utils/pull_out/pull_out_path.hpp"
-#include "behavior_path_planner/utils/pull_out/pull_out_planner_base.hpp"
+#include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
+#include "behavior_path_planner/utils/start_planner/pull_out_planner_base.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 
@@ -33,7 +33,7 @@ class ShiftPullOut : public PullOutPlannerBase
 {
 public:
   explicit ShiftPullOut(
-    rclcpp::Node & node, const PullOutParameters & parameters,
+    rclcpp::Node & node, const StartPlannerParameters & parameters,
     std::shared_ptr<LaneDepartureChecker> & lane_departure_checker);
 
   PlannerType getPlannerType() override { return PlannerType::SHIFT; };
@@ -43,7 +43,7 @@ public:
     const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
     const lanelet::ConstLanelets & shoulder_lanes, const Pose & start_pose, const Pose & goal_pose,
     const BehaviorPathPlannerParameters & common_parameter,
-    const behavior_path_planner::PullOutParameters & parameter);
+    const behavior_path_planner::StartPlannerParameters & parameter);
 
   bool hasEnoughDistance(
     const double pull_out_total_distance, const lanelet::ConstLanelets & current_lanes,
@@ -56,4 +56,4 @@ public:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__SHIFT_PULL_OUT_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__SHIFT_PULL_OUT_HPP_

@@ -1225,7 +1225,7 @@ Visualization Manager:
                           Value: false
                         - Class: rviz_default_plugins/MarkerArray
                           Enabled: false
-                          Name: PullOut
+                          Name: StartPlanner
                           Namespaces:
                             {}
                           Topic:
@@ -1233,7 +1233,7 @@ Visualization Manager:
                             Durability Policy: Volatile
                             History Policy: Keep Last
                             Reliability Policy: Reliable
-                            Value: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/pullout
+                            Value: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/startplanner
                           Value: false
                         - Class: rviz_default_plugins/MarkerArray
                           Enabled: false

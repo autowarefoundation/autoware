@@ -24,7 +24,7 @@
   <arg name="dynamic_avoidance_param_path"/>
   <arg name="lane_change_param_path"/>
   <arg name="goal_planner_param_path"/>
-  <arg name="pull_out_param_path"/>
+  <arg name="start_planner_param_path"/>
   <arg name="drivable_area_expansion_param_path"/>
   <arg name="behavior_path_planner_param_path"/>
   <!-- behavior velocity planner -->

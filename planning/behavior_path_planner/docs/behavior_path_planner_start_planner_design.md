@@ -1,4 +1,4 @@
-# Pull Out design
+# Start Planner design
 
 ## Purpose / Role
 
@@ -8,7 +8,7 @@ Pull out from the shoulder lane without colliding with objects.
 
 ```plantuml
 @startuml
-package pull_out{
+package start_planner{
     abstract class PullOutPlannerBase {
     }
 
@@ -19,7 +19,7 @@ package pull_out{
     class GeometricPullOut {
     }
 
-    class PullOutModule {
+    class StartPlannerModule {
     }
 
     struct PullOutPath{}
@@ -40,14 +40,14 @@ GeometricPullOut --|> PullOutPlannerBase
 PathShifter --o ShiftPullOut
 GeometricParallelParking --o GeometricPullOut
 
-PullOutPlannerBase --o PullOutModule
+PullOutPlannerBase --o StartPlannerModule
 
 PullOutPath --o PullOutPlannerBase
 
 @enduml
 ```
 
-## General parameters for pull_out
+## General parameters for start_planner
 
 | Name                              | Unit  | Type   | Description                                                          | Default value |
 | :-------------------------------- | :---- | :----- | :------------------------------------------------------------------- | :------------ |

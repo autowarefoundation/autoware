@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/pull_out/util.hpp"
+#include "behavior_path_planner/utils/start_planner/util.hpp"
 
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner::pull_out_utils
+namespace behavior_path_planner::start_planner_utils
 {
 PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2)
 {
@@ -114,4 +114,4 @@ lanelet::ConstLanelets getPullOutLanes(const std::shared_ptr<const PlannerData> 
   // pull out from road lane
   return utils::getExtendedCurrentLanes(planner_data);
 }
-}  // namespace behavior_path_planner::pull_out_utils
+}  // namespace behavior_path_planner::start_planner_utils

@@ -9,9 +9,9 @@
                 <Action ID="GoalPlanner_Plan" output="{output}"/>
             </ReactiveSequence>
             <ReactiveSequence>
-                <Condition ID="PullOut_Request"/>
-                <Condition ID="PullOut_Ready"/>
-                <Action ID="PullOut_Plan" output="{output}"/>
+                <Condition ID="StartPlanner_Request"/>
+                <Condition ID="StartPlanner_Ready"/>
+                <Action ID="StartPlanner_Plan" output="{output}"/>
             </ReactiveSequence>
             <ReactiveSequence>
                 <Condition ID="LaneChange_Request"/>
@@ -73,11 +73,11 @@
         </Action>
         <Condition ID="LaneFollowing_Ready"/>
         <Condition ID="LaneFollowing_Request"/>
-        <Action ID="PullOut_Plan">
+        <Action ID="StartPlanner_Plan">
             <output_port name="output"/>
         </Action>
-        <Condition ID="PullOut_Ready"/>
-        <Condition ID="PullOut_Request"/>
+        <Condition ID="StartPlanner_Ready"/>
+        <Condition ID="StartPlanner_Request"/>
         <Action ID="GoalPlanner_Plan">
             <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
         </Action>

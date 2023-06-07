@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PATH_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PATH_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__PULL_OUT_PATH_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__PULL_OUT_PATH_HPP_
 
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
@@ -31,4 +31,4 @@ struct PullOutPath
   Pose end_pose{};
 };
 }  // namespace behavior_path_planner
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PATH_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__PULL_OUT_PATH_HPP_

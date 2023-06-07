@@ -84,7 +84,7 @@ PlanningNode::PlanningNode(const rclcpp::NodeOptions & options) : Node("planning
 
   std::vector<std::string> steering_factor_topics = {
     "/planning/steering_factor/avoidance", "/planning/steering_factor/intersection",
-    "/planning/steering_factor/lane_change", "/planning/steering_factor/pull_out",
+    "/planning/steering_factor/lane_change", "/planning/steering_factor/start_planner",
     "/planning/steering_factor/goal_planner"};
 
   sub_velocity_factors_ =

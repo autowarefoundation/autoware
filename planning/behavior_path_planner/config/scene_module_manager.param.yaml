@@ -31,7 +31,7 @@
       priority: 5
       max_module_size: 1
 
-    pull_out:
+    start_planner:
       enable_module: true
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false

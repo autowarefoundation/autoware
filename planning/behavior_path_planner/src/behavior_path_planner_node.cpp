@@ -125,7 +125,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     dynamic_avoidance_param_ptr_ =
       std::make_shared<DynamicAvoidanceParameters>(getDynamicAvoidanceParam());
     lane_change_param_ptr_ = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
-    pull_out_param_ptr_ = std::make_shared<PullOutParameters>(getPullOutParam());
+    start_planner_param_ptr_ = std::make_shared<StartPlannerParameters>(getStartPlannerParam());
     goal_planner_param_ptr_ = std::make_shared<GoalPlannerParameters>(getGoalPlannerParam());
     side_shift_param_ptr_ = std::make_shared<SideShiftParameters>(getSideShiftParam());
     avoidance_by_lc_param_ptr_ = std::make_shared<AvoidanceByLCParameters>(
@@ -186,10 +186,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       "GoalPlanner", create_publisher<Path>(path_candidate_name_space + "goal_planner", 1));
     bt_manager_->registerSceneModule(goal_planner);
 
-    auto pull_out_module = std::make_shared<PullOutModule>("PullOut", *this, pull_out_param_ptr_);
+    auto start_planner_module =
+      std::make_shared<StartPlannerModule>("StartPlanner", *this, start_planner_param_ptr_);
     path_candidate_publishers_.emplace(
-      "PullOut", create_publisher<Path>(path_candidate_name_space + "pull_out", 1));
-    bt_manager_->registerSceneModule(pull_out_module);
+      "StartPlanner", create_publisher<Path>(path_candidate_name_space + "start_planner", 1));
+    bt_manager_->registerSceneModule(start_planner_module);
 
     bt_manager_->createBehaviorTree();
   }
@@ -214,14 +215,14 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
         module_name, create_publisher<Path>(path_reference_name_space + module_name, 1));
     };
 
-    if (p.config_pull_out.enable_module) {
-      auto manager = std::make_shared<PullOutModuleManager>(
-        this, "pull_out", p.config_pull_out, pull_out_param_ptr_);
+    if (p.config_start_planner.enable_module) {
+      auto manager = std::make_shared<StartPlannerModuleManager>(
+        this, "start_planner", p.config_start_planner, start_planner_param_ptr_);
       planner_manager_->registerSceneModuleManager(manager);
       path_candidate_publishers_.emplace(
-        "pull_out", create_publisher<Path>(path_candidate_name_space + "pull_out", 1));
+        "start_planner", create_publisher<Path>(path_candidate_name_space + "start_planner", 1));
       path_reference_publishers_.emplace(
-        "pull_out", create_publisher<Path>(path_reference_name_space + "pull_out", 1));
+        "start_planner", create_publisher<Path>(path_reference_name_space + "start_planner", 1));
     }
 
     if (p.config_goal_planner.enable_module) {
@@ -368,7 +369,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     return config;
   };
 
-  p.config_pull_out = get_scene_module_manager_param("pull_out.");
+  p.config_start_planner = get_scene_module_manager_param("start_planner.");
   p.config_goal_planner = get_scene_module_manager_param("goal_planner.");
   p.config_side_shift = get_scene_module_manager_param("side_shift.");
   p.config_lane_change_left = get_scene_module_manager_param("lane_change_left.");
@@ -1051,11 +1052,11 @@ GoalPlannerParameters BehaviorPathPlannerNode::getGoalPlannerParam()
   return p;
 }
 
-PullOutParameters BehaviorPathPlannerNode::getPullOutParam()
+StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
 {
-  PullOutParameters p;
+  StartPlannerParameters p;
 
-  std::string ns = "pull_out.";
+  std::string ns = "start_planner.";
 
   p.th_arrived_distance = declare_parameter<double>(ns + "th_arrived_distance");
   p.th_stopped_velocity = declare_parameter<double>(ns + "th_stopped_velocity");

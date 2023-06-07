@@ -110,7 +110,7 @@ void PlanningInterfaceTestManager::publishInitialPose(
   rclcpp::Node::SharedPtr target_node, std::string topic_name, const double shift,
   ModuleName module_name)
 {
-  if (module_name == ModuleName::PULL_OUT) {
+  if (module_name == ModuleName::START_PLANNER) {
     test_utils::publishToTargetNode(
       test_node_, target_node, topic_name, initial_pose_pub_,
       test_utils::makeInitialPoseFromLaneId(10291));
@@ -251,7 +251,7 @@ void PlanningInterfaceTestManager::publishNominalRoute(
 void PlanningInterfaceTestManager::publishBehaviorNominalRoute(
   rclcpp::Node::SharedPtr target_node, std::string topic_name, ModuleName module_name)
 {
-  if (module_name == ModuleName::PULL_OUT) {
+  if (module_name == ModuleName::START_PLANNER) {
     test_utils::publishToTargetNode(
       test_node_, target_node, topic_name, behavior_normal_route_pub_,
       test_utils::makeBehaviorRouteFromLaneId(10291, 10333), 5);

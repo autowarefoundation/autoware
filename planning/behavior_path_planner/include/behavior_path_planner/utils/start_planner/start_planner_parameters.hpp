@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PARAMETERS_HPP_
-#define BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PARAMETERS_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__START_PLANNER_PARAMETERS_HPP_
+#define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__START_PLANNER_PARAMETERS_HPP_
 
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 
@@ -23,7 +23,7 @@
 
 namespace behavior_path_planner
 {
-struct PullOutParameters
+struct StartPlannerParameters
 {
   double th_arrived_distance;
   double th_stopped_velocity;
@@ -55,4 +55,4 @@ struct PullOutParameters
 
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__UTILS__PULL_OUT__PULL_OUT_PARAMETERS_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__START_PLANNER_PARAMETERS_HPP_

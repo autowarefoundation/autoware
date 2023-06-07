@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/scene_module/pull_out/manager.hpp"
+#include "behavior_path_planner/scene_module/start_planner/manager.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -23,14 +23,14 @@
 namespace behavior_path_planner
 {
 
-PullOutModuleManager::PullOutModuleManager(
+StartPlannerModuleManager::StartPlannerModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-  const std::shared_ptr<PullOutParameters> & parameters)
+  const std::shared_ptr<StartPlannerParameters> & parameters)
 : SceneModuleManagerInterface(node, name, config, {""}), parameters_{parameters}
 {
 }
 
-void PullOutModuleManager::updateModuleParams(
+void StartPlannerModuleManager::updateModuleParams(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & parameters)
 {
   using tier4_autoware_utils::updateParam;

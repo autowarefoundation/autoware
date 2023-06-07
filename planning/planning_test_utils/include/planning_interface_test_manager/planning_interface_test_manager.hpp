@@ -101,7 +101,7 @@ using tier4_v2x_msgs::msg::VirtualTrafficLightStateArray;
 
 enum class ModuleName {
   UNKNOWN = 0,
-  PULL_OUT,
+  START_PLANNER,
 };
 
 class PlanningInterfaceTestManager

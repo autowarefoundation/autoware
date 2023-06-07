@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_MODULE_HPP_
-#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_MODULE_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__START_PLANNER_MODULE_HPP_
+#define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__START_PLANNER_MODULE_HPP_
 
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
-#include "behavior_path_planner/utils/pull_out/geometric_pull_out.hpp"
-#include "behavior_path_planner/utils/pull_out/pull_out_parameters.hpp"
-#include "behavior_path_planner/utils/pull_out/pull_out_path.hpp"
-#include "behavior_path_planner/utils/pull_out/shift_pull_out.hpp"
+#include "behavior_path_planner/utils/start_planner/geometric_pull_out.hpp"
+#include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
+#include "behavior_path_planner/utils/start_planner/shift_pull_out.hpp"
+#include "behavior_path_planner/utils/start_planner/start_planner_parameters.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -63,20 +63,20 @@ struct PullOutStatus
   PullOutStatus() {}
 };
 
-class PullOutModule : public SceneModuleInterface
+class StartPlannerModule : public SceneModuleInterface
 {
 public:
 #ifdef USE_OLD_ARCHITECTURE
-  PullOutModule(
+  StartPlannerModule(
     const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<PullOutParameters> & parameters);
+    const std::shared_ptr<StartPlannerParameters> & parameters);
 #else
-  PullOutModule(
+  StartPlannerModule(
     const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<PullOutParameters> & parameters,
+    const std::shared_ptr<StartPlannerParameters> & parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
-  void updateModuleParams(const std::shared_ptr<PullOutParameters> & parameters)
+  void updateModuleParams(const std::shared_ptr<StartPlannerParameters> & parameters)
   {
     parameters_ = parameters;
   }
@@ -93,7 +93,7 @@ public:
   CandidateOutput planCandidate() const override;
   void processOnExit() override;
 
-  void setParameters(const std::shared_ptr<PullOutParameters> & parameters)
+  void setParameters(const std::shared_ptr<StartPlannerParameters> & parameters)
   {
     parameters_ = parameters;
   }
@@ -105,10 +105,10 @@ public:
   }
 
 private:
-  std::shared_ptr<PullOutParameters> parameters_;
+  std::shared_ptr<StartPlannerParameters> parameters_;
   vehicle_info_util::VehicleInfo vehicle_info_;
 
-  std::vector<std::shared_ptr<PullOutPlannerBase>> pull_out_planners_;
+  std::vector<std::shared_ptr<PullOutPlannerBase>> start_planner_planners_;
   PullOutStatus status_;
 
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_;
@@ -151,4 +151,4 @@ private:
 };
 }  // namespace behavior_path_planner
 
-#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_MODULE_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__START_PLANNER__START_PLANNER_MODULE_HPP_
