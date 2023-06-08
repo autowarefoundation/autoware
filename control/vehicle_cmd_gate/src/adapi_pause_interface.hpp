@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PAUSE_INTERFACE_HPP_
-#define PAUSE_INTERFACE_HPP_
+#ifndef ADAPI_PAUSE_INTERFACE_HPP_
+#define ADAPI_PAUSE_INTERFACE_HPP_
 
 #include <component_interface_specs/control.hpp>
 #include <component_interface_utils/rclcpp.hpp>
@@ -24,7 +24,7 @@
 namespace vehicle_cmd_gate
 {
 
-class PauseInterface
+class AdapiPauseInterface
 {
 private:
   static constexpr double eps = 1e-3;
@@ -34,7 +34,7 @@ private:
   using IsStartRequested = control_interface::IsStartRequested;
 
 public:
-  explicit PauseInterface(rclcpp::Node * node);
+  explicit AdapiPauseInterface(rclcpp::Node * node);
   bool is_paused();
   void publish();
   void update(const AckermannControlCommand & control);
@@ -57,4 +57,4 @@ private:
 
 }  // namespace vehicle_cmd_gate
 
-#endif  // PAUSE_INTERFACE_HPP_
+#endif  // ADAPI_PAUSE_INTERFACE_HPP_

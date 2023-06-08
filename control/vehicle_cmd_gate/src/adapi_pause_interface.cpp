@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pause_interface.hpp"
+#include "adapi_pause_interface.hpp"
 
 namespace vehicle_cmd_gate
 {
 
-PauseInterface::PauseInterface(rclcpp::Node * node) : node_(node)
+AdapiPauseInterface::AdapiPauseInterface(rclcpp::Node * node) : node_(node)
 {
   const auto adaptor = component_interface_utils::NodeAdaptor(node);
-  adaptor.init_srv(srv_set_pause_, this, &PauseInterface::on_pause);
+  adaptor.init_srv(srv_set_pause_, this, &AdapiPauseInterface::on_pause);
   adaptor.init_pub(pub_is_paused_);
   adaptor.init_pub(pub_is_start_requested_);
 
@@ -29,12 +29,12 @@ PauseInterface::PauseInterface(rclcpp::Node * node) : node_(node)
   publish();
 }
 
-bool PauseInterface::is_paused()
+bool AdapiPauseInterface::is_paused()
 {
   return is_paused_;
 }
 
-void PauseInterface::publish()
+void AdapiPauseInterface::publish()
 {
   if (prev_is_paused_ != is_paused_) {
     IsPaused::Message msg;
@@ -53,12 +53,12 @@ void PauseInterface::publish()
   }
 }
 
-void PauseInterface::update(const AckermannControlCommand & control)
+void AdapiPauseInterface::update(const AckermannControlCommand & control)
 {
   is_start_requested_ = eps < std::abs(control.longitudinal.speed);
 }
 
-void PauseInterface::on_pause(
+void AdapiPauseInterface::on_pause(
   const SetPause::Service::Request::SharedPtr req, const SetPause::Service::Response::SharedPtr res)
 {
   is_paused_ = req->pause;

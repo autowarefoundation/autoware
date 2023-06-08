@@ -15,8 +15,8 @@
 #ifndef VEHICLE_CMD_GATE_HPP_
 #define VEHICLE_CMD_GATE_HPP_
 
+#include "adapi_pause_interface.hpp"
 #include "moderate_stop_interface.hpp"
-#include "pause_interface.hpp"
 #include "vehicle_cmd_filter.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -217,7 +217,7 @@ private:
   VehicleCmdFilter filter_on_transition_;
 
   // Pause interface for API
-  std::unique_ptr<PauseInterface> pause_;
+  std::unique_ptr<AdapiPauseInterface> adapi_pause_;
   std::unique_ptr<ModerateStopInterface> moderate_stop_interface_;
 };
 
