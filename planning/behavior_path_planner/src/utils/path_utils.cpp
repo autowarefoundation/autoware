@@ -77,22 +77,19 @@ PathWithLaneId resamplePathWithSpline(
 
   // Get lane ids that are not duplicated
   std::vector<double> s_in;
-  std::vector<int64_t> unique_lane_ids;
+  std::unordered_set<int64_t> unique_lane_ids;
   const auto s_vec =
     motion_utils::calcSignedArcLengthPartialSum(transformed_path, 0, transformed_path.size());
   for (size_t i = 0; i < path.points.size(); ++i) {
     const double s = s_vec.at(i);
     for (const auto & lane_id : path.points.at(i).lane_ids) {
-      if (keep_input_points && !has_almost_same_value(s_in, s)) {
-        s_in.push_back(s);
+      if (!keep_input_points && (unique_lane_ids.find(lane_id) != unique_lane_ids.end())) {
+        continue;
       }
-      if (
-        std::find(unique_lane_ids.begin(), unique_lane_ids.end(), lane_id) !=
-        unique_lane_ids.end()) {
-        unique_lane_ids.push_back(lane_id);
-        if (!has_almost_same_value(s_in, s)) {
-          s_in.push_back(s);
-        }
+      unique_lane_ids.insert(lane_id);
+
+      if (!has_almost_same_value(s_in, s)) {
+        s_in.push_back(s);
       }
     }
   }
