@@ -516,6 +516,7 @@ struct DebugData
   AvoidLineArray extra_return_shift;
 
   AvoidLineArray merged;
+  AvoidLineArray gap_filled;
   AvoidLineArray trim_similar_grad_shift;
   AvoidLineArray quantized;
   AvoidLineArray trim_small_shift;

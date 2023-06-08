@@ -371,6 +371,13 @@ private:
     const AvoidLineArray & base_lines, const AvoidLineArray & added_lines) const;
 
   /*
+   * @brief fill gap between two shift lines.
+   * @param original shift lines.
+   * @return processed shift lines.
+   */
+  AvoidLineArray fillShiftLineGap(const AvoidLineArray & shift_lines) const;
+
+  /*
    * @brief merge negative & positive shift lines.
    * @param original shift lines.
    * @param debug data.
