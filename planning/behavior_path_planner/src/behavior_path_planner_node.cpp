@@ -360,6 +360,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   const auto get_scene_module_manager_param = [&](std::string && ns) {
     ModuleConfigParameters config;
     config.enable_module = declare_parameter<bool>(ns + "enable_module");
+    config.enable_rtc = declare_parameter<bool>(ns + "enable_rtc");
     config.enable_simultaneous_execution_as_approved_module =
       declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
     config.enable_simultaneous_execution_as_candidate_module =

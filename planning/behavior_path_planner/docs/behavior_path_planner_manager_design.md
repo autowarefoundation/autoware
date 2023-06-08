@@ -93,13 +93,14 @@ struct ModuleConfigParameters
 
 Code is [here](https://github.com/autowarefoundation/autoware.universe/blob/b1734916e3efd9786507a271e0fe829dd37476c8/planning/behavior_path_planner/include/behavior_path_planner/parameters.hpp#L23-L30)
 
-| Name                                                | Type    | Description                                                                                                            |
-| :-------------------------------------------------- | :------ | :--------------------------------------------------------------------------------------------------------------------- |
-| `enable_module`                                     | bool    | if true, the sub-manager is registered on the manager.                                                                 |
-| `enable_simultaneous_execution_as_candidate_module` | bool    | if true, the manager allows its scene modules to run with other scene modules as **candidate module**.                 |
-| `enable_simultaneous_execution_as_approved_module`  | bool    | if true, the manager allows its scene modules to run with other scene modules as **approved module**.                  |
-| `priority`                                          | uint8_t | the manager decides execution priority based on this parameter. The smaller the number is, the higher the priority is. |
-| `max_module_size`                                   | uint8_t | the sub-manager can run some modules simultaneously. this parameter set the maximum number of the launched modules.    |
+| Name                                                | Type    | Description                                                                                                                                     |
+| :-------------------------------------------------- | :------ | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enable_module`                                     | bool    | if true, the sub-manager is registered on the manager.                                                                                          |
+| `enable_rtc`                                        | bool    | if true, the scene modules should be approved by (request to cooperate)rtc function. if false, the module can be run without approval from rtc. |
+| `enable_simultaneous_execution_as_candidate_module` | bool    | if true, the manager allows its scene modules to run with other scene modules as **candidate module**.                                          |
+| `enable_simultaneous_execution_as_approved_module`  | bool    | if true, the manager allows its scene modules to run with other scene modules as **approved module**.                                           |
+| `priority`                                          | uint8_t | the manager decides execution priority based on this parameter. The smaller the number is, the higher the priority is.                          |
+| `max_module_size`                                   | uint8_t | the sub-manager can run some modules simultaneously. this parameter set the maximum number of the launched modules.                             |
 
 ### Scene modules
 

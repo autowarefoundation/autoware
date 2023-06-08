@@ -78,9 +78,9 @@ Module getModuleType(const std::string & module_name)
 
 namespace rtc_interface
 {
-RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name)
+RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name, const bool enable_rtc)
 : logger_{node->get_logger().get_child("RTCInterface[" + name + "]")},
-  is_auto_mode_init_{false},
+  is_auto_mode_init_{!enable_rtc},
   is_locked_{false}
 {
   using std::placeholders::_1;
