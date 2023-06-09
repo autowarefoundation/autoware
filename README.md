@@ -36,7 +36,7 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
 
 ## Using Autoware.AI
 
-If you wish to use Autoware.AI, the previous version of Autoware based on ROS 1, switch to [autoware-ai](https://github.com/autowarefoundation/autoware.ai/tree/autoware-ai) branch. However, be aware that Autoware.AI will reach the end-of-life by the end of 2022, and we strongly recommend transitioning to Autoware Core/Universe for future use.
+If you wish to use Autoware.AI, the previous version of Autoware based on ROS 1, switch to [autoware-ai](https://github.com/autowarefoundation/autoware_ai) repository. However, be aware that Autoware.AI has reached the end-of-life as of 2022, and we strongly recommend transitioning to Autoware Core/Universe for future use.
 
 ## Contributing
 
