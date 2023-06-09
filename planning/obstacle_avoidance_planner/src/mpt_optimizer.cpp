@@ -842,6 +842,28 @@ void MPTOptimizer::updateBounds(
 
 void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_points) const
 {
+  // calculate drivable area width considering the curvature
+  std::vector<double> min_dynamic_drivable_width_vec;
+  for (int i = 0; i < static_cast<int>(ref_points.size()); ++i) {
+    double curvature = std::abs(ref_points.at(i).curvature);
+    if (i != static_cast<int>(ref_points.size()) - 1) {
+      curvature = std::max(curvature, std::abs(ref_points.at(i + 1).curvature));
+    }
+    if (i != 0) {
+      curvature = std::max(curvature, std::abs(ref_points.at(i - 1).curvature));
+    }
+
+    const double max_longitudinal_length = std::max(
+      std::abs(vehicle_info_.max_longitudinal_offset_m),
+      std::abs(vehicle_info_.min_longitudinal_offset_m));
+    const double turning_radius = 1.0 / curvature;
+    const double additional_drivable_width_by_curvature =
+      std::hypot(max_longitudinal_length, turning_radius + vehicle_info_.vehicle_width_m / 2.0) -
+      turning_radius - vehicle_info_.vehicle_width_m / 2.0;
+    min_dynamic_drivable_width_vec.push_back(
+      mpt_param_.min_drivable_width + additional_drivable_width_by_curvature);
+  }
+
   // 1. calculate start and end sections which are out of bounds
   std::vector<std::pair<size_t, size_t>> out_of_upper_bound_sections;
   std::vector<std::pair<size_t, size_t>> out_of_lower_bound_sections;
@@ -849,8 +871,9 @@ void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_poin
   std::optional<size_t> out_of_lower_bound_start_idx = std::nullopt;
   for (size_t i = 0; i < ref_points.size(); ++i) {
     const auto & b = ref_points.at(i).bounds;
+
     // const double drivable_width = b.upper_bound - b.lower_bound;
-    // const bool is_infeasible_to_drive = drivable_width < mpt_param_.min_drivable_width;
+    // const bool is_infeasible_to_drive = drivable_width < min_dynamic_drivable_width
 
     // NOTE: The following condition should be uncommented to see obstacles outside the path.
     //       However, on a narrow road, the ego may go outside the road border with this condition.
@@ -912,16 +935,16 @@ void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_poin
         // It seems both bounds are cut out. Widen the bounds towards the both side.
         const double center_dist_to_bounds =
           (original_b.upper_bound + original_b.lower_bound) / 2.0;
-        b.upper_bound =
-          std::max(b.upper_bound, center_dist_to_bounds + mpt_param_.min_drivable_width / 2.0);
-        b.lower_bound =
-          std::min(b.lower_bound, center_dist_to_bounds - mpt_param_.min_drivable_width / 2.0);
+        b.upper_bound = std::max(
+          b.upper_bound, center_dist_to_bounds + min_dynamic_drivable_width_vec.at(p_idx) / 2.0);
+        b.lower_bound = std::min(
+          b.lower_bound, center_dist_to_bounds - min_dynamic_drivable_width_vec.at(p_idx) / 2.0);
         continue;
       }
       // Only the Lower bound is cut out. Widen the bounds towards the lower bound since cut out too
       // much.
       b.lower_bound =
-        std::min(b.lower_bound, original_b.upper_bound - mpt_param_.min_drivable_width);
+        std::min(b.lower_bound, original_b.upper_bound - min_dynamic_drivable_width_vec.at(p_idx));
       continue;
     }
     // extend longitudinal if it overlaps out_of_upper_bound_sections
@@ -962,16 +985,16 @@ void MPTOptimizer::keepMinimumBoundsWidth(std::vector<ReferencePoint> & ref_poin
         // It seems both bounds are cut out. Widen the bounds towards the both side.
         const double center_dist_to_bounds =
           (original_b.upper_bound + original_b.lower_bound) / 2.0;
-        b.upper_bound =
-          std::max(b.upper_bound, center_dist_to_bounds + mpt_param_.min_drivable_width / 2.0);
-        b.lower_bound =
-          std::min(b.lower_bound, center_dist_to_bounds - mpt_param_.min_drivable_width / 2.0);
+        b.upper_bound = std::max(
+          b.upper_bound, center_dist_to_bounds + min_dynamic_drivable_width_vec.at(p_idx) / 2.0);
+        b.lower_bound = std::min(
+          b.lower_bound, center_dist_to_bounds - min_dynamic_drivable_width_vec.at(p_idx) / 2.0);
         continue;
       }
       // Only the Upper bound is cut out. Widen the bounds towards the upper bound since cut out too
       // much.
       b.upper_bound =
-        std::max(b.upper_bound, original_b.lower_bound + mpt_param_.min_drivable_width);
+        std::max(b.upper_bound, original_b.lower_bound + min_dynamic_drivable_width_vec.at(p_idx));
       continue;
     }
     // extend longitudinal if it overlaps out_of_lower_bound_sections
