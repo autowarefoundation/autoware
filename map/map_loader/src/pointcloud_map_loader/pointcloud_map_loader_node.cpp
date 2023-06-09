@@ -68,7 +68,7 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
       std::make_unique<PointcloudMapLoaderModule>(this, pcd_paths, publisher_name, true);
   }
 
-  if (enable_partial_load || enable_differential_load) {
+  if (enable_partial_load || enable_differential_load || enable_selected_load) {
     std::map<std::string, PCDFileMetadata> pcd_metadata_dict;
     try {
       pcd_metadata_dict = getPCDMetadata(pcd_metadata_path, pcd_paths);
