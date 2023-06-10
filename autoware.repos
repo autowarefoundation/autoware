@@ -33,7 +33,7 @@ repositories:
     version: main
   individual_params:
     type: git
-    url: https://github.com/tier4/perception_ecu_individual_params.git  # (TODO) rename repo
+    url: https://github.com/tier4/edge_auto_individual_params.git
     version: main
   calibration_tools:
     type: git
