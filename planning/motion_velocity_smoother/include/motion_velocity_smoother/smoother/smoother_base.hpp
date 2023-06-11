@@ -85,6 +85,8 @@ public:
   double getMaxJerk() const;
   double getMinJerk() const;
 
+  void setWheelBase(const double wheel_base);
+
   void setParam(const BaseParam & param);
   BaseParam getBaseParam() const;
 

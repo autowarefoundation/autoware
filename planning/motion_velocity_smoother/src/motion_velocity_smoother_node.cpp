@@ -45,40 +45,7 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   over_stop_velocity_warn_thr_ = declare_parameter<double>("over_stop_velocity_warn_thr");
 
   // create smoother
-  switch (node_param_.algorithm_type) {
-    case AlgorithmType::JERK_FILTERED: {
-      smoother_ = std::make_shared<JerkFilteredSmoother>(*this);
-
-      // Set Publisher for jerk filtered algorithm
-      pub_forward_filtered_trajectory_ =
-        create_publisher<Trajectory>("~/debug/forward_filtered_trajectory", 1);
-      pub_backward_filtered_trajectory_ =
-        create_publisher<Trajectory>("~/debug/backward_filtered_trajectory", 1);
-      pub_merged_filtered_trajectory_ =
-        create_publisher<Trajectory>("~/debug/merged_filtered_trajectory", 1);
-      pub_closest_merged_velocity_ =
-        create_publisher<Float32Stamped>("~/closest_merged_velocity", 1);
-      break;
-    }
-    case AlgorithmType::L2: {
-      smoother_ = std::make_shared<L2PseudoJerkSmoother>(*this);
-      break;
-    }
-    case AlgorithmType::LINF: {
-      smoother_ = std::make_shared<LinfPseudoJerkSmoother>(*this);
-      break;
-    }
-    case AlgorithmType::ANALYTICAL: {
-      smoother_ = std::make_shared<AnalyticalJerkConstrainedSmoother>(*this);
-      break;
-    }
-    default:
-      throw std::domain_error("[MotionVelocitySmootherNode] invalid algorithm");
-  }
-  // Initialize the wheelbase
-  auto p = smoother_->getBaseParam();
-  p.wheel_base = wheelbase_;
-  smoother_->setParam(p);
+  setupSmoother(wheelbase_);
 
   // publishers, subscribers
   pub_trajectory_ = create_publisher<Trajectory>("~/output/trajectory", 1);
@@ -125,6 +92,42 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   pub_velocity_limit_->publish(max_vel_msg);
 
   clock_ = get_clock();
+}
+
+void MotionVelocitySmootherNode::setupSmoother(const double wheelbase)
+{
+  switch (node_param_.algorithm_type) {
+    case AlgorithmType::JERK_FILTERED: {
+      smoother_ = std::make_shared<JerkFilteredSmoother>(*this);
+
+      // Set Publisher for jerk filtered algorithm
+      pub_forward_filtered_trajectory_ =
+        create_publisher<Trajectory>("~/debug/forward_filtered_trajectory", 1);
+      pub_backward_filtered_trajectory_ =
+        create_publisher<Trajectory>("~/debug/backward_filtered_trajectory", 1);
+      pub_merged_filtered_trajectory_ =
+        create_publisher<Trajectory>("~/debug/merged_filtered_trajectory", 1);
+      pub_closest_merged_velocity_ =
+        create_publisher<Float32Stamped>("~/closest_merged_velocity", 1);
+      break;
+    }
+    case AlgorithmType::L2: {
+      smoother_ = std::make_shared<L2PseudoJerkSmoother>(*this);
+      break;
+    }
+    case AlgorithmType::LINF: {
+      smoother_ = std::make_shared<LinfPseudoJerkSmoother>(*this);
+      break;
+    }
+    case AlgorithmType::ANALYTICAL: {
+      smoother_ = std::make_shared<AnalyticalJerkConstrainedSmoother>(*this);
+      break;
+    }
+    default:
+      throw std::domain_error("[MotionVelocitySmootherNode] invalid algorithm");
+  }
+
+  smoother_->setWheelBase(wheelbase);
 }
 
 rcl_interfaces::msg::SetParametersResult MotionVelocitySmootherNode::onParameter(
@@ -698,33 +701,28 @@ std::pair<Motion, MotionVelocitySmootherNode::InitializeType>
 MotionVelocitySmootherNode::calcInitialMotion(
   const TrajectoryPoints & input_traj, const size_t input_closest) const
 {
-  const double vehicle_speed{std::fabs(current_odometry_ptr_->twist.twist.linear.x)};
-  const double target_vel{std::fabs(input_traj.at(input_closest).longitudinal_velocity_mps)};
-
-  Motion initial_motion;
-  InitializeType type{};
+  const double vehicle_speed = std::fabs(current_odometry_ptr_->twist.twist.linear.x);
+  const double target_vel = std::fabs(input_traj.at(input_closest).longitudinal_velocity_mps);
 
   // first time
   if (!current_closest_point_from_prev_output_) {
-    initial_motion.vel = vehicle_speed;
-    initial_motion.acc = 0.0;
-    type = InitializeType::INIT;
-    return std::make_pair(initial_motion, type);
+    Motion initial_motion = {vehicle_speed, 0.0};
+    return {initial_motion, InitializeType::INIT};
   }
 
   // when velocity tracking deviation is large
-  const double desired_vel{current_closest_point_from_prev_output_->longitudinal_velocity_mps};
-  const double vel_error{vehicle_speed - std::fabs(desired_vel)};
+  const double desired_vel = current_closest_point_from_prev_output_->longitudinal_velocity_mps;
+  const double desired_acc = current_closest_point_from_prev_output_->acceleration_mps2;
+  const double vel_error = vehicle_speed - std::fabs(desired_vel);
+
   if (std::fabs(vel_error) > node_param_.replan_vel_deviation) {
-    type = InitializeType::LARGE_DEVIATION_REPLAN;
-    initial_motion.vel = vehicle_speed;  // use current vehicle speed
-    initial_motion.acc = current_closest_point_from_prev_output_->acceleration_mps2;
+    Motion initial_motion = {vehicle_speed, desired_acc};  // TODO(Horibe): use current acc
     RCLCPP_DEBUG(
       get_logger(),
       "calcInitialMotion : Large deviation error for speed control. Use current speed for "
       "initial value, desired_vel = %f, vehicle_speed = %f, vel_error = %f, error_thr = %f",
       desired_vel, vehicle_speed, vel_error, node_param_.replan_vel_deviation);
-    return std::make_pair(initial_motion, type);
+    return {initial_motion, InitializeType::LARGE_DEVIATION_REPLAN};
   }
 
   // if current vehicle velocity is low && base_desired speed is high,
@@ -737,37 +735,32 @@ MotionVelocitySmootherNode::calcInitialMotion(
                                        input_traj.at(*idx), input_traj.at(input_closest))
                                    : 0.0;
       if (!idx || stop_dist > node_param_.stop_dist_to_prohibit_engage) {
-        type = InitializeType::ENGAGING;
-        initial_motion.vel = node_param_.engage_velocity;
-        initial_motion.acc = node_param_.engage_acceleration;
+        Motion initial_motion = {node_param_.engage_velocity, node_param_.engage_acceleration};
         RCLCPP_DEBUG(
           get_logger(),
           "calcInitialMotion : vehicle speed is low (%.3f), and desired speed is high (%.3f). Use "
           "engage speed (%.3f) until vehicle speed reaches engage_vel_thr (%.3f). stop_dist = %.3f",
           vehicle_speed, target_vel, node_param_.engage_velocity, engage_vel_thr, stop_dist);
-        return std::make_pair(initial_motion, type);
+        return {initial_motion, InitializeType::ENGAGING};
       } else {
         RCLCPP_DEBUG(
           get_logger(), "calcInitialMotion : stop point is close (%.3f[m]). no engage.", stop_dist);
       }
     } else if (target_vel > 0.0) {
-      auto clock{rclcpp::Clock{RCL_ROS_TIME}};
       RCLCPP_WARN_THROTTLE(
-        get_logger(), clock, 3000,
+        get_logger(), *clock_, 3000,
         "calcInitialMotion : target velocity(%.3f[m/s]) is lower than engage velocity(%.3f[m/s]). ",
         target_vel, node_param_.engage_velocity);
     }
   }
 
   // normal update: use closest in current_closest_point_from_prev_output
-  type = InitializeType::NORMAL;
-  initial_motion.vel = current_closest_point_from_prev_output_->longitudinal_velocity_mps;
-  initial_motion.acc = current_closest_point_from_prev_output_->acceleration_mps2;
+  Motion initial_motion = {desired_vel, desired_acc};
   RCLCPP_DEBUG(
     get_logger(),
     "calcInitialMotion : normal update. v0 = %f, a0 = %f, vehicle_speed = %f, target_vel = %f",
     initial_motion.vel, initial_motion.acc, vehicle_speed, target_vel);
-  return std::make_pair(initial_motion, type);
+  return {initial_motion, InitializeType::NORMAL};
 }
 
 void MotionVelocitySmootherNode::overwriteStopPoint(

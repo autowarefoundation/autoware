@@ -63,6 +63,9 @@ struct Motion
 {
   double vel = 0.0;
   double acc = 0.0;
+
+  Motion() {}
+  Motion(const double v, const double a) : vel(v), acc(a) {}
 };
 
 class MotionVelocitySmootherNode : public rclcpp::Node
@@ -144,7 +147,9 @@ private:
 
   double over_stop_velocity_warn_thr_;  // threshold to publish over velocity warn
 
-  rclcpp::Clock::SharedPtr clock_;
+  mutable rclcpp::Clock::SharedPtr clock_;
+
+  void setupSmoother(const double wheelbase);
 
   // parameter update
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
