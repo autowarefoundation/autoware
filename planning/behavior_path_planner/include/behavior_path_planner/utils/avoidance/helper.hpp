@@ -156,6 +156,26 @@ public:
                        : std::max(shift_length, getRightShiftBound());
   }
 
+  void alignShiftLinesOrder(AvoidLineArray & lines, const bool align_shift_length = true) const
+  {
+    if (lines.empty()) {
+      return;
+    }
+
+    std::sort(lines.begin(), lines.end(), [](auto a, auto b) {
+      return a.end_longitudinal < b.end_longitudinal;
+    });
+
+    if (!align_shift_length) {
+      return;
+    }
+
+    lines.front().start_shift_length = getEgoLinearShift();
+    for (size_t i = 1; i < lines.size(); ++i) {
+      lines.at(i).start_shift_length = lines.at(i - 1).end_shift_length;
+    }
+  }
+
   AvoidLine getMainShiftLine(const AvoidLineArray & lines) const
   {
     const auto itr =

@@ -48,6 +48,8 @@ ShiftLineArray toShiftLineArray(const AvoidLineArray & avoid_points);
 std::vector<size_t> concatParentIds(
   const std::vector<size_t> & ids1, const std::vector<size_t> & ids2);
 
+std::vector<size_t> calcParentIds(const AvoidLineArray & lines1, const AvoidLine & lines2);
+
 double lerpShiftLengthOnArc(double arc, const AvoidLine & al);
 
 void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
@@ -110,6 +112,15 @@ double extendToRoadShoulderDistanceWithPolygon(
   const lanelet::ConstLineString3d & target_line, const double to_road_shoulder_distance,
   const geometry_msgs::msg::Point & overhang_pos,
   const lanelet::BasicPoint3d & overhang_basic_pose);
+
+void fillAdditionalInfoFromPoint(const AvoidancePlanningData & data, AvoidLineArray & lines);
+
+void fillAdditionalInfoFromLongitudinal(const AvoidancePlanningData & data, AvoidLineArray & lines);
+
+AvoidLine fillAdditionalInfo(const AvoidancePlanningData & data, const AvoidLine & line);
+
+AvoidLineArray combineRawShiftLinesWithUniqueCheck(
+  const AvoidLineArray & base_lines, const AvoidLineArray & added_lines);
 }  // namespace behavior_path_planner::utils::avoidance
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__UTILS_HPP_

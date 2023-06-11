@@ -193,6 +193,38 @@ std::vector<size_t> concatParentIds(
   return v;
 }
 
+std::vector<size_t> calcParentIds(const AvoidLineArray & lines1, const AvoidLine & lines2)
+{
+  // Get the ID of the original AP whose transition area overlaps with the given AP,
+  // and set it to the parent id.
+  std::set<uint64_t> ids;
+  for (const auto & al : lines1) {
+    const auto p_s = al.start_longitudinal;
+    const auto p_e = al.end_longitudinal;
+    const auto has_overlap = !(p_e < lines2.start_longitudinal || lines2.end_longitudinal < p_s);
+
+    if (!has_overlap) {
+      continue;
+    }
+
+    // Id the shift is overlapped, insert the shift point. Additionally, the shift which refers
+    // to the same object id (created by the same object) will be set.
+    //
+    // Why? : think that there are two shifts, avoiding and .
+    // If you register only the avoiding shift, the return-to-center shift will not be generated
+    // when you get too close to or over the obstacle. The return-shift can be handled with
+    // addReturnShift(), but it maybe reasonable to register the return-to-center shift for the
+    // object at the same time as registering the avoidance shift to remove the complexity of the
+    // addReturnShift().
+    for (const auto & al_local : lines1) {
+      if (al_local.object.object.object_id == al.object.object.object_id) {
+        ids.insert(al_local.id);
+      }
+    }
+  }
+  return std::vector<size_t>(ids.begin(), ids.end());
+}
+
 double lerpShiftLengthOnArc(double arc, const AvoidLine & ap)
 {
   if (ap.start_longitudinal <= arc && arc < ap.end_longitudinal) {
@@ -1009,5 +1041,82 @@ double extendToRoadShoulderDistanceWithPolygon(
     }
   }
   return updated_to_road_shoulder_distance;
+}
+
+AvoidLine fillAdditionalInfo(const AvoidancePlanningData & data, const AvoidLine & line)
+{
+  AvoidLineArray ret{line};
+  fillAdditionalInfoFromPoint(data, ret);
+  return ret.front();
+}
+
+void fillAdditionalInfoFromPoint(const AvoidancePlanningData & data, AvoidLineArray & lines)
+{
+  if (lines.empty()) {
+    return;
+  }
+
+  const auto & path = data.reference_path;
+  const auto & arc = data.arclength_from_ego;
+
+  // calc longitudinal
+  for (auto & sl : lines) {
+    sl.start_idx = findNearestIndex(path.points, sl.start.position);
+    sl.start_longitudinal = arc.at(sl.start_idx);
+    sl.end_idx = findNearestIndex(path.points, sl.end.position);
+    sl.end_longitudinal = arc.at(sl.end_idx);
+  }
+}
+
+void fillAdditionalInfoFromLongitudinal(const AvoidancePlanningData & data, AvoidLineArray & lines)
+{
+  const auto & path = data.reference_path;
+  const auto & arc = data.arclength_from_ego;
+
+  for (auto & sl : lines) {
+    sl.start_idx = findPathIndexFromArclength(arc, sl.start_longitudinal);
+    sl.start = path.points.at(sl.start_idx).point.pose;
+    sl.end_idx = findPathIndexFromArclength(arc, sl.end_longitudinal);
+    sl.end = path.points.at(sl.end_idx).point.pose;
+  }
+}
+
+AvoidLineArray combineRawShiftLinesWithUniqueCheck(
+  const AvoidLineArray & base_lines, const AvoidLineArray & added_lines)
+{
+  // TODO(Horibe) parametrize
+  const auto isSimilar = [](const AvoidLine & a, const AvoidLine & b) {
+    using tier4_autoware_utils::calcDistance2d;
+    if (calcDistance2d(a.start, b.start) > 1.0) {
+      return false;
+    }
+    if (calcDistance2d(a.end, b.end) > 1.0) {
+      return false;
+    }
+    if (std::abs(a.end_shift_length - b.end_shift_length) > 0.5) {
+      return false;
+    }
+    return true;
+  };
+  const auto hasSameObjectId = [](const auto & a, const auto & b) {
+    return a.object.object.object_id == b.object.object.object_id;
+  };
+
+  auto combined = base_lines;  // initialized
+  for (const auto & added_line : added_lines) {
+    bool skip = false;
+
+    for (const auto & base_line : base_lines) {
+      if (hasSameObjectId(added_line, base_line) && isSimilar(added_line, base_line)) {
+        skip = true;
+        break;
+      }
+    }
+    if (!skip) {
+      combined.push_back(added_line);
+    }
+  }
+
+  return combined;
 }
 }  // namespace behavior_path_planner::utils::avoidance
