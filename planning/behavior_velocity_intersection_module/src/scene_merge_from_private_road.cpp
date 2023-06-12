@@ -38,9 +38,11 @@ namespace bg = boost::geometry;
 MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
   const int64_t module_id, const int64_t lane_id,
   [[maybe_unused]] std::shared_ptr<const PlannerData> planner_data,
-  const PlannerParam & planner_param, const std::set<int> & assoc_ids, const rclcpp::Logger logger,
-  const rclcpp::Clock::SharedPtr clock)
-: SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id), assoc_ids_(assoc_ids)
+  const PlannerParam & planner_param, const std::set<int> & associative_ids,
+  const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock)
+: SceneModuleInterface(module_id, logger, clock),
+  lane_id_(lane_id),
+  associative_ids_(associative_ids)
 {
   velocity_factor_.init(VelocityFactor::MERGE);
   planner_param_ = planner_param;
@@ -53,7 +55,6 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   *stop_reason = planning_utils::initializeStopReason(StopReason::MERGE_FROM_PRIVATE_ROAD);
 
   const auto input_path = *path;
-  debug_data_.path_raw = input_path;
 
   StateMachine::State current_state = state_machine_.getState();
   RCLCPP_DEBUG(
@@ -67,41 +68,40 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   /* spline interpolation */
-  constexpr double interval = 0.2;
-  autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!splineInterpolate(*path, interval, path_ip, logger_)) {
+  const auto interpolated_path_info_opt = util::generateInterpolatedPath(
+    lane_id_, associative_ids_, *path, planner_param_.path_interpolation_ds, logger_);
+  if (!interpolated_path_info_opt) {
     RCLCPP_DEBUG_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "splineInterpolate failed");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
-    setSafe(true);
-    setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
-  const auto lane_interval_ip_opt = util::findLaneIdsInterval(path_ip, assoc_ids_);
-  if (!lane_interval_ip_opt.has_value()) {
+  const auto & interpolated_path_info = interpolated_path_info_opt.value();
+  if (!interpolated_path_info.lane_id_interval) {
     RCLCPP_WARN(logger_, "Path has no interval on intersection lane %ld", lane_id_);
     RCLCPP_DEBUG(logger_, "===== plan end =====");
-    setSafe(true);
-    setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
-  const auto lane_interval_ip = lane_interval_ip_opt.value();
 
   /* get detection area */
   if (!intersection_lanelets_.has_value()) {
+    const auto & assigned_lanelet =
+      planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id_);
+    const auto lanelets_on_path = planning_utils::getLaneletsOnPath(
+      *path, lanelet_map_ptr, planner_data_->current_odometry->pose);
     intersection_lanelets_ = util::getObjectiveLanelets(
-      lanelet_map_ptr, routing_graph_ptr, lane_id_, {}, {} /* not used here */, path_ip,
-      lane_interval_ip, planner_param_.detection_area_length,
+      lanelet_map_ptr, routing_graph_ptr, assigned_lanelet, lanelets_on_path, associative_ids_,
+      interpolated_path_info, planner_param_.attention_area_length,
       false /* tl_arrow_solid on does not matter here*/);
   }
   const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area;
+  if (!first_conflicting_area) {
+    return false;
+  }
 
   /* set stop-line and stop-judgement-line for base_link */
-  const auto stop_line_idx_opt =
-    first_conflicting_area
-      ? util::generateCollisionStopLine(
-          lane_id_, first_conflicting_area.value(), planner_data_, planner_param_.stop_line_margin,
-          path, path_ip, interval, lane_interval_ip, logger_.get_child("util"))
-      : std::nullopt;
+  const auto stop_line_idx_opt = util::generateStuckStopLine(
+    first_conflicting_area.value(), planner_data_, interpolated_path_info,
+    planner_param_.stop_line_margin, false, path);
   if (!stop_line_idx_opt.has_value()) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     return false;

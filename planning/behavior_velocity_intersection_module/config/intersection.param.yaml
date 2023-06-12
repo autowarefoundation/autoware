@@ -2,24 +2,23 @@
   ros__parameters:
     intersection:
       common:
-        detection_area_margin: 0.5 # [m]
-        detection_area_right_margin: 0.5 # [m]
-        detection_area_left_margin: 0.5 # [m]
-        detection_area_length: 200.0 # [m]
-        detection_area_angle_threshold: 0.785 # [rad]
+        attention_area_margin: 0.5 # [m]
+        attention_area_length: 200.0 # [m]
+        attention_area_angle_threshold: 0.785 # [rad]
         stop_line_margin: 3.0
         intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
         intersection_max_accel: 0.5 # m/ss
         stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collision detection
         use_intersection_area: false
+        path_interpolation_ds: 0.2 # [m]
 
       stuck_vehicle:
         use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
+        stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
         stuck_vehicle_ignore_dist: 10.0 # obstacle stop max distance(5.0m) + stuck vehicle size / 2 (0.0m-)
         stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
-        stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
-        enable_front_car_decel_prediction: false # By default this feature is disabled
-        assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
+        # enable_front_car_decel_prediction: false # By default this feature is disabled
+        # assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
 
       collision_detection:
         state_transit_margin_time: 1.0
@@ -31,7 +30,7 @@
 
       occlusion:
         enable: false
-        occlusion_detection_area_length: 70.0 # [m]
+        occlusion_attention_area_length: 70.0 # [m]
         enable_creeping: false # flag to use the creep velocity when reaching occlusion limit stop line
         occlusion_creep_velocity: 0.8333 # the creep velocity to occlusion limit stop line
         peeking_offset: -0.1 # [m] offset for peeking into detection area
