@@ -9,8 +9,11 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Run pre-commit
         uses: autowarefoundation/autoware-github-actions/pre-commit@v1
         with:
           pre-commit-config: .pre-commit-config-optional.yaml
+          base-branch: origin/${{ github.base_ref }}
