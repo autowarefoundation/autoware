@@ -14,6 +14,66 @@ Currently, it supports the following two types:
 - Send partial pointcloud map loading via ROS 2 service
 - Send differential pointcloud map loading via ROS 2 service
 
+### Prerequisites
+
+#### Prerequisites on pointcloud map file(s)
+
+You may provide either a single .pcd file or multiple .pcd files. If you are using multiple PCD data and either of `enable_partial_load`, `enable_differential_load` or `enable_selected_load` are set true, it MUST obey the following rules:
+
+1. **It must be divided by straight lines parallel to the x-axis and y-axis**. The system does not support division by diagonal lines or curved lines.
+2. **The division size along each axis should be equal.**
+3. **The division size should be about 20m x 20m.** Particularly, care should be taken as using too large division size (for example, more than 100m) may have adverse effects on dynamic map loading features in [ndt_scan_matcher](https://github.com/autowarefoundation/autoware.universe/tree/main/localization/ndt_scan_matcher) and [compare_map_segmentation](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/compare_map_segmentation).
+4. **All the split maps should not overlap with each other.**
+5. **Metadata file should also be provided.** The metadata structure description is provided below.
+
+Note that these rules are not applicable when `enable_partial_load`, `enable_differential_load` and `enable_selected_load` are all set false. In this case, however, you also need to disable dynamic map loading mode for other nodes as well ([ndt_scan_matcher](https://github.com/autowarefoundation/autoware.universe/tree/main/localization/ndt_scan_matcher) and [compare_map_segmentation](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/compare_map_segmentation) as of June 2023).
+
+#### Metadata structure
+
+The metadata should look like this:
+
+```yaml
+x_resolution: 20.0
+y_resolution: 20.0
+A.pcd: [1200, 2500] # -> 1200 < x < 1220, 2500 < y < 2520
+B.pcd: [1220, 2500] # -> 1220 < x < 1240, 2500 < y < 2520
+C.pcd: [1200, 2520] # -> 1200 < x < 1220, 2520 < y < 2540
+D.pcd: [1240, 2520] # -> 1240 < x < 1260, 2520 < y < 2540
+```
+
+where,
+
+- `x_resolution` and `y_resolution`
+- `A.pcd`, `B.pcd`, etc, are the names of PCD files.
+- List such as `[1200, 2500]` are the values indicate that for this PCD file, x coordinates are between 1200 and 1220 (`x_resolution` + `x_coordinate`) and y coordinates are between 2500 and 2520 (`y_resolution` + `y_coordinate`).
+
+You may use [pointcloud_divider](https://github.com/MapIV/pointcloud_divider) from MAP IV for dividing pointcloud map as well as generating the compatible metadata.yaml.
+
+#### Directory structure of these files
+
+If you only have one pointcloud map, Autoware will assume the following directory structure by default.
+
+```bash
+sample-map-rosbag
+├── lanelet2_map.osm
+├── pointcloud_map.pcd
+```
+
+If you have multiple rosbags, an example directory structure would be as follows. Note that you need to have a metadata when you have multiple pointcloud map files.
+
+```bash
+sample-map-rosbag
+├── lanelet2_map.osm
+├── pointcloud_map.pcd
+│ ├── A.pcd
+│ ├── B.pcd
+│ ├── C.pcd
+│ └── ...
+└── pointcloud_map_metadata.yaml
+```
+
+### Specific features
+
 #### Publish raw pointcloud map (ROS 2 topic)
 
 The node publishes the raw pointcloud map loaded from the `.pcd` file(s).
@@ -70,46 +130,6 @@ Please see [the description of `GetSelectedPointCloudMap.srv`](https://github.co
 - `service/get_selected_pcd_map` (autoware_map_msgs/srv/GetSelectedPointCloudMap) : Selected pointcloud map
 - pointcloud map file(s) (.pcd)
 - metadata of pointcloud map(s) (.yaml)
-
-### Metadata
-
-You must provide metadata in YAML format as well as pointcloud map files. Pointcloud map should be divided into one or more files with x-y grid.
-
-Metadata should look like this:
-
-```yaml
-x_resolution: 100.0
-y_resolution: 150.0
-A.pcd: [1200, 2500] # -> 1200 < x < 1300, 2500 < y < 2650
-B.pcd: [1300, 2500] # -> 1300 < x < 1400, 2500 < y < 2650
-C.pcd: [1200, 2650] # -> 1200 < x < 1300, 2650 < y < 2800
-D.pcd: [1400, 2650] # -> 1400 < x < 1500, 2650 < y < 2800
-```
-
-You may use [pointcloud_divider](https://github.com/MapIV/pointcloud_divider) from MAP IV for dividing pointcloud map as well as generating the compatible metadata.yaml.
-
-### How to store map-related files
-
-If you only have one pointcloud map, Autoware will assume the following directory structure by default.
-
-```bash
-sample-map-rosbag
-├── lanelet2_map.osm
-├── pointcloud_map.pcd
-```
-
-If you have multiple rosbags, an example directory structure would be as follows. Note that you need to have a metadata when you have multiple pointcloud map files.
-
-```bash
-sample-map-rosbag
-├── lanelet2_map.osm
-├── pointcloud_map.pcd
-│ ├── A.pcd
-│ ├── B.pcd
-│ ├── C.pcd
-│ └── ...
-└── pointcloud_map_metadata.yaml
-```
 
 ---
 
