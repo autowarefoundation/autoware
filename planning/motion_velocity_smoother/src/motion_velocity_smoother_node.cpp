@@ -716,12 +716,12 @@ MotionVelocitySmootherNode::calcInitialMotion(
   const double vel_error = vehicle_speed - std::fabs(desired_vel);
 
   if (std::fabs(vel_error) > node_param_.replan_vel_deviation) {
-    Motion initial_motion = {vehicle_speed, desired_acc};  // TODO(Horibe): use current acc
     RCLCPP_DEBUG(
       get_logger(),
       "calcInitialMotion : Large deviation error for speed control. Use current speed for "
       "initial value, desired_vel = %f, vehicle_speed = %f, vel_error = %f, error_thr = %f",
       desired_vel, vehicle_speed, vel_error, node_param_.replan_vel_deviation);
+    Motion initial_motion = {vehicle_speed, desired_acc};  // TODO(Horibe): use current acc
     return {initial_motion, InitializeType::LARGE_DEVIATION_REPLAN};
   }
 
@@ -730,17 +730,14 @@ MotionVelocitySmootherNode::calcInitialMotion(
   const double engage_vel_thr = node_param_.engage_velocity * node_param_.engage_exit_ratio;
   if (vehicle_speed < engage_vel_thr) {
     if (target_vel >= node_param_.engage_velocity) {
-      const auto idx = motion_utils::searchZeroVelocityIndex(input_traj);
-      const double stop_dist = idx ? tier4_autoware_utils::calcDistance2d(
-                                       input_traj.at(*idx), input_traj.at(input_closest))
-                                   : 0.0;
-      if (!idx || stop_dist > node_param_.stop_dist_to_prohibit_engage) {
-        Motion initial_motion = {node_param_.engage_velocity, node_param_.engage_acceleration};
+      const double stop_dist = trajectory_utils::calcStopDistance(input_traj, input_closest);
+      if (stop_dist > node_param_.stop_dist_to_prohibit_engage) {
         RCLCPP_DEBUG(
           get_logger(),
           "calcInitialMotion : vehicle speed is low (%.3f), and desired speed is high (%.3f). Use "
           "engage speed (%.3f) until vehicle speed reaches engage_vel_thr (%.3f). stop_dist = %.3f",
           vehicle_speed, target_vel, node_param_.engage_velocity, engage_vel_thr, stop_dist);
+        Motion initial_motion = {node_param_.engage_velocity, node_param_.engage_acceleration};
         return {initial_motion, InitializeType::ENGAGING};
       } else {
         RCLCPP_DEBUG(

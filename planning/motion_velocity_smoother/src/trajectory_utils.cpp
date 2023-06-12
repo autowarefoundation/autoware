@@ -594,5 +594,20 @@ std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
   return velocities;
 }
 
+double calcStopDistance(const TrajectoryPoints & trajectory, const size_t closest)
+{
+  const auto idx = motion_utils::searchZeroVelocityIndex(trajectory);
+
+  if (!idx) {
+    return std::numeric_limits<double>::max();  // stop point is located far away
+  }
+
+  // TODO(Horibe): use arc length distance
+  const double stop_dist =
+    tier4_autoware_utils::calcDistance2d(trajectory.at(*idx), trajectory.at(closest));
+
+  return stop_dist;
+}
+
 }  // namespace trajectory_utils
 }  // namespace motion_velocity_smoother
