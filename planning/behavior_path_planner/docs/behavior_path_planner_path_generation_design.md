@@ -16,7 +16,28 @@ Note that, due to the rarity of the $T_v$ in almost all cases of lane change and
 
 ## Mathematical Derivation
 
-By applying simple integral operations, the following analytical equations can be derived to describe the shift distance $l(t)$ at each time under lateral jerk, acceleration, and velocity constraints.
+With initial longitudinal velocity $v_0^{\rm lon}$ and longitudinal acceleration $a^{\rm lon}$, longitudinal position $s(t)$ and longitudinal velocity at each time $v^{\rm lon}(t)$ can be derived as:
+
+$$
+\begin{align}
+s_1&= v^{\rm lon}_0 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_1&= v^{\rm lon}_0 + a^{\rm lon} T_j \\
+s_2&= v^{\rm lon}_1 T_a + \frac{1}{2} a^{\rm lon} T_a^2 \\
+v_2&= v^{\rm lon}_1 + a^{\rm lon} T_a \\
+s_3&= v^{\rm lon}_2 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_3&= v^{\rm lon}_2 + a^{\rm lon} T_j \\
+s_4&= v^{\rm lon}_3 T_v + \frac{1}{2} a^{\rm lon} T_v^2 \\
+v_4&= v^{\rm lon}_3 + a^{\rm lon} T_v \\
+s_5&= v^{\rm lon}_4 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_5&= v^{\rm lon}_4 + a^{\rm lon} T_j \\
+s_6&= v^{\rm lon}_5 T_a + \frac{1}{2} a^{\rm lon} T_a^2 \\
+v_6&= v^{\rm lon}_5 + a^{\rm lon} T_a \\
+s_7&= v^{\rm lon}_6 T_j + \frac{1}{2} a^{\rm lon} T_j^2 \\
+v_7&= v^{\rm lon}_6 + a^{\rm lon} T_j
+\end{align}
+$$
+
+By applying simple integral operations, the following analytical equations can be derived to describe the shift distance $l(t)$ at each time under lateral jerk, lateral acceleration, and velocity constraints.
 
 $$
 \begin{align}
@@ -38,7 +59,7 @@ In the case where there are no limitations on lateral velocity and lateral accel
 
 $$
 \begin{align}
-a_{\rm max}  = \frac{8L}{T_{\rm total}^2}
+a_{\rm max}^{\rm lat}  = \frac{8L}{T_{\rm total}^2}
 \end{align}
 $$
 
@@ -56,7 +77,7 @@ Additionally, the velocity profile reveals the following relations:
 
 $$
 \begin{align}
-a_{\rm lim} &= j T_j\\
+a_{\rm lim}^{\rm lat} &= j T_j\\
 T_{\rm total} &= 4T_j + 2T_a
 \end{align}
 $$
@@ -65,28 +86,28 @@ By solving these three equations, the following can be obtained:
 
 $$
 \begin{align}
-T_j&=\frac{T_{\rm total}}{2} - \frac{2L}{a_{\rm lim} T_{\rm total}}\\[10pt]
-T_a&=\frac{4L}{a_{\rm lim} T_{\rm total}} - \frac{T_{\rm total}}{2}\\[10pt]
-jerk&=\frac{2a_{\rm lim} ^2T_{\rm total}}{a_{\rm lim} T_{\rm total}^2-4L}
+T_j&=\frac{T_{\rm total}}{2} - \frac{2L}{a_{\rm lim}^{\rm lat} T_{\rm total}}\\[10pt]
+T_a&=\frac{4L}{a_{\rm lim}^{\rm lat} T_{\rm total}} - \frac{T_{\rm total}}{2}\\[10pt]
+jerk&=\frac{2a_{\rm lim} ^2T_{\rm total}}{a_{\rm lim}^{\rm lat} T_{\rm total}^2-4L}
 \end{align}
 $$
 
-where $T_j$ is the constant-jerk time, $T_a$ is the constant acceleration time, $j$ is the required jerk, $a_{\rm lim}$ is the acceleration limit, and $L$ is the final shift length.
+where $T_j$ is the constant-jerk time, $T_a$ is the constant acceleration time, $j$ is the required jerk, $a_{\rm lim}^{\rm lat}$ is the lateral acceleration limit, and $L$ is the final shift length.
 
 ### Calculation of Required Time from Jerk and Acceleration Constraint
 
-In the case where there are no limitations on lateral velocity, the total time required for shifting can be calculated from the jerk and acceleration limits and the final shift length as follows. By solving the two equations given above:
+In the case where there are no limitations on lateral velocity, the total time required for shifting can be calculated from the lateral jerk and lateral acceleration limits and the final shift length as follows. By solving the two equations given above:
 
 $$
-L = l_7 = 2 j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j,\quad a_{\rm lim} = j T_j
+L = l_7 = 2 j T_j^3 + 3 j T_a T_j^2 + j T_a^2 T_j,\quad a_{\rm lim}^{\rm lat} = j T_j
 $$
 
 we obtain the following expressions:
 
 $$
 \begin{align}
-T_j &= \frac{a_{\rm lim}}{j}\\[10pt]
-T_a &= \frac{1}{2}\sqrt{\frac{a_{\rm lim}}{j}^2 + \frac{4L}{a_{\rm lim}}} - \frac{3a_{\rm lim}}{2j}
+T_j &= \frac{a_{\rm lim}^{\rm lat}}{j}\\[10pt]
+T_a &= \frac{1}{2}\sqrt{\frac{a_{\rm lim}^{\rm lat}}{j}^2 + \frac{4L}{a_{\rm lim}^{\rm lat}}} - \frac{3a_{\rm lim}^{\rm lat}}{2j}
 \end{align}
 $$
 
