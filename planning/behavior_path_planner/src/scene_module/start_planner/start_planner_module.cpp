@@ -796,7 +796,14 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   // pull out path does not overlap
   const double distance_from_end =
     motion_utils::calcSignedArcLength(path.points, end_pose.position, current_pose.position);
-  const double lateral_offset = inverseTransformPoint(end_pose.position, start_pose).y;
+
+  if (path.points.empty()) {
+    return {};
+  }
+  const auto closest_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
+  const auto lane_id = path.points.at(closest_idx).lane_ids.front();
+  const auto lane = planner_data_->route_handler->getLaneletMapPtr()->laneletLayer.get(lane_id);
+  const double lateral_offset = lanelet::utils::getLateralDistanceToCenterline(lane, start_pose);
 
   if (distance_from_end < 0.0 && lateral_offset > parameters_->th_blinker_on_lateral_offset) {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
