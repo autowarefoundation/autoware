@@ -101,7 +101,7 @@ motion_utils::VirtualWalls SpeedBumpModule::createVirtualWalls()
   wall.ns = std::to_string(module_id_) + "_";
   wall.style = motion_utils::VirtualWallType::slowdown;
   for (const auto & p : debug_data_.slow_start_poses) {
-    wall.pose = p;
+    wall.pose = tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     virtual_walls.push_back(wall);
   }
   return virtual_walls;
