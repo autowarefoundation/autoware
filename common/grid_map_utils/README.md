@@ -49,4 +49,3 @@ This behavior could be changed for example to only return all cells overlapped b
 
 - <https://en.wikipedia.org/wiki/Scanline_rendering>
 - <https://web.cs.ucdavis.edu/~ma/ECS175_S00/Notes/0411_b.pdf>
-- <https://www.techfak.uni-bielefeld.de/ags/wbski/lehre/digiSA/WS0607/3DVRCG/Vorlesung/13.RT3DCGVR-vertex-2-fragment.pdf>

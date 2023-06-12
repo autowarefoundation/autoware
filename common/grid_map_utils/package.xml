@@ -4,7 +4,7 @@
   <name>grid_map_utils</name>
   <version>0.0.0</version>
   <description>Utilities for the grid_map library</description>
-  <maintainer email="maxime.clement@tier4.jp">mclement</maintainer>
+  <maintainer email="maxime.clement@tier4.jp">Maxime CLEMENT</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>autoware_cmake</buildtool_depend>
