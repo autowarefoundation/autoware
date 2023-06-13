@@ -152,8 +152,10 @@ private:
 
   tier4_autoware_utils::LinearRing2d vehicle_footprint_;
 
-  // save last time and pose
+// save last time and pose
+#ifdef USE_OLD_ARCHITECTURE
   std::unique_ptr<rclcpp::Time> last_received_time_;
+#endif
   std::unique_ptr<rclcpp::Time> last_approved_time_;
   std::unique_ptr<rclcpp::Time> last_increment_time_;
   std::unique_ptr<rclcpp::Time> last_path_update_time_;

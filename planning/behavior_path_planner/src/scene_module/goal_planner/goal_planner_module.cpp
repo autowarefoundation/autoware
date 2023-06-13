@@ -488,26 +488,37 @@ void GoalPlannerModule::returnToLaneParking()
 
 void GoalPlannerModule::generateGoalCandidates()
 {
-  // initialize when receiving new route
   const auto & route_handler = planner_data_->route_handler;
-  if (!last_received_time_ || *last_received_time_ != route_handler->getRouteHeader().stamp) {
-    // Initialize parallel parking planner status
-    resetStatus();
 
-    // calculate goal candidates
-    const Pose goal_pose = route_handler->getGoalPose();
-    refined_goal_pose_ = calcRefinedGoal(goal_pose);
-    if (allow_goal_modification_) {
-      goal_searcher_->setPlannerData(planner_data_);
-      goal_candidates_ = goal_searcher_->search(refined_goal_pose_);
-    } else {
-      GoalCandidate goal_candidate{};
-      goal_candidate.goal_pose = goal_pose;
-      goal_candidate.distance_from_original_goal = 0.0;
-      goal_candidates_.push_back(goal_candidate);
-    }
+// with old architecture, module instance is not cleared when new route is received
+// so need to reset status here.
+#ifdef USE_OLD_ARCHITECTURE
+  // initialize when receiving new route
+  if (!last_received_time_ || *last_received_time_ != route_handler->getRouteHeader().stamp) {
+    // this process causes twice reset when receiving first route.
+    resetStatus();
   }
   last_received_time_ = std::make_unique<rclcpp::Time>(route_handler->getRouteHeader().stamp);
+
+#else
+  // todo: move this check out of this function after old architecture is removed
+  if (!goal_candidates_.empty()) {
+    return;
+  }
+#endif
+
+  // calculate goal candidates
+  const Pose goal_pose = route_handler->getGoalPose();
+  refined_goal_pose_ = calcRefinedGoal(goal_pose);
+  if (allow_goal_modification_) {
+    goal_searcher_->setPlannerData(planner_data_);
+    goal_candidates_ = goal_searcher_->search(refined_goal_pose_);
+  } else {
+    GoalCandidate goal_candidate{};
+    goal_candidate.goal_pose = goal_pose;
+    goal_candidate.distance_from_original_goal = 0.0;
+    goal_candidates_.push_back(goal_candidate);
+  }
 }
 
 BehaviorModuleOutput GoalPlannerModule::plan()
