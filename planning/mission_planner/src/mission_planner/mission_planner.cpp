@@ -373,8 +373,10 @@ void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPt
     change_state(RouteState::Message::CHANGING);
 
     const std::vector<geometry_msgs::msg::Pose> empty_waypoints;
-    const auto new_route =
+    auto new_route =
       create_route(msg->header, empty_waypoints, msg->pose, normal_route_->allow_modification);
+    // create_route generate new uuid, so set the original uuid again to keep that.
+    new_route.uuid = msg->uuid;
     if (new_route.segments.empty()) {
       change_route(*normal_route_);
       change_state(RouteState::Message::SET);
