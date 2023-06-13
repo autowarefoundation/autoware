@@ -1217,10 +1217,14 @@ void BehaviorPathPlannerNode::run()
   // update route
   const bool is_first_time = !(planner_data_->route_handler->isHandlerReady());
   if (route_ptr) {
+    // uuid is not changed when rerouting with modified goal,
+    // in this case do not need to rest modules.
+    const bool has_same_route_id =
+      planner_data_->prev_route_id && route_ptr->uuid == planner_data_->prev_route_id;
     planner_data_->route_handler->setRoute(*route_ptr);
     // Reset behavior tree when new route is received,
     // so that the each modules do not have to care about the "route jump".
-    if (!is_first_time) {
+    if (!is_first_time && !has_same_route_id) {
       RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
 #ifdef USE_OLD_ARCHITECTURE
       bt_manager_->resetBehaviorTree();
