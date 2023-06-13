@@ -136,7 +136,7 @@ planning/behavior_velocity_out_of_lane_module/** maxime.clement@tier4.jp shumpei
 planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_velocity_planner_common/** isamu.takagi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_velocity_run_out_module/** makoto.kurihara@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
-planning/behavior_velocity_speed_bump_module/** shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
+planning/behavior_velocity_speed_bump_module/** mdogru@leodrive.ai shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_velocity_stop_line_module/** shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_velocity_traffic_light_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
 planning/behavior_velocity_virtual_traffic_light_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp @autowarefoundation/autoware-global-codeowners
