@@ -806,10 +806,10 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   const double lateral_offset = lanelet::utils::getLateralDistanceToCenterline(lane, start_pose);
 
   if (distance_from_end < 0.0 && lateral_offset > parameters_->th_blinker_on_lateral_offset) {
-    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
   } else if (
     distance_from_end < 0.0 && lateral_offset < -parameters_->th_blinker_on_lateral_offset) {
-    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+    turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
   } else {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::DISABLE;
   }
