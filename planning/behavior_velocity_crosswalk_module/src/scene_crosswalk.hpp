@@ -18,6 +18,7 @@
 #include "util.hpp"
 
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <lanelet2_extension/regulatory_elements/crosswalk.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -52,6 +53,7 @@ using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::TrafficLight;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using lanelet::autoware::Crosswalk;
 using tier4_api_msgs::msg::CrosswalkStatus;
 using tier4_autoware_utils::StopWatch;
 
@@ -93,7 +95,8 @@ public:
   };
 
   CrosswalkModule(
-    const int64_t module_id, lanelet::ConstLanelet crosswalk, const PlannerParam & planner_param,
+    const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+    const PlannerParam & planner_param, const bool use_regulatory_element,
     const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock);
 
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
@@ -156,6 +159,8 @@ private:
 
   lanelet::ConstLanelet crosswalk_;
 
+  lanelet::ConstLineStrings3d stop_lines_;
+
   std::vector<geometry_msgs::msg::Point> path_intersects_;
 
   // Parameter
@@ -173,6 +178,9 @@ private:
 
   // whether ego passed safety_slow_point
   bool passed_safety_slow_point_;
+
+  // whether use regulatory element
+  bool use_regulatory_element_;
 };
 }  // namespace behavior_velocity_planner
 

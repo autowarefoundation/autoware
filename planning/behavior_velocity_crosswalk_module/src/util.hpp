@@ -81,7 +81,7 @@ std::vector<bg::model::d2::point_xy<double>> getLinestringIntersects(
   const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
 
 lanelet::Optional<lanelet::ConstLineString3d> getStopLineFromMap(
-  const int lane_id, const std::shared_ptr<const PlannerData> & planner_data,
+  const int lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const std::string & attribute_name);
 }  // namespace behavior_velocity_planner
 

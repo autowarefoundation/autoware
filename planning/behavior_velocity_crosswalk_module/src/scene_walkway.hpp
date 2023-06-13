@@ -45,7 +45,8 @@ public:
     double stop_duration_sec;
   };
   WalkwayModule(
-    const int64_t module_id, lanelet::ConstLanelet walkway, const PlannerParam & planner_param,
+    const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+    const PlannerParam & planner_param, const bool use_regulatory_element,
     const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock);
 
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
@@ -63,6 +64,8 @@ private:
 
   lanelet::ConstLanelet walkway_;
 
+  lanelet::ConstLineStrings3d stop_lines_;
+
   std::vector<geometry_msgs::msg::Point> path_intersects_;
 
   // State machine
@@ -73,6 +76,9 @@ private:
 
   // Debug
   DebugData debug_data_;
+
+  // flag to use regulatory element
+  bool use_regulatory_element_;
 };
 }  // namespace behavior_velocity_planner
 

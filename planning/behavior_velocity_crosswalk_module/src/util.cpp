@@ -139,11 +139,10 @@ std::vector<Point> getLinestringIntersects(
 }
 
 lanelet::Optional<lanelet::ConstLineString3d> getStopLineFromMap(
-  const int lane_id, const std::shared_ptr<const PlannerData> & planner_data,
+  const int lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const std::string & attribute_name)
 {
-  lanelet::ConstLanelet lanelet =
-    planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
+  lanelet::ConstLanelet lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);
   const auto road_markings = lanelet.regulatoryElementsAs<lanelet::autoware::RoadMarking>();
   lanelet::ConstLineStrings3d stop_line;
   for (const auto & road_marking : road_markings) {

@@ -127,15 +127,29 @@ void sortCrosswalksByDistance(
 }  // namespace
 
 CrosswalkModule::CrosswalkModule(
-  const int64_t module_id, lanelet::ConstLanelet crosswalk, const PlannerParam & planner_param,
+  const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const PlannerParam & planner_param, const bool use_regulatory_element,
   const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   module_id_(module_id),
-  crosswalk_(std::move(crosswalk)),
-  planner_param_(planner_param)
+  planner_param_(planner_param),
+  use_regulatory_element_(use_regulatory_element)
 {
   velocity_factor_.init(VelocityFactor::CROSSWALK);
   passed_safety_slow_point_ = false;
+
+  if (use_regulatory_element_) {
+    const auto reg_elem_ptr = std::dynamic_pointer_cast<const lanelet::autoware::Crosswalk>(
+      lanelet_map_ptr->regulatoryElementLayer.get(module_id));
+    stop_lines_ = reg_elem_ptr->stopLines();
+    crosswalk_ = reg_elem_ptr->crosswalkLanelet();
+  } else {
+    const auto stop_line = getStopLineFromMap(module_id_, lanelet_map_ptr, "crosswalk_id");
+    if (!!stop_line) {
+      stop_lines_.push_back(stop_line.get());
+    }
+    crosswalk_ = lanelet_map_ptr->laneletLayer.get(module_id);
+  }
 }
 
 bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -239,20 +253,33 @@ boost::optional<std::pair<double, geometry_msgs::msg::Point>> CrosswalkModule::g
 {
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
 
-  const auto stop_line = getStopLineFromMap(module_id_, planner_data_, "crosswalk_id");
-  exist_stopline_in_map = static_cast<bool>(stop_line);
-  if (stop_line) {
+  const auto get_stop_point =
+    [&](const auto & stop_line) -> boost::optional<geometry_msgs::msg::Point> {
     const auto intersects = getLinestringIntersects(
-      ego_path, lanelet::utils::to2D(stop_line.get()).basicLineString(), ego_pos, 2);
-    if (!intersects.empty()) {
-      const auto p_stop_line =
-        createPoint(intersects.front().x(), intersects.front().y(), ego_pos.z);
-      const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line);
-      return std::make_pair(dist_ego_to_stop, p_stop_line);
+      ego_path, lanelet::utils::to2D(stop_line).basicLineString(), ego_pos, 2);
+
+    if (intersects.empty()) {
+      return boost::none;
     }
+
+    return createPoint(intersects.front().x(), intersects.front().y(), ego_pos.z);
+  };
+
+  for (const auto & stop_line : stop_lines_) {
+    const auto p_stop_line = get_stop_point(stop_line);
+    if (!p_stop_line) {
+      continue;
+    }
+
+    exist_stopline_in_map = true;
+
+    const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line.get());
+    return std::make_pair(dist_ego_to_stop, p_stop_line.get());
   }
 
   {
+    exist_stopline_in_map = false;
+
     if (!path_intersects_.empty()) {
       const auto p_stop_line = path_intersects_.front();
       const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line) -
