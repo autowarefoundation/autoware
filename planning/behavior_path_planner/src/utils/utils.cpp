@@ -1510,8 +1510,11 @@ void generateDrivableArea(
   }
 
   // make bound longitudinally monotonic
-  makeBoundLongitudinallyMonotonic(path, true);   // for left bound
-  makeBoundLongitudinallyMonotonic(path, false);  // for right bound
+  // TODO(Murooka) Fix makeBoundLongitudinallyMonotonic
+  if (enable_expanding_polygon) {
+    makeBoundLongitudinallyMonotonic(path, true);   // for left bound
+    makeBoundLongitudinallyMonotonic(path, false);  // for right bound
+  }
 }
 
 // calculate bounds from drivable lanes and hatched road markings
