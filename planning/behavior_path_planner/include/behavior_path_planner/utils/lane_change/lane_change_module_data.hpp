@@ -35,6 +35,9 @@ struct LaneChangeParameters
   int longitudinal_acc_sampling_num{10};
   int lateral_acc_sampling_num{10};
 
+  // turn signal
+  double min_length_for_turn_signal_activation{10.0};
+
   // acceleration data
   double min_longitudinal_acc{-1.0};
   double max_longitudinal_acc{1.0};

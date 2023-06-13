@@ -249,6 +249,9 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
   module_type_->updateLaneChangeStatus();
 
+  // change turn signal when the vehicle reaches at the end of the path for waiting lane change
+  out.turn_signal_info = getCurrentTurnSignalInfo(*out.path, out.turn_signal_info);
+
   if (!module_type_->isValidPath()) {
     path_candidate_ = std::make_shared<PathWithLaneId>();
     return out;
@@ -405,6 +408,84 @@ void LaneChangeInterface::acceptVisitor(const std::shared_ptr<SceneModuleVisitor
   if (visitor) {
     visitor->visitLaneChangeInterface(this);
   }
+}
+
+TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
+  const PathWithLaneId & path, const TurnSignalInfo & original_turn_signal_info)
+{
+  const auto & target_lanes = module_type_->getLaneChangeStatus().lane_change_lanes;
+  const auto & is_valid = module_type_->getLaneChangeStatus().is_valid_path;
+  const auto & lane_change_path = module_type_->getLaneChangeStatus().lane_change_path;
+  const auto & lane_change_param = module_type_->getLaneChangeParam();
+
+  if (
+    module_type_->getModuleType() != LaneChangeModuleType::NORMAL || target_lanes.empty() ||
+    !is_valid) {
+    return original_turn_signal_info;
+  }
+
+  // check direction
+  TurnSignalInfo current_turn_signal_info;
+  const auto & current_pose = module_type_->getEgoPose();
+  const auto direction = module_type_->getDirection();
+  if (direction == Direction::LEFT) {
+    current_turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+  } else if (direction == Direction::RIGHT) {
+    current_turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+  }
+
+  if (path.points.empty()) {
+    current_turn_signal_info.desired_start_point = current_pose;
+    current_turn_signal_info.required_start_point = current_pose;
+    current_turn_signal_info.desired_end_point = lane_change_path.lane_changing_end;
+    current_turn_signal_info.required_end_point = lane_change_path.lane_changing_end;
+    return current_turn_signal_info;
+  }
+
+  const auto & min_length_for_turn_signal_activation =
+    lane_change_param.min_length_for_turn_signal_activation;
+  const auto & route_handler = module_type_->getRouteHandler();
+  const auto & common_parameter = module_type_->getCommonParam();
+  const auto shift_intervals =
+    route_handler->getLateralIntervalsToPreferredLane(target_lanes.back());
+  const double next_lane_change_buffer =
+    utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
+  const double & nearest_dist_threshold = common_parameter.ego_nearest_dist_threshold;
+  const double & nearest_yaw_threshold = common_parameter.ego_nearest_yaw_threshold;
+
+  const double buffer = next_lane_change_buffer + min_length_for_turn_signal_activation;
+  const double path_length = motion_utils::calcArcLength(path.points);
+  const auto & front_point = path.points.front().point.pose.position;
+  const size_t & current_nearest_seg_idx =
+    motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.points, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const double length_front_to_ego = motion_utils::calcSignedArcLength(
+    path.points, front_point, static_cast<size_t>(0), current_pose.position,
+    current_nearest_seg_idx);
+  const auto start_pose =
+    motion_utils::calcLongitudinalOffsetPose(path.points, 0, std::max(path_length - buffer, 0.0));
+  if (path_length - length_front_to_ego < buffer && start_pose) {
+    // modify turn signal
+    current_turn_signal_info.desired_start_point = *start_pose;
+    current_turn_signal_info.desired_end_point = lane_change_path.lane_changing_end;
+    current_turn_signal_info.required_start_point = current_turn_signal_info.desired_start_point;
+    current_turn_signal_info.required_end_point = current_turn_signal_info.desired_end_point;
+
+    const auto & original_command = original_turn_signal_info.turn_signal.command;
+    if (
+      original_command == TurnIndicatorsCommand::DISABLE ||
+      original_command == TurnIndicatorsCommand::NO_COMMAND) {
+      return current_turn_signal_info;
+    }
+
+    // check the priority of turn signals
+    return module_type_->getTurnSignalDecider().use_prior_turn_signal(
+      path, current_pose, current_nearest_seg_idx, original_turn_signal_info,
+      current_turn_signal_info, nearest_dist_threshold, nearest_yaw_threshold);
+  }
+
+  // not in the vicinity of the end of the path. return original
+  return original_turn_signal_info;
 }
 
 void SceneModuleVisitor::visitLaneChangeInterface(const LaneChangeInterface * interface) const

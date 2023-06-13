@@ -93,6 +93,9 @@ public:
 
   MarkerArray getModuleVirtualWall() override;
 
+  TurnSignalInfo getCurrentTurnSignalInfo(
+    const PathWithLaneId & path, const TurnSignalInfo & original_turn_signal_info);
+
 protected:
   std::shared_ptr<LaneChangeParameters> parameters_;
 
