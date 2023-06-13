@@ -18,7 +18,7 @@ This module is activated when the path contains the lanes with `turn_direction` 
 
 ### Requirements/Limitations
 
-- The HDMap needs to have the information of `turn_direction` tag (which should be one of `straight`, `left`, `right`) for all the lanes in intersections and `right_of_way` tag for specific lanes (refer to [RightOfWay](intersection-design.md#right-of-way) section for more details). See [lanelet2_extension document](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md) for more detail.
+- The HDMap needs to have the information of `turn_direction` tag (which should be one of `straight`, `left`, `right`) for all the lanes in intersections and `right_of_way` tag for specific lanes (refer to [RightOfWay](#right-of-way) section for more details). See [lanelet2_extension document](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md) for more detail.
 - WIP(perception requirements/limitations)
 - WIP(sensor visibility requirements/limitations)
 
@@ -50,7 +50,7 @@ This setting gives the following `attention_area` configurations.
 
 ### Target objects
 
-For [stuck vehicle detection](intersection-design.md#stuck-vehicle-detection) and [collision detection](intersection-design.md#collision-detection), this module checks **car**, **bus**, **truck**, **trailer**, **motor cycle**, and **bicycle** type objects.
+For [stuck vehicle detection](#stuck-vehicle-detection) and [collision detection](#collision-detection), this module checks **car**, **bus**, **truck**, **trailer**, **motor cycle**, and **bicycle** type objects.
 
 Objects that satisfy all of the following conditions are considered as target objects (possible collision objects):
 
