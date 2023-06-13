@@ -13,7 +13,7 @@ Some examples of No Drivable Lanes
 - Underpass road that goes under a railway, for safety reasons
 - Road with slope/inclination that the vehicle is not be able to drive autonomously due to technical limitations. And lots of other examples.
 
-![no-drivable-lane-design.svg](no_drivable_lane_design.svg)
+![no-drivable-lane-design.svg](./docs/no_drivable_lane_design.svg)
 
 A lanelet becomes invalid by adding a new tag under the relevant lanelet in the map file `<tag k="no_drivable_lane" v="yes"/>`.
 
@@ -42,7 +42,7 @@ This function is activated when the lane id of the target path has an no drivabl
   - the distance from front of the ego vehicle till the first intersection point between the ego path and the no drivable lane polygon is less than the `stop_margin`
 - Assign the state to `STOPPED` when the vehicle is completely stopped
 
-![no_drivable_lane_scenarios.svg](no_drivable_lane_scenarios.svg)
+![no_drivable_lane_scenarios.svg](./docs/no_drivable_lane_scenarios.svg)
 
 - At each state, RTC settings are assigned according to the following table
 
