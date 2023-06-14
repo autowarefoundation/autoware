@@ -11,7 +11,7 @@ on:
 
 jobs:
   docker-build-and-push-main:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64]
     strategy:
       fail-fast: false
       matrix:
