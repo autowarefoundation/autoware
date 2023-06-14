@@ -1,4 +1,5 @@
-- hosts: localhost
+- name: Set up Docker development environments for Autoware
+  hosts: localhost
   connection: local
   vars_prompt:
     - name: prompt_install_nvidia

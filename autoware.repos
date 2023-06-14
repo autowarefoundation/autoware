@@ -11,7 +11,7 @@ repositories:
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: 34338c0d9e68ea8c7598a66f319cdcb6d92873a3
+    version: awsim-stable
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git

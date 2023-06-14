@@ -8,11 +8,12 @@
 
 # ref: https://github.com/ansible/ansible-lint/issues/1780
 - name: Check if git lfs is installed # https://github.com/git-lfs/git-lfs/issues/901
-  git_config:
+  community.general.git_config:
     list_all: true
     scope: global
-  register: git_global_config
+  register: git_lfs__git_global_config
 
 - name: Setup Git LFS
-  command: git lfs install
-  when: "'filter.lfs.required' not in git_global_config.config_values"
+  ansible.builtin.command: git lfs install
+  when: "'filter.lfs.required' not in git_lfs__git_global_config.config_values"
+  changed_when: true
