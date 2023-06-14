@@ -56,3 +56,5 @@
 
     # system
     over_stop_velocity_warn_thr: 1.389  # used to check if the optimization exceeds the input velocity on the stop point
+
+    plan_from_ego_speed_on_manual_mode: true  # planning is done from ego velocity/acceleration on MANUAL mode. This should be true for smooth transition from MANUAL to AUTONOMOUS, but could be false for debugging.

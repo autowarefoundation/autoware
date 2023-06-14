@@ -25,6 +25,8 @@
     <remap from="~/input/trajectory" to="$(var input_trajectory)"/>
     <remap from="~/output/trajectory" to="$(var output_trajectory)"/>
     <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/>
+    <remap from="~/input/acceleration" to="/localization/acceleration"/>
+    <remap from="~/input/operation_mode_state" to="/system/operation_mode/state"/>
     <!-- Topic for setting maximum speed from the outside (input topic) -->
     <remap from="~/output/current_velocity_limit_mps" to="/planning/scenario_planning/current_max_velocity"/>
     <!-- Topic for displaying the set maximum speed (output topic) -->

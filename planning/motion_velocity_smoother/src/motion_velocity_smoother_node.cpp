@@ -61,6 +61,12 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   sub_external_velocity_limit_ = create_subscription<VelocityLimit>(
     "~/input/external_velocity_limit_mps", 1,
     std::bind(&MotionVelocitySmootherNode::onExternalVelocityLimit, this, _1));
+  sub_current_acceleration_ = create_subscription<AccelWithCovarianceStamped>(
+    "~/input/acceleration", 1,
+    [this](const AccelWithCovarianceStamped::SharedPtr msg) { current_acceleration_ptr_ = msg; });
+  sub_operation_mode_ = create_subscription<OperationModeState>(
+    "~/input/operation_mode_state", 1,
+    [this](const OperationModeState::SharedPtr msg) { operation_mode_ = *msg; });
 
   // parameter update
   set_param_res_ = this->add_on_set_parameters_callback(
@@ -143,6 +149,19 @@ rcl_interfaces::msg::SetParametersResult MotionVelocitySmootherNode::onParameter
     }
     return false;
   };
+
+  // TODO(Horibe): temporally. replace with template.
+  auto update_param_bool = [&](const std::string & name, bool & v) {
+    auto it = std::find_if(
+      parameters.cbegin(), parameters.cend(),
+      [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
+    if (it != parameters.cend()) {
+      v = it->as_bool();
+      return true;
+    }
+    return false;
+  };
+
   {
     auto & p = node_param_;
     update_param("max_velocity", p.max_velocity);
@@ -159,6 +178,7 @@ rcl_interfaces::msg::SetParametersResult MotionVelocitySmootherNode::onParameter
     update_param("stop_dist_to_prohibit_engage", p.stop_dist_to_prohibit_engage);
     update_param("ego_nearest_dist_threshold", p.ego_nearest_dist_threshold);
     update_param("ego_nearest_yaw_threshold", p.ego_nearest_yaw_threshold);
+    update_param_bool("plan_from_ego_speed_on_manual_mode", p.plan_from_ego_speed_on_manual_mode);
   }
 
   {
@@ -272,6 +292,9 @@ void MotionVelocitySmootherNode::initCommonParam()
   p.post_resample_param.sparse_min_interval_distance =
     declare_parameter<double>("post_sparse_min_interval_distance");
   p.algorithm_type = getAlgorithmType(declare_parameter<std::string>("algorithm_type"));
+
+  p.plan_from_ego_speed_on_manual_mode =
+    declare_parameter<bool>("plan_from_ego_speed_on_manual_mode");
 }
 
 void MotionVelocitySmootherNode::publishTrajectory(const TrajectoryPoints & trajectory) const
@@ -379,10 +402,10 @@ void MotionVelocitySmootherNode::calcExternalVelocityLimit()
 
 bool MotionVelocitySmootherNode::checkData() const
 {
-  if (!current_odometry_ptr_ || !base_traj_raw_ptr_) {
+  if (!current_odometry_ptr_ || !base_traj_raw_ptr_ || !current_acceleration_ptr_) {
     RCLCPP_DEBUG(
-      get_logger(), "wait topics : current_vel = %d, base_traj = %d", (bool)current_odometry_ptr_,
-      (bool)base_traj_raw_ptr_);
+      get_logger(), "wait topics : current_vel = %d, base_traj = %d, acceleration = %d",
+      (bool)current_odometry_ptr_, (bool)base_traj_raw_ptr_, (bool)current_acceleration_ptr_);
     return false;
   }
   if (base_traj_raw_ptr_->points.size() < 2) {
@@ -640,7 +663,7 @@ void MotionVelocitySmootherNode::insertBehindVelocity(
   const size_t output_closest, const InitializeType type, TrajectoryPoints & output) const
 {
   const bool keep_closest_vel_for_behind =
-    (type == InitializeType::INIT || type == InitializeType::LARGE_DEVIATION_REPLAN ||
+    (type == InitializeType::EGO_VELOCITY || type == InitializeType::LARGE_DEVIATION_REPLAN ||
      type == InitializeType::ENGAGING);
 
   for (size_t i = output_closest - 1; i < output.size(); --i) {
@@ -702,12 +725,13 @@ MotionVelocitySmootherNode::calcInitialMotion(
   const TrajectoryPoints & input_traj, const size_t input_closest) const
 {
   const double vehicle_speed = std::fabs(current_odometry_ptr_->twist.twist.linear.x);
+  const double vehicle_acceleration = current_acceleration_ptr_->accel.accel.linear.x;
   const double target_vel = std::fabs(input_traj.at(input_closest).longitudinal_velocity_mps);
 
   // first time
   if (!current_closest_point_from_prev_output_) {
     Motion initial_motion = {vehicle_speed, 0.0};
-    return {initial_motion, InitializeType::INIT};
+    return {initial_motion, InitializeType::EGO_VELOCITY};
   }
 
   // when velocity tracking deviation is large
@@ -748,6 +772,19 @@ MotionVelocitySmootherNode::calcInitialMotion(
         get_logger(), *clock_, 3000,
         "calcInitialMotion : target velocity(%.3f[m/s]) is lower than engage velocity(%.3f[m/s]). ",
         target_vel, node_param_.engage_velocity);
+    }
+  }
+
+  // If the control mode is not AUTONOMOUS (vehicle is not under control of the planning module),
+  // use ego velocity/acceleration in the planning for smooth transition from MANUAL to AUTONOMOUS.
+  if (node_param_.plan_from_ego_speed_on_manual_mode) {  // could be false for debug purpose
+    const bool is_in_autonomous_control = operation_mode_.is_autoware_control_enabled &&
+                                          operation_mode_.mode != OperationModeState::AUTONOMOUS;
+    if (!is_in_autonomous_control) {
+      RCLCPP_INFO_THROTTLE(
+        get_logger(), *clock_, 10000, "Not in autonomous control. Plan from ego velocity.");
+      Motion initial_motion = {vehicle_speed, vehicle_acceleration};
+      return {initial_motion, InitializeType::EGO_VELOCITY};
     }
   }
 

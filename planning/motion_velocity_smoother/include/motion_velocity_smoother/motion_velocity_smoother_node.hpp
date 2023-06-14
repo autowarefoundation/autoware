@@ -33,8 +33,10 @@
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
+#include "autoware_adapi_v1_msgs/msg/operation_mode_state.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tier4_debug_msgs/msg/float32_stamped.hpp"         // temporary
 #include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"  // temporary
@@ -52,6 +54,8 @@ namespace motion_velocity_smoother
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
+using autoware_adapi_v1_msgs::msg::OperationModeState;
+using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::Odometry;
@@ -77,10 +81,13 @@ private:
   rclcpp::Publisher<Trajectory>::SharedPtr pub_trajectory_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr pub_over_stop_velocity_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_current_odometry_;
+  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr sub_current_acceleration_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_current_trajectory_;
   rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
+  rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_;
 
   Odometry::ConstSharedPtr current_odometry_ptr_;  // current odometry
+  AccelWithCovarianceStamped::ConstSharedPtr current_acceleration_ptr_;
   VelocityLimit::ConstSharedPtr external_velocity_limit_ptr_{
     nullptr};                                     // external velocity limit message
   Trajectory::ConstSharedPtr base_traj_raw_ptr_;  // current base_waypoints
@@ -96,6 +103,9 @@ private:
 
   bool is_reverse_;
 
+  // check if the vehicle is under control of the planning module
+  OperationModeState operation_mode_;
+
   enum class AlgorithmType {
     INVALID = 0,
     JERK_FILTERED = 1,
@@ -105,7 +115,7 @@ private:
   };
 
   enum class InitializeType {
-    INIT = 0,
+    EGO_VELOCITY = 0,
     LARGE_DEVIATION_REPLAN = 1,
     ENGAGING = 2,
     NORMAL = 3,
@@ -131,6 +141,8 @@ private:
 
     resampling::ResampleParam post_resample_param;
     AlgorithmType algorithm_type;  // Option : JerkFiltered, Linf, L2
+
+    bool plan_from_ego_speed_on_manual_mode = true;
   } node_param_{};
 
   struct ExternalVelocityLimit
