@@ -345,8 +345,6 @@ void EKFLocalizer::callbackPoseWithCovariance(
   }
 
   pose_queue_.push(msg);
-
-  updateSimple1DFilters(*msg);
 }
 
 /*
@@ -448,6 +446,7 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
     poseMeasurementCovariance(pose.pose.covariance, params_.pose_smoothing_steps);
 
   ekf_.updateWithDelay(y, C, R, delay_step);
+  updateSimple1DFilters(pose, params_.pose_smoothing_steps);
 
   // debug
   const Eigen::MatrixXd X_result = ekf_.getLatestX();
@@ -600,16 +599,18 @@ void EKFLocalizer::publishEstimateResult()
   pub_debug_->publish(msg);
 }
 
-void EKFLocalizer::updateSimple1DFilters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose)
+void EKFLocalizer::updateSimple1DFilters(
+  const geometry_msgs::msg::PoseWithCovarianceStamped & pose, const size_t smoothing_step)
 {
   double z = pose.pose.pose.position.z;
 
   const auto rpy = tier4_autoware_utils::getRPY(pose.pose.pose.orientation);
 
   using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  double z_dev = pose.pose.covariance[COV_IDX::Z_Z];
-  double roll_dev = pose.pose.covariance[COV_IDX::ROLL_ROLL];
-  double pitch_dev = pose.pose.covariance[COV_IDX::PITCH_PITCH];
+  double z_dev = pose.pose.covariance[COV_IDX::Z_Z] * static_cast<double>(smoothing_step);
+  double roll_dev = pose.pose.covariance[COV_IDX::ROLL_ROLL] * static_cast<double>(smoothing_step);
+  double pitch_dev =
+    pose.pose.covariance[COV_IDX::PITCH_PITCH] * static_cast<double>(smoothing_step);
 
   z_filter_.update(z, z_dev, pose.header.stamp);
   roll_filter_.update(rpy.x, roll_dev, pose.header.stamp);
