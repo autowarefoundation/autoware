@@ -653,9 +653,7 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     case AvoidanceState::YIELD: {
       insertYieldVelocity(path);
       insertWaitPoint(parameters_->use_constraints_for_decel, path);
-      initRTCStatus();
-      removeAllRegisteredShiftPoints(path_shifter_);
-      unlockNewModuleLaunch();
+      removeRegisteredShiftLines();
       break;
     }
     case AvoidanceState::AVOID_PATH_NOT_READY: {
@@ -2555,7 +2553,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
 
   // post processing
   {
-    postProcess(path_shifter_);  // remove old shift points
+    postProcess();  // remove old shift points
   }
 
   // set previous data
@@ -2845,7 +2843,7 @@ AvoidLineArray AvoidanceModule::findNewShiftLine(const AvoidLineArray & candidat
     // this value should be larger than -eps consider path shifter calculation error.
     const double eps = 0.01;
     if (candidate.start_longitudinal < -eps) {
-      continue;
+      break;
     }
 
     if (!is_ignore_shift(candidate)) {
