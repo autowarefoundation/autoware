@@ -105,6 +105,18 @@ void StartPlannerModule::processOnExit()
 
 bool StartPlannerModule::isExecutionRequested() const
 {
+  // Check if ego arrives at goal
+  const Pose & goal_pose = planner_data_->route_handler->getGoalPose();
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+  if (
+    tier4_autoware_utils::calcDistance2d(goal_pose.position, current_pose.position) <
+    parameters_->th_arrived_distance) {
+#ifdef USE_OLD_ARCHITECTURE
+    is_executed_ = false;
+#endif
+    return false;
+  }
+
   has_received_new_route_ =
     !planner_data_->prev_route_id ||
     *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
