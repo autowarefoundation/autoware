@@ -433,10 +433,10 @@ PathSafetyStatus isLaneChangePathSafe(
       utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::safety_check::isSafeInLaneletCollisionCheck(
-            path, interpolated_ego, current_twist, check_durations,
-            lane_change_path.duration.prepare, obj, obj_path, common_parameter,
-            lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
-            rear_decel, current_debug_data.second)) {
+            path, interpolated_ego, current_twist.linear.x, check_durations, obj, obj_path,
+            common_parameter, front_decel, rear_decel, current_debug_data.second,
+            lane_change_path.duration.prepare,
+            lane_change_parameter.prepare_segment_ignore_object_velocity_thresh)) {
         path_safety_status.is_safe = false;
         appendDebugInfo(current_debug_data, false);
         if (isObjectIndexIncluded(i, dynamic_objects_indices.target_lane)) {

@@ -78,16 +78,31 @@ double calcMinimumLongitudinalLength(
 /**
  * @brief Iterate the points in the ego and target's predicted path and
  *        perform safety check for each of the iterated points.
+ * @param planned_path The predicted path of the ego vehicle.
+ * @param interpolated_ego A vector of pairs of ego vehicle's pose and its polygon at each moment in
+ * the future.
+ * @param ego_current_velocity Current velocity of the ego vehicle.
+ * @param check_duration The vector of times in the future at which safety check is
+ * performed.(relative time in sec from the current time)
+ * @param target_object The predicted object to check collision with.
+ * @param target_object_path The predicted path of the target object.
+ * @param common_parameters The common parameters used in behavior path planner.
+ * @param front_object_deceleration The deceleration of the object in the front.(used in RSS)
+ * @param rear_object_deceleration The deceleration of the object in the rear.(used in RSS)
+ * @param debug The debug information for collision checking.
+ * @param prepare_duration The duration to prepare before shifting lane.
+ * @param velocity_threshold_for_prepare_duration The threshold for the target velocity to
+ * ignore during preparation phase.
  * @return true if distance is safe.
  */
 bool isSafeInLaneletCollisionCheck(
-  const PathWithLaneId & path,
-  const std::vector<std::pair<Pose, tier4_autoware_utils::Polygon2d>> & interpolated_ego,
-  const Twist & ego_current_twist, const std::vector<double> & check_duration,
-  const double prepare_duration, const PredictedObject & target_object,
-  const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters,
-  const double prepare_phase_ignore_target_speed_thresh, const double front_decel,
-  const double rear_decel, CollisionCheckDebug & debug);
+  const PathWithLaneId & planned_path,
+  const std::vector<std::pair<Pose, tier4_autoware_utils::Polygon2d>> & predicted_ego_poses,
+  const double ego_current_velocity, const std::vector<double> & check_duration,
+  const PredictedObject & target_object, const PredictedPath & target_object_path,
+  const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
+  const double rear_object_deceleration, CollisionCheckDebug & debug,
+  const double prepare_duration = 0.0, const double velocity_threshold_for_prepare_duration = 0.0);
 
 /**
  * @brief Iterate the points in the ego and target's predicted path and
