@@ -127,7 +127,7 @@ bool StartPlannerModule::isExecutionRequested() const
   }
 
   const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
-                          parameters_->th_arrived_distance;
+                          parameters_->th_stopped_velocity;
   if (!is_stopped) {
 #ifdef USE_OLD_ARCHITECTURE
     is_executed_ = false;
