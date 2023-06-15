@@ -75,6 +75,8 @@ public:
 
   virtual PathWithLaneId getReferencePath() const = 0;
 
+  virtual std::optional<PathWithLaneId> extendPath() = 0;
+
   virtual void resetParameters() = 0;
 
   virtual TurnSignalInfo updateOutputTurnSignal() = 0;

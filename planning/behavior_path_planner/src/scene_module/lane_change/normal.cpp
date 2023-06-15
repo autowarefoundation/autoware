@@ -98,6 +98,11 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 {
   BehaviorModuleOutput output;
   output.path = std::make_shared<PathWithLaneId>(getLaneChangePath().path);
+
+  const auto found_extended_path = extendPath();
+  if (found_extended_path) {
+    *output.path = utils::lane_change::combineReferencePath(*output.path, *found_extended_path);
+  }
   extendOutputDrivableArea(output);
   output.reference_path = std::make_shared<PathWithLaneId>(getReferencePath());
   output.turn_signal_info = updateOutputTurnSignal();
@@ -155,6 +160,72 @@ PathWithLaneId NormalLaneChange::getReferencePath() const
   return utils::getCenterLinePathFromRootLanelet(status_.lane_change_lanes.front(), planner_data_);
 }
 
+std::optional<PathWithLaneId> NormalLaneChange::extendPath()
+{
+  const auto path = status_.lane_change_path.path;
+  const auto lc_start_point = status_.lane_change_path.lane_changing_start.position;
+
+  const auto dist =
+    motion_utils::calcSignedArcLength(path.points, lc_start_point, getEgoPosition());
+
+  if (dist < 0.0) {
+    return std::nullopt;
+  }
+
+  auto & target_lanes = status_.lane_change_lanes;
+  const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanes);
+  const auto dist_in_target = lanelet::utils::getArcCoordinates(target_lanes, getEgoPose());
+
+  const auto forward_path_length = getCommonParam().forward_path_length;
+
+  if ((target_lane_length - dist_in_target.length) > forward_path_length) {
+    return std::nullopt;
+  }
+
+  const auto is_goal_in_target = getRouteHandler()->isInGoalRouteSection(target_lanes.back());
+
+  if (is_goal_in_target) {
+    const auto goal_pose = getRouteHandler()->getGoalPose();
+
+    const auto dist_to_goal = lanelet::utils::getArcCoordinates(target_lanes, goal_pose).length;
+    const auto dist_to_end_of_path =
+      lanelet::utils::getArcCoordinates(target_lanes, path.points.back().point.pose).length;
+
+    return getRouteHandler()->getCenterLinePath(target_lanes, dist_to_end_of_path, dist_to_goal);
+  }
+
+  lanelet::ConstLanelet next_lane;
+  if (!getRouteHandler()->getNextLaneletWithinRoute(target_lanes.back(), &next_lane)) {
+    return std::nullopt;
+  }
+
+  target_lanes.push_back(next_lane);
+
+  const auto target_pose = std::invoke([&]() {
+    const auto is_goal_in_next_lane = getRouteHandler()->isInGoalRouteSection(next_lane);
+    if (is_goal_in_next_lane) {
+      return getRouteHandler()->getGoalPose();
+    }
+
+    Pose back_pose;
+    const auto back_point =
+      lanelet::utils::conversion::toGeomMsgPt(next_lane.centerline2d().back());
+    const double front_yaw = lanelet::utils::getLaneletAngle(next_lane, back_point);
+    back_pose.position = back_point;
+    tf2::Quaternion tf_quat;
+    tf_quat.setRPY(0, 0, front_yaw);
+    back_pose.orientation = tf2::toMsg(tf_quat);
+    return back_pose;
+  });
+
+  const auto dist_to_target_pose =
+    lanelet::utils::getArcCoordinates(target_lanes, target_pose).length;
+  const auto dist_to_end_of_path =
+    lanelet::utils::getArcCoordinates(target_lanes, path.points.back().point.pose).length;
+
+  return getRouteHandler()->getCenterLinePath(
+    target_lanes, dist_to_end_of_path, dist_to_target_pose);
+}
 void NormalLaneChange::resetParameters()
 {
   is_abort_path_approved_ = false;

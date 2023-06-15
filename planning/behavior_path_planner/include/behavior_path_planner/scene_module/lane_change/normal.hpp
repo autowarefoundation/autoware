@@ -57,6 +57,8 @@ public:
 
   PathWithLaneId getReferencePath() const override;
 
+  std::optional<PathWithLaneId> extendPath() override;
+
   void resetParameters() override;
 
   TurnSignalInfo updateOutputTurnSignal() override;
