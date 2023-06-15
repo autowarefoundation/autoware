@@ -29,44 +29,54 @@
       target_object:
         car:
           enable: true
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         truck:
           enable: true
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         bus:
           enable: true
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         trailer:
           enable: true
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         unknown:
           enable: false
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         bicycle:
           enable: false
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
         motorcycle:
           enable: false
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
         pedestrian:
           enable: false
+          max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
+        lower_distance_for_polygon_expansion: 30.0      # [m]
+        upper_distance_for_polygon_expansion: 100.0     # [m]
 
       # For target object filtering
       target_filtering:

@@ -181,16 +181,25 @@ ObjectData AvoidanceByLaneChange::createObjectData(
   const AvoidancePlanningData & data, const PredictedObject & object) const
 {
   using boost::geometry::return_centroid;
+  using motion_utils::findNearestIndex;
+  using tier4_autoware_utils::calcDistance2d;
 
   const auto & path_points = data.reference_path.points;
   const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const auto object_closest_index =
-    motion_utils::findNearestIndex(path_points, object_pose.position);
+  const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
   const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
+  const auto t = utils::getHighestProbLabel(object.classification);
+  const auto object_parameter = avoidance_parameters_->object_parameters.at(t);
 
   ObjectData object_data{};
 
   object_data.object = object;
+
+  const auto lower = avoidance_parameters_->lower_distance_for_polygon_expansion;
+  const auto upper = avoidance_parameters_->upper_distance_for_polygon_expansion;
+  const auto clamp =
+    std::clamp(calcDistance2d(getEgoPose(), object_pose) - lower, 0.0, upper) / upper;
+  object_data.distance_factor = object_parameter.max_expand_ratio * clamp + 1.0;
 
   // Calc envelop polygon.
   utils::avoidance::fillObjectEnvelopePolygon(
@@ -211,10 +220,9 @@ ObjectData AvoidanceByLaneChange::createObjectData(
     object_data, object_closest_pose, object_data.overhang_pose.position);
 
   // Check whether the the ego should avoid the object.
-  const auto t = utils::getHighestProbLabel(object.classification);
-  const auto object_parameter = avoidance_parameters_->object_parameters.at(t);
   const auto vehicle_width = planner_data_->parameters.vehicle_width;
-  const auto safety_margin = 0.5 * vehicle_width + object_parameter.safety_buffer_lateral;
+  const auto safety_margin =
+    0.5 * vehicle_width + object_parameter.safety_buffer_lateral * object_data.distance_factor;
   object_data.avoid_required =
     (utils::avoidance::isOnRight(object_data) &&
      std::abs(object_data.overhang_dist) < safety_margin) ||

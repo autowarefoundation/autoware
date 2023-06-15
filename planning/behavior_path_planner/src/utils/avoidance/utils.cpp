@@ -489,7 +489,9 @@ void fillObjectEnvelopePolygon(
 
   const auto t = utils::getHighestProbLabel(object_data.object.classification);
   const auto object_parameter = parameters->object_parameters.at(t);
-  const auto & envelope_buffer_margin = object_parameter.envelope_buffer_margin;
+
+  const auto & envelope_buffer_margin =
+    object_parameter.envelope_buffer_margin * object_data.distance_factor;
 
   const auto id = object_data.object.object_id;
   const auto same_id_obj = std::find_if(
@@ -772,7 +774,7 @@ void filterTargetObjects(
 
     // calculate avoid_margin dynamically
     // NOTE: This calculation must be after calculating to_road_shoulder_distance.
-    const double max_avoid_margin = object_parameter.safety_buffer_lateral +
+    const double max_avoid_margin = object_parameter.safety_buffer_lateral * o.distance_factor +
                                     parameters->lateral_collision_margin + 0.5 * vehicle_width;
     const double min_safety_lateral_distance =
       object_parameter.safety_buffer_lateral + 0.5 * vehicle_width;

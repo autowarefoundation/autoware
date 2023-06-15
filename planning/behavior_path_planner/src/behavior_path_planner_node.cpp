@@ -577,24 +577,31 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   {
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
-      param.enable = declare_parameter<bool>("avoidance.target_object." + ns + "enable");
-      param.envelope_buffer_margin =
-        declare_parameter<double>("avoidance.target_object." + ns + "envelope_buffer_margin");
-      param.safety_buffer_lateral =
-        declare_parameter<double>("avoidance.target_object." + ns + "safety_buffer_lateral");
+      param.enable = declare_parameter<bool>(ns + "enable");
+      param.max_expand_ratio = declare_parameter<double>(ns + "max_expand_ratio");
+      param.envelope_buffer_margin = declare_parameter<double>(ns + "envelope_buffer_margin");
+      param.safety_buffer_lateral = declare_parameter<double>(ns + "safety_buffer_lateral");
       param.safety_buffer_longitudinal =
-        declare_parameter<double>("avoidance.target_object." + ns + "safety_buffer_longitudinal");
+        declare_parameter<double>(ns + "safety_buffer_longitudinal");
       return param;
     };
 
-    p.object_parameters.emplace(ObjectClassification::MOTORCYCLE, get_object_param("motorcycle."));
-    p.object_parameters.emplace(ObjectClassification::CAR, get_object_param("car."));
-    p.object_parameters.emplace(ObjectClassification::TRUCK, get_object_param("truck."));
-    p.object_parameters.emplace(ObjectClassification::TRAILER, get_object_param("trailer."));
-    p.object_parameters.emplace(ObjectClassification::BUS, get_object_param("bus."));
-    p.object_parameters.emplace(ObjectClassification::PEDESTRIAN, get_object_param("pedestrian."));
-    p.object_parameters.emplace(ObjectClassification::BICYCLE, get_object_param("bicycle."));
-    p.object_parameters.emplace(ObjectClassification::UNKNOWN, get_object_param("unknown."));
+    const std::string ns = "avoidance.target_object.";
+    p.object_parameters.emplace(
+      ObjectClassification::MOTORCYCLE, get_object_param(ns + "motorcycle."));
+    p.object_parameters.emplace(ObjectClassification::CAR, get_object_param(ns + "car."));
+    p.object_parameters.emplace(ObjectClassification::TRUCK, get_object_param(ns + "truck."));
+    p.object_parameters.emplace(ObjectClassification::TRAILER, get_object_param(ns + "trailer."));
+    p.object_parameters.emplace(ObjectClassification::BUS, get_object_param(ns + "bus."));
+    p.object_parameters.emplace(
+      ObjectClassification::PEDESTRIAN, get_object_param(ns + "pedestrian."));
+    p.object_parameters.emplace(ObjectClassification::BICYCLE, get_object_param(ns + "bicycle."));
+    p.object_parameters.emplace(ObjectClassification::UNKNOWN, get_object_param(ns + "unknown."));
+
+    p.lower_distance_for_polygon_expansion =
+      declare_parameter<double>(ns + "lower_distance_for_polygon_expansion");
+    p.upper_distance_for_polygon_expansion =
+      declare_parameter<double>(ns + "upper_distance_for_polygon_expansion");
   }
 
   // target filtering

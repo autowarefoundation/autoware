@@ -50,6 +50,8 @@ struct ObjectParameter
 {
   bool enable{false};
 
+  double max_expand_ratio{0.0};
+
   double envelope_buffer_margin{0.0};
 
   double safety_buffer_lateral{1.0};
@@ -114,6 +116,12 @@ struct AvoidanceParameters
 
   // comfortable jerk
   double nominal_jerk;
+
+  // upper distance for envelope polygon expansion.
+  double upper_distance_for_polygon_expansion;
+
+  // lower distance for envelope polygon expansion.
+  double lower_distance_for_polygon_expansion;
 
   // Vehicles whose distance to the center of the path is
   // less than this will not be considered for avoidance.
@@ -307,6 +315,9 @@ struct ObjectData  // avoidance target
 
   // lateral shiftable ratio
   double shiftable_ratio{0.0};
+
+  // distance factor for perception noise (0.0~1.0)
+  double distance_factor{0.0};
 
   // count up when object disappeared. Removed when it exceeds threshold.
   rclcpp::Time last_seen;
