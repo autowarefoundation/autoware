@@ -235,21 +235,12 @@ void NormalLaneChange::resetParameters()
 
 TurnSignalInfo NormalLaneChange::updateOutputTurnSignal()
 {
-  calcTurnSignalInfo();
-  TurnSignalInfo turn_signal_info;
+  TurnSignalInfo turn_signal_info = calcTurnSignalInfo();
   const auto [turn_signal_command, distance_to_vehicle_front] = utils::getPathTurnSignal(
     status_.current_lanes, status_.lane_change_path.shifted_path,
     status_.lane_change_path.shift_line, getEgoPose(), getEgoTwist().linear.x,
     planner_data_->parameters);
   turn_signal_info.turn_signal.command = turn_signal_command.command;
-
-  turn_signal_info.desired_start_point =
-    status_.lane_change_path.turn_signal_info.desired_start_point;
-  turn_signal_info.required_start_point =
-    status_.lane_change_path.turn_signal_info.required_start_point;
-  turn_signal_info.required_end_point =
-    status_.lane_change_path.turn_signal_info.required_end_point;
-  turn_signal_info.desired_end_point = status_.lane_change_path.turn_signal_info.desired_end_point;
 
   return turn_signal_info;
 }
@@ -772,7 +763,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
   return safety_status;
 }
 
-void NormalLaneChange::calcTurnSignalInfo()
+TurnSignalInfo NormalLaneChange::calcTurnSignalInfo()
 {
   const auto get_blinker_pose = [](const PathWithLaneId & path, const double length) {
     double accumulated_length = 0.0;
@@ -819,7 +810,7 @@ void NormalLaneChange::calcTurnSignalInfo()
   const auto mid_lane_change_length = path.length.lane_changing / 2;
   turn_signal_info.required_end_point = get_blinker_pose(shifted_path, mid_lane_change_length);
 
-  status_.lane_change_path.turn_signal_info = turn_signal_info;
+  return turn_signal_info;
 }
 
 bool NormalLaneChange::isValidPath(const PathWithLaneId & path) const

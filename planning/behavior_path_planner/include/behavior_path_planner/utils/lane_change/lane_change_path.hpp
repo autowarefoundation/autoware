@@ -39,7 +39,6 @@ struct LaneChangePath
   double acceleration{0.0};
   LaneChangePhaseInfo length{};
   LaneChangePhaseInfo duration{};
-  TurnSignalInfo turn_signal_info{};
   PathWithLaneId prev_path{};
 };
 using LaneChangePaths = std::vector<LaneChangePath>;

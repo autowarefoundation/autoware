@@ -102,7 +102,7 @@ protected:
 
   std::vector<DrivableLanes> getDrivableLanes() const override;
 
-  void calcTurnSignalInfo() override;
+  TurnSignalInfo calcTurnSignalInfo() override;
 
   bool isValidPath(const PathWithLaneId & path) const override;
 };

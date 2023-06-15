@@ -199,7 +199,7 @@ protected:
 
   virtual std::vector<DrivableLanes> getDrivableLanes() const = 0;
 
-  virtual void calcTurnSignalInfo() = 0;
+  virtual TurnSignalInfo calcTurnSignalInfo() = 0;
 
   virtual bool isValidPath(const PathWithLaneId & path) const = 0;
 

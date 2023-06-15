@@ -590,15 +590,6 @@ ShiftLine getLaneChangingShiftLine(
   return shift_line;
 }
 
-void get_turn_signal_info(
-  const LaneChangePath & lane_change_path, TurnSignalInfo * turn_signal_info)
-{
-  turn_signal_info->desired_start_point = lane_change_path.turn_signal_info.desired_start_point;
-  turn_signal_info->required_start_point = lane_change_path.turn_signal_info.required_start_point;
-  turn_signal_info->required_end_point = lane_change_path.turn_signal_info.required_end_point;
-  turn_signal_info->desired_end_point = lane_change_path.turn_signal_info.desired_end_point;
-}
-
 std::vector<DrivableLanes> generateDrivableLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & lane_change_lanes)
