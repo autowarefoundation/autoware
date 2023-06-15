@@ -68,11 +68,23 @@ PathWithLaneId resamplePathWithSpline(
     transformed_path.at(i) = path.points.at(i).point;
   }
 
-  constexpr double epsilon = 0.2;
-  const auto has_almost_same_value = [&](const auto & vec, const auto x) {
-    if (vec.empty()) return false;
-    const auto has_close = [&](const auto v) { return std::abs(v - x) < epsilon; };
-    return std::find_if(vec.begin(), vec.end(), has_close) != vec.end();
+  const auto find_almost_same_values = [&](const std::vector<double> & vec, double x) {
+    constexpr double epsilon = 0.2;
+    const auto is_close = [&](double v, double x) { return std::abs(v - x) < epsilon; };
+
+    std::vector<size_t> indices;
+    if (vec.empty()) {
+      return boost::optional<std::vector<size_t>>();
+    }
+
+    for (size_t i = 0; i < vec.size(); ++i) {
+      if (is_close(vec[i], x)) {
+        indices.push_back(i);
+      }
+    }
+
+    return indices.empty() ? boost::optional<std::vector<size_t>>()
+                           : boost::optional<std::vector<size_t>>(indices);
   };
 
   // Get lane ids that are not duplicated
@@ -88,7 +100,7 @@ PathWithLaneId resamplePathWithSpline(
       }
       unique_lane_ids.insert(lane_id);
 
-      if (!has_almost_same_value(s_in, s)) {
+      if (!find_almost_same_values(s_in, s)) {
         s_in.push_back(s);
       }
     }
@@ -99,22 +111,26 @@ PathWithLaneId resamplePathWithSpline(
   const auto start_s = std::max(target_section.first, 0.0);
   const auto end_s = std::min(target_section.second, s_vec.back());
   for (double s = start_s; s < end_s; s += interval) {
-    if (!has_almost_same_value(s_out, s)) {
+    if (!find_almost_same_values(s_out, s)) {
       s_out.push_back(s);
     }
   }
 
-  // Insert Terminal Point
-  if (!has_almost_same_value(s_out, end_s)) {
-    s_out.push_back(end_s);
-  } else {
-    s_out.back() = end_s;
-  }
-
   // Insert Stop Point
   const auto closest_stop_dist = motion_utils::calcDistanceToForwardStopPoint(transformed_path);
-  if (closest_stop_dist && !has_almost_same_value(s_out, *closest_stop_dist)) {
-    s_out.push_back(*closest_stop_dist);
+  if (closest_stop_dist) {
+    const auto close_indices = find_almost_same_values(s_out, *closest_stop_dist);
+    if (close_indices) {
+      // Update the smallest index
+      s_out.at(close_indices->at(0)) = *closest_stop_dist;
+
+      // Remove the rest of the indices in descending order
+      for (size_t i = close_indices->size() - 1; i > 0; --i) {
+        s_out.erase(s_out.begin() + close_indices->at(i));
+      }
+    } else {
+      s_out.push_back(*closest_stop_dist);
+    }
   }
 
   if (s_out.empty()) {
