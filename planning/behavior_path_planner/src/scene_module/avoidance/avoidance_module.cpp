@@ -404,12 +404,8 @@ ObjectData AvoidanceModule::createObjectData(
 
   // Check whether the the ego should avoid the object.
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
-  const auto safety_margin =
-    0.5 * vehicle_width + object_parameter.safety_buffer_lateral * object_data.distance_factor;
-  object_data.avoid_required =
-    (utils::avoidance::isOnRight(object_data) &&
-     std::abs(object_data.overhang_dist) < safety_margin) ||
-    (!utils::avoidance::isOnRight(object_data) && object_data.overhang_dist < safety_margin);
+  utils::avoidance::fillAvoidanceNecessity(
+    object_data, registered_objects_, vehicle_width, parameters_);
 
   return object_data;
 }
