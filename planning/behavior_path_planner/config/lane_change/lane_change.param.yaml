@@ -6,7 +6,6 @@
 
       backward_length_buffer_for_end_of_lane: 3.0 # [m]
       lane_change_finish_judge_buffer: 2.0      # [m]
-      min_length_for_turn_signal_activation: 10.0 #[m]
 
       lane_changing_lateral_jerk: 0.5              # [m/s3]
       lateral_acc_switching_velocity: 4.0          #[m/s]
@@ -15,6 +14,10 @@
       prediction_time_resolution: 0.5           # [s]
       longitudinal_acceleration_sampling_num: 5
       lateral_acceleration_sampling_num: 3
+
+      # turn signal
+      min_length_for_turn_signal_activation: 10.0 # [m]
+      length_ratio_for_turn_signal_deactivation: 0.8 # ratio (desired end position)
 
       # longitudinal acceleration
       min_longitudinal_acc: -1.0

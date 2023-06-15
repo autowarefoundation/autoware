@@ -785,9 +785,11 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.lateral_acc_sampling_num =
     declare_parameter<int>(parameter("lateral_acceleration_sampling_num"));
 
-  // min length
+  // turn signal
   p.min_length_for_turn_signal_activation =
     declare_parameter<double>(parameter("min_length_for_turn_signal_activation"));
+  p.length_ratio_for_turn_signal_deactivation =
+    declare_parameter<double>(parameter("length_ratio_for_turn_signal_deactivation"));
 
   // acceleration
   p.min_longitudinal_acc = declare_parameter<double>(parameter("min_longitudinal_acc"));

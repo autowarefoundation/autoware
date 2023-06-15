@@ -37,6 +37,7 @@ struct LaneChangeParameters
 
   // turn signal
   double min_length_for_turn_signal_activation{10.0};
+  double length_ratio_for_turn_signal_deactivation{0.8};
 
   // acceleration data
   double min_longitudinal_acc{-1.0};
