@@ -84,6 +84,7 @@ Sub-manager has the following parameters that are needed by the manager to manag
 struct ModuleConfigParameters
 {
   bool enable_module{false};
+  bool enable_rtc{false};
   bool enable_simultaneous_execution_as_approved_module{false};
   bool enable_simultaneous_execution_as_candidate_module{false};
   uint8_t priority{0};
