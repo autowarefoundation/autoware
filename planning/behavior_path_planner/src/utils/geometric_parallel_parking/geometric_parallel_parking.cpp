@@ -292,7 +292,6 @@ bool GeometricParallelParking::planPullOut(
     // set pull_out velocity to arc paths and 0 velocity to end point
     constexpr bool set_stop_end = false;
     setVelocityToArcPaths(arc_paths, parameters_.pull_out_velocity, set_stop_end);
-    arc_paths.back().points.front().point.longitudinal_velocity_mps = 0.0;
 
     // combine the road center line path with the second arc path
     auto paths = arc_paths;
