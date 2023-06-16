@@ -318,7 +318,12 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
 void AvoidanceModule::fillAvoidanceTargetObjects(
   AvoidancePlanningData & data, DebugData & debug) const
 {
-  const auto expanded_lanelets = utils::avoidance::getTargetLanelets(
+  using utils::avoidance::fillObjectStoppableJudge;
+  using utils::avoidance::filterTargetObjects;
+  using utils::avoidance::getTargetLanelets;
+
+  // Separate dynamic objects based on whether they are inside or outside of the expanded lanelets.
+  const auto expanded_lanelets = getTargetLanelets(
     planner_data_, data.current_lanelets, parameters_->detection_area_left_expand_dist,
     parameters_->detection_area_right_expand_dist * (-1.0));
 
@@ -337,7 +342,18 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
     objects.push_back(createObjectData(data, object));
   }
 
-  utils::avoidance::filterTargetObjects(objects, data, debug, planner_data_, parameters_);
+  // Filter out the objects to determine the ones to be avoided.
+  filterTargetObjects(objects, data, debug, planner_data_, parameters_);
+
+  // Calculate the distance needed to safely decelerate the ego vehicle to a stop line.
+  // TODO(Satoshi OTA) use helper_ after the manager transition
+  helper::avoidance::AvoidanceHelper helper(planner_data_, parameters_);
+
+  const auto feasible_stop_distance = helper.getFeasibleDecelDistance(0.0);
+  std::for_each(data.target_objects.begin(), data.target_objects.end(), [&, this](auto & o) {
+    o.to_stop_line = calcDistanceToStopLine(o);
+    fillObjectStoppableJudge(o, registered_objects_, feasible_stop_distance, parameters_);
+  });
 
   // debug
   {
@@ -355,9 +371,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
       debug_info_array.push_back(debug_info);
     };
 
-    for (const auto & o : objects) {
-      append(o);
-    }
+    std::for_each(objects.begin(), objects.end(), [&](const auto & o) { append(o); });
 
     updateAvoidanceDebugData(debug_info_array);
   }
@@ -516,7 +530,7 @@ void AvoidanceModule::fillEgoStatus(
     if (o.avoid_required && enough_space) {
       data.avoid_required = true;
       data.stop_target_object = o;
-      data.to_stop_line = calcDistanceToStopLine(o);
+      data.to_stop_line = o.to_stop_line;
       break;
     }
   }
@@ -660,17 +674,16 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
       break;
     }
     case AvoidanceState::AVOID_PATH_NOT_READY: {
-      insertPrepareVelocity(false, path);
+      insertPrepareVelocity(path);
       insertWaitPoint(parameters_->use_constraints_for_decel, path);
       break;
     }
     case AvoidanceState::AVOID_PATH_READY: {
-      insertPrepareVelocity(true, path);
       insertWaitPoint(parameters_->use_constraints_for_decel, path);
       break;
     }
     case AvoidanceState::AVOID_EXECUTE: {
-      insertStopPoint(true, path);
+      insertStopPoint(parameters_->use_constraints_for_decel, path);
       break;
     }
     default:
@@ -3290,18 +3303,26 @@ void AvoidanceModule::insertWaitPoint(
     return;
   }
 
+  // If we don't need to consider deceleration constraints, insert a deceleration point
+  // and return immediately
   if (!use_constraints_for_decel) {
     utils::avoidance::insertDecelPoint(
       getEgoPosition(), data.to_stop_line, 0.0, shifted_path.path, stop_pose_);
     return;
   }
 
-  const auto stop_distance = helper_.getMildDecelDistance(0.0);
-  if (stop_distance) {
-    const auto insert_distance = std::max(data.to_stop_line, *stop_distance);
+  // If target object can be stopped for, insert a deceleration point and return
+  if (data.stop_target_object.get().is_stoppable) {
     utils::avoidance::insertDecelPoint(
-      getEgoPosition(), insert_distance, 0.0, shifted_path.path, stop_pose_);
+      getEgoPosition(), data.to_stop_line, 0.0, shifted_path.path, stop_pose_);
+    return;
   }
+
+  // If the object cannot be stopped for, calculate a "mild" deceleration distance
+  // and insert a deceleration point at that distance
+  const auto stop_distance = helper_.getFeasibleDecelDistance(0.0, false);
+  utils::avoidance::insertDecelPoint(
+    getEgoPosition(), stop_distance, 0.0, shifted_path.path, stop_pose_);
 }
 
 void AvoidanceModule::insertStopPoint(
@@ -3333,8 +3354,8 @@ void AvoidanceModule::insertStopPoint(
   const auto stop_distance =
     calcSignedArcLength(shifted_path.path.points, getEgoPosition(), stop_idx);
 
-  // Insert deceleration point at stop distance without deceleration if use_constraints_for_decel is
-  // false
+  // If we don't need to consider deceleration constraints, insert a deceleration point
+  // and return immediately
   if (!use_constraints_for_decel) {
     utils::avoidance::insertDecelPoint(
       getEgoPosition(), stop_distance, 0.0, shifted_path.path, stop_pose_);
@@ -3342,10 +3363,7 @@ void AvoidanceModule::insertStopPoint(
   }
 
   // Otherwise, consider deceleration constraints before inserting deceleration point
-  const auto decel_distance = helper_.getMildDecelDistance(0.0);
-  if (!decel_distance) {
-    return;
-  }
+  const auto decel_distance = helper_.getFeasibleDecelDistance(0.0, false);
   if (stop_distance < decel_distance) {
     return;
   }
@@ -3368,14 +3386,12 @@ void AvoidanceModule::insertYieldVelocity(ShiftedPath & shifted_path) const
     return;
   }
 
-  const auto decel_distance = helper_.getMildDecelDistance(p->yield_velocity);
-  if (decel_distance) {
-    utils::avoidance::insertDecelPoint(
-      getEgoPosition(), *decel_distance, p->yield_velocity, shifted_path.path, slow_pose_);
-  }
+  const auto decel_distance = helper_.getFeasibleDecelDistance(p->yield_velocity, false);
+  utils::avoidance::insertDecelPoint(
+    getEgoPosition(), decel_distance, p->yield_velocity, shifted_path.path, slow_pose_);
 }
 
-void AvoidanceModule::insertPrepareVelocity(const bool avoidable, ShiftedPath & shifted_path) const
+void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
 {
   const auto & data = avoidance_data_;
 
@@ -3393,15 +3409,9 @@ void AvoidanceModule::insertPrepareVelocity(const bool avoidable, ShiftedPath & 
     return;
   }
 
-  if (avoidable) {
-    return;
-  }
-
   const auto decel_distance = helper_.getFeasibleDecelDistance(0.0);
-  if (decel_distance) {
-    utils::avoidance::insertDecelPoint(
-      getEgoPosition(), *decel_distance, 0.0, shifted_path.path, slow_pose_);
-  }
+  utils::avoidance::insertDecelPoint(
+    getEgoPosition(), decel_distance, 0.0, shifted_path.path, slow_pose_);
 }
 
 std::shared_ptr<AvoidanceDebugMsgArray> AvoidanceModule::get_debug_msg_array() const

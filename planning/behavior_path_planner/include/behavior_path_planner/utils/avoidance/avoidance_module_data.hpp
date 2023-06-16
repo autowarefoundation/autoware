@@ -349,14 +349,20 @@ struct ObjectData  // avoidance target
   // to intersection
   double to_stop_factor_distance{std::numeric_limits<double>::infinity()};
 
+  // to stop line distance
+  double to_stop_line{std::numeric_limits<double>::infinity()};
+
   // if lateral margin is NOT enough, the ego must avoid the object.
   bool avoid_required{false};
 
-  // unavoidable reason
-  std::string reason{""};
-
   // is avoidable by behavior module
   bool is_avoidable{false};
+
+  // is stoppable under the constraints
+  bool is_stoppable{false};
+
+  // unavoidable reason
+  std::string reason{""};
 
   // lateral avoid margin
   // NOTE: If margin is less than the minimum margin threshold, boost::none will be set.

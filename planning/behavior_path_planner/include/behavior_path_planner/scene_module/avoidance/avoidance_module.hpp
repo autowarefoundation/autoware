@@ -231,10 +231,9 @@ private:
 
   /**
    * @brief insert stop point in output path.
-   * @param flag. if it is true, the ego decelerates within accel/jerk constraints.
    * @param target path.
    */
-  void insertPrepareVelocity(const bool avoidable, ShiftedPath & shifted_path) const;
+  void insertPrepareVelocity(ShiftedPath & shifted_path) const;
 
   /**
    * @brief insert decel point in output path in order to yield. the ego decelerates within
