@@ -78,6 +78,12 @@ repos:
         args: [--quiet]
         exclude: .cu
 
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.23.2
+    hooks:
+      - id: check-metaschema
+        files: ^.+/schema/.*schema\.json$
+
   - repo: local
     hooks:
       - id: prettier-svg
