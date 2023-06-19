@@ -614,7 +614,7 @@ void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
 
   // check ego is in next lane
   for (const auto & next : next_lanelets) {
-    if (next.id() == root_lanelet_.get().id()) {
+    if (next.id() == root_lanelet.id()) {
       return;
     }
   }
