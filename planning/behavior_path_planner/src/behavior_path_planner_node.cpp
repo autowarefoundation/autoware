@@ -1466,9 +1466,16 @@ void BehaviorPathPlannerNode::publishPathCandidate(
     }
 
     for (auto & module : manager->getSceneModules()) {
-      path_candidate_publishers_.at(module->name())
-        ->publish(
-          convertToPath(module->getPathCandidate(), module->isExecutionReady(), planner_data));
+      const auto & status = module->getCurrentStatus();
+      const auto candidate_path = std::invoke([&]() {
+        if (status == ModuleStatus::SUCCESS || status == ModuleStatus::FAILURE) {
+          // clear candidate path if the module is finished
+          return convertToPath(nullptr, false, planner_data);
+        }
+        return convertToPath(module->getPathCandidate(), module->isExecutionReady(), planner_data);
+      });
+
+      path_candidate_publishers_.at(module->name())->publish(candidate_path);
     }
   }
 }
