@@ -602,6 +602,17 @@ void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
     return;
   }
 
+  // when lane change module is running, don't update root lanelet.
+  const bool is_lane_change_running = std::invoke([&]() {
+    const auto lane_change_itr = std::find_if(
+      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+      [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
+    return lane_change_itr != approved_module_ptrs_.end();
+  });
+  if (is_lane_change_running) {
+    return;
+  }
+
   const auto root_lanelet = updateRootLanelet(data);
 
   // check ego is in same lane
@@ -629,7 +640,7 @@ void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
     }
   }
 
-  reset();
+  root_lanelet_ = root_lanelet;
 
   RCLCPP_INFO_EXPRESSION(logger_, verbose_, "change ego's following lane. reset.");
 }
