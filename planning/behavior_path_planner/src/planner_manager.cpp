@@ -39,6 +39,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
 {
   resetProcessingTime();
   stop_watch_.tic("total_time");
+  debug_info_.clear();
 
   if (!root_lanelet_) {
     root_lanelet_ = updateRootLanelet(data);
@@ -113,6 +114,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
        */
       addApprovedModule(highest_priority_module);
       clearCandidateModules();
+      debug_info_.emplace_back(highest_priority_module, Action::ADD, "To Approval");
     }
     return BehaviorModuleOutput{};
   }();
@@ -452,6 +454,8 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
 
       std::for_each(
         std::next(itr), approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+
+      debug_info_.emplace_back(*itr, Action::MOVE, "Back To Waiting Approval");
     }
 
     approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
@@ -465,7 +469,10 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
       approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
       [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::FAILURE; });
 
-    std::for_each(itr, approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+    std::for_each(itr, approved_module_ptrs_.end(), [this](auto & m) {
+      debug_info_.emplace_back(m, Action::DELETE, "From Approved");
+      deleteExpiredModules(m);
+    });
 
     if (itr != approved_module_ptrs_.end()) {
       clearCandidateModules();
@@ -513,8 +520,10 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
    * ModuleStatus::SUCCESS.
    */
   if (lane_change_itr == approved_module_ptrs_.end()) {
-    std::for_each(
-      success_itr, approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+    std::for_each(success_itr, approved_module_ptrs_.end(), [this](auto & m) {
+      debug_info_.emplace_back(m, Action::DELETE, "From Approved");
+      deleteExpiredModules(m);
+    });
 
     approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
     clearCandidateModules();
@@ -529,8 +538,10 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
    * change First In module's input.
    */
   if (not_success_itr == approved_module_ptrs_.rend()) {
-    std::for_each(
-      success_itr, approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+    std::for_each(success_itr, approved_module_ptrs_.end(), [this](auto & m) {
+      debug_info_.emplace_back(m, Action::DELETE, "From Approved");
+      deleteExpiredModules(m);
+    });
 
     approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
     clearCandidateModules();
@@ -680,6 +691,15 @@ void PlannerManager::print() const
   for (const auto & m : candidate_module_ptrs_) {
     string_stream << "[" << m->name() << "(" << get_status(m) << ")"
                   << "]->";
+  }
+
+  string_stream << "\n";
+  string_stream << "update module info: ";
+  for (const auto & i : debug_info_) {
+    string_stream << "[Module:" << i.module_name << " Status:" << magic_enum::enum_name(i.status)
+                  << " Action:" << magic_enum::enum_name(i.action)
+                  << " Description:" << i.description << "]\n"
+                  << std::setw(28);
   }
 
   string_stream << "\n" << std::fixed << std::setprecision(1);

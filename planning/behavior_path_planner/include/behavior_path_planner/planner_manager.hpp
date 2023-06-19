@@ -42,6 +42,39 @@ using tier4_planning_msgs::msg::StopReasonArray;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
 using SceneModuleManagerPtr = std::shared_ptr<SceneModuleManagerInterface>;
 
+enum Action {
+  ADD = 0,
+  DELETE,
+  MOVE,
+};
+
+struct ModuleUpdateInfo
+{
+  explicit ModuleUpdateInfo(
+    const SceneModulePtr & module_ptr, const Action & action, const std::string & description)
+  : status(module_ptr->getCurrentStatus()),
+    action(action),
+    module_name(module_ptr->name()),
+    description(description)
+  {
+  }
+
+  explicit ModuleUpdateInfo(
+    const std::string & name, const Action & action, const ModuleStatus & status,
+    const std::string & description)
+  : status(status), action(action), module_name(name), description(description)
+  {
+  }
+
+  ModuleStatus status;
+
+  Action action;
+
+  std::string module_name;
+
+  std::string description;
+};
+
 struct SceneModuleStatus
 {
   explicit SceneModuleStatus(const std::string & n) : module_name(n) {}
@@ -399,6 +432,8 @@ private:
   mutable StopWatch<std::chrono::milliseconds> stop_watch_;
 
   mutable std::unordered_map<std::string, double> processing_time_;
+
+  mutable std::vector<ModuleUpdateInfo> debug_info_;
 
   bool verbose_{false};
 };
