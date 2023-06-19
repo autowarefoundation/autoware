@@ -1079,12 +1079,13 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
     declare_parameter<double>(ns + "collision_check_distance_from_end");
   // shift pull out
   p.enable_shift_pull_out = declare_parameter<bool>(ns + "enable_shift_pull_out");
-  p.shift_pull_out_velocity = declare_parameter<double>(ns + "shift_pull_out_velocity");
-  p.pull_out_sampling_num = declare_parameter<int>(ns + "pull_out_sampling_num");
   p.minimum_shift_pull_out_distance =
     declare_parameter<double>(ns + "minimum_shift_pull_out_distance");
-  p.maximum_lateral_jerk = declare_parameter<double>(ns + "maximum_lateral_jerk");
-  p.minimum_lateral_jerk = declare_parameter<double>(ns + "minimum_lateral_jerk");
+  p.lateral_acceleration_sampling_num =
+    declare_parameter<int>(ns + "lateral_acceleration_sampling_num");
+  p.lateral_jerk = declare_parameter<double>(ns + "lateral_jerk");
+  p.maximum_lateral_acc = declare_parameter<double>(ns + "maximum_lateral_acc");
+  p.minimum_lateral_acc = declare_parameter<double>(ns + "minimum_lateral_acc");
   p.deceleration_interval = declare_parameter<double>(ns + "deceleration_interval");
   // geometric pull out
   p.enable_geometric_pull_out = declare_parameter<bool>(ns + "enable_geometric_pull_out");
@@ -1108,10 +1109,10 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
   p.ignore_distance_from_lane_end = declare_parameter<double>(ns + "ignore_distance_from_lane_end");
 
   // validation of parameters
-  if (p.pull_out_sampling_num < 1) {
+  if (p.lateral_acceleration_sampling_num < 1) {
     RCLCPP_FATAL_STREAM(
-      get_logger(), "pull_out_sampling_num must be positive integer. Given parameter: "
-                      << p.pull_out_sampling_num << std::endl
+      get_logger(), "lateral_acceleration_sampling_num must be positive integer. Given parameter: "
+                      << p.lateral_acceleration_sampling_num << std::endl
                       << "Terminating the program...");
     exit(EXIT_FAILURE);
   }

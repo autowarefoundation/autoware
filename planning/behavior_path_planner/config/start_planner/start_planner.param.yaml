@@ -9,12 +9,12 @@
       collision_check_distance_from_end: 1.0
       # shift pull out
       enable_shift_pull_out: true
-      shift_pull_out_velocity: 2.0
-      pull_out_sampling_num: 4
       minimum_shift_pull_out_distance: 0.0
-      maximum_lateral_jerk: 2.0
-      minimum_lateral_jerk: 0.1
       deceleration_interval: 15.0
+      lateral_jerk: 0.5
+      lateral_acceleration_sampling_num: 1
+      minimum_lateral_acc: 0.15
+      maximum_lateral_acc: 0.5
       # geometric pull out
       enable_geometric_pull_out: true
       divide_pull_out_path: false

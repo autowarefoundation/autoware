@@ -136,13 +136,15 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
 
   // rename parameter
   const double backward_path_length = common_parameter.backward_path_length;
-  const double shift_pull_out_velocity = parameter.shift_pull_out_velocity;
   const double minimum_shift_pull_out_distance = parameter.minimum_shift_pull_out_distance;
-  const double minimum_lateral_jerk = parameter.minimum_lateral_jerk;
-  const double maximum_lateral_jerk = parameter.maximum_lateral_jerk;
-  const int pull_out_sampling_num = parameter.pull_out_sampling_num;
-  const double jerk_resolution =
-    std::abs(maximum_lateral_jerk - minimum_lateral_jerk) / pull_out_sampling_num;
+  const double lateral_jerk = parameter.lateral_jerk;
+  const double minimum_lateral_acc = parameter.minimum_lateral_acc;
+  const double maximum_lateral_acc = parameter.maximum_lateral_acc;
+  const int lateral_acceleration_sampling_num = parameter.lateral_acceleration_sampling_num;
+  // set minimum acc for breaking loop when sampling num is 1
+  const double acc_resolution = std::max(
+    std::abs(maximum_lateral_acc - minimum_lateral_acc) / lateral_acceleration_sampling_num,
+    std::numeric_limits<double>::epsilon());
 
   // generate road lane reference path
   const auto arc_position_start = getArcCoordinates(road_lanes, start_pose);
@@ -155,49 +157,69 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   // if goal is behind start pose,
   const bool goal_is_behind = arc_position_goal.length < s_start;
   const double s_end = goal_is_behind ? road_lanes_length : arc_position_goal.length;
-  PathWithLaneId road_lane_reference_path =
-    utils::resamplePathWithSpline(route_handler.getCenterLinePath(road_lanes, s_start, s_end), 1.0);
+  constexpr double RESAMPLE_INTERVAL = 1.0;
+  PathWithLaneId road_lane_reference_path = utils::resamplePathWithSpline(
+    route_handler.getCenterLinePath(road_lanes, s_start, s_end), RESAMPLE_INTERVAL);
+
+  // non_shifted_path for when shift length or pull out distance is too short
+  const PullOutPath non_shifted_path = std::invoke([&]() {
+    PullOutPath non_shifted_path{};
+    non_shifted_path.partial_paths.push_back(road_lane_reference_path);
+    non_shifted_path.start_pose = start_pose;
+    non_shifted_path.end_pose = start_pose;
+    return non_shifted_path;
+  });
 
   bool has_non_shifted_path = false;
-  for (double lateral_jerk = minimum_lateral_jerk; lateral_jerk <= maximum_lateral_jerk;
-       lateral_jerk += jerk_resolution) {
+  for (double lateral_acc = minimum_lateral_acc; lateral_acc <= maximum_lateral_acc;
+       lateral_acc += acc_resolution) {
     PathShifter path_shifter{};
+
     path_shifter.setPath(road_lane_reference_path);
 
-    // calculate after/before shifted pull out distance
-    // lateral distance from road center to start pose
-    constexpr double minimum_shift_length = 0.01;
-    const double shift_length = getArcCoordinates(road_lanes, start_pose).distance;
     // if shift length is too short, add non sifted path
-    if (std::abs(shift_length) < minimum_shift_length && !has_non_shifted_path) {
-      PullOutPath non_shifted_path{};
-      non_shifted_path.partial_paths.push_back(road_lane_reference_path);
-      non_shifted_path.start_pose = start_pose;
-      non_shifted_path.end_pose = start_pose;
+    constexpr double MINIMUM_SHIFT_LENGTH = 0.01;
+    const double shift_length = getArcCoordinates(road_lanes, start_pose).distance;
+    if (std::abs(shift_length) < MINIMUM_SHIFT_LENGTH && !has_non_shifted_path) {
       candidate_paths.push_back(non_shifted_path);
       has_non_shifted_path = true;
       continue;
     }
 
-    const double pull_out_distance = std::max(
-      PathShifter::calcLongitudinalDistFromJerk(
-        abs(shift_length), lateral_jerk, shift_pull_out_velocity),
-      minimum_shift_pull_out_distance);
+    // calculate pull out distance, longitudinal acc, terminal velocity
     const size_t shift_start_idx =
       findNearestIndex(road_lane_reference_path.points, start_pose.position);
+    const double road_velocity =
+      road_lane_reference_path.points.at(shift_start_idx).point.longitudinal_velocity_mps;
+    const double shift_time =
+      PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, lateral_acc);
+    const double longitudinal_acc = std::clamp(road_velocity / shift_time, 0.0, 1.0);
+    const double pull_out_distance = (longitudinal_acc * std::pow(shift_time, 2)) / 2.0;
+    const double terminal_velocity = longitudinal_acc * shift_time;
+
+    // clip from ego pose
     PathWithLaneId road_lane_reference_path_from_ego = road_lane_reference_path;
     road_lane_reference_path_from_ego.points.erase(
       road_lane_reference_path_from_ego.points.begin(),
       road_lane_reference_path_from_ego.points.begin() + shift_start_idx);
     // before means distance on road lane
-    const double before_shifted_pull_out_distance = calcBeforeShiftedArcLength(
-      road_lane_reference_path_from_ego, pull_out_distance, shift_length);
+    const double before_shifted_pull_out_distance = std::max(
+      minimum_shift_pull_out_distance,
+      calcBeforeShiftedArcLength(
+        road_lane_reference_path_from_ego, pull_out_distance, shift_length));
 
     // check has enough distance
     const bool is_in_goal_route_section = route_handler.isInGoalRouteSection(road_lanes.back());
     if (!hasEnoughDistance(
           before_shifted_pull_out_distance, road_lanes, start_pose, is_in_goal_route_section,
           goal_pose)) {
+      continue;
+    }
+
+    // if before_shifted_pull_out_distance is too short, shifting path fails, so add non shifted
+    if (before_shifted_pull_out_distance < RESAMPLE_INTERVAL && !has_non_shifted_path) {
+      candidate_paths.push_back(non_shifted_path);
+      has_non_shifted_path = true;
       continue;
     }
 
@@ -223,6 +245,9 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     shift_line.end = *shift_end_pose_ptr;
     shift_line.end_shift_length = shift_length;
     path_shifter.addShiftLine(shift_line);
+    path_shifter.setVelocity(0.0);  // initial velocity is 0
+    path_shifter.setLongitudinalAcceleration(longitudinal_acc);
+    path_shifter.setLateralAccelerationLimit(lateral_acc);
 
     // offset front side
     ShiftedPath shifted_path;
@@ -237,8 +262,8 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
       auto & point = shifted_path.path.points.at(i);
       if (i < pull_out_end_idx) {
-        point.point.longitudinal_velocity_mps = std::min(
-          point.point.longitudinal_velocity_mps, static_cast<float>(shift_pull_out_velocity));
+        point.point.longitudinal_velocity_mps =
+          std::min(point.point.longitudinal_velocity_mps, static_cast<float>(terminal_velocity));
       }
     }
     // if the end point is the goal, set the velocity to 0
