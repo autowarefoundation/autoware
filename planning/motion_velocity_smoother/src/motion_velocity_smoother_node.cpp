@@ -783,7 +783,11 @@ MotionVelocitySmootherNode::calcInitialMotion(
     if (!is_in_autonomous_control) {
       RCLCPP_INFO_THROTTLE(
         get_logger(), *clock_, 10000, "Not in autonomous control. Plan from ego velocity.");
-      Motion initial_motion = {vehicle_speed, vehicle_acceleration};
+      // We should plan from the current vehicle speed, but if the initial value is greater than the
+      // velocity limit, the current planning algorithm decelerates with a very high deceleration.
+      // To avoid this, we set the initial value of the vehicle speed to be below the speed limit.
+      const auto v0 = std::min(target_vel, vehicle_speed);
+      const Motion initial_motion = {v0, vehicle_acceleration};
       return {initial_motion, InitializeType::EGO_VELOCITY};
     }
   }
