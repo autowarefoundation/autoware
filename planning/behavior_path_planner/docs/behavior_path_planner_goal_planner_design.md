@@ -222,7 +222,7 @@ Generate two forward arc paths.
 
 ![arc_forward_parking](../image/arc_forward_parking.drawio.svg)
 
-[how arc_forward_parking video](https://user-images.githubusercontent.com/39142679/178034128-4754c401-8aff-4745-b69a-4a69ca29ce4b.mp4)
+[arc_forward_parking video](https://user-images.githubusercontent.com/39142679/178034128-4754c401-8aff-4745-b69a-4a69ca29ce4b.mp4)
 
 #### Parameters arc forward parking
 
@@ -239,7 +239,7 @@ Generate two backward arc paths.
 
 ![arc_backward_parking](../image/arc_backward_parking.drawio.svg).
 
-[arc_forward_parking video](https://user-images.githubusercontent.com/39142679/178034280-4b6754fe-3981-4aee-b5e0-970f34563c6d.mp4)
+[arc_backward_parking video](https://user-images.githubusercontent.com/39142679/178034280-4b6754fe-3981-4aee-b5e0-970f34563c6d.mp4)
 
 #### Parameters arc backward parking
 
