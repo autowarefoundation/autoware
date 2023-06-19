@@ -205,6 +205,9 @@ void SideShiftModule::updateData()
   if (prev_reference_.points.empty()) {
     prev_reference_ = *getPreviousModuleOutput().path;
   }
+  if (!getPreviousModuleOutput().reference_path) {
+    return;
+  }
   const auto centerline_path = utils::calcCenterLinePath(
     planner_data_, reference_pose, longest_dist_to_shift_line,
     *getPreviousModuleOutput().reference_path);
