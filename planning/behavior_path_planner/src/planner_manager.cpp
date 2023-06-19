@@ -53,12 +53,16 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
       [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::RUNNING; });
 
-    const bool is_any_candidate_module_running = std::any_of(
-      candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(),
-      [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::RUNNING; });
+    // IDLE is a state in which an execution has been requested but not yet approved.
+    // once approved, it basically turns to running.
+    const bool is_any_candidate_module_running_or_idle =
+      std::any_of(candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), [](const auto & m) {
+        return m->getCurrentStatus() == ModuleStatus::RUNNING ||
+               m->getCurrentStatus() == ModuleStatus::IDLE;
+      });
 
     const bool is_any_module_running =
-      is_any_approved_module_running || is_any_candidate_module_running;
+      is_any_approved_module_running || is_any_candidate_module_running_or_idle;
 
     const bool is_out_of_route = utils::isEgoOutOfRoute(
       data->self_odometry->pose.pose, data->prev_modified_goal, data->route_handler);
@@ -422,8 +426,9 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
 
 BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<PlannerData> & data)
 {
-  std::unordered_map<std::string, BehaviorModuleOutput> results;
+  const bool has_any_running_candidate_module = hasAnyRunningCandidateModule();
 
+  std::unordered_map<std::string, BehaviorModuleOutput> results;
   BehaviorModuleOutput output = getReferencePath(data);
   results.emplace("root", output);
 
@@ -519,14 +524,14 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
    * ModuleStatus::RUNNING, the previous module keeps running even if it is in
    * ModuleStatus::SUCCESS.
    */
-  if (lane_change_itr == approved_module_ptrs_.end()) {
+  if (lane_change_itr == approved_module_ptrs_.end() && !has_any_running_candidate_module) {
     std::for_each(success_itr, approved_module_ptrs_.end(), [this](auto & m) {
       debug_info_.emplace_back(m, Action::DELETE, "From Approved");
       deleteExpiredModules(m);
     });
 
     approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
-    clearCandidateModules();
+    clearNotRunningCandidateModules();
 
     return approved_modules_output;
   }
@@ -537,14 +542,14 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
    * root lanelet is updated at the moment of lane change module's unregistering, and that causes
    * change First In module's input.
    */
-  if (not_success_itr == approved_module_ptrs_.rend()) {
+  if (not_success_itr == approved_module_ptrs_.rend() && !has_any_running_candidate_module) {
     std::for_each(success_itr, approved_module_ptrs_.end(), [this](auto & m) {
       debug_info_.emplace_back(m, Action::DELETE, "From Approved");
       deleteExpiredModules(m);
     });
 
     approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
-    clearCandidateModules();
+    clearNotRunningCandidateModules();
 
     root_lanelet_ = updateRootLanelet(data);
 

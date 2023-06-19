@@ -185,7 +185,9 @@ public:
    */
   virtual BehaviorModuleOutput run()
   {
+#ifdef USE_OLD_ARCHITECTURE
     current_state_ = ModuleStatus::RUNNING;
+#endif
 
     updateData();
 

@@ -189,6 +189,12 @@ ModuleStatus DynamicAvoidanceModule::updateState()
     return ModuleStatus::SUCCESS;
   }
 
+#ifndef USE_OLD_ARCHITECTURE
+  if (!isActivated() || isWaitingApproval()) {
+    return ModuleStatus::IDLE;
+  }
+#endif
+
   return ModuleStatus::RUNNING;
 }
 

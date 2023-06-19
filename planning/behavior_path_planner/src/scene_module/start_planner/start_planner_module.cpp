@@ -86,7 +86,9 @@ StartPlannerModule::StartPlannerModule(
 
 BehaviorModuleOutput StartPlannerModule::run()
 {
+#ifdef USE_OLD_ARCHITECTURE
   current_state_ = ModuleStatus::RUNNING;
+#endif
 
 #ifndef USE_OLD_ARCHITECTURE
   if (!isActivated()) {
@@ -176,10 +178,21 @@ bool StartPlannerModule::isExecutionReady() const
   return true;
 }
 
-// this runs only when RUNNING
 ModuleStatus StartPlannerModule::updateState()
 {
   RCLCPP_DEBUG(getLogger(), "START_PLANNER updateState");
+
+#ifdef USE_OLD_ARCHITECTURE
+  if (isActivated() && !isWaitingApproval()) {
+    current_state_ = ModuleStatus::RUNNING;
+  }
+#else
+  if (isActivated() && !isWaitingApproval()) {
+    current_state_ = ModuleStatus::RUNNING;
+  } else {
+    current_state_ = ModuleStatus::IDLE;
+  }
+#endif
 
   if (hasFinishedPullOut()) {
     return ModuleStatus::SUCCESS;

@@ -87,6 +87,10 @@ bool LaneChangeInterface::isExecutionReady() const
 
 ModuleStatus LaneChangeInterface::updateState()
 {
+  if (!isActivated() || isWaitingApproval()) {
+    return ModuleStatus::IDLE;
+  }
+
   if (!module_type_->isValidPath()) {
 #ifdef USE_OLD_ARCHITECTURE
     return ModuleStatus::FAILURE;
