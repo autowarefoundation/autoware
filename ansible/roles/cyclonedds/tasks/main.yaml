@@ -1,0 +1,57 @@
+- name: Create cyclonedds directory
+  ansible.builtin.file:
+    path: /opt/autoware/cyclonedds
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Copy cyclonedds config
+  ansible.builtin.template:
+    src: cyclonedds.xml.jinja2
+    dest: /opt/autoware/cyclonedds/cyclonedds.xml
+    mode: 0755
+  become: true
+
+- name: Copy multicast setup service
+  ansible.builtin.copy:
+    src: multicast@.service
+    dest: /etc/systemd/system/
+    mode: 0755
+  become: true
+
+- name: Enable multicast setup service
+  ansible.builtin.systemd:
+    name: multicast@{{ item }}.service
+    daemon_reload: true
+    enabled: true
+    masked: false
+  become: true
+  when: item == "lo"
+  with_items: "{{ network_config }}"
+
+- name: Add kernel parameter config
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    # reload: true
+    reload: false
+    sysctl_file: /etc/sysctl.d/60-cyclonedds.conf
+  with_dict:
+    net.ipv4.ipfrag_time: "{{ cyclonedds.ipfrag_time }}"
+    net.ipv4.ipfrag_high_thresh: "{{ cyclonedds.ipfrag_high_thresh }}"
+    net.core.rmem_max: "{{ cyclonedds.rmem_max }}"
+    net.core.rmem_default: "{{ cyclonedds.rmem_default }}"
+  become: true
+
+- name: Add settings to autoware.env
+  ansible.builtin.blockinfile:
+    path: "{{ autoware_env_dir }}/autoware.env"
+    state: present
+    create: true
+    mode: 0644
+    marker: "# {mark} cyclonedds"
+    block: |
+      export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      export CYCLONEDDS_URI=file:///opt/autoware/cyclonedds/cyclonedds.xml
+  become: true

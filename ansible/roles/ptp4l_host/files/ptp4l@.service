@@ -1,0 +1,13 @@
+[Unit]
+Description=Precision Time Protocol (PTP) service
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/ptp4l -i %i -m -S -A
+ExecStop=/usr/bin/pkill -f ptp4l
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target network-online.target

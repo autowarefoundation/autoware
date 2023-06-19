@@ -1,0 +1,21 @@
+- name: Install ptp4l
+  ansible.builtin.apt:
+    name:
+      - linuxptp
+    update_cache: true
+  become: true
+
+- name: Copy service template file
+  ansible.builtin.copy:
+    src: ptp4l@.service
+    dest: /etc/systemd/system/
+  become: true
+
+- name: Install ptp4l client service file
+  ansible.builtin.systemd:
+    name: ptp4l@{{ item }}.service
+    daemon_reload: true
+    enabled: true
+    masked: false
+  become: true
+  with_items: "{{ ptp4l_host_interface }}"

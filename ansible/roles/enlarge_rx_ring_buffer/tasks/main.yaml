@@ -1,0 +1,6 @@
+- name: Copy rule file
+  ansible.builtin.template:
+    src: 99-enlarge-rx-ring-buffer.rules.jinja2
+    dest: /etc/udev/rules.d/99-enlarge-rx-ring-buffer.rules
+    mode: 0644
+  become: true

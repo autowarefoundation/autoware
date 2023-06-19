@@ -1,0 +1,15 @@
+network_config:
+  ros:
+    interface_address: 192.168.2.1
+    interface_name: enp2s0f1
+  lidar:
+    interface_address: 192.168.1.100
+    interface_name: enp3s0
+  dhcp:
+    interface_name: eno1
+
+ptp4l_host_interface:
+  - enp2s0f1
+  - enp3s0
+
+ros_domain_id: 1

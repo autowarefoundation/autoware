@@ -1,0 +1,17 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+{% for key in network_config %}
+{% if 'dhcp' in key %}
+    {{ network_config[key].interface_name }}:
+      dhcp4: true
+      dhcp-identifier: mac
+      optional: true
+{% else %}
+    {{ network_config[key].interface_name }}:
+      addresses: [{{ network_config[key].interface_address }}/24]
+      dhcp4: false
+      dhcp6: false
+{% endif %}
+{% endfor %}

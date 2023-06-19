@@ -39,7 +39,7 @@ while [ "$1" != "" ]; do
 done
 
 # Select installation type
-target_playbook="autoware.dev_env.universe" # default
+target_playbook="autoware.dev_env.edge_auto" # default
 
 if [ ${#args[@]} -ge 1 ]; then
     target_playbook="autoware.dev_env.${args[0]}"

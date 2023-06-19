@@ -1,0 +1,18 @@
+- name: Add settings to autoware.env
+  ansible.builtin.blockinfile:
+    path: "{{ autoware_env_dir }}/autoware.env"
+    state: present
+    create: true
+    mode: 0644
+    marker: "# {mark} autoware"
+    block: |
+      export ROS_DOMAIN_ID={{ ros_domain_id }}
+  become: true
+
+- name: Add sourcing command in user's bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    state: present
+    marker: "# {mark} autoware"
+    block: |
+      source {{ autoware_env_dir }}/autoware.env

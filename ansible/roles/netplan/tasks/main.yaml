@@ -1,0 +1,16 @@
+- name: Install netplan
+  ansible.builtin.apt:
+    name: netplan.io
+    update_cache: true
+  become: true
+
+- name: Copy network config file using template
+  ansible.builtin.template:
+    src: 99-edge-auto.yaml.jinja2
+    dest: /etc/netplan/99-edge-auto-jetson.yaml
+    mode: 0644
+  become: true
+
+- name: Netplan apply
+  command: netplan apply
+  become: true

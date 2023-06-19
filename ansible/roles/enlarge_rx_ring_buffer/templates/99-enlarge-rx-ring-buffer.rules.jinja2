@@ -1,0 +1,5 @@
+{% for key in network_config %}
+{% if 'dhcp' not in key %}
+SUBSYSTEM=="net",ACTION=="add|change",KERNEL=="{{ network_config[key].interface_name }}",RUN+="/usr/sbin/ethtool -G %k rx {{ rx_ring_buffer_size }}"
+{% endif %}
+{% endfor %}

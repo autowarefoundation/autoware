@@ -1,0 +1,67 @@
+- name: Set up source development environments for Autoware Universe
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars/edge_auto.yaml
+  vars_prompt:
+    - name: prompt_install_nvidia
+      prompt: |-
+        [Warning] Some Autoware components depend on the CUDA, cuDNN and TensorRT NVIDIA libraries which have end-user license agreements that should be reviewed before installation.
+        Install NVIDIA libraries? [y/N]
+      private: false
+    - name: prompt_configure_network
+      prompt: |-
+        [Warning] Do you want to configure the network? This configuration may overwrite the IP address of the specific network interface [y/N]
+      private: false
+  pre_tasks:
+    - name: Verify OS
+      ansible.builtin.fail:
+        msg: Only Ubuntu 22.04 is supported for this branch. Please refer to https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/.
+      when: ansible_distribution_version != '22.04'
+
+    - name: Print args
+      ansible.builtin.debug:
+        msg:
+          - rosdistro: "{{ rosdistro }}"
+          - rmw_implementation: "{{ rmw_implementation }}"
+          - cuda_version: "{{ cuda_version }}"
+          - cudnn_version: "{{ cudnn_version }}"
+          - tensorrt_version: "{{ tensorrt_version }}"
+
+    - name: Show a warning if the NVIDIA libraries will not be installed
+      ansible.builtin.pause:
+        seconds: 10
+        prompt: |
+          [Warning] Skipping installation of NVIDIA libraries. Please manually install them if you plan to use any dependent components.
+      when: prompt_install_nvidia != 'y'
+  roles:
+    # Core
+    - role: autoware.dev_env.autoware_core
+    - role: autoware.dev_env.ccache
+      when: install_devel == 'true'
+    - role: autoware.dev_env.plotjuggler
+    - role: autoware.dev_env.pre_commit
+      when: install_devel == 'true'
+    - role: autoware.dev_env.ros2
+    - role: autoware.dev_env.ros2_dev_tools
+    # - role: autoware.dev_env.rmw_implementation
+
+    # Universe
+    - role: autoware.dev_env.autoware_universe
+    - role: autoware.dev_env.cuda
+      when: prompt_install_nvidia == 'y' and install_devel == 'true'
+    - role: autoware.dev_env.pacmod
+      when: rosdistro != 'rolling'
+    - role: autoware.dev_env.tensorrt
+      when: prompt_install_nvidia == 'y'
+    - role: autoware.dev_env.git_lfs
+
+    # Edge.Auto
+    - role: autoware.dev_env.ros2_domain_id
+    - role: autoware.dev_env.cyclonedds
+    - role: autoware.dev_env.ptp4l_host
+      when: prompt_configure_network
+    - role: autoware.dev_env.enlarge_rx_ring_buffer
+      when: prompt_configure_network
+    - role: autoware.dev_env.netplan
+      when: prompt_configure_network

@@ -1,0 +1,12 @@
+[Unit]
+Description=Multicast setup for cyclonedds communication
+Before=network.target
+
+[Service]
+ExecStart=/sbin/ip link set multicast on dev %i
+User=root
+Group=root
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
