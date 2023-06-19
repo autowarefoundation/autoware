@@ -50,6 +50,10 @@ struct ObjectParameter
 {
   bool enable{false};
 
+  double moving_speed_threshold{0.0};
+
+  double moving_time_threshold{1.0};
+
   double max_expand_ratio{0.0};
 
   double envelope_buffer_margin{0.0};
@@ -127,9 +131,6 @@ struct AvoidanceParameters
   // less than this will not be considered for avoidance.
   double threshold_distance_object_is_on_center;
 
-  // vehicles with speed greater than this will not be avoided
-  double threshold_speed_object_is_stopped;
-
   // execute only when there is no intersection behind of the stopped vehicle.
   double object_ignore_distance_traffic_light;
 
@@ -154,9 +155,6 @@ struct AvoidanceParameters
 
   // minimum road shoulder width. maybe 0.5 [m]
   double object_check_min_road_shoulder_width;
-
-  // vehicles which is moving more than this parameter will not be avoided
-  double threshold_time_object_is_moving;
 
   // force avoidance
   double threshold_time_force_avoidance_for_stopped_vehicle;

@@ -578,6 +578,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
       param.enable = declare_parameter<bool>(ns + "enable");
+      param.moving_speed_threshold = declare_parameter<double>(ns + "moving_speed_threshold");
+      param.moving_time_threshold = declare_parameter<double>(ns + "moving_time_threshold");
       param.max_expand_ratio = declare_parameter<double>(ns + "max_expand_ratio");
       param.envelope_buffer_margin = declare_parameter<double>(ns + "envelope_buffer_margin");
       param.safety_buffer_lateral = declare_parameter<double>(ns + "safety_buffer_lateral");
@@ -607,10 +609,6 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   // target filtering
   {
     std::string ns = "avoidance.target_filtering.";
-    p.threshold_speed_object_is_stopped =
-      declare_parameter<double>(ns + "threshold_speed_object_is_stopped");
-    p.threshold_time_object_is_moving =
-      declare_parameter<double>(ns + "threshold_time_object_is_moving");
     p.threshold_time_force_avoidance_for_stopped_vehicle =
       declare_parameter<double>(ns + "threshold_time_force_avoidance_for_stopped_vehicle");
     p.object_ignore_distance_traffic_light =

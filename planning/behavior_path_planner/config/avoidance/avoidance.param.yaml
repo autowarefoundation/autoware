@@ -28,49 +28,65 @@
       # avoidance is performed for the object type with true
       target_object:
         car:
-          enable: true
-          max_expand_ratio: 0.0
-          envelope_buffer_margin: 0.3
-          safety_buffer_lateral: 0.7
-          safety_buffer_longitudinal: 0.0
+          enable: true                                 # [-]
+          moving_speed_threshold: 1.0                  # [m/s]
+          moving_time_threshold: 1.0                   # [s]
+          max_expand_ratio: 0.0                        # [-]
+          envelope_buffer_margin: 0.3                  # [m]
+          safety_buffer_lateral: 0.7                   # [m]
+          safety_buffer_longitudinal: 0.0              # [m]
         truck:
           enable: true
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         bus:
           enable: true
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         trailer:
           enable: true
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         unknown:
           enable: false
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
         bicycle:
           enable: false
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
         motorcycle:
           enable: false
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
         pedestrian:
           enable: false
+          moving_speed_threshold: 1.0
+          moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
           safety_buffer_lateral: 1.0
@@ -81,8 +97,6 @@
       # For target object filtering
       target_filtering:
         # filtering moving objects
-        threshold_speed_object_is_stopped: 1.0          # [m/s]
-        threshold_time_object_is_moving: 1.0            # [s]
         threshold_time_force_avoidance_for_stopped_vehicle: 10.0 # [s]
         # detection range
         object_ignore_distance_traffic_light: 30.0      # [m]

@@ -48,6 +48,8 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
                                      const auto & semantic, const std::string & ns) {
     auto & config = p->object_parameters.at(semantic);
     updateParam<bool>(parameters, ns + "enable", config.enable);
+    updateParam<double>(parameters, ns + "moving_speed_threshold", config.moving_speed_threshold);
+    updateParam<double>(parameters, ns + "moving_time_threshold", config.moving_time_threshold);
     updateParam<double>(parameters, ns + "max_expand_ratio", config.max_expand_ratio);
     updateParam<double>(parameters, ns + "envelope_buffer_margin", config.envelope_buffer_margin);
     updateParam<double>(parameters, ns + "safety_buffer_lateral", config.safety_buffer_lateral);
