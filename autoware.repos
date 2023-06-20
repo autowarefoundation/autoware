@@ -50,15 +50,15 @@ repositories:
   universe/external/eagleye:
     type: git
     url: https://github.com/MapIV/eagleye.git
-    version: 61c3660fa2e9c4622046b611f29eef4da3a7059d
+    version: 46bc19406613fabdc8de8cb4741b88c018e107df # dependencies fixes
   universe/external/rtklib_ros_bridge:
     type: git
     url: https://github.com/MapIV/rtklib_ros_bridge.git
-    version: d499bc1efb051924be23c0f4a381f99ab4dcdeac
+    version: ef094407bba4f475a8032972e0c60cbb939b51b8 # dependencies fixes
   universe/external/llh_converter:
     type: git
     url: https://github.com/MapIV/llh_converter.git
-    version: 4d4fb18d43800a45e08738dfe18ae3b34903f143
+    version: 07ad112b4f6b83eccd3a5f777bbe40ff01c67382 # dependencies fixes
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
