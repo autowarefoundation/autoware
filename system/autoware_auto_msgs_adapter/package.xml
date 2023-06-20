@@ -4,8 +4,13 @@
   <name>autoware_auto_msgs_adapter</name>
   <version>1.0.0</version>
   <description>Converts an autoware_msgs message to autoware_auto_msgs version and publishes it.</description>
+
   <maintainer email="mfc@leodrive.ai">M. Fatih Cırıt</maintainer>
+  <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
+
   <license>Apache License 2.0</license>
+
+  <author email="mfc@leodrive.ai">M. Fatih Cırıt</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
