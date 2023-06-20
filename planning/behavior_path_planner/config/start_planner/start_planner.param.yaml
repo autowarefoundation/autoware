@@ -12,7 +12,7 @@
       minimum_shift_pull_out_distance: 0.0
       deceleration_interval: 15.0
       lateral_jerk: 0.5
-      lateral_acceleration_sampling_num: 1
+      lateral_acceleration_sampling_num: 3
       minimum_lateral_acc: 0.15
       maximum_lateral_acc: 0.5
       # geometric pull out
