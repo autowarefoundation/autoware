@@ -75,6 +75,24 @@ struct Route
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
 };
 
+struct NormalRoute
+{
+  using Message = autoware_planning_msgs::msg::LaneletRoute;
+  static constexpr char name[] = "/planning/mission_planning/normal_route";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+};
+
+struct MrmRoute
+{
+  using Message = autoware_planning_msgs::msg::LaneletRoute;
+  static constexpr char name[] = "/planning/mission_planning/mrm_route";
+  static constexpr size_t depth = 1;
+  static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+};
+
 struct Trajectory
 {
   using Message = autoware_auto_planning_msgs::msg::Trajectory;

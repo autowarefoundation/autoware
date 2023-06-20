@@ -75,7 +75,6 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   plugin_loader_("mission_planner", "mission_planner::PlannerPlugin"),
   tf_buffer_(get_clock()),
   tf_listener_(tf_buffer_),
-  original_route_(nullptr),
   normal_route_(nullptr)
 {
   map_frame_ = declare_parameter<std::string>("map_frame");
@@ -101,6 +100,8 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
   adaptor.init_pub(pub_state_);
   adaptor.init_pub(pub_route_);
+  adaptor.init_pub(pub_normal_route_);
+  adaptor.init_pub(pub_mrm_route_);
   adaptor.init_srv(srv_clear_route_, this, &MissionPlanner::on_clear_route);
   adaptor.init_srv(srv_set_route_, this, &MissionPlanner::on_set_route);
   adaptor.init_srv(srv_set_route_points_, this, &MissionPlanner::on_set_route_points);
@@ -163,6 +164,7 @@ void MissionPlanner::change_route(const LaneletRoute & route)
 
   arrival_checker_.set_goal(goal);
   pub_route_->publish(route);
+  pub_normal_route_->publish(route);
   pub_marker_->publish(planner_->visualize(route));
   planner_->updateRoute(route);
 
@@ -289,7 +291,6 @@ void MissionPlanner::on_set_route(
   // Update route.
   change_route(route);
   change_state(RouteState::Message::SET);
-  original_route_ = std::make_shared<LaneletRoute>(route);
   res->status.success = true;
 }
 
@@ -325,7 +326,6 @@ void MissionPlanner::on_set_route_points(
   // Update route.
   change_route(route);
   change_state(RouteState::Message::SET);
-  original_route_ = std::make_shared<LaneletRoute>(route);
   res->status.success = true;
 }
 

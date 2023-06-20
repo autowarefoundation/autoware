@@ -51,6 +51,8 @@ using SetRoute = planning_interface::SetRoute;
 using ChangeRoutePoints = planning_interface::ChangeRoutePoints;
 using ChangeRoute = planning_interface::ChangeRoute;
 using Route = planning_interface::Route;
+using NormalRoute = planning_interface::NormalRoute;
+using MrmRoute = planning_interface::MrmRoute;
 using RouteState = planning_interface::RouteState;
 using Odometry = nav_msgs::msg::Odometry;
 
@@ -89,6 +91,8 @@ private:
   RouteState::Message state_;
   component_interface_utils::Publisher<RouteState>::SharedPtr pub_state_;
   component_interface_utils::Publisher<Route>::SharedPtr pub_route_;
+  component_interface_utils::Publisher<NormalRoute>::SharedPtr pub_normal_route_;
+  component_interface_utils::Publisher<MrmRoute>::SharedPtr pub_mrm_route_;
   void change_state(RouteState::Message::_state_type state);
 
   component_interface_utils::Service<ClearRoute>::SharedPtr srv_clear_route_;
@@ -131,7 +135,6 @@ private:
   double minimum_reroute_length_{30.0};
   bool checkRerouteSafety(const LaneletRoute & original_route, const LaneletRoute & target_route);
 
-  std::shared_ptr<LaneletRoute> original_route_{nullptr};
   std::shared_ptr<LaneletRoute> normal_route_{nullptr};
 };
 
