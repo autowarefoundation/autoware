@@ -431,7 +431,7 @@ void MissionPlanner::on_change_route(
 
   // check route safety
   if (checkRerouteSafety(*normal_route_, new_route)) {
-    // sucess to reroute
+    // success to reroute
     change_route(new_route);
     res->status.success = true;
     change_state(RouteState::Message::SET);
@@ -485,7 +485,7 @@ void MissionPlanner::on_change_route_points(
 
   // check route safety
   if (checkRerouteSafety(*normal_route_, new_route)) {
-    // sucess to reroute
+    // success to reroute
     change_route(new_route);
     res->status.success = true;
     change_state(RouteState::Message::SET);
