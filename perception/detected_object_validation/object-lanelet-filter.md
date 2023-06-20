@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `object_lanelet_filter` is a node that filters detected object by using vector map.  
+The `object_lanelet_filter` is a node that filters detected object by using vector map.
 The objects only inside of the vector map will be published.
 
 ## Inner-workings / Algorithms
@@ -39,7 +39,7 @@ The objects only inside of the vector map will be published.
 
 ## Assumptions / Known limits
 
-Filtering is performed based on the shape polygon of the object.
+The lanelet filter is performed based on the shape polygon and bounding box of the objects.
 
 ## (Optional) Error detection and handling
 
