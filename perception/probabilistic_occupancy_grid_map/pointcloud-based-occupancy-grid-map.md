@@ -51,13 +51,13 @@ The ray trace is done by Bresenham's line algorithm.
 
 Using the previous occupancy grid map, update the existence probability using a binary Bayesian filter (1). Also, the unobserved cells are time-decayed like the system noise of the Kalman filter (2).
 
-```math
-    \hat{P_{o}} = \frac{(P_{o} * P_{z})}{(P_{o} * P_{z} + (1 - P_{o}) * \bar{P_{z}})} \tag{1}
-```
+$$
+\hat{P_{o}} = \frac{(P_{o} *P_{z})}{(P_{o}* P_{z} + (1 - P_{o}) * \bar{P_{z}})} \tag{1}
+$$
 
-```math
-    \hat{P_{o}} = \frac{(P_{o} + 0.5 * \frac{1}{ratio})}{(\frac{1}{ratio} + 1)} \tag{2}
-```
+$$
+\hat{P_{o}} = \frac{(P_{o} + 0.5 * \frac{1}{ratio})}{(\frac{1}{ratio} + 1)} \tag{2}
+$$
 
 ## Inputs / Outputs
 
