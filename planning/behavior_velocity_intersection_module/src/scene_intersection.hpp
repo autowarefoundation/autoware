@@ -73,6 +73,7 @@ public:
         assumed_front_car_decel;  //! the expected deceleration of front car when front car as well
       bool enable_front_car_decel_prediction;  //! flag for using above feature
       */
+      double timeout_private_area;
     } stuck_vehicle;
     struct CollisionDetection
     {
@@ -168,8 +169,8 @@ public:
   IntersectionModule(
     const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
     const PlannerParam & planner_param, const std::set<int> & associative_ids,
-    const bool enable_occlusion_detection, rclcpp::Node & node, const rclcpp::Logger logger,
-    const rclcpp::Clock::SharedPtr clock);
+    const bool is_private_area, const bool enable_occlusion_detection, rclcpp::Node & node,
+    const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock);
 
   /**
    * @brief plan go-stop velocity at traffic crossing with collision check between reference path
@@ -208,7 +209,10 @@ private:
   StateMachine collision_state_machine_;     //! for stable collision checking
   StateMachine before_creep_state_machine_;  //! for two phase stop
   // NOTE: uuid_ is base member
-  // for occlusion clearance decision
+
+  // for stuck vehicle detection
+  const bool is_private_area_;
+  StateMachine stuck_private_area_timeout_;
 
   // for RTC
   const UUID occlusion_uuid_;

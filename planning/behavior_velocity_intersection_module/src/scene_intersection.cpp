@@ -72,14 +72,15 @@ static bool isTargetCollisionVehicleType(
 IntersectionModule::IntersectionModule(
   const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
   const PlannerParam & planner_param, const std::set<int> & associative_ids,
-  const bool enable_occlusion_detection, rclcpp::Node & node, const rclcpp::Logger logger,
-  const rclcpp::Clock::SharedPtr clock)
+  const bool is_private_area, const bool enable_occlusion_detection, rclcpp::Node & node,
+  const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   node_(node),
   lane_id_(lane_id),
   associative_ids_(associative_ids),
   enable_occlusion_detection_(enable_occlusion_detection),
   occlusion_attention_divisions_(std::nullopt),
+  is_private_area_(is_private_area),
   occlusion_uuid_(tier4_autoware_utils::generateUUID())
 {
   velocity_factor_.init(VelocityFactor::INTERSECTION);
@@ -96,6 +97,8 @@ IntersectionModule::IntersectionModule(
     occlusion_grid_pub_ = node_.create_publisher<grid_map_msgs::msg::GridMap>(
       "~/debug/intersection/occlusion_grid", rclcpp::QoS(1).transient_local());
   }
+  stuck_private_area_timeout_.setMarginTime(planner_param_.stuck_vehicle.timeout_private_area);
+  stuck_private_area_timeout_.setState(StateMachine::State::STOP);
 }
 
 void IntersectionModule::initializeRTCStatus()
@@ -680,7 +683,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   }
   const auto & intersection_stop_lines = intersection_stop_lines_opt.value();
   const auto
-    [closest_idx, stuck_stop_line, default_stop_line_idx, occlusion_peeking_stop_line_idx,
+    [closest_idx, stuck_stop_line_idx, default_stop_line_idx, occlusion_peeking_stop_line_idx,
      pass_judge_line_idx] = intersection_stop_lines;
 
   const auto ego_lane_with_next_lane = util::getEgoLaneWithNextLane(
@@ -689,8 +692,22 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     checkStuckVehicle(planner_data_, ego_lane_with_next_lane, *path, intersection_stop_lines);
 
   if (stuck_detected) {
-    return IntersectionModule::StuckStop{
-      stuck_stop_line, !first_attention_area.has_value(), intersection_stop_lines};
+    const double dist_stopline = motion_utils::calcSignedArcLength(
+      path->points, path->points.at(closest_idx).point.pose.position,
+      path->points.at(stuck_stop_line_idx).point.pose.position);
+    const bool approached_stop_line =
+      (std::fabs(dist_stopline) < planner_param_.common.stop_overshoot_margin);
+    const bool is_stopped = planner_data_->isVehicleStopped();
+    if (is_stopped && approached_stop_line) {
+      stuck_private_area_timeout_.setStateWithMarginTime(
+        StateMachine::State::GO, logger_.get_child("stuck_private_area_timeout"), *clock_);
+    }
+    const bool timeout =
+      (is_private_area_ && stuck_private_area_timeout_.getState() == StateMachine::State::GO);
+    if (!timeout) {
+      return IntersectionModule::StuckStop{
+        stuck_stop_line_idx, !first_attention_area.has_value(), intersection_stop_lines};
+    }
   }
 
   if (!first_attention_area) {

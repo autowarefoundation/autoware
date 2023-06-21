@@ -69,6 +69,8 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.stuck_vehicle.enable_front_car_decel_prediction =
     node.declare_parameter<bool>(ns + ".stuck_vehicle.enable_front_car_decel_prediction");
   */
+  ip.stuck_vehicle.timeout_private_area =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.timeout_private_area");
 
   ip.collision_detection.state_transit_margin_time =
     node.declare_parameter<double>(ns + ".collision_detection.state_transit_margin_time");
@@ -132,8 +134,10 @@ void IntersectionModuleManager::launchNewModules(
 
     const auto associative_ids =
       planning_utils::getAssociativeIntersectionLanelets(ll, lanelet_map, routing_graph);
+    const std::string location = ll.attributeOr("location", "else");
+    const bool is_private_area = (location.compare("private") == 0);
     const auto new_module = std::make_shared<IntersectionModule>(
-      module_id, lane_id, planner_data_, intersection_param_, associative_ids,
+      module_id, lane_id, planner_data_, intersection_param_, associative_ids, is_private_area,
       enable_occlusion_detection, node_, logger_.get_child("intersection_module"), clock_);
     generateUUID(module_id);
     /* set RTC status as non_occluded status initially */
