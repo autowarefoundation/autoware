@@ -429,6 +429,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     std::min(p.minimum_lane_changing_velocity, p.max_acc * p.lane_change_prepare_duration);
   p.minimum_prepare_length =
     0.5 * p.max_acc * p.lane_change_prepare_duration * p.lane_change_prepare_duration;
+  p.lane_change_finish_judge_buffer =
+    declare_parameter<double>("lane_change.lane_change_finish_judge_buffer");
 
   // lateral acceleration map for lane change
   const auto lateral_acc_velocity =
@@ -775,8 +777,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
 
   // trajectory generation
   p.backward_lane_length = declare_parameter<double>(parameter("backward_lane_length"));
-  p.lane_change_finish_judge_buffer =
-    declare_parameter<double>(parameter("lane_change_finish_judge_buffer"));
   p.prediction_time_resolution = declare_parameter<double>(parameter("prediction_time_resolution"));
   p.longitudinal_acc_sampling_num =
     declare_parameter<int>(parameter("longitudinal_acceleration_sampling_num"));
@@ -845,15 +845,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
       get_logger(), "abort_delta_time: " << p.abort_delta_time << ", is too short.\n"
                                          << "Terminating the program...");
     exit(EXIT_FAILURE);
-  }
-
-  const auto lc_buffer =
-    this->get_parameter("lane_change.backward_length_buffer_for_end_of_lane").get_value<double>();
-  if (lc_buffer < p.lane_change_finish_judge_buffer + 1.0) {
-    p.lane_change_finish_judge_buffer = lc_buffer - 1;
-    RCLCPP_WARN_STREAM(
-      get_logger(), "lane change buffer is less than finish buffer. Modifying the value to "
-                      << p.lane_change_finish_judge_buffer << "....");
   }
 
   return p;

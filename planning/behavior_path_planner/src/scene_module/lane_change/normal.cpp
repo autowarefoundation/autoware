@@ -321,9 +321,9 @@ bool NormalLaneChange::hasFinishedLaneChange() const
   const auto & lane_change_end = status_.lane_change_path.shift_line.end;
   const double dist_to_lane_change_end = motion_utils::calcSignedArcLength(
     lane_change_path.points, current_pose.position, lane_change_end.position);
+  const double finish_judge_buffer = planner_data_->parameters.lane_change_finish_judge_buffer;
 
-  const auto reach_lane_change_end =
-    dist_to_lane_change_end + lane_change_parameters_->lane_change_finish_judge_buffer < 0.0;
+  const auto reach_lane_change_end = dist_to_lane_change_end + finish_judge_buffer < 0.0;
   if (!reach_lane_change_end) {
     return false;
   }
@@ -620,8 +620,8 @@ bool NormalLaneChange::getLaneChangePaths(
         const double s_goal =
           lanelet::utils::getArcCoordinates(target_lanelets, route_handler.getGoalPose()).length;
         if (
-          s_start + lane_changing_length +
-            lane_change_parameters_->lane_change_finish_judge_buffer + next_lane_change_buffer >
+          s_start + lane_changing_length + common_parameter.lane_change_finish_judge_buffer +
+            next_lane_change_buffer >
           s_goal) {
           RCLCPP_DEBUG(
             rclcpp::get_logger("behavior_path_planner").get_child("util").get_child("lane_change"),

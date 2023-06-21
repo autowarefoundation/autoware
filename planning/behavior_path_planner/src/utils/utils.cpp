@@ -2740,14 +2740,16 @@ double calcMinimumLaneChangeLength(
   const auto lat_acc = common_param.lane_change_lat_acc_map.find(vel);
   const double & max_lateral_acc = lat_acc.second;
   const double & lateral_jerk = common_param.lane_changing_lateral_jerk;
+  const double & finish_judge_buffer = common_param.lane_change_finish_judge_buffer;
 
-  double accumulated_length =
-    length_to_intersection + common_param.backward_length_buffer_for_end_of_lane;
+  double accumulated_length = length_to_intersection;
   for (const auto & shift_interval : shift_intervals) {
     const double t =
       PathShifter::calcShiftTimeFromJerk(shift_interval, lateral_jerk, max_lateral_acc);
-    accumulated_length += vel * t + common_param.minimum_prepare_length;
+    accumulated_length += vel * t + common_param.minimum_prepare_length + finish_judge_buffer;
   }
+  accumulated_length +=
+    common_param.backward_length_buffer_for_end_of_lane * (shift_intervals.size() - 1.0);
 
   return accumulated_length;
 }

@@ -103,6 +103,7 @@ struct BehaviorPathPlannerParameters
   double lateral_acc_switching_velocity{0.4};
   double minimum_lane_changing_velocity{5.6};
   double lane_change_prepare_duration{4.0};
+  double lane_change_finish_judge_buffer{3.0};
   double minimum_prepare_length;
   LateralAccelerationMap lane_change_lat_acc_map;
 
