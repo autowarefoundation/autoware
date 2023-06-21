@@ -20,6 +20,7 @@
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
@@ -103,6 +104,7 @@ void StartPlannerModule::processOnExit()
 {
   resetPathCandidate();
   resetPathReference();
+  debug_marker_.markers.clear();
 }
 
 bool StartPlannerModule::isExecutionRequested() const
@@ -836,8 +838,15 @@ void StartPlannerModule::setDebugData() const
 {
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
+  using tier4_autoware_utils::createDefaultMarker;
+  using tier4_autoware_utils::createMarkerColor;
+  using tier4_autoware_utils::createMarkerScale;
 
-  const auto add = [this](const MarkerArray & added) {
+  const auto life_time = rclcpp::Duration::from_seconds(1.5);
+  auto add = [&](MarkerArray added) {
+    for (auto & marker : added.markers) {
+      marker.lifetime = life_time;
+    }
     tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
   };
 
@@ -846,5 +855,26 @@ void StartPlannerModule::setDebugData() const
   add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
+
+  // Visualize planner type text
+  const auto header = planner_data_->route_handler->getRouteHeader();
+  {
+    visualization_msgs::msg::MarkerArray planner_type_marker_array{};
+    const auto color = status_.is_safe ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
+                                       : createMarkerColor(1.0, 0.0, 0.0, 0.99);
+    auto marker = createDefaultMarker(
+      header.frame_id, header.stamp, "planner_type", 0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0), color);
+    marker.pose = status_.pull_out_start_pose;
+    if (!status_.back_finished) {
+      marker.text = "BACK -> ";
+    }
+    marker.text += magic_enum::enum_name(status_.planner_type);
+    marker.text += " " + std::to_string(status_.current_path_idx) + "/" +
+                   std::to_string(status_.pull_out_path.partial_paths.size() - 1);
+    marker.lifetime = life_time;
+    planner_type_marker_array.markers.push_back(marker);
+    add(planner_type_marker_array);
+  }
 }
 }  // namespace behavior_path_planner
