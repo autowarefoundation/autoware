@@ -31,6 +31,7 @@ visualization_msgs::msg::MarkerArray make_debug_markers(
   marker.action = visualization_msgs::msg::Marker::ADD;
   marker.scale = scale;
   marker.id = i;
+  marker.lifetime = rclcpp::Duration::from_seconds(10.0);  // 10.0 is the lifetime in seconds.
 
   marker.ns = "initial_pose_transform_probability_color_marker";
   marker.pose = particle.initial_pose;
