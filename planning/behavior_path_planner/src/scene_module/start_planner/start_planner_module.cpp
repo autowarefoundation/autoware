@@ -817,10 +817,10 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   const auto lane = planner_data_->route_handler->getLaneletMapPtr()->laneletLayer.get(lane_id);
   const double lateral_offset = lanelet::utils::getLateralDistanceToCenterline(lane, start_pose);
 
-  if (distance_from_end < 0.0 && lateral_offset > parameters_->th_blinker_on_lateral_offset) {
+  if (distance_from_end < 0.0 && lateral_offset > parameters_->th_turn_signal_on_lateral_offset) {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
   } else if (
-    distance_from_end < 0.0 && lateral_offset < -parameters_->th_blinker_on_lateral_offset) {
+    distance_from_end < 0.0 && lateral_offset < -parameters_->th_turn_signal_on_lateral_offset) {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
   } else {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::DISABLE;
@@ -828,8 +828,52 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
 
   turn_signal.desired_start_point = start_pose;
   turn_signal.required_start_point = start_pose;
-  turn_signal.required_end_point = end_pose;
   turn_signal.desired_end_point = end_pose;
+
+  // check if intersection exists within search length
+  const bool is_near_intersection = std::invoke([&]() {
+    const double check_length = parameters_->intersection_search_length;
+    double accumulated_length = 0.0;
+    for (size_t i = 0; i < path.points.size() - 1; ++i) {
+      const auto & p = path.points.at(i);
+      for (const auto & lane : planner_data_->route_handler->getLaneletsFromIds(p.lane_ids)) {
+        const std::string turn_direction = lane.attributeOr("turn_direction", "else");
+        if (turn_direction == "right" || turn_direction == "left" || turn_direction == "straight") {
+          return true;
+        }
+      }
+      accumulated_length += tier4_autoware_utils::calcDistance2d(p, path.points.at(i + 1));
+      if (accumulated_length > check_length) {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  if (is_near_intersection) {
+    // offset required end pose with ration to activate turn signal for intersection
+    turn_signal.required_end_point = std::invoke([&]() {
+      const double length_start_to_end =
+        motion_utils::calcSignedArcLength(path.points, start_pose.position, end_pose.position);
+      const auto ratio = std::clamp(
+        parameters_->length_ratio_for_turn_signal_deactivation_near_intersection, 0.0, 1.0);
+
+      const double required_end_length = length_start_to_end * ratio;
+      double accumulated_length = 0.0;
+      const size_t start_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
+      for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
+        accumulated_length +=
+          tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+        if (accumulated_length > required_end_length) {
+          return path.points.at(i).point.pose;
+        }
+      }
+      // not found required end point
+      return end_pose;
+    });
+  } else {
+    turn_signal.required_end_point = end_pose;
+  }
 
   return turn_signal;
 }

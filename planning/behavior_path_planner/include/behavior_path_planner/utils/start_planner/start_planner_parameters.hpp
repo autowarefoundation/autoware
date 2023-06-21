@@ -28,7 +28,9 @@ struct StartPlannerParameters
   double th_arrived_distance;
   double th_stopped_velocity;
   double th_stopped_time;
-  double th_blinker_on_lateral_offset;
+  double th_turn_signal_on_lateral_offset;
+  double intersection_search_length;
+  double length_ratio_for_turn_signal_deactivation_near_intersection;
   double collision_check_margin;
   double collision_check_distance_from_end;
   // shift pull out
