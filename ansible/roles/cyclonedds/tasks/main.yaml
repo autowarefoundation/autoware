@@ -1,3 +1,10 @@
+- name: Install ros-{{ rosdistro }}-rmw-cyclonedds-cpp
+  ansible.builtin.apt:
+    name: ros-{{ rosdistro }}-rmw-cyclonedds-cpp
+    state: latest
+    update_cache: true
+  become: true
+
 - name: Create cyclonedds directory
   ansible.builtin.file:
     path: /opt/autoware/cyclonedds
