@@ -95,11 +95,12 @@ runs:
           echo "amd64_image: $amd64_image"
           echo "arm64_image: $arm64_image"
 
-          docker manifest create ${{ steps.set-image-name.outputs.image-name }}:$base_tag \
+          if docker manifest create ${{ steps.set-image-name.outputs.image-name }}:$base_tag \
             $amd64_image \
-            $arm64_image
+            $arm64_image; then
 
-          docker manifest push ${{ steps.set-image-name.outputs.image-name }}:$base_tag
+            docker manifest push ${{ steps.set-image-name.outputs.image-name }}:$base_tag
+          fi
         done
       env:
         ALL_TAGS: ${{ steps.get-all-tags.outputs.tags }}

@@ -84,7 +84,7 @@ runs:
         password: ${{ github.token }}
 
     - name: Build and push
-      uses: docker/bake-action@v2
+      uses: docker/bake-action@v3
       with:
         # Checking event_name for https://github.com/autowarefoundation/autoware/issues/2796
         push: ${{ github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch || github.event_name == 'push'}}
@@ -92,5 +92,6 @@ runs:
           docker/${{ inputs.bake-target }}/docker-bake.hcl
           ${{ steps.meta-devel.outputs.bake-file }}
           ${{ steps.meta-prebuilt.outputs.bake-file }}
+        provenance: false
         set: |
           ${{ inputs.build-args }}
