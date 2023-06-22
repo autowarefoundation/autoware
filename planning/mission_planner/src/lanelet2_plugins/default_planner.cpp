@@ -204,7 +204,7 @@ PlannerPlugin::MarkerArray DefaultPlanner::visualize(const LaneletRoute & route)
   std_msgs::msg::ColorRGBA cl_end;
   std_msgs::msg::ColorRGBA cl_normal;
   std_msgs::msg::ColorRGBA cl_goal;
-  set_color(&cl_route, 0.2, 0.4, 0.2, 0.05);
+  set_color(&cl_route, 0.8, 0.99, 0.8, 0.15);
   set_color(&cl_goal, 0.2, 0.4, 0.4, 0.05);
   set_color(&cl_end, 0.2, 0.2, 0.4, 0.05);
   set_color(&cl_normal, 0.2, 0.4, 0.2, 0.05);
