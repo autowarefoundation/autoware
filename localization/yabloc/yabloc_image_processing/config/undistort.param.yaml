@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    use_sensor_qos: true
+    width: 800
+    override_frame_id: "" # Value for overriding the camera's frame_id. If blank, frame_id of static_tf is not overwritten

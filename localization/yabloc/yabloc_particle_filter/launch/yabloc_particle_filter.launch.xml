@@ -1,0 +1,57 @@
+<launch>
+  <!-- predict update -->
+  <arg name="input_initialpose" default="/initialpose3d"/>
+  <arg name="twist_cov_for_prediction" default="/localization/twist_estimator/twist_with_covariance"/>
+  <let name="inout_weighted_particles" value="weighted_particles"/>
+  <let name="output_particles_marker_array" value="predicted_particles_marker"/>
+  <node pkg="yabloc_particle_filter" exec="predictor_node" name="particle_predictor" output="screen" args="--ros-args --log-level info">
+    <param from="$(var predictor_param_path)"/>
+
+    <remap from="~/input/initialpose" to="$(var input_initialpose)"/>
+    <remap from="~/input/twist_with_covariance" to="$(var twist_cov_for_prediction)"/>
+    <remap from="~/input/height" to="/localization/yabloc/map/height"/>
+    <remap from="~/input/weighted_particles" to="weighted_particles"/>
+    <remap from="~/output/pose_with_covariance" to="/localization/pose_estimator/pose_with_covariance"/>
+    <remap from="~/output/pose" to="pose"/>
+    <remap from="~/output/predicted_particles" to="predicted_particles"/>
+    <remap from="~/debug/init_marker" to="init_maker"/>
+    <remap from="~/debug/particles_marker_array" to="$(var output_particles_marker_array)"/>
+  </node>
+
+  <!-- camera  correction -->
+  <arg name="input_projected_line_segments_cloud" default="/localization/yabloc/image_processing/projected_line_segments_cloud"/>
+  <arg name="input_ll2_road_marking" default="/localization/yabloc/map/ll2_road_marking"/>
+  <arg name="input_ll2_bounding_box" default="/localization/yabloc/map/ll2_bounding_box"/>
+  <node pkg="yabloc_particle_filter" exec="camera_particle_corrector_node" name="camera_corrector" output="screen" args="--ros-args --log-level warn">
+    <param from="$(var camera_particle_corrector_param_path)"/>
+
+    <remap from="~/input/predicted_particles" to="predicted_particles"/>
+    <remap from="~/input/line_segments_cloud" to="$(var input_projected_line_segments_cloud)"/>
+    <remap from="~/input/ll2_road_marking" to="$(var input_ll2_road_marking)"/>
+    <remap from="~/input/ll2_bounding_box" to="$(var input_ll2_bounding_box)"/>
+    <remap from="~/input/pose" to="pose"/>
+
+    <remap from="~/output/weighted_particles" to="$(var inout_weighted_particles)"/>
+    <remap from="~/debug/cost_map_range" to="cost_map_range"/>
+    <remap from="~/debug/cost_map_image" to="cost_map_image"/>
+    <remap from="~/debug/match_image" to="match_image"/>
+    <remap from="~/debug/scored_cloud" to="scored_cloud"/>
+    <remap from="~/debug/scored_post_cloud" to="scored_post_cloud"/>
+    <remap from="~/debug/state_string" to="state_string"/>
+    <remap from="~/debug/particles_marker_array" to="camera_particles_marker"/>
+    <remap from="~/switch_srv" to="camera_corrector_switch"/>
+  </node>
+
+  <!-- gnss correction -->
+  <node pkg="yabloc_particle_filter" exec="gnss_particle_corrector_node" name="gnss_corrector" output="screen" args="--ros-args --log-level warn">
+    <param from="$(var gnss_particle_corrector_param_path)"/>
+
+    <remap from="~/input/predicted_particles" to="predicted_particles"/>
+    <remap from="~/input/height" to="/localization/yabloc/map/height"/>
+    <remap from="~/input/pose_with_covariance" to="/sensing/gnss/pose_with_covariance"/>
+
+    <remap from="~/output/weighted_particles" to="$(var inout_weighted_particles)"/>
+    <remap from="~/debug/gnss_range_marker" to="gnss_range_marker"/>
+    <remap from="~/debug/particles_marker_array" to="gnss_particles_marker"/>
+  </node>
+</launch>

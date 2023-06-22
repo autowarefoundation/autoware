@@ -21,6 +21,10 @@
   <exec_depend>pointcloud_preprocessor</exec_depend>
   <exec_depend>pose_initializer</exec_depend>
   <exec_depend>topic_tools</exec_depend>
+  <exec_depend>yabloc_common</exec_depend>
+  <exec_depend>yabloc_image_processing</exec_depend>
+  <exec_depend>yabloc_particle_filter</exec_depend>
+  <exec_depend>yabloc_pose_initializer</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

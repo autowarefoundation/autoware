@@ -1,0 +1,31 @@
+<launch>
+  <arg name="input_overlayed_pose" description=""/>
+  <let name="input_ground" value="/localization/yabloc/map/ground"/>
+  <let name="input_projected_line_segments_cloud" value="/localization/yabloc/image_processing/projected_line_segments_cloud"/>
+  <let name="input_ll2_sign_board" value="/localization/yabloc/map/ll2_sign_board"/>
+  <let name="input_ll2_road_marking" value="/localization/yabloc/map/ll2_road_marking"/>
+  <let name="input_debug_line_segments" value="debug/line_segments_cloud"/>
+  <arg name="output_image_with_colored_line_segments" default="image_with_colored_line_segments"/>
+  <arg name="resized_image" description=""/>
+  <arg name="resized_info" description=""/>
+
+  <!-- lanelet2 overlay monitor -->
+  <node name="lanelet2_overlay" pkg="yabloc_image_processing" exec="lanelet2_overlay_node" output="screen" args="--ros-args --log-level warn">
+    <remap from="~/input/image_raw" to="$(var resized_image)"/>
+    <remap from="~/input/camera_info" to="$(var resized_info)"/>
+    <remap from="~/input/pose" to="$(var input_overlayed_pose)"/>
+    <remap from="~/input/ground" to="$(var input_ground)"/>
+    <remap from="~/input/projected_line_segments_cloud" to="$(var input_projected_line_segments_cloud)"/>
+    <remap from="~/input/ll2_sign_board" to="$(var input_ll2_sign_board)"/>
+    <remap from="~/input/ll2_road_marking" to="$(var input_ll2_road_marking)"/>
+    <remap from="~/debug/projected_marker" to="projected_marker"/>
+    <remap from="~/debug/lanelet2_overlay_image" to="lanelet2_overlay_image"/>
+  </node>
+
+  <!-- line segments overlay monitor -->
+  <node name="line_segments_overlay" pkg="yabloc_image_processing" exec="line_segments_overlay_node" output="screen">
+    <remap from="~/input/image_raw" to="$(var resized_image)"/>
+    <remap from="~/input/line_segments" to="$(var input_debug_line_segments)"/>
+    <remap from="~/debug/image_with_colored_line_segments" to="$(var output_image_with_colored_line_segments)"/>
+  </node>
+</launch>

@@ -1,0 +1,17 @@
+/**:
+  ros__parameters:
+    # Declared in AbstractParticleCorrector
+    acceptable_max_delay: 1.0
+    visualize: false
+
+    mahalanobis_distance_threshold: 30.0 # If the distance to GNSS observation exceeds this, the correction is skipped.
+    #
+    for_fixed/max_weight: 5.0
+    for_fixed/flat_radius: 0.5
+    for_fixed/max_radius: 10.0
+    for_fixed/min_weight: 0.5
+    #
+    for_not_fixed/flat_radius: 5.0
+    for_not_fixed/max_radius: 20.0
+    for_not_fixed/min_weight: 0.5
+    for_not_fixed/max_weight: 1.0

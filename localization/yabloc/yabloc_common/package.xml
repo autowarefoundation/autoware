@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>yabloc_common</name>
+  <version>0.1.0</version>
+  <description>YabLoc common library</description>
+  <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+  <depend>autoware_auto_mapping_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>geographiclib</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_core</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>lanelet2_io</depend>
+  <depend>libgoogle-glog-dev</depend>
+  <depend>pcl_conversions</depend>
+  <depend>rcl_interfaces</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>signal_processing</depend>
+  <depend>sophus</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>ublox_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

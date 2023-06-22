@@ -6,6 +6,7 @@
   <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
     <param from="$(var common_config_file)"/>
     <param from="$(var config_file)"/>
+    <remap from="yabloc_align" to="/localization/yabloc/initializer/yabloc_align_srv"/>
     <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
     <remap from="stop_check_twist" to="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
     <remap from="gnss_pose_cov" to="$(var sub_gnss_pose_cov)"/>

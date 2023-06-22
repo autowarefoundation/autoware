@@ -1,0 +1,52 @@
+<launch>
+  <arg name="src_image" default="/sensing/camera/traffic_light/image_raw/compressed"/>
+  <arg name="src_info" default="/sensing/camera/traffic_light/camera_info"/>
+  <arg name="resized_image" default="/sensing/camera/undistorted/image_raw/relay"/>
+  <arg name="resized_info" default="/sensing/camera/undistorted/camera_info"/>
+
+  <!-- undistort -->
+  <node name="undistort" pkg="yabloc_image_processing" exec="undistort_node" output="screen" args="--ros-args --log-level warn">
+    <param from="$(var undistort_param_path)"/>
+
+    <remap from="~/input/image_raw" to="$(var src_image)"/>
+    <remap from="~/input/camera_info" to="$(var src_info)"/>
+    <remap from="~/output/resized_image" to="$(var resized_image)"/>
+    <remap from="~/output/resized_info" to="$(var resized_info)"/>
+  </node>
+
+  <!-- line segment detector -->
+  <arg name="output_image_with_line_segments" default="image_with_line_segments"/>
+  <arg name="output_line_segments_cloud" default="line_segments_cloud"/>
+  <node name="line_segment_detector" pkg="yabloc_image_processing" exec="line_segment_detector_node" output="screen" args="--ros-args --log-level warn">
+    <remap from="~/input/image_raw" to="$(var resized_image)"/>
+    <remap from="~/debug/image_with_line_segments" to="$(var output_image_with_line_segments)"/>
+    <remap from="~/output/line_segments_cloud" to="$(var output_line_segments_cloud)"/>
+  </node>
+
+  <!-- graph based segmentation -->
+  <arg name="output_graph_segmented" default="graph_segmented"/>
+  <arg name="output_segmented_image" default="segmented_image"/>
+  <node name="graph_segment" pkg="yabloc_image_processing" exec="graph_segment_node" output="screen" args="--ros-args --log-level warn">
+    <param from="$(var graph_segment_param_path)"/>
+    <remap from="~/input/image_raw" to="$(var resized_image)"/>
+    <remap from="~/output/mask_image" to="$(var output_graph_segmented)"/>
+    <remap from="~/debug/segmented_image" to="$(var output_segmented_image)"/>
+  </node>
+
+  <!-- segment fitler -->
+  <arg name="input_graph_segmented" default="graph_segmented"/>
+  <arg name="input_line_segments_cloud" default="line_segments_cloud"/>
+  <arg name="output_projected_line_segments_cloud" default="/localization/yabloc/image_processing/projected_line_segments_cloud"/>
+  <arg name="output_projected_image" default="/localization/yabloc/image_processing/projected_image"/>
+  <arg name="output_debug_line_segments" default="debug/line_segments_cloud"/>
+  <node name="segment_filter" pkg="yabloc_image_processing" exec="segment_filter_node" output="screen" args="--ros-args --log-level info">
+    <param from="$(var segment_filter_param_path)"/>
+
+    <remap from="~/input/line_segments_cloud" to="$(var input_line_segments_cloud)"/>
+    <remap from="~/input/graph_segmented" to="$(var input_graph_segmented)"/>
+    <remap from="~/input/camera_info" to="$(var resized_info)"/>
+    <remap from="~/output/projected_line_segments_cloud" to="$(var output_projected_line_segments_cloud)"/>
+    <remap from="~/debug/projected_image" to="$(var output_projected_image)"/>
+    <remap from="~/debug/debug_line_segments" to="$(var output_debug_line_segments)"/>
+  </node>
+</launch>

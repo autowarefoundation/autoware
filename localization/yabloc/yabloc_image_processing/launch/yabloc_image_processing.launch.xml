@@ -1,0 +1,23 @@
+<launch>
+  <arg name="src_image"/>
+  <arg name="src_info"/>
+  <arg name="resized_image" default="undistorted/image_raw"/>
+  <arg name="resized_info" default="undistorted/camera_info"/>
+  <arg name="input_pose" default="undistorted"/>
+  <arg name="validation" default="true"/>
+
+  <include file="$(find-pkg-share yabloc_image_processing)/launch/image_processing.launch.xml">
+    <arg name="src_image" value="$(var src_image)"/>
+    <arg name="src_info" value="$(var src_info)"/>
+    <arg name="resized_image" value="$(var resized_image)"/>
+    <arg name="resized_info" value="$(var resized_info)"/>
+  </include>
+
+  <group if="$(var validation)">
+    <include file="$(find-pkg-share yabloc_image_processing)/launch/overlay.launch.xml">
+      <arg name="input_overlayed_pose" value="$(var input_pose)"/>
+      <arg name="resized_image" value="$(var resized_image)"/>
+      <arg name="resized_info" value="$(var resized_info)"/>
+    </include>
+  </group>
+</launch>

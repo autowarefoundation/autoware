@@ -1,0 +1,37 @@
+<launch>
+  <arg name="input_particle_pose" default="/localization/pose_twist_fusion_filter/pose"/>
+
+  <!-- ground server -->
+  <arg name="output_height" default="height"/>
+  <arg name="output_ground" default="ground"/>
+  <arg name="output_ground_markers" default="ground_markers"/>
+  <arg name="output_ground_status" default="ground_status"/>
+  <arg name="output_near_cloud" default="near_cloud"/>
+  <node name="ground_server" pkg="yabloc_common" exec="ground_server_node" output="screen" args="--ros-args --log-level warn">
+    <param from="$(var ground_server_param_path)"/>
+
+    <remap from="~/input/vector_map" to="/map/vector_map"/>
+    <remap from="~/input/pose" to="$(var input_particle_pose)"/>
+    <remap from="~/output/height" to="$(var output_height)"/>
+    <remap from="~/output/ground" to="$(var output_ground)"/>
+    <remap from="~/debug/ground_markers" to="$(var output_ground_markers)"/>
+    <remap from="~/debug/ground_status" to="$(var output_ground_status)"/>
+    <remap from="~/debug/near_cloud" to="$(var output_near_cloud)"/>
+  </node>
+
+  <!-- lanelet2 -->
+  <arg name="output_ll2_road_marking" default="ll2_road_marking"/>
+  <arg name="output_ll2_sign_board" default="ll2_sign_board"/>
+  <arg name="output_ll2_bounding_box" default="ll2_bounding_box"/>
+  <arg name="output_sign_board_marker" default="sign_board_marker"/>
+
+  <node name="ll2_decomposer" pkg="yabloc_common" exec="ll2_decomposer_node" output="screen" args="--ros-args --log-level warn">
+    <param from="$(var ll2_decomposer_param_path)"/>
+
+    <remap from="~/input/vector_map" to="/map/vector_map"/>
+    <remap from="~/output/ll2_road_marking" to="$(var output_ll2_road_marking)"/>
+    <remap from="~/output/ll2_sign_board" to="$(var output_ll2_sign_board)"/>
+    <remap from="~/output/ll2_bounding_box" to="$(var output_ll2_bounding_box)"/>
+    <remap from="~/debug/sign_board_marker" to="$(var output_sign_board_marker)"/>
+  </node>
+</launch>

@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    # Declared in AbstractParticleCorrector
+    acceptable_max_delay: 1.0
+    visualize: false
+
+    # Declared in ll2_cost_map
+    image_size: 800 # cost map image made by lanelet2
+    max_range: 40.0 # [m] a cost map scale size
+    gamma: 5.0 # cost map intensity gradient
+
+    min_prob: 0.1 # minimum weight of particles
+    far_weight_gain: 0.001 # exp(-far_weight_gain_ * squared_norm) is multiplied each measurement
+    enabled_at_first: true # developing feature

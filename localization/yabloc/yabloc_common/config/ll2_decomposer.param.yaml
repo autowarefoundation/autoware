@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    road_marking_labels: [cross_walk, zebra_marking, line_thin, line_thick, pedestrian_marking, stop_line, road_border]
+    sign_board_labels: [sign-board]
+    bounding_box_labels: [none]

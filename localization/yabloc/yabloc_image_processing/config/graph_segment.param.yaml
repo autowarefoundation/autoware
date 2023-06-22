@@ -1,0 +1,18 @@
+/**:
+  ros__parameters:
+      # graph_node selects a road surface area from around this height
+      target_height_ratio: 0.85
+
+      #
+      target_candidate_box_width: 15
+
+      # graph_segment_node will pickup additional road-like areas
+      pickup_additional_graph_segment: true
+
+      # used when the pickup_additional_graph_segment: true
+      similarity_score_threshold: 0.8
+
+      # parameters for cv::ximgproc::segmentation
+      sigma: 0.5
+      k: 300.0
+      min_size: 100.0

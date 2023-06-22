@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    min_segment_length:  1.5    # if it is negative, it is unlimited
+    max_segment_distance:  30.0 # if it is negative, it is unlimited
+    max_lateral_distance: 10.0  # if it is negative, it is unlimited
+    publish_image_with_segment_for_debug: true
+    max_range: 20.0
+    image_size: 800 # debug

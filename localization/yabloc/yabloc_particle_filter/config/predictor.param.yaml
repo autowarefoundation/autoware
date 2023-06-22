@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    visualize: true
+
+    static_linear_covariance: 0.04
+    static_angular_covariance: 0.006
+
+    resampling_interval_seconds: 1.0
+    num_of_particles: 500
+    prediction_rate: 50.0
+
+    cov_xx_yy: [2.0,0.25]
