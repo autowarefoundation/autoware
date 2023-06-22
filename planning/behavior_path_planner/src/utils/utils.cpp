@@ -2388,7 +2388,7 @@ PathWithLaneId getCenterLinePathFromRootLanelet(
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
-  const BehaviorPathPlannerParameters & parameter, const double optional_length)
+  const BehaviorPathPlannerParameters & parameter)
 {
   PathWithLaneId reference_path;
 
@@ -2401,11 +2401,12 @@ PathWithLaneId getCenterLinePath(
   const double s_backward = std::max(0., s - backward_path_length);
   double s_forward = s + forward_path_length;
 
+#ifdef USE_OLD_ARCHITECTURE
   const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
   const auto shift_intervals =
     route_handler.getLateralIntervalsToPreferredLane(lanelet_sequence.back());
   const double lane_change_buffer =
-    utils::calcMinimumLaneChangeLength(parameter, shift_intervals, optional_length);
+    utils::calcMinimumLaneChangeLength(parameter, shift_intervals, 0.0);
 
   if (route_handler.isDeadEndLanelet(lanelet_sequence.back())) {
     const double forward_length = std::max(lane_length - lane_change_buffer, 0.0);
@@ -2418,10 +2419,22 @@ PathWithLaneId getCenterLinePath(
     const double forward_length = std::max(goal_arc_coordinates.length - lane_change_buffer, 0.0);
     s_forward = std::min(s_forward, forward_length);
   }
+#else
+  if (route_handler.isDeadEndLanelet(lanelet_sequence.back())) {
+    const auto lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
+    s_forward = std::clamp(s_forward, 0.0, lane_length);
+  }
+
+  if (route_handler.isInGoalRouteSection(lanelet_sequence.back())) {
+    const auto goal_arc_coordinates =
+      lanelet::utils::getArcCoordinates(lanelet_sequence, route_handler.getGoalPose());
+    s_forward = std::clamp(s_forward, 0.0, goal_arc_coordinates.length);
+  }
+#endif
 
   const auto raw_path_with_lane_id =
     route_handler.getCenterLinePath(lanelet_sequence, s_backward, s_forward, true);
-  const auto resampled_path_with_lane_id = motion_utils::resamplePath(
+  auto resampled_path_with_lane_id = motion_utils::resamplePath(
     raw_path_with_lane_id, parameter.input_path_interval, parameter.enable_akima_spline_first);
 
   // convert centerline, which we consider as CoG center,  to rear wheel center

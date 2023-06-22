@@ -152,6 +152,19 @@ void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output)
     *output.path, expanded_lanes, false, common_parameters.vehicle_length, planner_data_);
 }
 
+void NormalLaneChange::insertStopPoint(PathWithLaneId & path)
+{
+  const auto shift_intervals = getRouteHandler()->getLateralIntervalsToPreferredLane(
+    status_.lane_change_path.reference_lanelets.back());
+  const double lane_change_buffer =
+    utils::calcMinimumLaneChangeLength(getCommonParam(), shift_intervals, 0.0);
+  constexpr double stop_point_buffer{1.0};
+  const auto stopping_distance = std::max(
+    motion_utils::calcArcLength(path.points) - lane_change_buffer - stop_point_buffer, 0.0);
+
+  const auto stop_point = utils::insertStopPoint(stopping_distance, path);
+}
+
 PathWithLaneId NormalLaneChange::getReferencePath() const
 {
   return utils::getCenterLinePathFromRootLanelet(status_.lane_change_lanes.front(), planner_data_);

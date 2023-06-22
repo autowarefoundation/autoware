@@ -336,7 +336,7 @@ PathWithLaneId getCenterLinePathFromRootLanelet(
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
-  const BehaviorPathPlannerParameters & parameter, const double optional_length = 0.0);
+  const BehaviorPathPlannerParameters & parameter);
 
 PathWithLaneId setDecelerationVelocity(
   const RouteHandler & route_handler, const PathWithLaneId & input,
