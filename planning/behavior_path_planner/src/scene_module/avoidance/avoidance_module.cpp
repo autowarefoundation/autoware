@@ -879,11 +879,13 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
   const auto & base_link2front = planner_data_->parameters.base_link2front;
   const auto & base_link2rear = planner_data_->parameters.base_link2rear;
 
+  const auto is_forward_object = [](const auto & object) { return object.longitudinal > 0.0; };
+
   AvoidLineArray avoid_lines;
   for (auto & o : data.target_objects) {
     if (!o.avoid_margin) {
       o.reason = AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN;
-      if (o.avoid_required) {
+      if (o.avoid_required && is_forward_object(o)) {
         break;
       } else {
         continue;
@@ -894,7 +896,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
     const auto shift_length = helper_.getShiftLength(o, is_object_on_right, o.avoid_margin.get());
     if (utils::avoidance::isSameDirectionShift(is_object_on_right, shift_length)) {
       o.reason = AvoidanceDebugFactor::SAME_DIRECTION_SHIFT;
-      if (o.avoid_required) {
+      if (o.avoid_required && is_forward_object(o)) {
         break;
       } else {
         continue;
@@ -931,7 +933,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
         // is not zero.
         if (!data.avoiding_now) {
           o.reason = AvoidanceDebugFactor::REMAINING_DISTANCE_LESS_THAN_ZERO;
-          if (o.avoid_required) {
+          if (o.avoid_required && is_forward_object(o)) {
             break;
           } else {
             continue;
@@ -945,7 +947,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
       if (required_jerk > parameters_->max_lateral_jerk) {
         if (!data.avoiding_now) {
           o.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
-          if (o.avoid_required) {
+          if (o.avoid_required && is_forward_object(o)) {
             break;
           } else {
             continue;
