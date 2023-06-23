@@ -117,14 +117,6 @@ bool AvoidanceModule::isExecutionRequested() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionRequested");
 
-#ifndef USE_OLD_ARCHITECTURE
-  const auto is_driving_forward =
-    motion_utils::isDrivingForward(getPreviousModuleOutput().path->points);
-  if (!is_driving_forward || !(*is_driving_forward)) {
-    return false;
-  }
-#endif
-
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
   }

@@ -39,8 +39,12 @@ void StartPlannerModuleManager::updateModuleParams(
 
   [[maybe_unused]] std::string ns = name_ + ".";
 
-  std::for_each(registered_modules_.begin(), registered_modules_.end(), [&p](const auto & m) {
+  std::for_each(registered_modules_.begin(), registered_modules_.end(), [&](const auto & m) {
     m->updateModuleParams(p);
+    m->setInitialIsSimultaneousExecutableAsApprovedModule(
+      enable_simultaneous_execution_as_approved_module_);
+    m->setInitialIsSimultaneousExecutableAsCandidateModule(
+      enable_simultaneous_execution_as_candidate_module_);
   });
 }
 }  // namespace behavior_path_planner
