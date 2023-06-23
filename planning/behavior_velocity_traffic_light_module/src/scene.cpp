@@ -442,9 +442,15 @@ bool TrafficLightModule::getHighestConfidenceTrafficSignal(
     }
   }
   if (!found) {
+    std::string not_found_traffic_ids{""};
+    for (size_t i = 0; i < traffic_lights.size(); ++i) {
+      const int id = static_cast<lanelet::ConstLineString3d>(traffic_lights.at(i)).id();
+      not_found_traffic_ids += (i != 0 ? "," : "") + std::to_string(id);
+    }
+
     RCLCPP_WARN_THROTTLE(
-      logger_, *clock_, 5000 /* ms */, "cannot find traffic light lamp state (%s).",
-      reason.c_str());
+      logger_, *clock_, 5000 /* ms */, "cannot find traffic light lamp state (%s) due to %s.",
+      not_found_traffic_ids.c_str(), reason.c_str());
     return false;
   }
   return true;
