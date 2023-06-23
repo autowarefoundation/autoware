@@ -3178,6 +3178,7 @@ void AvoidanceModule::updateDebugMarker(
   add(createOtherObjectsMarkerArray(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE));
   add(createOtherObjectsMarkerArray(data.other_objects, AvoidanceDebugFactor::NOT_PARKING_OBJECT));
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("MovingObject")));
+  add(createOtherObjectsMarkerArray(data.other_objects, std::string("CrosswalkUser")));
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("OutOfTargetArea")));
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("NotNeedAvoidance")));
   add(createOtherObjectsMarkerArray(data.other_objects, std::string("LessThanExecutionThreshold")));

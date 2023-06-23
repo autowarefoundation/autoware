@@ -28,6 +28,12 @@ using behavior_path_planner::PlannerData;
 
 bool isOnRight(const ObjectData & obj);
 
+bool isVehicleTypeObject(const ObjectData & object);
+
+bool isWithinCrosswalk(
+  const ObjectData & object,
+  const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs);
+
 bool isTargetObjectType(
   const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters);
 
