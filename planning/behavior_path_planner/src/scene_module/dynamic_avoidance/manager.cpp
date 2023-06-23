@@ -49,6 +49,10 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
     updateParam<bool>(parameters, ns + "pedestrian", p->avoid_pedestrian);
 
     updateParam<double>(parameters, ns + "min_obstacle_vel", p->min_obstacle_vel);
+
+    updateParam<int>(
+      parameters, ns + "successive_num_to_entry_dynamic_avoidance_condition",
+      p->successive_num_to_entry_dynamic_avoidance_condition);
   }
 
   {  // drivable_area_generation

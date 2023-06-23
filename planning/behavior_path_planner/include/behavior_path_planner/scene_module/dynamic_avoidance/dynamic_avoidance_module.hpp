@@ -47,6 +47,7 @@ struct DynamicAvoidanceParameters
   bool avoid_motorcycle{false};
   bool avoid_pedestrian{false};
   double min_obstacle_vel{0.0};
+  int successive_num_to_entry_dynamic_avoidance_condition{0};
 
   // drivable area generation
   double lat_offset_from_obstacle{0.0};
@@ -87,6 +88,24 @@ public:
 
     bool is_left;
   };
+  struct DynamicAvoidanceObjectCandidate
+  {
+    DynamicAvoidanceObject object;
+    int alive_counter;
+
+    static std::optional<DynamicAvoidanceObjectCandidate> getObjectFromUuid(
+      const std::vector<DynamicAvoidanceObjectCandidate> & objects, const std::string & target_uuid)
+    {
+      const auto itr = std::find_if(objects.begin(), objects.end(), [&](const auto & object) {
+        return object.object.uuid == target_uuid;
+      });
+
+      if (itr == objects.end()) {
+        return std::nullopt;
+      }
+      return *itr;
+    }
+  };
 
 #ifdef USE_OLD_ARCHITECTURE
   DynamicAvoidanceModule(
@@ -119,12 +138,14 @@ public:
 
 private:
   bool isLabelTargetObstacle(const uint8_t label) const;
-  std::vector<DynamicAvoidanceObject> calcTargetObjects() const;
+  std::vector<DynamicAvoidanceObjectCandidate> calcTargetObjectsCandidate() const;
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
   std::optional<tier4_autoware_utils::Polygon2d> calcDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
 
+  std::vector<DynamicAvoidanceModule::DynamicAvoidanceObjectCandidate>
+    prev_target_objects_candidate_;
   std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> target_objects_;
   // std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> prev_target_objects_;
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;

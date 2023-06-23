@@ -192,7 +192,19 @@ bool DynamicAvoidanceModule::isExecutionReady() const
 
 void DynamicAvoidanceModule::updateData()
 {
-  target_objects_ = calcTargetObjects();
+  // calculate target objects candidate
+  const auto target_objects_candidate = calcTargetObjectsCandidate();
+  prev_target_objects_candidate_ = target_objects_candidate;
+
+  // calculate target objects considering flickering suppress
+  target_objects_.clear();
+  for (const auto & target_object_candidate : target_objects_candidate) {
+    if (
+      parameters_->successive_num_to_entry_dynamic_avoidance_condition <=
+      target_object_candidate.alive_counter) {
+      target_objects_.push_back(target_object_candidate.object);
+    }
+  }
 }
 
 ModuleStatus DynamicAvoidanceModule::updateState()
@@ -293,8 +305,8 @@ bool DynamicAvoidanceModule::isLabelTargetObstacle(const uint8_t label) const
   return false;
 }
 
-std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject>
-DynamicAvoidanceModule::calcTargetObjects() const
+std::vector<DynamicAvoidanceModule::DynamicAvoidanceObjectCandidate>
+DynamicAvoidanceModule::calcTargetObjectsCandidate() const
 {
   const auto prev_module_path = getPreviousModuleOutput().path;
   const auto & predicted_objects = planner_data_->dynamic_object->objects;
@@ -329,7 +341,7 @@ DynamicAvoidanceModule::calcTargetObjects() const
   // 4. check if object will cut into the ego lane.
   // NOTE: The oncoming object will be ignored.
   constexpr double epsilon_path_lat_diff = 0.3;
-  std::vector<DynamicAvoidanceObject> output_objects;
+  std::vector<DynamicAvoidanceObjectCandidate> output_objects_candidate;
   for (const bool is_left : {true, false}) {
     for (const auto & object : (is_left ? objects_in_left_lanes : objects_in_right_lanes)) {
       const auto reliable_predicted_path = std::max_element(
@@ -358,13 +370,24 @@ DynamicAvoidanceModule::calcTargetObjects() const
         continue;
       }
 
+      // get previous object if it exists
+      const auto prev_target_object_candidate = DynamicAvoidanceObjectCandidate::getObjectFromUuid(
+        prev_target_objects_candidate_, object.uuid);
+      const int alive_counter =
+        prev_target_object_candidate
+          ? std::min(
+              parameters_->successive_num_to_entry_dynamic_avoidance_condition,
+              prev_target_object_candidate->alive_counter + 1)
+          : 0;
+
       auto target_object = object;
       target_object.is_left = is_left;
-      output_objects.push_back(target_object);
+      output_objects_candidate.push_back(
+        DynamicAvoidanceObjectCandidate{target_object, alive_counter});
     }
   }
 
-  return output_objects;
+  return output_objects_candidate;
 }
 
 std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> DynamicAvoidanceModule::getAdjacentLanes(

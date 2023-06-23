@@ -743,6 +743,8 @@ DynamicAvoidanceParameters BehaviorPathPlannerNode::getDynamicAvoidanceParam()
     p.avoid_motorcycle = declare_parameter<bool>(ns + "motorcycle");
     p.avoid_pedestrian = declare_parameter<bool>(ns + "pedestrian");
     p.min_obstacle_vel = declare_parameter<double>(ns + "min_obstacle_vel");
+    p.successive_num_to_entry_dynamic_avoidance_condition =
+      declare_parameter<int>(ns + "successive_num_to_entry_dynamic_avoidance_condition");
   }
 
   {  // drivable_area_generation
