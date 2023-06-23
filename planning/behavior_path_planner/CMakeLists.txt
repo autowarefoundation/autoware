@@ -7,7 +7,7 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-set(COMPILE_WITH_OLD_ARCHITECTURE TRUE)
+set(COMPILE_WITH_OLD_ARCHITECTURE FALSE)
 
 set(common_src
   src/steering_factor_interface.cpp
