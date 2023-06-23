@@ -17,6 +17,7 @@
 
 #include "autoware_point_types/types.hpp"
 #include "pointcloud_preprocessor/filter.hpp"
+#include "pointcloud_preprocessor/transform_info.hpp"
 
 #include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 

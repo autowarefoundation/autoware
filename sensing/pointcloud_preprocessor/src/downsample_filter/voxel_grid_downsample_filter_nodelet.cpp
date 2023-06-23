@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@
 
 #include "pointcloud_preprocessor/downsample_filter/voxel_grid_downsample_filter_nodelet.hpp"
 
+#include "pointcloud_preprocessor/downsample_filter/faster_voxel_grid_downsample_filter.hpp"
+
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/segment_differences.h>
@@ -64,9 +66,9 @@ VoxelGridDownsampleFilterComponent::VoxelGridDownsampleFilterComponent(
 {
   // set initial parameters
   {
-    voxel_size_x_ = static_cast<double>(declare_parameter("voxel_size_x", 0.3));
-    voxel_size_y_ = static_cast<double>(declare_parameter("voxel_size_y", 0.3));
-    voxel_size_z_ = static_cast<double>(declare_parameter("voxel_size_z", 0.1));
+    voxel_size_x_ = static_cast<float>(declare_parameter("voxel_size_x", 0.3));
+    voxel_size_y_ = static_cast<float>(declare_parameter("voxel_size_y", 0.3));
+    voxel_size_z_ = static_cast<float>(declare_parameter("voxel_size_z", 0.1));
   }
 
   using std::placeholders::_1;
@@ -74,6 +76,8 @@ VoxelGridDownsampleFilterComponent::VoxelGridDownsampleFilterComponent(
     std::bind(&VoxelGridDownsampleFilterComponent::paramCallback, this, _1));
 }
 
+// TODO(atsushi421): Temporary Implementation: Delete this function definition when all the filter
+// nodes conform to new API.
 void VoxelGridDownsampleFilterComponent::filter(
   const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output)
 {
@@ -93,6 +97,19 @@ void VoxelGridDownsampleFilterComponent::filter(
 
   pcl::toROSMsg(*pcl_output, output);
   output.header = input->header;
+}
+
+// TODO(atsushi421): Temporary Implementation: Rename this function to `filter()` when all the
+// filter nodes conform to new API. Then delete the old `filter()` defined above.
+void VoxelGridDownsampleFilterComponent::faster_filter(
+  const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
+  PointCloud2 & output, const TransformInfo & transform_info)
+{
+  std::scoped_lock lock(mutex_);
+  FasterVoxelGridDownsampleFilter faster_voxel_filter;
+  faster_voxel_filter.set_voxel_size(voxel_size_x_, voxel_size_y_, voxel_size_z_);
+  faster_voxel_filter.set_field_offsets(input);
+  faster_voxel_filter.filter(input, output, transform_info, this->get_logger());
 }
 
 rcl_interfaces::msg::SetParametersResult VoxelGridDownsampleFilterComponent::paramCallback(

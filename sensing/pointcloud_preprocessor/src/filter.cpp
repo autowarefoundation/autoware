@@ -124,7 +124,8 @@ void pointcloud_preprocessor::Filter::subscribe(const std::string & filter_name)
   // TODO(sykwer): Change the corresponding node to subscribe to `faster_input_indices_callback`
   // each time a child class supports the faster version.
   // When all the child classes support the faster version, this workaround is deleted.
-  std::set<std::string> supported_nodes = {"CropBoxFilter", "RingOutlierFilter"};
+  std::set<std::string> supported_nodes = {
+    "CropBoxFilter", "RingOutlierFilter", "VoxelGridDownsampleFilter"};
   auto callback = supported_nodes.find(filter_name) != supported_nodes.end()
                     ? &Filter::faster_input_indices_callback
                     : &Filter::input_indices_callback;
