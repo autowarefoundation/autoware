@@ -78,6 +78,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       create_publisher<MarkerArray>("~/maximum_drivable_area", 1);
   }
 
+  debug_turn_signal_info_publisher_ = create_publisher<MarkerArray>("~/debug/turn_signal_info", 1);
+
   bound_publisher_ = create_publisher<MarkerArray>("~/debug/bound", 1);
 
   // subscriber
@@ -1339,12 +1341,13 @@ void BehaviorPathPlannerNode::computeTurnSignal(
   const BehaviorModuleOutput & output)
 {
   TurnIndicatorsCommand turn_signal;
+  TurnSignalDebugData debug_data;
   HazardLightsCommand hazard_signal;
   if (output.turn_signal_info.hazard_signal.command == HazardLightsCommand::ENABLE) {
     turn_signal.command = TurnIndicatorsCommand::DISABLE;
     hazard_signal.command = output.turn_signal_info.hazard_signal.command;
   } else {
-    turn_signal = planner_data->getTurnSignal(path, output.turn_signal_info);
+    turn_signal = planner_data->getTurnSignal(path, output.turn_signal_info, debug_data);
     hazard_signal.command = HazardLightsCommand::DISABLE;
   }
   turn_signal.stamp = get_clock()->now();
@@ -1352,6 +1355,7 @@ void BehaviorPathPlannerNode::computeTurnSignal(
   turn_signal_publisher_->publish(turn_signal);
   hazard_signal_publisher_->publish(hazard_signal);
 
+  publish_turn_signal_debug_data(debug_data);
   publish_steering_factor(planner_data, turn_signal);
 }
 
@@ -1384,6 +1388,77 @@ void BehaviorPathPlannerNode::publish_steering_factor(
     steering_factor_interface_ptr_->clearSteeringFactors();
   }
   steering_factor_interface_ptr_->publishSteeringFactor(get_clock()->now());
+}
+
+void BehaviorPathPlannerNode::publish_turn_signal_debug_data(const TurnSignalDebugData & debug_data)
+{
+  MarkerArray marker_array;
+
+  const auto current_time = rclcpp::Time();
+  constexpr double scale_x = 1.0;
+  constexpr double scale_y = 1.0;
+  constexpr double scale_z = 1.0;
+  const auto scale = tier4_autoware_utils::createMarkerScale(scale_x, scale_y, scale_z);
+  const auto desired_section_color = tier4_autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999);
+  const auto required_section_color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 1.0, 0.999);
+
+  // intersection turn signal info
+  {
+    const auto & turn_signal_info = debug_data.intersection_turn_signal_info;
+
+    auto desired_start_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "intersection_turn_signal_desired_start", 0L, Marker::SPHERE, scale,
+      desired_section_color);
+    auto desired_end_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "intersection_turn_signal_desired_end", 0L, Marker::SPHERE, scale,
+      desired_section_color);
+    desired_start_marker.pose = turn_signal_info.desired_start_point;
+    desired_end_marker.pose = turn_signal_info.desired_end_point;
+
+    auto required_start_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "intersection_turn_signal_required_start", 0L, Marker::SPHERE, scale,
+      required_section_color);
+    auto required_end_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "intersection_turn_signal_required_end", 0L, Marker::SPHERE, scale,
+      required_section_color);
+    required_start_marker.pose = turn_signal_info.required_start_point;
+    required_end_marker.pose = turn_signal_info.required_end_point;
+
+    marker_array.markers.push_back(desired_start_marker);
+    marker_array.markers.push_back(desired_end_marker);
+    marker_array.markers.push_back(required_start_marker);
+    marker_array.markers.push_back(required_end_marker);
+  }
+
+  // behavior turn signal info
+  {
+    const auto & turn_signal_info = debug_data.behavior_turn_signal_info;
+
+    auto desired_start_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "behavior_turn_signal_desired_start", 0L, Marker::CUBE, scale,
+      desired_section_color);
+    auto desired_end_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "behavior_turn_signal_desired_end", 0L, Marker::CUBE, scale,
+      desired_section_color);
+    desired_start_marker.pose = turn_signal_info.desired_start_point;
+    desired_end_marker.pose = turn_signal_info.desired_end_point;
+
+    auto required_start_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "behavior_turn_signal_required_start", 0L, Marker::CUBE, scale,
+      required_section_color);
+    auto required_end_marker = tier4_autoware_utils::createDefaultMarker(
+      "map", current_time, "behavior_turn_signal_required_end", 0L, Marker::CUBE, scale,
+      required_section_color);
+    required_start_marker.pose = turn_signal_info.required_start_point;
+    required_end_marker.pose = turn_signal_info.required_end_point;
+
+    marker_array.markers.push_back(desired_start_marker);
+    marker_array.markers.push_back(desired_end_marker);
+    marker_array.markers.push_back(required_start_marker);
+    marker_array.markers.push_back(required_end_marker);
+  }
+
+  debug_turn_signal_info_publisher_->publish(marker_array);
 }
 
 void BehaviorPathPlannerNode::publish_bounds(const PathWithLaneId & path)

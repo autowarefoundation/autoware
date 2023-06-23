@@ -41,8 +41,10 @@ double calc_distance(
 TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   const std::shared_ptr<RouteHandler> & route_handler, const PathWithLaneId & path,
   const TurnSignalInfo & turn_signal_info, const Pose & current_pose, const double current_vel,
-  const BehaviorPathPlannerParameters & parameters)
+  const BehaviorPathPlannerParameters & parameters, TurnSignalDebugData & debug_data)
 {
+  debug_data.behavior_turn_signal_info = turn_signal_info;
+
   // Guard
   if (path.points.empty()) {
     return turn_signal_info.turn_signal;
@@ -75,6 +77,10 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   const auto intersection_turn_signal_info = getIntersectionTurnSignalInfo(
     extended_path, current_pose, current_vel, ego_seg_idx, *route_handler, nearest_dist_threshold,
     nearest_yaw_threshold);
+
+  if (intersection_turn_signal_info) {
+    debug_data.intersection_turn_signal_info = *intersection_turn_signal_info;
+  }
 
   if (!intersection_turn_signal_info) {
     initialize_intersection_info();

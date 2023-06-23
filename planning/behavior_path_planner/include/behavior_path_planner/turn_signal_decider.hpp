@@ -63,13 +63,19 @@ struct TurnSignalInfo
   geometry_msgs::msg::Pose required_end_point;
 };
 
+struct TurnSignalDebugData
+{
+  TurnSignalInfo intersection_turn_signal_info;
+  TurnSignalInfo behavior_turn_signal_info;
+};
+
 class TurnSignalDecider
 {
 public:
   TurnIndicatorsCommand getTurnSignal(
     const std::shared_ptr<RouteHandler> & route_handler, const PathWithLaneId & path,
     const TurnSignalInfo & turn_signal_info, const Pose & current_pose, const double current_vel,
-    const BehaviorPathPlannerParameters & parameters);
+    const BehaviorPathPlannerParameters & parameters, TurnSignalDebugData & debug_data);
 
   TurnIndicatorsCommand resolve_turn_signal(
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,

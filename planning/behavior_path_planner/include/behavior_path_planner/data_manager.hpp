@@ -150,12 +150,13 @@ struct PlannerData
   mutable TurnSignalDecider turn_signal_decider;
 
   TurnIndicatorsCommand getTurnSignal(
-    const PathWithLaneId & path, const TurnSignalInfo & turn_signal_info)
+    const PathWithLaneId & path, const TurnSignalInfo & turn_signal_info,
+    TurnSignalDebugData & debug_data)
   {
     const auto & current_pose = self_odometry->pose.pose;
     const auto & current_vel = self_odometry->twist.twist.linear.x;
     return turn_signal_decider.getTurnSignal(
-      route_handler, path, turn_signal_info, current_pose, current_vel, parameters);
+      route_handler, path, turn_signal_info, current_pose, current_vel, parameters, debug_data);
   }
 
   template <class T>

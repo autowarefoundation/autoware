@@ -219,12 +219,18 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_maximum_drivable_area_publisher_;
   rclcpp::Publisher<AvoidanceDebugMsgArray>::SharedPtr debug_avoidance_msg_array_publisher_;
   rclcpp::Publisher<LaneChangeDebugMsgArray>::SharedPtr debug_lane_change_msg_array_publisher_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_turn_signal_info_publisher_;
 
   /**
    * @brief publish steering factor from intersection
    */
   void publish_steering_factor(
     const std::shared_ptr<PlannerData> & planner_data, const TurnIndicatorsCommand & turn_signal);
+
+  /**
+   * @brief publish turn signal debug info
+   */
+  void publish_turn_signal_debug_data(const TurnSignalDebugData & debug_data);
 
   /**
    * @brief publish left and right bound
