@@ -69,10 +69,11 @@ public:
   struct DynamicAvoidanceObject
   {
     DynamicAvoidanceObject(
-      const PredictedObject & predicted_object, const double arg_path_projected_vel)
+      const PredictedObject & predicted_object, const double arg_vel, const double arg_lat_vel)
     : uuid(tier4_autoware_utils::toHexString(predicted_object.object_id)),
       pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
-      path_projected_vel(arg_path_projected_vel),
+      vel(arg_vel),
+      lat_vel(arg_lat_vel),
       shape(predicted_object.shape)
     {
       for (const auto & path : predicted_object.kinematics.predicted_paths) {
@@ -82,7 +83,8 @@ public:
 
     std::string uuid;
     geometry_msgs::msg::Pose pose;
-    double path_projected_vel;
+    double vel;
+    double lat_vel;
     autoware_auto_perception_msgs::msg::Shape shape;
     std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
 
