@@ -2,7 +2,7 @@
 
 ## Overview
 
-Introduce operation mode. It handles autoware engage, gate_mode, external_cmd_selector and control_mode abstractly. When the mode is changed, it will be in-transition state, and if the transition completion condition to that mode is not satisfied, it will be returned to the previous mode. Also, currently, the condition for mode change is only `WaitingForEngage` in `/autoware/state`, and the engage state is shared between modes. After introducing the operation mode, each mode will have a transition available flag. See the [autoware-documentation](https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-interfaces/ad-api/list/api/operation_mode/) for AD API specifications.
+Introduce operation mode. It handles autoware engage, gate_mode, external_cmd_selector and control_mode abstractly. When the mode is changed, it will be in-transition state, and if the transition completion condition to that mode is not satisfied, it will be returned to the previous mode. Also, currently, the condition for mode change is only `WaitingForEngage` in `/autoware/state`, and the engage state is shared between modes. After introducing the operation mode, each mode will have a transition available flag. See the [autoware-documentation](https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-interfaces/ad-api/features/operation_mode/) for AD API specifications.
 
 ![operation-mode-architecture](images/operation-mode-architecture.drawio.svg)
 
