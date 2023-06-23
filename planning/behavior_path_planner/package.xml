@@ -53,6 +53,7 @@
   <depend>lane_departure_checker</depend>
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
+  <depend>libopencv-dev</depend>
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>perception_utils</depend>
