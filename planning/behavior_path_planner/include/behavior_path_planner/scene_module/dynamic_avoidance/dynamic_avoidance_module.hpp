@@ -67,9 +67,10 @@ class DynamicAvoidanceModule : public SceneModuleInterface
 public:
   struct DynamicAvoidanceObject
   {
-    explicit DynamicAvoidanceObject(
+    DynamicAvoidanceObject(
       const PredictedObject & predicted_object, const double arg_path_projected_vel)
-    : pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
+    : uuid(tier4_autoware_utils::toHexString(predicted_object.object_id)),
+      pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
       path_projected_vel(arg_path_projected_vel),
       shape(predicted_object.shape)
     {
@@ -78,9 +79,10 @@ public:
       }
     }
 
-    const geometry_msgs::msg::Pose pose;
-    const double path_projected_vel;
-    const autoware_auto_perception_msgs::msg::Shape shape;
+    std::string uuid;
+    geometry_msgs::msg::Pose pose;
+    double path_projected_vel;
+    autoware_auto_perception_msgs::msg::Shape shape;
     std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
 
     bool is_left;
@@ -124,7 +126,45 @@ private:
     const DynamicAvoidanceObject & object) const;
 
   std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> target_objects_;
+  // std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> prev_target_objects_;
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;
+
+  struct ObjectsVariable
+  {
+    void resetCurrentUuids() { current_uuids_.clear(); }
+    void addCurrentUuid(const std::string & uuid) { current_uuids_.push_back(uuid); }
+    void removeCounterUnlessUpdated()
+    {
+      std::vector<std::string> obsolete_uuids;
+      for (const auto & key_and_value : variable_) {
+        if (
+          std::find(current_uuids_.begin(), current_uuids_.end(), key_and_value.first) ==
+          current_uuids_.end()) {
+          obsolete_uuids.push_back(key_and_value.first);
+        }
+      }
+
+      for (const auto & obsolete_uuid : obsolete_uuids) {
+        variable_.erase(obsolete_uuid);
+      }
+    }
+
+    std::optional<double> get(const std::string & uuid) const
+    {
+      if (variable_.count(uuid) != 0) {
+        return variable_.at(uuid);
+      }
+      return std::nullopt;
+    }
+    void update(const std::string & uuid, const double new_variable)
+    {
+      variable_.emplace(uuid, new_variable);
+    }
+
+    std::unordered_map<std::string, double> variable_;
+    std::vector<std::string> current_uuids_;
+  };
+  mutable ObjectsVariable prev_objects_min_bound_lat_offset_;
 };
 }  // namespace behavior_path_planner
 

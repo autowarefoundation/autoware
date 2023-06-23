@@ -16,6 +16,7 @@
 
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
+#include "signal_processing/lowpass_filter_1d.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -128,6 +129,19 @@ void appendExtractedPolygonMarker(
 
   marker_array.markers.push_back(marker);
 }
+
+template <typename T>
+std::optional<T> getObjectFromUuid(const std::vector<T> & objects, const std::string & target_uuid)
+{
+  const auto itr = std::find_if(objects.begin(), objects.end(), [&](const auto & object) {
+    return object.uuid == target_uuid;
+  });
+
+  if (itr == objects.end()) {
+    return std::nullopt;
+  }
+  return *itr;
+}
 }  // namespace
 
 #ifdef USE_OLD_ARCHITECTURE
@@ -211,6 +225,7 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
 
   // 3. create obstacles to avoid (= extract from the drivable area)
   std::vector<DrivableAreaInfo::Obstacle> obstacles_for_drivable_area;
+  prev_objects_min_bound_lat_offset_.resetCurrentUuids();
   for (const auto & object : target_objects_) {
     const auto obstacle_poly = calcDynamicObstaclePolygon(object);
     if (obstacle_poly) {
@@ -218,8 +233,11 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
 
       appendObjectMarker(info_marker_, object.pose);
       appendExtractedPolygonMarker(debug_marker_, obstacle_poly.value());
+
+      prev_objects_min_bound_lat_offset_.addCurrentUuid(object.uuid);
     }
   }
+  prev_objects_min_bound_lat_offset_.removeCounterUnlessUpdated();
 
   BehaviorModuleOutput output;
   output.path = prev_module_path;
@@ -389,6 +407,7 @@ std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> DynamicAvoidanceModule
   return std::make_pair(right_lanes, left_lanes);
 }
 
+// NOTE: object does not have const only to update min_bound_lat_offset.
 std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynamicObstaclePolygon(
   const DynamicAvoidanceObject & object) const
 {
@@ -455,10 +474,8 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
         motion_utils::findNearestSegmentIndex(prev_module_path->points, object.pose.position);
       const double signed_lon_length = motion_utils::calcSignedArcLength(
         prev_module_path->points, getEgoPosition(), ego_seg_idx, object.pose.position, obj_seg_idx);
-      if (relative_velocity == 0.0) {
-        return std::numeric_limits<double>::max();
-      }
-      return signed_lon_length / relative_velocity;
+      const double positive_relative_velocity = std::max(relative_velocity, 1.0);
+      return signed_lon_length / positive_relative_velocity;
     }();
 
     if (time_to_collision < -parameters_->duration_to_hold_avoidance_overtaking_object) {
@@ -535,13 +552,21 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
   const double max_bound_lat_offset =
     max_obj_lat_offset + parameters_->lat_offset_from_obstacle * (object.is_left ? 1.0 : -1.0);
 
+  // filter min_bound_lat_offset
+  const auto prev_min_bound_lat_offset = prev_objects_min_bound_lat_offset_.get(object.uuid);
+  const double filtered_min_bound_lat_offset =
+    prev_min_bound_lat_offset
+      ? signal_processing::lowpassFilter(min_bound_lat_offset, *prev_min_bound_lat_offset, 0.3)
+      : min_bound_lat_offset;
+  prev_objects_min_bound_lat_offset_.update(object.uuid, filtered_min_bound_lat_offset);
+
   // create inner/outer bound points
   std::vector<geometry_msgs::msg::Point> obj_inner_bound_points;
   std::vector<geometry_msgs::msg::Point> obj_outer_bound_points;
   for (size_t i = lon_bound_start_idx; i <= lon_bound_end_idx; ++i) {
     obj_inner_bound_points.push_back(
       tier4_autoware_utils::calcOffsetPose(
-        path_with_backward_margin.points.at(i).point.pose, 0.0, min_bound_lat_offset, 0.0)
+        path_with_backward_margin.points.at(i).point.pose, 0.0, filtered_min_bound_lat_offset, 0.0)
         .position);
     obj_outer_bound_points.push_back(
       tier4_autoware_utils::calcOffsetPose(

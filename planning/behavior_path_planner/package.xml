@@ -62,6 +62,7 @@
   <depend>route_handler</depend>
   <depend>rtc_interface</depend>
   <depend>sensor_msgs</depend>
+  <depend>signal_processing</depend>
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
