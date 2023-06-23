@@ -27,20 +27,14 @@ class OccupancyGridMapBBFUpdater : public OccupancyGridMapUpdaterInterface
 public:
   enum Index : size_t { OCCUPIED = 0U, FREE = 1U };
   OccupancyGridMapBBFUpdater(
-    const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution)
-  : OccupancyGridMapUpdaterInterface(cells_size_x, cells_size_y, resolution)
-  {
-    probability_matrix_(Index::OCCUPIED, Index::OCCUPIED) = 0.95;
-    probability_matrix_(Index::FREE, Index::OCCUPIED) =
-      1.0 - probability_matrix_(OCCUPIED, OCCUPIED);
-    probability_matrix_(Index::FREE, Index::FREE) = 0.8;
-    probability_matrix_(Index::OCCUPIED, Index::FREE) = 1.0 - probability_matrix_(FREE, FREE);
-  }
+    const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution);
   bool update(const Costmap2D & single_frame_occupancy_grid_map) override;
+  void initRosParam(rclcpp::Node & node) override;
 
 private:
   inline unsigned char applyBBF(const unsigned char & z, const unsigned char & o);
   Eigen::Matrix2f probability_matrix_;
+  double v_ratio_;
 };
 
 }  // namespace costmap_2d

@@ -9,6 +9,8 @@
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
   <arg name="occupancy_grid_map_method"/>
   <arg name="occupancy_grid_map_param_path"/>
+  <arg name="occupancy_grid_map_updater"/>
+  <arg name="occupancy_grid_map_updater_param_path"/>
 
   <!-- centerpoint model configs -->
   <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
@@ -84,6 +86,8 @@
         <arg name="container_name" value="$(var pointcloud_container_name)"/>
         <arg name="occupancy_grid_map_method" value="$(var occupancy_grid_map_method)"/>
         <arg name="occupancy_grid_map_param_path" value="$(var occupancy_grid_map_param_path)"/>
+        <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
+        <arg name="occupancy_grid_map_updater_param_path" value="$(var occupancy_grid_map_updater_param_path)"/>
       </include>
     </group>
 

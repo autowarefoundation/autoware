@@ -7,7 +7,11 @@
     # ray-tracing center: main sensor frame is preferable like: "velodyne_top"
     scan_origin_frame: "base_link"
 
-    use_height_filter: true
+    height_filter:
+      use_height_filter: true
+      min_height: -1.0
+      max_height: 2.0
+
     enable_single_frame_mode: false
     map_length: 100.0
     map_width: 100.0

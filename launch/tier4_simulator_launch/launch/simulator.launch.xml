@@ -3,6 +3,8 @@
   <arg name="fault_injection_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
   <arg name="laserscan_based_occupancy_grid_map_param_path"/>
+  <arg name="occupancy_grid_map_updater"/>
+  <arg name="occupancy_grid_map_updater_param_path"/>
   <arg name="pose_initializer_param_path"/>
   <arg name="pose_initializer_common_param_path"/>
 
@@ -49,6 +51,8 @@
       <arg name="output" value="/perception/occupancy_grid_map/map"/>
       <arg name="occupancy_grid_map_method" value="laserscan_based_occupancy_grid_map"/>
       <arg name="occupancy_grid_map_param_path" value="$(var laserscan_based_occupancy_grid_map_param_path)"/>
+      <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
+      <arg name="occupancy_grid_map_updater_param_path" value="$(var occupancy_grid_map_updater_param_path)"/>
     </include>
   </group>
 

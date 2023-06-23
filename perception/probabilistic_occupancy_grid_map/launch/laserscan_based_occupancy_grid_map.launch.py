@@ -26,25 +26,15 @@ from launch_ros.descriptions import ComposableNode
 import yaml
 
 
-def overwrite_config(param_dict, launch_config_name, node_params_name, context):
-    if LaunchConfiguration(launch_config_name).perform(context) != "":
-        param_dict[node_params_name] = LaunchConfiguration(launch_config_name).perform(context)
-
-
 def launch_setup(context, *args, **kwargs):
     # load parameter files
     param_file = LaunchConfiguration("param_file").perform(context)
     with open(param_file, "r") as f:
         laserscan_based_occupancy_grid_map_node_params = yaml.safe_load(f)["/**"]["ros__parameters"]
-    overwrite_config(
-        laserscan_based_occupancy_grid_map_node_params,
-        "map_origin",
-        "gridmap_origin_frame",
-        context,
-    )
-    overwrite_config(
-        laserscan_based_occupancy_grid_map_node_params, "scan_origin", "scan_origin_frame", context
-    )
+
+    updater_param_file = LaunchConfiguration("updater_param_file").perform(context)
+    with open(updater_param_file, "r") as f:
+        occupancy_grid_map_updater_params = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     composable_nodes = [
         ComposableNode(
@@ -52,9 +42,18 @@ def launch_setup(context, *args, **kwargs):
             plugin="pointcloud_to_laserscan::PointCloudToLaserScanNode",
             name="pointcloud_to_laserscan_node",
             remappings=[
-                ("~/input/pointcloud", LaunchConfiguration("input/obstacle_pointcloud")),
-                ("~/output/laserscan", LaunchConfiguration("output/laserscan")),
-                ("~/output/pointcloud", LaunchConfiguration("output/pointcloud")),
+                (
+                    "~/input/pointcloud",
+                    LaunchConfiguration("input/obstacle_pointcloud"),
+                ),
+                (
+                    "~/output/laserscan",
+                    LaunchConfiguration("output/laserscan"),
+                ),
+                (
+                    "~/output/pointcloud",
+                    LaunchConfiguration("output/pointcloud"),
+                ),
                 ("~/output/ray", LaunchConfiguration("output/ray")),
                 ("~/output/stixel", LaunchConfiguration("output/stixel")),
             ],
@@ -90,12 +89,19 @@ def launch_setup(context, *args, **kwargs):
             name="occupancy_grid_map_node",
             remappings=[
                 ("~/input/laserscan", LaunchConfiguration("output/laserscan")),
-                ("~/input/obstacle_pointcloud", LaunchConfiguration("input/obstacle_pointcloud")),
-                ("~/input/raw_pointcloud", LaunchConfiguration("input/raw_pointcloud")),
+                (
+                    "~/input/obstacle_pointcloud",
+                    LaunchConfiguration("input/obstacle_pointcloud"),
+                ),
+                (
+                    "~/input/raw_pointcloud",
+                    LaunchConfiguration("input/raw_pointcloud"),
+                ),
                 ("~/output/occupancy_grid_map", LaunchConfiguration("output")),
             ],
             parameters=[
                 laserscan_based_occupancy_grid_map_node_params,
+                occupancy_grid_map_updater_params,
                 {
                     "input_obstacle_pointcloud": LaunchConfiguration("input_obstacle_pointcloud"),
                     "input_obstacle_and_raw_pointcloud": LaunchConfiguration(
@@ -148,24 +154,27 @@ def generate_launch_description():
             add_launch_arg("use_intra_process", "false"),
             add_launch_arg("input/obstacle_pointcloud", "no_ground/oneshot/pointcloud"),
             add_launch_arg("input/raw_pointcloud", "concatenated/pointcloud"),
-            add_launch_arg("map_origin", "base_link"),
-            add_launch_arg("sensor_origin", "base_link"),
             add_launch_arg("output", "occupancy_grid"),
             add_launch_arg("output/laserscan", "virtual_scan/laserscan"),
             add_launch_arg("output/pointcloud", "virtual_scan/pointcloud"),
             add_launch_arg("output/ray", "virtual_scan/ray"),
             add_launch_arg("output/stixel", "virtual_scan/stixel"),
-            add_launch_arg("input_obstacle_pointcloud", "false"),
-            add_launch_arg("input_obstacle_and_raw_pointcloud", "true"),
             add_launch_arg(
                 "param_file",
                 get_package_share_directory("probabilistic_occupancy_grid_map")
                 + "/config/laserscan_based_occupancy_grid_map.param.yaml",
             ),
+            add_launch_arg(
+                "updater_type",
+                "binary_bayes_filter",
+            ),
+            add_launch_arg(
+                "updater_param_file",
+                get_package_share_directory("probabilistic_occupancy_grid_map")
+                + "/config/updater.param.yaml",
+            ),
             add_launch_arg("use_pointcloud_container", "false"),
             add_launch_arg("container_name", "occupancy_grid_map_container"),
-            add_launch_arg("map_origin", ""),
-            add_launch_arg("scan_origin", ""),
             set_container_executable,
             set_container_mt_executable,
         ]
