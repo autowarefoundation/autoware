@@ -718,4 +718,17 @@ void PlannerManager::print() const
   RCLCPP_INFO_STREAM(logger_, string_stream.str());
 }
 
+std::shared_ptr<SceneModuleVisitor> PlannerManager::getDebugMsg()
+{
+  debug_msg_ptr_ = std::make_shared<SceneModuleVisitor>();
+  for (const auto & approved_module : approved_module_ptrs_) {
+    approved_module->acceptVisitor(debug_msg_ptr_);
+  }
+
+  for (const auto & candidate_module : candidate_module_ptrs_) {
+    candidate_module->acceptVisitor(debug_msg_ptr_);
+  }
+  return debug_msg_ptr_;
+}
+
 }  // namespace behavior_path_planner

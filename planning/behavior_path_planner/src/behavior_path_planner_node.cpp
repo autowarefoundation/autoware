@@ -1295,6 +1295,7 @@ void BehaviorPathPlannerNode::run()
   publishPathCandidate(bt_manager_->getSceneModules(), planner_data_);
   publishSceneModuleDebugMsg(bt_manager_->getAllSceneModuleDebugMsgData());
 #else
+  publishSceneModuleDebugMsg(planner_manager_->getDebugMsg());
   publishPathCandidate(planner_manager_->getSceneModuleManagers(), planner_data_);
   publishPathReference(planner_manager_->getSceneModuleManagers(), planner_data_);
   stop_reason_publisher_->publish(planner_manager_->getStopReasons());
@@ -1416,7 +1417,6 @@ void BehaviorPathPlannerNode::publish_bounds(const PathWithLaneId & path)
   bound_publisher_->publish(msg);
 }
 
-#ifdef USE_OLD_ARCHITECTURE
 void BehaviorPathPlannerNode::publishSceneModuleDebugMsg(
   const std::shared_ptr<SceneModuleVisitor> & debug_messages_data_ptr)
 {
@@ -1430,7 +1430,6 @@ void BehaviorPathPlannerNode::publishSceneModuleDebugMsg(
     debug_lane_change_msg_array_publisher_->publish(*lane_change_debug_message);
   }
 }
-#endif
 
 #ifdef USE_OLD_ARCHITECTURE
 void BehaviorPathPlannerNode::publishPathCandidate(
