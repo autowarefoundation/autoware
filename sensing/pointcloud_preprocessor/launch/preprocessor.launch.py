@@ -66,7 +66,9 @@ def generate_launch_description():
                     [
                         "'points_raw/concatenated' if len(",
                         LaunchConfiguration("input_points_raw_list"),
-                        ") > 1 else 'input_points_raw0'",
+                        ") > 1 else ",
+                        LaunchConfiguration("input_points_raw_list"),
+                        "[0]",
                     ]
                 ),
             ),
