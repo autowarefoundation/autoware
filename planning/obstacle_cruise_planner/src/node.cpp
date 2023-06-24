@@ -1251,7 +1251,7 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
   for (size_t i = 0; i < debug_data_ptr_->obstacles_to_cruise.size(); ++i) {
     // obstacle
     const auto obstacle_marker = obstacle_cruise_utils::getObjectMarker(
-      debug_data_ptr_->obstacles_to_cruise.at(i).pose, i, "obstacles_to_cruise", 1.0, 0.5, 0.5);
+      debug_data_ptr_->obstacles_to_cruise.at(i).pose, i, "obstacles_to_cruise", 1.0, 0.6, 0.1);
     debug_marker.markers.push_back(obstacle_marker);
 
     // collision points
