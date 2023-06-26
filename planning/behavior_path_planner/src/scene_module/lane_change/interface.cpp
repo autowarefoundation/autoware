@@ -67,22 +67,12 @@ bool LaneChangeInterface::isExecutionRequested() const
     return true;
   }
 
-  LaneChangePath selected_path;
-  module_type_->setPreviousModulePaths(
-    getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
-  const auto [found_valid_path, found_safe_path] = module_type_->getSafePath(selected_path);
-
-  return found_valid_path;
+  return module_type_->isLaneChangeRequired();
 }
 
 bool LaneChangeInterface::isExecutionReady() const
 {
-  LaneChangePath selected_path;
-  module_type_->setPreviousModulePaths(
-    getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
-  const auto [found_valid_path, found_safe_path] = module_type_->getSafePath(selected_path);
-
-  return found_safe_path;
+  return module_type_->isSafe();
 }
 
 ModuleStatus LaneChangeInterface::updateState()

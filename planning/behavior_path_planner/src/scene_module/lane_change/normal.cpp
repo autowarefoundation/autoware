@@ -89,6 +89,28 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
   return {true, found_safe_path};
 }
 
+bool NormalLaneChange::isLaneChangeRequired() const
+{
+  const auto current_lanes = getCurrentLanes();
+
+  if (current_lanes.empty()) {
+    return false;
+  }
+
+  const auto target_lanes = getLaneChangeLanes(current_lanes, direction_);
+
+  if (target_lanes.empty()) {
+    return false;
+  }
+
+  // find candidate paths
+  LaneChangePaths valid_paths{};
+  [[maybe_unused]] const auto found_safe_path =
+    getLaneChangePaths(current_lanes, target_lanes, direction_, &valid_paths, false);
+
+  return !valid_paths.empty();
+}
+
 LaneChangePath NormalLaneChange::getLaneChangePath() const
 {
   return isAbortState() ? *abort_path_ : status_.lane_change_path;
@@ -472,7 +494,7 @@ PathWithLaneId NormalLaneChange::getPrepareSegment(
 
 bool NormalLaneChange::getLaneChangePaths(
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  Direction direction, LaneChangePaths * candidate_paths) const
+  Direction direction, LaneChangePaths * candidate_paths, const bool check_safety) const
 {
   object_debug_.clear();
   if (original_lanelets.empty() || target_lanelets.empty()) {
@@ -705,6 +727,10 @@ bool NormalLaneChange::getLaneChangePaths(
           lateral_buffer);
       }
       candidate_paths->push_back(*candidate_path);
+
+      if (!check_safety) {
+        return false;
+      }
 
       const auto [is_safe, is_object_coming_from_rear] = utils::lane_change::isLaneChangePathSafe(
         *candidate_path, dynamic_objects, dynamic_object_indices, getEgoPose(), getEgoTwist(),

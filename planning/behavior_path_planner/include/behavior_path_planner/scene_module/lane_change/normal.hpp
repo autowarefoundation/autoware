@@ -85,6 +85,8 @@ public:
 
   bool isAbortState() const override;
 
+  bool isLaneChangeRequired() const override;
+
 protected:
   lanelet::ConstLanelets getCurrentLanes() const override;
 
@@ -100,7 +102,7 @@ protected:
   bool getLaneChangePaths(
     const lanelet::ConstLanelets & original_lanelets,
     const lanelet::ConstLanelets & target_lanelets, Direction direction,
-    LaneChangePaths * candidate_paths) const override;
+    LaneChangePaths * candidate_paths, const bool check_safety = true) const override;
 
   std::vector<DrivableLanes> getDrivableLanes() const override;
 

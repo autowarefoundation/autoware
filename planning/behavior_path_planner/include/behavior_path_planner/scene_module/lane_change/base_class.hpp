@@ -85,6 +85,8 @@ public:
 
   virtual bool hasFinishedAbort() const = 0;
 
+  virtual bool isLaneChangeRequired() const = 0;
+
   virtual bool isAbortState() const = 0;
 
   virtual bool isAbleToReturnCurrentLane() const = 0;
@@ -197,7 +199,7 @@ protected:
   virtual bool getLaneChangePaths(
     const lanelet::ConstLanelets & original_lanelets,
     const lanelet::ConstLanelets & target_lanelets, Direction direction,
-    LaneChangePaths * candidate_paths) const = 0;
+    LaneChangePaths * candidate_paths, const bool check_safety) const = 0;
 
   virtual std::vector<DrivableLanes> getDrivableLanes() const = 0;
 
