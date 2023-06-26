@@ -503,9 +503,25 @@ void MissionPlanner::on_modified_goal(const ModifiedGoal::Message::ConstSharedPt
     RCLCPP_ERROR(get_logger(), "Normal route has not set yet.");
     return;
   }
-  if (mrm_route_) {
-    RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 5000, "Cannot modify goal in the emergency state");
+
+  if (mrm_route_ && mrm_route_->uuid == msg->uuid) {
+    // set to changing state
+    change_state(RouteState::Message::CHANGING);
+
+    const std::vector<geometry_msgs::msg::Pose> empty_waypoints;
+    auto new_route =
+      create_route(msg->header, empty_waypoints, msg->pose, mrm_route_->allow_modification);
+    // create_route generate new uuid, so set the original uuid again to keep that.
+    new_route.uuid = msg->uuid;
+    if (new_route.segments.empty()) {
+      change_mrm_route(*mrm_route_);
+      change_state(RouteState::Message::SET);
+      RCLCPP_ERROR(get_logger(), "The planned route is empty.");
+      return;
+    }
+
+    change_mrm_route(new_route);
+    change_state(RouteState::Message::SET);
     return;
   }
 
