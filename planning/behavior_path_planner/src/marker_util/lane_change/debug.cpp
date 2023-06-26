@@ -185,11 +185,12 @@ MarkerArray showPolygon(
     }
     const auto & color = colors.at(idx);
     const auto & ego_polygon = info.ego_polygon.outer();
+    const auto poly_z = info.current_pose.position.z;  // temporally
     ego_marker.id = ++id;
     ego_marker.color = createMarkerColor(color[0], color[1], color[2], 0.8);
     ego_marker.points.reserve(ego_polygon.size());
     for (const auto & p : ego_polygon) {
-      ego_marker.points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0));
+      ego_marker.points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), poly_z));
     }
     marker_array.markers.push_back(ego_marker);
 
@@ -198,7 +199,7 @@ MarkerArray showPolygon(
     obj_marker.color = createMarkerColor(color[0], color[1], color[2], 0.8);
     obj_marker.points.reserve(obj_polygon.size());
     for (const auto & p : obj_polygon) {
-      obj_marker.points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0));
+      obj_marker.points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), poly_z));
     }
     marker_array.markers.push_back(obj_marker);
     ++idx;
