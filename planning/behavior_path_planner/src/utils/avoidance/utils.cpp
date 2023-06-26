@@ -894,7 +894,7 @@ void filterTargetObjects(
     // calculate avoid_margin dynamically
     // NOTE: This calculation must be after calculating to_road_shoulder_distance.
     const double max_avoid_margin = object_parameter.safety_buffer_lateral * o.distance_factor +
-                                    parameters->lateral_collision_margin + 0.5 * vehicle_width;
+                                    object_parameter.avoid_margin_lateral + 0.5 * vehicle_width;
     const double min_safety_lateral_distance =
       object_parameter.safety_buffer_lateral + 0.5 * vehicle_width;
     const auto max_allowable_lateral_distance =

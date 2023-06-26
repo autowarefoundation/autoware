@@ -586,6 +586,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
       param.moving_time_threshold = declare_parameter<double>(ns + "moving_time_threshold");
       param.max_expand_ratio = declare_parameter<double>(ns + "max_expand_ratio");
       param.envelope_buffer_margin = declare_parameter<double>(ns + "envelope_buffer_margin");
+      param.avoid_margin_lateral = declare_parameter<double>(ns + "avoid_margin_lateral");
       param.safety_buffer_lateral = declare_parameter<double>(ns + "safety_buffer_lateral");
       param.safety_buffer_longitudinal =
         declare_parameter<double>(ns + "safety_buffer_longitudinal");
@@ -649,7 +650,6 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   // avoidance maneuver (lateral)
   {
     std::string ns = "avoidance.avoidance.lateral.";
-    p.lateral_collision_margin = declare_parameter<double>(ns + "lateral_collision_margin");
     p.road_shoulder_safety_margin = declare_parameter<double>(ns + "road_shoulder_safety_margin");
     p.lateral_execution_threshold = declare_parameter<double>(ns + "lateral_execution_threshold");
     p.lateral_small_shift_threshold =

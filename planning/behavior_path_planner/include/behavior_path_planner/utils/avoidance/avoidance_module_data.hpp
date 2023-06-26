@@ -58,6 +58,8 @@ struct ObjectParameter
 
   double envelope_buffer_margin{0.0};
 
+  double avoid_margin_lateral{1.0};
+
   double safety_buffer_lateral{1.0};
 
   double safety_buffer_longitudinal{0.0};
@@ -158,9 +160,6 @@ struct AvoidanceParameters
 
   // force avoidance
   double threshold_time_force_avoidance_for_stopped_vehicle;
-
-  // we want to keep this lateral margin when avoiding
-  double lateral_collision_margin;
 
   // when complete avoidance motion, there is a distance margin with the object
   // for longitudinal direction

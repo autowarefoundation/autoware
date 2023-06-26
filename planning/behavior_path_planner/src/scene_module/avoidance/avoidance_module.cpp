@@ -620,7 +620,7 @@ void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugDat
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
 
   const auto max_avoid_margin = object_parameter.safety_buffer_lateral * o_front.distance_factor +
-                                parameters_->lateral_collision_margin + 0.5 * vehicle_width;
+                                object_parameter.avoid_margin_lateral + 0.5 * vehicle_width;
 
   const auto variable = helper_.getSharpAvoidanceDistance(
     helper_.getShiftLength(o_front, utils::avoidance::isOnRight(o_front), max_avoid_margin));
@@ -3285,7 +3285,7 @@ double AvoidanceModule::calcDistanceToStopLine(const ObjectData & object) const
   const auto object_parameter = parameters_->object_parameters.at(t);
 
   const auto avoid_margin = object_parameter.safety_buffer_lateral * object.distance_factor +
-                            p->lateral_collision_margin + 0.5 * vehicle_width;
+                            object_parameter.avoid_margin_lateral + 0.5 * vehicle_width;
   const auto variable = helper_.getMinimumAvoidanceDistance(
     helper_.getShiftLength(object, utils::avoidance::isOnRight(object), avoid_margin));
   const auto constant =

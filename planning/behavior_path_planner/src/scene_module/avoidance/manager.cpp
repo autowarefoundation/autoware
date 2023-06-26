@@ -52,6 +52,7 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     updateParam<double>(parameters, ns + "moving_time_threshold", config.moving_time_threshold);
     updateParam<double>(parameters, ns + "max_expand_ratio", config.max_expand_ratio);
     updateParam<double>(parameters, ns + "envelope_buffer_margin", config.envelope_buffer_margin);
+    updateParam<double>(parameters, ns + "avoid_margin_lateral", config.avoid_margin_lateral);
     updateParam<double>(parameters, ns + "safety_buffer_lateral", config.safety_buffer_lateral);
     updateParam<double>(
       parameters, ns + "safety_buffer_longitudinal", config.safety_buffer_longitudinal);
@@ -82,7 +83,6 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
       parameters, ns + "lateral_execution_threshold", p->lateral_execution_threshold);
     updateParam<double>(
       parameters, ns + "lateral_small_shift_threshold", p->lateral_small_shift_threshold);
-    updateParam<double>(parameters, ns + "lateral_collision_margin", p->lateral_collision_margin);
     updateParam<double>(
       parameters, ns + "road_shoulder_safety_margin", p->road_shoulder_safety_margin);
   }
