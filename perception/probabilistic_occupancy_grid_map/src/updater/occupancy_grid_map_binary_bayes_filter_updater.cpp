@@ -30,14 +30,14 @@ OccupancyGridMapBBFUpdater::OccupancyGridMapBBFUpdater(
 void OccupancyGridMapBBFUpdater::initRosParam(rclcpp::Node & node)
 {
   probability_matrix_(Index::OCCUPIED, Index::OCCUPIED) =
-    node.declare_parameter<double>("binary_bayes_filter.probability_matrix.occupied_to_occupied");
+    node.declare_parameter<double>("probability_matrix.occupied_to_occupied");
   probability_matrix_(Index::FREE, Index::OCCUPIED) =
-    node.declare_parameter<double>("binary_bayes_filter.probability_matrix.occupied_to_free");
+    node.declare_parameter<double>("probability_matrix.occupied_to_free");
   probability_matrix_(Index::FREE, Index::FREE) =
-    node.declare_parameter<double>("binary_bayes_filter.probability_matrix.free_to_free");
+    node.declare_parameter<double>("probability_matrix.free_to_free");
   probability_matrix_(Index::OCCUPIED, Index::FREE) =
-    node.declare_parameter<double>("binary_bayes_filter.probability_matrix.free_to_occupied");
-  v_ratio_ = node.declare_parameter<double>("binary_bayes_filter.v_ratio");
+    node.declare_parameter<double>("probability_matrix.free_to_occupied");
+  v_ratio_ = node.declare_parameter<double>("v_ratio");
 }
 
 inline unsigned char OccupancyGridMapBBFUpdater::applyBBF(
