@@ -34,6 +34,10 @@ struct LaneChangeParameters
   int longitudinal_acc_sampling_num{10};
   int lateral_acc_sampling_num{10};
 
+  // parked vehicle
+  double object_check_min_road_shoulder_width{0.5};
+  double object_shiftable_ratio_threshold{0.6};
+
   // turn signal
   double min_length_for_turn_signal_activation{10.0};
   double length_ratio_for_turn_signal_deactivation{0.8};

@@ -1058,4 +1058,109 @@ PredictedPath convertToPredictedPath(
 
   return predicted_path;
 }
+
+bool passParkedObject(
+  const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
+  const PathWithLaneId & current_lane_path, const PredictedObjects & objects,
+  const std::vector<size_t> & target_lane_obj_indices, const double minimum_lane_change_length,
+  const bool is_goal_in_route, const double object_check_min_road_shoulder_width,
+  const double object_shiftable_ratio_threshold)
+{
+  const auto & path = lane_change_path.path;
+
+  if (target_lane_obj_indices.empty() || path.points.empty() || current_lane_path.points.empty()) {
+    return false;
+  }
+
+  const auto leading_obj_idx = getLeadingStaticObjectIdx(
+    route_handler, lane_change_path, objects, target_lane_obj_indices,
+    object_check_min_road_shoulder_width, object_shiftable_ratio_threshold);
+  if (!leading_obj_idx) {
+    return false;
+  }
+
+  const auto & leading_obj = objects.objects.at(*leading_obj_idx);
+  const auto & leading_obj_poly = tier4_autoware_utils::toPolygon2d(leading_obj);
+  if (leading_obj_poly.outer().empty()) {
+    return false;
+  }
+
+  const auto & current_path_end = current_lane_path.points.back().point.pose.position;
+  double min_dist_to_end_of_current_lane = std::numeric_limits<double>::max();
+  for (const auto & point : leading_obj_poly.outer()) {
+    const auto obj_p = tier4_autoware_utils::createPoint(point.x(), point.y(), 0.0);
+    const double dist =
+      motion_utils::calcSignedArcLength(current_lane_path.points, obj_p, current_path_end);
+    min_dist_to_end_of_current_lane = std::min(dist, min_dist_to_end_of_current_lane);
+    if (is_goal_in_route) {
+      const auto goal_pose = route_handler.getGoalPose();
+      const double dist_to_goal =
+        motion_utils::calcSignedArcLength(current_lane_path.points, obj_p, goal_pose.position);
+      min_dist_to_end_of_current_lane = std::min(min_dist_to_end_of_current_lane, dist_to_goal);
+    }
+  }
+
+  // If there are still enough length after the target object, we delay the lane change
+  if (min_dist_to_end_of_current_lane > minimum_lane_change_length) {
+    return true;
+  }
+
+  return false;
+}
+
+boost::optional<size_t> getLeadingStaticObjectIdx(
+  const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
+  const PredictedObjects & objects, const std::vector<size_t> & obj_indices,
+  const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold)
+{
+  const auto & path = lane_change_path.path;
+
+  if (path.points.empty() || obj_indices.empty()) {
+    return {};
+  }
+
+  const auto & lane_change_start = lane_change_path.lane_changing_start;
+  const auto & path_end = path.points.back();
+
+  double dist_lc_start_to_leading_obj = 0.0;
+  boost::optional<size_t> leading_obj_idx = boost::none;
+  for (const auto & obj_idx : obj_indices) {
+    const auto & obj = objects.objects.at(obj_idx);
+    const auto & obj_pose = obj.kinematics.initial_pose_with_covariance.pose;
+
+    // ignore non-static object
+    // TODO(shimizu): parametrize threshold
+    if (obj.kinematics.initial_twist_with_covariance.twist.linear.x > 1.0) {
+      continue;
+    }
+
+    // ignore non-parked object
+    if (!isParkedObject(
+          path, route_handler, obj, object_check_min_road_shoulder_width,
+          object_shiftable_ratio_threshold)) {
+      continue;
+    }
+
+    const double dist_back_to_obj = motion_utils::calcSignedArcLength(
+      path.points, path_end.point.pose.position, obj_pose.position);
+    if (dist_back_to_obj > 0.0) {
+      // object is not on the lane change path
+      continue;
+    }
+
+    const double dist_lc_start_to_obj =
+      motion_utils::calcSignedArcLength(path.points, lane_change_start.position, obj_pose.position);
+    if (dist_lc_start_to_obj < 0.0) {
+      // object is on the lane changing path or behind it. It will be detected in safety check
+      continue;
+    }
+
+    if (dist_lc_start_to_obj > dist_lc_start_to_leading_obj) {
+      dist_lc_start_to_leading_obj = dist_lc_start_to_obj;
+      leading_obj_idx = obj_idx;
+    }
+  }
+
+  return leading_obj_idx;
+}
 }  // namespace behavior_path_planner::utils::lane_change

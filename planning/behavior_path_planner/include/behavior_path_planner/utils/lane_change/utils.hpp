@@ -174,5 +174,17 @@ PredictedPath convertToPredictedPath(
   const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & pose,
   const size_t nearest_seg_idx, const double duration, const double resolution,
   const double prepare_time, const double prepare_acc, const double lane_changing_acc);
+
+bool passParkedObject(
+  const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
+  const PathWithLaneId & current_lane_path, const PredictedObjects & objects,
+  const std::vector<size_t> & target_lane_obj_indices, const double minimum_lane_change_length,
+  const bool is_goal_in_route, const double object_check_min_road_shoulder_width,
+  const double object_shiftable_ratio_threshold);
+
+boost::optional<size_t> getLeadingStaticObjectIdx(
+  const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
+  const PredictedObjects & objects, const std::vector<size_t> & obj_indices,
+  const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold);
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_

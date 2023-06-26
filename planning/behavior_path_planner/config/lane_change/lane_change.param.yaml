@@ -15,6 +15,10 @@
       longitudinal_acceleration_sampling_num: 5
       lateral_acceleration_sampling_num: 3
 
+      # side walk parked vehicle
+      object_check_min_road_shoulder_width: 0.5  # [m]
+      object_shiftable_ratio_threshold: 0.6
+
       # turn signal
       min_length_for_turn_signal_activation: 10.0 # [m]
       length_ratio_for_turn_signal_deactivation: 0.8 # ratio (desired end position)

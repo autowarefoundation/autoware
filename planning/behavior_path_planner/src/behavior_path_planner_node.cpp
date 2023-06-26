@@ -787,6 +787,12 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.lateral_acc_sampling_num =
     declare_parameter<int>(parameter("lateral_acceleration_sampling_num"));
 
+  // parked vehicle detection
+  p.object_check_min_road_shoulder_width =
+    declare_parameter<double>(parameter("object_check_min_road_shoulder_width"));
+  p.object_shiftable_ratio_threshold =
+    declare_parameter<double>(parameter("object_shiftable_ratio_threshold"));
+
   // turn signal
   p.min_length_for_turn_signal_activation =
     declare_parameter<double>(parameter("min_length_for_turn_signal_activation"));

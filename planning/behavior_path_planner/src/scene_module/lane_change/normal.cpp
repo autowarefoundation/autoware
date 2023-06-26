@@ -539,10 +539,10 @@ bool NormalLaneChange::getLaneChangePaths(
 
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
-  const auto shift_intervals =
-    route_handler.getLateralIntervalsToPreferredLane(target_lanelets.back());
-  const double next_lane_change_buffer =
-    utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
+  const double lane_change_buffer = utils::calcMinimumLaneChangeLength(
+    common_parameter, route_handler.getLateralIntervalsToPreferredLane(original_lanelets.back()));
+  const double next_lane_change_buffer = utils::calcMinimumLaneChangeLength(
+    common_parameter, route_handler.getLateralIntervalsToPreferredLane(target_lanelets.back()));
 
   const auto dist_to_end_of_current_lanes =
     utils::getDistanceToEndOfLane(getEgoPose(), original_lanelets);
@@ -725,6 +725,20 @@ bool NormalLaneChange::getLaneChangePaths(
           {*candidate_path}, *dynamic_objects, backward_target_lanes_for_object_filtering,
           getEgoPose(), common_parameter.forward_path_length, *lane_change_parameters_,
           lateral_buffer);
+
+        const double object_check_min_road_shoulder_width =
+          lane_change_parameters_->object_check_min_road_shoulder_width;
+        const double object_shiftable_ratio_threshold =
+          lane_change_parameters_->object_shiftable_ratio_threshold;
+        const auto current_lane_path = route_handler.getCenterLinePath(
+          original_lanelets, 0.0, std::numeric_limits<double>::max());
+        const bool pass_parked_object = utils::lane_change::passParkedObject(
+          route_handler, *candidate_path, current_lane_path, *dynamic_objects,
+          dynamic_object_indices.target_lane, lane_change_buffer, is_goal_in_route,
+          object_check_min_road_shoulder_width, object_shiftable_ratio_threshold);
+        if (pass_parked_object) {
+          return false;
+        }
       }
       candidate_paths->push_back(*candidate_path);
 
