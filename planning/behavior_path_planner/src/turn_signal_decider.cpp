@@ -140,29 +140,94 @@ boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo
     }
   }
 
-  std::queue<TurnSignalInfo> signal_queue;
+  // combine consecutive lanes of the same turn direction
+  // stores lanes that have already been combine
+  std::set<int> processed_lanes;
+  // since combined_lane does not inherit id and attribute,
+  // and ConstantLanelet does not rewrite the value,
+  // we keep front_lane together as a representative.
+  std::vector<std::pair<lanelet::ConstLanelet, lanelet::ConstLanelet>> combined_and_front_vec{};
   for (const auto & lane_id : unique_lane_ids) {
-    const auto lane = route_handler.getLaneletsFromId(lane_id);
-    const double search_distance = lane.attributeOr("turn_signal_distance", base_search_distance);
-    if (lane.centerline3d().size() < 2) {
+    // Skip if already processed
+    if (processed_lanes.find(lane_id) != processed_lanes.end()) continue;
+    auto current_lane = route_handler.getLaneletsFromId(lane_id);
+    lanelet::ConstLanelets combined_lane_elems{};
+    while (rclcpp::ok()) {
+      processed_lanes.insert(current_lane.id());
+      combined_lane_elems.push_back(current_lane);
+
+      // Get the lane and its attribute
+      const std::string lane_attribute =
+        current_lane.attributeOr("turn_direction", std::string("none"));
+
+      // check next lanes
+      auto next_lanes = route_handler.getNextLanelets(current_lane);
+      if (next_lanes.empty()) {
+        break;
+      }
+
+      // filter next lanes with same attribute in the path
+      std::vector<lanelet::ConstLanelet> next_lanes_in_path{};
+      std::copy_if(
+        next_lanes.begin(), next_lanes.end(), std::back_inserter(next_lanes_in_path),
+        [&](const auto & next_lane) {
+          const bool is_in_unique_ids =
+            std::find(unique_lane_ids.begin(), unique_lane_ids.end(), next_lane.id()) !=
+            unique_lane_ids.end();
+          const bool has_same_attribute =
+            next_lane.attributeOr("turn_direction", std::string("none")) == lane_attribute;
+          return is_in_unique_ids && has_same_attribute;
+        });
+      if (next_lanes_in_path.empty()) {
+        break;
+      }
+
+      // assume that the next lane in the path is only one
+      current_lane = next_lanes_in_path.front();
+    }
+
+    if (!combined_lane_elems.empty()) {
+      // store combined lane and its front lane
+      const auto & combined_and_first = std::pair<lanelet::ConstLanelet, lanelet::ConstLanelet>(
+        lanelet::utils::combineLaneletsShape(combined_lane_elems), combined_lane_elems.front());
+      combined_and_front_vec.push_back(combined_and_first);
+    }
+  }
+
+  std::queue<TurnSignalInfo> signal_queue;
+  for (const auto & combined_and_front : combined_and_front_vec) {
+    // use combined_lane's centerline
+    const auto & combined_lane = combined_and_front.first;
+    if (combined_lane.centerline3d().size() < 2) {
       continue;
     }
+
+    // use front lane's id, attribute, and search distance as a representative
+    const auto & front_lane = combined_and_front.second;
+    const auto lane_id = front_lane.id();
+    const double search_distance =
+      front_lane.attributeOr("turn_signal_distance", base_search_distance);
+    const std::string lane_attribute =
+      front_lane.attributeOr("turn_direction", std::string("none"));
 
     // lane front and back pose
     Pose lane_front_pose;
     Pose lane_back_pose;
-    lane_front_pose.position = lanelet::utils::conversion::toGeomMsgPt(lane.centerline3d().front());
-    lane_back_pose.position = lanelet::utils::conversion::toGeomMsgPt(lane.centerline3d().back());
+    lane_front_pose.position =
+      lanelet::utils::conversion::toGeomMsgPt(combined_lane.centerline3d().front());
+    lane_back_pose.position =
+      lanelet::utils::conversion::toGeomMsgPt(combined_lane.centerline3d().back());
 
     {
       const auto & current_point = lane_front_pose.position;
-      const auto & next_point = lanelet::utils::conversion::toGeomMsgPt(lane.centerline3d()[1]);
+      const auto & next_point =
+        lanelet::utils::conversion::toGeomMsgPt(combined_lane.centerline3d()[1]);
       lane_front_pose.orientation = calc_orientation(current_point, next_point);
     }
 
     {
       const auto & current_point = lanelet::utils::conversion::toGeomMsgPt(
-        lane.centerline3d()[lane.centerline3d().size() - 2]);
+        combined_lane.centerline3d()[combined_lane.centerline3d().size() - 2]);
       const auto & next_point = lane_back_pose.position;
       lane_back_pose.orientation = calc_orientation(current_point, next_point);
     }
@@ -195,7 +260,6 @@ boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo
       continue;
     }
 
-    const std::string lane_attribute = lane.attributeOr("turn_direction", std::string("none"));
     if (
       (lane_attribute == "right" || lane_attribute == "left" || lane_attribute == "straight") &&
       dist_to_front_point < search_distance) {
@@ -207,7 +271,7 @@ boost::optional<TurnSignalInfo> TurnSignalDecider::getIntersectionTurnSignalInfo
       TurnSignalInfo turn_signal_info{};
       turn_signal_info.desired_start_point = desired_start_point_map_.at(lane_id);
       turn_signal_info.required_start_point = lane_front_pose;
-      turn_signal_info.required_end_point = get_required_end_point(lane.centerline3d());
+      turn_signal_info.required_end_point = get_required_end_point(combined_lane.centerline3d());
       turn_signal_info.desired_end_point = lane_back_pose;
       turn_signal_info.turn_signal.command = signal_map.at(lane_attribute);
       signal_queue.push(turn_signal_info);
