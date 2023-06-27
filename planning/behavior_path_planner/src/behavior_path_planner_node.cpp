@@ -853,10 +853,9 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   }
 
   if (p.cancel.delta_time < 1.0) {
-    RCLCPP_FATAL_STREAM(
-      get_logger(), "cancel.delta_time: " << p.cancel.delta_time << ", is too short.\n"
-                                          << "Terminating the program...");
-    exit(EXIT_FAILURE);
+    RCLCPP_WARN_STREAM(
+      get_logger(), "cancel.delta_time: " << p.cancel.delta_time
+                                          << ", is too short. This could cause a danger behavior.");
   }
 
   return p;
