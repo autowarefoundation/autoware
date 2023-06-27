@@ -846,7 +846,8 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   const bool is_near_intersection = std::invoke([&]() {
     const double check_length = parameters_->intersection_search_length;
     double accumulated_length = 0.0;
-    for (size_t i = 0; i < path.points.size() - 1; ++i) {
+    const size_t current_idx = motion_utils::findNearestIndex(path.points, current_pose.position);
+    for (size_t i = current_idx; i < path.points.size() - 1; ++i) {
       const auto & p = path.points.at(i);
       for (const auto & lane : planner_data_->route_handler->getLaneletsFromIds(p.lane_ids)) {
         const std::string turn_direction = lane.attributeOr("turn_direction", "else");
