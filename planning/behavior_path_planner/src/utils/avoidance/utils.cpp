@@ -107,7 +107,7 @@ bool isTargetObjectType(
     return false;
   }
 
-  return parameters->object_parameters.at(t).enable;
+  return parameters->object_parameters.at(t).is_target;
 }
 
 bool isVehicleTypeObject(const ObjectData & object)
@@ -951,7 +951,8 @@ void filterTargetObjects(
       const auto to_traffic_light =
         utils::getDistanceToNextTrafficLight(object_pose, data.current_lanelets);
       {
-        not_parked_object = to_traffic_light < parameters->object_ignore_distance_traffic_light;
+        not_parked_object =
+          to_traffic_light < parameters->object_ignore_section_traffic_light_in_front_distance;
       }
 
       // check crosswalk
@@ -961,8 +962,8 @@ void filterTargetObjects(
         o.longitudinal;
       {
         const auto stop_for_crosswalk =
-          to_crosswalk < parameters->object_ignore_distance_crosswalk_forward &&
-          to_crosswalk > -1.0 * parameters->object_ignore_distance_crosswalk_backward;
+          to_crosswalk < parameters->object_ignore_section_crosswalk_in_front_distance &&
+          to_crosswalk > -1.0 * parameters->object_ignore_section_crosswalk_behind_distance;
         not_parked_object = not_parked_object || stop_for_crosswalk;
       }
 

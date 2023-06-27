@@ -48,7 +48,7 @@ using geometry_msgs::msg::TransformStamped;
 
 struct ObjectParameter
 {
-  bool enable{false};
+  bool is_target{false};
 
   double moving_speed_threshold{0.0};
 
@@ -134,13 +134,13 @@ struct AvoidanceParameters
   double threshold_distance_object_is_on_center;
 
   // execute only when there is no intersection behind of the stopped vehicle.
-  double object_ignore_distance_traffic_light;
+  double object_ignore_section_traffic_light_in_front_distance;
 
   // execute only when there is no crosswalk near the stopped vehicle.
-  double object_ignore_distance_crosswalk_forward;
+  double object_ignore_section_crosswalk_in_front_distance;
 
   // execute only when there is no crosswalk near the stopped vehicle.
-  double object_ignore_distance_crosswalk_backward;
+  double object_ignore_section_crosswalk_behind_distance;
 
   // distance to avoid object detection
   double object_check_forward_distance;

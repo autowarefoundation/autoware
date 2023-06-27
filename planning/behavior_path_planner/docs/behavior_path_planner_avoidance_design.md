@@ -608,7 +608,7 @@ This module supports all object classes, and it can set following parameters ind
 
 ```yaml
 car:
-  enable: true # [-]
+  is_target: true # [-]
   moving_speed_threshold: 1.0 # [m/s]
   moving_time_threshold: 1.0 # [s]
   max_expand_ratio: 0.0 # [-]
@@ -618,15 +618,15 @@ car:
   safety_buffer_longitudinal: 0.0 # [m]
 ```
 
-| Name                       | Unit  | Type   | Description                                                                                                | Default value |
-| :------------------------- | ----- | ------ | ---------------------------------------------------------------------------------------------------------- | ------------- |
-| enable                     | [-]   | bool   | Allow avoidance for object type CAR                                                                        | false         |
-| moving_speed_threshold     | [m/s] | double | Objects with speed greater than this will be judged as moving ones.                                        | 1.0           |
-| moving_time_threshold      | [s]   | double | Objects keep moving longer duration than this will be excluded from avoidance target.                      | 1.0           |
-| envelope_buffer_margin     | [m]   | double | Allow avoidance for object type TRAILER                                                                    | 0.3           |
-| avoid_margin_lateral       | [m]   | double | The lateral distance between ego and avoidance targets.                                                    | 1.0           |
-| safety_buffer_lateral      | [m]   | double | Creates an additional lateral gap that will prevent the vehicle from getting to near to the obstacle.      | 0.5           |
-| safety_buffer_longitudinal | [m]   | double | Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle. | 0.0           |
+| Name                       | Unit  | Type   | Description                                                                                                               | Default value |
+| :------------------------- | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| is_target                  | [-]   | bool   | By setting this flag `true`, this module avoid those class objects.                                                       | false         |
+| moving_speed_threshold     | [m/s] | double | Objects with speed greater than this will be judged as moving ones.                                                       | 1.0           |
+| moving_time_threshold      | [s]   | double | Objects keep moving longer duration than this will be excluded from avoidance target.                                     | 1.0           |
+| envelope_buffer_margin     | [m]   | double | The buffer between raw boundary box of detected objects and enveloped polygon that is used for avoidance path generation. | 0.3           |
+| avoid_margin_lateral       | [m]   | double | The lateral distance between ego and avoidance targets.                                                                   | 1.0           |
+| safety_buffer_lateral      | [m]   | double | Creates an additional lateral gap that will prevent the vehicle from getting to near to the obstacle.                     | 0.5           |
+| safety_buffer_longitudinal | [m]   | double | Creates an additional longitudinal gap that will prevent the vehicle from getting to near to the obstacle.                | 0.0           |
 
 Parameters for the logic to compensate perception noise of the far objects.
 
@@ -638,18 +638,18 @@ Parameters for the logic to compensate perception noise of the far objects.
 
 namespace: `avoidance.target_filtering.`
 
-| Name                                      | Unit | Type   | Description                                                                                                                                                                                                                            | Default value |
-| :---------------------------------------- | :--- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| threshold_distance_object_is_on_center    | [m]  | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 1.0           |
-| object_ignore_distance_traffic_light      | [m]  | double | If the distance between traffic light and vehicle is less than this parameter, this module will ignore it.                                                                                                                             | 30.0          |
-| object_ignore_distance_crosswalk_forward  | [m]  | double | If the front distance between crosswalk and vehicle is less than this parameter, this module will ignore it.                                                                                                                           | 30.0          |
-| object_ignore_distance_crosswalk_backward | [m]  | double | If the back distance between crosswalk and vehicle is less than this parameter, this module will ignore it.                                                                                                                            | 30.0          |
-| object_check_forward_distance             | [m]  | double | Forward distance to search the avoidance target.                                                                                                                                                                                       | 150.0         |
-| object_check_backward_distance            | [m]  | double | Backward distance to search the avoidance target.                                                                                                                                                                                      | 2.0           |
-| object_check_goal_distance                | [m]  | double | Backward distance to search the avoidance target.                                                                                                                                                                                      | 20.0          |
-| object_check_shiftable_ratio              | [m]  | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 0.6           |
-| object_check_min_road_shoulder_width      | [m]  | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 0.5           |
-| object_last_seen_threshold                | [s]  | double | For the compensation of the detection lost. The object is registered once it is observed as an avoidance target. When the detection loses, the timer will start and the object will be un-registered when the time exceeds this limit. | 2.0           |
+| Name                                                  | Unit | Type   | Description                                                                                                                                                                                                                            | Default value |
+| :---------------------------------------------------- | :--- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| threshold_distance_object_is_on_center                | [m]  | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 1.0           |
+| object_ignore_section_traffic_light_in_front_distance | [m]  | double | If the distance between traffic light and vehicle is less than this parameter, this module will ignore it.                                                                                                                             | 30.0          |
+| object_ignore_section_crosswalk_in_front_distance     | [m]  | double | If the front distance between crosswalk and vehicle is less than this parameter, this module will ignore it.                                                                                                                           | 30.0          |
+| object_ignore_section_crosswalk_behind_distance       | [m]  | double | If the back distance between crosswalk and vehicle is less than this parameter, this module will ignore it.                                                                                                                            | 30.0          |
+| object_check_forward_distance                         | [m]  | double | Forward distance to search the avoidance target.                                                                                                                                                                                       | 150.0         |
+| object_check_backward_distance                        | [m]  | double | Backward distance to search the avoidance target.                                                                                                                                                                                      | 2.0           |
+| object_check_goal_distance                            | [m]  | double | Backward distance to search the avoidance target.                                                                                                                                                                                      | 20.0          |
+| object_check_shiftable_ratio                          | [m]  | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 0.6           |
+| object_check_min_road_shoulder_width                  | [m]  | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 0.5           |
+| object_last_seen_threshold                            | [s]  | double | For the compensation of the detection lost. The object is registered once it is observed as an avoidance target. When the detection loses, the timer will start and the object will be un-registered when the time exceeds this limit. | 2.0           |
 
 ### Safety check parameters
 

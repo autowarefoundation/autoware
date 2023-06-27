@@ -581,7 +581,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   {
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
-      param.enable = declare_parameter<bool>(ns + "enable");
+      param.is_target = declare_parameter<bool>(ns + "is_target");
       param.moving_speed_threshold = declare_parameter<double>(ns + "moving_speed_threshold");
       param.moving_time_threshold = declare_parameter<double>(ns + "moving_time_threshold");
       param.max_expand_ratio = declare_parameter<double>(ns + "max_expand_ratio");
@@ -616,12 +616,12 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
     std::string ns = "avoidance.target_filtering.";
     p.threshold_time_force_avoidance_for_stopped_vehicle =
       declare_parameter<double>(ns + "threshold_time_force_avoidance_for_stopped_vehicle");
-    p.object_ignore_distance_traffic_light =
-      declare_parameter<double>(ns + "object_ignore_distance_traffic_light");
-    p.object_ignore_distance_crosswalk_forward =
-      declare_parameter<double>(ns + "object_ignore_distance_crosswalk_forward");
-    p.object_ignore_distance_crosswalk_backward =
-      declare_parameter<double>(ns + "object_ignore_distance_crosswalk_backward");
+    p.object_ignore_section_traffic_light_in_front_distance =
+      declare_parameter<double>(ns + "object_ignore_section_traffic_light_in_front_distance");
+    p.object_ignore_section_crosswalk_in_front_distance =
+      declare_parameter<double>(ns + "object_ignore_section_crosswalk_in_front_distance");
+    p.object_ignore_section_crosswalk_behind_distance =
+      declare_parameter<double>(ns + "object_ignore_section_crosswalk_behind_distance");
     p.object_check_forward_distance =
       declare_parameter<double>(ns + "object_check_forward_distance");
     p.object_check_backward_distance =
