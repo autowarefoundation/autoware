@@ -48,11 +48,11 @@
       enable_prepare_segment_collision_check: true
       prepare_segment_ignore_object_velocity_thresh: 0.1 # [m/s]
       use_predicted_path_outside_lanelet: true
-      use_all_predicted_path: false
+      use_all_predicted_path: true
 
       # abort
       enable_cancel_lane_change: true
-      enable_abort_lane_change: false
+      enable_abort_lane_change: true
 
       abort_delta_time: 1.0                      # [s]
       aborting_time: 5.0                         # [s]
