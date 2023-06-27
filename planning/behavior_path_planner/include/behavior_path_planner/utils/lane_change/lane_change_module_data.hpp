@@ -26,6 +26,15 @@
 
 namespace behavior_path_planner
 {
+
+struct LaneChangeCancelParameters
+{
+  bool enable_on_prepare_phase{true};
+  bool enable_on_lane_changing_phase{false};
+  double delta_time{1.0};
+  double duration{5.0};
+  double max_lateral_jerk{10.0};
+};
 struct LaneChangeParameters
 {
   // trajectory generation
@@ -63,12 +72,7 @@ struct LaneChangeParameters
   bool check_pedestrian{true};  // check object pedestrian
 
   // abort
-  bool enable_cancel_lane_change{true};
-  bool enable_abort_lane_change{false};
-
-  double abort_delta_time{1.0};
-  double aborting_time{5.0};
-  double abort_max_lateral_jerk{10.0};
+  LaneChangeCancelParameters cancel;
 
   double finish_judge_lateral_threshold{0.2};
 

@@ -145,9 +145,12 @@ public:
 
   LaneChangeParameters getLaneChangeParam() const { return *lane_change_parameters_; }
 
-  bool isCancelEnabled() const { return lane_change_parameters_->enable_cancel_lane_change; }
+  bool isCancelEnabled() const { return lane_change_parameters_->cancel.enable_on_prepare_phase; }
 
-  bool isAbortEnabled() const { return lane_change_parameters_->enable_abort_lane_change; }
+  bool isAbortEnabled() const
+  {
+    return lane_change_parameters_->cancel.enable_on_lane_changing_phase;
+  }
 
   bool isSafe() const { return status_.is_safe; }
 

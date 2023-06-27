@@ -50,13 +50,13 @@
       use_predicted_path_outside_lanelet: true
       use_all_predicted_path: true
 
-      # abort
-      enable_cancel_lane_change: true
-      enable_abort_lane_change: true
-
-      abort_delta_time: 1.0                      # [s]
-      aborting_time: 5.0                         # [s]
-      abort_max_lateral_jerk: 1000.0             # [m/s3]
+      # lane change cancel
+      cancel:
+        enable_on_prepare_phase: true
+        enable_on_lane_changing_phase: true
+        delta_time: 1.0                     # [s]
+        duration: 5.0                       # [s]
+        max_lateral_jerk: 1000.0            # [m/s3]
 
       finish_judge_lateral_threshold: 0.2        # [m]
 

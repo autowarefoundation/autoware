@@ -825,13 +825,14 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
     p.check_pedestrian = declare_parameter<bool>(ns + "pedestrian");
   }
 
-  // abort
-  p.enable_cancel_lane_change = declare_parameter<bool>(parameter("enable_cancel_lane_change"));
-  p.enable_abort_lane_change = declare_parameter<bool>(parameter("enable_abort_lane_change"));
-
-  p.abort_delta_time = declare_parameter<double>(parameter("abort_delta_time"));
-  p.aborting_time = declare_parameter<double>(parameter("aborting_time"));
-  p.abort_max_lateral_jerk = declare_parameter<double>(parameter("abort_max_lateral_jerk"));
+  // lane change cancel
+  p.cancel.enable_on_prepare_phase =
+    declare_parameter<bool>(parameter("cancel.enable_on_prepare_phase"));
+  p.cancel.enable_on_lane_changing_phase =
+    declare_parameter<bool>(parameter("cancel.enable_on_lane_changing_phase"));
+  p.cancel.delta_time = declare_parameter<double>(parameter("cancel.delta_time"));
+  p.cancel.duration = declare_parameter<double>(parameter("cancel.duration"));
+  p.cancel.max_lateral_jerk = declare_parameter<double>(parameter("cancel.max_lateral_jerk"));
 
   p.finish_judge_lateral_threshold =
     declare_parameter<double>("lane_change.finish_judge_lateral_threshold");
@@ -850,10 +851,10 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
     exit(EXIT_FAILURE);
   }
 
-  if (p.abort_delta_time < 1.0) {
+  if (p.cancel.delta_time < 1.0) {
     RCLCPP_FATAL_STREAM(
-      get_logger(), "abort_delta_time: " << p.abort_delta_time << ", is too short.\n"
-                                         << "Terminating the program...");
+      get_logger(), "cancel.delta_time: " << p.cancel.delta_time << ", is too short.\n"
+                                          << "Terminating the program...");
     exit(EXIT_FAILURE);
   }
 

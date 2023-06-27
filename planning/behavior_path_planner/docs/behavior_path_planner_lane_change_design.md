@@ -240,7 +240,7 @@ detach
 
 Suppose the lane change trajectory is evaluated as unsafe. In that case, if the ego vehicle has not departed from the current lane yet, the trajectory will be reset, and the ego vehicle will resume the lane following the maneuver.
 
-The function can be enabled by setting `enable_cancel_lane_change` to `true`.
+The function can be enabled by setting `enable_on_prepare_phase` to `true`.
 
 The following image illustrates the cancel process.
 
@@ -248,7 +248,7 @@ The following image illustrates the cancel process.
 
 #### Abort
 
-Assume the ego vehicle has already departed from the current lane. In that case, it is dangerous to cancel the path, and it will cause the ego vehicle to change the heading direction abruptly. In this case, planning a trajectory that allows the ego vehicle to return to the current path while minimizing the heading changes is necessary. In this case, the lane change module will generate an abort path. The following images show an example of the abort path. Do note that the function DOESN'T GUARANTEE a safe abort process, as it didn't check the presence of the surrounding objects and/or their reactions. The function can be enable manually by setting both `enable_cancel_lane_change` and `enable_abort_lane_change` to `true`. The parameter `abort_max_lateral_jerk` need to be set to a high value in order for it to work.
+Assume the ego vehicle has already departed from the current lane. In that case, it is dangerous to cancel the path, and it will cause the ego vehicle to change the heading direction abruptly. In this case, planning a trajectory that allows the ego vehicle to return to the current path while minimizing the heading changes is necessary. In this case, the lane change module will generate an abort path. The following images show an example of the abort path. Do note that the function DOESN'T GUARANTEE a safe abort process, as it didn't check the presence of the surrounding objects and/or their reactions. The function can be enable manually by setting both `enable_on_prepare_phase` and `enable_on_lane_changing_phase` to `true`. The parameter `max_lateral_jerk` need to be set to a high value in order for it to work.
 
 ![abort](../image/lane_change/cancel_and_abort/lane_change-abort.png)
 
@@ -301,12 +301,13 @@ The following parameters are configurable in `behavior_path_planner.param.yaml`.
 
 The following parameters are configurable in `lane_change.param.yaml`.
 
-| Name                        | Unit | Type    | Description                             | Default value |
-| :-------------------------- | ---- | ------- | --------------------------------------- | ------------- |
-| `enable_cancel_lane_change` | [-]  | boolean | Enable cancel lane change               | true          |
-| `enable_abort_lane_change`  | [-]  | boolean | Enable abort lane change.               | false         |
-| `abort_delta_time`          | [s]  | double  | The time taken to start aborting.       | 3.0           |
-| `abort_max_lateral_jerk`    | [s]  | double  | The maximum lateral jerk for abort path | 1000.0        |
+| Name                                   | Unit    | Type    | Description                                                    | Default value |
+| :------------------------------------- | ------- | ------- | -------------------------------------------------------------- | ------------- |
+| `cancel.enable_on_prepare_phase`       | [-]     | boolean | Enable cancel lane change                                      | true          |
+| `cancel.enable_on_lane_changing_phase` | [-]     | boolean | Enable abort lane change.                                      | false         |
+| `cancel.delta_time`                    | [s]     | double  | The time taken to start steering to return to the center line. | 3.0           |
+| `cancel.duration`                      | [s]     | double  | The time taken to complete returning to the center line.       | 3.0           |
+| `cancel.max_lateral_jerk`              | [m/sss] | double  | The maximum lateral jerk for abort path                        | 1000.0        |
 
 ### Debug
 

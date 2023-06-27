@@ -102,7 +102,7 @@ def launch_setup(context, *args, **kwargs):
             behavior_path_planner_param,
             vehicle_param,
             {
-                "lane_change.enable_abort_lane_change": LaunchConfiguration(
+                "lane_change.cancel.enable_on_lane_changing_phase": LaunchConfiguration(
                     "use_experimental_lane_change_function"
                 ),
                 "lane_change.enable_collision_check_at_prepare_phase": LaunchConfiguration(
