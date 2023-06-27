@@ -1252,7 +1252,10 @@ void BehaviorPathPlannerNode::run()
   }
 
 #ifndef USE_OLD_ARCHITECTURE
-  if (planner_data_->operation_mode->mode != OperationModeState::AUTONOMOUS) {
+  const auto controlled_by_autoware_autonomously =
+    planner_data_->operation_mode->mode == OperationModeState::AUTONOMOUS &&
+    planner_data_->operation_mode->is_autoware_control_enabled;
+  if (!controlled_by_autoware_autonomously) {
     planner_manager_->resetRootLanelet(planner_data_);
   }
 #endif
