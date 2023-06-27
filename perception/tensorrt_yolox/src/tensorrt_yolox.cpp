@@ -104,21 +104,31 @@ namespace tensorrt_yolox
 TrtYoloX::TrtYoloX(
   const std::string & model_path, const std::string & precision, const int num_class,
   const float score_threshold, const float nms_threshold, tensorrt_common::BuildConfig build_config,
-  const bool use_gpu_preprocess, const std::string & calibration_image_list_file,
-  const double norm_factor, [[maybe_unused]] const std::string & cache_dir,
-  const tensorrt_common::BatchConfig & batch_config, const size_t max_workspace_size)
+  const bool use_gpu_preprocess, std::string calibration_image_list_path, const double norm_factor,
+  [[maybe_unused]] const std::string & cache_dir, const tensorrt_common::BatchConfig & batch_config,
+  const size_t max_workspace_size)
 {
   src_width_ = -1;
   src_height_ = -1;
   norm_factor_ = norm_factor;
   if (precision == "int8") {
-    if (calibration_image_list_file.empty()) {
-      throw std::runtime_error(
-        "calibration_image_list_file should be passed to generate int8 engine.");
+    if (build_config.clip_value <= 0.0) {
+      if (calibration_image_list_path.empty()) {
+        throw std::runtime_error(
+          "calibration_image_list_path should be passed to generate int8 engine "
+          "or specify values larger than zero to clip_value.");
+      }
+    } else {
+      // if clip value is larger than zero, calibration file is not needed
+      calibration_image_list_path = "";
     }
+
     int max_batch_size = 1;
     nvinfer1::Dims input_dims = tensorrt_common::get_input_dims(model_path);
-    std::vector<std::string> calibration_images = loadImageList(calibration_image_list_file, "");
+    std::vector<std::string> calibration_images;
+    if (calibration_image_list_path != "") {
+      calibration_images = loadImageList(calibration_image_list_path, "");
+    }
     tensorrt_yolox::ImageStream stream(max_batch_size, input_dims, calibration_images);
     fs::path calibration_table{model_path};
     std::string calibName = "";
@@ -231,9 +241,9 @@ TrtYoloX::TrtYoloX(
   }
 }
 
-void TrtYoloX::initPreprocesBuffer(int width, int height)
+void TrtYoloX::initPreprocessBuffer(int width, int height)
 {
-  // if size of source input has benn changed...
+  // if size of source input has been changed...
   if (src_width_ != -1 || src_height_ != -1) {
     if (width != src_width_ || height != src_height_) {
       // Free cuda memory to reallocate
@@ -315,7 +325,7 @@ void TrtYoloX::preprocessGpu(const std::vector<cv::Mat> & images)
     CHECK_CUDA_ERROR(cudaMemcpyAsync(
       image_buf_d_.get(), image_buf_h_.get(), image.cols * image.rows * 3 * sizeof(unsigned char),
       cudaMemcpyHostToDevice, *stream_));
-    // Preprcess on GPU
+    // Preprocess on GPU
     resize_bilinear_letterbox_nhwc_to_nchw32_gpu(
       input_d_.get(), image_buf_d_.get(), input_width, input_height, 3, image.cols, image.rows, 3,
       static_cast<float>(norm_factor_), *stream_);

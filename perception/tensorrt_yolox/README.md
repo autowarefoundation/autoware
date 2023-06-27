@@ -79,11 +79,17 @@ hence these parameters are ignored when users specify ONNX models including this
 
 This package accepts both `EfficientNMS_TRT` attached ONNXs and [models published from the official YOLOX repository](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/ONNXRuntime#download-onnx-models) (we referred to them as "plain" models).
 
+In addition to `yolox-tiny.onnx`, a custom model named `yolox-sPlus-opt.onnx` is either available.
+This model is based on YOLOX-s and tuned to perform more accurate detection with almost comparable execution speed with `yolox-tiny`.
+To get better results with this model, users are recommended to use some specific running arguments
+such as `precision:=int8`, `calibration_algorithm:=Entropy`, `clip_value:=6.0`.
+Users can refer `launch/yolox_sPlus_opt.launch.xml` to see how this model can be used.
+
 All models are automatically converted to TensorRT format.
 These converted files will be saved in the same directory as specified ONNX files
 with `.engine` filename extension and reused from the next run.
-The conversion process may take a while (typically a few minutes) and the inference process is blocked
-until complete the conversion, so it will take some time until detection results are published on the first run.
+The conversion process may take a while (**typically 10 to 20 minutes**) and the inference process is blocked
+until complete the conversion, so it will take some time until detection results are published (**even until appearing in the topic list**) on the first run
 
 ### Package acceptable model generation
 

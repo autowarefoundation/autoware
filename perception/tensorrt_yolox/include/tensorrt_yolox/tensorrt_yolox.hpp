@@ -81,9 +81,8 @@ public:
     const std::string & model_path, const std::string & precision, const int num_class = 8,
     const float score_threshold = 0.3, const float nms_threshold = 0.7,
     const tensorrt_common::BuildConfig build_config = tensorrt_common::BuildConfig(),
-    const bool use_gpu_preprocess = false,
-    const std::string & calibration_image_list_file = std::string(), const double norm_factor = 1.0,
-    const std::string & cache_dir = "",
+    const bool use_gpu_preprocess = false, std::string calibration_image_list_file = std::string(),
+    const double norm_factor = 1.0, const std::string & cache_dir = "",
     const tensorrt_common::BatchConfig & batch_config = {1, 1, 1},
     const size_t max_workspace_size = (1 << 30));
 
@@ -101,7 +100,7 @@ public:
    * @warning if we don't allocate buffers using it, "preprocess_gpu" allocates buffers at the
    * beginning
    */
-  void initPreprocesBuffer(int width, int height);
+  void initPreprocessBuffer(int width, int height);
 
   /**
    * @brief output TensorRT profiles for each layer
@@ -169,11 +168,11 @@ private:
 
   CudaUniquePtrHost<float[]> out_prob_h_;
 
-  // flag whether prepreceses are performed on GPU
+  // flag whether preprocess are performed on GPU
   bool use_gpu_preprocess_;
-  // host buffer for preprecessing on GPU
+  // host buffer for preprocessing on GPU
   CudaUniquePtrHost<unsigned char[]> image_buf_h_;
-  // device buffer for preprecessing on GPU
+  // device buffer for preprocessing on GPU
   CudaUniquePtr<unsigned char[]> image_buf_d_;
   // normalization factor used for preprocessing
   double norm_factor_;
