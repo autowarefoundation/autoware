@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "behavior_path_planner/marker_util/debug_utilities.hpp"
 #include "behavior_path_planner/utils/safety_check.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
@@ -40,6 +41,7 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
   vehicle_info.max_longitudinal_offset_m = 4.0;
   vehicle_info.vehicle_width_m = 2.0;
   vehicle_info.rear_overhang_m = 1.0;
+  CollisionCheckDebug debug;
 
   {
     Pose ego_pose;
@@ -49,7 +51,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
 
-    const auto polygon = createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin);
+    const auto polygon =
+      createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
@@ -75,7 +78,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
 
-    const auto polygon = createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin);
+    const auto polygon =
+      createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
@@ -102,7 +106,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
 
-    const auto polygon = createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin);
+    const auto polygon =
+      createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
@@ -149,7 +154,8 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
 
-    const auto polygon = createExtendedPolygon(obj_pose, shape, lon_length, lat_margin);
+    CollisionCheckDebug debug;
+    const auto polygon = createExtendedPolygon(obj_pose, shape, lon_length, lat_margin, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 

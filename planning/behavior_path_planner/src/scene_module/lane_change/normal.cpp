@@ -74,6 +74,7 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
   LaneChangePaths valid_paths{};
   const auto found_safe_path =
     getLaneChangePaths(current_lanes, target_lanes, direction_, &valid_paths);
+  debug_valid_path_ = valid_paths;
 
   if (valid_paths.empty()) {
     return {false, false};

@@ -57,6 +57,10 @@ struct CollisionCheckDebug
   Pose expected_ego_pose{};
   Pose expected_obj_pose{};
   Pose relative_to_ego{};
+  double rss_longitudinal{0.0};
+  double ego_to_obj_margin{0.0};
+  double longitudinal_offset{0.0};
+  double lateral_offset{0.0};
   bool is_front{false};
   bool allow_lane_change{false};
   std::vector<Pose> lerped_path;

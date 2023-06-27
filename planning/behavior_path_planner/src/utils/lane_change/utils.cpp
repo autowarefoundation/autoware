@@ -396,8 +396,8 @@ PathSafetyStatus isLaneChangePathSafe(
     return std::make_pair(tier4_autoware_utils::toHexString(obj.object_id), debug);
   };
 
-  const auto appendDebugInfo =
-    [&debug_data](std::pair<std::string, CollisionCheckDebug> & obj, bool && is_allowed) {
+  const auto updateDebugInfo =
+    [&debug_data](std::pair<std::string, CollisionCheckDebug> & obj, bool is_allowed) {
       const auto & key = obj.first;
       auto & element = obj.second;
       element.allow_lane_change = is_allowed;
@@ -438,7 +438,7 @@ PathSafetyStatus isLaneChangePathSafe(
             lane_change_path.duration.prepare,
             lane_change_parameter.prepare_segment_ignore_object_velocity_thresh)) {
         path_safety_status.is_safe = false;
-        appendDebugInfo(current_debug_data, false);
+        updateDebugInfo(current_debug_data, path_safety_status.is_safe);
         if (isObjectIndexIncluded(i, dynamic_objects_indices.target_lane)) {
           const auto & obj_pose = obj.kinematics.initial_pose_with_covariance.pose;
           const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
@@ -448,7 +448,7 @@ PathSafetyStatus isLaneChangePathSafe(
         }
       }
     }
-    appendDebugInfo(current_debug_data, true);
+    updateDebugInfo(current_debug_data, path_safety_status.is_safe);
   }
 
   if (!lane_change_parameter.use_predicted_path_outside_lanelet) {
@@ -469,13 +469,13 @@ PathSafetyStatus isLaneChangePathSafe(
           lane_change_parameter.prepare_segment_ignore_object_velocity_thresh, front_decel,
           rear_decel, current_debug_data.second)) {
       path_safety_status.is_safe = false;
-      appendDebugInfo(current_debug_data, false);
+      updateDebugInfo(current_debug_data, path_safety_status.is_safe);
       const auto & obj_pose = obj.kinematics.initial_pose_with_covariance.pose;
       const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
       path_safety_status.is_object_coming_from_rear |= !utils::safety_check::isTargetObjectFront(
         path, current_pose, common_parameter.vehicle_info, obj_polygon);
     }
-    appendDebugInfo(current_debug_data, true);
+    updateDebugInfo(current_debug_data, path_safety_status.is_safe);
   }
   return path_safety_status;
 }

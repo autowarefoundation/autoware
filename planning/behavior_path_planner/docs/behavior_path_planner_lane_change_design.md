@@ -319,6 +319,33 @@ The following parameters are configurable in `lane_change.param.yaml`.
 
 ## Debug Marker & Visualization
 
-To enable the debug marker, execute `ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner lane_change.publish_debug_marker true` (no restart is needed) or simply set the `publish_debug_marker` to `true` in the `lane_change.param.yaml` for permanent effect (restart is needed). Then add the marker `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/lanechange` in `rviz2`.
+To enable the debug marker, execute (no restart is needed)
 
-![debug](../image/lane_change/lane_change-debug.png)
+```shell
+ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner lane_change.publish_debug_marker true
+
+```
+
+or simply set the `publish_debug_marker` to `true` in the `lane_change.param.yaml` for permanent effect (restart is needed).
+
+Then add the marker
+
+```shell
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/lane_change_left
+```
+
+in `rviz2`.
+
+![debug](../image/lane_change/lane_change-debug-1.png)
+
+![debug2](../image/lane_change/lane_change-debug-2.png)
+
+![debug3](../image/lane_change/lane_change-debug-3.png)
+
+Available information
+
+1. Ego to object relation, plus safety check information
+2. Ego vehicle interpolated pose up to the latest safety check position.
+3. Object is safe or not, shown by the color of the polygon (Green = Safe, Red = unsafe)
+4. Valid candidate paths.
+5. Position when lane changing start and end.

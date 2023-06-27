@@ -62,9 +62,10 @@ bool isTargetObjectFront(
 
 Polygon2d createExtendedPolygon(
   const Pose & base_link_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
-  const double lon_length, const double lat_margin);
+  const double lon_length, const double lat_margin, CollisionCheckDebug & debug);
 Polygon2d createExtendedPolygon(
-  const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin);
+  const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin,
+  CollisionCheckDebug & debug);
 
 double calcRssDistance(
   const double front_object_velocity, const double rear_object_velocity,
