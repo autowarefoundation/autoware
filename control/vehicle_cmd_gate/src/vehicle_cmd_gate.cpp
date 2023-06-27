@@ -51,6 +51,9 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   rclcpp::QoS durable_qos{1};
   durable_qos.transient_local();
 
+  // Stop Checker
+  vehicle_stop_checker_ = std::make_unique<VehicleStopChecker>(this);
+
   // Publisher
   vehicle_cmd_emergency_pub_ =
     create_publisher<VehicleEmergencyStamped>("output/vehicle_cmd_emergency", durable_qos);
@@ -145,6 +148,7 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   emergency_acceleration_ = declare_parameter<double>("emergency_acceleration");
   moderate_stop_service_acceleration_ =
     declare_parameter<double>("moderate_stop_service_acceleration");
+  stop_check_duration_ = declare_parameter<double>("stop_check_duration");
 
   // Vehicle Parameter
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
@@ -492,7 +496,7 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   const double dt = getDt();
   const auto mode = current_operation_mode_;
   const auto current_status_cmd = getActualStatusAsCommand();
-  const auto ego_is_stopped = std::abs(current_status_cmd.longitudinal.speed) < 1e-3;
+  const auto ego_is_stopped = vehicle_stop_checker_->isVehicleStopped(stop_check_duration_);
   const auto input_cmd_is_stopping = in.longitudinal.acceleration < 0.0;
 
   // Apply transition_filter when transiting from MANUAL to AUTO.

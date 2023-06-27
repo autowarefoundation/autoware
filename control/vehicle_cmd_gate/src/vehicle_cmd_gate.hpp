@@ -20,6 +20,7 @@
 #include "vehicle_cmd_filter.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
+#include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -70,6 +71,7 @@ using nav_msgs::msg::Odometry;
 using EngageMsg = autoware_auto_vehicle_msgs::msg::Engage;
 using EngageSrv = tier4_external_api_msgs::srv::Engage;
 
+using motion_utils::VehicleStopChecker;
 struct Commands
 {
   AckermannControlCommand control;
@@ -219,6 +221,10 @@ private:
   // Pause interface for API
   std::unique_ptr<AdapiPauseInterface> adapi_pause_;
   std::unique_ptr<ModerateStopInterface> moderate_stop_interface_;
+
+  // stop checker
+  std::unique_ptr<VehicleStopChecker> vehicle_stop_checker_;
+  double stop_check_duration_;
 };
 
 }  // namespace vehicle_cmd_gate

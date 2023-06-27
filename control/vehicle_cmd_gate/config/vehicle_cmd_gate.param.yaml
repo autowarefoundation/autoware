@@ -10,6 +10,7 @@
     emergency_acceleration: -2.4
     moderate_stop_service_acceleration: -1.5
     stopped_state_entry_duration_time: 0.1
+    stop_check_duration: 1.0
     nominal:
       vel_lim: 25.0
       lon_acc_lim: 5.0
