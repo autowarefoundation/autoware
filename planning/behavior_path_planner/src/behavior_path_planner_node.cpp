@@ -833,6 +833,7 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.cancel.delta_time = declare_parameter<double>(parameter("cancel.delta_time"));
   p.cancel.duration = declare_parameter<double>(parameter("cancel.duration"));
   p.cancel.max_lateral_jerk = declare_parameter<double>(parameter("cancel.max_lateral_jerk"));
+  p.cancel.overhang_tolerance = declare_parameter<double>(parameter("cancel.overhang_tolerance"));
 
   p.finish_judge_lateral_threshold =
     declare_parameter<double>("lane_change.finish_judge_lateral_threshold");

@@ -57,6 +57,7 @@
         delta_time: 1.0                     # [s]
         duration: 5.0                       # [s]
         max_lateral_jerk: 1000.0            # [m/s3]
+        overhang_tolerance: 0.0             # [m]
 
       finish_judge_lateral_threshold: 0.2        # [m]
 

@@ -396,7 +396,8 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
     if (dist > estimated_travel_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
       return utils::isEgoWithinOriginalLane(
-        status_.current_lanes, estimated_pose, planner_data_->parameters);
+        status_.current_lanes, estimated_pose, planner_data_->parameters,
+        lane_change_parameters_->cancel.overhang_tolerance);
     }
   }
 

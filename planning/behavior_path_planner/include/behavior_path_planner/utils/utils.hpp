@@ -306,7 +306,7 @@ bool isEgoOutOfRoute(
 
 bool isEgoWithinOriginalLane(
   const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
-  const BehaviorPathPlannerParameters & common_param);
+  const BehaviorPathPlannerParameters & common_param, const double outer_margin = 0.0);
 
 // path management
 

@@ -1114,7 +1114,7 @@ bool isEgoOutOfRoute(
 
 bool isEgoWithinOriginalLane(
   const lanelet::ConstLanelets & current_lanes, const Pose & current_pose,
-  const BehaviorPathPlannerParameters & common_param)
+  const BehaviorPathPlannerParameters & common_param, const double outer_margin)
 {
   const auto lane_length = lanelet::utils::getLaneletLength2d(current_lanes);
   const auto lane_poly = lanelet::utils::getPolygonFromArcLength(current_lanes, 0, lane_length);
@@ -1124,9 +1124,17 @@ bool isEgoWithinOriginalLane(
   const auto vehicle_poly =
     tier4_autoware_utils::toFootprint(current_pose, base_link2front, base_link2rear, vehicle_width);
 
-  // Check if the ego vehicle is entirely within the lane by checking if the vehicle's polygon
-  // is within the lane's polygon
-  return boost::geometry::within(vehicle_poly, lanelet::utils::to2D(lane_poly).basicPolygon());
+  // Check if the ego vehicle is entirely within the lane with a given outer margin.
+  for (const auto & p : vehicle_poly.outer()) {
+    // When the point is in the polygon, the distance is 0. When it is out of the polygon, return a
+    // positive value.
+    const auto dist = boost::geometry::distance(p, lanelet::utils::to2D(lane_poly).basicPolygon());
+    if (dist > std::max(outer_margin, 0.0)) {
+      return false;  // out of polygon
+    }
+  }
+
+  return true;  // inside polygon
 }
 
 lanelet::ConstLanelets transformToLanelets(const DrivableLanes & drivable_lanes)

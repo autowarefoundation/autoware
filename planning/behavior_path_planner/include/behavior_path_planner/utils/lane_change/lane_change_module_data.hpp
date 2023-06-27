@@ -34,6 +34,7 @@ struct LaneChangeCancelParameters
   double delta_time{1.0};
   double duration{5.0};
   double max_lateral_jerk{10.0};
+  double overhang_tolerance{0.0};
 };
 struct LaneChangeParameters
 {
