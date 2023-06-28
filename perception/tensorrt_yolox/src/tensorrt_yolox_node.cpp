@@ -199,6 +199,8 @@ void TrtYoloXNode::replaceLabelMap()
     auto & label = label_map_[i];
     if (label == "PERSON") {
       label = "PEDESTRIAN";
+    } else if (label == "MOTORBIKE") {
+      label = "MOTORCYCLE";
     } else if (
       label != "CAR" && label != "PEDESTRIAN" && label != "BUS" && label != "TRUCK" &&
       label != "BICYCLE" && label != "MOTORCYCLE") {
