@@ -428,7 +428,8 @@ bool TrtYoloX::feedforward(const std::vector<cv::Mat> & images, ObjectArrays & o
   objects.clear();
   for (size_t i = 0; i < batch_size; ++i) {
     const size_t num_detection = static_cast<size_t>(out_num_detections[i]);
-    ObjectArray object_array(num_detection);
+    ObjectArray object_array;
+    object_array.reserve(num_detection);
     for (size_t j = 0; j < num_detection; ++j) {
       Object object{};
       const auto x1 = out_boxes[i * max_detections_ * 4 + j * 4] / scales_[i];
