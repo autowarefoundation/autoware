@@ -158,7 +158,8 @@ void NormalLaneChange::extendOutputDrivableArea(BehaviorModuleOutput & output)
   const auto & common_parameters = planner_data_->parameters;
   const auto & dp = planner_data_->drivable_area_expansion_parameters;
 
-  const auto drivable_lanes = getDrivableLanes();
+  const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
+    *getRouteHandler(), status_.current_lanes, status_.lane_change_lanes);
   const auto shorten_lanes = utils::cutOverlappedLanes(*output.path, drivable_lanes);
   const auto expanded_lanes = utils::expandLanelets(
     shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
@@ -763,13 +764,6 @@ bool NormalLaneChange::getLaneChangePaths(
   return false;
 }
 
-std::vector<DrivableLanes> NormalLaneChange::getDrivableLanes() const
-{
-  const auto drivable_lanes = utils::lane_change::generateDrivableLanes(
-    *getRouteHandler(), status_.current_lanes, status_.lane_change_lanes);
-  return utils::combineDrivableLanes(prev_drivable_area_info_.drivable_lanes, drivable_lanes);
-}
-
 PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
 {
   const auto current_pose = getEgoPose();
@@ -1117,11 +1111,5 @@ PathWithLaneId NormalLaneChangeBT::getPrepareSegment(
     getRouteHandler()->getCenterLinePath(current_lanes, s_start, s_end);
 
   return prepare_segment;
-}
-
-std::vector<DrivableLanes> NormalLaneChangeBT::getDrivableLanes() const
-{
-  return utils::lane_change::generateDrivableLanes(
-    *getRouteHandler(), status_.current_lanes, status_.lane_change_lanes);
 }
 }  // namespace behavior_path_planner
