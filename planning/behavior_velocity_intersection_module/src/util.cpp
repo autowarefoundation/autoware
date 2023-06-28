@@ -278,14 +278,14 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   // (5) stuck vehicle stop line
   int stuck_stop_line_ip_int = 0;
   if (use_stuck_stopline) {
-    stuck_stop_line_ip_int = std::get<0>(lane_interval_ip);
-  } else {
     const auto stuck_stop_line_idx_ip_opt =
       getFirstPointInsidePolygon(path_ip, lane_interval_ip, first_conflicting_area);
     if (!stuck_stop_line_idx_ip_opt) {
       return std::nullopt;
     }
     stuck_stop_line_ip_int = stuck_stop_line_idx_ip_opt.value();
+  } else {
+    stuck_stop_line_ip_int = std::get<0>(lane_interval_ip);
   }
   const auto stuck_stop_line_ip = static_cast<size_t>(
     std::max(0, stuck_stop_line_ip_int - stop_line_margin_idx_dist - base2front_idx_dist));
