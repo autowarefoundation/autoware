@@ -35,23 +35,12 @@ using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::getPoint;
 
-#ifdef USE_OLD_ARCHITECTURE
-SideShiftModule::SideShiftModule(
-  const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<SideShiftParameters> & parameters)
-: SceneModuleInterface{name, node, {}}, parameters_{parameters}
-{
-  using std::placeholders::_1;
-  lateral_offset_subscriber_ = node.create_subscription<LateralOffset>(
-    "~/input/lateral_offset", 1, std::bind(&SideShiftModule::onLateralOffset, this, _1));
-#else
 SideShiftModule::SideShiftModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<SideShiftParameters> & parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
 {
-#endif
   // If lateral offset is subscribed, it approves side shift module automatically
   clearWaitingApproval();
 }
@@ -186,7 +175,6 @@ ModuleStatus SideShiftModule::updateState()
 
 void SideShiftModule::updateData()
 {
-#ifndef USE_OLD_ARCHITECTURE
   if (
     planner_data_->lateral_offset != nullptr &&
     planner_data_->lateral_offset->stamp != latest_lateral_offset_stamp_) {
@@ -196,7 +184,6 @@ void SideShiftModule::updateData()
       latest_lateral_offset_stamp_ = planner_data_->lateral_offset->stamp;
     }
   }
-#endif
 
   if (current_state_ != ModuleStatus::RUNNING) {
     return;
@@ -214,10 +201,6 @@ void SideShiftModule::updateData()
   const auto reference_pose = prev_output_.shift_length.empty()
                                 ? planner_data_->self_odometry->pose.pose
                                 : utils::getUnshiftedEgoPose(getEgoPose(), prev_output_);
-#ifdef USE_OLD_ARCHITECTURE
-  const auto centerline_path =
-    utils::calcCenterLinePath(planner_data_, reference_pose, longest_dist_to_shift_line);
-#else
   if (prev_reference_.points.empty()) {
     prev_reference_ = *getPreviousModuleOutput().path;
   }
@@ -227,15 +210,10 @@ void SideShiftModule::updateData()
   const auto centerline_path = utils::calcCenterLinePath(
     planner_data_, reference_pose, longest_dist_to_shift_line,
     *getPreviousModuleOutput().reference_path);
-#endif
 
   constexpr double resample_interval = 1.0;
-#ifdef USE_OLD_ARCHITECTURE
-  reference_path_ = utils::resamplePathWithSpline(centerline_path, resample_interval);
-#else
   const auto backward_extened_path = extendBackwardLength(*getPreviousModuleOutput().path);
   reference_path_ = utils::resamplePathWithSpline(backward_extened_path, resample_interval);
-#endif
 
   path_shifter_.setPath(reference_path_);
 
@@ -358,32 +336,6 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
 
   return output;
 }
-
-#ifdef USE_OLD_ARCHITECTURE
-void SideShiftModule::onLateralOffset(const LateralOffset::ConstSharedPtr lateral_offset_msg)
-{
-  const double new_lateral_offset = lateral_offset_msg->lateral_offset;
-
-  RCLCPP_DEBUG(
-    getLogger(), "onLateralOffset start : lateral offset current = %f, new = &%f",
-    requested_lateral_offset_, new_lateral_offset);
-
-  // offset is not changed.
-  if (std::abs(inserted_lateral_offset_ - new_lateral_offset) < 1e-4) {
-    return;
-  }
-
-  if (parameters_->shift_request_time_limit < parameters_->time_to_start_shifting) {
-    RCLCPP_DEBUG(
-      getLogger(), "Shift request time might be too low. Generated trajectory might be wavy");
-  }
-  // new offset is requested.
-  if (isReadyForNextRequest(parameters_->shift_request_time_limit)) {
-    lateral_offset_change_request_ = true;
-    requested_lateral_offset_ = new_lateral_offset;
-  }
-}
-#endif
 
 ShiftLine SideShiftModule::calcShiftLine() const
 {

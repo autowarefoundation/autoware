@@ -145,19 +145,11 @@ std::pair<double, double> projectObstacleVelocityToTrajectory(
 }
 }  // namespace
 
-#ifdef USE_OLD_ARCHITECTURE
-DynamicAvoidanceModule::DynamicAvoidanceModule(
-  const std::string & name, rclcpp::Node & node,
-  std::shared_ptr<DynamicAvoidanceParameters> parameters)
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})},
-  parameters_{std::move(parameters)}
-#else
 DynamicAvoidanceModule::DynamicAvoidanceModule(
   const std::string & name, rclcpp::Node & node,
   std::shared_ptr<DynamicAvoidanceParameters> parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{std::move(parameters)}
-#endif
 {
 }
 
@@ -215,12 +207,6 @@ ModuleStatus DynamicAvoidanceModule::updateState()
   if (!has_avoidance_target) {
     return ModuleStatus::SUCCESS;
   }
-
-#ifndef USE_OLD_ARCHITECTURE
-  if (!isActivated() || isWaitingApproval()) {
-    return ModuleStatus::IDLE;
-  }
-#endif
 
   return ModuleStatus::RUNNING;
 }

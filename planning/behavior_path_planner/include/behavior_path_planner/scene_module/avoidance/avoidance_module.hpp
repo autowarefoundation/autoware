@@ -46,14 +46,9 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsg;
 class AvoidanceModule : public SceneModuleInterface
 {
 public:
-#ifdef USE_OLD_ARCHITECTURE
-  AvoidanceModule(
-    const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters);
-#else
   AvoidanceModule(
     const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
-#endif
 
   ModuleStatus updateState() override;
   ModuleStatus getNodeStatusWhileWaitingApproval() const override { return ModuleStatus::SUCCESS; }
@@ -67,12 +62,10 @@ public:
   void updateData() override;
   void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
 
-#ifndef USE_OLD_ARCHITECTURE
   void updateModuleParams(const std::shared_ptr<AvoidanceParameters> & parameters)
   {
     parameters_ = parameters;
   }
-#endif
   std::shared_ptr<AvoidanceDebugMsgArray> get_debug_msg_array() const;
 
 private:

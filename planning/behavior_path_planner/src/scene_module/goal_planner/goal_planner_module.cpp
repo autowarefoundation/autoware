@@ -47,20 +47,12 @@ using tier4_autoware_utils::inverseTransformPose;
 
 namespace behavior_path_planner
 {
-#ifdef USE_OLD_ARCHITECTURE
-GoalPlannerModule::GoalPlannerModule(
-  const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<GoalPlannerParameters> & parameters)
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})}, parameters_{parameters}
-{
-#else
 GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<GoalPlannerParameters> & parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
 {
-#endif
   LaneDepartureChecker lane_departure_checker{};
   lane_departure_checker.setVehicleInfo(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
 
@@ -232,11 +224,9 @@ BehaviorModuleOutput GoalPlannerModule::run()
   current_state_ = ModuleStatus::RUNNING;
   updateOccupancyGrid();
 
-#ifndef USE_OLD_ARCHITECTURE
   if (!isActivated()) {
     return planWaitingApproval();
   }
-#endif
 
   return plan();
 }
@@ -490,22 +480,12 @@ void GoalPlannerModule::generateGoalCandidates()
 {
   const auto & route_handler = planner_data_->route_handler;
 
-// with old architecture, module instance is not cleared when new route is received
-// so need to reset status here.
-#ifdef USE_OLD_ARCHITECTURE
-  // initialize when receiving new route
-  if (!last_received_time_ || *last_received_time_ != route_handler->getRouteHeader().stamp) {
-    // this process causes twice reset when receiving first route.
-    resetStatus();
-  }
-  last_received_time_ = std::make_unique<rclcpp::Time>(route_handler->getRouteHeader().stamp);
-
-#else
+  // with old architecture, module instance is not cleared when new route is received
+  // so need to reset status here.
   // todo: move this check out of this function after old architecture is removed
   if (!goal_candidates_.empty()) {
     return;
   }
-#endif
 
   // calculate goal candidates
   const Pose goal_pose = route_handler->getGoalPose();

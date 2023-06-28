@@ -36,30 +36,6 @@ using tier4_autoware_utils::inverseTransformPoint;
 
 namespace behavior_path_planner
 {
-#ifdef USE_OLD_ARCHITECTURE
-StartPlannerModule::StartPlannerModule(
-  const std::string & name, rclcpp::Node & node,
-  const std::shared_ptr<StartPlannerParameters> & parameters)
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {""})},
-  parameters_{parameters},
-  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
-{
-  lane_departure_checker_ = std::make_shared<LaneDepartureChecker>();
-  lane_departure_checker_->setVehicleInfo(vehicle_info_);
-
-  // set enabled planner
-  if (parameters_->enable_shift_pull_out) {
-    start_planner_planners_.push_back(
-      std::make_shared<ShiftPullOut>(node, *parameters, lane_departure_checker_));
-  }
-  if (parameters_->enable_geometric_pull_out) {
-    start_planner_planners_.push_back(std::make_shared<GeometricPullOut>(node, *parameters));
-  }
-  if (start_planner_planners_.empty()) {
-    RCLCPP_ERROR(getLogger(), "Not found enabled planner");
-  }
-}
-#else
 StartPlannerModule::StartPlannerModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<StartPlannerParameters> & parameters,
@@ -83,19 +59,12 @@ StartPlannerModule::StartPlannerModule(
     RCLCPP_ERROR(getLogger(), "Not found enabled planner");
   }
 }
-#endif
 
 BehaviorModuleOutput StartPlannerModule::run()
 {
-#ifdef USE_OLD_ARCHITECTURE
-  current_state_ = ModuleStatus::RUNNING;
-#endif
-
-#ifndef USE_OLD_ARCHITECTURE
   if (!isActivated()) {
     return planWaitingApproval();
   }
-#endif
 
   return plan();
 }
@@ -115,9 +84,6 @@ bool StartPlannerModule::isExecutionRequested() const
   if (
     tier4_autoware_utils::calcDistance2d(goal_pose.position, current_pose.position) <
     parameters_->th_arrived_distance) {
-#ifdef USE_OLD_ARCHITECTURE
-    is_executed_ = false;
-#endif
     return false;
   }
 
@@ -125,29 +91,17 @@ bool StartPlannerModule::isExecutionRequested() const
     !planner_data_->prev_route_id ||
     *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
 
-#ifdef USE_OLD_ARCHITECTURE
-  if (is_executed_) {
-    return true;
-  }
-#endif
-
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
   }
 
   if (!has_received_new_route_) {
-#ifdef USE_OLD_ARCHITECTURE
-    is_executed_ = false;
-#endif
     return false;
   }
 
   const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
                           parameters_->th_stopped_velocity;
   if (!is_stopped) {
-#ifdef USE_OLD_ARCHITECTURE
-    is_executed_ = false;
-#endif
     return false;
   }
 
@@ -163,15 +117,9 @@ bool StartPlannerModule::isExecutionRequested() const
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
   if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
-#ifdef USE_OLD_ARCHITECTURE
-    is_executed_ = false;
-#endif
     return false;
   }
 
-#ifdef USE_OLD_ARCHITECTURE
-  is_executed_ = true;
-#endif
   return true;
 }
 
@@ -184,17 +132,11 @@ ModuleStatus StartPlannerModule::updateState()
 {
   RCLCPP_DEBUG(getLogger(), "START_PLANNER updateState");
 
-#ifdef USE_OLD_ARCHITECTURE
-  if (isActivated() && !isWaitingApproval()) {
-    current_state_ = ModuleStatus::RUNNING;
-  }
-#else
   if (isActivated() && !isWaitingApproval()) {
     current_state_ = ModuleStatus::RUNNING;
   } else {
     current_state_ = ModuleStatus::IDLE;
   }
-#endif
 
   if (hasFinishedPullOut()) {
     return ModuleStatus::SUCCESS;
@@ -728,10 +670,6 @@ bool StartPlannerModule::hasFinishedPullOut() const
     lanelet::utils::getArcCoordinates(status_.current_lanes, status_.pull_out_path.end_pose);
 
   const bool has_finished = arclength_current.length - arclength_pull_out_end.length > 0.0;
-
-#ifdef USE_OLD_ARCHITECTURE
-  is_executed_ = !has_finished;
-#endif
 
   return has_finished;
 }

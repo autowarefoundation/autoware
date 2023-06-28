@@ -7,21 +7,26 @@ autoware_package()
 find_package(OpenCV REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-set(COMPILE_WITH_OLD_ARCHITECTURE FALSE)
-
-set(common_src
+ament_auto_add_library(behavior_path_planner_node SHARED
+  src/planner_manager.cpp
   src/steering_factor_interface.cpp
   src/behavior_path_planner_node.cpp
   src/scene_module/scene_module_visitor.cpp
   src/scene_module/avoidance/avoidance_module.cpp
+  src/scene_module/avoidance/manager.cpp
   src/scene_module/dynamic_avoidance/dynamic_avoidance_module.cpp
+  src/scene_module/dynamic_avoidance/manager.cpp
   src/scene_module/start_planner/start_planner_module.cpp
+  src/scene_module/start_planner/manager.cpp
   src/scene_module/goal_planner/goal_planner_module.cpp
+  src/scene_module/goal_planner/manager.cpp
   src/scene_module/side_shift/side_shift_module.cpp
+  src/scene_module/side_shift/manager.cpp
   src/scene_module/lane_change/interface.cpp
   src/scene_module/lane_change/normal.cpp
   src/scene_module/lane_change/external_request.cpp
   src/scene_module/lane_change/avoidance_by_lane_change.cpp
+  src/scene_module/lane_change/manager.cpp
   src/turn_signal_decider.cpp
   src/utils/utils.cpp
   src/utils/path_utils.cpp
@@ -49,33 +54,6 @@ set(common_src
   src/marker_util/avoidance/debug.cpp
   src/marker_util/lane_change/debug.cpp
 )
-
-if(COMPILE_WITH_OLD_ARCHITECTURE)
-  ament_auto_add_library(behavior_path_planner_node SHARED
-    src/behavior_tree_manager.cpp
-    src/scene_module/scene_module_bt_node_interface.cpp
-    src/scene_module/lane_following/lane_following_module.cpp
-    ${common_src}
-  )
-
-  target_compile_definitions(behavior_path_planner_node PRIVATE USE_OLD_ARCHITECTURE)
-
-  message(WARNING "Build behavior_path_planner with OLD framework...")
-
-else()
-  ament_auto_add_library(behavior_path_planner_node SHARED
-    src/planner_manager.cpp
-    src/scene_module/avoidance/manager.cpp
-    src/scene_module/dynamic_avoidance/manager.cpp
-    src/scene_module/start_planner/manager.cpp
-    src/scene_module/goal_planner/manager.cpp
-    src/scene_module/side_shift/manager.cpp
-    src/scene_module/lane_change/manager.cpp
-    ${common_src}
-  )
-
-  message(WARNING "Build behavior_path_planner with NEW framework...")
-endif()
 
 target_include_directories(behavior_path_planner_node SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIR}

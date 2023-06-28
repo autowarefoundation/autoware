@@ -66,11 +66,6 @@ struct PullOutStatus
 class StartPlannerModule : public SceneModuleInterface
 {
 public:
-#ifdef USE_OLD_ARCHITECTURE
-  StartPlannerModule(
-    const std::string & name, rclcpp::Node & node,
-    const std::shared_ptr<StartPlannerParameters> & parameters);
-#else
   StartPlannerModule(
     const std::string & name, rclcpp::Node & node,
     const std::shared_ptr<StartPlannerParameters> & parameters,
@@ -80,7 +75,6 @@ public:
   {
     parameters_ = parameters;
   }
-#endif
 
   BehaviorModuleOutput run() override;
 
@@ -156,11 +150,6 @@ private:
   bool hasFinishedCurrentPath();
 
   void setDebugData() const;
-
-// temporary for old architecture
-#ifdef USE_OLD_ARCHITECTURE
-  mutable bool is_executed_{false};
-#endif
 };
 }  // namespace behavior_path_planner
 

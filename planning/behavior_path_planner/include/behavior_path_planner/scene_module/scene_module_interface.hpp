@@ -76,37 +76,11 @@ public:
     clock_{node.get_clock()},
     is_waiting_approval_{false},
     is_locked_new_module_launch_{false},
-#ifdef USE_OLD_ARCHITECTURE
-    current_state_{ModuleStatus::SUCCESS},
-#else
     current_state_{ModuleStatus::IDLE},
-#endif
     rtc_interface_ptr_map_(rtc_interface_ptr_map),
     steering_factor_interface_ptr_(
       std::make_unique<SteeringFactorInterface>(&node, utils::convertToSnakeCase(name)))
   {
-#ifdef USE_OLD_ARCHITECTURE
-    {
-      const auto ns = std::string("~/debug/") + utils::convertToSnakeCase(name);
-      pub_debug_marker_ = node.create_publisher<MarkerArray>(ns, 20);
-    }
-
-    {
-      const auto ns = std::string("~/info/") + utils::convertToSnakeCase(name);
-      pub_info_marker_ = node.create_publisher<MarkerArray>(ns, 20);
-    }
-
-    {
-      const auto ns = std::string("~/virtual_wall/") + utils::convertToSnakeCase(name);
-      pub_virtual_wall_ = node.create_publisher<MarkerArray>(ns, 20);
-    }
-
-    {
-      const auto ns = std::string("~/output/stop_reasons");
-      pub_stop_reasons_ = node.create_publisher<StopReasonArray>(ns, 20);
-    }
-#endif
-
     for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
       uuid_map_.emplace(itr->first, generateUUID());
     }
@@ -185,10 +159,6 @@ public:
    */
   virtual BehaviorModuleOutput run()
   {
-#ifdef USE_OLD_ARCHITECTURE
-    current_state_ = ModuleStatus::RUNNING;
-#endif
-
     updateData();
 
     if (!isWaitingApproval()) {
@@ -212,11 +182,7 @@ public:
   {
     RCLCPP_DEBUG(getLogger(), "%s %s", name_.c_str(), __func__);
 
-#ifdef USE_OLD_ARCHITECTURE
-    current_state_ = ModuleStatus::SUCCESS;
-#else
     current_state_ = ModuleStatus::IDLE;
-#endif
 
     stop_reason_ = StopReason();
 
@@ -314,61 +280,6 @@ public:
    */
   virtual void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
 
-#ifdef USE_OLD_ARCHITECTURE
-  void publishInfoMarker() { pub_info_marker_->publish(info_marker_); }
-
-  void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
-
-  void publishStopReasons()
-  {
-    StopReasonArray stop_reason_array;
-    stop_reason_array.header.frame_id = "map";
-    stop_reason_array.header.stamp = clock_->now();
-
-    const auto reason = getStopReason();
-    if (reason.reason == "") {
-      return;
-    }
-
-    stop_reason_array.stop_reasons.push_back(reason);
-
-    pub_stop_reasons_->publish(stop_reason_array);
-  }
-
-  void publishVirtualWall()
-  {
-    MarkerArray markers{};
-
-    const auto opt_stop_pose = getStopPose();
-    if (!!opt_stop_pose) {
-      const auto virtual_wall = createStopVirtualWallMarker(
-        opt_stop_pose.get(), utils::convertToSnakeCase(name()), rclcpp::Clock().now(), 0);
-      appendMarkerArray(virtual_wall, &markers);
-    }
-
-    const auto opt_slow_pose = getSlowPose();
-    if (!!opt_slow_pose) {
-      const auto virtual_wall = createSlowDownVirtualWallMarker(
-        opt_slow_pose.get(), utils::convertToSnakeCase(name()), rclcpp::Clock().now(), 0);
-      appendMarkerArray(virtual_wall, &markers);
-    }
-
-    const auto opt_dead_pose = getDeadPose();
-    if (!!opt_dead_pose) {
-      const auto virtual_wall = createDeadLineVirtualWallMarker(
-        opt_dead_pose.get(), utils::convertToSnakeCase(name()), rclcpp::Clock().now(), 0);
-      appendMarkerArray(virtual_wall, &markers);
-    }
-
-    const auto module_specific_wall = getModuleVirtualWall();
-    appendMarkerArray(module_specific_wall, &markers);
-
-    pub_virtual_wall_->publish(markers);
-
-    resetWallPoses();
-  }
-#endif
-
   bool isWaitingApproval() const { return is_waiting_approval_; }
 
   bool isLockedNewModuleLaunch() const { return is_locked_new_module_launch_; }
@@ -458,13 +369,6 @@ private:
   std::string name_;
 
   rclcpp::Logger logger_;
-
-#ifdef USE_OLD_ARCHITECTURE
-  rclcpp::Publisher<MarkerArray>::SharedPtr pub_info_marker_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
-  rclcpp::Publisher<StopReasonArray>::SharedPtr pub_stop_reasons_;
-#endif
 
   BehaviorModuleOutput previous_module_output_;
 
@@ -575,11 +479,7 @@ protected:
   PlanResult path_candidate_;
   PlanResult path_reference_;
 
-#ifdef USE_OLD_ARCHITECTURE
-  ModuleStatus current_state_{ModuleStatus::SUCCESS};
-#else
   ModuleStatus current_state_{ModuleStatus::IDLE};
-#endif
 
   StopReason stop_reason_;
 

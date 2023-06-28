@@ -137,66 +137,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   m_set_param_res = this->add_on_set_parameters_callback(
     std::bind(&BehaviorPathPlannerNode::onSetParam, this, std::placeholders::_1));
 
-#ifdef USE_OLD_ARCHITECTURE
-  // behavior tree manager
-  {
-    RCLCPP_INFO(get_logger(), "use behavior tree.");
-
-    const std::string path_candidate_name_space = "/planning/path_candidate/";
-    const std::lock_guard<std::mutex> lock(mutex_manager_);  // for bt_manager_
-
-    bt_manager_ = std::make_shared<BehaviorTreeManager>(*this, getBehaviorTreeManagerParam());
-
-    auto side_shift_module =
-      std::make_shared<SideShiftModule>("SideShift", *this, side_shift_param_ptr_);
-    bt_manager_->registerSceneModule(side_shift_module);
-
-    auto avoidance_module =
-      std::make_shared<AvoidanceModule>("Avoidance", *this, avoidance_param_ptr_);
-    path_candidate_publishers_.emplace(
-      "Avoidance", create_publisher<Path>(path_candidate_name_space + "avoidance", 1));
-    bt_manager_->registerSceneModule(avoidance_module);
-
-    auto lane_following_module = std::make_shared<LaneFollowingModule>("LaneFollowing", *this);
-    bt_manager_->registerSceneModule(lane_following_module);
-
-    auto ext_request_lane_change_right_module =
-      std::make_shared<ExternalRequestLaneChangeRightBTModule>(
-        "ExternalRequestLaneChangeRight", *this, lane_change_param_ptr_);
-    path_candidate_publishers_.emplace(
-      "ExternalRequestLaneChangeRight",
-      create_publisher<Path>(path_candidate_name_space + "external_request_lane_change_right", 1));
-    bt_manager_->registerSceneModule(ext_request_lane_change_right_module);
-
-    auto ext_request_lane_change_left_module =
-      std::make_shared<ExternalRequestLaneChangeLeftBTModule>(
-        "ExternalRequestLaneChangeLeft", *this, lane_change_param_ptr_);
-    path_candidate_publishers_.emplace(
-      "ExternalRequestLaneChangeLeft",
-      create_publisher<Path>(path_candidate_name_space + "external_request_lane_change_left", 1));
-    bt_manager_->registerSceneModule(ext_request_lane_change_left_module);
-
-    auto lane_change_module =
-      std::make_shared<LaneChangeBTModule>("LaneChange", *this, lane_change_param_ptr_);
-    path_candidate_publishers_.emplace(
-      "LaneChange", create_publisher<Path>(path_candidate_name_space + "lane_change", 1));
-    bt_manager_->registerSceneModule(lane_change_module);
-
-    auto goal_planner =
-      std::make_shared<GoalPlannerModule>("GoalPlanner", *this, goal_planner_param_ptr_);
-    path_candidate_publishers_.emplace(
-      "GoalPlanner", create_publisher<Path>(path_candidate_name_space + "goal_planner", 1));
-    bt_manager_->registerSceneModule(goal_planner);
-
-    auto start_planner_module =
-      std::make_shared<StartPlannerModule>("StartPlanner", *this, start_planner_param_ptr_);
-    path_candidate_publishers_.emplace(
-      "StartPlanner", create_publisher<Path>(path_candidate_name_space + "start_planner", 1));
-    bt_manager_->registerSceneModule(start_planner_module);
-
-    bt_manager_->createBehaviorTree();
-  }
-#else
   {
     RCLCPP_INFO(get_logger(), "not use behavior tree.");
 
@@ -308,7 +248,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       planner_manager_->registerSceneModuleManager(manager);
     }
   }
-#endif
 
   // turn signal decider
   {
@@ -335,19 +274,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
 
 std::vector<std::string> BehaviorPathPlannerNode::getWaitingApprovalModules()
 {
-#ifdef USE_OLD_ARCHITECTURE
-  auto registered_modules_ptr = bt_manager_->getSceneModules();
-  std::vector<std::string> waiting_approval_modules;
-  for (const auto & module : registered_modules_ptr) {
-    if (module->isWaitingApproval() == true) {
-      waiting_approval_modules.push_back(module->name());
-#else
   auto all_scene_module_ptr = planner_manager_->getSceneModuleStatus();
   std::vector<std::string> waiting_approval_modules;
   for (const auto & module : all_scene_module_ptr) {
     if (module->is_waiting_approval == true) {
       waiting_approval_modules.push_back(module->module_name);
-#endif
     }
   }
   return waiting_approval_modules;
@@ -1126,17 +1057,6 @@ StartPlannerParameters BehaviorPathPlannerNode::getStartPlannerParam()
   return p;
 }
 
-#ifdef USE_OLD_ARCHITECTURE
-BehaviorTreeManagerParam BehaviorPathPlannerNode::getBehaviorTreeManagerParam()
-{
-  BehaviorTreeManagerParam p{};
-  p.bt_tree_config_path = declare_parameter<std::string>("bt_tree_config_path");
-  p.groot_zmq_publisher_port = declare_parameter<int>("groot_zmq_publisher_port");
-  p.groot_zmq_server_port = declare_parameter<int>("groot_zmq_server_port");
-  return p;
-}
-#endif
-
 // wait until mandatory data is ready
 bool BehaviorPathPlannerNode::isDataReady()
 {
@@ -1232,9 +1152,7 @@ void BehaviorPathPlannerNode::run()
   const bool is_first_time = !(planner_data_->route_handler->isHandlerReady());
   if (route_ptr) {
     planner_data_->route_handler->setRoute(*route_ptr);
-#ifndef USE_OLD_ARCHITECTURE
     planner_manager_->resetRootLanelet(planner_data_);
-#endif
 
     // uuid is not changed when rerouting with modified goal,
     // in this case do not need to rest modules.
@@ -1244,36 +1162,22 @@ void BehaviorPathPlannerNode::run()
     // so that the each modules do not have to care about the "route jump".
     if (!is_first_time && !has_same_route_id) {
       RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
-#ifdef USE_OLD_ARCHITECTURE
-      bt_manager_->resetBehaviorTree();
-#else
       planner_manager_->reset();
-#endif
     }
   }
 
-#ifndef USE_OLD_ARCHITECTURE
   const auto controlled_by_autoware_autonomously =
     planner_data_->operation_mode->mode == OperationModeState::AUTONOMOUS &&
     planner_data_->operation_mode->is_autoware_control_enabled;
   if (!controlled_by_autoware_autonomously) {
     planner_manager_->resetRootLanelet(planner_data_);
   }
-#endif
 
   // run behavior planner
-#ifdef USE_OLD_ARCHITECTURE
-  const auto output = bt_manager_->run(planner_data_);
-#else
   const auto output = planner_manager_->run(planner_data_);
-#endif
 
   // path handling
-#ifdef USE_OLD_ARCHITECTURE
-  const auto path = getPath(output, planner_data_, bt_manager_);
-#else
   const auto path = getPath(output, planner_data_, planner_manager_);
-#endif
   // update planner data
   planner_data_->prev_output_path = path;
 
@@ -1305,19 +1209,10 @@ void BehaviorPathPlannerNode::run()
       get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
   }
 
-#ifdef USE_OLD_ARCHITECTURE
-  publishPathCandidate(bt_manager_->getSceneModules(), planner_data_);
-  publishSceneModuleDebugMsg(bt_manager_->getAllSceneModuleDebugMsgData());
-#else
   publishSceneModuleDebugMsg(planner_manager_->getDebugMsg());
   publishPathCandidate(planner_manager_->getSceneModuleManagers(), planner_data_);
   publishPathReference(planner_manager_->getSceneModuleManagers(), planner_data_);
   stop_reason_publisher_->publish(planner_manager_->getStopReasons());
-#endif
-
-#ifdef USE_OLD_ARCHITECTURE
-  lk_manager.unlock();  // release bt_manager_
-#endif
 
   if (output.modified_goal) {
     PoseWithUuidStamped modified_goal = *(output.modified_goal);
@@ -1336,12 +1231,10 @@ void BehaviorPathPlannerNode::run()
 
   lk_pd.unlock();  // release planner_data_
 
-#ifndef USE_OLD_ARCHITECTURE
   planner_manager_->print();
   planner_manager_->publishMarker();
   planner_manager_->publishVirtualWall();
   lk_manager.unlock();  // release planner_manager_
-#endif
 
   RCLCPP_DEBUG(get_logger(), "----- behavior path planner end -----\n\n");
 }
@@ -1518,20 +1411,6 @@ void BehaviorPathPlannerNode::publishSceneModuleDebugMsg(
   }
 }
 
-#ifdef USE_OLD_ARCHITECTURE
-void BehaviorPathPlannerNode::publishPathCandidate(
-  const std::vector<std::shared_ptr<SceneModuleInterface>> & scene_modules,
-  const std::shared_ptr<PlannerData> & planner_data)
-{
-  for (auto & module : scene_modules) {
-    if (path_candidate_publishers_.count(module->name()) != 0) {
-      path_candidate_publishers_.at(module->name())
-        ->publish(
-          convertToPath(module->getPathCandidate(), module->isExecutionReady(), planner_data));
-    }
-  }
-}
-#else
 void BehaviorPathPlannerNode::publishPathCandidate(
   const std::vector<std::shared_ptr<SceneModuleManagerInterface>> & managers,
   const std::shared_ptr<PlannerData> & planner_data)
@@ -1583,7 +1462,6 @@ void BehaviorPathPlannerNode::publishPathReference(
     }
   }
 }
-#endif
 
 Path BehaviorPathPlannerNode::convertToPath(
   const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready,
@@ -1611,15 +1489,9 @@ Path BehaviorPathPlannerNode::convertToPath(
   return output;
 }
 
-#ifdef USE_OLD_ARCHITECTURE
-PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
-  const BehaviorModuleOutput & bt_output, const std::shared_ptr<PlannerData> & planner_data,
-  const std::shared_ptr<BehaviorTreeManager> & bt_manager)
-#else
 PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
   const BehaviorModuleOutput & bt_output, const std::shared_ptr<PlannerData> & planner_data,
   const std::shared_ptr<PlannerManager> & planner_manager)
-#endif
 {
   // TODO(Horibe) do some error handling when path is not available.
 
@@ -1630,11 +1502,7 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
     get_logger(), "BehaviorTreeManager: output is %s.", bt_output.path ? "FOUND" : "NOT FOUND");
 
   PathWithLaneId connected_path;
-#ifdef USE_OLD_ARCHITECTURE
-  const auto module_status_ptr_vec = bt_manager->getModulesStatus();
-#else
   const auto module_status_ptr_vec = planner_manager->getSceneModuleStatus();
-#endif
 
   const auto resampled_path = utils::resamplePathWithSpline(
     *path, planner_data->parameters.output_path_interval, keepInputPoints(module_status_ptr_vec));
@@ -1645,11 +1513,7 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
 bool BehaviorPathPlannerNode::keepInputPoints(
   const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses) const
 {
-#ifdef USE_OLD_ARCHITECTURE
-  const std::vector<std::string> target_modules = {"GoalPlanner", "Avoidance"};
-#else
   const std::vector<std::string> target_modules = {"goal_planner", "avoidance"};
-#endif
 
   const auto target_status = ModuleStatus::RUNNING;
 
@@ -1745,12 +1609,10 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
     return result;
   }
 
-#ifndef USE_OLD_ARCHITECTURE
   {
     const std::lock_guard<std::mutex> lock(mutex_manager_);  // for planner_manager_
     planner_manager_->updateModuleParams(parameters);
   }
-#endif
 
   result.successful = true;
   result.reason = "success";

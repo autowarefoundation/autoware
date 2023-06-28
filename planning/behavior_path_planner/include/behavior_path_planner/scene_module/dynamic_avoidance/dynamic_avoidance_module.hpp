@@ -109,11 +109,6 @@ public:
     }
   };
 
-#ifdef USE_OLD_ARCHITECTURE
-  DynamicAvoidanceModule(
-    const std::string & name, rclcpp::Node & node,
-    std::shared_ptr<DynamicAvoidanceParameters> parameters);
-#else
   DynamicAvoidanceModule(
     const std::string & name, rclcpp::Node & node,
     std::shared_ptr<DynamicAvoidanceParameters> parameters,
@@ -123,7 +118,6 @@ public:
   {
     parameters_ = parameters;
   }
-#endif
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;

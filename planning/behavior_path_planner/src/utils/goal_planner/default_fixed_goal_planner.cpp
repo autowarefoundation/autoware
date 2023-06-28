@@ -30,48 +30,14 @@ BehaviorModuleOutput DefaultFixedGoalPlanner::plan(
   const std::shared_ptr<const PlannerData> & planner_data) const
 {
   BehaviorModuleOutput output =
-#ifdef USE_OLD_ARCHITECTURE
-    // generate reference path in this planner
-    std::invoke([this, &planner_data]() {
-      auto path = getReferencePath(planner_data);
-      if (!path) {
-        return BehaviorModuleOutput{};
-      }
-      return *path;
-    });
-#else
     // use planner previous module reference path
     getPreviousModuleOutput();
-#endif
   const PathWithLaneId smoothed_path =
     modifyPathForSmoothGoalConnection(*(output.path), planner_data);
   output.path = std::make_shared<PathWithLaneId>(smoothed_path);
   output.reference_path = std::make_shared<PathWithLaneId>(smoothed_path);
   return output;
 }
-
-#ifdef USE_OLD_ARCHITECTURE
-boost::optional<BehaviorModuleOutput> DefaultFixedGoalPlanner::getReferencePath(
-  const std::shared_ptr<const PlannerData> & planner_data) const
-{
-  const auto & route_handler = planner_data->route_handler;
-  const auto current_pose = planner_data->self_odometry->pose.pose;
-  const double dist_threshold = planner_data->parameters.ego_nearest_dist_threshold;
-  const double yaw_threshold = planner_data->parameters.ego_nearest_yaw_threshold;
-
-  lanelet::ConstLanelet current_lane{};
-  if (route_handler->getClosestLaneletWithConstrainsWithinRoute(
-        current_pose, &current_lane, dist_threshold, yaw_threshold)) {
-    return utils::getReferencePath(current_lane, planner_data);
-  }
-
-  if (route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    return utils::getReferencePath(current_lane, planner_data);
-  }
-
-  return {};  // something wrong
-}
-#endif
 
 PathWithLaneId DefaultFixedGoalPlanner::modifyPathForSmoothGoalConnection(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data) const

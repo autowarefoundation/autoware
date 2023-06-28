@@ -15,16 +15,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_
 #define BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_
 
-#ifdef USE_OLD_ARCHITECTURE
-#include <behaviortree_cpp_v3/basic_types.h>
-#endif
-
 namespace behavior_path_planner
 {
-
-#ifdef USE_OLD_ARCHITECTURE
-using ModuleStatus = BT::NodeStatus;
-#else
 enum class ModuleStatus {
   IDLE = 0,
   RUNNING = 1,
@@ -32,8 +24,6 @@ enum class ModuleStatus {
   FAILURE = 3,
   // SKIPPED = 4,
 };
-#endif
-
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__MODULE_STATUS_HPP_

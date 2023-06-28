@@ -96,20 +96,12 @@ bool isDrivingSameLane(
 }
 }  // namespace
 
-#ifdef USE_OLD_ARCHITECTURE
-AvoidanceModule::AvoidanceModule(
-  const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters)
-: SceneModuleInterface{name, node, createRTCInterfaceMap(node, name, {"left", "right"})},
-  parameters_{parameters},
-  helper_{parameters}
-#else
 AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map},
   parameters_{parameters},
   helper_{parameters}
-#endif
 {
 }
 
@@ -122,26 +114,11 @@ bool AvoidanceModule::isExecutionRequested() const
   }
 
   // Check ego is in preferred lane
-#ifdef USE_OLD_ARCHITECTURE
-  const auto avoid_data = calcAvoidancePlanningData(debug_data_);
-
-  const auto current_lanes = utils::getCurrentLanes(planner_data_);
-  lanelet::ConstLanelet current_lane;
-  lanelet::utils::query::getClosestLanelet(
-    current_lanes, planner_data_->self_odometry->pose.pose, &current_lane);
-  const auto num = planner_data_->route_handler->getNumLaneToPreferredLane(current_lane);
-
-  if (num != 0) {
-    return false;
-  }
-#else
   const auto avoid_data = avoidance_data_;
-#endif
 
   updateInfoMarker(avoid_data);
   updateDebugMarker(avoid_data, path_shifter_, debug_data_);
 
-#ifndef USE_OLD_ARCHITECTURE
   // there is object that should be avoid. return true.
   if (!!avoid_data.stop_target_object) {
     return true;
@@ -150,7 +127,6 @@ bool AvoidanceModule::isExecutionRequested() const
   if (avoid_data.unapproved_new_sl.empty()) {
     return false;
   }
-#endif
 
   return !avoid_data.target_objects.empty();
 }
@@ -201,14 +177,10 @@ ModuleStatus AvoidanceModule::updateState()
 
   helper_.setPreviousDrivingLanes(data.current_lanelets);
 
-#ifdef USE_OLD_ARCHITECTURE
-  return ModuleStatus::RUNNING;
-#else
   if (is_plan_running || current_state_ == ModuleStatus::RUNNING) {
     return ModuleStatus::RUNNING;
   }
   return ModuleStatus::IDLE;
-#endif
 }
 
 bool AvoidanceModule::isAvoidancePlanRunning() const
@@ -253,14 +225,9 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
   }();
 
   // center line path (output of this function must have size > 1)
-#ifdef USE_OLD_ARCHITECTURE
-  const auto center_path =
-    utils::calcCenterLinePath(planner_data_, reference_pose, longest_dist_to_shift_line);
-#else
   const auto center_path = utils::calcCenterLinePath(
     planner_data_, reference_pose, longest_dist_to_shift_line,
     *getPreviousModuleOutput().reference_path);
-#endif
 
   debug.center_line = center_path;
   if (center_path.points.size() < 2) {
@@ -270,11 +237,7 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
   }
 
   // reference path
-#ifdef USE_OLD_ARCHITECTURE
-  data.reference_path_rough = center_path;
-#else
   data.reference_path_rough = extendBackwardLength(*getPreviousModuleOutput().path);
-#endif
 
   data.reference_path = utils::resamplePathWithSpline(
     data.reference_path_rough, parameters_->resample_interval_for_planning);
@@ -295,14 +258,8 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
     calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
 
   // lanelet info
-#ifdef USE_OLD_ARCHITECTURE
-  data.current_lanelets = utils::calcLaneAroundPose(
-    planner_data_->route_handler, reference_pose, planner_data_->parameters.forward_path_length,
-    planner_data_->parameters.backward_path_length);
-#else
   data.current_lanelets =
     utils::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
-#endif
 
   // keep avoidance state
   data.state = avoidance_data_.state;
@@ -2676,11 +2633,9 @@ BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
   // we can execute the plan() since it handles the approval appropriately.
   BehaviorModuleOutput out = plan();
 
-#ifndef USE_OLD_ARCHITECTURE
   if (path_shifter_.getShiftLines().empty()) {
     out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   }
-#endif
 
   const auto all_unavoidable = std::all_of(
     data.target_objects.begin(), data.target_objects.end(),
@@ -2932,7 +2887,6 @@ void AvoidanceModule::updateData()
 
   helper_.setData(planner_data_);
 
-#ifndef USE_OLD_ARCHITECTURE
   if (!helper_.isInitialized()) {
     helper_.setPreviousSplineShiftPath(toShiftedPath(*getPreviousModuleOutput().path));
     helper_.setPreviousLinearShiftPath(toShiftedPath(*getPreviousModuleOutput().path));
@@ -2940,7 +2894,6 @@ void AvoidanceModule::updateData()
     helper_.setPreviousDrivingLanes(
       utils::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_));
   }
-#endif
 
   debug_data_ = DebugData();
   avoidance_data_ = calcAvoidancePlanningData(debug_data_);
@@ -2958,15 +2911,6 @@ void AvoidanceModule::updateData()
 
   // update registered shift point for new reference path & remove past objects
   updateRegisteredRawShiftLines();
-
-#ifdef USE_OLD_ARCHITECTURE
-  if (!helper_.isInitialized()) {
-    helper_.setPreviousSplineShiftPath(toShiftedPath(avoidance_data_.reference_path));
-    helper_.setPreviousLinearShiftPath(toShiftedPath(avoidance_data_.reference_path));
-    helper_.setPreviousReferencePath(avoidance_data_.reference_path);
-    helper_.setPreviousDrivingLanes(avoidance_data_.current_lanelets);
-  }
-#endif
 
   fillShiftLine(avoidance_data_, debug_data_);
   fillEgoStatus(avoidance_data_, debug_data_);
