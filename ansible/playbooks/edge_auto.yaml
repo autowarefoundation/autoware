@@ -60,8 +60,8 @@
     - role: autoware.dev_env.ros2_domain_id
     - role: autoware.dev_env.cyclonedds
     - role: autoware.dev_env.ptp4l_host
-      when: prompt_configure_network
+      when: prompt_configure_network == 'y'
     - role: autoware.dev_env.enlarge_rx_ring_buffer
-      when: prompt_configure_network
+      when: prompt_configure_network == 'y'
     - role: autoware.dev_env.netplan
-      when: prompt_configure_network
+      when: prompt_configure_network == 'y'
