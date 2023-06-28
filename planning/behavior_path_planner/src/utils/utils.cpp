@@ -2573,23 +2573,32 @@ std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & class
   return label;
 }
 
-lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> & planner_data)
+lanelet::ConstLanelets getCurrentLanes(
+  const std::shared_ptr<const PlannerData> & planner_data, const double backward_path_length,
+  const double forward_path_length)
 {
   const auto & route_handler = planner_data->route_handler;
   const auto current_pose = planner_data->self_odometry->pose.pose;
-  const auto & common_parameters = planner_data->parameters;
 
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    // RCLCPP_ERROR(getLogger(), "failed to find closest lanelet within route!!!");
-    std::cerr << "failed to find closest lanelet within route!!!" << std::endl;
+    auto clock{rclcpp::Clock{RCL_ROS_TIME}};
+    RCLCPP_ERROR_STREAM_THROTTLE(
+      rclcpp::get_logger("behavior_path_planner").get_child("utils"), clock, 1000,
+      "failed to find closest lanelet within route!!!");
     return {};  // TODO(Horibe) what should be returned?
   }
 
   // For current_lanes with desired length
   return route_handler->getLaneletSequence(
-    current_lane, current_pose, common_parameters.backward_path_length,
-    common_parameters.forward_path_length);
+    current_lane, current_pose, backward_path_length, forward_path_length);
+}
+
+lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> & planner_data)
+{
+  const auto & common_parameters = planner_data->parameters;
+  return getCurrentLanes(
+    planner_data, common_parameters.backward_path_length, common_parameters.forward_path_length);
 }
 
 lanelet::ConstLanelets getCurrentLanesFromPath(
