@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="traffic_light_recognition_marker_publisher" exec="traffic_light_recognition_marker_publisher_node" name="traffic_light_recognition_marker_publisher">
+    <remap from="~/input/lanelet2_map" to="/map/vector_map"/>
+    <remap from="~/input/traffic_signals" to="/perception/traffic_light_recognition/traffic_signals"/>
+    <remap from="~/output/marker" to="/perception/traffic_light_recognition/traffic_signals_marker"/>
+  </node>
+</launch>
