@@ -715,6 +715,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     return IntersectionModule::Indecisive{};
   }
 
+  if (default_stop_line_idx == 0) {
+    RCLCPP_DEBUG(logger_, "stop line index is 0");
+    return IntersectionModule::Indecisive{};
+  }
+
   const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   debug_data_.pass_judge_wall_pose =
     planning_utils::getAheadPose(pass_judge_line_idx, baselink2front, *path);
@@ -795,7 +800,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
       path->points.at(default_stop_line_idx).point.pose.position);
     const bool approached_stop_line =
       (std::fabs(dist_stopline) < planner_param_.common.stop_overshoot_margin);
+    const bool over_stop_line = (dist_stopline < 0.0);
     const bool is_stopped = planner_data_->isVehicleStopped();
+    if (over_stop_line) {
+      before_creep_state_machine_.setState(StateMachine::State::GO);
+    }
     if (before_creep_state_machine_.getState() == StateMachine::State::GO) {
       if (has_collision) {
         return IntersectionModule::OccludedCollisionStop{
