@@ -284,7 +284,7 @@ TurnSignalInfo NormalLaneChange::updateOutputTurnSignal()
 
 lanelet::ConstLanelets NormalLaneChange::getCurrentLanes() const
 {
-  return utils::getCurrentLanesFromPath(prev_module_reference_path_, planner_data_);
+  return utils::getCurrentLanesFromPath(prev_module_path_, planner_data_);
 }
 
 lanelet::ConstLanelets NormalLaneChange::getLaneChangeLanes(
