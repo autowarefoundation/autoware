@@ -7,11 +7,10 @@ When a initial pose topic is received, call the localization initialize API.
 This node depends on the map height fitter library.
 [See here for more details.](../../../map/map_height_fitter/README.md)
 
-| Interface    | Local Name     | Global Name                       | Description                               |
-| ------------ | -------------- | --------------------------------- | ----------------------------------------- |
-| Subscription | initialpose    | /initialpose                      | The pose for localization initialization. |
-| Client       | fit_map_height | /localization/util/fit_map_height | To fix initial pose to map height         |
-| Client       | -              | /api/localization/initialize      | The localization initialize API.          |
+| Interface    | Local Name  | Global Name                  | Description                               |
+| ------------ | ----------- | ---------------------------- | ----------------------------------------- |
+| Subscription | initialpose | /initialpose                 | The pose for localization initialization. |
+| Client       | -           | /api/localization/initialize | The localization initialize API.          |
 
 ## routing_adaptor
 
