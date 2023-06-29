@@ -210,15 +210,15 @@ std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const std::vector<std::vector<int64_t>> & sorted_lane_ids, const double longitudinal_acceleration,
-  const double lateral_acceleration, const LaneChangePhaseInfo lane_change_length,
-  const LaneChangePhaseInfo lane_change_velocity, const double terminal_lane_changing_velocity,
-  const LaneChangePhaseInfo lane_change_time)
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids,
+  const LaneChangePhaseInfo longitudinal_acceleration, const double lateral_acceleration,
+  const LaneChangePhaseInfo lane_change_length, const LaneChangePhaseInfo lane_change_velocity,
+  const double terminal_lane_changing_velocity, const LaneChangePhaseInfo lane_change_time)
 {
   PathShifter path_shifter;
   path_shifter.setPath(target_lane_reference_path);
   path_shifter.addShiftLine(shift_line);
-  path_shifter.setLongitudinalAcceleration(longitudinal_acceleration);
+  path_shifter.setLongitudinalAcceleration(longitudinal_acceleration.lane_changing);
   ShiftedPath shifted_path;
 
   // offset front side
@@ -238,7 +238,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   const auto & lane_changing_length = lane_change_length.lane_changing;
 
   LaneChangePath candidate_path;
-  candidate_path.acceleration = longitudinal_acceleration;
+  candidate_path.longitudinal_acceleration = longitudinal_acceleration;
   candidate_path.length.prepare = prepare_length;
   candidate_path.length.lane_changing = lane_changing_length;
   candidate_path.duration.prepare = lane_change_time.prepare;

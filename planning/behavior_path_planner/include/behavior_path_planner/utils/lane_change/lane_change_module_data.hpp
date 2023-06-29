@@ -94,6 +94,11 @@ struct LaneChangePhaseInfo
   double lane_changing{0.0};
 
   [[nodiscard]] double sum() const { return prepare + lane_changing; }
+
+  LaneChangePhaseInfo(const double _prepare, const double _lane_changing)
+  : prepare(_prepare), lane_changing(_lane_changing)
+  {
+  }
 };
 
 struct LaneChangeTargetObjectIndices

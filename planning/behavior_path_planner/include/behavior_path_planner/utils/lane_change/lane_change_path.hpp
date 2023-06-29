@@ -36,9 +36,12 @@ struct LaneChangePath
   Pose lane_changing_end{};
   ShiftedPath shifted_path{};
   ShiftLine shift_line{};
-  double acceleration{0.0};
-  LaneChangePhaseInfo length{};
-  LaneChangePhaseInfo duration{};
+
+  // longitudinal acceleration applied on the prepare and lane-changing phase
+  LaneChangePhaseInfo longitudinal_acceleration{0.0, 0.0};
+
+  LaneChangePhaseInfo length{0.0, 0.0};
+  LaneChangePhaseInfo duration{0.0, 0.0};
   PathWithLaneId prev_path{};
 };
 using LaneChangePaths = std::vector<LaneChangePath>;

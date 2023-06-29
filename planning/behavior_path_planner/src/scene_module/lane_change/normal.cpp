@@ -578,11 +578,13 @@ bool NormalLaneChange::getLaneChangePaths(
       minimum_lane_changing_velocity);
 
     // compute actual longitudinal acceleration
-    const double longitudinal_acc = (prepare_velocity - current_velocity) / prepare_duration;
+    const double longitudinal_acc_on_prepare =
+      (prepare_velocity - current_velocity) / prepare_duration;
 
     // get path on original lanes
     const double prepare_length = std::max(
-      current_velocity * prepare_duration + 0.5 * longitudinal_acc * std::pow(prepare_duration, 2),
+      current_velocity * prepare_duration +
+        0.5 * longitudinal_acc_on_prepare * std::pow(prepare_duration, 2),
       minimum_prepare_length);
 
     if (prepare_length < target_length) {
@@ -629,14 +631,15 @@ bool NormalLaneChange::getLaneChangePaths(
          lateral_acc += lateral_acc_resolution) {
       const auto lane_changing_time = PathShifter::calcShiftTimeFromJerk(
         shift_length, common_parameter.lane_changing_lateral_jerk, lateral_acc);
-      const double lane_changing_lon_acc = utils::lane_change::calcLaneChangingAcceleration(
-        initial_lane_changing_velocity, max_path_velocity, lane_changing_time,
-        sampled_longitudinal_acc);
+      const double longitudinal_acc_on_lane_changing =
+        utils::lane_change::calcLaneChangingAcceleration(
+          initial_lane_changing_velocity, max_path_velocity, lane_changing_time,
+          sampled_longitudinal_acc);
       const auto lane_changing_length =
         initial_lane_changing_velocity * lane_changing_time +
-        0.5 * lane_changing_lon_acc * lane_changing_time * lane_changing_time;
+        0.5 * longitudinal_acc_on_lane_changing * lane_changing_time * lane_changing_time;
       const auto terminal_lane_changing_velocity =
-        initial_lane_changing_velocity + lane_changing_lon_acc * lane_changing_time;
+        initial_lane_changing_velocity + longitudinal_acc_on_lane_changing * lane_changing_time;
       utils::lane_change::setPrepareVelocity(
         prepare_segment, current_velocity, terminal_lane_changing_velocity);
 
@@ -701,7 +704,8 @@ bool NormalLaneChange::getLaneChangePaths(
 
       const auto candidate_path = utils::lane_change::constructCandidatePath(
         prepare_segment, target_segment, target_lane_reference_path, shift_line, original_lanelets,
-        target_lanelets, sorted_lane_ids, lane_changing_lon_acc, lateral_acc, lc_length,
+        target_lanelets, sorted_lane_ids,
+        {longitudinal_acc_on_prepare, longitudinal_acc_on_lane_changing}, lateral_acc, lc_length,
         lc_velocity, terminal_lane_changing_velocity, lc_time);
 
       if (!candidate_path) {
@@ -752,8 +756,8 @@ bool NormalLaneChange::getLaneChangePaths(
       const auto [is_safe, is_object_coming_from_rear] = utils::lane_change::isLaneChangePathSafe(
         *candidate_path, dynamic_objects, dynamic_object_indices, getEgoPose(), getEgoTwist(),
         common_parameter, *lane_change_parameters_, common_parameter.expected_front_deceleration,
-        common_parameter.expected_rear_deceleration, object_debug_, longitudinal_acc,
-        lane_changing_lon_acc);
+        common_parameter.expected_rear_deceleration, object_debug_, longitudinal_acc_on_prepare,
+        longitudinal_acc_on_lane_changing);
 
       if (is_safe) {
         return true;
@@ -790,7 +794,8 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
     path, dynamic_objects, dynamic_object_indices, current_pose, current_twist, common_parameters,
     *lane_change_parameters_, common_parameters.expected_front_deceleration_for_abort,
     common_parameters.expected_rear_deceleration_for_abort, debug_data,
-    status_.lane_change_path.acceleration);
+    status_.lane_change_path.longitudinal_acceleration.prepare,
+    status_.lane_change_path.longitudinal_acceleration.lane_changing);
 
   return safety_status;
 }
