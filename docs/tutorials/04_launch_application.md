@@ -4,7 +4,9 @@ Launch the perception application implemented in [autoware.universe](https://git
 
 ## 4-1. Jetson-based ECU
 
-**NOTE: This following steps can be performed from your x86-based ECU via ssh.**
+> **Note**
+> 
+> This following steps can be performed from your x86-based ECU via ssh.
 
 The following sample launches image-based object detection performed on two cameras individually.
 
@@ -42,3 +44,12 @@ in [autoware.universe](https://github.com/autowarefoundation/autoware.universe.g
 See the READMEs of these packages for more detail.
 
 In addition to the perception stack, this sample also launches viewers so that users can check perception results visually.
+
+As an example, the following picture shows the perception results in the case of a system configuration that consists of one AT128 and one C1 camera.
+
+![Example: perception result](../sample.png "Example: perception result")
+
+Note: The default models used in this tutorial are tuned for outdoor environments
+(especially for autonomous driving contexts).
+If you try this tutorial in some indoor environments, such as room ceil is in the range of sensor FoV, 
+additional preprocessings, such as cropping the range to be processed, may be required to get better results.

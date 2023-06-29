@@ -16,7 +16,7 @@ contents of this repository. Various perception applications will be added in th
 
 This repository is based on a natively built ROS2 environment. The sample system overview is shown below.
 
-![system overview](docs/tutorials/connection.drawio.svg "edge-auto overview")
+![system overview](docs/tutorials/figures/connection.drawio.svg "edge-auto overview")
 
 ### System Requirement
 
