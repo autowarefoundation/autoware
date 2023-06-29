@@ -112,7 +112,12 @@ bool StartPlannerModule::isExecutionRequested() const
     tier4_autoware_utils::pose2transform(planner_data_->self_odometry->pose.pose));
 
   // Check if ego is not out of lanes
-  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
+  // const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+  const auto current_lanes =
+    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
+
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(planner_data_);
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
@@ -305,7 +310,12 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
     return output;
   }
 
-  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
+  // const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+  const auto current_lanes =
+    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
+
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(planner_data_);
   auto stop_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
   const auto drivable_lanes =
@@ -542,7 +552,10 @@ void StartPlannerModule::updatePullOutStatus()
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & goal_pose = planner_data_->route_handler->getGoalPose();
 
-  status_.current_lanes = utils::getExtendedCurrentLanes(planner_data_);
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+  status_.current_lanes =
+    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
   status_.pull_out_lanes = start_planner_utils::getPullOutLanes(planner_data_);
 
   // combine road and shoulder lanes

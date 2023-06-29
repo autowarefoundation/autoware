@@ -44,11 +44,15 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
   const auto & route_handler = planner_data_->route_handler;
   const auto & common_parameters = planner_data_->parameters;
   const auto & dynamic_objects = planner_data_->dynamic_object;
-  const auto & road_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto & shoulder_lanes = getPullOutLanes(planner_data_);
+  const auto shoulder_lanes = getPullOutLanes(planner_data_);
   if (shoulder_lanes.empty()) {
     return boost::none;
   }
+
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_.max_back_distance;
+  const auto road_lanes =
+    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
 
   // find candidate paths
   auto pull_out_paths = calcPullOutPaths(
@@ -135,6 +139,7 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   }
 
   // rename parameter
+  const double forward_path_length = common_parameter.forward_path_length;
   const double backward_path_length = common_parameter.backward_path_length;
   const double minimum_shift_pull_out_distance = parameter.minimum_shift_pull_out_distance;
   const double lateral_jerk = parameter.lateral_jerk;
@@ -150,13 +155,13 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const auto arc_position_start = getArcCoordinates(road_lanes, start_pose);
   const double s_start = std::max(arc_position_start.length - backward_path_length, 0.0);
   const auto arc_position_goal = getArcCoordinates(road_lanes, goal_pose);
-  const double road_lanes_length = std::accumulate(
-    road_lanes.begin(), road_lanes.end(), 0.0, [](const double sum, const auto & lane) {
-      return sum + lanelet::utils::getLaneletLength2d(lane);
-    });
-  // if goal is behind start pose,
+
+  // if goal is behind start pose, use path with forward_path_length
   const bool goal_is_behind = arc_position_goal.length < s_start;
-  const double s_end = goal_is_behind ? road_lanes_length : arc_position_goal.length;
+  const double s_forward_length = s_start + forward_path_length;
+  const double s_end =
+    goal_is_behind ? s_forward_length : std::min(arc_position_goal.length, s_forward_length);
+
   constexpr double RESAMPLE_INTERVAL = 1.0;
   PathWithLaneId road_lane_reference_path = utils::resamplePathWithSpline(
     route_handler.getCenterLinePath(road_lanes, s_start, s_end), RESAMPLE_INTERVAL);
