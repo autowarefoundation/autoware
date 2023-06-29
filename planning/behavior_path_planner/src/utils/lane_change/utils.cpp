@@ -822,86 +822,6 @@ lanelet::ConstLanelets getBackwardLanelets(
   return backward_lanes;
 }
 
-LaneChangeTargetObjectIndices filterObjectIndices(
-  const LaneChangePaths & lane_change_paths, const PredictedObjects & objects,
-  const lanelet::ConstLanelets & target_backward_lanes, const Pose & current_pose,
-  const double forward_path_length, const LaneChangeParameters & lane_change_parameter,
-  const double filter_width)
-{
-  // Reserve maximum amount possible
-
-  std::vector<size_t> current_lane_obj_indices{};
-  std::vector<size_t> target_lane_obj_indices{};
-  std::vector<size_t> others_obj_indices{};
-  current_lane_obj_indices.reserve(objects.objects.size());
-  target_lane_obj_indices.reserve(objects.objects.size());
-  others_obj_indices.reserve(objects.objects.size());
-
-  const auto & longest_path = lane_change_paths.front();
-  const auto & current_lanes = longest_path.reference_lanelets;
-  const auto & target_lanes = longest_path.target_lanelets;
-  const auto & ego_path = longest_path.path;
-
-  const auto get_basic_polygon =
-    [](const lanelet::ConstLanelets & lanes, const double start_dist, const double end_dist) {
-      const auto polygon_3d = lanelet::utils::getPolygonFromArcLength(lanes, start_dist, end_dist);
-      return lanelet::utils::to2D(polygon_3d).basicPolygon();
-    };
-  const auto arc = lanelet::utils::getArcCoordinates(current_lanes, current_pose);
-  const auto current_polygon =
-    get_basic_polygon(current_lanes, arc.length, arc.length + forward_path_length);
-  const auto target_polygon =
-    get_basic_polygon(target_lanes, 0.0, std::numeric_limits<double>::max());
-  LineString2d ego_path_linestring;
-  ego_path_linestring.reserve(ego_path.points.size());
-  for (const auto & pt : ego_path.points) {
-    const auto & position = pt.point.pose.position;
-    boost::geometry::append(ego_path_linestring, Point2d(position.x, position.y));
-  }
-
-  for (size_t i = 0; i < objects.objects.size(); ++i) {
-    const auto & obj = objects.objects.at(i);
-
-    if (!isTargetObjectType(obj, lane_change_parameter)) {
-      continue;
-    }
-
-    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj);
-    if (boost::geometry::intersects(current_polygon, obj_polygon)) {
-      const double distance = boost::geometry::distance(obj_polygon, ego_path_linestring);
-
-      if (distance < filter_width) {
-        current_lane_obj_indices.push_back(i);
-        continue;
-      }
-    }
-
-    const bool is_intersect_with_target = boost::geometry::intersects(target_polygon, obj_polygon);
-    if (is_intersect_with_target) {
-      target_lane_obj_indices.push_back(i);
-      continue;
-    }
-
-    const bool is_intersect_with_backward = std::invoke([&]() {
-      for (const auto & ll : target_backward_lanes) {
-        const bool is_intersect_with_backward =
-          boost::geometry::intersects(ll.polygon2d().basicPolygon(), obj_polygon);
-        if (is_intersect_with_backward) {
-          target_lane_obj_indices.push_back(i);
-          return true;
-        }
-      }
-      return false;
-    });
-
-    if (!is_intersect_with_backward) {
-      others_obj_indices.push_back(i);
-    }
-  }
-
-  return {current_lane_obj_indices, target_lane_obj_indices, others_obj_indices};
-}
-
 bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameter)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
@@ -1162,5 +1082,88 @@ boost::optional<size_t> getLeadingStaticObjectIdx(
   }
 
   return leading_obj_idx;
+}
+
+std::optional<lanelet::BasicPolygon2d> createPolygon(
+  const lanelet::ConstLanelets & lanes, const double start_dist, const double end_dist)
+{
+  if (lanes.empty()) {
+    return {};
+  }
+  const auto polygon_3d = lanelet::utils::getPolygonFromArcLength(lanes, start_dist, end_dist);
+  return lanelet::utils::to2D(polygon_3d).basicPolygon();
+}
+
+LaneChangeTargetObjectIndices filterObject(
+  const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes, const lanelet::ConstLanelets & target_backward_lanes,
+  const Pose & current_pose, const RouteHandler & route_handler,
+  const LaneChangeParameters & lane_change_parameter)
+{
+  // Guard
+  if (objects.objects.empty()) {
+    return {};
+  }
+
+  // Get path
+  const auto path =
+    route_handler.getCenterLinePath(current_lanes, 0.0, std::numeric_limits<double>::max());
+
+  const auto current_polygon =
+    createPolygon(current_lanes, 0.0, std::numeric_limits<double>::max());
+  const auto target_polygon = createPolygon(target_lanes, 0.0, std::numeric_limits<double>::max());
+  const auto target_backward_polygon =
+    createPolygon(target_backward_lanes, 0.0, std::numeric_limits<double>::max());
+
+  LaneChangeTargetObjectIndices filtered_obj_indices;
+  for (size_t i = 0; i < objects.objects.size(); ++i) {
+    const auto & object = objects.objects.at(i);
+    const auto & obj_velocity = object.kinematics.initial_twist_with_covariance.twist.linear.x;
+
+    // ignore specific object types
+    if (!isTargetObjectType(object, lane_change_parameter)) {
+      continue;
+    }
+
+    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
+
+    // calc distance from the current ego position
+    double max_dist_ego_to_obj = std::numeric_limits<double>::lowest();
+    for (const auto & polygon_p : obj_polygon.outer()) {
+      const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
+      const double dist_ego_to_obj =
+        motion_utils::calcSignedArcLength(path.points, current_pose.position, obj_p);
+      max_dist_ego_to_obj = std::max(dist_ego_to_obj, max_dist_ego_to_obj);
+    }
+
+    // ignore static object that are behind the ego vehicle
+    if (obj_velocity < 1.0 && max_dist_ego_to_obj < 0.0) {
+      continue;
+    }
+
+    // check if the object intersects with target lanes
+    if (target_polygon && boost::geometry::intersects(target_polygon.value(), obj_polygon)) {
+      filtered_obj_indices.target_lane.push_back(i);
+      continue;
+    }
+
+    // check if the object intersects with target backward lanes
+    if (
+      target_backward_polygon &&
+      boost::geometry::intersects(target_backward_polygon.value(), obj_polygon)) {
+      filtered_obj_indices.target_lane.push_back(i);
+      continue;
+    }
+
+    // check if the object intersects with current lanes
+    if (current_polygon && boost::geometry::intersects(current_polygon.value(), obj_polygon)) {
+      filtered_obj_indices.current_lane.push_back(i);
+      continue;
+    }
+
+    filtered_obj_indices.other_lane.push_back(i);
+  }
+
+  return filtered_obj_indices;
 }
 }  // namespace behavior_path_planner::utils::lane_change

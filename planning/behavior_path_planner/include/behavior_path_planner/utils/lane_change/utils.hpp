@@ -150,12 +150,6 @@ lanelet::ConstLanelets getBackwardLanelets(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & current_pose, const double backward_length);
 
-LaneChangeTargetObjectIndices filterObjectIndices(
-  const LaneChangePaths & lane_change_paths, const PredictedObjects & objects,
-  const lanelet::ConstLanelets & target_backward_lanes, const Pose & current_pose,
-  const double forward_path_length, const LaneChangeParameters & lane_change_parameter,
-  const double filter_width);
-
 bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameter);
 
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
@@ -186,5 +180,14 @@ boost::optional<size_t> getLeadingStaticObjectIdx(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
   const PredictedObjects & objects, const std::vector<size_t> & obj_indices,
   const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold);
+
+std::optional<lanelet::BasicPolygon2d> createPolygon(
+  const lanelet::ConstLanelets & lanes, const double start_dist, const double end_dist);
+
+LaneChangeTargetObjectIndices filterObject(
+  const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes, const lanelet::ConstLanelets & target_backward_lanes,
+  const Pose & current_pose, const RouteHandler & route_handler,
+  const LaneChangeParameters & lane_change_parameter);
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_
