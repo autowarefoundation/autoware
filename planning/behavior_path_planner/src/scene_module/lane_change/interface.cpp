@@ -402,13 +402,13 @@ void LaneChangeInterface::acceptVisitor(const std::shared_ptr<SceneModuleVisitor
 TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
   const PathWithLaneId & path, const TurnSignalInfo & original_turn_signal_info)
 {
-  const auto & target_lanes = module_type_->getLaneChangeStatus().lane_change_lanes;
+  const auto & current_lanes = module_type_->getLaneChangeStatus().current_lanes;
   const auto & is_valid = module_type_->getLaneChangeStatus().is_valid_path;
   const auto & lane_change_path = module_type_->getLaneChangeStatus().lane_change_path;
   const auto & lane_change_param = module_type_->getLaneChangeParam();
 
   if (
-    module_type_->getModuleType() != LaneChangeModuleType::NORMAL || target_lanes.empty() ||
+    module_type_->getModuleType() != LaneChangeModuleType::NORMAL || current_lanes.empty() ||
     !is_valid) {
     return original_turn_signal_info;
   }
@@ -436,13 +436,15 @@ TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
   const auto & route_handler = module_type_->getRouteHandler();
   const auto & common_parameter = module_type_->getCommonParam();
   const auto shift_intervals =
-    route_handler->getLateralIntervalsToPreferredLane(target_lanes.back());
+    route_handler->getLateralIntervalsToPreferredLane(current_lanes.back());
   const double next_lane_change_buffer =
     utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
   const double & nearest_dist_threshold = common_parameter.ego_nearest_dist_threshold;
   const double & nearest_yaw_threshold = common_parameter.ego_nearest_yaw_threshold;
+  const double & base_to_front = common_parameter.base_link2front;
 
-  const double buffer = next_lane_change_buffer + min_length_for_turn_signal_activation;
+  const double buffer =
+    next_lane_change_buffer + min_length_for_turn_signal_activation + base_to_front;
   const double path_length = motion_utils::calcArcLength(path.points);
   const auto & front_point = path.points.front().point.pose.position;
   const size_t & current_nearest_seg_idx =
