@@ -682,7 +682,9 @@ bool StartPlannerModule::hasFinishedPullOut() const
   const auto arclength_pull_out_end =
     lanelet::utils::getArcCoordinates(status_.current_lanes, status_.pull_out_path.end_pose);
 
-  const bool has_finished = arclength_current.length - arclength_pull_out_end.length > 0.0;
+  // offset to not finish the module before engage
+  constexpr double offset = 0.1;
+  const bool has_finished = arclength_current.length - arclength_pull_out_end.length > offset;
 
   return has_finished;
 }
