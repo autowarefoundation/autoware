@@ -24,10 +24,49 @@ namespace behavior_path_planner
 {
 
 DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-  const std::shared_ptr<DynamicAvoidanceParameters> & parameters)
-: SceneModuleManagerInterface(node, name, config, {""}), parameters_{parameters}
+  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
+: SceneModuleManagerInterface(node, name, config, {""})
 {
+  DynamicAvoidanceParameters p{};
+
+  {  // target object
+    std::string ns = "dynamic_avoidance.target_object.";
+    p.avoid_car = node->declare_parameter<bool>(ns + "car");
+    p.avoid_truck = node->declare_parameter<bool>(ns + "truck");
+    p.avoid_bus = node->declare_parameter<bool>(ns + "bus");
+    p.avoid_trailer = node->declare_parameter<bool>(ns + "trailer");
+    p.avoid_unknown = node->declare_parameter<bool>(ns + "unknown");
+    p.avoid_bicycle = node->declare_parameter<bool>(ns + "bicycle");
+    p.avoid_motorcycle = node->declare_parameter<bool>(ns + "motorcycle");
+    p.avoid_pedestrian = node->declare_parameter<bool>(ns + "pedestrian");
+    p.min_obstacle_vel = node->declare_parameter<double>(ns + "min_obstacle_vel");
+    p.successive_num_to_entry_dynamic_avoidance_condition =
+      node->declare_parameter<int>(ns + "successive_num_to_entry_dynamic_avoidance_condition");
+  }
+
+  {  // drivable_area_generation
+    std::string ns = "dynamic_avoidance.drivable_area_generation.";
+    p.lat_offset_from_obstacle = node->declare_parameter<double>(ns + "lat_offset_from_obstacle");
+    p.max_lat_offset_to_avoid = node->declare_parameter<double>(ns + "max_lat_offset_to_avoid");
+
+    p.max_time_to_collision_overtaking_object =
+      node->declare_parameter<double>(ns + "overtaking_object.max_time_to_collision");
+    p.start_duration_to_avoid_overtaking_object =
+      node->declare_parameter<double>(ns + "overtaking_object.start_duration_to_avoid");
+    p.end_duration_to_avoid_overtaking_object =
+      node->declare_parameter<double>(ns + "overtaking_object.end_duration_to_avoid");
+    p.duration_to_hold_avoidance_overtaking_object =
+      node->declare_parameter<double>(ns + "overtaking_object.duration_to_hold_avoidance");
+
+    p.max_time_to_collision_oncoming_object =
+      node->declare_parameter<double>(ns + "oncoming_object.max_time_to_collision");
+    p.start_duration_to_avoid_oncoming_object =
+      node->declare_parameter<double>(ns + "oncoming_object.start_duration_to_avoid");
+    p.end_duration_to_avoid_oncoming_object =
+      node->declare_parameter<double>(ns + "oncoming_object.end_duration_to_avoid");
+  }
+
+  parameters_ = std::make_shared<DynamicAvoidanceParameters>(p);
 }
 
 void DynamicAvoidanceModuleManager::updateModuleParams(

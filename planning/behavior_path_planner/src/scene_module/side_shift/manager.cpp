@@ -24,10 +24,21 @@ namespace behavior_path_planner
 {
 
 SideShiftModuleManager::SideShiftModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-  const std::shared_ptr<SideShiftParameters> & parameters)
-: SceneModuleManagerInterface(node, name, config, {}), parameters_{parameters}
+  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
+: SceneModuleManagerInterface(node, name, config, {})
 {
+  SideShiftParameters p{};
+
+  p.min_distance_to_start_shifting =
+    node->declare_parameter<double>(name + ".min_distance_to_start_shifting");
+  p.time_to_start_shifting = node->declare_parameter<double>(name + ".time_to_start_shifting");
+  p.shifting_lateral_jerk = node->declare_parameter<double>(name + ".shifting_lateral_jerk");
+  p.min_shifting_distance = node->declare_parameter<double>(name + ".min_shifting_distance");
+  p.min_shifting_speed = node->declare_parameter<double>(name + ".min_shifting_speed");
+  p.shift_request_time_limit = node->declare_parameter<double>(name + ".shift_request_time_limit");
+  p.publish_debug_marker = node->declare_parameter<bool>(name + ".publish_debug_marker");
+
+  parameters_ = std::make_shared<SideShiftParameters>(p);
 }
 
 void SideShiftModuleManager::updateModuleParams(

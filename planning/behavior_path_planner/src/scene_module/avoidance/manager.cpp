@@ -23,11 +23,209 @@
 namespace behavior_path_planner
 {
 
-AvoidanceModuleManager::AvoidanceModuleManager(
-  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
-  const std::shared_ptr<AvoidanceParameters> & parameters)
-: SceneModuleManagerInterface(node, name, config, {"left", "right"}), parameters_{parameters}
+namespace
 {
+template <typename T>
+T get_parameter(rclcpp::Node * node, const std::string & ns)
+{
+  if (node->has_parameter(ns)) {
+    return node->get_parameter(ns).get_value<T>();
+  }
+
+  return node->declare_parameter<T>(ns);
+}
+}  // namespace
+
+AvoidanceModuleManager::AvoidanceModuleManager(
+  rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
+: SceneModuleManagerInterface(node, name, config, {"left", "right"})
+{
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+
+  AvoidanceParameters p{};
+  // general params
+  {
+    std::string ns = "avoidance.";
+    p.resample_interval_for_planning =
+      get_parameter<double>(node, ns + "resample_interval_for_planning");
+    p.resample_interval_for_output =
+      get_parameter<double>(node, ns + "resample_interval_for_output");
+    p.detection_area_right_expand_dist =
+      get_parameter<double>(node, ns + "detection_area_right_expand_dist");
+    p.detection_area_left_expand_dist =
+      get_parameter<double>(node, ns + "detection_area_left_expand_dist");
+    p.enable_bound_clipping = get_parameter<bool>(node, ns + "enable_bound_clipping");
+    p.enable_avoidance_over_same_direction =
+      get_parameter<bool>(node, ns + "enable_avoidance_over_same_direction");
+    p.enable_avoidance_over_opposite_direction =
+      get_parameter<bool>(node, ns + "enable_avoidance_over_opposite_direction");
+    p.enable_update_path_when_object_is_gone =
+      get_parameter<bool>(node, ns + "enable_update_path_when_object_is_gone");
+    p.enable_force_avoidance_for_stopped_vehicle =
+      get_parameter<bool>(node, ns + "enable_force_avoidance_for_stopped_vehicle");
+    p.enable_safety_check = get_parameter<bool>(node, ns + "enable_safety_check");
+    p.enable_yield_maneuver = get_parameter<bool>(node, ns + "enable_yield_maneuver");
+    p.enable_yield_maneuver_during_shifting =
+      get_parameter<bool>(node, ns + "enable_yield_maneuver_during_shifting");
+    p.disable_path_update = get_parameter<bool>(node, ns + "disable_path_update");
+    p.use_hatched_road_markings = get_parameter<bool>(node, ns + "use_hatched_road_markings");
+    p.publish_debug_marker = get_parameter<bool>(node, ns + "publish_debug_marker");
+    p.print_debug_info = get_parameter<bool>(node, ns + "print_debug_info");
+  }
+
+  // target object
+  {
+    const auto get_object_param = [&](std::string && ns) {
+      ObjectParameter param{};
+      param.is_target = get_parameter<bool>(node, ns + "is_target");
+      param.moving_speed_threshold = get_parameter<double>(node, ns + "moving_speed_threshold");
+      param.moving_time_threshold = get_parameter<double>(node, ns + "moving_time_threshold");
+      param.max_expand_ratio = get_parameter<double>(node, ns + "max_expand_ratio");
+      param.envelope_buffer_margin = get_parameter<double>(node, ns + "envelope_buffer_margin");
+      param.avoid_margin_lateral = get_parameter<double>(node, ns + "avoid_margin_lateral");
+      param.safety_buffer_lateral = get_parameter<double>(node, ns + "safety_buffer_lateral");
+      param.safety_buffer_longitudinal =
+        get_parameter<double>(node, ns + "safety_buffer_longitudinal");
+      return param;
+    };
+
+    const std::string ns = "avoidance.target_object.";
+    p.object_parameters.emplace(
+      ObjectClassification::MOTORCYCLE, get_object_param(ns + "motorcycle."));
+    p.object_parameters.emplace(ObjectClassification::CAR, get_object_param(ns + "car."));
+    p.object_parameters.emplace(ObjectClassification::TRUCK, get_object_param(ns + "truck."));
+    p.object_parameters.emplace(ObjectClassification::TRAILER, get_object_param(ns + "trailer."));
+    p.object_parameters.emplace(ObjectClassification::BUS, get_object_param(ns + "bus."));
+    p.object_parameters.emplace(
+      ObjectClassification::PEDESTRIAN, get_object_param(ns + "pedestrian."));
+    p.object_parameters.emplace(ObjectClassification::BICYCLE, get_object_param(ns + "bicycle."));
+    p.object_parameters.emplace(ObjectClassification::UNKNOWN, get_object_param(ns + "unknown."));
+
+    p.lower_distance_for_polygon_expansion =
+      get_parameter<double>(node, ns + "lower_distance_for_polygon_expansion");
+    p.upper_distance_for_polygon_expansion =
+      get_parameter<double>(node, ns + "upper_distance_for_polygon_expansion");
+  }
+
+  // target filtering
+  {
+    std::string ns = "avoidance.target_filtering.";
+    p.threshold_time_force_avoidance_for_stopped_vehicle =
+      get_parameter<double>(node, ns + "threshold_time_force_avoidance_for_stopped_vehicle");
+    p.object_ignore_section_traffic_light_in_front_distance =
+      get_parameter<double>(node, ns + "object_ignore_section_traffic_light_in_front_distance");
+    p.object_ignore_section_crosswalk_in_front_distance =
+      get_parameter<double>(node, ns + "object_ignore_section_crosswalk_in_front_distance");
+    p.object_ignore_section_crosswalk_behind_distance =
+      get_parameter<double>(node, ns + "object_ignore_section_crosswalk_behind_distance");
+    p.object_check_forward_distance =
+      get_parameter<double>(node, ns + "object_check_forward_distance");
+    p.object_check_backward_distance =
+      get_parameter<double>(node, ns + "object_check_backward_distance");
+    p.object_check_goal_distance = get_parameter<double>(node, ns + "object_check_goal_distance");
+    p.threshold_distance_object_is_on_center =
+      get_parameter<double>(node, ns + "threshold_distance_object_is_on_center");
+    p.object_check_shiftable_ratio =
+      get_parameter<double>(node, ns + "object_check_shiftable_ratio");
+    p.object_check_min_road_shoulder_width =
+      get_parameter<double>(node, ns + "object_check_min_road_shoulder_width");
+    p.object_last_seen_threshold = get_parameter<double>(node, ns + "object_last_seen_threshold");
+  }
+
+  // safety check
+  {
+    std::string ns = "avoidance.safety_check.";
+    p.safety_check_backward_distance =
+      get_parameter<double>(node, ns + "safety_check_backward_distance");
+    p.safety_check_time_horizon = get_parameter<double>(node, ns + "safety_check_time_horizon");
+    p.safety_check_idling_time = get_parameter<double>(node, ns + "safety_check_idling_time");
+    p.safety_check_accel_for_rss = get_parameter<double>(node, ns + "safety_check_accel_for_rss");
+    p.safety_check_hysteresis_factor =
+      get_parameter<double>(node, ns + "safety_check_hysteresis_factor");
+  }
+
+  // avoidance maneuver (lateral)
+  {
+    std::string ns = "avoidance.avoidance.lateral.";
+    p.road_shoulder_safety_margin = get_parameter<double>(node, ns + "road_shoulder_safety_margin");
+    p.lateral_execution_threshold = get_parameter<double>(node, ns + "lateral_execution_threshold");
+    p.lateral_small_shift_threshold =
+      get_parameter<double>(node, ns + "lateral_small_shift_threshold");
+    p.max_right_shift_length = get_parameter<double>(node, ns + "max_right_shift_length");
+    p.max_left_shift_length = get_parameter<double>(node, ns + "max_left_shift_length");
+  }
+
+  // avoidance maneuver (longitudinal)
+  {
+    std::string ns = "avoidance.avoidance.longitudinal.";
+    p.prepare_time = get_parameter<double>(node, ns + "prepare_time");
+    p.min_prepare_distance = get_parameter<double>(node, ns + "min_prepare_distance");
+    p.min_avoidance_distance = get_parameter<double>(node, ns + "min_avoidance_distance");
+    p.min_nominal_avoidance_speed = get_parameter<double>(node, ns + "min_nominal_avoidance_speed");
+    p.min_sharp_avoidance_speed = get_parameter<double>(node, ns + "min_sharp_avoidance_speed");
+  }
+
+  // yield
+  {
+    std::string ns = "avoidance.yield.";
+    p.yield_velocity = get_parameter<double>(node, ns + "yield_velocity");
+  }
+
+  // stop
+  {
+    std::string ns = "avoidance.stop.";
+    p.stop_min_distance = get_parameter<double>(node, ns + "min_distance");
+    p.stop_max_distance = get_parameter<double>(node, ns + "max_distance");
+  }
+
+  // constraints
+  {
+    std::string ns = "avoidance.constraints.";
+    p.use_constraints_for_decel = get_parameter<bool>(node, ns + "use_constraints_for_decel");
+  }
+
+  // constraints (longitudinal)
+  {
+    std::string ns = "avoidance.constraints.longitudinal.";
+    p.nominal_deceleration = get_parameter<double>(node, ns + "nominal_deceleration");
+    p.nominal_jerk = get_parameter<double>(node, ns + "nominal_jerk");
+    p.max_deceleration = get_parameter<double>(node, ns + "max_deceleration");
+    p.max_jerk = get_parameter<double>(node, ns + "max_jerk");
+    p.min_avoidance_speed_for_acc_prevention =
+      get_parameter<double>(node, ns + "min_avoidance_speed_for_acc_prevention");
+    p.max_avoidance_acceleration = get_parameter<double>(node, ns + "max_avoidance_acceleration");
+  }
+
+  // constraints (lateral)
+  {
+    std::string ns = "avoidance.constraints.lateral.";
+    p.nominal_lateral_jerk = get_parameter<double>(node, ns + "nominal_lateral_jerk");
+    p.max_lateral_jerk = get_parameter<double>(node, ns + "max_lateral_jerk");
+  }
+
+  // velocity matrix
+  {
+    std::string ns = "avoidance.target_velocity_matrix.";
+    p.col_size = get_parameter<int>(node, ns + "col_size");
+    p.target_velocity_matrix = get_parameter<std::vector<double>>(node, ns + "matrix");
+  }
+
+  // shift line pipeline
+  {
+    std::string ns = "avoidance.shift_line_pipeline.";
+    p.quantize_filter_threshold =
+      get_parameter<double>(node, ns + "trim.quantize_filter_threshold");
+    p.same_grad_filter_1_threshold =
+      get_parameter<double>(node, ns + "trim.same_grad_filter_1_threshold");
+    p.same_grad_filter_2_threshold =
+      get_parameter<double>(node, ns + "trim.same_grad_filter_2_threshold");
+    p.same_grad_filter_3_threshold =
+      get_parameter<double>(node, ns + "trim.same_grad_filter_3_threshold");
+    p.sharp_shift_filter_threshold =
+      get_parameter<double>(node, ns + "trim.sharp_shift_filter_threshold");
+  }
+
+  parameters_ = std::make_shared<AvoidanceParameters>(p);
 }
 
 void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parameter> & parameters)

@@ -25,12 +25,6 @@
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 #include "behavior_path_planner/scene_module/start_planner/manager.hpp"
 #include "behavior_path_planner/steering_factor_interface.hpp"
-#include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
-#include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
-#include "behavior_path_planner/utils/lane_following/module_data.hpp"
-#include "behavior_path_planner/utils/side_shift/side_shift_parameters.hpp"
-#include "behavior_path_planner/utils/start_planner/start_planner_parameters.hpp"
 
 #include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
@@ -134,25 +128,7 @@ private:
   bool isDataReady();
 
   // parameters
-  std::shared_ptr<AvoidanceParameters> avoidance_param_ptr_;
-  std::shared_ptr<AvoidanceByLCParameters> avoidance_by_lc_param_ptr_;
-  std::shared_ptr<DynamicAvoidanceParameters> dynamic_avoidance_param_ptr_;
-  std::shared_ptr<SideShiftParameters> side_shift_param_ptr_;
-  std::shared_ptr<LaneChangeParameters> lane_change_param_ptr_;
-  std::shared_ptr<StartPlannerParameters> start_planner_param_ptr_;
-  std::shared_ptr<GoalPlannerParameters> goal_planner_param_ptr_;
-
   BehaviorPathPlannerParameters getCommonParam();
-
-  AvoidanceParameters getAvoidanceParam();
-  DynamicAvoidanceParameters getDynamicAvoidanceParam();
-  LaneChangeParameters getLaneChangeParam();
-  SideShiftParameters getSideShiftParam();
-  GoalPlannerParameters getGoalPlannerParam();
-  StartPlannerParameters getStartPlannerParam();
-  AvoidanceByLCParameters getAvoidanceByLCParam(
-    const std::shared_ptr<AvoidanceParameters> & avoidance_param,
-    const std::shared_ptr<LaneChangeParameters> & lane_change_param);
 
   // callback
   void onOdometry(const Odometry::ConstSharedPtr msg);

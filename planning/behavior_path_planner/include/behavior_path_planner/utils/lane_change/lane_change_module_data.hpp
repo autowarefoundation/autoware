@@ -114,11 +114,8 @@ enum class LaneChangeModuleType {
   AVOIDANCE_BY_LANE_CHANGE,
 };
 
-struct AvoidanceByLCParameters
+struct AvoidanceByLCParameters : public AvoidanceParameters
 {
-  std::shared_ptr<AvoidanceParameters> avoidance{};
-  std::shared_ptr<LaneChangeParameters> lane_change{};
-
   // execute if the target object number is larger than this param.
   size_t execute_object_num{1};
 
