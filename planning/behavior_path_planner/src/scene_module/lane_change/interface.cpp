@@ -232,6 +232,7 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   module_type_->setPreviousModulePaths(
     getPreviousModuleOutput().reference_path, getPreviousModuleOutput().path);
   module_type_->updateLaneChangeStatus();
+  setObjectDebugVisualization();
 
   // change turn signal when the vehicle reaches at the end of the path for waiting lane change
   out.turn_signal_info = getCurrentTurnSignalInfo(*out.path, out.turn_signal_info);
@@ -248,8 +249,6 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   updateRTCStatus(
     candidate.start_distance_to_path_change, candidate.finish_distance_to_path_change);
   is_abort_path_approved_ = false;
-
-  setObjectDebugVisualization();
 
   return out;
 }
