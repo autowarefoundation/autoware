@@ -20,9 +20,9 @@
 namespace converter
 {
 
-using OldList = autoware_auto_perception_msgs::msg::TrafficSignalArray;
-using OldData = autoware_auto_perception_msgs::msg::TrafficSignal;
-using OldElem = autoware_auto_perception_msgs::msg::TrafficLight;
+using OldList = tier4_perception_msgs::msg::TrafficSignalArray;
+using OldData = tier4_perception_msgs::msg::TrafficSignal;
+using OldElem = tier4_perception_msgs::msg::TrafficLightElement;
 using NewList = autoware_perception_msgs::msg::TrafficLightArray;
 using NewData = autoware_perception_msgs::msg::TrafficLight;
 using NewElem = autoware_perception_msgs::msg::TrafficLightElement;
@@ -53,8 +53,8 @@ NewList convert(const OldList & input)
 NewData convert(const OldData & input)
 {
   NewData output;
-  output.traffic_light_id = input.map_primitive_id;
-  output.elements = convert_vector<NewElem>(input.lights);
+  output.traffic_light_id = input.traffic_light_id;
+  output.elements = convert_vector<NewElem>(input.elements);
   return output;
 }
 

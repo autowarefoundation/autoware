@@ -1,7 +1,8 @@
 /**:
   ros__parameters:
-    max_vibration_pitch: 0.00436332312   # -0.5 ~ 0.5 deg
-    max_vibration_yaw: 0.00436332312     # -0.5 ~ 0.5 deg
-    max_vibration_height: 0.01           # -0.05 ~ 0.05 m
-    max_vibration_width: 0.01            # -0.05 ~ 0.05 m
-    max_vibration_depth: 0.01            # -0.05 ~ 0.05 m
+    max_vibration_pitch: 0.01745329251   # -0.5 ~ 0.5 deg
+    max_vibration_yaw: 0.01745329251     # -0.5 ~ 0.5 deg
+    max_vibration_height: 0.5            # -0.25 ~ 0.25 m
+    max_vibration_width: 0.5             # -0.25 ~ 0.25 m
+    max_vibration_depth: 0.5             # -0.25 ~ 0.25 m
+    max_detection_range: 200.0

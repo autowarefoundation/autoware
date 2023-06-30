@@ -1,0 +1,6 @@
+/**:
+  ros__parameters:
+    camera_namespaces: ["camera6", "camera7"]
+    message_lifespan: 0.09
+    approximate_sync: false
+    perform_group_fusion: true

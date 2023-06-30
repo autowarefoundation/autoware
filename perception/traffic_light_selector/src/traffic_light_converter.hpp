@@ -17,8 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/traffic_signal_array.hpp>
 #include <autoware_perception_msgs/msg/traffic_light_array.hpp>
+#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 class TrafficLightConverter : public rclcpp::Node
 {
@@ -26,7 +26,7 @@ public:
   explicit TrafficLightConverter(const rclcpp::NodeOptions & options);
 
 private:
-  using OldMessage = autoware_auto_perception_msgs::msg::TrafficSignalArray;
+  using OldMessage = tier4_perception_msgs::msg::TrafficSignalArray;
   using NewMessage = autoware_perception_msgs::msg::TrafficLightArray;
   rclcpp::Subscription<OldMessage>::SharedPtr sub_;
   rclcpp::Publisher<NewMessage>::SharedPtr pub_;

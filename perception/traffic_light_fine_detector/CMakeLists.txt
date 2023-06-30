@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.14)
-project(traffic_light_classifier)
+project(traffic_light_fine_detector)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
+add_compile_options(-Wno-deprecated-declarations)
+
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
+
+find_package(OpenCV REQUIRED)
+
 # set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
@@ -59,13 +64,16 @@ if(CUDNN_LIBRARY)
     message(STATUS "CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
   endif()
   set(CUDNN_AVAIL ON)
-
 else()
   message(STATUS "CUDNN is NOT Available")
   set(CUDNN_AVAIL OFF)
 endif()
 
 # Download caffemodel and prototxt
+set(PRETRAINED_MODEL_HASH f3af5bd588c6c99ccf9ca236a07ad41e)
+set(LAMP_LABEL_HASH e9f45efb02f2a9aa8ac27b3d5c164905)
+set(DATA_DIR https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2)
+
 set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
 if(NOT EXISTS "${DATA_PATH}")
   execute_process(COMMAND mkdir -p ${DATA_PATH})
@@ -84,14 +92,14 @@ function(download FILE_NAME FILE_HASH)
     else()
       message(STATUS "diff ${FILE_NAME}")
       message(STATUS "File hash changes. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v1/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
+      file(DOWNLOAD ${DATA_DIR}/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
       list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
       list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
     endif()
   else()
     message(STATUS "not found ${FILE_NAME}")
     message(STATUS "File doesn't exists. Downloading now ...")
-    file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v1/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
+    file(DOWNLOAD ${DATA_DIR}/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
     list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
     list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
   endif()
@@ -101,64 +109,37 @@ function(download FILE_NAME FILE_HASH)
     message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
   endif()
 endfunction()
-download(traffic_light_classifier_mobilenetv2.onnx caa51f2080aa2df943e4f884c41898eb)
-download(traffic_light_classifier_efficientNet_b1.onnx 82baba4fcf1abe0c040cd55005e34510)
-download(lamp_labels.txt 4b2cf910d97d05d464e7c26901af3d4c)
-
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
-find_package(OpenCV REQUIRED)
-find_package(Boost REQUIRED COMPONENTS filesystem)
+download(tlr_yolox_s.onnx ${PRETRAINED_MODEL_HASH})
+download(tlr_labels.txt ${LAMP_LABEL_HASH})
 
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
-  add_definitions(-DENABLE_GPU)
-
   include_directories(
     ${OpenCV_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
   )
 
-  ament_auto_add_library(traffic_light_classifier_nodelet SHARED
-    src/color_classifier.cpp
-    src/cnn_classifier.cpp
+  ament_auto_add_library(traffic_light_fine_detector_nodelet SHARED
     src/nodelet.cpp
-  )
-  target_link_libraries(traffic_light_classifier_nodelet
-    ${OpenCV_LIBRARIES}
-    ${NVINFER}
-    ${NVONNXPARSER}
-    ${NVINFER_PLUGIN}
-    ${CUDA_LIBRARIES}
-    ${CUBLAS_LIBRARIES}
-    ${CUDNN_LIBRARY}
-    stdc++fs
-  )
-  rclcpp_components_register_node(traffic_light_classifier_nodelet
-    PLUGIN "traffic_light::TrafficLightClassifierNodelet"
-    EXECUTABLE traffic_light_classifier_node
   )
 
-  ament_auto_add_library(single_image_debug_inference_node SHARED
-    src/cnn_classifier.cpp
-    src/color_classifier.cpp
-    src/nodelet.cpp
-    src/single_image_debug_inference_node.cpp
+  target_include_directories(traffic_light_fine_detector_nodelet PUBLIC
+    lib/include
   )
-  target_link_libraries(single_image_debug_inference_node
-    ${OpenCV_LIBRARIES}
+
+  target_link_libraries(traffic_light_fine_detector_nodelet
     ${NVINFER}
     ${NVONNXPARSER}
     ${NVINFER_PLUGIN}
     ${CUDA_LIBRARIES}
     ${CUBLAS_LIBRARIES}
     ${CUDNN_LIBRARY}
+    ${OpenCV_LIB}
     stdc++fs
-    opencv_core
-    opencv_highgui
   )
-  rclcpp_components_register_node(single_image_debug_inference_node
-    PLUGIN "traffic_light::SingleImageDebugInferenceNode"
-    EXECUTABLE single_image_debug_inference
+
+  rclcpp_components_register_node(traffic_light_fine_detector_nodelet
+    PLUGIN "traffic_light::TrafficLightFineDetectorNodelet"
+    EXECUTABLE traffic_light_fine_detector_node
   )
 
   ament_auto_package(INSTALL_TO_SHARE
@@ -167,28 +148,9 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   )
 
 else()
-  message(STATUS "CUDA and/or TensorRT were not found. build only color classifier")
-
-  include_directories(
-    ${OpenCV_INCLUDE_DIRS}
-  )
-
-  ament_auto_add_library(traffic_light_classifier_nodelet SHARED
-    src/color_classifier.cpp
-    src/nodelet.cpp
-  )
-  target_link_libraries(traffic_light_classifier_nodelet
-    ${OpenCV_LIBRARIES}
-  )
-
-  rclcpp_components_register_node(traffic_light_classifier_nodelet
-    PLUGIN "traffic_light::TrafficLightClassifierNodelet"
-    EXECUTABLE traffic_light_classifier_node
-  )
-
+  message(STATUS "TrafficLightFineDetector won't be built, CUDA and/or TensorRT were not found.")
+  # to avoid launch file missing without a gpu
   ament_auto_package(INSTALL_TO_SHARE
-    data
     launch
   )
-
 endif()

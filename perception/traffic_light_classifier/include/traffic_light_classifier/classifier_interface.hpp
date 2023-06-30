@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <autoware_auto_perception_msgs/msg/traffic_signal.hpp>
+#include <tier4_perception_msgs/msg/traffic_signal.hpp>
 
 #include <vector>
 
@@ -28,8 +28,7 @@ class ClassifierInterface
 {
 public:
   virtual bool getTrafficSignal(
-    const cv::Mat & input_image,
-    autoware_auto_perception_msgs::msg::TrafficSignal & traffic_signal) = 0;
+    const cv::Mat & input_image, tier4_perception_msgs::msg::TrafficSignal & traffic_signal) = 0;
 };
 }  // namespace traffic_light
 

@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ ColorClassifier::ColorClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 }
 
 bool ColorClassifier::getTrafficSignal(
-  const cv::Mat & input_image, autoware_auto_perception_msgs::msg::TrafficSignal & traffic_signal)
+  const cv::Mat & input_image, tier4_perception_msgs::msg::TrafficSignal & traffic_signal)
 {
   cv::Mat green_image;
   cv::Mat yellow_image;
@@ -157,25 +157,25 @@ bool ColorClassifier::getTrafficSignal(
     static_cast<double>(red_filtered_bin_image.rows * red_filtered_bin_image.cols);
 
   if (yellow_ratio < green_ratio && red_ratio < green_ratio) {
-    autoware_auto_perception_msgs::msg::TrafficLight light;
-    light.color = autoware_auto_perception_msgs::msg::TrafficLight::GREEN;
-    light.confidence = std::min(1.0, static_cast<double>(green_pixel_num) / (20.0 * 20.0));
-    traffic_signal.lights.push_back(light);
+    tier4_perception_msgs::msg::TrafficLightElement element;
+    element.color = tier4_perception_msgs::msg::TrafficLightElement::GREEN;
+    element.confidence = std::min(1.0, static_cast<double>(green_pixel_num) / (20.0 * 20.0));
+    traffic_signal.elements.push_back(element);
   } else if (green_ratio < yellow_ratio && red_ratio < yellow_ratio) {
-    autoware_auto_perception_msgs::msg::TrafficLight light;
-    light.color = autoware_auto_perception_msgs::msg::TrafficLight::AMBER;
-    light.confidence = std::min(1.0, static_cast<double>(yellow_pixel_num) / (20.0 * 20.0));
-    traffic_signal.lights.push_back(light);
+    tier4_perception_msgs::msg::TrafficLightElement element;
+    element.color = tier4_perception_msgs::msg::TrafficLightElement::AMBER;
+    element.confidence = std::min(1.0, static_cast<double>(yellow_pixel_num) / (20.0 * 20.0));
+    traffic_signal.elements.push_back(element);
   } else if (green_ratio < red_ratio && yellow_ratio < red_ratio) {
-    autoware_auto_perception_msgs::msg::TrafficLight light;
-    light.color = ::autoware_auto_perception_msgs::msg::TrafficLight::RED;
-    light.confidence = std::min(1.0, static_cast<double>(red_pixel_num) / (20.0 * 20.0));
-    traffic_signal.lights.push_back(light);
+    tier4_perception_msgs::msg::TrafficLightElement element;
+    element.color = ::tier4_perception_msgs::msg::TrafficLightElement::RED;
+    element.confidence = std::min(1.0, static_cast<double>(red_pixel_num) / (20.0 * 20.0));
+    traffic_signal.elements.push_back(element);
   } else {
-    autoware_auto_perception_msgs::msg::TrafficLight light;
-    light.color = ::autoware_auto_perception_msgs::msg::TrafficLight::UNKNOWN;
-    light.confidence = 0.0;
-    traffic_signal.lights.push_back(light);
+    tier4_perception_msgs::msg::TrafficLightElement element;
+    element.color = ::tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN;
+    element.confidence = 0.0;
+    traffic_signal.elements.push_back(element);
   }
   return true;
 }

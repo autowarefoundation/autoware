@@ -1,4 +1,4 @@
-// Copyright 2023 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,31 +28,31 @@ namespace
 {
 std::string toString(const uint8_t state)
 {
-  if (state == autoware_auto_perception_msgs::msg::TrafficLight::RED) {
+  if (state == tier4_perception_msgs::msg::TrafficLightElement::RED) {
     return "red";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::AMBER) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::AMBER) {
     return "yellow";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::GREEN) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::GREEN) {
     return "green";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::WHITE) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::WHITE) {
     return "white";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::CIRCLE) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::CIRCLE) {
     return "circle";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::LEFT_ARROW) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::LEFT_ARROW) {
     return "left";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::RIGHT_ARROW) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::RIGHT_ARROW) {
     return "right";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::UP_ARROW) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::UP_ARROW) {
     return "straight";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::DOWN_ARROW) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::DOWN_ARROW) {
     return "down";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::DOWN_LEFT_ARROW) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::DOWN_LEFT_ARROW) {
     return "down_left";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::DOWN_RIGHT_ARROW) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::DOWN_RIGHT_ARROW) {
     return "down_right";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::CROSS) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::CROSS) {
     return "cross";
-  } else if (state == autoware_auto_perception_msgs::msg::TrafficLight::UNKNOWN) {
+  } else if (state == tier4_perception_msgs::msg::TrafficLightElement::UNKNOWN) {
     return "unknown";
   } else {
     return "";
@@ -122,17 +122,17 @@ private:
         return;
       }
       cv::cvtColor(crop, crop, cv::COLOR_BGR2RGB);
-      autoware_auto_perception_msgs::msg::TrafficSignal traffic_signal;
+      tier4_perception_msgs::msg::TrafficSignal traffic_signal;
       if (!classifier_ptr_->getTrafficSignal(crop, traffic_signal)) {
         RCLCPP_ERROR(get_logger(), "failed to classify image");
         return;
       }
       cv::Scalar color;
       cv::Scalar text_color;
-      for (const auto & light : traffic_signal.lights) {
-        auto color_str = toString(light.color);
-        auto shape_str = toString(light.shape);
-        auto confidence_str = std::to_string(light.confidence);
+      for (const auto & element : traffic_signal.elements) {
+        auto color_str = toString(element.color);
+        auto shape_str = toString(element.shape);
+        auto confidence_str = std::to_string(element.confidence);
         if (shape_str == "circle") {
           if (color_str == "red") {
             color = cv::Scalar(0, 0, 255);

@@ -32,9 +32,9 @@ A temporary node that converts old message type to new message type.
 
 #### Input
 
-| Name                 | Type                                                 | Description                    |
-| -------------------- | ---------------------------------------------------- | ------------------------------ |
-| ~/sub/traffic_lights | autoware_auto_perception_msgs/msg/TrafficSignalArray | The state in old message type. |
+| Name                 | Type                                         | Description                    |
+| -------------------- | -------------------------------------------- | ------------------------------ |
+| ~/sub/traffic_lights | tier4_perception_msgs/msg/TrafficSignalArray | The state in old message type. |
 
 #### Output
 

@@ -1,10 +1,9 @@
 <launch>
   <arg name="input/image" default="~/image_raw"/>
   <arg name="input/rois" default="~/rois"/>
-  <arg name="output/traffic_signals" default="~/traffic_signals"/>
-  <arg name="manager" default="traffic_light_recognition_nodelet_manager"/>
+  <arg name="output/traffic_signals" default="classified/traffic_signals"/>
 
-  <arg name="use_gpu" default="false"/>
+  <arg name="use_gpu" default="true"/>
   <!-- classifier_type {hsv_filter: 0, cnn: 1} -->
   <arg name="classifier_type" default="1" if="$(var use_gpu)"/>
   <arg name="classifier_type" default="0" unless="$(var use_gpu)"/>
@@ -17,17 +16,9 @@
     <remap from="~/output/traffic_signals" to="$(var output/traffic_signals)"/>
     <param name="approximate_sync" value="false"/>
     <param name="classifier_type" value="$(var classifier_type)"/>
-    <param name="model_file_path" value="$(find-pkg-share traffic_light_classifier)/data/traffic_light_classifier_mobilenetv2.onnx"/>
-    <param name="label_file_path" value="$(find-pkg-share traffic_light_classifier)/data/lamp_labels.txt"/>
-    <param name="mean" value="[0.242, 0.193, 0.201]"/>
-    <param name="std" value="[1.0, 1.0, 1.0]"/>
-    <param name="precision" value="fp16"/>
-    <param name="input_name" value="input_0"/>
-    <param name="output_name" value="output_0"/>
-    <param name="apply_softmax" value="true"/>
-    <param name="input_c" value="3"/>
-    <param name="input_h" value="224"/>
-    <param name="input_w" value="224"/>
+    <param name="classifier_model_path" value="$(find-pkg-share traffic_light_classifier)/data/traffic_light_classifier_efficientNet_b1.onnx"/>
+    <param name="classifier_label_path" value="$(find-pkg-share traffic_light_classifier)/data/lamp_labels.txt"/>
+    <param name="classifier_precision" value="fp16"/>
     <param name="build_only" value="$(var build_only)"/>
   </node>
 </launch>

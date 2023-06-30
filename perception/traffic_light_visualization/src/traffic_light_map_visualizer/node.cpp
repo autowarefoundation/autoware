@@ -47,16 +47,6 @@ bool isAttributeValue(
   return false;
 }
 
-bool isAttributeValue(
-  const lanelet::ConstLineString3d l, const std::string attr_str, const int value)
-{
-  lanelet::Attribute attr = l.attribute(attr_str);
-  if (std::stoi(attr.value()) == value) {
-    return true;
-  }
-  return false;
-}
-
 void lightAsMarker(
   const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logging,
   lanelet::ConstPoint3d p, visualization_msgs::msg::Marker * marker, const std::string ns,
@@ -121,7 +111,7 @@ TrafficLightMapVisualizerNode::TrafficLightMapVisualizerNode(
 {
   light_marker_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/output/traffic_light", 1);
-  tl_state_sub_ = create_subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>(
+  tl_state_sub_ = create_subscription<autoware_perception_msgs::msg::TrafficSignalArray>(
     "~/input/tl_state", 1,
     std::bind(&TrafficLightMapVisualizerNode::trafficSignalsCallback, this, _1));
   vector_map_sub_ = create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
@@ -129,8 +119,7 @@ TrafficLightMapVisualizerNode::TrafficLightMapVisualizerNode(
     std::bind(&TrafficLightMapVisualizerNode::binMapCallback, this, _1));
 }
 void TrafficLightMapVisualizerNode::trafficSignalsCallback(
-  const autoware_auto_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr
-    input_traffic_signals)
+  const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr input_traffic_signals)
 {
   visualization_msgs::msg::MarkerArray output_msg;
   const auto current_time = now();
@@ -167,28 +156,29 @@ void TrafficLightMapVisualizerNode::trafficSignalsCallback(
         continue;
       }
       for (const auto & input_traffic_signal : input_traffic_signals->signals) {
-        if (isAttributeValue(ls, "traffic_light_id", input_traffic_signal.map_primitive_id)) {
+        if ((*tli)->id() == input_traffic_signal.traffic_signal_id) {
+          // if (isAttributeValue(ls, "traffic_light_id", input_traffic_signal.map_primitive_id)) {
           for (auto pt : ls) {
             if (!pt.hasAttribute("color")) {
               continue;
             }
 
-            for (const auto & light : input_traffic_signal.lights) {
+            for (const auto & elem : input_traffic_signal.elements) {
               visualization_msgs::msg::Marker marker;
               if (
                 isAttributeValue(pt, "color", "red") &&
-                light.color == autoware_auto_perception_msgs::msg::TrafficLight::RED) {
+                elem.color == autoware_perception_msgs::msg::TrafficLightElement::RED) {
                 lightAsMarker(
                   get_node_logging_interface(), pt, &marker, "traffic_light", current_time);
               } else if (  // NOLINT
                 isAttributeValue(pt, "color", "green") &&
-                light.color == autoware_auto_perception_msgs::msg::TrafficLight::GREEN) {
+                elem.color == autoware_perception_msgs::msg::TrafficLightElement::GREEN) {
                 lightAsMarker(
                   get_node_logging_interface(), pt, &marker, "traffic_light", current_time);
 
               } else if (  // NOLINT
                 isAttributeValue(pt, "color", "yellow") &&
-                light.color == autoware_auto_perception_msgs::msg::TrafficLight::AMBER) {
+                elem.color == autoware_perception_msgs::msg::TrafficLightElement::AMBER) {
                 lightAsMarker(
                   get_node_logging_interface(), pt, &marker, "traffic_light", current_time);
               } else {

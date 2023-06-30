@@ -1,4 +1,4 @@
-// Copyright 2020 Tier IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@
 #include <image_transport/subscriber_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/traffic_light.hpp>
-#include <autoware_auto_perception_msgs/msg/traffic_light_roi_array.hpp>
-#include <autoware_auto_perception_msgs/msg/traffic_signal.hpp>
-#include <autoware_auto_perception_msgs/msg/traffic_signal_array.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_element.hpp>
+#include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
+#include <tier4_perception_msgs/msg/traffic_signal.hpp>
+#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 #if __has_include(<cv_bridge/cv_bridge.hpp>)
 #include <cv_bridge/cv_bridge.hpp>
@@ -59,8 +59,7 @@ public:
   explicit TrafficLightClassifierNodelet(const rclcpp::NodeOptions & options);
   void imageRoiCallback(
     const sensor_msgs::msg::Image::ConstSharedPtr & input_image_msg,
-    const autoware_auto_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr &
-      input_rois_msg);
+    const tier4_perception_msgs::msg::TrafficLightRoiArray::ConstSharedPtr & input_rois_msg);
 
   enum ClassifierType {
     HSVFilter = 0,
@@ -72,19 +71,19 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
   image_transport::SubscriberFilter image_sub_;
-  message_filters::Subscriber<autoware_auto_perception_msgs::msg::TrafficLightRoiArray> roi_sub_;
+  message_filters::Subscriber<tier4_perception_msgs::msg::TrafficLightRoiArray> roi_sub_;
   typedef message_filters::sync_policies::ExactTime<
-    sensor_msgs::msg::Image, autoware_auto_perception_msgs::msg::TrafficLightRoiArray>
+    sensor_msgs::msg::Image, tier4_perception_msgs::msg::TrafficLightRoiArray>
     SyncPolicy;
   typedef message_filters::Synchronizer<SyncPolicy> Sync;
   std::shared_ptr<Sync> sync_;
   typedef message_filters::sync_policies::ApproximateTime<
-    sensor_msgs::msg::Image, autoware_auto_perception_msgs::msg::TrafficLightRoiArray>
+    sensor_msgs::msg::Image, tier4_perception_msgs::msg::TrafficLightRoiArray>
     ApproximateSyncPolicy;
   typedef message_filters::Synchronizer<ApproximateSyncPolicy> ApproximateSync;
   std::shared_ptr<ApproximateSync> approximate_sync_;
   bool is_approximate_sync_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::TrafficSignalArray>::SharedPtr
+  rclcpp::Publisher<tier4_perception_msgs::msg::TrafficSignalArray>::SharedPtr
     traffic_signal_array_pub_;
   std::shared_ptr<ClassifierInterface> classifier_ptr_;
 };

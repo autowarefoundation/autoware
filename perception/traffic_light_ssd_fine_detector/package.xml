@@ -10,7 +10,6 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>autoware_auto_perception_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>message_filters</depend>
@@ -18,6 +17,7 @@
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>tier4_debug_msgs</depend>
+  <depend>tier4_perception_msgs</depend>
 
   <test_depend>autoware_lint_common</test_depend>
 

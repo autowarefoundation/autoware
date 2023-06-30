@@ -8,8 +8,14 @@ traffic_light_classifier is a package for classifying traffic light labels using
 
 ### cnn_classifier
 
-Traffic light labels are classified by MobileNetV2.  
-Totally 37600 (26300 for training, 6800 for evaluation and 4500 for test) TIER IV internal images of Japanese traffic lights were used for fine-tuning.
+Traffic light labels are classified by EfficientNet-b1 or MobiletNet-v2.  
+Totally 83400 (58600 for training, 14800 for evaluation and 10000 for test) TIER IV internal images of Japanese traffic lights were used for fine-tuning.  
+The information of the models is listed here:
+
+| Name            | Input Size | Test Accuracy |
+| --------------- | ---------- | ------------- |
+| EfficientNet-b1 | 128 x 128  | 99.76%        |
+| MobileNet-v2    | 224 x 224  | 99.81%        |
 
 ### hsv_classifier
 
@@ -30,17 +36,17 @@ These colors and shapes are assigned to the message as follows:
 
 ### Input
 
-| Name            | Type                                                       | Description            |
-| --------------- | ---------------------------------------------------------- | ---------------------- |
-| `~/input/image` | `sensor_msgs::msg::Image`                                  | input image            |
-| `~/input/rois`  | `autoware_auto_perception_msgs::msg::TrafficLightRoiArray` | rois of traffic lights |
+| Name            | Type                                               | Description            |
+| --------------- | -------------------------------------------------- | ---------------------- |
+| `~/input/image` | `sensor_msgs::msg::Image`                          | input image            |
+| `~/input/rois`  | `tier4_perception_msgs::msg::TrafficLightRoiArray` | rois of traffic lights |
 
 ### Output
 
-| Name                       | Type                                                     | Description         |
-| -------------------------- | -------------------------------------------------------- | ------------------- |
-| `~/output/traffic_signals` | `autoware_auto_perception_msgs::msg::TrafficSignalArray` | classified signals  |
-| `~/output/debug/image`     | `sensor_msgs::msg::Image`                                | image for debugging |
+| Name                       | Type                                             | Description         |
+| -------------------------- | ------------------------------------------------ | ------------------- |
+| `~/output/traffic_signals` | `tier4_perception_msgs::msg::TrafficSignalArray` | classified signals  |
+| `~/output/debug/image`     | `sensor_msgs::msg::Image`                        | image for debugging |
 
 ## Parameters
 
@@ -54,19 +60,14 @@ These colors and shapes are assigned to the message as follows:
 
 #### cnn_classifier
 
-| Name              | Type   | Description                                       |
-| ----------------- | ------ | ------------------------------------------------- |
-| `model_file_path` | str    | path to the model file                            |
-| `label_file_path` | str    | path to the label file                            |
-| `precision`       | str    | TensorRT precision, `fp16` or `int8`              |
-| `input_c`         | str    | the channel size of an input image                |
-| `input_h`         | str    | the height of an input image                      |
-| `input_w`         | str    | the width of an input image                       |
-| `input_name`      | str    | the name of neural network's input layer          |
-| `output_name`     | str    | the name of neural network's output name          |
-| `mean`            | double | mean values for image normalization               |
-| `std`             | double | std values for image normalization                |
-| `build_only`      | bool   | shutdown node after TensorRT engine file is built |
+| Name                    | Type            | Description                          |
+| ----------------------- | --------------- | ------------------------------------ |
+| `classifier_label_path` | str             | path to the model file               |
+| `classifier_model_path` | str             | path to the label file               |
+| `classifier_precision`  | str             | TensorRT precision, `fp16` or `int8` |
+| `classifier_mean`       | vector\<double> | 3-channel input image mean           |
+| `classifier_std`        | vector\<double> | 3-channel input image std            |
+| `apply_softmax`         | bool            | whether or not apply softmax         |
 
 #### hsv_classifier
 
@@ -93,10 +94,10 @@ These colors and shapes are assigned to the message as follows:
 
 ## Customization of CNN model
 
-Currently, in Autoware, [MobileNetV2](https://arxiv.org/abs/1801.04381v3) is used as CNN classifier by default. The corresponding onnx file is `data/traffic_light_classifier_mobilenetv2.onnx`(This file will be downloaded during the build process).
+Currently, in Autoware, [MobileNetV2](https://arxiv.org/abs/1801.04381v3) and [EfficientNet-b1](https://arxiv.org/abs/1905.11946v5) are provided.
+The corresponding onnx files are `data/traffic_light_classifier_mobilenetv2.onnx` and `data/traffic_light_classifier_efficientNet_b1.onnx` (These files will be downloaded during the build process).
 Also, you can apply the following models shown as below, for example.
 
-- [EfficientNet](https://arxiv.org/abs/1905.11946v5)
 - [ResNet](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html)
 - [MobileNetV3](https://arxiv.org/abs/1905.02244)
   ...
@@ -153,7 +154,7 @@ python3 pytorch2onnx.py YOUR_CONFIG.py ...
 ```
 
 After obtaining your onnx model, update parameters defined in the launch file (e.g. `model_file_path`, `label_file_path`, `input_h`, `input_w`...).
-Note that, we only support labels defined in [autoware_auto_perception_msgs::msg::TrafficLight](https://github.com/tier4/autoware_auto_msgs/blob/tier4/main/autoware_auto_perception_msgs/msg/TrafficLight.idl).
+Note that, we only support labels defined in [tier4_perception_msgs::msg::TrafficLightElement](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_perception_msgs/msg/traffic_light/TrafficLightElement.msg).
 
 ## Assumptions / Known limits
 
@@ -190,6 +191,8 @@ Example:
 ## References/External links
 
 [1] M. Sandler, A. Howard, M. Zhu, A. Zhmoginov and L. Chen, "MobileNetV2: Inverted Residuals and Linear Bottlenecks," 2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition, Salt Lake City, UT, 2018, pp. 4510-4520, doi: 10.1109/CVPR.2018.00474.
+
+[2] Tan, Mingxing, and Quoc Le. "Efficientnet: Rethinking model scaling for convolutional neural networks." International conference on machine learning. PMLR, 2019.
 
 ## (Optional) Future extensions / Unimplemented parts
 
