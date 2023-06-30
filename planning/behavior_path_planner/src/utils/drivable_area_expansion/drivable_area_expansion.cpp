@@ -19,6 +19,7 @@
 #include "behavior_path_planner/utils/drivable_area_expansion/map_utils.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/parameters.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/types.hpp"
+#include "interpolation/linear_interpolation.hpp"
 
 #include <boost/geometry.hpp>
 
@@ -68,9 +69,7 @@ polygon_t createExpandedDrivableAreaPolygon(
   for (const auto & p : expansion_polygons) {
     unions.clear();
     boost::geometry::union_(expanded_da_poly, p, unions);
-    if (unions.size() != 1)  // union of overlapping polygons should produce a single polygon
-      continue;
-    else
+    if (unions.size() == 1)  // union of overlapping polygons should produce a single polygon
       expanded_da_poly = unions[0];
   }
   return expanded_da_poly;
@@ -129,8 +128,36 @@ std::array<ring_t::const_iterator, 4> findLeftRightRanges(
   return {left_start, left_end, right_start, right_end};
 }
 
+void copy_z_over_arc_length(
+  const std::vector<geometry_msgs::msg::Point> & from, std::vector<geometry_msgs::msg::Point> & to)
+{
+  if (from.empty() || to.empty()) return;
+  to.front().z = from.front().z;
+  if (from.size() < 2 || to.size() < 2) return;
+  to.back().z = from.back().z;
+  auto i_from = 1lu;
+  auto s_from = tier4_autoware_utils::calcDistance2d(from[0], from[1]);
+  auto s_to = 0.0;
+  auto s_from_prev = 0.0;
+  for (auto i_to = 1lu; i_to + 1 < to.size(); ++i_to) {
+    s_to += tier4_autoware_utils::calcDistance2d(to[i_to - 1], to[i_to]);
+    for (; s_from < s_to && i_from + 1 < from.size(); ++i_from) {
+      s_from_prev = s_from;
+      s_from += tier4_autoware_utils::calcDistance2d(from[i_from], from[i_from + 1]);
+    }
+    if (s_from - s_from_prev != 0.0) {
+      const auto ratio = (s_to - s_from_prev) / (s_from - s_from_prev);
+      to[i_to].z = interpolation::lerp(from[i_from - 1].z, from[i_from].z, ratio);
+    } else {
+      to[i_to].z = to[i_to - 1].z;
+    }
+  }
+}
+
 void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_drivable_area)
 {
+  const auto original_left_bound = path.left_bound;
+  const auto original_right_bound = path.right_bound;
   path.left_bound.clear();
   path.right_bound.clear();
   const auto begin = expanded_drivable_area.outer().begin();
@@ -155,6 +182,8 @@ void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_
     for (auto it = right_start; it >= begin; --it) path.right_bound.push_back(convert_point(*it));
     for (auto it = end - 1; it >= right_end; --it) path.right_bound.push_back(convert_point(*it));
   }
+  copy_z_over_arc_length(original_left_bound, path.left_bound);
+  copy_z_over_arc_length(original_right_bound, path.right_bound);
 }
 
 }  // namespace drivable_area_expansion
