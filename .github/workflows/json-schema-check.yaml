@@ -1,0 +1,17 @@
+name: json-schema-check
+
+on:
+  pull_request:
+    paths:
+      - "**/schema/*.schema.json"
+      - "**/config/*.param.yaml"
+
+jobs:
+  json-schema-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Run json-schema-check
+        uses: autowarefoundation/autoware-github-actions/json-schema-check@v1
