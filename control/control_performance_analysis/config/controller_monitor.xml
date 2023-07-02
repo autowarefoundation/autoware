@@ -287,7 +287,7 @@
        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
         <range top="1278.960225" left="0.000000" bottom="-30.937311" right="59.925017"/>
         <limitY/>
-        <curve color="#9467bd" name="iae_longitudina_velocity_error"/>
+        <curve color="#9467bd" name="iae_longitudinal_velocity_error"/>
        </plot>
       </DockArea>
       <DockArea name="iae_longitudinal_acceleration_error">
@@ -381,7 +381,7 @@
   <plugin ID="DataLoad CSV">
    <default time_axis="" delimiter="0"/>
   </plugin>
-  <plugin ID="DataLoad ROS2 bags">
+  <plugin ID="DataLoad ROS 2 bags">
    <use_header_stamp value="false"/>
    <discard_large_arrays value="true"/>
    <max_array_size value="100"/>
@@ -389,7 +389,7 @@
    <remove_suffix_from_strings value="true"/>
   </plugin>
   <plugin ID="DataLoad ULog"/>
-  <plugin ID="ROS2 Topic Subscriber">
+  <plugin ID="ROS 2 Topic Subscriber">
    <use_header_stamp value="false"/>
    <discard_large_arrays value="true"/>
    <max_array_size value="100"/>
@@ -405,14 +405,14 @@
    <scripts/>
   </plugin>
   <plugin ID="CSV Exporter"/>
-  <plugin ID="ROS2 Topic Re-Publisher"/>
+  <plugin ID="ROS 2 Topic Re-Publisher"/>
  </Plugins>
  <!-- - - - - - - - - - - - - - - -->
  <previouslyLoaded_Datafiles/>
- <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/>
+ <previouslyLoaded_Streamer name="ROS 2 Topic Subscriber"/>
  <!-- - - - - - - - - - - - - - - -->
  <customMathEquations>
-  <snippet name="iae_longitudina_velocity_error">
+  <snippet name="iae_longitudinal_velocity_error">
    <global>sum = 0</global>
    <function>sum = sum + math.abs(value)
 

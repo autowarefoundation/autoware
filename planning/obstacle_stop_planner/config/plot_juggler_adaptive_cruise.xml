@@ -102,14 +102,14 @@
   <plugin ID="DataLoad CSV">
    <default time_axis=""/>
   </plugin>
-  <plugin ID="DataLoad ROS2 bags">
+  <plugin ID="DataLoad ROS 2 bags">
    <use_header_stamp value="false"/>
    <discard_large_arrays value="true"/>
    <max_array_size value="100"/>
   </plugin>
   <plugin ID="DataLoad ULog"/>
   <plugin ID="MQTT Subscriber"/>
-  <plugin ID="ROS2 Topic Subscriber">
+  <plugin ID="ROS 2 Topic Subscriber">
    <use_header_stamp value="false"/>
    <discard_large_arrays value="true"/>
    <max_array_size value="true"/>
@@ -121,11 +121,11 @@
   <plugin ID="UDP Server"/>
   <plugin ID="WebSocket Server"/>
   <plugin ID="ZMQ Subscriber"/>
-  <plugin status="idle" ID="ROS2 Topic Re-Publisher"/>
+  <plugin status="idle" ID="ROS 2 Topic Re-Publisher"/>
  </Plugins>
  <!-- - - - - - - - - - - - - - - -->
  <previouslyLoaded_Datafiles/>
- <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/>
+ <previouslyLoaded_Streamer name="ROS 2 Topic Subscriber"/>
  <!-- - - - - - - - - - - - - - - -->
  <customMathEquations/>
  <snippets/>

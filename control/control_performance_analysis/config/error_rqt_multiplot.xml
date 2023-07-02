@@ -726,7 +726,7 @@
                         <visible>true</visible>
                     </legend>
                     <plot_rate>30</plot_rate>
-                    <title> Measured and Computed  Steerings Plot</title>
+                    <title> Measured and Computed Steering Plot</title>
                 </column_2>
             </row_2>
             <row_3>
