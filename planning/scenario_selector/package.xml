@@ -4,7 +4,6 @@
   <name>scenario_selector</name>
   <version>0.1.0</version>
   <description>The scenario_selector ROS 2 package</description>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
   <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
@@ -13,8 +12,6 @@
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <license>Apache License 2.0</license>
-
-  <author email="kenji.miyake@tier4.jp">Kenji Miyake</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>

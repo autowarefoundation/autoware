@@ -4,7 +4,6 @@
   <name>system_error_monitor</name>
   <version>0.1.1</version>
   <description>The system_error_monitor package in ROS 2</description>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
   <maintainer email="fumihito.ito@tier4.jp">Fumihito Ito</maintainer>
   <license>Apache License 2.0</license>
 

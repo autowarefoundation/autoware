@@ -8,7 +8,6 @@
   <license>Apache License 2.0</license>
 
   <author email="berkay@leodrive.ai">Berkay Karaman</author>
-  <author email="kenji.miyake@tier4.jp">Kenji Miyake</author>
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

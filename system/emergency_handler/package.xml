@@ -4,7 +4,6 @@
   <name>emergency_handler</name>
   <version>0.1.0</version>
   <description>The emergency_handler ROS 2 package</description>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
   <maintainer email="makoto.kurihara@tier4.jp">Makoto Kurihara</maintainer>
   <license>Apache License 2.0</license>
 

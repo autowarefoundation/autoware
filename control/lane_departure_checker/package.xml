@@ -7,8 +7,6 @@
   <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
   <license>Apache License 2.0</license>
 
-  <author email="kenji.miyake@tier4.jp">Kenji Miyake</author>
-
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 

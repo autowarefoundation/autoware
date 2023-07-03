@@ -4,7 +4,6 @@
   <name>obstacle_collision_checker</name>
   <version>0.1.0</version>
   <description>The obstacle_collision_checker package</description>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
   <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
   <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
@@ -14,7 +13,6 @@
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <license>Apache License 2.0</license>
 
-  <author email="kenji.miyake@tier4.jp">Kenji Miyake</author>
   <author email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
