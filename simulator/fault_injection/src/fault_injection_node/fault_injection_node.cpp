@@ -55,7 +55,7 @@ FaultInjectionNode::FaultInjectionNode(rclcpp::NodeOptions node_options)
 
   // Subscriber
   sub_simulation_events_ = this->create_subscription<SimulationEvents>(
-    "~/input/simulation_events", rclcpp::QoS{1},
+    "~/input/simulation_events", rclcpp::QoS{rclcpp::KeepLast(10)},
     std::bind(&FaultInjectionNode::onSimulationEvents, this, _1));
 
   // Load all config

@@ -127,6 +127,55 @@ class TestFaultInjectionLink(unittest.TestCase):
 
         self.assertGreaterEqual(self.get_num_valid_data(msg_buffer, DiagnosticStatus.ERROR), 1)
 
+    def test_receive_multiple_message_simultaneously(self):
+        """
+        Test for https://github.com/autowarefoundation/autoware.universe/pull/4042.
+
+        Expect fault_injection_node can receive multiple messages simultaneously.
+        """
+        msg_buffer = []
+        self.test_node.create_subscription(
+            DiagnosticArray, "/diagnostics", lambda msg: msg_buffer.append(msg), 10
+        )
+
+        # Call spin_once() so that the publisher publish messages simultaneously
+        pub_events_1 = self.test_node.create_publisher(SimulationEvents, "/simulation/events", 10)
+        pub_events_2 = self.test_node.create_publisher(SimulationEvents, "/simulation/events", 10)
+        rclpy.spin_once(self.test_node, timeout_sec=0.1)
+        pub_events_1.publish(
+            SimulationEvents(
+                fault_injection_events=[
+                    FaultInjectionEvent(name="cpu_temperature", level=FaultInjectionEvent.ERROR)
+                ]
+            )
+        )
+        pub_events_2.publish(
+            SimulationEvents(
+                fault_injection_events=[
+                    FaultInjectionEvent(name="cpu_usage", level=FaultInjectionEvent.ERROR)
+                ]
+            )
+        )
+
+        # Wait until the subscriber receive messages
+        end_time = time.time() + self.evaluation_time
+        while time.time() < end_time:
+            rclpy.spin_once(self.test_node, timeout_sec=1.0)
+
+        # Verify the number of received messages
+        self.assertGreater(len(msg_buffer), 0)
+
+        # Verify the latest message
+        for stat in msg_buffer[-1].status:
+            if stat.name == "fault_injection: CPU Load Average":
+                self.assertEqual(stat.level, DiagnosticStatus.OK)
+            elif stat.name == "fault_injection: CPU Temperature":
+                self.assertEqual(stat.level, DiagnosticStatus.ERROR)
+            elif stat.name == "fault_injection: CPU Usage":
+                self.assertEqual(stat.level, DiagnosticStatus.ERROR)
+            else:
+                self.fail(f"Unexpected status name: {stat.name}")
+
 
 @launch_testing.post_shutdown_test()
 class TestProcessOutput(unittest.TestCase):
