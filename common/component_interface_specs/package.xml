@@ -14,6 +14,9 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_adapi_v1_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>tier4_map_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
