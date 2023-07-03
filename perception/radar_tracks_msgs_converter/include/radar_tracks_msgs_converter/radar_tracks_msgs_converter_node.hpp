@@ -93,7 +93,7 @@ private:
   // Core
   geometry_msgs::msg::PoseWithCovariance convertPoseWithCovariance();
   TrackedObjects convertRadarTrackToTrackedObjects();
-  DetectedObjects convertRadarTrackToDetectedObjects();
+  DetectedObjects convertTrackedObjectsToDetectedObjects(TrackedObjects & objects);
   uint8_t convertClassification(const uint16_t classification);
 };
 

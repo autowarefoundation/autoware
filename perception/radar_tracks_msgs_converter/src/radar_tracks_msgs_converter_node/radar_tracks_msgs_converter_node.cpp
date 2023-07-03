@@ -14,6 +14,8 @@
 
 #include "radar_tracks_msgs_converter/radar_tracks_msgs_converter_node.hpp"
 
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 #include <tf2/utils.h>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -153,94 +155,36 @@ void RadarTracksMsgsConverterNode::onTimer()
     node_param_.new_frame_id, header.frame_id, header.stamp, rclcpp::Duration::from_seconds(0.01));
 
   TrackedObjects tracked_objects = convertRadarTrackToTrackedObjects();
-  DetectedObjects detected_objects = convertRadarTrackToDetectedObjects();
+  DetectedObjects detected_objects = convertTrackedObjectsToDetectedObjects(tracked_objects);
   if (!tracked_objects.objects.empty()) {
     pub_tracked_objects_->publish(tracked_objects);
     pub_detected_objects_->publish(detected_objects);
   }
 }
 
-DetectedObjects RadarTracksMsgsConverterNode::convertRadarTrackToDetectedObjects()
+DetectedObjects RadarTracksMsgsConverterNode::convertTrackedObjectsToDetectedObjects(
+  TrackedObjects & objects)
 {
   DetectedObjects detected_objects;
-  detected_objects.header = radar_data_->header;
-  detected_objects.header.frame_id = node_param_.new_frame_id;
-  using POSE_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
-  using RADAR_IDX = tier4_autoware_utils::xyz_upper_covariance_index::XYZ_UPPER_COV_IDX;
+  detected_objects.header = objects.header;
 
-  for (auto & radar_track : radar_data_->tracks) {
+  for (auto & object : objects.objects) {
     DetectedObject detected_object;
-
     detected_object.existence_probability = 1.0;
+    detected_object.shape = object.shape;
 
-    detected_object.shape.type = Shape::BOUNDING_BOX;
-    detected_object.shape.dimensions = radar_track.size;
-
-    // kinematics
+    // kinematics setting
     DetectedObjectKinematics kinematics;
+    kinematics.orientation_availability =
+      autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
     kinematics.has_twist = true;
     kinematics.has_twist_covariance = true;
-
-    // convert by tf
-    geometry_msgs::msg::PoseStamped radar_pose_stamped{};
-    radar_pose_stamped.pose.position = radar_track.position;
-    geometry_msgs::msg::PoseStamped transformed_pose_stamped{};
-    tf2::doTransform(radar_pose_stamped, transformed_pose_stamped, *transform_);
-    kinematics.pose_with_covariance.pose = transformed_pose_stamped.pose;
-
-    {
-      auto & pose_cov = kinematics.pose_with_covariance.covariance;
-      auto & radar_position_cov = radar_track.position_covariance;
-      pose_cov[POSE_IDX::X_X] = radar_position_cov[RADAR_IDX::X_X];
-      pose_cov[POSE_IDX::X_Y] = radar_position_cov[RADAR_IDX::X_Y];
-      pose_cov[POSE_IDX::X_Z] = radar_position_cov[RADAR_IDX::X_Z];
-      pose_cov[POSE_IDX::Y_X] = radar_position_cov[RADAR_IDX::X_Y];
-      pose_cov[POSE_IDX::Y_Y] = radar_position_cov[RADAR_IDX::Y_Y];
-      pose_cov[POSE_IDX::Y_Z] = radar_position_cov[RADAR_IDX::Y_Z];
-      pose_cov[POSE_IDX::Z_X] = radar_position_cov[RADAR_IDX::X_Z];
-      pose_cov[POSE_IDX::Z_Y] = radar_position_cov[RADAR_IDX::Y_Z];
-      pose_cov[POSE_IDX::Z_Z] = radar_position_cov[RADAR_IDX::Z_Z];
-    }
-
-    // convert by tf
-    geometry_msgs::msg::Vector3Stamped radar_velocity_stamped{};
-    radar_velocity_stamped.vector = radar_track.velocity;
-    geometry_msgs::msg::Vector3Stamped transformed_vector3_stamped{};
-    tf2::doTransform(radar_velocity_stamped, transformed_vector3_stamped, *transform_);
-    kinematics.twist_with_covariance.twist.linear = transformed_vector3_stamped.vector;
-
-    // twist compensation
-    if (node_param_.use_twist_compensation) {
-      if (odometry_data_) {
-        kinematics.twist_with_covariance.twist.linear.x += odometry_data_->twist.twist.linear.x;
-        kinematics.twist_with_covariance.twist.linear.y += odometry_data_->twist.twist.linear.y;
-        kinematics.twist_with_covariance.twist.linear.z += odometry_data_->twist.twist.linear.z;
-      } else {
-        RCLCPP_INFO(get_logger(), "Odometry data is not coming");
-      }
-    }
-
-    {
-      auto & twist_cov = kinematics.twist_with_covariance.covariance;
-      auto & radar_vel_cov = radar_track.velocity_covariance;
-      twist_cov[POSE_IDX::X_X] = radar_vel_cov[RADAR_IDX::X_X];
-      twist_cov[POSE_IDX::X_Y] = radar_vel_cov[RADAR_IDX::X_Y];
-      twist_cov[POSE_IDX::X_Z] = radar_vel_cov[RADAR_IDX::X_Z];
-      twist_cov[POSE_IDX::Y_X] = radar_vel_cov[RADAR_IDX::X_Y];
-      twist_cov[POSE_IDX::Y_Y] = radar_vel_cov[RADAR_IDX::Y_Y];
-      twist_cov[POSE_IDX::Y_Z] = radar_vel_cov[RADAR_IDX::Y_Z];
-      twist_cov[POSE_IDX::Z_X] = radar_vel_cov[RADAR_IDX::X_Z];
-      twist_cov[POSE_IDX::Z_Y] = radar_vel_cov[RADAR_IDX::Y_Z];
-      twist_cov[POSE_IDX::Z_Z] = radar_vel_cov[RADAR_IDX::Z_Z];
-    }
+    kinematics.twist_with_covariance = object.kinematics.twist_with_covariance;
+    kinematics.pose_with_covariance = object.kinematics.pose_with_covariance;
     detected_object.kinematics = kinematics;
 
     // classification
-    ObjectClassification classification;
-    classification.probability = 1.0;
-    classification.label = convertClassification(radar_track.classification);
-    detected_object.classification.emplace_back(classification);
-
+    detected_object.classification = object.classification;
     detected_objects.objects.emplace_back(detected_object);
   }
   return detected_objects;
@@ -263,14 +207,34 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
     tracked_object.shape.type = Shape::BOUNDING_BOX;
     tracked_object.shape.dimensions = radar_track.size;
 
-    // kinematics
+    // kinematics setting
     TrackedObjectKinematics kinematics;
     kinematics.orientation_availability = TrackedObjectKinematics::AVAILABLE;
     kinematics.is_stationary = false;
 
-    // convert by tf
+    // Twist conversion
+    geometry_msgs::msg::Vector3 compensated_velocity = radar_track.velocity;
+    if (node_param_.use_twist_compensation) {
+      if (odometry_data_) {
+        compensated_velocity.x += odometry_data_->twist.twist.linear.x;
+        compensated_velocity.y += odometry_data_->twist.twist.linear.y;
+        compensated_velocity.z += odometry_data_->twist.twist.linear.z;
+      } else {
+        RCLCPP_INFO(get_logger(), "Odometry data is not coming");
+      }
+    }
+    kinematics.twist_with_covariance.twist.linear.x = std::sqrt(
+      compensated_velocity.x * compensated_velocity.x +
+      compensated_velocity.y * compensated_velocity.y);
+
+    // Pose conversion
     geometry_msgs::msg::PoseStamped radar_pose_stamped{};
     radar_pose_stamped.pose.position = radar_track.position;
+
+    double yaw = tier4_autoware_utils::normalizeRadian(
+      std::atan2(compensated_velocity.y, compensated_velocity.x));
+    radar_pose_stamped.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
+
     geometry_msgs::msg::PoseStamped transformed_pose_stamped{};
     tf2::doTransform(radar_pose_stamped, transformed_pose_stamped, *transform_);
     kinematics.pose_with_covariance.pose = transformed_pose_stamped.pose;
@@ -287,24 +251,6 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
       pose_cov[POSE_IDX::Z_X] = radar_position_cov[RADAR_IDX::X_Z];
       pose_cov[POSE_IDX::Z_Y] = radar_position_cov[RADAR_IDX::Y_Z];
       pose_cov[POSE_IDX::Z_Z] = radar_position_cov[RADAR_IDX::Z_Z];
-    }
-
-    // convert by tf
-    geometry_msgs::msg::Vector3Stamped radar_velocity_stamped{};
-    radar_velocity_stamped.vector = radar_track.velocity;
-    geometry_msgs::msg::Vector3Stamped transformed_vector3_stamped{};
-    tf2::doTransform(radar_velocity_stamped, transformed_vector3_stamped, *transform_);
-    kinematics.twist_with_covariance.twist.linear = transformed_vector3_stamped.vector;
-
-    // twist compensation
-    if (node_param_.use_twist_compensation) {
-      if (odometry_data_) {
-        kinematics.twist_with_covariance.twist.linear.x += odometry_data_->twist.twist.linear.x;
-        kinematics.twist_with_covariance.twist.linear.y += odometry_data_->twist.twist.linear.y;
-        kinematics.twist_with_covariance.twist.linear.z += odometry_data_->twist.twist.linear.z;
-      } else {
-        RCLCPP_INFO(get_logger(), "Odometry data is not coming");
-      }
     }
 
     {
