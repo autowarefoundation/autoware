@@ -100,8 +100,10 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
     const auto expanded_lanes = utils::expandLanelets(
       drivable_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
       dp.drivable_area_types_to_skip);
-    if (lane_departure_checker_->checkPathWillLeaveLane(
-          utils::transformToLanelets(expanded_lanes), path_start_to_end)) {
+    if (
+      parameters_.check_shift_path_lane_departure &&
+      lane_departure_checker_->checkPathWillLeaveLane(
+        utils::transformToLanelets(expanded_lanes), path_start_to_end)) {
       continue;
     }
 

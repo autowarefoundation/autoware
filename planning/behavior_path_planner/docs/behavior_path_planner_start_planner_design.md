@@ -105,6 +105,7 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 | Name                            | Unit   | Type   | Description                                                                                                          | Default value |
 | :------------------------------ | :----- | :----- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
 | enable_shift_pull_out           | [-]    | bool   | flag whether to enable shift pull out                                                                                | true          |
+| check_shift_path_lane_departure | [-]    | bool   | flag whether to check if shift path footprints are out of lane                                                       | false         |
 | shift_pull_out_velocity         | [m/s]  | double | velocity of shift pull out                                                                                           | 2.0           |
 | pull_out_sampling_num           | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                                  | 4             |
 | maximum_lateral_jerk            | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
