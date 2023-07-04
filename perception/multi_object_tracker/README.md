@@ -90,6 +90,8 @@ Example:
   Also, this algorithm doesn't care about blind spots. In general, since too close obstacles aren't visible due to the sensing performance limit, please take enough margin to obstacles.
 -->
 
+See the [model explanations](models.md).
+
 ## (Optional) Error detection and handling
 
 <!-- Write how to detect errors and how to recover from them.
