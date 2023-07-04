@@ -43,11 +43,12 @@ OBSTACLE_AVOID = 2
 OBSTACLE_STOP = 3
 LAT_ACC = 4
 VELOCITY_OPTIMIZE = 5
-CONTROL_CMD = 6
-VEHICLE_CMD = 7
-CONTROL_CMD_ACC = 8
-VEHICLE_CMD_ACC = 9
-DATA_NUM = 10
+ACCELERATION_OPTIMIZE = 6
+CONTROL_CMD = 7
+VEHICLE_CMD = 8
+CONTROL_CMD_ACC = 9
+VEHICLE_CMD_ACC = 10
+DATA_NUM = 11
 
 
 class VelocityChecker(Node):
@@ -94,8 +95,6 @@ class VelocityChecker(Node):
         self.sub4 = self.create_subscription(
             Trajectory,
             scenario + "/motion_velocity_smoother/debug/trajectory_lateral_acc_filtered",
-            # TODO: change to following string after fixing bug of autoware
-            # '/motion_velocity_optimizer/debug/trajectory_lateral_acc_filtered',
             self.CallBackLataccTrajectory,
             1,
         )
@@ -157,9 +156,9 @@ class VelocityChecker(Node):
         if self.count == 0:
             self.get_logger().info("")
             self.get_logger().info(
-                "| Map Limit | Behavior | Obs Avoid | Obs Stop | External Lim | LatAcc Filtered "
-                "| Optimized | Control VelCmd | Control AccCmd | Vehicle VelCmd | Vehicle AccCmd "
-                "| AW Engage | VC Engage | Localization Vel | Vehicle Vel | [km/h] | Distance [m] "
+                "| Behavior Path | Behavior Vel | Obs Avoid | Obs Stop | External Lim | LatAcc Filtered "
+                "| Optimized Vel | Optimized Acc | Control VelCmd | Control AccCmd | Vehicle VelCmd | Vehicle AccCmd "
+                "| AW Engage | VC Engage | Localization Vel | Vehicle Vel | Distance [m] |"
             )  # noqa: E501
         mps2kmph = 3.6
         distance_to_stopline = self.distance_to_stopline
@@ -170,6 +169,7 @@ class VelocityChecker(Node):
         vel_external_lim = self.external_v_lim * mps2kmph
         vel_latacc_filtered = self.data_arr[LAT_ACC] * mps2kmph
         vel_optimized = self.data_arr[VELOCITY_OPTIMIZE] * mps2kmph
+        acc_optimized = self.data_arr[ACCELERATION_OPTIMIZE]
         vel_ctrl_cmd = self.data_arr[CONTROL_CMD] * mps2kmph
         acc_ctrl_cmd = self.data_arr[CONTROL_CMD_ACC]
         vel_vehicle_cmd = self.data_arr[VEHICLE_CMD] * mps2kmph
@@ -187,9 +187,9 @@ class VelocityChecker(Node):
             else ("True" if self.vehicle_engage is True else "False")
         )
         self.get_logger().info(
-            "| {0: 9.2f} | {1: 8.2f} | {2: 9.2f} | {3: 8.2f} | {4: 12.2f} "
-            "| {5: 15.2f} | {6: 9.2f} | {7: 14.2f} | {8: 14.2f} | {9: 14.2f} | {10: 14.2f} "
-            "| {11:>9s} | {12:>9s} | {13: 16.2f} | {14: 11.2f} |        | {15: 10.2f}".format(  # noqa: E501
+            "| {0: 13.2f} | {1: 12.2f} | {2: 9.2f} | {3: 8.2f} | {4: 12.2f} "
+            "| {5: 15.2f} | {6: 13.2f} | {7: 13.2f} | {8: 14.2f} | {9: 14.2f} | {10: 14.2f} | {11: 14.2f} "
+            "| {12:>9s} | {13:>9s} | {14: 16.2f} | {15: 11.2f} | {16: 12.2f} |".format(  # noqa: E501
                 vel_map_lim,
                 vel_behavior,
                 vel_obs_avoid,
@@ -197,6 +197,7 @@ class VelocityChecker(Node):
                 vel_external_lim,
                 vel_latacc_filtered,
                 vel_optimized,
+                acc_optimized,
                 vel_ctrl_cmd,
                 acc_ctrl_cmd,
                 vel_vehicle_cmd,
@@ -268,6 +269,7 @@ class VelocityChecker(Node):
         # self.get_logger().info('VELOCITY_OPTIMIZE called')
         closest = self.calcClosestTrajectory(msg)
         self.data_arr[VELOCITY_OPTIMIZE] = msg.points[closest].longitudinal_velocity_mps
+        self.data_arr[ACCELERATION_OPTIMIZE] = msg.points[closest].acceleration_mps2
         return
 
     def CallBackControlCmd(self, msg):
