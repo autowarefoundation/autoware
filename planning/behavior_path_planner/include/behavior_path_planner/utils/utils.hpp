@@ -358,11 +358,21 @@ lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> 
 lanelet::ConstLanelets getCurrentLanesFromPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data);
 
+lanelet::ConstLanelets extendNextLane(
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
+
+lanelet::ConstLanelets extendPrevLane(
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
+
 lanelet::ConstLanelets extendLanes(
   const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
 
 lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data);
+
+lanelet::ConstLanelets getExtendedCurrentLanes(
+  const std::shared_ptr<const PlannerData> & planner_data, const double backward_length,
+  const double forward_length);
 
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
