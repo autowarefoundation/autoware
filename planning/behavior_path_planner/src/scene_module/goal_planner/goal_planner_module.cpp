@@ -284,7 +284,7 @@ bool GoalPlannerModule::isExecutionRequested() const
       return lanelet::utils::isInLanelet(goal_pose, current_lane);
     });
 
-  // check that goal is in current neghibor shoulder lane
+  // check that goal is in current neighbor shoulder lane
   const bool goal_is_in_current_shoulder_lanes = std::invoke([&]() {
     lanelet::ConstLanelet neighbor_shoulder_lane{};
     for (const auto & lane : current_lanes) {
