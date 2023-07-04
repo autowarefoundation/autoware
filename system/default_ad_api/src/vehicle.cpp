@@ -181,7 +181,7 @@ void VehicleNode::publish_status()
 {
   if (
     !steering_status_msgs_ || !gear_status_msgs_ || !turn_indicator_status_msgs_ ||
-    hazard_light_status_msgs_ || energy_status_msgs_)
+    !hazard_light_status_msgs_ || !energy_status_msgs_)
     return;
 
   autoware_ad_api::vehicle::VehicleStatus::Message vehicle_status;
