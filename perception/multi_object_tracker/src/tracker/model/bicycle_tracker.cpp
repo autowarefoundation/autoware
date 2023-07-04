@@ -135,7 +135,7 @@ BicycleTracker::BicycleTracker(
   ekf_.init(X, P);
 
   // Set lf, lr
-  double point_ratio = 0.5;  // comes to front if larger
+  double point_ratio = 0.2;  // under steered if smaller than 0.5
   lf_ = bounding_box_.length * point_ratio;
   lr_ = bounding_box_.length * (1.0 - point_ratio);
 }
