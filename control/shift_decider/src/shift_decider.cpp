@@ -86,7 +86,10 @@ void ShiftDecider::updateCurrentShiftCmd()
       shift_cmd_.command = current_gear_ptr_->report;
     }
   } else {
-    if (autoware_state_->state == AutowareState::ARRIVED_GOAL && park_on_goal_) {
+    if (
+      (autoware_state_->state == AutowareState::ARRIVED_GOAL ||
+       autoware_state_->state == AutowareState::WAITING_FOR_ROUTE) &&
+      park_on_goal_) {
       shift_cmd_.command = GearCommand::PARK;
     } else {
       shift_cmd_.command = current_gear_ptr_->report;
