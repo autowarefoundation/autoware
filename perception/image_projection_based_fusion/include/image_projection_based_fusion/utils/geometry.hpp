@@ -60,6 +60,10 @@ void transformPoints(
   const std::vector<Eigen::Vector3d> & input_points, const Eigen::Affine3d & affine_transform,
   std::vector<Eigen::Vector3d> & output_points);
 
+bool is_inside(
+  const sensor_msgs::msg::RegionOfInterest & outer,
+  const sensor_msgs::msg::RegionOfInterest & inner, const float outer_offset_scale = 1.1);
+
 }  // namespace image_projection_based_fusion
 
 #endif  // IMAGE_PROJECTION_BASED_FUSION__UTILS__GEOMETRY_HPP_

@@ -40,6 +40,8 @@ RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
   use_iou_y_ = declare_parameter("use_iou_y", false);
   use_iou_ = declare_parameter("use_iou", false);
   use_cluster_semantic_type_ = declare_parameter("use_cluster_semantic_type", false);
+  only_allow_inside_cluster_ = declare_parameter("only_allow_inside_cluster_", false);
+  roi_scale_factor_ = declare_parameter("roi_scale_factor", 1.1);
   iou_threshold_ = declare_parameter("iou_threshold", 0.1);
   remove_unknown_ = declare_parameter("remove_unknown", false);
   trust_distance_ = declare_parameter("trust_distance", 100.0);
@@ -177,7 +179,11 @@ void RoiClusterFusionNode::fuseOnSingleImage(
       if (use_iou_y_) {
         iou_y = calcIoUY(cluster_map.second, feature_obj.feature.roi);
       }
-      if (max_iou < iou + iou_x + iou_y) {
+      const bool passed_inside_cluster_gate =
+        only_allow_inside_cluster_
+          ? is_inside(feature_obj.feature.roi, cluster_map.second, roi_scale_factor_)
+          : true;
+      if (max_iou < iou + iou_x + iou_y && passed_inside_cluster_gate) {
         index = cluster_map.first;
         max_iou = iou + iou_x + iou_y;
       }

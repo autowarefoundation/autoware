@@ -162,4 +162,15 @@ void transformPoints(
   }
 }
 
+bool is_inside(
+  const sensor_msgs::msg::RegionOfInterest & outer,
+  const sensor_msgs::msg::RegionOfInterest & inner, const double outer_offset_scale)
+{
+  const double lower_scale = 1.0 - std::abs(outer_offset_scale - 1.0);
+  return outer.x_offset * lower_scale <= inner.x_offset &&
+         outer.y_offset * lower_scale <= inner.y_offset &&
+         inner.x_offset + inner.width <= (outer.x_offset + outer.width) * outer_offset_scale &&
+         inner.y_offset + inner.height <= (outer.y_offset + outer.height) * outer_offset_scale;
+}
+
 }  // namespace image_projection_based_fusion

@@ -42,6 +42,8 @@ protected:
   bool use_iou_y_{false};
   bool use_iou_{false};
   bool use_cluster_semantic_type_{false};
+  bool only_allow_inside_cluster_{false};
+  float roi_scale_factor_{1.1f};
   float iou_threshold_{0.0f};
   bool remove_unknown_;
   float trust_distance_;
