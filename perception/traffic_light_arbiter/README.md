@@ -12,11 +12,11 @@ A node that merges traffic light/signal state from image recognition and externa
 
 #### Input
 
-| Name                             | Type                                         | Description                                              |
-| -------------------------------- | -------------------------------------------- | -------------------------------------------------------- |
-| ~/sub/vector_map                 | autoware_auto_mapping_msgs::msg::HADMapBin   | The vector map to get valid traffic signal ids.          |
-| ~/sub/perception_traffic_signals | autoware_perception_msgs::msg::TrafficSignal | The traffic signals from the image recognition pipeline. |
-| ~/sub/external_traffic_signals   | autoware_perception_msgs::msg::TrafficSignal | The traffic signals from an external system.             |
+| Name                             | Type                                              | Description                                              |
+| -------------------------------- | ------------------------------------------------- | -------------------------------------------------------- |
+| ~/sub/vector_map                 | autoware_auto_mapping_msgs::msg::HADMapBin        | The vector map to get valid traffic signal ids.          |
+| ~/sub/perception_traffic_signals | autoware_perception_msgs::msg::TrafficSignalArray | The traffic signals from the image recognition pipeline. |
+| ~/sub/external_traffic_signals   | autoware_perception_msgs::msg::TrafficSignalArray | The traffic signals from an external system.             |
 
 #### Output
 
