@@ -655,13 +655,14 @@ namespace: `avoidance.target_filtering.`
 
 namespace: `avoidance.safety_check.`
 
-| Name                           | Unit   | Type   | Description                                                                       | Default value |
-| :----------------------------- | ------ | ------ | --------------------------------------------------------------------------------- | ------------- |
-| safety_check_backward_distance | [m]    | double | Backward distance to search the dynamic objects.                                  | 50.0          |
-| safety_check_time_horizon      | [s]    | double | Time horizon to check lateral/longitudinal margin is enough or not.               | 10.0          |
-| safety_check_idling_time       | [t]    | double | Time delay constant that be use for longitudinal margin calculation based on RSS. | 1.5           |
-| safety_check_accel_for_rss     | [m/ss] | double | Accel constant that be used for longitudinal margin calculation based on RSS.     | 2.5           |
-| safety_check_hysteresis_factor | [-]    | double | Hysteresis factor that be used for chattering prevention.                         | 2.0           |
+| Name                           | Unit   | Type   | Description                                                                                                | Default value |
+| :----------------------------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------- | ------------- |
+| safety_check_backward_distance | [m]    | double | Backward distance to search the dynamic objects.                                                           | 50.0          |
+| safety_check_time_horizon      | [s]    | double | Time horizon to check lateral/longitudinal margin is enough or not.                                        | 10.0          |
+| safety_check_idling_time       | [t]    | double | Time delay constant that be use for longitudinal margin calculation based on RSS.                          | 1.5           |
+| safety_check_accel_for_rss     | [m/ss] | double | Accel constant that be used for longitudinal margin calculation based on RSS.                              | 2.5           |
+| safety_check_hysteresis_factor | [-]    | double | Hysteresis factor that be used for chattering prevention.                                                  | 2.0           |
+| safety_check_ego_offset        | [m]    | double | Output new avoidance path **only when** the offset between ego and previous output path is less than this. | 1.0           |
 
 ### Avoidance maneuver parameters
 

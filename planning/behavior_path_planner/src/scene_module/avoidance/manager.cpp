@@ -142,6 +142,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.safety_check_accel_for_rss = get_parameter<double>(node, ns + "safety_check_accel_for_rss");
     p.safety_check_hysteresis_factor =
       get_parameter<double>(node, ns + "safety_check_hysteresis_factor");
+    p.safety_check_ego_offset = get_parameter<double>(node, ns + "safety_check_ego_offset");
   }
 
   // avoidance maneuver (lateral)

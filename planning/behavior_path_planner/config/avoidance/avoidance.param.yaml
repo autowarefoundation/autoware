@@ -127,6 +127,7 @@
         safety_check_idling_time: 1.5                    # [s]
         safety_check_accel_for_rss: 2.5                  # [m/ss]
         safety_check_hysteresis_factor: 2.0              # [-]
+        safety_check_ego_offset: 1.0                     # [m]
 
       # For avoidance maneuver
       avoidance:
