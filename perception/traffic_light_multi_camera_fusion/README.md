@@ -20,9 +20,9 @@ You don't need to configure these topics manually. Just provide the `camera_name
 
 ## Output topics
 
-| Name                       | Type                                           | Description                        |
-| -------------------------- | ---------------------------------------------- | ---------------------------------- |
-| `~/output/traffic_signals` | tier4_perception_msgs::TrafficLightSignalArray | traffic light signal fusion result |
+| Name                       | Type                                              | Description                        |
+| -------------------------- | ------------------------------------------------- | ---------------------------------- |
+| `~/output/traffic_signals` | autoware_perception_msgs::TrafficLightSignalArray | traffic light signal fusion result |
 
 ## Node parameters
 
