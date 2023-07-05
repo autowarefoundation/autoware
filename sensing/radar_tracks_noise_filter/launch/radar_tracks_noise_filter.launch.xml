@@ -1,0 +1,17 @@
+<launch>
+  <!-- Input -->
+  <arg name="input/tracks" default="~/input/tracks"/>
+  <!-- Output -->
+  <arg name="output/noise_tracks" default="~/output/noise_tracks"/>
+  <arg name="output/filtered_tracks" default="~/output/filtered_tracks"/>
+  <!-- Parameter -->
+  <arg name="velocity_y_threshold" default="7.0"/>
+
+  <!-- Node -->
+  <node pkg="radar_tracks_noise_filter" exec="radar_tracks_noise_filter_node" name="radar_tracks_noise_filter" output="screen">
+    <remap from="~/input/tracks" to="$(var input/tracks)"/>
+    <remap from="~/output/noise_tracks" to="$(var output/noise_tracks)"/>
+    <remap from="~/output/filtered_tracks" to="$(var output/filtered_tracks)"/>
+    <param name="velocity_y_threshold" value="$(var velocity_y_threshold)"/>
+  </node>
+</launch>
