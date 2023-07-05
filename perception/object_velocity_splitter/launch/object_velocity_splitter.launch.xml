@@ -1,0 +1,17 @@
+<launch>
+  <!-- Input -->
+  <arg name="input/objects" default="~/input/objects"/>
+  <!-- Output -->
+  <arg name="output/low_speed_objects" default="~/output/low_speed_objects"/>
+  <arg name="output/high_speed_objects" default="~/output/high_speed_objects"/>
+  <!-- Parameter -->
+  <arg name="velocity_threshold" default="3.0"/>
+
+  <!-- Node -->
+  <node pkg="object_velocity_splitter" exec="object_velocity_splitter_node" name="object_velocity_splitter" output="screen">
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <remap from="~/output/low_speed_objects" to="$(var output/low_speed_objects)"/>
+    <remap from="~/output/high_speed_objects" to="$(var output/high_speed_objects)"/>
+    <param name="velocity_threshold" value="$(var velocity_threshold)"/>
+  </node>
+</launch>
