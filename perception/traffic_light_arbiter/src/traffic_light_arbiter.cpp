@@ -45,7 +45,7 @@ std::vector<TrafficLightConstPtr> filter_traffic_signals(const LaneletMapConstPt
 }  // namespace lanelet
 
 TrafficLightArbiter::TrafficLightArbiter(const rclcpp::NodeOptions & options)
-: Node("traffic_light_selector", options)
+: Node("traffic_light_arbiter", options)
 {
   external_time_tolerance_ = this->declare_parameter<double>("external_time_tolerance", 5.0);
   perception_time_tolerance_ = this->declare_parameter<double>("perception_time_tolerance", 1.0);

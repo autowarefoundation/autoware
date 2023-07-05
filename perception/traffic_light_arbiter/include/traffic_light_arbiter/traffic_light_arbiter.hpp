@@ -18,7 +18,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_perception_msgs/msg/traffic_light_array.hpp>
 #include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
 
 #include <lanelet2_core/Forward.h>
@@ -31,7 +30,7 @@ public:
   explicit TrafficLightArbiter(const rclcpp::NodeOptions & options);
 
 private:
-  using Element = autoware_perception_msgs::msg::TrafficLightElement;
+  using Element = autoware_perception_msgs::msg::TrafficSignalElement;
   using LaneletMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
   using TrafficSignalArray = autoware_perception_msgs::msg::TrafficSignalArray;
   using TrafficSignal = autoware_perception_msgs::msg::TrafficSignal;

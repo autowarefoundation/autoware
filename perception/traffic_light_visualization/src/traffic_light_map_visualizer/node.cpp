@@ -167,18 +167,18 @@ void TrafficLightMapVisualizerNode::trafficSignalsCallback(
               visualization_msgs::msg::Marker marker;
               if (
                 isAttributeValue(pt, "color", "red") &&
-                elem.color == autoware_perception_msgs::msg::TrafficLightElement::RED) {
+                elem.color == autoware_perception_msgs::msg::TrafficSignalElement::RED) {
                 lightAsMarker(
                   get_node_logging_interface(), pt, &marker, "traffic_light", current_time);
               } else if (  // NOLINT
                 isAttributeValue(pt, "color", "green") &&
-                elem.color == autoware_perception_msgs::msg::TrafficLightElement::GREEN) {
+                elem.color == autoware_perception_msgs::msg::TrafficSignalElement::GREEN) {
                 lightAsMarker(
                   get_node_logging_interface(), pt, &marker, "traffic_light", current_time);
 
               } else if (  // NOLINT
                 isAttributeValue(pt, "color", "yellow") &&
-                elem.color == autoware_perception_msgs::msg::TrafficLightElement::AMBER) {
+                elem.color == autoware_perception_msgs::msg::TrafficSignalElement::AMBER) {
                 lightAsMarker(
                   get_node_logging_interface(), pt, &marker, "traffic_light", current_time);
               } else {
