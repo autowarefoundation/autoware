@@ -19,7 +19,6 @@
 
 #include "ndt_scan_matcher/map_module.hpp"
 #include "ndt_scan_matcher/map_update_module.hpp"
-#include "ndt_scan_matcher/pose_initialization_module.hpp"
 #include "ndt_scan_matcher/tf2_listener_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -32,6 +31,7 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <tier4_debug_msgs/msg/float32_stamped.hpp>
 #include <tier4_debug_msgs/msg/int32_stamped.hpp>
+#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <fmt/format.h>
@@ -99,7 +99,6 @@ private:
     const std::string source_frame, const std::string target_frame,
     const pcl::shared_ptr<pcl::PointCloud<PointSource>> sensor_points_input_ptr,
     pcl::shared_ptr<pcl::PointCloud<PointSource>> sensor_points_output_ptr);
-  void update_transforms();
 
   void publish_tf(
     const rclcpp::Time & sensor_ros_time, const geometry_msgs::msg::Pose & result_pose_msg);
@@ -200,12 +199,13 @@ private:
   bool is_activated_;
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
   std::unique_ptr<MapModule> map_module_;
-  std::unique_ptr<PoseInitializationModule> pose_init_module_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
 
   // cspell: ignore degrounded
   bool estimate_scores_for_degrounded_scan_;
   double z_margin_for_ground_removal_;
+
+  bool use_dynamic_map_loading_;
 };
 
 #endif  // NDT_SCAN_MATCHER__NDT_SCAN_MATCHER_CORE_HPP_

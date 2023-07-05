@@ -27,7 +27,6 @@
 #include <autoware_map_msgs/srv/get_differential_point_cloud_map.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <fmt/format.h>
@@ -56,9 +55,7 @@ public:
     std::shared_ptr<std::map<std::string, std::string>> state_ptr);
 
 private:
-  void service_ndt_align(
-    const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
-    tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res);
+  friend class NDTScanMatcher;
   void callback_ekf_odom(nav_msgs::msg::Odometry::ConstSharedPtr odom_ptr);
   void map_update_timer_callback();
 
@@ -68,19 +65,9 @@ private:
   void update_map(const geometry_msgs::msg::Point & position);
   bool should_update_map(const geometry_msgs::msg::Point & position) const;
   void publish_partial_pcd_map();
-  geometry_msgs::msg::PoseWithCovarianceStamped align_using_monte_carlo(
-    const std::shared_ptr<NormalDistributionsTransform> & ndt_ptr,
-    const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_with_cov);
-  void publish_point_cloud(
-    const rclcpp::Time & sensor_ros_time, const std::string & frame_id,
-    const std::shared_ptr<const pcl::PointCloud<PointSource>> & sensor_points_mapTF_ptr);
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr loaded_pcd_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
-    ndt_monte_carlo_initial_pose_marker_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr sensor_aligned_pose_pub_;
 
-  rclcpp::Service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedPtr service_;
   rclcpp::Client<autoware_map_msgs::srv::GetDifferentialPointCloudMap>::SharedPtr
     pcd_loader_client_;
   rclcpp::TimerBase::SharedPtr map_update_timer_;
@@ -97,7 +84,6 @@ private:
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
   std::shared_ptr<std::map<std::string, std::string>> state_ptr_;
 
-  int initial_estimate_particles_num_;
   std::optional<geometry_msgs::msg::Point> last_update_position_ = std::nullopt;
   std::optional<geometry_msgs::msg::Point> current_position_ = std::nullopt;
   const double dynamic_map_loading_update_distance_;

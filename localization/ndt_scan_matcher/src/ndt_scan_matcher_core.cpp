@@ -150,6 +150,9 @@ NDTScanMatcher::NDTScanMatcher()
     output_pose_covariance_[i] = output_pose_covariance[i];
   }
 
+  initial_estimate_particles_num_ =
+    this->declare_parameter("initial_estimate_particles_num", initial_estimate_particles_num_);
+
   rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group;
   initial_pose_callback_group =
     this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -211,7 +214,15 @@ NDTScanMatcher::NDTScanMatcher()
   ndt_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("ndt_marker", 10);
   diagnostics_pub_ =
     this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+  ndt_monte_carlo_initial_pose_marker_pub_ =
+    this->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "monte_carlo_initial_pose_marker", 10);
 
+  service_ = this->create_service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>(
+    "ndt_align_srv",
+    std::bind(
+      &NDTScanMatcher::service_ndt_align, this, std::placeholders::_1, std::placeholders::_2),
+    rclcpp::ServicesQoS().get_rmw_qos_profile(), main_callback_group);
   service_trigger_node_ = this->create_service<std_srvs::srv::SetBool>(
     "trigger_node_srv",
     std::bind(
@@ -223,15 +234,13 @@ NDTScanMatcher::NDTScanMatcher()
 
   tf2_listener_module_ = std::make_shared<Tf2ListenerModule>(this);
 
-  if (this->declare_parameter<bool>("use_dynamic_map_loading")) {
+  use_dynamic_map_loading_ = this->declare_parameter<bool>("use_dynamic_map_loading");
+  if (use_dynamic_map_loading_) {
     map_update_module_ = std::make_unique<MapUpdateModule>(
       this, &ndt_ptr_mtx_, ndt_ptr_, tf2_listener_module_, map_frame_, main_callback_group,
       state_ptr_);
   } else {
     map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, main_callback_group);
-    pose_init_module_ = std::make_unique<PoseInitializationModule>(
-      this, &ndt_ptr_mtx_, ndt_ptr_, tf2_listener_module_, map_frame_, main_callback_group,
-      state_ptr_);
   }
 }
 
@@ -688,4 +697,90 @@ void NDTScanMatcher::service_trigger_node(
   }
   res->success = true;
   return;
+}
+
+void NDTScanMatcher::service_ndt_align(
+  const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
+  tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res)
+{
+  // get TF from pose_frame to map_frame
+  auto TF_pose_to_map_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
+  tf2_listener_module_->get_transform(
+    get_clock()->now(), map_frame_, req->pose_with_covariance.header.frame_id, TF_pose_to_map_ptr);
+
+  // transform pose_frame to map_frame
+  const auto mapTF_initial_pose_msg = transform(req->pose_with_covariance, *TF_pose_to_map_ptr);
+  if (use_dynamic_map_loading_) {
+    map_update_module_->update_map(mapTF_initial_pose_msg.pose.pose.position);
+  }
+
+  if (ndt_ptr_->getInputTarget() == nullptr) {
+    res->success = false;
+    RCLCPP_WARN(get_logger(), "No InputTarget");
+    return;
+  }
+
+  if (ndt_ptr_->getInputSource() == nullptr) {
+    res->success = false;
+    RCLCPP_WARN(get_logger(), "No InputSource");
+    return;
+  }
+
+  // mutex Map
+  std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);
+
+  (*state_ptr_)["state"] = "Aligning";
+  res->pose_with_covariance = align_using_monte_carlo(ndt_ptr_, mapTF_initial_pose_msg);
+  (*state_ptr_)["state"] = "Sleeping";
+  res->success = true;
+  res->pose_with_covariance.pose.covariance = req->pose_with_covariance.pose.covariance;
+}
+
+geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_carlo(
+  const std::shared_ptr<NormalDistributionsTransform> & ndt_ptr,
+  const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_with_cov)
+{
+  if (ndt_ptr->getInputTarget() == nullptr || ndt_ptr->getInputSource() == nullptr) {
+    RCLCPP_WARN(get_logger(), "No Map or Sensor PointCloud");
+    return geometry_msgs::msg::PoseWithCovarianceStamped();
+  }
+
+  // generateParticle
+  const auto initial_poses =
+    create_random_pose_array(initial_pose_with_cov, initial_estimate_particles_num_);
+
+  std::vector<Particle> particle_array;
+  auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();
+
+  for (unsigned int i = 0; i < initial_poses.size(); i++) {
+    const auto & initial_pose = initial_poses[i];
+    const Eigen::Matrix4f initial_pose_matrix = pose_to_matrix4f(initial_pose);
+    ndt_ptr->align(*output_cloud, initial_pose_matrix);
+    const pclomp::NdtResult ndt_result = ndt_ptr->getResult();
+
+    Particle particle(
+      initial_pose, matrix4f_to_pose(ndt_result.pose), ndt_result.transform_probability,
+      ndt_result.iteration_num);
+    particle_array.push_back(particle);
+    const auto marker_array = make_debug_markers(
+      get_clock()->now(), map_frame_, tier4_autoware_utils::createMarkerScale(0.3, 0.1, 0.1),
+      particle, i);
+    ndt_monte_carlo_initial_pose_marker_pub_->publish(marker_array);
+
+    auto sensor_points_mapTF_ptr = std::make_shared<pcl::PointCloud<PointSource>>();
+    tier4_autoware_utils::transformPointCloud(
+      *ndt_ptr->getInputSource(), *sensor_points_mapTF_ptr, ndt_result.pose);
+    publish_point_cloud(initial_pose_with_cov.header.stamp, map_frame_, sensor_points_mapTF_ptr);
+  }
+
+  auto best_particle_ptr = std::max_element(
+    std::begin(particle_array), std::end(particle_array),
+    [](const Particle & lhs, const Particle & rhs) { return lhs.score < rhs.score; });
+
+  geometry_msgs::msg::PoseWithCovarianceStamped result_pose_with_cov_msg;
+  result_pose_with_cov_msg.header.stamp = initial_pose_with_cov.header.stamp;
+  result_pose_with_cov_msg.header.frame_id = map_frame_;
+  result_pose_with_cov_msg.pose.pose = best_particle_ptr->result_pose;
+
+  return result_pose_with_cov_msg;
 }
