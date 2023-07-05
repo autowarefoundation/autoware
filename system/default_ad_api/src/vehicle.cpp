@@ -138,7 +138,7 @@ void VehicleNode::map_projector_info(const MapProjectorInfo::ConstSharedPtr msg_
 
 void VehicleNode::publish_kinematics()
 {
-  if (!kinematic_state_msgs_ || !acceleration_msgs_) return;
+  if (!kinematic_state_msgs_ || !acceleration_msgs_ || !map_projector_info_) return;
 
   autoware_ad_api::vehicle::VehicleKinematics::Message vehicle_kinematics;
   vehicle_kinematics.pose.header = kinematic_state_msgs_->header;
