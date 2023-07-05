@@ -503,6 +503,11 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   if (mode.is_in_transition) {
     filter_on_transition_.filterAll(dt, current_steer_, out);
   } else {
+    // When ego is stopped and the input command is not stopping,
+    // use the actual vehicle longitudinal state for the filtering
+    // this is to prevent the jerk limits being applied and causing
+    // a delay when restarting the vehicle.
+    if (ego_is_stopped && !input_cmd_is_stopping) filter_.setPrevCmd(current_status_cmd);
     filter_.filterAll(dt, current_steer_, out);
   }
 
@@ -520,14 +525,6 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   // supposed to stop. Until the appropriate handling will be done, previous value is used for the
   // filter in manual mode.
   prev_values.longitudinal = out.longitudinal;  // TODO(Horibe): to be removed
-
-  // When ego is stopped and the input command is stopping,
-  // use the actual vehicle longitudinal state for the next filtering
-  // this is to prevent the jerk limits being applied on the "stop acceleration"
-  // which may be negative and cause delays when restarting the vehicle.
-  if (ego_is_stopped && input_cmd_is_stopping) {
-    prev_values.longitudinal = current_status_cmd.longitudinal;
-  }
 
   filter_.setPrevCmd(prev_values);
   filter_on_transition_.setPrevCmd(prev_values);
