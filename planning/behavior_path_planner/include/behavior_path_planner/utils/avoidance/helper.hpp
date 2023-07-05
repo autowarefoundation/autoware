@@ -74,13 +74,6 @@ public:
     return std::max(getEgoSpeed(), parameters_->min_sharp_avoidance_speed);
   }
 
-  float getMaximumAvoidanceEgoSpeed() const
-  {
-    return parameters_->target_velocity_matrix.at(parameters_->col_size - 1);
-  }
-
-  float getMinimumAvoidanceEgoSpeed() const { return parameters_->target_velocity_matrix.front(); }
-
   double getNominalPrepareDistance() const
   {
     const auto & p = parameters_;
@@ -103,7 +96,7 @@ public:
   {
     const auto & p = parameters_;
     const auto distance_by_jerk = PathShifter::calcLongitudinalDistFromJerk(
-      shift_length, p->nominal_lateral_jerk, getMinimumAvoidanceEgoSpeed());
+      shift_length, p->max_lateral_jerk, p->min_sharp_avoidance_speed);
 
     return std::max(p->min_avoidance_distance, distance_by_jerk);
   }

@@ -136,6 +136,9 @@ public:
   // Utility Functions
   ////////////////////////////////////////
 
+  static double calcFeasibleVelocityFromJerk(
+    const double lateral, const double jerk, const double distance);
+
   static double calcLongitudinalDistFromJerk(
     const double lateral, const double jerk, const double velocity);
 

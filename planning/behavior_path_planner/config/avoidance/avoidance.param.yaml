@@ -144,6 +144,8 @@
           min_avoidance_distance: 10.0                  # [m]
           min_nominal_avoidance_speed: 7.0              # [m/s]
           min_sharp_avoidance_speed: 1.0                # [m/s]
+          min_slow_down_speed: 1.38                     # [m/s]
+          buf_slow_down_speed: 0.56                     # [m/s]
 
       # For yield maneuver
       yield:
@@ -153,6 +155,7 @@
       stop:
         min_distance: 10.0                              # [m]
         max_distance: 20.0                              # [m]
+        stop_buffer: 1.0                                # [m]
 
       constraints:
         # vehicle slows down under longitudinal constraints

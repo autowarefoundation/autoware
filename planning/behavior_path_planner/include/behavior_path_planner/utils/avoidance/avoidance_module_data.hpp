@@ -196,6 +196,9 @@ struct AvoidanceParameters
   // maximum stop distance
   double stop_max_distance;
 
+  // stop buffer
+  double stop_buffer;
+
   // start avoidance after this time to avoid sudden path change
   double prepare_time;
 
@@ -215,6 +218,12 @@ struct AvoidanceParameters
   // minimum speed for jerk calculation in a tight situation, i.e. there is NOT an enough
   // distance for avoidance. Need a sharp avoidance path to avoid the object.
   double min_sharp_avoidance_speed;
+
+  // minimum slow down speed
+  double min_slow_down_speed;
+
+  // slow down speed buffer
+  double buf_slow_down_speed;
 
   // The margin is configured so that the generated avoidance trajectory does not come near to the
   // road shoulder.

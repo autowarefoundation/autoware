@@ -120,9 +120,11 @@ MarkerArray createObjectInfoMarkerArray(const ObjectDataArray & objects, std::st
       marker.id = uuidToInt32(object.object.object_id);
       marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
       std::ostringstream string_stream;
-      string_stream << std::fixed << std::setprecision(2);
+      string_stream << std::fixed << std::setprecision(2) << std::boolalpha;
       string_stream << "ratio:" << object.shiftable_ratio << " [-]\n"
-                    << "lateral: " << object.lateral << " [-]\n"
+                    << "lateral:" << object.lateral << " [m]\n"
+                    << "necessity:" << object.avoid_required << " [-]\n"
+                    << "stoppable:" << object.is_stoppable << " [-]\n"
                     << "stop_factor:" << object.to_stop_factor_distance << " [m]\n"
                     << "move_time:" << object.move_time << " [s]\n"
                     << "stop_time:" << object.stop_time << " [s]\n";

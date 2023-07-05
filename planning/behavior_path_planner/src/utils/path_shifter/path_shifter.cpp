@@ -554,6 +554,18 @@ double PathShifter::calcShiftTimeFromJerk(const double lateral, const double jer
   return t_total;
 }
 
+double PathShifter::calcFeasibleVelocityFromJerk(
+  const double lateral, const double jerk, const double distance)
+{
+  const double j = std::abs(jerk);
+  const double l = std::abs(lateral);
+  const double d = std::abs(distance);
+  if (j < 1.0e-8) {
+    return 1.0e10;  // TODO(Horibe) maybe invalid arg?
+  }
+  return d / (4.0 * std::pow(0.5 * l / j, 1.0 / 3.0));
+}
+
 double PathShifter::calcLongitudinalDistFromJerk(
   const double lateral, const double jerk, const double velocity)
 {
