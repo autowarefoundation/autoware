@@ -1156,8 +1156,17 @@ LaneChangeTargetObjectIndices filterObject(
     }
 
     // check if the object intersects with current lanes
-    if (current_polygon && boost::geometry::intersects(current_polygon.value(), obj_polygon)) {
+    if (
+      current_polygon && boost::geometry::intersects(current_polygon.value(), obj_polygon) &&
+      max_dist_ego_to_obj >= 0.0) {
+      // check only the objects that are in front of the ego vehicle
       filtered_obj_indices.current_lane.push_back(i);
+      continue;
+    }
+
+    // ignore all objects that are behind the ego vehicle and not on the current and target
+    // lanes
+    if (max_dist_ego_to_obj < 0.0) {
       continue;
     }
 

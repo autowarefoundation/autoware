@@ -777,7 +777,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
 
   // get lanes used for detection
   const auto backward_target_lanes_for_object_filtering = utils::lane_change::getBackwardLanelets(
-    route_handler, path.target_lanelets, current_pose, lane_change_parameters.backward_lane_length);
+    route_handler, target_lanes, current_pose, lane_change_parameters.backward_lane_length);
 
   const auto dynamic_object_indices = utils::lane_change::filterObject(
     *dynamic_objects, current_lanes, target_lanes, backward_target_lanes_for_object_filtering,
