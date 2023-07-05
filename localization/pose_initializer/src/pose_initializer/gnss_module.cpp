@@ -43,7 +43,10 @@ geometry_msgs::msg::PoseWithCovarianceStamped GnssModule::get_pose()
       Initialize::Service::Response::ERROR_GNSS, "The GNSS pose is out of date.");
   }
 
-  auto result = *pose_;
-  result.pose.pose.position = fitter_.fit(result.pose.pose.position, result.header.frame_id);
-  return result;
+  PoseWithCovarianceStamped pose = *pose_;
+  const auto fitted = fitter_.fit(pose.pose.pose.position, pose.header.frame_id);
+  if (fitted) {
+    pose.pose.pose.position = fitted.value();
+  }
+  return pose;
 }

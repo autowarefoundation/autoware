@@ -32,9 +32,9 @@ struct MapHeightFitter::Impl
 
   explicit Impl(rclcpp::Node * node);
   void on_map(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  void get_partial_point_cloud_map(const Point & point);
+  bool get_partial_point_cloud_map(const Point & point);
   double get_ground_height(const tf2::Vector3 & point) const;
-  Point fit(const Point & position, const std::string & frame);
+  std::optional<Point> fit(const Point & position, const std::string & frame);
 
   tf2::BufferCore tf2_buffer_;
   tf2_ros::TransformListener tf2_listener_;
@@ -83,17 +83,17 @@ void MapHeightFitter::Impl::on_map(const sensor_msgs::msg::PointCloud2::ConstSha
   pcl::fromROSMsg(*msg, *map_cloud_);
 }
 
-void MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
+bool MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
 {
   const auto logger = node_->get_logger();
 
   if (!cli_map_) {
     RCLCPP_WARN_STREAM(logger, "Partial map loading in pointcloud_map_loader is not enabled");
-    return;
+    return false;
   }
   if (!cli_map_->service_is_ready()) {
     RCLCPP_WARN_STREAM(logger, "Partial map loading in pointcloud_map_loader is not ready");
-    return;
+    return false;
   }
 
   const auto req = std::make_shared<autoware_map_msgs::srv::GetPartialPointCloudMap::Request>();
@@ -107,7 +107,7 @@ void MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
   while (status != std::future_status::ready) {
     RCLCPP_INFO(logger, "waiting response");
     if (!rclcpp::ok()) {
-      return;
+      return false;
     }
     status = future.wait_for(std::chrono::seconds(1));
   }
@@ -131,6 +131,7 @@ void MapHeightFitter::Impl::get_partial_point_cloud_map(const Point & point)
   map_frame_ = res->header.frame_id;
   map_cloud_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromROSMsg(pcd_msg, *map_cloud_);
+  return true;
 }
 
 double MapHeightFitter::Impl::get_ground_height(const tf2::Vector3 & point) const
@@ -162,32 +163,37 @@ double MapHeightFitter::Impl::get_ground_height(const tf2::Vector3 & point) cons
   return std::isfinite(height) ? height : point.getZ();
 }
 
-Point MapHeightFitter::Impl::fit(const Point & position, const std::string & frame)
+std::optional<Point> MapHeightFitter::Impl::fit(const Point & position, const std::string & frame)
 {
   const auto logger = node_->get_logger();
   tf2::Vector3 point(position.x, position.y, position.z);
 
-  RCLCPP_INFO(logger, "map fit1: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
+  RCLCPP_INFO(logger, "original point: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
 
   if (cli_map_) {
-    map_cloud_.reset();
-    get_partial_point_cloud_map(position);
-  }
-
-  if (map_cloud_) {
-    try {
-      const auto stamped = tf2_buffer_.lookupTransform(map_frame_, frame, tf2::TimePointZero);
-      tf2::Transform transform{tf2::Quaternion{}, tf2::Vector3{}};
-      tf2::fromMsg(stamped.transform, transform);
-      point = transform * point;
-      point.setZ(get_ground_height(point));
-      point = transform.inverse() * point;
-    } catch (tf2::TransformException & exception) {
-      RCLCPP_WARN_STREAM(logger, "failed to lookup transform: " << exception.what());
+    if (!get_partial_point_cloud_map(position)) {
+      return std::nullopt;
     }
   }
 
-  RCLCPP_INFO(logger, "map fit2: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
+  if (!map_cloud_) {
+    RCLCPP_WARN_STREAM(logger, "point cloud map is not ready");
+    return std::nullopt;
+  }
+
+  try {
+    const auto stamped = tf2_buffer_.lookupTransform(map_frame_, frame, tf2::TimePointZero);
+    tf2::Transform transform{tf2::Quaternion{}, tf2::Vector3{}};
+    tf2::fromMsg(stamped.transform, transform);
+    point = transform * point;
+    point.setZ(get_ground_height(point));
+    point = transform.inverse() * point;
+  } catch (tf2::TransformException & exception) {
+    RCLCPP_WARN_STREAM(logger, "failed to lookup transform: " << exception.what());
+    return std::nullopt;
+  }
+
+  RCLCPP_INFO(logger, "modified point: %.3f %.3f %.3f", point.getX(), point.getY(), point.getZ());
 
   Point result;
   result.x = point.getX();
@@ -205,7 +211,7 @@ MapHeightFitter::~MapHeightFitter()
 {
 }
 
-Point MapHeightFitter::fit(const Point & position, const std::string & frame)
+std::optional<Point> MapHeightFitter::fit(const Point & position, const std::string & frame)
 {
   return impl_->fit(position, frame);
 }

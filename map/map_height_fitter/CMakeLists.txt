@@ -10,4 +10,8 @@ ament_auto_add_library(map_height_fitter SHARED
 )
 target_link_libraries(map_height_fitter ${PCL_LIBRARIES})
 
-ament_auto_package()
+ament_auto_add_executable(node
+  src/node.cpp
+)
+
+ament_auto_package(INSTALL_TO_SHARE launch)

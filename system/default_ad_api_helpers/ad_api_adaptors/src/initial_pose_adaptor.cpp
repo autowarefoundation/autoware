@@ -47,10 +47,11 @@ InitialPoseAdaptor::InitialPoseAdaptor() : Node("initial_pose_adaptor"), fitter_
 
 void InitialPoseAdaptor::on_initial_pose(const PoseWithCovarianceStamped::ConstSharedPtr msg)
 {
-  const auto & point = msg->pose.pose.position;
-  const auto & frame = msg->header.frame_id;
-  auto pose = *msg;
-  pose.pose.pose.position = fitter_.fit(point, frame);
+  PoseWithCovarianceStamped pose = *msg;
+  const auto fitted = fitter_.fit(pose.pose.pose.position, pose.header.frame_id);
+  if (fitted) {
+    pose.pose.pose.position = fitted.value();
+  }
   pose.pose.covariance = rviz_particle_covariance_;
 
   const auto req = std::make_shared<Initialize::Service::Request>();

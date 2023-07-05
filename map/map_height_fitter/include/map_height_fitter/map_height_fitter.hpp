@@ -20,6 +20,7 @@
 #include <geometry_msgs/msg/point.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace map_height_fitter
@@ -32,7 +33,7 @@ class MapHeightFitter final
 public:
   MapHeightFitter(rclcpp::Node * node);
   ~MapHeightFitter();
-  Point fit(const Point & position, const std::string & frame);
+  std::optional<Point> fit(const Point & position, const std::string & frame);
 
 private:
   struct Impl;
