@@ -36,9 +36,9 @@
 namespace behavior_velocity_planner
 {
 
-namespace bg = boost::geometry;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using tier4_autoware_utils::Point2d;
 
 enum class CollisionPointState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE };
 
@@ -72,11 +72,11 @@ struct DebugData
   std::vector<geometry_msgs::msg::Polygon> obj_polygons;
 };
 
-std::vector<bg::model::d2::point_xy<double>> getPolygonIntersects(
+std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,
   const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
 
-std::vector<bg::model::d2::point_xy<double>> getLinestringIntersects(
+std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicLineString2d & linestring,
   const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
 

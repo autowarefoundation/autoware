@@ -42,28 +42,26 @@
 
 namespace behavior_velocity_planner
 {
-
 namespace bg = boost::geometry;
-using Point = bg::model::d2::point_xy<double>;
-using Polygon = bg::model::polygon<Point>;
-using Line = bg::model::linestring<Point>;
 using motion_utils::calcSignedArcLength;
 using tier4_autoware_utils::createPoint;
+using tier4_autoware_utils::Line2d;
+using tier4_autoware_utils::Point2d;
 
-std::vector<Point> getPolygonIntersects(
+std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicPolygon2d & polygon,
   const geometry_msgs::msg::Point & ego_pos,
   const size_t max_num = std::numeric_limits<size_t>::max())
 {
-  std::vector<Point> intersects{};
+  std::vector<Point2d> intersects{};
 
   bool found_max_num = false;
   for (size_t i = 0; i < ego_path.points.size() - 1; ++i) {
     const auto & p_back = ego_path.points.at(i).point.pose.position;
     const auto & p_front = ego_path.points.at(i + 1).point.pose.position;
-    const Line segment{{p_back.x, p_back.y}, {p_front.x, p_front.y}};
+    const Line2d segment{{p_back.x, p_back.y}, {p_front.x, p_front.y}};
 
-    std::vector<Point> tmp_intersects{};
+    std::vector<Point2d> tmp_intersects{};
     bg::intersection(segment, polygon, tmp_intersects);
 
     for (const auto & p : tmp_intersects) {
@@ -79,7 +77,7 @@ std::vector<Point> getPolygonIntersects(
     }
   }
 
-  const auto compare = [&](const Point & p1, const Point & p2) {
+  const auto compare = [&](const Point2d & p1, const Point2d & p2) {
     const auto dist_l1 =
       calcSignedArcLength(ego_path.points, size_t(0), createPoint(p1.x(), p1.y(), ego_pos.z));
 
@@ -91,23 +89,28 @@ std::vector<Point> getPolygonIntersects(
 
   std::sort(intersects.begin(), intersects.end(), compare);
 
-  return intersects;
+  // convert tier4_autoware_utils::Point2d to geometry::msg::Point
+  std::vector<geometry_msgs::msg::Point> geometry_points;
+  for (const auto & p : intersects) {
+    geometry_points.push_back(createPoint(p.x(), p.y(), ego_pos.z));
+  }
+  return geometry_points;
 }
 
-std::vector<Point> getLinestringIntersects(
+std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicLineString2d & linestring,
   const geometry_msgs::msg::Point & ego_pos,
   const size_t max_num = std::numeric_limits<size_t>::max())
 {
-  std::vector<Point> intersects{};
+  std::vector<Point2d> intersects{};
 
   bool found_max_num = false;
   for (size_t i = 0; i < ego_path.points.size() - 1; ++i) {
     const auto & p_back = ego_path.points.at(i).point.pose.position;
     const auto & p_front = ego_path.points.at(i + 1).point.pose.position;
-    const Line segment{{p_back.x, p_back.y}, {p_front.x, p_front.y}};
+    const Line2d segment{{p_back.x, p_back.y}, {p_front.x, p_front.y}};
 
-    std::vector<Point> tmp_intersects{};
+    std::vector<Point2d> tmp_intersects{};
     bg::intersection(segment, linestring, tmp_intersects);
 
     for (const auto & p : tmp_intersects) {
@@ -123,7 +126,7 @@ std::vector<Point> getLinestringIntersects(
     }
   }
 
-  const auto compare = [&](const Point & p1, const Point & p2) {
+  const auto compare = [&](const Point2d & p1, const Point2d & p2) {
     const auto dist_l1 =
       calcSignedArcLength(ego_path.points, size_t(0), createPoint(p1.x(), p1.y(), ego_pos.z));
 
@@ -135,7 +138,12 @@ std::vector<Point> getLinestringIntersects(
 
   std::sort(intersects.begin(), intersects.end(), compare);
 
-  return intersects;
+  // convert tier4_autoware_utils::Point2d to geometry::msg::Point
+  std::vector<geometry_msgs::msg::Point> geometry_points;
+  for (const auto & p : intersects) {
+    geometry_points.push_back(createPoint(p.x(), p.y(), ego_pos.z));
+  }
+  return geometry_points;
 }
 
 lanelet::Optional<lanelet::ConstLineString3d> getStopLineFromMap(

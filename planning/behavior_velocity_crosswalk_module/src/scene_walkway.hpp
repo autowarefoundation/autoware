@@ -58,15 +58,14 @@ private:
   int64_t module_id_;
 
   [[nodiscard]] boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
-    const PathWithLaneId & ego_path, bool & exist_stopline_in_map) const;
+    const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 
   enum class State { APPROACH, STOP, SURPASSED };
 
   lanelet::ConstLanelet walkway_;
 
   lanelet::ConstLineStrings3d stop_lines_;
-
-  std::vector<geometry_msgs::msg::Point> path_intersects_;
 
   // State machine
   State state_;

@@ -29,9 +29,6 @@
 
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/linestring.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -55,6 +52,7 @@ using autoware_auto_perception_msgs::msg::TrafficLight;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using lanelet::autoware::Crosswalk;
 using tier4_api_msgs::msg::CrosswalkStatus;
+using tier4_autoware_utils::Polygon2d;
 using tier4_autoware_utils::StopWatch;
 
 class CrosswalkModule : public SceneModuleInterface
@@ -108,21 +106,24 @@ private:
   int64_t module_id_;
 
   boost::optional<std::pair<geometry_msgs::msg::Point, StopFactor>> findRTCStopPointWithFactor(
-    const PathWithLaneId & ego_path);
+    const PathWithLaneId & ego_path,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
   boost::optional<std::pair<geometry_msgs::msg::Point, StopFactor>> findNearestStopPointWithFactor(
-    const PathWithLaneId & ego_path);
+    const PathWithLaneId & ego_path,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
   boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
-    const PathWithLaneId & ego_path, bool & exist_stopline_in_map) const;
+    const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 
   std::vector<CollisionPoint> getCollisionPoints(
     const PathWithLaneId & ego_path, const PredictedObject & object,
-    const boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double>> &
-      attention_area,
-    const std::pair<double, double> & crosswalk_attention_range);
+    const Polygon2d & attention_area, const std::pair<double, double> & crosswalk_attention_range);
 
-  std::pair<double, double> getAttentionRange(const PathWithLaneId & ego_path);
+  std::pair<double, double> getAttentionRange(
+    const PathWithLaneId & ego_path,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
   void insertDecelPointWithDebugInfo(
     const geometry_msgs::msg::Point & stop_point, const float target_velocity,
@@ -138,12 +139,15 @@ private:
 
   CollisionPointState getCollisionPointState(const double ttc, const double ttv) const;
 
-  bool applySafetySlowDownSpeed(PathWithLaneId & output);
+  bool applySafetySlowDownSpeed(
+    PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
   float calcTargetVelocity(
     const geometry_msgs::msg::Point & stop_point, const PathWithLaneId & ego_path) const;
 
-  bool isStuckVehicle(const PathWithLaneId & ego_path, const PredictedObject & object) const;
+  bool isStuckVehicle(
+    const PathWithLaneId & ego_path, const PredictedObject & object,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 
   bool isRedSignalForPedestrians() const;
 
@@ -160,8 +164,6 @@ private:
   lanelet::ConstLanelet crosswalk_;
 
   lanelet::ConstLineStrings3d stop_lines_;
-
-  std::vector<geometry_msgs::msg::Point> path_intersects_;
 
   // Parameter
   PlannerParam planner_param_;

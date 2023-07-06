@@ -34,6 +34,7 @@ using Box2d = boost::geometry::model::box<Point2d>;
 using LineString2d = boost::geometry::model::linestring<Point2d>;
 using LinearRing2d = boost::geometry::model::ring<Point2d>;
 using Polygon2d = boost::geometry::model::polygon<Point2d>;
+using Line2d = boost::geometry::model::linestring<Point2d>;
 using MultiPoint2d = boost::geometry::model::multi_point<Point2d>;
 using MultiLineString2d = boost::geometry::model::multi_linestring<LineString2d>;
 using MultiPolygon2d = boost::geometry::model::multi_polygon<Polygon2d>;
