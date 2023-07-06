@@ -91,6 +91,8 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
     intersection_lanelets_ = util::getObjectiveLanelets(
       lanelet_map_ptr, routing_graph_ptr, assigned_lanelet, lanelets_on_path, associative_ids_,
       interpolated_path_info, planner_param_.attention_area_length,
+      planner_param_.occlusion_attention_area_length,
+      planner_param_.consider_wrong_direction_vehicle,
       false /* tl_arrow_solid on does not matter here*/);
   }
   const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area;

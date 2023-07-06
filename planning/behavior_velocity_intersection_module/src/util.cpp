@@ -402,7 +402,7 @@ IntersectionLanelets getObjectiveLanelets(
   const lanelet::ConstLanelet assigned_lanelet, const lanelet::ConstLanelets & lanelets_on_path,
   const std::set<int> & associative_ids, const InterpolatedPathInfo & interpolated_path_info,
   const double detection_area_length, const double occlusion_detection_area_length,
-  const bool tl_arrow_solid_on)
+  const bool consider_wrong_direction_vehicle, const bool tl_arrow_solid_on)
 {
   const auto turn_direction = assigned_lanelet.attributeOr("turn_direction", "else");
 
@@ -446,6 +446,7 @@ IntersectionLanelets getObjectiveLanelets(
   // get conflicting lanes on assigned lanelet
   const auto & conflicting_lanelets =
     lanelet::utils::getConflictingLanelets(routing_graph_ptr, assigned_lanelet);
+  const auto & adjacent_followings = routing_graph_ptr->following(conflicting_lanelets.back());
 
   // final objective lanelets
   lanelet::ConstLanelets detection_lanelets;
@@ -460,14 +461,26 @@ IntersectionLanelets getObjectiveLanelets(
   if (turn_direction == std::string("straight") && has_traffic_light) {
     // if assigned lanelet is "straight" with traffic light, detection area is not necessary
   } else {
-    // otherwise we need to know the priority from RightOfWay
-    for (const auto & conflicting_lanelet : conflicting_lanelets) {
-      if (
-        lanelet::utils::contains(yield_lanelets, conflicting_lanelet) ||
-        lanelet::utils::contains(ego_lanelets, conflicting_lanelet)) {
-        continue;
+    if (consider_wrong_direction_vehicle) {
+      for (const auto & conflicting_lanelet : conflicting_lanelets) {
+        if (lanelet::utils::contains(yield_lanelets, conflicting_lanelet)) {
+          continue;
+        }
+        detection_lanelets.push_back(conflicting_lanelet);
+        if (!adjacent_followings.empty()) {
+          detection_lanelets.push_back(adjacent_followings.front());
+        }
       }
-      detection_lanelets.push_back(conflicting_lanelet);
+    } else {
+      // otherwise we need to know the priority from RightOfWay
+      for (const auto & conflicting_lanelet : conflicting_lanelets) {
+        if (
+          lanelet::utils::contains(yield_lanelets, conflicting_lanelet) ||
+          lanelet::utils::contains(ego_lanelets, conflicting_lanelet)) {
+          continue;
+        }
+        detection_lanelets.push_back(conflicting_lanelet);
+      }
     }
   }
 
@@ -988,7 +1001,9 @@ bool checkAngleForTargetLanelets(
     const double ll_angle = lanelet::utils::getLaneletAngle(ll, pose.position);
     const double pose_angle = tf2::getYaw(pose.orientation);
     const double angle_diff = tier4_autoware_utils::normalizeRadian(ll_angle - pose_angle);
-    if (std::fabs(angle_diff) < detection_area_angle_thr) {
+    if (
+      std::fabs(angle_diff) < detection_area_angle_thr / 2 ||
+      std::fabs(angle_diff) > detection_area_angle_thr) {
       return true;
     }
   }
