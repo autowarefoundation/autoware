@@ -425,6 +425,25 @@ private:
   // for path
 
   PathWithLaneId updatePathTwist(const PathWithLaneId & path) const;
+  /**
+   * @brief Checks if a path has a no_drivable_lane or not
+   * @param path lanelet path
+   * @return true if the lanelet path includes at least one no_drivable_lane, false if it does not
+   * include any.
+   */
+  bool hasNoDrivableLaneInPath(const lanelet::routing::LaneletPath & path) const;
+  /**
+   * @brief Searches for a path between start and goal lanelets that does not include any
+   * no_drivable_lane. If there is more than one path fount, the function returns the shortest path
+   * that does not include any no_drivable_lane.
+   * @param start_lanelet start lanelet
+   * @param goal_lanelet goal lanelet
+   * @param drivable_lane_path output path that does not include no_drivable_lane.
+   * @return true if a path without any no_drivable_lane found, false if this path is not found.
+   */
+  bool findDrivableLanePath(
+    const lanelet::Lanelet & start_lanelet, const lanelet::Lanelet & goal_lanelet,
+    lanelet::routing::LaneletPath & drivable_lane_path) const;
 };
 }  // namespace route_handler
 #endif  // ROUTE_HANDLER__ROUTE_HANDLER_HPP_

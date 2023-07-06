@@ -1994,11 +1994,28 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
     return false;
   }
 
-  const auto shortest_path = optional_route->shortestPath();
-  path_lanelets->reserve(shortest_path.size());
-  for (const auto & llt : shortest_path) {
+  const lanelet::routing::LaneletPath shortest_path = optional_route->shortestPath();
+  bool shortest_path_has_no_drivable_lane = hasNoDrivableLaneInPath(shortest_path);
+  lanelet::routing::LaneletPath drivable_lane_path;
+  bool drivable_lane_path_found = false;
+
+  if (shortest_path_has_no_drivable_lane) {
+    drivable_lane_path_found =
+      findDrivableLanePath(start_lanelet, goal_lanelet, drivable_lane_path);
+  }
+
+  lanelet::routing::LaneletPath path;
+  if (drivable_lane_path_found) {
+    path = drivable_lane_path;
+  } else {
+    path = shortest_path;
+  }
+
+  path_lanelets->reserve(path.size());
+  for (const auto & llt : path) {
     path_lanelets->push_back(llt);
   }
+
   return true;
 }
 
@@ -2040,6 +2057,44 @@ lanelet::ConstLanelets RouteHandler::getMainLanelets(
     lanelet_sequence = getPreviousLaneletSequence(lanelet_sequence);
   }
   return main_lanelets;
+}
+
+bool RouteHandler::hasNoDrivableLaneInPath(const lanelet::routing::LaneletPath & path) const
+{
+  for (const auto & llt : path) {
+    const std::string no_drivable_lane_attribute = llt.attributeOr("no_drivable_lane", "no");
+    if (no_drivable_lane_attribute == "yes") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool RouteHandler::findDrivableLanePath(
+  const lanelet::Lanelet & start_lanelet, const lanelet::Lanelet & goal_lanelet,
+  lanelet::routing::LaneletPath & drivable_lane_path) const
+{
+  double drivable_lane_path_length2d = std::numeric_limits<double>::max();
+  bool drivable_lane_path_found = false;
+
+  for (const auto & llt : road_lanelets_) {
+    lanelet::ConstLanelets via_lanelet;
+    via_lanelet.push_back(llt);
+    const lanelet::Optional<lanelet::routing::Route> optional_route =
+      routing_graph_ptr_->getRouteVia(start_lanelet, via_lanelet, goal_lanelet, 0);
+
+    if ((optional_route) && (!hasNoDrivableLaneInPath(optional_route->shortestPath()))) {
+      if (optional_route->length2d() < drivable_lane_path_length2d) {
+        drivable_lane_path_length2d = optional_route->length2d();
+        drivable_lane_path = optional_route->shortestPath();
+        drivable_lane_path_found = true;
+      }
+    }
+    via_lanelet.clear();
+  }
+
+  return drivable_lane_path_found;
 }
 
 }  // namespace route_handler
