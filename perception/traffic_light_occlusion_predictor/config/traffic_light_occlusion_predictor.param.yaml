@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    azimuth_occlusion_resolution_deg: 0.15 # degree
+    elevation_occlusion_resolution_deg: 0.08  # degree
+    max_valid_pt_dist: 50.0
+    # the node would wait at most max_wait_t seconds for cloud whose timestamp different with the image is less than max_image_cloud_delay.
+    # If no cloud with timestamp difference smaller than max_image_cloud_delay is found, the node would publish occlusion ratio of all
+    # traffic lights as 0
+    max_image_cloud_delay: 0.5
+    max_wait_t: 0.05
+    max_occlusion_ratio: 50
