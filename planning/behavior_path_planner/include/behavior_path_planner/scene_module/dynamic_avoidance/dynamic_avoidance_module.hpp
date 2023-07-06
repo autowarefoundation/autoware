@@ -48,6 +48,7 @@ struct DynamicAvoidanceParameters
   bool avoid_pedestrian{false};
   double min_obstacle_vel{0.0};
   int successive_num_to_entry_dynamic_avoidance_condition{0};
+  double min_obj_lat_offset_to_ego_path{0.0};
 
   // drivable area generation
   double lat_offset_from_obstacle{0.0};

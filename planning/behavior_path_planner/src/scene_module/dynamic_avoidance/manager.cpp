@@ -42,6 +42,8 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
     p.min_obstacle_vel = node->declare_parameter<double>(ns + "min_obstacle_vel");
     p.successive_num_to_entry_dynamic_avoidance_condition =
       node->declare_parameter<int>(ns + "successive_num_to_entry_dynamic_avoidance_condition");
+    p.min_obj_lat_offset_to_ego_path =
+      node->declare_parameter<double>(ns + "min_obj_lat_offset_to_ego_path");
   }
 
   {  // drivable_area_generation
@@ -92,6 +94,8 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
     updateParam<int>(
       parameters, ns + "successive_num_to_entry_dynamic_avoidance_condition",
       p->successive_num_to_entry_dynamic_avoidance_condition);
+    updateParam<double>(
+      parameters, ns + "min_obj_lat_offset_to_ego_path", p->min_obj_lat_offset_to_ego_path);
   }
 
   {  // drivable_area_generation
