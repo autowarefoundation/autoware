@@ -49,8 +49,8 @@
  *         David V. Lu!!
  *********************************************************************/
 
-#ifndef POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
-#define POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
+#ifndef POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_BASE_HPP_
+#define POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_BASE_HPP_
 
 #include <nav2_costmap_2d/costmap_2d.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -64,23 +64,24 @@ namespace costmap_2d
 using geometry_msgs::msg::Pose;
 using sensor_msgs::msg::PointCloud2;
 
-class OccupancyGridMap : public nav2_costmap_2d::Costmap2D
+class OccupancyGridMapInterface : public nav2_costmap_2d::Costmap2D
 {
 public:
-  OccupancyGridMap(
+  OccupancyGridMapInterface(
     const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution);
 
-  void updateWithPointCloud(
+  virtual void updateWithPointCloud(
     const PointCloud2 & raw_pointcloud, const PointCloud2 & obstacle_pointcloud,
-    const Pose & robot_pose, const Pose & scan_origin);
+    const Pose & robot_pose, const Pose & scan_origin) = 0;
 
   void updateOrigin(double new_origin_x, double new_origin_y) override;
-
-  void setCellValue(const double wx, const double wy, const unsigned char cost);
-
   void raytrace(
     const double source_x, const double source_y, const double target_x, const double target_y,
     const unsigned char cost);
+  void setCellValue(const double wx, const double wy, const unsigned char cost);
+  using nav2_costmap_2d::Costmap2D::resetMaps;
+
+  virtual void initRosParam(rclcpp::Node & node) = 0;
 
 private:
   bool worldToMap(double wx, double wy, unsigned int & mx, unsigned int & my) const;
@@ -91,4 +92,4 @@ private:
 
 }  // namespace costmap_2d
 
-#endif  // POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
+#endif  // POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_BASE_HPP_

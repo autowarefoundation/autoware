@@ -6,8 +6,8 @@
 
 ### 1st step
 
-First of all, obstacle and raw pointcloud as input are transformed into a polar coordinate system and divided into bin per angle_increment.
-At this time, each point belonging to each bin is stored as range data. In addition, the x,y information in the map coordinate is also stored for ray trace on map coordinate.
+First of all, input obstacle/raw pointcloud are transformed into the polar coordinate centered around `scan_origin` and divided int ocircular bins per angle_increment respectively.
+At this time, each point belonging to each bin is stored as range data. In addition, the x,y information in the map coordinate is also stored for raytracing on the map coordinate.
 The bin contains the following information for each point
 
 - range data from origin of raytrace
@@ -30,8 +30,7 @@ The ray trace is done by Bresenham's line algorithm.
    ![pointcloud_based_occupancy_grid_map_side_view_1st](./image/pointcloud_based_occupancy_grid_map_side_view_1st.svg)
 
 2. Fill in the unknown cells.
-   Assume that unknown is behind the obstacle, since the back of the obstacle is a blind spot.
-   Therefore, the unknown are assumed to be the cells that are more than a distance margin from each obstacle point.
+   Based on the assumption that `UNKNOWN` is behind the obstacle, the cells that are more than a distance margin from each obstacle point are filled with `UNKOWN`
 
    ![pointcloud_based_occupancy_grid_map_side_view_2nd](./image/pointcloud_based_occupancy_grid_map_side_view_2nd.svg)
 
@@ -41,9 +40,13 @@ The ray trace is done by Bresenham's line algorithm.
    - The obstacle point cloud is processed and may not match the raw pointcloud.
    - The input may be inaccurate and obstacle points may not be determined as obstacles.
 
+   When the parameter `grid_map_type` is "OccupancyGridMapProjectiveBlindSpot" and the `scan_origin` is a sensor frame like `velodyne_top` for instance, for each obstacle pointcloud, if there are no _visible_ raw pointclouds that are located above the projected ray from the `scan_origin` to that obstacle pointcloud, the cells between the obstacle pointcloud and the `projected point` are filled with `UNKNOWN`. Note that the `scan_origin` should not be `base_link` if this flag is true because otherwise all the cells behind the obstacle point clouds would be filled with `UNKNOWN`.
+
+   ![pointcloud_based_occupancy_grid_map_side_view_2nd_projection](./image/pointcloud_based_occupancy_grid_map_side_view_2nd_projection.drawio.svg)
+
 3. Fill in the occupied cells.
    Fill in the point where the obstacle point is located with occupied.
-   In addition, If the distance between obstacle points is less than or equal to the distance margin, it is filled with occupied because the input may be inaccurate and obstacle points may not be determined as obstacles.
+   In addition, If the distance between obstacle points is less than or equal to the distance margin, that interval is filled with `OCCUPIED` because the input may be inaccurate and obstacle points may not be determined as obstacles.
 
    ![pointcloud_based_occupancy_grid_map_side_view_3rd](./image/pointcloud_based_occupancy_grid_map_side_view_3rd.svg)
 
@@ -85,6 +88,7 @@ $$
 | `use_height_filter` | bool   | whether to height filter for `~/input/obstacle_pointcloud` and `~/input/raw_pointcloud`? By default, the height is set to -1~2m. |
 | `map_length`        | double | The length of the map. -100 if it is 50~50[m]                                                                                    |
 | `map_resolution`    | double | The map cell resolution [m]                                                                                                      |
+| `grid_map_type`     | string | The type of grid map for estimating `UNKNOWN` region behind obstacle point clouds                                                |
 
 ## Assumptions / Known limits
 
@@ -104,3 +108,17 @@ In several places we have modified the external code written in BSD3 license.
 
 - The update probability of the binary Bayesian filter is currently hard-coded and requires a code change to be modified.
 - Since there is no special support for moving objects, the probability of existence is not increased for fast objects.
+
+## How to debug
+
+If `grid_map_type` is "OccupancyGridMapProjectiveBlindSpot" and `pub_debug_grid` is `true`, it is possible to check the each process of grid map generation by running
+
+```shell
+ros2 launch probabilistic_occupancy_grid_map debug.launch.xml
+```
+
+and visualizing the following occupancy grid map topics (which are listed in config/grid_map_param.yaml):
+
+- `/perception/occupancy_grid_map/grid_1st_step`: `FREE` cells are filled
+- `/perception/occupancy_grid_map/grid_2nd_step`: `UNKNOWN` cells are filled
+- `/perception/occupancy_grid_map/grid_3rd_step`: `OCCUPIED` cells are filled

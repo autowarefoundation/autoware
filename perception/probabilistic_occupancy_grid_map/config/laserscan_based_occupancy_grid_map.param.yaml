@@ -13,6 +13,6 @@
       max_height: 2.0
 
     enable_single_frame_mode: false
-    map_length: 100.0
-    map_width: 100.0
+    map_length: 150.0
+    map_width: 150.0
     map_resolution: 0.5

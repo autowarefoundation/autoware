@@ -1,0 +1,22 @@
+/**:
+  ros__parameters:
+    grid_map_topic: /perception/occupancy_grid_map/occupancy_grid_map_node/debug/grid_map
+    grid_map_visualizations: [grid_1st_step, grid_2nd_step, grid_3rd_step]
+    grid_1st_step:
+      type: occupancy_grid
+      params:
+        layer: filled_free_to_farthest
+        data_min: 0.0
+        data_max: 100.0
+    grid_2nd_step:
+      type: occupancy_grid
+      params:
+        layer: added_unknown
+        data_min: 0.0
+        data_max: 100.0
+    grid_3rd_step:
+      type: occupancy_grid
+      params:
+        layer: added_obstacle
+        data_min: 0.0
+        data_max: 100.0

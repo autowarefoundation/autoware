@@ -6,6 +6,7 @@
   <description>generate probabilistic occupancy grid map</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
+  <maintainer email="mamoru.sobue@tier4.jp">Mamoru Sobue</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="yukihiro.saito@tier4.jp">Yukihiro Saito</author>
@@ -14,6 +15,9 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>eigen3_cmake_module</depend>
+  <depend>grid_map_costmap_2d</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
   <depend>laser_geometry</depend>
   <depend>message_filters</depend>
   <depend>nav2_costmap_2d</depend>

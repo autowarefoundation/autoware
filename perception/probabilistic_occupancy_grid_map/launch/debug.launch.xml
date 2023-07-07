@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <group>
+    <push-ros-namespace namespace="/perception/occupancy_grid_map/"/>
+    <node name="grid_map_visualization" pkg="grid_map_visualization" exec="grid_map_visualization">
+      <param from="$(find-pkg-share probabilistic_occupancy_grid_map)/config/grid_map_param.yaml"/>
+    </node>
+  </group>
+</launch>

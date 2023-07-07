@@ -24,25 +24,29 @@ Config parameters are managed in `config/*.yaml` and here shows its outline.
 
 - Pointcloud based occupancy grid map
 
-| Ros param name                    | Default value |
-| --------------------------------- | ------------- |
-| map_frame                         | "map"         |
-| base_link_frame                   | "base_link"   |
-| scan_origin_frame                 | "base_link"   |
-| gridmap_origin_frame              | "base_link"   |
-| use_height_filter                 | true          |
-| enable_single_frame_mode          | false         |
-| map_length                        | 100.0 [m]     |
-| map_width                         | 100.0 [m]     |
-| map_resolution                    | 0.5 [m]       |
-| input_obstacle_pointcloud         | true          |
-| input_obstacle_and_raw_pointcloud | true          |
+| Ros param name                               | Default value |
+| -------------------------------------------- | ------------- |
+| map_frame                                    | "map"         |
+| base_link_frame                              | "base_link"   |
+| scan_origin_frame                            | "base_link"   |
+| gridmap_origin_frame                         | "base_link"   |
+| use_height_filter                            | true          |
+| enable_single_frame_mode                     | false         |
+| filter_obstacle_pointcloud_by_raw_pointcloud | false         |
+| map_length                                   | 150.0 [m]     |
+| map_resolution                               | 0.5 [m]       |
+| use_projection                               | false         |
+| projection_dz_threshold                      | 0.01          |
+| obstacle_separation_threshold                | 1.0           |
+| input_obstacle_pointcloud                    | true          |
+| input_obstacle_and_raw_pointcloud            | true          |
 
 - Laserscan based occupancy grid map
 
 | Ros param name           | Default value |
 | ------------------------ | ------------- |
-| map_length               | 100 [m]       |
+| map_length               | 150 [m]       |
+| map_width                | 150 [m]       |
 | map_resolution           | 0.5 [m]       |
 | use_height_filter        | true          |
 | enable_single_frame_mode | false         |
@@ -55,15 +59,14 @@ Config parameters are managed in `config/*.yaml` and here shows its outline.
 
 Additional argument is shown below:
 
-| Name                                            | Default                        | Description                                                                                                                               |
-| ----------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `use_multithread`                               | `false`                        | whether to use multithread                                                                                                                |
-| `use_intra_process`                             | `false`                        |                                                                                                                                           |
-| `map_origin`                                    | ``                             | parameter to override `map_origin_frame` which means grid map origin                                                                      |
-| `scan_origin`                                   | ``                             | parameter to override `scan_origin_frame` which means scanning center                                                                     |
-| `output`                                        | `occupancy_grid`               | output name                                                                                                                               |
-| `use_pointcloud_container`                      | `false`                        |                                                                                                                                           |
-| `container_name`                                | `occupancy_grid_map_container` |                                                                                                                                           |
-| `filter_obstacle_pointcloud_by_raw_pointcloud_` | `false`                        | only for pointcloud based method. If true, the node use raw pointcloud to filter obstacle pointcloud. Options for the limited FOV sensor. |
-| `input_obstacle_pointcloud`                     | `false`                        | only for laserscan based method. If true, the node subscribe obstacle pointcloud                                                          |
-| `input_obstacle_and_raw_pointcloud`             | `true`                         | only for laserscan based method. If true, the node subscribe both obstacle and raw pointcloud                                             |
+| Name                                | Default                        | Description                                                                                   |
+| ----------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------- |
+| `use_multithread`                   | `false`                        | whether to use multithread                                                                    |
+| `use_intra_process`                 | `false`                        |                                                                                               |
+| `map_origin`                        | ``                             | parameter to override `map_origin_frame` which means grid map origin                          |
+| `scan_origin`                       | ``                             | parameter to override `scan_origin_frame` which means scanning center                         |
+| `output`                            | `occupancy_grid`               | output name                                                                                   |
+| `use_pointcloud_container`          | `false`                        |                                                                                               |
+| `container_name`                    | `occupancy_grid_map_container` |                                                                                               |
+| `input_obstacle_pointcloud`         | `false`                        | only for laserscan based method. If true, the node subscribe obstacle pointcloud              |
+| `input_obstacle_and_raw_pointcloud` | `true`                         | only for laserscan based method. If true, the node subscribe both obstacle and raw pointcloud |

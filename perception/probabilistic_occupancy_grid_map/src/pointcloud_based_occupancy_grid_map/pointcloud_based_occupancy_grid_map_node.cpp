@@ -15,6 +15,8 @@
 #include "pointcloud_based_occupancy_grid_map/pointcloud_based_occupancy_grid_map_node.hpp"
 
 #include "cost_value.hpp"
+#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map_fixed.hpp"
+#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map_projective.hpp"
 #include "utils/utils.hpp"
 
 #include <pcl_ros/transforms.hpp>
@@ -39,8 +41,9 @@
 
 namespace occupancy_grid_map
 {
-using costmap_2d::OccupancyGridMap;
 using costmap_2d::OccupancyGridMapBBFUpdater;
+using costmap_2d::OccupancyGridMapFixedBlindSpot;
+using costmap_2d::OccupancyGridMapProjectiveBlindSpot;
 using geometry_msgs::msg::Pose;
 
 PointcloudBasedOccupancyGridMapNode::PointcloudBasedOccupancyGridMapNode(
@@ -78,17 +81,40 @@ PointcloudBasedOccupancyGridMapNode::PointcloudBasedOccupancyGridMapNode(
 
   const std::string updater_type = this->declare_parameter<std::string>("updater_type");
   if (updater_type == "binary_bayes_filter") {
-    occupancy_grid_map_updater_ptr_ = std::make_shared<OccupancyGridMapBBFUpdater>(
+    occupancy_grid_map_updater_ptr_ = std::make_unique<OccupancyGridMapBBFUpdater>(
       map_length / map_resolution, map_length / map_resolution, map_resolution);
   } else {
     RCLCPP_WARN(
       get_logger(),
       "specified occupancy grid map updater type [%s] is not found, use binary_bayes_filter",
       updater_type.c_str());
-    occupancy_grid_map_updater_ptr_ = std::make_shared<OccupancyGridMapBBFUpdater>(
+    occupancy_grid_map_updater_ptr_ = std::make_unique<OccupancyGridMapBBFUpdater>(
       map_length / map_resolution, map_length / map_resolution, map_resolution);
   }
   occupancy_grid_map_updater_ptr_->initRosParam(*this);
+
+  const std::string grid_map_type = this->declare_parameter<std::string>("grid_map_type");
+  if (grid_map_type == "OccupancyGridMapProjectiveBlindSpot") {
+    occupancy_grid_map_ptr_ = std::make_unique<OccupancyGridMapProjectiveBlindSpot>(
+      occupancy_grid_map_updater_ptr_->getSizeInCellsX(),
+      occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
+      occupancy_grid_map_updater_ptr_->getResolution());
+  } else if (grid_map_type == "OccupancyGridMapFixedBlindSpot") {
+    occupancy_grid_map_ptr_ = std::make_unique<OccupancyGridMapFixedBlindSpot>(
+      occupancy_grid_map_updater_ptr_->getSizeInCellsX(),
+      occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
+      occupancy_grid_map_updater_ptr_->getResolution());
+  } else {
+    RCLCPP_WARN(
+      get_logger(),
+      "specified occupancy grid map type [%s] is not found, use OccupancyGridMapFixedBlindSpot",
+      grid_map_type.c_str());
+    occupancy_grid_map_ptr_ = std::make_unique<OccupancyGridMapFixedBlindSpot>(
+      occupancy_grid_map_updater_ptr_->getSizeInCellsX(),
+      occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
+      occupancy_grid_map_updater_ptr_->getResolution());
+  }
+  occupancy_grid_map_ptr_->initRosParam(*this);
 
   // initialize debug tool
   {
@@ -154,23 +180,21 @@ void PointcloudBasedOccupancyGridMapNode::onPointcloudWithObstacleAndRaw(
   }
 
   // Create single frame occupancy grid map
-  OccupancyGridMap single_frame_occupancy_grid_map(
-    occupancy_grid_map_updater_ptr_->getSizeInCellsX(),
-    occupancy_grid_map_updater_ptr_->getSizeInCellsY(),
-    occupancy_grid_map_updater_ptr_->getResolution());
-  single_frame_occupancy_grid_map.updateOrigin(
-    gridmap_origin.position.x - single_frame_occupancy_grid_map.getSizeInMetersX() / 2,
-    gridmap_origin.position.y - single_frame_occupancy_grid_map.getSizeInMetersY() / 2);
-  single_frame_occupancy_grid_map.updateWithPointCloud(
+  occupancy_grid_map_ptr_->resetMaps();
+  occupancy_grid_map_ptr_->updateOrigin(
+    gridmap_origin.position.x - occupancy_grid_map_ptr_->getSizeInMetersX() / 2,
+    gridmap_origin.position.y - occupancy_grid_map_ptr_->getSizeInMetersY() / 2);
+  occupancy_grid_map_ptr_->updateWithPointCloud(
     filtered_raw_pc, filtered_obstacle_pc_common, robot_pose, scan_origin);
+
   if (enable_single_frame_mode_) {
     // publish
     occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(
       map_frame_, input_raw_msg->header.stamp, robot_pose.position.z,
-      single_frame_occupancy_grid_map));  // (todo) robot_pose may be altered with gridmap_origin
+      *occupancy_grid_map_ptr_));  // (todo) robot_pose may be altered with gridmap_origin
   } else {
     // Update with bayes filter
-    occupancy_grid_map_updater_ptr_->update(single_frame_occupancy_grid_map);
+    occupancy_grid_map_updater_ptr_->update(*occupancy_grid_map_ptr_);
 
     // publish
     occupancy_grid_map_pub_->publish(OccupancyGridMapToMsgPtr(

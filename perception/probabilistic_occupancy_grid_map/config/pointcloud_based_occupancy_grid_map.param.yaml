@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    map_length: 100.0     # [m]
+    map_length: 150.0     # [m]
     map_resolution: 0.5 # [m]
 
     height_filter:
@@ -18,4 +18,13 @@
     # center of the grid map
     gridmap_origin_frame: "base_link"
     # ray-tracing center: main sensor frame is preferable like: "velodyne_top"
+    # base_link should not be used with "OccupancyGridMapProjectiveBlindSpot"
     scan_origin_frame: "base_link"
+
+    grid_map_type: "OccupancyGridMapFixedBlindSpot"
+    OccupancyGridMapFixedBlindSpot:
+      distance_margin: 1.0
+    OccupancyGridMapProjectiveBlindSpot:
+      projection_dz_threshold: 0.01 # [m] for avoiding null division
+      obstacle_separation_threshold: 1.0 # [m] fill the interval between obstacles with unknown for this length
+      pub_debug_grid: false

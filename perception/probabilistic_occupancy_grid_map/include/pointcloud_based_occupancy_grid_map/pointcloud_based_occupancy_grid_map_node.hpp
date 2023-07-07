@@ -15,7 +15,7 @@
 #ifndef POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP_NODE_HPP_
 #define POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP_NODE_HPP_
 
-#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map.hpp"
+#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map_base.hpp"
 #include "updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
 #include "updater/occupancy_grid_map_updater_interface.hpp"
 
@@ -41,6 +41,7 @@
 namespace occupancy_grid_map
 {
 using builtin_interfaces::msg::Time;
+using costmap_2d::OccupancyGridMapInterface;
 using costmap_2d::OccupancyGridMapUpdaterInterface;
 using laser_geometry::LaserProjection;
 using nav2_costmap_2d::Costmap2D;
@@ -77,7 +78,8 @@ private:
   using Sync = message_filters::Synchronizer<SyncPolicy>;
   std::shared_ptr<Sync> sync_ptr_;
 
-  std::shared_ptr<OccupancyGridMapUpdaterInterface> occupancy_grid_map_updater_ptr_;
+  std::unique_ptr<OccupancyGridMapInterface> occupancy_grid_map_ptr_;
+  std::unique_ptr<OccupancyGridMapUpdaterInterface> occupancy_grid_map_updater_ptr_;
 
   // ROS Parameters
   std::string map_frame_;
