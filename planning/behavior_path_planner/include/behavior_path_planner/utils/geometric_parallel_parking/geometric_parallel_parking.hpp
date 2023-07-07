@@ -127,13 +127,14 @@ private:
     const Pose & center, const double radius, const double yaw, const bool is_left_turn,
     const bool is_forward);
   boost::optional<Pose> calcStartPose(
-    const Pose & goal_pose, const double start_pose_offset, const double R_E_r,
-    const bool is_forward);
+    const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
+    const double start_pose_offset, const double R_E_r, const bool is_forward);
   std::vector<PathWithLaneId> generatePullOverPaths(
     const Pose & start_pose, const Pose & goal_pose, const double R_E_r,
     const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
     const bool is_forward, const double end_pose_offset, const double velocity);
-  PathWithLaneId generateStraightPath(const Pose & start_pose);
+  PathWithLaneId generateStraightPath(
+    const Pose & start_pose, const lanelet::ConstLanelets & road_lanes);
   void setVelocityToArcPaths(
     std::vector<PathWithLaneId> & arc_paths, const double velocity, const bool set_stop_end);
 

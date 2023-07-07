@@ -40,11 +40,14 @@ boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
   const auto & route_handler = planner_data_->route_handler;
   const double min_jerk = parameters_.minimum_lateral_jerk;
   const double max_jerk = parameters_.maximum_lateral_jerk;
+  const double backward_search_length = parameters_.backward_goal_search_length;
+  const double forward_search_length = parameters_.forward_goal_search_length;
   const int shift_sampling_num = parameters_.shift_sampling_num;
   const double jerk_resolution = std::abs(max_jerk - min_jerk) / shift_sampling_num;
 
   // get road and shoulder lanes
-  const auto road_lanes = utils::getExtendedCurrentLanes(planner_data_);
+  const auto road_lanes =
+    utils::getExtendedCurrentLanes(planner_data_, backward_search_length, forward_search_length);
   const auto shoulder_lanes =
     goal_planner_utils::getPullOverLanes(*route_handler, left_side_parking_);
   if (road_lanes.empty() || shoulder_lanes.empty()) {

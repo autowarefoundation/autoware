@@ -54,7 +54,7 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
 
   const auto pull_over_lanes =
     goal_planner_utils::getPullOverLanes(*route_handler, left_side_parking_);
-  auto lanes = utils::getExtendedCurrentLanes(planner_data_);
+  auto lanes = utils::getExtendedCurrentLanes(planner_data_, backward_length, forward_length);
   lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
   const auto goal_arc_coords =

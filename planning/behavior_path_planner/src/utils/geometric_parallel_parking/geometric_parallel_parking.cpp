@@ -138,7 +138,7 @@ std::vector<PathWithLaneId> GeometricParallelParking::generatePullOverPaths(
   setVelocityToArcPaths(arc_paths, velocity, set_stop_end);
 
   // straight path from current to parking start
-  const auto straight_path = generateStraightPath(start_pose);
+  const auto straight_path = generateStraightPath(start_pose, road_lanes);
 
   // check the continuity of straight path and arc path
   const Pose & road_path_last_pose = straight_path.points.back().point.pose;
@@ -187,7 +187,8 @@ bool GeometricParallelParking::planPullOver(
     for (double steer = parameters_.forward_parking_max_steer_angle; steer > min_steer_rad;
          steer -= steer_interval) {
       const double R_E_r = common_params.wheel_base / std::tan(steer);
-      const auto start_pose = calcStartPose(arc_end_pose, start_pose_offset, R_E_r, is_forward);
+      const auto start_pose =
+        calcStartPose(arc_end_pose, road_lanes, start_pose_offset, R_E_r, is_forward);
       if (!start_pose) {
         continue;
       }
@@ -208,7 +209,8 @@ bool GeometricParallelParking::planPullOver(
     constexpr double offset_interval = 1.0;
     for (double start_pose_offset = 0; start_pose_offset < max_offset;
          start_pose_offset += offset_interval) {
-      const auto start_pose = calcStartPose(arc_end_pose, start_pose_offset, R_E_min_, is_forward);
+      const auto start_pose =
+        calcStartPose(arc_end_pose, road_lanes, start_pose_offset, R_E_min_, is_forward);
       if (!start_pose) {
         continue;
       }
@@ -238,7 +240,8 @@ bool GeometricParallelParking::planPullOut(
   for (double end_pose_offset = 0; end_pose_offset < max_offset;
        end_pose_offset += offset_interval) {
     // pull_out end pose which is the second arc path end
-    const auto end_pose = calcStartPose(start_pose, end_pose_offset, R_E_min_, is_forward);
+    const auto end_pose =
+      calcStartPose(start_pose, road_lanes, end_pose_offset, R_E_min_, is_forward);
     if (!end_pose) {
       continue;
     }
@@ -315,11 +318,10 @@ bool GeometricParallelParking::planPullOut(
 }
 
 boost::optional<Pose> GeometricParallelParking::calcStartPose(
-  const Pose & goal_pose, const double start_pose_offset, const double R_E_r, const bool is_forward)
+  const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes, const double start_pose_offset,
+  const double R_E_r, const bool is_forward)
 {
-  // Not use shoulder lanes.
-  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto arc_coordinates = lanelet::utils::getArcCoordinates(current_lanes, goal_pose);
+  const auto arc_coordinates = lanelet::utils::getArcCoordinates(road_lanes, goal_pose);
 
   // todo
   // When forwarding, the turning radius of the right and left will be the same.
@@ -339,17 +341,17 @@ boost::optional<Pose> GeometricParallelParking::calcStartPose(
   return start_pose;
 }
 
-PathWithLaneId GeometricParallelParking::generateStraightPath(const Pose & start_pose)
+PathWithLaneId GeometricParallelParking::generateStraightPath(
+  const Pose & start_pose, const lanelet::ConstLanelets & road_lanes)
 {
   // get straight path before parking.
-  const auto current_lanes = utils::getExtendedCurrentLanes(planner_data_);
-  const auto start_arc_position = lanelet::utils::getArcCoordinates(current_lanes, start_pose);
+  const auto start_arc_position = lanelet::utils::getArcCoordinates(road_lanes, start_pose);
 
   const Pose current_pose = planner_data_->self_odometry->pose.pose;
-  const auto current_arc_position = lanelet::utils::getArcCoordinates(current_lanes, current_pose);
+  const auto current_arc_position = lanelet::utils::getArcCoordinates(road_lanes, current_pose);
 
   auto path = planner_data_->route_handler->getCenterLinePath(
-    current_lanes, current_arc_position.length, start_arc_position.length, true);
+    road_lanes, current_arc_position.length, start_arc_position.length, true);
   path.header = planner_data_->route_handler->getRouteHeader();
   if (!path.points.empty()) {
     path.points.back().point.longitudinal_velocity_mps = 0;
