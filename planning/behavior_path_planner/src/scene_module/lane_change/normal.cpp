@@ -942,7 +942,7 @@ bool NormalLaneChange::getAbortPath()
   const auto [abort_start_idx, abort_start_dist] =
     get_abort_idx_and_distance(lane_change_parameters_->cancel.delta_time);
   const auto [abort_return_idx, abort_return_dist] = get_abort_idx_and_distance(
-    lane_change_parameters_->cancel.delta_time + lane_change_parameters_->cancel.delta_time);
+    lane_change_parameters_->cancel.delta_time + lane_change_parameters_->cancel.duration);
 
   if (abort_start_idx >= abort_return_idx) {
     RCLCPP_ERROR(logger_, "abort start idx and return idx is equal. can't compute abort path.");
