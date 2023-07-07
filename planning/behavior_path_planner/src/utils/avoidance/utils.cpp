@@ -797,6 +797,25 @@ void filterTargetObjects(
       ? calcSignedArcLength(path_points, ego_pos, rh->getGoalPose().position)
       : std::numeric_limits<double>::max();
 
+  // extend lanelets if the reference path is cut for lane change.
+  const auto & ego_pose = planner_data->self_odometry->pose.pose;
+  lanelet::ConstLanelets extend_lanelets = data.current_lanelets;
+  while (rclcpp::ok()) {
+    const double lane_length = lanelet::utils::getLaneletLength2d(extend_lanelets);
+    const auto arclength = lanelet::utils::getArcCoordinates(extend_lanelets, ego_pose);
+    const auto next_lanelets = rh->getNextLanelets(extend_lanelets.back());
+
+    if (next_lanelets.empty()) {
+      break;
+    }
+
+    if (lane_length - arclength.length < planner_data->parameters.forward_path_length) {
+      extend_lanelets.push_back(next_lanelets.front());
+    } else {
+      break;
+    }
+  }
+
   for (auto & o : objects) {
     const auto & object_pose = o.object.kinematics.initial_pose_with_covariance.pose;
     const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
@@ -955,16 +974,15 @@ void filterTargetObjects(
 
       // check traffic light
       const auto to_traffic_light =
-        utils::getDistanceToNextTrafficLight(object_pose, data.current_lanelets);
+        utils::getDistanceToNextTrafficLight(object_pose, extend_lanelets);
       {
         not_parked_object =
           to_traffic_light < parameters->object_ignore_section_traffic_light_in_front_distance;
       }
 
       // check crosswalk
-      const auto & ego_pose = planner_data->self_odometry->pose.pose;
       const auto to_crosswalk =
-        utils::getDistanceToCrosswalk(ego_pose, data.current_lanelets, *rh->getOverallGraphPtr()) -
+        utils::getDistanceToCrosswalk(ego_pose, extend_lanelets, *rh->getOverallGraphPtr()) -
         o.longitudinal;
       {
         const auto stop_for_crosswalk =
