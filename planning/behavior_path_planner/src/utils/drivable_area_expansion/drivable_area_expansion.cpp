@@ -33,13 +33,19 @@ void expandDrivableArea(
 {
   const auto uncrossable_lines =
     extractUncrossableLines(*route_handler.getLaneletMapPtr(), params.avoid_linestring_types);
+  multilinestring_t uncrossable_lines_in_range;
+  const auto & p = path.points.front().point.pose.position;
+  for (const auto & line : uncrossable_lines)
+    if (boost::geometry::distance(line, point_t{p.x, p.y}) < params.max_path_arc_length)
+      uncrossable_lines_in_range.push_back(line);
   const auto path_footprints = createPathFootprints(path, params);
   const auto predicted_paths = createObjectFootprints(dynamic_objects, params);
   const auto expansion_polygons =
     params.expansion_method == "lanelet"
       ? createExpansionLaneletPolygons(
           path_lanes, route_handler, path_footprints, predicted_paths, params)
-      : createExpansionPolygons(path, path_footprints, predicted_paths, uncrossable_lines, params);
+      : createExpansionPolygons(
+          path, path_footprints, predicted_paths, uncrossable_lines_in_range, params);
   const auto expanded_drivable_area = createExpandedDrivableAreaPolygon(path, expansion_polygons);
   updateDrivableAreaBounds(path, expanded_drivable_area);
 }

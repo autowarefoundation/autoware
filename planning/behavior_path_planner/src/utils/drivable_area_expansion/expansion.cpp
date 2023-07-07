@@ -25,10 +25,6 @@ double calculateDistanceLimit(
   const multilinestring_t & limit_lines)
 {
   auto dist_limit = std::numeric_limits<double>::max();
-  boost::geometry::for_each_point(limit_lines, [&](const auto & point) {
-    if (boost::geometry::within(point, expansion_polygon))
-      dist_limit = std::min(dist_limit, boost::geometry::distance(point, base_ls));
-  });
   multipoint_t intersections;
   boost::geometry::intersection(expansion_polygon, limit_lines, intersections);
   for (const auto & p : intersections)
@@ -42,16 +38,10 @@ double calculateDistanceLimit(
 {
   auto dist_limit = std::numeric_limits<double>::max();
   for (const auto & polygon : limit_polygons) {
-    for (const auto & p : polygon.outer()) {
-      if (boost::geometry::within(p, expansion_polygon)) {
-        dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
-      }
-    }
     multipoint_t intersections;
     boost::geometry::intersection(expansion_polygon, polygon, intersections);
-    for (const auto & p : intersections) {
+    for (const auto & p : intersections)
       dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
-    }
   }
   return dist_limit;
 }

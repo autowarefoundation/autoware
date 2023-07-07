@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "behavior_path_planner/utils/drivable_area_expansion/drivable_area_expansion.hpp"
+#include "behavior_path_planner/utils/drivable_area_expansion/expansion.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/path_projection.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/types.hpp"
 #include "lanelet2_extension/utility/message_conversion.hpp"
@@ -287,4 +288,41 @@ TEST(DrivableAreaExpansionProjection, expandDrivableArea)
   EXPECT_NEAR(path.right_bound[1].y, -2.0, eps);
   EXPECT_NEAR(path.right_bound[2].x, 2.0, eps);
   EXPECT_NEAR(path.right_bound[2].y, -1.0, eps);
+}
+
+TEST(DrivableAreaExpansion, calculateDistanceLimit)
+{
+  using drivable_area_expansion::calculateDistanceLimit;
+  using drivable_area_expansion::linestring_t;
+  using drivable_area_expansion::multilinestring_t;
+  using drivable_area_expansion::polygon_t;
+
+  {
+    const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
+    const multilinestring_t uncrossable_lines = {};
+    const polygon_t expansion_polygon = {
+      {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {10.0, -4.0}}, {}};
+    const auto limit_distance =
+      calculateDistanceLimit(base_ls, expansion_polygon, uncrossable_lines);
+    EXPECT_NEAR(limit_distance, std::numeric_limits<double>::max(), 1e-9);
+  }
+  {
+    const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
+    const linestring_t uncrossable_line = {{0.0, 2.0}, {10.0, 2.0}};
+    const polygon_t expansion_polygon = {
+      {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {10.0, -4.0}}, {}};
+    const auto limit_distance =
+      calculateDistanceLimit(base_ls, expansion_polygon, {uncrossable_line});
+    EXPECT_NEAR(limit_distance, 2.0, 1e-9);
+  }
+  {
+    const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
+    const multilinestring_t uncrossable_lines = {
+      {{0.0, 2.0}, {10.0, 2.0}}, {{0.0, 1.5}, {10.0, 1.0}}};
+    const polygon_t expansion_polygon = {
+      {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {10.0, -4.0}}, {}};
+    const auto limit_distance =
+      calculateDistanceLimit(base_ls, expansion_polygon, uncrossable_lines);
+    EXPECT_NEAR(limit_distance, 1.0, 1e-9);
+  }
 }
