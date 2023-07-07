@@ -446,7 +446,16 @@ IntersectionLanelets getObjectiveLanelets(
   // get conflicting lanes on assigned lanelet
   const auto & conflicting_lanelets =
     lanelet::utils::getConflictingLanelets(routing_graph_ptr, assigned_lanelet);
-  const auto & adjacent_followings = routing_graph_ptr->following(conflicting_lanelets.back());
+  std::vector<lanelet::ConstLanelet> adjacent_followings;
+
+  for (const auto & conflicting_lanelet : conflicting_lanelets) {
+    for (const auto & following_lanelet : routing_graph_ptr->following(conflicting_lanelet)) {
+      adjacent_followings.push_back(following_lanelet);
+    }
+    for (const auto & following_lanelet : routing_graph_ptr->previous(conflicting_lanelet)) {
+      adjacent_followings.push_back(following_lanelet);
+    }
+  }
 
   // final objective lanelets
   lanelet::ConstLanelets detection_lanelets;
@@ -467,9 +476,9 @@ IntersectionLanelets getObjectiveLanelets(
           continue;
         }
         detection_lanelets.push_back(conflicting_lanelet);
-        if (!adjacent_followings.empty()) {
-          detection_lanelets.push_back(adjacent_followings.front());
-        }
+      }
+      for (const auto & adjacent_following : adjacent_followings) {
+        detection_lanelets.push_back(adjacent_following);
       }
     } else {
       // otherwise we need to know the priority from RightOfWay
@@ -992,7 +1001,8 @@ Polygon2d generateStuckVehicleDetectAreaPolygon(
 
 bool checkAngleForTargetLanelets(
   const geometry_msgs::msg::Pose & pose, const lanelet::ConstLanelets & target_lanelets,
-  const double detection_area_angle_thr, const double margin)
+  const double detection_area_angle_thr, const bool consider_wrong_direction_vehicle,
+  const double margin)
 {
   for (const auto & ll : target_lanelets) {
     if (!lanelet::utils::isInLanelet(pose, ll, margin)) {
@@ -1001,10 +1011,14 @@ bool checkAngleForTargetLanelets(
     const double ll_angle = lanelet::utils::getLaneletAngle(ll, pose.position);
     const double pose_angle = tf2::getYaw(pose.orientation);
     const double angle_diff = tier4_autoware_utils::normalizeRadian(ll_angle - pose_angle);
-    if (
-      std::fabs(angle_diff) < detection_area_angle_thr / 2 ||
-      std::fabs(angle_diff) > detection_area_angle_thr) {
-      return true;
+    if (consider_wrong_direction_vehicle) {
+      if (std::fabs(angle_diff) > 1.57 || std::fabs(angle_diff) < detection_area_angle_thr) {
+        return true;
+      }
+    } else {
+      if (std::fabs(angle_diff) < detection_area_angle_thr) {
+        return true;
+      }
     }
   }
   return false;

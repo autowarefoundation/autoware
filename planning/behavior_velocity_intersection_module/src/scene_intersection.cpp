@@ -899,6 +899,7 @@ bool IntersectionModule::checkCollision(
     const auto object_direction = util::getObjectPoseWithVelocityDirection(object.kinematics);
     const auto is_in_adjacent_lanelets = util::checkAngleForTargetLanelets(
       object_direction, adjacent_lanelets, planner_param_.common.attention_area_angle_thr,
+      planner_param_.common.consider_wrong_direction_vehicle,
       planner_param_.common.attention_area_margin);
     if (is_in_adjacent_lanelets) {
       continue;
@@ -913,12 +914,14 @@ bool IntersectionModule::checkCollision(
       } else if (util::checkAngleForTargetLanelets(
                    object_direction, attention_area_lanelets,
                    planner_param_.common.attention_area_angle_thr,
+                   planner_param_.common.consider_wrong_direction_vehicle,
                    planner_param_.common.attention_area_margin)) {
         target_objects.objects.push_back(object);
       }
     } else if (util::checkAngleForTargetLanelets(
                  object_direction, attention_area_lanelets,
                  planner_param_.common.attention_area_angle_thr,
+                 planner_param_.common.consider_wrong_direction_vehicle,
                  planner_param_.common.attention_area_margin)) {
       // intersection_area is not available, use detection_area_with_margin as before
       target_objects.objects.push_back(object);

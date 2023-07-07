@@ -144,7 +144,8 @@ Polygon2d generateStuckVehicleDetectAreaPolygon(
 
 bool checkAngleForTargetLanelets(
   const geometry_msgs::msg::Pose & pose, const lanelet::ConstLanelets & target_lanelets,
-  const double detection_area_angle_thr, const double margin = 0.0);
+  const double detection_area_angle_thr, const bool consider_wrong_direction_vehicle,
+  const double margin = 0.0);
 
 void cutPredictPathWithDuration(
   autoware_auto_perception_msgs::msg::PredictedObjects * objects_ptr,
