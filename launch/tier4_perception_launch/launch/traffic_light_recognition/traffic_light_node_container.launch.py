@@ -40,6 +40,10 @@ def generate_launch_description():
     add_launch_arg("enable_image_decompressor", "True")
     add_launch_arg("enable_fine_detection", "True")
     add_launch_arg("input/image", "/sensing/camera/traffic_light/image_raw")
+    add_launch_arg("output/rois", "/perception/traffic_light_recognition/rois")
+    add_launch_arg(
+        "output/traffic_signals", "/perception/traffic_light_recognition/traffic_signals"
+    )
 
     # traffic_light_fine_detector
     add_launch_arg(
@@ -89,6 +93,7 @@ def generate_launch_description():
                 package="traffic_light_classifier",
                 plugin="traffic_light::TrafficLightClassifierNodelet",
                 name="traffic_light_classifier",
+                namespace="classification",
                 parameters=[
                     create_parameter_dict(
                         "approximate_sync",
@@ -102,7 +107,7 @@ def generate_launch_description():
                 ],
                 remappings=[
                     ("~/input/image", LaunchConfiguration("input/image")),
-                    ("~/input/rois", "rois"),
+                    ("~/input/rois", LaunchConfiguration("output/rois")),
                     ("~/output/traffic_signals", "classified/traffic_signals"),
                 ],
                 extra_arguments=[
@@ -116,9 +121,9 @@ def generate_launch_description():
                 parameters=[create_parameter_dict("enable_fine_detection")],
                 remappings=[
                     ("~/input/image", LaunchConfiguration("input/image")),
-                    ("~/input/rois", "rois"),
-                    ("~/input/rough/rois", "rough/rois"),
-                    ("~/input/traffic_signals", "traffic_signals"),
+                    ("~/input/rois", LaunchConfiguration("output/rois")),
+                    ("~/input/rough/rois", "detection/rough/rois"),
+                    ("~/input/traffic_signals", LaunchConfiguration("output/traffic_signals")),
                     ("~/output/image", "debug/rois"),
                     ("~/output/image/compressed", "debug/rois/compressed"),
                     ("~/output/image/compressedDepth", "debug/rois/compressedDepth"),
@@ -138,11 +143,12 @@ def generate_launch_description():
                 package="crosswalk_traffic_light_estimator",
                 plugin="traffic_light::CrosswalkTrafficLightEstimatorNode",
                 name="crosswalk_traffic_light_estimator",
+                namespace="classification",
                 remappings=[
                     ("~/input/vector_map", "/map/vector_map"),
                     ("~/input/route", "/planning/mission_planning/route"),
                     ("~/input/classified/traffic_signals", "classified/traffic_signals"),
-                    ("~/output/traffic_signals", "traffic_signals"),
+                    ("~/output/traffic_signals", "estimated/traffic_signals"),
                 ],
                 extra_arguments=[{"use_intra_process_comms": False}],
             ),
@@ -157,11 +163,10 @@ def generate_launch_description():
                 package="topic_tools",
                 plugin="topic_tools::RelayNode",
                 name="classified_signals_relay",
-                namespace="",
+                namespace="classification",
                 parameters=[
                     {"input_topic": "classified/traffic_signals"},
-                    {"output_topic": "traffic_signals"},
-                    {"type": "autoware_auto_perception_msgs/msg/TrafficSignalArray"},
+                    {"output_topic": "estimated/traffic_signals"},
                 ],
                 extra_arguments=[
                     {"use_intra_process_comms": LaunchConfiguration("use_intra_process")}
@@ -209,12 +214,13 @@ def generate_launch_description():
                 package="traffic_light_fine_detector",
                 plugin="traffic_light::TrafficLightFineDetectorNodelet",
                 name="traffic_light_fine_detector",
+                namespace="detection",
                 parameters=[fine_detector_param],
                 remappings=[
                     ("~/input/image", LaunchConfiguration("input/image")),
                     ("~/input/rois", "rough/rois"),
                     ("~/expect/rois", "expect/rois"),
-                    ("~/output/rois", "rois"),
+                    ("~/output/rois", LaunchConfiguration("output/rois")),
                 ],
                 extra_arguments=[
                     {"use_intra_process_comms": LaunchConfiguration("use_intra_process")}

@@ -149,8 +149,8 @@ MultiCameraFusion::MultiCameraFusion(const rclcpp::NodeOptions & node_options)
   is_approximate_sync_ = this->declare_parameter<bool>("approximate_sync", false);
   message_lifespan_ = this->declare_parameter<double>("message_lifespan", 0.09);
   for (const std::string & camera_ns : camera_namespaces) {
-    std::string signal_topic = camera_ns + "/traffic_signals";
-    std::string roi_topic = camera_ns + "/rois";
+    std::string signal_topic = camera_ns + "/classification/traffic_signals";
+    std::string roi_topic = camera_ns + "/detection/rois";
     std::string cam_info_topic = camera_ns + "/camera_info";
     roi_subs_.emplace_back(
       new mf::Subscriber<RoiArrayType>(this, roi_topic, rclcpp::QoS{1}.get_rmw_qos_profile()));

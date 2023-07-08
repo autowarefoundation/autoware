@@ -52,6 +52,8 @@
   <!-- Traffic Light Recognition Parameters -->
   <arg name="use_traffic_light_recognition" default="true"/>
   <arg name="traffic_light_recognition/enable_fine_detection" default="true"/>
+  <arg name="traffic_light_recognition/fusion_only" default="false"/>
+  <arg name="traffic_light_image_number" default="1" description="choose traffic light image raw number(1-2)"/>
   <!-- Camera Lidar Fusion Parameters -->
   <arg name="remove_unknown" default="true"/>
   <arg name="trust_distance" default="30.0"/>
@@ -153,6 +155,8 @@
       <push-ros-namespace namespace="traffic_light_recognition"/>
       <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml">
         <arg name="enable_fine_detection" value="$(var traffic_light_recognition/enable_fine_detection)"/>
+        <arg name="fusion_only" value="$(var traffic_light_recognition/fusion_only)"/>
+        <arg name="image_number" value="$(var traffic_light_image_number)"/>
       </include>
     </group>
   </group>

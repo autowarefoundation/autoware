@@ -32,9 +32,12 @@
   <exec_depend>probabilistic_occupancy_grid_map</exec_depend>
   <exec_depend>shape_estimation</exec_depend>
   <exec_depend>tensorrt_yolo</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
   <exec_depend>traffic_light_classifier</exec_depend>
+  <exec_depend>traffic_light_fine_detector</exec_depend>
   <exec_depend>traffic_light_map_based_detector</exec_depend>
-  <exec_depend>traffic_light_ssd_fine_detector</exec_depend>
+  <exec_depend>traffic_light_multi_camera_fusion</exec_depend>
+  <exec_depend>traffic_light_occlusion_predictor</exec_depend>
   <exec_depend>traffic_light_visualization</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
