@@ -22,7 +22,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <tier4_perception_msgs/msg/traffic_light_element.hpp>
+#include <tier4_perception_msgs/msg/traffic_signal_array.hpp>
 
 #if __has_include(<cv_bridge/cv_bridge.hpp>)
 #include <cv_bridge/cv_bridge.hpp>
@@ -62,9 +62,9 @@ public:
   explicit ColorClassifier(rclcpp::Node * node_ptr);
   virtual ~ColorClassifier() = default;
 
-  bool getTrafficSignal(
-    const cv::Mat & input_image,
-    tier4_perception_msgs::msg::TrafficSignal & traffic_signal) override;
+  bool getTrafficSignals(
+    const std::vector<cv::Mat> & images,
+    tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals) override;
 
 private:
   bool filterHSV(

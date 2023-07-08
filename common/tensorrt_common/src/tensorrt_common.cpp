@@ -19,6 +19,7 @@
 
 #include <fstream>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -59,7 +60,7 @@ nvinfer1::Dims get_input_dims(const std::string & onnx_file_path)
   auto parser = TrtUniquePtr<nvonnxparser::IParser>(nvonnxparser::createParser(*network, logger_));
   if (!parser->parseFromFile(
         onnx_file_path.c_str(), static_cast<int>(nvinfer1::ILogger::Severity::kERROR))) {
-    logger_.log(nvinfer1::ILogger::Severity::kERROR, "Fail to parse ONNX");
+    logger_.log(nvinfer1::ILogger::Severity::kERROR, "Failed to parse onnx file");
   }
 
   const auto input = network->getInput(0);
@@ -124,6 +125,10 @@ TrtCommon::TrtCommon(
     runtime_->setDLACore(build_config_->dla_core_id);
   }
   initLibNvInferPlugins(&logger_, "");
+}
+
+TrtCommon::~TrtCommon()
+{
 }
 
 void TrtCommon::setup()
@@ -417,6 +422,21 @@ bool TrtCommon::buildEngineFromOnnx(
             layer->setPrecision(nvinfer1::DataType::kHALF);
             std::cout << "Set kHALF in " << name << std::endl;
           }
+          for (int i = num - 1; i >= 0; i--) {
+            nvinfer1::ILayer * layer = network->getLayer(i);
+            auto ltype = layer->getType();
+            std::string name = layer->getName();
+            if (ltype == nvinfer1::LayerType::kCONVOLUTION) {
+              layer->setPrecision(nvinfer1::DataType::kHALF);
+              std::cout << "Set kHALF in " << name << std::endl;
+              break;
+            }
+            if (ltype == nvinfer1::LayerType::kMATRIX_MULTIPLY) {
+              layer->setPrecision(nvinfer1::DataType::kHALF);
+              std::cout << "Set kHALF in " << name << std::endl;
+              break;
+            }
+          }
         }
       }
     }
@@ -427,6 +447,11 @@ bool TrtCommon::buildEngineFromOnnx(
   const auto input_channel = input_dims.d[1];
   const auto input_height = input_dims.d[2];
   const auto input_width = input_dims.d[3];
+  const auto input_batch = input_dims.d[0];
+
+  if (input_batch > 1) {
+    batch_config_[0] = input_batch;
+  }
 
   if (batch_config_.at(0) > 1 && (batch_config_.at(0) == batch_config_.at(2))) {
     // Attention : below API is deprecated in TRT8.4

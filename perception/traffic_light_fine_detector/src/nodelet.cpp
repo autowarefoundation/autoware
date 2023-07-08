@@ -76,8 +76,22 @@ TrafficLightFineDetectorNodelet::TrafficLightFineDetectorNodelet(
   if (!readLabelFile(label_path, tlr_id_, num_class)) {
     RCLCPP_ERROR(this->get_logger(), "Could not find tlr id");
   }
+
+  const tensorrt_common::BuildConfig build_config =
+    tensorrt_common::BuildConfig("MinMax", -1, false, false, false, 0.0);
+
+  const bool cuda_preprocess = true;
+  const std::string calib_image_list = "";
+  const double scale = 1.0;
+  const std::string cache_dir = "";
+  nvinfer1::Dims input_dim = tensorrt_common::get_input_dims(model_path);
+  assert(input_dim.d[0] > 0);
+  batch_size_ = input_dim.d[0];
+  const tensorrt_common::BatchConfig batch_config{batch_size_, batch_size_, batch_size_};
+
   trt_yolox_ = std::make_unique<tensorrt_yolox::TrtYoloX>(
-    model_path, precision, num_class, score_thresh_, nms_threshold);
+    model_path, precision, num_class, score_thresh_, nms_threshold, build_config, cuda_preprocess,
+    calib_image_list, scale, cache_dir, batch_config);
 
   using std::chrono_literals::operator""ms;
   timer_ = rclcpp::create_timer(
@@ -139,30 +153,50 @@ void TrafficLightFineDetectorNodelet::callback(
   }
 
   rosMsg2CvMat(in_image_msg, original_image, "bgr8");
-  for (const auto & rough_roi : rough_roi_msg->rois) {
+  std::vector<cv::Rect> rois;
+  tensorrt_yolox::ObjectArrays inference_results;
+  std::vector<cv::Point> lts;
+  std::vector<size_t> roi_ids;
+  for (size_t roi_i = 0; roi_i < rough_roi_msg->rois.size(); roi_i++) {
+    const auto & rough_roi = rough_roi_msg->rois[roi_i];
     cv::Point lt(rough_roi.roi.x_offset, rough_roi.roi.y_offset);
     cv::Point rb(
       rough_roi.roi.x_offset + rough_roi.roi.width, rough_roi.roi.y_offset + rough_roi.roi.height);
     fitInFrame(lt, rb, cv::Size(original_image.size()));
-    cv::Mat cropped_img = cv::Mat(original_image, cv::Rect(lt, rb));
-    tensorrt_yolox::ObjectArrays inference_results;
-    if (!trt_yolox_->doInference({cropped_img}, inference_results)) {
-      RCLCPP_WARN(this->get_logger(), "Fail to inference");
-      return;
-    }
-    for (tensorrt_yolox::Object & detection : inference_results[0]) {
-      if (detection.score < score_thresh_ || detection.type != tlr_id_) {
-        continue;
+    rois.emplace_back(lt, rb);
+    lts.emplace_back(lt);
+    roi_ids.emplace_back(rough_roi.traffic_light_id);
+    // keep the actual batch size
+    size_t true_batch_size = rois.size();
+    // insert fake rois since the TRT model requires static batch size
+    if (roi_i + 1 == rough_roi_msg->rois.size()) {
+      while (static_cast<int>(rois.size()) < batch_size_) {
+        rois.emplace_back(rois.front());
       }
-      cv::Point lt_roi(lt.x + detection.x_offset, lt.y + detection.y_offset);
-      cv::Point rb_roi(lt_roi.x + detection.width, lt_roi.y + detection.height);
-      fitInFrame(lt_roi, rb_roi, cv::Size(original_image.size()));
-      tensorrt_yolox::Object det = detection;
-      det.x_offset = lt_roi.x;
-      det.y_offset = lt_roi.y;
-      det.width = rb_roi.x - lt_roi.x;
-      det.height = rb_roi.y - lt_roi.y;
-      id2detections[rough_roi.traffic_light_id].push_back(det);
+    }
+    if (static_cast<int>(rois.size()) == batch_size_) {
+      trt_yolox_->doMultiScaleInference(original_image, inference_results, rois);
+      for (size_t batch_i = 0; batch_i < true_batch_size; batch_i++) {
+        for (const tensorrt_yolox::Object & detection : inference_results[batch_i]) {
+          if (detection.score < score_thresh_ || detection.type != tlr_id_) {
+            continue;
+          }
+          cv::Point lt_roi(
+            lts[batch_i].x + detection.x_offset, lts[batch_i].y + detection.y_offset);
+          cv::Point rb_roi(lt_roi.x + detection.width, lt_roi.y + detection.height);
+          fitInFrame(lt_roi, rb_roi, cv::Size(original_image.size()));
+          tensorrt_yolox::Object det = detection;
+          det.x_offset = lt_roi.x;
+          det.y_offset = lt_roi.y;
+          det.width = rb_roi.x - lt_roi.x;
+          det.height = rb_roi.y - lt_roi.y;
+          id2detections[roi_ids[batch_i]].push_back(det);
+        }
+      }
+      rois.clear();
+      lts.clear();
+      inference_results.clear();
+      roi_ids.clear();
     }
   }
   detectionMatch(id2expectRoi, id2detections, out_rois);

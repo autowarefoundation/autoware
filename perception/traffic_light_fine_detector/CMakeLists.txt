@@ -70,7 +70,9 @@ else()
 endif()
 
 # Download caffemodel and prototxt
-set(PRETRAINED_MODEL_HASH f3af5bd588c6c99ccf9ca236a07ad41e)
+set(PRETRAINED_MODEL_BATCH_1_HASH 2b72d085022b8ee6aacff06bd722cfda)
+set(PRETRAINED_MODEL_BATCH_4_HASH 4044daa86e7776ce241e94d98a09cc0e)
+set(PRETRAINED_MODEL_BATCH_6_HASH 47255a11bde479320d703f1f45db1242)
 set(LAMP_LABEL_HASH e9f45efb02f2a9aa8ac27b3d5c164905)
 set(DATA_DIR https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2)
 
@@ -109,7 +111,9 @@ function(download FILE_NAME FILE_HASH)
     message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
   endif()
 endfunction()
-download(tlr_yolox_s.onnx ${PRETRAINED_MODEL_HASH})
+download(tlr_yolox_s_batch_1.onnx ${PRETRAINED_MODEL_BATCH_1_HASH})
+download(tlr_yolox_s_batch_4.onnx ${PRETRAINED_MODEL_BATCH_4_HASH})
+download(tlr_yolox_s_batch_6.onnx ${PRETRAINED_MODEL_BATCH_6_HASH})
 download(tlr_labels.txt ${LAMP_LABEL_HASH})
 
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)

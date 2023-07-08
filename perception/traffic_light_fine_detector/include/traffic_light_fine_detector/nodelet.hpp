@@ -164,6 +164,7 @@ private:
   double score_thresh_;
   int tlr_id_;
 
+  int batch_size_;
   std::unique_ptr<tensorrt_yolox::TrtYoloX> trt_yolox_;
 };  // TrafficLightFineDetectorNodelet
 

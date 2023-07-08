@@ -36,82 +36,72 @@ CNNClassifier::CNNClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
   precision = node_ptr_->declare_parameter("classifier_precision", "fp16");
   label_file_path = node_ptr_->declare_parameter("classifier_label_path", "labels.txt");
   model_file_path = node_ptr_->declare_parameter("classifier_model_path", "model.onnx");
-  apply_softmax_ = node_ptr_->declare_parameter("apply_softmax", false);
-  mean_ =
+  // ros param does not support loading std::vector<float>
+  // we have to load std::vector<double> and transfer to std::vector<float>
+  auto mean_d =
     node_ptr->declare_parameter("classifier_mean", std::vector<double>{123.675, 116.28, 103.53});
-  std_ = node_ptr->declare_parameter("classifier_std", std::vector<double>{58.395, 57.12, 57.375});
+  auto std_d =
+    node_ptr->declare_parameter("classifier_std", std::vector<double>{58.395, 57.12, 57.375});
+  mean_ = std::vector<float>(mean_d.begin(), mean_d.end());
+  std_ = std::vector<float>(std_d.begin(), std_d.end());
   if (mean_.size() != 3 || std_.size() != 3) {
     RCLCPP_ERROR(node_ptr->get_logger(), "classifier_mean and classifier_std must be of size 3");
     return;
   }
 
   readLabelfile(label_file_path, labels_);
+  nvinfer1::Dims input_dim = tensorrt_common::get_input_dims(model_file_path);
+  assert(input_dim.d[0] > 0);
+  batch_size_ = input_dim.d[0];
 
-  tensorrt_common::BatchConfig batch_config{1, 1, 1};
-  size_t max_workspace_size = 1 << 30;
-
-  trt_common_ = std::make_unique<tensorrt_common::TrtCommon>(
-    model_file_path, precision, nullptr, batch_config, max_workspace_size);
-  trt_common_->setup();
-  if (!trt_common_->isInitialized()) {
-    return;
-  }
-  const auto input_dims = trt_common_->getBindingDimensions(0);
-  if (input_dims.nbDims != 4) {
-    RCLCPP_ERROR(node_ptr_->get_logger(), "Model input dimension must be 4!");
-  }
-  batch_size_ = input_dims.d[0];
-  input_c_ = input_dims.d[1];
-  input_h_ = input_dims.d[2];
-  input_w_ = input_dims.d[3];
-  num_input_ = batch_size_ * input_c_ * input_h_ * input_w_;
-  const auto output_dims = trt_common_->getBindingDimensions(1);
-  num_output_ =
-    std::accumulate(output_dims.d, output_dims.d + output_dims.nbDims, 1, std::multiplies<int>());
+  tensorrt_common::BatchConfig batch_config{batch_size_, batch_size_, batch_size_};
+  classifier_ = std::make_unique<tensorrt_classifier::TrtClassifier>(
+    model_file_path, precision, batch_config, mean_, std_);
   if (node_ptr_->declare_parameter("build_only", false)) {
     RCLCPP_INFO(node_ptr_->get_logger(), "TensorRT engine is built and shutdown node.");
     rclcpp::shutdown();
   }
 }
 
-bool CNNClassifier::getTrafficSignal(
-  const cv::Mat & input_image, tier4_perception_msgs::msg::TrafficSignal & traffic_signal)
+bool CNNClassifier::getTrafficSignals(
+  const std::vector<cv::Mat> & images,
+  tier4_perception_msgs::msg::TrafficSignalArray & traffic_signals)
 {
-  if (!trt_common_->isInitialized()) {
-    RCLCPP_WARN(node_ptr_->get_logger(), "failed to init tensorrt");
+  if (images.size() != traffic_signals.signals.size()) {
+    RCLCPP_WARN(node_ptr_->get_logger(), "image number should be equal to traffic signal number!");
     return false;
   }
+  std::vector<cv::Mat> image_batch;
+  int signal_i = 0;
 
-  std::vector<float> input_data_host(num_input_);
-
-  cv::Mat image = input_image.clone();
-  preProcess(image, input_data_host, true);
-
-  auto input_data_device = cuda_utils::make_unique<float[]>(num_input_);
-  cudaMemcpy(
-    input_data_device.get(), input_data_host.data(), num_input_ * sizeof(float),
-    cudaMemcpyHostToDevice);
-
-  auto output_data_device = cuda_utils::make_unique<float[]>(num_output_);
-
-  // do inference
-  std::vector<void *> bindings = {input_data_device.get(), output_data_device.get()};
-
-  trt_common_->enqueueV2(bindings.data(), *stream_, nullptr);
-
-  std::vector<float> output_data_host(num_output_);
-  cudaMemcpy(
-    output_data_host.data(), output_data_device.get(), num_output_ * sizeof(float),
-    cudaMemcpyDeviceToHost);
-
-  postProcess(output_data_host, traffic_signal, apply_softmax_);
-
-  /* debug */
-  if (0 < image_pub_.getNumSubscribers()) {
-    cv::Mat debug_image = input_image.clone();
-    outputDebugImage(debug_image, traffic_signal);
+  for (size_t image_i = 0; image_i < images.size(); image_i++) {
+    image_batch.emplace_back(images[image_i]);
+    // keep the actual batch size
+    size_t true_batch_size = image_batch.size();
+    // insert fake image since the TRT model requires static batch size
+    if (image_i + 1 == images.size()) {
+      while (static_cast<int>(image_batch.size()) < batch_size_) {
+        image_batch.emplace_back(image_batch.front());
+      }
+    }
+    if (static_cast<int>(image_batch.size()) == batch_size_) {
+      std::vector<float> probs;
+      std::vector<int> classes;
+      bool res = classifier_->doInference(image_batch, classes, probs);
+      if (!res || classes.empty() || probs.empty()) {
+        return false;
+      }
+      for (size_t i = 0; i < true_batch_size; i++) {
+        postProcess(classes[i], probs[i], traffic_signals.signals[signal_i]);
+        /* debug */
+        if (0 < image_pub_.getNumSubscribers()) {
+          outputDebugImage(image_batch[i], traffic_signals.signals[signal_i]);
+        }
+        signal_i++;
+      }
+      image_batch.clear();
+    }
   }
-
   return true;
 }
 
@@ -147,49 +137,10 @@ void CNNClassifier::outputDebugImage(
   image_pub_.publish(debug_image_msg);
 }
 
-void CNNClassifier::preProcess(cv::Mat & image, std::vector<float> & input_tensor, bool normalize)
+void CNNClassifier::postProcess(
+  int class_index, float prob, tier4_perception_msgs::msg::TrafficSignal & traffic_signal)
 {
-  const float scale =
-    std::min(static_cast<float>(input_w_) / image.cols, static_cast<float>(input_h_) / image.rows);
-  const auto scale_size = cv::Size(image.cols * scale, image.rows * scale);
-  cv::resize(image, image, scale_size, 0, 0, cv::INTER_CUBIC);
-  const auto bottom = input_h_ - image.rows;
-  const auto right = input_w_ - image.cols;
-  copyMakeBorder(image, image, 0, bottom, 0, right, cv::BORDER_CONSTANT, {0, 0, 0});
-
-  const size_t strides_cv[3] = {
-    static_cast<size_t>(input_w_ * input_c_), static_cast<size_t>(input_c_), 1};
-  const size_t strides[3] = {
-    static_cast<size_t>(input_h_ * input_w_), static_cast<size_t>(input_w_), 1};
-
-  for (int i = 0; i < input_h_; i++) {
-    for (int j = 0; j < input_w_; j++) {
-      for (int k = 0; k < input_c_; k++) {
-        const size_t offset_cv = i * strides_cv[0] + j * strides_cv[1] + k * strides_cv[2];
-        const size_t offset = k * strides[0] + i * strides[1] + j * strides[2];
-        if (normalize) {
-          input_tensor[offset] = (static_cast<float>(image.data[offset_cv]) - mean_[k]) / std_[k];
-        } else {
-          input_tensor[offset] = static_cast<float>(image.data[offset_cv]);
-        }
-      }
-    }
-  }
-}
-
-bool CNNClassifier::postProcess(
-  std::vector<float> & output_tensor, tier4_perception_msgs::msg::TrafficSignal & traffic_signal,
-  bool apply_softmax)
-{
-  std::vector<float> probs;
-  if (apply_softmax) {
-    calcSoftmax(output_tensor, probs, num_output_);
-  }
-  std::vector<size_t> sorted_indices = argsort(output_tensor, num_output_);
-
-  size_t max_indice = sorted_indices.front();
-  std::string match_label = labels_[max_indice];
-  float probability = apply_softmax ? probs[max_indice] : output_tensor[max_indice];
+  std::string match_label = labels_[class_index];
 
   // label names are assumed to be comma-separated to represent each lamp
   // e.g.
@@ -224,11 +175,9 @@ bool CNNClassifier::postProcess(
         element.shape = label2state_[label];
       }
     }
-    element.confidence = probability;
+    element.confidence = prob;
     traffic_signal.elements.push_back(element);
   }
-
-  return true;
 }
 
 bool CNNClassifier::readLabelfile(std::string filepath, std::vector<std::string> & labels)
@@ -243,32 +192,6 @@ bool CNNClassifier::readLabelfile(std::string filepath, std::vector<std::string>
     labels.push_back(label);
   }
   return true;
-}
-
-void CNNClassifier::calcSoftmax(
-  std::vector<float> & data, std::vector<float> & probs, int num_output)
-{
-  float exp_sum = 0.0;
-  for (int i = 0; i < num_output; ++i) {
-    exp_sum += exp(data[i]);
-  }
-
-  for (int i = 0; i < num_output; ++i) {
-    probs.push_back(exp(data[i]) / exp_sum);
-  }
-}
-
-std::vector<size_t> CNNClassifier::argsort(std::vector<float> & tensor, int num_output)
-{
-  std::vector<size_t> indices(num_output);
-  for (int i = 0; i < num_output; i++) {
-    indices[i] = i;
-  }
-  std::sort(indices.begin(), indices.begin() + num_output, [tensor](size_t idx1, size_t idx2) {
-    return tensor[idx1] > tensor[idx2];
-  });
-
-  return indices;
 }
 
 bool CNNClassifier::isColorLabel(const std::string label)

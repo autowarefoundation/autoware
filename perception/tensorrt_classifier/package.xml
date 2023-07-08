@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>tensorrt_classifier</name>
+  <version>0.0.1</version>
+  <description>tensorrt classifier wrapper</description>
+
+  <author email="dan.umeda@tier4.jp">Dan Umeda</author>
+  <author email="mingyu.li@tier4.jp">Mingyu Li</author>
+  <maintainer email="mingyu.li@tier4.jp">>Mingyu Li</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>cudnn_cmake_module</buildtool_depend>
+  <buildtool_depend>tensorrt_cmake_module</buildtool_depend>
+
+  <buildtool_export_depend>cudnn_cmake_module</buildtool_export_depend>
+  <buildtool_export_depend>tensorrt_cmake_module</buildtool_export_depend>
+
+  <build_depend>autoware_cmake</build_depend>
+
+  <depend>cuda_utils</depend>
+  <depend>libopencv-dev</depend>
+  <depend>rclcpp</depend>
+  <depend>tensorrt_common</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

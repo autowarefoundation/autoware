@@ -149,6 +149,11 @@ public:
     const std::vector<std::string> & plugin_paths = {});
 
   /**
+   * @brief Deconstruct TrtCommon
+   */
+  ~TrtCommon();
+
+  /**
    * @brief Load TensorRT engine
    * @param[in] engine_file_path path for a engine file
    * @return flag for whether loading are succeeded or failed
