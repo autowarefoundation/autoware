@@ -55,7 +55,7 @@ public:
   motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
-  int64_t module_id_;
+  const int64_t module_id_;
 
   [[nodiscard]] boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
     const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
@@ -71,13 +71,13 @@ private:
   State state_;
 
   // Parameter
-  PlannerParam planner_param_;
+  const PlannerParam planner_param_;
 
   // Debug
   DebugData debug_data_;
 
   // flag to use regulatory element
-  bool use_regulatory_element_;
+  const bool use_regulatory_element_;
 };
 }  // namespace behavior_velocity_planner
 

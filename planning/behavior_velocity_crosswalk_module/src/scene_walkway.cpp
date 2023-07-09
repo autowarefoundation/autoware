@@ -91,8 +91,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
 {
   const auto & base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
-  debug_data_ = DebugData();
-  debug_data_.base_link2front = base_link2front;
+  debug_data_ = DebugData(planner_data_);
   *stop_reason = planning_utils::initializeStopReason(StopReason::WALKWAY);
 
   const auto input = *path;

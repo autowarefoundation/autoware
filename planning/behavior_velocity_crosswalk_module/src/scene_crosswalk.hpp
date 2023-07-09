@@ -103,13 +103,13 @@ public:
   motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
-  int64_t module_id_;
+  const int64_t module_id_;
 
-  boost::optional<std::pair<geometry_msgs::msg::Point, StopFactor>> findRTCStopPointWithFactor(
+  boost::optional<StopFactor> findDefaultStopFactor(
     const PathWithLaneId & ego_path,
     const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
-  boost::optional<std::pair<geometry_msgs::msg::Point, StopFactor>> findNearestStopPointWithFactor(
+  boost::optional<StopFactor> findNearestStopFactor(
     const PathWithLaneId & ego_path,
     const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
@@ -129,8 +129,9 @@ private:
     const geometry_msgs::msg::Point & stop_point, const float target_velocity,
     PathWithLaneId & output);
 
-  void clampAttentionRangeByNeighborCrosswalks(
-    const PathWithLaneId & ego_path, double & near_attention_range, double & far_attention_range);
+  std::pair<double, double> clampAttentionRangeByNeighborCrosswalks(
+    const PathWithLaneId & ego_path, const double near_attention_range,
+    const double far_attention_range);
 
   CollisionPoint createCollisionPoint(
     const geometry_msgs::msg::Point & nearest_collision_point, const double dist_ego2cp,
@@ -139,14 +140,18 @@ private:
 
   CollisionPointState getCollisionPointState(const double ttc, const double ttv) const;
 
-  bool applySafetySlowDownSpeed(
+  void applySafetySlowDownSpeed(
     PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
   float calcTargetVelocity(
     const geometry_msgs::msg::Point & stop_point, const PathWithLaneId & ego_path) const;
 
+  Polygon2d getAttentionArea(
+    const PathWithLaneId & sparse_resample_path,
+    const std::pair<double, double> & crosswalk_attention_range) const;
+
   bool isStuckVehicle(
-    const PathWithLaneId & ego_path, const PredictedObject & object,
+    const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
     const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 
   bool isRedSignalForPedestrians() const;
@@ -161,19 +166,35 @@ private:
   static geometry_msgs::msg::Polygon createVehiclePolygon(
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
+  boost::optional<StopFactorInfo> generateStopFactorInfo(
+    const boost::optional<StopFactor> & nearest_stop_factor,
+    const boost::optional<StopFactor> & default_stop_factor) const;
+
+  void planGo(const boost::optional<StopFactorInfo> & stop_factor_info, PathWithLaneId & ego_path);
+  bool planStop(
+    const boost::optional<StopFactorInfo> & stop_factor_info, PathWithLaneId & ego_path,
+    StopReason * stop_reason);
+
+  void recordTime(const int step_num)
+  {
+    RCLCPP_INFO_EXPRESSION(
+      logger_, planner_param_.show_processing_time, "- step%d: %f ms", step_num,
+      stop_watch_.toc("total_processing_time", false));
+  }
+
   lanelet::ConstLanelet crosswalk_;
 
   lanelet::ConstLineStrings3d stop_lines_;
 
   // Parameter
-  PlannerParam planner_param_;
+  const PlannerParam planner_param_;
 
   // Ignore objects
   std::unordered_map<std::string, rclcpp::Time> stopped_objects_;
   std::unordered_map<std::string, rclcpp::Time> ignore_objects_;
 
   // Debug
-  DebugData debug_data_;
+  mutable DebugData debug_data_;
 
   // Stop watch
   StopWatch<std::chrono::milliseconds> stop_watch_;
@@ -182,7 +203,7 @@ private:
   bool passed_safety_slow_point_;
 
   // whether use regulatory element
-  bool use_regulatory_element_;
+  const bool use_regulatory_element_;
 };
 }  // namespace behavior_velocity_planner
 

@@ -92,32 +92,24 @@ visualization_msgs::msg::MarkerArray createCrosswalkMarkers(
     msg.markers.push_back(marker);
   }
 
-  {
-    size_t i = 0;
-    for (const auto & polygon : debug_data.obj_polygons) {
-      auto marker = createDefaultMarker(
-        "map", now, "object polygon", uid + i++, Marker::LINE_STRIP,
-        createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(1.0, 0.0, 1.0, 0.999));
-      for (const auto & p : polygon.points) {
-        marker.points.push_back(createPoint(p.x, p.y, p.z));
-      }
-      marker.points.push_back(marker.points.front());
-      msg.markers.push_back(marker);
-    }
+  for (size_t i = 0; i < debug_data.obj_polygons.size(); ++i) {
+    const auto & points = debug_data.obj_polygons.at(i);
+    auto marker = createDefaultMarker(
+      "map", now, "object polygon", uid + i++, Marker::LINE_STRIP, createMarkerScale(0.1, 0.0, 0.0),
+      createMarkerColor(1.0, 0.0, 1.0, 0.999));
+    marker.points = points;
+    // marker.points.push_back(marker.points.front());
+    msg.markers.push_back(marker);
   }
 
-  {
-    size_t i = 0;
-    for (const auto & polygon : debug_data.ego_polygons) {
-      auto marker = createDefaultMarker(
-        "map", now, "vehicle polygon", uid + i++, Marker::LINE_STRIP,
-        createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(1.0, 1.0, 0.0, 0.999));
-      for (const auto & p : polygon.points) {
-        marker.points.push_back(createPoint(p.x, p.y, p.z));
-      }
-      marker.points.push_back(marker.points.front());
-      msg.markers.push_back(marker);
-    }
+  for (size_t i = 0; i < debug_data.ego_polygons.size(); ++i) {
+    const auto & points = debug_data.ego_polygons.at(i);
+    auto marker = createDefaultMarker(
+      "map", now, "vehicle polygon", uid + i++, Marker::LINE_STRIP,
+      createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(1.0, 1.0, 0.0, 0.999));
+    marker.points = points;
+    // marker.points.push_back(marker.points.front());
+    msg.markers.push_back(marker);
   }
 
   // Crosswalk polygon

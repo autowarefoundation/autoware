@@ -32,13 +32,16 @@
 #include <behavior_velocity_planner_common/planner_data.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_planning_msgs/msg/stop_factor.hpp>
 
 namespace behavior_velocity_planner
 {
 
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::Point2d;
+using tier4_planning_msgs::msg::StopFactor;
 
 enum class CollisionPointState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE };
 
@@ -50,11 +53,24 @@ struct CollisionPoint
   CollisionPointState state{CollisionPointState::EGO_PASS_FIRST};
 };
 
+struct StopFactorInfo
+{
+  enum class Type { NEAREST = 0, DEFAULT };
+  StopFactor stop_factor;
+  Type type;
+};
+
 struct DebugData
 {
+  DebugData() = default;
+  explicit DebugData(const std::shared_ptr<const PlannerData> planner_data)
+  : base_link2front(planner_data->vehicle_info_.max_longitudinal_offset_m)
+  {
+  }
+
   bool ignore_crosswalk{false};
   double base_link2front;
-  double stop_judge_range;
+  double stop_judge_range{};
 
   geometry_msgs::msg::Pose first_stop_pose;
   geometry_msgs::msg::Point nearest_collision_point;
@@ -68,8 +84,8 @@ struct DebugData
   std::vector<geometry_msgs::msg::Pose> slow_poses;
   std::vector<geometry_msgs::msg::Point> stop_factor_points;
   std::vector<geometry_msgs::msg::Point> crosswalk_polygon;
-  std::vector<geometry_msgs::msg::Polygon> ego_polygons;
-  std::vector<geometry_msgs::msg::Polygon> obj_polygons;
+  std::vector<std::vector<geometry_msgs::msg::Point>> ego_polygons;
+  std::vector<std::vector<geometry_msgs::msg::Point>> obj_polygons;
 };
 
 std::vector<geometry_msgs::msg::Point> getPolygonIntersects(
