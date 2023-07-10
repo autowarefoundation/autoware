@@ -580,7 +580,6 @@ private:
       return;
     }
 
-    initRTCStatus();
     unlockNewModuleLaunch();
 
     current_raw_shift_lines_.clear();

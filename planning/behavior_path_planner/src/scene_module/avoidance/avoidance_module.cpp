@@ -114,27 +114,25 @@ bool AvoidanceModule::isExecutionRequested() const
   }
 
   // Check ego is in preferred lane
-  const auto avoid_data = avoidance_data_;
-
-  updateInfoMarker(avoid_data);
-  updateDebugMarker(avoid_data, path_shifter_, debug_data_);
+  updateInfoMarker(avoidance_data_);
+  updateDebugMarker(avoidance_data_, path_shifter_, debug_data_);
 
   // there is object that should be avoid. return true.
-  if (!!avoid_data.stop_target_object) {
+  if (!!avoidance_data_.stop_target_object) {
     return true;
   }
 
-  if (avoid_data.unapproved_new_sl.empty()) {
+  if (avoidance_data_.unapproved_new_sl.empty()) {
     return false;
   }
 
-  return !avoid_data.target_objects.empty();
+  return !avoidance_data_.target_objects.empty();
 }
 
 bool AvoidanceModule::isExecutionReady() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionReady");
-  return true;
+  return avoidance_data_.safe;
 }
 
 ModuleStatus AvoidanceModule::updateState()
@@ -534,6 +532,7 @@ void AvoidanceModule::fillEgoStatus(
    * if the avoidance has already been initiated.
    */
   if (!can_yield_maneuver) {
+    data.safe = true;  // overwrite safety judge.
     data.yield_required = false;
     data.safe_new_sl = data.unapproved_new_sl;
     RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 500, "unsafe. but could not transit yield status.");
@@ -545,7 +544,7 @@ void AvoidanceModule::fillEgoStatus(
    */
   {
     data.yield_required = true;
-    data.safe_new_sl.clear();
+    data.safe_new_sl = data.unapproved_new_sl;
   }
 
   /**
@@ -2605,8 +2604,7 @@ CandidateOutput AvoidanceModule::planCandidate() const
 
   CandidateOutput output;
 
-  auto shifted_path = data.yield_required ? utils::avoidance::toShiftedPath(data.reference_path)
-                                          : data.candidate_path;
+  auto shifted_path = data.candidate_path;
 
   if (!data.safe_new_sl.empty()) {  // clip from shift start index for visualize
     utils::clipPathLength(
