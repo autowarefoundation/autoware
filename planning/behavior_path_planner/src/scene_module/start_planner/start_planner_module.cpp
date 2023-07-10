@@ -49,13 +49,13 @@ StartPlannerModule::StartPlannerModule(
 
   // set enabled planner
   if (parameters_->enable_shift_pull_out) {
-    start_planner_planners_.push_back(
+    start_planners_.push_back(
       std::make_shared<ShiftPullOut>(node, *parameters, lane_departure_checker_));
   }
   if (parameters_->enable_geometric_pull_out) {
-    start_planner_planners_.push_back(std::make_shared<GeometricPullOut>(node, *parameters));
+    start_planners_.push_back(std::make_shared<GeometricPullOut>(node, *parameters));
   }
-  if (start_planner_planners_.empty()) {
+  if (start_planners_.empty()) {
     RCLCPP_ERROR(getLogger(), "Not found enabled planner");
   }
 }
@@ -257,7 +257,7 @@ CandidateOutput StartPlannerModule::planCandidate() const
 
 std::shared_ptr<PullOutPlannerBase> StartPlannerModule::getCurrentPlanner() const
 {
-  for (const auto & planner : start_planner_planners_) {
+  for (const auto & planner : start_planners_) {
     if (status_.planner_type == planner->getPlannerType()) {
       return planner;
     }
@@ -458,7 +458,7 @@ void StartPlannerModule::planWithPriority(
   using PriorityOrder = std::vector<std::pair<size_t, std::shared_ptr<PullOutPlannerBase>>>;
   const auto make_loop_order_planner_first = [&]() {
     PriorityOrder order_priority;
-    for (const auto & planner : start_planner_planners_) {
+    for (const auto & planner : start_planners_) {
       for (size_t i = 0; i < start_pose_candidates.size(); i++) {
         order_priority.emplace_back(i, planner);
       }
@@ -469,7 +469,7 @@ void StartPlannerModule::planWithPriority(
   const auto make_loop_order_pose_first = [&]() {
     PriorityOrder order_priority;
     for (size_t i = 0; i < start_pose_candidates.size(); i++) {
-      for (const auto & planner : start_planner_planners_) {
+      for (const auto & planner : start_planners_) {
         order_priority.emplace_back(i, planner);
       }
     }
