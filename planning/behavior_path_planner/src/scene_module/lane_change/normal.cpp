@@ -77,6 +77,7 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
   debug_valid_path_ = valid_paths;
 
   if (valid_paths.empty()) {
+    safe_path.reference_lanelets = current_lanes;
     return {false, false};
   }
 
@@ -100,16 +101,7 @@ bool NormalLaneChange::isLaneChangeRequired() const
 
   const auto target_lanes = getLaneChangeLanes(current_lanes, direction_);
 
-  if (target_lanes.empty()) {
-    return false;
-  }
-
-  // find candidate paths
-  LaneChangePaths valid_paths{};
-  [[maybe_unused]] const auto found_safe_path =
-    getLaneChangePaths(current_lanes, target_lanes, direction_, &valid_paths, false);
-
-  return !valid_paths.empty();
+  return !target_lanes.empty();
 }
 
 LaneChangePath NormalLaneChange::getLaneChangePath() const

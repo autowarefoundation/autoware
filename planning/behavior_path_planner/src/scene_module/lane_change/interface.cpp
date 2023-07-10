@@ -237,7 +237,10 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   // change turn signal when the vehicle reaches at the end of the path for waiting lane change
   out.turn_signal_info = getCurrentTurnSignalInfo(*out.path, out.turn_signal_info);
 
+  path_reference_ = getPreviousModuleOutput().reference_path;
+
   if (!module_type_->isValidPath()) {
+    removeRTCStatus();
     path_candidate_ = std::make_shared<PathWithLaneId>();
     return out;
   }
@@ -245,7 +248,6 @@ BehaviorModuleOutput LaneChangeInterface::planWaitingApproval()
   const auto candidate = planCandidate();
   path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
 
-  path_reference_ = getPreviousModuleOutput().reference_path;
   updateRTCStatus(
     candidate.start_distance_to_path_change, candidate.finish_distance_to_path_change);
   is_abort_path_approved_ = false;
