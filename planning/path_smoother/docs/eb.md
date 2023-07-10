@@ -159,3 +159,15 @@ $$
 
 In addition, the beginning point is fixed and the end point as well if the end point is considered as the goal.
 This constraint can be applied with the upper equation by changing the distance that each point can move.
+
+## Debug
+
+- **EB Fixed Trajectory**
+  - The fixed trajectory points as a constraint of elastic band.
+
+![eb_fixed_traj](../media/debug/eb_fixed_traj_visualization.png)
+
+- **EB Trajectory**
+  - The optimized trajectory points by elastic band.
+
+![eb_traj](../media/debug/eb_traj_visualization.png)

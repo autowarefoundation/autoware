@@ -15,7 +15,6 @@
 #include "obstacle_avoidance_planner/debug_marker.hpp"
 
 #include "motion_utils/motion_utils.hpp"
-#include "obstacle_avoidance_planner/eb_path_smoother.hpp"
 #include "obstacle_avoidance_planner/mpt_optimizer.hpp"
 
 #include "visualization_msgs/msg/marker_array.hpp"

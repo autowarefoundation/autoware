@@ -1,8 +1,7 @@
 /**:
   ros__parameters:
     option:
-      enable_smoothing: true                                       # enable path smoothing by elastic band
-      enable_skip_optimization: false                              # skip elastic band and model predictive trajectory
+      enable_skip_optimization: false                              # skip model predictive trajectory
       enable_reset_prev_optimization: false                        # If true, optimization has no fix constraint to the previous result.
       enable_outside_drivable_area_stop: true                      # stop if the ego's trajectory footprint is outside the drivable area
       use_footprint_polygon_for_outside_drivable_area_check: false # If false, only the footprint's corner points are considered.
@@ -29,35 +28,6 @@
       # make max_goal_moving_dist long to keep start point fixed for pull over
       max_goal_moving_dist: 15.0               # threshold of goal's moving distance for replan [m]
       max_delta_time_sec: 1.0                  # threshold of delta time for replan [second]
-
-    # eb param
-    eb:
-      option:
-        enable_warm_start: true
-        enable_optimization_validation: false
-
-      common:
-        num_points: 100        # number of points for optimization [-]
-        delta_arc_length: 1.0  # delta arc length for optimization [m]
-
-      clearance:
-        num_joint_points: 3  # number of joint points (joint means connecting fixing and smoothing)
-
-        clearance_for_fix: 0.0     # maximum optimizing range when applying fixing
-        clearance_for_joint: 0.1   # maximum optimizing range when applying jointing
-        clearance_for_smooth: 0.1  # maximum optimizing range when applying smoothing
-
-      weight:
-        smooth_weight: 1.0
-        lat_error_weight: 0.001
-
-      qp:
-        max_iteration: 10000  # max iteration when solving QP
-        eps_abs: 1.0e-7       # eps abs when solving OSQP
-        eps_rel: 1.0e-7       # eps rel when solving OSQP
-
-      validation: # if enable_optimization_validation is true
-        max_error: 3.0 # [m]
 
     # mpt param
     mpt:

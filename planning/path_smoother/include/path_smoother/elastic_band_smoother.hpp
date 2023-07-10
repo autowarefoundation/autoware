@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_AVOIDANCE_PLANNER__NODE_HPP_
-#define OBSTACLE_AVOIDANCE_PLANNER__NODE_HPP_
+#ifndef PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
+#define PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
 
 #include "motion_utils/motion_utils.hpp"
-#include "obstacle_avoidance_planner/common_structs.hpp"
-#include "obstacle_avoidance_planner/mpt_optimizer.hpp"
-#include "obstacle_avoidance_planner/replan_checker.hpp"
-#include "obstacle_avoidance_planner/type_alias.hpp"
+#include "path_smoother/common_structs.hpp"
+#include "path_smoother/elastic_band.hpp"
+#include "path_smoother/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -30,15 +28,14 @@
 #include <string>
 #include <vector>
 
-namespace obstacle_avoidance_planner
+namespace path_smoother
 {
-class ObstacleAvoidancePlanner : public rclcpp::Node
+class ElasticBandSmoother : public rclcpp::Node
 {
 public:
-  explicit ObstacleAvoidancePlanner(const rclcpp::NodeOptions & node_options);
+  explicit ElasticBandSmoother(const rclcpp::NodeOptions & node_options);
 
-protected:  // for the static_centerline_optimizer package
-  // TODO(murooka) move this node to common
+protected:
   class DrivingDirectionChecker
   {
   public:
@@ -55,24 +52,16 @@ protected:  // for the static_centerline_optimizer package
   DrivingDirectionChecker driving_direction_checker_{};
 
   // argument variables
-  vehicle_info_util::VehicleInfo vehicle_info_{};
-  mutable std::shared_ptr<DebugData> debug_data_ptr_{nullptr};
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_{nullptr};
 
   // flags for some functions
-  bool enable_pub_debug_marker_;
   bool enable_debug_info_;
-  bool enable_outside_drivable_area_stop_;
-  bool enable_skip_optimization_;
-  bool enable_reset_prev_optimization_;
-  bool use_footprint_polygon_for_outside_drivable_area_check_;
 
-  // core algorithms
-  std::shared_ptr<ReplanChecker> replan_checker_ptr_{nullptr};
-  std::shared_ptr<MPTOptimizer> mpt_optimizer_ptr_{nullptr};
+  // algorithms
+  std::shared_ptr<EBPathSmoother> eb_path_smoother_ptr_{nullptr};
 
   // parameters
-  TrajectoryParam traj_param_{};
+  CommonParam common_param_{};
   EgoNearestParam ego_nearest_param_{};
 
   // variables for subscribers
@@ -83,7 +72,7 @@ protected:  // for the static_centerline_optimizer package
 
   // interface publisher
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr virtual_wall_pub_;
+  rclcpp::Publisher<Path>::SharedPtr path_pub_;
 
   // interface subscriber
   rclcpp::Subscription<Path>::SharedPtr path_sub_;
@@ -91,7 +80,6 @@ protected:  // for the static_centerline_optimizer package
 
   // debug publisher
   rclcpp::Publisher<Trajectory>::SharedPtr debug_extended_traj_pub_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr debug_markers_pub_;
   rclcpp::Publisher<StringStamped>::SharedPtr debug_calculation_time_pub_;
 
   // parameter callback
@@ -113,7 +101,6 @@ protected:  // for the static_centerline_optimizer package
   std::vector<TrajectoryPoint> extendTrajectory(
     const std::vector<TrajectoryPoint> & traj_points,
     const std::vector<TrajectoryPoint> & optimized_points) const;
-  void publishDebugData(const Header & header) const;
 
   // functions in generateOptimizedTrajectory
   std::vector<TrajectoryPoint> optimizeTrajectory(const PlannerData & planner_data);
@@ -126,8 +113,7 @@ protected:  // for the static_centerline_optimizer package
   void insertZeroVelocityOutsideDrivableArea(
     const PlannerData & planner_data, std::vector<TrajectoryPoint> & traj_points) const;
   void publishVirtualWall(const geometry_msgs::msg::Pose & stop_pose) const;
-  void publishDebugMarkerOfOptimization(const std::vector<TrajectoryPoint> & traj_points) const;
 };
-}  // namespace obstacle_avoidance_planner
+}  // namespace path_smoother
 
-#endif  // OBSTACLE_AVOIDANCE_PLANNER__NODE_HPP_
+#endif  // PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_

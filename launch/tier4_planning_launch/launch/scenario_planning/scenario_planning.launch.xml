@@ -27,11 +27,11 @@
       <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
       <set_remap from="~/output/trajectory" to="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
       <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
-        <arg name="smoother_type" value="$(var smoother_type)"/>
+        <arg name="velocity_smoother_type" value="$(var velocity_smoother_type)"/>
         <arg name="common_param_path" value="$(var common_param_path)"/>
         <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
         <arg name="param_path" value="$(var motion_velocity_smoother_param_path)"/>
-        <arg name="smoother_param_path" value="$(var smoother_type_param_path)"/>
+        <arg name="velocity_smoother_param_path" value="$(var velocity_smoother_type_param_path)"/>
       </include>
     </group>
   </group>

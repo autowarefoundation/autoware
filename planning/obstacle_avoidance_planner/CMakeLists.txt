@@ -22,7 +22,6 @@ ament_auto_add_library(obstacle_avoidance_planner SHARED
   src/node.cpp
   # core algorithms
   src/replan_checker.cpp
-  src/eb_path_smoother.cpp
   src/mpt_optimizer.cpp
   src/state_equation_generator.cpp
   # debug marker

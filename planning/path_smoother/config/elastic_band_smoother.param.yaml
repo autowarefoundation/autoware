@@ -1,0 +1,37 @@
+/**:
+  ros__parameters:
+    common:
+      # output
+      output_delta_arc_length: 0.5     #  delta arc length for output trajectory [m]
+      output_backward_traj_length: 5.0  # backward length for backward trajectory from base_link [m]
+    # elastic band
+    elastic_band:
+      option:
+        enable_warm_start: true
+        enable_optimization_validation: false
+
+      common:
+        num_points: 100        # number of points for optimization [-]
+        delta_arc_length: 1.0  # delta arc length for optimization [m]
+
+      clearance:
+        num_joint_points: 3  # number of joint points (joint means connecting fixing and smoothing)
+
+        clearance_for_fix: 0.0     # maximum optimizing range when applying fixing
+        clearance_for_joint: 0.1   # maximum optimizing range when applying jointing
+        clearance_for_smooth: 0.1  # maximum optimizing range when applying smoothing
+
+      weight:
+        smooth_weight: 1.0
+        lat_error_weight: 0.001
+
+      qp:
+        max_iteration: 10000  # max iteration when solving QP
+        eps_abs: 1.0e-7       # eps abs when solving OSQP
+        eps_rel: 1.0e-7       # eps rel when solving OSQP
+
+      validation: # if enable_optimization_validation is true
+        max_error: 3.0 # [m]
+    # nearest search
+    ego_nearest_dist_threshold: 3.0 # [m]
+    ego_nearest_yaw_threshold: 1.046 # [rad] = 60 [deg]

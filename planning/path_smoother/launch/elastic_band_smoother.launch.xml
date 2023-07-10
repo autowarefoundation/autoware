@@ -1,0 +1,17 @@
+<launch>
+  <arg name="input_path_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
+  <arg name="output_path_topic" default="/planning/scenario_planning/lane_driving/path_smoother/path"/>
+  <arg name="output_trajectory_topic" default="/planning/scenario_planning/lane_driving/path_smoother/trajectory"/>
+  <arg name="enable_debug_info" default="false"/>
+  <arg name="param_path" default="$(find-pkg-share path_smoother)/config/elastic_band_smoother.param.yaml"/>
+
+  <node pkg="path_smoother" exec="elastic_band_smoother" name="elastic_band_smoother" output="screen">
+    <remap from="~/input/path" to="$(var input_path_topic)"/>
+    <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+    <remap from="~/output/traj" to="$(var output_trajectory_topic)"/>
+    <remap from="~/output/path" to="$(var output_path_topic)"/>
+
+    <param from="$(var param_path)"/>
+    <param name="enable_debug_info" value="$(var enable_debug_info)"/>
+  </node>
+</launch>

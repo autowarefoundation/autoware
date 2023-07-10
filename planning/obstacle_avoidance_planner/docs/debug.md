@@ -2,7 +2,7 @@
 
 ## Debug visualization
 
-The visualization markers of the planning flow (Input, Elastic Band, Model Predictive Trajectory, and Output) are explained here.
+The visualization markers of the planning flow (Input, Model Predictive Trajectory, and Output) are explained here.
 
 All the following markers can be visualized by
 
@@ -37,18 +37,6 @@ The `vehicle_model` must be specified to make footprints with vehicle's size.
     - During avoidance or lane change by the `behavior` planner, please make sure that the drivable area is expanded correctly.
 
 ![drivable_area](../media/debug/drivable_area_visualization.png)
-
-### Elastic Band (EB)
-
-- **EB Fixed Trajectory**
-  - The fixed trajectory points as a constraint of elastic band.
-
-![eb_fixed_traj](../media/debug/eb_fixed_traj_visualization.png)
-
-- **EB Trajectory**
-  - The optimized trajectory points by elastic band.
-
-![eb_traj](../media/debug/eb_traj_visualization.png)
 
 ### Model Predictive Trajectory (MPT)
 
@@ -100,7 +88,7 @@ The `vehicle_model` must be specified to make footprints with vehicle's size.
 
 ## Calculation time
 
-The `obstacle_avoidance_planner` consists of many functions such as boundaries' width calculation, reference path smoothing, collision-free planning, etc.
+The `obstacle_avoidance_planner` consists of many functions such as boundaries' width calculation, collision-free planning, etc.
 We can see the calculation time for each function as follows.
 
 ### Raw data
@@ -169,8 +157,6 @@ For your information, the following functions for optimization and its initializ
 - MPT
   - `initOsqp`
   - `solveOsqp`
-- EB
-  - `optimizeTrajectory`
 
 ### When a part of the trajectory has high curvature
 
@@ -186,5 +172,4 @@ Please check if there is something weird by the visualization.
 Some of the following may have an issue.
 Please check if there is something weird by the visualization.
 
-- EB Trajectory
 - Vehicle Circles on Trajectory

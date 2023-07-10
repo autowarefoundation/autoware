@@ -4,7 +4,8 @@
   <arg name="vehicle_param_file"/>
   <arg name="use_pointcloud_container"/>
   <arg name="pointcloud_container_name"/>
-  <arg name="smoother_type"/>
+  <arg name="path_smoother_type"/>
+  <arg name="velocity_smoother_type"/>
   <arg name="vehicle_param_file"/>
   <arg name="use_pointcloud_container"/>
   <arg name="pointcloud_container_name"/>
@@ -43,7 +44,7 @@
   <arg name="obstacle_cruise_planner_param_path"/>
   <!-- motion velocity smoother -->
   <arg name="motion_velocity_smoother_param_path"/>
-  <arg name="smoother_type_param_path"/>
+  <arg name="velocity_smoother_type_param_path"/>
   <!-- planning validator -->
   <arg name="planning_validator_param_path"/>
 

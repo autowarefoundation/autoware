@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_AVOIDANCE_PLANNER__EB_PATH_SMOOTHER_HPP_
-#define OBSTACLE_AVOIDANCE_PLANNER__EB_PATH_SMOOTHER_HPP_
+#ifndef PATH_SMOOTHER__ELASTIC_BAND_HPP_
+#define PATH_SMOOTHER__ELASTIC_BAND_HPP_
 
-#include "obstacle_avoidance_planner/common_structs.hpp"
-#include "obstacle_avoidance_planner/type_alias.hpp"
 #include "osqp_interface/osqp_interface.hpp"
+#include "path_smoother/common_structs.hpp"
+#include "path_smoother/type_alias.hpp"
 
 #include <Eigen/Core>
 
@@ -27,19 +27,19 @@
 #include <utility>
 #include <vector>
 
-namespace obstacle_avoidance_planner
+namespace path_smoother
 {
 class EBPathSmoother
 {
 public:
   EBPathSmoother(
     rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
-    const TrajectoryParam & traj_param, const std::shared_ptr<TimeKeeper> time_keeper_ptr);
+    const CommonParam & common_param, const std::shared_ptr<TimeKeeper> time_keeper_ptr);
 
   std::optional<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>> getEBTrajectory(
     const PlannerData & planner_data);
 
-  void initialize(const bool enable_debug_info, const TrajectoryParam & traj_param);
+  void initialize(const bool enable_debug_info, const CommonParam & common_param);
   void resetPreviousData();
   void onParam(const std::vector<rclcpp::Parameter> & parameters);
 
@@ -99,7 +99,7 @@ private:
   // arguments
   bool enable_debug_info_;
   EgoNearestParam ego_nearest_param_;
-  TrajectoryParam traj_param_;
+  CommonParam common_param_;
   EBParam eb_param_;
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;
   rclcpp::Logger logger_;
@@ -128,6 +128,6 @@ private:
     const std::vector<double> & optimized_points, const std::vector<TrajectoryPoint> & traj_points,
     const int pad_start_idx) const;
 };
-}  // namespace obstacle_avoidance_planner
+}  // namespace path_smoother
 
-#endif  // OBSTACLE_AVOIDANCE_PLANNER__EB_PATH_SMOOTHER_HPP_
+#endif  // PATH_SMOOTHER__ELASTIC_BAND_HPP_

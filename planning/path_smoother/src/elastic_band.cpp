@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_avoidance_planner/eb_path_smoother.hpp"
+#include "path_smoother/elastic_band.hpp"
 
 #include "motion_utils/motion_utils.hpp"
-#include "obstacle_avoidance_planner/type_alias.hpp"
-#include "obstacle_avoidance_planner/utils/geometry_utils.hpp"
-#include "obstacle_avoidance_planner/utils/trajectory_utils.hpp"
+#include "path_smoother/type_alias.hpp"
+#include "path_smoother/utils/geometry_utils.hpp"
+#include "path_smoother/utils/trajectory_utils.hpp"
+#include "tf2/utils.h"
 
 #include <algorithm>
 #include <chrono>
@@ -69,41 +70,43 @@ std::vector<double> toStdVector(const Eigen::VectorXd & eigen_vec)
 }
 }  // namespace
 
-namespace obstacle_avoidance_planner
+namespace path_smoother
 {
 EBPathSmoother::EBParam::EBParam(rclcpp::Node * node)
 {
   {  // option
-    enable_warm_start = node->declare_parameter<bool>("eb.option.enable_warm_start");
+    enable_warm_start = node->declare_parameter<bool>("elastic_band.option.enable_warm_start");
     enable_optimization_validation =
-      node->declare_parameter<bool>("eb.option.enable_optimization_validation");
+      node->declare_parameter<bool>("elastic_band.option.enable_optimization_validation");
   }
 
   {  // common
-    delta_arc_length = node->declare_parameter<double>("eb.common.delta_arc_length");
-    num_points = node->declare_parameter<int>("eb.common.num_points");
+    delta_arc_length = node->declare_parameter<double>("elastic_band.common.delta_arc_length");
+    num_points = node->declare_parameter<int>("elastic_band.common.num_points");
   }
 
   {  // clearance
-    num_joint_points = node->declare_parameter<int>("eb.clearance.num_joint_points");
-    clearance_for_fix = node->declare_parameter<double>("eb.clearance.clearance_for_fix");
-    clearance_for_joint = node->declare_parameter<double>("eb.clearance.clearance_for_joint");
-    clearance_for_smooth = node->declare_parameter<double>("eb.clearance.clearance_for_smooth");
+    num_joint_points = node->declare_parameter<int>("elastic_band.clearance.num_joint_points");
+    clearance_for_fix = node->declare_parameter<double>("elastic_band.clearance.clearance_for_fix");
+    clearance_for_joint =
+      node->declare_parameter<double>("elastic_band.clearance.clearance_for_joint");
+    clearance_for_smooth =
+      node->declare_parameter<double>("elastic_band.clearance.clearance_for_smooth");
   }
 
   {  // weight
-    smooth_weight = node->declare_parameter<double>("eb.weight.smooth_weight");
-    lat_error_weight = node->declare_parameter<double>("eb.weight.lat_error_weight");
+    smooth_weight = node->declare_parameter<double>("elastic_band.weight.smooth_weight");
+    lat_error_weight = node->declare_parameter<double>("elastic_band.weight.lat_error_weight");
   }
 
   {  // qp
-    qp_param.max_iteration = node->declare_parameter<int>("eb.qp.max_iteration");
-    qp_param.eps_abs = node->declare_parameter<double>("eb.qp.eps_abs");
-    qp_param.eps_rel = node->declare_parameter<double>("eb.qp.eps_rel");
+    qp_param.max_iteration = node->declare_parameter<int>("elastic_band.qp.max_iteration");
+    qp_param.eps_abs = node->declare_parameter<double>("elastic_band.qp.eps_abs");
+    qp_param.eps_rel = node->declare_parameter<double>("elastic_band.qp.eps_rel");
   }
 
   // validation
-  max_validation_error = node->declare_parameter<double>("eb.validation.max_error");
+  max_validation_error = node->declare_parameter<double>("elastic_band.validation.max_error");
 }
 
 void EBPathSmoother::EBParam::onParam(const std::vector<rclcpp::Parameter> & parameters)
@@ -111,43 +114,46 @@ void EBPathSmoother::EBParam::onParam(const std::vector<rclcpp::Parameter> & par
   using tier4_autoware_utils::updateParam;
 
   {  // option
-    updateParam<bool>(parameters, "eb.option.enable_warm_start", enable_warm_start);
+    updateParam<bool>(parameters, "elastic_band.option.enable_warm_start", enable_warm_start);
     updateParam<bool>(
-      parameters, "eb.option.enable_optimization_validation", enable_optimization_validation);
+      parameters, "elastic_band.option.enable_optimization_validation",
+      enable_optimization_validation);
   }
 
   {  // common
-    updateParam<double>(parameters, "eb.common.delta_arc_length", delta_arc_length);
-    updateParam<int>(parameters, "eb.common.num_points", num_points);
+    updateParam<double>(parameters, "elastic_band.common.delta_arc_length", delta_arc_length);
+    updateParam<int>(parameters, "elastic_band.common.num_points", num_points);
   }
 
   {  // clearance
-    updateParam<int>(parameters, "eb.clearance.num_joint_points", num_joint_points);
-    updateParam<double>(parameters, "eb.clearance.clearance_for_fix", clearance_for_fix);
-    updateParam<double>(parameters, "eb.clearance.clearance_for_joint", clearance_for_joint);
-    updateParam<double>(parameters, "eb.clearance.clearance_for_smooth", clearance_for_smooth);
+    updateParam<int>(parameters, "elastic_band.clearance.num_joint_points", num_joint_points);
+    updateParam<double>(parameters, "elastic_band.clearance.clearance_for_fix", clearance_for_fix);
+    updateParam<double>(
+      parameters, "elastic_band.clearance.clearance_for_joint", clearance_for_joint);
+    updateParam<double>(
+      parameters, "elastic_band.clearance.clearance_for_smooth", clearance_for_smooth);
   }
 
   {  // weight
-    updateParam<double>(parameters, "eb.weight.smooth_weight", smooth_weight);
-    updateParam<double>(parameters, "eb.weight.lat_error_weight", lat_error_weight);
+    updateParam<double>(parameters, "elastic_band.weight.smooth_weight", smooth_weight);
+    updateParam<double>(parameters, "elastic_band.weight.lat_error_weight", lat_error_weight);
   }
 
   {  // qp
-    updateParam<int>(parameters, "eb.qp.max_iteration", qp_param.max_iteration);
-    updateParam<double>(parameters, "eb.qp.eps_abs", qp_param.eps_abs);
-    updateParam<double>(parameters, "eb.qp.eps_rel", qp_param.eps_rel);
+    updateParam<int>(parameters, "elastic_band.qp.max_iteration", qp_param.max_iteration);
+    updateParam<double>(parameters, "elastic_band.qp.eps_abs", qp_param.eps_abs);
+    updateParam<double>(parameters, "elastic_band.qp.eps_rel", qp_param.eps_rel);
   }
 }
 
 EBPathSmoother::EBPathSmoother(
   rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
-  const TrajectoryParam & traj_param, const std::shared_ptr<TimeKeeper> time_keeper_ptr)
+  const CommonParam & common_param, const std::shared_ptr<TimeKeeper> time_keeper_ptr)
 : enable_debug_info_(enable_debug_info),
   ego_nearest_param_(ego_nearest_param),
-  traj_param_(traj_param),
+  common_param_(common_param),
   time_keeper_ptr_(time_keeper_ptr),
-  logger_(node->get_logger().get_child("eb_path_smoother"))
+  logger_(node->get_logger().get_child("elastic_band_smoother"))
 {
   // eb param
   eb_param_ = EBParam(node);
@@ -162,10 +168,10 @@ void EBPathSmoother::onParam(const std::vector<rclcpp::Parameter> & parameters)
   eb_param_.onParam(parameters);
 }
 
-void EBPathSmoother::initialize(const bool enable_debug_info, const TrajectoryParam & traj_param)
+void EBPathSmoother::initialize(const bool enable_debug_info, const CommonParam & common_param)
 {
   enable_debug_info_ = enable_debug_info;
-  traj_param_ = traj_param;
+  common_param_ = common_param;
 }
 
 void EBPathSmoother::resetPreviousData()
@@ -182,7 +188,7 @@ EBPathSmoother::getEBTrajectory(const PlannerData & planner_data)
 
   // 1. crop trajectory
   const double forward_traj_length = eb_param_.num_points * eb_param_.delta_arc_length;
-  const double backward_traj_length = traj_param_.output_backward_traj_length;
+  const double backward_traj_length = common_param_.output_backward_traj_length;
 
   const size_t ego_seg_idx =
     trajectory_utils::findEgoSegmentIndex(p.traj_points, p.ego_pose, ego_nearest_param_);
@@ -422,4 +428,4 @@ std::optional<std::vector<TrajectoryPoint>> EBPathSmoother::convertOptimizedPoin
   time_keeper_ptr_->toc(__func__, "        ");
   return eb_traj_points;
 }
-}  // namespace obstacle_avoidance_planner
+}  // namespace path_smoother

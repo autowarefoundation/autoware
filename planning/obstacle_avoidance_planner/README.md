@@ -9,7 +9,6 @@ Only position and orientation of trajectory are updated in this module, and velo
 
 This package is able to
 
-- make the trajectory smooth
 - make the trajectory inside the drivable area as much as possible
   - NOTE: Static obstacles to avoid can be removed from the drivable area.
 - insert stop point before the planned footprint will be outside the drivable area
@@ -109,13 +108,6 @@ max_path_shape_around_ego_lat_dist
   - The optimization is skipped for a while sine the optimization is sometimes heavy.
 - The input path changes laterally longer than `replan.max_path_shape_around_ego_lat_dist` in one cycle. (default: 2.0)
 
-### getEBTrajectory
-
-The latter optimization (model predictive trajectory) assumes that the reference path is smooth enough.
-This function makes the input path smooth by elastic band.
-
-More details about elastic band can be seen [here](docs/eb.md).
-
 ### getModelPredictiveTrajectory
 
 This module makes the trajectory kinematically-feasible and collision-free.
@@ -212,17 +204,14 @@ Although it has a cons to converge to the local minima, it can get a good soluti
 
 ### Robustness
 
-- Check if the trajectory before EB, after EB, or after MPT is not robust
-  - if the trajectory before EB is not robust
-  - if the trajectory after EB is not robust
+- Check if the trajectory before or after MPT is not robust
+  - if the trajectory before MPT is not robust
   - if the trajectory after MPT is not robust
     - make `mpt.weight.steer_input_weight` or `mpt.weight.steer_rate_weight` larger, which are stability of steering wheel along the trajectory.
 
 ### Other options
 
-- `option.enable_skip_optimization` skips EB and MPT optimization.
-- `option.enable_smoothing` enables EB which is smoothing the trajectory for MPT.
-  - EB is not required if the reference path for MPT is smooth enough and does not change its shape suddenly
+- `option.enable_skip_optimization` skips MPT optimization.
 - `option.enable_calculation_time_info` enables showing each calculation time for functions and total calculation time on the terminal.
 - `option.enable_outside_drivable_area_stop` enables stopping just before the generated trajectory point will be outside the drivable area.
 
