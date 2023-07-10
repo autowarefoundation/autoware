@@ -40,7 +40,7 @@ RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
   use_iou_y_ = declare_parameter("use_iou_y", false);
   use_iou_ = declare_parameter("use_iou", false);
   use_cluster_semantic_type_ = declare_parameter("use_cluster_semantic_type", false);
-  only_allow_inside_cluster_ = declare_parameter("only_allow_inside_cluster_", false);
+  only_allow_inside_cluster_ = declare_parameter("only_allow_inside_cluster_", true);
   roi_scale_factor_ = declare_parameter("roi_scale_factor", 1.1);
   iou_threshold_ = declare_parameter("iou_threshold", 0.1);
   remove_unknown_ = declare_parameter("remove_unknown", false);
