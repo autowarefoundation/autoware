@@ -70,6 +70,9 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
     if (!is_any_module_running && is_out_of_route) {
       BehaviorModuleOutput output = utils::createGoalAroundPath(data);
       generateCombinedDrivableArea(output, data);
+      RCLCPP_WARN_THROTTLE(
+        logger_, clock_, 5000,
+        "Ego is out of route, no module is running. Skip running scene modules.");
       return output;
     }
 
