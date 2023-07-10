@@ -1,10 +1,6 @@
 /**:
   ros__parameters:
     verbose: false
-
-    groot_zmq_publisher_port: 1666
-    groot_zmq_server_port: 1667
-
     planning_hz: 10.0
     backward_path_length: 5.0
     forward_path_length: 300.0

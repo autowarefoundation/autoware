@@ -34,10 +34,4 @@ ExternalRequestLaneChange::ExternalRequestLaneChange(
 : NormalLaneChange(parameters, LaneChangeModuleType::EXTERNAL_REQUEST, direction)
 {
 }
-
-ExternalRequestLaneChangeBT::ExternalRequestLaneChangeBT(
-  const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction)
-: NormalLaneChangeBT(parameters, LaneChangeModuleType::EXTERNAL_REQUEST, direction)
-{
-}
 }  // namespace behavior_path_planner

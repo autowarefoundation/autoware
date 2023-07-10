@@ -407,15 +407,10 @@ BehaviorModuleOutput SideShiftModule::adjustDrivableArea(const ShiftedPath & pat
   const auto expanded_lanes =
     utils::expandLanelets(shorten_lanes, left_offset, right_offset, dp.drivable_area_types_to_skip);
 
-  {  // for old architecture
-    utils::generateDrivableArea(
-      output_path, expanded_lanes, false, p.vehicle_length, planner_data_);
-    out.path = std::make_shared<PathWithLaneId>(output_path);
-  }
-
   {  // for new architecture
     // NOTE: side shift module is not launched with other modules. Therefore, drivable_lanes can be
     // assigned without combining.
+    out.path = std::make_shared<PathWithLaneId>(output_path);
     out.drivable_area_info.drivable_lanes = expanded_lanes;
     out.drivable_area_info.is_already_expanded = true;
   }

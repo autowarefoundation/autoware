@@ -103,19 +103,12 @@ boost::optional<PullOverPath> FreespacePullOver::plan(const Pose & goal_pose)
 
   utils::correctDividedPathVelocity(partial_paths);
 
-  const double drivable_area_margin = planner_data_->parameters.vehicle_width;
   for (auto & path : partial_paths) {
     const auto is_driving_forward = motion_utils::isDrivingForward(path.points);
     if (!is_driving_forward) {
       // path points is less than 2
       return {};
     }
-
-    // for old architecture
-    // NOTE: drivable_area_info is assigned outside this function.
-    const double offset = planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
-    utils::generateDrivableArea(
-      path, planner_data_->parameters.vehicle_length, offset, *is_driving_forward);
   }
 
   PullOverPath pull_over_path{};

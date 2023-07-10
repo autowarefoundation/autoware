@@ -967,7 +967,6 @@ BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerDat
 {
   BehaviorModuleOutput output;
 
-  const auto & p = planner_data->parameters;
   const auto & route_handler = planner_data->route_handler;
   const auto & modified_goal = planner_data->prev_modified_goal;
 
@@ -1001,9 +1000,6 @@ BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerDat
   const auto expanded_lanes = expandLanelets(
     shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
     dp.drivable_area_types_to_skip);
-
-  // for old architecture
-  generateDrivableArea(reference_path, expanded_lanes, false, p.vehicle_length, planner_data);
 
   output.path = std::make_shared<PathWithLaneId>(reference_path);
   output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
@@ -2285,9 +2281,6 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
     *route_handler, lanelet_sequence, pose, p.backward_path_length, p.forward_path_length, p);
 
   centerline_path->header = route_handler->getRouteHeader();
-
-  utils::generateDrivableArea(
-    *centerline_path, drivable_lanes, false, p.vehicle_length, planner_data);
 
   return centerline_path;
 }

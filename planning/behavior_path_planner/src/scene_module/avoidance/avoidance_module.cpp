@@ -2369,12 +2369,6 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
     output.drivable_area_info = utils::combineDrivableAreaInfo(
       current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
   }
-
-  {  // for old architecture
-    // NOTE: Obstacles to avoid are not extracted from the drivable area with an old architecture.
-    utils::generateDrivableArea(
-      *output.path, drivable_lanes, false, planner_data_->parameters.vehicle_length, planner_data_);
-  }
 }
 
 void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(ShiftedPath & path)

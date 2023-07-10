@@ -122,8 +122,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     createSubscriptionOptions(this));
 
   {
-    RCLCPP_INFO(get_logger(), "not use behavior tree.");
-
     const std::string path_candidate_name_space = "/planning/path_candidate/";
     const std::string path_reference_name_space = "/planning/path_reference/";
 
@@ -508,7 +506,7 @@ void BehaviorPathPlannerNode::run()
     planner_data_->route_handler->setMap(*map_ptr);
   }
 
-  std::unique_lock<std::mutex> lk_manager(mutex_manager_);  // for bt_manager_ or planner_manager_
+  std::unique_lock<std::mutex> lk_manager(mutex_manager_);  // for planner_manager_
 
   // update route
   const bool is_first_time = !(planner_data_->route_handler->isHandlerReady());
@@ -523,7 +521,6 @@ void BehaviorPathPlannerNode::run()
     // Reset behavior tree when new route is received,
     // so that the each modules do not have to care about the "route jump".
     if (!is_first_time && !has_same_route_id) {
-      RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
       planner_manager_->reset();
     }
   }
@@ -852,16 +849,14 @@ Path BehaviorPathPlannerNode::convertToPath(
 }
 
 PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
-  const BehaviorModuleOutput & bt_output, const std::shared_ptr<PlannerData> & planner_data,
+  const BehaviorModuleOutput & output, const std::shared_ptr<PlannerData> & planner_data,
   const std::shared_ptr<PlannerManager> & planner_manager)
 {
   // TODO(Horibe) do some error handling when path is not available.
 
-  auto path = bt_output.path ? bt_output.path : planner_data->prev_output_path;
+  auto path = output.path ? output.path : planner_data->prev_output_path;
   path->header = planner_data->route_handler->getRouteHeader();
   path->header.stamp = this->now();
-  RCLCPP_DEBUG(
-    get_logger(), "BehaviorTreeManager: output is %s.", bt_output.path ? "FOUND" : "NOT FOUND");
 
   PathWithLaneId connected_path;
   const auto module_status_ptr_vec = planner_manager->getSceneModuleStatus();

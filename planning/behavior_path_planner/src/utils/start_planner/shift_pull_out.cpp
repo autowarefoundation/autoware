@@ -114,13 +114,6 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
       continue;
     }
 
-    // Generate drivable area
-    // for old architecture
-    // NOTE: drivable_area_info is assigned outside this function.
-    const auto shorten_lanes = utils::cutOverlappedLanes(shift_path, drivable_lanes);
-    utils::generateDrivableArea(
-      shift_path, shorten_lanes, false, common_parameters.vehicle_length, planner_data_);
-
     shift_path.header = planner_data_->route_handler->getRouteHeader();
 
     return pull_out_path;

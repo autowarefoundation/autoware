@@ -33,19 +33,6 @@ public:
   ExternalRequestLaneChange & operator=(ExternalRequestLaneChange &&) = delete;
   ~ExternalRequestLaneChange() override = default;
 };
-
-class ExternalRequestLaneChangeBT : public NormalLaneChangeBT
-{
-public:
-  ExternalRequestLaneChangeBT(
-    const std::shared_ptr<LaneChangeParameters> & parameters, Direction direction);
-
-  ExternalRequestLaneChangeBT(const ExternalRequestLaneChangeBT &) = delete;
-  ExternalRequestLaneChangeBT(ExternalRequestLaneChangeBT &&) = delete;
-  ExternalRequestLaneChangeBT & operator=(const ExternalRequestLaneChangeBT &) = delete;
-  ExternalRequestLaneChangeBT & operator=(ExternalRequestLaneChangeBT &&) = delete;
-  ~ExternalRequestLaneChangeBT() override = default;
-};
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__EXTERNAL_REQUEST_HPP_
