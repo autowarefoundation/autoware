@@ -1,8 +1,9 @@
 builtin_interfaces/Time stamp
 
 # states
-string previous_state
-string current_state
+string status
+bool in_autoware_control
+bool in_transition
 
 # flags for engage permission
 bool is_all_ok

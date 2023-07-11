@@ -270,10 +270,19 @@ void OperationModeTransitionManager::publishData()
     pub_operation_mode_->publish(state);
   }
 
+  const auto status_str = [&]() {
+    if (!current_control) return "DISENGAGE (autoware mode = " + toString(current_mode_) + ")";
+    if (transition_)
+      return toString(current_mode_) + " (in transition from " + toString(transition_->previous) +
+             ")";
+    return toString(current_mode_);
+  }();
+
   ModeChangeBase::DebugInfo debug_info = modes_.at(OperationMode::AUTONOMOUS)->getDebugInfo();
   debug_info.stamp = time;
-  debug_info.current_state = toString(current_mode_);
-  debug_info.previous_state = transition_ ? toString(transition_->previous) : "NONE";
+  debug_info.status = status_str;
+  debug_info.in_autoware_control = current_control;
+  debug_info.in_transition = transition_ ? true : false;
   pub_debug_info_->publish(debug_info);
 }
 
