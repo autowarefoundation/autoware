@@ -249,6 +249,13 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     path_shifter.setLongitudinalAcceleration(longitudinal_acc);
     path_shifter.setLateralAccelerationLimit(lateral_acc);
 
+    const auto shift_line_idx = path_shifter.getShiftLines().front();
+    if (!has_non_shifted_path && (shift_line_idx.end_idx - shift_line_idx.start_idx <= 1)) {
+      candidate_paths.push_back(non_shifted_path);
+      has_non_shifted_path = true;
+      continue;
+    }
+
     // offset front side
     ShiftedPath shifted_path;
     const bool offset_back = false;
