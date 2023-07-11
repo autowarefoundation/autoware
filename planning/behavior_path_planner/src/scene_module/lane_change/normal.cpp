@@ -548,12 +548,13 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto sorted_lane_ids = utils::lane_change::getSortedLaneIds(
     route_handler, original_lanelets, target_lanelets, arc_position_from_target.distance);
 
-  const auto target_preferred_lanelets = utils::lane_change::getTargetPreferredLanes(
-    route_handler, original_lanelets, target_lanelets, direction, type_);
-  const auto target_preferred_lane_poly = lanelet::utils::getPolygonFromArcLength(
-    target_preferred_lanelets, 0, std::numeric_limits<double>::max());
-  const auto target_preferred_lane_poly_2d =
-    lanelet::utils::to2D(target_preferred_lane_poly).basicPolygon();
+  const auto target_neighbor_lanelets =
+    utils::lane_change::getTargetNeighborLanes(route_handler, original_lanelets, type_);
+
+  const auto target_neighbor_preferred_lane_poly = lanelet::utils::getPolygonFromArcLength(
+    target_neighbor_lanelets, 0, std::numeric_limits<double>::max());
+  const auto target_neighbor_preferred_lane_poly_2d =
+    lanelet::utils::to2D(target_neighbor_preferred_lane_poly).basicPolygon();
 
   const auto backward_length = lane_change_parameters_->backward_lane_length;
   const auto backward_target_lanes_for_object_filtering = utils::lane_change::getBackwardLanelets(
@@ -664,11 +665,11 @@ bool NormalLaneChange::getLaneChangePaths(
         continue;
       }
 
-      const lanelet::BasicPoint2d lc_terminal_point(
-        target_segment.points.front().point.pose.position.x,
-        target_segment.points.front().point.pose.position.y);
-      if (!boost::geometry::covered_by(lc_terminal_point, target_preferred_lane_poly_2d)) {
-        // lane change terminal point is not inside of the target preferred lanes
+      const lanelet::BasicPoint2d lc_start_point(
+        prepare_segment.points.back().point.pose.position.x,
+        prepare_segment.points.back().point.pose.position.y);
+      if (!boost::geometry::covered_by(lc_start_point, target_neighbor_preferred_lane_poly_2d)) {
+        // lane changing points are not inside of the target preferred lanes or its neighbors
         continue;
       }
 

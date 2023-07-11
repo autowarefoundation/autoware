@@ -182,6 +182,27 @@ lanelet::ConstLanelets getTargetPreferredLanes(
   return target_preferred_lanes;
 }
 
+lanelet::ConstLanelets getTargetNeighborLanes(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const LaneChangeModuleType & type)
+{
+  lanelet::ConstLanelets neighbor_lanes;
+
+  for (const auto & current_lane : current_lanes) {
+    if (route_handler.getNumLaneToPreferredLane(current_lane) != 0) {
+      if (type == LaneChangeModuleType::NORMAL) {
+        neighbor_lanes.push_back(current_lane);
+      }
+    } else {
+      if (type != LaneChangeModuleType::NORMAL) {
+        neighbor_lanes.push_back(current_lane);
+      }
+    }
+  }
+
+  return neighbor_lanes;
+}
+
 bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets)

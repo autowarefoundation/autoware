@@ -86,6 +86,10 @@ lanelet::ConstLanelets getTargetPreferredLanes(
   const lanelet::ConstLanelets & target_lanes, const Direction & direction,
   const LaneChangeModuleType & type);
 
+lanelet::ConstLanelets getTargetNeighborLanes(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
+  const LaneChangeModuleType & type);
+
 bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets);
