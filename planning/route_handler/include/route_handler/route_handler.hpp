@@ -442,7 +442,7 @@ private:
    * @return true if a path without any no_drivable_lane found, false if this path is not found.
    */
   bool findDrivableLanePath(
-    const lanelet::Lanelet & start_lanelet, const lanelet::Lanelet & goal_lanelet,
+    const lanelet::ConstLanelet & start_lanelet, const lanelet::ConstLanelet & goal_lanelet,
     lanelet::routing::LaneletPath & drivable_lane_path) const;
 };
 }  // namespace route_handler
