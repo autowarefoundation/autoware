@@ -451,8 +451,8 @@ void MPTOptimizer::updateVehicleCircles()
     std::tie(vehicle_circle_radiuses_, vehicle_circle_longitudinal_offsets_) =
       calcVehicleCirclesByBicycleModel(
         vehicle_info_, p.vehicle_circles_bicycle_model_num,
-        p.vehicle_circles_bicycle_model_front_radius_ratio,
-        p.vehicle_circles_bicycle_model_rear_radius_ratio);
+        p.vehicle_circles_bicycle_model_rear_radius_ratio,
+        p.vehicle_circles_bicycle_model_front_radius_ratio);
   } else if (p.vehicle_circles_method == "fitting_uniform_circle") {
     std::tie(vehicle_circle_radiuses_, vehicle_circle_longitudinal_offsets_) =
       calcVehicleCirclesByFittingUniformCircle(
