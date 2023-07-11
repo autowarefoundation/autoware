@@ -50,6 +50,7 @@ private:
   autoware_auto_system_msgs::msg::AutowareState::SharedPtr autoware_state_;
   autoware_auto_vehicle_msgs::msg::GearCommand shift_cmd_;
   autoware_auto_vehicle_msgs::msg::GearReport::SharedPtr current_gear_ptr_;
+  uint8_t prev_shift_command = autoware_auto_vehicle_msgs::msg::GearCommand::PARK;
 
   bool park_on_goal_;
 };
