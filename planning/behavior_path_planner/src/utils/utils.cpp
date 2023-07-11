@@ -2695,44 +2695,19 @@ lanelet::ConstLanelets calcLaneAroundPose(
   return current_lanes;
 }
 
-boost::optional<std::pair<Pose, Polygon2d>> getEgoExpectedPoseAndConvertToPolygon(
-  const PredictedPath & pred_path, const double current_time, const VehicleInfo & ego_info)
-{
-  const auto interpolated_pose = perception_utils::calcInterpolatedPose(pred_path, current_time);
-
-  if (!interpolated_pose) {
-    return {};
-  }
-
-  const auto & i = ego_info;
-  const auto & base_to_front = i.max_longitudinal_offset_m;
-  const auto & base_to_rear = i.rear_overhang_m;
-  const auto & width = i.vehicle_width_m;
-
-  const auto ego_polygon =
-    tier4_autoware_utils::toFootprint(*interpolated_pose, base_to_front, base_to_rear, width);
-
-  return std::make_pair(*interpolated_pose, ego_polygon);
-}
-
-std::vector<PredictedPath> getPredictedPathFromObj(
-  const PredictedObject & obj, const bool & is_use_all_predicted_path)
+std::vector<PredictedPathWithPolygon> getPredictedPathFromObj(
+  const ExtendedPredictedObject & obj, const bool & is_use_all_predicted_path)
 {
   if (!is_use_all_predicted_path) {
     const auto max_confidence_path = std::max_element(
-      obj.kinematics.predicted_paths.begin(), obj.kinematics.predicted_paths.end(),
+      obj.predicted_paths.begin(), obj.predicted_paths.end(),
       [](const auto & path1, const auto & path2) { return path1.confidence < path2.confidence; });
-    if (max_confidence_path != obj.kinematics.predicted_paths.end()) {
+    if (max_confidence_path != obj.predicted_paths.end()) {
       return {*max_confidence_path};
     }
   }
 
-  std::vector<PredictedPath> predicted_path_vec;
-  std::copy_if(
-    obj.kinematics.predicted_paths.cbegin(), obj.kinematics.predicted_paths.cend(),
-    std::back_inserter(predicted_path_vec),
-    [](const PredictedPath & path) { return !path.path.empty(); });
-  return predicted_path_vec;
+  return obj.predicted_paths;
 }
 
 bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_threshold)
@@ -3006,124 +2981,4 @@ void extractObstaclesFromDrivableArea(
     bound = drivable_area_processing::updateBoundary(bound, unique_polygons);
   }
 }
-
-bool isParkedObject(
-  const PathWithLaneId & path, const RouteHandler & route_handler, const PredictedObject & object,
-  const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold,
-  const double static_object_velocity_threshold)
-{
-  // ============================================ <- most_left_lanelet.leftBound()
-  // y              road shoulder
-  // ^ ------------------------------------------
-  // |   x                                +
-  // +---> --- object closest lanelet --- o ----- <- object_closest_lanelet.centerline()
-  //
-  // --------------------------------------------
-  // +: object position
-  // o: nearest point on centerline
-
-  using lanelet::geometry::distance2d;
-  using lanelet::geometry::toArcCoordinates;
-
-  if (
-    object.kinematics.initial_twist_with_covariance.twist.linear.x >
-    static_object_velocity_threshold) {
-    return false;
-  }
-
-  const auto & object_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const auto object_closest_index =
-    motion_utils::findNearestIndex(path.points, object_pose.position);
-  const auto object_closest_pose = path.points.at(object_closest_index).point.pose;
-
-  lanelet::ConstLanelet closest_lanelet;
-  if (!route_handler.getClosestLaneletWithinRoute(object_closest_pose, &closest_lanelet)) {
-    return false;
-  }
-
-  const double lat_dist = motion_utils::calcLateralOffset(path.points, object_pose.position);
-  lanelet::BasicLineString2d bound;
-  double center_to_bound_buffer = 0.0;
-  if (lat_dist > 0.0) {
-    // left side vehicle
-    const auto most_left_road_lanelet = route_handler.getMostLeftLanelet(closest_lanelet);
-    const auto most_left_lanelet_candidates =
-      route_handler.getLaneletMapPtr()->laneletLayer.findUsages(most_left_road_lanelet.leftBound());
-    lanelet::ConstLanelet most_left_lanelet = most_left_road_lanelet;
-    const lanelet::Attribute sub_type =
-      most_left_lanelet.attribute(lanelet::AttributeName::Subtype);
-
-    for (const auto & ll : most_left_lanelet_candidates) {
-      const lanelet::Attribute sub_type = ll.attribute(lanelet::AttributeName::Subtype);
-      if (sub_type.value() == "road_shoulder") {
-        most_left_lanelet = ll;
-      }
-    }
-    bound = most_left_lanelet.leftBound2d().basicLineString();
-    if (sub_type.value() != "road_shoulder") {
-      center_to_bound_buffer = object_check_min_road_shoulder_width;
-    }
-  } else {
-    // right side vehicle
-    const auto most_right_road_lanelet = route_handler.getMostRightLanelet(closest_lanelet);
-    const auto most_right_lanelet_candidates =
-      route_handler.getLaneletMapPtr()->laneletLayer.findUsages(
-        most_right_road_lanelet.rightBound());
-
-    lanelet::ConstLanelet most_right_lanelet = most_right_road_lanelet;
-    const lanelet::Attribute sub_type =
-      most_right_lanelet.attribute(lanelet::AttributeName::Subtype);
-
-    for (const auto & ll : most_right_lanelet_candidates) {
-      const lanelet::Attribute sub_type = ll.attribute(lanelet::AttributeName::Subtype);
-      if (sub_type.value() == "road_shoulder") {
-        most_right_lanelet = ll;
-      }
-    }
-    bound = most_right_lanelet.rightBound2d().basicLineString();
-    if (sub_type.value() != "road_shoulder") {
-      center_to_bound_buffer = object_check_min_road_shoulder_width;
-    }
-  }
-
-  return isParkedObject(
-    closest_lanelet, bound, object, center_to_bound_buffer, object_shiftable_ratio_threshold);
-}
-
-bool isParkedObject(
-  const lanelet::ConstLanelet & closest_lanelet, const lanelet::BasicLineString2d & boundary,
-  const PredictedObject & object, const double buffer_to_bound, const double ratio_threshold)
-{
-  using lanelet::geometry::distance2d;
-
-  const auto obj_poly = tier4_autoware_utils::toPolygon2d(object);
-  const auto obj_point = object.kinematics.initial_pose_with_covariance.pose.position;
-
-  double max_dist_to_bound = std::numeric_limits<double>::lowest();
-  double min_dist_to_bound = std::numeric_limits<double>::max();
-  for (const auto & edge : obj_poly.outer()) {
-    const auto ll_edge = lanelet::Point2d(lanelet::InvalId, edge.x(), edge.y());
-    const auto dist = distance2d(boundary, ll_edge);
-    max_dist_to_bound = std::max(dist, max_dist_to_bound);
-    min_dist_to_bound = std::min(dist, min_dist_to_bound);
-  }
-  const double obj_width = std::max(max_dist_to_bound - min_dist_to_bound, 0.0);
-
-  // distance from centerline to the boundary line with object width
-  const auto centerline_pose = lanelet::utils::getClosestCenterPose(closest_lanelet, obj_point);
-  const lanelet::BasicPoint3d centerline_point(
-    centerline_pose.position.x, centerline_pose.position.y, centerline_pose.position.z);
-  const double dist_bound_to_centerline =
-    std::abs(distance2d(boundary, centerline_point)) - 0.5 * obj_width + buffer_to_bound;
-
-  // distance from object point to centerline
-  const auto centerline = closest_lanelet.centerline();
-  const auto ll_obj_point = lanelet::Point2d(lanelet::InvalId, obj_point.x, obj_point.y);
-  const double dist_obj_to_centerline = std::abs(distance2d(centerline, ll_obj_point));
-
-  const double ratio = dist_obj_to_centerline / std::max(dist_bound_to_centerline, 1e-6);
-  const double clamped_ratio = std::clamp(ratio, 0.0, 1.0);
-  return clamped_ratio > ratio_threshold;
-}
-
 }  // namespace behavior_path_planner::utils
