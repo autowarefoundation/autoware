@@ -91,7 +91,7 @@ PathWithLaneId get_path_with_lane_id(
   constexpr double vehicle_length = 0.0;
   const auto drivable_lanes = behavior_path_planner::utils::generateDrivableLanes(lanelets);
   behavior_path_planner::utils::generateDrivableArea(
-    path_with_lane_id, drivable_lanes, false, vehicle_length, planner_data);
+    path_with_lane_id, drivable_lanes, false, false, vehicle_length, planner_data);
 
   return path_with_lane_id;
 }

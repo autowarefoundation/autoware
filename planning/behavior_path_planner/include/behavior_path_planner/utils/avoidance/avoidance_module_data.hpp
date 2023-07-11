@@ -108,6 +108,9 @@ struct AvoidanceParameters
   // use hatched road markings for avoidance
   bool use_hatched_road_markings{false};
 
+  // use intersection area for avoidance
+  bool use_intersection_areas{false};
+
   // constrains
   bool use_constraints_for_decel{false};
 

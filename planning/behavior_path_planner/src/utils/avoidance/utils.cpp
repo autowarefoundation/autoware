@@ -908,11 +908,11 @@ void filterTargetObjects(
       }
       debug.bounds.push_back(target_line);
 
-      // update to_road_shoulder_distance with expandable polygons
-      if (parameters->use_hatched_road_markings) {
+      {
         o.to_road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
-          rh, target_line, o.to_road_shoulder_distance, o.overhang_pose.position,
-          overhang_basic_pose);
+          rh, target_line, o.to_road_shoulder_distance, overhang_lanelet, o.overhang_pose.position,
+          overhang_basic_pose, parameters->use_hatched_road_markings,
+          parameters->use_intersection_areas);
       }
     }
 
@@ -1137,27 +1137,41 @@ void filterTargetObjects(
 double extendToRoadShoulderDistanceWithPolygon(
   const std::shared_ptr<route_handler::RouteHandler> & rh,
   const lanelet::ConstLineString3d & target_line, const double to_road_shoulder_distance,
-  const geometry_msgs::msg::Point & overhang_pos, const lanelet::BasicPoint3d & overhang_basic_pose)
+  const lanelet::ConstLanelet & overhang_lanelet, const geometry_msgs::msg::Point & overhang_pos,
+  const lanelet::BasicPoint3d & overhang_basic_pose, const bool use_hatched_road_markings,
+  const bool use_intersection_areas)
 {
   // get expandable polygons for avoidance (e.g. hatched road markings)
   std::vector<lanelet::Polygon3d> expandable_polygons;
-  for (const auto & point : target_line) {
-    const auto new_polygon_candidate = utils::getPolygonByPoint(rh, point, "hatched_road_markings");
-    if (!new_polygon_candidate) {
-      continue;
-    }
 
-    bool is_new_polygon{true};
-    for (const auto & polygon : expandable_polygons) {
-      if (polygon.id() == new_polygon_candidate->id()) {
-        is_new_polygon = false;
-        break;
+  const auto exist_polygon = [&](const auto & candidate_polygon) {
+    return std::any_of(
+      expandable_polygons.begin(), expandable_polygons.end(),
+      [&](const auto & polygon) { return polygon.id() == candidate_polygon.id(); });
+  };
+
+  if (use_hatched_road_markings) {
+    for (const auto & point : target_line) {
+      const auto new_polygon_candidate =
+        utils::getPolygonByPoint(rh, point, "hatched_road_markings");
+
+      if (!!new_polygon_candidate && !exist_polygon(*new_polygon_candidate)) {
+        expandable_polygons.push_back(*new_polygon_candidate);
       }
     }
+  }
 
-    if (is_new_polygon) {
-      expandable_polygons.push_back(*new_polygon_candidate);
+  if (use_intersection_areas) {
+    const std::string area_id_str = overhang_lanelet.attributeOr("intersection_area", "else");
+
+    if (area_id_str != "else") {
+      expandable_polygons.push_back(
+        rh->getLaneletMapPtr()->polygonLayer.get(std::atoi(area_id_str.c_str())));
     }
+  }
+
+  if (expandable_polygons.empty()) {
+    return to_road_shoulder_distance;
   }
 
   // calculate point laterally offset from overhang position to calculate intersection with
@@ -1170,7 +1184,7 @@ double extendToRoadShoulderDistanceWithPolygon(
     const auto closest_target_line_point =
       lanelet::geometry::fromArcCoordinates(target_line, arc_coordinates);
 
-    const double ratio = 10.0 / to_road_shoulder_distance;
+    const double ratio = 100.0 / to_road_shoulder_distance;
     lat_offset_overhang_pos.x =
       closest_target_line_point.x() + (closest_target_line_point.x() - overhang_pos.x) * ratio;
     lat_offset_overhang_pos.y =
@@ -1197,12 +1211,8 @@ double extendToRoadShoulderDistanceWithPolygon(
     }
 
     std::sort(intersect_dist_vec.begin(), intersect_dist_vec.end());
-    if (1 < intersect_dist_vec.size()) {
-      if (std::abs(updated_to_road_shoulder_distance - intersect_dist_vec.at(0)) < 1e-3) {
-        updated_to_road_shoulder_distance =
-          std::max(updated_to_road_shoulder_distance, intersect_dist_vec.at(1));
-      }
-    }
+    updated_to_road_shoulder_distance =
+      std::max(updated_to_road_shoulder_distance, intersect_dist_vec.back());
   }
   return updated_to_road_shoulder_distance;
 }

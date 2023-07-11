@@ -2365,6 +2365,9 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
     // expand hatched road markings
     current_drivable_area_info.enable_expanding_hatched_road_markings =
       parameters_->use_hatched_road_markings;
+    // expand intersection areas
+    current_drivable_area_info.enable_expanding_intersection_areas =
+      parameters_->use_intersection_areas;
 
     output.drivable_area_info = utils::combineDrivableAreaInfo(
       current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);

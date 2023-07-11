@@ -69,6 +69,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
       get_parameter<bool>(node, ns + "enable_yield_maneuver_during_shifting");
     p.disable_path_update = get_parameter<bool>(node, ns + "disable_path_update");
     p.use_hatched_road_markings = get_parameter<bool>(node, ns + "use_hatched_road_markings");
+    p.use_intersection_areas = get_parameter<bool>(node, ns + "use_intersection_areas");
     p.publish_debug_marker = get_parameter<bool>(node, ns + "publish_debug_marker");
     p.print_debug_info = get_parameter<bool>(node, ns + "print_debug_info");
   }
