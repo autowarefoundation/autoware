@@ -5,6 +5,7 @@
   <description>localization evaluator ROS 2 node</description>
 
   <maintainer email="dominik.jargot@robotec.ai">Dominik Jargot</maintainer>
+  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
 
   <license>Apache License 2.0</license>
 

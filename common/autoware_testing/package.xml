@@ -5,6 +5,9 @@
   <version>0.1.0</version>
   <description>Tools for handling standard tests based on ros_testing</description>
   <maintainer email="adam.dabrowski@robotec.ai">Adam Dabrowski</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
