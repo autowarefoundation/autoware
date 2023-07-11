@@ -153,6 +153,12 @@ ModuleStatus StartPlannerModule::updateState()
 
 BehaviorModuleOutput StartPlannerModule::plan()
 {
+  if (IsGoalBehindOfEgoInSameRouteSegment()) {
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Start plan for a backward goal is not supported now");
+    return generateStopOutput();
+  }
+
   if (isWaitingApproval()) {
     clearWaitingApproval();
     resetPathCandidate();
@@ -293,6 +299,12 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 {
   updatePullOutStatus();
   waitApproval();
+
+  if (IsGoalBehindOfEgoInSameRouteSegment()) {
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Start plan for a backward goal is not supported now");
+    return generateStopOutput();
+  }
 
   BehaviorModuleOutput output;
   if (!status_.is_safe) {
@@ -830,6 +842,46 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   }
 
   return turn_signal;
+}
+
+bool StartPlannerModule::IsGoalBehindOfEgoInSameRouteSegment() const
+{
+  const auto & rh = planner_data_->route_handler;
+
+  // Check if the goal and ego are in the same route segment. If not, this is out of scope of this
+  // function. Return false.
+  lanelet::ConstLanelet ego_lanelet;
+  rh->getClosestLaneletWithinRoute(getEgoPose(), &ego_lanelet);
+  const auto is_ego_in_goal_route_section = rh->isInGoalRouteSection(ego_lanelet);
+
+  if (!is_ego_in_goal_route_section) {
+    return false;
+  }
+
+  // If the goal and ego are in the same route segment, check the goal and ego pose relation.
+  // Return true when the goal is located behind of ego.
+  const auto ego_lane_path = rh->getCenterLinePath(
+    lanelet::ConstLanelets{ego_lanelet}, 0.0, std::numeric_limits<double>::max());
+  const auto dist_ego_to_goal = motion_utils::calcSignedArcLength(
+    ego_lane_path.points, getEgoPosition(), rh->getGoalPose().position);
+
+  const bool is_goal_behind_of_ego = (dist_ego_to_goal < 0.0);
+  return is_goal_behind_of_ego;
+}
+
+// NOTE: this must be called after updatePullOutStatus(). This must be fixed.
+BehaviorModuleOutput StartPlannerModule::generateStopOutput() const
+{
+  BehaviorModuleOutput output;
+  output.path = std::make_shared<PathWithLaneId>(generateStopPath());
+
+  DrivableAreaInfo current_drivable_area_info;
+  current_drivable_area_info.drivable_lanes = status_.lanes;
+  output.drivable_area_info = utils::combineDrivableAreaInfo(
+    current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
+
+  output.reference_path = getPreviousModuleOutput().reference_path;
+  return output;
 }
 
 void StartPlannerModule::setDebugData() const
