@@ -409,8 +409,7 @@ PathSafetyStatus isLaneChangePathSafe(
     for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::safety_check::checkCollision(
             path, ego_predicted_path, current_twist.linear.x, obj, obj_path, common_parameter,
-            front_decel, rear_decel, current_debug_data.second, lane_change_path.duration.prepare,
-            lane_change_parameter.prepare_segment_ignore_object_velocity_thresh)) {
+            front_decel, rear_decel, current_debug_data.second)) {
         path_safety_status.is_safe = false;
         updateDebugInfo(current_debug_data, path_safety_status.is_safe);
         const auto & obj_pose = obj.initial_pose.pose;
@@ -423,12 +422,6 @@ PathSafetyStatus isLaneChangePathSafe(
   }
 
   return path_safety_status;
-}
-
-bool isObjectIndexIncluded(
-  const size_t & index, const std::vector<size_t> & dynamic_objects_indices)
-{
-  return std::count(dynamic_objects_indices.begin(), dynamic_objects_indices.end(), index) != 0;
 }
 
 PathWithLaneId getTargetSegment(
@@ -1256,6 +1249,9 @@ ExtendedPredictedObject transform(
   const auto & check_at_prepare_phase =
     lane_change_parameters.enable_prepare_segment_collision_check;
   const auto & prepare_duration = common_parameters.lane_change_prepare_duration;
+  const auto & velocity_threshold =
+    lane_change_parameters.prepare_segment_ignore_object_velocity_thresh;
+  const auto & obj_vel = extended_object.initial_twist.twist.linear.x;
   const auto start_time = check_at_prepare_phase ? 0.0 : prepare_duration;
 
   extended_object.predicted_paths.resize(object.kinematics.predicted_paths.size());
@@ -1268,6 +1264,9 @@ ExtendedPredictedObject transform(
     // create path
     for (double t = start_time; t < end_time + std::numeric_limits<double>::epsilon();
          t += time_resolution) {
+      if (t < prepare_duration && obj_vel < velocity_threshold) {
+        continue;
+      }
       const auto obj_pose = perception_utils::calcInterpolatedPose(path, t);
       if (obj_pose) {
         const auto obj_polygon = tier4_autoware_utils::toPolygon2d(*obj_pose, object.shape);

@@ -188,8 +188,7 @@ bool checkCollision(
   const double ego_current_velocity, const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
-  const double rear_object_deceleration, CollisionCheckDebug & debug, const double prepare_duration,
-  const double velocity_threshold_for_prepare_duration)
+  const double rear_object_deceleration, CollisionCheckDebug & debug)
 {
   debug.lerped_path.reserve(target_object_path.path.size());
 
@@ -198,14 +197,6 @@ bool checkCollision(
 
   for (const auto & obj_pose_with_poly : target_object_path.path) {
     const auto & current_time = obj_pose_with_poly.time;
-
-    // ignore low velocity object during prepare duration
-    const bool prepare_phase = current_time < prepare_duration;
-    const bool ignore_target_velocity_during_prepare_phase =
-      object_velocity < velocity_threshold_for_prepare_duration;
-    if (prepare_phase && ignore_target_velocity_during_prepare_phase) {
-      continue;
-    }
 
     // get object information at current time
     const auto & obj_pose = obj_pose_with_poly.pose;

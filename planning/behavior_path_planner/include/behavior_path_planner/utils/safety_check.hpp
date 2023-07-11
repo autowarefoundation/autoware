@@ -87,9 +87,6 @@ boost::optional<PoseWithPolygon> getEgoInterpolatedPoseWithPolygon(
  * @param front_object_deceleration The deceleration of the object in the front.(used in RSS)
  * @param rear_object_deceleration The deceleration of the object in the rear.(used in RSS)
  * @param debug The debug information for collision checking.
- * @param prepare_duration The duration to prepare before shifting lane.
- * @param velocity_threshold_for_prepare_duration The threshold for the target velocity to
- * ignore during preparation phase.
  * @return true if distance is safe.
  */
 bool checkCollision(
@@ -97,8 +94,7 @@ bool checkCollision(
   const double ego_current_velocity, const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
-  const double rear_object_deceleration, CollisionCheckDebug & debug,
-  const double prepare_duration = 0.0, const double velocity_threshold_for_prepare_duration = 0.0);
+  const double rear_object_deceleration, CollisionCheckDebug & debug);
 
 }  // namespace behavior_path_planner::utils::safety_check
 

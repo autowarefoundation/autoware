@@ -108,9 +108,6 @@ PathSafetyStatus isLaneChangePathSafe(
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const double prepare_acc,
   const double lane_changing_acc);
 
-bool isObjectIndexIncluded(
-  const size_t & index, const std::vector<size_t> & dynamic_objects_indices);
-
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
