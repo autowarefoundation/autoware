@@ -114,7 +114,6 @@ def launch_setup(context, *args, **kwargs):
                 "lane_change.use_all_predicted_path": LaunchConfiguration(
                     "use_experimental_lane_change_function"
                 ),
-                "bt_tree_config_path": LaunchConfiguration("behavior_path_planner_tree_param_path"),
             },
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],

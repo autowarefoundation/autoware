@@ -48,9 +48,6 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
   const auto behavior_path_planner_dir =
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
 
-  node_options.append_parameter_override(
-    "bt_tree_config_path", behavior_path_planner_dir + "/config/behavior_path_planner_tree.xml");
-
   test_utils::updateNodeOptions(
     node_options,
     {planning_test_utils_dir + "/config/test_common.param.yaml",
