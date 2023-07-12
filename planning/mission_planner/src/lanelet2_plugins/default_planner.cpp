@@ -402,6 +402,7 @@ PlannerPlugin::LaneletRoute DefaultPlanner::plan(const RoutePoints & points)
     lanelet::ConstLanelets path_lanelets;
     if (!route_handler_.planPathLaneletsBetweenCheckpoints(
           start_check_point, goal_check_point, &path_lanelets)) {
+      RCLCPP_WARN(logger, "Failed to plan route.");
       return route_msg;
     }
     for (const auto & lane : path_lanelets) {

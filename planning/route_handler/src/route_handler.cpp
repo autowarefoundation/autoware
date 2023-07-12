@@ -1975,10 +1975,20 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
   lanelet::ConstLanelets start_lanelets;
   if (!lanelet::utils::query::getCurrentLanelets(
         road_lanelets_, start_checkpoint, &start_lanelets)) {
+    RCLCPP_WARN_STREAM(
+      logger_, "Failed to find current lanelet."
+                 << std::endl
+                 << " - start checkpoint: " << toString(start_checkpoint) << std::endl
+                 << " - goal checkpoint: " << toString(goal_checkpoint) << std::endl);
     return false;
   }
   lanelet::ConstLanelet goal_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(road_lanelets_, goal_checkpoint, &goal_lanelet)) {
+    RCLCPP_WARN_STREAM(
+      logger_, "Failed to find closest lanelet."
+                 << std::endl
+                 << " - start checkpoint: " << toString(start_checkpoint) << std::endl
+                 << " - goal checkpoint: " << toString(goal_checkpoint) << std::endl);
     return false;
   }
 
@@ -1997,10 +2007,10 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
       RCLCPP_ERROR_STREAM(
         logger_, "Failed to find a proper path!"
                    << std::endl
-                   << "start checkpoint: " << toString(start_checkpoint) << std::endl
-                   << "goal checkpoint: " << toString(goal_checkpoint) << std::endl
-                   << "start lane id: " << st_llt.id() << std::endl
-                   << "goal lane id: " << goal_lanelet.id() << std::endl);
+                   << " - start checkpoint: " << toString(start_checkpoint) << std::endl
+                   << " - goal checkpoint: " << toString(goal_checkpoint) << std::endl
+                   << " - start lane id: " << st_llt.id() << std::endl
+                   << " - goal lane id: " << goal_lanelet.id() << std::endl);
     } else {
       is_route_found = true;
 
