@@ -1210,6 +1210,10 @@ double extendToRoadShoulderDistanceWithPolygon(
       }
     }
 
+    if (intersect_dist_vec.empty()) {
+      continue;
+    }
+
     std::sort(intersect_dist_vec.begin(), intersect_dist_vec.end());
     updated_to_road_shoulder_distance =
       std::max(updated_to_road_shoulder_distance, intersect_dist_vec.back());
