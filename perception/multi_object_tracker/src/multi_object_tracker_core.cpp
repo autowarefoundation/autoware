@@ -30,7 +30,7 @@
 #define EIGEN_MPL2_ONLY
 #include "multi_object_tracker/multi_object_tracker_core.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -134,7 +134,7 @@ void MultiObjectTracker::onMeasurement(
 
   /* transform to world coordinate */
   autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects;
-  if (!perception_utils::transformObjects(
+  if (!object_recognition_utils::transformObjects(
         *input_objects_msg, world_frame_id_, tf_buffer_, transformed_objects)) {
     return;
   }
@@ -188,7 +188,7 @@ std::shared_ptr<Tracker> MultiObjectTracker::createNewTracker(
   const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
   const geometry_msgs::msg::Transform & self_transform) const
 {
-  const std::uint8_t label = perception_utils::getHighestProbLabel(object.classification);
+  const std::uint8_t label = object_recognition_utils::getHighestProbLabel(object.classification);
   if (tracker_map_.count(label) != 0) {
     const auto tracker = tracker_map_.at(label);
 
@@ -270,7 +270,7 @@ void MultiObjectTracker::sanitizeTracker(
       }
 
       const double min_union_iou_area = 1e-2;
-      const auto iou = perception_utils::get2dIoU(object1, object2, min_union_iou_area);
+      const auto iou = object_recognition_utils::get2dIoU(object1, object2, min_union_iou_area);
       const auto & label1 = (*itr1)->getHighestProbLabel();
       const auto & label2 = (*itr2)->getHighestProbLabel();
       bool should_delete_tracker1 = false;

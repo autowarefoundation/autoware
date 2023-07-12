@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "perception_utils/conversion.hpp"
+#include "object_recognition_utils/conversion.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <gtest/gtest.h>
@@ -43,7 +43,7 @@ autoware_auto_perception_msgs::msg::ObjectClassification createObjectClassificat
 TEST(conversion, test_toDetectedObject)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
-  using perception_utils::toDetectedObject;
+  using object_recognition_utils::toDetectedObject;
 
   autoware_auto_perception_msgs::msg::TrackedObject tracked_obj;
   // existence probability
@@ -161,7 +161,7 @@ TEST(conversion, test_toDetectedObject)
 TEST(conversion, test_toTrackedObject)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
-  using perception_utils::toTrackedObject;
+  using object_recognition_utils::toTrackedObject;
 
   autoware_auto_perception_msgs::msg::DetectedObject detected_obj;
   // existence probability

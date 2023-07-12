@@ -16,7 +16,7 @@
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "perception_utils/predicted_path_utils.hpp"
+#include "object_recognition_utils/predicted_path_utils.hpp"
 
 namespace behavior_path_planner::utils::safety_check
 {
@@ -166,7 +166,8 @@ double calcMinimumLongitudinalLength(
 boost::optional<PoseWithPolygon> getEgoInterpolatedPoseWithPolygon(
   const PredictedPath & pred_path, const double current_time, const VehicleInfo & ego_info)
 {
-  const auto interpolated_pose = perception_utils::calcInterpolatedPose(pred_path, current_time);
+  const auto interpolated_pose =
+    object_recognition_utils::calcInterpolatedPose(pred_path, current_time);
 
   if (!interpolated_pose) {
     return {};

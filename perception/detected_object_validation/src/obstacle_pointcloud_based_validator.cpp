@@ -14,7 +14,7 @@
 
 #include "obstacle_pointcloud_based_validator/obstacle_pointcloud_based_validator.hpp"
 
-#include <perception_utils/perception_utils.hpp>
+#include <object_recognition_utils/object_recognition_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <boost/geometry.hpp>
@@ -111,7 +111,7 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
 
   // Transform to pointcloud frame
   autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects;
-  if (!perception_utils::transformObjects(
+  if (!object_recognition_utils::transformObjects(
         *input_objects, input_obstacle_pointcloud->header.frame_id, tf_buffer_,
         transformed_objects)) {
     // objects_pub_->publish(*input_objects);

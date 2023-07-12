@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PERCEPTION_UTILS__TRANSFORM_HPP_
-#define PERCEPTION_UTILS__TRANSFORM_HPP_
+#ifndef OBJECT_RECOGNITION_UTILS__TRANSFORM_HPP_
+#define OBJECT_RECOGNITION_UTILS__TRANSFORM_HPP_
 
 #include <geometry_msgs/msg/transform.hpp>
 
@@ -41,13 +41,13 @@ namespace detail
       target_frame_id, source_frame_id, time, rclcpp::Duration::from_seconds(0.5));
     return self_transform_stamped.transform;
   } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("perception_utils"), ex.what());
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("object_recognition_utils"), ex.what());
     return boost::none;
   }
 }
 }  // namespace detail
 
-namespace perception_utils
+namespace object_recognition_utils
 {
 template <class T>
 bool transformObjects(
@@ -79,6 +79,6 @@ bool transformObjects(
   }
   return true;
 }
-}  // namespace perception_utils
+}  // namespace object_recognition_utils
 
-#endif  // PERCEPTION_UTILS__TRANSFORM_HPP_
+#endif  // OBJECT_RECOGNITION_UTILS__TRANSFORM_HPP_

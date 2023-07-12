@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
-#define PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
+#ifndef OBJECT_RECOGNITION_UTILS__PREDICTED_PATH_UTILS_HPP_
+#define OBJECT_RECOGNITION_UTILS__PREDICTED_PATH_UTILS_HPP_
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
@@ -24,7 +24,7 @@
 
 #include <vector>
 
-namespace perception_utils
+namespace object_recognition_utils
 {
 /**
  * @brief Calculate Interpolated Pose from predicted path by time
@@ -61,6 +61,6 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & path,
   const double sampling_time_interval, const double sampling_horizon,
   const bool use_spline_for_xy = true, const bool use_spline_for_z = false);
-}  // namespace perception_utils
+}  // namespace object_recognition_utils
 
-#endif  // PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
+#endif  // OBJECT_RECOGNITION_UTILS__PREDICTED_PATH_UTILS_HPP_

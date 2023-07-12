@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "perception_utils/geometry.hpp"
+#include "object_recognition_utils/geometry.hpp"
 
 #include <gtest/gtest.h>
 
@@ -20,7 +20,7 @@
 
 TEST(geometry, getPose)
 {
-  using perception_utils::getPose;
+  using object_recognition_utils::getPose;
 
   const double x_ans = 1.0;
   const double y_ans = 2.0;

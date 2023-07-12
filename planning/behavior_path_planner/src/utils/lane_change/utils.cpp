@@ -1288,7 +1288,7 @@ ExtendedPredictedObject transform(
       if (t < prepare_duration && obj_vel < velocity_threshold) {
         continue;
       }
-      const auto obj_pose = perception_utils::calcInterpolatedPose(path, t);
+      const auto obj_pose = object_recognition_utils::calcInterpolatedPose(path, t);
       if (obj_pose) {
         const auto obj_polygon = tier4_autoware_utils::toPolygon2d(*obj_pose, object.shape);
         extended_object.predicted_paths.at(i).path.emplace_back(t, *obj_pose, obj_polygon);

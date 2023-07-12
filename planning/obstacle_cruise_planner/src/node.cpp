@@ -16,9 +16,9 @@
 
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/tmp_conversion.hpp"
+#include "object_recognition_utils/predicted_path_utils.hpp"
 #include "obstacle_cruise_planner/polygon_utils.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
-#include "perception_utils/predicted_path_utils.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
@@ -79,7 +79,8 @@ PredictedPath resampleHighestConfidencePredictedPath(
     [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
 
   // resample
-  return perception_utils::resamplePredictedPath(*reliable_path, time_interval, time_horizon);
+  return object_recognition_utils::resamplePredictedPath(
+    *reliable_path, time_interval, time_horizon);
 }
 
 double calcDiffAngleAgainstTrajectory(

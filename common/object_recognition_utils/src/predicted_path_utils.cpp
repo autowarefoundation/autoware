@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "perception_utils/predicted_path_utils.hpp"
+#include "object_recognition_utils/predicted_path_utils.hpp"
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spherical_linear_interpolation.hpp"
@@ -20,7 +20,7 @@
 
 #include <algorithm>
 
-namespace perception_utils
+namespace object_recognition_utils
 {
 boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
   const autoware_auto_perception_msgs::msg::PredictedPath & path, const double relative_time)
@@ -130,4 +130,4 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   resampled_path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval);
   return resampled_path;
 }
-}  // namespace perception_utils
+}  // namespace object_recognition_utils

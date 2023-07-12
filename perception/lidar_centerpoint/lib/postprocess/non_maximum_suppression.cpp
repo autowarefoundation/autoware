@@ -14,8 +14,8 @@
 
 #include "lidar_centerpoint/postprocess/non_maximum_suppression.hpp"
 
-#include "perception_utils/geometry.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/geometry.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 namespace centerpoint
@@ -41,8 +41,8 @@ bool NonMaximumSuppression::isTargetLabel(const uint8_t label)
 bool NonMaximumSuppression::isTargetPairObject(
   const DetectedObject & object1, const DetectedObject & object2)
 {
-  const auto label1 = perception_utils::getHighestProbLabel(object1.classification);
-  const auto label2 = perception_utils::getHighestProbLabel(object2.classification);
+  const auto label1 = object_recognition_utils::getHighestProbLabel(object1.classification);
+  const auto label2 = object_recognition_utils::getHighestProbLabel(object2.classification);
 
   if (isTargetLabel(label1) && isTargetLabel(label2)) {
     return true;
@@ -50,7 +50,7 @@ bool NonMaximumSuppression::isTargetPairObject(
 
   const auto search_sqr_dist_2d = params_.search_distance_2d_ * params_.search_distance_2d_;
   const auto sqr_dist_2d = tier4_autoware_utils::calcSquaredDistance2d(
-    perception_utils::getPose(object1), perception_utils::getPose(object2));
+    object_recognition_utils::getPose(object1), object_recognition_utils::getPose(object2));
   return sqr_dist_2d <= search_sqr_dist_2d;
 }
 
@@ -69,7 +69,7 @@ Eigen::MatrixXd NonMaximumSuppression::generateIoUMatrix(
       }
 
       if (params_.nms_type_ == NMS_TYPE::IoU_BEV) {
-        const double iou = perception_utils::get2dIoU(target_obj, source_obj);
+        const double iou = object_recognition_utils::get2dIoU(target_obj, source_obj);
         triangular_matrix(target_i, source_i) = iou;
         // NOTE: If the target object has any objects with iou > iou_threshold, it
         // will be suppressed regardless of later results.

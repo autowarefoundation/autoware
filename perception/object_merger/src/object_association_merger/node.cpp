@@ -15,7 +15,7 @@
 #include "object_association_merger/node.hpp"
 
 #include "object_association_merger/utils/utils.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <boost/optional.hpp>
@@ -37,16 +37,17 @@ bool isUnknownObjectOverlapped(
   const double precision_threshold, const double recall_threshold,
   std::map<int, double> distance_threshold_map, const double generalized_iou_threshold)
 {
-  const double distance_threshold =
-    distance_threshold_map.at(perception_utils::getHighestProbLabel(known_object.classification));
+  const double distance_threshold = distance_threshold_map.at(
+    object_recognition_utils::getHighestProbLabel(known_object.classification));
   const double sq_distance_threshold = std::pow(distance_threshold, 2.0);
   const double sq_distance = tier4_autoware_utils::calcSquaredDistance2d(
     unknown_object.kinematics.pose_with_covariance.pose,
     known_object.kinematics.pose_with_covariance.pose);
   if (sq_distance_threshold < sq_distance) return false;
-  const auto precision = perception_utils::get2dPrecision(unknown_object, known_object);
-  const auto recall = perception_utils::get2dRecall(unknown_object, known_object);
-  const auto generalized_iou = perception_utils::get2dGeneralizedIoU(unknown_object, known_object);
+  const auto precision = object_recognition_utils::get2dPrecision(unknown_object, known_object);
+  const auto recall = object_recognition_utils::get2dRecall(unknown_object, known_object);
+  const auto generalized_iou =
+    object_recognition_utils::get2dGeneralizedIoU(unknown_object, known_object);
   return precision > precision_threshold || recall > recall_threshold ||
          generalized_iou > generalized_iou_threshold;
 }
@@ -125,9 +126,9 @@ void ObjectAssociationMergerNode::objectsCallback(
   /* transform to base_link coordinate */
   autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects0, transformed_objects1;
   if (
-    !perception_utils::transformObjects(
+    !object_recognition_utils::transformObjects(
       *input_objects0_msg, base_link_frame_id_, tf_buffer_, transformed_objects0) ||
-    !perception_utils::transformObjects(
+    !object_recognition_utils::transformObjects(
       *input_objects1_msg, base_link_frame_id_, tf_buffer_, transformed_objects1)) {
     return;
   }
@@ -180,7 +181,7 @@ void ObjectAssociationMergerNode::objectsCallback(
     unknown_objects.reserve(output_msg.objects.size());
     known_objects.reserve(output_msg.objects.size());
     for (const auto & object : output_msg.objects) {
-      if (perception_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
+      if (object_recognition_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
         unknown_objects.push_back(object);
       } else {
         known_objects.push_back(object);

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PERCEPTION_UTILS__OBJECT_CLASSIFICATION_HPP_
-#define PERCEPTION_UTILS__OBJECT_CLASSIFICATION_HPP_
+#ifndef OBJECT_RECOGNITION_UTILS__OBJECT_CLASSIFICATION_HPP_
+#define OBJECT_RECOGNITION_UTILS__OBJECT_CLASSIFICATION_HPP_
 
 #include "autoware_auto_perception_msgs/msg/object_classification.hpp"
 
 #include <string>
 #include <vector>
 
-namespace perception_utils
+namespace object_recognition_utils
 {
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 
@@ -169,6 +169,6 @@ inline std::string convertLabelToString(
   return convertLabelToString(highest_prob_label);
 }
 
-}  // namespace perception_utils
+}  // namespace object_recognition_utils
 
-#endif  // PERCEPTION_UTILS__OBJECT_CLASSIFICATION_HPP_
+#endif  // OBJECT_RECOGNITION_UTILS__OBJECT_CLASSIFICATION_HPP_

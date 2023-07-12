@@ -21,7 +21,7 @@
 
 #define EIGEN_MPL2_ONLY
 #include "multi_object_tracker/utils/utils.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
@@ -66,7 +66,7 @@ public:
   }
   std::uint8_t getHighestProbLabel() const
   {
-    return perception_utils::getHighestProbLabel(classification_);
+    return object_recognition_utils::getHighestProbLabel(classification_);
   }
   int getNoMeasurementCount() const { return no_measurement_count_; }
   int getTotalNoMeasurementCount() const { return total_no_measurement_count_; }

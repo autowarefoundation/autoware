@@ -14,7 +14,7 @@
 
 #include "tensorrt_yolox/tensorrt_yolox_node.hpp"
 
-#include "perception_utils/object_classification.hpp"
+#include "object_recognition_utils/object_classification.hpp"
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 
@@ -157,7 +157,7 @@ void TrtYoloXNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
     object.feature.roi.height = yolox_object.height;
     object.object.existence_probability = yolox_object.score;
     object.object.classification =
-      perception_utils::toObjectClassifications(label_map_[yolox_object.type], 1.0f);
+      object_recognition_utils::toObjectClassifications(label_map_[yolox_object.type], 1.0f);
     out_objects.feature_objects.push_back(object);
     const auto left = std::max(0, static_cast<int>(object.feature.roi.x_offset));
     const auto top = std::max(0, static_cast<int>(object.feature.roi.y_offset));

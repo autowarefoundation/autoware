@@ -533,11 +533,11 @@ double getDistanceBetweenPredictedPaths(
 {
   double min_distance = std::numeric_limits<double>::max();
   for (double t = start_time; t < end_time; t += resolution) {
-    const auto object_pose = perception_utils::calcInterpolatedPose(object_path, t);
+    const auto object_pose = object_recognition_utils::calcInterpolatedPose(object_path, t);
     if (!object_pose) {
       continue;
     }
-    const auto ego_pose = perception_utils::calcInterpolatedPose(ego_path, t);
+    const auto ego_pose = object_recognition_utils::calcInterpolatedPose(ego_path, t);
     if (!ego_pose) {
       continue;
     }
@@ -560,7 +560,7 @@ double getDistanceBetweenPredictedPathAndObject(
   rclcpp::Time ros_end_time = clock.now() + rclcpp::Duration::from_seconds(end_time);
   const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
   for (double t = start_time; t < end_time; t += resolution) {
-    const auto ego_pose = perception_utils::calcInterpolatedPose(ego_path, t);
+    const auto ego_pose = object_recognition_utils::calcInterpolatedPose(ego_path, t);
     if (!ego_pose) {
       continue;
     }

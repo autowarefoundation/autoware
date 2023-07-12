@@ -13,8 +13,8 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_auto_perception_msgs</depend>
+  <depend>object_recognition_utils</depend>
   <depend>pcl_ros</depend>
-  <depend>perception_utils</depend>
   <depend>python3-open3d</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

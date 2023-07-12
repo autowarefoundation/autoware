@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PERCEPTION_UTILS__MATCHING_HPP_
-#define PERCEPTION_UTILS__MATCHING_HPP_
+#ifndef OBJECT_RECOGNITION_UTILS__MATCHING_HPP_
+#define OBJECT_RECOGNITION_UTILS__MATCHING_HPP_
 
-#include "perception_utils/geometry.hpp"
+#include "object_recognition_utils/geometry.hpp"
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-namespace perception_utils
+namespace object_recognition_utils
 {
 using tier4_autoware_utils::Polygon2d;
 
@@ -116,6 +116,6 @@ double get2dRecall(const T1 source_object, const T2 target_object)
 
   return std::min(1.0, intersection_area / target_area);
 }
-}  // namespace perception_utils
+}  // namespace object_recognition_utils
 
-#endif  // PERCEPTION_UTILS__MATCHING_HPP_
+#endif  // OBJECT_RECOGNITION_UTILS__MATCHING_HPP_

@@ -32,7 +32,7 @@
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
@@ -357,7 +357,7 @@ bool BicycleTracker::measure(
 {
   const auto & current_classification = getClassification();
   object_ = object;
-  if (perception_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
+  if (object_recognition_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
     setClassification(current_classification);
   }
 
@@ -376,7 +376,7 @@ bool BicycleTracker::measure(
 bool BicycleTracker::getTrackedObject(
   const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
 {
-  object = perception_utils::toTrackedObject(object_);
+  object = object_recognition_utils::toTrackedObject(object_);
   object.object_id = getUUID();
   object.classification = getClassification();
 

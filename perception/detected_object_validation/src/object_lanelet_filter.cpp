@@ -14,7 +14,7 @@
 
 #include "detected_object_filter/object_lanelet_filter.hpp"
 
-#include <perception_utils/perception_utils.hpp>
+#include <object_recognition_utils/object_recognition_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <boost/geometry/algorithms/convex_hull.hpp>
@@ -76,7 +76,7 @@ void ObjectLaneletFilterNode::objectCallback(
     return;
   }
   autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects;
-  if (!perception_utils::transformObjects(
+  if (!object_recognition_utils::transformObjects(
         *input_msg, lanelet_frame_id_, tf_buffer_, transformed_objects)) {
     RCLCPP_ERROR(get_logger(), "Failed transform to %s.", lanelet_frame_id_.c_str());
     return;

@@ -16,9 +16,9 @@
 #define TRAFFIC_LIGHT_OCCLUSION_PREDICTOR__NODELET_HPP_
 
 #include <perception_utils/prime_synchronizer.hpp>
-#include <perception_utils/traffic_light_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <traffic_light_occlusion_predictor/occlusion_predictor.hpp>
+#include <traffic_light_utils/traffic_light_utils.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>

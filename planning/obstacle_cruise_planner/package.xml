@@ -23,8 +23,8 @@
   <depend>lanelet2_extension</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
+  <depend>object_recognition_utils</depend>
   <depend>osqp_interface</depend>
-  <depend>perception_utils</depend>
   <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

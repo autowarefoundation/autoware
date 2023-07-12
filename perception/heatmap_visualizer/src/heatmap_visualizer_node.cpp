@@ -15,7 +15,7 @@
 #include "heatmap_visualizer/heatmap_visualizer_node.hpp"
 
 #include "heatmap_visualizer/utils.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <rclcpp_components/register_node_macro.hpp>
 
@@ -56,7 +56,7 @@ HeatmapVisualizerNode::HeatmapVisualizerNode(const rclcpp::NodeOptions & node_op
     buffer.resize(width_ * height_, 0);
 
     uint8_t label = getSemanticType(key);
-    bool is_car_like_vehicle = perception_utils::isCarLikeVehicle(label);
+    bool is_car_like_vehicle = object_recognition_utils::isCarLikeVehicle(label);
     if ((!rename_car_to_truck_and_bus_) && (is_car_like_vehicle)) {
       uint8_t car_label = getSemanticType("CAR");
       heatmaps_.insert(std::make_pair(car_label, heatmap));
@@ -80,7 +80,7 @@ void HeatmapVisualizerNode::detectedObjectsCallback(
   frame_count_ += 1;
   for (const auto & obj : msg->objects) {
     uint8_t label = obj.classification[0].label;
-    bool is_car_like_vehicle = perception_utils::isCarLikeVehicle(label);
+    bool is_car_like_vehicle = object_recognition_utils::isCarLikeVehicle(label);
     if ((!rename_car_to_truck_and_bus_) && (is_car_like_vehicle)) {
       label = getSemanticType("CAR");
     }

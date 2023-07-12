@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PERCEPTION_UTILS__CONVERSION_HPP_
-#define PERCEPTION_UTILS__CONVERSION_HPP_
+#ifndef OBJECT_RECOGNITION_UTILS__CONVERSION_HPP_
+#define OBJECT_RECOGNITION_UTILS__CONVERSION_HPP_
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
 
-namespace perception_utils
+namespace object_recognition_utils
 {
 using autoware_auto_perception_msgs::msg::DetectedObject;
 using autoware_auto_perception_msgs::msg::DetectedObjects;
@@ -29,6 +29,6 @@ DetectedObject toDetectedObject(const TrackedObject & tracked_object);
 DetectedObjects toDetectedObjects(const TrackedObjects & tracked_objects);
 TrackedObject toTrackedObject(const DetectedObject & detected_object);
 TrackedObjects toTrackedObjects(const DetectedObjects & detected_objects);
-}  // namespace perception_utils
+}  // namespace object_recognition_utils
 
-#endif  // PERCEPTION_UTILS__CONVERSION_HPP_
+#endif  // OBJECT_RECOGNITION_UTILS__CONVERSION_HPP_

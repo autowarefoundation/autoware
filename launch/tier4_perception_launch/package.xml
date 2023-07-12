@@ -33,6 +33,7 @@
   <exec_depend>shape_estimation</exec_depend>
   <exec_depend>tensorrt_yolo</exec_depend>
   <exec_depend>topic_tools</exec_depend>
+  <exec_depend>traffic_light_arbiter</exec_depend>
   <exec_depend>traffic_light_classifier</exec_depend>
   <exec_depend>traffic_light_fine_detector</exec_depend>
   <exec_depend>traffic_light_map_based_detector</exec_depend>

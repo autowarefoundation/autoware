@@ -1,19 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>perception_utils</name>
+  <name>traffic_light_utils</name>
   <version>0.1.0</version>
-  <description>The perception_utils package</description>
-  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
-  <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
-  <maintainer email="yusuke.muramatsu@tier4.jp">Yusuke Muramatsu</maintainer>
+  <description>The traffic_light_utils package</description>
+  <maintainer email="mingyu.li@tier4.jp">Mingyu Li</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>rclcpp</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>tier4_perception_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

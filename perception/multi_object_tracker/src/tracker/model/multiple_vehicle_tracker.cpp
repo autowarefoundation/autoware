@@ -44,7 +44,7 @@ bool MultipleVehicleTracker::measure(
 {
   big_vehicle_tracker_.measure(object, time, self_transform);
   normal_vehicle_tracker_.measure(object, time, self_transform);
-  if (perception_utils::getHighestProbLabel(object.classification) != Label::UNKNOWN)
+  if (object_recognition_utils::getHighestProbLabel(object.classification) != Label::UNKNOWN)
     setClassification(object.classification);
   return true;
 }

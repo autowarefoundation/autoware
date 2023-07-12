@@ -30,7 +30,7 @@
 #define EIGEN_MPL2_ONLY
 #include "multi_object_tracker/tracker/model/normal_vehicle_tracker.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -245,7 +245,7 @@ bool NormalVehicleTracker::measureWithPose(
 
   float r_cov_x;
   float r_cov_y;
-  const uint8_t label = perception_utils::getHighestProbLabel(object.classification);
+  const uint8_t label = object_recognition_utils::getHighestProbLabel(object.classification);
 
   if (label == Label::CAR) {
     r_cov_x = ekf_params_.r_cov_x;
@@ -407,7 +407,7 @@ bool NormalVehicleTracker::measure(
 {
   const auto & current_classification = getClassification();
   object_ = object;
-  if (perception_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
+  if (object_recognition_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
     setClassification(current_classification);
   }
 
@@ -435,7 +435,7 @@ bool NormalVehicleTracker::measure(
 bool NormalVehicleTracker::getTrackedObject(
   const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
 {
-  object = perception_utils::toTrackedObject(object_);
+  object = object_recognition_utils::toTrackedObject(object_);
   object.object_id = getUUID();
   object.classification = getClassification();
 

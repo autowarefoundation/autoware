@@ -16,7 +16,7 @@
 
 #include "multi_object_tracker/data_association/solver/gnn_solver.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
-#include "perception_utils/perception_utils.hpp"
+#include "object_recognition_utils/object_recognition_utils.hpp"
 
 #include <algorithm>
 #include <list>
@@ -162,7 +162,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
       const autoware_auto_perception_msgs::msg::DetectedObject & measurement_object =
         measurements.objects.at(measurement_idx);
       const std::uint8_t measurement_label =
-        perception_utils::getHighestProbLabel(measurement_object.classification);
+        object_recognition_utils::getHighestProbLabel(measurement_object.classification);
 
       double score = 0.0;
       if (can_assign_matrix_(tracker_label, measurement_label)) {
@@ -207,8 +207,8 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         if (passed_gate) {
           const double min_iou = min_iou_matrix_(tracker_label, measurement_label);
           const double min_union_iou_area = 1e-2;
-          const double iou =
-            perception_utils::get2dIoU(measurement_object, tracked_object, min_union_iou_area);
+          const double iou = object_recognition_utils::get2dIoU(
+            measurement_object, tracked_object, min_union_iou_area);
           if (iou < min_iou) passed_gate = false;
         }
 

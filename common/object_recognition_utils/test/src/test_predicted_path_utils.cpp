@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "perception_utils/predicted_path_utils.hpp"
+#include "object_recognition_utils/predicted_path_utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
@@ -62,7 +62,7 @@ PredictedPath createTestPredictedPath(
 
 TEST(predicted_path_utils, testCalcInterpolatedPose)
 {
-  using perception_utils::calcInterpolatedPose;
+  using object_recognition_utils::calcInterpolatedPose;
   using tier4_autoware_utils::createQuaternionFromRPY;
   using tier4_autoware_utils::createQuaternionFromYaw;
   using tier4_autoware_utils::deg2rad;
@@ -128,7 +128,7 @@ TEST(predicted_path_utils, testCalcInterpolatedPose)
 
 TEST(predicted_path_utils, resamplePredictedPath_by_vector)
 {
-  using perception_utils::resamplePredictedPath;
+  using object_recognition_utils::resamplePredictedPath;
   using tier4_autoware_utils::createQuaternionFromRPY;
   using tier4_autoware_utils::createQuaternionFromYaw;
   using tier4_autoware_utils::deg2rad;
@@ -206,7 +206,7 @@ TEST(predicted_path_utils, resamplePredictedPath_by_vector)
 
 TEST(predicted_path_utils, resamplePredictedPath_by_sampling_time)
 {
-  using perception_utils::resamplePredictedPath;
+  using object_recognition_utils::resamplePredictedPath;
   using tier4_autoware_utils::createQuaternionFromRPY;
   using tier4_autoware_utils::createQuaternionFromYaw;
   using tier4_autoware_utils::deg2rad;

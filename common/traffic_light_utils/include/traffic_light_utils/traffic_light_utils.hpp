@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PERCEPTION_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
-#define PERCEPTION_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
+#ifndef TRAFFIC_LIGHT_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
+#define TRAFFIC_LIGHT_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
 
 #include "tier4_perception_msgs/msg/traffic_light_element.hpp"
 #include "tier4_perception_msgs/msg/traffic_light_roi.hpp"
@@ -24,10 +24,7 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Transform.h>
 
-namespace perception_utils
-{
-
-namespace traffic_light
+namespace traffic_light_utils
 {
 
 bool isRoiValid(
@@ -45,8 +42,6 @@ tf2::Vector3 getTrafficLightBottomRight(const lanelet::ConstLineString3d & traff
 
 tf2::Vector3 getTrafficLightCenter(const lanelet::ConstLineString3d & traffic_light);
 
-}  // namespace traffic_light
+}  // namespace traffic_light_utils
 
-}  // namespace perception_utils
-
-#endif  // PERCEPTION_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
+#endif  // TRAFFIC_LIGHT_UTILS__TRAFFIC_LIGHT_UTILS_HPP_
