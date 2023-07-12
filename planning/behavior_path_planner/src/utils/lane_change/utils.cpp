@@ -368,8 +368,7 @@ PathSafetyStatus isLaneChangePathSafe(
   const Pose & current_pose, const Twist & current_twist,
   const BehaviorPathPlannerParameters & common_parameter,
   const LaneChangeParameters & lane_change_parameter, const double front_decel,
-  const double rear_decel, std::unordered_map<std::string, CollisionCheckDebug> & debug_data,
-  const double prepare_acc, const double lane_changing_acc)
+  const double rear_decel, std::unordered_map<std::string, CollisionCheckDebug> & debug_data)
 {
   PathSafetyStatus path_safety_status;
 
@@ -380,17 +379,11 @@ PathSafetyStatus isLaneChangePathSafe(
     return path_safety_status;
   }
 
-  const double time_resolution = lane_change_parameter.prediction_time_resolution;
-  const double check_end_time = lane_change_path.duration.sum();
-  const double & prepare_duration = common_parameter.lane_change_prepare_duration;
-
-  const auto current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, current_pose, common_parameter.ego_nearest_dist_threshold,
-    common_parameter.ego_nearest_yaw_threshold);
+  const double & time_resolution = lane_change_parameter.prediction_time_resolution;
 
   const auto ego_predicted_path = convertToPredictedPath(
-    path, current_twist, current_pose, current_seg_idx, check_end_time, time_resolution,
-    prepare_duration, prepare_acc, lane_changing_acc);
+    lane_change_path, current_twist, current_pose, common_parameter, time_resolution);
+  const auto debug_predicted_path = convertToPredictedPath(ego_predicted_path, time_resolution);
 
   auto collision_check_objects = target_objects.target_lane;
   collision_check_objects.insert(
@@ -424,13 +417,13 @@ PathSafetyStatus isLaneChangePathSafe(
 
   for (const auto & obj : collision_check_objects) {
     auto current_debug_data = assignDebugData(obj);
-    current_debug_data.second.ego_predicted_path.push_back(ego_predicted_path);
+    current_debug_data.second.ego_predicted_path.push_back(debug_predicted_path);
     const auto obj_predicted_paths =
       utils::getPredictedPathFromObj(obj, lane_change_parameter.use_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::safety_check::checkCollision(
-            path, ego_predicted_path, current_twist.linear.x, obj, obj_path, common_parameter,
-            front_decel, rear_decel, current_debug_data.second)) {
+            path, ego_predicted_path, obj, obj_path, common_parameter, front_decel, rear_decel,
+            current_debug_data.second)) {
         path_safety_status.is_safe = false;
         updateDebugInfo(current_debug_data, path_safety_status.is_safe);
         const auto & obj_pose = obj.initial_pose.pose;
@@ -898,43 +891,68 @@ boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
   return route_handler.getLaneChangeTargetExceptPreferredLane(current_lanes, direction);
 }
 
-PredictedPath convertToPredictedPath(
-  const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & vehicle_pose,
-  const size_t nearest_seg_idx, const double duration, const double resolution,
-  const double prepare_time, const double prepare_acc, const double lane_changing_acc)
+std::vector<PoseWithVelocityStamped> convertToPredictedPath(
+  const LaneChangePath & lane_change_path, const Twist & vehicle_twist, const Pose & vehicle_pose,
+  const BehaviorPathPlannerParameters & common_parameter, const double resolution)
 {
-  PredictedPath predicted_path{};
-  predicted_path.time_step = rclcpp::Duration::from_seconds(resolution);
-  predicted_path.path.reserve(std::min(path.points.size(), static_cast<size_t>(100)));
-
-  if (path.points.empty()) {
-    return predicted_path;
+  if (lane_change_path.path.points.empty()) {
+    return {};
   }
 
-  FrenetPoint vehicle_pose_frenet =
+  const auto & path = lane_change_path.path;
+  const auto & prepare_acc = lane_change_path.longitudinal_acceleration.prepare;
+  const auto & lane_changing_acc = lane_change_path.longitudinal_acceleration.lane_changing;
+  const auto & duration = lane_change_path.duration.sum();
+  const auto & prepare_time = lane_change_path.duration.prepare;
+  const auto & minimum_lane_changing_velocity = common_parameter.minimum_lane_changing_velocity;
+
+  const auto nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    path.points, vehicle_pose, common_parameter.ego_nearest_dist_threshold,
+    common_parameter.ego_nearest_yaw_threshold);
+
+  std::vector<PoseWithVelocityStamped> predicted_path;
+  const auto vehicle_pose_frenet =
     convertToFrenetPoint(path.points, vehicle_pose.position, nearest_seg_idx);
   const double initial_velocity = std::abs(vehicle_twist.linear.x);
 
   // prepare segment
   for (double t = 0.0; t < prepare_time; t += resolution) {
+    const double velocity =
+      std::max(initial_velocity + prepare_acc * t, minimum_lane_changing_velocity);
     const double length = initial_velocity * t + 0.5 * prepare_acc * t * t;
-    predicted_path.path.push_back(
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
+    const auto pose =
+      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
+    predicted_path.emplace_back(t, pose, velocity);
   }
 
   // lane changing segment
   const double lane_changing_velocity =
-    std::max(initial_velocity + prepare_acc * prepare_time, 0.0);
+    std::max(initial_velocity + prepare_acc * prepare_time, minimum_lane_changing_velocity);
   const double offset =
     initial_velocity * prepare_time + 0.5 * prepare_acc * prepare_time * prepare_time;
   for (double t = prepare_time; t < duration; t += resolution) {
     const double delta_t = t - prepare_time;
+    const double velocity = lane_changing_velocity + lane_changing_acc * delta_t;
     const double length =
       lane_changing_velocity * delta_t + 0.5 * lane_changing_acc * delta_t * delta_t + offset;
-    predicted_path.path.push_back(
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length));
+    const auto pose =
+      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
+    predicted_path.emplace_back(t, pose, velocity);
   }
 
+  return predicted_path;
+}
+
+PredictedPath convertToPredictedPath(
+  const std::vector<PoseWithVelocityStamped> & path, const double time_resolution)
+{
+  PredictedPath predicted_path;
+  predicted_path.time_step = rclcpp::Duration::from_seconds(time_resolution);
+  predicted_path.path.resize(path.size());
+
+  for (size_t i = 0; i < path.size(); ++i) {
+    predicted_path.path.at(i) = path.at(i).pose;
+  }
   return predicted_path;
 }
 
@@ -1280,6 +1298,7 @@ ExtendedPredictedObject transform(
     lane_change_parameters.prepare_segment_ignore_object_velocity_thresh;
   const auto & obj_vel = extended_object.initial_twist.twist.linear.x;
   const auto start_time = check_at_prepare_phase ? 0.0 : prepare_duration;
+  const double obj_velocity = extended_object.initial_twist.twist.linear.x;
 
   extended_object.predicted_paths.resize(object.kinematics.predicted_paths.size());
   for (size_t i = 0; i < object.kinematics.predicted_paths.size(); ++i) {
@@ -1297,7 +1316,8 @@ ExtendedPredictedObject transform(
       const auto obj_pose = object_recognition_utils::calcInterpolatedPose(path, t);
       if (obj_pose) {
         const auto obj_polygon = tier4_autoware_utils::toPolygon2d(*obj_pose, object.shape);
-        extended_object.predicted_paths.at(i).path.emplace_back(t, *obj_pose, obj_polygon);
+        extended_object.predicted_paths.at(i).path.emplace_back(
+          t, *obj_pose, obj_velocity, obj_polygon);
       }
     }
   }

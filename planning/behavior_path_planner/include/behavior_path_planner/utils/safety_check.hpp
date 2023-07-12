@@ -72,8 +72,12 @@ double calcMinimumLongitudinalLength(
   const double front_object_velocity, const double rear_object_velocity,
   const BehaviorPathPlannerParameters & params);
 
-boost::optional<PoseWithPolygon> getEgoInterpolatedPoseWithPolygon(
-  const PredictedPath & pred_path, const double current_time, const VehicleInfo & ego_info);
+boost::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
+  const std::vector<PoseWithVelocityStamped> & path, const double relative_time);
+
+boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+  const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
+  const VehicleInfo & ego_info);
 
 /**
  * @brief Iterate the points in the ego and target's predicted path and
@@ -90,8 +94,9 @@ boost::optional<PoseWithPolygon> getEgoInterpolatedPoseWithPolygon(
  * @return true if distance is safe.
  */
 bool checkCollision(
-  const PathWithLaneId & planned_path, const PredictedPath & predicted_ego_path,
-  const double ego_current_velocity, const ExtendedPredictedObject & target_object,
+  const PathWithLaneId & planned_path,
+  const std::vector<PoseWithVelocityStamped> & predicted_ego_path,
+  const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
   const double rear_object_deceleration, CollisionCheckDebug & debug);

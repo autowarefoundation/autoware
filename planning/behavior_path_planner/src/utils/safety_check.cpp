@@ -15,6 +15,7 @@
 #include "behavior_path_planner/utils/safety_check.hpp"
 
 #include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
@@ -163,13 +164,40 @@ double calcMinimumLongitudinalLength(
   return params.longitudinal_velocity_delta_time * std::abs(max_vel) + lon_threshold;
 }
 
-boost::optional<PoseWithPolygon> getEgoInterpolatedPoseWithPolygon(
-  const PredictedPath & pred_path, const double current_time, const VehicleInfo & ego_info)
+boost::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
+  const std::vector<PoseWithVelocityStamped> & path, const double relative_time)
 {
-  const auto interpolated_pose =
-    object_recognition_utils::calcInterpolatedPose(pred_path, current_time);
+  // Check if relative time is in the valid range
+  if (path.empty() || relative_time < 0.0) {
+    return boost::none;
+  }
 
-  if (!interpolated_pose) {
+  constexpr double epsilon = 1e-6;
+  for (size_t path_idx = 1; path_idx < path.size(); ++path_idx) {
+    const auto & pt = path.at(path_idx);
+    const auto & prev_pt = path.at(path_idx - 1);
+    if (relative_time < pt.time + epsilon) {
+      const double offset = relative_time - prev_pt.time;
+      const double time_step = pt.time - prev_pt.time;
+      const double ratio = std::clamp(offset / time_step, 0.0, 1.0);
+      const auto interpolated_pose =
+        tier4_autoware_utils::calcInterpolatedPose(prev_pt.pose, pt.pose, ratio, false);
+      const double interpolated_velocity =
+        interpolation::lerp(prev_pt.velocity, pt.velocity, ratio);
+      return PoseWithVelocityStamped{relative_time, interpolated_pose, interpolated_velocity};
+    }
+  }
+
+  return boost::none;
+}
+
+boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+  const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
+  const VehicleInfo & ego_info)
+{
+  const auto interpolation_result = calcInterpolatedPoseWithVelocity(pred_path, current_time);
+
+  if (!interpolation_result) {
     return {};
   }
 
@@ -177,24 +205,24 @@ boost::optional<PoseWithPolygon> getEgoInterpolatedPoseWithPolygon(
   const auto & base_to_front = i.max_longitudinal_offset_m;
   const auto & base_to_rear = i.rear_overhang_m;
   const auto & width = i.vehicle_width_m;
+  const auto & pose = interpolation_result->pose;
+  const auto & velocity = interpolation_result->velocity;
 
   const auto ego_polygon =
-    tier4_autoware_utils::toFootprint(*interpolated_pose, base_to_front, base_to_rear, width);
+    tier4_autoware_utils::toFootprint(pose, base_to_front, base_to_rear, width);
 
-  return PoseWithPolygon{*interpolated_pose, ego_polygon};
+  return PoseWithVelocityAndPolygonStamped{current_time, pose, velocity, ego_polygon};
 }
 
 bool checkCollision(
-  const PathWithLaneId & planned_path, const PredictedPath & predicted_ego_path,
-  const double ego_current_velocity, const ExtendedPredictedObject & target_object,
+  const PathWithLaneId & planned_path,
+  const std::vector<PoseWithVelocityStamped> & predicted_ego_path,
+  const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
   const double rear_object_deceleration, CollisionCheckDebug & debug)
 {
   debug.lerped_path.reserve(target_object_path.path.size());
-
-  const auto & ego_velocity = ego_current_velocity;
-  const auto & object_velocity = target_object.initial_twist.twist.linear.x;
 
   for (const auto & obj_pose_with_poly : target_object_path.path) {
     const auto & current_time = obj_pose_with_poly.time;
@@ -202,16 +230,20 @@ bool checkCollision(
     // get object information at current time
     const auto & obj_pose = obj_pose_with_poly.pose;
     const auto & obj_polygon = obj_pose_with_poly.poly;
+    const auto & object_velocity = obj_pose_with_poly.velocity;
 
     // get ego information at current time
+    // Note: we can create these polygons in advance. However, it can decrease the readability and
+    // variability
     const auto & ego_vehicle_info = common_parameters.vehicle_info;
-    const auto ego_pose_with_polygon =
-      getEgoInterpolatedPoseWithPolygon(predicted_ego_path, current_time, ego_vehicle_info);
-    if (!ego_pose_with_polygon) {
+    const auto interpolated_data = getInterpolatedPoseWithVelocityAndPolygonStamped(
+      predicted_ego_path, current_time, ego_vehicle_info);
+    if (!interpolated_data) {
       continue;
     }
-    const auto & ego_pose = ego_pose_with_polygon->pose;
-    const auto & ego_polygon = ego_pose_with_polygon->poly;
+    const auto & ego_pose = interpolated_data->pose;
+    const auto & ego_polygon = interpolated_data->poly;
+    const auto & ego_velocity = interpolated_data->velocity;
 
     {
       debug.lerped_path.push_back(ego_pose);
@@ -229,7 +261,7 @@ bool checkCollision(
 
     // compute which one is at the front of the other
     const bool is_object_front =
-      isTargetObjectFront(planned_path, ego_pose, common_parameters.vehicle_info, obj_polygon);
+      isTargetObjectFront(planned_path, ego_pose, ego_vehicle_info, obj_polygon);
     const auto & [front_object_velocity, rear_object_velocity] =
       is_object_front ? std::make_pair(object_velocity, ego_velocity)
                       : std::make_pair(ego_velocity, object_velocity);

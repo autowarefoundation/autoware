@@ -726,8 +726,7 @@ bool NormalLaneChange::getLaneChangePaths(
       const auto [is_safe, is_object_coming_from_rear] = utils::lane_change::isLaneChangePathSafe(
         *candidate_path, target_objects, getEgoPose(), getEgoTwist(), common_parameter,
         *lane_change_parameters_, common_parameter.expected_front_deceleration,
-        common_parameter.expected_rear_deceleration, object_debug_, longitudinal_acc_on_prepare,
-        longitudinal_acc_on_lane_changing);
+        common_parameter.expected_rear_deceleration, object_debug_);
 
       if (is_safe) {
         return true;
@@ -762,9 +761,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
   const auto safety_status = utils::lane_change::isLaneChangePathSafe(
     path, target_objects, current_pose, current_twist, common_parameters, *lane_change_parameters_,
     common_parameters.expected_front_deceleration_for_abort,
-    common_parameters.expected_rear_deceleration_for_abort, debug_data,
-    status_.lane_change_path.longitudinal_acceleration.prepare,
-    status_.lane_change_path.longitudinal_acceleration.lane_changing);
+    common_parameters.expected_rear_deceleration_for_abort, debug_data);
 
   return safety_status;
 }
