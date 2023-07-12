@@ -359,7 +359,7 @@ void DummyPerceptionPublisherNode::objectCallback(
           ros_map2base_link = tf_buffer_.lookupTransform(
             "map", "base_link", rclcpp::Time(0), rclcpp::Duration::from_seconds(0.5));
           object.initial_state.pose_covariance.pose.position.z =
-            ros_map2base_link.transform.translation.z;
+            ros_map2base_link.transform.translation.z + 0.5 * object.shape.dimensions.z;
         } catch (tf2::TransformException & ex) {
           RCLCPP_WARN_SKIPFIRST_THROTTLE(get_logger(), *get_clock(), 5000, "%s", ex.what());
           return;
@@ -406,7 +406,7 @@ void DummyPerceptionPublisherNode::objectCallback(
               ros_map2base_link = tf_buffer_.lookupTransform(
                 "map", "base_link", rclcpp::Time(0), rclcpp::Duration::from_seconds(0.5));
               objects_.at(i).initial_state.pose_covariance.pose.position.z =
-                ros_map2base_link.transform.translation.z;
+                ros_map2base_link.transform.translation.z + 0.5 * objects_.at(i).shape.dimensions.z;
             } catch (tf2::TransformException & ex) {
               RCLCPP_WARN_SKIPFIRST_THROTTLE(get_logger(), *get_clock(), 5000, "%s", ex.what());
               return;
