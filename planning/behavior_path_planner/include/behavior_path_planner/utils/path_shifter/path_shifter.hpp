@@ -139,6 +139,9 @@ public:
   static double calcFeasibleVelocityFromJerk(
     const double lateral, const double jerk, const double distance);
 
+  static double calcLateralDistFromJerk(
+    const double longitudinal, const double jerk, const double velocity);
+
   static double calcLongitudinalDistFromJerk(
     const double lateral, const double jerk, const double velocity);
 
