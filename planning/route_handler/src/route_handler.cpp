@@ -1971,17 +1971,27 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
   const Pose & start_checkpoint, const Pose & goal_checkpoint,
   lanelet::ConstLanelets * path_lanelets) const
 {
+  // Find lanelets for start point. First, find all lanelets containing the start point to calculate
+  // all possible route later. It fails when the point is not located on any road_lanelet (e.g. the
+  // start point is located out of any lanelets or road_shoulder lanelet which is not contained in
+  // road_lanelet). In that case, find the closest lanelet instead.
   lanelet::ConstLanelet start_lanelet;
   lanelet::ConstLanelets start_lanelets;
   if (!lanelet::utils::query::getCurrentLanelets(
         road_lanelets_, start_checkpoint, &start_lanelets)) {
-    RCLCPP_WARN_STREAM(
-      logger_, "Failed to find current lanelet."
-                 << std::endl
-                 << " - start checkpoint: " << toString(start_checkpoint) << std::endl
-                 << " - goal checkpoint: " << toString(goal_checkpoint) << std::endl);
-    return false;
+    if (!lanelet::utils::query::getClosestLanelet(
+          road_lanelets_, start_checkpoint, &start_lanelet)) {
+      RCLCPP_WARN_STREAM(
+        logger_, "Failed to find current lanelet."
+                   << std::endl
+                   << " - start checkpoint: " << toString(start_checkpoint) << std::endl
+                   << " - goal checkpoint: " << toString(goal_checkpoint) << std::endl);
+      return false;
+    }
+    start_lanelets = {start_lanelet};
   }
+
+  // Find lanelets for goal point.
   lanelet::ConstLanelet goal_lanelet;
   if (!lanelet::utils::query::getClosestLanelet(road_lanelets_, goal_checkpoint, &goal_lanelet)) {
     RCLCPP_WARN_STREAM(
