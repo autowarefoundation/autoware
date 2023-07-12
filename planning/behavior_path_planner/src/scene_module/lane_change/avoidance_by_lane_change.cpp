@@ -55,8 +55,7 @@ std::pair<bool, bool> AvoidanceByLaneChange::getSafePath(LaneChangePath & safe_p
     return {false, false};
   }
 
-  const auto direction = utils::avoidance::isOnRight(o_front) ? Direction::LEFT : Direction::RIGHT;
-  const auto target_lanes = getLaneChangeLanes(current_lanes, direction);
+  const auto target_lanes = getLaneChangeLanes(current_lanes, direction_);
 
   if (target_lanes.empty()) {
     return {false, false};
@@ -65,7 +64,7 @@ std::pair<bool, bool> AvoidanceByLaneChange::getSafePath(LaneChangePath & safe_p
   // find candidate paths
   LaneChangePaths valid_paths{};
   const auto found_safe_path =
-    getLaneChangePaths(current_lanes, target_lanes, direction, &valid_paths);
+    getLaneChangePaths(current_lanes, target_lanes, direction_, &valid_paths);
 
   if (valid_paths.empty()) {
     return {false, false};
@@ -95,6 +94,14 @@ void AvoidanceByLaneChange::updateSpecialData()
 
   avoidance_debug_data_ = DebugData();
   avoidance_data_ = calcAvoidancePlanningData(avoidance_debug_data_);
+
+  if (avoidance_data_.target_objects.empty()) {
+    direction_ = Direction::NONE;
+  } else {
+    direction_ = utils::avoidance::isOnRight(avoidance_data_.target_objects.front())
+                   ? Direction::LEFT
+                   : Direction::RIGHT;
+  }
 
   utils::avoidance::updateRegisteredObject(registered_objects_, avoidance_data_.target_objects, p);
   utils::avoidance::compensateDetectionLost(
