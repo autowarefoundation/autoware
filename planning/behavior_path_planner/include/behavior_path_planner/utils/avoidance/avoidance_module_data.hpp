@@ -126,6 +126,9 @@ struct AvoidanceParameters
   // comfortable jerk
   double nominal_jerk;
 
+  // To prevent large acceleration while avoidance.
+  double max_acceleration;
+
   // upper distance for envelope polygon expansion.
   double upper_distance_for_polygon_expansion;
 
@@ -248,18 +251,13 @@ struct AvoidanceParameters
   // if the avoidance path exceeds this lateral jerk, it will be not used anymore.
   double max_lateral_jerk;
 
+  // To prevent large acceleration while avoidance.
+  double max_lateral_acceleration;
+
   // For the compensation of the detection lost. Once an object is observed, it is registered and
   // will be used for planning from the next time. If the object is not observed, it counts up the
   // lost_count and the registered object will be removed when the count exceeds this max count.
   double object_last_seen_threshold;
-
-  // For velocity planning to avoid acceleration during avoidance.
-  // Speeds smaller than this are not inserted.
-  double min_avoidance_speed_for_acc_prevention;
-
-  // To prevent large acceleration while avoidance. The max velocity is limited with this
-  // acceleration.
-  double max_avoidance_acceleration;
 
   // The avoidance path generation is performed when the shift distance of the
   // avoidance points is greater than this threshold.

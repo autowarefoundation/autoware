@@ -476,12 +476,6 @@ private:
   void generateExtendedDrivableArea(BehaviorModuleOutput & output) const;
 
   /**
-   * @brief insert slow down point to prevent acceleration in avoidance maneuver.
-   * @param avoidance path.
-   */
-  void modifyPathVelocityToPreventAccelerationOnAvoidance(ShiftedPath & shifted_path);
-
-  /**
    * @brief fill debug markers.
    */
   void updateDebugMarker(
@@ -620,8 +614,6 @@ private:
   bool arrived_path_end_{false};
 
   std::shared_ptr<AvoidanceParameters> parameters_;
-
-  std::shared_ptr<double> ego_velocity_starting_avoidance_ptr_;
 
   helper::avoidance::AvoidanceHelper helper_;
 

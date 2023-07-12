@@ -717,23 +717,23 @@ namespace: `avoidance.constraints.`
 
 namespace: `avoidance.constraints.lateral.`
 
-| a Name               | Unit   | Type   | Description                                                                                   | Default value |
-| :------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------- | :------------ |
-| prepare_time         | [s]    | double | Avoidance shift starts from point ahead of this time x ego_speed to avoid sudden path change. | 2.0           |
-| min_prepare_distance | [m]    | double | Minimum distance for "prepare_time" x "ego_speed".                                            | 1.0           |
-| nominal_lateral_jerk | [m/s3] | double | Avoidance path is generated with this jerk when there is enough distance from ego.            | 0.2           |
-| max_lateral_jerk     | [m/s3] | double | Avoidance path gets sharp up to this jerk limit when there is not enough distance from ego.   | 1.0           |
+| a Name                   | Unit   | Type   | Description                                                                                   | Default value |
+| :----------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------- | :------------ |
+| prepare_time             | [s]    | double | Avoidance shift starts from point ahead of this time x ego_speed to avoid sudden path change. | 2.0           |
+| min_prepare_distance     | [m]    | double | Minimum distance for "prepare_time" x "ego_speed".                                            | 1.0           |
+| nominal_lateral_jerk     | [m/s3] | double | Avoidance path is generated with this jerk when there is enough distance from ego.            | 0.2           |
+| max_lateral_jerk         | [m/s3] | double | Avoidance path gets sharp up to this jerk limit when there is not enough distance from ego.   | 1.0           |
+| max_lateral_acceleration | [m/s3] | double | Avoidance path gets sharp up to this accel limit when there is not enough distance from ego.  | 0.5           |
 
 namespace: `avoidance.constraints.longitudinal.`
 
-| Name                                   | Unit    | Type   | Description                                                                 | Default value |
-| :------------------------------------- | :------ | :----- | :-------------------------------------------------------------------------- | :------------ |
-| nominal_deceleration                   | [m/ss]  | double | Nominal deceleration limit.                                                 | -1.0          |
-| nominal_jerk                           | [m/sss] | double | Nominal jerk limit.                                                         | 0.5           |
-| max_deceleration                       | [m/ss]  | double | Max decelerate limit.                                                       | -2.0          |
-| max_jerk                               | [m/sss] | double | Max jerk limit.                                                             | 1.0           |
-| min_avoidance_speed_for_acc_prevention | [m]     | double | Minimum speed limit to be applied to prevent acceleration during avoidance. | 3.0           |
-| max_avoidance_acceleration             | [m/ss]  | double | Maximum acceleration during avoidance.                                      | 0.5           |
+| Name                 | Unit    | Type   | Description                            | Default value |
+| :------------------- | :------ | :----- | :------------------------------------- | :------------ |
+| nominal_deceleration | [m/ss]  | double | Nominal deceleration limit.            | -1.0          |
+| nominal_jerk         | [m/sss] | double | Nominal jerk limit.                    | 0.5           |
+| max_deceleration     | [m/ss]  | double | Max decelerate limit.                  | -2.0          |
+| max_jerk             | [m/sss] | double | Max jerk limit.                        | 1.0           |
+| max_acceleration     | [m/ss]  | double | Maximum acceleration during avoidance. | 1.0           |
 
 (\*2) If there are multiple vehicles in a row to be avoided, no new avoidance path will be generated unless their lateral margin difference exceeds this value.
 

@@ -165,18 +165,17 @@
 
         # lateral constraints
         lateral:
-          nominal_lateral_jerk: 0.2                     # [m/s3]
-          max_lateral_jerk: 1.0                         # [m/s3]
+          nominal_lateral_jerk: 0.2                     # [m/sss]
+          max_lateral_jerk: 1.0                         # [m/sss]
+          max_lateral_acceleration: 0.5                 # [m/ss]
 
         # longitudinal constraints
         longitudinal:
           nominal_deceleration: -1.0                    # [m/ss]
           nominal_jerk: 0.5                             # [m/sss]
           max_deceleration: -2.0                        # [m/ss]
-          max_jerk: 1.0
-          # For prevention of large acceleration while avoidance
-          min_avoidance_speed_for_acc_prevention: 3.0   # [m/s]
-          max_avoidance_acceleration: 0.5               # [m/ss]
+          max_jerk: 1.0                                 # [m/sss]
+          max_acceleration: 1.0                         # [m/ss]
 
       target_velocity_matrix:
         col_size: 2

@@ -196,9 +196,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.nominal_jerk = get_parameter<double>(node, ns + "nominal_jerk");
     p.max_deceleration = get_parameter<double>(node, ns + "max_deceleration");
     p.max_jerk = get_parameter<double>(node, ns + "max_jerk");
-    p.min_avoidance_speed_for_acc_prevention =
-      get_parameter<double>(node, ns + "min_avoidance_speed_for_acc_prevention");
-    p.max_avoidance_acceleration = get_parameter<double>(node, ns + "max_avoidance_acceleration");
+    p.max_acceleration = get_parameter<double>(node, ns + "max_acceleration");
   }
 
   // constraints (lateral)
@@ -206,6 +204,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     std::string ns = "avoidance.constraints.lateral.";
     p.nominal_lateral_jerk = get_parameter<double>(node, ns + "nominal_lateral_jerk");
     p.max_lateral_jerk = get_parameter<double>(node, ns + "max_lateral_jerk");
+    p.max_lateral_acceleration = get_parameter<double>(node, ns + "max_lateral_acceleration");
   }
 
   // velocity matrix
@@ -308,6 +307,7 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     const std::string ns = "avoidance.constrains.lateral.";
     updateParam<double>(parameters, ns + "nominal_lateral_jerk", p->nominal_lateral_jerk);
     updateParam<double>(parameters, ns + "max_lateral_jerk", p->max_lateral_jerk);
+    updateParam<double>(parameters, ns + "max_lateral_acceleration", p->max_lateral_acceleration);
   }
 
   {
