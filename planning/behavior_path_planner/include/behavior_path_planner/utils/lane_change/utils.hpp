@@ -187,9 +187,8 @@ bool isParkedObject(
 
 bool passParkedObject(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
-  const PathWithLaneId & current_lane_path, const std::vector<ExtendedPredictedObject> & objects,
-  const double minimum_lane_change_length, const bool is_goal_in_route,
-  const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold);
+  const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
+  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters);
 
 boost::optional<size_t> getLeadingStaticObjectIdx(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,

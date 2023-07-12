@@ -1060,11 +1060,17 @@ bool isParkedObject(
 
 bool passParkedObject(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
-  const PathWithLaneId & current_lane_path, const std::vector<ExtendedPredictedObject> & objects,
-  const double minimum_lane_change_length, const bool is_goal_in_route,
-  const double object_check_min_road_shoulder_width, const double object_shiftable_ratio_threshold)
+  const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
+  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters)
 {
+  const auto & object_check_min_road_shoulder_width =
+    lane_change_parameters.object_check_min_road_shoulder_width;
+  const auto & object_shiftable_ratio_threshold =
+    lane_change_parameters.object_shiftable_ratio_threshold;
   const auto & path = lane_change_path.path;
+  const auto & current_lanes = lane_change_path.reference_lanelets;
+  const auto current_lane_path =
+    route_handler.getCenterLinePath(current_lanes, 0.0, std::numeric_limits<double>::max());
 
   if (objects.empty() || path.points.empty() || current_lane_path.points.empty()) {
     return false;

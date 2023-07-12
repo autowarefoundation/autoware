@@ -712,20 +712,10 @@ bool NormalLaneChange::getLaneChangePaths(
         continue;
       }
 
-      if (candidate_paths->empty()) {
-        const double object_check_min_road_shoulder_width =
-          lane_change_parameters_->object_check_min_road_shoulder_width;
-        const double object_shiftable_ratio_threshold =
-          lane_change_parameters_->object_shiftable_ratio_threshold;
-        const auto current_lane_path = route_handler.getCenterLinePath(
-          original_lanelets, 0.0, std::numeric_limits<double>::max());
-        const bool pass_parked_object = utils::lane_change::passParkedObject(
-          route_handler, *candidate_path, current_lane_path, target_objects.target_lane,
-          lane_change_buffer, is_goal_in_route, object_check_min_road_shoulder_width,
-          object_shiftable_ratio_threshold);
-        if (pass_parked_object) {
-          return false;
-        }
+      if (utils::lane_change::passParkedObject(
+            route_handler, *candidate_path, target_objects.target_lane, lane_change_buffer,
+            is_goal_in_route, *lane_change_parameters_)) {
+        return false;
       }
       candidate_paths->push_back(*candidate_path);
 
