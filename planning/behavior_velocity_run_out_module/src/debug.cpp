@@ -184,6 +184,8 @@ motion_utils::VirtualWalls RunOutDebug::createVirtualWalls()
     wall.pose = p;
     virtual_walls.push_back(wall);
   }
+  stop_pose_.clear();
+
   return virtual_walls;
 }
 
