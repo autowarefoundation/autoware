@@ -46,15 +46,6 @@ This function is activated when the lane id of the target path has an no drivabl
 
 - At each state, RTC settings are assigned according to the following table
 
-#### RTC Settings During Different States
-
-| State                     | RTC Activation | Safe State | Distance                                                    |
-| ------------------------- | -------------- | ---------- | ----------------------------------------------------------- |
-| `INIT`                    | `false`        | `true`     | distance from ego front to first intersection point OR zero |
-| `APPROACHING`             | `false`        | `true`     | distance from ego front to first intersection               |
-| `INSIDE_NO_DRIVABLE_LANE` | `false`        | `false`    | zero                                                        |
-| `STOPPED`                 | `true`         | `false`    | zero                                                        |
-
 ### Future Work
 
 - As [Request to Intervene API](https://github.com/autowarefoundation/autoware/issues/3487) is not implemented yet, this will be handled to notify the driver to takeover the driving task responsibility after the vehicle stops due to `no_drivable_lane`
