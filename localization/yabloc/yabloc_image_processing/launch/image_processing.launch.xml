@@ -33,7 +33,7 @@
     <remap from="~/debug/segmented_image" to="$(var output_segmented_image)"/>
   </node>
 
-  <!-- segment fitler -->
+  <!-- segment filter -->
   <arg name="input_graph_segmented" default="graph_segmented"/>
   <arg name="input_line_segments_cloud" default="line_segments_cloud"/>
   <arg name="output_projected_line_segments_cloud" default="/localization/yabloc/image_processing/projected_line_segments_cloud"/>

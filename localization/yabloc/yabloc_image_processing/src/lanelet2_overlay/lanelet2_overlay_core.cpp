@@ -116,20 +116,20 @@ void Lanelet2Overlay::draw_overlay(
 {
   if (ll2_cloud_.empty()) return;
 
-  cv::Mat overlayed_image = cv::Mat::zeros(image.size(), CV_8UC3);
+  cv::Mat overlaid_image = cv::Mat::zeros(image.size(), CV_8UC3);
 
   using common::extract_near_line_segments;
   if (pose) {
     draw_overlay_line_segments(
-      overlayed_image, *pose,
+      overlaid_image, *pose,
       extract_near_line_segments(ll2_cloud_, common::pose_to_se3(*pose), 60));
     draw_overlay_line_segments(
-      overlayed_image, *pose,
+      overlaid_image, *pose,
       extract_near_line_segments(sign_board_, common::pose_to_se3(*pose), 60));
   }
 
   cv::Mat show_image;
-  cv::addWeighted(image, 0.8, overlayed_image, 0.8, 1, show_image);
+  cv::addWeighted(image, 0.8, overlaid_image, 0.8, 1, show_image);
   common::publish_image(*pub_image_, show_image, stamp);
 }
 

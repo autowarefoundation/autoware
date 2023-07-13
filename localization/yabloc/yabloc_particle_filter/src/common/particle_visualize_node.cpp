@@ -20,7 +20,7 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-namespace yabloc::modularized_particle_fitler
+namespace yabloc::modularized_particle_filter
 {
 class ParticleVisualize : public rclcpp::Node
 {
@@ -103,13 +103,13 @@ private:
     pub_marker_array->publish(marker_array);
   }
 };
-}  // namespace yabloc::modularized_particle_fitler
+}  // namespace yabloc::modularized_particle_filter
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  rclcpp::spin(std::make_shared<yabloc::modularized_particle_fitler::ParticleVisualize>());
+  rclcpp::spin(std::make_shared<yabloc::modularized_particle_filter::ParticleVisualize>());
   rclcpp::shutdown();
   return 0;
 }

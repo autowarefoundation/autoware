@@ -1,5 +1,5 @@
 <launch>
-  <arg name="input_overlayed_pose" description=""/>
+  <arg name="input_overlaid_pose" description=""/>
   <let name="input_ground" value="/localization/yabloc/map/ground"/>
   <let name="input_projected_line_segments_cloud" value="/localization/yabloc/image_processing/projected_line_segments_cloud"/>
   <let name="input_ll2_sign_board" value="/localization/yabloc/map/ll2_sign_board"/>
@@ -13,7 +13,7 @@
   <node name="lanelet2_overlay" pkg="yabloc_image_processing" exec="lanelet2_overlay_node" output="screen" args="--ros-args --log-level warn">
     <remap from="~/input/image_raw" to="$(var resized_image)"/>
     <remap from="~/input/camera_info" to="$(var resized_info)"/>
-    <remap from="~/input/pose" to="$(var input_overlayed_pose)"/>
+    <remap from="~/input/pose" to="$(var input_overlaid_pose)"/>
     <remap from="~/input/ground" to="$(var input_ground)"/>
     <remap from="~/input/projected_line_segments_cloud" to="$(var input_projected_line_segments_cloud)"/>
     <remap from="~/input/ll2_sign_board" to="$(var input_ll2_sign_board)"/>
