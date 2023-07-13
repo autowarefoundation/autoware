@@ -792,10 +792,10 @@ void filterTargetObjects(
   const rclcpp::Time now = rclcpp::Clock(RCL_ROS_TIME).now();
 
   // for goal
-  const auto dist_to_goal =
-    rh->isInGoalRouteSection(data.current_lanelets.back())
-      ? calcSignedArcLength(path_points, ego_pos, rh->getGoalPose().position)
-      : std::numeric_limits<double>::max();
+  const auto ego_idx = planner_data->findEgoIndex(path_points);
+  const auto dist_to_goal = rh->isInGoalRouteSection(data.current_lanelets.back())
+                              ? calcSignedArcLength(path_points, ego_idx, path_points.size() - 1)
+                              : std::numeric_limits<double>::max();
 
   // extend lanelets if the reference path is cut for lane change.
   const auto & ego_pose = planner_data->self_odometry->pose.pose;
