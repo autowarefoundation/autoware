@@ -459,7 +459,12 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * STEP 5
    * Generate avoidance path.
    */
-  data.candidate_path = generateAvoidancePath(path_shifter);
+  ShiftedPath spline_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
+  const auto success_spline_path_generation =
+    path_shifter.generate(&spline_shift_path, true, SHIFT_TYPE::SPLINE);
+  data.candidate_path = success_spline_path_generation
+                          ? spline_shift_path
+                          : utils::avoidance::toShiftedPath(data.reference_path);
 
   /**
    * STEP 6
@@ -2494,21 +2499,25 @@ BehaviorModuleOutput AvoidanceModule::plan()
   }
 
   // generate path with shift points that have been inserted.
-  auto avoidance_path = generateAvoidancePath(path_shifter_);
-  debug_data_.output_shift = avoidance_path.shift_length;
+  ShiftedPath linear_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
+  ShiftedPath spline_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
+  const auto success_spline_path_generation =
+    path_shifter_.generate(&spline_shift_path, true, SHIFT_TYPE::SPLINE);
+  const auto success_linear_path_generation =
+    path_shifter_.generate(&linear_shift_path, true, SHIFT_TYPE::LINEAR);
+
+  // set previous data
+  if (success_spline_path_generation && success_linear_path_generation) {
+    helper_.setPreviousLinearShiftPath(linear_shift_path);
+    helper_.setPreviousSplineShiftPath(spline_shift_path);
+    helper_.setPreviousReferencePath(data.reference_path);
+  } else {
+    spline_shift_path = helper_.getPreviousSplineShiftPath();
+  }
 
   // post processing
   {
     postProcess();  // remove old shift points
-  }
-
-  // set previous data
-  {
-    ShiftedPath linear_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
-    path_shifter_.generate(&linear_shift_path, true, SHIFT_TYPE::LINEAR);
-    helper_.setPreviousLinearShiftPath(linear_shift_path);
-    helper_.setPreviousSplineShiftPath(avoidance_path);
-    helper_.setPreviousReferencePath(data.reference_path);
   }
 
   BehaviorModuleOutput output;
@@ -2516,30 +2525,30 @@ BehaviorModuleOutput AvoidanceModule::plan()
   // turn signal info
   {
     const auto original_signal = getPreviousModuleOutput().turn_signal_info;
-    const auto new_signal = calcTurnSignalInfo(avoidance_path);
-    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(avoidance_path.path.points);
+    const auto new_signal = calcTurnSignalInfo(spline_shift_path);
+    const auto current_seg_idx = planner_data_->findEgoSegmentIndex(spline_shift_path.path.points);
     output.turn_signal_info = planner_data_->turn_signal_decider.use_prior_turn_signal(
-      avoidance_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
+      spline_shift_path.path, getEgoPose(), current_seg_idx, original_signal, new_signal,
       planner_data_->parameters.ego_nearest_dist_threshold,
       planner_data_->parameters.ego_nearest_yaw_threshold);
   }
 
   // sparse resampling for computational cost
   {
-    avoidance_path.path =
-      utils::resamplePathWithSpline(avoidance_path.path, parameters_->resample_interval_for_output);
+    spline_shift_path.path = utils::resamplePathWithSpline(
+      spline_shift_path.path, parameters_->resample_interval_for_output);
   }
 
   avoidance_data_.state = updateEgoState(data);
 
   // update output data
   {
-    updateEgoBehavior(data, avoidance_path);
+    updateEgoBehavior(data, spline_shift_path);
     updateInfoMarker(avoidance_data_);
     updateDebugMarker(avoidance_data_, path_shifter_, debug_data_);
   }
 
-  output.path = std::make_shared<PathWithLaneId>(avoidance_path.path);
+  output.path = std::make_shared<PathWithLaneId>(spline_shift_path.path);
   output.reference_path = getPreviousModuleOutput().reference_path;
   path_reference_ = getPreviousModuleOutput().reference_path;
 
@@ -2549,7 +2558,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   // Drivable area generation.
   generateExtendedDrivableArea(output);
 
-  updateRegisteredRTCStatus(avoidance_path.path);
+  updateRegisteredRTCStatus(spline_shift_path.path);
 
   return output;
 }
@@ -2848,20 +2857,6 @@ bool AvoidanceModule::isValidShiftLine(
   debug_data_.proposed_spline_shift = proposed_shift_path.shift_length;
 
   return true;  // valid shift line.
-}
-
-ShiftedPath AvoidanceModule::generateAvoidancePath(PathShifter & path_shifter) const
-{
-  DEBUG_PRINT("path_shifter: base shift = %f", getCurrentBaseShift());
-  printShiftLines(path_shifter.getShiftLines(), "path_shifter shift points");
-
-  ShiftedPath shifted_path;
-  if (!path_shifter.generate(&shifted_path)) {
-    RCLCPP_ERROR(getLogger(), "failed to generate shifted path.");
-    return helper_.getPreviousSplineShiftPath();
-  }
-
-  return shifted_path;
 }
 
 void AvoidanceModule::updateData()

@@ -456,12 +456,6 @@ private:
   // generate output data
 
   /**
-   * @brief generate avoidance path from path shifter.
-   * @return avoidance path.
-   */
-  ShiftedPath generateAvoidancePath(PathShifter & shifter) const;
-
-  /**
    * @brief calculate turn signal infomation.
    * @param avoidance path.
    * @return turn signal command.
