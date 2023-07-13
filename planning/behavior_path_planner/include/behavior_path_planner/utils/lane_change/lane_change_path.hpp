@@ -30,19 +30,9 @@ using behavior_path_planner::TurnSignalInfo;
 struct LaneChangePath
 {
   PathWithLaneId path{};
-  lanelet::ConstLanelets reference_lanelets{};
-  lanelet::ConstLanelets target_lanelets{};
-  Pose lane_changing_start{};
-  Pose lane_changing_end{};
   ShiftedPath shifted_path{};
-  ShiftLine shift_line{};
-
-  // longitudinal acceleration applied on the prepare and lane-changing phase
-  LaneChangePhaseInfo longitudinal_acceleration{0.0, 0.0};
-
-  LaneChangePhaseInfo length{0.0, 0.0};
-  LaneChangePhaseInfo duration{0.0, 0.0};
   PathWithLaneId prev_path{};
+  LaneChangeInfo info{};
 };
 using LaneChangePaths = std::vector<LaneChangePath>;
 

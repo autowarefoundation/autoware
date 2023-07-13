@@ -94,13 +94,9 @@ bool isPathInLanelets(
   const lanelet::ConstLanelets & target_lanelets);
 
 std::optional<LaneChangePath> constructCandidatePath(
-  const PathWithLaneId & prepare_segment, const PathWithLaneId & target_segment,
-  const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
-  const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const std::vector<std::vector<int64_t>> & sorted_lane_ids,
-  const LaneChangePhaseInfo longitudinal_acceleration, const double lateral_acceleration,
-  const LaneChangePhaseInfo lane_change_length, const LaneChangePhaseInfo lane_change_velocity,
-  const double terminal_lane_changing_velocity, const LaneChangePhaseInfo lane_change_time);
+  const LaneChangeInfo & lane_change_info, const PathWithLaneId & prepare_segment,
+  const PathWithLaneId & target_segment, const PathWithLaneId & target_lane_reference_path,
+  const std::vector<std::vector<int64_t>> & sorted_lane_ids);
 
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,

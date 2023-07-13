@@ -146,6 +146,25 @@ struct LaneChangePhaseInfo
   }
 };
 
+struct LaneChangeInfo
+{
+  LaneChangePhaseInfo longitudinal_acceleration{0.0, 0.0};
+  LaneChangePhaseInfo velocity{0.0, 0.0};
+  LaneChangePhaseInfo duration{0.0, 0.0};
+  LaneChangePhaseInfo length{0.0, 0.0};
+
+  lanelet::ConstLanelets reference_lanelets{};
+  lanelet::ConstLanelets target_lanelets{};
+
+  Pose lane_changing_start{};
+  Pose lane_changing_end{};
+
+  ShiftLine shift_line{};
+
+  double lateral_acceleration{0.0};
+  double terminal_lane_changing_velocity{0.0};
+};
+
 struct LaneChangeTargetObjectIndices
 {
   std::vector<size_t> current_lane{};

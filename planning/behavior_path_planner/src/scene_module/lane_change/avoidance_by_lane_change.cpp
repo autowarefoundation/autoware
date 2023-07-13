@@ -78,7 +78,7 @@ std::pair<bool, bool> AvoidanceByLaneChange::getSafePath(LaneChangePath & safe_p
   }
 
   const auto to_lane_change_end_distance = motion_utils::calcSignedArcLength(
-    safe_path.path.points, getEgoPose().position, safe_path.shift_line.end.position);
+    safe_path.path.points, getEgoPose().position, safe_path.info.shift_line.end.position);
   const auto lane_change_finish_before_object = o_front.longitudinal > to_lane_change_end_distance;
   const auto execute_only_when_lane_change_finish_before_object =
     avoidance_parameters_->execute_only_when_lane_change_finish_before_object;
