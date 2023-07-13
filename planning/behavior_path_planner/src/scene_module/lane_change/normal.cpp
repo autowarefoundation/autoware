@@ -723,9 +723,8 @@ bool NormalLaneChange::getLaneChangePaths(
         return false;
       }
 
-      const auto [is_safe, is_object_coming_from_rear] = utils::lane_change::isLaneChangePathSafe(
-        *candidate_path, target_objects, getEgoPose(), getEgoTwist(), common_parameter,
-        *lane_change_parameters_, common_parameter.expected_front_deceleration,
+      const auto [is_safe, is_object_coming_from_rear] = isLaneChangePathSafe(
+        *candidate_path, target_objects, common_parameter.expected_front_deceleration,
         common_parameter.expected_rear_deceleration, object_debug_);
 
       if (is_safe) {
@@ -740,7 +739,6 @@ bool NormalLaneChange::getLaneChangePaths(
 PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
 {
   const auto current_pose = getEgoPose();
-  const auto current_twist = getEgoTwist();
   const auto & dynamic_objects = planner_data_->dynamic_object;
   const auto & common_parameters = getCommonParam();
   const auto & lane_change_parameters = *lane_change_parameters_;
@@ -758,9 +756,8 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
     current_pose, route_handler, common_parameters, *lane_change_parameters_);
 
   CollisionCheckDebugMap debug_data;
-  const auto safety_status = utils::lane_change::isLaneChangePathSafe(
-    path, target_objects, current_pose, current_twist, common_parameters, *lane_change_parameters_,
-    common_parameters.expected_front_deceleration_for_abort,
+  const auto safety_status = isLaneChangePathSafe(
+    path, target_objects, common_parameters.expected_front_deceleration_for_abort,
     common_parameters.expected_rear_deceleration_for_abort, debug_data);
 
   return safety_status;
@@ -999,5 +996,82 @@ bool NormalLaneChange::getAbortPath()
   abort_path.shift_line = shift_line;
   abort_path_ = std::make_shared<LaneChangePath>(abort_path);
   return true;
+}
+
+PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
+  const LaneChangePath & lane_change_path, const LaneChangeTargetObjects & target_objects,
+  const double front_decel, const double rear_decel,
+  std::unordered_map<std::string, CollisionCheckDebug> & debug_data) const
+{
+  PathSafetyStatus path_safety_status;
+
+  const auto & path = lane_change_path.path;
+  const auto & common_parameter = planner_data_->parameters;
+  const auto current_pose = getEgoPose();
+  const auto current_twist = getEgoTwist();
+
+  if (path.points.empty()) {
+    path_safety_status.is_safe = false;
+    return path_safety_status;
+  }
+
+  const double & time_resolution = lane_change_parameters_->prediction_time_resolution;
+
+  const auto ego_predicted_path = utils::lane_change::convertToPredictedPath(
+    lane_change_path, current_twist, current_pose, common_parameter, time_resolution);
+  const auto debug_predicted_path =
+    utils::lane_change::convertToPredictedPath(ego_predicted_path, time_resolution);
+
+  auto collision_check_objects = target_objects.target_lane;
+  collision_check_objects.insert(
+    collision_check_objects.end(), target_objects.current_lane.begin(),
+    target_objects.current_lane.end());
+
+  if (lane_change_parameters_->use_predicted_path_outside_lanelet) {
+    collision_check_objects.insert(
+      collision_check_objects.end(), target_objects.other_lane.begin(),
+      target_objects.other_lane.end());
+  }
+
+  const auto assignDebugData = [](const ExtendedPredictedObject & obj) {
+    CollisionCheckDebug debug;
+    debug.current_pose = obj.initial_pose.pose;
+    debug.current_twist = obj.initial_twist.twist;
+    return std::make_pair(tier4_autoware_utils::toHexString(obj.uuid), debug);
+  };
+
+  const auto updateDebugInfo =
+    [&debug_data](std::pair<std::string, CollisionCheckDebug> & obj, bool is_allowed) {
+      const auto & key = obj.first;
+      auto & element = obj.second;
+      element.allow_lane_change = is_allowed;
+      if (debug_data.find(key) != debug_data.end()) {
+        debug_data[key] = element;
+      } else {
+        debug_data.insert(obj);
+      }
+    };
+
+  for (const auto & obj : collision_check_objects) {
+    auto current_debug_data = assignDebugData(obj);
+    current_debug_data.second.ego_predicted_path.push_back(debug_predicted_path);
+    const auto obj_predicted_paths =
+      utils::getPredictedPathFromObj(obj, lane_change_parameters_->use_all_predicted_path);
+    for (const auto & obj_path : obj_predicted_paths) {
+      if (!utils::safety_check::checkCollision(
+            path, ego_predicted_path, obj, obj_path, common_parameter, front_decel, rear_decel,
+            current_debug_data.second)) {
+        path_safety_status.is_safe = false;
+        updateDebugInfo(current_debug_data, path_safety_status.is_safe);
+        const auto & obj_pose = obj.initial_pose.pose;
+        const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
+        path_safety_status.is_object_coming_from_rear |= !utils::safety_check::isTargetObjectFront(
+          path, current_pose, common_parameter.vehicle_info, obj_polygon);
+      }
+    }
+    updateDebugInfo(current_debug_data, path_safety_status.is_safe);
+  }
+
+  return path_safety_status;
 }
 }  // namespace behavior_path_planner

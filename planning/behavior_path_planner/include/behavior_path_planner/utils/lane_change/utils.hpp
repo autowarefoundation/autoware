@@ -50,7 +50,6 @@ using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using marker_utils::CollisionCheckDebug;
 using route_handler::Direction;
 using tier4_autoware_utils::Polygon2d;
 
@@ -102,14 +101,6 @@ std::optional<LaneChangePath> constructCandidatePath(
   const LaneChangePhaseInfo longitudinal_acceleration, const double lateral_acceleration,
   const LaneChangePhaseInfo lane_change_length, const LaneChangePhaseInfo lane_change_velocity,
   const double terminal_lane_changing_velocity, const LaneChangePhaseInfo lane_change_time);
-
-PathSafetyStatus isLaneChangePathSafe(
-  const LaneChangePath & lane_change_path, const LaneChangeTargetObjects & target_objects,
-  const Pose & current_pose, const Twist & current_twist,
-  const BehaviorPathPlannerParameters & common_parameter,
-  const behavior_path_planner::LaneChangeParameters & lane_change_parameter,
-  const double front_decel, const double rear_decel,
-  std::unordered_map<std::string, CollisionCheckDebug> & debug_data);
 
 bool hasEnoughLength(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
