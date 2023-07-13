@@ -53,6 +53,7 @@ StartPlannerModuleManager::StartPlannerModuleManager(
   p.lateral_jerk = node->declare_parameter<double>(ns + "lateral_jerk");
   p.maximum_lateral_acc = node->declare_parameter<double>(ns + "maximum_lateral_acc");
   p.minimum_lateral_acc = node->declare_parameter<double>(ns + "minimum_lateral_acc");
+  p.maximum_curvature = node->declare_parameter<double>(ns + "maximum_curvature");
   p.deceleration_interval = node->declare_parameter<double>(ns + "deceleration_interval");
   // geometric pull out
   p.enable_geometric_pull_out = node->declare_parameter<bool>(ns + "enable_geometric_pull_out");

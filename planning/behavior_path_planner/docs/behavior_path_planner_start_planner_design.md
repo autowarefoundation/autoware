@@ -111,6 +111,9 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 | maximum_lateral_jerk            | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
 | minimum_lateral_jerk            | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.1           |
 | minimum_shift_pull_out_distance | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 0.0           |
+| maximum_curvature               | [m]    | double | maximum curvature. The pull out distance is calculated so that the curvature is smaller than this value.             |
+
+| 0.07 |
 
 ### **geometric pull out**
 

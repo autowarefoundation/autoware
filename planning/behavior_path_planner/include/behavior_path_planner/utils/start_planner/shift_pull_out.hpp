@@ -53,6 +53,13 @@ public:
     const PathWithLaneId & path, const double target_after_arc_length, const double dr);
 
   std::shared_ptr<LaneDepartureChecker> lane_departure_checker_;
+
+private:
+  // Calculate longitudinal distance based on the acceleration limit, curvature limit, and the
+  // minimum distance requirement.
+  double calcPullOutLongitudinalDistance(
+    const double lon_acc, const double shift_time, const double shift_length,
+    const double max_curvature, const double min_distance) const;
 };
 }  // namespace behavior_path_planner
 

@@ -41,6 +41,7 @@ struct StartPlannerParameters
   double lateral_jerk;
   double maximum_lateral_acc;
   double minimum_lateral_acc;
+  double maximum_curvature;  // maximum curvature considered in the path generation
   double deceleration_interval;
   // geometric pull out
   bool enable_geometric_pull_out;

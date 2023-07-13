@@ -15,6 +15,7 @@
       lateral_acceleration_sampling_num: 3
       minimum_lateral_acc: 0.15
       maximum_lateral_acc: 0.5
+      maximum_curvature: 0.07
       # geometric pull out
       enable_geometric_pull_out: true
       divide_pull_out_path: false
