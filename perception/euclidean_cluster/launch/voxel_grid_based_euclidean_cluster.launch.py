@@ -224,21 +224,30 @@ def generate_launch_description():
             add_launch_arg("use_pointcloud_map", "false"),
             add_launch_arg(
                 "voxel_grid_param_path",
-                [FindPackageShare("euclidean_cluster"), "/config/voxel_grid.param.yaml"],
+                [
+                    FindPackageShare("autoware_launch"),
+                    "/config/perception/object_recognition/detection/clustering/voxel_grid.param.yaml",
+                ],
             ),
             add_launch_arg(
                 "outlier_param_path",
-                [FindPackageShare("euclidean_cluster"), "/config/outlier.param.yaml"],
+                [
+                    FindPackageShare("autoware_launch"),
+                    "/config/perception/object_recognition/detection/clustering/outlier.param.yaml",
+                ],
             ),
             add_launch_arg(
                 "compare_map_param_path",
-                [FindPackageShare("euclidean_cluster"), "/config/compare_map.param.yaml"],
+                [
+                    FindPackageShare("autoware_launch"),
+                    "/config/perception/object_recognition/detection/clustering/compare_map.param.yaml",
+                ],
             ),
             add_launch_arg(
                 "voxel_grid_based_euclidean_param_path",
                 [
-                    FindPackageShare("euclidean_cluster"),
-                    "/config/voxel_grid_based_euclidean_cluster.param.yaml",
+                    FindPackageShare("autoware_launch"),
+                    "/config/perception/object_recognition/detection/clustering/voxel_grid_based_euclidean_cluster.param.yaml",
                 ],
             ),
             OpaqueFunction(function=launch_setup),

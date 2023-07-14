@@ -133,11 +133,17 @@ def generate_launch_description():
             add_launch_arg("use_pointcloud_map", "false"),
             add_launch_arg(
                 "voxel_grid_param_path",
-                [FindPackageShare("euclidean_cluster"), "/config/voxel_grid.param.yaml"],
+                [
+                    FindPackageShare("autoware_launch"),
+                    "/config/perception/object_recognition/detection/clustering/voxel_grid.param.yaml",
+                ],
             ),
             add_launch_arg(
                 "euclidean_param_path",
-                [FindPackageShare("euclidean_cluster"), "/config/euclidean_cluster.param.yaml"],
+                [
+                    FindPackageShare("autoware_launch"),
+                    "/config/perception/object_recognition/detection/clustering/euclidean_cluster.param.yaml",
+                ],
             ),
             OpaqueFunction(function=launch_setup),
         ]
