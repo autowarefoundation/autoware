@@ -74,7 +74,7 @@ visualization_msgs::msg::MarkerArray createCrosswalkMarkers(
       }
       marker.text = string_stream.str();
       marker.pose.position = point.collision_point;
-      marker.pose.position.z += 2.0;
+      marker.pose.position.z += 2.0 + i * 0.5;  // NOTE: so that the texts will not overlap
       msg.markers.push_back(marker);
     }
   }
