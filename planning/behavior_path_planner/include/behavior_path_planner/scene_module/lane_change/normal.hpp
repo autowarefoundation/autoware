@@ -98,9 +98,22 @@ protected:
 
   int getNumToPreferredLane(const lanelet::ConstLanelet & lane) const override;
 
+  LaneChangeTargetObjects getTargetObjects(
+    const lanelet::ConstLanelets & current_lanes,
+    const lanelet::ConstLanelets & target_lanes) const;
+
   PathWithLaneId getPrepareSegment(
     const lanelet::ConstLanelets & current_lanes, const double backward_path_length,
     const double prepare_length) const override;
+
+  PathWithLaneId getTargetSegment(
+    const lanelet::ConstLanelets & target_lanelets, const Pose & lane_changing_start_pose,
+    const double target_lane_length, const double lane_changing_length,
+    const double lane_changing_velocity, const double buffer_for_next_lane_change) const;
+
+  bool hasEnoughLength(
+    const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
+    const lanelet::ConstLanelets & target_lanes, const Direction direction = Direction::NONE) const;
 
   bool getLaneChangePaths(
     const lanelet::ConstLanelets & original_lanelets,
