@@ -80,6 +80,7 @@ public:
     double ego_pass_later_margin;
     double stop_object_velocity;
     double min_object_velocity;
+    bool disable_stop_for_yield_cancel;
     double max_yield_timeout;
     double ego_yield_query_stop_duration;
     // param for input data
@@ -90,6 +91,80 @@ public:
     bool look_bicycle;
     bool look_motorcycle;
     bool look_pedestrian;
+  };
+
+  struct ObjectInfo
+  {
+    // NOTE: FULLY_STOPPED means stopped object which can be ignored.
+    enum class State { STOPPED = 0, FULLY_STOPPED, OTHER };
+    State state{State::OTHER};
+    boost::optional<rclcpp::Time> time_to_start_stopped{boost::none};
+
+    void updateState(
+      const rclcpp::Time & now, const double obj_vel, const bool is_ego_yielding,
+      const PlannerParam & planner_param)
+    {
+      const bool is_stopped = obj_vel < planner_param.stop_object_velocity;
+
+      if (is_stopped) {
+        if (state == State::FULLY_STOPPED) {
+          return;
+        }
+
+        if (!time_to_start_stopped) {
+          time_to_start_stopped = now;
+        }
+        const bool intent_to_cross =
+          (now - *time_to_start_stopped).seconds() < planner_param.max_yield_timeout;
+        if ((is_ego_yielding || planner_param.disable_stop_for_yield_cancel) && !intent_to_cross) {
+          state = State::FULLY_STOPPED;
+        } else {
+          // NOTE: Object may start moving
+          state = State::STOPPED;
+        }
+      } else {
+        time_to_start_stopped = boost::none;
+        state = State::OTHER;
+      }
+    }
+  };
+  struct ObjectInfoManager
+  {
+    void init() { current_uuids_.clear(); }
+    void update(
+      const std::string & uuid, const double obj_vel, const rclcpp::Time & now,
+      const bool is_ego_yielding, const PlannerParam & planner_param)
+    {
+      // update current uuids
+      current_uuids_.push_back(uuid);
+
+      // add new object
+      if (objects.count(uuid) == 0) {
+        objects.emplace(uuid, ObjectInfo{});
+      }
+
+      // update object state
+      objects.at(uuid).updateState(now, obj_vel, is_ego_yielding, planner_param);
+    }
+    void finalize()
+    {
+      // remove objects not set in current_uuids_
+      std::vector<std::string> obsolete_uuids;
+      for (const auto & object : objects) {
+        if (
+          std::find(current_uuids_.begin(), current_uuids_.end(), object.first) ==
+          current_uuids_.end()) {
+          obsolete_uuids.push_back(object.first);
+        }
+      }
+      for (const auto & obsolete_uuid : obsolete_uuids) {
+        objects.erase(obsolete_uuid);
+      }
+    }
+    ObjectInfo::State getState(const std::string & uuid) const { return objects.at(uuid).state; }
+
+    std::unordered_map<std::string, ObjectInfo> objects;
+    std::vector<std::string> current_uuids_;
   };
 
   CrosswalkModule(
@@ -138,7 +213,8 @@ private:
     const double dist_obj2cp, const geometry_msgs::msg::Vector3 & ego_vel,
     const geometry_msgs::msg::Vector3 & obj_vel) const;
 
-  CollisionPointState getCollisionPointState(const double ttc, const double ttv) const;
+  CollisionState getCollisionState(
+    const std::string & obj_uuid, const double ttc, const double ttv) const;
 
   void applySafetySlowDownSpeed(
     PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects);
@@ -158,7 +234,7 @@ private:
 
   static bool isVehicle(const PredictedObject & object);
 
-  bool isTargetType(const PredictedObject & object) const;
+  bool isCrosswalkUserType(const PredictedObject & object) const;
 
   static geometry_msgs::msg::Polygon createObjectPolygon(
     const double width_m, const double length_m);
@@ -189,9 +265,7 @@ private:
   // Parameter
   const PlannerParam planner_param_;
 
-  // Ignore objects
-  std::unordered_map<std::string, rclcpp::Time> stopped_objects_;
-  std::unordered_map<std::string, rclcpp::Time> ignore_objects_;
+  ObjectInfoManager object_info_manager_;
 
   // Debug
   mutable DebugData debug_data_;

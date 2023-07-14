@@ -119,6 +119,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   cp.ego_pass_later_margin = node.declare_parameter<double>(ns + ".ego_pass_later_margin");
   cp.stop_object_velocity = node.declare_parameter<double>(ns + ".stop_object_velocity_threshold");
   cp.min_object_velocity = node.declare_parameter<double>(ns + ".min_object_velocity");
+  cp.disable_stop_for_yield_cancel =
+    node.declare_parameter<bool>(ns + ".disable_stop_for_yield_cancel");
   cp.max_yield_timeout = node.declare_parameter<double>(ns + ".max_yield_timeout");
   cp.ego_yield_query_stop_duration =
     node.declare_parameter<double>(ns + ".ego_yield_query_stop_duration");

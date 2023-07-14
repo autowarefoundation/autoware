@@ -24,6 +24,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #define EIGEN_MPL2_ONLY
@@ -43,14 +44,13 @@ using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::Point2d;
 using tier4_planning_msgs::msg::StopFactor;
 
-enum class CollisionPointState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE };
+enum class CollisionState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE };
 
 struct CollisionPoint
 {
   geometry_msgs::msg::Point collision_point{};
   double time_to_collision{};
   double time_to_vehicle{};
-  CollisionPointState state{CollisionPointState::EGO_PASS_FIRST};
 };
 
 struct StopFactorInfo
@@ -78,7 +78,7 @@ struct DebugData
   boost::optional<geometry_msgs::msg::Point> range_near_point{boost::none};
   boost::optional<geometry_msgs::msg::Point> range_far_point{boost::none};
 
-  std::vector<CollisionPoint> collision_points;
+  std::vector<std::pair<CollisionPoint, CollisionState>> collision_points;
 
   std::vector<geometry_msgs::msg::Pose> stop_poses;
   std::vector<geometry_msgs::msg::Pose> slow_poses;

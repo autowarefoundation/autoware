@@ -124,6 +124,26 @@ void sortCrosswalksByDistance(
 
   std::sort(crosswalks.begin(), crosswalks.end(), compare);
 }
+
+std::vector<Point2d> calcOverlappingPoints(const Polygon2d & polygon1, const Polygon2d & polygon2)
+{
+  // NOTE: If one polygon is fully inside the other polygon, the result is empty.
+  std::vector<Point2d> intersection{};
+  bg::intersection(polygon1, polygon2, intersection);
+
+  if (bg::within(polygon1, polygon2)) {
+    for (const auto & p : polygon1.outer()) {
+      intersection.push_back(Point2d{p.x(), p.y()});
+    }
+  }
+  if (bg::within(polygon2, polygon1)) {
+    for (const auto & p : polygon2.outer()) {
+      intersection.push_back(Point2d{p.x(), p.y()});
+    }
+  }
+
+  return intersection;
+}
 }  // namespace
 
 CrosswalkModule::CrosswalkModule(
@@ -290,28 +310,42 @@ boost::optional<StopFactor> CrosswalkModule::findNearestStopFactor(
     return {};
   }
 
-  const auto now = clock_->now();
-
-  const auto ignore_crosswalk = debug_data_.ignore_crosswalk = isRedSignalForPedestrians();
-
-  // Get attention area
+  // Get attention area, which is ego's footprints on the crosswalk
   const auto attention_area = getAttentionArea(sparse_resample_path, crosswalk_attention_range);
 
   // Check stuck vehicle
   const bool found_stuck_vehicle =
     isStuckVehicle(sparse_resample_path, objects_ptr->objects, path_intersects);
 
+  // Check if ego is yielding
+  const bool is_ego_yielding = [&]() {
+    const auto has_reached_stop_point =
+      p_stop_line.get().first - base_link2front < planner_param_.stop_position_threshold;
+
+    return planner_data_->isVehicleStopped(planner_param_.ego_yield_query_stop_duration) &&
+           has_reached_stop_point;
+  }();
+
+  // Update object state
+  object_info_manager_.init();
+  for (const auto & object : objects_ptr->objects) {
+    const auto obj_uuid = toHexString(object.object_id);
+    const auto & obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear;
+    object_info_manager_.update(
+      obj_uuid, std::hypot(obj_vel.x, obj_vel.y), clock_->now(), is_ego_yielding, planner_param_);
+  }
+  object_info_manager_.finalize();
+
   // Check pedestrian for stop
-  bool found_pedestrians = false;
-  geometry_msgs::msg::Point first_stop_point{};
-  double minimum_stop_dist = std::numeric_limits<double>::max();
+  std::optional<std::pair<geometry_msgs::msg::Point, double>>
+    nearest_stop_info;  // first stop point and minimum stop distance
   StopFactor stop_factor;
+  const auto ignore_crosswalk = debug_data_.ignore_crosswalk = isRedSignalForPedestrians();
   for (const auto & object : objects_ptr->objects) {
     const auto & obj_pos = object.kinematics.initial_pose_with_covariance.pose.position;
-    const auto & obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear;
     const auto obj_uuid = toHexString(object.object_id);
 
-    if (!isTargetType(object)) {
+    if (!isCrosswalkUserType(object)) {
       continue;
     }
 
@@ -319,87 +353,49 @@ boost::optional<StopFactor> CrosswalkModule::findNearestStopFactor(
       continue;
     }
 
-    for (auto & cp : getCollisionPoints(
-           sparse_resample_path, object, attention_area, crosswalk_attention_range)) {
-      const auto is_ignore_object = ignore_objects_.count(obj_uuid) != 0;
-      if (is_ignore_object) {
-        cp.state = CollisionPointState::IGNORE;
-      }
+    // NOTE: Collision points are calculated on each predicted path
+    const auto collision_point =
+      getCollisionPoints(sparse_resample_path, object, attention_area, crosswalk_attention_range);
 
-      const auto is_stop_object =
-        std::hypot(obj_vel.x, obj_vel.y) < planner_param_.stop_object_velocity;
-      if (!is_stop_object) {
-        ignore_objects_.erase(obj_uuid);
-        stopped_objects_.erase(obj_uuid);
-      }
-
-      debug_data_.collision_points.push_back(cp);
-
-      if (cp.state != CollisionPointState::YIELD) {
-        continue;
-      }
-
-      found_pedestrians = true;
-      stop_factor.stop_factor_points.push_back(obj_pos);
-
+    for (const auto & cp : collision_point) {
       const auto dist_ego2cp =
         calcSignedArcLength(sparse_resample_path.points, ego_pos, cp.collision_point) -
         planner_param_.stop_margin;
 
-      if (dist_ego2cp < minimum_stop_dist) {
-        first_stop_point = cp.collision_point;
-        minimum_stop_dist = dist_ego2cp;
-      }
+      const auto collision_state =
+        getCollisionState(obj_uuid, cp.time_to_collision, cp.time_to_vehicle);
+      debug_data_.collision_points.push_back(std::make_pair(cp, collision_state));
 
-      if (!is_stop_object) {
+      if (collision_state != CollisionState::YIELD) {
         continue;
       }
 
-      const auto reached_stop_point =
-        dist_ego2cp - base_link2front < planner_param_.stop_position_threshold ||
-        p_stop_line.get().first - base_link2front < planner_param_.stop_position_threshold;
+      stop_factor.stop_factor_points.push_back(obj_pos);
 
-      const auto is_yielding_now =
-        planner_data_->isVehicleStopped(planner_param_.ego_yield_query_stop_duration) &&
-        reached_stop_point;
-      if (!is_yielding_now) {
-        continue;
+      if (!nearest_stop_info || dist_ego2cp < nearest_stop_info->second) {
+        nearest_stop_info = std::make_pair(cp.collision_point, dist_ego2cp);
       }
-
-      const auto has_object_stopped = stopped_objects_.count(obj_uuid) != 0;
-      if (!has_object_stopped) {
-        stopped_objects_.insert(std::make_pair(obj_uuid, now));
-        continue;
-      }
-
-      const auto stopped_time = (now - stopped_objects_.at(obj_uuid)).seconds();
-      const auto no_intent_to_cross = stopped_time > planner_param_.max_yield_timeout;
-      if (!no_intent_to_cross) {
-        continue;
-      }
-
-      ignore_objects_.insert(std::make_pair(obj_uuid, now));
     }
   }
 
   // Check if stop is required
+  const bool found_pedestrians = static_cast<bool>(nearest_stop_info);
   const auto need_to_stop = found_pedestrians || found_stuck_vehicle;
   if (!need_to_stop) {
     return {};
   }
 
-  if (!found_pedestrians) {
-    minimum_stop_dist = p_stop_line.get().first;
-    first_stop_point = p_stop_line.get().second;
+  if (!nearest_stop_info) {
+    nearest_stop_info = std::make_pair(p_stop_line.get().second, p_stop_line.get().first);
   }
 
   const auto within_stop_line_margin =
-    p_stop_line.get().first < minimum_stop_dist &&
-    minimum_stop_dist < p_stop_line.get().first + planner_param_.stop_line_margin;
+    p_stop_line.get().first < nearest_stop_info->second &&
+    nearest_stop_info->second < p_stop_line.get().first + planner_param_.stop_line_margin;
 
   const auto stop_at_stop_line = !found_pedestrians || within_stop_line_margin;
 
-  const auto & p_stop = stop_at_stop_line ? p_stop_line.get().second : first_stop_point;
+  const auto & p_stop = stop_at_stop_line ? p_stop_line.get().second : nearest_stop_info->first;
   const auto stop_line_distance = exist_stopline_in_map ? 0.0 : planner_param_.stop_line_distance;
   const auto margin = stop_at_stop_line ? stop_line_distance + base_link2front
                                         : planner_param_.stop_margin + base_link2front;
@@ -620,23 +616,16 @@ std::vector<CollisionPoint> CrosswalkModule::getCollisionPoints(
       const auto & p_obj_back = obj_path.path.at(i + 1);
       const auto obj_one_step_polygon = createOneStepPolygon(p_obj_front, p_obj_back, obj_polygon);
 
-      std::vector<Point2d> tmp_intersects{};
-      bg::intersection(obj_one_step_polygon, attention_area, tmp_intersects);
-
-      if (bg::within(obj_one_step_polygon, attention_area)) {
-        for (const auto & p : obj_one_step_polygon.outer()) {
-          const Point2d point{p.x(), p.y()};
-          tmp_intersects.push_back(point);
-        }
-      }
-
-      if (tmp_intersects.empty()) {
+      // Calculate intersection points between object and attention area
+      const auto tmp_intersection = calcOverlappingPoints(obj_one_step_polygon, attention_area);
+      if (tmp_intersection.empty()) {
         continue;
       }
 
+      // Calculate nearest collision point
       double minimum_stop_dist = std::numeric_limits<double>::max();
       geometry_msgs::msg::Point nearest_collision_point{};
-      for (const auto & p : tmp_intersects) {
+      for (const auto & p : tmp_intersection) {
         const auto cp = createPoint(p.x(), p.y(), ego_pos.z);
         const auto dist_ego2cp = calcSignedArcLength(ego_path.points, ego_pos, cp);
 
@@ -694,24 +683,28 @@ CollisionPoint CrosswalkModule::createCollisionPoint(
     std::max(0.0, dist_ego2cp - planner_param_.stop_margin - base_link2front) /
     std::max(ego_vel.x, min_ego_velocity);
   collision_point.time_to_vehicle = std::max(0.0, dist_obj2cp) / velocity;
-  collision_point.state =
-    getCollisionPointState(collision_point.time_to_collision, collision_point.time_to_vehicle);
 
   return collision_point;
 }
 
-CollisionPointState CrosswalkModule::getCollisionPointState(
-  const double ttc, const double ttv) const
+CollisionState CrosswalkModule::getCollisionState(
+  const std::string & obj_uuid, const double ttc, const double ttv) const
 {
+  // First, check if the object can be ignored
+  const auto obj_state = object_info_manager_.getState(obj_uuid);
+  if (obj_state == ObjectInfo::State::FULLY_STOPPED) {
+    return CollisionState::IGNORE;
+  }
+
+  // Compare time to collision and vehicle
   if (ttc + planner_param_.ego_pass_first_margin < ttv) {
-    return CollisionPointState::EGO_PASS_FIRST;
+    return CollisionState::EGO_PASS_FIRST;
   }
 
   if (ttv + planner_param_.ego_pass_later_margin < ttc) {
-    return CollisionPointState::EGO_PASS_LATER;
+    return CollisionState::EGO_PASS_LATER;
   }
-
-  return CollisionPointState::YIELD;
+  return CollisionState::YIELD;
 }
 
 void CrosswalkModule::applySafetySlowDownSpeed(
@@ -906,7 +899,7 @@ bool CrosswalkModule::isVehicle(const PredictedObject & object)
   return false;
 }
 
-bool CrosswalkModule::isTargetType(const PredictedObject & object) const
+bool CrosswalkModule::isCrosswalkUserType(const PredictedObject & object) const
 {
   if (object.classification.empty()) {
     return false;
