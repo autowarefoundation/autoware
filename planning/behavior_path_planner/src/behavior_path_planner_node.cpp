@@ -344,8 +344,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter<double>("lane_change.minimum_lane_changing_velocity");
   p.minimum_lane_changing_velocity =
     std::min(p.minimum_lane_changing_velocity, p.max_acc * p.lane_change_prepare_duration);
-  p.minimum_prepare_length =
-    0.5 * p.max_acc * p.lane_change_prepare_duration * p.lane_change_prepare_duration;
   p.lane_change_finish_judge_buffer =
     declare_parameter<double>("lane_change.lane_change_finish_judge_buffer");
 

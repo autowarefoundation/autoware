@@ -578,22 +578,11 @@ bool NormalLaneChange::hasEnoughLength(
   const auto current_pose = getEgoPose();
   const auto & route_handler = *getRouteHandler();
   const auto & common_parameters = planner_data_->parameters;
-  const auto minimum_lane_changing_velocity = common_parameters.minimum_lane_changing_velocity;
-  const auto lateral_jerk = common_parameters.lane_changing_lateral_jerk;
   const double lane_change_length = path.info.length.sum();
-  const double max_lat_acc =
-    common_parameters.lane_change_lat_acc_map.find(minimum_lane_changing_velocity).second;
   const auto shift_intervals =
     route_handler.getLateralIntervalsToPreferredLane(target_lanes.back(), direction);
-
-  double minimum_lane_change_length_to_preferred_lane = 0.0;
-  for (const auto & shift_length : shift_intervals) {
-    const auto lane_changing_time =
-      PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, max_lat_acc);
-    minimum_lane_change_length_to_preferred_lane +=
-      minimum_lane_changing_velocity * lane_changing_time +
-      common_parameters.minimum_prepare_length;
-  }
+  double minimum_lane_change_length_to_preferred_lane =
+    utils::calcMinimumLaneChangeLength(common_parameters, shift_intervals);
 
   if (lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
     return false;
@@ -634,8 +623,6 @@ bool NormalLaneChange::getLaneChangePaths(
 
   const auto backward_path_length = common_parameter.backward_path_length;
   const auto forward_path_length = common_parameter.forward_path_length;
-  const auto prepare_duration = common_parameter.lane_change_prepare_duration;
-  const auto minimum_prepare_length = common_parameter.minimum_prepare_length;
   const auto minimum_lane_changing_velocity = common_parameter.minimum_lane_changing_velocity;
   const auto longitudinal_acc_sampling_num = lane_change_parameters_->longitudinal_acc_sampling_num;
   const auto lateral_acc_sampling_num = lane_change_parameters_->lateral_acc_sampling_num;
@@ -649,7 +636,7 @@ bool NormalLaneChange::getLaneChangePaths(
 
   // compute maximum longitudinal deceleration and acceleration
   const auto maximum_deceleration = std::invoke([&minimum_lane_changing_velocity, &current_velocity,
-                                                 &min_longitudinal_acc, &common_parameter, this]() {
+                                                 &min_longitudinal_acc, &common_parameter]() {
     const double min_a = (minimum_lane_changing_velocity - current_velocity) /
                          common_parameter.lane_change_prepare_duration;
     return std::clamp(
@@ -661,9 +648,6 @@ bool NormalLaneChange::getLaneChangePaths(
   // get sampling acceleration values
   const auto longitudinal_acc_sampling_values = utils::lane_change::getAccelerationValues(
     maximum_deceleration, maximum_acceleration, longitudinal_acc_sampling_num);
-
-  const auto target_length =
-    utils::getArcLengthToTargetLanelet(original_lanelets, target_lanelets.front(), getEgoPose());
 
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanelets.back());
 
@@ -694,25 +678,31 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto target_objects = getTargetObjects(original_lanelets, target_lanelets);
 
   candidate_paths->reserve(longitudinal_acc_sampling_values.size() * lateral_acc_sampling_num);
+  const auto is_near_end_of_current_lane = std::invoke([&]() {
+    const auto distance =
+      !is_goal_in_route
+        ? dist_to_end_of_current_lanes
+        : utils::getSignedDistance(getEgoPose(), route_handler.getGoalPose(), original_lanelets);
+
+    return std::abs(distance - lane_change_buffer) <
+           lane_change_parameters_->min_length_for_turn_signal_activation;
+  });
+  const bool disable_prepare_segment = is_near_end_of_current_lane && (getEgoVelocity() < 1.0);
+  const double prepare_duration =
+    disable_prepare_segment ? 0.0 : common_parameter.lane_change_prepare_duration;
+
   for (const auto & sampled_longitudinal_acc : longitudinal_acc_sampling_values) {
+    // get path on original lanes
     const auto prepare_velocity = std::max(
       current_velocity + sampled_longitudinal_acc * prepare_duration,
       minimum_lane_changing_velocity);
 
     // compute actual longitudinal acceleration
     const double longitudinal_acc_on_prepare =
-      (prepare_velocity - current_velocity) / prepare_duration;
+      (prepare_duration < 1e-3) ? 0.0 : ((prepare_velocity - current_velocity) / prepare_duration);
 
-    // get path on original lanes
-    const double prepare_length = std::max(
-      current_velocity * prepare_duration +
-        0.5 * longitudinal_acc_on_prepare * std::pow(prepare_duration, 2),
-      minimum_prepare_length);
-
-    if (prepare_length < target_length) {
-      RCLCPP_DEBUG(logger_, "prepare length is shorter than distance to target lane!!");
-      break;
-    }
+    const double prepare_length = current_velocity * prepare_duration +
+                                  0.5 * longitudinal_acc_on_prepare * std::pow(prepare_duration, 2);
 
     auto prepare_segment =
       getPrepareSegment(original_lanelets, backward_path_length, prepare_length);
@@ -724,12 +714,10 @@ bool NormalLaneChange::getLaneChangePaths(
 
     // lane changing start getEgoPose() is at the end of prepare segment
     const auto & lane_changing_start_pose = prepare_segment.points.back().point.pose;
-
     const auto target_length_from_lane_change_start_pose = utils::getArcLengthToTargetLanelet(
       original_lanelets, target_lanelets.front(), lane_changing_start_pose);
-    // In new architecture, there is a possibility that the lane change start getEgoPose() is behind
-    // of the target lanelet, even if the condition prepare_length > target_length is satisfied. In
-    // that case, the lane change shouldn't be executed.
+
+    // Check if the lane changing start point is not on the lanes next to target lanes,
     if (target_length_from_lane_change_start_pose > 0.0) {
       RCLCPP_DEBUG(
         logger_, "[only new arch] lane change start getEgoPose() is behind target lanelet!!");
@@ -910,8 +898,7 @@ TurnSignalInfo NormalLaneChange::calcTurnSignalInfo()
   // desired start pose = prepare start pose
   turn_signal_info.desired_start_point = std::invoke([&]() {
     const auto blinker_start_duration = planner_data_->parameters.turn_signal_search_time;
-    const auto prepare_duration = planner_data_->parameters.lane_change_prepare_duration;
-    const auto diff_time = prepare_duration - blinker_start_duration;
+    const auto diff_time = path.info.duration.prepare - blinker_start_duration;
     if (diff_time < 1e-5) {
       return path.path.points.front().point.pose;
     }
