@@ -406,10 +406,6 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
 {
   time_keeper_ptr_->tic(__func__);
 
-  if (!enable_outside_drivable_area_stop_) {
-    return;
-  }
-
   if (optimized_traj_points.empty()) {
     return;
   }
@@ -430,7 +426,7 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
   // 3. assign zero velocity to the first point being outside the drivable area
   const auto first_outside_idx = [&]() -> std::optional<size_t> {
     for (size_t i = ego_idx; i < static_cast<size_t>(end_idx); ++i) {
-      auto & traj_point = optimized_traj_points.at(i);
+      const auto & traj_point = optimized_traj_points.at(i);
 
       // check if the footprint is outside the drivable area
       const bool is_outside = geometry_utils::isOutsideDrivableAreaFromRectangleFootprint(
@@ -445,9 +441,11 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
     return std::nullopt;
   }();
 
-  if (first_outside_idx) {
-    for (size_t i = *first_outside_idx; i < optimized_traj_points.size(); ++i) {
-      optimized_traj_points.at(i).longitudinal_velocity_mps = 0.0;
+  if (enable_outside_drivable_area_stop_) {
+    if (first_outside_idx) {
+      for (size_t i = *first_outside_idx; i < optimized_traj_points.size(); ++i) {
+        optimized_traj_points.at(i).longitudinal_velocity_mps = 0.0;
+      }
     }
   }
 
@@ -458,8 +456,12 @@ void ObstacleAvoidancePlanner::publishVirtualWall(const geometry_msgs::msg::Pose
 {
   time_keeper_ptr_->tic(__func__);
 
-  const auto virtual_wall_marker = motion_utils::createStopVirtualWallMarker(
+  auto virtual_wall_marker = motion_utils::createStopVirtualWallMarker(
     stop_pose, "outside drivable area", now(), 0, vehicle_info_.max_longitudinal_offset_m);
+  if (!enable_outside_drivable_area_stop_) {
+    virtual_wall_marker.markers.front().color =
+      tier4_autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.5);
+  }
 
   virtual_wall_pub_->publish(virtual_wall_marker);
   time_keeper_ptr_->toc(__func__, "      ");
