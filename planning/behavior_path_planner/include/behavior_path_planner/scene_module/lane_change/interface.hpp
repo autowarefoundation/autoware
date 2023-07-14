@@ -133,6 +133,8 @@ public:
     const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
 
+  bool isExecutionRequested() const override;
+
 protected:
   void updateRTCStatus(const double start_distance, const double finish_distance) override;
 };

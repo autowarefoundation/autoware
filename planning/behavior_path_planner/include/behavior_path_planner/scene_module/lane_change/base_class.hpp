@@ -103,6 +103,10 @@ public:
 
   virtual bool getAbortPath() = 0;
 
+  virtual bool specialRequiredCheck() const { return false; }
+
+  virtual bool specialExpiredCheck() const { return false; }
+
   virtual void setPreviousModulePaths(
     const std::shared_ptr<PathWithLaneId> & prev_module_reference_path,
     const std::shared_ptr<PathWithLaneId> & prev_module_path)

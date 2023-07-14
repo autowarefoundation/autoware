@@ -77,6 +77,12 @@ bool LaneChangeInterface::isExecutionReady() const
 
 ModuleStatus LaneChangeInterface::updateState()
 {
+  if (module_type_->specialExpiredCheck()) {
+    if (isWaitingApproval()) {
+      return ModuleStatus::SUCCESS;
+    }
+  }
+
   if (!isActivated() || isWaitingApproval()) {
     return ModuleStatus::IDLE;
   }
@@ -494,6 +500,11 @@ AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(
     name, node, parameters, rtc_interface_ptr_map,
     std::make_unique<AvoidanceByLaneChange>(parameters, avoidance_by_lane_change_parameters)}
 {
+}
+
+bool AvoidanceByLaneChangeInterface::isExecutionRequested() const
+{
+  return module_type_->specialRequiredCheck() && module_type_->isLaneChangeRequired();
 }
 
 void AvoidanceByLaneChangeInterface::updateRTCStatus(

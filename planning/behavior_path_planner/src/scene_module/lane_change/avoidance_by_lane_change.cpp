@@ -31,61 +31,44 @@ AvoidanceByLaneChange::AvoidanceByLaneChange(
 {
 }
 
-std::pair<bool, bool> AvoidanceByLaneChange::getSafePath(LaneChangePath & safe_path) const
+bool AvoidanceByLaneChange::specialRequiredCheck() const
 {
-  const auto & avoidance_objects = avoidance_data_.target_objects;
-  const auto execute_object_num = avoidance_parameters_->execute_object_num;
+  const auto & data = avoidance_data_;
+  const auto & execute_object_num = avoidance_parameters_->execute_object_num;
 
-  if (avoidance_objects.size() < execute_object_num) {
-    return {false, false};
+  if (!status_.is_safe) {
+    return false;
   }
 
-  const auto current_lanes = getCurrentLanes();
-
-  if (current_lanes.empty()) {
-    return {false, false};
+  if (data.target_objects.size() < execute_object_num) {
+    return false;
   }
 
-  const auto & o_front = avoidance_objects.front();
+  const auto & front_object = data.target_objects.front();
 
-  // check distance from ego to o_front vs acceptable longitudinal margin
-  const auto execute_object_longitudinal_margin =
-    avoidance_parameters_->execute_object_longitudinal_margin;
-  if (execute_object_longitudinal_margin > o_front.longitudinal) {
-    return {false, false};
+  const auto THRESHOLD = avoidance_parameters_->execute_object_longitudinal_margin;
+  if (front_object.longitudinal < THRESHOLD) {
+    return false;
   }
 
-  const auto target_lanes = getLaneChangeLanes(current_lanes, direction_);
-
-  if (target_lanes.empty()) {
-    return {false, false};
-  }
-
-  // find candidate paths
-  LaneChangePaths valid_paths{};
-  const auto found_safe_path =
-    getLaneChangePaths(current_lanes, target_lanes, direction_, &valid_paths);
-
-  if (valid_paths.empty()) {
-    return {false, false};
-  }
-
-  if (found_safe_path) {
-    safe_path = valid_paths.back();
-  } else {
-    // force candidate
-    safe_path = valid_paths.front();
-  }
-
-  const auto to_lane_change_end_distance = motion_utils::calcSignedArcLength(
-    safe_path.path.points, getEgoPose().position, safe_path.info.shift_line.end.position);
-  const auto lane_change_finish_before_object = o_front.longitudinal > to_lane_change_end_distance;
+  const auto path = status_.lane_change_path.path;
+  const auto to_lc_end = motion_utils::calcSignedArcLength(
+    status_.lane_change_path.path.points, getEgoPose().position,
+    status_.lane_change_path.info.shift_line.end.position);
   const auto execute_only_when_lane_change_finish_before_object =
     avoidance_parameters_->execute_only_when_lane_change_finish_before_object;
-  if (!lane_change_finish_before_object && execute_only_when_lane_change_finish_before_object) {
-    return {false, found_safe_path};
+  const auto not_enough_distance = front_object.longitudinal < to_lc_end;
+
+  if (execute_only_when_lane_change_finish_before_object && not_enough_distance) {
+    return false;
   }
-  return {true, found_safe_path};
+
+  return true;
+}
+
+bool AvoidanceByLaneChange::specialExpiredCheck() const
+{
+  return !specialRequiredCheck();
 }
 
 void AvoidanceByLaneChange::updateSpecialData()

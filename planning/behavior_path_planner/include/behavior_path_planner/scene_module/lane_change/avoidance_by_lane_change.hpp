@@ -36,9 +36,11 @@ public:
     const std::shared_ptr<LaneChangeParameters> & parameters,
     std::shared_ptr<AvoidanceByLCParameters> avoidance_by_lane_change_parameters);
 
-  void updateSpecialData() override;
+  bool specialRequiredCheck() const override;
 
-  std::pair<bool, bool> getSafePath(LaneChangePath & safe_path) const override;
+  bool specialExpiredCheck() const override;
+
+  void updateSpecialData() override;
 
 private:
   std::shared_ptr<AvoidanceByLCParameters> avoidance_parameters_;
