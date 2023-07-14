@@ -62,7 +62,7 @@ void transformPoints(
 
 bool is_inside(
   const sensor_msgs::msg::RegionOfInterest & outer,
-  const sensor_msgs::msg::RegionOfInterest & inner, const float outer_offset_scale = 1.1);
+  const sensor_msgs::msg::RegionOfInterest & inner, const double outer_offset_scale = 1.1);
 
 }  // namespace image_projection_based_fusion
 
