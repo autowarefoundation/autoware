@@ -92,7 +92,7 @@ TEST_F(TestPointcloudMapLoaderModule, LoadPCDFilesNoDownsampleTest)
   // Check if the point cloud is received and the content is as expected
   ASSERT_TRUE(*pointcloud_received);
 
-  // Convert the received point cloud to pcl::PointCloudpcl::PointXYZ
+  // Convert the received point cloud to pcl::PointCloud<pcl::PointXYZ>
   pcl::PointCloud<pcl::PointXYZ> received_cloud;
   pcl::fromROSMsg(*pointcloud_msg, received_cloud);
 
