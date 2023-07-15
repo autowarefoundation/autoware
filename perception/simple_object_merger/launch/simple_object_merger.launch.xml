@@ -1,0 +1,18 @@
+<launch>
+  <!-- Output -->
+  <arg name="output/objects" default="~/output/objects"/>
+  <!-- Parameter -->
+  <arg name="update_rate_hz" default="20.0"/>
+  <arg name="new_frame_id" default="base_link"/>
+  <arg name="timeout_threshold" default="1.0"/>
+  <arg name="input_topics" default="[]"/>
+
+  <!-- Node -->
+  <node pkg="simple_object_merger" exec="simple_object_merger_node" name="simple_object_merger" output="screen">
+    <remap from="~/output/objects" to="$(var output/objects)"/>
+    <param name="update_rate_hz" value="$(var update_rate_hz)"/>
+    <param name="timeout_threshold" value="$(var timeout_threshold)"/>
+    <param name="new_frame_id" value="$(var new_frame_id)"/>
+    <param name="input_topics" value="$(var input_topics)"/>
+  </node>
+</launch>
