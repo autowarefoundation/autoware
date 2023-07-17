@@ -114,12 +114,22 @@ bool StartPlannerModule::isExecutionRequested() const
   // Check if ego is not out of lanes
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
-  const auto current_lanes =
-    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
-
-  const auto pull_out_lanes = start_planner_utils::getPullOutLanes(planner_data_);
+  const auto current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max());
+  const auto pull_out_lanes =
+    start_planner_utils::getPullOutLanes(planner_data_, backward_path_length);
   auto lanes = current_lanes;
-  lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
+  for (const auto & pull_out_lane : pull_out_lanes) {
+    auto it = std::find_if(
+      lanes.begin(), lanes.end(), [&pull_out_lane](const lanelet::ConstLanelet & lane) {
+        return lane.id() == pull_out_lane.id();
+      });
+
+    if (it == lanes.end()) {
+      lanes.push_back(pull_out_lane);
+    }
+  }
+
   if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
     return false;
   }
@@ -320,10 +330,11 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
-  const auto current_lanes =
-    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
+  const auto current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max());
 
-  const auto pull_out_lanes = start_planner_utils::getPullOutLanes(planner_data_);
+  const auto pull_out_lanes =
+    start_planner_utils::getPullOutLanes(planner_data_, backward_path_length);
   auto stop_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
   const auto drivable_lanes =
     utils::generateDrivableLanesWithShoulderLanes(current_lanes, pull_out_lanes);
@@ -554,9 +565,10 @@ void StartPlannerModule::updatePullOutStatus()
 
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
-  status_.current_lanes =
-    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
-  status_.pull_out_lanes = start_planner_utils::getPullOutLanes(planner_data_);
+  status_.current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max());
+  status_.pull_out_lanes =
+    start_planner_utils::getPullOutLanes(planner_data_, backward_path_length);
 
   // combine road and shoulder lanes
   status_.lanes =

@@ -96,7 +96,8 @@ Pose getBackedPose(
   return backed_pose;
 }
 
-lanelet::ConstLanelets getPullOutLanes(const std::shared_ptr<const PlannerData> & planner_data)
+lanelet::ConstLanelets getPullOutLanes(
+  const std::shared_ptr<const PlannerData> & planner_data, const double backward_length)
 {
   const double & vehicle_width = planner_data->parameters.vehicle_width;
   const auto & route_handler = planner_data->route_handler;
@@ -112,6 +113,7 @@ lanelet::ConstLanelets getPullOutLanes(const std::shared_ptr<const PlannerData> 
   }
 
   // pull out from road lane
-  return utils::getExtendedCurrentLanes(planner_data);
+  return utils::getExtendedCurrentLanes(
+    planner_data, backward_length, /*forward_length*/ std::numeric_limits<double>::max());
 }
 }  // namespace behavior_path_planner::start_planner_utils

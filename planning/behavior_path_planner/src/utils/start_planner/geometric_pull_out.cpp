@@ -42,18 +42,25 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
   // combine road lane and shoulder lane
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_.max_back_distance;
-  const auto road_lanes =
-    utils::getCurrentLanes(planner_data_, backward_path_length, std::numeric_limits<double>::max());
-
-  const auto shoulder_lanes = getPullOutLanes(planner_data_);
+  const auto road_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max());
+  const auto pull_out_lanes = getPullOutLanes(planner_data_, backward_path_length);
   auto lanes = road_lanes;
-  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
+  for (const auto & pull_out_lane : pull_out_lanes) {
+    auto it = std::find_if(
+      lanes.begin(), lanes.end(), [&pull_out_lane](const lanelet::ConstLanelet & lane) {
+        return lane.id() == pull_out_lane.id();
+      });
+    if (it == lanes.end()) {
+      lanes.push_back(pull_out_lane);
+    }
+  }
 
   planner_.setTurningRadius(
     planner_data_->parameters, parallel_parking_parameters_.pull_out_max_steer_angle);
   planner_.setPlannerData(planner_data_);
   const bool found_valid_path =
-    planner_.planPullOut(start_pose, goal_pose, road_lanes, shoulder_lanes);
+    planner_.planPullOut(start_pose, goal_pose, road_lanes, pull_out_lanes);
   if (!found_valid_path) {
     return {};
   }
@@ -61,7 +68,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
   // collision check with objects in shoulder lanes
   const auto arc_path = planner_.getArcPath();
   const auto [shoulder_lane_objects, others] =
-    utils::separateObjectsByLanelets(*(planner_data_->dynamic_object), shoulder_lanes);
+    utils::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_out_lanes);
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
         vehicle_footprint_, arc_path, shoulder_lane_objects, parameters_.collision_check_margin)) {
     return {};
