@@ -677,11 +677,8 @@ void GoalPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) const
 
 void GoalPlannerModule::setModifiedGoal(BehaviorModuleOutput & output) const
 {
-  // set the modified goal only when it is updated
   const auto & route_handler = planner_data_->route_handler;
-  const bool has_changed_goal =
-    modified_goal_pose_ && (!prev_goal_id_ || *prev_goal_id_ != modified_goal_pose_->id);
-  if (status_.is_safe && has_changed_goal) {
+  if (status_.is_safe) {
     PoseWithUuidStamped modified_goal{};
     modified_goal.uuid = route_handler->getRouteUuid();
     modified_goal.pose = modified_goal_pose_->goal_pose;

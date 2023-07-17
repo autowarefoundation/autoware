@@ -571,7 +571,12 @@ void BehaviorPathPlannerNode::run()
   publishPathReference(planner_manager_->getSceneModuleManagers(), planner_data_);
   stop_reason_publisher_->publish(planner_manager_->getStopReasons());
 
-  if (output.modified_goal) {
+  // publish modified goal only when it is updated
+  if (
+    output.modified_goal &&
+    /* has changed modified goal */ (
+      !planner_data_->prev_modified_goal ||
+      planner_data_->prev_modified_goal->uuid != output.modified_goal->uuid)) {
     PoseWithUuidStamped modified_goal = *(output.modified_goal);
     modified_goal.header.stamp = path->header.stamp;
     planner_data_->prev_modified_goal = modified_goal;
