@@ -14,6 +14,8 @@
 
 #include "util.hpp"
 
+#include "util_type.hpp"
+
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
@@ -400,9 +402,8 @@ static std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
 IntersectionLanelets getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const lanelet::ConstLanelet assigned_lanelet, const lanelet::ConstLanelets & lanelets_on_path,
-  const std::set<int> & associative_ids, const InterpolatedPathInfo & interpolated_path_info,
-  const double detection_area_length, const double occlusion_detection_area_length,
-  const bool consider_wrong_direction_vehicle, const bool tl_arrow_solid_on)
+  const std::set<int> & associative_ids, const double detection_area_length,
+  const double occlusion_detection_area_length, const bool consider_wrong_direction_vehicle)
 {
   const auto turn_direction = assigned_lanelet.attributeOr("turn_direction", "else");
 
@@ -494,9 +495,8 @@ IntersectionLanelets getObjectiveLanelets(
   }
 
   // get possible lanelet path that reaches conflicting_lane longer than given length
-  // if traffic light arrow is active, this process is unnecessary
   lanelet::ConstLanelets detection_and_preceding_lanelets;
-  if (!tl_arrow_solid_on) {
+  {
     const double length = detection_area_length;
     std::set<lanelet::Id> detection_ids;
     for (const auto & ll : detection_lanelets) {
@@ -538,36 +538,16 @@ IntersectionLanelets getObjectiveLanelets(
   }
 
   IntersectionLanelets result;
-  if (!tl_arrow_solid_on) {
-    result.attention = std::move(detection_and_preceding_lanelets);
-  } else {
-    result.attention = std::move(detection_lanelets);
-  }
-  result.conflicting = std::move(conflicting_ex_ego_lanelets);
-  result.adjacent = planning_utils::getConstLaneletsFromIds(lanelet_map_ptr, associative_ids);
-  result.occlusion_attention = std::move(occlusion_detection_and_preceding_lanelets);
+  result.attention_ = std::move(detection_and_preceding_lanelets);
+  result.attention_non_preceding_ = std::move(detection_lanelets);
+  result.conflicting_ = std::move(conflicting_ex_ego_lanelets);
+  result.adjacent_ = planning_utils::getConstLaneletsFromIds(lanelet_map_ptr, associative_ids);
+  result.occlusion_attention_ = std::move(occlusion_detection_and_preceding_lanelets);
   // compoundPolygon3d
-  result.attention_area = getPolygon3dFromLanelets(result.attention);
-  result.conflicting_area = getPolygon3dFromLanelets(result.conflicting);
-  result.adjacent_area = getPolygon3dFromLanelets(result.adjacent);
-  result.occlusion_attention_area = getPolygon3dFromLanelets(result.occlusion_attention);
-
-  // find the first conflicting/detection area polygon intersecting the path
-  const auto & path = interpolated_path_info.path;
-  const auto & lane_interval = interpolated_path_info.lane_id_interval.value();
-  {
-    auto first = getFirstPointInsidePolygons(path, lane_interval, result.conflicting_area);
-    if (first) {
-      result.first_conflicting_area = first.value().second;
-    }
-  }
-  {
-    auto first = getFirstPointInsidePolygons(path, lane_interval, result.attention_area);
-    if (first) {
-      result.first_attention_area = first.value().second;
-    }
-  }
-
+  result.attention_area_ = getPolygon3dFromLanelets(result.attention_);
+  result.conflicting_area_ = getPolygon3dFromLanelets(result.conflicting_);
+  result.adjacent_area_ = getPolygon3dFromLanelets(result.adjacent_);
+  result.occlusion_attention_area_ = getPolygon3dFromLanelets(result.occlusion_attention_);
   return result;
 }
 
@@ -1128,6 +1108,27 @@ double calcDistanceUntilIntersectionLanelet(
     path.points.at(dst_idx).point.pose.position.x - lane_first_point.x(),
     path.points.at(dst_idx).point.pose.position.y - lane_first_point.y());
   return distance;
+}
+
+void IntersectionLanelets::update(
+  const bool tl_arrow_solid_on, const InterpolatedPathInfo & interpolated_path_info)
+{
+  tl_arrow_solid_on_ = tl_arrow_solid_on;
+  // find the first conflicting/detection area polygon intersecting the path
+  const auto & path = interpolated_path_info.path;
+  const auto & lane_interval = interpolated_path_info.lane_id_interval.value();
+  {
+    auto first = getFirstPointInsidePolygons(path, lane_interval, conflicting_area_);
+    if (first) {
+      first_conflicting_area_ = first.value().second;
+    }
+  }
+  {
+    auto first = getFirstPointInsidePolygons(path, lane_interval, attention_area_);
+    if (first) {
+      first_attention_area_ = first.value().second;
+    }
+  }
 }
 
 }  // namespace util

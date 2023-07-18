@@ -83,19 +83,18 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   }
 
   /* get detection area */
-  if (!intersection_lanelets_.has_value()) {
+  if (!intersection_lanelets_) {
     const auto & assigned_lanelet =
       planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id_);
     const auto lanelets_on_path = planning_utils::getLaneletsOnPath(
       *path, lanelet_map_ptr, planner_data_->current_odometry->pose);
     intersection_lanelets_ = util::getObjectiveLanelets(
       lanelet_map_ptr, routing_graph_ptr, assigned_lanelet, lanelets_on_path, associative_ids_,
-      interpolated_path_info, planner_param_.attention_area_length,
-      planner_param_.occlusion_attention_area_length,
-      planner_param_.consider_wrong_direction_vehicle,
-      false /* tl_arrow_solid on does not matter here*/);
+      planner_param_.attention_area_length, planner_param_.occlusion_attention_area_length,
+      planner_param_.consider_wrong_direction_vehicle);
   }
-  const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area;
+  intersection_lanelets_.value().update(false, interpolated_path_info);
+  const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area();
   if (!first_conflicting_area) {
     return false;
   }

@@ -650,29 +650,26 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   }
 
   const auto & current_pose = planner_data_->current_odometry->pose;
-  // dynamically change detection area based on tl_arrow_solid_on
-  const bool tl_arrow_solid_on =
-    util::isTrafficLightArrowActivated(assigned_lanelet, planner_data_->traffic_light_id_map);
-  if (
-    !intersection_lanelets_ ||
-    intersection_lanelets_.value().tl_arrow_solid_on != tl_arrow_solid_on) {
+  if (!intersection_lanelets_) {
     const auto lanelets_on_path =
       planning_utils::getLaneletsOnPath(*path, lanelet_map_ptr, current_pose);
     intersection_lanelets_ = util::getObjectiveLanelets(
       lanelet_map_ptr, routing_graph_ptr, assigned_lanelet, lanelets_on_path, associative_ids_,
-      interpolated_path_info, planner_param_.common.attention_area_length,
+      planner_param_.common.attention_area_length,
       planner_param_.occlusion.occlusion_attention_area_length,
-      planner_param_.common.consider_wrong_direction_vehicle, tl_arrow_solid_on);
+      planner_param_.common.consider_wrong_direction_vehicle);
   }
+  const bool tl_arrow_solid_on =
+    util::isTrafficLightArrowActivated(assigned_lanelet, planner_data_->traffic_light_id_map);
+  intersection_lanelets_.value().update(tl_arrow_solid_on, interpolated_path_info);
 
-  const auto & conflicting_lanelets = intersection_lanelets_.value().conflicting;
-  const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area;
+  const auto & conflicting_lanelets = intersection_lanelets_.value().conflicting();
+  const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area();
   if (conflicting_lanelets.empty() || !first_conflicting_area) {
-    RCLCPP_DEBUG(logger_, "conflicting area is empty");
     return IntersectionModule::Indecisive{};
   }
 
-  const auto & first_attention_area = intersection_lanelets_.value().first_attention_area;
+  const auto & first_attention_area = intersection_lanelets_.value().first_attention_area();
   const auto & dummy_first_attention_area =
     first_attention_area ? first_attention_area.value() : first_conflicting_area.value();
   const auto intersection_stop_lines_opt = util::generateIntersectionStopLines(
@@ -745,13 +742,12 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     return IntersectionModule::Indecisive{};
   }
 
-  const auto & attention_lanelets = intersection_lanelets_.value().attention;
-  const auto & adjacent_lanelets = intersection_lanelets_.value().adjacent;
-  const auto & occlusion_attention_lanelets = intersection_lanelets_.value().occlusion_attention;
-  const auto & attention_area = intersection_lanelets_.value().attention_area;
-  const auto & occlusion_attention_area = intersection_lanelets_.value().occlusion_attention_area;
-  debug_data_.attention_area = attention_area;
-  debug_data_.adjacent_area = intersection_lanelets_.value().adjacent_area;
+  const auto & attention_lanelets = intersection_lanelets_.value().attention();
+  const auto & adjacent_lanelets = intersection_lanelets_.value().adjacent();
+  const auto & occlusion_attention_lanelets = intersection_lanelets_.value().occlusion_attention();
+  const auto & occlusion_attention_area = intersection_lanelets_.value().occlusion_attention_area();
+  debug_data_.attention_area = intersection_lanelets_.value().attention_area();
+  debug_data_.adjacent_area = intersection_lanelets_.value().adjacent_area();
 
   // get intersection area
   const auto intersection_area = planner_param_.common.use_intersection_area
