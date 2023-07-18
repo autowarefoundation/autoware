@@ -1689,3 +1689,108 @@ TEST(geometry, isTwistCovarianceValid)
   twist_with_covariance.covariance.at(0) = 1.0;
   EXPECT_EQ(tier4_autoware_utils::isTwistCovarianceValid(twist_with_covariance), true);
 }
+
+TEST(geometry, intersect)
+{
+  using tier4_autoware_utils::createPoint;
+  using tier4_autoware_utils::intersect;
+
+  {  // Normally crossing
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(-1.0, 0.0, 0.0);
+    const auto p4 = createPoint(1.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_TRUE(result);
+    EXPECT_NEAR(result->x, 0.0, epsilon);
+    EXPECT_NEAR(result->y, 0.0, epsilon);
+    EXPECT_NEAR(result->z, 0.0, epsilon);
+  }
+
+  {  // No crossing
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(1.0, 0.0, 0.0);
+    const auto p4 = createPoint(3.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_FALSE(result);
+  }
+
+  {  // One segment is the point on the other's segment
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(0.0, 0.0, 0.0);
+    const auto p4 = createPoint(0.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_FALSE(result);
+  }
+
+  {  // One segment is the point not on the other's segment
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(1.0, 0.0, 0.0);
+    const auto p4 = createPoint(1.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_FALSE(result);
+  }
+
+  {  // Both segments are the points which are the same position
+    const auto p1 = createPoint(0.0, 0.0, 0.0);
+    const auto p2 = createPoint(0.0, 0.0, 0.0);
+    const auto p3 = createPoint(0.0, 0.0, 0.0);
+    const auto p4 = createPoint(0.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_FALSE(result);
+  }
+
+  {  // Both segments are the points which are different position
+    const auto p1 = createPoint(0.0, 1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(1.0, 0.0, 0.0);
+    const auto p4 = createPoint(1.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_FALSE(result);
+  }
+
+  {  // Segments are the same
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(0.0, -1.0, 0.0);
+    const auto p4 = createPoint(0.0, 1.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_FALSE(result);
+  }
+
+  {  // One's edge is on the other's segment
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(0.0, 0.0, 0.0);
+    const auto p4 = createPoint(1.0, 0.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_TRUE(result);
+    EXPECT_NEAR(result->x, 0.0, epsilon);
+    EXPECT_NEAR(result->y, 0.0, epsilon);
+    EXPECT_NEAR(result->z, 0.0, epsilon);
+  }
+
+  {  // One's edge is the same as the other's edge.
+    const auto p1 = createPoint(0.0, -1.0, 0.0);
+    const auto p2 = createPoint(0.0, 1.0, 0.0);
+    const auto p3 = createPoint(0.0, -1.0, 0.0);
+    const auto p4 = createPoint(2.0, -1.0, 0.0);
+    const auto result = intersect(p1, p2, p3, p4);
+
+    EXPECT_TRUE(result);
+    EXPECT_NEAR(result->x, 0.0, epsilon);
+    EXPECT_NEAR(result->y, -1.0, epsilon);
+    EXPECT_NEAR(result->z, 0.0, epsilon);
+  }
+}
