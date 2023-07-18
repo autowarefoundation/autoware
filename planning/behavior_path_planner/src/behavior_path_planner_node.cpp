@@ -575,8 +575,9 @@ void BehaviorPathPlannerNode::run()
   if (
     output.modified_goal &&
     /* has changed modified goal */ (
-      !planner_data_->prev_modified_goal ||
-      planner_data_->prev_modified_goal->uuid != output.modified_goal->uuid)) {
+      !planner_data_->prev_modified_goal || tier4_autoware_utils::calcDistance2d(
+                                              planner_data_->prev_modified_goal->pose.position,
+                                              output.modified_goal->pose.position) > 0.01)) {
     PoseWithUuidStamped modified_goal = *(output.modified_goal);
     modified_goal.header.stamp = path->header.stamp;
     planner_data_->prev_modified_goal = modified_goal;

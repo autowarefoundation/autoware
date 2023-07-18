@@ -128,7 +128,6 @@ private:
   // goal searcher
   std::shared_ptr<GoalSearcherBase> goal_searcher_;
   std::optional<GoalCandidate> modified_goal_pose_;
-  std::optional<size_t> prev_goal_id_;
   Pose refined_goal_pose_;
   GoalCandidates goal_candidates_;
 
