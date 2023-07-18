@@ -2707,12 +2707,26 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
   const double forward_length)
 {
   auto lanes = getCurrentLanes(planner_data);
+  if (lanes.empty()) return lanes;
 
   double forward_length_sum = 0.0;
   double backward_length_sum = 0.0;
 
+  const auto is_loop = [&](const auto & target_lane) {
+    auto it = std::find_if(lanes.begin(), lanes.end(), [&](const lanelet::ConstLanelet & lane) {
+      return lane.id() == target_lane.id();
+    });
+
+    return it != lanes.end();
+  };
+
   while (backward_length_sum < backward_length) {
     auto extended_lanes = extendPrevLane(planner_data->route_handler, lanes);
+
+    if (extended_lanes.empty() || is_loop(extended_lanes.front())) {
+      return lanes;
+    }
+
     if (extended_lanes.size() > lanes.size()) {
       backward_length_sum += lanelet::utils::getLaneletLength2d(extended_lanes.front());
     } else {
@@ -2723,6 +2737,11 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 
   while (forward_length_sum < forward_length) {
     auto extended_lanes = extendNextLane(planner_data->route_handler, lanes);
+
+    if (extended_lanes.empty() || is_loop(extended_lanes.back())) {
+      return lanes;
+    }
+
     if (extended_lanes.size() > lanes.size()) {
       forward_length_sum += lanelet::utils::getLaneletLength2d(extended_lanes.back());
     } else {
