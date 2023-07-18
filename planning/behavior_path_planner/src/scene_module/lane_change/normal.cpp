@@ -36,6 +36,7 @@ NormalLaneChange::NormalLaneChange(
   Direction direction)
 : LaneChangeBase(parameters, type, direction)
 {
+  stop_watch_.tic(getModuleTypeStr());
 }
 
 void NormalLaneChange::updateLaneChangeStatus()
@@ -870,6 +871,20 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
   const auto safety_status = isLaneChangePathSafe(
     path, target_objects, common_parameters.expected_front_deceleration_for_abort,
     common_parameters.expected_rear_deceleration_for_abort, debug_data);
+  {
+    // only for debug purpose
+    object_debug_.clear();
+    object_debug_lifetime_ += (stop_watch_.toc(getModuleTypeStr()) / 1000);
+    if (object_debug_lifetime_ > 2.0) {
+      stop_watch_.toc(getModuleTypeStr(), true);
+      object_debug_lifetime_ = 0.0;
+      object_debug_after_approval_.clear();
+    }
+
+    if (!safety_status.is_safe) {
+      object_debug_after_approval_ = debug_data;
+    }
+  }
 
   return safety_status;
 }

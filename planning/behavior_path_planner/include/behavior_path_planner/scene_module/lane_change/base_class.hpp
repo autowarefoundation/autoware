@@ -14,6 +14,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 
+#include "behavior_path_planner/marker_util/debug_utilities.hpp"
 #include "behavior_path_planner/marker_util/lane_change/debug.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
@@ -21,6 +22,7 @@
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
+#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -32,6 +34,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 
 #include <algorithm>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <utility>
@@ -46,6 +49,7 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using marker_utils::CollisionCheckDebugMap;
 using route_handler::Direction;
+using tier4_autoware_utils::StopWatch;
 using tier4_planning_msgs::msg::LaneChangeDebugMsg;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
@@ -138,6 +142,11 @@ public:
   const LaneChangePaths & getDebugValidPath() const { return debug_valid_path_; }
 
   const CollisionCheckDebugMap & getDebugData() const { return object_debug_; }
+
+  const CollisionCheckDebugMap & getAfterApprovalDebugData() const
+  {
+    return object_debug_after_approval_;
+  }
 
   const Pose & getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
 
@@ -239,8 +248,11 @@ protected:
   Direction direction_{Direction::NONE};
   LaneChangeModuleType type_{LaneChangeModuleType::NORMAL};
 
-  mutable CollisionCheckDebugMap object_debug_{};
   mutable LaneChangePaths debug_valid_path_{};
+  mutable CollisionCheckDebugMap object_debug_{};
+  mutable CollisionCheckDebugMap object_debug_after_approval_{};
+  mutable double object_debug_lifetime_{0.0};
+  mutable StopWatch<std::chrono::milliseconds> stop_watch_;
 };
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
