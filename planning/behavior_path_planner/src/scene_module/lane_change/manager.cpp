@@ -200,10 +200,6 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
       get_parameter<double>(node, ns + "detection_area_right_expand_dist");
     p.detection_area_left_expand_dist =
       get_parameter<double>(node, ns + "detection_area_left_expand_dist");
-    p.enable_avoidance_over_same_direction =
-      get_parameter<bool>(node, ns + "enable_avoidance_over_same_direction");
-    p.enable_avoidance_over_opposite_direction =
-      get_parameter<bool>(node, ns + "enable_avoidance_over_opposite_direction");
     p.enable_update_path_when_object_is_gone =
       get_parameter<bool>(node, ns + "enable_update_path_when_object_is_gone");
     p.enable_force_avoidance_for_stopped_vehicle =

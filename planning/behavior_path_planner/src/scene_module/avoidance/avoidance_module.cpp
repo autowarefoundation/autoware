@@ -2261,7 +2261,7 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
 
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_lanes = avoidance_data_.current_lanelets;
-  const auto & enable_opposite = parameters_->enable_avoidance_over_opposite_direction;
+  const auto & enable_opposite = parameters_->use_opposite_lane;
   std::vector<DrivableLanes> drivable_lanes;
 
   for (const auto & current_lane : current_lanes) {
@@ -2269,7 +2269,7 @@ void AvoidanceModule::generateExtendedDrivableArea(BehaviorModuleOutput & output
     current_drivable_lanes.left_lane = current_lane;
     current_drivable_lanes.right_lane = current_lane;
 
-    if (!parameters_->enable_avoidance_over_same_direction) {
+    if (!parameters_->use_adjacent_lane) {
       drivable_lanes.push_back(current_drivable_lanes);
       continue;
     }

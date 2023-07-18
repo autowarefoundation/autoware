@@ -11,16 +11,18 @@
 
       # avoidance module common setting
       enable_bound_clipping: false
-      enable_avoidance_over_same_direction: true
-      enable_avoidance_over_opposite_direction: true
       enable_update_path_when_object_is_gone: false
       enable_force_avoidance_for_stopped_vehicle: false
       enable_safety_check: true
       enable_yield_maneuver: true
       enable_yield_maneuver_during_shifting: false
       disable_path_update: false
-      use_hatched_road_markings: false
+
+      # drivable area setting
+      use_adjacent_lane: true
+      use_opposite_lane: true
       use_intersection_areas: false
+      use_hatched_road_markings: false
 
       # for debug
       publish_debug_marker: false

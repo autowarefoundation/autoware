@@ -81,11 +81,11 @@ struct AvoidanceParameters
   double detection_area_left_expand_dist = 1.0;
 
   // enable avoidance to be perform only in lane with same direction
-  bool enable_avoidance_over_same_direction{true};
+  bool use_adjacent_lane{true};
 
   // enable avoidance to be perform in opposite lane direction
   // to use this, enable_avoidance_over_same_direction need to be set to true.
-  bool enable_avoidance_over_opposite_direction{true};
+  bool use_opposite_lane{true};
 
   // enable update path when if detected objects on planner data is gone.
   bool enable_update_path_when_object_is_gone{false};

@@ -877,9 +877,9 @@ void filterTargetObjects(
       lanelet::BasicPoint3d overhang_basic_pose(
         o.overhang_pose.position.x, o.overhang_pose.position.y, o.overhang_pose.position.z);
 
-      const bool get_left = isOnRight(o) && parameters->enable_avoidance_over_same_direction;
-      const bool get_right = !isOnRight(o) && parameters->enable_avoidance_over_same_direction;
-      const bool get_opposite = parameters->enable_avoidance_over_opposite_direction;
+      const bool get_left = isOnRight(o) && parameters->use_adjacent_lane;
+      const bool get_right = !isOnRight(o) && parameters->use_adjacent_lane;
+      const bool get_opposite = parameters->use_opposite_lane;
 
       lanelet::ConstLineString3d target_line{};
       o.to_road_shoulder_distance = std::numeric_limits<double>::max();

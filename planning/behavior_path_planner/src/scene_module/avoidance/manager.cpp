@@ -55,10 +55,6 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.detection_area_left_expand_dist =
       get_parameter<double>(node, ns + "detection_area_left_expand_dist");
     p.enable_bound_clipping = get_parameter<bool>(node, ns + "enable_bound_clipping");
-    p.enable_avoidance_over_same_direction =
-      get_parameter<bool>(node, ns + "enable_avoidance_over_same_direction");
-    p.enable_avoidance_over_opposite_direction =
-      get_parameter<bool>(node, ns + "enable_avoidance_over_opposite_direction");
     p.enable_update_path_when_object_is_gone =
       get_parameter<bool>(node, ns + "enable_update_path_when_object_is_gone");
     p.enable_force_avoidance_for_stopped_vehicle =
@@ -68,10 +64,17 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.enable_yield_maneuver_during_shifting =
       get_parameter<bool>(node, ns + "enable_yield_maneuver_during_shifting");
     p.disable_path_update = get_parameter<bool>(node, ns + "disable_path_update");
-    p.use_hatched_road_markings = get_parameter<bool>(node, ns + "use_hatched_road_markings");
-    p.use_intersection_areas = get_parameter<bool>(node, ns + "use_intersection_areas");
     p.publish_debug_marker = get_parameter<bool>(node, ns + "publish_debug_marker");
     p.print_debug_info = get_parameter<bool>(node, ns + "print_debug_info");
+  }
+
+  // drivable area
+  {
+    std::string ns = "avoidance.";
+    p.use_adjacent_lane = get_parameter<bool>(node, ns + "use_adjacent_lane");
+    p.use_opposite_lane = get_parameter<bool>(node, ns + "use_opposite_lane");
+    p.use_intersection_areas = get_parameter<bool>(node, ns + "use_intersection_areas");
+    p.use_hatched_road_markings = get_parameter<bool>(node, ns + "use_hatched_road_markings");
   }
 
   // target object

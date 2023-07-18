@@ -265,7 +265,7 @@ The shift length is set as a constant value before the feature is implemented. S
 - The obstacles' current lane and position.
 - The road shoulder with reference to the direction to avoid.
 
-These elements are used to compute the distance from the object to the road's shoulder (`to_road_shoulder_distance`). The parameters `enable_avoidance_over_same_direction` and `enable_avoidance_over_opposite_direction` allows further configuration of the to `to_road_shoulder_distance`. The following image illustrates the configuration.
+These elements are used to compute the distance from the object to the road's shoulder (`to_road_shoulder_distance`). The parameters `use_adjacent_lane` and `use_opposite_lane` allows further configuration of the to `to_road_shoulder_distance`. The following image illustrates the configuration.
 
 ![obstacle_to_road_shoulder_distance](../image/avoidance/obstacle_to_road_shoulder_distance.drawio.svg)
 
@@ -451,6 +451,38 @@ The shift points are modified by a filtering process in order to get the expecte
 
 ## Other features
 
+### Drivable area expansion
+
+This module has following parameters that sets which areas the path may extend into when generating an avoidance path.
+
+```yaml
+# drivable area setting
+use_adjacent_lane: true
+use_opposite_lane: true
+use_intersection_areas: false
+use_hatched_road_markings: false
+```
+
+#### adjacent lane
+
+![fig1](../image/avoidance/use_adjacent_lane.svg)
+
+#### opposite lane
+
+![fig1](../image/avoidance/use_opposite_lane.svg)
+
+#### intersection areas
+
+The intersection area is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
+
+![fig1](../image/avoidance/use_intersection_areas.svg)
+
+#### hatched road markings
+
+The hatched road marking is defined on Lanelet map. See [here](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md#hatched-road-markings-area)
+
+![fig1](../image/avoidance/use_hatched_road_markings.svg)
+
 ### Safety check
 
 The avoidance module has a safety check logic. The result of safe check is used for yield maneuver. It is enable by setting `enable_safety_check` as `true`.
@@ -582,23 +614,31 @@ The avoidance specific parameter configuration file can be located at `src/autow
 
 namespace: `avoidance.`
 
-| Name                                     | Unit | Type   | Description                                                                                                                                      | Default value |
-| :--------------------------------------- | :--- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| resample_interval_for_planning           | [m]  | double | Path resample interval for avoidance planning path.                                                                                              | 0.3           |
-| resample_interval_for_output             | [m]  | double | Path resample interval for output path. Too short interval increases computational cost for latter modules.                                      | 4.0           |
-| detection_area_right_expand_dist         | [m]  | double | Lanelet expand length for right side to find avoidance target vehicles.                                                                          | 0.0           |
-| detection_area_left_expand_dist          | [m]  | double | Lanelet expand length for left side to find avoidance target vehicles.                                                                           | 1.0           |
-| enable_bound_clipping                    | [-]  | bool   | Enable clipping left and right bound of drivable area when obstacles are in the drivable area                                                    | false         |
-| enable_avoidance_over_same_direction     | [-]  | bool   | Extend avoidance trajectory to adjacent lanes that has same direction. If false, avoidance only happen in current lane.                          | true          |
-| enable_avoidance_over_opposite_direction | [-]  | bool   | Extend avoidance trajectory to adjacent lanes that has opposite direction. `enable_avoidance_over_same_direction` must be `true` to take effects | true          |
-| enable_update_path_when_object_is_gone   | [-]  | bool   | Reset trajectory when avoided objects are gone. If false, shifted path points remain same even though the avoided objects are gone.              | false         |
-| enable_safety_check                      | [-]  | bool   | Flag to enable safety check.                                                                                                                     | false         |
-| enable_yield_maneuver                    | [-]  | bool   | Flag to enable yield maneuver.                                                                                                                   | false         |
-| enable_yield_maneuver_during_shifting    | [-]  | bool   | Flag to enable yield maneuver during shifting.                                                                                                   | false         |
-| publish_debug_marker                     | [-]  | bool   | Flag to publish debug marker (set `false` as default since it takes considerable cost).                                                          | false         |
-| print_debug_info                         | [-]  | bool   | Flag to print debug info (set `false` as default since it takes considerable cost).                                                              | false         |
+| Name                                   | Unit | Type   | Description                                                                                                                         | Default value |
+| :------------------------------------- | :--- | :----- | :---------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| resample_interval_for_planning         | [m]  | double | Path resample interval for avoidance planning path.                                                                                 | 0.3           |
+| resample_interval_for_output           | [m]  | double | Path resample interval for output path. Too short interval increases computational cost for latter modules.                         | 4.0           |
+| detection_area_right_expand_dist       | [m]  | double | Lanelet expand length for right side to find avoidance target vehicles.                                                             | 0.0           |
+| detection_area_left_expand_dist        | [m]  | double | Lanelet expand length for left side to find avoidance target vehicles.                                                              | 1.0           |
+| enable_update_path_when_object_is_gone | [-]  | bool   | Reset trajectory when avoided objects are gone. If false, shifted path points remain same even though the avoided objects are gone. | false         |
+| enable_safety_check                    | [-]  | bool   | Flag to enable safety check.                                                                                                        | false         |
+| enable_yield_maneuver                  | [-]  | bool   | Flag to enable yield maneuver.                                                                                                      | false         |
+| enable_yield_maneuver_during_shifting  | [-]  | bool   | Flag to enable yield maneuver during shifting.                                                                                      | false         |
 
 **NOTE:** It has to set both `enable_safety_check` and `enable_yield_maneuver` to enable yield maneuver.
+
+| Name                      | Unit | Type | Description                                                                                                             | Default value |
+| :------------------------ | ---- | ---- | ----------------------------------------------------------------------------------------------------------------------- | ------------- |
+| enable_bound_clipping     | [-]  | bool | Enable clipping left and right bound of drivable area when obstacles are in the drivable area                           | false         |
+| use_adjacent_lane         | [-]  | bool | Extend avoidance trajectory to adjacent lanes that has same direction. If false, avoidance only happen in current lane. | true          |
+| use_opposite_lane         | [-]  | bool | Extend avoidance trajectory to opposite direction lane. `use_adjacent_lane` must be `true` to take effects              | true          |
+| use_intersection_areas    | [-]  | bool | Extend drivable to intersection area.                                                                                   | false         |
+| use_hatched_road_markings | [-]  | bool | Extend drivable to hatched road marking area.                                                                           | false         |
+
+| Name                | Unit | Type | Description                                                                             | Default value |
+| :------------------ | ---- | ---- | --------------------------------------------------------------------------------------- | ------------- |
+| output_debug_marker | [-]  | bool | Flag to publish debug marker (set `false` as default since it takes considerable cost). | false         |
+| output_debug_info   | [-]  | bool | Flag to print debug info (set `false` as default since it takes considerable cost).     | false         |
 
 ### Avoidance target filtering parameters
 
@@ -772,7 +812,7 @@ Developers can see what is going on in each process by visualizing all the avoid
 
 ![fig1](../image/avoidance/avoidance-debug-marker.png)
 
-To enable the debug marker, execute `ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner avoidance.publish_debug_marker true` (no restart is needed) or simply set the `publish_debug_marker` to `true` in the `avoidance.param.yaml` for permanent effect (restart is needed). Then add the marker `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance` in `rviz2`.
+To enable the debug marker, execute `ros2 param set /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner avoidance.output_debug_marker true` (no restart is needed) or simply set the `output_debug_marker` to `true` in the `avoidance.param.yaml` for permanent effect (restart is needed). Then add the marker `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance` in `rviz2`.
 
 ### Echoing debug message to find out why the objects were ignored
 
