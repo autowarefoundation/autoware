@@ -13,9 +13,12 @@
         is_show_cv_window: false            # [-] whether to show open_cv debug window
         is_show_processing_time: false      # [-] whether to show processing time
       threshold:
+        detection_area_offset: 30.0
         detection_area_length: 100.0        # [m] the length of path to consider perception range
         stuck_vehicle_vel: 1.0              # [m/s] velocity below this value is assumed to stop
         lateral_distance: 1.5               # [m] maximum lateral distance to consider hidden collision
+        search_dist: 10.0
+        search_angle: 0.63                  # [rad] PI/5.0
       motion:
         safety_ratio: 0.8                   # [-] jerk/acceleration ratio for safety
         max_slow_down_jerk: -0.5            # [m/s^3] minimum jerk deceleration for safe brake.
