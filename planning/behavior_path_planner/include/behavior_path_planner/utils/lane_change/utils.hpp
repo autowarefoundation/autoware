@@ -90,8 +90,8 @@ lanelet::ConstLanelets getTargetNeighborLanes(
   const LaneChangeModuleType & type);
 
 bool isPathInLanelets(
-  const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
-  const lanelet::ConstLanelets & target_lanelets);
+  const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes);
 
 std::optional<LaneChangePath> constructCandidatePath(
   const LaneChangeInfo & lane_change_info, const PathWithLaneId & prepare_segment,

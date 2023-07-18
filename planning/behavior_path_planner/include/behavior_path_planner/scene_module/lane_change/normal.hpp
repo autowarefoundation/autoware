@@ -107,7 +107,7 @@ protected:
     const double prepare_length) const override;
 
   PathWithLaneId getTargetSegment(
-    const lanelet::ConstLanelets & target_lanelets, const Pose & lane_changing_start_pose,
+    const lanelet::ConstLanelets & target_lanes, const Pose & lane_changing_start_pose,
     const double target_lane_length, const double lane_changing_length,
     const double lane_changing_velocity, const double buffer_for_next_lane_change) const;
 
@@ -116,9 +116,9 @@ protected:
     const lanelet::ConstLanelets & target_lanes, const Direction direction = Direction::NONE) const;
 
   bool getLaneChangePaths(
-    const lanelet::ConstLanelets & original_lanelets,
-    const lanelet::ConstLanelets & target_lanelets, Direction direction,
-    LaneChangePaths * candidate_paths, const bool check_safety = true) const override;
+    const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
+    Direction direction, LaneChangePaths * candidate_paths,
+    const bool check_safety = true) const override;
 
   TurnSignalInfo calcTurnSignalInfo() override;
 

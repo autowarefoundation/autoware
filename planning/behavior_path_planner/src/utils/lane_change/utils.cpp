@@ -204,13 +204,13 @@ lanelet::ConstLanelets getTargetNeighborLanes(
 }
 
 bool isPathInLanelets(
-  const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
-  const lanelet::ConstLanelets & target_lanelets)
+  const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes)
 {
-  const auto current_lane_poly = lanelet::utils::getPolygonFromArcLength(
-    original_lanelets, 0, std::numeric_limits<double>::max());
+  const auto current_lane_poly =
+    lanelet::utils::getPolygonFromArcLength(current_lanes, 0, std::numeric_limits<double>::max());
   const auto target_lane_poly =
-    lanelet::utils::getPolygonFromArcLength(target_lanelets, 0, std::numeric_limits<double>::max());
+    lanelet::utils::getPolygonFromArcLength(target_lanes, 0, std::numeric_limits<double>::max());
   const auto current_lane_poly_2d = lanelet::utils::to2D(current_lane_poly).basicPolygon();
   const auto target_lane_poly_2d = lanelet::utils::to2D(target_lane_poly).basicPolygon();
   for (const auto & pt : path.points) {
@@ -233,8 +233,8 @@ std::optional<LaneChangePath> constructCandidatePath(
   const std::vector<std::vector<int64_t>> & sorted_lane_ids)
 {
   const auto & shift_line = lane_change_info.shift_line;
-  const auto & original_lanelets = lane_change_info.reference_lanelets;
-  const auto & target_lanelets = lane_change_info.target_lanelets;
+  const auto & original_lanes = lane_change_info.current_lanes;
+  const auto & target_lanes = lane_change_info.target_lanes;
   const auto terminal_lane_changing_velocity = lane_change_info.terminal_lane_changing_velocity;
   const auto longitudinal_acceleration = lane_change_info.longitudinal_acceleration;
   const auto lane_change_velocity = lane_change_info.velocity;
@@ -301,7 +301,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   // check candidate path is in lanelet
   if (
     enable_path_check_in_lanelet &&
-    !isPathInLanelets(shifted_path.path, original_lanelets, target_lanelets)) {
+    !isPathInLanelets(shifted_path.path, original_lanes, target_lanes)) {
     return std::nullopt;
   }
 
@@ -919,7 +919,7 @@ bool passParkedObject(
   const auto & object_shiftable_ratio_threshold =
     lane_change_parameters.object_shiftable_ratio_threshold;
   const auto & path = lane_change_path.path;
-  const auto & current_lanes = lane_change_path.info.reference_lanelets;
+  const auto & current_lanes = lane_change_path.info.current_lanes;
   const auto current_lane_path =
     route_handler.getCenterLinePath(current_lanes, 0.0, std::numeric_limits<double>::max());
 

@@ -153,8 +153,8 @@ struct LaneChangeInfo
   LaneChangePhaseInfo duration{0.0, 0.0};
   LaneChangePhaseInfo length{0.0, 0.0};
 
-  lanelet::ConstLanelets reference_lanelets{};
-  lanelet::ConstLanelets target_lanelets{};
+  lanelet::ConstLanelets current_lanes{};
+  lanelet::ConstLanelets target_lanes{};
 
   Pose lane_changing_start{};
   Pose lane_changing_end{};
