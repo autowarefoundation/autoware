@@ -6,7 +6,6 @@
     "**/evaluator/**",
     "**/launch/**",
     "**/localization/**",
-    "**/map/**",
     "**/perception/**",
     "**/planning/**",
     "**/sensing/**",
