@@ -131,6 +131,7 @@ void MapUpdateModule::update_map(const geometry_msgs::msg::Point & position)
     status = result.wait_for(std::chrono::seconds(1));
   }
   update_ndt(result.get()->new_pointcloud_with_ids, result.get()->ids_to_remove);
+  last_update_position_ = position;
 }
 
 void MapUpdateModule::update_ndt(
