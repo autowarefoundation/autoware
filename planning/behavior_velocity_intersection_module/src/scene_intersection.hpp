@@ -78,12 +78,20 @@ public:
     } stuck_vehicle;
     struct CollisionDetection
     {
-      double state_transit_margin_time;
       double min_predicted_path_confidence;
       //! minimum confidence value of predicted path to use for collision detection
       double minimum_ego_predicted_velocity;  //! used to calculate ego's future velocity profile
-      double collision_start_margin_time;     //! start margin time to check collision
-      double collision_end_margin_time;       //! end margin time to check collision
+      double state_transit_margin_time;
+      struct Normal
+      {
+        double collision_start_margin_time;  //! start margin time to check collision
+        double collision_end_margin_time;    //! end margin time to check collision
+      } normal;
+      struct Relaxed
+      {
+        double collision_start_margin_time;
+        double collision_end_margin_time;
+      } relaxed;
       double keep_detection_vel_thr;  //! keep detection if ego is ego.vel < keep_detection_vel_thr
     } collision_detection;
     struct Occlusion
@@ -156,6 +164,11 @@ public:
     // NOTE: if RTC is disapproved status, default stop lines are still needed.
     util::IntersectionStopLines stop_lines;
   };
+  struct TrafficLightArrowSolidOn
+  {
+    bool collision_detected;
+    util::IntersectionStopLines stop_lines;
+  };
   using DecisionResult = std::variant<
     Indecisive,                // internal process error, or over the pass judge line
     StuckStop,                 // detected stuck vehicle
@@ -163,8 +176,8 @@ public:
     FirstWaitBeforeOcclusion,  // stop for a while before peeking to occlusion
     PeekingTowardOcclusion,    // peeking into occlusion while collision is not detected
     OccludedCollisionStop,     // occlusion and collision are both detected
-    Safe                       // judge as safe
-    /* TODO(Mamoru Sobue): TrafficLightArrowSolidOn */
+    Safe,                      // judge as safe
+    TrafficLightArrowSolidOn   // only detect vehicles violating traffic rules
     >;
 
   IntersectionModule(
@@ -242,7 +255,7 @@ private:
     const lanelet::ConstLanelets & adjacent_lanelets,
     const std::optional<Polygon2d> & intersection_area,
     const lanelet::ConstLanelets & ego_lane_with_next_lane, const int closest_idx,
-    const double time_delay);
+    const double time_delay, const bool tl_arrow_solid_on);
 
   bool isOcclusionCleared(
     const nav_msgs::msg::OccupancyGrid & occ_grid,

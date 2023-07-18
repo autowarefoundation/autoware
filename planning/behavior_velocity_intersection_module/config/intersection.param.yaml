@@ -10,10 +10,10 @@
         intersection_max_accel: 0.5 # m/ss
         stop_overshoot_margin: 0.5 # [m] overshoot margin for stuck, collision detection
         use_intersection_area: false
-        path_interpolation_ds: 0.2 # [m]
+        path_interpolation_ds: 0.1 # [m]
         consider_wrong_direction_vehicle: false
       stuck_vehicle:
-        use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
+        use_stuck_stopline: true # stopline generated before the first conflicting area
         stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
         stuck_vehicle_ignore_dist: 10.0 # obstacle stop max distance(5.0m) + stuck vehicle size / 2 (0.0m-)
         stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
@@ -25,8 +25,12 @@
         state_transit_margin_time: 1.0
         min_predicted_path_confidence: 0.05
         minimum_ego_predicted_velocity: 1.388 # [m/s]
-        collision_start_margin_time: 4.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
-        collision_end_margin_time: 6.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
+        normal:
+          collision_start_margin_time: 4.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
+          collision_end_margin_time: 6.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
+        relaxed:
+          collision_start_margin_time: 2.0
+          collision_end_margin_time: 0.0
         keep_detection_vel_thr: 0.833 # == 3.0km/h. keep detection if ego is ego.vel < keep_detection_vel_thr
 
       occlusion:
@@ -34,11 +38,11 @@
         occlusion_attention_area_length: 70.0 # [m]
         enable_creeping: false # flag to use the creep velocity when reaching occlusion limit stop line
         occlusion_creep_velocity: 0.8333 # the creep velocity to occlusion limit stop line
-        peeking_offset: -0.1 # [m] offset for peeking into detection area
+        peeking_offset: -0.5 # [m] offset for peeking into detection area
         free_space_max: 43
         occupied_min: 58
         do_dp: true
-        before_creep_stop_time: 1.0 # [s]
+        before_creep_stop_time: 0.1 # [s]
         min_vehicle_brake_for_rss: -2.5 # [m/s^2]
         max_vehicle_velocity_for_rss: 16.66 # [m/s] == 60kmph
         denoise_kernel: 1.0 # [m]

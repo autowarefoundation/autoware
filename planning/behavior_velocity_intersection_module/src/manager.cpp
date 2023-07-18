@@ -74,16 +74,20 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.stuck_vehicle.timeout_private_area =
     node.declare_parameter<double>(ns + ".stuck_vehicle.timeout_private_area");
 
-  ip.collision_detection.state_transit_margin_time =
-    node.declare_parameter<double>(ns + ".collision_detection.state_transit_margin_time");
   ip.collision_detection.min_predicted_path_confidence =
     node.declare_parameter<double>(ns + ".collision_detection.min_predicted_path_confidence");
   ip.collision_detection.minimum_ego_predicted_velocity =
     node.declare_parameter<double>(ns + ".collision_detection.minimum_ego_predicted_velocity");
-  ip.collision_detection.collision_start_margin_time =
-    node.declare_parameter<double>(ns + ".collision_detection.collision_start_margin_time");
-  ip.collision_detection.collision_end_margin_time =
-    node.declare_parameter<double>(ns + ".collision_detection.collision_end_margin_time");
+  ip.collision_detection.state_transit_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.state_transit_margin_time");
+  ip.collision_detection.normal.collision_start_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.normal.collision_start_margin_time");
+  ip.collision_detection.normal.collision_end_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.normal.collision_end_margin_time");
+  ip.collision_detection.relaxed.collision_start_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.relaxed.collision_start_margin_time");
+  ip.collision_detection.relaxed.collision_end_margin_time =
+    node.declare_parameter<double>(ns + ".collision_detection.relaxed.collision_end_margin_time");
   ip.collision_detection.keep_detection_vel_thr =
     node.declare_parameter<double>(ns + ".collision_detection.keep_detection_vel_thr");
 

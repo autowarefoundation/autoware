@@ -545,6 +545,7 @@ IntersectionLanelets getObjectiveLanelets(
   result.occlusion_attention_ = std::move(occlusion_detection_and_preceding_lanelets);
   // compoundPolygon3d
   result.attention_area_ = getPolygon3dFromLanelets(result.attention_);
+  result.attention_non_preceding_area_ = getPolygon3dFromLanelets(result.attention_non_preceding_);
   result.conflicting_area_ = getPolygon3dFromLanelets(result.conflicting_);
   result.adjacent_area_ = getPolygon3dFromLanelets(result.adjacent_);
   result.occlusion_attention_area_ = getPolygon3dFromLanelets(result.occlusion_attention_);
@@ -1119,13 +1120,13 @@ void IntersectionLanelets::update(
   const auto & lane_interval = interpolated_path_info.lane_id_interval.value();
   {
     auto first = getFirstPointInsidePolygons(path, lane_interval, conflicting_area_);
-    if (first) {
+    if (first && !first_conflicting_area_) {
       first_conflicting_area_ = first.value().second;
     }
   }
   {
     auto first = getFirstPointInsidePolygons(path, lane_interval, attention_area_);
-    if (first) {
+    if (first && !first_attention_area_) {
       first_attention_area_ = first.value().second;
     }
   }
