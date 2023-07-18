@@ -1,0 +1,19 @@
+<launch>
+  <!-- Input -->
+  <arg name="input/objects" default="~/input/objects"/>
+  <!-- Output -->
+  <arg name="output/noise_objects" default="~/output/noise_objects"/>
+  <arg name="output/filtered_objects" default="~/output/filtered_objects"/>
+  <!-- Parameter -->
+  <arg name="angle_threshold" default="1.0472"/>
+  <arg name="velocity_threshold" default="3.0"/>
+
+  <!-- Node -->
+  <node pkg="radar_crossing_objects_noise_filter" exec="radar_crossing_objects_noise_filter_node" name="radar_crossing_objects_noise_filter" output="screen">
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <remap from="~/output/noise_objects" to="$(var output/noise_objects)"/>
+    <remap from="~/output/filtered_objects" to="$(var output/filtered_objects)"/>
+    <param name="angle_threshold" value="$(var angle_threshold)"/>
+    <param name="velocity_threshold" value="$(var velocity_threshold)"/>
+  </node>
+</launch>
