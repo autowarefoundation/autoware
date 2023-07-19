@@ -34,8 +34,9 @@ WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 
   // for walkway parameters
   auto & wp = walkway_planner_param_;
-  wp.stop_line_distance = node.declare_parameter<double>(ns + ".stop_line_distance");
-  wp.stop_duration_sec = node.declare_parameter<double>(ns + ".stop_duration_sec");
+  wp.stop_distance_from_crosswalk =
+    node.declare_parameter<double>(ns + ".stop_distance_from_crosswalk");
+  wp.stop_duration = node.declare_parameter<double>(ns + ".stop_duration");
 }
 
 void WalkwayModuleManager::launchNewModules(const PathWithLaneId & path)

@@ -79,7 +79,7 @@ std::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getSt
     if (!path_intersects.empty()) {
       const auto p_stop_line = path_intersects.front();
       const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line) -
-                                    planner_param_.stop_line_distance;
+                                    planner_param_.stop_distance_from_crosswalk;
       return std::make_pair(dist_ego_to_stop, p_stop_line);
     }
   }
@@ -112,8 +112,9 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     }
 
     const auto & p_stop = p_stop_line->second;
-    const auto stop_line_distance = exist_stopline_in_map ? 0.0 : planner_param_.stop_line_distance;
-    const auto margin = stop_line_distance + base_link2front;
+    const auto stop_distance_from_crosswalk =
+      exist_stopline_in_map ? 0.0 : planner_param_.stop_distance_from_crosswalk;
+    const auto margin = stop_distance_from_crosswalk + base_link2front;
     const auto stop_pose = calcLongitudinalOffsetPose(input.points, p_stop, -margin);
 
     if (!stop_pose) {
@@ -141,9 +142,8 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     const double distance_threshold = 1.0;
     debug_data_.stop_judge_range = distance_threshold;
 
-    const auto stop_at_stop_point =
-      signed_arc_dist_to_stop_point < distance_threshold &&
-      planner_data_->isVehicleStopped(planner_param_.stop_duration_sec);
+    const auto stop_at_stop_point = signed_arc_dist_to_stop_point < distance_threshold &&
+                                    planner_data_->isVehicleStopped(planner_param_.stop_duration);
 
     if (stop_at_stop_point) {
       // If ego vehicle is after walkway stop and stopped then move to stop state

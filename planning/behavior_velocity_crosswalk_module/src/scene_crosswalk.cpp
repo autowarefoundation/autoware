@@ -239,12 +239,12 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     *path, sparse_resample_path, p_stop_line, path_intersects, default_stop_pose);
 
   // Decide to stop for stuck vehicle
-  const auto stop_factor_for_stucked_vehicles = checkStopForStuckedVehicles(
+  const auto stop_factor_for_stuck_vehicles = checkStopForStuckVehicles(
     sparse_resample_path, objects_ptr->objects, path_intersects, default_stop_pose);
 
   // Get nearest stop factor
   const auto nearest_stop_factor =
-    getNearestStopFactor(*path, stop_factor_for_crosswalk_users, stop_factor_for_stucked_vehicles);
+    getNearestStopFactor(*path, stop_factor_for_crosswalk_users, stop_factor_for_stuck_vehicles);
   recordTime(3);
 
   // Set safe or unsafe
@@ -274,14 +274,15 @@ std::optional<std::pair<geometry_msgs::msg::Point, double>> CrosswalkModule::get
     const auto p_stop_lines = getLinestringIntersects(
       ego_path, lanelet::utils::to2D(stop_line).basicLineString(), ego_pos, 2);
     if (!p_stop_lines.empty()) {
-      return std::make_pair(p_stop_lines.front(), -planner_param_.stop_margin - base_link2front);
+      return std::make_pair(
+        p_stop_lines.front(), -planner_param_.stop_distance_from_object - base_link2front);
     }
   }
 
   // If stop lines are not found in the LL2 map.
   if (!path_intersects.empty()) {
     return std::make_pair(
-      path_intersects.front(), -planner_param_.stop_line_distance - base_link2front);
+      path_intersects.front(), -planner_param_.stop_distance_from_crosswalk - base_link2front);
   }
 
   return {};
@@ -342,7 +343,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
 
       const auto dist_ego2cp =
         calcSignedArcLength(sparse_resample_path.points, ego_pos, cp.collision_point) -
-        planner_param_.stop_margin;
+        planner_param_.stop_distance_from_object;
       if (!nearest_stop_info || dist_ego2cp - base_link2front < nearest_stop_info->second) {
         nearest_stop_info = std::make_pair(cp.collision_point, dist_ego2cp - base_link2front);
       }
@@ -357,7 +358,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   // Check if the ego should stop beyond the stop line.
   const bool stop_at_stop_line =
     dist_ego_to_stop < nearest_stop_info->second &&
-    nearest_stop_info->second < dist_ego_to_stop + planner_param_.stop_line_margin;
+    nearest_stop_info->second < dist_ego_to_stop + planner_param_.far_object_threshold;
 
   if (stop_at_stop_line) {
     // Stop at the stop line
@@ -367,7 +368,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   } else {
     // Stop beyond the stop line
     const auto stop_pose = calcLongitudinalOffsetPose(
-      ego_path.points, nearest_stop_info->first, planner_param_.stop_margin);
+      ego_path.points, nearest_stop_info->first, planner_param_.stop_distance_from_object);
     if (stop_pose) {
       return createStopFactor(*stop_pose, stop_factor_points);
     }
@@ -643,7 +644,7 @@ CollisionPoint CrosswalkModule::createCollisionPoint(
   CollisionPoint collision_point{};
   collision_point.collision_point = nearest_collision_point;
   collision_point.time_to_collision =
-    std::max(0.0, dist_ego2cp - planner_param_.stop_margin - base_link2front) /
+    std::max(0.0, dist_ego2cp - planner_param_.stop_distance_from_object - base_link2front) /
     std::max(ego_vel.x, min_ego_velocity);
   collision_point.time_to_vehicle = std::max(0.0, dist_obj2cp) / velocity;
 
@@ -756,7 +757,7 @@ Polygon2d CrosswalkModule::getAttentionArea(
   return attention_area;
 }
 
-std::optional<StopFactor> CrosswalkModule::checkStopForStuckedVehicles(
+std::optional<StopFactor> CrosswalkModule::checkStopForStuckVehicles(
   const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
   const std::vector<geometry_msgs::msg::Point> & path_intersects,
   const std::optional<geometry_msgs::msg::Pose> & stop_pose) const
@@ -777,7 +778,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForStuckedVehicles(
 
     const auto & obj_pos = object.kinematics.initial_pose_with_covariance.pose.position;
     const auto lateral_offset = calcLateralOffset(ego_path.points, obj_pos);
-    if (planner_param_.max_lateral_offset < std::abs(lateral_offset)) {
+    if (planner_param_.max_stuck_vehicle_lateral_offset < std::abs(lateral_offset)) {
       continue;
     }
 
@@ -800,7 +801,7 @@ std::optional<StopFactor> CrosswalkModule::checkStopForStuckedVehicles(
 std::optional<StopFactor> CrosswalkModule::getNearestStopFactor(
   const PathWithLaneId & ego_path,
   const std::optional<StopFactor> & stop_factor_for_crosswalk_users,
-  const std::optional<StopFactor> & stop_factor_for_stucked_vehicles)
+  const std::optional<StopFactor> & stop_factor_for_stuck_vehicles)
 {
   const auto get_distance_to_stop = [&](const auto stop_factor) -> std::optional<double> {
     const auto & ego_pos = planner_data_->current_odometry->pose.position;
@@ -809,20 +810,19 @@ std::optional<StopFactor> CrosswalkModule::getNearestStopFactor(
   };
   const auto dist_to_stop_for_crosswalk_users =
     get_distance_to_stop(stop_factor_for_crosswalk_users);
-  const auto dist_to_stop_for_stucked_vehicles =
-    get_distance_to_stop(stop_factor_for_stucked_vehicles);
+  const auto dist_to_stop_for_stuck_vehicles = get_distance_to_stop(stop_factor_for_stuck_vehicles);
 
   if (dist_to_stop_for_crosswalk_users) {
-    if (dist_to_stop_for_stucked_vehicles) {
-      if (*dist_to_stop_for_stucked_vehicles < *dist_to_stop_for_crosswalk_users) {
-        return stop_factor_for_stucked_vehicles;
+    if (dist_to_stop_for_stuck_vehicles) {
+      if (*dist_to_stop_for_stuck_vehicles < *dist_to_stop_for_crosswalk_users) {
+        return stop_factor_for_stuck_vehicles;
       }
     }
     return stop_factor_for_crosswalk_users;
   }
 
-  if (dist_to_stop_for_stucked_vehicles) {
-    return stop_factor_for_stucked_vehicles;
+  if (dist_to_stop_for_stuck_vehicles) {
+    return stop_factor_for_stuck_vehicles;
   }
 
   return {};
@@ -836,7 +836,7 @@ void CrosswalkModule::updateObjectState(const double dist_ego_to_stop)
   const bool is_ego_yielding = [&]() {
     const auto has_reached_stop_point = dist_ego_to_stop < planner_param_.stop_position_threshold;
 
-    return planner_data_->isVehicleStopped(planner_param_.ego_yield_query_stop_duration) &&
+    return planner_data_->isVehicleStopped(planner_param_.timeout_ego_stop_for_yield) &&
            has_reached_stop_point;
   }();
 
@@ -866,7 +866,7 @@ bool CrosswalkModule::isRedSignalForPedestrians() const
       }
 
       if (
-        planner_param_.tl_state_timeout <
+        planner_param_.traffic_light_state_timeout <
         (clock_->now() - traffic_signal_stamped->header.stamp).seconds()) {
         continue;
       }

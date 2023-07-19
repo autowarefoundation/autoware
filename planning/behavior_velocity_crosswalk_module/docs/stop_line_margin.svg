@@ -51,13 +51,13 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                stop_line_margin
+                far_object_threshold
                 <span style="font-style: normal;">[m]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="545" y="351" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_line_margin [m]</text>
+        <text x="545" y="351" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">far_object_threshold [m]</text>
       </switch>
     </g>
     <path d="M 810.63 240.04 L 599.37 239.92" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>
@@ -158,13 +158,13 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                stop_margin
+                stop_distance_from_object
                 <span style="font-style: normal;">[m]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="972" y="21" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_margin [m]</text>
+        <text x="972" y="21" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_distance_from_object [m]</text>
       </switch>
     </g>
     <path d="M 862.1 230 Q 891.4 110 916.4 140 Q 941.4 170 972 30" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>

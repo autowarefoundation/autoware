@@ -63,9 +63,9 @@ public:
   {
     bool show_processing_time;
     // param for stop position
-    double stop_margin;
-    double stop_line_distance;
-    double stop_line_margin;
+    double stop_distance_from_object;
+    double stop_distance_from_crosswalk;
+    double far_object_threshold;
     double stop_position_threshold;
     // param for ego velocity
     float min_slow_down_velocity;
@@ -74,7 +74,7 @@ public:
     double no_relax_velocity;
     // param for stuck vehicle
     double stuck_vehicle_velocity;
-    double max_lateral_offset;
+    double max_stuck_vehicle_lateral_offset;
     double stuck_vehicle_attention_range;
     // param for pass judge logic
     double ego_pass_first_margin;
@@ -82,10 +82,10 @@ public:
     double stop_object_velocity;
     double min_object_velocity;
     bool disable_stop_for_yield_cancel;
-    double max_yield_timeout;
-    double ego_yield_query_stop_duration;
+    double timeout_no_intention_to_walk;
+    double timeout_ego_stop_for_yield;
     // param for input data
-    double tl_state_timeout;
+    double traffic_light_state_timeout;
     // param for target area & object
     double crosswalk_attention_range;
     bool look_unknown;
@@ -116,7 +116,7 @@ public:
           time_to_start_stopped = now;
         }
         const bool intent_to_cross =
-          (now - *time_to_start_stopped).seconds() < planner_param.max_yield_timeout;
+          (now - *time_to_start_stopped).seconds() < planner_param.timeout_no_intention_to_walk;
         if ((is_ego_yielding || planner_param.disable_stop_for_yield_cancel) && !intent_to_cross) {
           state = State::FULLY_STOPPED;
         } else {
@@ -193,7 +193,7 @@ private:
     const std::vector<geometry_msgs::msg::Point> & path_intersects,
     const std::optional<geometry_msgs::msg::Pose> & default_stop_pose);
 
-  std::optional<StopFactor> checkStopForStuckedVehicles(
+  std::optional<StopFactor> checkStopForStuckVehicles(
     const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
     const std::vector<geometry_msgs::msg::Point> & path_intersects,
     const std::optional<geometry_msgs::msg::Pose> & stop_pose) const;
@@ -205,7 +205,7 @@ private:
   std::optional<StopFactor> getNearestStopFactor(
     const PathWithLaneId & ego_path,
     const std::optional<StopFactor> & stop_factor_for_crosswalk_users,
-    const std::optional<StopFactor> & stop_factor_for_stucked_vehicles);
+    const std::optional<StopFactor> & stop_factor_for_stuck_vehicles);
 
   void planGo(PathWithLaneId & ego_path, const std::optional<StopFactor> & stop_factor);
 

@@ -34,46 +34,61 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 
   // for crosswalk parameters
   auto & cp = crosswalk_planner_param_;
-  cp.show_processing_time = node.declare_parameter<bool>(ns + ".show_processing_time");
-
-  // param for stop position
-  cp.stop_line_distance = node.declare_parameter<double>(ns + ".stop_line_distance");
-  cp.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");
-  cp.stop_line_margin = node.declare_parameter<double>(ns + ".stop_line_margin");
-  cp.stop_position_threshold = node.declare_parameter<double>(ns + ".stop_position_threshold");
-
-  // param for ego velocity
-  cp.min_slow_down_velocity = node.declare_parameter<double>(ns + ".min_slow_down_velocity");
-  cp.max_slow_down_jerk = node.declare_parameter<double>(ns + ".max_slow_down_jerk");
-  cp.max_slow_down_accel = node.declare_parameter<double>(ns + ".max_slow_down_accel");
-  cp.no_relax_velocity = node.declare_parameter<double>(ns + ".no_relax_velocity");
-
-  // param for stuck vehicle
-  cp.stuck_vehicle_velocity = node.declare_parameter<double>(ns + ".stuck_vehicle_velocity");
-  cp.max_lateral_offset = node.declare_parameter<double>(ns + ".max_lateral_offset");
-  cp.stuck_vehicle_attention_range =
-    node.declare_parameter<double>(ns + ".stuck_vehicle_attention_range");
-
-  // param for pass judge logic
-  cp.ego_pass_first_margin = node.declare_parameter<double>(ns + ".ego_pass_first_margin");
-  cp.ego_pass_later_margin = node.declare_parameter<double>(ns + ".ego_pass_later_margin");
-  cp.stop_object_velocity = node.declare_parameter<double>(ns + ".stop_object_velocity_threshold");
-  cp.min_object_velocity = node.declare_parameter<double>(ns + ".min_object_velocity");
-  cp.disable_stop_for_yield_cancel =
-    node.declare_parameter<bool>(ns + ".disable_stop_for_yield_cancel");
-  cp.max_yield_timeout = node.declare_parameter<double>(ns + ".max_yield_timeout");
-  cp.ego_yield_query_stop_duration =
-    node.declare_parameter<double>(ns + ".ego_yield_query_stop_duration");
+  cp.show_processing_time = node.declare_parameter<bool>(ns + ".common.show_processing_time");
 
   // param for input data
-  cp.tl_state_timeout = node.declare_parameter<double>(ns + ".tl_state_timeout");
+  cp.traffic_light_state_timeout =
+    node.declare_parameter<double>(ns + ".common.traffic_light_state_timeout");
+
+  // param for stop position
+  cp.stop_distance_from_crosswalk =
+    node.declare_parameter<double>(ns + ".stop_position.stop_distance_from_crosswalk");
+  cp.stop_distance_from_object =
+    node.declare_parameter<double>(ns + ".stop_position.stop_distance_from_object");
+  cp.far_object_threshold =
+    node.declare_parameter<double>(ns + ".stop_position.far_object_threshold");
+  cp.stop_position_threshold =
+    node.declare_parameter<double>(ns + ".stop_position.stop_position_threshold");
+
+  // param for ego velocity
+  cp.min_slow_down_velocity =
+    node.declare_parameter<double>(ns + ".slow_down.min_slow_down_velocity");
+  cp.max_slow_down_jerk = node.declare_parameter<double>(ns + ".slow_down.max_slow_down_jerk");
+  cp.max_slow_down_accel = node.declare_parameter<double>(ns + ".slow_down.max_slow_down_accel");
+  cp.no_relax_velocity = node.declare_parameter<double>(ns + ".slow_down.no_relax_velocity");
+
+  // param for stuck vehicle
+  cp.stuck_vehicle_velocity =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.stuck_vehicle_velocity");
+  cp.max_stuck_vehicle_lateral_offset =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.max_stuck_vehicle_lateral_offset");
+  cp.stuck_vehicle_attention_range =
+    node.declare_parameter<double>(ns + ".stuck_vehicle.stuck_vehicle_attention_range");
+
+  // param for pass judge logic
+  cp.ego_pass_first_margin =
+    node.declare_parameter<double>(ns + ".pass_judge.ego_pass_first_margin");
+  cp.ego_pass_later_margin =
+    node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_margin");
+  cp.stop_object_velocity =
+    node.declare_parameter<double>(ns + ".pass_judge.stop_object_velocity_threshold");
+  cp.min_object_velocity = node.declare_parameter<double>(ns + ".pass_judge.min_object_velocity");
+  cp.disable_stop_for_yield_cancel =
+    node.declare_parameter<bool>(ns + ".pass_judge.disable_stop_for_yield_cancel");
+  cp.timeout_no_intention_to_walk =
+    node.declare_parameter<double>(ns + ".pass_judge.timeout_no_intention_to_walk");
+  cp.timeout_ego_stop_for_yield =
+    node.declare_parameter<double>(ns + ".pass_judge.timeout_ego_stop_for_yield");
 
   // param for target area & object
-  cp.crosswalk_attention_range = node.declare_parameter<double>(ns + ".crosswalk_attention_range");
-  cp.look_unknown = node.declare_parameter<bool>(ns + ".target_object.unknown");
-  cp.look_bicycle = node.declare_parameter<bool>(ns + ".target_object.bicycle");
-  cp.look_motorcycle = node.declare_parameter<bool>(ns + ".target_object.motorcycle");
-  cp.look_pedestrian = node.declare_parameter<bool>(ns + ".target_object.pedestrian");
+  cp.crosswalk_attention_range =
+    node.declare_parameter<double>(ns + ".object_filtering.crosswalk_attention_range");
+  cp.look_unknown = node.declare_parameter<bool>(ns + ".object_filtering.target_object.unknown");
+  cp.look_bicycle = node.declare_parameter<bool>(ns + ".object_filtering.target_object.bicycle");
+  cp.look_motorcycle =
+    node.declare_parameter<bool>(ns + ".object_filtering.target_object.motorcycle");
+  cp.look_pedestrian =
+    node.declare_parameter<bool>(ns + ".object_filtering.target_object.pedestrian");
 }
 
 void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)

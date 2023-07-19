@@ -51,13 +51,13 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                stop_line_distance
+                stop_distance_from_crosswalk
                 <span style="font-style: normal;">[m]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="516" y="71" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_line_distance [m]</text>
+        <text x="516" y="71" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_distance_from_crosswalk [m]</text>
       </switch>
     </g>
     <ellipse cx="690.5" cy="447.5" rx="7.5" ry="7.5" fill="#8c8c8c" stroke="rgb(0, 0, 0)" stroke-width="3" pointer-events="none"/>
@@ -131,13 +131,13 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                stop_margin
+                stop_distance_from_object
                 <span style="font-style: normal;">[m]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="765" y="71" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_margin [m]</text>
+        <text x="765" y="71" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">stop_distance_from_object [m]</text>
       </switch>
     </g>
     <path d="M 659.96 230.08 Q 689.4 110 714.4 140 Q 739.4 170 765 80" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>

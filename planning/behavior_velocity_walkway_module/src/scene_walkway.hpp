@@ -39,8 +39,8 @@ class WalkwayModule : public SceneModuleInterface
 public:
   struct PlannerParam
   {
-    double stop_line_distance;
-    double stop_duration_sec;
+    double stop_distance_from_crosswalk;
+    double stop_duration;
   };
   WalkwayModule(
     const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,

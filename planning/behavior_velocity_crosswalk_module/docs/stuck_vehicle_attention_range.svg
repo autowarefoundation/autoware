@@ -154,13 +154,13 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                max_lateral_offset
+                max_stuck_vehicle_lateral_offset
                 <span style="font-style: normal;">[m]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="1135" y="131" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">max_lateral_offset [m]</text>
+        <text x="1135" y="131" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">max_stuck_vehicle_lateral_offset [m]</text>
       </switch>
     </g>
     <path d="M 992.04 250 Q 1130 240 1105 215 Q 1080 190 1139.88 150.08" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="none"/>
