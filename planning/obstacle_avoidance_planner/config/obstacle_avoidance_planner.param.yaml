@@ -19,6 +19,9 @@
       output_delta_arc_length: 0.5     #  delta arc length for output trajectory [m]
       output_backward_traj_length: 5.0  # backward length for backward trajectory from base_link [m]
 
+      vehicle_stop_margin_outside_drivable_area: 1.5 # vehicle stop margin to let the vehicle stop before the calculated stop point if it is calculated outside the drivable area [m] .
+                                                     # This margin will be realized with delta_arc_length_for_mpt_points m precision.
+
     # replanning & trimming trajectory param outside algorithm
     replan:
       max_path_shape_around_ego_lat_dist: 2.0  # threshold of path shape change around ego [m]
