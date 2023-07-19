@@ -10,6 +10,7 @@
 
   <arg name="launch_stop_line" default="true"/>
   <arg name="launch_crosswalk" default="true"/>
+  <arg name="launch_walkway" default="true"/>
   <arg name="launch_traffic_light" default="true"/>
   <arg name="launch_intersection" default="true"/>
   <arg name="launch_blind_spot" default="true"/>
@@ -30,6 +31,7 @@
   <node pkg="behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
     <param from="$(find-pkg-share behavior_velocity_planner)/config/blind_spot.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/crosswalk.param.yaml"/>
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/walkway.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/detection_area.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/intersection.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/stop_line.param.yaml"/>
@@ -57,6 +59,7 @@
 
     <param name="launch_stop_line" value="$(var launch_stop_line)"/>
     <param name="launch_crosswalk" value="$(var launch_crosswalk)"/>
+    <param name="launch_walkway" value="$(var launch_walkway)"/>
     <param name="launch_traffic_light" value="$(var launch_traffic_light)"/>
     <param name="launch_intersection" value="$(var launch_intersection)"/>
     <param name="launch_blind_spot" value="$(var launch_blind_spot)"/>

@@ -15,15 +15,12 @@
 #ifndef SCENE_WALKWAY_HPP_
 #define SCENE_WALKWAY_HPP_
 
-#include "scene_crosswalk.hpp"
-#include "util.hpp"
+#include "behavior_velocity_crosswalk_module/util.hpp"
+#include "scene_walkway.hpp"
 
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
-
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>

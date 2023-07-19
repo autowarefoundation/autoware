@@ -15,7 +15,7 @@
 #ifndef MANAGER_HPP_
 #define MANAGER_HPP_
 
-#include "scene_crosswalk.hpp"
+#include "scene_walkway.hpp"
 
 #include <behavior_velocity_planner_common/plugin_interface.hpp>
 #include <behavior_velocity_planner_common/plugin_wrapper.hpp>
@@ -24,7 +24,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <tier4_api_msgs/msg/crosswalk_status.hpp>
 
 #include <functional>
 #include <memory>
@@ -37,15 +36,15 @@ namespace behavior_velocity_planner
 
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 
-class CrosswalkModuleManager : public SceneModuleManagerInterfaceWithRTC
+class WalkwayModuleManager : public SceneModuleManagerInterface
 {
 public:
-  explicit CrosswalkModuleManager(rclcpp::Node & node);
+  explicit WalkwayModuleManager(rclcpp::Node & node);
 
-  const char * getModuleName() override { return "crosswalk"; }
+  const char * getModuleName() override { return "walkway"; }
 
 private:
-  CrosswalkModule::PlannerParam crosswalk_planner_param_{};
+  WalkwayModule::PlannerParam walkway_planner_param_{};
 
   void launchNewModules(const PathWithLaneId & path) override;
 
@@ -55,9 +54,10 @@ private:
   std::optional<bool> opt_use_regulatory_element_{std::nullopt};
 };
 
-class CrosswalkModulePlugin : public PluginWrapper<CrosswalkModuleManager>
+class WalkwayModulePlugin : public PluginWrapper<WalkwayModuleManager>
 {
 };
+
 }  // namespace behavior_velocity_planner
 
 #endif  // MANAGER_HPP_

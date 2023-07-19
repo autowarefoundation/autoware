@@ -76,6 +76,7 @@
   <test_depend>behavior_velocity_stop_line_module</test_depend>
   <test_depend>behavior_velocity_traffic_light_module</test_depend>
   <test_depend>behavior_velocity_virtual_traffic_light_module</test_depend>
+  <test_depend>behavior_velocity_walkway_module</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
