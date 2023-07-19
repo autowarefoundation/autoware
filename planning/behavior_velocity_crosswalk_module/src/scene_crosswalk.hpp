@@ -178,24 +178,41 @@ public:
   motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
-  const int64_t module_id_;
+  // main functions
+  void applySafetySlowDownSpeed(
+    PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects);
 
-  boost::optional<StopFactor> findDefaultStopFactor(
+  boost::optional<std::pair<geometry_msgs::msg::Point, double>> getStopPointWithMargin(
     const PathWithLaneId & ego_path,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects);
-
-  boost::optional<StopFactor> findNearestStopFactor(
-    const PathWithLaneId & ego_path,
-    const std::vector<geometry_msgs::msg::Point> & path_intersects);
-
-  boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
-    const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
     const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
+
+  boost::optional<StopFactor> checkStopForCrosswalkUsers(
+    const PathWithLaneId & ego_path, const PathWithLaneId & sparse_resample_path,
+    const boost::optional<std::pair<geometry_msgs::msg::Point, double>> & p_stop_line,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects,
+    const boost::optional<geometry_msgs::msg::Pose> & default_stop_pose);
+
+  boost::optional<StopFactor> checkStopForStuckedVehicles(
+    const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
+    const std::vector<geometry_msgs::msg::Point> & path_intersects,
+    const boost::optional<geometry_msgs::msg::Pose> & stop_pose) const;
 
   std::vector<CollisionPoint> getCollisionPoints(
     const PathWithLaneId & ego_path, const PredictedObject & object,
     const Polygon2d & attention_area, const std::pair<double, double> & crosswalk_attention_range);
 
+  boost::optional<StopFactor> getNearestStopFactor(
+    const PathWithLaneId & ego_path,
+    const boost::optional<StopFactor> & stop_factor_for_crosswalk_users,
+    const boost::optional<StopFactor> & stop_factor_for_stucked_vehicles);
+
+  void planGo(PathWithLaneId & ego_path, const boost::optional<StopFactor> & stop_factor);
+
+  void planStop(
+    PathWithLaneId & ego_path, const boost::optional<StopFactor> & nearest_stop_factor,
+    const boost::optional<geometry_msgs::msg::Pose> & default_stop_pose, StopReason * stop_reason);
+
+  // minor functions
   std::pair<double, double> getAttentionRange(
     const PathWithLaneId & ego_path,
     const std::vector<geometry_msgs::msg::Point> & path_intersects);
@@ -216,9 +233,6 @@ private:
   CollisionState getCollisionState(
     const std::string & obj_uuid, const double ttc, const double ttv) const;
 
-  void applySafetySlowDownSpeed(
-    PathWithLaneId & output, const std::vector<geometry_msgs::msg::Point> & path_intersects);
-
   float calcTargetVelocity(
     const geometry_msgs::msg::Point & stop_point, const PathWithLaneId & ego_path) const;
 
@@ -229,6 +243,8 @@ private:
   bool isStuckVehicle(
     const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
     const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
+
+  void updateObjectState(const double dist_ego_to_stop);
 
   bool isRedSignalForPedestrians() const;
 
@@ -242,21 +258,14 @@ private:
   static geometry_msgs::msg::Polygon createVehiclePolygon(
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
-  boost::optional<StopFactorInfo> generateStopFactorInfo(
-    const boost::optional<StopFactor> & nearest_stop_factor,
-    const boost::optional<StopFactor> & default_stop_factor) const;
-
-  void planGo(const boost::optional<StopFactorInfo> & stop_factor_info, PathWithLaneId & ego_path);
-  bool planStop(
-    const boost::optional<StopFactorInfo> & stop_factor_info, PathWithLaneId & ego_path,
-    StopReason * stop_reason);
-
   void recordTime(const int step_num)
   {
     RCLCPP_INFO_EXPRESSION(
       logger_, planner_param_.show_processing_time, "- step%d: %f ms", step_num,
       stop_watch_.toc("total_processing_time", false));
   }
+
+  const int64_t module_id_;
 
   lanelet::ConstLanelet crosswalk_;
 

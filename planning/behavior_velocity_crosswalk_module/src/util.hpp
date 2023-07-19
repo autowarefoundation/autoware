@@ -53,13 +53,6 @@ struct CollisionPoint
   double time_to_vehicle{};
 };
 
-struct StopFactorInfo
-{
-  enum class Type { NEAREST = 0, DEFAULT };
-  StopFactor stop_factor;
-  Type type;
-};
-
 struct DebugData
 {
   DebugData() = default;
