@@ -29,6 +29,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -52,7 +53,7 @@ private:
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const PathWithLaneId & path) override;
 
-  boost::optional<bool> opt_use_regulatory_element_{boost::none};
+  std::optional<bool> opt_use_regulatory_element_{std::nullopt};
 };
 
 class WalkwayModuleManager : public SceneModuleManagerInterface
@@ -70,7 +71,7 @@ private:
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const PathWithLaneId & path) override;
 
-  boost::optional<bool> opt_use_regulatory_element_{boost::none};
+  std::optional<bool> opt_use_regulatory_element_{std::nullopt};
 };
 
 class CrosswalkModulePlugin : public PluginWrapper<CrosswalkModuleManager>

@@ -153,6 +153,15 @@ StopFactor createStopFactor(
   stop_factor.stop_pose = stop_pose;
   return stop_factor;
 }
+
+std::optional<geometry_msgs::msg::Pose> toStdOptional(
+  const boost::optional<geometry_msgs::msg::Pose> & boost_pose)
+{
+  if (boost_pose) {
+    return *boost_pose;
+  }
+  return std::nullopt;
+}
 }  // namespace
 
 CrosswalkModule::CrosswalkModule(
@@ -175,7 +184,7 @@ CrosswalkModule::CrosswalkModule(
   } else {
     const auto stop_line = getStopLineFromMap(module_id_, lanelet_map_ptr, "crosswalk_id");
     if (stop_line) {
-      stop_lines_.push_back(stop_line.get());
+      stop_lines_.push_back(*stop_line);
     }
     crosswalk_ = lanelet_map_ptr->laneletLayer.get(module_id);
   }
@@ -217,8 +226,8 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   // Calculate stop point with margin
   const auto p_stop_line = getStopPointWithMargin(*path, path_intersects);
   // TODO(murooka) add a guard of p_stop_line
-  const auto default_stop_pose =
-    calcLongitudinalOffsetPose(path->points, p_stop_line->first, p_stop_line->second);
+  const auto default_stop_pose = toStdOptional(
+    calcLongitudinalOffsetPose(path->points, p_stop_line->first, p_stop_line->second));
 
   // Resample path sparsely for less computation cost
   constexpr double resample_interval = 4.0;
@@ -253,8 +262,7 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 }
 
 // NOTE: The stop point will be the returned point with the margin.
-boost::optional<std::pair<geometry_msgs::msg::Point, double>>
-CrosswalkModule::getStopPointWithMargin(
+std::optional<std::pair<geometry_msgs::msg::Point, double>> CrosswalkModule::getStopPointWithMargin(
   const PathWithLaneId & ego_path,
   const std::vector<geometry_msgs::msg::Point> & path_intersects) const
 {
@@ -279,11 +287,11 @@ CrosswalkModule::getStopPointWithMargin(
   return {};
 }
 
-boost::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
+std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   const PathWithLaneId & ego_path, const PathWithLaneId & sparse_resample_path,
-  const boost::optional<std::pair<geometry_msgs::msg::Point, double>> & p_stop_line,
+  const std::optional<std::pair<geometry_msgs::msg::Point, double>> & p_stop_line,
   const std::vector<geometry_msgs::msg::Point> & path_intersects,
-  const boost::optional<geometry_msgs::msg::Pose> & default_stop_pose)
+  const std::optional<geometry_msgs::msg::Pose> & default_stop_pose)
 {
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
   const auto & objects_ptr = planner_data_->predicted_objects;
@@ -480,8 +488,8 @@ std::pair<double, double> CrosswalkModule::clampAttentionRangeByNeighborCrosswal
 
   sortCrosswalksByDistance(ego_path, ego_pos, crosswalks);
 
-  boost::optional<lanelet::ConstLanelet> prev_crosswalk{boost::none};
-  boost::optional<lanelet::ConstLanelet> next_crosswalk{boost::none};
+  std::optional<lanelet::ConstLanelet> prev_crosswalk{std::nullopt};
+  std::optional<lanelet::ConstLanelet> next_crosswalk{std::nullopt};
 
   if (!crosswalks.empty()) {
     for (size_t i = 0; i < crosswalks.size() - 1; ++i) {
@@ -506,7 +514,7 @@ std::pair<double, double> CrosswalkModule::clampAttentionRangeByNeighborCrosswal
     std::reverse(reverse_ego_path.points.begin(), reverse_ego_path.points.end());
 
     const auto prev_crosswalk_intersects = getPolygonIntersects(
-      reverse_ego_path, prev_crosswalk.get().polygon2d().basicPolygon(), ego_pos, 2);
+      reverse_ego_path, prev_crosswalk->polygon2d().basicPolygon(), ego_pos, 2);
     if (prev_crosswalk_intersects.empty()) {
       return near_attention_range;
     }
@@ -521,7 +529,7 @@ std::pair<double, double> CrosswalkModule::clampAttentionRangeByNeighborCrosswal
       return far_attention_range;
     }
     const auto next_crosswalk_intersects =
-      getPolygonIntersects(ego_path, next_crosswalk.get().polygon2d().basicPolygon(), ego_pos, 2);
+      getPolygonIntersects(ego_path, next_crosswalk->polygon2d().basicPolygon(), ego_pos, 2);
 
     if (next_crosswalk_intersects.empty()) {
       return far_attention_range;
@@ -748,10 +756,10 @@ Polygon2d CrosswalkModule::getAttentionArea(
   return attention_area;
 }
 
-boost::optional<StopFactor> CrosswalkModule::checkStopForStuckedVehicles(
+std::optional<StopFactor> CrosswalkModule::checkStopForStuckedVehicles(
   const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
   const std::vector<geometry_msgs::msg::Point> & path_intersects,
-  const boost::optional<geometry_msgs::msg::Pose> & stop_pose) const
+  const std::optional<geometry_msgs::msg::Pose> & stop_pose) const
 {
   if (path_intersects.size() < 2 || !stop_pose) {
     return {};
@@ -789,14 +797,14 @@ boost::optional<StopFactor> CrosswalkModule::checkStopForStuckedVehicles(
   return {};
 }
 
-boost::optional<StopFactor> CrosswalkModule::getNearestStopFactor(
+std::optional<StopFactor> CrosswalkModule::getNearestStopFactor(
   const PathWithLaneId & ego_path,
-  const boost::optional<StopFactor> & stop_factor_for_crosswalk_users,
-  const boost::optional<StopFactor> & stop_factor_for_stucked_vehicles)
+  const std::optional<StopFactor> & stop_factor_for_crosswalk_users,
+  const std::optional<StopFactor> & stop_factor_for_stucked_vehicles)
 {
-  const auto get_distance_to_stop = [&](const auto stop_factor) -> boost::optional<double> {
+  const auto get_distance_to_stop = [&](const auto stop_factor) -> std::optional<double> {
     const auto & ego_pos = planner_data_->current_odometry->pose.position;
-    if (!stop_factor) return boost::none;
+    if (!stop_factor) return std::nullopt;
     return calcSignedArcLength(ego_path.points, ego_pos, stop_factor->stop_pose.position);
   };
   const auto dist_to_stop_for_crosswalk_users =
@@ -967,7 +975,7 @@ geometry_msgs::msg::Polygon CrosswalkModule::createVehiclePolygon(
 }
 
 void CrosswalkModule::planGo(
-  PathWithLaneId & ego_path, const boost::optional<StopFactor> & stop_factor)
+  PathWithLaneId & ego_path, const std::optional<StopFactor> & stop_factor)
 {
   if (!stop_factor) {
     setDistance(std::numeric_limits<double>::lowest());
@@ -988,13 +996,13 @@ void CrosswalkModule::planGo(
 }
 
 void CrosswalkModule::planStop(
-  PathWithLaneId & ego_path, const boost::optional<StopFactor> & nearest_stop_factor,
-  const boost::optional<geometry_msgs::msg::Pose> & default_stop_pose, StopReason * stop_reason)
+  PathWithLaneId & ego_path, const std::optional<StopFactor> & nearest_stop_factor,
+  const std::optional<geometry_msgs::msg::Pose> & default_stop_pose, StopReason * stop_reason)
 {
-  const auto stop_factor = [&]() -> boost::optional<StopFactor> {
+  const auto stop_factor = [&]() -> std::optional<StopFactor> {
     if (nearest_stop_factor) return *nearest_stop_factor;
     if (default_stop_pose) return createStopFactor(*default_stop_pose);
-    return boost::none;
+    return std::nullopt;
   }();
 
   if (!stop_factor) {

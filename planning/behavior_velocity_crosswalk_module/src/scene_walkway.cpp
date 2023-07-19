@@ -48,13 +48,13 @@ WalkwayModule::WalkwayModule(
   } else {
     const auto stop_line = getStopLineFromMap(module_id_, lanelet_map_ptr, "crosswalk_id");
     if (!!stop_line) {
-      stop_lines_.push_back(stop_line.get());
+      stop_lines_.push_back(*stop_line);
     }
     walkway_ = lanelet_map_ptr->laneletLayer.get(module_id);
   }
 }
 
-boost::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
+std::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
   const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
   const std::vector<geometry_msgs::msg::Point> & path_intersects) const
 {
@@ -111,7 +111,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
       return false;
     }
 
-    const auto & p_stop = p_stop_line.get().second;
+    const auto & p_stop = p_stop_line->second;
     const auto stop_line_distance = exist_stopline_in_map ? 0.0 : planner_param_.stop_line_distance;
     const auto margin = stop_line_distance + base_link2front;
     const auto stop_pose = calcLongitudinalOffsetPose(input.points, p_stop, -margin);
@@ -120,7 +120,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
       return false;
     }
 
-    const auto inserted_pose = planning_utils::insertStopPoint(stop_pose.get().position, *path);
+    const auto inserted_pose = planning_utils::insertStopPoint(stop_pose->position, *path);
     if (inserted_pose) {
       debug_data_.stop_poses.push_back(inserted_pose.get());
     }
@@ -136,7 +136,7 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
 
     // use arc length to identify if ego vehicle is in front of walkway stop or not.
     const double signed_arc_dist_to_stop_point =
-      calcSignedArcLength(input.points, ego_pos, stop_pose.get().position);
+      calcSignedArcLength(input.points, ego_pos, stop_pose->position);
 
     const double distance_threshold = 1.0;
     debug_data_.stop_judge_range = distance_threshold;

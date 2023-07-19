@@ -30,6 +30,7 @@
 #include <lanelet2_routing/RoutingGraphContainer.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -57,7 +58,7 @@ public:
 private:
   const int64_t module_id_;
 
-  [[nodiscard]] boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
+  [[nodiscard]] std::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
     const PathWithLaneId & ego_path, bool & exist_stopline_in_map,
     const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 

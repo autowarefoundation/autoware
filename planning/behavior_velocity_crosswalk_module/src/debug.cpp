@@ -83,7 +83,7 @@ visualization_msgs::msg::MarkerArray createCrosswalkMarkers(
     auto marker = createDefaultMarker(
       "map", now, "attention range near", uid, Marker::POINTS, createMarkerScale(0.25, 0.25, 0.0),
       createMarkerColor(0.0, 0.0, 1.0, 0.999));
-    marker.points.push_back(debug_data.range_near_point.get());
+    marker.points.push_back(*debug_data.range_near_point);
     msg.markers.push_back(marker);
   }
 
@@ -91,7 +91,7 @@ visualization_msgs::msg::MarkerArray createCrosswalkMarkers(
     auto marker = createDefaultMarker(
       "map", now, "attention range far", uid, Marker::POINTS, createMarkerScale(0.25, 0.25, 0.0),
       createMarkerColor(1.0, 1.0, 1.0, 0.999));
-    marker.points.push_back(debug_data.range_far_point.get());
+    marker.points.push_back(*debug_data.range_far_point);
     msg.markers.push_back(marker);
   }
 

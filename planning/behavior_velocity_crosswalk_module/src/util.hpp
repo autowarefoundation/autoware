@@ -23,6 +23,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -68,8 +69,8 @@ struct DebugData
   geometry_msgs::msg::Pose first_stop_pose;
   geometry_msgs::msg::Point nearest_collision_point;
 
-  boost::optional<geometry_msgs::msg::Point> range_near_point{boost::none};
-  boost::optional<geometry_msgs::msg::Point> range_far_point{boost::none};
+  std::optional<geometry_msgs::msg::Point> range_near_point{std::nullopt};
+  std::optional<geometry_msgs::msg::Point> range_far_point{std::nullopt};
 
   std::vector<std::pair<CollisionPoint, CollisionState>> collision_points;
 
@@ -89,7 +90,7 @@ std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
   const PathWithLaneId & ego_path, const lanelet::BasicLineString2d & linestring,
   const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
 
-lanelet::Optional<lanelet::ConstLineString3d> getStopLineFromMap(
+std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
   const int lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const std::string & attribute_name);
 }  // namespace behavior_velocity_planner
