@@ -47,7 +47,8 @@
       # collision check
       enable_prepare_segment_collision_check: true
       prepare_segment_ignore_object_velocity_thresh: 0.1 # [m/s]
-      use_predicted_path_outside_lanelet: true
+      check_objects_on_current_lanes: true
+      check_objects_on_other_lanes: true
       use_all_predicted_path: true
 
       # lane change cancel

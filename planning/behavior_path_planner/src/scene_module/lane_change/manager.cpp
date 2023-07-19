@@ -79,8 +79,10 @@ LaneChangeModuleManager::LaneChangeModuleManager(
     get_parameter<bool>(node, parameter("enable_prepare_segment_collision_check"));
   p.prepare_segment_ignore_object_velocity_thresh =
     get_parameter<double>(node, parameter("prepare_segment_ignore_object_velocity_thresh"));
-  p.use_predicted_path_outside_lanelet =
-    get_parameter<bool>(node, parameter("use_predicted_path_outside_lanelet"));
+  p.check_objects_on_current_lanes =
+    get_parameter<bool>(node, parameter("check_objects_on_current_lanes"));
+  p.check_objects_on_other_lanes =
+    get_parameter<bool>(node, parameter("check_objects_on_other_lanes"));
   p.use_all_predicted_path = get_parameter<bool>(node, parameter("use_all_predicted_path"));
 
   // target object
