@@ -41,7 +41,7 @@ public:
   }
 
   std::set<int> search(
-    const cv::Mat & rgb_image, const cv::Mat & segmented, int best_roadlike_class);
+    const cv::Mat & rgb_image, const cv::Mat & segmented, int best_road_like_class);
 
 private:
   const float similarity_score_threshold_;

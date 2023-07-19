@@ -125,7 +125,7 @@ void Ll2Decomposer::on_map(const HADMapBin & msg)
   common::publish_cloud(*pub_sign_board_, ll2_sign_board, stamp);
   common::publish_cloud(*pub_bounding_box_, ll2_bounding_box, stamp);
 
-  RCLCPP_INFO_STREAM(get_logger(), "successed map decomposing");
+  RCLCPP_INFO_STREAM(get_logger(), "succeeded map decomposing");
 }
 
 pcl::PointCloud<pcl::PointNormal> Ll2Decomposer::split_line_strings(

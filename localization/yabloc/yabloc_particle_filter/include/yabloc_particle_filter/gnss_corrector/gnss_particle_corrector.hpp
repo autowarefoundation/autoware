@@ -57,7 +57,7 @@ private:
     const Eigen::Vector3f & gnss_position, const rclcpp::Time & stamp, const bool is_rtk_fixed);
 
   bool is_gnss_observation_valid(
-    const Eigen::Matrix3f & sigma, const Eigen::Vector3f & meaned_position,
+    const Eigen::Matrix3f & sigma, const Eigen::Vector3f & mean_position,
     const Eigen::Vector3f & gnss_position);
 
   ParticleArray weight_particles(

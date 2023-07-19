@@ -37,11 +37,11 @@ GnssParticleCorrector::GnssParticleCorrector()
 }
 
 bool GnssParticleCorrector::is_gnss_observation_valid(
-  const Eigen::Matrix3f & sigma, const Eigen::Vector3f & meaned_position,
+  const Eigen::Matrix3f & sigma, const Eigen::Vector3f & mean_position,
   const Eigen::Vector3f & gnss_position)
 {
   Eigen::Matrix3f inv_sigma = sigma.completeOrthogonalDecomposition().pseudoInverse();
-  Eigen::Vector3f diff = gnss_position - meaned_position;
+  Eigen::Vector3f diff = gnss_position - mean_position;
   diff.z() = 0;
 
   float mahalanobis_distance = std::sqrt(diff.dot(inv_sigma * diff));
@@ -82,11 +82,11 @@ void GnssParticleCorrector::process(
   }
 
   const Eigen::Matrix3f sigma = modularized_particle_filter::std_of_distribution(*opt_particles);
-  const geometry_msgs::msg::Pose meaned_pose = mean_pose(opt_particles.value());
-  const Eigen::Vector3f meaned_position = common::pose_to_affine(meaned_pose).translation();
+  const geometry_msgs::msg::Pose mean_pose = get_mean_pose(opt_particles.value());
+  const Eigen::Vector3f mean_position = common::pose_to_affine(mean_pose).translation();
 
   // Check validity of GNSS measurement by mahalanobis distance
-  if (!is_gnss_observation_valid(sigma, meaned_position, gnss_position)) {
+  if (!is_gnss_observation_valid(sigma, mean_position, gnss_position)) {
     return;
   }
 
@@ -96,10 +96,10 @@ void GnssParticleCorrector::process(
   // Compute travel distance from last update position
   // If the distance is too short, skip weighting
   {
-    Eigen::Vector3f meaned_position = common::pose_to_affine(meaned_pose).translation();
-    if ((meaned_position - last_mean_position_).squaredNorm() > 1) {
+    Eigen::Vector3f mean_position = common::pose_to_affine(mean_pose).translation();
+    if ((mean_position - last_mean_position_).squaredNorm() > 1) {
       this->set_weighted_particle_array(weighted_particles);
-      last_mean_position_ = meaned_position;
+      last_mean_position_ = mean_position;
     } else {
       RCLCPP_WARN_STREAM_THROTTLE(
         get_logger(), *get_clock(), 2000,

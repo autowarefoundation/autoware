@@ -129,7 +129,7 @@ bool CameraPoseInitializer::estimate_pose(
   }
 
   cv::Mat projected_image = projector_module_->project_image(segmented_image);
-  cv::Mat vectormap_image = lane_image_->create_vectormap_image(position);
+  cv::Mat vector_map_image = lane_image_->create_vector_map_image(position);
 
   std::vector<float> scores;
   std::vector<float> angles_rad;
@@ -141,8 +141,8 @@ bool CameraPoseInitializer::estimate_pose(
 
     cv::Mat rot = cv::getRotationMatrix2D(cv::Point2f(400, 400), angle_deg, 1);
     cv::Mat rotated_image;
-    cv::warpAffine(projected_image, rotated_image, rot, vectormap_image.size());
-    cv::Mat dst = bitwise_and_3ch(rotated_image, vectormap_image);
+    cv::warpAffine(projected_image, rotated_image, rot, vector_map_image.size());
+    cv::Mat dst = bitwise_and_3ch(rotated_image, vector_map_image);
 
     // consider lanelet direction
     float gain = 1;
@@ -155,7 +155,7 @@ bool CameraPoseInitializer::estimate_pose(
     constexpr bool imshow = false;
     if (imshow) {
       cv::Mat show_image;
-      cv::hconcat(std::vector<cv::Mat>{rotated_image, vectormap_image, dst}, show_image);
+      cv::hconcat(std::vector<cv::Mat>{rotated_image, vector_map_image, dst}, show_image);
       cv::imshow("and operator", show_image);
       cv::waitKey(50);
     }

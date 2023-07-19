@@ -19,7 +19,7 @@ This package contains some executable nodes related to particle filter.
 
 | Name                          | Type                                             | Description                                               |
 | ----------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
-| `input/initialpose`           | `geometry_msgs::msg::PoseWithCovarianceStamped`  | to specity the initial position of particles              |
+| `input/initialpose`           | `geometry_msgs::msg::PoseWithCovarianceStamped`  | to specify the initial position of particles              |
 | `input/twist_with_covariance` | `geometry_msgs::msg::TwistWithCovarianceStamped` | linear velocity and angular velocity of prediction update |
 | `input/height`                | `std_msgs::msg::Float32`                         | ground height                                             |
 | `input/weighted_particles`    | `yabloc_particle_filter::msg::ParticleArray`     | particles weighted by corrector nodes                     |
@@ -41,7 +41,7 @@ This package contains some executable nodes related to particle filter.
 | `visualize`                   | bool             | whether particles are also published in visualization_msgs or not |
 | `static_linear_covariance`    | double           | to override the covariance of `/twist_with_covariance`            |
 | `static_angular_covariance`   | double           | to override the covariance of `/twist_with_covariance`            |
-| `resampling_interval_seconds` | double           | the interval of particle resamping                                |
+| `resampling_interval_seconds` | double           | the interval of particle resampling                               |
 | `num_of_particles`            | int              | the number of particles                                           |
 | `prediction_rate`             | double           | frequency of forecast updates, in Hz                              |
 | `cov_xx_yy`                   | vector\<double\> | the covariance of initial pose                                    |
@@ -126,7 +126,7 @@ This package contains some executable nodes related to particle filter.
 | `acceptable_max_delay` | double | how long to hold the predicted particles                                                                                                  |
 | `visualize`            | double | whether publish particles as marker_array or not                                                                                          |
 | `image_size`           | int    | image size of debug/cost_map_image                                                                                                        |
-| `max_range`            | double | width of heararchical cost map                                                                                                            |
+| `max_range`            | double | width of hierarchical cost map                                                                                                            |
 | `gamma`                | double | gamma value of the intensity gradient of the cost map                                                                                     |
 | `min_prob`             | double | minimum particle weight the corrector node gives                                                                                          |
 | `far_weight_gain`      | double | `exp(-far_weight_gain_ * squared_distance_from_camera)` is weight gain. if this is large, the nearby road markings will be more important |

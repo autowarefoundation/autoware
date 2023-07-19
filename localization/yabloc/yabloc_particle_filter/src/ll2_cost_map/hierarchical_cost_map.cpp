@@ -149,14 +149,14 @@ void HierarchicalCostMap::build_map(const Area & area)
   generated_map_history_.push_back(area);
 
   RCLCPP_INFO_STREAM(
-    logger_, "successed to build map " << area(area) << " " << area.real_scale().transpose());
+    logger_, "succeeded to build map " << area(area) << " " << area.real_scale().transpose());
 }
 
 HierarchicalCostMap::MarkerArray HierarchicalCostMap::show_map_range() const
 {
   MarkerArray array_msg;
 
-  auto gpoint = [](float x, float y) -> geometry_msgs::msg::Point {
+  auto point_msg = [](float x, float y) -> geometry_msgs::msg::Point {
     geometry_msgs::msg::Point gp;
     gp.x = x;
     gp.y = y;
@@ -172,11 +172,11 @@ HierarchicalCostMap::MarkerArray HierarchicalCostMap::show_map_range() const
     marker.color = common::Color(0, 0, 1.0f, 1.0f);
     marker.scale.x = 0.1;
     Eigen::Vector2f xy = area.real_scale();
-    marker.points.push_back(gpoint(xy.x(), xy.y()));
-    marker.points.push_back(gpoint(xy.x() + area.unit_length_, xy.y()));
-    marker.points.push_back(gpoint(xy.x() + area.unit_length_, xy.y() + area.unit_length_));
-    marker.points.push_back(gpoint(xy.x(), xy.y() + area.unit_length_));
-    marker.points.push_back(gpoint(xy.x(), xy.y()));
+    marker.points.push_back(point_msg(xy.x(), xy.y()));
+    marker.points.push_back(point_msg(xy.x() + area.unit_length_, xy.y()));
+    marker.points.push_back(point_msg(xy.x() + area.unit_length_, xy.y() + area.unit_length_));
+    marker.points.push_back(point_msg(xy.x(), xy.y() + area.unit_length_));
+    marker.points.push_back(point_msg(xy.x(), xy.y()));
     array_msg.markers.push_back(marker);
   }
   return array_msg;

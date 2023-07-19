@@ -21,7 +21,7 @@ float logit_to_prob(float logit, float gain = 1.0f);
 
 /**
  * Convert probability to logit
- * This function is much faster than logit_to_prob() because it refers to pre-computeed table
+ * This function is much faster than logit_to_prob() because it refers to pre-computed table
  *
  * @param[in] prob
  * @return logit

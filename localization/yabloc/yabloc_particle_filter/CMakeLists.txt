@@ -98,7 +98,7 @@ target_link_libraries(${TARGET} Sophus::Sophus)
 set(TARGET camera_particle_corrector_node)
 ament_auto_add_executable(${TARGET}
   src/camera_corrector/camera_particle_corrector_node.cpp
-  src/camera_corrector/filt_line_segments.cpp
+  src/camera_corrector/filter_line_segments.cpp
   src/camera_corrector/logit.cpp
   src/camera_corrector/camera_particle_corrector_core.cpp)
 target_include_directories(${TARGET} PUBLIC include)

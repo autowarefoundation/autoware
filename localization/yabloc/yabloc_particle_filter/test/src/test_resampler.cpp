@@ -42,28 +42,28 @@ TEST(ResamplerTestSuite, outOfHistory)
   // Invalid generation
   {
     weighted.id = -1;
-    bool catched = false;
+    bool caught = false;
     try {
       resampler.add_weight_retroactively(predicted, weighted);
     } catch (...) {
-      catched = true;
+      caught = true;
     }
-    EXPECT_TRUE(catched);
+    EXPECT_TRUE(caught);
   }
 
   // Future generation
   {
     weighted.id = 1;
-    bool catched = false;
+    bool caught = false;
     try {
       resampler.add_weight_retroactively(predicted, weighted);
     } catch (...) {
-      catched = true;
+      caught = true;
     }
-    EXPECT_TRUE(catched);
+    EXPECT_TRUE(caught);
   }
 
-  // Repease resampling to fill all history
+  // Iterate resampling to fill all history
   for (int t = 0; t < HISTORY_SIZE; ++t) {
     auto resampled = resampler.resample(predicted);
     EXPECT_EQ(resampled.id, t + 1);
@@ -73,13 +73,13 @@ TEST(ResamplerTestSuite, outOfHistory)
   // Too old generation
   {
     weighted.id = 0;
-    bool catched = false;
+    bool caught = false;
     try {
       resampler.add_weight_retroactively(predicted, weighted);
     } catch (...) {
-      catched = true;
+      caught = true;
     }
-    EXPECT_TRUE(catched);
+    EXPECT_TRUE(caught);
   }
 }
 
@@ -130,7 +130,7 @@ TEST(ResamplerTestSuite, simpleResampling)
     }
     ParticleArray array1 = resampler.add_weight_retroactively(predicted, weighted);
 
-    // All weight must match with following exepection
+    // All weight must match with following expectation
     for (int i = 0; i < PARTICLE_COUNT; ++i) {
       const auto & p = array1.particles.at(i);
       if (i < PARTICLE_COUNT / 2) {

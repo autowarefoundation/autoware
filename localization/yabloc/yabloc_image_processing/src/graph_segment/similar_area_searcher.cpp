@@ -30,7 +30,7 @@ struct KeyAndArea
 };
 
 std::set<int> SimilarAreaSearcher::search(
-  const cv::Mat & rgb_image, const cv::Mat & segmented, int best_roadlike_class)
+  const cv::Mat & rgb_image, const cv::Mat & segmented, int best_road_like_class)
 {
   std::unordered_map<int, Histogram> histogram_map;
   std::unordered_map<int, int> count_map;
@@ -58,7 +58,7 @@ std::set<int> SimilarAreaSearcher::search(
     key_queue.push({key, count});
   }
 
-  const Eigen::MatrixXf ref_histogram = histogram_map.at(best_roadlike_class).eval();
+  const Eigen::MatrixXf ref_histogram = histogram_map.at(best_road_like_class).eval();
 
   std::stringstream debug_ss;
   debug_ss << "histogram equality ";

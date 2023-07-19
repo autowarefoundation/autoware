@@ -18,7 +18,7 @@ It estimates the height and tilt of the ground from lanelet2.
 | Name               | Type                                         | Description         |
 | ------------------ | -------------------------------------------- | ------------------- |
 | `input/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin` | vector map          |
-| `input/pose`       | `geometry_msgs::msg::PoseStamped`            | estiamted self pose |
+| `input/pose`       | `geometry_msgs::msg::PoseStamped`            | estimated self pose |
 
 #### Output
 
@@ -65,6 +65,6 @@ This node extracts the elements related to the road surface markings and yabloc 
 
 | Name                  | Type             | Description                                                            |
 | --------------------- | ---------------- | ---------------------------------------------------------------------- |
-| `road_marking_labels` | vector\<string\> | This label is used to extract the road surface markings from lanalet2. |
-| `sign_board_labels`   | vector\<string\> | This label is used to extract the traffic sign boards from lanalet2.   |
-| `bounding_box_labels` | vector\<string\> | This label is used to extract the bounding boxes from lanalet2.        |
+| `road_marking_labels` | vector\<string\> | This label is used to extract the road surface markings from lanelet2. |
+| `sign_board_labels`   | vector\<string\> | This label is used to extract the traffic sign boards from lanelet2.   |
+| `bounding_box_labels` | vector\<string\> | This label is used to extract the bounding boxes from lanelet2.        |

@@ -105,7 +105,7 @@ void GroundServer::on_map(const HADMapBin & msg)
   lanelet::LaneletMapPtr lanelet_map(new lanelet::LaneletMap);
   lanelet::utils::conversion::fromBinMsg(msg, lanelet_map);
 
-  // These should be loaded from rosparm
+  // These should be loaded from rosparam
   const std::set<std::string> ground_labels = {
     "zebra_marking",      "virtual",   "line_thin", "line_thick",
     "pedestrian_marking", "stop_line", "curbstone"};
@@ -204,7 +204,7 @@ GroundServer::GroundPlane GroundServer::estimate_ground(const Point & point)
   pcl::compute3DCentroid(*cloud_, indices, centroid);
   pcl::computeCovarianceMatrix(*cloud_, indices, centroid, covariance);
 
-  // NOTE: I forgot why I don't use coefficients computeed by SACSegmentation
+  // NOTE: I forgot why I don't use coefficients computed by SACSegmentation
   Eigen::Vector4f plane_parameter;
   float curvature;
   pcl::solvePlaneParameters(covariance, centroid, plane_parameter, curvature);

@@ -185,7 +185,7 @@ void Predictor::on_timer()
   if (!particle_array_opt_.has_value()) {
     return;
   }
-  // Return if twist is not subscirbed yet
+  // Return if twist is not subscribed yet
   if (!latest_twist_opt_.has_value()) {
     return;
   }
@@ -212,7 +212,7 @@ void Predictor::on_timer()
   //
   predicted_particles_pub_->publish(particle_array);
   //
-  publish_mean_pose(mean_pose(particle_array), this->now());
+  publish_mean_pose(get_mean_pose(particle_array), this->now());
   // If visualizer exists,
   if (visualizer_ptr_) {
     visualizer_ptr_->publish(particle_array);

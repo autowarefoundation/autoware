@@ -44,8 +44,8 @@ public:
 
     sub1_ = std::make_shared<Sub1>(n, topic1);
     sub2_ = std::make_shared<Sub2>(n, topic2);
-    syncronizer_ = std::make_shared<Synchronizer>(SyncPolicy(80), *sub1_, *sub2_);
-    syncronizer_->registerCallback(std::bind(&SynchroSubscriber::raw_callback, this, _1, _2));
+    synchronizer_ = std::make_shared<Synchronizer>(SyncPolicy(80), *sub1_, *sub2_);
+    synchronizer_->registerCallback(std::bind(&SynchroSubscriber::raw_callback, this, _1, _2));
   }
 
   void set_callback(const UserCallback & callback) { user_callback_ = callback; }
@@ -53,7 +53,7 @@ public:
 private:
   std::shared_ptr<Sub1> sub1_;
   std::shared_ptr<Sub2> sub2_;
-  std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> syncronizer_;
+  std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> synchronizer_;
   std::optional<UserCallback> user_callback_{std::nullopt};
 
   void raw_callback(const typename Msg1::ConstPtr & msg1, const typename Msg2::ConstPtr & msg2)

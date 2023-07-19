@@ -46,7 +46,7 @@ cv::Point2i to_cv_point(const Eigen::Vector3f & v)
   return pt;
 }
 
-cv::Mat LaneImage::create_vectormap_image(const Eigen::Vector3f & position)
+cv::Mat LaneImage::create_vector_map_image(const Eigen::Vector3f & position)
 {
   geometry_msgs::msg::Pose pose;
   pose.position.x = position.x();
