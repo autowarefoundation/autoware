@@ -529,15 +529,15 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   // switching from manual to autonomous
   auto prev_values = (mode.mode == OperationModeState::AUTONOMOUS) ? out : current_status_cmd;
 
+  if (ego_is_stopped) {
+    prev_values.longitudinal = out.longitudinal;
+  }
+
   // TODO(Horibe): To prevent sudden acceleration/deceleration when switching from manual to
   // autonomous, the filter should be applied for actual speed and acceleration during manual
   // driving. However, this means that the output command from Gate will always be close to the
-  // driving state during manual driving. Since the Gate's output is checked by various modules as
-  // the intended value of Autoware, it should be closed to planned values. Conversely, it is
-  // undesirable for the target vehicle speed to be non-zero in a situation where the vehicle is
-  // supposed to stop. Until the appropriate handling will be done, previous value is used for the
-  // filter in manual mode.
-  prev_values.longitudinal = out.longitudinal;  // TODO(Horibe): to be removed
+  // driving state during manual driving. Here, let autoware publish the stop command when the ego
+  // is stopped to intend the autoware is trying to keep stopping.
 
   filter_.setPrevCmd(prev_values);
   filter_on_transition_.setPrevCmd(prev_values);
