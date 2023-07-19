@@ -17,8 +17,8 @@ YabLoc enables users localize vehicles that are not equipped with LiDAR and in e
 
 ## How to launch YabLoc instead of NDT
 
-When launching autoware, if you set `localization_mode:=camera` as an argument, YabLoc will be launched instead of NDT.
-By default, `localization_mode` is `lidar`.
+When launching autoware, if you set `pose_source:=yabloc` as an argument, YabLoc will be launched instead of NDT.
+By default, `pose_source` is `ndt`.
 
 A sample command to run YabLoc is as follows
 
@@ -27,7 +27,7 @@ ros2 launch autoware_launch logging_simulator.launch.xml \
   map_path:=$HOME/autoware_map/sample-map-rosbag\
   vehicle_model:=sample_vehicle \
   sensor_model:=sample_sensor_kit \
-  localization_mode:=camera
+  pose_source:=yabloc
 ```
 
 ## Architecture

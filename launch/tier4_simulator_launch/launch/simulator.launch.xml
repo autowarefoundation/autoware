@@ -6,7 +6,6 @@
   <arg name="occupancy_grid_map_updater"/>
   <arg name="occupancy_grid_map_updater_param_path"/>
   <arg name="pose_initializer_param_path"/>
-  <arg name="pose_initializer_common_param_path"/>
 
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
@@ -109,7 +108,11 @@
   <!-- Dummy localization -->
   <group if="$(var launch_dummy_localization)">
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
-      <arg name="common_config_file" value="$(var pose_initializer_common_param_path)"/>
+      <arg name="ndt_enabled" value="false"/>
+      <arg name="gnss_enabled" value="false"/>
+      <arg name="ekf_enabled" value="false"/>
+      <arg name="yabloc_enabled" value="false"/>
+      <arg name="stop_check_enabled" value="false"/>
       <arg name="config_file" value="$(var pose_initializer_param_path)"/>
     </include>
   </group>

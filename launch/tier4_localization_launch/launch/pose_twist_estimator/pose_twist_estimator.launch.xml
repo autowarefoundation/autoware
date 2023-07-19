@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<launch>
+  <let name="stop_check_enabled" if="$(eval &quot;'$(var system_run_mode)'=='online'&quot;)" value="true"/>
+  <let name="stop_check_enabled" if="$(eval &quot;'$(var system_run_mode)'=='logging_simulation'&quot;)" value="false"/>
+
+  <!-- NDT Scan Matcher Launch (as pose estimator) -->
+  <group if="$(eval &quot;'$(var pose_source)'=='ndt'&quot;)">
+    <group>
+      <push-ros-namespace namespace="pose_estimator"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/ndt_scan_matcher.launch.xml"/>
+    </group>
+    <group>
+      <push-ros-namespace namespace="util"/>
+      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+        <arg name="ndt_enabled" value="true"/>
+        <arg name="gnss_enabled" value="true"/>
+        <arg name="ekf_enabled" value="true"/>
+        <arg name="yabloc_enabled" value="false"/>
+        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
+        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+        <arg name="sub_gnss_pose_cov" value="/sensing/gnss/pose_with_covariance"/>
+      </include>
+      <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.py"/>
+    </group>
+  </group>
+
+  <!-- YabLoc Launch (as pose estimator) -->
+  <group if="$(eval &quot;'$(var pose_source)'=='yabloc'&quot;)">
+    <group>
+      <push-ros-namespace namespace="pose_estimator"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/yabloc.launch.xml"/>
+    </group>
+    <group>
+      <push-ros-namespace namespace="util"/>
+      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+        <arg name="ndt_enabled" value="false"/>
+        <arg name="gnss_enabled" value="true"/>
+        <arg name="ekf_enabled" value="true"/>
+        <arg name="yabloc_enabled" value="true"/>
+        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
+        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+        <arg name="sub_gnss_pose_cov" value="/sensing/gnss/pose_with_covariance"/>
+      </include>
+      <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
+    </group>
+  </group>
+
+  <!-- Gyro Odometer Launch (as pose estimator) -->
+  <group if="$(eval &quot;'$(var twist_source)'=='gyro_odom'&quot;)">
+    <push-ros-namespace namespace="twist_estimator"/>
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/gyro_odometer.launch.xml"/>
+  </group>
+
+  <!-- Eagleye Launch (as pose & twist estimator) -->
+  <group if="$(eval &quot;'$(var pose_source)'=='eagleye' and '$(var twist_source)'=='eagleye'&quot;)">
+    <group>
+      <push-ros-namespace namespace="pose_twist_estimator"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
+        <arg name="output_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
+        <arg name="output_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
+        <arg name="use_eagleye_pose" value="true"/>
+        <arg name="use_eagleye_twist" value="true"/>
+      </include>
+    </group>
+    <group>
+      <push-ros-namespace namespace="util"/>
+      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+        <arg name="ndt_enabled" value="false"/>
+        <arg name="gnss_enabled" value="true"/>
+        <arg name="ekf_enabled" value="true"/>
+        <arg name="yabloc_enabled" value="false"/>
+        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
+        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+        <arg name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance"/>
+      </include>
+      <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
+    </group>
+  </group>
+
+  <!-- Eagleye Launch (as pose estimator) -->
+  <group if="$(eval &quot;'$(var pose_source)'=='eagleye' and '$(var twist_source)'!='eagleye'&quot;)">
+    <group>
+      <push-ros-namespace namespace="pose_estimator"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
+        <arg name="output_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
+        <arg name="use_eagleye_pose" value="true"/>
+        <arg name="use_eagleye_twist" value="false"/>
+      </include>
+    </group>
+    <group>
+      <push-ros-namespace namespace="util"/>
+      <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml">
+        <arg name="ndt_enabled" value="false"/>
+        <arg name="gnss_enabled" value="true"/>
+        <arg name="ekf_enabled" value="true"/>
+        <arg name="yabloc_enabled" value="false"/>
+        <arg name="stop_check_enabled" value="$(var stop_check_enabled)"/>
+        <arg name="config_file" value="$(var pose_initializer_param_path)"/>
+        <arg name="sub_gnss_pose_cov" value="/localization/pose_estimator/pose_with_covariance"/>
+      </include>
+      <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
+    </group>
+  </group>
+
+  <!-- Eagleye Launch (as twist estimator) -->
+  <group if="$(eval &quot;'$(var pose_source)'!='eagleye' and '$(var twist_source)'=='eagleye'&quot;)">
+    <push-ros-namespace namespace="twist_estimator"/>
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/eagleye_rt.launch.xml">
+      <arg name="output_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
+      <arg name="use_eagleye_pose" value="false"/>
+      <arg name="use_eagleye_twist" value="true"/>
+    </include>
+  </group>
+</launch>

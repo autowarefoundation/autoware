@@ -36,8 +36,8 @@
   <!-- segment filter -->
   <arg name="input_graph_segmented" default="graph_segmented"/>
   <arg name="input_line_segments_cloud" default="line_segments_cloud"/>
-  <arg name="output_projected_line_segments_cloud" default="/localization/yabloc/image_processing/projected_line_segments_cloud"/>
-  <arg name="output_projected_image" default="/localization/yabloc/image_processing/projected_image"/>
+  <arg name="output_projected_line_segments_cloud" default="projected_line_segments_cloud"/>
+  <arg name="output_projected_image" default="projected_image"/>
   <arg name="output_debug_line_segments" default="debug/line_segments_cloud"/>
   <node name="segment_filter" pkg="yabloc_image_processing" exec="segment_filter_node" output="screen" args="--ros-args --log-level info">
     <param from="$(var segment_filter_param_path)"/>
