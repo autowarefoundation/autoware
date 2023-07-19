@@ -17,6 +17,7 @@
 #include <rclcpp/logging.hpp>
 #include <tier4_api_utils/tier4_api_utils.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -504,10 +505,22 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
     filter_on_transition_.filterAll(dt, current_steer_, out);
   } else {
     // When ego is stopped and the input command is not stopping,
-    // use the actual vehicle longitudinal state for the filtering
+    // use the higher of actual vehicle longitudinal state
+    // and previous longitudinal command for the filtering
     // this is to prevent the jerk limits being applied and causing
     // a delay when restarting the vehicle.
-    if (ego_is_stopped && !input_cmd_is_stopping) filter_.setPrevCmd(current_status_cmd);
+
+    if (ego_is_stopped && !input_cmd_is_stopping) {
+      auto prev_cmd = filter_.getPrevCmd();
+      prev_cmd.longitudinal.acceleration =
+        std::max(prev_cmd.longitudinal.acceleration, current_status_cmd.longitudinal.acceleration);
+      // consider reverse driving
+      prev_cmd.longitudinal.speed =
+        std::fabs(prev_cmd.longitudinal.speed) > std::fabs(current_status_cmd.longitudinal.speed)
+          ? prev_cmd.longitudinal.speed
+          : current_status_cmd.longitudinal.speed;
+      filter_.setPrevCmd(prev_cmd);
+    }
     filter_.filterAll(dt, current_steer_, out);
   }
 

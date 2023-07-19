@@ -59,6 +59,8 @@ public:
   void filterAll(
     const double dt, const double current_steer_angle, AckermannControlCommand & input) const;
 
+  AckermannControlCommand getPrevCmd() { return prev_cmd_; }
+
 private:
   VehicleCmdFilterParam param_;
   AckermannControlCommand prev_cmd_;
