@@ -9,6 +9,8 @@
   <arg name="object_recognition_detection_object_position_filter_param_path"/>
   <arg name="object_recognition_detection_pointcloud_map_filter_param_path"/>
   <arg name="object_recognition_prediction_map_based_prediction_param_path"/>
+  <arg name="object_recognition_detection_object_merger_data_association_matrix_param_path"/>
+  <arg name="object_recognition_detection_object_merger_distance_threshold_list_path"/>
   <arg name="object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
