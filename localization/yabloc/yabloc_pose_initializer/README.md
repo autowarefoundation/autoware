@@ -5,6 +5,20 @@ This package contains some nodes related to initial pose estimation.
 - [camera_pose_initializer](#camera_pose_initializer)
 - [semantic_segmentation_server](#semantic_segmentation_server)
 
+Ideally, this package downloads a pre-trained semantic segmentation model during the build and loads it at runtime for initialization.
+However, to handle cases where network connectivity is not available at build time, **the default behavior is not to download the model during build.**
+Even if the model is not downloaded, initialization will still complete, but the accuracy may be compromised.
+
+<!-- cspell: ignore DDOWNLOAD_ARTIFACTS -->
+
+To download the model, please specify `--cmake-args -DDOWNLOAD_ARTIFACTS=ON` to the build command.
+
+```bash
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_ARTIFACTS=ON --packages-select yabloc_pose_initializer
+```
+
+For detailed information about the downloaded contents, please consult the `download.cmake` file in this package.
+
 ## Note
 
 This package makes use of external code. The trained files are provided by apollo. The trained files are automatically downloaded when you build.

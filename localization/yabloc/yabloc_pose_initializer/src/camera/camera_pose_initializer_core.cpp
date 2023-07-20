@@ -20,10 +20,6 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl_conversions/pcl_conversions.h>
-
 namespace yabloc
 {
 CameraPoseInitializer::CameraPoseInitializer()
@@ -74,7 +70,7 @@ cv::Mat bitwise_and_3ch(const cv::Mat src1, const cv::Mat src2)
   return merged;
 }
 
-int count_nonzero(cv::Mat image_3ch)
+int count_non_zero(cv::Mat image_3ch)
 {
   std::vector<cv::Mat> images;
   cv::split(image_3ch, images);
@@ -85,20 +81,20 @@ int count_nonzero(cv::Mat image_3ch)
   return count;
 }
 
-bool CameraPoseInitializer::estimate_pose(
-  const Eigen::Vector3f & position, double & yaw_angle_rad, double yaw_std_rad)
+std::optional<double> CameraPoseInitializer::estimate_pose(
+  const Eigen::Vector3f & position, const double yaw_angle_rad, const double yaw_std_rad)
 {
   if (!projector_module_->define_project_func()) {
-    return false;
+    return std::nullopt;
   }
   if (!lane_image_) {
     RCLCPP_WARN_STREAM(get_logger(), "vector map is not ready ");
-    return false;
+    return std::nullopt;
   }
   // TODO(KYabuuchi) check latest_image_msg's time stamp, too
   if (!latest_image_msg_.has_value()) {
     RCLCPP_WARN_STREAM(get_logger(), "source image is not ready");
-    return false;
+    return std::nullopt;
   }
 
   Image segmented_image;
@@ -110,10 +106,22 @@ bool CameraPoseInitializer::estimate_pose(
     using namespace std::literals::chrono_literals;
     std::future_status status = result_future.wait_for(1000ms);
     if (status == std::future_status::ready) {
-      segmented_image = result_future.get()->dst_image;
+      const auto response = result_future.get();
+      if (response->success) {
+        segmented_image = response->dst_image;
+      } else {
+        RCLCPP_WARN_STREAM(get_logger(), "segmentation service failed unexpectedly");
+        // NOTE: Even if the segmentation service fails, the function will still return the
+        // yaw_angle_rad as it is and complete the initialization. The service fails
+        // when the DNN model is not downloaded. Ideally, initialization should rely on
+        // segmentation, but this implementation allows initialization even in cases where network
+        // connectivity is not available.
+        return yaw_angle_rad;
+      }
     } else {
-      RCLCPP_ERROR_STREAM(get_logger(), "segmentation service exited unexpectedly");
-      return false;
+      RCLCPP_ERROR_STREAM(
+        get_logger(), "segmentation service did not return within the expected time");
+      return std::nullopt;
     }
   }
 
@@ -149,30 +157,18 @@ bool CameraPoseInitializer::estimate_pose(
     if (lane_angle_rad) {
       gain = 2 + std::cos((lane_angle_rad.value() - angle_rad) / 2.0);
     }
-    const float score = gain * count_nonzero(dst);
-
-    // DEBUG:
-    constexpr bool imshow = false;
-    if (imshow) {
-      cv::Mat show_image;
-      cv::hconcat(std::vector<cv::Mat>{rotated_image, vector_map_image, dst}, show_image);
-      cv::imshow("and operator", show_image);
-      cv::waitKey(50);
-    }
+    // If count_non_zero() returns 0 everywhere, the orientation is chosen by the only gain
+    const float score = gain * (1 + count_non_zero(dst));
 
     scores.push_back(score);
     angles_rad.push_back(angle_rad);
   }
 
-  {
-    size_t max_index =
-      std::distance(scores.begin(), std::max_element(scores.begin(), scores.end()));
-    yaw_angle_rad = angles_rad.at(max_index);
-  }
-
   marker_module_->publish_marker(scores, angles_rad, position);
 
-  return true;
+  const size_t max_index =
+    std::distance(scores.begin(), std::max_element(scores.begin(), scores.end()));
+  return angles_rad.at(max_index);
 }
 
 void CameraPoseInitializer::on_map(const HADMapBin & msg)
@@ -193,8 +189,6 @@ void CameraPoseInitializer::on_service(
 {
   RCLCPP_INFO_STREAM(get_logger(), "CameraPoseInitializer on_service");
 
-  response->success = false;
-
   const auto query_pos_with_cov = request->pose_with_covariance;
   const auto query_pos = request->pose_with_covariance.pose.pose.position;
   const auto orientation = request->pose_with_covariance.pose.pose.orientation;
@@ -203,12 +197,14 @@ void CameraPoseInitializer::on_service(
   RCLCPP_INFO_STREAM(get_logger(), "Given initial position " << pos_vec3f.transpose());
 
   // Estimate orientation
-  const auto header = request->pose_with_covariance.header;
-  double yaw_angle_rad = 2 * std::atan2(orientation.z, orientation.w);
-  if (estimate_pose(pos_vec3f, yaw_angle_rad, yaw_std_rad)) {
+  const double initial_yaw_angle_rad = 2 * std::atan2(orientation.z, orientation.w);
+  const auto yaw_angle_rad_opt = estimate_pose(pos_vec3f, initial_yaw_angle_rad, yaw_std_rad);
+  if (yaw_angle_rad_opt.has_value()) {
     response->success = true;
     response->pose_with_covariance =
-      create_rectified_initial_pose(pos_vec3f, yaw_angle_rad, query_pos_with_cov);
+      create_rectified_initial_pose(pos_vec3f, yaw_angle_rad_opt.value(), query_pos_with_cov);
+  } else {
+    response->success = false;
   }
 }
 

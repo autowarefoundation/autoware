@@ -1,3 +1,4 @@
 sensor_msgs/Image src_image
 ---
+bool success
 sensor_msgs/Image dst_image

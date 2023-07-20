@@ -50,7 +50,6 @@ target_link_libraries(${TARGET} ${PCL_LIBRARIES} Sophus::Sophus)
 # Semantic segmentation
 install(PROGRAMS
   src/semantic_segmentation/semantic_segmentation_core.py
-  src/semantic_segmentation/semantic_segmentation_node.py
   src/semantic_segmentation/semantic_segmentation_server.py
   DESTINATION lib/${PROJECT_NAME}
 )

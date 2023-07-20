@@ -70,7 +70,8 @@ private:
   PoseCovStamped create_rectified_initial_pose(
     const Eigen::Vector3f & pos, double yaw_angle_rad, const PoseCovStamped & src_msg);
 
-  bool estimate_pose(const Eigen::Vector3f & position, double & yaw_angle_rad, double yaw_std_rad);
+  std::optional<double> estimate_pose(
+    const Eigen::Vector3f & position, const double yaw_angle_rad, const double yaw_std_rad);
 };
 }  // namespace yabloc
 
