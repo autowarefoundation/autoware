@@ -28,6 +28,7 @@
 #include <boost/circular_buffer.hpp>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace image_projection_based_fusion
@@ -39,7 +40,8 @@ class Debugger
 {
 public:
   explicit Debugger(
-    rclcpp::Node * node_ptr, const std::size_t image_num, const std::size_t image_buffer_size);
+    rclcpp::Node * node_ptr, const std::size_t image_num, const std::size_t image_buffer_size,
+    std::vector<std::string> input_camera_topics);
 
   void publishImage(const std::size_t image_id, const rclcpp::Time & stamp);
 
@@ -55,6 +57,7 @@ private:
 
   rclcpp::Node * node_ptr_;
   std::shared_ptr<image_transport::ImageTransport> image_transport_;
+  std::vector<std::string> input_camera_topics_;
   std::vector<image_transport::Subscriber> image_subs_;
   std::vector<image_transport::Publisher> image_pubs_;
   std::vector<boost::circular_buffer<sensor_msgs::msg::Image::ConstSharedPtr>> image_buffers_;

@@ -100,13 +100,15 @@ protected:
   rclcpp::TimerBase::SharedPtr timer_;
   double timeout_ms_{};
   double match_threshold_ms_{};
+  std::vector<std::string> input_rois_topics_;
+  std::vector<std::string> input_camera_info_topics_;
+  std::vector<std::string> input_camera_topics_;
 
   /** \brief A vector of subscriber. */
   typename rclcpp::Subscription<Msg>::SharedPtr sub_;
   std::vector<rclcpp::Subscription<DetectedObjectsWithFeature>::SharedPtr> rois_subs_;
 
-  /** \brief Input point cloud topics. */
-  std::vector<std::string> input_topics_;
+  // offsets between cameras and the lidars
   std::vector<double> input_offset_ms_;
 
   // cache for fusion

@@ -60,6 +60,24 @@ FusionNode<Msg, ObjType>::FusionNode(
   match_threshold_ms_ = declare_parameter<double>("match_threshold_ms");
   timeout_ms_ = declare_parameter<double>("timeout_ms");
 
+  input_rois_topics_.resize(rois_number_);
+  input_camera_topics_.resize(rois_number_);
+  input_camera_info_topics_.resize(rois_number_);
+
+  for (std::size_t roi_i = 0; roi_i < rois_number_; ++roi_i) {
+    input_rois_topics_.at(roi_i) = declare_parameter<std::string>(
+      "input/rois" + std::to_string(roi_i),
+      "/perception/object_recognition/detection/rois" + std::to_string(roi_i));
+
+    input_camera_info_topics_.at(roi_i) = declare_parameter<std::string>(
+      "input/camera_info" + std::to_string(roi_i),
+      "/sensing/camera/camera" + std::to_string(roi_i) + "/camera_info");
+
+    input_camera_topics_.at(roi_i) = declare_parameter<std::string>(
+      "input/image" + std::to_string(roi_i),
+      "/sensing/camera/camera" + std::to_string(roi_i) + "/image_rect_color");
+  }
+
   input_offset_ms_ = declare_parameter("input_offset_ms", std::vector<double>{});
   if (!input_offset_ms_.empty() && rois_number_ != input_offset_ms_.size()) {
     throw std::runtime_error("The number of offsets does not match the number of topics.");
@@ -71,7 +89,7 @@ FusionNode<Msg, ObjType>::FusionNode(
     std::function<void(const sensor_msgs::msg::CameraInfo::ConstSharedPtr msg)> fnc =
       std::bind(&FusionNode::cameraInfoCallback, this, std::placeholders::_1, roi_i);
     camera_info_subs_.at(roi_i) = this->create_subscription<sensor_msgs::msg::CameraInfo>(
-      "input/camera_info" + std::to_string(roi_i), rclcpp::QoS{1}.best_effort(), fnc);
+      input_camera_info_topics_.at(roi_i), rclcpp::QoS{1}.best_effort(), fnc);
   }
 
   // sub rois
@@ -82,7 +100,7 @@ FusionNode<Msg, ObjType>::FusionNode(
     std::function<void(const DetectedObjectsWithFeature::ConstSharedPtr msg)> roi_callback =
       std::bind(&FusionNode::roiCallback, this, std::placeholders::_1, roi_i);
     rois_subs_.at(roi_i) = this->create_subscription<DetectedObjectsWithFeature>(
-      "input/rois" + std::to_string(roi_i), rclcpp::QoS{1}.best_effort(), roi_callback);
+      input_rois_topics_.at(roi_i), rclcpp::QoS{1}.best_effort(), roi_callback);
   }
 
   // subscribers
@@ -103,7 +121,8 @@ FusionNode<Msg, ObjType>::FusionNode(
   if (declare_parameter("debug_mode", false)) {
     std::size_t image_buffer_size =
       static_cast<std::size_t>(declare_parameter("image_buffer_size", 15));
-    debugger_ = std::make_shared<Debugger>(this, rois_number_, image_buffer_size);
+    debugger_ =
+      std::make_shared<Debugger>(this, rois_number_, image_buffer_size, input_camera_topics_);
   }
 
   // initialize debug tool

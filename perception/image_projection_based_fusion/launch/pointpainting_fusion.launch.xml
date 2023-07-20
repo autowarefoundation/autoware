@@ -38,32 +38,6 @@
   <arg name="input/image6" default="/image_raw6"/>
   <arg name="input/image7" default="/image_raw7"/>
   <group>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '1' &quot;)" from="input/rois0" to="$(var input/rois0)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '1' &quot;)" from="input/camera_info0" to="$(var input/camera_info0)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '2' &quot;)" from="input/rois1" to="$(var input/rois1)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '2' &quot;)" from="input/camera_info1" to="$(var input/camera_info1)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '3' &quot;)" from="input/rois2" to="$(var input/rois2)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '3' &quot;)" from="input/camera_info2" to="$(var input/camera_info2)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '4' &quot;)" from="input/rois3" to="$(var input/rois3)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '4' &quot;)" from="input/camera_info3" to="$(var input/camera_info3)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '5' &quot;)" from="input/rois4" to="$(var input/rois4)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '5' &quot;)" from="input/camera_info4" to="$(var input/camera_info4)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '6' &quot;)" from="input/rois5" to="$(var input/rois5)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '6' &quot;)" from="input/camera_info5" to="$(var input/camera_info5)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '7' &quot;)" from="input/rois6" to="$(var input/rois6)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '7' &quot;)" from="input/camera_info6" to="$(var input/camera_info6)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '8' &quot;)" from="input/rois7" to="$(var input/rois7)"/>
-    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '8' &quot;)" from="input/camera_info7" to="$(var input/camera_info7)"/>
-
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '1' &quot;)" from="input/image_raw0" to="$(var input/image0)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '2' &quot;)" from="input/image_raw1" to="$(var input/image1)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '3' &quot;)" from="input/image_raw2" to="$(var input/image2)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '4' &quot;)" from="input/image_raw3" to="$(var input/image3)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '5' &quot;)" from="input/image_raw4" to="$(var input/image4)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '6' &quot;)" from="input/image_raw5" to="$(var input/image5)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '7' &quot;)" from="input/image_raw6" to="$(var input/image6)"/>
-    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '8' &quot;)" from="input/image_raw7" to="$(var input/image7)"/>
-
     <node pkg="image_projection_based_fusion" exec="pointpainting_fusion_node" name="pointpainting" output="screen">
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
@@ -79,6 +53,32 @@
       <param from="$(var sync_param_path)"/>
       <param from="$(var class_remapper_param_path)"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
+
+      <!-- rois, camera and info -->
+      <param name="input/rois0" value="$(var input/rois0)"/>
+      <param name="input/camera_info0" value="$(var input/camera_info0)"/>
+      <param name="input/image0" value="$(var input/image0)"/>
+      <param name="input/rois1" value="$(var input/rois1)"/>
+      <param name="input/camera_info1" value="$(var input/camera_info1)"/>
+      <param name="input/image1" value="$(var input/image1)"/>
+      <param name="input/rois2" value="$(var input/rois2)"/>
+      <param name="input/camera_info2" value="$(var input/camera_info2)"/>
+      <param name="input/image2" value="$(var input/image2)"/>
+      <param name="input/rois3" value="$(var input/rois3)"/>
+      <param name="input/camera_info3" value="$(var input/camera_info3)"/>
+      <param name="input/image3" value="$(var input/image3)"/>
+      <param name="input/rois4" value="$(var input/rois4)"/>
+      <param name="input/camera_info4" value="$(var input/camera_info4)"/>
+      <param name="input/image4" value="$(var input/image4)"/>
+      <param name="input/rois5" value="$(var input/rois5)"/>
+      <param name="input/camera_info5" value="$(var input/camera_info5)"/>
+      <param name="input/image5" value="$(var input/image5)"/>
+      <param name="input/rois6" value="$(var input/rois6)"/>
+      <param name="input/camera_info6" value="$(var input/camera_info6)"/>
+      <param name="input/image6" value="$(var input/image6)"/>
+      <param name="input/rois7" value="$(var input/rois7)"/>
+      <param name="input/camera_info7" value="$(var input/camera_info7)"/>
+      <param name="input/image7" value="$(var input/image7)"/>
 
       <!-- debug -->
       <param name="debug_mode" value="$(var debug_mode)"/>
