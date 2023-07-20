@@ -304,7 +304,7 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   // TODO(Satoshi OTA) use helper_ after the manager transition
   helper::avoidance::AvoidanceHelper helper(planner_data_, parameters_);
 
-  const auto feasible_stop_distance = helper.getFeasibleDecelDistance(0.0);
+  const auto feasible_stop_distance = helper.getFeasibleDecelDistance(0.0, false);
   std::for_each(data.target_objects.begin(), data.target_objects.end(), [&, this](auto & o) {
     o.to_stop_line = calcDistanceToStopLine(o);
     fillObjectStoppableJudge(o, registered_objects_, feasible_stop_distance, parameters_);
@@ -3241,6 +3241,14 @@ void AvoidanceModule::insertWaitPoint(
   if (!use_constraints_for_decel) {
     utils::avoidance::insertDecelPoint(
       getEgoPosition(), data.to_stop_line, 0.0, shifted_path.path, stop_pose_);
+    return;
+  }
+
+  // If the stop distance is not enough for comfortable stop, don't insert wait point.
+  const auto is_comfortable_stop = helper_.getFeasibleDecelDistance(0.0) < data.to_stop_line;
+  const auto is_slow_speed = getEgoSpeed() < parameters_->min_slow_down_speed;
+  if (!is_comfortable_stop && !is_slow_speed) {
+    RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 500, "not execute uncomfortable deceleration.");
     return;
   }
 
