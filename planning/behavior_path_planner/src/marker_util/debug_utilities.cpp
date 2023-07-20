@@ -361,4 +361,51 @@ MarkerArray createObjectsMarkerArray(
 
   return msg;
 }
+
+MarkerArray createDrivableLanesMarkerArray(
+  const std::vector<DrivableLanes> & drivable_lanes, std::string && ns)
+{
+  MarkerArray msg;
+
+  int32_t i{0};
+
+  const auto get_lanelet_marker =
+    [&ns, &i](const auto & lanelet, const auto r, const auto g, const auto b) {
+      auto marker = createDefaultMarker(
+        "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, bitShift(lanelet.id()) + i++,
+        Marker::LINE_STRIP, createMarkerScale(0.1, 0.0, 0.0), createMarkerColor(r, g, b, 0.999));
+
+      if (lanelet.polygon3d().empty()) {
+        return marker;
+      }
+
+      marker.points.reserve(lanelet.polygon3d().size() + 1);
+
+      for (const auto & p : lanelet.polygon3d()) {
+        marker.points.push_back(createPoint(p.x(), p.y(), p.z()));
+      }
+
+      marker.points.push_back(marker.points.front());
+
+      return marker;
+    };
+
+  const auto get_drivable_lanes = [&msg, &get_lanelet_marker](const DrivableLanes & drivable_lane) {
+    {
+      msg.markers.push_back(get_lanelet_marker(drivable_lane.right_lane, 1.0, 0.0, 0.0));
+    }
+
+    {
+      msg.markers.push_back(get_lanelet_marker(drivable_lane.left_lane, 0.0, 1.0, 0.0));
+    }
+
+    std::for_each(
+      drivable_lane.middle_lanes.begin(), drivable_lane.middle_lanes.end(),
+      [&](const auto & lane) { msg.markers.push_back(get_lanelet_marker(lane, 0.0, 0.0, 1.0)); });
+  };
+
+  std::for_each(drivable_lanes.begin(), drivable_lanes.end(), get_drivable_lanes);
+
+  return msg;
+}
 }  // namespace marker_utils

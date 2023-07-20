@@ -14,6 +14,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
 #define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
 
+#include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
@@ -36,6 +37,7 @@ namespace marker_utils
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using behavior_path_planner::DrivableLanes;
 using behavior_path_planner::ShiftLineArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;
@@ -125,6 +127,9 @@ MarkerArray createPolygonMarkerArray(
 MarkerArray createObjectsMarkerArray(
   const PredictedObjects & objects, std::string && ns, const int64_t & lane_id, const float & r,
   const float & g, const float & b);
+
+MarkerArray createDrivableLanesMarkerArray(
+  const std::vector<DrivableLanes> & drivable_lanes, std::string && ns);
 
 }  // namespace marker_utils
 
