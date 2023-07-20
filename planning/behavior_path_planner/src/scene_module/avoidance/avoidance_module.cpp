@@ -3386,6 +3386,9 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
 
     shifted_path.path.points.at(i).point.longitudinal_velocity_mps = std::min(v_original, v_insert);
   }
+
+  slow_pose_ = motion_utils::calcLongitudinalOffsetPose(
+    shifted_path.path.points, start_idx, distance_to_object);
 }
 
 std::shared_ptr<AvoidanceDebugMsgArray> AvoidanceModule::get_debug_msg_array() const
