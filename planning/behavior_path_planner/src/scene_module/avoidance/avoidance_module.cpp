@@ -2385,7 +2385,7 @@ PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & orig
     planner_data_->parameters.backward_path_length, longest_dist_to_shift_point + extra_margin);
   const auto previous_path = helper_.getPreviousReferencePath();
 
-  const size_t orig_ego_idx = findNearestIndex(original_path.points, getEgoPosition());
+  const size_t orig_ego_idx = planner_data_->findEgoIndex(original_path.points);
   const size_t prev_ego_idx =
     findNearestSegmentIndex(previous_path.points, getPoint(original_path.points.at(orig_ego_idx)));
 
@@ -2403,6 +2403,12 @@ PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & orig
       extended_path.points.end(), previous_path.points.begin() + clip_idx,
       previous_path.points.begin() + prev_ego_idx);
   }
+
+  // overwrite backward path velocity by latest one.
+  std::for_each(extended_path.points.begin(), extended_path.points.end(), [&](auto & p) {
+    p.point.longitudinal_velocity_mps =
+      original_path.points.at(orig_ego_idx).point.longitudinal_velocity_mps;
+  });
 
   {
     extended_path.points.insert(
