@@ -273,12 +273,12 @@ void TrtCommon::printNetworkInfo(const std::string & onnx_file_path)
   int total_params = 0;
   for (int i = 0; i < num; i++) {
     nvinfer1::ILayer * layer = network->getLayer(i);
-    auto ltype = layer->getType();
+    auto layer_type = layer->getType();
     std::string name = layer->getName();
     if (build_config_->profile_per_layer) {
       model_profiler_.setProfDict(layer);
     }
-    if (ltype == nvinfer1::LayerType::kCONSTANT) {
+    if (layer_type == nvinfer1::LayerType::kCONSTANT) {
       continue;
     }
     nvinfer1::ITensor * in = layer->getInput(0);
@@ -286,7 +286,7 @@ void TrtCommon::printNetworkInfo(const std::string & onnx_file_path)
     nvinfer1::ITensor * out = layer->getOutput(0);
     nvinfer1::Dims dim_out = out->getDimensions();
 
-    if (ltype == nvinfer1::LayerType::kCONVOLUTION) {
+    if (layer_type == nvinfer1::LayerType::kCONVOLUTION) {
       nvinfer1::IConvolutionLayer * conv = (nvinfer1::IConvolutionLayer *)layer;
       nvinfer1::Dims k_dims = conv->getKernelSizeNd();
       nvinfer1::Dims s_dims = conv->getStrideNd();
@@ -305,7 +305,7 @@ void TrtCommon::printNetworkInfo(const std::string & onnx_file_path)
       std::cout << " weights:" << num_weights;
       std::cout << " GFLOPs:" << gflops;
       std::cout << std::endl;
-    } else if (ltype == nvinfer1::LayerType::kPOOLING) {
+    } else if (layer_type == nvinfer1::LayerType::kPOOLING) {
       nvinfer1::IPoolingLayer * pool = (nvinfer1::IPoolingLayer *)layer;
       auto p_type = pool->getPoolingType();
       nvinfer1::Dims dim_stride = pool->getStrideNd();
@@ -325,7 +325,7 @@ void TrtCommon::printNetworkInfo(const std::string & onnx_file_path)
       std::cout << "pool " << dim_window.d[0] << "x" << dim_window.d[1] << "]";
       std::cout << " GFLOPs:" << gflops;
       std::cout << std::endl;
-    } else if (ltype == nvinfer1::LayerType::kRESIZE) {
+    } else if (layer_type == nvinfer1::LayerType::kRESIZE) {
       std::cout << "L" << i << " [resize]" << std::endl;
     }
   }
@@ -364,7 +364,7 @@ bool TrtCommon::buildEngineFromOnnx(
     if (num_available_dla > 0) {
       std::cout << "###" << num_available_dla << " DLAs are supported! ###" << std::endl;
     } else {
-      std::cout << "###Warninig : "
+      std::cout << "###Warning : "
                 << "No DLA is supported! ###" << std::endl;
     }
     config->setDefaultDeviceType(nvinfer1::DeviceType::kDLA);
@@ -400,7 +400,7 @@ bool TrtCommon::buildEngineFromOnnx(
     network->getInput(0)->setDynamicRange(0, 255.0);
     for (int i = 0; i < num; i++) {
       nvinfer1::ILayer * layer = network->getLayer(i);
-      auto ltype = layer->getType();
+      auto layer_type = layer->getType();
       std::string name = layer->getName();
       nvinfer1::ITensor * out = layer->getOutput(0);
       if (build_config_->clip_value > 0.0) {
@@ -409,7 +409,7 @@ bool TrtCommon::buildEngineFromOnnx(
         out->setDynamicRange(0.0, build_config_->clip_value);
       }
 
-      if (ltype == nvinfer1::LayerType::kCONVOLUTION) {
+      if (layer_type == nvinfer1::LayerType::kCONVOLUTION) {
         if (first) {
           layer->setPrecision(nvinfer1::DataType::kHALF);
           std::cout << "Set kHALF in " << name << std::endl;
@@ -424,14 +424,14 @@ bool TrtCommon::buildEngineFromOnnx(
           }
           for (int i = num - 1; i >= 0; i--) {
             nvinfer1::ILayer * layer = network->getLayer(i);
-            auto ltype = layer->getType();
+            auto layer_type = layer->getType();
             std::string name = layer->getName();
-            if (ltype == nvinfer1::LayerType::kCONVOLUTION) {
+            if (layer_type == nvinfer1::LayerType::kCONVOLUTION) {
               layer->setPrecision(nvinfer1::DataType::kHALF);
               std::cout << "Set kHALF in " << name << std::endl;
               break;
             }
-            if (ltype == nvinfer1::LayerType::kMATRIX_MULTIPLY) {
+            if (layer_type == nvinfer1::LayerType::kMATRIX_MULTIPLY) {
               layer->setPrecision(nvinfer1::DataType::kHALF);
               std::cout << "Set kHALF in " << name << std::endl;
               break;
