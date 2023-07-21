@@ -607,19 +607,19 @@ lanelet::ConstLanelets getBackwardLanelets(
   return backward_lanes;
 }
 
-bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameter)
+bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameters)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
   const auto t = utils::getHighestProbLabel(object.classification);
   const auto is_object_type =
-    ((t == ObjectClassification::CAR && parameter.check_car) ||
-     (t == ObjectClassification::TRUCK && parameter.check_truck) ||
-     (t == ObjectClassification::BUS && parameter.check_bus) ||
-     (t == ObjectClassification::TRAILER && parameter.check_trailer) ||
-     (t == ObjectClassification::UNKNOWN && parameter.check_unknown) ||
-     (t == ObjectClassification::BICYCLE && parameter.check_bicycle) ||
-     (t == ObjectClassification::MOTORCYCLE && parameter.check_motorcycle) ||
-     (t == ObjectClassification::PEDESTRIAN && parameter.check_pedestrian));
+    ((t == ObjectClassification::CAR && parameters.check_car) ||
+     (t == ObjectClassification::TRUCK && parameters.check_truck) ||
+     (t == ObjectClassification::BUS && parameters.check_bus) ||
+     (t == ObjectClassification::TRAILER && parameters.check_trailer) ||
+     (t == ObjectClassification::UNKNOWN && parameters.check_unknown) ||
+     (t == ObjectClassification::BICYCLE && parameters.check_bicycle) ||
+     (t == ObjectClassification::MOTORCYCLE && parameters.check_motorcycle) ||
+     (t == ObjectClassification::PEDESTRIAN && parameters.check_pedestrian));
   return is_object_type;
 }
 
@@ -726,7 +726,7 @@ boost::optional<lanelet::ConstLanelet> getLaneChangeTargetLane(
 
 std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const LaneChangePath & lane_change_path, const Twist & vehicle_twist, const Pose & vehicle_pose,
-  const BehaviorPathPlannerParameters & common_parameter, const double resolution)
+  const BehaviorPathPlannerParameters & common_parameters, const double resolution)
 {
   if (lane_change_path.path.points.empty()) {
     return {};
@@ -737,11 +737,11 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const auto lane_changing_acc = lane_change_path.info.longitudinal_acceleration.lane_changing;
   const auto duration = lane_change_path.info.duration.sum();
   const auto prepare_time = lane_change_path.info.duration.prepare;
-  const auto & minimum_lane_changing_velocity = common_parameter.minimum_lane_changing_velocity;
+  const auto & minimum_lane_changing_velocity = common_parameters.minimum_lane_changing_velocity;
 
   const auto nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    path.points, vehicle_pose, common_parameter.ego_nearest_dist_threshold,
-    common_parameter.ego_nearest_yaw_threshold);
+    path.points, vehicle_pose, common_parameters.ego_nearest_dist_threshold,
+    common_parameters.ego_nearest_yaw_threshold);
 
   std::vector<PoseWithVelocityStamped> predicted_path;
   const auto vehicle_pose_frenet =
