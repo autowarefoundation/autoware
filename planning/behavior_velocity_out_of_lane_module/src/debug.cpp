@@ -64,7 +64,7 @@ void add_current_overlap_marker(
   debug_marker.points.clear();
   for (const auto & p : current_footprint)
     debug_marker.points.push_back(tier4_autoware_utils::createMarkerPosition(p.x(), p.y(), z));
-  debug_marker.points.push_back(debug_marker.points.front());
+  if (!debug_marker.points.empty()) debug_marker.points.push_back(debug_marker.points.front());
   if (current_overlapped_lanelets.empty())
     debug_marker.color = tier4_autoware_utils::createMarkerColor(0.1, 1.0, 0.1, 0.5);
   else
