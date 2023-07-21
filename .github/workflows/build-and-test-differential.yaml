@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-and-test-differential:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64]
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -59,7 +59,7 @@ jobs:
           flags: differential
 
   clang-tidy-differential:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64]
     container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
     needs: build-and-test-differential
     steps:
