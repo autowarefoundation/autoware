@@ -9,6 +9,9 @@
   <arg name="container_name" default="pointcloud_container"/>
   <arg name="score_threshold" default="0.20"/>
 
+  <!-- radar param -->
+  <arg name="input/radar" default="/sensing/radar/detected_objects"/>
+
   <!-- lidar based detection-->
   <group>
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/lidar_based_detection.launch.xml">
@@ -27,14 +30,22 @@
   <group>
     <push-ros-namespace namespace="radar"/>
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/radar_based_detection.launch.xml">
-      <arg name="output/objects" value="objects"/>
+      <arg name="input/radar" value="$(var input/radar)"/>
+      <arg name="output/objects" value="far_objects"/>
+      <arg name="filter/angle_threshold" value="1.0472"/>
+      <arg name="filter/velocity_threshold" value="3.0"/>
+      <arg name="split/velocity_threshold" value="4.5"/>
+      <arg name="split_range" value="70.0"/>
+      <arg name="clustering/angle_threshold" value="0.174"/>
+      <arg name="clustering/distance_threshold" value="10.0"/>
+      <arg name="clustering/velocity_threshold" value="4.0"/>
     </include>
   </group>
 
   <!-- lidar radar fusion-->
   <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
     <arg name="input/objects" value="lidar/objects"/>
-    <arg name="input/radars" value="radar/objects"/>
+    <arg name="input/radars" value="radar/noise_filtered_objects"/>
     <arg name="output/objects" value="objects"/>
   </include>
 </launch>

@@ -26,10 +26,14 @@
   <exec_depend>multi_object_tracker</exec_depend>
   <exec_depend>object_merger</exec_depend>
   <exec_depend>object_range_splitter</exec_depend>
+  <exec_depend>object_velocity_splitter</exec_depend>
   <exec_depend>occupancy_grid_map_outlier_filter</exec_depend>
   <exec_depend>pointcloud_preprocessor</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
   <exec_depend>probabilistic_occupancy_grid_map</exec_depend>
+  <exec_depend>radar_crossing_objects_noise_filter</exec_depend>
+  <exec_depend>radar_fusion_to_detected_object</exec_depend>
+  <exec_depend>radar_object_clustering</exec_depend>
   <exec_depend>shape_estimation</exec_depend>
   <exec_depend>tensorrt_yolo</exec_depend>
   <exec_depend>topic_tools</exec_depend>

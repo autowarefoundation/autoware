@@ -1,12 +1,56 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="output/objects" default="objects"/>
+  <arg name="input/radar" default="/sensing/radar/detected_objects"/>
+  <arg name="output/objects" default="far_objects"/>
+  <arg name="filter/angle_threshold" default="1.0472"/>
+  <arg name="filter/velocity_threshold" default="3.0"/>
+  <arg name="split/velocity_threshold" default="4.5"/>
+  <arg name="split_range" default="70.0"/>
+  <arg name="clustering/angle_threshold" default="0.174"/>
+  <arg name="clustering/distance_threshold" default="10.0"/>
+  <arg name="clustering/velocity_threshold" default="4.0"/>
+  <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_position_filter.param.yaml"/>
 
-  <include file="$(find-pkg-share radar_tracks_msgs_converter)/launch/radar_tracks_msgs_converter.launch.xml">
-    <arg name="input/radar_objects" value="/sensing/radar/front_center/objects_raw"/>
-    <arg name="input/odometry" value="/localization/kinematic_state"/>
-    <arg name="output/radar_detected_objects" value="$(var output/objects)"/>
-    <arg name="update_rate_hz" value="20.0"/>
-    <arg name="use_twist_compensation" value="true"/>
+  <!-- Detection for far dynamic objects -->
+  <include file="$(find-pkg-share radar_crossing_objects_noise_filter)/launch/radar_crossing_objects_noise_filter.launch.xml">
+    <arg name="input/objects" value="$(var input/radar)"/>
+    <arg name="output/noise_objects" value="noise_objects"/>
+    <arg name="output/filtered_objects" value="noise_filtered_objects"/>
+    <arg name="angle_threshold" value="$(var filter/angle_threshold)"/>
+    <arg name="velocity_threshold" value="$(var filter/velocity_threshold)"/>
+  </include>
+
+  <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
+    <arg name="input/object" value="noise_filtered_objects"/>
+    <arg name="output/object" value="lanelet_filtered_objects"/>
+    <arg name="filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
+  </include>
+
+  <include file="$(find-pkg-share object_velocity_splitter)/launch/object_velocity_splitter.launch.xml">
+    <arg name="input/objects" value="lanelet_filtered_objects"/>
+    <arg name="output/low_speed_objects" value="low_speed_objects"/>
+    <arg name="output/high_speed_objects" value="high_speed_objects"/>
+    <arg name="velocity_threshold" value="$(var split/velocity_threshold)"/>
+  </include>
+
+  <include file="$(find-pkg-share object_range_splitter)/launch/object_range_splitter.launch.xml">
+    <arg name="input/object" value="high_speed_objects"/>
+    <arg name="output/long_range_object" value="far_high_speed_objects"/>
+    <arg name="output/short_range_object" value="near_high_speed_objects"/>
+    <arg name="split_range" value="$(var split_range)"/>
+  </include>
+
+  <include file="$(find-pkg-share radar_object_clustering)/launch/radar_object_clustering.launch.xml">
+    <arg name="input/objects" value="far_high_speed_objects"/>
+    <arg name="output/objects" value="$(var output/objects)"/>
+    <arg name="angle_threshold" value="$(var clustering/angle_threshold)"/>
+    <arg name="distance_threshold" value="$(var clustering/distance_threshold)"/>
+    <arg name="velocity_threshold" value="$(var clustering/velocity_threshold)"/>
+    <arg name="is_fixed_label" value="true"/>
+    <arg name="fixed_label" value="CAR"/>
+    <arg name="is_fixed_size" value="true"/>
+    <arg name="size_x" value="4.0"/>
+    <arg name="size_y" value="1.5"/>
+    <arg name="size_z" value="1.5"/>
   </include>
 </launch>

@@ -34,6 +34,7 @@
   <arg name="trust_distance" default="30.0"/>
 
   <!-- radar param -->
+  <arg name="input/radar" default="/sensing/radar/detected_objects"/>
 
   <!-- camera lidar radar fusion based detection-->
   <group if="$(eval '&quot;$(var mode)&quot;==&quot;camera_lidar_radar_fusion&quot;')">
@@ -63,6 +64,7 @@
       <arg name="container_name" value="$(var container_name)"/>
       <arg name="remove_unknown" value="$(var remove_unknown)"/>
       <arg name="trust_distance" value="$(var trust_distance)"/>
+      <arg name="input/radar" value="$(var input/radar)"/>
     </include>
   </group>
 
@@ -104,6 +106,7 @@
       <arg name="use_object_filter" value="$(var use_object_filter)"/>
       <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)"/>
       <arg name="container_name" value="$(var container_name)"/>
+      <arg name="input/radar" value="$(var input/radar)"/>
     </include>
   </group>
 
@@ -122,6 +125,7 @@
   <!-- radar based detection-->
   <group if="$(eval '&quot;$(var mode)&quot;==&quot;radar&quot;')">
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/radar_based_detection.launch.xml">
+      <arg name="input/radar" value="$(var input/radar)"/>
       <arg name="output/objects" value="objects"/>
     </include>
   </group>
