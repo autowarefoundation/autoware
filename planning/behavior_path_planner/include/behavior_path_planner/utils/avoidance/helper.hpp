@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <vector>
 
 namespace behavior_path_planner::helper::avoidance
 {
@@ -37,13 +38,6 @@ class AvoidanceHelper
 public:
   explicit AvoidanceHelper(const std::shared_ptr<AvoidanceParameters> & parameters)
   : parameters_{parameters}
-  {
-  }
-
-  AvoidanceHelper(
-    const std::shared_ptr<const PlannerData> & data,
-    const std::shared_ptr<AvoidanceParameters> & parameters)
-  : data_{data}, parameters_{parameters}
   {
   }
 
@@ -64,50 +58,72 @@ public:
 
   double getEgoSpeed() const { return std::abs(data_->self_odometry->twist.twist.linear.x); }
 
-  double getNominalAvoidanceEgoSpeed() const
+  size_t getConstraintsMapIndex(const double velocity, const std::vector<double> & values) const
   {
-    return std::max(getEgoSpeed(), parameters_->min_nominal_avoidance_speed);
+    const auto itr = std::find_if(
+      values.begin(), values.end(), [&](const auto value) { return velocity < value; });
+    const auto idx = std::distance(values.begin(), itr);
+    return 0 < idx ? idx - 1 : 0;
   }
 
-  double getSharpAvoidanceEgoSpeed() const
+  double getLateralMinJerkLimit() const
   {
-    return std::max(getEgoSpeed(), parameters_->min_sharp_avoidance_speed);
+    const auto idx = getConstraintsMapIndex(getEgoSpeed(), parameters_->velocity_map);
+    return parameters_->lateral_min_jerk_map.at(idx);
+  }
+
+  double getLateralMaxJerkLimit() const
+  {
+    const auto idx = getConstraintsMapIndex(getEgoSpeed(), parameters_->velocity_map);
+    return parameters_->lateral_max_jerk_map.at(idx);
+  }
+
+  double getLateralMaxAccelLimit() const
+  {
+    const auto idx = getConstraintsMapIndex(getEgoSpeed(), parameters_->velocity_map);
+    return parameters_->lateral_max_accel_map.at(idx);
+  }
+
+  double getAvoidanceEgoSpeed() const
+  {
+    const auto & values = parameters_->velocity_map;
+    const auto idx = getConstraintsMapIndex(getEgoSpeed(), values);
+    return std::max(getEgoSpeed(), values.at(idx));
   }
 
   double getNominalPrepareDistance() const
   {
     const auto & p = parameters_;
-    const auto epsilon_m = 0.01;  // for floating error to pass "has_enough_distance" check.
-    const auto nominal_distance =
-      std::max(getEgoSpeed() * p->prepare_time, p->min_prepare_distance);
-    return nominal_distance + epsilon_m;
+    return std::max(getEgoSpeed() * p->prepare_time, p->min_prepare_distance);
   }
 
   double getNominalAvoidanceDistance(const double shift_length) const
   {
     const auto & p = parameters_;
-    const auto distance_by_jerk = PathShifter::calcLongitudinalDistFromJerk(
-      shift_length, p->nominal_lateral_jerk, getNominalAvoidanceEgoSpeed());
-
-    return std::max(p->min_avoidance_distance, distance_by_jerk);
+    const auto nominal_speed = std::max(getEgoSpeed(), p->nominal_avoidance_speed);
+    const auto nominal_jerk =
+      p->lateral_min_jerk_map.at(getConstraintsMapIndex(nominal_speed, p->velocity_map));
+    return PathShifter::calcLongitudinalDistFromJerk(shift_length, nominal_jerk, nominal_speed);
   }
 
-  double getMinimumAvoidanceDistance(const double shift_length) const
+  double getMinAvoidanceDistance(const double shift_length) const
   {
     const auto & p = parameters_;
-    const auto distance_by_jerk = PathShifter::calcLongitudinalDistFromJerk(
-      shift_length, p->max_lateral_jerk, p->min_sharp_avoidance_speed);
+    return PathShifter::calcLongitudinalDistFromJerk(
+      shift_length, p->lateral_max_jerk_map.front(), p->velocity_map.front());
+  }
 
-    return std::max(p->min_avoidance_distance, distance_by_jerk);
+  double getMaxAvoidanceDistance(const double shift_length) const
+  {
+    const auto distance_from_jerk = PathShifter::calcLongitudinalDistFromJerk(
+      shift_length, getLateralMinJerkLimit(), getAvoidanceEgoSpeed());
+    return std::max(getNominalAvoidanceDistance(shift_length), distance_from_jerk);
   }
 
   double getSharpAvoidanceDistance(const double shift_length) const
   {
-    const auto & p = parameters_;
-    const auto distance_by_jerk = PathShifter::calcLongitudinalDistFromJerk(
-      shift_length, p->max_lateral_jerk, getSharpAvoidanceEgoSpeed());
-
-    return std::max(p->min_avoidance_distance, distance_by_jerk);
+    return PathShifter::calcLongitudinalDistFromJerk(
+      shift_length, getLateralMaxJerkLimit(), getAvoidanceEgoSpeed());
   }
 
   double getEgoShift() const

@@ -145,11 +145,9 @@
         longitudinal:
           prepare_time: 2.0                             # [s]
           min_prepare_distance: 1.0                     # [m]
-          min_avoidance_distance: 10.0                  # [m]
-          min_nominal_avoidance_speed: 7.0              # [m/s]
-          min_sharp_avoidance_speed: 1.0                # [m/s]
           min_slow_down_speed: 1.38                     # [m/s]
           buf_slow_down_speed: 0.56                     # [m/s]
+          nominal_avoidance_speed: 8.33                 # [m/s]
 
       # For yield maneuver
       yield:
@@ -157,7 +155,6 @@
 
       # For stop maneuver
       stop:
-        min_distance: 10.0                              # [m]
         max_distance: 20.0                              # [m]
         stop_buffer: 1.0                                # [m]
 
@@ -167,9 +164,10 @@
 
         # lateral constraints
         lateral:
-          nominal_lateral_jerk: 0.2                     # [m/sss]
-          max_lateral_jerk: 1.0                         # [m/sss]
-          max_lateral_acceleration: 0.5                 # [m/ss]
+          velocity: [1.0, 1.38, 11.1]                   # [m/s]
+          max_accel_values: [0.5, 0.5, 0.5]             # [m/ss]
+          min_jerk_values: [0.2, 0.2, 0.2]              # [m/sss]
+          max_jerk_values: [1.0, 1.0, 1.0]             # [m/sss]
 
         # longitudinal constraints
         longitudinal:

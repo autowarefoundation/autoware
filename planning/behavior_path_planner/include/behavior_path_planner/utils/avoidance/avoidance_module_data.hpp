@@ -199,9 +199,6 @@ struct AvoidanceParameters
   // keep target velocity in yield maneuver
   double yield_velocity;
 
-  // minimum stop distance
-  double stop_min_distance;
-
   // maximum stop distance
   double stop_max_distance;
 
@@ -214,25 +211,14 @@ struct AvoidanceParameters
   // Even if the vehicle speed is zero, avoidance will start after a distance of this much.
   double min_prepare_distance;
 
-  // minimum distance while avoiding TODO(Horibe): will be changed to jerk constraint later
-  double min_avoidance_distance;
-
-  // minimum speed for jerk calculation in a nominal situation, i.e. there is an enough
-  // distance for avoidance, and the object is very far from ego. In that case, the
-  // vehicle speed is unknown passing along the object. Then use this speed as a minimum.
-  // Note: This parameter is needed because we have to plan an avoidance path in advance
-  //       without knowing the speed of the distant path.
-  double min_nominal_avoidance_speed;
-
-  // minimum speed for jerk calculation in a tight situation, i.e. there is NOT an enough
-  // distance for avoidance. Need a sharp avoidance path to avoid the object.
-  double min_sharp_avoidance_speed;
-
   // minimum slow down speed
   double min_slow_down_speed;
 
   // slow down speed buffer
   double buf_slow_down_speed;
+
+  // nominal avoidance sped
+  double nominal_avoidance_speed;
 
   // The margin is configured so that the generated avoidance trajectory does not come near to the
   // road shoulder.
@@ -243,13 +229,6 @@ struct AvoidanceParameters
 
   // Even if the obstacle is very large, it will not avoid more than this length for left direction
   double max_left_shift_length;
-
-  // Avoidance path is generated with this jerk.
-  // If there is no margin, the jerk increases up to max lateral jerk.
-  double nominal_lateral_jerk;
-
-  // if the avoidance path exceeds this lateral jerk, it will be not used anymore.
-  double max_lateral_jerk;
 
   // To prevent large acceleration while avoidance.
   double max_lateral_acceleration;
@@ -283,6 +262,18 @@ struct AvoidanceParameters
 
   // For shift line generation process. Remove sharp(=jerky) shift line.
   double sharp_shift_filter_threshold;
+
+  // target velocity matrix
+  std::vector<double> velocity_map;
+
+  // Minimum lateral jerk limitation map.
+  std::vector<double> lateral_min_jerk_map;
+
+  // Maximum lateral jerk limitation map.
+  std::vector<double> lateral_max_jerk_map;
+
+  // Maximum lateral acceleration limitation map.
+  std::vector<double> lateral_max_accel_map;
 
   // target velocity matrix
   std::vector<double> target_velocity_matrix;

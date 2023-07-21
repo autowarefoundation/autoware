@@ -425,12 +425,6 @@ private:
    * @brief trim invalid shift lines whose gradient it too large to follow.
    * @param target shift lines.
    */
-  void trimTooSharpShift(AvoidLineArray & shift_lines) const;
-
-  /*
-   * @brief trim invalid shift lines whose gradient it too large to follow.
-   * @param target shift lines.
-   */
   void trimSharpReturn(AvoidLineArray & shift_lines, const double threshold) const;
 
   /**
