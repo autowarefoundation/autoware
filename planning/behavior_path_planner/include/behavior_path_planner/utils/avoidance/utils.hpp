@@ -88,6 +88,9 @@ lanelet::ConstLanelets getTargetLanelets(
   const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
   const double left_offset, const double right_offset);
 
+lanelet::ConstLanelets getCurrentLanesFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data);
+
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
   boost::optional<Pose> & p_out);

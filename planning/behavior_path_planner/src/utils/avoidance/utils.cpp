@@ -498,6 +498,25 @@ lanelet::ConstLanelets getTargetLanelets(
   return target_lanelets;
 }
 
+lanelet::ConstLanelets getCurrentLanesFromPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data)
+{
+  if (path.points.empty()) {
+    throw std::logic_error("empty path.");
+  }
+
+  if (path.points.front().lane_ids.empty()) {
+    throw std::logic_error("empty lane ids.");
+  }
+
+  const auto start_id = path.points.front().lane_ids.front();
+  const auto start_lane = planner_data->route_handler->getLaneletsFromId(start_id);
+  const auto & p = planner_data->parameters;
+
+  return planner_data->route_handler->getLaneletSequence(
+    start_lane, p.backward_path_length, p.forward_path_length);
+}
+
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
   boost::optional<Pose> & p_out)

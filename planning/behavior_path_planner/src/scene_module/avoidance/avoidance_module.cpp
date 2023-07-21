@@ -256,8 +256,8 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
     calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
 
   // lanelet info
-  data.current_lanelets =
-    utils::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_);
+  data.current_lanelets = utils::avoidance::getCurrentLanesFromPath(
+    *getPreviousModuleOutput().reference_path, planner_data_);
 
   // keep avoidance state
   data.state = avoidance_data_.state;
@@ -2869,8 +2869,8 @@ void AvoidanceModule::updateData()
     helper_.setPreviousSplineShiftPath(toShiftedPath(*getPreviousModuleOutput().path));
     helper_.setPreviousLinearShiftPath(toShiftedPath(*getPreviousModuleOutput().path));
     helper_.setPreviousReferencePath(*getPreviousModuleOutput().path);
-    helper_.setPreviousDrivingLanes(
-      utils::getCurrentLanesFromPath(*getPreviousModuleOutput().reference_path, planner_data_));
+    helper_.setPreviousDrivingLanes(utils::avoidance::getCurrentLanesFromPath(
+      *getPreviousModuleOutput().reference_path, planner_data_));
   }
 
   debug_data_ = DebugData();
