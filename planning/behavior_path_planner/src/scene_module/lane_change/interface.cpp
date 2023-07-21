@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/scene_module/lane_change/interface.hpp"
 
-#include "behavior_path_planner/marker_util/lane_change/debug.hpp"
+#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
 #include "behavior_path_planner/module_status.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"

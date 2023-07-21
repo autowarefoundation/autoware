@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTIL__AVOIDANCE__DEBUG_HPP_
-#define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__AVOIDANCE__DEBUG_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTILS__AVOIDANCE__DEBUG_HPP_
+#define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__AVOIDANCE__DEBUG_HPP_
 
-#include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
@@ -81,4 +81,4 @@ std::string toStrInfo(const behavior_path_planner::ShiftLine & sp);
 
 std::string toStrInfo(const behavior_path_planner::AvoidLine & ap);
 
-#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTIL__AVOIDANCE__DEBUG_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTILS__AVOIDANCE__DEBUG_HPP_

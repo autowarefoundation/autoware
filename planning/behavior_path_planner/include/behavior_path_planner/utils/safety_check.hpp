@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__SAFETY_CHECK_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>

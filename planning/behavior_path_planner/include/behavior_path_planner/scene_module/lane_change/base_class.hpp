@@ -14,8 +14,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 
-#include "behavior_path_planner/marker_util/debug_utilities.hpp"
-#include "behavior_path_planner/marker_util/lane_change/debug.hpp"
+#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"

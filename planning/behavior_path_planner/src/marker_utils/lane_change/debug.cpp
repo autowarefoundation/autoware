@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
-#include <behavior_path_planner/marker_util/lane_change/debug.hpp>
+#include <behavior_path_planner/marker_utils/lane_change/debug.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>

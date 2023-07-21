@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
-#define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTILS__UTILS_HPP_
+#define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__UTILS_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
@@ -133,4 +133,4 @@ MarkerArray createDrivableLanesMarkerArray(
 
 }  // namespace marker_utils
 
-#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTIL__DEBUG_UTILITIES_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTILS__UTILS_HPP_

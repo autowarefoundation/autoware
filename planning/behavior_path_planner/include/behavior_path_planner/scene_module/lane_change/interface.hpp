@@ -15,7 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 
-#include "behavior_path_planner/marker_util/lane_change/debug.hpp"
+#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
 #include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
 #include "behavior_path_planner/scene_module/lane_change/base_class.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request.hpp"

@@ -14,7 +14,7 @@
 
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 
-#include "behavior_path_planner/marker_util/avoidance/debug.hpp"
+#include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"

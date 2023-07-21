@@ -15,7 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_
 
-#include "behavior_path_planner/marker_util/lane_change/debug.hpp"
+#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
 #include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"

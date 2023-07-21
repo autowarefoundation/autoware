@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTIL__LANE_CHANGE__DEBUG_HPP_
-#define BEHAVIOR_PATH_PLANNER__MARKER_UTIL__LANE_CHANGE__DEBUG_HPP_
+#ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTILS__LANE_CHANGE__DEBUG_HPP_
+#define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__LANE_CHANGE__DEBUG_HPP_
 
-#include "behavior_path_planner/marker_util/debug_utilities.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
 
 #include <string>
@@ -43,4 +43,4 @@ MarkerArray createLaneChangingVirtualWallMarker(
   const geometry_msgs::msg::Pose & lane_changing_pose, const std::string & module_name,
   const rclcpp::Time & now, const std::string & ns);
 }  // namespace marker_utils::lane_change_markers
-#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTIL__LANE_CHANGE__DEBUG_HPP_
+#endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTILS__LANE_CHANGE__DEBUG_HPP_
