@@ -28,7 +28,9 @@
 namespace behavior_velocity_planner
 {
 BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(
+    node, getModuleName(),
+    node.declare_parameter<bool>(std::string(getModuleName()) + ".enable_rtc"))
 {
   const std::string ns(getModuleName());
   planner_param_.use_pass_judge_line = node.declare_parameter<bool>(ns + ".use_pass_judge_line");

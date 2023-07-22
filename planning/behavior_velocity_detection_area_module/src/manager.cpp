@@ -31,7 +31,9 @@ namespace behavior_velocity_planner
 using lanelet::autoware::DetectionArea;
 
 DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(
+    node, getModuleName(),
+    node.declare_parameter<bool>(std::string(getModuleName()) + ".enable_rtc"))
 {
   const std::string ns(getModuleName());
   planner_param_.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");

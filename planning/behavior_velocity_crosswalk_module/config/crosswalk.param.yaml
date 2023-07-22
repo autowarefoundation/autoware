@@ -4,6 +4,7 @@
       common:
         show_processing_time: false # [-] whether to show processing time
         # param for input data
+        enable_rtc: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
         traffic_light_state_timeout: 3.0 # [s] timeout threshold for traffic light signal
 
       # param for stop position

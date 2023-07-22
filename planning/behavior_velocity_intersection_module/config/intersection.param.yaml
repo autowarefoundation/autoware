@@ -48,5 +48,9 @@
         denoise_kernel: 1.0 # [m]
         pub_debug_grid: false
 
+      enable_rtc: # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+        intersection: true
+        intersection_to_occlusion: true
+
     merge_from_private:
       stop_duration_sec: 1.0
