@@ -41,6 +41,7 @@ The clusters are projected onto image planes, and then if the ROIs of clusters a
 | `only_allow_inside_cluster` | bool  | if `true`, the only clusters contained inside RoIs by a detector                 |
 | `roi_scale_factor`          | float | the scale factor for offset of detector RoIs if `only_allow_inside_cluster=true` |
 | `iou_threshold`             | float | the IoU threshold to overwrite a label of clusters with a label of roi           |
+| `unknown_iou_threshold`     | float | the IoU threshold to fuse cluster with unknown label of roi                      |
 | `rois_number`               | int   | the number of input rois                                                         |
 | `debug_mode`                | bool  | If `true`, subscribe and publish images for visualization.                       |
 
