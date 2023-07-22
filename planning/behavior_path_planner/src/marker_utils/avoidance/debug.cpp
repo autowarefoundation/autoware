@@ -200,8 +200,7 @@ MarkerArray createEgoStatusMarkerArray(
   {
     std::ostringstream string_stream;
     string_stream << std::fixed << std::setprecision(2) << std::boolalpha;
-    string_stream << "avoid_now:" << data.avoiding_now << ","
-                  << "avoid_req:" << data.avoid_required << ","
+    string_stream << "avoid_req:" << data.avoid_required << ","
                   << "yield_req:" << data.yield_required << ","
                   << "safe:" << data.safe;
     marker.text = string_stream.str();

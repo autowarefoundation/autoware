@@ -224,6 +224,11 @@ public:
     return std::numeric_limits<double>::max();
   }
 
+  bool isShifted() const
+  {
+    return std::abs(getEgoShift()) > parameters_->lateral_avoid_check_threshold;
+  }
+
   bool isInitialized() const
   {
     if (prev_spline_shift_path_.path.points.empty()) {

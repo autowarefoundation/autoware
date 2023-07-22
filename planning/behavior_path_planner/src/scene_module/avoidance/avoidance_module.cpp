@@ -379,7 +379,7 @@ ObjectData AvoidanceModule::createObjectData(
 bool AvoidanceModule::canYieldManeuver(const AvoidancePlanningData & data) const
 {
   // transit yield maneuver only when the avoidance maneuver is not initiated.
-  if (data.avoiding_now) {
+  if (helper_.isShifted()) {
     return false;
   }
 
@@ -413,9 +413,6 @@ bool AvoidanceModule::canYieldManeuver(const AvoidancePlanningData & data) const
 
 void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & debug) const
 {
-  constexpr double AVOIDING_SHIFT_THR = 0.1;
-  data.avoiding_now = std::abs(helper_.getEgoShift()) > AVOIDING_SHIFT_THR;
-
   auto path_shifter = path_shifter_;
 
   /**
@@ -578,7 +575,7 @@ void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugDat
     return;
   }
 
-  if (data.avoiding_now) {
+  if (helper_.isShifted()) {
     return;
   }
 
@@ -3189,7 +3186,7 @@ void AvoidanceModule::insertWaitPoint(
     return;
   }
 
-  if (data.avoiding_now) {
+  if (helper_.isShifted()) {
     return;
   }
 
@@ -3280,7 +3277,7 @@ void AvoidanceModule::insertYieldVelocity(ShiftedPath & shifted_path) const
     return;
   }
 
-  if (data.avoiding_now) {
+  if (helper_.isShifted()) {
     return;
   }
 
@@ -3299,7 +3296,7 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   }
 
   // insert slow down speed only when the avoidance maneuver is not initiated.
-  if (data.avoiding_now) {
+  if (helper_.isShifted()) {
     return;
   }
 

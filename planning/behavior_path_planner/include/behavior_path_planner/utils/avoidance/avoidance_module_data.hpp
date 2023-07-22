@@ -248,6 +248,9 @@ struct AvoidanceParameters
   // line.
   double lateral_small_shift_threshold;
 
+  // use for judge if the ego is shifting or not.
+  double lateral_avoid_check_threshold;
+
   // For shift line generation process. The continuous shift length is quantized by this value.
   double quantize_filter_threshold;
 
@@ -459,8 +462,6 @@ struct AvoidancePlanningData
   AvoidLineArray safe_new_sl{};
 
   bool safe{false};
-
-  bool avoiding_now{false};
 
   bool avoid_required{false};
 
