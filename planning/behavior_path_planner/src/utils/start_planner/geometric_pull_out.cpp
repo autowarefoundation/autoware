@@ -83,7 +83,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
     const auto combined_path = combineReferencePath(partial_paths.at(0), partial_paths.at(1));
     output.partial_paths.push_back(combined_path);
   }
-  output.start_pose = planner_.getArcPaths().at(0).points.back().point.pose;
+  output.start_pose = planner_.getArcPaths().at(0).points.front().point.pose;
   output.end_pose = planner_.getArcPaths().at(1).points.back().point.pose;
 
   return output;
