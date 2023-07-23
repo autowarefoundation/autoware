@@ -115,29 +115,6 @@ std::vector<double> toStdVector(const Eigen::VectorXd & eigen_vec)
   return {eigen_vec.data(), eigen_vec.data() + eigen_vec.rows()};
 }
 
-// NOTE: much faster than boost::geometry::intersection()
-std::optional<geometry_msgs::msg::Point> intersect(
-  const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
-  const geometry_msgs::msg::Point & p3, const geometry_msgs::msg::Point & p4)
-{
-  // calculate intersection point
-  const double det = (p1.x - p2.x) * (p4.y - p3.y) - (p4.x - p3.x) * (p1.y - p2.y);
-  if (det == 0.0) {
-    return std::nullopt;
-  }
-
-  const double t = ((p4.y - p3.y) * (p4.x - p2.x) + (p3.x - p4.x) * (p4.y - p2.y)) / det;
-  const double s = ((p2.y - p1.y) * (p4.x - p2.x) + (p1.x - p2.x) * (p4.y - p2.y)) / det;
-  if (t < 0 || 1 < t || s < 0 || 1 < s) {
-    return std::nullopt;
-  }
-
-  geometry_msgs::msg::Point intersect_point;
-  intersect_point.x = t * p1.x + (1.0 - t) * p2.x;
-  intersect_point.y = t * p1.y + (1.0 - t) * p2.y;
-  return intersect_point;
-}
-
 bool isLeft(const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Point & target_pos)
 {
   const double base_theta = tf2::getYaw(pose.orientation);
@@ -163,8 +140,8 @@ double calcLateralDistToBounds(
 
   double closest_dist_to_bound = max_lat_offset;
   for (size_t i = 0; i < bound.size() - 1; ++i) {
-    const auto intersect_point =
-      intersect(min_lat_offset_point, max_lat_offset_point, bound.at(i), bound.at(i + 1));
+    const auto intersect_point = tier4_autoware_utils::intersect(
+      min_lat_offset_point, max_lat_offset_point, bound.at(i), bound.at(i + 1));
     if (intersect_point) {
       const bool is_point_left = isLeft(pose, *intersect_point);
       const double dist_to_bound =

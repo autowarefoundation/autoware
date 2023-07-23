@@ -125,29 +125,6 @@ using tier4_autoware_utils::Point2d;
 
 namespace drivable_area_processing
 {
-boost::optional<geometry_msgs::msg::Point> intersect(
-  const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
-  const geometry_msgs::msg::Point & p3, const geometry_msgs::msg::Point & p4)
-{
-  // calculate intersection point
-  const double det = (p1.x - p2.x) * (p4.y - p3.y) - (p4.x - p3.x) * (p1.y - p2.y);
-  if (det == 0.0) {
-    return {};
-  }
-
-  const double t = ((p4.y - p3.y) * (p4.x - p2.x) + (p3.x - p4.x) * (p4.y - p2.y)) / det;
-  const double s = ((p2.y - p1.y) * (p4.x - p2.x) + (p1.x - p2.x) * (p4.y - p2.y)) / det;
-  if (t < 0 || 1 < t || s < 0 || 1 < s) {
-    return {};
-  }
-
-  geometry_msgs::msg::Point intersect_point;
-  intersect_point.x = t * p1.x + (1.0 - t) * p2.x;
-  intersect_point.y = t * p1.y + (1.0 - t) * p2.y;
-  intersect_point.z = t * p1.z + (1.0 - t) * p2.z;
-  return intersect_point;
-}
-
 boost::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2,
   const std::vector<geometry_msgs::msg::Point> & bound, const size_t seg_idx1,
@@ -158,11 +135,12 @@ boost::optional<std::pair<size_t, geometry_msgs::msg::Point>> intersectBound(
   const size_t end_idx = static_cast<size_t>(std::min(
     static_cast<int>(bound.size()) - 1, static_cast<int>(std::max(seg_idx1, seg_idx2)) + 1 + 5));
   for (int i = start_idx; i < static_cast<int>(end_idx); ++i) {
-    const auto intersect_point = intersect(p1, p2, bound.at(i), bound.at(i + 1));
+    const auto intersect_point =
+      tier4_autoware_utils::intersect(p1, p2, bound.at(i), bound.at(i + 1));
     if (intersect_point) {
       std::pair<size_t, geometry_msgs::msg::Point> result;
       result.first = static_cast<size_t>(i);
-      result.second = intersect_point.get();
+      result.second = *intersect_point;
       return result;
     }
   }
@@ -329,11 +307,11 @@ std::vector<PolygonPoint> concatenateTwoPolygons(
     const size_t next_idx = outside_idx + 1;
 
     for (size_t i = 0; i < get_in_poly().size() - 1; ++i) {
-      const auto intersection = intersect(
+      const auto intersection = tier4_autoware_utils::intersect(
         get_out_poly().at(curr_idx).point, get_out_poly().at(next_idx).point,
         get_in_poly().at(i).point, get_in_poly().at(i + 1).point);
       if (intersection) {
-        const auto intersect_point = PolygonPoint{intersection.get(), 0, 0.0, 0.0};
+        const auto intersect_point = PolygonPoint{*intersection, 0, 0.0, 0.0};
         concatenated_polygon.push_back(intersect_point);
 
         is_front_polygon_outside = !is_front_polygon_outside;
@@ -1714,7 +1692,6 @@ void makeBoundLongitudinallyMonotonic(
   PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
   const bool is_bound_left)
 {
-  using drivable_area_processing::intersect;
   using motion_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::calcAzimuthAngle;
   using tier4_autoware_utils::calcDistance2d;
@@ -1722,6 +1699,7 @@ void makeBoundLongitudinallyMonotonic(
   using tier4_autoware_utils::createQuaternionFromRPY;
   using tier4_autoware_utils::getPoint;
   using tier4_autoware_utils::getPose;
+  using tier4_autoware_utils::intersect;
   using tier4_autoware_utils::normalizeRadian;
 
   const auto set_orientation = [](
@@ -1741,7 +1719,7 @@ void makeBoundLongitudinallyMonotonic(
         continue;
       }
 
-      intersects.emplace_back(i, opt_intersect.get());
+      intersects.emplace_back(i, *opt_intersect);
     }
 
     if (intersects.empty()) {
@@ -1834,9 +1812,8 @@ void makeBoundLongitudinallyMonotonic(
 
         if (intersect_point) {
           Pose pose;
-          pose.position = intersect_point.get();
-          const auto yaw =
-            calcAzimuthAngle(intersect_point.get(), bound_with_pose.at(i + 1).position);
+          pose.position = *intersect_point;
+          const auto yaw = calcAzimuthAngle(*intersect_point, bound_with_pose.at(i + 1).position);
           pose.orientation = createQuaternionFromRPY(0.0, 0.0, yaw);
           monotonic_bound.push_back(pose);
           bound_idx = i;
