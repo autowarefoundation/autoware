@@ -76,7 +76,7 @@ public:
       const typename PrimeMsgT::ConstSharedPtr, const typename SecondaryMsgT::ConstSharedPtr...)>
       callback,
     StampT max_delay_t = 0.2, StampT max_wait_t = 0.1)
-  : node_ptr_(node_ptr), callback_(callback), max_delay_t_(max_delay_t), max_wait_t_(max_wait_t)
+  : node_ptr_(node_ptr), callback_(callback), max_wait_t_(max_wait_t), max_delay_t_(max_delay_t)
   {
     assert((topics.size() == sizeof...(SecondaryMsgT) + 1) && "Incorrect topic number");
     assert(topics.size() == qos.size() && "topic size not equal to qos size!");
