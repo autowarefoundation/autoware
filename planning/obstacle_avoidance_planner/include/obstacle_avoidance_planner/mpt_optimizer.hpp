@@ -109,8 +109,9 @@ public:
     const std::shared_ptr<DebugData> debug_data_ptr,
     const std::shared_ptr<TimeKeeper> time_keeper_ptr);
 
-  std::optional<std::vector<TrajectoryPoint>> getModelPredictiveTrajectory(
+  std::vector<TrajectoryPoint> optimizeTrajectory(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & smoothed_points);
+  std::optional<std::vector<TrajectoryPoint>> getPrevOptimizedTrajectoryPoints() const;
 
   void initialize(const bool enable_debug_info, const TrajectoryParam & traj_param);
   void resetPreviousData();
@@ -237,6 +238,7 @@ private:
   int prev_mat_n_ = 0;
   int prev_mat_m_ = 0;
   std::shared_ptr<std::vector<ReferencePoint>> prev_ref_points_ptr_{nullptr};
+  std::shared_ptr<std::vector<TrajectoryPoint>> prev_optimized_traj_points_ptr_{nullptr};
 
   void updateVehicleCircles();
 

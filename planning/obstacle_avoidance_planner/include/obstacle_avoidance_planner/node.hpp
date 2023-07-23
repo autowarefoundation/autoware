@@ -78,9 +78,6 @@ protected:  // for the static_centerline_optimizer package
   // variables for subscribers
   Odometry::SharedPtr ego_state_ptr_;
 
-  // variables for previous information
-  std::shared_ptr<std::vector<TrajectoryPoint>> prev_optimized_traj_points_ptr_;
-
   // interface publisher
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr virtual_wall_pub_;

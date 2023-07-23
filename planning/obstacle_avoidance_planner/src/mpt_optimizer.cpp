@@ -474,6 +474,7 @@ void MPTOptimizer::initialize(const bool enable_debug_info, const TrajectoryPara
 void MPTOptimizer::resetPreviousData()
 {
   prev_ref_points_ptr_ = nullptr;
+  prev_optimized_traj_points_ptr_ = nullptr;
 }
 
 void MPTOptimizer::onParam(const std::vector<rclcpp::Parameter> & parameters)
@@ -483,7 +484,7 @@ void MPTOptimizer::onParam(const std::vector<rclcpp::Parameter> & parameters)
   debug_data_ptr_->mpt_visualize_sampling_num = mpt_param_.mpt_visualize_sampling_num;
 }
 
-std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getModelPredictiveTrajectory(
+std::vector<TrajectoryPoint> MPTOptimizer::optimizeTrajectory(
   const PlannerData & planner_data, const std::vector<TrajectoryPoint> & smoothed_points)
 {
   time_keeper_ptr_->tic(__func__);
@@ -491,12 +492,19 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getModelPredictiveTraj
   const auto & p = planner_data;
   const auto & traj_points = p.traj_points;
 
+  const auto get_prev_optimized_traj_points = [&]() {
+    if (prev_optimized_traj_points_ptr_) {
+      return *prev_optimized_traj_points_ptr_;
+    }
+    return smoothed_points;
+  };
+
   // 1. calculate reference points
   auto ref_points = calcReferencePoints(planner_data, smoothed_points);
   if (ref_points.size() < 2) {
     RCLCPP_INFO_EXPRESSION(
       logger_, enable_debug_info_, "return std::nullopt since ref_points size is less than 2.");
-    return std::nullopt;
+    return get_prev_optimized_traj_points();
   }
 
   // 2. calculate B and W matrices where x = B u + W
@@ -516,14 +524,14 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getModelPredictiveTraj
   if (!optimized_steer_angles) {
     RCLCPP_INFO_EXPRESSION(
       logger_, enable_debug_info_, "return std::nullopt since could not solve qp");
-    return std::nullopt;
+    return get_prev_optimized_traj_points();
   }
 
   // 7. convert to points with validation
   const auto mpt_traj_points = calcMPTPoints(ref_points, *optimized_steer_angles, mpt_mat);
   if (!mpt_traj_points) {
     RCLCPP_WARN(logger_, "return std::nullopt since lateral or yaw error is too large.");
-    return std::nullopt;
+    return get_prev_optimized_traj_points();
   }
 
   // 8. publish trajectories for debug
@@ -533,8 +541,18 @@ std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getModelPredictiveTraj
 
   debug_data_ptr_->ref_points = ref_points;
   prev_ref_points_ptr_ = std::make_shared<std::vector<ReferencePoint>>(ref_points);
+  prev_optimized_traj_points_ptr_ =
+    std::make_shared<std::vector<TrajectoryPoint>>(*mpt_traj_points);
 
   return *mpt_traj_points;
+}
+
+std::optional<std::vector<TrajectoryPoint>> MPTOptimizer::getPrevOptimizedTrajectoryPoints() const
+{
+  if (prev_optimized_traj_points_ptr_) {
+    return *prev_optimized_traj_points_ptr_;
+  }
+  return std::nullopt;
 }
 
 std::vector<ReferencePoint> MPTOptimizer::calcReferencePoints(
