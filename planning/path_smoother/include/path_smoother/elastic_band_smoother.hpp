@@ -96,23 +96,13 @@ protected:
 
   // main functions
   bool isDataReady(const Path & path, rclcpp::Clock clock) const;
-  PlannerData createPlannerData(const Path & path) const;
-  std::vector<TrajectoryPoint> generateOptimizedTrajectory(const PlannerData & planner_data);
-  std::vector<TrajectoryPoint> extendTrajectory(
-    const std::vector<TrajectoryPoint> & traj_points,
-    const std::vector<TrajectoryPoint> & optimized_points) const;
-
-  // functions in generateOptimizedTrajectory
-  std::vector<TrajectoryPoint> optimizeTrajectory(const PlannerData & planner_data);
-  std::vector<TrajectoryPoint> getPrevOptimizedTrajectory(
-    const std::vector<TrajectoryPoint> & traj_points) const;
   void applyInputVelocity(
     std::vector<TrajectoryPoint> & output_traj_points,
     const std::vector<TrajectoryPoint> & input_traj_points,
     const geometry_msgs::msg::Pose & ego_pose) const;
-  void insertZeroVelocityOutsideDrivableArea(
-    const PlannerData & planner_data, std::vector<TrajectoryPoint> & traj_points) const;
-  void publishVirtualWall(const geometry_msgs::msg::Pose & stop_pose) const;
+  std::vector<TrajectoryPoint> extendTrajectory(
+    const std::vector<TrajectoryPoint> & traj_points,
+    const std::vector<TrajectoryPoint> & optimized_points) const;
 };
 }  // namespace path_smoother
 

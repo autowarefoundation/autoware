@@ -36,8 +36,8 @@ public:
     rclcpp::Node * node, const bool enable_debug_info, const EgoNearestParam ego_nearest_param,
     const CommonParam & common_param, const std::shared_ptr<TimeKeeper> time_keeper_ptr);
 
-  std::optional<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>> getEBTrajectory(
-    const PlannerData & planner_data);
+  std::vector<TrajectoryPoint> smoothTrajectory(
+    const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & ego_pose);
 
   void initialize(const bool enable_debug_info, const CommonParam & common_param);
   void resetPreviousData();
@@ -103,6 +103,7 @@ private:
   EBParam eb_param_;
   mutable std::shared_ptr<TimeKeeper> time_keeper_ptr_;
   rclcpp::Logger logger_;
+  rclcpp::Clock clock_;
 
   // publisher
   rclcpp::Publisher<Trajectory>::SharedPtr debug_eb_traj_pub_;
@@ -118,13 +119,12 @@ private:
     const std::vector<TrajectoryPoint> & traj_points) const;
 
   void updateConstraint(
-    const std_msgs::msg::Header & header, const std::vector<TrajectoryPoint> & traj_points,
-    const bool is_goal_contained, const int pad_start_idx);
+    const std::vector<TrajectoryPoint> & traj_points, const bool is_goal_contained,
+    const int pad_start_idx);
 
-  std::optional<std::vector<double>> optimizeTrajectory();
+  std::optional<std::vector<double>> calcSmoothedTrajectory();
 
-  std::optional<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>>
-  convertOptimizedPointsToTrajectory(
+  std::optional<std::vector<TrajectoryPoint>> convertOptimizedPointsToTrajectory(
     const std::vector<double> & optimized_points, const std::vector<TrajectoryPoint> & traj_points,
     const int pad_start_idx) const;
 };

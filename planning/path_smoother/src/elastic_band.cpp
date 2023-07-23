@@ -68,6 +68,14 @@ std::vector<double> toStdVector(const Eigen::VectorXd & eigen_vec)
 {
   return {eigen_vec.data(), eigen_vec.data() + eigen_vec.rows()};
 }
+
+std_msgs::msg::Header createHeader(const rclcpp::Time & now)
+{
+  std_msgs::msg::Header header;
+  header.frame_id = "map";
+  header.stamp = now;
+  return header;
+}
 }  // namespace
 
 namespace path_smoother
@@ -153,7 +161,8 @@ EBPathSmoother::EBPathSmoother(
   ego_nearest_param_(ego_nearest_param),
   common_param_(common_param),
   time_keeper_ptr_(time_keeper_ptr),
-  logger_(node->get_logger().get_child("elastic_band_smoother"))
+  logger_(node->get_logger().get_child("elastic_band_smoother")),
+  clock_(*node->get_clock())
 {
   // eb param
   eb_param_ = EBParam(node);
@@ -179,25 +188,30 @@ void EBPathSmoother::resetPreviousData()
   prev_eb_traj_points_ptr_ = nullptr;
 }
 
-std::optional<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>>
-EBPathSmoother::getEBTrajectory(const PlannerData & planner_data)
+std::vector<TrajectoryPoint> EBPathSmoother::smoothTrajectory(
+  const std::vector<TrajectoryPoint> & traj_points, const geometry_msgs::msg::Pose & ego_pose)
 {
   time_keeper_ptr_->tic(__func__);
 
-  const auto & p = planner_data;
+  const auto get_prev_eb_traj_points = [&]() {
+    if (prev_eb_traj_points_ptr_) {
+      return *prev_eb_traj_points_ptr_;
+    }
+    return traj_points;
+  };
 
   // 1. crop trajectory
   const double forward_traj_length = eb_param_.num_points * eb_param_.delta_arc_length;
   const double backward_traj_length = common_param_.output_backward_traj_length;
 
   const size_t ego_seg_idx =
-    trajectory_utils::findEgoSegmentIndex(p.traj_points, p.ego_pose, ego_nearest_param_);
+    trajectory_utils::findEgoSegmentIndex(traj_points, ego_pose, ego_nearest_param_);
   const auto cropped_traj_points = motion_utils::cropPoints(
-    p.traj_points, p.ego_pose.position, ego_seg_idx, forward_traj_length, backward_traj_length);
+    traj_points, ego_pose.position, ego_seg_idx, forward_traj_length, backward_traj_length);
 
   // check if goal is contained in cropped_traj_points
   const bool is_goal_contained =
-    geometry_utils::isSamePoint(cropped_traj_points.back(), planner_data.traj_points.back());
+    geometry_utils::isSamePoint(cropped_traj_points.back(), traj_points.back());
 
   // 2. insert fixed point
   // NOTE: This should be after cropping trajectory so that fixed point will not be cropped.
@@ -221,14 +235,14 @@ EBPathSmoother::getEBTrajectory(const PlannerData & planner_data)
   const auto [padded_traj_points, pad_start_idx] = getPaddedTrajectoryPoints(resampled_traj_points);
 
   // 5. update constraint for elastic band's QP
-  updateConstraint(p.header, padded_traj_points, is_goal_contained, pad_start_idx);
+  updateConstraint(padded_traj_points, is_goal_contained, pad_start_idx);
 
   // 6. get optimization result
-  const auto optimized_points = optimizeTrajectory();
+  const auto optimized_points = calcSmoothedTrajectory();
   if (!optimized_points) {
     RCLCPP_INFO_EXPRESSION(
       logger_, enable_debug_info_, "return std::nullopt since smoothing failed");
-    return std::nullopt;
+    return get_prev_eb_traj_points();
   }
 
   // 7. convert optimization result to trajectory
@@ -236,13 +250,14 @@ EBPathSmoother::getEBTrajectory(const PlannerData & planner_data)
     convertOptimizedPointsToTrajectory(*optimized_points, padded_traj_points, pad_start_idx);
   if (!eb_traj_points) {
     RCLCPP_WARN(logger_, "return std::nullopt since x or y error is too large");
-    return std::nullopt;
+    return get_prev_eb_traj_points();
   }
 
   prev_eb_traj_points_ptr_ = std::make_shared<std::vector<TrajectoryPoint>>(*eb_traj_points);
 
   // 8. publish eb trajectory
-  const auto eb_traj = trajectory_utils::createTrajectory(p.header, *eb_traj_points);
+  const auto eb_traj =
+    trajectory_utils::createTrajectory(createHeader(clock_.now()), *eb_traj_points);
   debug_eb_traj_pub_->publish(eb_traj);
 
   time_keeper_ptr_->toc(__func__, "      ");
@@ -287,8 +302,8 @@ std::tuple<std::vector<TrajectoryPoint>, size_t> EBPathSmoother::getPaddedTrajec
 }
 
 void EBPathSmoother::updateConstraint(
-  const std_msgs::msg::Header & header, const std::vector<TrajectoryPoint> & traj_points,
-  const bool is_goal_contained, const int pad_start_idx)
+  const std::vector<TrajectoryPoint> & traj_points, const bool is_goal_contained,
+  const int pad_start_idx)
 {
   time_keeper_ptr_->tic(__func__);
 
@@ -365,13 +380,14 @@ void EBPathSmoother::updateConstraint(
   }
 
   // publish fixed trajectory
-  const auto eb_fixed_traj = trajectory_utils::createTrajectory(header, debug_fixed_traj_points);
+  const auto eb_fixed_traj =
+    trajectory_utils::createTrajectory(createHeader(clock_.now()), debug_fixed_traj_points);
   debug_eb_fixed_traj_pub_->publish(eb_fixed_traj);
 
   time_keeper_ptr_->toc(__func__, "        ");
 }
 
-std::optional<std::vector<double>> EBPathSmoother::optimizeTrajectory()
+std::optional<std::vector<double>> EBPathSmoother::calcSmoothedTrajectory()
 {
   time_keeper_ptr_->tic(__func__);
 
