@@ -35,7 +35,8 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
   plane_zone_(declare_parameter<int>("plane_zone", 9)),
   msg_gnss_ins_orientation_stamped_(
     std::make_shared<autoware_sensing_msgs::msg::GnssInsOrientationStamped>()),
-  height_system_(declare_parameter<int>("height_system", 1))
+  height_system_(declare_parameter<int>("height_system", 1)),
+  gnss_pose_pub_method(declare_parameter<int>("gnss_pose_pub_method", 0))
 {
   int coordinate_system =
     declare_parameter("coordinate_system", static_cast<int>(CoordinateSystem::MGRS));
@@ -84,37 +85,43 @@ void GNSSPoser::callbackNavSatFix(
   const auto gnss_stat = convert(*nav_sat_fix_msg_ptr, coordinate_system_, height_system_);
   const auto position = getPosition(gnss_stat);
 
-  // calc median position
-  position_buffer_.push_front(position);
-  if (!position_buffer_.full()) {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
-      "Buffering Position. Output Skipped.");
-    return;
+  geometry_msgs::msg::Pose gnss_antenna_pose{};
+
+  // publish pose immediately
+  if (!gnss_pose_pub_method) {
+    gnss_antenna_pose.position = position;
+  } else {
+    // fill position buffer
+    position_buffer_.push_front(position);
+    if (!position_buffer_.full()) {
+      RCLCPP_WARN_STREAM_THROTTLE(
+        this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
+        "Buffering Position. Output Skipped.");
+      return;
+    }
+    // publish average pose or median pose of position buffer
+    gnss_antenna_pose.position = (gnss_pose_pub_method == 1) ? getAveragePosition(position_buffer_)
+                                                             : getMedianPosition(position_buffer_);
   }
-  const auto median_position = getMedianPosition(position_buffer_);
 
   // calc gnss antenna orientation
   geometry_msgs::msg::Quaternion orientation;
   if (use_gnss_ins_orientation_) {
     orientation = msg_gnss_ins_orientation_stamped_->orientation.orientation;
   } else {
-    static auto prev_position = median_position;
-    orientation = getQuaternionByPositionDifference(median_position, prev_position);
-    prev_position = median_position;
+    static auto prev_position = gnss_antenna_pose.position;
+    orientation = getQuaternionByPositionDifference(gnss_antenna_pose.position, prev_position);
+    prev_position = gnss_antenna_pose.position;
   }
 
-  // generate gnss_antenna_pose
-  geometry_msgs::msg::Pose gnss_antenna_pose{};
-  gnss_antenna_pose.position = median_position;
   gnss_antenna_pose.orientation = orientation;
 
-  // get TF from gnss_antenna to map
   tf2::Transform tf_map2gnss_antenna{};
   tf2::fromMsg(gnss_antenna_pose, tf_map2gnss_antenna);
 
   // get TF from base_link to gnss_antenna
   auto tf_gnss_antenna2base_link_msg_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
+
   getStaticTransform(
     gnss_frame_, base_frame_, tf_gnss_antenna2base_link_msg_ptr, nav_sat_fix_msg_ptr->header.stamp);
   tf2::Transform tf_gnss_antenna2base_link{};
@@ -240,6 +247,28 @@ geometry_msgs::msg::Point GNSSPoser::getMedianPosition(
   median_point.y = getMedian(array_y);
   median_point.z = getMedian(array_z);
   return median_point;
+}
+
+geometry_msgs::msg::Point GNSSPoser::getAveragePosition(
+  const boost::circular_buffer<geometry_msgs::msg::Point> & position_buffer)
+{
+  std::vector<double> array_x;
+  std::vector<double> array_y;
+  std::vector<double> array_z;
+  for (const auto & position : position_buffer) {
+    array_x.push_back(position.x);
+    array_y.push_back(position.y);
+    array_z.push_back(position.z);
+  }
+
+  geometry_msgs::msg::Point average_point;
+  average_point.x =
+    std::reduce(array_x.begin(), array_x.end()) / static_cast<double>(array_x.size());
+  average_point.y =
+    std::reduce(array_y.begin(), array_y.end()) / static_cast<double>(array_y.size());
+  average_point.z =
+    std::reduce(array_z.begin(), array_z.end()) / static_cast<double>(array_z.size());
+  return average_point;
 }
 
 geometry_msgs::msg::Quaternion GNSSPoser::getQuaternionByHeading(const int heading)

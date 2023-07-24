@@ -27,14 +27,15 @@ The `gnss_poser` is a node that subscribes gnss sensing messages and calculates 
 
 ### Core Parameters
 
-| Name                | Type   | Default Value    | Description                                                                                                                |
-| ------------------- | ------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `base_frame`        | string | "base_link"      | frame id                                                                                                                   |
-| `gnss_frame`        | string | "gnss"           | frame id                                                                                                                   |
-| `gnss_base_frame`   | string | "gnss_base_link" | frame id                                                                                                                   |
-| `map_frame`         | string | "map"            | frame id                                                                                                                   |
-| `coordinate_system` | int    | "4"              | coordinate system enumeration; 0: UTM, 1: MGRS, 2: Plane, 3: WGS84 Local Coordinate System, 4: UTM Local Coordinate System |
-| `plane_zone`        | int    | 9                | identification number of the plane rectangular coordinate systems.                                                         |
+| Name                   | Type   | Default Value    | Description                                                                                                                |
+| ---------------------- | ------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `base_frame`           | string | "base_link"      | frame id                                                                                                                   |
+| `gnss_frame`           | string | "gnss"           | frame id                                                                                                                   |
+| `gnss_base_frame`      | string | "gnss_base_link" | frame id                                                                                                                   |
+| `map_frame`            | string | "map"            | frame id                                                                                                                   |
+| `coordinate_system`    | int    | "4"              | coordinate system enumeration; 0: UTM, 1: MGRS, 2: Plane, 3: WGS84 Local Coordinate System, 4: UTM Local Coordinate System |
+| `plane_zone`           | int    | 9                | identification number of the plane rectangular coordinate systems.                                                         |
+| `gnss_pose_pub_method` | int    | 0                | 0: Instant Value 1: Average Value 2: Median Value. If 0 is chosen buffer_epoch parameter loses affect.                     |
 
 ## Assumptions / Known limits
 

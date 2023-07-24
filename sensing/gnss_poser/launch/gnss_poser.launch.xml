@@ -18,6 +18,7 @@
   <arg name="use_gnss_ins_orientation" default="true"/>
   <arg name="plane_zone" default="9"/>
   <arg name="height_system" default="1" description="0:Orthometric Height 1:Ellipsoid Height"/>
+  <arg name="gnss_pose_pub_method" default="0" description="0: Instant Value 1: Average Value 2: Median Value"/>
 
   <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="screen">
     <remap from="fix" to="$(var input_topic_fix)"/>
@@ -37,5 +38,6 @@
     <param name="use_gnss_ins_orientation" value="$(var use_gnss_ins_orientation)"/>
     <param from="$(var param_file)"/>
     <param name="height_system" value="$(var height_system)"/>
+    <param name="gnss_pose_pub_method" value="$(var gnss_pose_pub_method)"/>
   </node>
 </launch>
