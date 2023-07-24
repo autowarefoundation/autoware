@@ -445,7 +445,7 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
         optimized_traj_points.at(0), optimized_traj_points.at(*first_outside_idx));
       const auto dist_with_margin = dist - vehicle_stop_margin_outside_drivable_area_;
       const auto first_outside_idx_with_margin =
-        motion_utils::insertStopPoint(dist_with_margin, optimized_traj_points);
+        motion_utils::insertTargetPoint(0, dist_with_margin, optimized_traj_points);
       if (first_outside_idx_with_margin) {
         return *first_outside_idx_with_margin;
       }
