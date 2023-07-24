@@ -145,7 +145,7 @@
         <arg name="score_threshold" value="$(var score_threshold)"/>
         <arg name="model_name" value="$(var centerpoint_model_name)"/>
         <arg name="model_path" value="$(var centerpoint_model_path)"/>
-        <arg name="model_param_path" value="$(var centerpoint_model_param_path)"/>
+        <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var centerpoint_model_name).param.yaml"/>
       </include>
     </group>
   </group>
@@ -209,6 +209,8 @@
       <arg name="input/image7" value="$(var image_raw7)"/>
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
       <arg name="output/objects" value="objects"/>
+      <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var lidar_detection_model).param.yaml"/>
+      <arg name="class_remapper_param_path" value="$(var lidar_model_param_path)/detection_class_remapper.param.yaml"/>
     </include>
   </group>
 
