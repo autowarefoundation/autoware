@@ -528,6 +528,9 @@ void AutowareStatePanel::onShift(
     case autoware_auto_vehicle_msgs::msg::GearReport::DRIVE:
       gear_label_ptr_->setText("DRIVE");
       break;
+    case autoware_auto_vehicle_msgs::msg::GearReport::NEUTRAL:
+      gear_label_ptr_->setText("NEUTRAL");
+      break;
     case autoware_auto_vehicle_msgs::msg::GearReport::LOW:
       gear_label_ptr_->setText("LOW");
       break;
