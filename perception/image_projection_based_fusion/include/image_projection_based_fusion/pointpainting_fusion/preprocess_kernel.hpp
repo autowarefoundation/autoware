@@ -24,7 +24,8 @@ cudaError_t generateFeatures_launch(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
   const std::size_t num_voxels, const std::size_t max_voxel_size, const float voxel_size_x,
   const float voxel_size_y, const float voxel_size_z, const float range_min_x,
-  const float range_min_y, const float range_min_z, float * features, cudaStream_t stream);
+  const float range_min_y, const float range_min_z, float * features,
+  const std::size_t encoder_in_feature_size, cudaStream_t stream);
 
 }  // namespace image_projection_based_fusion
 

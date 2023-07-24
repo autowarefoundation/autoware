@@ -65,7 +65,7 @@ bool PointPaintingTRT::preprocess(
     voxels_d_.get(), num_points_per_voxel_d_.get(), coordinates_d_.get(), num_voxels_,
     config_.max_voxel_size_, config_.voxel_size_x_, config_.voxel_size_y_, config_.voxel_size_z_,
     config_.range_min_x_, config_.range_min_y_, config_.range_min_z_, encoder_in_features_d_.get(),
-    stream_));
+    config_.encoder_in_feature_size_, stream_));
 
   return true;
 }

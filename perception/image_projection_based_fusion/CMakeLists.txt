@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 3.14)
 project(image_projection_based_fusion)
-add_compile_options(-Wno-unknown-pragmas)
+# add_compile_options(-Wno-unknown-pragmas)
+add_compile_options(-Wno-unknown-pragmas -fopenmp)
 
 find_package(autoware_cmake REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 autoware_package()
+
+find_package(OpenMP REQUIRED)
+if(OpenMP_FOUND)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 # Build non-CUDA dependent nodes
 ament_auto_add_library(${PROJECT_NAME} SHARED
@@ -117,7 +124,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
       else()
         message(STATUS "diff ${FILE_NAME}")
         message(STATUS "File hash changes. Downloading now ...")
-        file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/pointpainting/v2/${FILE_NAME}
+        file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/pointpainting/v3/${FILE_NAME}
                       ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
         list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
         list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
@@ -125,7 +132,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     else()
       message(STATUS "not found ${FILE_NAME}")
       message(STATUS "File doesn't exists. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/pointpainting/v2/${FILE_NAME}
+      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/pointpainting/v3/${FILE_NAME}
                     ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
       list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
       list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
@@ -138,8 +145,8 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   endfunction()
 
   # default model
-  download(pts_voxel_encoder_pointpainting.onnx 438dfecd962631ec8f011e0dfa2c6160)
-  download(pts_backbone_neck_head_pointpainting.onnx e590a0b2bdcd35e01340cf4521bf149e)
+  download(pts_voxel_encoder_pointpainting.onnx e674271096f6fbbe0f808eef87f5a5ab)
+  download(pts_backbone_neck_head_pointpainting.onnx d4527a4da08959c2bf9c997112a1de35)
   find_package(OpenCV REQUIRED)
   find_package(Eigen3 REQUIRED)
 

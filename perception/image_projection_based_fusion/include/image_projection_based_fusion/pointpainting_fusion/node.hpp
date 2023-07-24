@@ -17,6 +17,7 @@
 
 #include "image_projection_based_fusion/fusion_node.hpp"
 #include "image_projection_based_fusion/pointpainting_fusion/pointpainting_trt.hpp"
+#include "lidar_centerpoint/postprocess/non_maximum_suppression.hpp"
 
 #include <image_projection_based_fusion/utils/geometry.hpp>
 #include <image_projection_based_fusion/utils/utils.hpp>
@@ -52,11 +53,15 @@ protected:
 
   std::vector<double> tan_h_;  // horizontal field of view
 
+  int omp_num_threads_{1};
   float score_threshold_{0.0};
   std::vector<std::string> class_names_;
+  std::map<std::string, float> class_index_;
+  std::map<std::string, std::function<bool(int)>> isClassTable_;
   std::vector<double> pointcloud_range;
   bool has_twist_{false};
 
+  centerpoint::NonMaximumSuppression iou_bev_nms_;
   centerpoint::DetectionClassRemapper detection_class_remapper_;
 
   std::unique_ptr<image_projection_based_fusion::PointPaintingTRT> detector_ptr_{nullptr};

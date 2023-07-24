@@ -37,7 +37,8 @@ namespace
 {
 const std::size_t MAX_POINT_IN_VOXEL_SIZE = 32;  // the same as max_point_in_voxel_size_ in config
 const std::size_t WARPS_PER_BLOCK = 4;
-const std::size_t ENCODER_IN_FEATURE_SIZE = 12;  // same as encoder_in_feature_size_ in config.hpp
+const std::size_t ENCODER_IN_FEATURE_SIZE = 14;  // same as encoder_in_feature_size_ in config.hpp
+const int POINT_FEATURE_SIZE = 9;
 
 // cspell: ignore divup
 std::size_t divup(const std::size_t a, const std::size_t b)
@@ -59,7 +60,8 @@ namespace image_projection_based_fusion
 __global__ void generateFeatures_kernel(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
   const std::size_t num_voxels, const float voxel_x, const float voxel_y, const float voxel_z,
-  const float range_min_x, const float range_min_y, const float range_min_z, float * features)
+  const float range_min_x, const float range_min_y, const float range_min_z, float * features,
+  const std::size_t encoder_in_feature_size)
 {
   // voxel_features (float): (max_num_voxels, max_num_points_per_voxel, point_feature_size)
   // voxel_num_points (int): (max_num_voxels)
@@ -71,7 +73,6 @@ __global__ void generateFeatures_kernel(
   if (pillar_idx >= num_voxels) return;
 
   // load src
-  const int POINT_FEATURE_SIZE = 7;
   __shared__ float pillarSM[WARPS_PER_BLOCK][MAX_POINT_IN_VOXEL_SIZE][POINT_FEATURE_SIZE];
   __shared__ float3 pillarSumSM[WARPS_PER_BLOCK];
   __shared__ int3 cordsSM[WARPS_PER_BLOCK];
@@ -86,7 +87,7 @@ __global__ void generateFeatures_kernel(
 
   for (std::size_t i = 0; i < POINT_FEATURE_SIZE; ++i) {
     pillarSM[pillar_idx_inBlock][point_idx][i] = voxel_features
-      [POINT_FEATURE_SIZE * pillar_idx * MAX_POINT_IN_VOXEL_SIZE + POINT_FEATURE_SIZE * point_idx +
+      [(POINT_FEATURE_SIZE)*pillar_idx * MAX_POINT_IN_VOXEL_SIZE + (POINT_FEATURE_SIZE)*point_idx +
        i];
   }
   __syncthreads();
@@ -123,46 +124,30 @@ __global__ void generateFeatures_kernel(
 
   // store output
   if (point_idx < pointsNumSM[pillar_idx_inBlock]) {
-    // 0 ~ 5
-    pillarOutSM[pillar_idx_inBlock][point_idx][0] = pillarSM[pillar_idx_inBlock][point_idx][0];
-    pillarOutSM[pillar_idx_inBlock][point_idx][1] = pillarSM[pillar_idx_inBlock][point_idx][1];
-    pillarOutSM[pillar_idx_inBlock][point_idx][2] = pillarSM[pillar_idx_inBlock][point_idx][2];
-    pillarOutSM[pillar_idx_inBlock][point_idx][3] = pillarSM[pillar_idx_inBlock][point_idx][3];
-    pillarOutSM[pillar_idx_inBlock][point_idx][4] = pillarSM[pillar_idx_inBlock][point_idx][4];
-    pillarOutSM[pillar_idx_inBlock][point_idx][5] = pillarSM[pillar_idx_inBlock][point_idx][5];
-    pillarOutSM[pillar_idx_inBlock][point_idx][6] = pillarSM[pillar_idx_inBlock][point_idx][6];
+    for (std::size_t i = 0; i < POINT_FEATURE_SIZE; ++i) {
+      pillarOutSM[pillar_idx_inBlock][point_idx][i] = pillarSM[pillar_idx_inBlock][point_idx][i];
+    }
 
     // change index
-    pillarOutSM[pillar_idx_inBlock][point_idx][7] = mean.x;
-    pillarOutSM[pillar_idx_inBlock][point_idx][8] = mean.y;
-    pillarOutSM[pillar_idx_inBlock][point_idx][9] = mean.z;
+    pillarOutSM[pillar_idx_inBlock][point_idx][POINT_FEATURE_SIZE] = mean.x;
+    pillarOutSM[pillar_idx_inBlock][point_idx][POINT_FEATURE_SIZE + 1] = mean.y;
+    pillarOutSM[pillar_idx_inBlock][point_idx][POINT_FEATURE_SIZE + 2] = mean.z;
 
-    pillarOutSM[pillar_idx_inBlock][point_idx][10] = center.x;
-    pillarOutSM[pillar_idx_inBlock][point_idx][11] = center.y;
+    pillarOutSM[pillar_idx_inBlock][point_idx][POINT_FEATURE_SIZE + 3] = center.x;
+    pillarOutSM[pillar_idx_inBlock][point_idx][POINT_FEATURE_SIZE + 4] = center.y;
 
   } else {
-    pillarOutSM[pillar_idx_inBlock][point_idx][0] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][1] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][2] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][3] = 0;
-
-    pillarOutSM[pillar_idx_inBlock][point_idx][4] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][5] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][6] = 0;
-
-    pillarOutSM[pillar_idx_inBlock][point_idx][7] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][8] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][9] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][10] = 0;
-    pillarOutSM[pillar_idx_inBlock][point_idx][11] = 0;
+    for (std::size_t i = 0; i < encoder_in_feature_size; ++i) {
+      pillarOutSM[pillar_idx_inBlock][point_idx][i] = 0;
+    }
   }
 
   __syncthreads();
 
-  for (int i = 0; i < ENCODER_IN_FEATURE_SIZE; i++) {
+  for (int i = 0; i < encoder_in_feature_size; i++) {
     int outputSMId = pillar_idx_inBlock * MAX_POINT_IN_VOXEL_SIZE * ENCODER_IN_FEATURE_SIZE +
                      i * MAX_POINT_IN_VOXEL_SIZE + point_idx;
-    int outputId = pillar_idx * MAX_POINT_IN_VOXEL_SIZE * ENCODER_IN_FEATURE_SIZE +
+    int outputId = pillar_idx * MAX_POINT_IN_VOXEL_SIZE * encoder_in_feature_size +
                    i * MAX_POINT_IN_VOXEL_SIZE + point_idx;
     features[outputId] = ((float *)pillarOutSM)[outputSMId];
   }
@@ -172,13 +157,14 @@ cudaError_t generateFeatures_launch(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
   const std::size_t num_voxels, const std::size_t max_voxel_size, const float voxel_size_x,
   const float voxel_size_y, const float voxel_size_z, const float range_min_x,
-  const float range_min_y, const float range_min_z, float * features, cudaStream_t stream)
+  const float range_min_y, const float range_min_z, float * features,
+  const std::size_t encoder_in_feature_size, cudaStream_t stream)
 {
   dim3 blocks(divup(max_voxel_size, WARPS_PER_BLOCK));
   dim3 threads(WARPS_PER_BLOCK * MAX_POINT_IN_VOXEL_SIZE);
   generateFeatures_kernel<<<blocks, threads, 0, stream>>>(
     voxel_features, voxel_num_points, coords, num_voxels, voxel_size_x, voxel_size_y, voxel_size_z,
-    range_min_x, range_min_y, range_min_z, features);
+    range_min_x, range_min_y, range_min_z, features, encoder_in_feature_size);
 
   return cudaGetLastError();
 }
