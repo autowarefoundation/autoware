@@ -33,20 +33,28 @@
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
   <arg name="image_raw0" default="/sensing/camera/camera0/image_rect_color" description="image raw topic name"/>
   <arg name="camera_info0" default="/sensing/camera/camera0/camera_info" description="camera info topic name"/>
+  <arg name="detection_rois0" default="/perception/object_recognition/detection/rois0" description="detection rois output topic name"/>
   <arg name="image_raw1" default="/sensing/camera/camera1/image_rect_color"/>
   <arg name="camera_info1" default="/sensing/camera/camera1/camera_info"/>
+  <arg name="detection_rois1" default="/perception/object_recognition/detection/rois1"/>
   <arg name="image_raw2" default="/sensing/camera/camera2/image_rect_color"/>
   <arg name="camera_info2" default="/sensing/camera/camera2/camera_info"/>
+  <arg name="detection_rois2" default="/perception/object_recognition/detection/rois2"/>
   <arg name="image_raw3" default="/sensing/camera/camera3/image_rect_color"/>
   <arg name="camera_info3" default="/sensing/camera/camera3/camera_info"/>
+  <arg name="detection_rois3" default="/perception/object_recognition/detection/rois3"/>
   <arg name="image_raw4" default="/sensing/camera/camera4/image_rect_color"/>
   <arg name="camera_info4" default="/sensing/camera/camera4/camera_info"/>
+  <arg name="detection_rois4" default="/perception/object_recognition/detection/rois4"/>
   <arg name="image_raw5" default="/sensing/camera/camera5/image_rect_color"/>
   <arg name="camera_info5" default="/sensing/camera/camera5/camera_info"/>
+  <arg name="detection_rois5" default="/perception/object_recognition/detection/rois5"/>
   <arg name="image_raw6" default="/sensing/camera/camera6/image_rect_color"/>
   <arg name="camera_info6" default="/sensing/camera/camera6/camera_info"/>
+  <arg name="detection_rois6" default="/perception/object_recognition/detection/rois6"/>
   <arg name="image_raw7" default="/sensing/camera/camera7/image_rect_color"/>
   <arg name="camera_info7" default="/sensing/camera/camera7/camera_info"/>
+  <arg name="detection_rois7" default="/perception/object_recognition/detection/rois7"/>
   <arg name="image_number" default="6" description="choose image raw number(1-8)"/>
   <arg name="use_vector_map" default="true" description="use vector map in prediction"/>
   <arg name="use_pointcloud_map" default="true" description="use pointcloud map in detection"/>
