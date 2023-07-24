@@ -328,6 +328,38 @@ visualization_msgs::msg::MarkerArray getPointsTextMarkerArray(
 
   return msg;
 }
+
+visualization_msgs::msg::MarkerArray getFootprintByDrivableAreaMarkerArray(
+  const geometry_msgs::msg::Pose & stop_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
+  const std::string & ns, const double r, const double g, const double b)
+{
+  visualization_msgs::msg::MarkerArray msg;
+
+  auto marker = createDefaultMarker(
+    "map", rclcpp::Clock().now(), ns, 1, visualization_msgs::msg::Marker::LINE_STRIP,
+    createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(r, g, b, 1.0));
+  marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+
+  const double base_to_right = (vehicle_info.wheel_tread_m / 2.0) + vehicle_info.right_overhang_m;
+  const double base_to_left = (vehicle_info.wheel_tread_m / 2.0) + vehicle_info.left_overhang_m;
+  const double base_to_front = vehicle_info.vehicle_length_m - vehicle_info.rear_overhang_m;
+  const double base_to_rear = vehicle_info.rear_overhang_m;
+
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, base_to_front, base_to_left, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, base_to_front, -base_to_right, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, -base_to_rear, -base_to_right, 0.0).position);
+  marker.points.push_back(
+    tier4_autoware_utils::calcOffsetPose(stop_pose, -base_to_rear, base_to_left, 0.0).position);
+  marker.points.push_back(marker.points.front());
+
+  msg.markers.push_back(marker);
+
+  return msg;
+}
+
 }  // namespace
 
 MarkerArray getDebugMarker(
@@ -372,6 +404,15 @@ MarkerArray getDebugMarker(
       debug_data.vehicle_circle_radiuses, debug_data.mpt_visualize_sampling_num, "vehicle_circles",
       1.0, 0.3, 0.3),
     &marker_array);
+
+  // footprint by drivable area
+  if (debug_data.stop_pose_by_drivable_area) {
+    appendMarkerArray(
+      getFootprintByDrivableAreaMarkerArray(
+        *debug_data.stop_pose_by_drivable_area, vehicle_info, "footprint_by_drivable_area", 1.0,
+        0.0, 0.0),
+      &marker_array);
+  }
 
   // debug text
   appendMarkerArray(getPointsTextMarkerArray(debug_data.ref_points), &marker_array);

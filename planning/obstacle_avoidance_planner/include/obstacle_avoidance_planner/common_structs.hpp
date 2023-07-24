@@ -97,6 +97,7 @@ struct DebugData
   std::vector<std::vector<geometry_msgs::msg::Pose>> vehicle_circles_pose;
 
   std::vector<TrajectoryPoint> extended_traj_points;
+  std::optional<geometry_msgs::msg::Pose> stop_pose_by_drivable_area = std::nullopt;
 };
 
 struct TrajectoryParam
