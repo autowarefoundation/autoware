@@ -1,6 +1,82 @@
 /**:
   ros__parameters:
     avoidance_by_lane_change:
-      execute_object_num: 1
-      execute_object_longitudinal_margin: 0.0
-      execute_only_when_lane_change_finish_before_object: true
+      execute_object_longitudinal_margin: 80.0
+      execute_only_when_lane_change_finish_before_object: false
+
+      # avoidance is performed for the object type with true
+      target_object:
+        car:
+          is_target: true                              # [-]
+          execute_num: 2                               # [-]
+          moving_speed_threshold: 1.0                  # [m/s]
+          moving_time_threshold: 1.0                   # [s]
+          max_expand_ratio: 0.0                        # [-]
+          envelope_buffer_margin: 0.3                  # [m]
+          avoid_margin_lateral: 1.0                    # [m]
+          safety_buffer_lateral: 0.7                   # [m]
+        truck:
+          is_target: true
+          execute_num: 2
+          moving_speed_threshold: 1.0                  # 3.6km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.3
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 0.7
+        bus:
+          is_target: true
+          execute_num: 2
+          moving_speed_threshold: 1.0                  # 3.6km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.3
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 0.7
+        trailer:
+          is_target: true
+          execute_num: 2
+          moving_speed_threshold: 1.0                  # 3.6km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.3
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 0.7
+        unknown:
+          is_target: true
+          execute_num: 1
+          moving_speed_threshold: 0.28                 # 1.0km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.3
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 0.0
+        bicycle:
+          is_target: true
+          execute_num: 2
+          moving_speed_threshold: 0.28                 # 1.0km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.8
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 1.0
+        motorcycle:
+          is_target: true
+          execute_num: 2
+          moving_speed_threshold: 1.0                  # 3.6km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.8
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 1.0
+        pedestrian:
+          is_target: true
+          execute_num: 2
+          moving_speed_threshold: 0.28                 # 1.0km/h
+          moving_time_threshold: 1.0
+          max_expand_ratio: 0.0
+          envelope_buffer_margin: 0.8
+          avoid_margin_lateral: 1.0
+          safety_buffer_lateral: 1.0
+        lower_distance_for_polygon_expansion: 0.0      # [m]
+        upper_distance_for_polygon_expansion: 1.0      # [m]

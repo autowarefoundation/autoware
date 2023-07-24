@@ -180,15 +180,10 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
   // unique parameters
   {
     std::string ns = "avoidance_by_lane_change.";
-    p.execute_object_num = get_parameter<int>(node, ns + "execute_object_num");
     p.execute_object_longitudinal_margin =
       get_parameter<double>(node, ns + "execute_object_longitudinal_margin");
     p.execute_only_when_lane_change_finish_before_object =
       get_parameter<bool>(node, ns + "execute_only_when_lane_change_finish_before_object");
-  }
-
-  if (p.execute_object_num < 1) {
-    RCLCPP_WARN_STREAM(logger_, "execute_object_num cannot be lesser than 1.");
   }
 
   // general params
@@ -213,18 +208,17 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
       param.is_target = get_parameter<bool>(node, ns + "is_target");
+      param.execute_num = get_parameter<int>(node, ns + "execute_num");
       param.moving_speed_threshold = get_parameter<double>(node, ns + "moving_speed_threshold");
       param.moving_time_threshold = get_parameter<double>(node, ns + "moving_time_threshold");
       param.max_expand_ratio = get_parameter<double>(node, ns + "max_expand_ratio");
       param.envelope_buffer_margin = get_parameter<double>(node, ns + "envelope_buffer_margin");
       param.avoid_margin_lateral = get_parameter<double>(node, ns + "avoid_margin_lateral");
       param.safety_buffer_lateral = get_parameter<double>(node, ns + "safety_buffer_lateral");
-      param.safety_buffer_longitudinal =
-        get_parameter<double>(node, ns + "safety_buffer_longitudinal");
       return param;
     };
 
-    const std::string ns = "avoidance.target_object.";
+    const std::string ns = "avoidance_by_lane_change.target_object.";
     p.object_parameters.emplace(
       ObjectClassification::MOTORCYCLE, get_object_param(ns + "motorcycle."));
     p.object_parameters.emplace(ObjectClassification::CAR, get_object_param(ns + "car."));
@@ -265,6 +259,13 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
     p.object_check_min_road_shoulder_width =
       get_parameter<double>(node, ns + "object_check_min_road_shoulder_width");
     p.object_last_seen_threshold = get_parameter<double>(node, ns + "object_last_seen_threshold");
+  }
+
+  // safety check
+  {
+    std::string ns = "avoidance.safety_check.";
+    p.safety_check_hysteresis_factor =
+      get_parameter<double>(node, ns + "safety_check_hysteresis_factor");
   }
 
   avoidance_parameters_ = std::make_shared<AvoidanceByLCParameters>(p);

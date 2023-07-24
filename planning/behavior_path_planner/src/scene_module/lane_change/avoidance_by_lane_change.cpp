@@ -34,13 +34,26 @@ AvoidanceByLaneChange::AvoidanceByLaneChange(
 bool AvoidanceByLaneChange::specialRequiredCheck() const
 {
   const auto & data = avoidance_data_;
-  const auto & execute_object_num = avoidance_parameters_->execute_object_num;
 
   if (!status_.is_safe) {
     return false;
   }
 
-  if (data.target_objects.size() < execute_object_num) {
+  const auto & object_parameters = avoidance_parameters_->object_parameters;
+  const auto is_more_than_threshold =
+    std::any_of(object_parameters.begin(), object_parameters.end(), [&](const auto & p) {
+      const auto & objects = avoidance_data_.target_objects;
+
+      const size_t num = std::count_if(objects.begin(), objects.end(), [&p](const auto & object) {
+        const auto target_class =
+          utils::getHighestProbLabel(object.object.classification) == p.first;
+        return target_class && object.avoid_required;
+      });
+
+      return num >= p.second.execute_num;
+    });
+
+  if (!is_more_than_threshold) {
     return false;
   }
 
@@ -122,14 +135,8 @@ void AvoidanceByLaneChange::fillAvoidanceTargetObjects(
 {
   const auto p = std::dynamic_pointer_cast<AvoidanceParameters>(avoidance_parameters_);
 
-  const auto left_expand_dist = p->detection_area_left_expand_dist;
-  const auto right_expand_dist = p->detection_area_right_expand_dist;
-
-  const auto expanded_lanelets = lanelet::utils::getExpandedLanelets(
-    data.current_lanelets, left_expand_dist, right_expand_dist * (-1.0));
-
   const auto [object_within_target_lane, object_outside_target_lane] =
-    utils::separateObjectsByLanelets(*planner_data_->dynamic_object, expanded_lanelets);
+    utils::separateObjectsByLanelets(*planner_data_->dynamic_object, data.current_lanelets);
 
   // Assume that the maximum allocation for data.other object is the sum of
   // objects_within_target_lane and object_outside_target_lane. The maximum allocation for
@@ -179,7 +186,7 @@ ObjectData AvoidanceByLaneChange::createObjectData(
   const auto object_closest_index = findNearestIndex(path_points, object_pose.position);
   const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
   const auto t = utils::getHighestProbLabel(object.classification);
-  const auto object_parameter = p->object_parameters.at(t);
+  const auto & object_parameter = avoidance_parameters_->object_parameters.at(t);
 
   ObjectData object_data{};
 

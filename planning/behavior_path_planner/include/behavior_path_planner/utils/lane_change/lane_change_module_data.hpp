@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -188,9 +189,6 @@ enum class LaneChangeModuleType {
 
 struct AvoidanceByLCParameters : public AvoidanceParameters
 {
-  // execute if the target object number is larger than this param.
-  size_t execute_object_num{1};
-
   // execute only when the target object longitudinal distance is larger than this param.
   double execute_object_longitudinal_margin{0.0};
 

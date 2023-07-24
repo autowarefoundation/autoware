@@ -82,6 +82,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
       param.is_target = get_parameter<bool>(node, ns + "is_target");
+      param.execute_num = get_parameter<int>(node, ns + "execute_num");
       param.moving_speed_threshold = get_parameter<double>(node, ns + "moving_speed_threshold");
       param.moving_time_threshold = get_parameter<double>(node, ns + "moving_time_threshold");
       param.max_expand_ratio = get_parameter<double>(node, ns + "max_expand_ratio");

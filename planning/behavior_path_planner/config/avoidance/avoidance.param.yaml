@@ -32,6 +32,7 @@
       target_object:
         car:
           is_target: true                              # [-]
+          execute_num: 1                               # [-]
           moving_speed_threshold: 1.0                  # [m/s]
           moving_time_threshold: 1.0                   # [s]
           max_expand_ratio: 0.0                        # [-]
@@ -41,6 +42,7 @@
           safety_buffer_longitudinal: 0.0              # [m]
         truck:
           is_target: true
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
@@ -50,6 +52,7 @@
           safety_buffer_longitudinal: 0.0
         bus:
           is_target: true
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
@@ -59,6 +62,7 @@
           safety_buffer_longitudinal: 0.0
         trailer:
           is_target: true
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
@@ -68,6 +72,7 @@
           safety_buffer_longitudinal: 0.0
         unknown:
           is_target: false
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
@@ -77,6 +82,7 @@
           safety_buffer_longitudinal: 0.0
         bicycle:
           is_target: false
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
@@ -86,6 +92,7 @@
           safety_buffer_longitudinal: 1.0
         motorcycle:
           is_target: false
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
@@ -95,6 +102,7 @@
           safety_buffer_longitudinal: 1.0
         pedestrian:
           is_target: false
+          execute_num: 1
           moving_speed_threshold: 1.0
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
