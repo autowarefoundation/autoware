@@ -636,15 +636,21 @@ void PlannerManager::resetRootLanelet(const std::shared_ptr<PlannerData> & data)
 
   const auto root_lanelet = updateRootLanelet(data);
 
+  // if root_lanelet is not route lanelets, reset root lanelet.
+  // this can be caused by rerouting.
+  const auto & route_handler = data->route_handler;
+  if (!route_handler->isRouteLanelet(root_lanelet_.get())) {
+    root_lanelet_ = root_lanelet;
+    return;
+  }
+
   // check ego is in same lane
   if (root_lanelet_.get().id() == root_lanelet.id()) {
     return;
   }
 
-  const auto route_handler = data->route_handler;
-  const auto next_lanelets = route_handler->getRoutingGraphPtr()->following(root_lanelet_.get());
-
   // check ego is in next lane
+  const auto next_lanelets = route_handler->getRoutingGraphPtr()->following(root_lanelet_.get());
   for (const auto & next : next_lanelets) {
     if (next.id() == root_lanelet.id()) {
       return;
