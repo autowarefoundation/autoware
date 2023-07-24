@@ -12,6 +12,8 @@
   <arg name="object_recognition_detection_object_merger_data_association_matrix_param_path"/>
   <arg name="object_recognition_detection_object_merger_distance_threshold_list_path"/>
   <arg name="object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path"/>
+  <arg name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path"/>
+  <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
   <arg name="occupancy_grid_map_method"/>
@@ -145,7 +147,9 @@
       <!-- tracking module -->
       <group>
         <push-ros-namespace namespace="tracking"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml"/>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+          <arg name="mode" value="$(var mode)"/>
+        </include>
       </group>
       <!-- prediction module -->
       <group>

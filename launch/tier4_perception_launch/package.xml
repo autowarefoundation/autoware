@@ -34,6 +34,7 @@
   <exec_depend>radar_crossing_objects_noise_filter</exec_depend>
   <exec_depend>radar_fusion_to_detected_object</exec_depend>
   <exec_depend>radar_object_clustering</exec_depend>
+  <exec_depend>radar_object_tracker</exec_depend>
   <exec_depend>shape_estimation</exec_depend>
   <exec_depend>tensorrt_yolo</exec_depend>
   <exec_depend>topic_tools</exec_depend>
