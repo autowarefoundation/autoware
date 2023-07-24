@@ -139,6 +139,7 @@ private:
   // Parameters
   bool enable_delay_compensation_;
   double prediction_time_horizon_;
+  double prediction_time_horizon_rate_for_validate_lane_length_;
   double prediction_sampling_time_interval_;
   double min_velocity_for_map_based_prediction_;
   double min_crosswalk_user_velocity_;
