@@ -103,12 +103,12 @@
               <div
                 style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; background-color: rgb(255, 255, 255); white-space: nowrap;"
               >
-                <span style="background-color: rgb(251, 251, 251);">/localization/yablocmap/ll2_road_marking</span>
+                <span style="background-color: rgb(251, 251, 251);">/localization/yabloc/map/ll2_road_marking</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="510" y="704" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="11px" text-anchor="middle">/localization/yablocmap/ll2_road_marking</text>
+        <text x="510" y="704" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="11px" text-anchor="middle">/localization/yabloc/map/ll2_road_marking</text>
       </switch>
     </g>
     <path d="M 311 470 L 341 470 L 341 500 L 761 500 L 761 446.37" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="stroke"/>
