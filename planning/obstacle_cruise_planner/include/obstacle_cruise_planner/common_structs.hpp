@@ -217,6 +217,7 @@ struct DebugData
   std::vector<StopObstacle> obstacles_to_stop;
   std::vector<CruiseObstacle> obstacles_to_cruise;
   std::vector<SlowDownObstacle> obstacles_to_slow_down;
+  MarkerArray slow_down_debug_wall_marker;
   MarkerArray stop_wall_marker;
   MarkerArray cruise_wall_marker;
   MarkerArray slow_down_wall_marker;

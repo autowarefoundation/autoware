@@ -1342,6 +1342,10 @@ void ObstacleCruisePlannerNode::publishDebugMarker() const
     debug_marker.markers.push_back(marker);
   }
 
+  // slow down debug wall marker
+  tier4_autoware_utils::appendMarkerArray(
+    debug_data_ptr_->slow_down_debug_wall_marker, &debug_marker);
+
   debug_marker_pub_->publish(debug_marker);
 
   // 2. publish virtual wall for cruise and stop
