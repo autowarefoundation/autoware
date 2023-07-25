@@ -48,7 +48,13 @@ struct DynamicAvoidanceParameters
   bool avoid_pedestrian{false};
   double min_obstacle_vel{0.0};
   int successive_num_to_entry_dynamic_avoidance_condition{0};
+
   double min_obj_lat_offset_to_ego_path{0.0};
+  double max_obj_lat_offset_to_ego_path{0.0};
+
+  double max_front_object_angle{0.0};
+  double min_crossing_object_vel{0.0};
+  double max_crossing_object_angle{0.0};
 
   // drivable area generation
   double lat_offset_from_obstacle{0.0};
@@ -70,12 +76,15 @@ public:
   struct DynamicAvoidanceObject
   {
     DynamicAvoidanceObject(
-      const PredictedObject & predicted_object, const double arg_vel, const double arg_lat_vel)
+      const PredictedObject & predicted_object, const double arg_vel, const double arg_lat_vel,
+      const bool arg_is_left, const double arg_time_to_collision)
     : uuid(tier4_autoware_utils::toHexString(predicted_object.object_id)),
       pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
+      shape(predicted_object.shape),
       vel(arg_vel),
       lat_vel(arg_lat_vel),
-      shape(predicted_object.shape)
+      is_left(arg_is_left),
+      time_to_collision(arg_time_to_collision)
     {
       for (const auto & path : predicted_object.kinematics.predicted_paths) {
         predicted_paths.push_back(path);
@@ -84,12 +93,12 @@ public:
 
     std::string uuid;
     geometry_msgs::msg::Pose pose;
+    autoware_auto_perception_msgs::msg::Shape shape;
     double vel;
     double lat_vel;
-    autoware_auto_perception_msgs::msg::Shape shape;
-    std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
-
     bool is_left;
+    double time_to_collision;
+    std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
   };
   struct DynamicAvoidanceObjectCandidate
   {
@@ -113,7 +122,7 @@ public:
   DynamicAvoidanceModule(
     const std::string & name, rclcpp::Node & node,
     std::shared_ptr<DynamicAvoidanceParameters> parameters,
-    const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
+    const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
   void updateModuleParams(const std::shared_ptr<DynamicAvoidanceParameters> & parameters)
   {
@@ -135,7 +144,20 @@ public:
 
 private:
   bool isLabelTargetObstacle(const uint8_t label) const;
-  std::vector<DynamicAvoidanceObjectCandidate> calcTargetObjectsCandidate() const;
+  std::vector<DynamicAvoidanceObjectCandidate> calcTargetObjectsCandidate();
+  bool willObjectCutIn(
+    const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
+    const double obj_tangent_vel) const;
+  bool willObjectCutOut(
+    const double obj_tangent_vel, const double obj_normal_vel, const bool is_left) const;
+  bool isObjectFarFromPath(
+    const PredictedObject & predicted_object, const double obj_dist_to_path) const;
+  double calcTimeToCollision(
+    const std::vector<PathPointWithLaneId> & ego_path, const geometry_msgs::msg::Pose & obj_pose,
+    const double obj_tangent_vel) const;
+  std::optional<std::pair<size_t, size_t>> calcCollisionSection(
+    const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & obj_path) const;
+
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
   std::optional<tier4_autoware_utils::Polygon2d> calcDynamicObstaclePolygon(
