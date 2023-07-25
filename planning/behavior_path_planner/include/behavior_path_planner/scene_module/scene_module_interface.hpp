@@ -296,6 +296,8 @@ public:
 
   MarkerArray getDebugMarkers() const { return debug_marker_; }
 
+  MarkerArray getDrivableLanesMarkers() const { return drivable_lanes_marker_; }
+
   virtual MarkerArray getModuleVirtualWall() { return MarkerArray(); }
 
   ModuleStatus getCurrentStatus() const { return current_state_; }
@@ -341,6 +343,12 @@ public:
     stop_pose_ = boost::none;
     slow_pose_ = boost::none;
     dead_pose_ = boost::none;
+  }
+
+  void setDrivableLanes(const std::vector<DrivableLanes> & drivable_lanes)
+  {
+    drivable_lanes_marker_ =
+      marker_utils::createDrivableLanesMarkerArray(drivable_lanes, "drivable_lanes");
   }
 
   rclcpp::Logger getLogger() const { return logger_; }
@@ -496,6 +504,8 @@ protected:
   mutable MarkerArray info_marker_;
 
   mutable MarkerArray debug_marker_;
+
+  mutable MarkerArray drivable_lanes_marker_;
 };
 
 }  // namespace behavior_path_planner

@@ -2512,6 +2512,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
 
   // Drivable area generation.
   generateExtendedDrivableArea(output);
+  setDrivableLanes(output.drivable_area_info.drivable_lanes);
 
   updateRegisteredRTCStatus(spline_shift_path.path);
 

@@ -68,6 +68,7 @@ public:
     pub_info_marker_ = node->create_publisher<MarkerArray>("~/info/" + name, 20);
     pub_debug_marker_ = node->create_publisher<MarkerArray>("~/debug/" + name, 20);
     pub_virtual_wall_ = node->create_publisher<MarkerArray>("~/virtual_wall/" + name, 20);
+    pub_drivable_lanes_ = node->create_publisher<MarkerArray>("~/drivable_lanes/" + name, 20);
   }
 
   virtual ~SceneModuleManagerInterface() = default;
@@ -170,6 +171,7 @@ public:
 
     MarkerArray info_markers{};
     MarkerArray debug_markers{};
+    MarkerArray drivable_lanes_markers{};
 
     const auto marker_offset = std::numeric_limits<uint8_t>::max();
 
@@ -185,16 +187,23 @@ public:
         debug_markers.markers.push_back(marker);
       }
 
+      for (auto & marker : m->getDrivableLanesMarkers().markers) {
+        marker.id += marker_id;
+        drivable_lanes_markers.markers.push_back(marker);
+      }
+
       marker_id += marker_offset;
     }
 
     if (registered_modules_.empty() && idling_module_ptr_ != nullptr) {
       appendMarkerArray(idling_module_ptr_->getInfoMarkers(), &info_markers);
       appendMarkerArray(idling_module_ptr_->getDebugMarkers(), &debug_markers);
+      appendMarkerArray(idling_module_ptr_->getDrivableLanesMarkers(), &drivable_lanes_markers);
     }
 
     pub_info_marker_->publish(info_markers);
     pub_debug_marker_->publish(debug_markers);
+    pub_drivable_lanes_->publish(drivable_lanes_markers);
   }
 
   bool exist(const SceneModulePtr & module_ptr) const
@@ -270,6 +279,8 @@ protected:
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
+
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_drivable_lanes_;
 
   std::string name_;
 
