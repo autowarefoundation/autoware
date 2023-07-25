@@ -37,9 +37,36 @@ The figure below represents the reception time of each sensor data and how it is
 
 ### Core Parameters
 
-| Name          | Type   | Default Value | Description                                                                                                                                                                              |
-| ------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `timeout_sec` | double | 0.1           | tolerance of time to publish next pointcloud [s]<br>When this time limit is exceeded, the filter concatenates and publishes pointcloud, even if not all the point clouds are subscribed. |
+| Name                              | Type             | Default Value | Description                                                                                                                                                                                                                                                |
+| --------------------------------- | ---------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `timeout_sec`                     | double           | 0.1           | tolerance of time to publish next pointcloud [s]<br>When this time limit is exceeded, the filter concatenates and publishes pointcloud, even if not all the point clouds are subscribed.                                                                   |
+| `input_offset`                    | vector of double | []            | This parameter can control waiting time for each input sensor pointcloud [s]. You must to set the same length of offsets with input pointclouds numbers. <br> For its tuning, please see [actual usage page](#how-to-tuning-timeout_sec-and-input_offset). |
+| `publish_synchronized_pointcloud` | bool             | false         | If true, publish the time synchronized pointclouds. All input pointclouds are transformed and then re-published as message named `<original_msg_name>_synchronized`.                                                                                       |
+
+## Actual Usage
+
+For the example of actual usage of this node, please refer to the [preprocessor.launch.py](../launch/preprocessor.launch.py) file.
+
+### How to tuning timeout_sec and input_offset
+
+The values in `timeout_sec` and `input_offset` are used in the timercallback to control concatenation timings.
+
+- Assumptions
+  - when the timer runs out, we concatenate the pointclouds in the buffer
+  - when the first pointcloud comes to buffer, we reset the timer to `timeout_sec`
+  - when the second and later pointclouds comes to buffer, we reset the timer to `timeout_sec` - `input_offset`
+  - we assume all lidar has same frequency
+
+| Name           | Description                                          | How to tune                                                                                                                                                          |
+| -------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `timeout_sec`  | timeout sec for default timer                        | To avoid mis-concatenation, at least this value must be shorter than sampling time.                                                                                  |
+| `input_offset` | timeout extension when a pointcloud comes to buffer. | The amount of waiting time will be `timeout_sec` - `input_offset`. So, you will need to set larger value for the last-coming pointcloud and smaller for fore-coming. |
+
+### Node separation options for future
+
+Since the pointcloud concatenation has two process, "time synchronization" and "pointcloud concatenation", it is possible to separate these processes.
+
+In the future, Nodes will be completely separated in order to achieve node loosely coupled nature, but currently both nodes can be selected for backward compatibility ([See this PR](https://github.com/autowarefoundation/autoware.universe/pull/3312)).
 
 ## Assumptions / Known limits
 
