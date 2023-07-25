@@ -96,6 +96,8 @@ protected:
   rclcpp::Logger logger_;
   std::mutex * mutex_ptr_;
   double voxel_leaf_size_;
+  double voxel_leaf_size_z_;
+  double downsize_ratio_z_axis_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr downsampled_map_pub_;
   bool debug_ = false;
 
@@ -104,7 +106,9 @@ public:
   typedef typename pcl::Filter<pcl::PointXYZ>::PointCloud PointCloud;
   typedef typename PointCloud::Ptr PointCloudPtr;
   explicit VoxelGridMapLoader(
-    rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex);
+    rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
+    std::string * tf_map_input_frame, std::mutex * mutex);
+
   virtual bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold) = 0;
   bool is_close_to_neighbor_voxels(
     const pcl::PointXYZ & point, const double distance_threshold, VoxelGridPointXYZ & voxel,
@@ -132,7 +136,8 @@ protected:
 
 public:
   explicit VoxelGridStaticMapLoader(
-    rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex);
+    rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
+    std::string * tf_map_input_frame, std::mutex * mutex);
   virtual void onMapCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr map);
   virtual bool is_close_to_map(const pcl::PointXYZ & point, const double distance_threshold);
 };
@@ -192,7 +197,8 @@ protected:
 
 public:
   explicit VoxelGridDynamicMapLoader(
-    rclcpp::Node * node, double leaf_size, std::string * tf_map_input_frame, std::mutex * mutex,
+    rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
+    std::string * tf_map_input_frame, std::mutex * mutex,
     rclcpp::CallbackGroup::SharedPtr main_callback_group);
   void onEstimatedPoseCallback(geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose);
   void onPoseInitializerCallback(const InitializationState::Message::ConstSharedPtr msg);
@@ -293,7 +299,7 @@ public:
 
     auto map_cell_voxel_input_tmp_ptr =
       std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_cell_pc_tmp);
-    map_cell_voxel_grid_tmp.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
+    map_cell_voxel_grid_tmp.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_z_);
     map_cell_downsampled_pc_ptr_tmp.reset(new pcl::PointCloud<pcl::PointXYZ>);
     map_cell_voxel_grid_tmp.setInputCloud(map_cell_voxel_input_tmp_ptr);
     map_cell_voxel_grid_tmp.setSaveLeafLayout(true);
