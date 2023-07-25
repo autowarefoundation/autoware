@@ -198,7 +198,11 @@ private:
     }
     void update(const std::string & uuid, const double new_variable)
     {
-      variable_.emplace(uuid, new_variable);
+      if (variable_.count(uuid) != 0) {
+        variable_.at(uuid) = new_variable;
+      } else {
+        variable_.emplace(uuid, new_variable);
+      }
     }
 
     std::unordered_map<std::string, double> variable_;
