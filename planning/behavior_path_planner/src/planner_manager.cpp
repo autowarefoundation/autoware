@@ -178,6 +178,14 @@ void PlannerManager::generateCombinedDrivableArea(
 std::vector<SceneModulePtr> PlannerManager::getRequestModules(
   const BehaviorModuleOutput & previous_module_output) const
 {
+  if (!previous_module_output.path) {
+    RCLCPP_ERROR_STREAM(
+      logger_, "Current module output is null. Skip candidate module check."
+                 << "\n      - Approved  module list: " << getNames(approved_module_ptrs_)
+                 << "\n      - Candidate module list: " << getNames(candidate_module_ptrs_));
+    return {};
+  }
+
   std::vector<SceneModulePtr> request_modules{};
 
   /**
@@ -740,6 +748,15 @@ std::shared_ptr<SceneModuleVisitor> PlannerManager::getDebugMsg()
     candidate_module->acceptVisitor(debug_msg_ptr_);
   }
   return debug_msg_ptr_;
+}
+
+std::string PlannerManager::getNames(const std::vector<SceneModulePtr> & modules) const
+{
+  std::stringstream ss;
+  for (const auto & m : modules) {
+    ss << "[" << m->name() << "], ";
+  }
+  return ss.str();
 }
 
 }  // namespace behavior_path_planner
