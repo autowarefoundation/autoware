@@ -15,6 +15,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_
 
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/utils/safety_check.hpp"
 #include "lanelet2_core/geometry/Lanelet.h"
 
 #include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
@@ -27,51 +28,6 @@
 
 namespace behavior_path_planner
 {
-
-struct PoseWithVelocity
-{
-  Pose pose;
-  double velocity;
-
-  PoseWithVelocity(const Pose & pose, const double velocity) : pose(pose), velocity(velocity) {}
-};
-
-struct PoseWithVelocityStamped : public PoseWithVelocity
-{
-  double time;
-
-  PoseWithVelocityStamped(const double time, const Pose & pose, const double velocity)
-  : PoseWithVelocity(pose, velocity), time(time)
-  {
-  }
-};
-
-struct PoseWithVelocityAndPolygonStamped : public PoseWithVelocityStamped
-{
-  Polygon2d poly;
-
-  PoseWithVelocityAndPolygonStamped(
-    const double time, const Pose & pose, const double velocity, const Polygon2d & poly)
-  : PoseWithVelocityStamped(time, pose, velocity), poly(poly)
-  {
-  }
-};
-
-struct PredictedPathWithPolygon
-{
-  float confidence;
-  std::vector<PoseWithVelocityAndPolygonStamped> path;
-};
-
-struct ExtendedPredictedObject
-{
-  unique_identifier_msgs::msg::UUID uuid;
-  geometry_msgs::msg::PoseWithCovariance initial_pose;
-  geometry_msgs::msg::TwistWithCovariance initial_twist;
-  geometry_msgs::msg::AccelWithCovariance initial_acceleration;
-  autoware_auto_perception_msgs::msg::Shape shape;
-  std::vector<PredictedPathWithPolygon> predicted_paths;
-};
 
 struct LaneChangeCancelParameters
 {
@@ -176,9 +132,9 @@ struct LaneChangeTargetObjectIndices
 
 struct LaneChangeTargetObjects
 {
-  std::vector<ExtendedPredictedObject> current_lane{};
-  std::vector<ExtendedPredictedObject> target_lane{};
-  std::vector<ExtendedPredictedObject> other_lane{};
+  std::vector<utils::safety_check::ExtendedPredictedObject> current_lane{};
+  std::vector<utils::safety_check::ExtendedPredictedObject> target_lane{};
+  std::vector<utils::safety_check::ExtendedPredictedObject> other_lane{};
 };
 
 enum class LaneChangeModuleType {

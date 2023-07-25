@@ -17,7 +17,6 @@
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/marker_utils/utils.hpp"
-#include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
@@ -49,6 +48,51 @@ using marker_utils::CollisionCheckDebug;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 using vehicle_info_util::VehicleInfo;
+
+struct PoseWithVelocity
+{
+  Pose pose;
+  double velocity{0.0};
+
+  PoseWithVelocity(const Pose & pose, const double velocity) : pose(pose), velocity(velocity) {}
+};
+
+struct PoseWithVelocityStamped : public PoseWithVelocity
+{
+  double time{0.0};
+
+  PoseWithVelocityStamped(const double time, const Pose & pose, const double velocity)
+  : PoseWithVelocity(pose, velocity), time(time)
+  {
+  }
+};
+
+struct PoseWithVelocityAndPolygonStamped : public PoseWithVelocityStamped
+{
+  Polygon2d poly;
+
+  PoseWithVelocityAndPolygonStamped(
+    const double time, const Pose & pose, const double velocity, const Polygon2d & poly)
+  : PoseWithVelocityStamped(time, pose, velocity), poly(poly)
+  {
+  }
+};
+
+struct PredictedPathWithPolygon
+{
+  float confidence{0.0};
+  std::vector<PoseWithVelocityAndPolygonStamped> path;
+};
+
+struct ExtendedPredictedObject
+{
+  unique_identifier_msgs::msg::UUID uuid;
+  geometry_msgs::msg::PoseWithCovariance initial_pose;
+  geometry_msgs::msg::TwistWithCovariance initial_twist;
+  geometry_msgs::msg::AccelWithCovariance initial_acceleration;
+  autoware_auto_perception_msgs::msg::Shape shape;
+  std::vector<PredictedPathWithPolygon> predicted_paths;
+};
 
 namespace bg = boost::geometry;
 

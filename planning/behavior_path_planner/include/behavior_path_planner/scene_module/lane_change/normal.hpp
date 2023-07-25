@@ -26,6 +26,10 @@
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using behavior_path_planner::utils::safety_check::ExtendedPredictedObject;
+using behavior_path_planner::utils::safety_check::PoseWithVelocityAndPolygonStamped;
+using behavior_path_planner::utils::safety_check::PoseWithVelocityStamped;
+using behavior_path_planner::utils::safety_check::PredictedPathWithPolygon;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
