@@ -16,9 +16,10 @@ import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import OpaqueFunction
 from launch.conditions import IfCondition
-from launch.conditions import UnlessCondition
+from launch.substitutions import AndSubstitution
 from launch.substitutions import AnonName
 from launch.substitutions import LaunchConfiguration
+from launch.substitutions import NotSubstitution
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
@@ -164,7 +165,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # set euclidean cluster as a component
-    euclidean_cluster_component = ComposableNode(
+    use_downsample_euclidean_cluster_component = ComposableNode(
         package=pkg,
         namespace=ns,
         plugin="euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
@@ -176,40 +177,108 @@ def launch_setup(context, *args, **kwargs):
         parameters=[load_composable_node_param("voxel_grid_based_euclidean_param_path")],
     )
 
+    use_map_disuse_downsample_euclidean_component = ComposableNode(
+        package=pkg,
+        namespace=ns,
+        plugin="euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
+        name="euclidean_cluster",
+        remappings=[
+            ("input", "map_filter/pointcloud"),
+            ("output", LaunchConfiguration("output_clusters")),
+        ],
+        parameters=[load_composable_node_param("voxel_grid_based_euclidean_param_path")],
+    )
+    disuse_map_disuse_downsample_euclidean_component = ComposableNode(
+        package=pkg,
+        namespace=ns,
+        plugin="euclidean_cluster::VoxelGridBasedEuclideanClusterNode",
+        name="euclidean_cluster",
+        remappings=[
+            ("input", LaunchConfiguration("input_pointcloud")),
+            ("output", LaunchConfiguration("output_clusters")),
+        ],
+        parameters=[load_composable_node_param("voxel_grid_based_euclidean_param_path")],
+    )
+
     container = ComposableNodeContainer(
         name="euclidean_cluster_container",
         package="rclcpp_components",
         namespace=ns,
         executable="component_container",
-        composable_node_descriptions=[
-            voxel_grid_filter_component,
-            outlier_filter_component,
-            downsample_concat_component,
-            euclidean_cluster_component,
-        ],
+        composable_node_descriptions=[],
         output="screen",
     )
 
-    use_map_loader = LoadComposableNodes(
+    use_map_use_downsample_loader = LoadComposableNodes(
         composable_node_descriptions=[
             compare_map_filter_component,
             use_map_short_range_crop_box_filter_component,
             use_map_long_range_crop_box_filter_component,
+            voxel_grid_filter_component,
+            outlier_filter_component,
+            downsample_concat_component,
+            use_downsample_euclidean_cluster_component,
         ],
         target_container=container,
-        condition=IfCondition(LaunchConfiguration("use_pointcloud_map")),
+        condition=IfCondition(
+            AndSubstitution(
+                LaunchConfiguration("use_pointcloud_map"),
+                LaunchConfiguration("use_downsample_pointcloud"),
+            )
+        ),
     )
 
-    disuse_map_loader = LoadComposableNodes(
+    disuse_map_use_downsample_loader = LoadComposableNodes(
         composable_node_descriptions=[
             disuse_map_short_range_crop_box_filter_component,
             disuse_map_long_range_crop_box_filter_component,
+            voxel_grid_filter_component,
+            outlier_filter_component,
+            downsample_concat_component,
+            use_downsample_euclidean_cluster_component,
         ],
         target_container=container,
-        condition=UnlessCondition(LaunchConfiguration("use_pointcloud_map")),
+        condition=IfCondition(
+            AndSubstitution(
+                NotSubstitution(LaunchConfiguration("use_pointcloud_map")),
+                LaunchConfiguration("use_downsample_pointcloud"),
+            )
+        ),
     )
 
-    return [container, use_map_loader, disuse_map_loader]
+    use_map_disuse_downsample_loader = LoadComposableNodes(
+        composable_node_descriptions=[
+            compare_map_filter_component,
+            use_map_disuse_downsample_euclidean_component,
+        ],
+        target_container=container,
+        condition=IfCondition(
+            AndSubstitution(
+                (LaunchConfiguration("use_pointcloud_map")),
+                NotSubstitution(LaunchConfiguration("use_downsample_pointcloud")),
+            )
+        ),
+    )
+
+    disuse_map_disuse_downsample_loader = LoadComposableNodes(
+        composable_node_descriptions=[
+            disuse_map_disuse_downsample_euclidean_component,
+        ],
+        target_container=container,
+        condition=IfCondition(
+            AndSubstitution(
+                NotSubstitution(LaunchConfiguration("use_pointcloud_map")),
+                NotSubstitution(LaunchConfiguration("use_downsample_pointcloud")),
+            )
+        ),
+    )
+    return [
+        container,
+        use_map_use_downsample_loader,
+        disuse_map_use_downsample_loader,
+        use_map_disuse_downsample_loader,
+        disuse_map_disuse_downsample_loader,
+    ]
 
 
 def generate_launch_description():
@@ -222,6 +291,7 @@ def generate_launch_description():
             add_launch_arg("input_map", "/map/pointcloud_map"),
             add_launch_arg("output_clusters", "clusters"),
             add_launch_arg("use_pointcloud_map", "false"),
+            add_launch_arg("use_downsample_pointcloud", "false"),
             add_launch_arg(
                 "voxel_grid_param_path",
                 [
