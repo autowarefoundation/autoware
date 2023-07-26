@@ -681,7 +681,7 @@ bool StartPlannerModule::isOverlappedWithLane(
 
 bool StartPlannerModule::hasFinishedPullOut() const
 {
-  if (!status_.back_finished) {
+  if (!status_.back_finished || !status_.is_safe) {
     return false;
   }
 
