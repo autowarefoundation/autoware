@@ -160,8 +160,8 @@ private:
 /**Percentile calibration using legacy calibrator*/
 /**
  * @class Int8LegacyCalibrator
- * @brief Calibrator for Percentle
- * @warning We are confirming bug on Tegra like Xavier and Orin. We recommand use MinMax calibrator
+ * @brief Calibrator for Percentile
+ * @warning We are confirming bug on Tegra like Xavier and Orin. We recommend use MinMax calibrator
  */
 class Int8LegacyCalibrator : public nvinfer1::IInt8LegacyCalibrator
 {
@@ -172,7 +172,7 @@ public:
     double quantile = 0.999999, double cutoff = 0.999999)
   : stream_(stream),
     calibration_cache_file_(calibration_cache_file),
-    histogranm_cache_file_(histogram_cache_file),
+    histogram_cache_file_(histogram_cache_file),
     read_cache_(read_cache)
   {
     auto d = stream_.getInputDims();
@@ -184,16 +184,16 @@ public:
     auto algType = getAlgorithm();
     switch (algType) {
       case (nvinfer1::CalibrationAlgoType::kLEGACY_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kLEGACY_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kLEGACY_CALIBRATION" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kENTROPY_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kENTROPY_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kENTROPY_CALIBRATION" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kENTROPY_CALIBRATION_2):
-        std::cout << "CalibratioAlgoType : kENTROPY_CALIBRATION_2" << std::endl;
+        std::cout << "CalibrationAlgoType : kENTROPY_CALIBRATION_2" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kMINMAX_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kMINMAX_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kMINMAX_CALIBRATION" << std::endl;
         break;
       default:
         std::cout << "No CalibrationAlgType" << std::endl;
@@ -263,7 +263,7 @@ public:
   const void * readHistogramCache(std::size_t & length) noexcept
   {
     hist_cache_.clear();
-    std::ifstream input(histogranm_cache_file_, std::ios::binary);
+    std::ifstream input(histogram_cache_file_, std::ios::binary);
     input >> std::noskipws;
     if (read_cache_ && input.good()) {
       std::copy(
@@ -281,14 +281,14 @@ public:
   }
   void writeHistogramCache(void const * ptr, std::size_t length) noexcept
   {
-    std::ofstream output(histogranm_cache_file_, std::ios::binary);
+    std::ofstream output(histogram_cache_file_, std::ios::binary);
     output.write(reinterpret_cast<const char *>(ptr), length);
   }
 
 private:
   ImageStream stream_;
   const std::string calibration_cache_file_;
-  const std::string histogranm_cache_file_;
+  const std::string histogram_cache_file_;
   bool read_cache_{true};
   size_t input_count_;
   void * device_input_{nullptr};
@@ -301,7 +301,7 @@ private:
 
 /**
  * @class Int8LegacyCalibrator
- * @brief Calibrator for Percentle
+ * @brief Calibrator for Percentile
  * @warning This calibrator causes crucial accuracy drop for YOLOX.
  */
 class Int8EntropyCalibrator : public nvinfer1::IInt8EntropyCalibrator2
@@ -319,16 +319,16 @@ public:
     auto algType = getAlgorithm();
     switch (algType) {
       case (nvinfer1::CalibrationAlgoType::kLEGACY_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kLEGACY_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kLEGACY_CALIBRATION" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kENTROPY_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kENTROPY_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kENTROPY_CALIBRATION" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kENTROPY_CALIBRATION_2):
-        std::cout << "CalibratioAlgoType : kENTROPY_CALIBRATION_2" << std::endl;
+        std::cout << "CalibrationAlgoType : kENTROPY_CALIBRATION_2" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kMINMAX_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kMINMAX_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kMINMAX_CALIBRATION" << std::endl;
         break;
       default:
         std::cout << "No CalibrationAlgType" << std::endl;
@@ -397,7 +397,7 @@ private:
 /**
  * @class Int8MinMaxCalibrator
  * @brief Calibrator for MinMax
- * @warning We strongly recommand MinMax calibrator for YOLOX
+ * @warning We strongly recommend MinMax calibrator for YOLOX
  */
 class Int8MinMaxCalibrator : public nvinfer1::IInt8MinMaxCalibrator
 {
@@ -414,16 +414,16 @@ public:
     auto algType = getAlgorithm();
     switch (algType) {
       case (nvinfer1::CalibrationAlgoType::kLEGACY_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kLEGACY_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kLEGACY_CALIBRATION" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kENTROPY_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kENTROPY_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kENTROPY_CALIBRATION" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kENTROPY_CALIBRATION_2):
-        std::cout << "CalibratioAlgoType : kENTROPY_CALIBRATION_2" << std::endl;
+        std::cout << "CalibrationAlgoType : kENTROPY_CALIBRATION_2" << std::endl;
         break;
       case (nvinfer1::CalibrationAlgoType::kMINMAX_CALIBRATION):
-        std::cout << "CalibratioAlgoType : kMINMAX_CALIBRATION" << std::endl;
+        std::cout << "CalibrationAlgoType : kMINMAX_CALIBRATION" << std::endl;
         break;
       default:
         std::cout << "No CalibrationAlgType" << std::endl;

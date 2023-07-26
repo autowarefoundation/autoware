@@ -72,7 +72,8 @@ public:
    * @param[in] images batched images
    */
   bool doInference(
-    const std::vector<cv::Mat> & images, std::vector<int> & results, std::vector<float> & probs);
+    const std::vector<cv::Mat> & images, std::vector<int> & results,
+    std::vector<float> & probabilities);
 
   /**
    * @brief allocate buffer for preprocess on GPU
@@ -85,7 +86,7 @@ public:
 
 private:
   /**
-   * @brief run preprcess including resizing, letterbox, BGR2RGB, NHWC2NCHW and toFloat on CPU
+   * @brief run preprocess including resizing, letterbox, BGR2RGB, NHWC2NCHW and toFloat on CPU
    * @param[in] images batching images
    */
   void preprocess_opt(const std::vector<cv::Mat> & images);
@@ -98,7 +99,8 @@ private:
   void preprocessGpu(const std::vector<cv::Mat> & images);
 
   bool feedforwardAndDecode(
-    const std::vector<cv::Mat> & images, std::vector<int> & results, std::vector<float> & probs);
+    const std::vector<cv::Mat> & images, std::vector<int> & results,
+    std::vector<float> & probabilities);
 
   std::unique_ptr<tensorrt_common::TrtCommon> trt_common_;
 
@@ -116,11 +118,11 @@ private:
   // std for preprocessing
   std::vector<float> std_;
   std::vector<float> inv_std_;
-  // flg for preprecessing on GPU
+  // flg for preprocessing on GPU
   bool m_cuda;
-  // host buffer for preprecessing on GPU
+  // host buffer for preprocessing on GPU
   unsigned char * h_img_;
-  // device buffer for preprecessing on GPU
+  // device buffer for preprocessing on GPU
   unsigned char * d_img_;
   int src_width_;
   int src_height_;

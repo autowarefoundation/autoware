@@ -85,14 +85,14 @@ bool CNNClassifier::getTrafficSignals(
       }
     }
     if (static_cast<int>(image_batch.size()) == batch_size_) {
-      std::vector<float> probs;
+      std::vector<float> probabilities;
       std::vector<int> classes;
-      bool res = classifier_->doInference(image_batch, classes, probs);
-      if (!res || classes.empty() || probs.empty()) {
+      bool res = classifier_->doInference(image_batch, classes, probabilities);
+      if (!res || classes.empty() || probabilities.empty()) {
         return false;
       }
       for (size_t i = 0; i < true_batch_size; i++) {
-        postProcess(classes[i], probs[i], traffic_signals.signals[signal_i]);
+        postProcess(classes[i], probabilities[i], traffic_signals.signals[signal_i]);
         /* debug */
         if (0 < image_pub_.getNumSubscribers()) {
           outputDebugImage(image_batch[i], traffic_signals.signals[signal_i]);

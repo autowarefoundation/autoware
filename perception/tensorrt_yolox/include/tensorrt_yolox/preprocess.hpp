@@ -49,11 +49,11 @@ extern void resize_bilinear_gpu(
 
 /**
  * @brief Letterbox a image on gpus
- * @param[out] dst letterboxed image
+ * @param[out] dst letterbox-ed image
  * @param[in] src image
- * @param[in] d_w width for letterboxing
- * @param[in] d_h height foletterboxing
- * @param[in] d_c channel foletterboxing
+ * @param[in] d_w width for letterbox-ing
+ * @param[in] d_h height for letterbox-ing
+ * @param[in] d_c channel for letterbox-ing
  * @param[in] s_w width for input image
  * @param[in] s_h height for input image
  * @param[in] s_c channel for input image
@@ -89,7 +89,7 @@ extern void to_float_gpu(
 
 /**
  * @brief Resize and letterbox a image using bilinear interpolation on gpus
- * @param[out] dst processsed image
+ * @param[out] dst processed image
  * @param[in] src image
  * @param[in] d_w width for output
  * @param[in] d_h height for output
@@ -106,7 +106,7 @@ extern void resize_bilinear_letterbox_gpu(
 /**
  * @brief Optimized preprocessing including resize, letterbox, nhwc2nchw, toFloat and normalization
  * for YOLOX on gpus
- * @param[out] dst processsed image
+ * @param[out] dst processed image
  * @param[in] src image
  * @param[in] d_w width for output
  * @param[in] d_h height for output
@@ -124,7 +124,7 @@ extern void resize_bilinear_letterbox_nhwc_to_nchw32_gpu(
 /**
  * @brief Optimized preprocessing including resize, letterbox, nhwc2nchw, toFloat and normalization
  * with batching for YOLOX on gpus
- * @param[out] dst processsed image
+ * @param[out] dst processed image
  * @param[in] src image
  * @param[in] d_w width for output
  * @param[in] d_h height for output
@@ -143,7 +143,7 @@ extern void resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
 /**
  * @brief Optimized preprocessing including crop, resize, letterbox, nhwc2nchw, toFloat and
  * normalization with batching for YOLOX on gpus
- * @param[out] dst processsed image
+ * @param[out] dst processed image
  * @param[in] src image
  * @param[in] d_w width for output
  * @param[in] d_h height for output
@@ -163,7 +163,7 @@ extern void crop_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
 /**
  * @brief Optimized multi-scale preprocessing including crop, resize, letterbox, nhwc2nchw, toFloat
  * and normalization with batching for YOLOX on gpus
- * @param[out] dst processsed image
+ * @param[out] dst processed image
  * @param[in] src image
  * @param[in] d_w width for output
  * @param[in] d_h height for output

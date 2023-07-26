@@ -146,28 +146,28 @@ void generateDetectedBoxes3D(
     // construct boxes3d failed
     std::cerr << "lidar_centerpoint_tvm: construct boxes3d failed" << std::endl;
   }
-  std::vector<Box3D> det_boxes3d_nonms(num_det_boxes3d);
+  std::vector<Box3D> det_boxes3d_no_nms(num_det_boxes3d);
   std::copy_if(
-    boxes3d.begin(), boxes3d.end(), det_boxes3d_nonms.begin(),
+    boxes3d.begin(), boxes3d.end(), det_boxes3d_no_nms.begin(),
     is_score_greater(config.score_threshold_));
 
   // sort by score
-  std::sort(det_boxes3d_nonms.begin(), det_boxes3d_nonms.end(), score_greater());
+  std::sort(det_boxes3d_no_nms.begin(), det_boxes3d_no_nms.end(), score_greater());
 
   // suppress by NMS
   std::vector<bool> final_keep_mask(num_det_boxes3d);
   const auto num_final_det_boxes3d =
-    circleNMS(det_boxes3d_nonms, config.circle_nms_dist_threshold_, final_keep_mask);
+    circleNMS(det_boxes3d_no_nms, config.circle_nms_dist_threshold_, final_keep_mask);
 
   det_boxes3d.resize(num_final_det_boxes3d);
   std::size_t box_id = 0;
   for (std::size_t idx = 0; idx < final_keep_mask.size(); idx++) {
     if (final_keep_mask[idx]) {
-      det_boxes3d[box_id] = det_boxes3d_nonms[idx];
+      det_boxes3d[box_id] = det_boxes3d_no_nms[idx];
       box_id++;
     }
   }
-  // std::copy_if(det_boxes3d_nonms.begin(), det_boxes3d_nonms.end(), final_keep_mask.begin(),
+  // std::copy_if(det_boxes3d_no_nms.begin(), det_boxes3d_no_nms.end(), final_keep_mask.begin(),
   //   det_boxes3d.begin(), is_kept());
 }
 

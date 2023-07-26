@@ -473,6 +473,7 @@ void MapBasedDetector::getVisibleTrafficLights(
       }
 
       // check within image frame
+      // cspell: ignore tltl
       tf2::Vector3 tf_camera2tltl = tf_map2camera.inverse() * getTrafficLightTopLeft(traffic_light);
       tf2::Vector3 tf_camera2tlbr =
         tf_map2camera.inverse() * getTrafficLightBottomRight(traffic_light);

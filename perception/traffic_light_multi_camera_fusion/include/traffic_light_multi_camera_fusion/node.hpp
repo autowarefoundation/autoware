@@ -87,31 +87,31 @@ private:
 
   void mapCallback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr input_msg);
 
-  void multiCameraFusion(std::map<IdType, FusionRecord> & fusioned_record_map);
+  void multiCameraFusion(std::map<IdType, FusionRecord> & fused_record_map);
 
   void convertOutputMsg(
     const std::map<IdType, FusionRecord> & grouped_record_map, NewSignalArrayType & msg_out);
 
   void groupFusion(
-    std::map<IdType, FusionRecord> & fusioned_record_map,
+    std::map<IdType, FusionRecord> & fused_record_map,
     std::map<IdType, FusionRecord> & grouped_record_map);
 
   typedef mf::sync_policies::ExactTime<CamInfoType, RoiArrayType, SignalArrayType> ExactSyncPolicy;
   typedef mf::Synchronizer<ExactSyncPolicy> ExactSync;
   typedef mf::sync_policies::ApproximateTime<CamInfoType, RoiArrayType, SignalArrayType>
-    ApproSyncPolicy;
-  typedef mf::Synchronizer<ApproSyncPolicy> ApproSync;
+    ApproximateSyncPolicy;
+  typedef mf::Synchronizer<ApproximateSyncPolicy> ApproximateSync;
 
   std::vector<std::unique_ptr<mf::Subscriber<SignalArrayType>>> signal_subs_;
   std::vector<std::unique_ptr<mf::Subscriber<RoiArrayType>>> roi_subs_;
   std::vector<std::unique_ptr<mf::Subscriber<CamInfoType>>> cam_info_subs_;
   std::vector<std::unique_ptr<ExactSync>> exact_sync_subs_;
-  std::vector<std::unique_ptr<ApproSync>> appro_sync_subs_;
+  std::vector<std::unique_ptr<ApproximateSync>> approximate_sync_subs_;
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_sub_;
 
   rclcpp::Publisher<NewSignalArrayType>::SharedPtr signal_pub_;
   /*
-  the mappping from traffic light id (instance id) to regulatory element id (group id)
+  the mapping from traffic light id (instance id) to regulatory element id (group id)
   */
   std::map<lanelet::Id, lanelet::Id> traffic_light_id_to_regulatory_ele_id_;
   /*

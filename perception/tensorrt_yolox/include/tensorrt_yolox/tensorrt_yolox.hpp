@@ -132,7 +132,7 @@ public:
 
 private:
   /**
-   * @brief run preprcess including resizing, letterbox, NHWC2NCHW and toFloat on CPU
+   * @brief run preprocess including resizing, letterbox, NHWC2NCHW and toFloat on CPU
    * @param[in] images batching images
    */
   void preprocess(const std::vector<cv::Mat> & images);
@@ -144,7 +144,7 @@ private:
   void preprocessGpu(const std::vector<cv::Mat> & images);
 
   /**
-   * @brief run preprcess including resizing, letterbox, NHWC2NCHW and toFloat on CPU
+   * @brief run preprocess including resizing, letterbox, NHWC2NCHW and toFloat on CPU
    * @param[in] images batching images
    * @param[in] rois region of interest
    */
@@ -159,18 +159,18 @@ private:
     const std::vector<cv::Mat> & images, const std::vector<cv::Rect> & rois);
 
   /**
-   * @brief run multi-scale preprcess including resizing, letterbox, NHWC2NCHW and toFloat on CPU
+   * @brief run multi-scale preprocess including resizing, letterbox, NHWC2NCHW and toFloat on CPU
    * @param[in] images batching images
    * @param[in] rois region of interest
    */
   void multiScalePreprocess(const cv::Mat & image, const std::vector<cv::Rect> & rois);
 
   /**
-   * @brief run multi-scale preprcess including resizing, letterbox, NHWC2NCHW and toFloat on GPU
+   * @brief run multi-scale preprocess including resizing, letterbox, NHWC2NCHW and toFloat on GPU
    * @param[in] images batching images
    * @param[in] rois region of interest
    */
-  void multiScalepreprocessGpu(const cv::Mat & image, const std::vector<cv::Rect> & rois);
+  void multiScalePreprocessGpu(const cv::Mat & image, const std::vector<cv::Rect> & rois);
 
   bool multiScaleFeedforward(const cv::Mat & image, int batch_size, ObjectArrays & objects);
   bool multiScaleFeedforwardAndDecode(

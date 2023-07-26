@@ -47,10 +47,10 @@ using sensor_msgs::msg::PointCloud2;
 using std_msgs::msg::Header;
 using PclPointCloud = pcl::PointCloud<pcl::PointXYZ>;
 
-class RadiusSearch2dfilter
+class RadiusSearch2dFilter
 {
 public:
-  explicit RadiusSearch2dfilter(rclcpp::Node & node);
+  explicit RadiusSearch2dFilter(rclcpp::Node & node);
   void filter(
     const PclPointCloud & input, const Pose & pose, PclPointCloud & output,
     PclPointCloud & outlier);
@@ -114,7 +114,7 @@ private:
   std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
 
   // 2d outlier filter
-  std::shared_ptr<RadiusSearch2dfilter> radius_search_2d_filter_ptr_;
+  std::shared_ptr<RadiusSearch2dFilter> radius_search_2d_filter_ptr_;
 
   // Debugger
   std::shared_ptr<Debugger> debugger_ptr_;

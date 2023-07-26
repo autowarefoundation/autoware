@@ -158,7 +158,7 @@ private:
    * @tparam Idx
    * @param argv
    * @return true  All messages are not nullptr
-   * @return false At least one message in the tuplc is nullptr
+   * @return false At least one message in the topic is nullptr
    */
   template <std::size_t Idx = 0>
   bool isArgvValid(

@@ -109,13 +109,13 @@ TEST_F(RayGroundFilterComponentTestSuite, TestCase1)
   // check out_cloud
   int effect_num = 0;
   int total_num = 0;
-  const float min_noground_point_z = 0.1;  // z in base_frame
+  const float min_no_ground_point_z = 0.1;  // z in base_frame
   for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(out_cloud, "x"), iter_y(out_cloud, "y"),
        iter_z(out_cloud, "z");
        iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
     const float z = *iter_z;
     total_num += 1;
-    if (z > min_noground_point_z) {
+    if (z > min_no_ground_point_z) {
       effect_num += 1;
     }
   }

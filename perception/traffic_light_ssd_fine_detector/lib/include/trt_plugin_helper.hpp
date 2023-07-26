@@ -41,6 +41,7 @@ enum pluginStatus_t {
     }                                                                         \
   }
 
+// cspell: ignore CUASSERT
 #define CUASSERT(status_)                                                                       \
   {                                                                                             \
     auto s_ = status;                                                                           \
@@ -50,6 +51,7 @@ enum pluginStatus_t {
     }                                                                                           \
   }
 
+// cspell: ignore CUBLASASSERT
 #define CUBLASASSERT(status_)                                               \
   {                                                                         \
     auto s_ = status_;                                                      \
@@ -58,6 +60,7 @@ enum pluginStatus_t {
     }                                                                       \
   }
 
+// cspell: ignore CUERRORMSG
 #define CUERRORMSG(status_)                                                            \
   {                                                                                    \
     auto s_ = status_;                                                                 \

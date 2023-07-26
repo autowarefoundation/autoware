@@ -65,6 +65,7 @@ else()
   set(CUDNN_AVAIL OFF)
 endif()
 
+# cspell: ignore EFFICIENTNET, MOBILENET
 # Download caffemodel and prototxt
 set(EFFICIENTNET_BATCH_1_HASH 82baba4fcf1abe0c040cd55005e34510)
 set(EFFICIENTNET_BATCH_4_HASH 21b549c2fe4fbb20d32cc019e6d70cd7)

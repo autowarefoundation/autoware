@@ -8,7 +8,7 @@ traffic_light_classifier is a package for classifying traffic light labels using
 
 ### cnn_classifier
 
-Traffic light labels are classified by EfficientNet-b1 or MobiletNet-v2.  
+Traffic light labels are classified by EfficientNet-b1 or MobileNet-v2.  
 Totally 83400 (58600 for training, 14800 for evaluation and 10000 for test) TIER IV internal images of Japanese traffic lights were used for fine-tuning.  
 The information of the models is listed here:
 
@@ -188,11 +188,13 @@ Example:
   ...
 -->
 
+<!-- cspell:ignore Mingxing, Quoc, PMLR -->
+
 ## References/External links
 
 [1] M. Sandler, A. Howard, M. Zhu, A. Zhmoginov and L. Chen, "MobileNetV2: Inverted Residuals and Linear Bottlenecks," 2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition, Salt Lake City, UT, 2018, pp. 4510-4520, doi: 10.1109/CVPR.2018.00474.
 
-[2] Tan, Mingxing, and Quoc Le. "Efficientnet: Rethinking model scaling for convolutional neural networks." International conference on machine learning. PMLR, 2019.
+[2] Tan, Mingxing, and Quoc Le. "EfficientNet: Rethinking model scaling for convolutional neural networks." International conference on machine learning. PMLR, 2019.
 
 ## (Optional) Future extensions / Unimplemented parts
 

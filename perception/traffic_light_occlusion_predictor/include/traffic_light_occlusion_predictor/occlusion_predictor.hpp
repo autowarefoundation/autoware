@@ -77,7 +77,7 @@ private:
     uint32_t horizontal_sample_num, uint32_t vertical_sample_num,
     pcl::PointCloud<pcl::PointXYZ> & cloud_out);
 
-  void calcRoiVectex3D(
+  void calcRoiVector3D(
     const tier4_perception_msgs::msg::TrafficLightRoi & roi,
     const image_geometry::PinholeCameraModel & pinhole_model,
     const std::map<lanelet::Id, tf2::Vector3> & traffic_light_position_map,

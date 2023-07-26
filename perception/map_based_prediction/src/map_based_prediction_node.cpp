@@ -550,7 +550,7 @@ ObjectClassification::_label_type changeLabelForPrediction(
     label == ObjectClassification::MOTORCYCLE || label == ObjectClassification::BICYCLE) {
     // if object is within road lanelet and satisfies yaw constraints
     const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
-    const float high_speed_threshold = 25.0 / 18.0 * 5.0;  // High speed bycicle 25 km/h
+    const float high_speed_threshold = 25.0 / 18.0 * 5.0;  // High speed bicycle 25 km/h
     const bool high_speed_object =
       object.kinematics.twist_with_covariance.twist.linear.x > high_speed_threshold;
 

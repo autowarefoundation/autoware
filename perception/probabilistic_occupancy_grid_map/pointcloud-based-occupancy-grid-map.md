@@ -6,8 +6,8 @@
 
 ### 1st step
 
-First of all, input obstacle/raw pointcloud are transformed into the polar coordinate centered around `scan_origin` and divided int ocircular bins per angle_increment respectively.
-At this time, each point belonging to each bin is stored as range data. In addition, the x,y information in the map coordinate is also stored for raytracing on the map coordinate.
+First of all, input obstacle/raw pointcloud are transformed into the polar coordinate centered around `scan_origin` and divided int circular bins per angle_increment respectively.
+At this time, each point belonging to each bin is stored as range data. In addition, the x,y information in the map coordinate is also stored for ray-tracing on the map coordinate.
 The bin contains the following information for each point
 
 - range data from origin of raytrace
@@ -30,7 +30,7 @@ The ray trace is done by Bresenham's line algorithm.
    ![pointcloud_based_occupancy_grid_map_side_view_1st](./image/pointcloud_based_occupancy_grid_map_side_view_1st.svg)
 
 2. Fill in the unknown cells.
-   Based on the assumption that `UNKNOWN` is behind the obstacle, the cells that are more than a distance margin from each obstacle point are filled with `UNKOWN`
+   Based on the assumption that `UNKNOWN` is behind the obstacle, the cells that are more than a distance margin from each obstacle point are filled with `UNKNOWN`
 
    ![pointcloud_based_occupancy_grid_map_side_view_2nd](./image/pointcloud_based_occupancy_grid_map_side_view_2nd.svg)
 

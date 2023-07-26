@@ -433,7 +433,7 @@ void TrtYoloX::preprocessWithRoiGpu(
 
   input_dims.d[0] = batch_size;
   for (const auto & image : images) {
-    // if size of source input has benn changed...
+    // if size of source input has been changed...
     int width = image.cols;
     int height = image.rows;
     if (src_width_ != -1 || src_height_ != -1) {
@@ -551,14 +551,14 @@ void TrtYoloX::preprocessWithRoi(
   // No Need for Sync
 }
 
-void TrtYoloX::multiScalepreprocessGpu(const cv::Mat & image, const std::vector<cv::Rect> & rois)
+void TrtYoloX::multiScalePreprocessGpu(const cv::Mat & image, const std::vector<cv::Rect> & rois)
 {
   const auto batch_size = rois.size();
   auto input_dims = trt_common_->getBindingDimensions(0);
 
   input_dims.d[0] = batch_size;
 
-  // if size of source input has benn changed...
+  // if size of source input has been changed...
   int width = image.cols;
   int height = image.rows;
   if (src_width_ != -1 || src_height_ != -1) {
@@ -683,7 +683,7 @@ bool TrtYoloX::doMultiScaleInference(
     return false;
   }
   if (use_gpu_preprocess_) {
-    multiScalepreprocessGpu(image, rois);
+    multiScalePreprocessGpu(image, rois);
   } else {
     multiScalePreprocess(image, rois);
   }

@@ -141,7 +141,7 @@ void OccupancyGridMapFixedBlindSpot::updateWithPointCloud(
       occupancy_cost_value::FREE_SPACE);
   }
 
-  // Second step: Add uknown cell
+  // Second step: Add unknown cell
   for (size_t bin_index = 0; bin_index < obstacle_pointcloud_angle_bins.size(); ++bin_index) {
     auto & obstacle_pointcloud_angle_bin = obstacle_pointcloud_angle_bins.at(bin_index);
     auto & raw_pointcloud_angle_bin = raw_pointcloud_angle_bins.at(bin_index);

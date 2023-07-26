@@ -198,7 +198,7 @@ TrtClassifier::~TrtClassifier()
 
 void TrtClassifier::initPreprocessBuffer(int width, int height)
 {
-  // if size of source input has benn changed...
+  // if size of source input has been changed...
   if (src_width_ != -1 || src_height_ != -1) {
     if (width != src_width_ || height != src_height_) {
       // Free cuda memory to reallocate
@@ -243,7 +243,7 @@ void TrtClassifier::preprocessGpu(const std::vector<cv::Mat> & images)
 
   input_dims.d[0] = batch_size;
   for (const auto & image : images) {
-    // if size of source input has benn changed...
+    // if size of source input has been changed...
     int width = image.cols;
     int height = image.rows;
     if (src_width_ != -1 || src_height_ != -1) {
@@ -342,21 +342,23 @@ void TrtClassifier::preprocess_opt(const std::vector<cv::Mat> & images)
 }
 
 bool TrtClassifier::doInference(
-  const std::vector<cv::Mat> & images, std::vector<int> & results, std::vector<float> & probs)
+  const std::vector<cv::Mat> & images, std::vector<int> & results,
+  std::vector<float> & probabilities)
 {
   if (!trt_common_->isInitialized()) {
     return false;
   }
   preprocess_opt(images);
 
-  return feedforwardAndDecode(images, results, probs);
+  return feedforwardAndDecode(images, results, probabilities);
 }
 
 bool TrtClassifier::feedforwardAndDecode(
-  const std::vector<cv::Mat> & images, std::vector<int> & results, std::vector<float> & probs)
+  const std::vector<cv::Mat> & images, std::vector<int> & results,
+  std::vector<float> & probabilities)
 {
   results.clear();
-  probs.clear();
+  probabilities.clear();
   std::vector<void *> buffers = {input_d_.get(), out_prob_d_.get()};
   trt_common_->enqueueV2(buffers.data(), *stream_, nullptr);
 
@@ -377,7 +379,7 @@ bool TrtClassifier::feedforwardAndDecode(
         index = j;
       }
     }
-    probs.push_back(max);
+    probabilities.push_back(max);
     results.push_back(index);
   }
   return true;

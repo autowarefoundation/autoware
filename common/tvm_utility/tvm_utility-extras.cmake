@@ -35,6 +35,7 @@ function(get_neural_network MODEL_NAME MODEL_BACKEND DEPENDENCY)
   set(PREPROCESSING "")
 
   # Prioritize user-provided models.
+  # cspell: ignore COPYONLY
   if(IS_DIRECTORY "${DATA_PATH}/user/${MODEL_NAME}")
     message(STATUS "Using user-provided model from ${DATA_PATH}/user/${MODEL_NAME}")
     file(REMOVE_RECURSE "${DATA_PATH}/models/${MODEL_NAME}/")

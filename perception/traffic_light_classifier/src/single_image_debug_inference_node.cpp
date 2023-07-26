@@ -111,6 +111,7 @@ private:
 
   void inferWithCrop(int action, int x, int y, [[maybe_unused]] int flags)
   {
+    // cspell: ignore LBUTTONDOWN, LBUTTONUP
     if (action == cv::EVENT_LBUTTONDOWN) {
       top_left_corner_ = cv::Point(x, y);
     } else if (action == cv::EVENT_LBUTTONUP) {

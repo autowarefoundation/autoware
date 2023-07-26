@@ -101,7 +101,7 @@ boost::optional<char> getCost(
 
 namespace occupancy_grid_map_outlier_filter
 {
-RadiusSearch2dfilter::RadiusSearch2dfilter(rclcpp::Node & node)
+RadiusSearch2dFilter::RadiusSearch2dFilter(rclcpp::Node & node)
 {
   search_radius_ = node.declare_parameter("radius_search_2d_filter.search_radius", 1.0f);
   min_points_and_distance_ratio_ =
@@ -113,7 +113,7 @@ RadiusSearch2dfilter::RadiusSearch2dfilter(rclcpp::Node & node)
   kd_tree_ = pcl::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
 }
 
-void RadiusSearch2dfilter::filter(
+void RadiusSearch2dFilter::filter(
   const PclPointCloud & input, const Pose & pose, PclPointCloud & output, PclPointCloud & outlier)
 {
   const auto & xyz_cloud = input;
@@ -125,7 +125,7 @@ void RadiusSearch2dfilter::filter(
   }
 
   std::vector<int> k_indices(xy_cloud->points.size());
-  std::vector<float> k_dists(xy_cloud->points.size());
+  std::vector<float> k_distances(xy_cloud->points.size());
   kd_tree_->setInputCloud(xy_cloud);
   for (size_t i = 0; i < xy_cloud->points.size(); ++i) {
     const float distance =
@@ -134,7 +134,7 @@ void RadiusSearch2dfilter::filter(
       std::max(static_cast<int>(min_points_and_distance_ratio_ / distance + 0.5f), min_points_),
       max_points_);
     const int points_num =
-      kd_tree_->radiusSearch(i, search_radius_, k_indices, k_dists, min_points_threshold);
+      kd_tree_->radiusSearch(i, search_radius_, k_indices, k_distances, min_points_threshold);
 
     if (min_points_threshold <= points_num) {
       output.points.push_back(xyz_cloud.points.at(i));
@@ -144,13 +144,13 @@ void RadiusSearch2dfilter::filter(
   }
 }
 
-void RadiusSearch2dfilter::filter(
+void RadiusSearch2dFilter::filter(
   const PclPointCloud & high_conf_input, const PclPointCloud & low_conf_input, const Pose & pose,
   PclPointCloud & output, PclPointCloud & outlier)
 {
   const auto & high_conf_xyz_cloud = high_conf_input;
   const auto & low_conf_xyz_cloud = low_conf_input;
-  // check the limit points nunber
+  // check the limit points number
   if (low_conf_xyz_cloud.points.size() > max_filter_points_nb_) {
     RCLCPP_WARN(
       rclcpp::get_logger("OccupancyGridMapOutlierFilterComponent"),
@@ -170,7 +170,7 @@ void RadiusSearch2dfilter::filter(
   }
 
   std::vector<int> k_indices(xy_cloud->points.size());
-  std::vector<float> k_dists(xy_cloud->points.size());
+  std::vector<float> k_distances(xy_cloud->points.size());
   kd_tree_->setInputCloud(xy_cloud);
   for (size_t i = 0; i < low_conf_xyz_cloud.points.size(); ++i) {
     const float distance =
@@ -179,7 +179,7 @@ void RadiusSearch2dfilter::filter(
       std::max(static_cast<int>(min_points_and_distance_ratio_ / distance + 0.5f), min_points_),
       max_points_);
     const int points_num =
-      kd_tree_->radiusSearch(i, search_radius_, k_indices, k_dists, min_points_threshold);
+      kd_tree_->radiusSearch(i, search_radius_, k_indices, k_distances, min_points_threshold);
 
     if (min_points_threshold <= points_num) {
       output.points.push_back(low_conf_xyz_cloud.points.at(i));
@@ -226,7 +226,7 @@ OccupancyGridMapOutlierFilterComponent::OccupancyGridMapOutlierFilterComponent(
 
   /* Radius search 2d filter */
   if (use_radius_search_2d_filter) {
-    radius_search_2d_filter_ptr_ = std::make_shared<RadiusSearch2dfilter>(*this);
+    radius_search_2d_filter_ptr_ = std::make_shared<RadiusSearch2dFilter>(*this);
   }
   /* debugger */
   if (enable_debugger) {

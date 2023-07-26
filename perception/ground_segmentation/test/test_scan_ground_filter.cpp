@@ -45,7 +45,7 @@ protected:
     output_pointcloud_pub_ = rclcpp::create_publisher<sensor_msgs::msg::PointCloud2>(
       dummy_node_, "/test_scan_ground_filter/output_cloud", 1);
 
-    // no real uages,ScanGroundFilterComponent cosntruct need these params
+    // no real usages, ScanGroundFilterComponent constructor need these params
     rclcpp::NodeOptions options;
     std::vector<rclcpp::Parameter> parameters;
     parameters.emplace_back(rclcpp::Parameter("wheel_radius", 0.39));
@@ -173,13 +173,13 @@ TEST_F(ScanGroundFilterTest, TestCase1)
   // check out_cloud
   int effect_num = 0;
   int total_num = 0;
-  const float min_noground_point_z = 0.1;
+  const float min_no_ground_point_z = 0.1;
   for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(out_cloud, "x"), iter_y(out_cloud, "y"),
        iter_z(out_cloud, "z");
        iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
     const float z = *iter_z;
     total_num += 1;
-    if (z > min_noground_point_z) {
+    if (z > min_no_ground_point_z) {
       effect_num += 1;
     }
   }

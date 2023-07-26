@@ -100,9 +100,9 @@ private:
    * @brief Every traffic light roi might have several possible detections. This function
    * is designed to select the best detection for every traffic light by making use of
    * the relative positions between the traffic lights projected on the image (expect/rois).
-   * To be specified, for every detection, all the expect rois will be transfered so that
+   * To be specified, for every detection, all the expect rois will be transferred so that
    * this detection will match the corresponding expect roi. Note that the expect rois
-   * of other traffic lights will also be transfered equally. Then, for every expect roi,
+   * of other traffic lights will also be transferred equally. Then, for every expect roi,
    * it will calculate the match score (which is IoU_detection_roi * detection_confidence)
    * with every detection.
    * The combination of detections that will get highest match score sum will be the selected
