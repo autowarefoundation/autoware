@@ -372,7 +372,10 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate()
     const bool is_object_on_ego_path =
       obj_dist_to_path <
       planner_data_->parameters.vehicle_width / 2.0 + parameters_->min_obj_lat_offset_to_ego_path;
-    if (is_object_on_ego_path && std::abs(obj_angle) < parameters_->max_front_object_angle) {
+    const bool is_object_aligned_to_path =
+      std::abs(obj_angle) < parameters_->max_front_object_angle ||
+      M_PI - parameters_->max_front_object_angle < std::abs(obj_angle);
+    if (is_object_on_ego_path && is_object_aligned_to_path) {
       continue;
     }
 
