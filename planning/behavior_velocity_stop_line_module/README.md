@@ -12,11 +12,13 @@ This module is activated when there is a stop line in a target lane.
 
 ### Module Parameters
 
-| Parameter                   | Type   | Description                                                                                    |
-| --------------------------- | ------ | ---------------------------------------------------------------------------------------------- |
-| `stop_margin`               | double | a margin that the vehicle tries to stop before stop_line                                       |
-| `stop_check_dist`           | double | when the vehicle is within `stop_check_dist` from stop_line and stopped, move to STOPPED state |
-| `hold_stop_margin_distance` | double | [m] parameter for restart prevention (See Algorithm section)                                   |
+| Parameter                        | Type   | Description                                                                                                                                                                       |
+| -------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stop_margin`                    | double | a margin that the vehicle tries to stop before stop_line                                                                                                                          |
+| `stop_duration_sec`              | double | [s] time parameter for the ego vehicle to stop in front of a stop line                                                                                                            |
+| `hold_stop_margin_distance`      | double | [m] parameter for restart prevention (See Algorithm section). Also, when the ego vehicle is within this distance from a stop line, the ego state becomes STOPPED from APPROACHING |
+| `use_initialization_stop_state`  | bool   | A flag to determine whether to return to the approaching state when the vehicle moves away from a stop line.                                                                      |
+| `show_stop_line_collision_check` | bool   | A flag to determine whether to show the debug information of collision check with a stop line                                                                                     |
 
 ### Inner-workings / Algorithms
 

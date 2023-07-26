@@ -87,7 +87,7 @@ visualization_msgs::msg::MarkerArray createStopLineCollisionCheck(
 visualization_msgs::msg::MarkerArray StopLineModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
-  if (planner_param_.show_stopline_collision_check) {
+  if (planner_param_.show_stop_line_collision_check) {
     appendMarkerArray(
       createStopLineCollisionCheck(debug_data_, module_id_), &debug_marker_array,
       this->clock_->now());

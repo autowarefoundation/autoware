@@ -34,8 +34,8 @@ StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
   p.use_initialization_stop_line_state =
     node.declare_parameter<bool>(ns + ".use_initialization_stop_line_state");
   // debug
-  p.show_stopline_collision_check =
-    node.declare_parameter<bool>(ns + ".debug.show_stopline_collision_check");
+  p.show_stop_line_collision_check =
+    node.declare_parameter<bool>(ns + ".debug.show_stop_line_collision_check");
 }
 
 std::vector<StopLineWithLaneId> StopLineModuleManager::getStopLinesWithLaneIdOnPath(

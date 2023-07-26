@@ -2,10 +2,9 @@
   ros__parameters:
     stop_line:
       stop_margin: 0.0
-      stop_check_dist: 2.0
       stop_duration_sec: 1.0
       use_initialization_stop_line_state: true
       hold_stop_margin_distance: 2.0
 
       debug:
-        show_stopline_collision_check: false            # [-] whether to show stopline collision
+        show_stop_line_collision_check: false            # [-] whether to show stopline collision
