@@ -69,6 +69,79 @@ geometry_msgs::msg::Polygon toMsg(const tier4_autoware_utils::Polygon2d & polygo
   }
   return ret;
 }
+
+template <class T>
+size_t findFirstNearestIndex(const T & points, const geometry_msgs::msg::Point & point)
+{
+  motion_utils::validateNonEmpty(points);
+
+  double min_dist = std::numeric_limits<double>::max();
+  size_t min_idx = 0;
+  bool decreasing = false;
+
+  for (size_t i = 0; i < points.size(); ++i) {
+    const auto dist = tier4_autoware_utils::calcSquaredDistance2d(points.at(i), point);
+    if (dist < min_dist) {
+      decreasing = true;
+      min_dist = dist;
+      min_idx = i;
+      continue;
+    }
+
+    if (decreasing) {
+      return min_idx;
+    }
+  }
+
+  return min_idx;
+}
+
+template <class T>
+size_t findFirstNearestSegmentIndex(const T & points, const geometry_msgs::msg::Point & point)
+{
+  const size_t nearest_idx = findFirstNearestIndex(points, point);
+
+  if (nearest_idx == 0) {
+    return 0;
+  }
+  if (nearest_idx == points.size() - 1) {
+    return points.size() - 2;
+  }
+
+  const double signed_length =
+    motion_utils::calcLongitudinalOffsetToSegment(points, nearest_idx, point);
+
+  if (signed_length <= 0) {
+    return nearest_idx - 1;
+  }
+
+  return nearest_idx;
+}
+
+template <class T>
+double calcSignedArcLengthToFirstNearestPoint(
+  const T & points, const geometry_msgs::msg::Point & src_point,
+  const geometry_msgs::msg::Point & dst_point)
+{
+  try {
+    motion_utils::validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return 0.0;
+  }
+
+  const size_t src_seg_idx = findFirstNearestSegmentIndex(points, src_point);
+  const size_t dst_seg_idx = findFirstNearestSegmentIndex(points, dst_point);
+
+  const double signed_length_on_traj =
+    motion_utils::calcSignedArcLength(points, src_seg_idx, dst_seg_idx);
+  const double signed_length_src_offset =
+    motion_utils::calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
+  const double signed_length_dst_offset =
+    motion_utils::calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
+
+  return signed_length_on_traj - signed_length_src_offset + signed_length_dst_offset;
+}
 }  // namespace
 
 bool isOnRight(const ObjectData & obj)
@@ -270,7 +343,7 @@ void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
   double max_distance = std::numeric_limits<double>::lowest();
   for (const auto & p : obj.envelope_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
+    const double arc_length = calcSignedArcLengthToFirstNearestPoint(path.points, ego_pos, point);
     min_distance = std::min(min_distance, arc_length);
     max_distance = std::max(max_distance, arc_length);
   }
