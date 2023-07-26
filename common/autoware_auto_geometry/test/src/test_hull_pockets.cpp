@@ -110,7 +110,7 @@ TYPED_TEST(TypedHullPocketsTest, Box)
 // |                              |
 // +------------------------------+
 // This should come up with a single box on the top left.
-TYPED_TEST(TypedHullPocketsTest, Ushape)
+TYPED_TEST(TypedHullPocketsTest, UShape)
 {
   const auto polygon = std::vector<decltype(this->make(0, 0, 0))>{
     this->make(0, 0, 0), this->make(5, 0, 0), this->make(5, 4.5, 0), this->make(4, 5, 0),

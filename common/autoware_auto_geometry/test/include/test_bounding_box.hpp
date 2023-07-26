@@ -336,7 +336,7 @@ TYPED_TEST(BoxTest, Line3)
     /_/ <-- first guess is suboptimal
 
 */
-TYPED_TEST(BoxTest, SuboptInit)
+TYPED_TEST(BoxTest, SuboptimalInit)
 {
   this->points.insert(
     this->points.begin(),

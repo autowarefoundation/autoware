@@ -145,9 +145,9 @@ TYPED_TEST(TypedSpatialHashTest, Oob)
   // loop through all points
   float32_t r = dr + this->EPS;
   const uint32_t n_pts = PTS_PER_RING;
-  const auto & nbrs = hash.near(this->ref, r);
+  const auto & neighbors = hash.near(this->ref, r);
   uint32_t points_seen = 0U;
-  for (const auto itd : nbrs) {
+  for (const auto itd : neighbors) {
     const PointT & pt = itd;
     const float32_t dist = sqrtf((pt.x * pt.x) + (pt.y * pt.y));
     ASSERT_LT(dist, r);

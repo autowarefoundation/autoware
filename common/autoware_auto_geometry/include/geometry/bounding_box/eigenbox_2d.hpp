@@ -98,7 +98,7 @@ Covariance2d covariance_2d(const IT begin, const IT end)
 /// \param[out] eig_vec1 First eigenvector
 /// \param[out] eig_vec2 Second eigenvector
 /// \tparam PointT Point type that has at least float members x and y
-/// \return A pairt of eigenvalues: The first is the larger eigenvalue
+/// \return A pair of eigenvalues: The first is the larger eigenvalue
 /// \throw std::runtime error if you would get degenerate covariance
 template <typename PointT>
 std::pair<float32_t, float32_t> eig_2d(
