@@ -28,7 +28,7 @@
     <let name="map_based_detector_output_topic" value="$(var output/rois1)" unless="$(var enable_fine_detection)"/>
 
     <group unless="$(var fusion_only)">
-      <node pkg="topic_tools" exec="relay" name="traffic_light_camra_info_relay" args="$(var input/camera_info) camera_info"/>
+      <node pkg="topic_tools" exec="relay" name="traffic_light_camera_info_relay" args="$(var input/camera_info) camera_info"/>
       <group>
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share traffic_light_map_based_detector)/launch/traffic_light_map_based_detector.launch.xml">
@@ -78,7 +78,7 @@
     <let name="map_based_detector_output_topic" value="rois" unless="$(var enable_fine_detection)"/>
 
     <group unless="$(var fusion_only)">
-      <node pkg="topic_tools" exec="relay" name="traffic_light_camra_info_relay" args="$(var input/camera_info) camera_info"/>
+      <node pkg="topic_tools" exec="relay" name="traffic_light_camera_info_relay" args="$(var input/camera_info) camera_info"/>
       <group>
         <push-ros-namespace namespace="detection"/>
         <include file="$(find-pkg-share traffic_light_map_based_detector)/launch/traffic_light_map_based_detector.launch.xml">
