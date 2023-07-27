@@ -2,27 +2,28 @@
 
 ### Automatically generated from package.xml ###
 common/autoware_ad_api_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp
-common/autoware_auto_common/** opensource@apex.ai
+common/autoware_auto_common/** opensource@apex.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/autoware_auto_geometry/** satoshi.ota@tier4.jp
 common/autoware_auto_perception_rviz_plugin/** opensource@apex.ai satoshi.tanaka@tier4.jp taiki.tanaka@tier4.jp takeshi.miura@tier4.jp
-common/autoware_auto_tf2/** jit.ray.c@gmail.com
+common/autoware_auto_tf2/** jit.ray.c@gmail.com satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/autoware_point_types/** taichi.higashide@tier4.jp
-common/autoware_testing/** adam.dabrowski@robotec.ai
+common/autoware_testing/** adam.dabrowski@robotec.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/bag_time_manager_rviz_plugin/** taiki.tanaka@tier4.jp
 common/component_interface_specs/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp yukihiro.saito@tier4.jp
 common/component_interface_tools/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp
 common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp yukihiro.saito@tier4.jp
 common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp
-common/fake_test_node/** opensource@apex.ai
+common/fake_test_node/** opensource@apex.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/global_parameter_loader/** ryohsuke.mitsudome@tier4.jp
 common/goal_distance_calculator/** taiki.tanaka@tier4.jp
 common/grid_map_utils/** maxime.clement@tier4.jp
 common/interpolation/** fumiya.watanabe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
 common/kalman_filter/** koji.minoda@tier4.jp takeshi.ishita@tier4.jp yukihiro.saito@tier4.jp
 common/motion_utils/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp
+common/object_recognition_utils/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp takayuki.murooka@tier4.jp yusuke.muramatsu@tier4.jp
 common/osqp_interface/** fumiya.watanabe@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp
 common/path_distance_calculator/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp
-common/perception_utils/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp takayuki.murooka@tier4.jp yusuke.muramatsu@tier4.jp
+common/perception_utils/** mingyu.li@tier4.jp satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yusuke.muramatsu@tier4.jp
 common/polar_grid/** yukihiro.saito@tier4.jp
 common/qp_interface/** fumiya.watanabe@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp
 common/rtc_manager_rviz_plugin/** taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
@@ -45,8 +46,9 @@ common/tier4_simulated_clock_rviz_plugin/** maxime.clement@tier4.jp
 common/tier4_state_rviz_plugin/** hiroki.ota@tier4.jp isamu.takagi@tier4.jp
 common/tier4_traffic_light_rviz_plugin/** satoshi.ota@tier4.jp
 common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp
-common/time_utils/** christopherj.ho@gmail.com
+common/time_utils/** christopherj.ho@gmail.com shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 common/traffic_light_recognition_marker_publisher/** shumpei.wakabayashi@tier4.jp takeshi.miura@tier4.jp tomoya.kimura@tier4.jp
+common/traffic_light_utils/** mingyu.li@tier4.jp shunsuke.miura@tier4.jp
 common/trtexec_vendor/** daisuke.nishimatsu@tier4.jp yusuke.muramatsu@tier4.jp
 common/tvm_utility/** ambroise.vincent@arm.com xinyu.wang@tier4.jp
 control/autonomous_emergency_braking/** takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp
@@ -64,10 +66,9 @@ control/trajectory_follower_base/** takamasa.horibe@tier4.jp takayuki.murooka@ti
 control/trajectory_follower_node/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 control/vehicle_cmd_gate/** takamasa.horibe@tier4.jp tomoya.kimura@tier4.jp
 evaluator/diagnostic_converter/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp takamasa.horibe@tier4.jp
-evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai
-evaluator/localization_evaluator/** dominik.jargot@robotec.ai
+evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
+evaluator/localization_evaluator/** dominik.jargot@robotec.ai koji.minoda@tier4.jp
 evaluator/planning_evaluator/** kyoichi.sugahara@tier4.jp maxime.clement@tier4.jp
-launch/map4_localization_launch/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp ryohei.sasaki@map.jp ryu.yamamoto@tier4.jp yamato.ando@tier4.jp
 launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp ryohsuke.mitsudome@tier4.jp
 launch/tier4_control_launch/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
 launch/tier4_localization_launch/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp ryu.yamamoto@tier4.jp yamato.ando@tier4.jp
@@ -116,11 +117,17 @@ perception/map_based_prediction/** shunsuke.miura@tier4.jp tomoya.kimura@tier4.j
 perception/multi_object_tracker/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/object_merger/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/object_range_splitter/** yukihiro.saito@tier4.jp
+perception/object_velocity_splitter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
 perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
-perception/probabilistic_occupancy_grid_map/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
+perception/probabilistic_occupancy_grid_map/** mamoru.sobue@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
+perception/radar_crossing_objects_noise_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
 perception/radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp
+perception/radar_object_clustering/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
+perception/radar_object_tracker/** satoshi.tanaka@tier4.jp yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp
 perception/shape_estimation/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
+perception/simple_object_merger/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp yoshi.ri@tier4.jp
+perception/tensorrt_classifier/** mingyu.li@tier4.jp
 perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp
 perception/tensorrt_yolox/** daisuke.nishimatsu@tier4.jp dan.umeda@tier4.jp manato.hirabayashi@tier4.jp
 perception/traffic_light_arbiter/** kenzo.lobos@tier4.jp
@@ -128,17 +135,18 @@ perception/traffic_light_classifier/** shunsuke.miura@tier4.jp yukihiro.saito@ti
 perception/traffic_light_fine_detector/** mingyu.li@tier4.jp
 perception/traffic_light_map_based_detector/** yukihiro.saito@tier4.jp
 perception/traffic_light_multi_camera_fusion/** mingyu.li@tier4.jp
+perception/traffic_light_occlusion_predictor/** mingyu.li@tier4.jp
 perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp
 perception/traffic_light_visualization/** yukihiro.saito@tier4.jp
 planning/behavior_path_planner/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp
 planning/behavior_velocity_blind_spot_module/** mamoru.sobue@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
-planning/behavior_velocity_crosswalk_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
+planning/behavior_velocity_crosswalk_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_detection_area_module/** kyoichi.sugahara@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_intersection_module/** mamoru.sobue@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
-planning/behavior_velocity_no_drivable_lane_module/** ahmed.ebrahim@leodrive.ai
+planning/behavior_velocity_no_drivable_lane_module/** ahmed.ebrahim@leodrive.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_no_stopping_area_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_occlusion_spot_module/** shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
-planning/behavior_velocity_out_of_lane_module/** maxime.clement@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
+planning/behavior_velocity_out_of_lane_module/** maxime.clement@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_planner/** kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp makoto.kurihara@tier4.jp mamoru.sobue@tier4.jp maxime.clement@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp
 planning/behavior_velocity_planner_common/** isamu.takagi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_run_out_module/** makoto.kurihara@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
@@ -146,6 +154,7 @@ planning/behavior_velocity_speed_bump_module/** mdogru@leodrive.ai shumpei.wakab
 planning/behavior_velocity_stop_line_module/** shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp
 planning/behavior_velocity_traffic_light_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_virtual_traffic_light_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
+planning/behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/costmap_generator/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
 planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp shinnosuke.hirakawa@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
 planning/freespace_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
@@ -156,6 +165,7 @@ planning/obstacle_avoidance_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@
 planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
 planning/obstacle_stop_planner/** berkay@leodrive.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
 planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp
+planning/path_smoother/** maxime.clement@tier4.jp takayuki.murooka@tier4.jp
 planning/planning_debug_tools/** taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
 planning/planning_test_utils/** kyoichi.sugahara@tier4.jp takamasa.horibe@tier4.jp
 planning/planning_validator/** takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp
@@ -180,6 +190,7 @@ sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com shunsuke.miura@tier4
 sensing/radar_scan_to_pointcloud2/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp
 sensing/radar_static_pointcloud_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp
 sensing/radar_threshold_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp
+sensing/radar_tracks_noise_filter/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.jp
 sensing/tier4_pcl_extensions/** ryu.yamamoto@tier4.jp
 sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp
 simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp
@@ -201,7 +212,7 @@ system/system_error_monitor/** fumihito.ito@tier4.jp
 system/system_monitor/** akihiro.sakurai@tier4.jp fumihito.ito@tier4.jp
 system/topic_state_monitor/** ryohsuke.mitsudome@tier4.jp
 system/velodyne_monitor/** fumihito.ito@tier4.jp
-tools/simulator_test/simulator_compatibility_test/** shpark@morai.ai
+tools/simulator_test/simulator_compatibility_test/** shpark@morai.ai shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 vehicle/accel_brake_map_calibrator/accel_brake_map_calibrator/** taiki.tanaka@tier4.jp takeshi.miura@tier4.jp tomoya.kimura@tier4.jp
 vehicle/external_cmd_converter/** takamasa.horibe@tier4.jp
 vehicle/raw_vehicle_cmd_converter/** makoto.kurihara@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
