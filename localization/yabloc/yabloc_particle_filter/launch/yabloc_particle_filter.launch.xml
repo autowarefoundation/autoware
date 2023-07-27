@@ -9,7 +9,7 @@
 
     <remap from="~/input/initialpose" to="$(var input_initialpose)"/>
     <remap from="~/input/twist_with_covariance" to="$(var twist_cov_for_prediction)"/>
-    <remap from="~/input/height" to="/localization/pose_estimator/map/height"/>
+    <remap from="~/input/height" to="/localization/pose_estimator/yabloc/map/height"/>
     <remap from="~/input/weighted_particles" to="weighted_particles"/>
     <remap from="~/output/pose_with_covariance" to="/localization/pose_estimator/pose_with_covariance"/>
     <remap from="~/output/pose" to="pose"/>
@@ -19,9 +19,9 @@
   </node>
 
   <!-- camera  correction -->
-  <arg name="input_projected_line_segments_cloud" default="/localization/pose_estimator/image_processing/projected_line_segments_cloud"/>
-  <arg name="input_ll2_road_marking" default="/localization/pose_estimator/map/ll2_road_marking"/>
-  <arg name="input_ll2_bounding_box" default="/localization/pose_estimator/map/ll2_bounding_box"/>
+  <arg name="input_projected_line_segments_cloud" default="/localization/pose_estimator/yabloc/image_processing/projected_line_segments_cloud"/>
+  <arg name="input_ll2_road_marking" default="/localization/pose_estimator/yabloc/map/ll2_road_marking"/>
+  <arg name="input_ll2_bounding_box" default="/localization/pose_estimator/yabloc/map/ll2_bounding_box"/>
   <node pkg="yabloc_particle_filter" exec="camera_particle_corrector_node" name="camera_corrector" output="screen" args="--ros-args --log-level warn">
     <param from="$(var camera_particle_corrector_param_path)"/>
 
@@ -47,7 +47,7 @@
     <param from="$(var gnss_particle_corrector_param_path)"/>
 
     <remap from="~/input/predicted_particles" to="predicted_particles"/>
-    <remap from="~/input/height" to="/localization/pose_estimator/map/height"/>
+    <remap from="~/input/height" to="/localization/pose_estimator/yabloc/map/height"/>
     <remap from="~/input/pose_with_covariance" to="/sensing/gnss/pose_with_covariance"/>
 
     <remap from="~/output/weighted_particles" to="$(var output_weighted_particles)"/>

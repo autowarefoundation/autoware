@@ -21,33 +21,37 @@
 
   <let name="input_pose" value="/localization/pose_twist_fusion_filter/pose"/>
 
-  <!-- initializer -->
   <group>
-    <push-ros-namespace namespace="initializer"/>
-    <include file="$(find-pkg-share yabloc_pose_initializer)/launch/yabloc_pose_initializer.launch.xml"/>
-  </group>
+    <push-ros-namespace namespace="yabloc"/>
 
-  <!-- particle filter -->
-  <group>
-    <push-ros-namespace namespace="pf"/>
-    <include file="$(find-pkg-share yabloc_particle_filter)/launch/yabloc_particle_filter.launch.xml"/>
-  </group>
+    <!-- initializer -->
+    <group>
+      <push-ros-namespace namespace="initializer"/>
+      <include file="$(find-pkg-share yabloc_pose_initializer)/launch/yabloc_pose_initializer.launch.xml"/>
+    </group>
 
-  <!-- image processing -->
-  <group>
-    <push-ros-namespace namespace="image_processing"/>
-    <include file="$(find-pkg-share yabloc_image_processing)/launch/yabloc_image_processing.launch.xml">
-      <arg name="src_image" value="$(var src_image)"/>
-      <arg name="src_info" value="$(var src_info)"/>
-      <arg name="input_pose" value="$(var input_pose)"/>
-    </include>
-  </group>
+    <!-- particle filter -->
+    <group>
+      <push-ros-namespace namespace="pf"/>
+      <include file="$(find-pkg-share yabloc_particle_filter)/launch/yabloc_particle_filter.launch.xml"/>
+    </group>
 
-  <!-- map -->
-  <group>
-    <push-ros-namespace namespace="map"/>
-    <include file="$(find-pkg-share yabloc_common)/launch/yabloc_common.launch.xml">
-      <arg name="input_particle_pose" value="$(var input_pose)"/>
-    </include>
+    <!-- image processing -->
+    <group>
+      <push-ros-namespace namespace="image_processing"/>
+      <include file="$(find-pkg-share yabloc_image_processing)/launch/yabloc_image_processing.launch.xml">
+        <arg name="src_image" value="$(var src_image)"/>
+        <arg name="src_info" value="$(var src_info)"/>
+        <arg name="input_pose" value="$(var input_pose)"/>
+      </include>
+    </group>
+
+    <!-- map -->
+    <group>
+      <push-ros-namespace namespace="map"/>
+      <include file="$(find-pkg-share yabloc_common)/launch/yabloc_common.launch.xml">
+        <arg name="input_particle_pose" value="$(var input_pose)"/>
+      </include>
+    </group>
   </group>
 </launch>
