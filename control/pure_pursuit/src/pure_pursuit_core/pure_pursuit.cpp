@@ -55,16 +55,17 @@ std::pair<bool, double> PurePursuit::run()
     return std::make_pair(false, std::numeric_limits<double>::quiet_NaN());
   }
 
-  auto clst_pair = planning_utils::findClosestIdxWithDistAngThr(
-    *curr_wps_ptr_, *curr_pose_ptr_, clst_thr_dist_, clst_thr_ang_);
+  auto closest_pair = planning_utils::findClosestIdxWithDistAngThr(
+    *curr_wps_ptr_, *curr_pose_ptr_, closest_thr_dist_, closest_thr_ang_);
 
-  if (!clst_pair.first) {
+  if (!closest_pair.first) {
     RCLCPP_WARN(
-      logger, "cannot find, curr_bool: %d, clst_idx: %d", clst_pair.first, clst_pair.second);
+      logger, "cannot find, curr_bool: %d, closest_idx: %d", closest_pair.first,
+      closest_pair.second);
     return std::make_pair(false, std::numeric_limits<double>::quiet_NaN());
   }
 
-  int32_t next_wp_idx = findNextPointIdx(clst_pair.second);
+  int32_t next_wp_idx = findNextPointIdx(closest_pair.second);
   if (next_wp_idx == -1) {
     RCLCPP_WARN(logger, "lost next waypoint");
     return std::make_pair(false, std::numeric_limits<double>::quiet_NaN());

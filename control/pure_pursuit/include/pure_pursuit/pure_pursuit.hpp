@@ -47,7 +47,7 @@ namespace pure_pursuit
 class PurePursuit
 {
 public:
-  PurePursuit() : lookahead_distance_(0.0), clst_thr_dist_(3.0), clst_thr_ang_(M_PI / 4) {}
+  PurePursuit() : lookahead_distance_(0.0), closest_thr_dist_(3.0), closest_thr_ang_(M_PI / 4) {}
   ~PurePursuit() = default;
 
   rclcpp::Logger logger = rclcpp::get_logger("pure_pursuit");
@@ -55,10 +55,10 @@ public:
   void setCurrentPose(const geometry_msgs::msg::Pose & msg);
   void setWaypoints(const std::vector<geometry_msgs::msg::Pose> & msg);
   void setLookaheadDistance(double ld) { lookahead_distance_ = ld; }
-  void setClosestThreshold(double clst_thr_dist, double clst_thr_ang)
+  void setClosestThreshold(double closest_thr_dist, double closest_thr_ang)
   {
-    clst_thr_dist_ = clst_thr_dist;
-    clst_thr_ang_ = clst_thr_ang;
+    closest_thr_dist_ = closest_thr_dist;
+    closest_thr_ang_ = closest_thr_ang;
   }
 
   // getter
@@ -74,7 +74,7 @@ private:
   geometry_msgs::msg::Point loc_next_tgt_;
 
   // variables got from outside
-  double lookahead_distance_, clst_thr_dist_, clst_thr_ang_;
+  double lookahead_distance_, closest_thr_dist_, closest_thr_ang_;
   std::shared_ptr<std::vector<geometry_msgs::msg::Pose>> curr_wps_ptr_;
   std::shared_ptr<geometry_msgs::msg::Pose> curr_pose_ptr_;
 
