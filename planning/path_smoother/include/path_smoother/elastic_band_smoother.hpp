@@ -65,7 +65,7 @@ protected:
   EgoNearestParam ego_nearest_param_{};
 
   // variables for subscribers
-  Odometry::SharedPtr ego_state_ptr_;
+  Odometry::ConstSharedPtr ego_state_ptr_;
 
   // variables for previous information
   std::shared_ptr<std::vector<TrajectoryPoint>> prev_optimized_traj_points_ptr_;
@@ -88,7 +88,7 @@ protected:
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
 
   // subscriber callback function
-  void onPath(const Path::SharedPtr);
+  void onPath(const Path::ConstSharedPtr path_ptr);
 
   // reset functions
   void initializePlanning();

@@ -75,7 +75,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
   path_sub_ = create_subscription<Path>(
     "~/input/path", 1, std::bind(&ObstacleAvoidancePlanner::onPath, this, std::placeholders::_1));
   odom_sub_ = create_subscription<Odometry>(
-    "~/input/odometry", 1, [this](const Odometry::SharedPtr msg) { ego_state_ptr_ = msg; });
+    "~/input/odometry", 1, [this](const Odometry::ConstSharedPtr msg) { ego_state_ptr_ = msg; });
 
   // debug publisher
   debug_extended_traj_pub_ = create_publisher<Trajectory>("~/debug/extended_traj", 1);
@@ -189,7 +189,7 @@ void ObstacleAvoidancePlanner::resetPreviousData()
   mpt_optimizer_ptr_->resetPreviousData();
 }
 
-void ObstacleAvoidancePlanner::onPath(const Path::SharedPtr path_ptr)
+void ObstacleAvoidancePlanner::onPath(const Path::ConstSharedPtr path_ptr)
 {
   time_keeper_ptr_->init();
   time_keeper_ptr_->tic(__func__);

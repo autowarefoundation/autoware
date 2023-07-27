@@ -76,7 +76,7 @@ protected:  // for the static_centerline_optimizer package
   EgoNearestParam ego_nearest_param_{};
 
   // variables for subscribers
-  Odometry::SharedPtr ego_state_ptr_;
+  Odometry::ConstSharedPtr ego_state_ptr_;
 
   // interface publisher
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub_;
@@ -97,7 +97,7 @@ protected:  // for the static_centerline_optimizer package
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
 
   // subscriber callback function
-  void onPath(const Path::SharedPtr);
+  void onPath(const Path::ConstSharedPtr path_ptr);
 
   // reset functions
   void initializePlanning();

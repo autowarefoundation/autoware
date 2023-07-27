@@ -62,11 +62,12 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
     "~/input/external_velocity_limit_mps", 1,
     std::bind(&MotionVelocitySmootherNode::onExternalVelocityLimit, this, _1));
   sub_current_acceleration_ = create_subscription<AccelWithCovarianceStamped>(
-    "~/input/acceleration", 1,
-    [this](const AccelWithCovarianceStamped::SharedPtr msg) { current_acceleration_ptr_ = msg; });
+    "~/input/acceleration", 1, [this](const AccelWithCovarianceStamped::ConstSharedPtr msg) {
+      current_acceleration_ptr_ = msg;
+    });
   sub_operation_mode_ = create_subscription<OperationModeState>(
     "~/input/operation_mode_state", 1,
-    [this](const OperationModeState::SharedPtr msg) { operation_mode_ = *msg; });
+    [this](const OperationModeState::ConstSharedPtr msg) { operation_mode_ = *msg; });
 
   // parameter update
   set_param_res_ = this->add_on_set_parameters_callback(
