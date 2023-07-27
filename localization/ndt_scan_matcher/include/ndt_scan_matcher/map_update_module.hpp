@@ -63,7 +63,7 @@ private:
     const std::vector<autoware_map_msgs::msg::PointCloudMapCellWithID> & maps_to_add,
     const std::vector<std::string> & map_ids_to_remove);
   void update_map(const geometry_msgs::msg::Point & position);
-  bool should_update_map(const geometry_msgs::msg::Point & position) const;
+  [[nodiscard]] bool should_update_map(const geometry_msgs::msg::Point & position) const;
   void publish_partial_pcd_map();
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr loaded_pcd_pub_;

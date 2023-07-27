@@ -18,7 +18,7 @@ MapModule::MapModule(
   rclcpp::Node * node, std::mutex * ndt_ptr_mutex,
   std::shared_ptr<NormalDistributionsTransform> ndt_ptr,
   rclcpp::CallbackGroup::SharedPtr map_callback_group)
-: ndt_ptr_(ndt_ptr), ndt_ptr_mutex_(ndt_ptr_mutex)
+: ndt_ptr_(std::move(ndt_ptr)), ndt_ptr_mutex_(ndt_ptr_mutex)
 {
   auto map_sub_opt = rclcpp::SubscriptionOptions();
   map_sub_opt.callback_group = map_callback_group;

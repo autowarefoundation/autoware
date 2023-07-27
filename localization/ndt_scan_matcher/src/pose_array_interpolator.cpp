@@ -15,7 +15,7 @@
 #include "ndt_scan_matcher/pose_array_interpolator.hpp"
 
 PoseArrayInterpolator::PoseArrayInterpolator(
-  rclcpp::Node * node, const rclcpp::Time target_ros_time,
+  rclcpp::Node * node, const rclcpp::Time & target_ros_time,
   const std::deque<PoseWithCovarianceStamped::ConstSharedPtr> & pose_msg_ptr_array)
 : logger_(node->get_logger()),
   clock_(*node->get_clock()),
@@ -33,7 +33,7 @@ PoseArrayInterpolator::PoseArrayInterpolator(
 }
 
 PoseArrayInterpolator::PoseArrayInterpolator(
-  rclcpp::Node * node, const rclcpp::Time target_ros_time,
+  rclcpp::Node * node, const rclcpp::Time & target_ros_time,
   const std::deque<PoseWithCovarianceStamped::ConstSharedPtr> & pose_msg_ptr_array,
   const double & pose_timeout_sec, const double & pose_distance_tolerance_meters)
 : PoseArrayInterpolator(node, target_ros_time, pose_msg_ptr_array)
@@ -50,7 +50,7 @@ PoseArrayInterpolator::PoseArrayInterpolator(
     pose_distance_tolerance_meters);
 
   // all validations must be true
-  if (!(is_old_pose_valid & is_new_pose_valid & is_pose_diff_valid)) {
+  if (!(is_old_pose_valid && is_new_pose_valid && is_pose_diff_valid)) {
     RCLCPP_WARN(logger_, "Validation error.");
   }
 }
@@ -70,7 +70,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped PoseArrayInterpolator::get_new_pos
   return *new_pose_ptr_;
 }
 
-bool PoseArrayInterpolator::is_success()
+bool PoseArrayInterpolator::is_success() const
 {
   return success_;
 }

@@ -30,7 +30,7 @@ visualization_msgs::msg::MarkerArray make_debug_markers(
   marker.type = visualization_msgs::msg::Marker::ARROW;
   marker.action = visualization_msgs::msg::Marker::ADD;
   marker.scale = scale;
-  marker.id = i;
+  marker.id = static_cast<int32_t>(i);
   marker.lifetime = rclcpp::Duration::from_seconds(10.0);  // 10.0 is the lifetime in seconds.
 
   marker.ns = "initial_pose_transform_probability_color_marker";
@@ -45,7 +45,7 @@ visualization_msgs::msg::MarkerArray make_debug_markers(
 
   marker.ns = "initial_pose_index_color_marker";
   marker.pose = particle.initial_pose;
-  marker.color = exchange_color_crc((1.0 * i) / 100);
+  marker.color = exchange_color_crc(static_cast<double>(i) / 100.0);
   marker_array.markers.push_back(marker);
 
   marker.ns = "result_pose_transform_probability_color_marker";
@@ -60,7 +60,7 @@ visualization_msgs::msg::MarkerArray make_debug_markers(
 
   marker.ns = "result_pose_index_color_marker";
   marker.pose = particle.result_pose;
-  marker.color = exchange_color_crc((1.0 * i) / 100);
+  marker.color = exchange_color_crc(static_cast<double>(i) / 100.0);
   marker_array.markers.push_back(marker);
 
   return marker_array;

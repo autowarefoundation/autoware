@@ -39,7 +39,7 @@ public:
     rclcpp::CallbackGroup::SharedPtr map_callback_group);
 
 private:
-  void callback_map_points(sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud2_msg_ptr);
+  void callback_map_points(sensor_msgs::msg::PointCloud2::ConstSharedPtr map_points_msg_ptr);
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr map_points_sub_;
   std::shared_ptr<NormalDistributionsTransform> ndt_ptr_;

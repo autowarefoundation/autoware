@@ -28,19 +28,19 @@ std_msgs::msg::ColorRGBA exchange_color_crc(double x)
 
   if (x <= 0.25) {
     color.b = 1.0;
-    color.g = std::sin(x * 2.0 * M_PI);
+    color.g = static_cast<float>(std::sin(x * 2.0 * M_PI));
     color.r = 0;
   } else if (x > 0.25 && x <= 0.5) {
-    color.b = std::sin(x * 2 * M_PI);
+    color.b = static_cast<float>(std::sin(x * 2 * M_PI));
     color.g = 1.0;
     color.r = 0;
   } else if (x > 0.5 && x <= 0.75) {
     color.b = 0;
     color.g = 1.0;
-    color.r = -std::sin(x * 2.0 * M_PI);
+    color.r = static_cast<float>(-std::sin(x * 2.0 * M_PI));
   } else {
     color.b = 0;
-    color.g = -std::sin(x * 2.0 * M_PI);
+    color.g = static_cast<float>(-std::sin(x * 2.0 * M_PI));
     color.r = 1.0;
   }
   color.a = 0.999;
@@ -58,9 +58,9 @@ double calc_diff_for_radian(const double lhs_rad, const double rhs_rad)
   return diff_rad;
 }
 
-Eigen::Map<const RowMatrixXd> makeEigenCovariance(const std::array<double, 36> & covariance)
+Eigen::Map<const RowMatrixXd> make_eigen_covariance(const std::array<double, 36> & covariance)
 {
-  return Eigen::Map<const RowMatrixXd>(covariance.data(), 6, 6);
+  return {covariance.data(), 6, 6};
 }
 
 // x: roll, y: pitch, z: yaw
@@ -242,7 +242,7 @@ std::vector<geometry_msgs::msg::Pose> create_random_pose_array(
 {
   std::default_random_engine engine(seed_gen());
   const Eigen::Map<const RowMatrixXd> covariance =
-    makeEigenCovariance(base_pose_with_cov.pose.covariance);
+    make_eigen_covariance(base_pose_with_cov.pose.covariance);
 
   std::normal_distribution<> x_distribution(0.0, std::sqrt(covariance(0, 0)));
   std::normal_distribution<> y_distribution(0.0, std::sqrt(covariance(1, 1)));
