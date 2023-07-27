@@ -19,6 +19,7 @@
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/avoidance/helper.hpp"
+#include "behavior_path_planner/utils/safety_check.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -257,12 +258,6 @@ private:
     const AvoidancePlanningData & data, const PredictedObject & object) const;
 
   /**
-   * @brief get objects that are driving on adjacent lanes.
-   * @param left or right lanelets.
-   */
-  ObjectDataArray getAdjacentLaneObjects(const lanelet::ConstLanelets & adjacent_lanes) const;
-
-  /**
    * @brief fill additional data so that the module judges target objects.
    * @param avoidance data.
    * @param debug data.
@@ -482,64 +477,12 @@ private:
   // safety check
 
   /**
-   * @brief get shift side adjacent lanes.
-   * @param path shifter.
-   * @param forward distance to get.
-   * @param backward distance to get.
-   * @return adjacent lanes.
-   */
-  lanelet::ConstLanelets getAdjacentLane(
-    const PathShifter & path_shifter, const double forward_distance,
-    const double backward_distance) const;
-
-  /**
-   * @brief calculate lateral margin from avoidance velocity for safety check.
-   * @param target velocity.
-   */
-  double getLateralMarginFromVelocity(const double velocity) const;
-
-  /**
-   * @brief calculate rss longitudinal distance for safety check.
-   * @param ego velocity.
-   * @param object velocity.
-   * @param option for rss calculation.
-   * @return rss longitudinal distance.
-   */
-  double getRSSLongitudinalDistance(
-    const double v_ego, const double v_obj, const bool is_front_object) const;
-
-  /**
    * @brief check avoidance path safety for surround moving objects.
-   * @param path shifter.
    * @param avoidance path.
    * @param debug data.
    * @return result.
    */
-  bool isSafePath(
-    const PathShifter & path_shifter, ShiftedPath & shifted_path, DebugData & debug) const;
-
-  /**
-   * @brief check avoidance path safety for surround moving objects.
-   * @param avoidance path.
-   * @param shift side lanes.
-   * @param debug data.
-   * @return result.
-   */
-  bool isSafePath(
-    const PathWithLaneId & path, const lanelet::ConstLanelets & check_lanes,
-    DebugData & debug) const;
-
-  /**
-   * @brief check predicted points safety.
-   * @param predicted points.
-   * @param future time.
-   * @param object data.
-   * @param margin data for debug.
-   * @return result.
-   */
-  bool isEnoughMargin(
-    const PathPointWithLaneId & p_ego, const double t, const ObjectData & object,
-    MarginData & margin_data) const;
+  bool isSafePath(ShiftedPath & shifted_path, DebugData & debug) const;
 
   // post process
 

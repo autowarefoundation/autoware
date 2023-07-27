@@ -485,15 +485,22 @@ The hatched road marking is defined on Lanelet map. See [here](https://github.co
 
 ### Safety check
 
-The avoidance module has a safety check logic. The result of safe check is used for yield maneuver. It is enable by setting `enable_safety_check` as `true`.
+The avoidance module has a safety check logic. The result of safe check is used for yield maneuver. It is enable by setting `enable` as `true`.
 
 ```yaml
-enable_safety_check: false
+# safety check configuration
+enable: true # [-]
+check_current_lane: false # [-]
+check_shift_side_lane: true # [-]
+check_other_side_lane: false # [-]
+check_unavoidable_object: false # [-]
+check_other_object: true # [-]
 
-# For safety check
+# collision check parameters
+check_all_predicted_path: false # [-]
+time_horizon: 10.0 # [s]
+idling_time: 1.5 # [s]
 safety_check_backward_distance: 50.0 # [m]
-safety_check_time_horizon: 10.0 # [s]
-safety_check_idling_time: 1.5 # [s]
 safety_check_accel_for_rss: 2.5 # [m/ss]
 ```
 
@@ -621,11 +628,8 @@ namespace: `avoidance.`
 | detection_area_right_expand_dist       | [m]  | double | Lanelet expand length for right side to find avoidance target vehicles.                                                             | 0.0           |
 | detection_area_left_expand_dist        | [m]  | double | Lanelet expand length for left side to find avoidance target vehicles.                                                              | 1.0           |
 | enable_update_path_when_object_is_gone | [-]  | bool   | Reset trajectory when avoided objects are gone. If false, shifted path points remain same even though the avoided objects are gone. | false         |
-| enable_safety_check                    | [-]  | bool   | Flag to enable safety check.                                                                                                        | false         |
 | enable_yield_maneuver                  | [-]  | bool   | Flag to enable yield maneuver.                                                                                                      | false         |
 | enable_yield_maneuver_during_shifting  | [-]  | bool   | Flag to enable yield maneuver during shifting.                                                                                      | false         |
-
-**NOTE:** It has to set both `enable_safety_check` and `enable_yield_maneuver` to enable yield maneuver.
 
 | Name                      | Unit | Type | Description                                                                                                             | Default value |
 | :------------------------ | ---- | ---- | ----------------------------------------------------------------------------------------------------------------------- | ------------- |
@@ -695,14 +699,20 @@ namespace: `avoidance.target_filtering.`
 
 namespace: `avoidance.safety_check.`
 
-| Name                           | Unit   | Type   | Description                                                                                                | Default value |
-| :----------------------------- | ------ | ------ | ---------------------------------------------------------------------------------------------------------- | ------------- |
-| safety_check_backward_distance | [m]    | double | Backward distance to search the dynamic objects.                                                           | 50.0          |
-| safety_check_time_horizon      | [s]    | double | Time horizon to check lateral/longitudinal margin is enough or not.                                        | 10.0          |
-| safety_check_idling_time       | [t]    | double | Time delay constant that be use for longitudinal margin calculation based on RSS.                          | 1.5           |
-| safety_check_accel_for_rss     | [m/ss] | double | Accel constant that be used for longitudinal margin calculation based on RSS.                              | 2.5           |
-| safety_check_hysteresis_factor | [-]    | double | Hysteresis factor that be used for chattering prevention.                                                  | 2.0           |
-| safety_check_ego_offset        | [m]    | double | Output new avoidance path **only when** the offset between ego and previous output path is less than this. | 1.0           |
+| Name                           | Unit | Type   | Description                                                                                                | Default value |
+| :----------------------------- | ---- | ------ | ---------------------------------------------------------------------------------------------------------- | ------------- |
+| enable                         | [-]  | bool   | Enable to use safety check feature.                                                                        | true          |
+| check_current_lane             | [-]  | bool   | Check objects on current driving lane.                                                                     | false         |
+| check_shift_side_lane          | [-]  | bool   | Check objects on shift side lane.                                                                          | true          |
+| check_other_side_lane          | [-]  | bool   | Check objects on other side lane.                                                                          | false         |
+| check_unavoidable_object       | [-]  | bool   | Check collision between ego and unavoidable objects.                                                       | false         |
+| check_other_object             | [-]  | bool   | Check collision between ego and non avoidance target objects.                                              | false         |
+| check_all_predicted_path       | [-]  | bool   | Check all prediction path of safety check target objects.                                                  | false         |
+| time_horizon                   | [s]  | double | Time horizon to check lateral/longitudinal margin is enough or not.                                        | 10.0          |
+| time_resolution                | [s]  | double | Time resolution to check lateral/longitudinal margin is enough or not.                                     | 0.5           |
+| safety_check_backward_distance | [m]  | double | Backward distance to search the dynamic objects.                                                           | 50.0          |
+| safety_check_hysteresis_factor | [-]  | double | Hysteresis factor that be used for chattering prevention.                                                  | 2.0           |
+| safety_check_ego_offset        | [m]  | double | Output new avoidance path **only when** the offset between ego and previous output path is less than this. | 1.0           |
 
 ### Avoidance maneuver parameters
 

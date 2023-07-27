@@ -13,7 +13,6 @@
       enable_bound_clipping: false
       enable_update_path_when_object_is_gone: false
       enable_force_avoidance_for_stopped_vehicle: false
-      enable_safety_check: true
       enable_yield_maneuver: true
       enable_yield_maneuver_during_shifting: false
       disable_path_update: false
@@ -133,10 +132,18 @@
 
       # For safety check
       safety_check:
+        # safety check configuration
+        enable: true                                     # [-]
+        check_current_lane: false                        # [-]
+        check_shift_side_lane: true                      # [-]
+        check_other_side_lane: false                     # [-]
+        check_unavoidable_object: false                  # [-]
+        check_other_object: true                         # [-]
+        # collision check parameters
+        check_all_predicted_path: false                  # [-]
+        time_resolution: 0.5                             # [s]
+        time_horizon: 10.0                               # [s]
         safety_check_backward_distance: 100.0            # [m]
-        safety_check_time_horizon: 10.0                  # [s]
-        safety_check_idling_time: 1.5                    # [s]
-        safety_check_accel_for_rss: 2.5                  # [m/ss]
         safety_check_hysteresis_factor: 2.0              # [-]
         safety_check_ego_offset: 1.0                     # [m]
 
@@ -185,12 +192,6 @@
           max_deceleration: -2.0                        # [m/ss]
           max_jerk: 1.0                                 # [m/sss]
           max_acceleration: 1.0                         # [m/ss]
-
-      target_velocity_matrix:
-        col_size: 2
-        matrix:
-          [2.78, 13.9,                                  # velocity [m/s]
-           0.50, 1.00]                                  # margin [m]
 
       shift_line_pipeline:
         trim:

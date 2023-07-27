@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
 
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -45,6 +46,8 @@ using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
+
+using marker_utils::CollisionCheckDebug;
 
 struct ObjectParameter
 {
@@ -94,9 +97,6 @@ struct AvoidanceParameters
 
   // enable avoidance for all parking vehicle
   bool enable_force_avoidance_for_stopped_vehicle{false};
-
-  // enable safety check. if avoidance path is NOT safe, the ego will execute yield maneuver
-  bool enable_safety_check{false};
 
   // enable yield maneuver.
   bool enable_yield_maneuver{false};
@@ -177,20 +177,23 @@ struct AvoidanceParameters
   // for longitudinal direction
   double longitudinal_collision_margin_time;
 
+  // parameters for safety check area
+  bool enable_safety_check{false};
+  bool check_current_lane{false};
+  bool check_shift_side_lane{false};
+  bool check_other_side_lane{false};
+
+  // parameters for safety check target.
+  bool check_unavoidable_object{false};
+  bool check_other_object{false};
+
+  // parameters for collision check.
+  bool check_all_predicted_path{false};
+  double safety_check_time_horizon{0.0};
+  double safety_check_time_resolution{0.0};
+
   // find adjacent lane vehicles
   double safety_check_backward_distance;
-
-  // minimum longitudinal margin for vehicles in adjacent lane
-  double safety_check_min_longitudinal_margin;
-
-  // safety check time horizon
-  double safety_check_time_horizon;
-
-  // use in RSS calculation
-  double safety_check_idling_time;
-
-  // use in RSS calculation
-  double safety_check_accel_for_rss;
 
   // transit hysteresis (unsafe to safe)
   double safety_check_hysteresis_factor;
@@ -279,12 +282,6 @@ struct AvoidanceParameters
 
   // Maximum lateral acceleration limitation map.
   std::vector<double> lateral_max_accel_map;
-
-  // target velocity matrix
-  std::vector<double> target_velocity_matrix;
-
-  // matrix col size
-  size_t col_size;
 
   // parameters depend on object class
   std::unordered_map<uint8_t, ObjectParameter> object_parameters;

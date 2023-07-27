@@ -17,7 +17,9 @@
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/utils/safety_check.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -25,6 +27,10 @@
 namespace behavior_path_planner::utils::avoidance
 {
 using behavior_path_planner::PlannerData;
+using behavior_path_planner::utils::safety_check::ExtendedPredictedObject;
+using behavior_path_planner::utils::safety_check::PoseWithVelocityAndPolygonStamped;
+using behavior_path_planner::utils::safety_check::PoseWithVelocityStamped;
+using behavior_path_planner::utils::safety_check::PredictedPathWithPolygon;
 
 bool isOnRight(const ObjectData & obj);
 
@@ -79,10 +85,18 @@ std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
   const ObjectDataArray & objects, const std::shared_ptr<AvoidanceParameters> & parameters,
   const double vehicle_width);
 
+std::vector<PoseWithVelocityStamped> convertToPredictedPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
+
 double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const double v);
 
 bool isCentroidWithinLanelets(
   const PredictedObject & object, const lanelet::ConstLanelets & target_lanelets);
+
+lanelet::ConstLanelets getAdjacentLane(
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift);
 
 lanelet::ConstLanelets getTargetLanelets(
   const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
@@ -139,6 +153,13 @@ AvoidLine fillAdditionalInfo(const AvoidancePlanningData & data, const AvoidLine
 
 AvoidLineArray combineRawShiftLinesWithUniqueCheck(
   const AvoidLineArray & base_lines, const AvoidLineArray & added_lines);
+
+ExtendedPredictedObject transform(
+  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters);
+
+std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
+  const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift);
 }  // namespace behavior_path_planner::utils::avoidance
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__UTILS_HPP_
