@@ -17,7 +17,7 @@ ament_auto_add_library(${MPC_LAT_CON_LIB} SHARED
   src/mpc_trajectory.cpp
   src/mpc_utils.cpp
   src/qp_solver/qp_solver_osqp.cpp
-  src/qp_solver/qp_solver_unconstr_fast.cpp
+  src/qp_solver/qp_solver_unconstraint_fast.cpp
   src/vehicle_model/vehicle_model_bicycle_dynamics.cpp
   src/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.cpp
   src/vehicle_model/vehicle_model_bicycle_kinematics.cpp

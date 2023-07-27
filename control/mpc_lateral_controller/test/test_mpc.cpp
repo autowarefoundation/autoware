@@ -15,7 +15,7 @@
 #include "gtest/gtest.h"
 #include "mpc_lateral_controller/mpc.hpp"
 #include "mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
-#include "mpc_lateral_controller/qp_solver/qp_solver_unconstr_fast.hpp"
+#include "mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
