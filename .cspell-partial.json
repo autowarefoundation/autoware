@@ -1,6 +1,5 @@
 {
   "ignorePaths": [
-    "**/common/**",
     "**/control/**",
     "**/evaluator/**",
     "**/launch/**",
