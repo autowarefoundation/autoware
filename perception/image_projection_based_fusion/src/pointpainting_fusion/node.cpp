@@ -180,6 +180,12 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
 
 void PointPaintingFusionNode::preprocess(sensor_msgs::msg::PointCloud2 & painted_pointcloud_msg)
 {
+  if (painted_pointcloud_msg.data.empty() || painted_pointcloud_msg.fields.empty()) {
+    RCLCPP_WARN_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
+    return;
+  }
+
   sensor_msgs::msg::PointCloud2 tmp;
   tmp = painted_pointcloud_msg;
 
@@ -232,6 +238,12 @@ void PointPaintingFusionNode::fuseOnSingleImage(
   const sensor_msgs::msg::CameraInfo & camera_info,
   sensor_msgs::msg::PointCloud2 & painted_pointcloud_msg)
 {
+  if (painted_pointcloud_msg.data.empty() || painted_pointcloud_msg.fields.empty()) {
+    RCLCPP_WARN_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
+    return;
+  }
+
   auto num_bbox = (input_roi_msg.feature_objects).size();
   if (num_bbox == 0) {
     return;
@@ -339,6 +351,12 @@ void PointPaintingFusionNode::postprocess(sensor_msgs::msg::PointCloud2 & painte
   const auto objects_sub_count =
     obj_pub_ptr_->get_subscription_count() + obj_pub_ptr_->get_intra_process_subscription_count();
   if (objects_sub_count < 1) {
+    return;
+  }
+
+  if (painted_pointcloud_msg.data.empty() || painted_pointcloud_msg.fields.empty()) {
+    RCLCPP_WARN_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
     return;
   }
 
