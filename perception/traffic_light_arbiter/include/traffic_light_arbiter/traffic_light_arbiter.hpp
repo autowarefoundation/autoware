@@ -22,6 +22,7 @@
 
 #include <lanelet2_core/Forward.h>
 
+#include <memory>
 #include <unordered_set>
 
 class TrafficLightArbiter : public rclcpp::Node
@@ -45,7 +46,7 @@ private:
   void onExternalMsg(const TrafficSignalArray::ConstSharedPtr msg);
   void arbitrateAndPublish(const builtin_interfaces::msg::Time & stamp);
 
-  std::unordered_set<lanelet::Id> map_regulatory_elements_set_;
+  std::unique_ptr<std::unordered_set<lanelet::Id>> map_regulatory_elements_set_;
 
   double external_time_tolerance_;
   double perception_time_tolerance_;
