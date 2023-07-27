@@ -49,7 +49,6 @@ ament_auto_add_library(
 )
 target_include_directories(abstract_corrector SYSTEM PRIVATE ${PCL_INCLUDE_DIRS})
 target_link_libraries(abstract_corrector Sophus::Sophus ${PCL_LIBRARIES})
-rosidl_target_interfaces(abstract_corrector ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 # Prediction library
 ament_auto_add_library(predictor
@@ -60,7 +59,16 @@ ament_auto_add_library(predictor
 )
 target_include_directories(predictor SYSTEM PRIVATE ${PCL_INCLUDE_DIRS})
 target_link_libraries(predictor Sophus::Sophus ${PCL_LIBRARIES})
-rosidl_target_interfaces(predictor ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+# ros2idl typesupport
+if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)
+  rosidl_target_interfaces(abstract_corrector ${PROJECT_NAME} "rosidl_typesupport_cpp")
+  rosidl_target_interfaces(predictor ${PROJECT_NAME} "rosidl_typesupport_cpp")
+else()
+  rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+  target_link_libraries(abstract_corrector "${cpp_typesupport_target}")
+  target_link_libraries(predictor "${cpp_typesupport_target}")
+endif()
 
 # Cost map Library
 ament_auto_add_library(ll2_cost_map
