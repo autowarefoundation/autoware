@@ -152,8 +152,8 @@ private:
   // check if the goal is located behind the ego in the same route segment.
   bool IsGoalBehindOfEgoInSameRouteSegment() const;
 
-  // generate BehaviorPathOutput with stopping path.
-  BehaviorModuleOutput generateStopOutput() const;
+  // generate BehaviorPathOutput with stopping path and update status
+  BehaviorModuleOutput generateStopOutput();
 
   void setDebugData() const;
 };
