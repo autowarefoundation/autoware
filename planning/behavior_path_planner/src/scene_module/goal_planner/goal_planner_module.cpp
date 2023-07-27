@@ -1110,8 +1110,15 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo() const
     const double distance_to_end =
       calcSignedArcLength(full_path.points, current_pose.position, end_pose.position);
     const bool is_before_end_pose = distance_to_end >= 0.0;
-    turn_signal.turn_signal.command =
-      is_before_end_pose ? TurnIndicatorsCommand::ENABLE_LEFT : TurnIndicatorsCommand::NO_COMMAND;
+    if (is_before_end_pose) {
+      if (left_side_parking_) {
+        turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+      } else {
+        turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+      }
+    } else {
+      turn_signal.turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
+    }
   }
 
   // calc desired/required start/end point
