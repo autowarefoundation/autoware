@@ -37,6 +37,9 @@ namespace behavior_path_planner
 {
 struct DynamicAvoidanceParameters
 {
+  // common
+  bool enable_debug_info{true};
+
   // obstacle types to avoid
   bool avoid_car{true};
   bool avoid_truck{true};

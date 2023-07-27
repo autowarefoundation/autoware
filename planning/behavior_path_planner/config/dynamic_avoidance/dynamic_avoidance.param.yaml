@@ -1,6 +1,9 @@
 /**:
   ros__parameters:
     dynamic_avoidance:
+      common:
+        enable_debug_info: true
+
       # avoidance is performed for the object type with true
       target_object:
         car: true

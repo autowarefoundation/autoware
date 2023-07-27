@@ -29,6 +29,11 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
 {
   DynamicAvoidanceParameters p{};
 
+  {  // common
+    std::string ns = "dynamic_avoidance.common.";
+    p.enable_debug_info = node->declare_parameter<bool>(ns + "enable_debug_info");
+  }
+
   {  // target object
     std::string ns = "dynamic_avoidance.target_object.";
     p.avoid_car = node->declare_parameter<bool>(ns + "car");
@@ -87,6 +92,11 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
 {
   using tier4_autoware_utils::updateParam;
   auto & p = parameters_;
+
+  {  // common
+    const std::string ns = "dynamic_avoidance.common.";
+    updateParam<bool>(parameters, ns + "enable_debug_info", p->enable_debug_info);
+  }
 
   {  // target object
     const std::string ns = "dynamic_avoidance.target_object.";
