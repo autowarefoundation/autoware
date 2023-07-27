@@ -30,15 +30,15 @@ struct Bounds;
 
 struct PlannerData
 {
-  // input
-  Header header;
-  std::vector<TrajectoryPoint> traj_points;  // converted from the input path
-  std::vector<geometry_msgs::msg::Point> left_bound;
-  std::vector<geometry_msgs::msg::Point> right_bound;
-
-  // ego
+  std::vector<TrajectoryPoint> traj_points;
   geometry_msgs::msg::Pose ego_pose;
   double ego_vel{};
+
+  PlannerData(
+    std::vector<TrajectoryPoint> traj_points_, geometry_msgs::msg::Pose ego_pose_, double ego_vel_)
+  : traj_points(traj_points_), ego_pose(ego_pose_), ego_vel(ego_vel_)
+  {
+  }
 };
 
 struct TimeKeeper

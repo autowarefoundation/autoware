@@ -87,6 +87,7 @@ ElasticBandSmoother::ElasticBandSmoother(const rclcpp::NodeOptions & node_option
 
   eb_path_smoother_ptr_ = std::make_shared<EBPathSmoother>(
     this, enable_debug_info_, ego_nearest_param_, common_param_, time_keeper_ptr_);
+  replan_checker_ptr_ = std::make_shared<ReplanChecker>(this, ego_nearest_param_);
 
   // reset planners
   initializePlanning();
@@ -109,6 +110,7 @@ rcl_interfaces::msg::SetParametersResult ElasticBandSmoother::onParam(
 
   // parameters for core algorithms
   eb_path_smoother_ptr_->onParam(parameters);
+  replan_checker_ptr_->onParam(parameters);
 
   // reset planners
   initializePlanning();
@@ -162,10 +164,28 @@ void ElasticBandSmoother::onPath(const Path::ConstSharedPtr path_ptr)
   const auto input_traj_points = trajectory_utils::convertToTrajectoryPoints(path_ptr->points);
 
   // 1. calculate trajectory with Elastic Band
+  // 1.a check if replan (= optimization) is required
+  PlannerData planner_data(
+    input_traj_points, ego_state_ptr_->pose.pose, ego_state_ptr_->twist.twist.linear.x);
+  const bool is_replan_required = [&]() {
+    if (replan_checker_ptr_->isResetRequired(planner_data)) {
+      // NOTE: always replan when resetting previous optimization
+      resetPreviousData();
+      return true;
+    }
+    // check replan when not resetting previous optimization
+    return !prev_optimized_traj_points_ptr_ ||
+           replan_checker_ptr_->isReplanRequired(planner_data, now());
+  }();
+  replan_checker_ptr_->updateData(planner_data, is_replan_required, now());
   time_keeper_ptr_->tic(__func__);
-  auto smoothed_traj_points =
-    eb_path_smoother_ptr_->smoothTrajectory(input_traj_points, ego_state_ptr_->pose.pose);
+  auto smoothed_traj_points = is_replan_required ? eb_path_smoother_ptr_->smoothTrajectory(
+                                                     input_traj_points, ego_state_ptr_->pose.pose)
+                                                 : *prev_optimized_traj_points_ptr_;
   time_keeper_ptr_->toc(__func__, "    ");
+
+  prev_optimized_traj_points_ptr_ =
+    std::make_shared<std::vector<TrajectoryPoint>>(smoothed_traj_points);
 
   // 2. update velocity
   applyInputVelocity(smoothed_traj_points, input_traj_points, ego_state_ptr_->pose.pose);

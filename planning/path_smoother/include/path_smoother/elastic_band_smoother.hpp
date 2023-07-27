@@ -18,6 +18,7 @@
 #include "motion_utils/motion_utils.hpp"
 #include "path_smoother/common_structs.hpp"
 #include "path_smoother/elastic_band.hpp"
+#include "path_smoother/replan_checker.hpp"
 #include "path_smoother/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
@@ -59,6 +60,7 @@ protected:
 
   // algorithms
   std::shared_ptr<EBPathSmoother> eb_path_smoother_ptr_{nullptr};
+  std::shared_ptr<ReplanChecker> replan_checker_ptr_{nullptr};
 
   // parameters
   CommonParam common_param_{};
