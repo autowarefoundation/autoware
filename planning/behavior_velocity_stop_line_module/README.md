@@ -25,7 +25,7 @@ This module is activated when there is a stop line in a target lane.
 - Gets a stop line from map information.
 - insert a stop point on the path from the stop line defined in the map and the ego vehicle length.
 - Sets velocities of the path after the stop point to 0[m/s].
-- Release the inserted stop velocity when the vehicle stops within a radius of 2[m] from the stop point.
+- Release the inserted stop velocity when the vehicle stops at the stop point for `stop_duration_sec` seconds.
 
 #### Flowchart
 
@@ -50,13 +50,13 @@ endif
 if (state is APPROACH) then (yes)
   :set stop velocity;
 
-  if (vehicle is within stop_check_dist?) then (yes)
+  if (vehicle is within hold_stop_margin_distance?) then (yes)
     if (vehicle is stopped?) then (yes)
       :change state to STOPPED;
     endif
   endif
 else if (state is STOPPED) then (yes)
-  if (vehicle started to move?) then (yes)
+  if (stopping time is longer than stop_duration_sec ?) then (yes)
     :change state to START;
   endif
 else if (state is START) then (yes)
