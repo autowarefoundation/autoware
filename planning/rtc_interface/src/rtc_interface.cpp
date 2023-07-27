@@ -251,7 +251,7 @@ void RTCInterface::clearCooperateStatus()
   stored_commands_.clear();
 }
 
-bool RTCInterface::isActivated(const UUID & uuid)
+bool RTCInterface::isActivated(const UUID & uuid) const
 {
   std::lock_guard<std::mutex> lock(mutex_);
   const auto itr = std::find_if(
@@ -271,7 +271,7 @@ bool RTCInterface::isActivated(const UUID & uuid)
   return false;
 }
 
-bool RTCInterface::isRegistered(const UUID & uuid)
+bool RTCInterface::isRegistered(const UUID & uuid) const
 {
   std::lock_guard<std::mutex> lock(mutex_);
   const auto itr = std::find_if(
