@@ -70,6 +70,7 @@ using behavior_path_planner::utils::safety_check::ExtendedPredictedObject;
 using behavior_path_planner::utils::safety_check::PoseWithVelocityAndPolygonStamped;
 using behavior_path_planner::utils::safety_check::PoseWithVelocityStamped;
 using behavior_path_planner::utils::safety_check::PredictedPathWithPolygon;
+using drivable_area_expansion::DrivableAreaExpansionParameters;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
@@ -229,6 +230,9 @@ boost::optional<lanelet::ConstLanelet> getLeftLanelet(
 std::vector<DrivableLanes> generateDrivableLanes(const lanelet::ConstLanelets & current_lanes);
 std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & shoulder_lanes);
+std::vector<DrivableLanes> getNonOverlappingExpandedLanes(
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
+  const DrivableAreaExpansionParameters & parameters);
 std::vector<geometry_msgs::msg::Point> calcBound(
   const std::shared_ptr<RouteHandler> route_handler,
   const std::vector<DrivableLanes> & drivable_lanes,

@@ -664,7 +664,8 @@ void GoalPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) const
     output.drivable_area_info.drivable_margin =
       planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
   } else {
-    const auto target_drivable_lanes = getNonOverlappingExpandedLanes(*output.path, status_.lanes);
+    const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
+      *output.path, status_.lanes, planner_data_->drivable_area_expansion_parameters);
 
     DrivableAreaInfo current_drivable_area_info;
     current_drivable_area_info.drivable_lanes = target_drivable_lanes;
@@ -854,7 +855,8 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
     out.drivable_area_info.drivable_margin =
       planner_data_->parameters.vehicle_width / 2.0 + drivable_area_margin;
   } else {
-    const auto target_drivable_lanes = getNonOverlappingExpandedLanes(*out.path, status_.lanes);
+    const auto target_drivable_lanes = utils::getNonOverlappingExpandedLanes(
+      *out.path, status_.lanes, planner_data_->drivable_area_expansion_parameters);
 
     DrivableAreaInfo current_drivable_area_info;
     current_drivable_area_info.drivable_lanes = target_drivable_lanes;

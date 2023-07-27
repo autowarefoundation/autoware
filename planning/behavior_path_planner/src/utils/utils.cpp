@@ -1212,6 +1212,16 @@ std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
   return drivable_lanes;
 }
 
+std::vector<DrivableLanes> getNonOverlappingExpandedLanes(
+  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
+  const DrivableAreaExpansionParameters & parameters)
+{
+  const auto shorten_lanes = utils::cutOverlappedLanes(path, lanes);
+  return utils::expandLanelets(
+    shorten_lanes, parameters.drivable_area_left_bound_offset,
+    parameters.drivable_area_right_bound_offset, parameters.drivable_area_types_to_skip);
+}
+
 boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes)
 {
   auto overlaps = [](const DrivableLanes & lanes, const DrivableLanes & target_lanes) {

@@ -81,7 +81,6 @@ public:
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
   ModuleStatus updateState() override;
-  ModuleStatus getNodeStatusWhileWaitingApproval() const override { return ModuleStatus::SUCCESS; }
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
