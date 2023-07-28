@@ -227,7 +227,7 @@ lanelet::ConstLanelets getRightLineSharingLanelets(
   for (auto & candidate : right_lane_candidates) {
     // exclude self lanelet
     if (candidate == current_lanelet) continue;
-    // if candidate has linestring as leftbound, assign it to output
+    // if candidate has linestring as left bound, assign it to output
     if (candidate.leftBound() == current_lanelet.rightBound()) {
       output_lanelets.push_back(candidate);
     }
@@ -254,7 +254,7 @@ lanelet::ConstLanelets getLeftLineSharingLanelets(
   for (auto & candidate : left_lane_candidates) {
     // exclude self lanelet
     if (candidate == current_lanelet) continue;
-    // if candidate has linestring as rightbound, assign it to output
+    // if candidate has linestring as right bound, assign it to output
     if (candidate.rightBound() == current_lanelet.leftBound()) {
       output_lanelets.push_back(candidate);
     }
@@ -287,7 +287,7 @@ lanelet::routing::LaneletPaths getPossiblePathsForIsolatedLanelet(
   lanelet::ConstLanelets possible_lanelets;
   possible_lanelets.push_back(lanelet);
   lanelet::routing::LaneletPaths possible_paths;
-  // need to init path with constlanelets
+  // need to initialize path with constant lanelets
   lanelet::routing::LaneletPath possible_path(possible_lanelets);
   possible_paths.push_back(possible_path);
   return possible_paths;
