@@ -28,6 +28,7 @@
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>shape_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tier4_api_msgs</depend>
   <depend>tier4_control_msgs</depend>
