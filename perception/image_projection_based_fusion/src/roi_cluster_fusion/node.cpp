@@ -191,38 +191,39 @@ void RoiClusterFusionNode::fuseOnSingleImage(
         max_iou = iou + iou_x + iou_y;
       }
     }
-    bool is_roi_label_known = feature_obj.object.classification.front().label !=
-                              autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
-    bool is_roi_existence_prob_higher =
-      output_cluster_msg.feature_objects.at(index).object.existence_probability <=
-      feature_obj.object.existence_probability;
-    if (iou_threshold_ < max_iou && is_roi_existence_prob_higher && is_roi_label_known) {
-      output_cluster_msg.feature_objects.at(index).object.classification =
-        feature_obj.object.classification;
+    if (!output_cluster_msg.feature_objects.empty()) {
+      bool is_roi_label_known = feature_obj.object.classification.front().label !=
+                                autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
+      bool is_roi_existence_prob_higher =
+        output_cluster_msg.feature_objects.at(index).object.existence_probability <=
+        feature_obj.object.existence_probability;
+      if (iou_threshold_ < max_iou && is_roi_existence_prob_higher && is_roi_label_known) {
+        output_cluster_msg.feature_objects.at(index).object.classification =
+          feature_obj.object.classification;
 
-      // Update existence_probability for fused objects
-      if (
-        output_cluster_msg.feature_objects.at(index).object.existence_probability <
-        min_roi_existence_prob_) {
-        output_cluster_msg.feature_objects.at(index).object.existence_probability =
-          min_roi_existence_prob_;
+        // Update existence_probability for fused objects
+        if (
+          output_cluster_msg.feature_objects.at(index).object.existence_probability <
+          min_roi_existence_prob_) {
+          output_cluster_msg.feature_objects.at(index).object.existence_probability =
+            min_roi_existence_prob_;
+        }
+      }
+
+      // fuse with unknown roi
+
+      if (unknown_iou_threshold_ < max_iou && is_roi_existence_prob_higher && !is_roi_label_known) {
+        output_cluster_msg.feature_objects.at(index).object.classification =
+          feature_obj.object.classification;
+        // Update existence_probability for fused objects
+        if (
+          output_cluster_msg.feature_objects.at(index).object.existence_probability <
+          min_roi_existence_prob_) {
+          output_cluster_msg.feature_objects.at(index).object.existence_probability =
+            min_roi_existence_prob_;
+        }
       }
     }
-
-    // fuse with unknown roi
-
-    if (unknown_iou_threshold_ < max_iou && is_roi_existence_prob_higher && !is_roi_label_known) {
-      output_cluster_msg.feature_objects.at(index).object.classification =
-        feature_obj.object.classification;
-      // Update existence_probability for fused objects
-      if (
-        output_cluster_msg.feature_objects.at(index).object.existence_probability <
-        min_roi_existence_prob_) {
-        output_cluster_msg.feature_objects.at(index).object.existence_probability =
-          min_roi_existence_prob_;
-      }
-    }
-
     debug_image_rois.push_back(feature_obj.feature.roi);
   }
 
