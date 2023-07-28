@@ -55,6 +55,8 @@ struct DynamicAvoidanceParameters
   double min_obj_lat_offset_to_ego_path{0.0};
   double max_obj_lat_offset_to_ego_path{0.0};
 
+  double min_time_to_start_cut_in{0.0};
+  double min_lon_offset_ego_to_cut_in_object{0.0};
   double max_front_object_angle{0.0};
   double min_crossing_object_vel{0.0};
   double max_crossing_object_angle{0.0};
@@ -145,11 +147,20 @@ public:
   }
 
 private:
+  struct LatLonOffset
+  {
+    const size_t nearest_idx;
+    const double max_lat_offset;
+    const double min_lat_offset;
+    const double max_lon_offset;
+    const double min_lon_offset;
+  };
+
   bool isLabelTargetObstacle(const uint8_t label) const;
   std::vector<DynamicAvoidanceObjectCandidate> calcTargetObjectsCandidate();
   bool willObjectCutIn(
     const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
-    const double obj_tangent_vel) const;
+    const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const;
   bool willObjectCutOut(
     const double obj_tangent_vel, const double obj_normal_vel, const bool is_left) const;
   bool isObjectFarFromPath(
@@ -159,6 +170,8 @@ private:
     const double obj_tangent_vel) const;
   std::optional<std::pair<size_t, size_t>> calcCollisionSection(
     const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & obj_path) const;
+  LatLonOffset getLateralLongitudinalOffset(
+    const std::vector<PathPointWithLaneId> & ego_path, const PredictedObject & object) const;
 
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;

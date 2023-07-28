@@ -53,6 +53,11 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
     p.max_obj_lat_offset_to_ego_path =
       node->declare_parameter<double>(ns + "max_obj_lat_offset_to_ego_path");
 
+    p.min_time_to_start_cut_in =
+      node->declare_parameter<double>(ns + "cut_in_object.min_time_to_start_cut_in");
+    p.min_lon_offset_ego_to_cut_in_object =
+      node->declare_parameter<double>(ns + "cut_in_object.min_lon_offset_ego_to_object");
+
     p.max_front_object_angle =
       node->declare_parameter<double>(ns + "front_object.max_object_angle");
 
@@ -120,6 +125,12 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
       parameters, ns + "min_obj_lat_offset_to_ego_path", p->min_obj_lat_offset_to_ego_path);
     updateParam<double>(
       parameters, ns + "max_obj_lat_offset_to_ego_path", p->max_obj_lat_offset_to_ego_path);
+
+    updateParam<double>(
+      parameters, ns + "cut_in_object.min_time_to_start_cut_in", p->min_time_to_start_cut_in);
+    updateParam<double>(
+      parameters, ns + "cut_in_object.min_lon_offset_ego_to_object",
+      p->min_lon_offset_ego_to_cut_in_object);
 
     updateParam<double>(
       parameters, ns + "front_object.max_object_angle", p->max_front_object_angle);

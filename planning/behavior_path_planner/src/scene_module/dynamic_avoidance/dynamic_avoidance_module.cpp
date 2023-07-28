@@ -399,10 +399,12 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate()
     // TODO(murooka) use obj_path.back() instead of obj_pose for the case where the object crosses
     // the ego's path
     const bool is_left = isLeft(prev_module_path->points, obj_path.path.back().position);
+    const auto lat_lon_offset =
+      getLateralLongitudinalOffset(prev_module_path->points, predicted_object);
 
     // 6. check if object will not cut in or cut out
     const bool will_object_cut_in =
-      willObjectCutIn(prev_module_path->points, obj_path, obj_tangent_vel);
+      willObjectCutIn(prev_module_path->points, obj_path, obj_tangent_vel, lat_lon_offset);
     const bool will_object_cut_out = willObjectCutOut(obj_tangent_vel, obj_normal_vel, is_left);
     if (will_object_cut_in) {
       RCLCPP_INFO_EXPRESSION(
@@ -516,12 +518,26 @@ bool DynamicAvoidanceModule::isObjectFarFromPath(
 
 bool DynamicAvoidanceModule::willObjectCutIn(
   const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
-  const double obj_tangent_vel) const
+  const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const
 {
   constexpr double epsilon_path_lat_diff = 0.3;
 
   // Ignore oncoming object
   if (obj_tangent_vel < 0) {
+    return false;
+  }
+
+  // Ignore object close to the ego
+  const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(ego_path);
+  const double relative_velocity = getEgoSpeed() - obj_tangent_vel;
+  const double lon_offset_ego_to_obj =
+    motion_utils::calcSignedArcLength(
+      ego_path, getEgoPose().position, ego_seg_idx, lat_lon_offset.nearest_idx) +
+    lat_lon_offset.min_lon_offset;
+  if (
+    lon_offset_ego_to_obj < std::max(
+                              parameters_->min_lon_offset_ego_to_cut_in_object,
+                              relative_velocity * parameters_->min_time_to_start_cut_in)) {
     return false;
   }
 
@@ -594,6 +610,41 @@ std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> DynamicAvoidanceModule
   }
 
   return std::make_pair(right_lanes, left_lanes);
+}
+
+DynamicAvoidanceModule::LatLonOffset DynamicAvoidanceModule::getLateralLongitudinalOffset(
+  const std::vector<PathPointWithLaneId> & ego_path, const PredictedObject & object) const
+{
+  const auto & obj_pose = object.kinematics.initial_pose_with_covariance.pose;
+
+  const size_t obj_seg_idx = motion_utils::findNearestSegmentIndex(ego_path, obj_pose.position);
+  const auto obj_points = tier4_autoware_utils::toPolygon2d(obj_pose, object.shape);
+
+  // TODO(murooka) calculation is not so accurate.
+  std::vector<double> obj_lat_offset_vec;
+  std::vector<double> obj_lon_offset_vec;
+  for (size_t i = 0; i < obj_points.outer().size(); ++i) {
+    const auto geom_obj_point = toGeometryPoint(obj_points.outer().at(i));
+    const size_t obj_point_seg_idx =
+      motion_utils::findNearestSegmentIndex(ego_path, geom_obj_point);
+
+    // calculate lateral offset
+    const double obj_point_lat_offset =
+      motion_utils::calcLateralOffset(ego_path, geom_obj_point, obj_point_seg_idx);
+    obj_lat_offset_vec.push_back(obj_point_lat_offset);
+
+    // calculate longitudinal offset
+    const double lon_offset =
+      motion_utils::calcLongitudinalOffsetToSegment(ego_path, obj_seg_idx, geom_obj_point);
+    obj_lon_offset_vec.push_back(lon_offset);
+  }
+
+  const auto obj_lat_min_max_offset = getMinMaxValues(obj_lat_offset_vec);
+  const auto obj_lon_min_max_offset = getMinMaxValues(obj_lon_offset_vec);
+
+  return LatLonOffset{
+    obj_seg_idx, obj_lat_min_max_offset.second, obj_lat_min_max_offset.first,
+    obj_lon_min_max_offset.second, obj_lon_min_max_offset.first};
 }
 
 // NOTE: object does not have const only to update min_bound_lat_offset.
