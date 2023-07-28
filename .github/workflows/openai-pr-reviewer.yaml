@@ -6,6 +6,10 @@ permissions:
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
   pull_request_review_comment:
     types: [created]
 
@@ -16,7 +20,13 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'pull_request_review_comment' }}
 
 jobs:
+  prevent-no-label-execution:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
+    with:
+      label: openai-pr-reviewer
   review:
+    needs: prevent-no-label-execution
+    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: fluxninja/openai-pr-reviewer@latest
