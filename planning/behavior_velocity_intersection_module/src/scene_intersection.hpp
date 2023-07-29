@@ -20,13 +20,11 @@
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <behavior_velocity_planner_common/utilization/state_machine.hpp>
-#include <grid_map_core/grid_map_core.hpp>
 #include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <grid_map_msgs/msg/grid_map.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -108,7 +106,7 @@ public:
       double min_vehicle_brake_for_rss;
       double max_vehicle_velocity_for_rss;
       double denoise_kernel;
-      bool pub_debug_grid;
+      std::vector<double> possible_object_bbox;
     } occlusion;
   };
 
@@ -274,7 +272,6 @@ private:
   */
 
   util::DebugData debug_data_;
-  rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr occlusion_grid_pub_;
 };
 
 }  // namespace behavior_velocity_planner

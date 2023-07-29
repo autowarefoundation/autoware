@@ -46,7 +46,7 @@
         min_vehicle_brake_for_rss: -2.5 # [m/s^2]
         max_vehicle_velocity_for_rss: 16.66 # [m/s] == 60kmph
         denoise_kernel: 1.0 # [m]
-        pub_debug_grid: false
+        possible_object_bbox: [1.0, 2.0] # [m x m]
 
       enable_rtc: # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
         intersection: true

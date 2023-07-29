@@ -20,14 +20,9 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
   <depend>behavior_velocity_planner_common</depend>
-  <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
-  <depend>grid_map_cv</depend>
-  <depend>grid_map_ros</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
-  <depend>libboost-dev</depend>
-  <depend>libopencv-dev</depend>
   <depend>magic_enum</depend>
   <depend>motion_utils</depend>
   <depend>nav_msgs</depend>

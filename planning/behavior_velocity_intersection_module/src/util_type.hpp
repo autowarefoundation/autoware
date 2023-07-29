@@ -49,6 +49,7 @@ struct DebugData
   autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
   std::optional<geometry_msgs::msg::Point> nearest_occlusion_point = std::nullopt;
   std::optional<geometry_msgs::msg::Point> nearest_occlusion_projection_point = std::nullopt;
+  std::vector<geometry_msgs::msg::Polygon> occlusion_polygons;
 };
 
 struct InterpolatedPathInfo
