@@ -114,6 +114,8 @@ lanelet::ConstLanelets getPullOutLanes(
 
   // pull out from road lane
   return utils::getExtendedCurrentLanes(
-    planner_data, backward_length, /*forward_length*/ std::numeric_limits<double>::max());
+    planner_data, backward_length,
+    /*forward_length*/ std::numeric_limits<double>::max(),
+    /*until_goal_lane*/ true);
 }
 }  // namespace behavior_path_planner::start_planner_utils

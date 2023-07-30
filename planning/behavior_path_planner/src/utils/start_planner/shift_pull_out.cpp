@@ -53,8 +53,8 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
   }
 
   const auto road_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, backward_path_length, std::numeric_limits<double>::max());
-
+    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
+    /*until_goal_lane*/ true);
   // find candidate paths
   auto pull_out_paths = calcPullOutPaths(
     *route_handler, road_lanes, start_pose, goal_pose, common_parameters, parameters_);
