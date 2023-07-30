@@ -61,12 +61,11 @@ This filter is a combination of the distance_based_compare_map_filter and voxel_
 
 #### Input
 
-| Name                                 | Type                                            | Description                                                    |
-| ------------------------------------ | ----------------------------------------------- | -------------------------------------------------------------- |
-| `~/input/points`                     | `sensor_msgs::msg::PointCloud2`                 | reference points                                               |
-| `~/input/map`                        | `sensor_msgs::msg::PointCloud2`                 | map (in case static map loading)                               |
-| `~/pose_with_covariance`             | `geometry_msgs::msg::PoseWithCovarianceStamped` | current ego-vehicle pose (in case dynamic map loading)         |
-| `/localization/initialization_state` | `localization_interface::InitializationState`   | Ego-vehicle pose initialization state (in dynamic map loading) |
+| Name                            | Type                            | Description                                            |
+| ------------------------------- | ------------------------------- | ------------------------------------------------------ |
+| `~/input/points`                | `sensor_msgs::msg::PointCloud2` | reference points                                       |
+| `~/input/map`                   | `sensor_msgs::msg::PointCloud2` | map (in case static map loading)                       |
+| `/localization/kinematic_state` | `nav_msgs::msg::Odometry`       | current ego-vehicle pose (in case dynamic map loading) |
 
 #### Output
 

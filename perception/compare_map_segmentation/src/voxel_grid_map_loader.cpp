@@ -301,13 +301,8 @@ VoxelGridDynamicMapLoader::VoxelGridDynamicMapLoader(
   map_loader_radius_ = node->declare_parameter<double>("map_loader_radius");
   auto main_sub_opt = rclcpp::SubscriptionOptions();
   main_sub_opt.callback_group = main_callback_group;
-
-  const auto localization_node = component_interface_utils::NodeAdaptor(node);
-  localization_node.init_sub(
-    sub_pose_initializer_state_, this, &VoxelGridDynamicMapLoader::onPoseInitializerCallback);
-
-  sub_estimated_pose_ = node->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    "pose_with_covariance", rclcpp::QoS{1},
+  sub_kinematic_state_ = node->create_subscription<nav_msgs::msg::Odometry>(
+    "kinematic_state", rclcpp::QoS{1},
     std::bind(&VoxelGridDynamicMapLoader::onEstimatedPoseCallback, this, std::placeholders::_1),
     main_sub_opt);
   RCLCPP_INFO(logger_, "VoxelGridDynamicMapLoader initialized.\n");
@@ -327,18 +322,7 @@ VoxelGridDynamicMapLoader::VoxelGridDynamicMapLoader(
     node, node->get_clock(), period_ns, std::bind(&VoxelGridDynamicMapLoader::timer_callback, this),
     timer_callback_group_);
 }
-void VoxelGridDynamicMapLoader::onPoseInitializerCallback(
-  const InitializationState::Message::ConstSharedPtr msg)
-{
-  initialization_state_.state = msg->state;
-  if (msg->state != InitializationState::Message::INITIALIZED) {
-    current_position_ = std::nullopt;
-    last_updated_position_ = std::nullopt;
-    RCLCPP_INFO(logger_, "Initializing pose... Reset the position of Vehicle");
-  }
-}
-void VoxelGridDynamicMapLoader::onEstimatedPoseCallback(
-  geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr msg)
+void VoxelGridDynamicMapLoader::onEstimatedPoseCallback(nav_msgs::msg::Odometry::ConstSharedPtr msg)
 {
   current_position_ = msg->pose.pose.position;
 }
@@ -417,9 +401,7 @@ bool VoxelGridDynamicMapLoader::is_close_to_map(
 }
 void VoxelGridDynamicMapLoader::timer_callback()
 {
-  if (
-    current_position_ == std::nullopt ||
-    initialization_state_.state != InitializationState::Message::INITIALIZED) {
+  if (current_position_ == std::nullopt) {
     return;
   }
   if (last_updated_position_ == std::nullopt) {

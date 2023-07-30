@@ -15,12 +15,11 @@
 #ifndef COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
 #define COMPARE_MAP_SEGMENTATION__VOXEL_GRID_MAP_LOADER_HPP_
 
-#include <component_interface_specs/localization.hpp>
-#include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_map_msgs/srv/get_differential_point_cloud_map.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <pcl/filters/voxel_grid.h>
@@ -154,16 +153,11 @@ protected:
   };
 
   typedef typename std::map<std::string, struct MapGridVoxelInfo> VoxelGridDict;
-  using InitializationState = localization_interface::InitializationState;
 
   /** \brief Map to hold loaded map grid id and it's voxel filter */
   VoxelGridDict current_voxel_grid_dict_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_kinematic_state_;
 
-  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
-    sub_estimated_pose_;
-  component_interface_utils::Subscription<InitializationState>::SharedPtr
-    sub_pose_initializer_state_;
-  InitializationState::Message initialization_state_;
   std::optional<geometry_msgs::msg::Point> current_position_ = std::nullopt;
   std::optional<geometry_msgs::msg::Point> last_updated_position_ = std::nullopt;
   rclcpp::TimerBase::SharedPtr map_update_timer_;
@@ -200,8 +194,7 @@ public:
     rclcpp::Node * node, double leaf_size, double downsize_ratio_z_axis,
     std::string * tf_map_input_frame, std::mutex * mutex,
     rclcpp::CallbackGroup::SharedPtr main_callback_group);
-  void onEstimatedPoseCallback(geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose);
-  void onPoseInitializerCallback(const InitializationState::Message::ConstSharedPtr msg);
+  void onEstimatedPoseCallback(nav_msgs::msg::Odometry::ConstSharedPtr pose);
 
   void timer_callback();
   bool should_update_map() const;

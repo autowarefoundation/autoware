@@ -65,7 +65,7 @@ class PointcloudMapFilterPipeline:
                     ("map", "/map/pointcloud_map"),
                     ("output", LaunchConfiguration("output_topic")),
                     ("map_loader_service", "/map/get_differential_pointcloud_map"),
-                    ("pose_with_covariance", "/localization/pose_estimator/pose_with_covariance"),
+                    ("kinematic_state", "/localization/kinematic_state"),
                 ],
                 parameters=[
                     {
@@ -122,7 +122,7 @@ class PointcloudMapFilterPipeline:
                     ("map", "/map/pointcloud_map"),
                     ("output", LaunchConfiguration("output_topic")),
                     ("map_loader_service", "/map/get_differential_pointcloud_map"),
-                    ("pose_with_covariance", "/localization/pose_estimator/pose_with_covariance"),
+                    ("kinematic_state", "/localization/kinematic_state"),
                 ],
                 parameters=[
                     {

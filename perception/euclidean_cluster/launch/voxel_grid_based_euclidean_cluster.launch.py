@@ -47,7 +47,7 @@ def launch_setup(context, *args, **kwargs):
             ("map", LaunchConfiguration("input_map")),
             ("output", "map_filter/pointcloud"),
             ("map_loader_service", "/map/get_differential_pointcloud_map"),
-            ("pose_with_covariance", "/localization/pose_estimator/pose_with_covariance"),
+            ("kinematic_state", "/localization/kinematic_state"),
         ],
         parameters=[load_composable_node_param("compare_map_param_path")],
     )
