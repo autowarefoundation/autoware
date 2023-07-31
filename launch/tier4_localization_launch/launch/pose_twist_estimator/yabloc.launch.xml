@@ -53,5 +53,11 @@
         <arg name="input_particle_pose" value="$(var input_pose)"/>
       </include>
     </group>
+
+    <!-- monitor -->
+    <group>
+      <push-ros-namespace namespace="monitor"/>
+      <include file="$(find-pkg-share yabloc_monitor)/launch/yabloc_monitor.launch.xml"/>
+    </group>
   </group>
 </launch>
