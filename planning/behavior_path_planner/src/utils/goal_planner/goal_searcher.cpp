@@ -26,6 +26,7 @@
 namespace behavior_path_planner
 {
 using lane_departure_checker::LaneDepartureChecker;
+using lanelet::autoware::NoParkingArea;
 using lanelet::autoware::NoStoppingArea;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::inverseTransformPose;
@@ -103,6 +104,10 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
 
       const auto transformed_vehicle_footprint =
         transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(search_pose));
+
+      if (isInAreas(transformed_vehicle_footprint, getNoParkingAreaPolygons(pull_over_lanes))) {
+        continue;
+      }
 
       if (isInAreas(transformed_vehicle_footprint, getNoStoppingAreaPolygons(pull_over_lanes))) {
         continue;
@@ -274,6 +279,20 @@ void GoalSearcher::createAreaPolygons(std::vector<Pose> original_search_poses)
     boost::geometry::union_(footprint, area_polygons_, current_result);
     area_polygons_ = current_result;
   }
+}
+
+BasicPolygons2d GoalSearcher::getNoParkingAreaPolygons(const lanelet::ConstLanelets & lanes) const
+{
+  BasicPolygons2d area_polygons{};
+  for (const auto & ll : lanes) {
+    for (const auto & reg_elem : ll.regulatoryElementsAs<NoParkingArea>()) {
+      for (const auto & area : reg_elem->noParkingAreas()) {
+        const auto & area_poly = lanelet::utils::to2D(area).basicPolygon();
+        area_polygons.push_back(area_poly);
+      }
+    }
+  }
+  return area_polygons;
 }
 
 BasicPolygons2d GoalSearcher::getNoStoppingAreaPolygons(const lanelet::ConstLanelets & lanes) const
