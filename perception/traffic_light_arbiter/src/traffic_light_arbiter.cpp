@@ -99,7 +99,7 @@ void TrafficLightArbiter::onExternalMsg(const TrafficSignalArray::ConstSharedPtr
   if (
     (rclcpp::Time(msg->stamp) - rclcpp::Time(latest_perception_msg_.stamp)).seconds() >
     perception_time_tolerance_) {
-    latest_external_msg_.signals.clear();
+    latest_perception_msg_.signals.clear();
   }
 
   arbitrateAndPublish(msg->stamp);
