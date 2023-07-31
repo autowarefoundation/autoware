@@ -262,7 +262,8 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   for (const auto & object : target_objects_) {
     const auto obstacle_poly = calcDynamicObstaclePolygon(object);
     if (obstacle_poly) {
-      obstacles_for_drivable_area.push_back({object.pose, obstacle_poly.value(), object.is_left});
+      obstacles_for_drivable_area.push_back(
+        {object.pose, obstacle_poly.value(), object.is_collision_left});
 
       appendObjectMarker(info_marker_, object.pose);
       appendExtractedPolygonMarker(debug_marker_, obstacle_poly.value());
@@ -396,16 +397,15 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate()
     }
 
     // 6. calculate which side object exists against ego's path
-    // TODO(murooka) use obj_path.back() instead of obj_pose for the case where the object crosses
-    // the ego's path
-    const bool is_left = isLeft(prev_module_path->points, obj_path.path.back().position);
+    const bool is_object_left = isLeft(prev_module_path->points, obj_pose.position);
     const auto lat_lon_offset =
       getLateralLongitudinalOffset(prev_module_path->points, predicted_object);
 
     // 6. check if object will not cut in or cut out
     const bool will_object_cut_in =
       willObjectCutIn(prev_module_path->points, obj_path, obj_tangent_vel, lat_lon_offset);
-    const bool will_object_cut_out = willObjectCutOut(obj_tangent_vel, obj_normal_vel, is_left);
+    const bool will_object_cut_out =
+      willObjectCutOut(obj_tangent_vel, obj_normal_vel, is_object_left);
     if (will_object_cut_in) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,
@@ -434,6 +434,13 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate()
       continue;
     }
 
+    // calculate which side object will be against ego's path
+    const auto future_obj_pose =
+      object_recognition_utils::calcInterpolatedPose(obj_path, time_to_collision);
+    const bool is_collision_left = future_obj_pose
+                                     ? isLeft(prev_module_path->points, future_obj_pose->position)
+                                     : is_object_left;
+
     // 8. calculate alive counter for filtering objects
     const auto prev_target_object_candidate =
       DynamicAvoidanceObjectCandidate::getObjectFromUuid(prev_target_objects_candidate_, obj_uuid);
@@ -445,7 +452,7 @@ DynamicAvoidanceModule::calcTargetObjectsCandidate()
         : 0;
 
     const auto target_object = DynamicAvoidanceObject(
-      predicted_object, obj_tangent_vel, obj_normal_vel, is_left, time_to_collision);
+      predicted_object, obj_tangent_vel, obj_normal_vel, is_collision_left, time_to_collision);
     const auto target_object_candidate =
       DynamicAvoidanceObjectCandidate{target_object, alive_counter};
     output_objects_candidate.push_back(target_object_candidate);
@@ -552,7 +559,7 @@ bool DynamicAvoidanceModule::willObjectCutIn(
 }
 
 bool DynamicAvoidanceModule::willObjectCutOut(
-  const double obj_tangent_vel, const double obj_normal_vel, const bool is_left) const
+  const double obj_tangent_vel, const double obj_normal_vel, const bool is_collision_left) const
 {
   // Ignore oncoming object
   if (obj_tangent_vel < 0) {
@@ -560,7 +567,7 @@ bool DynamicAvoidanceModule::willObjectCutOut(
   }
 
   constexpr double object_lat_vel_thresh = 0.3;
-  if (is_left) {
+  if (is_collision_left) {
     if (object_lat_vel_thresh < obj_normal_vel) {
       return true;
     }
@@ -689,8 +696,10 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
     }
     return getMinMaxValues(obj_lat_abs_offset_vec);
   }();
-  const double min_obj_lat_offset = min_obj_lat_abs_offset * (object.is_left ? 1.0 : -1.0);
-  const double max_obj_lat_offset = max_obj_lat_abs_offset * (object.is_left ? 1.0 : -1.0);
+  const double min_obj_lat_offset =
+    min_obj_lat_abs_offset * (object.is_collision_left ? 1.0 : -1.0);
+  const double max_obj_lat_offset =
+    max_obj_lat_abs_offset * (object.is_collision_left ? 1.0 : -1.0);
 
   // calculate min/max longitudinal offset from object to path
   const auto obj_lon_offset = [&]() -> std::optional<std::pair<double, double>> {
@@ -708,9 +717,15 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
       return std::nullopt;
     }
 
-    return std::make_pair(
-      raw_min_obj_lon_offset + object.vel * object.time_to_collision,
-      raw_max_obj_lon_offset + object.vel * object.time_to_collision);
+    if (object.vel < 0) {
+      return std::make_pair(
+        raw_min_obj_lon_offset + object.vel * object.time_to_collision, raw_max_obj_lon_offset);
+    }
+
+    // NOTE: If time to collision is considered here, the ego is close to the object when starting
+    // avoidance.
+    //       The ego should start avoidance before overtaking.
+    return std::make_pair(raw_min_obj_lon_offset, raw_max_obj_lon_offset);
   }();
 
   if (!obj_lon_offset) {
@@ -752,10 +767,11 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
   // calculate bound min and max lateral offset
   const double min_bound_lat_offset = [&]() {
     const double raw_min_bound_lat_offset =
-      min_obj_lat_offset - parameters_->lat_offset_from_obstacle * (object.is_left ? 1.0 : -1.0);
+      min_obj_lat_offset -
+      parameters_->lat_offset_from_obstacle * (object.is_collision_left ? 1.0 : -1.0);
     const double min_bound_lat_abs_offset_limit =
       planner_data_->parameters.vehicle_width / 2.0 - parameters_->max_lat_offset_to_avoid;
-    if (object.is_left) {
+    if (object.is_collision_left) {
       if (raw_min_bound_lat_offset < min_bound_lat_abs_offset_limit) {
         return min_bound_lat_abs_offset_limit;
       }
@@ -767,7 +783,8 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
     return raw_min_bound_lat_offset;
   }();
   const double max_bound_lat_offset =
-    max_obj_lat_offset + parameters_->lat_offset_from_obstacle * (object.is_left ? 1.0 : -1.0);
+    max_obj_lat_offset +
+    parameters_->lat_offset_from_obstacle * (object.is_collision_left ? 1.0 : -1.0);
 
   // filter min_bound_lat_offset
   const auto prev_min_bound_lat_offset = prev_objects_min_bound_lat_offset_.get(object.uuid);

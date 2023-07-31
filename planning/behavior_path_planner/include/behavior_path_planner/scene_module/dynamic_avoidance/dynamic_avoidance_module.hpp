@@ -82,13 +82,13 @@ public:
   {
     DynamicAvoidanceObject(
       const PredictedObject & predicted_object, const double arg_vel, const double arg_lat_vel,
-      const bool arg_is_left, const double arg_time_to_collision)
+      const bool arg_is_collision_left, const double arg_time_to_collision)
     : uuid(tier4_autoware_utils::toHexString(predicted_object.object_id)),
       pose(predicted_object.kinematics.initial_pose_with_covariance.pose),
       shape(predicted_object.shape),
       vel(arg_vel),
       lat_vel(arg_lat_vel),
-      is_left(arg_is_left),
+      is_collision_left(arg_is_collision_left),
       time_to_collision(arg_time_to_collision)
     {
       for (const auto & path : predicted_object.kinematics.predicted_paths) {
@@ -101,7 +101,7 @@ public:
     autoware_auto_perception_msgs::msg::Shape shape;
     double vel;
     double lat_vel;
-    bool is_left;
+    bool is_collision_left;
     double time_to_collision;
     std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
   };
@@ -162,7 +162,7 @@ private:
     const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
     const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const;
   bool willObjectCutOut(
-    const double obj_tangent_vel, const double obj_normal_vel, const bool is_left) const;
+    const double obj_tangent_vel, const double obj_normal_vel, const bool is_collision_left) const;
   bool isObjectFarFromPath(
     const PredictedObject & predicted_object, const double obj_dist_to_path) const;
   double calcTimeToCollision(
