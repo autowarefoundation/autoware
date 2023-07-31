@@ -86,6 +86,8 @@ IntersectionModule::IntersectionModule(
   before_creep_state_machine_.setState(StateMachine::State::STOP);
   stuck_private_area_timeout_.setMarginTime(planner_param_.stuck_vehicle.timeout_private_area);
   stuck_private_area_timeout_.setState(StateMachine::State::STOP);
+  decision_state_pub_ =
+    node_.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
 }
 
 void IntersectionModule::initializeRTCStatus()
@@ -647,6 +649,35 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
 
   // calculate the
   const auto decision_result = modifyPathVelocityDetail(path, stop_reason);
+
+  std::string decision_type = "intersection" + std::to_string(module_id_) + " : ";
+  if (std::get_if<IntersectionModule::Indecisive>(&decision_result)) {
+    decision_type += "Indecisive";
+  }
+  if (std::get_if<IntersectionModule::StuckStop>(&decision_result)) {
+    decision_type += "StuckStop";
+  }
+  if (std::get_if<IntersectionModule::NonOccludedCollisionStop>(&decision_result)) {
+    decision_type += "NonOccludedCollisionStop";
+  }
+  if (std::get_if<IntersectionModule::FirstWaitBeforeOcclusion>(&decision_result)) {
+    decision_type += "FirstWaitBeforeOcclusion";
+  }
+  if (std::get_if<IntersectionModule::PeekingTowardOcclusion>(&decision_result)) {
+    decision_type += "PeekingTowardOcclusion";
+  }
+  if (std::get_if<IntersectionModule::OccludedCollisionStop>(&decision_result)) {
+    decision_type += "OccludedCollisionStop";
+  }
+  if (std::get_if<IntersectionModule::Safe>(&decision_result)) {
+    decision_type += "Safe";
+  }
+  if (std::get_if<IntersectionModule::TrafficLightArrowSolidOn>(&decision_result)) {
+    decision_type += "TrafficLightArrowSolidOn";
+  }
+  std_msgs::msg::String decision_result_msg;
+  decision_result_msg.data = decision_type;
+  decision_state_pub_->publish(decision_result_msg);
 
   prepareRTCStatus(decision_result, *path);
 
