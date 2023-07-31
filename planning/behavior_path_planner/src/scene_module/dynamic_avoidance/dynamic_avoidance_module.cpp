@@ -56,7 +56,7 @@ void appendObjectMarker(MarkerArray & marker_array, const geometry_msgs::msg::Po
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "dynamic_objects_to_avoid",
     marker_array.markers.size(), visualization_msgs::msg::Marker::CUBE,
     tier4_autoware_utils::createMarkerScale(3.0, 1.0, 1.0),
-    tier4_autoware_utils::createMarkerColor(0.7, 0.15, 0.9, 0.8));
+    tier4_autoware_utils::createMarkerColor(1.0, 0.5, 0.6, 0.8));
   marker.pose = obj_pose;
 
   marker_array.markers.push_back(marker);
@@ -68,8 +68,8 @@ void appendExtractedPolygonMarker(
   auto marker = tier4_autoware_utils::createDefaultMarker(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "extracted_polygons", marker_array.markers.size(),
     visualization_msgs::msg::Marker::LINE_STRIP,
-    tier4_autoware_utils::createMarkerScale(0.1, 0.0, 0.0),
-    tier4_autoware_utils::createMarkerColor(0.7, 0.15, 0.9, 0.8));
+    tier4_autoware_utils::createMarkerScale(0.05, 0.0, 0.0),
+    tier4_autoware_utils::createMarkerColor(1.0, 0.5, 0.6, 0.8));
 
   // NOTE: obj_poly.outer() has already duplicated points to close the polygon.
   for (size_t i = 0; i < obj_poly.outer().size(); ++i) {
