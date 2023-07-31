@@ -13,10 +13,36 @@ jobs:
     with:
       label: run-build-and-test-differential
 
-  build-and-test-differential:
+  start-runner:
+    name: Start self-hosted EC2 runner
     needs: prevent-no-label-execution
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
-    runs-on: [self-hosted, linux, X64]
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.EC2_ON_DEMAND_AWS_ACCESS_KEY_ID_COMMON }}
+          aws-secret-access-key: ${{ secrets.EC2_ON_DEMAND_AWS_SECRET_ACCESS_KEY_COMMON }}
+          aws-region: ${{ secrets.EC2_ON_DEMAND_AWS_REGION_COMMON }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN_MFC }}
+          ec2-image-id: ami-092a175a6ad1aad7a
+          ec2-instance-type: c6a.xlarge
+          subnet-id: subnet-070b3d46464230127
+          security-group-id: sg-0cca5762919221f16
+          runner-home-dir: /home/ubuntu/actions-runner
+
+  build-and-test-differential:
+    needs: start-runner
+    runs-on: ${{ needs.start-runner.outputs.label }}
     container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
@@ -70,9 +96,9 @@ jobs:
           flags: differential
 
   clang-tidy-differential:
-    runs-on: [self-hosted, linux, X64]
-    container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
     needs: build-and-test-differential
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -103,3 +129,25 @@ jobs:
           target-files: ${{ steps.get-modified-files.outputs.all_changed_files }}
           clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware/main/.clang-tidy
           build-depends-repos: build_depends.repos
+
+  stop-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-runner
+      - clang-tidy-differential
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.EC2_ON_DEMAND_AWS_ACCESS_KEY_ID_COMMON }}
+          aws-secret-access-key: ${{ secrets.EC2_ON_DEMAND_AWS_SECRET_ACCESS_KEY_COMMON }}
+          aws-region: ${{ secrets.EC2_ON_DEMAND_AWS_REGION_COMMON }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN_MFC }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
