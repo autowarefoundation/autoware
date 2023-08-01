@@ -858,6 +858,10 @@ void CrosswalkModule::updateObjectState(const double dist_ego_to_stop)
 {
   const auto & objects_ptr = planner_data_->predicted_objects;
 
+  const auto traffic_lights_reg_elems =
+    crosswalk_.regulatoryElementsAs<const lanelet::TrafficLight>();
+  const bool has_traffic_light = !traffic_lights_reg_elems.empty();
+
   // Check if ego is yielding
   const bool is_ego_yielding = [&]() {
     const auto has_reached_stop_point = dist_ego_to_stop < planner_param_.stop_position_threshold;
@@ -872,7 +876,8 @@ void CrosswalkModule::updateObjectState(const double dist_ego_to_stop)
     const auto obj_uuid = toHexString(object.object_id);
     const auto & obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear;
     object_info_manager_.update(
-      obj_uuid, std::hypot(obj_vel.x, obj_vel.y), clock_->now(), is_ego_yielding, planner_param_);
+      obj_uuid, std::hypot(obj_vel.x, obj_vel.y), clock_->now(), is_ego_yielding, has_traffic_light,
+      planner_param_);
   }
   object_info_manager_.finalize();
 }

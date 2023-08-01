@@ -106,7 +106,7 @@ public:
 
     void updateState(
       const rclcpp::Time & now, const double obj_vel, const bool is_ego_yielding,
-      const PlannerParam & planner_param)
+      const bool has_traffic_light, const PlannerParam & planner_param)
     {
       const bool is_stopped = obj_vel < planner_param.stop_object_velocity;
 
@@ -120,7 +120,9 @@ public:
         }
         const bool intent_to_cross =
           (now - *time_to_start_stopped).seconds() < planner_param.timeout_no_intention_to_walk;
-        if ((is_ego_yielding || planner_param.disable_stop_for_yield_cancel) && !intent_to_cross) {
+        if (
+          (is_ego_yielding || (has_traffic_light && planner_param.disable_stop_for_yield_cancel)) &&
+          !intent_to_cross) {
           state = State::FULLY_STOPPED;
         } else {
           // NOTE: Object may start moving
@@ -137,7 +139,7 @@ public:
     void init() { current_uuids_.clear(); }
     void update(
       const std::string & uuid, const double obj_vel, const rclcpp::Time & now,
-      const bool is_ego_yielding, const PlannerParam & planner_param)
+      const bool is_ego_yielding, const bool has_traffic_light, const PlannerParam & planner_param)
     {
       // update current uuids
       current_uuids_.push_back(uuid);
@@ -148,7 +150,7 @@ public:
       }
 
       // update object state
-      objects.at(uuid).updateState(now, obj_vel, is_ego_yielding, planner_param);
+      objects.at(uuid).updateState(now, obj_vel, is_ego_yielding, has_traffic_light, planner_param);
     }
     void finalize()
     {
