@@ -55,12 +55,12 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                TTV = TTC + ego_pass_later_margin
+                TTV = TTC + ego_pass_first_margin
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="1045" y="241" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">TTV = TTC + ego_pass_later_margin</text>
+        <text x="1045" y="241" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">TTV = TTC + ego_pass_first_margin</text>
       </switch>
     </g>
     <rect x="760" y="0" width="340" height="30" fill="none" stroke="none" pointer-events="all"/>
@@ -75,12 +75,12 @@
               <div
                 style="display: inline-block; font-size: 20px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                TTC = TTV + ego_pass_first_margin
+                TTC = TTV + ego_pass_later_margin
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="930" y="21" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">TTC = TTV + ego_pass_first_margin</text>
+        <text x="930" y="21" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="20px" text-anchor="middle" font-style="italic">TTC = TTV + ego_pass_later_margin</text>
       </switch>
     </g>
     <path d="M 640 90 Q 690 90 695 65 Q 700 40 760 15" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="stroke"/>
@@ -160,13 +160,13 @@
               <div
                 style="display: inline-block; font-size: 15px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                ego_pass_later_margin
+                ego_pass_first_margin
                 <span style="font-style: normal; font-size: 15px;">[s]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="855" y="390" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="15px" text-anchor="middle" font-style="italic">ego_pass_later_margin [s]</text>
+        <text x="855" y="390" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="15px" text-anchor="middle" font-style="italic">ego_pass_first_margin [s]</text>
       </switch>
     </g>
     <rect x="760" y="330" width="200" height="30" fill="none" stroke="none" pointer-events="all"/>
@@ -181,13 +181,13 @@
               <div
                 style="display: inline-block; font-size: 15px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; font-style: italic; white-space: normal; overflow-wrap: normal;"
               >
-                ego_pass_pass_margin
+                ego_pass_later_margin
                 <span style="font-style: normal; font-size: 15px;">[s]</span>
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="860" y="350" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="15px" text-anchor="middle" font-style="italic">ego_pass_pass_margin [s]</text>
+        <text x="860" y="350" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="15px" text-anchor="middle" font-style="italic">ego_pass_later_margin [s]</text>
       </switch>
     </g>
     <path d="M 560 309.75 Q 610 309.75 630 329.88 Q 650 350 760 345" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="stroke"/>
