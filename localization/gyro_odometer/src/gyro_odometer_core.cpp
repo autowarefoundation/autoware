@@ -102,7 +102,7 @@ geometry_msgs::msg::TwistWithCovarianceStamped concatGyroAndOdometer(
 
 GyroOdometer::GyroOdometer(const rclcpp::NodeOptions & options)
 : Node("gyro_odometer", options),
-  output_frame_(declare_parameter("base_link", "base_link")),
+  output_frame_(declare_parameter("output_frame", "base_link")),
   message_timeout_sec_(declare_parameter("message_timeout_sec", 0.2)),
   vehicle_twist_arrived_(false),
   imu_arrived_(false)
