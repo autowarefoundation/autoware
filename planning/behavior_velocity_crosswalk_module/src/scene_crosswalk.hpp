@@ -85,6 +85,7 @@ public:
     double stop_object_velocity;
     double min_object_velocity;
     bool disable_stop_for_yield_cancel;
+    bool disable_yield_for_new_stopped_object;
     double timeout_no_intention_to_walk;
     double timeout_ego_stop_for_yield;
     // param for input data
@@ -101,7 +102,7 @@ public:
   {
     // NOTE: FULLY_STOPPED means stopped object which can be ignored.
     enum class State { STOPPED = 0, FULLY_STOPPED, OTHER };
-    State state{State::OTHER};
+    State state;
     std::optional<rclcpp::Time> time_to_start_stopped{std::nullopt};
 
     void updateState(
@@ -146,7 +147,13 @@ public:
 
       // add new object
       if (objects.count(uuid) == 0) {
-        objects.emplace(uuid, ObjectInfo{});
+        if (
+          has_traffic_light && planner_param.disable_stop_for_yield_cancel &&
+          planner_param.disable_yield_for_new_stopped_object) {
+          objects.emplace(uuid, ObjectInfo{ObjectInfo::State::FULLY_STOPPED});
+        } else {
+          objects.emplace(uuid, ObjectInfo{ObjectInfo::State::OTHER});
+        }
       }
 
       // update object state

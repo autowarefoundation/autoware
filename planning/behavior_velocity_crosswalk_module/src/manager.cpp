@@ -80,6 +80,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   cp.min_object_velocity = node.declare_parameter<double>(ns + ".pass_judge.min_object_velocity");
   cp.disable_stop_for_yield_cancel =
     node.declare_parameter<bool>(ns + ".pass_judge.disable_stop_for_yield_cancel");
+  cp.disable_yield_for_new_stopped_object =
+    node.declare_parameter<bool>(ns + ".pass_judge.disable_yield_for_new_stopped_object");
   cp.timeout_no_intention_to_walk =
     node.declare_parameter<double>(ns + ".pass_judge.timeout_no_intention_to_walk");
   cp.timeout_ego_stop_for_yield =
