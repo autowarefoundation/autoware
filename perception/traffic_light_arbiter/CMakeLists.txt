@@ -12,4 +12,4 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
   TrafficLightArbiter
 )
 
-ament_auto_package(INSTALL_TO_SHARE launch)
+ament_auto_package(INSTALL_TO_SHARE launch config)

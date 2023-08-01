@@ -2,6 +2,7 @@
   <arg name="perception_traffic_signals" default="/internal/traffic_signals"/>
   <arg name="external_traffic_signals" default="/external/traffic_signals"/>
   <arg name="output_traffic_signals" default="/traffic_light_arbiter/traffic_signals"/>
+  <arg name="traffic_light_arbiter_param_path" default="$(find-pkg-share traffic_light_arbiter)/config/traffic_light_arbiter.param.yaml"/>
 
   <push-ros-namespace namespace="traffic_light_arbiter"/>
   <node_container pkg="rclcpp_components" exec="component_container" name="container" namespace="">
@@ -10,6 +11,7 @@
       <remap from="~/sub/perception_traffic_signals" to="$(var perception_traffic_signals)"/>
       <remap from="~/sub/external_traffic_signals" to="$(var external_traffic_signals)"/>
       <remap from="~/pub/traffic_signals" to="$(var output_traffic_signals)"/>
+      <param from="$(var traffic_light_arbiter_param_path)"/>
     </composable_node>
   </node_container>
 </launch>

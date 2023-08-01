@@ -22,6 +22,7 @@
   <arg name="occupancy_grid_map_param_path"/>
   <arg name="occupancy_grid_map_updater"/>
   <arg name="occupancy_grid_map_updater_param_path"/>
+  <arg name="traffic_light_arbiter_param_path"/>
 
   <!-- centerpoint model configs -->
   <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
