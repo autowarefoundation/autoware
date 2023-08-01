@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>The traffic_light_arbiter package</description>
   <maintainer email="kenzo.lobos@tier4.jp">Kenzo Lobos-Tsunekawa</maintainer>
+  <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
