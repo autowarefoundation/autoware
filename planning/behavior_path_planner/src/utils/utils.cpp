@@ -2938,13 +2938,11 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
   }
 
   while (forward_length_sum < forward_length) {
-    // stop extending if the goal lane is included
+    // stop extending when the goal route section is reached
     // if forward_length is a very large value, set it to true,
     // as it may continue to extend lanes outside the route ahead of goal forever.
     if (until_goal_lane) {
-      lanelet::ConstLanelet goal_lane;
-      planner_data->route_handler->getGoalLanelet(&goal_lane);
-      if (lanes.back().id() == goal_lane.id()) {
+      if (planner_data->route_handler->isInGoalRouteSection(lanes.back())) {
         return lanes;
       }
     }
