@@ -160,6 +160,7 @@
         # avoidance distance parameters
         longitudinal:
           prepare_time: 2.0                             # [s]
+          remain_buffer_distance: 30.0                  # [m]
           min_prepare_distance: 1.0                     # [m]
           min_slow_down_speed: 1.38                     # [m/s]
           buf_slow_down_speed: 0.56                     # [m/s]

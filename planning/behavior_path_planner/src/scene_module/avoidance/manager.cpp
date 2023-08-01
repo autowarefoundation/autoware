@@ -173,6 +173,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     std::string ns = "avoidance.avoidance.longitudinal.";
     p.prepare_time = get_parameter<double>(node, ns + "prepare_time");
     p.min_prepare_distance = get_parameter<double>(node, ns + "min_prepare_distance");
+    p.remain_buffer_distance = get_parameter<double>(node, ns + "remain_buffer_distance");
     p.min_slow_down_speed = get_parameter<double>(node, ns + "min_slow_down_speed");
     p.buf_slow_down_speed = get_parameter<double>(node, ns + "buf_slow_down_speed");
     p.nominal_avoidance_speed = get_parameter<double>(node, ns + "nominal_avoidance_speed");

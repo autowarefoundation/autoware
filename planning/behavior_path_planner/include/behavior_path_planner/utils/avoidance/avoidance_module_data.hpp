@@ -225,6 +225,9 @@ struct AvoidanceParameters
   // nominal avoidance sped
   double nominal_avoidance_speed;
 
+  // module try to return original path to keep this distance from edge point of the path.
+  double remain_buffer_distance;
+
   // The margin is configured so that the generated avoidance trajectory does not come near to the
   // road shoulder.
   double road_shoulder_safety_margin{1.0};

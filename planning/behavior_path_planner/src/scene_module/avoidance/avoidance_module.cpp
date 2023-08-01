@@ -996,9 +996,10 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
       const auto offset = object_parameter.safety_buffer_longitudinal + base_link2rear + o.length;
       // The end_margin also has the purpose of preventing the return path from NOT being
       // triggered at the end point.
-      const auto end_margin = 1.0;
-      const auto return_remaining_distance =
-        std::max(data.arclength_from_ego.back() - o.longitudinal - offset - end_margin, 0.0);
+      const auto return_remaining_distance = std::max(
+        data.arclength_from_ego.back() - o.longitudinal - offset -
+          parameters_->remain_buffer_distance,
+        0.0);
 
       al_return.start_shift_length = feasible_shift_length.get();
       al_return.end_shift_length = 0.0;
@@ -1745,14 +1746,14 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
     return;
   }
 
-  const auto remaining_distance = arclength_from_ego.back();
+  const auto remaining_distance = arclength_from_ego.back() - parameters_->remain_buffer_distance;
 
   // If the avoidance point has already been set, the return shift must be set after the point.
   const auto last_sl_distance = avoidance_data_.arclength_from_ego.at(last_sl.end_idx);
 
   // check if there is enough distance for return.
-  if (last_sl_distance + 1.0 > remaining_distance) {  // tmp: add some small number (+1.0)
-    DEBUG_PRINT("No enough distance for return.");
+  if (last_sl_distance > remaining_distance) {  // tmp: add some small number (+1.0)
+    RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 1000, "No enough distance for return.");
     return;
   }
 
