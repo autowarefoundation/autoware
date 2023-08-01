@@ -157,6 +157,12 @@ stop
 
 See [safety check utils explanation](../docs/behavior_path_planner_safety_check.md)
 
+#### Objects selection and classification
+
+First, we divide the target objects into obstacles in the target lane, obstacles in the current lane, and obstacles in other lanes. Target lane indicates the lane that the ego vehicle is going to reach after the lane change and current lane mean the current lane where the ego vehicle is following before the lane change. Other lanes are lanes that do not belong to the target and current lanes. The following picture describes objects on each lane. Note that users can remove objects either on current and other lanes from safety check by changing the flag, which are `check_objects_on_current_lanes` and `check_objects_on_other_lanes`.
+
+![object lanes](../image/lane_change/lane_objects.drawio.svg)
+
 ##### Collision check in prepare phase
 
 The ego vehicle may need to secure ample inter-vehicle distance ahead of the target vehicle before attempting a lane change. The flag `enable_collision_check_at_prepare_phase` can be enabled to gain this behavior. The following image illustrates the differences between the `false` and `true` cases.
@@ -292,7 +298,8 @@ The following parameters are configurable in `behavior_path_planner.param.yaml`.
 | `rear_vehicle_safety_time_margin`          | [s]     | double  | The time buffer for the rear vehicle to come into complete stop when its driver perform sudden braking.                                                        | 2.0           |
 | `enable_collision_check_at_prepare_phase`  | [-]     | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                       | true          |
 | `prepare_phase_ignore_target_speed_thresh` | [m/s]   | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true`     | 0.1           |
-| `use_predicted_path_outside_lanelet`       | [-]     | boolean | If true, include collision check for predicted path that is out of lanelet (freespace).                                                                        | false         |
+| `check_objects_on_current_lanes`           | [-]     | boolean | If true, the lane change module include objects on current lanes.                                                                                              | true          |
+| `check_objects_on_other_lanes`             | [-]     | boolean | If true, the lane change module include objects on other lanes.                                                                                                | true          |
 | `use_all_predicted_path`                   | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                         | true          |
 
 (\*1) the value must be negative.
