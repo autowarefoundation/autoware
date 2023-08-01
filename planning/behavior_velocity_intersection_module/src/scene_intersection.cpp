@@ -708,11 +708,13 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     lane_id_, associative_ids_, *path, planner_param_.common.path_interpolation_ds, logger_);
   if (!interpolated_path_info_opt) {
     RCLCPP_DEBUG(logger_, "splineInterpolate failed");
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
   const auto & interpolated_path_info = interpolated_path_info_opt.value();
   if (!interpolated_path_info.lane_id_interval) {
     RCLCPP_WARN(logger_, "Path has no interval on intersection lane %ld", lane_id_);
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
 
@@ -733,6 +735,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const auto & conflicting_lanelets = intersection_lanelets_.value().conflicting();
   const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area();
   if (conflicting_lanelets.empty() || !first_conflicting_area) {
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
 
@@ -745,6 +748,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     planner_param_.common.stop_line_margin, planner_param_.occlusion.peeking_offset, path);
   if (!intersection_stop_lines_opt) {
     RCLCPP_DEBUG(logger_, "failed to generate intersection_stop_lines");
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
   const auto & intersection_stop_lines = intersection_stop_lines_opt.value();
@@ -771,6 +775,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     const bool timeout =
       (is_private_area_ && stuck_private_area_timeout_.getState() == StateMachine::State::GO);
     if (!timeout) {
+      is_peeking_ = false;
       return IntersectionModule::StuckStop{
         stuck_stop_line_idx, !first_attention_area.has_value(), intersection_stop_lines};
     }
@@ -778,11 +783,13 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
 
   if (!first_attention_area) {
     RCLCPP_DEBUG(logger_, "attention area is empty");
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
 
   if (default_stop_line_idx == 0) {
     RCLCPP_DEBUG(logger_, "stop line index is 0");
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
 
@@ -796,7 +803,10 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const double vel = std::fabs(planner_data_->current_velocity->twist.linear.x);
   const bool keep_detection = (vel < planner_param_.collision_detection.keep_detection_vel_thr);
   // if ego is over the pass judge line and not stopped
-  if (is_over_default_stop_line && !is_over_pass_judge_line && keep_detection) {
+  if (is_peeking_) {
+    // do nothing
+    RCLCPP_DEBUG(logger_, "peeking now");
+  } else if (is_over_default_stop_line && !is_over_pass_judge_line && keep_detection) {
     RCLCPP_DEBUG(
       logger_, "is_over_default_stop_line && !is_over_pass_judge_line && keep_detection");
     // do nothing
@@ -806,6 +816,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     // activated_: current RTC approval
     is_permanent_go_ = true;
     RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
+    is_peeking_ = false;
     return IntersectionModule::Indecisive{};
   }
 
@@ -841,6 +852,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     collision_state_machine_.getState() == StateMachine::State::STOP;
 
   if (tl_arrow_solid_on) {
+    is_peeking_ = false;
     return TrafficLightArrowSolidOn{has_collision, intersection_stop_lines};
   }
 
@@ -884,10 +896,12 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     }
     if (before_creep_state_machine_.getState() == StateMachine::State::GO) {
       if (has_collision) {
+        is_peeking_ = true;
         return IntersectionModule::OccludedCollisionStop{
           default_stop_line_idx, occlusion_peeking_stop_line_idx, is_occlusion_cleared,
           intersection_stop_lines};
       } else {
+        is_peeking_ = true;
         return IntersectionModule::PeekingTowardOcclusion{
           occlusion_peeking_stop_line_idx, is_occlusion_cleared, intersection_stop_lines};
       }
@@ -897,6 +911,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
         before_creep_state_machine_.setStateWithMarginTime(
           StateMachine::State::GO, logger_.get_child("occlusion state_machine"), *clock_);
       }
+      is_peeking_ = true;
       return IntersectionModule::FirstWaitBeforeOcclusion{
         default_stop_line_idx, occlusion_peeking_stop_line_idx, is_occlusion_cleared,
         intersection_stop_lines};
@@ -905,9 +920,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     const bool is_over_default_stopLine =
       util::isOverTargetIndex(*path, closest_idx, current_pose, default_stop_line_idx);
     const auto stop_line_idx = is_over_default_stopLine ? closest_idx : default_stop_line_idx;
+    is_peeking_ = false;
     return IntersectionModule::NonOccludedCollisionStop{stop_line_idx, intersection_stop_lines};
   }
 
+  is_peeking_ = false;
   return IntersectionModule::Safe{intersection_stop_lines};
 }
 

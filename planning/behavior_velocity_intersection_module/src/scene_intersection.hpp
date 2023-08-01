@@ -210,6 +210,7 @@ private:
   std::string turn_direction_;
   bool is_go_out_ = false;
   bool is_permanent_go_ = false;
+  bool is_peeking_ = false;
   // Parameter
   PlannerParam planner_param_;
   std::optional<util::IntersectionLanelets> intersection_lanelets_;

@@ -315,6 +315,10 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     intersection_stop_lines.default_stop_line) {
     intersection_stop_lines.occlusion_peeking_stop_line = intersection_stop_lines.default_stop_line;
   }
+  if (
+    intersection_stop_lines.occlusion_peeking_stop_line > intersection_stop_lines.pass_judge_line) {
+    intersection_stop_lines.pass_judge_line = intersection_stop_lines.occlusion_peeking_stop_line;
+  }
   return intersection_stop_lines;
 }
 
