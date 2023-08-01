@@ -194,7 +194,7 @@ private:
     std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> & odometry_buffer, const double time);
   bool hasFinishedCurrentPath();
   bool hasFinishedGoalPlanner();
-  bool isOnGoal() const;
+  bool isOnModifiedGoal() const;
   double calcModuleRequestLength() const;
   void resetStatus();
   bool needPathUpdate(const double path_update_duration) const;

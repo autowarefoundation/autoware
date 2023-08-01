@@ -1085,17 +1085,20 @@ bool GoalPlannerModule::hasFinishedCurrentPath()
   return is_near_target && isStopped();
 }
 
-bool GoalPlannerModule::isOnGoal() const
+bool GoalPlannerModule::isOnModifiedGoal() const
 {
+  if (!modified_goal_pose_) {
+    return false;
+  }
+
   const Pose current_pose = planner_data_->self_odometry->pose.pose;
-  const Pose goal_pose = modified_goal_pose_ ? modified_goal_pose_->goal_pose
-                                             : planner_data_->route_handler->getGoalPose();
-  return calcDistance2d(current_pose, goal_pose) < parameters_->th_arrived_distance;
+  return calcDistance2d(current_pose, modified_goal_pose_->goal_pose) <
+         parameters_->th_arrived_distance;
 }
 
 bool GoalPlannerModule::hasFinishedGoalPlanner()
 {
-  return isOnGoal() && isStopped();
+  return isOnModifiedGoal() && isStopped();
 }
 
 TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo() const
@@ -1516,7 +1519,7 @@ bool GoalPlannerModule::checkOriginalGoalIsInShoulder() const
 
 bool GoalPlannerModule::needPathUpdate(const double path_update_duration) const
 {
-  return !isOnGoal() && hasEnoughTimePassedSincePathUpdate(path_update_duration);
+  return !isOnModifiedGoal() && hasEnoughTimePassedSincePathUpdate(path_update_duration);
 }
 
 bool GoalPlannerModule::hasEnoughTimePassedSincePathUpdate(const double duration) const
