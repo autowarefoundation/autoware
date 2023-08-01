@@ -101,7 +101,7 @@ at its current velocity or at half the velocity of the path points, whichever is
 ###### Dynamic objects
 
 Two methods are used to estimate the time when a dynamic objects with reach some point.
-If `objects.use_predicted_paths` is set to `true`, the predicted path of the dynamic object is used.
+If `objects.use_predicted_paths` is set to `true`, the predicted paths of the dynamic object are used if their confidence value is higher than the value set by the `objects.predicted_path_min_confidence` parameter.
 Otherwise, the lanelet map is used to estimate the distance between the object and the point and the time is calculated assuming the object keeps its current velocity.
 
 #### 5. Path update
@@ -138,10 +138,11 @@ Moreover, parameter `action.distance_buffer` adds an extra distance between the 
 | -------------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | `threshold`    | double | [s] consider objects with an estimated time to collision bellow this value while ego is on the overlap |
 
-| Parameter /objects    | Type   | Description                                                                                                                                                               |
-| --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `minimum_velocity`    | double | [m/s] consider objects with an estimated time to collision bellow this value while on the overlap                                                                         |
-| `use_predicted_paths` | bool   | [-] if true, use the predicted paths to estimate future positions; if false, assume the object moves at constant velocity along _all_ lanelets it currently is located in |
+| Parameter /objects              | Type   | Description                                                                                                                                                               |
+| ------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `minimum_velocity`              | double | [m/s] consider objects with an estimated time to collision bellow this value while on the overlap                                                                         |
+| `use_predicted_paths`           | bool   | [-] if true, use the predicted paths to estimate future positions; if false, assume the object moves at constant velocity along _all_ lanelets it currently is located in |
+| `predicted_path_min_confidence` | double | [-] minimum confidence required for a predicted path to be considered                                                                                                     |
 
 | Parameter /overlap | Type   | Description                                                                                          |
 | ------------------ | ------ | ---------------------------------------------------------------------------------------------------- |

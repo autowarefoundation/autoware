@@ -42,7 +42,7 @@ double time_along_path(const EgoData & ego_data, const size_t target_idx)
 
 std::optional<std::pair<double, double>> object_time_to_range(
   const autoware_auto_perception_msgs::msg::PredictedObject & object, const OverlapRange & range,
-  const rclcpp::Logger & logger)
+  const double min_confidence, const rclcpp::Logger & logger)
 {
   const auto max_deviation = object.shape.dimensions.y * 2.0;
 
@@ -50,6 +50,7 @@ std::optional<std::pair<double, double>> object_time_to_range(
   auto worst_exit_time = std::optional<double>();
 
   for (const auto & predicted_path : object.kinematics.predicted_paths) {
+    if (predicted_path.confidence < min_confidence) continue;
     const auto time_step = rclcpp::Duration(predicted_path.time_step).seconds();
     const auto enter_point =
       geometry_msgs::msg::Point().set__x(range.entering_point.x()).set__y(range.entering_point.y());
@@ -274,9 +275,10 @@ bool should_not_enter(
       continue;  // skip objects with velocity bellow a threshold
     }
     // skip objects that are already on the interval
-    const auto enter_exit_time = params.objects_use_predicted_paths
-                                   ? object_time_to_range(object, range, logger)
-                                   : object_time_to_range(object, range, inputs, logger);
+    const auto enter_exit_time =
+      params.objects_use_predicted_paths
+        ? object_time_to_range(object, range, params.objects_min_confidence, logger)
+        : object_time_to_range(object, range, inputs, logger);
     if (!enter_exit_time) {
       RCLCPP_DEBUG(logger, " SKIP (no enter/exit times found)\n");
       continue;  // skip objects that are not driving towards the overlapping range

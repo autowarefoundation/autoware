@@ -45,6 +45,7 @@ struct PlannerParam
 
   bool objects_use_predicted_paths;  //  # whether to use the objects' predicted paths
   double objects_min_vel;            //  # [m/s] objects lower than this velocity will be ignored
+  double objects_min_confidence;     //  # minimum confidence to consider a predicted path
 
   double overlap_extra_length;  // [m] extra length to add around an overlap range
   double overlap_min_dist;      // [m] min distance inside another lane to consider an overlap

@@ -16,6 +16,7 @@
         minimum_velocity: 0.5  # [m/s] objects lower than this velocity will be ignored
         use_predicted_paths: true  # if true, use the predicted paths to estimate future positions.
                                    # if false, assume the object moves at constant velocity along *all* lanelets it currently is located in.
+        predicted_path_min_confidence : 0.1  # when using predicted paths, ignore the ones whose confidence is lower than this value.
 
       overlap:
         minimum_distance: 0.0  # [m] minimum distance inside a lanelet for an overlap to be considered

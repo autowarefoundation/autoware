@@ -44,6 +44,8 @@ OutOfLaneModuleManager::OutOfLaneModuleManager(rclcpp::Node & node)
   pp.objects_min_vel = node.declare_parameter<double>(ns + ".objects.minimum_velocity");
   pp.objects_use_predicted_paths =
     node.declare_parameter<bool>(ns + ".objects.use_predicted_paths");
+  pp.objects_min_confidence =
+    node.declare_parameter<double>(ns + ".objects.predicted_path_min_confidence");
 
   pp.overlap_min_dist = node.declare_parameter<double>(ns + ".overlap.minimum_distance");
   pp.overlap_extra_length = node.declare_parameter<double>(ns + ".overlap.extra_length");
