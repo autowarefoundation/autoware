@@ -76,6 +76,9 @@ public:
     double stuck_vehicle_velocity;
     double max_stuck_vehicle_lateral_offset;
     double stuck_vehicle_attention_range;
+    double min_acc_for_stuck_vehicle;
+    double max_jerk_for_stuck_vehicle;
+    double min_jerk_for_stuck_vehicle;
     // param for pass judge logic
     double ego_pass_first_margin;
     double ego_pass_later_margin;

@@ -66,6 +66,9 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     node.declare_parameter<double>(ns + ".stuck_vehicle.max_stuck_vehicle_lateral_offset");
   cp.stuck_vehicle_attention_range =
     node.declare_parameter<double>(ns + ".stuck_vehicle.stuck_vehicle_attention_range");
+  cp.min_acc_for_stuck_vehicle = node.declare_parameter<double>(ns + ".stuck_vehicle.min_acc");
+  cp.max_jerk_for_stuck_vehicle = node.declare_parameter<double>(ns + ".stuck_vehicle.max_jerk");
+  cp.min_jerk_for_stuck_vehicle = node.declare_parameter<double>(ns + ".stuck_vehicle.min_jerk");
 
   // param for pass judge logic
   cp.ego_pass_first_margin =

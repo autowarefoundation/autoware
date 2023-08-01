@@ -17,6 +17,7 @@
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <motion_utils/distance/distance.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
@@ -30,6 +31,7 @@ namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 using motion_utils::calcArcLength;
+using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::calcLateralOffset;
 using motion_utils::calcLongitudinalOffsetPoint;
 using motion_utils::calcLongitudinalOffsetPose;
@@ -762,6 +764,8 @@ std::optional<StopFactor> CrosswalkModule::checkStopForStuckVehicles(
   const std::vector<geometry_msgs::msg::Point> & path_intersects,
   const std::optional<geometry_msgs::msg::Pose> & stop_pose) const
 {
+  const auto & p = planner_param_;
+
   if (path_intersects.size() < 2 || !stop_pose) {
     return {};
   }
@@ -772,26 +776,48 @@ std::optional<StopFactor> CrosswalkModule::checkStopForStuckVehicles(
     }
 
     const auto & obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear;
-    if (planner_param_.stuck_vehicle_velocity < std::hypot(obj_vel.x, obj_vel.y)) {
+    if (p.stuck_vehicle_velocity < std::hypot(obj_vel.x, obj_vel.y)) {
       continue;
     }
 
     const auto & obj_pos = object.kinematics.initial_pose_with_covariance.pose.position;
     const auto lateral_offset = calcLateralOffset(ego_path.points, obj_pos);
-    if (planner_param_.max_stuck_vehicle_lateral_offset < std::abs(lateral_offset)) {
+    if (p.max_stuck_vehicle_lateral_offset < std::abs(lateral_offset)) {
       continue;
     }
 
     const auto & ego_pos = planner_data_->current_odometry->pose.position;
+    const auto ego_vel = planner_data_->current_velocity->twist.linear.x;
+    const auto ego_acc = planner_data_->current_acceleration->accel.accel.linear.x;
+
     const double near_attention_range =
       calcSignedArcLength(ego_path.points, ego_pos, path_intersects.back());
-    const double far_attention_range =
-      near_attention_range + planner_param_.stuck_vehicle_attention_range;
+    const double far_attention_range = near_attention_range + p.stuck_vehicle_attention_range;
 
     const auto dist_ego2obj = calcSignedArcLength(ego_path.points, ego_pos, obj_pos);
 
     if (near_attention_range < dist_ego2obj && dist_ego2obj < far_attention_range) {
-      return createStopFactor(*stop_pose, {obj_pos});
+      // Plan STOP considering min_acc, max_jerk and min_jerk.
+      const auto min_feasible_dist_ego2stop = calcDecelDistWithJerkAndAccConstraints(
+        ego_vel, 0.0, ego_acc, p.min_acc_for_stuck_vehicle, p.max_jerk_for_stuck_vehicle,
+        p.min_jerk_for_stuck_vehicle);
+      if (!min_feasible_dist_ego2stop) {
+        continue;
+      }
+
+      const double dist_ego2stop =
+        calcSignedArcLength(ego_path.points, ego_pos, stop_pose->position);
+      const double feasible_dist_ego2stop = std::max(*min_feasible_dist_ego2stop, dist_ego2stop);
+      const double dist_to_ego =
+        calcSignedArcLength(ego_path.points, ego_path.points.front().point.pose.position, ego_pos);
+
+      const auto feasible_stop_pose =
+        calcLongitudinalOffsetPose(ego_path.points, 0, dist_to_ego + feasible_dist_ego2stop);
+      if (!feasible_stop_pose) {
+        continue;
+      }
+
+      return createStopFactor(*feasible_stop_pose, {obj_pos});
     }
   }
 

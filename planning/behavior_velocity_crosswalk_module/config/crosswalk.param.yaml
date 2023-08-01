@@ -4,8 +4,8 @@
       common:
         show_processing_time: false # [-] whether to show processing time
         # param for input data
-        enable_rtc: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
         traffic_light_state_timeout: 3.0 # [s] timeout threshold for traffic light signal
+        enable_rtc: true # if true, the scene modules should be approved by (request to cooperate)rtc function. if false, the module can be run without approval from rtc.
 
       # param for stop position
       stop_position:
@@ -30,6 +30,9 @@
         stuck_vehicle_velocity: 1.0 # [m/s] maximum velocity threshold whether the vehicle is stuck
         max_stuck_vehicle_lateral_offset: 2.0 # [m] maximum lateral offset for stuck vehicle position should be looked
         stuck_vehicle_attention_range: 10.0 # [m] the detection area is defined as X meters behind the crosswalk
+        min_acc: -1.0   # min acceleration [m/ss]
+        min_jerk: -1.0  # min jerk [m/sss]
+        max_jerk: 1.0   # max jerk [m/sss]
 
       # param for pass judge logic
       pass_judge:
