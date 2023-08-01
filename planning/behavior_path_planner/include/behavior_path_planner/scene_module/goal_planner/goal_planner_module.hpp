@@ -92,9 +92,9 @@ public:
     const std::shared_ptr<GoalPlannerParameters> & parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
-  void updateModuleParams(const std::shared_ptr<GoalPlannerParameters> & parameters)
+  void updateModuleParams(const std::any & parameters) override
   {
-    parameters_ = parameters;
+    parameters_ = std::any_cast<std::shared_ptr<GoalPlannerParameters>>(parameters);
   }
 
   BehaviorModuleOutput run() override;

@@ -87,7 +87,7 @@ public:
 
   void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
 
-  void updateModuleParams(const std::shared_ptr<LaneChangeParameters> & parameters);
+  void updateModuleParams(const std::any & parameters) override;
 
   void setData(const std::shared_ptr<const PlannerData> & data) override;
 

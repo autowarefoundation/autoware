@@ -43,8 +43,6 @@ public:
 
 private:
   std::shared_ptr<SideShiftParameters> parameters_;
-
-  std::vector<std::shared_ptr<SideShiftModule>> registered_modules_;
 };
 
 }  // namespace behavior_path_planner

@@ -42,8 +42,6 @@ public:
 
 private:
   std::shared_ptr<GoalPlannerParameters> parameters_;
-
-  std::vector<std::shared_ptr<GoalPlannerModule>> registered_modules_;
 };
 
 }  // namespace behavior_path_planner

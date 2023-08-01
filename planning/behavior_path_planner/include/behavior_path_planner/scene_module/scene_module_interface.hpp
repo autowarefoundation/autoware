@@ -37,6 +37,7 @@
 #include <visualization_msgs/msg/detail/marker_array__struct.hpp>
 
 #include <algorithm>
+#include <any>
 #include <limits>
 #include <memory>
 #include <random>
@@ -87,6 +88,8 @@ public:
   }
 
   virtual ~SceneModuleInterface() = default;
+
+  virtual void updateModuleParams(const std::any & parameters) = 0;
 
   /**
    * @brief Return SUCCESS if plan is not needed or plan is successfully finished,

@@ -49,7 +49,7 @@ class AvoidanceModule : public SceneModuleInterface
 public:
   AvoidanceModule(
     const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters,
-    const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map);
+    const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
   ModuleStatus updateState() override;
   CandidateOutput planCandidate() const override;
@@ -62,9 +62,9 @@ public:
   void updateData() override;
   void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
 
-  void updateModuleParams(const std::shared_ptr<AvoidanceParameters> & parameters)
+  void updateModuleParams(const std::any & parameters) override
   {
-    parameters_ = parameters;
+    parameters_ = std::any_cast<std::shared_ptr<AvoidanceParameters>>(parameters);
   }
   std::shared_ptr<AvoidanceDebugMsgArray> get_debug_msg_array() const;
 

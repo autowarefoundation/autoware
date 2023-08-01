@@ -42,8 +42,6 @@ public:
 
 private:
   std::shared_ptr<StartPlannerParameters> parameters_;
-
-  std::vector<std::shared_ptr<StartPlannerModule>> registered_modules_;
 };
 
 }  // namespace behavior_path_planner

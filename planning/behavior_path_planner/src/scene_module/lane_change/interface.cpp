@@ -36,7 +36,7 @@ using utils::lane_change::assignToCandidate;
 
 LaneChangeInterface::LaneChangeInterface(
   const std::string & name, rclcpp::Node & node, std::shared_ptr<LaneChangeParameters> parameters,
-  const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map,
+  const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map,
   std::unique_ptr<LaneChangeBase> && module_type)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map},
   parameters_{std::move(parameters)},
@@ -278,10 +278,9 @@ CandidateOutput LaneChangeInterface::planCandidate() const
   return output;
 }
 
-void LaneChangeInterface::updateModuleParams(
-  const std::shared_ptr<LaneChangeParameters> & parameters)
+void LaneChangeInterface::updateModuleParams(const std::any & parameters)
 {
-  parameters_ = parameters;
+  parameters_ = std::any_cast<std::shared_ptr<LaneChangeParameters>>(parameters);
 }
 
 void LaneChangeInterface::setData(const std::shared_ptr<const PlannerData> & data)
@@ -507,7 +506,7 @@ AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<LaneChangeParameters> & parameters,
   const std::shared_ptr<AvoidanceByLCParameters> & avoidance_by_lane_change_parameters,
-  const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
+  const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map)
 : LaneChangeInterface{
     name, node, parameters, rtc_interface_ptr_map,
     std::make_unique<AvoidanceByLaneChange>(parameters, avoidance_by_lane_change_parameters)}

@@ -44,7 +44,6 @@ public:
 
 private:
   std::shared_ptr<DynamicAvoidanceParameters> parameters_;
-  std::vector<std::shared_ptr<DynamicAvoidanceModule>> registered_modules_;
 };
 
 }  // namespace behavior_path_planner

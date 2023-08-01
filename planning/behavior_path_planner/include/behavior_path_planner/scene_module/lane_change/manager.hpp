@@ -44,8 +44,6 @@ public:
 protected:
   std::shared_ptr<LaneChangeParameters> parameters_;
 
-  std::vector<std::shared_ptr<LaneChangeInterface>> registered_modules_;
-
   Direction direction_;
 
   LaneChangeModuleType type_;
