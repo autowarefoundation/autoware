@@ -125,7 +125,7 @@ Substituting equation (8) into equation (9) and tidying up the equation for $U$.
 $$
 \begin{align}
 J(U) &= (H(Fx_{0}+GU+SW)-Y_{ref})^{T}Q(H(Fx_{0}+GU+SW)-Y_{ref})+(U-U_{ref})^{T}R(U-U_{ref}) \\
-& =U^{T}(G^{T}H^{T}QHG+R)U+2\left\{(H(Fx_{0}+SW)-Yref)^{T}QHG-U_{ref}^{T}R\right\}U +(\rm{constant}) \tag{10}
+& =U^{T}(G^{T}H^{T}QHG+R)U+2\left\{(H(Fx_{0}+SW)-Y_{ref})^{T}QHG-U_{ref}^{T}R\right\}U +(\rm{constant}) \tag{10}
 \end{align}
 $$
 
@@ -182,7 +182,7 @@ Where $\kappa_{r}\left(s\right)$ is the curvature along the trajectory parametri
 
 There are three expressions in the update equations that are subject to linear approximation: the lateral deviation (or lateral coordinate) $y$, the heading angle (or the heading angle error) $\theta$, and the steering $\delta$. We can make a small angle assumption on the heading angle $\theta$.
 
-In the path tracking problem, the curvature of the trajectory $\kappa_{r}$ is known in advance. At the lower speeds, the Ackermann formula approximates the reference steering angle $\theta_{r}$(this value corresponds to the $U_{ref}$ mentioned above). The Ackerman steering expression can be written as;
+In the path tracking problem, the curvature of the trajectory $\kappa_{r}$ is known in advance. At the lower speeds, the Ackermann formula approximates the reference steering angle $\theta_{r}$(this value corresponds to the $U_{ref}$ mentioned above). The Ackermann steering expression can be written as;
 
 $$
 \begin{align}
@@ -344,7 +344,7 @@ $$
 \end{align}
 $$
 
-Discretizing $\dot{u}$ as $\left(u_{k} - u_{k-1}\right)/\text{d}t$ and multiply both sides by dt the resulting constraint become linear and convex
+We discretize $\dot{u}$ as $\left(u_{k} - u_{k-1}\right)/\text{d}t$ and multiply both sides by dt, and the resulting constraint become linear and convex
 
 $$
 \begin{align}
