@@ -3,3 +3,6 @@
     distance_threshold_list:
       #UNKNOWN, CAR, TRUCK, BUS,  TRAILER, MOTORBIKE, BICYCLE,PEDESTRIAN
       [9.0,     9.0, 9.0,   9.0,  9.0,     9.0,       9.0,    9.0]         #UNKNOWN
+
+    generalized_iou_threshold:
+      [-0.1, -0.1, -0.1, -0.6,  -0.6, -0.1, -0.1, -0.1]

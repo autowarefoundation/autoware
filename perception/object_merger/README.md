@@ -34,7 +34,7 @@ The successive shortest path algorithm is used to solve the data association pro
 | `max_rad_matrix`            | double                | Maximum angle table for data association                                                                                                                                                                                              |
 | `base_link_frame_id`        | double                | association frame                                                                                                                                                                                                                     |
 | `distance_threshold_list`   | `std::vector<double>` | Distance threshold for each class used in judging overlap. The class order depends on [ObjectClassification](https://github.com/tier4/autoware_auto_msgs/blob/tier4/main/autoware_auto_perception_msgs/msg/ObjectClassification.idl). |
-| `generalized_iou_threshold` | double                | Generalized IoU threshold                                                                                                                                                                                                             |
+| `generalized_iou_threshold` | `std::vector<double>` | Generalized IoU threshold for each class                                                                                                                                                                                              |
 
 ## Tips
 

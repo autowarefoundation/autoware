@@ -35,8 +35,11 @@ bool isUnknownObjectOverlapped(
   const autoware_auto_perception_msgs::msg::DetectedObject & unknown_object,
   const autoware_auto_perception_msgs::msg::DetectedObject & known_object,
   const double precision_threshold, const double recall_threshold,
-  std::map<int, double> distance_threshold_map, const double generalized_iou_threshold)
+  std::map<int, double> distance_threshold_map,
+  const std::map<int, double> generalized_iou_threshold_map)
 {
+  const double generalized_iou_threshold = generalized_iou_threshold_map.at(
+    object_recognition_utils::getHighestProbLabel(known_object.classification));
   const double distance_threshold = distance_threshold_map.at(
     object_recognition_utils::getHighestProbLabel(known_object.classification));
   const double sq_distance_threshold = std::pow(distance_threshold, 2.0);
@@ -95,7 +98,7 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
   overlapped_judge_param_.recall_threshold =
     declare_parameter<double>("recall_threshold_to_judge_overlapped", 0.5);
   overlapped_judge_param_.generalized_iou_threshold =
-    declare_parameter<double>("generalized_iou_threshold");
+    convertListToClassMap(declare_parameter<std::vector<double>>("generalized_iou_threshold"));
 
   // get distance_threshold_map from distance_threshold_list
   /** TODO(Shin-kyoto):
