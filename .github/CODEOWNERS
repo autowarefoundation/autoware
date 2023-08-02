@@ -79,21 +79,22 @@ launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp
 launch/tier4_simulator_launch/** keisuke.shima@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 launch/tier4_system_launch/** akihiro.sakurai@tier4.jp fumihito.ito@tier4.jp
 launch/tier4_vehicle_launch/** yukihiro.saito@tier4.jp
-localization/ekf_localizer/** koji.minoda@tier4.jp takamasa.horibe@tier4.jp takeshi.ishita@tier4.jp yamato.ando@tier4.jp
-localization/gyro_odometer/** yamato.ando@tier4.jp
-localization/initial_pose_button_panel/** yamato.ando@tier4.jp
-localization/localization_error_monitor/** yamato.ando@tier4.jp
-localization/ndt_scan_matcher/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp yamato.ando@tier4.jp
-localization/pose2twist/** yamato.ando@tier4.jp
-localization/pose_initializer/** isamu.takagi@tier4.jp yamato.ando@tier4.jp
-localization/stop_filter/** koji.minoda@tier4.jp yamato.ando@tier4.jp
-localization/twist2accel/** koji.minoda@tier4.jp yamato.ando@tier4.jp
-localization/yabloc/yabloc_common/** kento.yabuuchi.2@tier4.jp
-localization/yabloc/yabloc_image_processing/** kento.yabuuchi.2@tier4.jp
-localization/yabloc/yabloc_particle_filter/** kento.yabuuchi.2@tier4.jp
-localization/yabloc/yabloc_pose_initializer/** kento.yabuuchi.2@tier4.jp
-map/map_height_fitter/** isamu.takagi@tier4.jp yamato.ando@tier4.jp
-map/map_loader/** koji.minoda@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp
+localization/ekf_localizer/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp takamasa.horibe@tier4.jp takeshi.ishita@tier4.jp yamato.ando@tier4.jp
+localization/gyro_odometer/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/initial_pose_button_panel/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/localization_error_monitor/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/ndt_scan_matcher/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/pose2twist/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/pose_initializer/** isamu.takagi@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/stop_filter/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/twist2accel/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/yabloc/yabloc_common/** kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp
+localization/yabloc/yabloc_image_processing/** kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp
+localization/yabloc/yabloc_monitor/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp
+localization/yabloc/yabloc_particle_filter/** kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp
+localization/yabloc/yabloc_pose_initializer/** kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp
+map/map_height_fitter/** isamu.takagi@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+map/map_loader/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp
 map/map_tf_generator/** azumi.suzuki@tier4.jp
 map/util/lanelet2_map_preprocessor/** ryohsuke.mitsudome@tier4.jp
 perception/bytetrack/** manato.hirabayashi@tier4.jp
@@ -130,12 +131,12 @@ perception/simple_object_merger/** satoshi.tanaka@tier4.jp shunsuke.miura@tier4.
 perception/tensorrt_classifier/** mingyu.li@tier4.jp
 perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp
 perception/tensorrt_yolox/** daisuke.nishimatsu@tier4.jp dan.umeda@tier4.jp manato.hirabayashi@tier4.jp
-perception/traffic_light_arbiter/** kenzo.lobos@tier4.jp
+perception/traffic_light_arbiter/** kenzo.lobos@tier4.jp shunsuke.miura@tier4.jp
 perception/traffic_light_classifier/** shunsuke.miura@tier4.jp yukihiro.saito@tier4.jp
-perception/traffic_light_fine_detector/** mingyu.li@tier4.jp
+perception/traffic_light_fine_detector/** mingyu.li@tier4.jp shunsuke.miura@tier4.jp
 perception/traffic_light_map_based_detector/** yukihiro.saito@tier4.jp
-perception/traffic_light_multi_camera_fusion/** mingyu.li@tier4.jp
-perception/traffic_light_occlusion_predictor/** mingyu.li@tier4.jp
+perception/traffic_light_multi_camera_fusion/** mingyu.li@tier4.jp shunsuke.miura@tier4.jp
+perception/traffic_light_occlusion_predictor/** mingyu.li@tier4.jp shunsuke.miura@tier4.jp
 perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp
 perception/traffic_light_visualization/** yukihiro.saito@tier4.jp
 planning/behavior_path_planner/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4.jp kyoichi.sugahara@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp zulfaqar.azmi@tier4.jp
