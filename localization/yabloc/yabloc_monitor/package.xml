@@ -6,6 +6,7 @@
   <description>YabLoc monitor package</description>
   <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>
   <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
+  <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>

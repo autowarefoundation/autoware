@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>YabLoc particle filter package</description>
   <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>
+  <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
