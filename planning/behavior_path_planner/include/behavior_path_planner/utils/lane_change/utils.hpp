@@ -76,8 +76,8 @@ std::vector<int64_t> replaceWithSortedIds(
   const std::vector<std::vector<int64_t>> & sorted_lane_ids);
 
 std::vector<std::vector<int64_t>> getSortedLaneIds(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const double rough_shift_length);
+  const RouteHandler & route_handler, const Pose & current_pose,
+  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes);
 
 PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 
@@ -88,6 +88,10 @@ lanelet::ConstLanelets getTargetPreferredLanes(
 
 lanelet::ConstLanelets getTargetNeighborLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
+  const LaneChangeModuleType & type);
+
+lanelet::BasicPolygon2d getTargetNeighborLanesPolygon(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const LaneChangeModuleType & type);
 
 bool isPathInLanelets(

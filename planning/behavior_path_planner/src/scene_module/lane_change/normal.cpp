@@ -679,21 +679,13 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto dist_to_end_of_current_lanes =
     utils::getDistanceToEndOfLane(getEgoPose(), current_lanes);
 
-  const auto arc_position_from_target =
-    lanelet::utils::getArcCoordinates(target_lanes, getEgoPose());
-
   const auto target_lane_length = lanelet::utils::getLaneletLength2d(target_lanes);
 
-  const auto sorted_lane_ids = utils::lane_change::getSortedLaneIds(
-    route_handler, current_lanes, target_lanes, arc_position_from_target.distance);
+  const auto sorted_lane_ids =
+    utils::lane_change::getSortedLaneIds(route_handler, getEgoPose(), current_lanes, target_lanes);
 
-  const auto target_neighbor_lanelets =
-    utils::lane_change::getTargetNeighborLanes(route_handler, current_lanes, type_);
-
-  const auto target_neighbor_preferred_lane_poly = lanelet::utils::getPolygonFromArcLength(
-    target_neighbor_lanelets, 0, std::numeric_limits<double>::max());
   const auto target_neighbor_preferred_lane_poly_2d =
-    lanelet::utils::to2D(target_neighbor_preferred_lane_poly).basicPolygon();
+    utils::lane_change::getTargetNeighborLanesPolygon(route_handler, current_lanes, type_);
 
   const auto target_objects = getTargetObjects(current_lanes, target_lanes);
 

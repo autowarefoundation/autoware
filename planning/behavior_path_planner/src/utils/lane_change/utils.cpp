@@ -203,6 +203,18 @@ lanelet::ConstLanelets getTargetNeighborLanes(
   return neighbor_lanes;
 }
 
+lanelet::BasicPolygon2d getTargetNeighborLanesPolygon(
+  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
+  const LaneChangeModuleType & type)
+{
+  const auto target_neighbor_lanelets =
+    utils::lane_change::getTargetNeighborLanes(route_handler, current_lanes, type);
+  const auto target_neighbor_preferred_lane_poly = lanelet::utils::getPolygonFromArcLength(
+    target_neighbor_lanelets, 0, std::numeric_limits<double>::max());
+
+  return lanelet::utils::to2D(target_neighbor_preferred_lane_poly).basicPolygon();
+}
+
 bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes)
@@ -640,9 +652,12 @@ std::string getStrDirection(const std::string & name, const Direction direction)
 }
 
 std::vector<std::vector<int64_t>> getSortedLaneIds(
-  const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const double rough_shift_length)
+  const RouteHandler & route_handler, const Pose & current_pose,
+  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes)
 {
+  const auto rough_shift_length =
+    lanelet::utils::getArcCoordinates(target_lanes, current_pose).distance;
+
   std::vector<std::vector<int64_t>> sorted_lane_ids{};
   sorted_lane_ids.reserve(target_lanes.size());
   const auto get_sorted_lane_ids = [&](const lanelet::ConstLanelet & target_lane) {
