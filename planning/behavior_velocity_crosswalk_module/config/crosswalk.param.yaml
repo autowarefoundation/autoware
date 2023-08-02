@@ -37,7 +37,9 @@
       # param for pass judge logic
       pass_judge:
         ego_pass_first_margin: 6.0 # [s] time margin for ego pass first situation (the module judges that ego don't have to stop at TTC + MARGIN < TTV condition)
+        ego_pass_first_additional_margin: 0.5 # [s] additional time margin for ego pass first situation to suppress chattering
         ego_pass_later_margin: 10.0 # [s] time margin for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
+        ego_pass_later_additional_margin: 0.5 # [s] additional time margin for object pass first situation to suppress chattering
         stop_object_velocity_threshold: 0.28 # [m/s] velocity threshold for the module to judge whether the objects is stopped (0.28 m/s = 1.0 kmph)
         min_object_velocity: 1.39 # [m/s] minimum object velocity (compare the estimated velocity by perception module with this parameter and adopt the larger one to calculate TTV. 1.39 m/s = 5.0 kmph)
         ## param for yielding

@@ -73,8 +73,12 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   // param for pass judge logic
   cp.ego_pass_first_margin =
     node.declare_parameter<double>(ns + ".pass_judge.ego_pass_first_margin");
+  cp.ego_pass_first_additional_margin =
+    node.declare_parameter<double>(ns + ".pass_judge.ego_pass_first_additional_margin");
   cp.ego_pass_later_margin =
     node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_margin");
+  cp.ego_pass_later_additional_margin =
+    node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_additional_margin");
   cp.stop_object_velocity =
     node.declare_parameter<double>(ns + ".pass_judge.stop_object_velocity_threshold");
   cp.min_object_velocity = node.declare_parameter<double>(ns + ".pass_judge.min_object_velocity");

@@ -81,7 +81,9 @@ public:
     double min_jerk_for_stuck_vehicle;
     // param for pass judge logic
     double ego_pass_first_margin;
+    double ego_pass_first_additional_margin;
     double ego_pass_later_margin;
+    double ego_pass_later_additional_margin;
     double stop_object_velocity;
     double min_object_velocity;
     bool disable_stop_for_yield_cancel;
@@ -100,19 +102,22 @@ public:
 
   struct ObjectInfo
   {
-    // NOTE: FULLY_STOPPED means stopped object which can be ignored.
-    enum class State { STOPPED = 0, FULLY_STOPPED, OTHER };
-    State state;
+    CollisionState collision_state{};
     std::optional<rclcpp::Time> time_to_start_stopped{std::nullopt};
 
-    void updateState(
-      const rclcpp::Time & now, const double obj_vel, const bool is_ego_yielding,
-      const bool has_traffic_light, const PlannerParam & planner_param)
-    {
-      const bool is_stopped = obj_vel < planner_param.stop_object_velocity;
+    geometry_msgs::msg::Point position{};
+    std::optional<CollisionPoint> collision_point{};
 
+    void transitState(
+      const rclcpp::Time & now, const double vel, const bool is_ego_yielding,
+      const bool has_traffic_light, const std::optional<CollisionPoint> & collision_point,
+      const PlannerParam & planner_param)
+    {
+      const bool is_stopped = vel < planner_param.stop_object_velocity;
+
+      // Check if the object can be ignored
       if (is_stopped) {
-        if (state == State::FULLY_STOPPED) {
+        if (collision_state == CollisionState::IGNORE) {
           return;
         }
 
@@ -124,14 +129,41 @@ public:
         if (
           (is_ego_yielding || (has_traffic_light && planner_param.disable_stop_for_yield_cancel)) &&
           !intent_to_cross) {
-          state = State::FULLY_STOPPED;
-        } else {
-          // NOTE: Object may start moving
-          state = State::STOPPED;
+          collision_state = CollisionState::IGNORE;
+          return;
         }
       } else {
         time_to_start_stopped = std::nullopt;
-        state = State::OTHER;
+      }
+
+      // Compare time to collision and vehicle
+      if (collision_point) {
+        // Check if ego will pass first
+        const double ego_pass_first_additional_margin =
+          collision_state == CollisionState::EGO_PASS_FIRST
+            ? 0.0
+            : planner_param.ego_pass_first_additional_margin;
+        if (
+          collision_point->time_to_collision + planner_param.ego_pass_first_margin +
+            ego_pass_first_additional_margin <
+          collision_point->time_to_vehicle) {
+          collision_state = CollisionState::EGO_PASS_FIRST;
+          return;
+        }
+        // Check if ego will pass later
+        const double ego_pass_later_additional_margin =
+          collision_state == CollisionState::EGO_PASS_LATER
+            ? 0.0
+            : planner_param.ego_pass_later_additional_margin;
+        if (
+          collision_point->time_to_vehicle + planner_param.ego_pass_later_margin +
+            ego_pass_later_additional_margin <
+          collision_point->time_to_collision) {
+          collision_state = CollisionState::EGO_PASS_LATER;
+          return;
+        }
+        collision_state = CollisionState::YIELD;
+        return;
       }
     }
   };
@@ -139,8 +171,9 @@ public:
   {
     void init() { current_uuids_.clear(); }
     void update(
-      const std::string & uuid, const double obj_vel, const rclcpp::Time & now,
-      const bool is_ego_yielding, const bool has_traffic_light, const PlannerParam & planner_param)
+      const std::string & uuid, const geometry_msgs::msg::Point & position, const double vel,
+      const rclcpp::Time & now, const bool is_ego_yielding, const bool has_traffic_light,
+      const std::optional<CollisionPoint> & collision_point, const PlannerParam & planner_param)
     {
       // update current uuids
       current_uuids_.push_back(uuid);
@@ -150,14 +183,17 @@ public:
         if (
           has_traffic_light && planner_param.disable_stop_for_yield_cancel &&
           planner_param.disable_yield_for_new_stopped_object) {
-          objects.emplace(uuid, ObjectInfo{ObjectInfo::State::FULLY_STOPPED});
+          objects.emplace(uuid, ObjectInfo{CollisionState::IGNORE});
         } else {
-          objects.emplace(uuid, ObjectInfo{ObjectInfo::State::OTHER});
+          objects.emplace(uuid, ObjectInfo{CollisionState::YIELD});
         }
       }
 
       // update object state
-      objects.at(uuid).updateState(now, obj_vel, is_ego_yielding, has_traffic_light, planner_param);
+      objects.at(uuid).transitState(
+        now, vel, is_ego_yielding, has_traffic_light, collision_point, planner_param);
+      objects.at(uuid).collision_point = collision_point;
+      objects.at(uuid).position = position;
     }
     void finalize()
     {
@@ -174,7 +210,19 @@ public:
         objects.erase(obsolete_uuid);
       }
     }
-    ObjectInfo::State getState(const std::string & uuid) const { return objects.at(uuid).state; }
+
+    std::vector<ObjectInfo> getObject() const
+    {
+      std::vector<ObjectInfo> object_info_vec;
+      for (auto object : objects) {
+        object_info_vec.push_back(object.second);
+      }
+      return object_info_vec;
+    }
+    CollisionState getCollisionState(const std::string & uuid) const
+    {
+      return objects.at(uuid).collision_state;
+    }
 
     std::unordered_map<std::string, ObjectInfo> objects;
     std::vector<std::string> current_uuids_;
@@ -210,9 +258,9 @@ private:
     const std::vector<geometry_msgs::msg::Point> & path_intersects,
     const std::optional<geometry_msgs::msg::Pose> & stop_pose) const;
 
-  std::vector<CollisionPoint> getCollisionPoints(
+  std::optional<CollisionPoint> getCollisionPoint(
     const PathWithLaneId & ego_path, const PredictedObject & object,
-    const Polygon2d & attention_area, const std::pair<double, double> & crosswalk_attention_range);
+    const std::pair<double, double> & crosswalk_attention_range, const Polygon2d & attention_area);
 
   std::optional<StopFactor> getNearestStopFactor(
     const PathWithLaneId & ego_path,
@@ -243,9 +291,6 @@ private:
     const double dist_obj2cp, const geometry_msgs::msg::Vector3 & ego_vel,
     const geometry_msgs::msg::Vector3 & obj_vel) const;
 
-  CollisionState getCollisionState(
-    const std::string & obj_uuid, const double ttc, const double ttv) const;
-
   float calcTargetVelocity(
     const geometry_msgs::msg::Point & stop_point, const PathWithLaneId & ego_path) const;
 
@@ -257,7 +302,9 @@ private:
     const PathWithLaneId & ego_path, const std::vector<PredictedObject> & objects,
     const std::vector<geometry_msgs::msg::Point> & path_intersects) const;
 
-  void updateObjectState(const double dist_ego_to_stop);
+  void updateObjectState(
+    const double dist_ego_to_stop, const PathWithLaneId & sparse_resample_path,
+    const std::pair<double, double> & crosswalk_attention_range, const Polygon2d & attention_area);
 
   bool isRedSignalForPedestrians() const;
 
