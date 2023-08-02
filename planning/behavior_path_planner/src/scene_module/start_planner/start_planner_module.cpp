@@ -78,25 +78,25 @@ void StartPlannerModule::processOnExit()
 
 bool StartPlannerModule::isExecutionRequested() const
 {
+  // Execute when current pose is near route start pose
+  const Pose & start_pose = planner_data_->route_handler->getStartPose();
+  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
+  if (
+    tier4_autoware_utils::calcDistance2d(start_pose.position, current_pose.position) >
+    parameters_->th_arrived_distance) {
+    return false;
+  }
+
   // Check if ego arrives at goal
   const Pose & goal_pose = planner_data_->route_handler->getGoalPose();
-  const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   if (
     tier4_autoware_utils::calcDistance2d(goal_pose.position, current_pose.position) <
     parameters_->th_arrived_distance) {
     return false;
   }
 
-  has_received_new_route_ =
-    !planner_data_->prev_route_id ||
-    *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
-
   if (current_state_ == ModuleStatus::RUNNING) {
     return true;
-  }
-
-  if (!has_received_new_route_) {
-    return false;
   }
 
   const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
@@ -565,13 +565,17 @@ std::vector<DrivableLanes> StartPlannerModule::generateDrivableLanes(
 
 void StartPlannerModule::updatePullOutStatus()
 {
-  if (has_received_new_route_) {
+  const bool has_received_new_route =
+    !planner_data_->prev_route_id ||
+    *planner_data_->prev_route_id != planner_data_->route_handler->getRouteUuid();
+
+  if (has_received_new_route) {
     status_ = PullOutStatus();
   }
 
   // skip updating if enough time has not passed for preventing chattering between back and
   // start_planner
-  if (!has_received_new_route_ && !last_pull_out_start_update_time_ && !status_.back_finished) {
+  if (!has_received_new_route && !last_pull_out_start_update_time_ && !status_.back_finished) {
     if (!last_pull_out_start_update_time_) {
       last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
     }

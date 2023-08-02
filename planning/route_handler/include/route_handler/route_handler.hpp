@@ -96,6 +96,7 @@ public:
   // for goal
   bool isInGoalRouteSection(const lanelet::ConstLanelet & lanelet) const;
   Pose getGoalPose() const;
+  Pose getStartPose() const;
   lanelet::Id getGoalLaneId() const;
   bool getGoalLanelet(lanelet::ConstLanelet * goal_lanelet) const;
   std::vector<lanelet::ConstLanelet> getLanesBeforePose(

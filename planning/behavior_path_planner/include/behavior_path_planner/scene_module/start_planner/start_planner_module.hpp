@@ -118,7 +118,6 @@ private:
   std::unique_ptr<rclcpp::Time> last_route_received_time_;
   std::unique_ptr<rclcpp::Time> last_pull_out_start_update_time_;
   std::unique_ptr<Pose> last_approved_pose_;
-  mutable bool has_received_new_route_{false};
 
   std::shared_ptr<PullOutPlannerBase> getCurrentPlanner() const;
   PathWithLaneId getFullPath() const;
