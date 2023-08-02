@@ -62,7 +62,7 @@ public:
 
   void extendOutputDrivableArea(BehaviorModuleOutput & output) override;
 
-  void insertStopPoint(PathWithLaneId & path) override;
+  void insertStopPoint(const lanelet::ConstLanelets & lanelets, PathWithLaneId & path) override;
 
   PathWithLaneId getReferencePath() const override;
 
