@@ -71,12 +71,16 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   cp.min_jerk_for_stuck_vehicle = node.declare_parameter<double>(ns + ".stuck_vehicle.min_jerk");
 
   // param for pass judge logic
-  cp.ego_pass_first_margin =
-    node.declare_parameter<double>(ns + ".pass_judge.ego_pass_first_margin");
+  cp.ego_pass_first_margin_x =
+    node.declare_parameter<std::vector<double>>(ns + ".pass_judge.ego_pass_first_margin_x");
+  cp.ego_pass_first_margin_y =
+    node.declare_parameter<std::vector<double>>(ns + ".pass_judge.ego_pass_first_margin_y");
   cp.ego_pass_first_additional_margin =
     node.declare_parameter<double>(ns + ".pass_judge.ego_pass_first_additional_margin");
-  cp.ego_pass_later_margin =
-    node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_margin");
+  cp.ego_pass_later_margin_x =
+    node.declare_parameter<std::vector<double>>(ns + ".pass_judge.ego_pass_later_margin_x");
+  cp.ego_pass_later_margin_y =
+    node.declare_parameter<std::vector<double>>(ns + ".pass_judge.ego_pass_later_margin_y");
   cp.ego_pass_later_additional_margin =
     node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_additional_margin");
   cp.max_offset_to_crosswalk_for_yield =

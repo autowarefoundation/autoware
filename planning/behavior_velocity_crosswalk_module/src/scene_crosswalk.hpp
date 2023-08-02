@@ -56,6 +56,24 @@ using tier4_api_msgs::msg::CrosswalkStatus;
 using tier4_autoware_utils::Polygon2d;
 using tier4_autoware_utils::StopWatch;
 
+namespace
+{
+double interpolateEgoPassMargin(
+  const std::vector<double> & x_vec, const std::vector<double> & y_vec, const double target_x)
+{
+  for (size_t i = 0; i < x_vec.size(); ++i) {
+    if (target_x < x_vec.at(i)) {
+      if (i == 0) {
+        return y_vec.at(i);
+      }
+      const double ratio = (target_x - x_vec.at(i - 1)) / (x_vec.at(i) - x_vec.at(i - 1));
+      return y_vec.at(i - 1) + ratio * (y_vec.at(i) - y_vec.at(i - 1));
+    }
+  }
+  return y_vec.back();
+}
+}  // namespace
+
 class CrosswalkModule : public SceneModuleInterface
 {
 public:
@@ -80,9 +98,11 @@ public:
     double max_jerk_for_stuck_vehicle;
     double min_jerk_for_stuck_vehicle;
     // param for pass judge logic
-    double ego_pass_first_margin;
+    std::vector<double> ego_pass_first_margin_x;
+    std::vector<double> ego_pass_first_margin_y;
     double ego_pass_first_additional_margin;
-    double ego_pass_later_margin;
+    std::vector<double> ego_pass_later_margin_x;
+    std::vector<double> ego_pass_later_margin_y;
     double ego_pass_later_additional_margin;
     double max_offset_to_crosswalk_for_yield;
     double stop_object_velocity;
@@ -144,20 +164,27 @@ public:
           collision_state == CollisionState::EGO_PASS_FIRST
             ? 0.0
             : planner_param.ego_pass_first_additional_margin;
+        const double ego_pass_first_margin = interpolateEgoPassMargin(
+          planner_param.ego_pass_first_margin_x, planner_param.ego_pass_first_margin_y,
+          collision_point->time_to_collision);
         if (
-          collision_point->time_to_collision + planner_param.ego_pass_first_margin +
+          collision_point->time_to_collision + ego_pass_first_margin +
             ego_pass_first_additional_margin <
           collision_point->time_to_vehicle) {
           collision_state = CollisionState::EGO_PASS_FIRST;
           return;
         }
+
         // Check if ego will pass later
         const double ego_pass_later_additional_margin =
           collision_state == CollisionState::EGO_PASS_LATER
             ? 0.0
             : planner_param.ego_pass_later_additional_margin;
+        const double ego_pass_later_margin = interpolateEgoPassMargin(
+          planner_param.ego_pass_later_margin_x, planner_param.ego_pass_later_margin_y,
+          collision_point->time_to_vehicle);
         if (
-          collision_point->time_to_vehicle + planner_param.ego_pass_later_margin +
+          collision_point->time_to_vehicle + ego_pass_later_margin +
             ego_pass_later_additional_margin <
           collision_point->time_to_collision) {
           collision_state = CollisionState::EGO_PASS_LATER;
