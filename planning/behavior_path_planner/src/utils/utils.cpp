@@ -1268,18 +1268,17 @@ boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> 
 std::vector<DrivableLanes> cutOverlappedLanes(
   PathWithLaneId & path, const std::vector<DrivableLanes> & lanes)
 {
-  const auto overlapped_lanelet_id = getOverlappedLaneletId(lanes);
-  if (!overlapped_lanelet_id) {
+  const auto overlapped_lanelet_idx = getOverlappedLaneletId(lanes);
+  if (!overlapped_lanelet_idx) {
     return lanes;
   }
 
-  const std::vector<DrivableLanes> shorten_lanes{
-    lanes.begin(), lanes.begin() + *overlapped_lanelet_id};
+  std::vector<DrivableLanes> shorten_lanes{lanes.begin(), lanes.begin() + *overlapped_lanelet_idx};
   const auto shorten_lanelets = utils::transformToLanelets(shorten_lanes);
 
   // create removed lanelets
   std::vector<int64_t> removed_lane_ids;
-  for (size_t i = *overlapped_lanelet_id; i < lanes.size(); ++i) {
+  for (size_t i = *overlapped_lanelet_idx; i < lanes.size(); ++i) {
     const auto target_lanelets = utils::transformToLanelets(lanes.at(i));
     for (const auto & target_lanelet : target_lanelets) {
       // if target lane is inside of the shorten lanelets, we do not remove it
@@ -1290,18 +1289,22 @@ std::vector<DrivableLanes> cutOverlappedLanes(
     }
   }
 
-  for (size_t i = 0; i < path.points.size(); ++i) {
-    const auto & lane_ids = path.points.at(i).lane_ids;
+  const auto is_same_lane_id = [&removed_lane_ids](const auto & point) {
+    const auto & lane_ids = point.lane_ids;
     for (const auto & lane_id : lane_ids) {
-      if (
-        std::find(removed_lane_ids.begin(), removed_lane_ids.end(), lane_id) !=
-        removed_lane_ids.end()) {
-        path.points.erase(path.points.begin() + i, path.points.end());
-        return shorten_lanes;
+      const auto is_same_id = [&lane_id](const auto id) { return lane_id == id; };
+
+      if (std::any_of(removed_lane_ids.begin(), removed_lane_ids.end(), is_same_id)) {
+        return true;
       }
     }
-  }
+    return false;
+  };
 
+  const auto points_with_overlapped_id =
+    std::remove_if(path.points.begin(), path.points.end(), is_same_lane_id);
+
+  path.points.erase(points_with_overlapped_id, path.points.end());
   return shorten_lanes;
 }
 
