@@ -311,6 +311,16 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   updateObjectState(
     dist_ego_to_stop, sparse_resample_path, crosswalk_attention_range, attention_area);
 
+  // Check if ego moves forward enough to ignore yield.
+  if (!path_intersects.empty()) {
+    const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+    const double dist_ego2crosswalk =
+      calcSignedArcLength(ego_path.points, ego_pos, path_intersects.front());
+    if (dist_ego2crosswalk - base_link2front < planner_param_.max_offset_to_crosswalk_for_yield) {
+      return {};
+    }
+  }
+
   // Check pedestrian for stop
   // NOTE: first stop point and its minimum distance from ego to stop
   std::optional<std::pair<geometry_msgs::msg::Point, double>> nearest_stop_info;

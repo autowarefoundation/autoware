@@ -79,6 +79,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
     node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_margin");
   cp.ego_pass_later_additional_margin =
     node.declare_parameter<double>(ns + ".pass_judge.ego_pass_later_additional_margin");
+  cp.max_offset_to_crosswalk_for_yield =
+    node.declare_parameter<double>(ns + ".pass_judge.max_offset_to_crosswalk_for_yield");
   cp.stop_object_velocity =
     node.declare_parameter<double>(ns + ".pass_judge.stop_object_velocity_threshold");
   cp.min_object_velocity = node.declare_parameter<double>(ns + ".pass_judge.min_object_velocity");

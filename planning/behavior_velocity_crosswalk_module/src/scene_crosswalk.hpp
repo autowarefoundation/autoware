@@ -84,6 +84,7 @@ public:
     double ego_pass_first_additional_margin;
     double ego_pass_later_margin;
     double ego_pass_later_additional_margin;
+    double max_offset_to_crosswalk_for_yield;
     double stop_object_velocity;
     double min_object_velocity;
     bool disable_stop_for_yield_cancel;
