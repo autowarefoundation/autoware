@@ -51,8 +51,8 @@ void SideShiftModuleManager::updateModuleParams(
   [[maybe_unused]] std::string ns = "side_shift.";
   // updateParam<bool>(parameters, ns + ..., ...);
 
-  std::for_each(registered_modules_.begin(), registered_modules_.end(), [&p](const auto & m) {
-    m->updateModuleParams(p);
+  std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {
+    if (!observer.expired()) observer.lock()->updateModuleParams(p);
   });
 }
 

@@ -34,9 +34,9 @@ public:
   SideShiftModuleManager(
     rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config);
 
-  std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
+  std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
-    return std::make_shared<SideShiftModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
+    return std::make_unique<SideShiftModule>(name_, *node_, parameters_, rtc_interface_ptr_map_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;

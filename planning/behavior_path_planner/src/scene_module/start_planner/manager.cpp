@@ -99,13 +99,17 @@ void StartPlannerModuleManager::updateModuleParams(
 
   [[maybe_unused]] std::string ns = name_ + ".";
 
-  std::for_each(registered_modules_.begin(), registered_modules_.end(), [&](const auto & m) {
-    const auto start_planner_ptr = std::dynamic_pointer_cast<StartPlannerModule>(m);
-    start_planner_ptr->updateModuleParams(p);
-    start_planner_ptr->setInitialIsSimultaneousExecutableAsApprovedModule(
-      enable_simultaneous_execution_as_approved_module_);
-    start_planner_ptr->setInitialIsSimultaneousExecutableAsCandidateModule(
-      enable_simultaneous_execution_as_candidate_module_);
+  std::for_each(observers_.begin(), observers_.end(), [&](const auto & observer) {
+    if (!observer.expired()) {
+      const auto start_planner_ptr = std::dynamic_pointer_cast<StartPlannerModule>(observer.lock());
+      if (start_planner_ptr) {
+        start_planner_ptr->updateModuleParams(p);
+        start_planner_ptr->setInitialIsSimultaneousExecutableAsApprovedModule(
+          enable_simultaneous_execution_as_approved_module_);
+        start_planner_ptr->setInitialIsSimultaneousExecutableAsCandidateModule(
+          enable_simultaneous_execution_as_candidate_module_);
+      }
+    }
   });
 }
 }  // namespace behavior_path_planner

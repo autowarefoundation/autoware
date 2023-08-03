@@ -38,6 +38,7 @@ using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::toHexString;
 using unique_identifier_msgs::msg::UUID;
 using SceneModulePtr = std::shared_ptr<SceneModuleInterface>;
+using SceneModuleObserver = std::weak_ptr<SceneModuleInterface>;
 
 class SceneModuleManagerInterface
 {
@@ -73,56 +74,50 @@ public:
 
   virtual ~SceneModuleManagerInterface() = default;
 
-  SceneModulePtr getNewModule()
+  void updateIdleModuleInstance()
   {
-    if (idling_module_ptr_ != nullptr) {
-      idling_module_ptr_->onEntry();
-      return idling_module_ptr_;
+    if (idle_module_ptr_) {
+      idle_module_ptr_->onEntry();
+      return;
     }
 
-    idling_module_ptr_ = createNewSceneModuleInstance();
-    return idling_module_ptr_;
+    idle_module_ptr_ = createNewSceneModuleInstance();
   }
 
-  bool isExecutionRequested(
-    const SceneModulePtr & module_ptr, const BehaviorModuleOutput & previous_module_output) const
+  bool isExecutionRequested(const BehaviorModuleOutput & previous_module_output) const
   {
-    module_ptr->setData(planner_data_);
-    module_ptr->setPreviousModuleOutput(previous_module_output);
-    module_ptr->updateData();
+    idle_module_ptr_->setData(planner_data_);
+    idle_module_ptr_->setPreviousModuleOutput(previous_module_output);
+    idle_module_ptr_->updateData();
 
-    return module_ptr->isExecutionRequested();
+    return idle_module_ptr_->isExecutionRequested();
   }
 
   void registerNewModule(
-    const SceneModulePtr & module_ptr, const BehaviorModuleOutput & previous_module_output)
+    const SceneModuleObserver & observer, const BehaviorModuleOutput & previous_module_output)
   {
-    module_ptr->setIsSimultaneousExecutableAsApprovedModule(
-      enable_simultaneous_execution_as_approved_module_);
-    module_ptr->setIsSimultaneousExecutableAsCandidateModule(
-      enable_simultaneous_execution_as_candidate_module_);
-    module_ptr->setData(planner_data_);
-    module_ptr->setPreviousModuleOutput(previous_module_output);
-    module_ptr->onEntry();
-
-    registered_modules_.push_back(module_ptr);
-  }
-
-  void deleteModules(SceneModulePtr & module_ptr)
-  {
-    module_ptr->onExit();
-    module_ptr->publishRTCStatus();
-
-    const auto itr = std::find(registered_modules_.begin(), registered_modules_.end(), module_ptr);
-
-    if (itr != registered_modules_.end()) {
-      registered_modules_.erase(itr);
+    if (observer.expired()) {
+      return;
     }
 
-    module_ptr.reset();
-    idling_module_ptr_.reset();
+    observer.lock()->setIsSimultaneousExecutableAsApprovedModule(
+      enable_simultaneous_execution_as_approved_module_);
+    observer.lock()->setIsSimultaneousExecutableAsCandidateModule(
+      enable_simultaneous_execution_as_candidate_module_);
+    observer.lock()->setData(planner_data_);
+    observer.lock()->setPreviousModuleOutput(previous_module_output);
+    observer.lock()->onEntry();
 
-    pub_debug_marker_->publish(MarkerArray{});
+    observers_.push_back(observer);
+  }
+
+  void updateObserver()
+  {
+    const auto itr = std::remove_if(
+      observers_.begin(), observers_.end(),
+      [](const auto & observer) { return observer.expired(); });
+
+    observers_.erase(itr, observers_.end());
   }
 
   void publishVirtualWall() const
@@ -134,32 +129,36 @@ public:
     const auto marker_offset = std::numeric_limits<uint8_t>::max();
 
     uint32_t marker_id = marker_offset;
-    for (const auto & m : registered_modules_) {
-      const auto opt_stop_pose = m->getStopPose();
+    for (const auto & m : observers_) {
+      if (m.expired()) {
+        continue;
+      }
+
+      const auto opt_stop_pose = m.lock()->getStopPose();
       if (!!opt_stop_pose) {
         const auto virtual_wall = createStopVirtualWallMarker(
-          opt_stop_pose.get(), m->name(), rclcpp::Clock().now(), marker_id);
+          opt_stop_pose.get(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
         appendMarkerArray(virtual_wall, &markers);
       }
 
-      const auto opt_slow_pose = m->getSlowPose();
+      const auto opt_slow_pose = m.lock()->getSlowPose();
       if (!!opt_slow_pose) {
         const auto virtual_wall = createSlowDownVirtualWallMarker(
-          opt_slow_pose.get(), m->name(), rclcpp::Clock().now(), marker_id);
+          opt_slow_pose.get(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
         appendMarkerArray(virtual_wall, &markers);
       }
 
-      const auto opt_dead_pose = m->getDeadPose();
+      const auto opt_dead_pose = m.lock()->getDeadPose();
       if (!!opt_dead_pose) {
         const auto virtual_wall = createDeadLineVirtualWallMarker(
-          opt_dead_pose.get(), m->name(), rclcpp::Clock().now(), marker_id);
+          opt_dead_pose.get(), m.lock()->name(), rclcpp::Clock().now(), marker_id);
         appendMarkerArray(virtual_wall, &markers);
       }
 
-      const auto module_specific_wall = m->getModuleVirtualWall();
+      const auto module_specific_wall = m.lock()->getModuleVirtualWall();
       appendMarkerArray(module_specific_wall, &markers);
 
-      m->resetWallPoses();
+      m.lock()->resetWallPoses();
     }
 
     pub_virtual_wall_->publish(markers);
@@ -176,18 +175,22 @@ public:
     const auto marker_offset = std::numeric_limits<uint8_t>::max();
 
     uint32_t marker_id = marker_offset;
-    for (const auto & m : registered_modules_) {
-      for (auto & marker : m->getInfoMarkers().markers) {
+    for (const auto & m : observers_) {
+      if (m.expired()) {
+        continue;
+      }
+
+      for (auto & marker : m.lock()->getInfoMarkers().markers) {
         marker.id += marker_id;
         info_markers.markers.push_back(marker);
       }
 
-      for (auto & marker : m->getDebugMarkers().markers) {
+      for (auto & marker : m.lock()->getDebugMarkers().markers) {
         marker.id += marker_id;
         debug_markers.markers.push_back(marker);
       }
 
-      for (auto & marker : m->getDrivableLanesMarkers().markers) {
+      for (auto & marker : m.lock()->getDrivableLanesMarkers().markers) {
         marker.id += marker_id;
         drivable_lanes_markers.markers.push_back(marker);
       }
@@ -195,10 +198,10 @@ public:
       marker_id += marker_offset;
     }
 
-    if (registered_modules_.empty() && idling_module_ptr_ != nullptr) {
-      appendMarkerArray(idling_module_ptr_->getInfoMarkers(), &info_markers);
-      appendMarkerArray(idling_module_ptr_->getDebugMarkers(), &debug_markers);
-      appendMarkerArray(idling_module_ptr_->getDrivableLanesMarkers(), &drivable_lanes_markers);
+    if (observers_.empty() && idle_module_ptr_ != nullptr) {
+      appendMarkerArray(idle_module_ptr_->getInfoMarkers(), &info_markers);
+      appendMarkerArray(idle_module_ptr_->getDebugMarkers(), &debug_markers);
+      appendMarkerArray(idle_module_ptr_->getDrivableLanesMarkers(), &drivable_lanes_markers);
     }
 
     pub_info_marker_->publish(info_markers);
@@ -208,50 +211,62 @@ public:
 
   bool exist(const SceneModulePtr & module_ptr) const
   {
-    return std::find(registered_modules_.begin(), registered_modules_.end(), module_ptr) !=
-           registered_modules_.end();
+    return std::any_of(observers_.begin(), observers_.end(), [&](const auto & observer) {
+      return !observer.expired() && observer.lock() == module_ptr;
+    });
   }
 
-  bool canLaunchNewModule() const { return registered_modules_.size() < max_module_num_; }
+  bool canLaunchNewModule() const { return observers_.size() < max_module_num_; }
 
   bool isSimultaneousExecutableAsApprovedModule() const
   {
-    if (registered_modules_.empty()) {
+    if (observers_.empty()) {
       return enable_simultaneous_execution_as_approved_module_;
     }
 
-    return std::all_of(
-      registered_modules_.begin(), registered_modules_.end(), [](const SceneModulePtr & module) {
-        return module->isSimultaneousExecutableAsApprovedModule();
-      });
+    const auto checker = [this](const SceneModuleObserver & observer) {
+      if (observer.expired()) {
+        return enable_simultaneous_execution_as_approved_module_;
+      }
+      return observer.lock()->isSimultaneousExecutableAsApprovedModule();
+    };
+
+    return std::all_of(observers_.begin(), observers_.end(), checker);
   }
 
   bool isSimultaneousExecutableAsCandidateModule() const
   {
-    if (registered_modules_.empty()) {
+    if (observers_.empty()) {
       return enable_simultaneous_execution_as_candidate_module_;
     }
 
-    return std::all_of(
-      registered_modules_.begin(), registered_modules_.end(), [](const SceneModulePtr & module) {
-        return module->isSimultaneousExecutableAsCandidateModule();
-      });
+    const auto checker = [this](const SceneModuleObserver & observer) {
+      if (observer.expired()) {
+        return enable_simultaneous_execution_as_candidate_module_;
+      }
+      return observer.lock()->isSimultaneousExecutableAsCandidateModule();
+    };
+
+    return std::all_of(observers_.begin(), observers_.end(), checker);
   }
 
   void setData(const std::shared_ptr<PlannerData> & planner_data) { planner_data_ = planner_data; }
 
   void reset()
   {
-    std::for_each(registered_modules_.begin(), registered_modules_.end(), [](const auto & m) {
-      m->onExit();
-      m->publishRTCStatus();
+    std::for_each(observers_.begin(), observers_.end(), [](const auto & observer) {
+      if (!observer.expired()) {
+        observer.lock()->onExit();
+        observer.lock()->publishRTCStatus();
+      }
     });
-    registered_modules_.clear();
 
-    if (idling_module_ptr_ != nullptr) {
-      idling_module_ptr_->onExit();
-      idling_module_ptr_->publishRTCStatus();
-      idling_module_ptr_.reset();
+    observers_.clear();
+
+    if (idle_module_ptr_ != nullptr) {
+      idle_module_ptr_->onExit();
+      idle_module_ptr_->publishRTCStatus();
+      idle_module_ptr_.reset();
     }
 
     pub_debug_marker_->publish(MarkerArray{});
@@ -259,14 +274,16 @@ public:
 
   size_t getPriority() const { return priority_; }
 
-  std::string getModuleName() const { return name_; }
+  std::string name() const { return name_; }
 
-  std::vector<SceneModulePtr> getSceneModules() { return registered_modules_; }
+  std::vector<SceneModuleObserver> getSceneModuleObservers() { return observers_; }
+
+  std::shared_ptr<SceneModuleInterface> getIdleModule() { return std::move(idle_module_ptr_); }
 
   virtual void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) = 0;
 
 protected:
-  virtual std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() = 0;
+  virtual std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() = 0;
 
   rclcpp::Node * node_;
 
@@ -286,9 +303,9 @@ protected:
 
   std::shared_ptr<PlannerData> planner_data_;
 
-  std::vector<SceneModulePtr> registered_modules_;
+  std::vector<SceneModuleObserver> observers_;
 
-  SceneModulePtr idling_module_ptr_;
+  std::unique_ptr<SceneModuleInterface> idle_module_ptr_;
 
   std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map_;
 

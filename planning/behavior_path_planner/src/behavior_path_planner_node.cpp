@@ -131,7 +131,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     planner_manager_ = std::make_shared<PlannerManager>(*this, p.verbose);
 
     const auto register_and_create_publisher = [&](const auto & manager) {
-      const auto & module_name = manager->getModuleName();
+      const auto & module_name = manager->name();
       planner_manager_->registerSceneModuleManager(manager);
       path_candidate_publishers_.emplace(
         module_name, create_publisher<Path>(path_candidate_name_space + module_name, 1));
@@ -779,27 +779,31 @@ void BehaviorPathPlannerNode::publishPathCandidate(
   const std::shared_ptr<PlannerData> & planner_data)
 {
   for (auto & manager : managers) {
-    if (path_candidate_publishers_.count(manager->getModuleName()) == 0) {
+    if (path_candidate_publishers_.count(manager->name()) == 0) {
       continue;
     }
 
-    if (manager->getSceneModules().empty()) {
-      path_candidate_publishers_.at(manager->getModuleName())
+    if (manager->getSceneModuleObservers().empty()) {
+      path_candidate_publishers_.at(manager->name())
         ->publish(convertToPath(nullptr, false, planner_data));
       continue;
     }
 
-    for (auto & module : manager->getSceneModules()) {
-      const auto & status = module->getCurrentStatus();
+    for (auto & observer : manager->getSceneModuleObservers()) {
+      if (observer.expired()) {
+        continue;
+      }
+      const auto & status = observer.lock()->getCurrentStatus();
       const auto candidate_path = std::invoke([&]() {
         if (status == ModuleStatus::SUCCESS || status == ModuleStatus::FAILURE) {
           // clear candidate path if the module is finished
           return convertToPath(nullptr, false, planner_data);
         }
-        return convertToPath(module->getPathCandidate(), module->isExecutionReady(), planner_data);
+        return convertToPath(
+          observer.lock()->getPathCandidate(), observer.lock()->isExecutionReady(), planner_data);
       });
 
-      path_candidate_publishers_.at(module->name())->publish(candidate_path);
+      path_candidate_publishers_.at(observer.lock()->name())->publish(candidate_path);
     }
   }
 }
@@ -809,19 +813,22 @@ void BehaviorPathPlannerNode::publishPathReference(
   const std::shared_ptr<PlannerData> & planner_data)
 {
   for (auto & manager : managers) {
-    if (path_reference_publishers_.count(manager->getModuleName()) == 0) {
+    if (path_reference_publishers_.count(manager->name()) == 0) {
       continue;
     }
 
-    if (manager->getSceneModules().empty()) {
-      path_reference_publishers_.at(manager->getModuleName())
+    if (manager->getSceneModuleObservers().empty()) {
+      path_reference_publishers_.at(manager->name())
         ->publish(convertToPath(nullptr, false, planner_data));
       continue;
     }
 
-    for (auto & module : manager->getSceneModules()) {
-      path_reference_publishers_.at(module->name())
-        ->publish(convertToPath(module->getPathReference(), true, planner_data));
+    for (auto & observer : manager->getSceneModuleObservers()) {
+      if (observer.expired()) {
+        continue;
+      }
+      path_reference_publishers_.at(observer.lock()->name())
+        ->publish(convertToPath(observer.lock()->getPathReference(), true, planner_data));
     }
   }
 }

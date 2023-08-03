@@ -171,8 +171,8 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
       p->end_duration_to_avoid_oncoming_object);
   }
 
-  std::for_each(registered_modules_.begin(), registered_modules_.end(), [&p](const auto & m) {
-    m->updateModuleParams(p);
+  std::for_each(observers_.begin(), observers_.end(), [&p](const auto & observer) {
+    if (!observer.expired()) observer.lock()->updateModuleParams(p);
   });
 }
 }  // namespace behavior_path_planner

@@ -34,9 +34,9 @@ public:
   DynamicAvoidanceModuleManager(
     rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config);
 
-  std::shared_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
+  std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
-    return std::make_shared<DynamicAvoidanceModule>(
+    return std::make_unique<DynamicAvoidanceModule>(
       name_, *node_, parameters_, rtc_interface_ptr_map_);
   }
 

@@ -105,9 +105,9 @@ public:
    */
   void registerSceneModuleManager(const SceneModuleManagerPtr & manager_ptr)
   {
-    RCLCPP_INFO(logger_, "register %s module", manager_ptr->getModuleName().c_str());
+    RCLCPP_INFO(logger_, "register %s module", manager_ptr->name().c_str());
     manager_ptrs_.push_back(manager_ptr);
-    processing_time_.emplace(manager_ptr->getModuleName(), 0.0);
+    processing_time_.emplace(manager_ptr->name(), 0.0);
   }
 
   /**
@@ -301,8 +301,9 @@ private:
    */
   void deleteExpiredModules(SceneModulePtr & module_ptr) const
   {
-    const auto manager = getManager(module_ptr);
-    manager->deleteModules(module_ptr);
+    module_ptr->onExit();
+    module_ptr->publishRTCStatus();
+    module_ptr.reset();
   }
 
   /**
@@ -376,7 +377,7 @@ private:
   {
     const auto itr = std::find_if(
       manager_ptrs_.begin(), manager_ptrs_.end(),
-      [&module_ptr](const auto & m) { return m->getModuleName() == module_ptr->name(); });
+      [&module_ptr](const auto & m) { return m->name() == module_ptr->name(); });
 
     if (itr == manager_ptrs_.end()) {
       throw std::domain_error("unknown manager name.");
