@@ -497,6 +497,62 @@ int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) 
   return std::abs(getRouteHandler()->getNumLaneToPreferredLane(lane, get_opposite_direction));
 }
 
+std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
+  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes) const
+{
+  if (prev_module_path_.points.empty()) {
+    return {};
+  }
+
+  const auto & common_parameters = planner_data_->parameters;
+  const auto & route_handler = *getRouteHandler();
+  const auto current_pose = getEgoPose();
+  const auto current_velocity = getEgoVelocity();
+
+  const auto longitudinal_acc_sampling_num = lane_change_parameters_->longitudinal_acc_sampling_num;
+  const auto vehicle_min_acc =
+    std::max(common_parameters.min_acc, lane_change_parameters_->min_longitudinal_acc);
+  const auto vehicle_max_acc =
+    std::min(common_parameters.max_acc, lane_change_parameters_->max_longitudinal_acc);
+  const double nearest_dist_threshold = common_parameters.ego_nearest_dist_threshold;
+  const double nearest_yaw_threshold = common_parameters.ego_nearest_yaw_threshold;
+
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    prev_module_path_.points, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const double & max_path_velocity =
+    prev_module_path_.points.at(current_seg_idx).point.longitudinal_velocity_mps;
+
+  // calculate minimum and maximum acceleration
+  const auto min_acc = utils::lane_change::calcMinimumAcceleration(
+    current_velocity, vehicle_min_acc, common_parameters);
+  const auto max_acc = utils::lane_change::calcMaximumAcceleration(
+    current_velocity, max_path_velocity, vehicle_max_acc, common_parameters);
+
+  // if max acc is not positive, then we do the normal sampling
+  if (max_acc <= 0.0) {
+    return utils::lane_change::getAccelerationValues(
+      min_acc, max_acc, longitudinal_acc_sampling_num);
+  }
+
+  // calculate maximum lane change length
+  const double max_lane_change_length = utils::lane_change::calcMaximumLaneChangeLength(
+    current_velocity, common_parameters,
+    route_handler.getLateralIntervalsToPreferredLane(current_lanes.back()), max_acc);
+
+  // if maximum lane change length is less than length to goal or the end of target lanes, only
+  // sample max acc
+  if (route_handler.isInGoalRouteSection(target_lanes.back())) {
+    const auto goal_pose = route_handler.getGoalPose();
+    if (max_lane_change_length < utils::getSignedDistance(current_pose, goal_pose, target_lanes)) {
+      return {max_acc};
+    }
+  } else if (max_lane_change_length < utils::getDistanceToEndOfLane(current_pose, target_lanes)) {
+    return {max_acc};
+  }
+
+  return utils::lane_change::getAccelerationValues(min_acc, max_acc, longitudinal_acc_sampling_num);
+}
+
 double NormalLaneChange::calcPrepareDuration(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes) const
 {
@@ -670,31 +726,14 @@ bool NormalLaneChange::getLaneChangePaths(
   const auto backward_path_length = common_parameters.backward_path_length;
   const auto forward_path_length = common_parameters.forward_path_length;
   const auto minimum_lane_changing_velocity = common_parameters.minimum_lane_changing_velocity;
-  const auto longitudinal_acc_sampling_num = lane_change_parameters_->longitudinal_acc_sampling_num;
   const auto lateral_acc_sampling_num = lane_change_parameters_->lateral_acc_sampling_num;
-  const auto min_longitudinal_acc =
-    std::max(common_parameters.min_acc, lane_change_parameters_->min_longitudinal_acc);
-  const auto max_longitudinal_acc =
-    std::min(common_parameters.max_acc, lane_change_parameters_->max_longitudinal_acc);
-  const auto finish_judge_buffer = common_parameters.lane_change_finish_judge_buffer;
 
   // get velocity
-  const auto current_velocity = getEgoTwist().linear.x;
-
-  // compute maximum longitudinal deceleration and acceleration
-  const auto maximum_deceleration = std::invoke([&minimum_lane_changing_velocity, &current_velocity,
-                                                 &min_longitudinal_acc, &common_parameters]() {
-    const double min_a = (minimum_lane_changing_velocity - current_velocity) /
-                         common_parameters.lane_change_prepare_duration;
-    return std::clamp(
-      min_a, -std::abs(min_longitudinal_acc), -std::numeric_limits<double>::epsilon());
-  });
-  const auto maximum_acceleration = utils::lane_change::calcMaximumAcceleration(
-    prev_module_path_, getEgoPose(), current_velocity, max_longitudinal_acc, common_parameters);
+  const auto current_velocity = getEgoVelocity();
 
   // get sampling acceleration values
-  const auto longitudinal_acc_sampling_values = utils::lane_change::getAccelerationValues(
-    maximum_deceleration, maximum_acceleration, longitudinal_acc_sampling_num);
+  const auto longitudinal_acc_sampling_values =
+    sampleLongitudinalAccValues(current_lanes, target_lanes);
 
   const auto is_goal_in_route = route_handler.isInGoalRouteSection(target_lanes.back());
 
@@ -795,6 +834,7 @@ bool NormalLaneChange::getLaneChangePaths(
           std::abs(route_handler.getNumLaneToPreferredLane(target_lanes.back(), direction));
         const double backward_buffer =
           num == 0 ? 0.0 : common_parameters.backward_length_buffer_for_end_of_lane;
+        const double finish_judge_buffer = common_parameters.lane_change_finish_judge_buffer;
         if (
           s_start + lane_changing_length + finish_judge_buffer + backward_buffer +
             next_lane_change_buffer >

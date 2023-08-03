@@ -57,8 +57,16 @@ using tier4_autoware_utils::Polygon2d;
 double calcLaneChangeResampleInterval(
   const double lane_changing_length, const double lane_changing_velocity);
 
+double calcMaximumLaneChangeLength(
+  const double current_velocity, const BehaviorPathPlannerParameters & common_param,
+  const std::vector<double> & shift_intervals, const double max_acc);
+
+double calcMinimumAcceleration(
+  const double current_velocity, const double min_longitudinal_acc,
+  const BehaviorPathPlannerParameters & params);
+
 double calcMaximumAcceleration(
-  const PathWithLaneId & path, const Pose & current_pose, const double current_velocity,
+  const double current_velocity, const double current_max_velocity,
   const double max_longitudinal_acc, const BehaviorPathPlannerParameters & params);
 
 double calcLaneChangingAcceleration(
