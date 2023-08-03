@@ -389,11 +389,18 @@ void ObstacleAvoidancePlanner::applyInputVelocity(
   const auto stop_idx = motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
   if (stop_idx) {
     const auto input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.get()).pose;
-    const size_t stop_seg_idx = trajectory_utils::findEgoSegmentIndex(
-      output_traj_points, input_stop_pose, ego_nearest_param_);
+    // NOTE: motion_utils::findNearestSegmentIndex is used instead of
+    // trajectory_utils::findEgoSegmentIndex
+    //       for the case where input_traj_points is much longer than output_traj_points, and the
+    //       former has a stop point but the latter will not have.
+    const auto stop_seg_idx = motion_utils::findNearestSegmentIndex(
+      output_traj_points, input_stop_pose, ego_nearest_param_.dist_threshold,
+      ego_nearest_param_.yaw_threshold);
 
     // calculate and insert stop pose on output trajectory
-    trajectory_utils::insertStopPoint(output_traj_points, input_stop_pose, stop_seg_idx);
+    if (stop_seg_idx) {
+      trajectory_utils::insertStopPoint(output_traj_points, input_stop_pose, *stop_seg_idx);
+    }
   }
 
   time_keeper_ptr_->toc(__func__, "    ");
