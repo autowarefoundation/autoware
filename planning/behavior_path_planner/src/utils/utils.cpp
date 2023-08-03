@@ -81,28 +81,33 @@ template <class T>
 size_t findNearestSegmentIndexFromLateralDistance(
   const std::vector<T> & points, const geometry_msgs::msg::Point & target_point)
 {
-  size_t closest_idx = motion_utils::findNearestSegmentIndex(points, target_point);
-  double min_lateral_dist =
-    std::fabs(motion_utils::calcLateralOffset(points, target_point, closest_idx));
-
+  std::optional<size_t> closest_idx{std::nullopt};
+  double min_lateral_dist = std::numeric_limits<double>::max();
   for (size_t seg_idx = 0; seg_idx < points.size() - 1; ++seg_idx) {
     const double lon_dist =
       motion_utils::calcLongitudinalOffsetToSegment(points, seg_idx, target_point);
     const double segment_length =
       tier4_autoware_utils::calcDistance2d(points.at(seg_idx), points.at(seg_idx + 1));
-    if (lon_dist < 0.0 || segment_length < lon_dist) {
-      continue;
-    }
-
-    const double lat_dist =
-      std::fabs(motion_utils::calcLateralOffset(points, target_point, seg_idx));
+    const double lat_dist = [&]() {
+      if (lon_dist < 0.0) {
+        return tier4_autoware_utils::calcDistance2d(points.at(seg_idx), target_point);
+      }
+      if (segment_length < lon_dist) {
+        return tier4_autoware_utils::calcDistance2d(points.at(seg_idx + 1), target_point);
+      }
+      return std::abs(motion_utils::calcLateralOffset(points, target_point, seg_idx));
+    }();
     if (lat_dist < min_lateral_dist) {
       closest_idx = seg_idx;
       min_lateral_dist = lat_dist;
     }
   }
 
-  return closest_idx;
+  if (closest_idx) {
+    return *closest_idx;
+  }
+
+  return motion_utils::findNearestSegmentIndex(points, target_point);
 }
 
 bool checkHasSameLane(
