@@ -349,40 +349,20 @@ private:
   }
 
   /**
-   * @brief stop and remove not RUNNING modules in candidate_module_ptrs_.
-   */
-  void clearNotRunningCandidateModules()
-  {
-    const auto it = std::remove_if(
-      candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), [this](auto & m) {
-        if (m->getCurrentStatus() != ModuleStatus::RUNNING) {
-          deleteExpiredModules(m);
-          return true;
-        }
-        return false;
-      });
-    candidate_module_ptrs_.erase(it, candidate_module_ptrs_.end());
-  }
-
-  /**
-   * @brief check if there is any RUNNING module in candidate_module_ptrs_.
-   */
-  bool hasAnyRunningCandidateModule()
-  {
-    return std::any_of(candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), [](auto & m) {
-      return m->getCurrentStatus() == ModuleStatus::RUNNING;
-    });
-  }
-
-  /**
    * @brief get current root lanelet. the lanelet is used for reference path generation.
    * @param planner data.
    * @return root lanelet.
    */
-  lanelet::ConstLanelet updateRootLanelet(const std::shared_ptr<PlannerData> & data) const
+  lanelet::ConstLanelet updateRootLanelet(
+    const std::shared_ptr<PlannerData> & data, bool success_lane_change = false) const
   {
     lanelet::ConstLanelet ret{};
-    data->route_handler->getClosestLaneletWithinRoute(data->self_odometry->pose.pose, &ret);
+    if (success_lane_change) {
+      data->route_handler->getClosestPreferredLaneletWithinRoute(
+        data->self_odometry->pose.pose, &ret);
+    } else {
+      data->route_handler->getClosestLaneletWithinRoute(data->self_odometry->pose.pose, &ret);
+    }
     RCLCPP_DEBUG(logger_, "update start lanelet. id:%ld", ret.id());
     return ret;
   }

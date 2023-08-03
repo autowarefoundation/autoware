@@ -439,8 +439,6 @@ std::pair<SceneModulePtr, BehaviorModuleOutput> PlannerManager::runRequestModule
 
 BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<PlannerData> & data)
 {
-  const bool has_any_running_candidate_module = hasAnyRunningCandidateModule();
-
   std::unordered_map<std::string, BehaviorModuleOutput> results;
   BehaviorModuleOutput output = getReferencePath(data);
   results.emplace("root", output);
@@ -514,59 +512,28 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     return results.at(output_module_name);
   }();
 
-  const auto not_success_itr = std::find_if(
-    approved_module_ptrs_.rbegin(), approved_module_ptrs_.rend(),
-    [](const auto & m) { return m->getCurrentStatus() != ModuleStatus::SUCCESS; });
-
-  // convert reverse iterator -> iterator
-  const auto success_itr = std::prev(not_success_itr).base() - 1;
-
   /**
-   * there is no succeeded module. return.
+   * remove success module immediately. if lane change module has succeeded, update root lanelet.
    */
-  if (success_itr == approved_module_ptrs_.end()) {
-    return approved_modules_output;
-  }
+  {
+    const auto success_module_itr = std::partition(
+      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
+      [](const auto & m) { return m->getCurrentStatus() != ModuleStatus::SUCCESS; });
 
-  const auto lane_change_itr = std::find_if(
-    success_itr, approved_module_ptrs_.end(),
-    [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
+    const auto success_lane_change = std::any_of(
+      success_module_itr, approved_module_ptrs_.end(),
+      [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
 
-  /**
-   * remove success modules according to Last In First Out(LIFO) policy. when the next module is in
-   * ModuleStatus::RUNNING, the previous module keeps running even if it is in
-   * ModuleStatus::SUCCESS.
-   */
-  if (lane_change_itr == approved_module_ptrs_.end() && !has_any_running_candidate_module) {
-    std::for_each(success_itr, approved_module_ptrs_.end(), [this](auto & m) {
+    if (success_lane_change) {
+      root_lanelet_ = updateRootLanelet(data, true);
+    }
+
+    std::for_each(success_module_itr, approved_module_ptrs_.end(), [&](auto & m) {
       debug_info_.emplace_back(m, Action::DELETE, "From Approved");
       deleteExpiredModules(m);
     });
 
-    approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
-    clearNotRunningCandidateModules();
-
-    return approved_modules_output;
-  }
-
-  /**
-   * as an exception, when there is lane change module is in succeeded modules, it doesn't remove
-   * any modules if module whose status is NOT ModuleStatus::SUCCESS exists. this is because the
-   * root lanelet is updated at the moment of lane change module's unregistering, and that causes
-   * change First In module's input.
-   */
-  if (not_success_itr == approved_module_ptrs_.rend() && !has_any_running_candidate_module) {
-    std::for_each(success_itr, approved_module_ptrs_.end(), [this](auto & m) {
-      debug_info_.emplace_back(m, Action::DELETE, "From Approved");
-      deleteExpiredModules(m);
-    });
-
-    approved_module_ptrs_.erase(success_itr, approved_module_ptrs_.end());
-    clearNotRunningCandidateModules();
-
-    root_lanelet_ = updateRootLanelet(data);
-
-    return approved_modules_output;
+    approved_module_ptrs_.erase(success_module_itr, approved_module_ptrs_.end());
   }
 
   return approved_modules_output;
