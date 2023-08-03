@@ -166,6 +166,10 @@ QGroupBox * AutowareStatePanel::makeLocalizationGroup()
   localization_label_ptr_->setStyleSheet("border:1px solid black;");
   grid->addWidget(localization_label_ptr_, 0, 0);
 
+  init_by_gnss_button_ptr_ = new QPushButton("Init by GNSS");
+  connect(init_by_gnss_button_ptr_, SIGNAL(clicked()), SLOT(onClickInitByGnss()));
+  grid->addWidget(init_by_gnss_button_ptr_, 1, 0);
+
   group->setLayout(grid);
   return group;
 }
@@ -248,6 +252,9 @@ void AutowareStatePanel::onInitialize()
   sub_localization_ = raw_node_->create_subscription<LocalizationInitializationState>(
     "/api/localization/initialization_state", rclcpp::QoS{1}.transient_local(),
     std::bind(&AutowareStatePanel::onLocalization, this, _1));
+
+  client_init_by_gnss_ =
+    raw_node_->create_client<InitializeLocalization>("/api/localization/initialize");
 
   // Motion
   sub_motion_ = raw_node_->create_subscription<MotionState>(
@@ -585,6 +592,11 @@ void AutowareStatePanel::onClickDirectControl()
 void AutowareStatePanel::onClickClearRoute()
 {
   callServiceWithoutResponse<ClearRoute>(client_clear_route_);
+}
+
+void AutowareStatePanel::onClickInitByGnss()
+{
+  callServiceWithoutResponse<InitializeLocalization>(client_init_by_gnss_);
 }
 
 void AutowareStatePanel::onClickAcceptStart()
