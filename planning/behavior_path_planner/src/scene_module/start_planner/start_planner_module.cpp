@@ -623,6 +623,10 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoses()
     status_.pull_out_lanes, arc_position_pose.length - check_distance,
     arc_position_pose.length + check_distance);
 
+  // filter pull out lanes objects
+  const auto [pull_out_lane_objects, others] =
+    utils::separateObjectsByLanelets(*planner_data_->dynamic_object, status_.pull_out_lanes);
+
   // lateral shift to current_pose
   const double distance_from_center_line = arc_position_pose.distance;
   for (auto & p : backward_shoulder_path.points) {
@@ -665,7 +669,7 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoses()
     }
 
     if (utils::checkCollisionBetweenFootprintAndObjects(
-          local_vehicle_footprint, *backed_pose, *(planner_data_->dynamic_object),
+          local_vehicle_footprint, *backed_pose, pull_out_lane_objects,
           parameters_->collision_check_margin)) {
       break;  // poses behind this has a collision, so break.
     }
