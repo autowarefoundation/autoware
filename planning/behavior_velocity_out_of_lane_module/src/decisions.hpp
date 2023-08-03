@@ -56,18 +56,21 @@ double time_along_path(const EgoData & ego_data, const size_t target_idx);
 /// but may not exist (e.g,, predicted path ends before reaching the end of the range)
 /// @param [in] object dynamic object
 /// @param [in] range overlapping range
+/// @param [in] route_handler route handler used to estimate the path of the dynamic object
 /// @param [in] min_confidence minimum confidence to consider a predicted path
 /// @param [in] logger ros logger
 /// @return an optional pair (time at enter [s], time at exit [s]). If the dynamic object drives in
 /// the opposite direction, time at enter > time at exit
 std::optional<std::pair<double, double>> object_time_to_range(
   const autoware_auto_perception_msgs::msg::PredictedObject & object, const OverlapRange & range,
-  const double min_confidence, const rclcpp::Logger & logger);
+  const std::shared_ptr<route_handler::RouteHandler> route_handler, const double min_confidence,
+  const rclcpp::Logger & logger);
 /// @brief use the lanelet map to estimate the times when an object will reach the enter and exit
 /// points of an overlapping range
 /// @param [in] object dynamic object
 /// @param [in] range overlapping range
-/// @param [in] lanelets objects to consider
+/// @param [in] inputs information used to take decisions (ranges, ego and objects data, route
+/// handler, lanelets)
 /// @param [in] logger ros logger
 /// @return an optional pair (time at enter [s], time at exit [s]). If the dynamic object drives in
 /// the opposite direction, time at enter > time at exit.
@@ -79,7 +82,7 @@ std::optional<std::pair<double, double>> object_time_to_range(
 /// @param [in] range_times times when ego and the object enter/exit the range
 /// @param [in] params parameters
 /// @param [in] logger ros logger
-bool object_is_incoming(
+bool will_collide_on_range(
   const RangeTimes & range_times, const PlannerParam & params, const rclcpp::Logger & logger);
 /// @brief check whether we should avoid entering the given range
 /// @param [in] range the range to check
