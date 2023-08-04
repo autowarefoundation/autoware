@@ -42,6 +42,7 @@ StartPlannerModuleManager::StartPlannerModuleManager(
   p.collision_check_margin = node->declare_parameter<double>(ns + "collision_check_margin");
   p.collision_check_distance_from_end =
     node->declare_parameter<double>(ns + "collision_check_distance_from_end");
+  p.th_moving_object_velocity = node->declare_parameter<double>(ns + "th_moving_object_velocity");
   // shift pull out
   p.enable_shift_pull_out = node->declare_parameter<bool>(ns + "enable_shift_pull_out");
   p.check_shift_path_lane_departure =

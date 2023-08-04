@@ -33,6 +33,7 @@ struct StartPlannerParameters
   double length_ratio_for_turn_signal_deactivation_near_intersection;
   double collision_check_margin;
   double collision_check_distance_from_end;
+  double th_moving_object_velocity;
   // shift pull out
   bool enable_shift_pull_out;
   bool check_shift_path_lane_departure;
