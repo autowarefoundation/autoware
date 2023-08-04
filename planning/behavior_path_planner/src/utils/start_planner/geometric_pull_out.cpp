@@ -39,7 +39,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
 {
   PullOutPath output;
 
-  // combine road lane and shoulder lane
+  // combine road lane and pull out lane
   const double backward_path_length =
     planner_data_->parameters.backward_path_length + parameters_.max_back_distance;
   const auto road_lanes = utils::getExtendedCurrentLanes(

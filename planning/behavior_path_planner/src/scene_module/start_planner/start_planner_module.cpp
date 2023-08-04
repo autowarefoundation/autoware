@@ -517,10 +517,9 @@ PathWithLaneId StartPlannerModule::generateStopPath() const
     PathPointWithLaneId p{};
     p.point.pose = pose;
     p.point.longitudinal_velocity_mps = 0.0;
-    lanelet::Lanelet closest_shoulder_lanelet;
-    lanelet::utils::query::getClosestLanelet(
-      status_.pull_out_lanes, pose, &closest_shoulder_lanelet);
-    p.lane_ids.push_back(closest_shoulder_lanelet.id());
+    lanelet::Lanelet closest_lanelet;
+    lanelet::utils::query::getClosestLanelet(status_.pull_out_lanes, pose, &closest_lanelet);
+    p.lane_ids.push_back(closest_lanelet.id());
     return p;
   };
 
