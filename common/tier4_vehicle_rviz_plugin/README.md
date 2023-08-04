@@ -5,7 +5,7 @@ Note that jsk_overlay_utils.cpp and jsk_overlay_utils.hpp are BSD license.
 
 ## Purpose
 
-This plugin provides a visual and easy-to-understand display of vehicle speed, turn signal and steering status.
+This plugin provides a visual and easy-to-understand display of vehicle speed, turn signal, steering status and acceleration.
 
 ## Inputs / Outputs
 
@@ -16,6 +16,7 @@ This plugin provides a visual and easy-to-understand display of vehicle speed, t
 | `/vehicle/status/velocity_status` | `autoware_auto_vehicle_msgs::msg::VelocityReport`       | The topic is vehicle twist         |
 | `/control/turn_signal_cmd`        | `autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport` | The topic is status of turn signal |
 | `/vehicle/status/steering_status` | `autoware_auto_vehicle_msgs::msg::SteeringReport`       | The topic is status of steering    |
+| `/localization/acceleration`      | `geometry_msgs::msg::AccelWithCovarianceStamped`        | The topic is the acceleration      |
 
 ## Parameter
 
@@ -63,6 +64,20 @@ This plugin provides a visual and easy-to-understand display of vehicle speed, t
 | `property_velocity_color_view_` | bool   | false         | Use Constant Color or not  |
 | `property_velocity_color_`      | QColor | Qt::black     | Color of velocity history  |
 | `property_vel_max_`             | float  | 3.0           | Color Border Vel Max [m/s] |
+
+#### AccelerationMeter
+
+| Name                                | Type   | Default Value        | Description                                      |
+| ----------------------------------- | ------ | -------------------- | ------------------------------------------------ |
+| `property_normal_text_color_`       | QColor | QColor(25, 255, 240) | Normal text color                                |
+| `property_emergency_text_color_`    | QColor | QColor(255, 80, 80)  | Emergency acceleration color                     |
+| `property_left_`                    | int    | 896                  | Left of the plotter window [px]                  |
+| `property_top_`                     | int    | 128                  | Top of the plotter window [px]                   |
+| `property_length_`                  | int    | 256                  | Height of the plotter window [px]                |
+| `property_value_height_offset_`     | int    | 0                    | Height offset of the plotter window [px]         |
+| `property_value_scale_`             | float  | 1 / 6.667            | Value text scale                                 |
+| `property_emergency_threshold_max_` | float  | 1.0                  | Max acceleration threshold for emergency [m/s^2] |
+| `property_emergency_threshold_min_` | float  | -2.5                 | Min acceleration threshold for emergency [m/s^2] |
 
 ## Assumptions / Known limits
 

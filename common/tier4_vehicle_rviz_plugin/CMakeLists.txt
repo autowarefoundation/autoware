@@ -17,6 +17,7 @@ set(HEADERS
   src/tools/steering_angle.hpp
   src/tools/jsk_overlay_utils.hpp
   src/tools/velocity_history.hpp
+  src/tools/acceleration_meter.hpp
 )
 
 ## Declare a C++ library
@@ -26,6 +27,7 @@ ament_auto_add_library(tier4_vehicle_rviz_plugin SHARED
   src/tools/steering_angle.cpp
   src/tools/jsk_overlay_utils.cpp
   src/tools/velocity_history.cpp
+  src/tools/acceleration_meter.cpp
   ${HEADERS}
 )
 

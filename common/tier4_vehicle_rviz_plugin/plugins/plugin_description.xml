@@ -15,4 +15,8 @@
          type="rviz_plugins::VelocityHistoryDisplay"
          base_class_type="rviz_common::Display">
   </class>
+  <class name="rviz_plugins/AccelerationMeter"
+         type="rviz_plugins::AccelerationMeterDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
 </library>
