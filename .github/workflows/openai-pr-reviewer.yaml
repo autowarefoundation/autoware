@@ -5,10 +5,8 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
+  pull_request_target:
     types:
-      - opened
-      - synchronize
       - labeled
   pull_request_review_comment:
     types: [created]
