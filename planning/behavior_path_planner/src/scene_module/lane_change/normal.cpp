@@ -125,6 +125,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 
   if (isAbortState()) {
     output.reference_path = std::make_shared<PathWithLaneId>(prev_module_reference_path_);
+    output.turn_signal_info = prev_turn_signal_info_;
     return output;
   }
 
