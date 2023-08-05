@@ -80,7 +80,6 @@ struct PUllOverStatus
   bool prev_is_safe{false};
   bool has_decided_velocity{false};
   bool has_requested_approval{false};
-  std::optional<Pose> stop_pose{};
   bool is_ready{false};
 };
 

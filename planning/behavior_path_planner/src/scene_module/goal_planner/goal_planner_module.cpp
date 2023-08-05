@@ -604,7 +604,7 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
   if (status_.is_safe) {
     // clear stop pose when the path is safe and activated
     if (isActivated()) {
-      status_.stop_pose.reset();
+      resetWallPoses();
     }
 
     // keep stop if not enough time passed,
@@ -819,6 +819,8 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
     printParkingPositionError();
   }
 
+  setStopReason(StopReason::GOAL_PLANNER, status_.pull_over_path->getFullPath());
+
   return output;
 }
 
@@ -872,6 +874,8 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
   updateSteeringFactor(
     {status_.pull_over_path->start_pose, modified_goal_pose_->goal_pose},
     {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::APPROACHING);
+
+  setStopReason(StopReason::GOAL_PLANNER, status_.pull_over_path->getFullPath());
 
   return out;
 }
@@ -954,7 +958,7 @@ PathWithLaneId GoalPlannerModule::generateStopPath()
 
   // slow down for turn signal, insert stop point to stop_pose
   decelerateForTurnSignal(stop_pose, reference_path);
-  status_.stop_pose = stop_pose;
+  stop_pose_ = stop_pose;
 
   // slow down before the search area.
   if (search_start_offset_pose) {
@@ -998,7 +1002,7 @@ PathWithLaneId GoalPlannerModule::generateFeasibleStopPath()
   const auto stop_idx =
     motion_utils::insertStopPoint(current_pose, *min_stop_distance, stop_path.points);
   if (stop_idx) {
-    status_.stop_pose = stop_path.points.at(*stop_idx).point.pose;
+    stop_pose_ = stop_path.points.at(*stop_idx).point.pose;
   }
 
   return stop_path;
@@ -1475,13 +1479,6 @@ void GoalPlannerModule::setDebugData()
   for (size_t i = 0; i < debug_poses.size(); ++i) {
     add(createPoseMarkerArray(
       debug_poses.at(i), "debug_pose_" + std::to_string(i), 0, 0.3, 0.3, 0.3));
-  }
-
-  // Visualize stop pose
-  if (status_.stop_pose) {
-    add(createStopVirtualWallMarker(
-      *status_.stop_pose, "pull_over", clock_->now(), 0,
-      planner_data_->parameters.base_link2front));
   }
 }
 
