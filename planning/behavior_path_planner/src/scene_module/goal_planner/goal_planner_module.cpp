@@ -915,6 +915,7 @@ PathWithLaneId GoalPlannerModule::generateStopPath()
   const auto & route_handler = planner_data_->route_handler;
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const auto & common_parameters = planner_data_->parameters;
+  const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
   const double pull_over_velocity = parameters_->pull_over_velocity;
 
   if (status_.current_lanes.empty()) {
@@ -952,7 +953,10 @@ PathWithLaneId GoalPlannerModule::generateStopPath()
   // if stop pose is closer than min_stop_distance, stop as soon as possible
   const double ego_to_stop_distance = calcSignedArcLengthFromEgo(reference_path, stop_pose);
   const auto min_stop_distance = calcFeasibleDecelDistance(0.0);
-  if (min_stop_distance && ego_to_stop_distance + stop_distance_buffer_ < *min_stop_distance) {
+  const double eps_vel = 0.01;
+  const bool is_stopped = std::abs(current_vel) < eps_vel;
+  const double buffer = is_stopped ? stop_distance_buffer_ : 0.0;
+  if (min_stop_distance && ego_to_stop_distance + buffer < *min_stop_distance) {
     return generateFeasibleStopPath();
   }
 
@@ -1175,13 +1179,12 @@ bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) c
   // distance to restart should be less than decide_path_distance.
   // otherwise, the goal would change immediately after departure.
   const bool is_separated_path = status_.pull_over_path->partial_paths.size() > 1;
-  constexpr double eps_vel = 0.01;
   const double distance_to_start = calcSignedArcLength(
     pull_over_path.getFullPath().points, current_pose.position, pull_over_path.start_pose.position);
   const double distance_to_restart = parameters_->decide_path_distance / 2;
-  if (
-    is_separated_path && std::abs(current_vel) < eps_vel &&
-    distance_to_start < distance_to_restart) {
+  const double eps_vel = 0.01;
+  const bool is_stopped = std::abs(current_vel) < eps_vel;
+  if (is_separated_path && is_stopped && distance_to_start < distance_to_restart) {
     return false;
   }
 
@@ -1190,7 +1193,11 @@ bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) c
     return false;
   }
 
-  if (distance_to_start + stop_distance_buffer_ < *current_to_stop_distance) {
+  // If the stop line is subtly exceeded, it is assumed that there is not enough distance to the
+  // starting point of parking, so to prevent this, once the vehicle has stopped, it also has a
+  // stop_distance_buffer to allow for the amount exceeded.
+  const double buffer = is_stopped ? stop_distance_buffer_ : 0.0;
+  if (distance_to_start + buffer < *current_to_stop_distance) {
     return false;
   }
 
