@@ -173,6 +173,10 @@ bool RouteHandler::isRouteLooped(const RouteSections & route_sections)
 void RouteHandler::setRoute(const LaneletRoute & route_msg)
 {
   if (!isRouteLooped(route_msg.segments)) {
+    // if get not modified route but new route, reset original start pose
+    if (!route_ptr_ || route_ptr_->uuid != route_msg.uuid) {
+      original_start_pose_ = route_msg.start_pose;
+    }
     route_ptr_ = std::make_shared<LaneletRoute>(route_msg);
     is_handler_ready_ = false;
     setLaneletsFromRouteMsg();
@@ -425,6 +429,11 @@ Pose RouteHandler::getStartPose() const
     Pose();
   }
   return route_ptr_->start_pose;
+}
+
+Pose RouteHandler::getOriginalStartPose() const
+{
+  return original_start_pose_;
 }
 
 Pose RouteHandler::getGoalPose() const

@@ -97,6 +97,7 @@ public:
   bool isInGoalRouteSection(const lanelet::ConstLanelet & lanelet) const;
   Pose getGoalPose() const;
   Pose getStartPose() const;
+  Pose getOriginalStartPose() const;
   lanelet::Id getGoalLaneId() const;
   bool getGoalLanelet(lanelet::ConstLanelet * goal_lanelet) const;
   std::vector<lanelet::ConstLanelet> getLanesBeforePose(
@@ -374,6 +375,9 @@ private:
 
   bool is_map_msg_ready_{false};
   bool is_handler_ready_{false};
+
+  // save original(not modified) route start pose for start planer execution
+  Pose original_start_pose_;
 
   // non-const methods
   void setLaneletsFromRouteMsg();
