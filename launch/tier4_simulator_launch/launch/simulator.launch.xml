@@ -16,7 +16,8 @@
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
   <arg name="perception/enable_object_recognition" default="false" description="enable object recognition"/>
   <arg name="perception/enable_elevation_map" default="false" description="enable elevation map loader"/>
-  <arg name="perception/enable_traffic_light" default="false" description="enable traffic light"/>
+  <arg name="perception/enable_traffic_light" default="true" description="enable traffic light"/>
+  <arg name="fusion_only" default="true" description="enable only camera and V2X fusion when enabling traffic light"/>
   <arg name="perception/use_base_link_z" default="true" description="dummy perception uses base_link z axis coordinate if it is true"/>
   <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
 
