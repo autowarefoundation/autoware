@@ -8,7 +8,6 @@
       lane_change_finish_judge_buffer: 2.0      # [m]
 
       lane_changing_lateral_jerk: 0.5              # [m/s3]
-      lateral_acc_switching_velocity: 4.0          #[m/s]
 
       minimum_lane_changing_velocity: 2.78        # [m/s]
       prediction_time_resolution: 0.5           # [s]

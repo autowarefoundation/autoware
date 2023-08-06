@@ -337,8 +337,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
     declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
   p.lane_changing_lateral_jerk =
     declare_parameter<double>("lane_change.lane_changing_lateral_jerk");
-  p.lateral_acc_switching_velocity =
-    declare_parameter<double>("lane_change.lateral_acc_switching_velocity");
   p.lane_change_prepare_duration = declare_parameter<double>("lane_change.prepare_duration");
   p.minimum_lane_changing_velocity =
     declare_parameter<double>("lane_change.minimum_lane_changing_velocity");
