@@ -72,14 +72,17 @@ public:
     parameters_ = std::any_cast<std::shared_ptr<StartPlannerParameters>>(parameters);
   }
 
-  BehaviorModuleOutput run() override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] BehaviorModuleOutput run() override;
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
-  ModuleStatus updateState() override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] ModuleStatus updateState() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
+
   void processOnExit() override;
 
   void setParameters(const std::shared_ptr<StartPlannerParameters> & parameters)
@@ -107,6 +110,12 @@ public:
   };
 
 private:
+  bool canTransitSuccessState() override { return false; }
+
+  bool canTransitFailureState() override { return false; }
+
+  bool canTransitIdleToRunningState() override { return false; }
+
   std::shared_ptr<StartPlannerParameters> parameters_;
   vehicle_info_util::VehicleInfo vehicle_info_;
 

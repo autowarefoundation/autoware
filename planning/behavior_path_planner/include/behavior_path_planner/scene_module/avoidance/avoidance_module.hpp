@@ -51,7 +51,6 @@ public:
     const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters,
     const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map);
 
-  ModuleStatus updateState() override;
   CandidateOutput planCandidate() const override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
@@ -69,6 +68,12 @@ public:
   std::shared_ptr<AvoidanceDebugMsgArray> get_debug_msg_array() const;
 
 private:
+  bool canTransitSuccessState() override;
+
+  bool canTransitFailureState() override { return false; }
+
+  bool canTransitIdleToRunningState() override { return true; }
+
   /**
    * @brief update RTC status for candidate shift line.
    * @param candidate path.
@@ -176,6 +181,11 @@ private:
    * @brief init RTC status.
    */
   void initRTCStatus();
+
+  /**
+   * @brief update RTC status.
+   */
+  void updateRTCData();
 
   // ego state check
 
@@ -425,7 +435,7 @@ private:
    * @brief add new shift line to path shifter if the RTC status is activated.
    * @param new shift lines.
    */
-  void addShiftLineIfApproved(const AvoidLineArray & point);
+  void updatePathShifter(const AvoidLineArray & point);
 
   /**
    * @brief add new shift line to path shifter.

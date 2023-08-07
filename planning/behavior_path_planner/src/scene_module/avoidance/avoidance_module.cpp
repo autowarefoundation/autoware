@@ -110,10 +110,6 @@ bool AvoidanceModule::isExecutionRequested() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionRequested");
 
-  if (current_state_ == ModuleStatus::RUNNING) {
-    return true;
-  }
-
   // Check ego is in preferred lane
   updateInfoMarker(avoidance_data_);
   updateDebugMarker(avoidance_data_, path_shifter_, debug_data_);
@@ -136,7 +132,7 @@ bool AvoidanceModule::isExecutionReady() const
   return avoidance_data_.safe;
 }
 
-ModuleStatus AvoidanceModule::updateState()
+bool AvoidanceModule::canTransitSuccessState()
 {
   const auto & data = avoidance_data_;
   const auto is_plan_running = isAvoidancePlanRunning();
@@ -144,7 +140,7 @@ ModuleStatus AvoidanceModule::updateState()
 
   if (!isDrivingSameLane(helper_.getPreviousDrivingLanes(), data.current_lanelets)) {
     RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 500, "previous module lane is updated.");
-    return ModuleStatus::SUCCESS;
+    return true;
   }
 
   const auto idx = planner_data_->findEgoIndex(data.reference_path.points);
@@ -157,29 +153,26 @@ ModuleStatus AvoidanceModule::updateState()
     calcDistance2d(getEgoPose(), getPose(data.reference_path.points.back())) > THRESHOLD &&
     arrived_path_end_) {
     RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 500, "reach path end point. exit avoidance module.");
-    return ModuleStatus::SUCCESS;
+    return true;
   }
 
   DEBUG_PRINT(
     "is_plan_running = %d, has_avoidance_target = %d", is_plan_running, has_avoidance_target);
 
   if (!is_plan_running && !has_avoidance_target) {
-    return ModuleStatus::SUCCESS;
+    return true;
   }
 
   if (
     !has_avoidance_target && parameters_->enable_update_path_when_object_is_gone &&
     !isAvoidanceManeuverRunning()) {
     // if dynamic objects are removed on path, change current state to reset path
-    return ModuleStatus::SUCCESS;
+    return true;
   }
 
   helper_.setPreviousDrivingLanes(data.current_lanelets);
 
-  if (is_plan_running || current_state_ == ModuleStatus::RUNNING) {
-    return ModuleStatus::RUNNING;
-  }
-  return ModuleStatus::IDLE;
+  return false;
 }
 
 bool AvoidanceModule::isAvoidancePlanRunning() const
@@ -2109,35 +2102,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   resetPathCandidate();
   resetPathReference();
 
-  /**
-   * Has new shift point?
-   *   Yes -> Is it approved?
-   *       Yes -> add the shift point.
-   *       No  -> set approval_handler to WAIT_APPROVAL state.
-   *   No -> waiting approval?
-   *       Yes -> clear WAIT_APPROVAL state.
-   *       No  -> do nothing.
-   */
-  if (!data.safe_new_sl.empty()) {
-    debug_data_.new_shift_lines = data.safe_new_sl;
-    DEBUG_PRINT("new_shift_lines size = %lu", data.safe_new_sl.size());
-    printShiftLines(data.safe_new_sl, "new_shift_lines");
-
-    const auto sl = helper_.getMainShiftLine(data.safe_new_sl);
-    if (helper_.getRelativeShiftToPath(sl) > 0.0) {
-      removePreviousRTCStatusRight();
-    } else if (helper_.getRelativeShiftToPath(sl) < 0.0) {
-      removePreviousRTCStatusLeft();
-    } else {
-      RCLCPP_WARN_STREAM(getLogger(), "Direction is UNKNOWN");
-    }
-    if (!parameters_->disable_path_update) {
-      addShiftLineIfApproved(data.safe_new_sl);
-    }
-  } else if (isWaitingApproval()) {
-    clearWaitingApproval();
-    removeCandidateRTCStatus();
-  }
+  updatePathShifter(data.safe_new_sl);
 
   // generate path with shift points that have been inserted.
   ShiftedPath linear_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
@@ -2200,7 +2165,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   generateExtendedDrivableArea(output);
   setDrivableLanes(output.drivable_area_info.drivable_lanes);
 
-  updateRegisteredRTCStatus(spline_shift_path.path);
+  // updateRegisteredRTCStatus(spline_shift_path.path);
 
   return output;
 }
@@ -2249,71 +2214,53 @@ CandidateOutput AvoidanceModule::planCandidate() const
 
 BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
 {
-  const auto & data = avoidance_data_;
-
-  // we can execute the plan() since it handles the approval appropriately.
   BehaviorModuleOutput out = plan();
 
   if (path_shifter_.getShiftLines().empty()) {
     out.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
   }
 
-  const auto all_unavoidable = std::all_of(
-    data.target_objects.begin(), data.target_objects.end(),
-    [](const auto & o) { return !o.is_avoidable; });
-
-  const auto candidate = planCandidate();
-  if (!data.safe_new_sl.empty()) {
-    updateCandidateRTCStatus(candidate);
-    waitApproval();
-  } else if (path_shifter_.getShiftLines().empty()) {
-    waitApproval();
-  } else if (all_unavoidable) {
-    waitApproval();
-  } else {
-    clearWaitingApproval();
-    removeCandidateRTCStatus();
-  }
-
-  path_candidate_ = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+  path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
   path_reference_ = getPreviousModuleOutput().reference_path;
 
   return out;
 }
 
-void AvoidanceModule::addShiftLineIfApproved(const AvoidLineArray & shift_lines)
+void AvoidanceModule::updatePathShifter(const AvoidLineArray & shift_lines)
 {
-  if (isActivated()) {
-    DEBUG_PRINT("We want to add this shift point, and approved. ADD SHIFT POINT!");
-    const size_t prev_size = path_shifter_.getShiftLinesSize();
-    addNewShiftLines(path_shifter_, shift_lines);
-
-    current_raw_shift_lines_ = avoidance_data_.unapproved_raw_sl;
-
-    // register original points for consistency
-    registerRawShiftLines(shift_lines);
-
-    const auto sl = helper_.getMainShiftLine(shift_lines);
-    const auto sl_front = shift_lines.front();
-    const auto sl_back = shift_lines.back();
-
-    if (helper_.getRelativeShiftToPath(sl) > 0.0) {
-      left_shift_array_.push_back({uuid_map_.at("left"), sl_front.start, sl_back.end});
-    } else if (helper_.getRelativeShiftToPath(sl) < 0.0) {
-      right_shift_array_.push_back({uuid_map_.at("right"), sl_front.start, sl_back.end});
-    }
-
-    uuid_map_.at("left") = generateUUID();
-    uuid_map_.at("right") = generateUUID();
-    candidate_uuid_ = generateUUID();
-
-    lockNewModuleLaunch();
-
-    DEBUG_PRINT("shift_line size: %lu -> %lu", prev_size, path_shifter_.getShiftLinesSize());
-  } else {
-    DEBUG_PRINT("We want to add this shift point, but NOT approved. waiting...");
-    waitApproval();
+  if (parameters_->disable_path_update) {
+    return;
   }
+
+  if (shift_lines.empty()) {
+    return;
+  }
+
+  if (!isActivated()) {
+    return;
+  }
+
+  addNewShiftLines(path_shifter_, shift_lines);
+
+  current_raw_shift_lines_ = avoidance_data_.unapproved_raw_sl;
+
+  registerRawShiftLines(shift_lines);
+
+  const auto sl = helper_.getMainShiftLine(shift_lines);
+  const auto sl_front = shift_lines.front();
+  const auto sl_back = shift_lines.back();
+
+  if (helper_.getRelativeShiftToPath(sl) > 0.0) {
+    left_shift_array_.push_back({uuid_map_.at("left"), sl_front.start, sl_back.end});
+  } else if (helper_.getRelativeShiftToPath(sl) < 0.0) {
+    right_shift_array_.push_back({uuid_map_.at("right"), sl_front.start, sl_back.end});
+  }
+
+  uuid_map_.at("left") = generateUUID();
+  uuid_map_.at("right") = generateUUID();
+  candidate_uuid_ = generateUUID();
+
+  lockNewModuleLaunch();
 }
 
 /**
@@ -2535,12 +2482,13 @@ void AvoidanceModule::updateData()
   fillShiftLine(avoidance_data_, debug_data_);
   fillEgoStatus(avoidance_data_, debug_data_);
   fillDebugData(avoidance_data_, debug_data_);
+
+  updateRTCData();
 }
 
 void AvoidanceModule::processOnEntry()
 {
   initVariables();
-  waitApproval();
 }
 
 void AvoidanceModule::processOnExit()
@@ -2574,6 +2522,39 @@ void AvoidanceModule::initRTCStatus()
   uuid_map_.at("left") = generateUUID();
   uuid_map_.at("right") = generateUUID();
   candidate_uuid_ = generateUUID();
+}
+
+void AvoidanceModule::updateRTCData()
+{
+  const auto & data = avoidance_data_;
+
+  updateRegisteredRTCStatus(helper_.getPreviousSplineShiftPath().path);
+
+  if (data.safe_new_sl.empty()) {
+    removeCandidateRTCStatus();
+    return;
+  }
+
+  const auto shift_line = helper_.getMainShiftLine(data.safe_new_sl);
+  if (helper_.getRelativeShiftToPath(shift_line) > 0.0) {
+    removePreviousRTCStatusRight();
+  } else if (helper_.getRelativeShiftToPath(shift_line) < 0.0) {
+    removePreviousRTCStatusLeft();
+  } else {
+    RCLCPP_WARN_STREAM(getLogger(), "Direction is UNKNOWN");
+  }
+
+  CandidateOutput output;
+
+  const auto sl_front = data.safe_new_sl.front();
+  const auto sl_back = data.safe_new_sl.back();
+
+  output.path_candidate = data.candidate_path.path;
+  output.lateral_shift = helper_.getRelativeShiftToPath(shift_line);
+  output.start_distance_to_path_change = sl_front.start_longitudinal;
+  output.finish_distance_to_path_change = sl_back.end_longitudinal;
+
+  updateCandidateRTCStatus(output);
 }
 
 TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) const

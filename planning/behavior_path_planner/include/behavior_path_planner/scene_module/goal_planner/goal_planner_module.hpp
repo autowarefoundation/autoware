@@ -96,10 +96,12 @@ public:
     parameters_ = std::any_cast<std::shared_ptr<GoalPlannerParameters>>(parameters);
   }
 
-  BehaviorModuleOutput run() override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] BehaviorModuleOutput run() override;
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
-  ModuleStatus updateState() override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] ModuleStatus updateState() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   void processOnEntry() override;
@@ -114,6 +116,12 @@ public:
   CandidateOutput planCandidate() const override { return CandidateOutput{}; };
 
 private:
+  bool canTransitSuccessState() override { return false; }
+
+  bool canTransitFailureState() override { return false; }
+
+  bool canTransitIdleToRunningState() override { return false; }
+
   PUllOverStatus status_;
 
   std::shared_ptr<GoalPlannerParameters> parameters_;

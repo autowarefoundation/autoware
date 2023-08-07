@@ -230,7 +230,7 @@ public:
     }
 
     std::vector<std::string> current_uuids_;
-    // NOTE: positive is for meeting entrying condition, and negative is for exiting.
+    // NOTE: positive is for meeting entry condition, and negative is for exiting.
     std::unordered_map<std::string, int> counter_map_;
     std::unordered_map<std::string, DynamicAvoidanceObject> object_map_;
   };
@@ -245,12 +245,32 @@ public:
     parameters_ = std::any_cast<std::shared_ptr<DynamicAvoidanceParameters>>(parameters);
   }
 
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] BehaviorModuleOutput run() override
+  {
+    updateData();
+
+    if (!isWaitingApproval()) {
+      return plan();
+    }
+
+    // module is waiting approval. Check it.
+    if (isActivated()) {
+      RCLCPP_DEBUG(getLogger(), "Was waiting approval, and now approved. Do plan().");
+      return plan();
+    } else {
+      RCLCPP_DEBUG(getLogger(), "keep waiting approval... Do planCandidate().");
+      return planWaitingApproval();
+    }
+  }
+
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
-  ModuleStatus updateState() override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] ModuleStatus updateState() override;
   BehaviorModuleOutput plan() override;
-  CandidateOutput planCandidate() const override;
   BehaviorModuleOutput planWaitingApproval() override;
+  CandidateOutput planCandidate() const override;
   void updateData() override;
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
@@ -266,6 +286,12 @@ private:
     const double max_lon_offset;
     const double min_lon_offset;
   };
+
+  bool canTransitSuccessState() override { return false; }
+
+  bool canTransitFailureState() override { return false; }
+
+  bool canTransitIdleToRunningState() override { return false; }
 
   bool isLabelTargetObstacle(const uint8_t label) const;
   void updateTargetObjects();
