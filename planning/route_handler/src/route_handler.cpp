@@ -1999,7 +1999,7 @@ lanelet::ConstLanelets RouteHandler::getNextLaneSequence(
 
 bool RouteHandler::planPathLaneletsBetweenCheckpoints(
   const Pose & start_checkpoint, const Pose & goal_checkpoint,
-  lanelet::ConstLanelets * path_lanelets) const
+  lanelet::ConstLanelets * path_lanelets, const bool consider_no_drivable_lanes) const
 {
   // Find lanelets for start point. First, find all lanelets containing the start point to calculate
   // all possible route later. It fails when the point is not located on any road_lanelet (e.g. the
@@ -2063,15 +2063,19 @@ bool RouteHandler::planPathLaneletsBetweenCheckpoints(
   }
 
   if (is_route_found) {
-    bool shortest_path_has_no_drivable_lane = hasNoDrivableLaneInPath(shortest_path);
-    if (shortest_path_has_no_drivable_lane) {
-      drivable_lane_path_found =
-        findDrivableLanePath(start_lanelet, goal_lanelet, drivable_lane_path);
-    }
-
     lanelet::routing::LaneletPath path;
-    if (drivable_lane_path_found) {
-      path = drivable_lane_path;
+    if (consider_no_drivable_lanes) {
+      bool shortest_path_has_no_drivable_lane = hasNoDrivableLaneInPath(shortest_path);
+      if (shortest_path_has_no_drivable_lane) {
+        drivable_lane_path_found =
+          findDrivableLanePath(start_lanelet, goal_lanelet, drivable_lane_path);
+      }
+
+      if (drivable_lane_path_found) {
+        path = drivable_lane_path;
+      } else {
+        path = shortest_path;
+      }
     } else {
       path = shortest_path;
     }

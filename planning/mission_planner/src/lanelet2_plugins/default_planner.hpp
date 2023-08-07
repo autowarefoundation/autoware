@@ -37,6 +37,7 @@ struct DefaultPlannerParameters
 {
   double goal_angle_threshold_deg;
   bool enable_correct_goal_pose;
+  bool consider_no_drivable_lanes;
 };
 
 class DefaultPlanner : public mission_planner::PlannerPlugin
