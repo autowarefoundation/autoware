@@ -2997,6 +2997,15 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   const auto lower_speed = object.avoid_required ? 0.0 : parameters_->min_slow_down_speed;
 
   // insert slow down speed.
+  const double current_target_velocity = PathShifter::calcFeasibleVelocityFromJerk(
+    shift_length, helper_.getLateralMinJerkLimit(), distance_to_object);
+  if (current_target_velocity < getEgoSpeed() && decel_distance < remaining_distance) {
+    utils::avoidance::insertDecelPoint(
+      getEgoPosition(), decel_distance, parameters_->velocity_map.front(), shifted_path.path,
+      slow_pose_);
+    return;
+  }
+
   const auto start_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   for (size_t i = start_idx; i < shifted_path.path.points.size(); ++i) {
     const auto distance_from_ego = calcSignedArcLength(shifted_path.path.points, start_idx, i);
