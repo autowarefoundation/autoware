@@ -44,7 +44,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
     planner_data_->parameters.backward_path_length + parameters_.max_back_distance;
   const auto road_lanes = utils::getExtendedCurrentLanes(
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
-    /*until_goal_lane*/ true);
+    /*forward_only_in_route*/ true);
   const auto pull_out_lanes = getPullOutLanes(planner_data_, backward_path_length);
   auto lanes = road_lanes;
   for (const auto & pull_out_lane : pull_out_lanes) {

@@ -2963,7 +2963,7 @@ lanelet::ConstLanelets extendLanes(
 
 lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data, const double backward_length,
-  const double forward_length, const bool until_goal_lane)
+  const double forward_length, const bool forward_only_in_route)
 {
   auto lanes = getCurrentLanes(planner_data);
   if (lanes.empty()) return lanes;
@@ -2993,15 +2993,6 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
   }
 
   while (forward_length_sum < forward_length) {
-    // stop extending when the goal route section is reached
-    // if forward_length is a very large value, set it to true,
-    // as it may continue to extend lanes outside the route ahead of goal forever.
-    if (until_goal_lane) {
-      if (planner_data->route_handler->isInGoalRouteSection(lanes.back())) {
-        return lanes;
-      }
-    }
-
     auto extended_lanes = extendNextLane(planner_data->route_handler, lanes);
     if (extended_lanes.empty()) {
       return lanes;
@@ -3018,6 +3009,16 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
     } else {
       break;  // no more next lanes to add
     }
+
+    // stop extending when the lane outside of the route is reached
+    // if forward_length is a very large value, set it to true,
+    // as it may continue to extend forever.
+    if (forward_only_in_route) {
+      if (!planner_data->route_handler->isRouteLanelet(extended_lanes.back())) {
+        return lanes;
+      }
+    }
+
     lanes = extended_lanes;
   }
 

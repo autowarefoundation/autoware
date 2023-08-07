@@ -116,7 +116,7 @@ bool StartPlannerModule::isExecutionRequested() const
     planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
   const auto current_lanes = utils::getExtendedCurrentLanes(
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
-    /*until_goal_lane*/ true);
+    /*forward_only_in_route*/ true);
   const auto pull_out_lanes =
     start_planner_utils::getPullOutLanes(planner_data_, backward_path_length);
   auto lanes = current_lanes;
@@ -328,7 +328,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
     planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
   const auto current_lanes = utils::getExtendedCurrentLanes(
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
-    /*until_goal_lane*/ true);
+    /*forward_only_in_route*/ true);
 
   auto stop_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
   const auto drivable_lanes = generateDrivableLanes(stop_path);

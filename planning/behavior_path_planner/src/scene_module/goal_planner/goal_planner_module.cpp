@@ -154,7 +154,7 @@ void GoalPlannerModule::onTimer()
   const auto current_lanes = utils::getExtendedCurrentLanes(
     planner_data_, parameters_->backward_goal_search_length,
     parameters_->forward_goal_search_length,
-    /*until_goal_lane*/ false);
+    /*forward_only_in_route*/ false);
   std::vector<PullOverPath> path_candidates{};
   std::optional<Pose> closest_start_pose{};
   double min_start_arc_length = std::numeric_limits<double>::max();
@@ -592,7 +592,7 @@ void GoalPlannerModule::setLanes()
   status_.current_lanes = utils::getExtendedCurrentLanes(
     planner_data_, parameters_->backward_goal_search_length,
     parameters_->forward_goal_search_length,
-    /*until_goal_lane*/ false);
+    /*forward_only_in_route*/ false);
   status_.pull_over_lanes =
     goal_planner_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
   status_.lanes =
