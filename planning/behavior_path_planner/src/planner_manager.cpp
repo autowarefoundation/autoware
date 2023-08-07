@@ -49,15 +49,18 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
     manager_ptrs_.begin(), manager_ptrs_.end(), [&data](const auto & m) { m->setData(data); });
 
   auto result_output = [&]() {
-    const bool is_any_approved_module_running = std::any_of(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [](const auto & m) { return m->getCurrentStatus() == ModuleStatus::RUNNING; });
+    const bool is_any_approved_module_running =
+      std::any_of(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [](const auto & m) {
+        return m->getCurrentStatus() == ModuleStatus::RUNNING ||
+               m->getCurrentStatus() == ModuleStatus::WAITING_APPROVAL;
+      });
 
     // IDLE is a state in which an execution has been requested but not yet approved.
     // once approved, it basically turns to running.
     const bool is_any_candidate_module_running_or_idle =
       std::any_of(candidate_module_ptrs_.begin(), candidate_module_ptrs_.end(), [](const auto & m) {
         return m->getCurrentStatus() == ModuleStatus::RUNNING ||
+               m->getCurrentStatus() == ModuleStatus::WAITING_APPROVAL ||
                m->getCurrentStatus() == ModuleStatus::IDLE;
       });
 
