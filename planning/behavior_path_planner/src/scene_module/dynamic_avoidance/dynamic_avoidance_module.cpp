@@ -502,7 +502,7 @@ void DynamicAvoidanceModule::updateTargetObjects()
     const auto lon_offset_to_avoid = calcMinMaxLongitudinalOffsetToAvoid(
       *path_points_for_object_polygon, object.pose, obj_points, object.vel, time_to_collision);
     const auto lat_offset_to_avoid = calcMinMaxLateralOffsetToAvoid(
-      *path_points_for_object_polygon, obj_points, is_collision_left, prev_object);
+      *path_points_for_object_polygon, obj_points, is_collision_left, object.lat_vel, prev_object);
 
     const bool should_be_avoided = true;
     target_objects_manager_.updateObject(
@@ -782,7 +782,7 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
 
 MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
   const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
-  const Polygon2d & obj_points, const bool is_collision_left,
+  const Polygon2d & obj_points, const bool is_collision_left, const double obj_normal_vel,
   const std::optional<DynamicAvoidanceObject> & prev_object) const
 {
   // calculate min/max lateral offset from object to path
@@ -798,28 +798,25 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
     }
     return getMinMaxValues(obj_lat_abs_offset_vec);
   }();
-  const double min_obj_lat_offset = obj_lat_abs_offset.min_value * (is_collision_left ? 1.0 : -1.0);
-  const double max_obj_lat_offset = obj_lat_abs_offset.max_value * (is_collision_left ? 1.0 : -1.0);
+  const double min_obj_lat_abs_offset = obj_lat_abs_offset.min_value;
+  const double max_obj_lat_abs_offset = obj_lat_abs_offset.max_value;
 
   // calculate bound min and max lateral offset
   const double min_bound_lat_offset = [&]() {
+    constexpr double object_time_to_shift = 2.0;
+    const double lat_abs_offset_to_shift =
+      std::max(0.0, obj_normal_vel * (is_collision_left ? -1.0 : 1.0)) *
+      object_time_to_shift;  // TODO(murooka) use rosparam
     const double raw_min_bound_lat_offset =
-      min_obj_lat_offset - parameters_->lat_offset_from_obstacle * (is_collision_left ? 1.0 : -1.0);
+      min_obj_lat_abs_offset - parameters_->lat_offset_from_obstacle - lat_abs_offset_to_shift;
     const double min_bound_lat_abs_offset_limit =
       planner_data_->parameters.vehicle_width / 2.0 - parameters_->max_lat_offset_to_avoid;
-    if (is_collision_left) {
-      if (raw_min_bound_lat_offset < min_bound_lat_abs_offset_limit) {
-        return min_bound_lat_abs_offset_limit;
-      }
-    } else {
-      if (-min_bound_lat_abs_offset_limit < raw_min_bound_lat_offset) {
-        return -min_bound_lat_abs_offset_limit;
-      }
-    }
-    return raw_min_bound_lat_offset;
+    return std::max(raw_min_bound_lat_offset, min_bound_lat_abs_offset_limit) *
+           (is_collision_left ? 1.0 : -1.0);
   }();
   const double max_bound_lat_offset =
-    max_obj_lat_offset + parameters_->lat_offset_from_obstacle * (is_collision_left ? 1.0 : -1.0);
+    (max_obj_lat_abs_offset + parameters_->lat_offset_from_obstacle) *
+    (is_collision_left ? 1.0 : -1.0);
 
   // filter min_bound_lat_offset
   const auto prev_min_lat_avoid_to_offset = [&]() -> std::optional<double> {
@@ -830,7 +827,8 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
   }();
   const double filtered_min_bound_lat_offset =
     prev_min_lat_avoid_to_offset
-      ? signal_processing::lowpassFilter(min_bound_lat_offset, *prev_min_lat_avoid_to_offset, 0.3)
+      ? signal_processing::lowpassFilter(
+          min_bound_lat_offset, *prev_min_lat_avoid_to_offset, 0.5)  // TODO(murooka) use rosparam
       : min_bound_lat_offset;
 
   return MinMaxValue{filtered_min_bound_lat_offset, max_bound_lat_offset};

@@ -318,7 +318,7 @@ private:
     const double time_to_collision) const;
   MinMaxValue calcMinMaxLateralOffsetToAvoid(
     const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
-    const Polygon2d & obj_points, const bool is_collision_left,
+    const Polygon2d & obj_points, const bool is_collision_left, const double obj_normal_vel,
     const std::optional<DynamicAvoidanceObject> & prev_object) const;
 
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
