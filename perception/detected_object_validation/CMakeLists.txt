@@ -80,6 +80,11 @@ rclcpp_components_register_node(object_position_filter
   EXECUTABLE object_position_filter_node
 )
 
+rclcpp_components_register_node(occupancy_grid_based_validator
+  PLUGIN "occupancy_grid_based_validator::OccupancyGridBasedValidator"
+  EXECUTABLE occupancy_grid_based_validator_node
+)
+
 ament_auto_package(INSTALL_TO_SHARE
   launch
   config

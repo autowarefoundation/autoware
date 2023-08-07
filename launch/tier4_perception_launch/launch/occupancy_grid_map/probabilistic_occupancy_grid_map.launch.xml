@@ -12,6 +12,8 @@
   <arg name="occupancy_grid_map_param_path"/>
   <arg name="occupancy_grid_map_updater" description="options: binary_bayes_filter"/>
   <arg name="occupancy_grid_map_updater_param_path"/>
+  <arg name="input_obstacle_pointcloud" default="false" description="subscribe obstacle pointcloud"/>
+  <arg name="input_obstacle_and_raw_pointcloud" default="true" description="subscribe both obstacle and raw pointcloud"/>
 
   <!--pointcloud based method-->
   <group if="$(eval &quot;'$(var occupancy_grid_map_method)'=='pointcloud_based_occupancy_grid_map'&quot;)">
@@ -42,6 +44,8 @@
       <arg name="param_file" value="$(var occupancy_grid_map_param_path)"/>
       <arg name="updater_type" value="$(var occupancy_grid_map_updater)"/>
       <arg name="updater_param_file" value="$(var occupancy_grid_map_updater_param_path)"/>
+      <arg name="input_obstacle_pointcloud" value="$(var input_obstacle_pointcloud)"/>
+      <arg name="input_obstacle_and_raw_pointcloud" value="$(var input_obstacle_and_raw_pointcloud)"/>
     </include>
   </group>
 </launch>

@@ -68,6 +68,8 @@
   />
   <arg name="use_pointcloud_container" default="false" description="launch pointcloud container"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
+  <arg name="objects_filter_method" default="lanelet_filter"/>
+  <arg name="objects_validation_method" default="obstacle_pointcloud"/>
   <!-- Traffic Light Recognition Parameters -->
   <arg name="use_traffic_light_recognition" default="true"/>
   <arg name="traffic_light_recognition/enable_fine_detection" default="true"/>

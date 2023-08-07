@@ -225,12 +225,19 @@
   </group>
 
   <!-- Validator -->
-  <group>
+  <group if="$(eval &quot;'$(var objects_validation_method)'=='obstacle_pointcloud'&quot;)">
     <let name="validator/input/obstacle_pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud" if="$(var use_pointcloud_map)"/>
     <let name="validator/input/obstacle_pointcloud" value="$(var input/obstacle_segmentation/pointcloud)" unless="$(var use_pointcloud_map)"/>
     <include file="$(find-pkg-share detected_object_validation)/launch/obstacle_pointcloud_based_validator.launch.xml" if="$(var use_validator)">
       <arg name="input/detected_objects" value="$(var lidar_detection_model)/objects"/>
       <arg name="input/obstacle_pointcloud" value="$(var validator/input/obstacle_pointcloud)"/>
+      <arg name="output/objects" value="$(var lidar_detection_model)/validation/objects"/>
+    </include>
+  </group>
+
+  <group if="$(eval &quot;'$(var objects_validation_method)'=='occupancy_grid'&quot;)">
+    <include file="$(find-pkg-share detected_object_validation)/launch/occupancy_grid_based_validator.launch.xml" if="$(var use_validator)">
+      <arg name="input/detected_objects" value="$(var lidar_detection_model)/objects"/>
       <arg name="output/objects" value="$(var lidar_detection_model)/validation/objects"/>
     </include>
   </group>
@@ -262,11 +269,19 @@
   </group>
 
   <!-- Filter -->
-  <group>
+  <group if="$(eval &quot;'$(var objects_filter_method)'=='lanelet_filter'&quot;)">
     <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml" if="$(var use_object_filter)">
       <arg name="input/object" value="objects_before_filter"/>
       <arg name="output/object" value="$(var output/objects)"/>
       <arg name="filtering_range_param" value="$(var object_recognition_detection_object_lanelet_filter_param_path)"/>
+    </include>
+  </group>
+
+  <group if="$(eval &quot;'$(var objects_filter_method)'=='position_filter'&quot;)">
+    <include file="$(find-pkg-share detected_object_validation)/launch/object_position_filter.launch.xml" if="$(var use_object_filter)">
+      <arg name="input/object" value="objects_before_filter"/>
+      <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="filtering_range_param" value="$(var object_recognition_detection_object_position_filter_param_path)"/>
     </include>
   </group>
 </launch>

@@ -171,6 +171,8 @@ def generate_launch_description():
                 get_package_share_directory("probabilistic_occupancy_grid_map")
                 + "/config/updater.param.yaml",
             ),
+            add_launch_arg("input_obstacle_pointcloud", "false"),
+            add_launch_arg("input_obstacle_and_raw_pointcloud", "true"),
             add_launch_arg("use_pointcloud_container", "false"),
             add_launch_arg("container_name", "occupancy_grid_map_container"),
             set_container_executable,
