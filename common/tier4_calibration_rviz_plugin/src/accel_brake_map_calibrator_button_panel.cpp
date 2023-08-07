@@ -75,7 +75,7 @@ void AccelBrakeMapCalibratorButtonPanel::onInitialize()
       &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
 
   client_ = raw_node->create_client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
-    "/accel_brake_map_calibrator/update_map_dir");
+    "/vehicle/calibration/accel_brake_map_calibrator/update_map_dir");
 }
 
 void AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest(
@@ -118,25 +118,28 @@ void AccelBrakeMapCalibratorButtonPanel::pushCalibrationButton()
   status_label_->setText("executing calibration...");
 
   std::thread thread([this] {
-    auto req = std::make_shared<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Request>();
-    req->path = "";
+    if (!client_->wait_for_service(std::chrono::seconds(1))) {
+      status_label_->setStyleSheet("QLabel { background-color : red;}");
+      status_label_->setText("service server not found");
 
-    client_->async_send_request(
-      req,
-      [this](
-        [[maybe_unused]] rclcpp::Client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedFuture
-          result) {
-        status_label_->setStyleSheet("QLabel { background-color : lightgreen;}");
-        status_label_->setText("OK!!!");
+    } else {
+      auto req = std::make_shared<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Request>();
+      req->path = "";
+      client_->async_send_request(
+        req, [this]([[maybe_unused]] rclcpp::Client<
+                    tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedFuture result) {});
 
-        // wait 3 second
-        after_calib_ = true;
-        rclcpp::Rate(3.0).sleep();
-        after_calib_ = false;
+      status_label_->setStyleSheet("QLabel { background-color : lightgreen;}");
+      status_label_->setText("OK!!!");
+    }
 
-        // unlock button
-        calibration_button_->setEnabled(true);
-      });
+    // wait 3 second
+    after_calib_ = true;
+    rclcpp::Rate(1.0 / 3.0).sleep();
+    after_calib_ = false;
+
+    // unlock button
+    calibration_button_->setEnabled(true);
   });
 
   thread.detach();
