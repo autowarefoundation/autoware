@@ -41,12 +41,11 @@ protected:
     const sensor_msgs::msg::CameraInfo & camera_info, DetectedObjects & output_object_msg) override;
 
   std::map<std::size_t, RegionOfInterest> generateDetectedObjectRoIs(
-    const std::vector<DetectedObject> & input_objects, const double image_width,
-    const double image_height, const Eigen::Affine3d & object2camera_affine,
-    const Eigen::Matrix4d & camera_projection);
+    const DetectedObjects & input_object_msg, const double image_width, const double image_height,
+    const Eigen::Affine3d & object2camera_affine, const Eigen::Matrix4d & camera_projection);
 
   void fuseObjectsOnImage(
-    const std::vector<DetectedObject> & objects,
+    const DetectedObjects & input_object_msg,
     const std::vector<DetectedObjectWithFeature> & image_rois,
     const std::map<std::size_t, sensor_msgs::msg::RegionOfInterest> & object_roi_map);
 
@@ -63,7 +62,8 @@ private:
     double roi_probability_threshold{};
   } fusion_params_;
 
-  std::vector<bool> passthrough_object_flags_, fused_object_flags_, ignored_object_flags_;
+  std::map<int64_t, std::vector<bool>> passthrough_object_flags_map_, fused_object_flags_map_,
+    ignored_object_flags_map_;
 };
 
 }  // namespace image_projection_based_fusion
