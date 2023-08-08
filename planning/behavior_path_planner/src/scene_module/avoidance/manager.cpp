@@ -55,8 +55,7 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.detection_area_left_expand_dist =
       get_parameter<double>(node, ns + "detection_area_left_expand_dist");
     p.enable_bound_clipping = get_parameter<bool>(node, ns + "enable_bound_clipping");
-    p.enable_update_path_when_object_is_gone =
-      get_parameter<bool>(node, ns + "enable_update_path_when_object_is_gone");
+    p.enable_cancel_maneuver = get_parameter<bool>(node, ns + "enable_cancel_maneuver");
     p.enable_force_avoidance_for_stopped_vehicle =
       get_parameter<bool>(node, ns + "enable_force_avoidance_for_stopped_vehicle");
     p.enable_yield_maneuver = get_parameter<bool>(node, ns + "enable_yield_maneuver");

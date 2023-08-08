@@ -92,8 +92,8 @@ struct AvoidanceParameters
   // to use this, enable_avoidance_over_same_direction need to be set to true.
   bool use_opposite_lane{true};
 
-  // enable update path when if detected objects on planner data is gone.
-  bool enable_update_path_when_object_is_gone{false};
+  // if this param is true, it reverts avoidance path when the path is no longer needed.
+  bool enable_cancel_maneuver{false};
 
   // enable avoidance for all parking vehicle
   bool enable_force_avoidance_for_stopped_vehicle{false};

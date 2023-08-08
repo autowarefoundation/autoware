@@ -601,13 +601,13 @@ $$
 
 ### Avoidance cancelling maneuver
 
-If `enable_update_path_when_object_is_gone` parameter is true, Avoidance Module takes different actions according to the situations as follows:
+If `enable_cancel_maneuver` parameter is true, Avoidance Module takes different actions according to the situations as follows:
 
 - If vehicle stops: If there is any object in the path of the vehicle, the avoidance path is generated. If this object goes away while the vehicle is stopping, the avoidance path will cancelled.
 - If vehicle is in motion, but avoidance maneuver doesn't started: If there is any object in the path of the vehicle, the avoidance path is generated. If this object goes away while the vehicle is not started avoidance maneuver, the avoidance path will cancelled.
 - If vehicle is in motion, avoidance maneuver started: If there is any object in the path of the vehicle, the avoidance path is generated,but if this object goes away while the vehicle is started avoidance maneuver, the avoidance path will not cancelled.
 
-If `enable_update_path_when_object_is_gone` parameter is false, Avoidance Module doesn't revert generated avoidance path even if path objects are gone.
+If `enable_cancel_maneuver` parameter is false, Avoidance Module doesn't revert generated avoidance path even if path objects are gone.
 
 ## How to keep the consistency of the optimize-base path generation logic
 
@@ -621,15 +621,15 @@ The avoidance specific parameter configuration file can be located at `src/autow
 
 namespace: `avoidance.`
 
-| Name                                   | Unit | Type   | Description                                                                                                                         | Default value |
-| :------------------------------------- | :--- | :----- | :---------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| resample_interval_for_planning         | [m]  | double | Path resample interval for avoidance planning path.                                                                                 | 0.3           |
-| resample_interval_for_output           | [m]  | double | Path resample interval for output path. Too short interval increases computational cost for latter modules.                         | 4.0           |
-| detection_area_right_expand_dist       | [m]  | double | Lanelet expand length for right side to find avoidance target vehicles.                                                             | 0.0           |
-| detection_area_left_expand_dist        | [m]  | double | Lanelet expand length for left side to find avoidance target vehicles.                                                              | 1.0           |
-| enable_update_path_when_object_is_gone | [-]  | bool   | Reset trajectory when avoided objects are gone. If false, shifted path points remain same even though the avoided objects are gone. | false         |
-| enable_yield_maneuver                  | [-]  | bool   | Flag to enable yield maneuver.                                                                                                      | false         |
-| enable_yield_maneuver_during_shifting  | [-]  | bool   | Flag to enable yield maneuver during shifting.                                                                                      | false         |
+| Name                                  | Unit | Type   | Description                                                                                                                         | Default value |
+| :------------------------------------ | :--- | :----- | :---------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| resample_interval_for_planning        | [m]  | double | Path resample interval for avoidance planning path.                                                                                 | 0.3           |
+| resample_interval_for_output          | [m]  | double | Path resample interval for output path. Too short interval increases computational cost for latter modules.                         | 4.0           |
+| detection_area_right_expand_dist      | [m]  | double | Lanelet expand length for right side to find avoidance target vehicles.                                                             | 0.0           |
+| detection_area_left_expand_dist       | [m]  | double | Lanelet expand length for left side to find avoidance target vehicles.                                                              | 1.0           |
+| enable_cancel_maneuver                | [-]  | bool   | Reset trajectory when avoided objects are gone. If false, shifted path points remain same even though the avoided objects are gone. | false         |
+| enable_yield_maneuver                 | [-]  | bool   | Flag to enable yield maneuver.                                                                                                      | false         |
+| enable_yield_maneuver_during_shifting | [-]  | bool   | Flag to enable yield maneuver during shifting.                                                                                      | false         |
 
 | Name                      | Unit | Type | Description                                                                                                             | Default value |
 | :------------------------ | ---- | ---- | ----------------------------------------------------------------------------------------------------------------------- | ------------- |
