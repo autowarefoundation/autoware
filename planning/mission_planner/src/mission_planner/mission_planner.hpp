@@ -27,6 +27,7 @@
 
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tier4_planning_msgs/msg/reroute_availability.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <tf2_ros/buffer.h>
@@ -55,6 +56,7 @@ using NormalRoute = planning_interface::NormalRoute;
 using MrmRoute = planning_interface::MrmRoute;
 using RouteState = planning_interface::RouteState;
 using Odometry = nav_msgs::msg::Odometry;
+using RerouteAvailability = tier4_planning_msgs::msg::RerouteAvailability;
 
 class MissionPlanner : public rclcpp::Node
 {
@@ -72,8 +74,11 @@ private:
 
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
   rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_;
+  rclcpp::Subscription<RerouteAvailability>::SharedPtr sub_reroute_availability_;
   Odometry::ConstSharedPtr odometry_;
+  RerouteAvailability::ConstSharedPtr reroute_availability_;
   void on_odometry(const Odometry::ConstSharedPtr msg);
+  void on_reroute_availability(const RerouteAvailability::ConstSharedPtr msg);
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   void clear_route();
