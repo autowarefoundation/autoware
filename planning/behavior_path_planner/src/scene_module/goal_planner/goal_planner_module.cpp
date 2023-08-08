@@ -1076,11 +1076,22 @@ bool GoalPlannerModule::isStopped()
 
 bool GoalPlannerModule::isStuck()
 {
+  constexpr double stuck_time = 5.0;
+  if (!isStopped(odometry_buffer_stuck_, stuck_time)) {
+    return false;
+  }
+
+  // not found safe path
+  if (!status_.is_safe) {
+    return true;
+  }
+
+  // any path has never been found
   if (!status_.pull_over_path) {
     return false;
   }
-  constexpr double stuck_time = 5.0;
-  return isStopped(odometry_buffer_stuck_, stuck_time) && checkCollision(getCurrentPath());
+
+  return checkCollision(getCurrentPath());
 }
 
 bool GoalPlannerModule::hasFinishedCurrentPath()
