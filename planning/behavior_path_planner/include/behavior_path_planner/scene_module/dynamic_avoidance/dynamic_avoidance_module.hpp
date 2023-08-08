@@ -235,6 +235,12 @@ public:
     std::unordered_map<std::string, DynamicAvoidanceObject> object_map_;
   };
 
+  struct DecisionWithReason
+  {
+    bool decision;
+    std::string reason{""};
+  };
+
   DynamicAvoidanceModule(
     const std::string & name, rclcpp::Node & node,
     std::shared_ptr<DynamicAvoidanceParameters> parameters,
@@ -299,14 +305,14 @@ private:
   bool willObjectCutIn(
     const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
     const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const;
-  bool willObjectCutOut(
+  DecisionWithReason willObjectCutOut(
     const double obj_tangent_vel, const double obj_normal_vel, const bool is_object_left,
     const std::optional<DynamicAvoidanceObject> & prev_object) const;
   bool isObjectFarFromPath(
     const PredictedObject & predicted_object, const double obj_dist_to_path) const;
   double calcTimeToCollision(
     const std::vector<PathPointWithLaneId> & ego_path, const geometry_msgs::msg::Pose & obj_pose,
-    const double obj_tangent_vel) const;
+    const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const;
   std::optional<std::pair<size_t, size_t>> calcCollisionSection(
     const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & obj_path) const;
   LatLonOffset getLateralLongitudinalOffset(
@@ -325,6 +331,14 @@ private:
     const double forward_distance, const double backward_distance) const;
   std::optional<tier4_autoware_utils::Polygon2d> calcDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
+
+  void printIgnoreReason(const std::string & obj_uuid, const std::string & reason)
+  {
+    const auto reason_text =
+      "[DynamicAvoidance] Ignore obstacle (%s)" + (reason == "" ? "." : " since " + reason + ".");
+    RCLCPP_INFO_EXPRESSION(
+      getLogger(), parameters_->enable_debug_info, reason_text.c_str(), obj_uuid.c_str());
+  }
 
   std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> target_objects_;
   // std::vector<DynamicAvoidanceModule::DynamicAvoidanceObject> prev_target_objects_;
