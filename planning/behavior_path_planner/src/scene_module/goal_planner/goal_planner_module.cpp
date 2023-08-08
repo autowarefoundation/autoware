@@ -1467,7 +1467,8 @@ void GoalPlannerModule::setDebugData()
     auto marker = createDefaultMarker(
       header.frame_id, header.stamp, "planner_type", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0), color);
-    marker.pose = modified_goal_pose_->goal_pose;
+    marker.pose = modified_goal_pose_ ? modified_goal_pose_->goal_pose
+                                      : planner_data_->self_odometry->pose.pose;
     marker.text = magic_enum::enum_name(status_.pull_over_path->type);
     marker.text += " " + std::to_string(status_.current_path_idx) + "/" +
                    std::to_string(status_.pull_over_path->partial_paths.size() - 1);
