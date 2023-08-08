@@ -75,6 +75,8 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   plugin_loader_("mission_planner", "mission_planner::PlannerPlugin"),
   tf_buffer_(get_clock()),
   tf_listener_(tf_buffer_),
+  odometry_(nullptr),
+  map_ptr_(nullptr),
   reroute_availability_(nullptr),
   normal_route_(nullptr),
   mrm_route_(nullptr)
@@ -86,7 +88,6 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   planner_ = plugin_loader_.createSharedInstance("mission_planner::lanelet2::DefaultPlanner");
   planner_->initialize(this);
 
-  odometry_ = nullptr;
   sub_odometry_ = create_subscription<Odometry>(
     "/localization/kinematic_state", rclcpp::QoS(1),
     std::bind(&MissionPlanner::on_odometry, this, std::placeholders::_1));
@@ -97,9 +98,9 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
     std::bind(&MissionPlanner::on_reroute_availability, this, std::placeholders::_1));
 
   auto qos_transient_local = rclcpp::QoS{1}.transient_local();
-  vector_map_subscriber_ = create_subscription<HADMapBin>(
+  sub_vector_map_ = create_subscription<HADMapBin>(
     "input/vector_map", qos_transient_local,
-    std::bind(&MissionPlanner::onMap, this, std::placeholders::_1));
+    std::bind(&MissionPlanner::on_map, this, std::placeholders::_1));
 
   const auto durable_qos = rclcpp::QoS(1).transient_local();
   pub_marker_ = create_publisher<MarkerArray>("debug/route_marker", durable_qos);
@@ -141,7 +142,7 @@ void MissionPlanner::on_reroute_availability(const RerouteAvailability::ConstSha
   reroute_availability_ = msg;
 }
 
-void MissionPlanner::onMap(const HADMapBin::ConstSharedPtr msg)
+void MissionPlanner::on_map(const HADMapBin::ConstSharedPtr msg)
 {
   map_ptr_ = msg;
 }
