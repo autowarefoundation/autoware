@@ -295,7 +295,12 @@ private:
     const std::optional<StopFactor> & stop_factor_for_crosswalk_users,
     const std::optional<StopFactor> & stop_factor_for_stuck_vehicles);
 
-  void planGo(PathWithLaneId & ego_path, const std::optional<StopFactor> & stop_factor);
+  void setDistanceToStop(
+    const PathWithLaneId & ego_path,
+    const std::optional<geometry_msgs::msg::Pose> & default_stop_pose,
+    const std::optional<StopFactor> & stop_factor);
+
+  void planGo(PathWithLaneId & ego_path, const std::optional<StopFactor> & stop_factor) const;
 
   void planStop(
     PathWithLaneId & ego_path, const std::optional<StopFactor> & nearest_stop_factor,
@@ -308,7 +313,7 @@ private:
 
   void insertDecelPointWithDebugInfo(
     const geometry_msgs::msg::Point & stop_point, const float target_velocity,
-    PathWithLaneId & output);
+    PathWithLaneId & output) const;
 
   std::pair<double, double> clampAttentionRangeByNeighborCrosswalks(
     const PathWithLaneId & ego_path, const double near_attention_range,
