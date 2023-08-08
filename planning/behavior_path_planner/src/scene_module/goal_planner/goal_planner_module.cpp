@@ -1425,7 +1425,10 @@ void GoalPlannerModule::setDebugData()
 
   const auto header = planner_data_->route_handler->getRouteHeader();
 
-  const auto add = [this](const MarkerArray & added) {
+  const auto add = [this](MarkerArray added) {
+    for (auto & marker : added.markers) {
+      marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+    }
     tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
   };
 
