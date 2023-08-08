@@ -270,7 +270,6 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   debug_marker_.markers.clear();
 
   const auto prev_module_path = getPreviousModuleOutput().path;
-  const auto drivable_lanes = getPreviousModuleOutput().drivable_area_info.drivable_lanes;
 
   // create obstacles to avoid (= extract from the drivable area)
   std::vector<DrivableAreaInfo::Obstacle> obstacles_for_drivable_area;
@@ -285,11 +284,18 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
     }
   }
 
+  DrivableAreaInfo current_drivable_area_info;
+  current_drivable_area_info.drivable_lanes =
+    getPreviousModuleOutput().drivable_area_info.drivable_lanes;
+  current_drivable_area_info.obstacles = obstacles_for_drivable_area;
+  current_drivable_area_info.enable_expanding_hatched_road_markings =
+    parameters_->use_hatched_road_markings;
+
   BehaviorModuleOutput output;
   output.path = prev_module_path;
+  output.drivable_area_info = utils::combineDrivableAreaInfo(
+    current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
   output.reference_path = getPreviousModuleOutput().reference_path;
-  output.drivable_area_info.drivable_lanes = drivable_lanes;
-  output.drivable_area_info.obstacles = obstacles_for_drivable_area;
   output.turn_signal_info = getPreviousModuleOutput().turn_signal_info;
 
   return output;
@@ -827,10 +833,9 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
 
   // calculate bound min and max lateral offset
   const double min_bound_lat_offset = [&]() {
-    constexpr double object_time_to_shift = 2.0;
     const double lat_abs_offset_to_shift =
       std::max(0.0, obj_normal_vel * (is_collision_left ? -1.0 : 1.0)) *
-      object_time_to_shift;  // TODO(murooka) use rosparam
+      parameters_->max_time_for_lat_shift;
     const double raw_min_bound_lat_offset =
       min_obj_lat_abs_offset - parameters_->lat_offset_from_obstacle - lat_abs_offset_to_shift;
     const double min_bound_lat_abs_offset_limit =
@@ -850,10 +855,10 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
     return prev_object->lat_offset_to_avoid.min_value;
   }();
   const double filtered_min_bound_lat_offset =
-    prev_min_lat_avoid_to_offset
-      ? signal_processing::lowpassFilter(
-          min_bound_lat_offset, *prev_min_lat_avoid_to_offset, 0.5)  // TODO(murooka) use rosparam
-      : min_bound_lat_offset;
+    prev_min_lat_avoid_to_offset ? signal_processing::lowpassFilter(
+                                     min_bound_lat_offset, *prev_min_lat_avoid_to_offset,
+                                     parameters_->lpf_gain_for_lat_avoid_to_offset)
+                                 : min_bound_lat_offset;
 
   return MinMaxValue{filtered_min_bound_lat_offset, max_bound_lat_offset};
 }

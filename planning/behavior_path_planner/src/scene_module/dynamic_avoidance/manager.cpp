@@ -32,6 +32,7 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
   {  // common
     std::string ns = "dynamic_avoidance.common.";
     p.enable_debug_info = node->declare_parameter<bool>(ns + "enable_debug_info");
+    p.use_hatched_road_markings = node->declare_parameter<bool>(ns + "use_hatched_road_markings");
   }
 
   {  // target object
@@ -82,6 +83,10 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
     std::string ns = "dynamic_avoidance.drivable_area_generation.";
     p.lat_offset_from_obstacle = node->declare_parameter<double>(ns + "lat_offset_from_obstacle");
     p.max_lat_offset_to_avoid = node->declare_parameter<double>(ns + "max_lat_offset_to_avoid");
+    p.max_time_for_lat_shift =
+      node->declare_parameter<double>(ns + "max_time_for_object_lat_shift");
+    p.lpf_gain_for_lat_avoid_to_offset =
+      node->declare_parameter<double>(ns + "lpf_gain_for_lat_avoid_to_offset");
 
     p.max_time_to_collision_overtaking_object =
       node->declare_parameter<double>(ns + "overtaking_object.max_time_to_collision");
@@ -112,6 +117,7 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
   {  // common
     const std::string ns = "dynamic_avoidance.common.";
     updateParam<bool>(parameters, ns + "enable_debug_info", p->enable_debug_info);
+    updateParam<bool>(parameters, ns + "use_hatched_road_markings", p->use_hatched_road_markings);
   }
 
   {  // target object
@@ -174,6 +180,10 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
 
     updateParam<double>(parameters, ns + "lat_offset_from_obstacle", p->lat_offset_from_obstacle);
     updateParam<double>(parameters, ns + "max_lat_offset_to_avoid", p->max_lat_offset_to_avoid);
+    updateParam<double>(
+      parameters, ns + "max_time_for_object_lat_shift", p->max_time_for_lat_shift);
+    updateParam<double>(
+      parameters, ns + "lpf_gain_for_lat_avoid_to_offset", p->lpf_gain_for_lat_avoid_to_offset);
 
     updateParam<double>(
       parameters, ns + "overtaking_object.max_time_to_collision",

@@ -3,6 +3,7 @@
     dynamic_avoidance:
       common:
         enable_debug_info: true
+        use_hatched_road_markings: true
 
       # avoidance is performed for the object type with true
       target_object:
@@ -18,6 +19,7 @@
         min_obstacle_vel: 0.0 # [m/s]
 
         successive_num_to_entry_dynamic_avoidance_condition: 5
+        successive_num_to_exit_dynamic_avoidance_condition: 1
 
         min_obj_lat_offset_to_ego_path: 0.0 # [m]
         max_obj_lat_offset_to_ego_path: 1.0 # [m]
@@ -26,26 +28,34 @@
           min_time_to_start_cut_in: 1.0 # [s]
           min_lon_offset_ego_to_object: 0.0 # [m]
 
+        cut_out_object:
+          max_time_from_outside_ego_path: 2.0 # [s]
+          min_object_lat_vel: 0.3 # [m/s]
+
         crossing_object:
-          min_object_vel: 1.0
-          max_object_angle: 1.05
+          min_overtaking_object_vel: 1.0
+          max_overtaking_object_angle: 1.05
+          min_oncoming_object_vel: 0.0
+          max_oncoming_object_angle: 0.523
 
         front_object:
           max_object_angle: 0.785
 
       drivable_area_generation:
-        lat_offset_from_obstacle: 1.0 # [m]
+        lat_offset_from_obstacle: 0.8 # [m]
         max_lat_offset_to_avoid: 0.5 # [m]
+        max_time_for_object_lat_shift: 2.0 # [s]
+        lpf_gain_for_lat_avoid_to_offset: 0.9 # [-]
 
         # for same directional object
         overtaking_object:
-          max_time_to_collision: 10.0 # [s]
+          max_time_to_collision: 40.0 # [s]
           start_duration_to_avoid: 2.0  # [s]
           end_duration_to_avoid: 4.0  # [s]
           duration_to_hold_avoidance: 3.0 # [s]
 
         # for opposite directional object
         oncoming_object:
-          max_time_to_collision: 15.0 # [s]
+          max_time_to_collision: 40.0 # [s] This value should be the same as overtaking_object's one to suppress chattering of this value for parked vehicles
           start_duration_to_avoid: 12.0  # [s]
           end_duration_to_avoid: 0.0  # [s]

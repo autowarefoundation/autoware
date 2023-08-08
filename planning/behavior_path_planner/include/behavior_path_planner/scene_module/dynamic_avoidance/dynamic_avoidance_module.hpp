@@ -45,6 +45,7 @@ struct DynamicAvoidanceParameters
 {
   // common
   bool enable_debug_info{true};
+  bool use_hatched_road_markings{true};
 
   // obstacle types to avoid
   bool avoid_car{true};
@@ -75,6 +76,8 @@ struct DynamicAvoidanceParameters
   // drivable area generation
   double lat_offset_from_obstacle{0.0};
   double max_lat_offset_to_avoid{0.0};
+  double max_time_for_lat_shift{0.0};
+  double lpf_gain_for_lat_avoid_to_offset{0.0};
 
   double max_time_to_collision_overtaking_object{0.0};
   double start_duration_to_avoid_overtaking_object{0.0};
