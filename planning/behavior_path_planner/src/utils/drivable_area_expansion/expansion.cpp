@@ -137,8 +137,9 @@ multipolygon_t createExpansionPolygons(
                                       : footprint_dist;
         auto expansion_polygon = createExpansionPolygon(base_ls, expansion_dist, is_left);
         auto limited_dist = expansion_dist;
-        const auto uncrossable_dist_limit =
-          calculateDistanceLimit(base_ls, expansion_polygon, uncrossable_lines);
+        const auto uncrossable_dist_limit = std::max(
+          0.0, calculateDistanceLimit(base_ls, expansion_polygon, uncrossable_lines) -
+                 params.avoid_linestring_dist);
         if (uncrossable_dist_limit < limited_dist) {
           limited_dist = uncrossable_dist_limit;
           if (params.compensate_uncrossable_lines) {
