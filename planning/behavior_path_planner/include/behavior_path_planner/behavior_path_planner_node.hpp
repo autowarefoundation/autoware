@@ -42,6 +42,7 @@
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 #include <tier4_planning_msgs/msg/lane_change_debug_msg_array.hpp>
 #include <tier4_planning_msgs/msg/path_change_module.hpp>
+#include <tier4_planning_msgs/msg/reroute_availability.hpp>
 #include <tier4_planning_msgs/msg/scenario.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
 #include <visualization_msgs/msg/marker.hpp>
@@ -72,6 +73,7 @@ using steering_factor_interface::SteeringFactorInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 using tier4_planning_msgs::msg::LateralOffset;
+using tier4_planning_msgs::msg::RerouteAvailability;
 using tier4_planning_msgs::msg::Scenario;
 using tier4_planning_msgs::msg::StopReasonArray;
 using visualization_msgs::msg::Marker;
@@ -102,6 +104,7 @@ private:
   rclcpp::Publisher<MarkerArray>::SharedPtr bound_publisher_;
   rclcpp::Publisher<PoseWithUuidStamped>::SharedPtr modified_goal_publisher_;
   rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reason_publisher_;
+  rclcpp::Publisher<RerouteAvailability>::SharedPtr reroute_availability_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::map<std::string, rclcpp::Publisher<Path>::SharedPtr> path_candidate_publishers_;
@@ -170,6 +173,11 @@ private:
   rclcpp::Publisher<AvoidanceDebugMsgArray>::SharedPtr debug_avoidance_msg_array_publisher_;
   rclcpp::Publisher<LaneChangeDebugMsgArray>::SharedPtr debug_lane_change_msg_array_publisher_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_turn_signal_info_publisher_;
+
+  /**
+   * @brief publish reroute availability
+   */
+  void publish_reroute_availability();
 
   /**
    * @brief publish steering factor from intersection

@@ -215,6 +215,16 @@ public:
   }
 
   /**
+   * @brief check if there are approved modules.
+   */
+  bool hasApprovedModules() const { return !approved_module_ptrs_.empty(); }
+
+  /**
+   * @brief check if there are candidate modules.
+   */
+  bool hasCandidateModules() const { return !candidate_module_ptrs_.empty(); }
+
+  /**
    * @brief reset root lanelet. if there are approved modules, don't reset root lanelet.
    * @param planner data.
    * @details this function is called only when it is in disengage and drive by manual.
