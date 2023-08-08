@@ -1,0 +1,58 @@
+/**:
+  ros__parameters:
+    dynamic_avoidance:
+      common:
+        enable_debug_info: true
+
+      # avoidance is performed for the object type with true
+      target_object:
+        car: true
+        truck: true
+        bus: true
+        trailer: true
+        unknown: false
+        bicycle: false
+        motorcycle: true
+        pedestrian: false
+
+        min_obstacle_vel: 0.0 # [m/s]
+
+        successive_num_to_entry_dynamic_avoidance_condition: 5
+        successive_num_to_exit_dynamic_avoidance_condition: 1
+
+        min_obj_lat_offset_to_ego_path: 0.0 # [m]
+        max_obj_lat_offset_to_ego_path: 1.0 # [m]
+
+        cut_in_object:
+          min_time_to_start_cut_in: 1.0 # [s]
+          min_lon_offset_ego_to_object: 0.0 # [m]
+
+        cut_out_object:
+          max_time_from_outside_ego_path: 2.0 # [s]
+          min_object_lat_vel: 0.3 # [m/s]
+
+        crossing_object:
+          min_overtaking_object_vel: 1.0
+          max_overtaking_object_angle: 1.05
+          min_oncoming_object_vel: 0.0
+          max_oncoming_object_angle: 0.523
+
+        front_object:
+          max_object_angle: 0.785
+
+      drivable_area_generation:
+        lat_offset_from_obstacle: 0.8 # [m]
+        max_lat_offset_to_avoid: 0.5 # [m]
+
+        # for same directional object
+        overtaking_object:
+          max_time_to_collision: 40.0 # [s]
+          start_duration_to_avoid: 2.0  # [s]
+          end_duration_to_avoid: 4.0  # [s]
+          duration_to_hold_avoidance: 3.0 # [s]
+
+        # for opposite directional object
+        oncoming_object:
+          max_time_to_collision: 15.0 # [s]
+          start_duration_to_avoid: 12.0  # [s]
+          end_duration_to_avoid: 0.0  # [s]

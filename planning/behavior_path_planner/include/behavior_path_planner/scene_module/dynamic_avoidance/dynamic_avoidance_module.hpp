@@ -67,8 +67,10 @@ struct DynamicAvoidanceParameters
   double max_time_from_outside_ego_path_for_cut_out{0.0};
   double min_cut_out_object_lat_vel{0.0};
   double max_front_object_angle{0.0};
-  double min_crossing_object_vel{0.0};
-  double max_crossing_object_angle{0.0};
+  double min_overtaking_crossing_object_vel{0.0};
+  double max_overtaking_crossing_object_angle{0.0};
+  double min_oncoming_crossing_object_vel{0.0};
+  double max_oncoming_crossing_object_angle{0.0};
 
   // drivable area generation
   double lat_offset_from_obstacle{0.0};

@@ -68,10 +68,14 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
     p.max_front_object_angle =
       node->declare_parameter<double>(ns + "front_object.max_object_angle");
 
-    p.min_crossing_object_vel =
-      node->declare_parameter<double>(ns + "crossing_object.min_object_vel");
-    p.max_crossing_object_angle =
-      node->declare_parameter<double>(ns + "crossing_object.max_object_angle");
+    p.min_overtaking_crossing_object_vel =
+      node->declare_parameter<double>(ns + "crossing_object.min_overtaking_object_vel");
+    p.max_overtaking_crossing_object_angle =
+      node->declare_parameter<double>(ns + "crossing_object.max_overtaking_object_angle");
+    p.min_oncoming_crossing_object_vel =
+      node->declare_parameter<double>(ns + "crossing_object.min_oncoming_object_vel");
+    p.max_oncoming_crossing_object_angle =
+      node->declare_parameter<double>(ns + "crossing_object.max_oncoming_object_angle");
   }
 
   {  // drivable_area_generation
@@ -152,9 +156,17 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
       parameters, ns + "front_object.max_object_angle", p->max_front_object_angle);
 
     updateParam<double>(
-      parameters, ns + "crossing_object.min_object_vel", p->min_crossing_object_vel);
+      parameters, ns + "crossing_object.min_overtaking_object_vel",
+      p->min_overtaking_crossing_object_vel);
     updateParam<double>(
-      parameters, ns + "crossing_object.max_object_angle", p->max_crossing_object_angle);
+      parameters, ns + "crossing_object.max_overtaking_object_angle",
+      p->max_overtaking_crossing_object_angle);
+    updateParam<double>(
+      parameters, ns + "crossing_object.min_oncoming_object_vel",
+      p->min_oncoming_crossing_object_vel);
+    updateParam<double>(
+      parameters, ns + "crossing_object.max_oncoming_object_angle",
+      p->max_oncoming_crossing_object_angle);
   }
 
   {  // drivable_area_generation

@@ -374,11 +374,16 @@ void DynamicAvoidanceModule::updateTargetObjects()
 
     // 1.c. check if object is not crossing ego's path
     const double obj_angle = calcDiffAngleAgainstPath(prev_module_path->points, obj_pose);
-    const bool is_obstacle_crossing_path =
-      parameters_->max_crossing_object_angle < std::abs(obj_angle) &&
-      parameters_->max_crossing_object_angle < M_PI - std::abs(obj_angle);
+    const double max_crossing_object_angle = 0.0 <= obj_tangent_vel
+                                               ? parameters_->max_overtaking_crossing_object_angle
+                                               : parameters_->max_oncoming_crossing_object_angle;
+    const bool is_obstacle_crossing_path = max_crossing_object_angle < std::abs(obj_angle) &&
+                                           max_crossing_object_angle < M_PI - std::abs(obj_angle);
+    const double min_crossing_object_vel = 0.0 <= obj_tangent_vel
+                                             ? parameters_->min_overtaking_crossing_object_vel
+                                             : parameters_->min_oncoming_crossing_object_vel;
     const bool is_crossing_object_to_ignore =
-      parameters_->min_crossing_object_vel < std::abs(obj_vel) && is_obstacle_crossing_path;
+      min_crossing_object_vel < std::abs(obj_vel) && is_obstacle_crossing_path;
     if (is_crossing_object_to_ignore) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,
