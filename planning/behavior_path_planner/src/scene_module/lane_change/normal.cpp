@@ -540,6 +540,11 @@ std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
     current_velocity, common_parameters,
     route_handler.getLateralIntervalsToPreferredLane(current_lanes.back()), max_acc);
 
+  if (max_lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
+    return utils::lane_change::getAccelerationValues(
+      min_acc, max_acc, longitudinal_acc_sampling_num);
+  }
+
   // if maximum lane change length is less than length to goal or the end of target lanes, only
   // sample max acc
   if (route_handler.isInGoalRouteSection(target_lanes.back())) {
