@@ -50,6 +50,7 @@ ament_auto_package(
 install(PROGRAMS
   scripts/trajectory_visualizer.py
   scripts/closest_velocity_checker.py
-  scripts/perception_reproducer.py
+  scripts/perception_replayer/perception_reproducer.py
+  scripts/perception_replayer/perception_replayer.py
   DESTINATION lib/${PROJECT_NAME}
 )

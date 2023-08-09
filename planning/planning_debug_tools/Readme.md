@@ -188,7 +188,7 @@ PlotCurrentVelocity('localization_kinematic_state', '/localization/kinematic_sta
 
 ## Perception reproducer
 
-This script can overlay the perception results from the rosbag on the planning simulator.
+This script can overlay the perception results from the rosbag on the planning simulator synchronized with the simulator's ego pose.
 
 In detail, the ego pose in the rosbag which is closest to the current ego pose in the simulator is calculated.
 The perception results at the timestamp of the closest ego pose is extracted, and published.
@@ -208,6 +208,36 @@ You can designate multiple rosbags in the directory.
 
 ```bash
 ros2 run planning_debug_tools perception_reproducer.py -b <dir-to-bag-files>
+```
+
+Instead of publishing predicted objects, you can publish detected/tracked objects by designating `-d` or `-t`, respectively.
+
+## Perception replayer
+
+A part of the feature is under development.
+
+This script can overlay the perception results from the rosbag on the planning simulator.
+
+In detail, this script publishes the data at a certain timestamp from the rosbag.
+The timestamp will increase according to the real time without any operation.
+By using the GUI, you can modify the timestamp by pausing, changing the rate or going back into the past.
+
+### How to use
+
+First, launch the planning simulator, and put the ego pose.
+Then, run the script according to the following command.
+
+By designating a rosbag, perception replayer can be launched.
+The GUI is launched as well with which a timestamp of rosbag can be managed.
+
+```bash
+ros2 run planning_debug_tools perception_replayer.py -b <bag-file>
+```
+
+You can designate multiple rosbags in the directory.
+
+```bash
+ros2 run planning_debug_tools perception_replayer.py -b <dir-to-bag-files>
 ```
 
 Instead of publishing predicted objects, you can publish detected/tracked objects by designating `-d` or `-t`, respectively.
