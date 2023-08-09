@@ -41,14 +41,16 @@ The DetectedObject has three possible shape choices/implementations, where the p
 
 ### Core Parameters
 
-| Name                                            | Type   | Description                                                                                                               |
-| ----------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `rois_number`                                   | int    | the number of input rois                                                                                                  |
-| `debug_mode`                                    | bool   | If set to `true`, the node subscribes to the image topic and publishes an image with debug drawings.                      |
-| `min_iou_threshold`                             | double | If the iou between detected objects and rois is greater than `min_iou_threshold`, the objects are classified as fused.    |
-| `passthrough_lower_bound_probability_threshold` | double | If the `existence_probability` of a detected object is greater than the threshold, it is published in output.             |
-| `use_roi_probability`                           | float  | If set to `true`, the algorithm uses `existence_probability` of ROIs to match with the that of detected objects.          |
-| `roi_probability_threshold`                     | double | If the `existence_probability` of ROIs is greater than the threshold, matched detected objects are published in `output`. |
+| Name                                             | Type           | Description                                                                                                                |
+| ------------------------------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `rois_number`                                    | int            | the number of input rois                                                                                                   |
+| `debug_mode`                                     | bool           | If set to `true`, the node subscribes to the image topic and publishes an image with debug drawings.                       |
+| `passthrough_lower_bound_probability_thresholds` | vector[double] | If the `existence_probability` of a detected object is greater than the threshold, it is published in output.              |
+| `trust_distances`                                | vector[double] | If the distance of a detected object from the origin of frame_id is greater than the threshold, it is published in output. |
+| `min_iou_threshold`                              | double         | If the iou between detected objects and rois is greater than `min_iou_threshold`, the objects are classified as fused.     |
+| `use_roi_probability`                            | float          | If set to `true`, the algorithm uses `existence_probability` of ROIs to match with the that of detected objects.           |
+| `roi_probability_threshold`                      | double         | If the `existence_probability` of ROIs is greater than the threshold, matched detected objects are published in `output`.  |
+| `can_assign_matrix`                              | vector[int]    | association matrix between rois and detected_objects to check that two rois on images can be match                         |
 
 ## Assumptions / Known limits
 

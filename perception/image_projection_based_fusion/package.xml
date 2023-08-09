@@ -17,6 +17,7 @@
   <depend>image_transport</depend>
   <depend>lidar_centerpoint</depend>
   <depend>message_filters</depend>
+  <depend>object_recognition_utils</depend>
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>
   <depend>rclcpp</depend>
