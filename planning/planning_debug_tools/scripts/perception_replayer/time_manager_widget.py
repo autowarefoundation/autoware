@@ -19,12 +19,18 @@ from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtWidgets import QSlider
 from PyQt5.QtWidgets import QWidget
 
 
 class TimeManagerWidget(QMainWindow):
-    def __init__(self):
+    def __init__(self, start_timestamp, end_timestamp):
         super(self.__class__, self).__init__()
+
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+        self.max_value = 1000000
+
         self.setupUI()
 
     def setupUI(self):
@@ -39,6 +45,7 @@ class TimeManagerWidget(QMainWindow):
         self.grid_layout.setContentsMargins(10, 10, 10, 10)
         self.grid_layout.setObjectName("grid_layout")
 
+        # rate button
         self.rate_button = []
         for i, rate in enumerate([0.1, 0.5, 1.0, 2.0, 5.0, 10.0]):
             button = QPushButton(str(rate))
@@ -46,9 +53,29 @@ class TimeManagerWidget(QMainWindow):
             self.rate_button.append(button)
             self.grid_layout.addWidget(self.rate_button[-1], 0, i, 1, 1)
 
+        # pause button
         self.button = QPushButton("pause")
         self.button.setCheckable(True)
         self.button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
         self.grid_layout.addWidget(self.button, 1, 0, 1, -1)
+
+        # slider
+        self.slider = QSlider(QtCore.Qt.Horizontal)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(self.max_value)
+        self.slider.setValue(0)
+        self.grid_layout.addWidget(self.slider, 2, 0, 1, -1)
+
         self.setCentralWidget(self.central_widget)
+
+    def timestamp_to_value(self, timestamp):
+        return int(
+            (timestamp - self.start_timestamp)
+            / (self.end_timestamp - self.start_timestamp)
+            * self.max_value
+        )
+
+    def value_to_timestamp(self, value):
+        return self.start_timestamp + self.slider.value() / self.max_value * (
+            self.end_value - self.start_value
+        )
