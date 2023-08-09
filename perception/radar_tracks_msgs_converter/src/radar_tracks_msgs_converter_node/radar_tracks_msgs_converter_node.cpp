@@ -220,7 +220,7 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
         compensated_velocity.y += odometry_data_->twist.twist.linear.y;
         compensated_velocity.z += odometry_data_->twist.twist.linear.z;
       } else {
-        RCLCPP_INFO(get_logger(), "Odometry data is not coming");
+        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "Odometry data is not coming");
       }
     }
     kinematics.twist_with_covariance.twist.linear.x = std::sqrt(
