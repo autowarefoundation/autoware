@@ -22,12 +22,25 @@
 #include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
 #include <lidar_centerpoint/ros_utils.hpp>
 #include <lidar_centerpoint/utils.hpp>
+#include <pcl_ros/transforms.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/constants.hpp>
 
 #include <omp.h>
 
 #include <chrono>
+
+namespace
+{
+
+Eigen::Affine3f _transformToEigen(const geometry_msgs::msg::Transform & t)
+{
+  Eigen::Affine3f a;
+  a.matrix() = tf2::transformToEigen(t).matrix().cast<float>();
+  return a;
+}
+
+}  // namespace
 
 namespace image_projection_based_fusion
 {
@@ -102,8 +115,12 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
   const std::string head_engine_path = this->declare_parameter("head_engine_path", "");
 
   class_names_ = this->declare_parameter<std::vector<std::string>>("class_names");
+  const auto paint_class_names =
+    this->declare_parameter<std::vector<std::string>>("paint_class_names");
   std::vector<std::string> classes_{"CAR", "TRUCK", "BUS", "BICYCLE", "PEDESTRIAN"};
-  if (std::find(class_names_.begin(), class_names_.end(), "TRUCK") != class_names_.end()) {
+  if (
+    std::find(paint_class_names.begin(), paint_class_names.end(), "TRUCK") !=
+    paint_class_names.end()) {
     isClassTable_["CAR"] = std::bind(&isCar, std::placeholders::_1);
   } else {
     isClassTable_["CAR"] = std::bind(&isVehicle, std::placeholders::_1);
@@ -113,9 +130,9 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
   isClassTable_["BICYCLE"] = std::bind(&isBicycle, std::placeholders::_1);
   isClassTable_["PEDESTRIAN"] = std::bind(&isPedestrian, std::placeholders::_1);
   for (const auto & cls : classes_) {
-    auto it = find(class_names_.begin(), class_names_.end(), cls);
-    if (it != class_names_.end()) {
-      int index = it - class_names_.begin();
+    auto it = find(paint_class_names.begin(), paint_class_names.end(), cls);
+    if (it != paint_class_names.end()) {
+      int index = it - paint_class_names.begin();
       class_index_[cls] = index + 1;
     } else {
       isClassTable_.erase(cls);
@@ -253,39 +270,38 @@ void PointPaintingFusionNode::fuseOnSingleImage(
   std::vector<Eigen::Vector2d> debug_image_points;
 
   // get transform from cluster frame id to camera optical frame id
-  geometry_msgs::msg::TransformStamped transform_stamped;
+  // geometry_msgs::msg::TransformStamped transform_stamped;
+  Eigen::Affine3f lidar2cam_affine;
   {
     const auto transform_stamped_optional = getTransformStamped(
-      tf_buffer_, /*target*/ camera_info.header.frame_id,
-      /*source*/ painted_pointcloud_msg.header.frame_id, camera_info.header.stamp);
+      tf_buffer_, /*target*/ input_roi_msg.header.frame_id,
+      /*source*/ painted_pointcloud_msg.header.frame_id, input_roi_msg.header.stamp);
     if (!transform_stamped_optional) {
       return;
     }
-    transform_stamped = transform_stamped_optional.value();
+    lidar2cam_affine = _transformToEigen(transform_stamped_optional.value().transform);
   }
 
   // transform
-  sensor_msgs::msg::PointCloud2 transformed_pointcloud;
-  tf2::doTransform(painted_pointcloud_msg, transformed_pointcloud, transform_stamped);
-
-  std::chrono::system_clock::time_point start, end;
-  start = std::chrono::system_clock::now();
+  // sensor_msgs::msg::PointCloud2 transformed_pointcloud;
+  // tf2::doTransform(painted_pointcloud_msg, transformed_pointcloud, transform_stamped);
 
   const auto x_offset =
-    transformed_pointcloud.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::X))
+    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::X))
       .offset;
   const auto y_offset =
-    transformed_pointcloud.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Y))
+    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Y))
       .offset;
   const auto z_offset =
-    transformed_pointcloud.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Z))
+    painted_pointcloud_msg.fields.at(static_cast<size_t>(autoware_point_types::PointIndex::Z))
       .offset;
   const auto class_offset = painted_pointcloud_msg.fields.at(4).offset;
-  const auto p_step = transformed_pointcloud.point_step;
+  const auto p_step = painted_pointcloud_msg.point_step;
   // projection matrix
   Eigen::Matrix3f camera_projection;  // use only x,y,z
   camera_projection << camera_info.p.at(0), camera_info.p.at(1), camera_info.p.at(2),
     camera_info.p.at(4), camera_info.p.at(5), camera_info.p.at(6);
+  Eigen::Vector3f point_lidar, point_camera;
   /** dc : don't care
 
 x    | f  x1 x2  dc ||xc|
@@ -295,18 +311,24 @@ dc   | dc dc dc  dc ||zc|
    **/
 
   auto objects = input_roi_msg.feature_objects;
-  int iterations = transformed_pointcloud.data.size() / transformed_pointcloud.point_step;
+  int iterations = painted_pointcloud_msg.data.size() / painted_pointcloud_msg.point_step;
   // iterate points
   // Requires 'OMP_NUM_THREADS=N'
   omp_set_num_threads(omp_num_threads_);
 #pragma omp parallel for
   for (int i = 0; i < iterations; i++) {
     int stride = p_step * i;
-    unsigned char * data = &transformed_pointcloud.data[0];
+    unsigned char * data = &painted_pointcloud_msg.data[0];
     unsigned char * output = &painted_pointcloud_msg.data[0];
     float p_x = *reinterpret_cast<const float *>(&data[stride + x_offset]);
     float p_y = *reinterpret_cast<const float *>(&data[stride + y_offset]);
     float p_z = *reinterpret_cast<const float *>(&data[stride + z_offset]);
+    point_lidar << p_x, p_y, p_z;
+    point_camera = lidar2cam_affine * point_lidar;
+    p_x = point_camera.x();
+    p_y = point_camera.y();
+    p_z = point_camera.z();
+
     if (p_z <= 0.0 || p_x > (tan_h_.at(image_id) * p_z) || p_x < (-tan_h_.at(image_id) * p_z)) {
       continue;
     }

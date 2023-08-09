@@ -41,7 +41,7 @@
     <node pkg="image_projection_based_fusion" exec="pointpainting_fusion_node" name="pointpainting" output="screen">
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
-      <param name="score_threshold" value="0.45"/>
+      <param name="score_threshold" value="0.35"/>
       <param name="densification_world_frame_id" value="map"/>
       <param name="densification_num_past_frames" value="1"/>
       <param name="trt_precision" value="fp16"/>

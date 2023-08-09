@@ -24,7 +24,7 @@ std::optional<geometry_msgs::msg::TransformStamped> getTransformStamped(
   try {
     geometry_msgs::msg::TransformStamped transform_stamped;
     transform_stamped = tf_buffer.lookupTransform(
-      target_frame_id, source_frame_id, time, rclcpp::Duration::from_seconds(0.5));
+      target_frame_id, source_frame_id, time, rclcpp::Duration::from_seconds(0.01));
     return transform_stamped;
   } catch (tf2::TransformException & ex) {
     RCLCPP_WARN_STREAM(rclcpp::get_logger("image_projection_based_fusion"), ex.what());
