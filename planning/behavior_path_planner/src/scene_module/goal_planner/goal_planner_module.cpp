@@ -419,9 +419,16 @@ bool GoalPlannerModule::planFreespacePath()
   mutex_.lock();
   goal_searcher_->update(goal_candidates_);
   const auto goal_candidates = goal_candidates_;
+  debug_data_.freespace_planner.num_goal_candidates = goal_candidates.size();
+  debug_data_.freespace_planner.is_planning = true;
   mutex_.unlock();
 
-  for (const auto & goal_candidate : goal_candidates) {
+  for (size_t i = 0; i < goal_candidates.size(); i++) {
+    const auto goal_candidate = goal_candidates.at(i);
+    mutex_.lock();
+    debug_data_.freespace_planner.current_goal_idx = i;
+    mutex_.unlock();
+
     if (!goal_candidate.is_safe) {
       continue;
     }
@@ -437,9 +444,12 @@ bool GoalPlannerModule::planFreespacePath()
     status_.is_safe = true;
     modified_goal_pose_ = goal_candidate;
     last_path_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
+    debug_data_.freespace_planner.is_planning = false;
     mutex_.unlock();
     return true;
   }
+
+  debug_data_.freespace_planner.is_planning = false;
   return false;
 }
 
@@ -1490,6 +1500,12 @@ void GoalPlannerModule::setDebugData()
       marker.text += " stuck";
     } else if (isStopped()) {
       marker.text += " stopped";
+    }
+
+    if (debug_data_.freespace_planner.is_planning) {
+      marker.text +=
+        " freespace: " + std::to_string(debug_data_.freespace_planner.current_goal_idx) + "/" +
+        std::to_string(debug_data_.freespace_planner.num_goal_candidates);
     }
 
     planner_type_marker_array.markers.push_back(marker);
