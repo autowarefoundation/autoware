@@ -1,9 +1,0 @@
-<library path="initial_pose_button_panel">
-    <class name="tier4_localization_rviz_plugin/InitialPoseButtonPanel"
-           type="tier4_localization_rviz_plugin::InitialPoseButtonPanel"
-           base_class_type="rviz_common::Panel">
-        <description>
-          initial button.
-        </description>
-    </class>
-</library>
