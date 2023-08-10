@@ -35,7 +35,7 @@ $$
 Kinematic bicycle model uses slip angle $\beta$ and velocity $v$ to calculate yaw update.
 The merit of using this model is that it can prevent unintended yaw rotation when the vehicle is stopped.
 
-![kbmodel](image/kinematic_bicycle_model.png)
+![kinematic_bicycle_model](image/kinematic_bicycle_model.png)
 
 - **state variable**
   - pose( $x,y$ ), velocity( $v$ ), yaw( $\psi$ ), and slip angle ( $\beta$ )

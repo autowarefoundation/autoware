@@ -301,7 +301,7 @@ inline void convertConvexHullToBoundingBox(
     input_object.kinematics.pose_with_covariance.pose.position.x,
     input_object.kinematics.pose_with_covariance.pose.position.y};
   const auto yaw = tf2::getYaw(input_object.kinematics.pose_with_covariance.pose.orientation);
-  const Eigen::Matrix2d Rinv = Eigen::Rotation2Dd(-yaw).toRotationMatrix();
+  const Eigen::Matrix2d R_inv = Eigen::Rotation2Dd(-yaw).toRotationMatrix();
 
   double max_x = 0;
   double max_y = 0;
@@ -314,7 +314,7 @@ inline void convertConvexHullToBoundingBox(
     Eigen::Vector2d vertex{
       input_object.shape.footprint.points.at(i).x, input_object.shape.footprint.points.at(i).y};
 
-    const Eigen::Vector2d local_vertex = Rinv * (vertex - center);
+    const Eigen::Vector2d local_vertex = R_inv * (vertex - center);
     max_x = std::max(max_x, local_vertex.x());
     max_y = std::max(max_y, local_vertex.y());
     min_x = std::min(min_x, local_vertex.x());
@@ -328,7 +328,7 @@ inline void convertConvexHullToBoundingBox(
   const double width = max_y - min_y;
   const double height = max_z;
   const Eigen::Vector2d new_local_center{(max_x + min_x) / 2.0, (max_y + min_y) / 2.0};
-  const Eigen::Vector2d new_center = center + Rinv.transpose() * new_local_center;
+  const Eigen::Vector2d new_center = center + R_inv.transpose() * new_local_center;
 
   // set output parameters
   output_object = input_object;
