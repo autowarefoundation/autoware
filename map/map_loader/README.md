@@ -20,11 +20,12 @@ Currently, it supports the following two types:
 
 You may provide either a single .pcd file or multiple .pcd files. If you are using multiple PCD data and either of `enable_partial_load`, `enable_differential_load` or `enable_selected_load` are set true, it MUST obey the following rules:
 
-1. **It must be divided by straight lines parallel to the x-axis and y-axis**. The system does not support division by diagonal lines or curved lines.
-2. **The division size along each axis should be equal.**
-3. **The division size should be about 20m x 20m.** Particularly, care should be taken as using too large division size (for example, more than 100m) may have adverse effects on dynamic map loading features in [ndt_scan_matcher](https://github.com/autowarefoundation/autoware.universe/tree/main/localization/ndt_scan_matcher) and [compare_map_segmentation](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/compare_map_segmentation).
-4. **All the split maps should not overlap with each other.**
-5. **Metadata file should also be provided.** The metadata structure description is provided below.
+1. **The pointcloud map should be projected on the same coordinate defined in `map_projection_loader`**, in order to be consistent with the lanelet2 map and other packages that converts between local and geodetic coordinates. For more information, please refer to [the readme of `map_projection_loader`](https://github.com/autowarefoundation/autoware.universe/tree/main/map/map_projection_loader/README.md).
+2. **It must be divided by straight lines parallel to the x-axis and y-axis**. The system does not support division by diagonal lines or curved lines.
+3. **The division size along each axis should be equal.**
+4. **The division size should be about 20m x 20m.** Particularly, care should be taken as using too large division size (for example, more than 100m) may have adverse effects on dynamic map loading features in [ndt_scan_matcher](https://github.com/autowarefoundation/autoware.universe/tree/main/localization/ndt_scan_matcher) and [compare_map_segmentation](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/compare_map_segmentation).
+5. **All the split maps should not overlap with each other.**
+6. **Metadata file should also be provided.** The metadata structure description is provided below.
 
 Note that these rules are not applicable when `enable_partial_load`, `enable_differential_load` and `enable_selected_load` are all set false. In this case, however, you also need to disable dynamic map loading mode for other nodes as well ([ndt_scan_matcher](https://github.com/autowarefoundation/autoware.universe/tree/main/localization/ndt_scan_matcher) and [compare_map_segmentation](https://github.com/autowarefoundation/autoware.universe/tree/main/perception/compare_map_segmentation) as of June 2023).
 
@@ -69,6 +70,7 @@ sample-map-rosbag
 │ ├── B.pcd
 │ ├── C.pcd
 │ └── ...
+├── map_projector_info.yaml
 └── pointcloud_map_metadata.yaml
 ```
 
@@ -138,15 +140,31 @@ Please see [the description of `GetSelectedPointCloudMap.srv`](https://github.co
 ### Feature
 
 lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_auto_mapping_msgs/HADMapBin message.
-The node projects lan/lon coordinates into MGRS coordinates.
+The node projects lan/lon coordinates into arbitrary coordinates defined in `/map/map_projector_type` from `map_projection_loader`.
+The node supports the following three types of coordinate systems:
+
+- MGRS
+- UTM
+- local
 
 ### How to run
 
 `ros2 run map_loader lanelet2_map_loader --ros-args -p lanelet2_map_path:=path/to/map.osm`
 
+### Subscribed Topics
+
+- ~input/map_projector_info (tier4_map_msgs/MapProjectorInfo) : Projection type for Autoware
+
 ### Published Topics
 
 - ~output/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : Binary data of loaded Lanelet2 Map
+
+### Parameters
+
+| Name                   | Type        | Description                                      | Default value |
+| :--------------------- | :---------- | :----------------------------------------------- | :------------ |
+| center_line_resolution | double      | Define the resolution of the lanelet center line | 5.0           |
+| lanelet2_map_path      | std::string | The lanelet2 map path                            | None          |
 
 ---
 
@@ -154,11 +172,7 @@ The node projects lan/lon coordinates into MGRS coordinates.
 
 ### Feature
 
-lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messages into visualization_msgs/MarkerArray. There are 3 types of map can be loaded in autoware. Please make sure you selected the correct lanelet2_map_projector_type when you launch this package.
-
-- MGRS
-- UTM
-- local
+lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messages into visualization_msgs/MarkerArray.
 
 ### How to Run
 
@@ -171,13 +185,3 @@ lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messa
 ### Published Topics
 
 - ~output/lanelet2_map_marker (visualization_msgs/MarkerArray) : visualization messages for RViz
-
-### Parameters
-
-| Name                        | Type        | Description                                                  | Default value |
-| :-------------------------- | :---------- | :----------------------------------------------------------- | :------------ |
-| lanelet2_map_projector_type | std::string | The type of the map projector using, can be MGRS, UTM, local | MGRS          |
-| latitude                    | double      | Latitude of map_origin, only using in UTM map projector      | 0.0           |
-| longitude                   | double      | Longitude of map_origin, only using in UTM map projector     | 0.0           |
-| center_line_resolution      | double      | Define the resolution of the lanelet center line             | 5.0           |
-| lanelet2_map_path           | std::string | The lanelet2 map path                                        | None          |
