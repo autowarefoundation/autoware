@@ -1051,6 +1051,11 @@ void CrosswalkModule::planStop(
     return std::nullopt;
   }();
 
+  if (!stop_factor) {
+    RCLCPP_ERROR_STREAM_THROTTLE(logger_, *clock_, 5000, "stop_factor is null");
+    return;
+  }
+
   // Plan stop
   insertDecelPointWithDebugInfo(stop_factor->stop_pose.position, 0.0, ego_path);
   planning_utils::appendStopReason(*stop_factor, stop_reason);
