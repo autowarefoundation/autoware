@@ -39,11 +39,11 @@ polygon_t createFootprint(const geometry_msgs::msg::Pose & pose, const polygon_t
   return translatePolygon(rotatePolygon(base_footprint, angle), pose.position.x, pose.position.y);
 }
 
-multipolygon_t createObjectFootprints(
+multi_polygon_t createObjectFootprints(
   const autoware_auto_perception_msgs::msg::PredictedObjects & objects,
   const DrivableAreaExpansionParameters & params)
 {
-  multipolygon_t footprints;
+  multi_polygon_t footprints;
   if (params.avoid_dynamic_objects) {
     for (const auto & object : objects.objects) {
       const auto front = object.shape.dimensions.x / 2 + params.dynamic_objects_extra_front_offset;
@@ -62,7 +62,7 @@ multipolygon_t createObjectFootprints(
   return footprints;
 }
 
-multipolygon_t createPathFootprints(
+multi_polygon_t createPathFootprints(
   const PathWithLaneId & path, const DrivableAreaExpansionParameters & params)
 {
   const auto left = params.ego_left_offset + params.ego_extra_left_offset;
@@ -73,7 +73,7 @@ multipolygon_t createPathFootprints(
   base_footprint.outer() = {
     point_t{front, left}, point_t{front, right}, point_t{rear, right}, point_t{rear, left},
     point_t{front, left}};
-  multipolygon_t footprints;
+  multi_polygon_t footprints;
   // skip the last footprint as its orientation is usually wrong
   footprints.reserve(path.points.size() - 1);
   double arc_length = 0.0;

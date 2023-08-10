@@ -22,10 +22,10 @@ namespace drivable_area_expansion
 
 double calculateDistanceLimit(
   const linestring_t & base_ls, const polygon_t & expansion_polygon,
-  const multilinestring_t & limit_lines)
+  const multi_linestring_t & limit_lines)
 {
   auto dist_limit = std::numeric_limits<double>::max();
-  multipoint_t intersections;
+  multi_point_t intersections;
   boost::geometry::intersection(expansion_polygon, limit_lines, intersections);
   for (const auto & p : intersections)
     dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
@@ -34,11 +34,11 @@ double calculateDistanceLimit(
 
 double calculateDistanceLimit(
   const linestring_t & base_ls, const polygon_t & expansion_polygon,
-  const multipolygon_t & limit_polygons)
+  const multi_polygon_t & limit_polygons)
 {
   auto dist_limit = std::numeric_limits<double>::max();
   for (const auto & polygon : limit_polygons) {
-    multipoint_t intersections;
+    multi_point_t intersections;
     boost::geometry::intersection(expansion_polygon, polygon, intersections);
     for (const auto & p : intersections)
       dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
@@ -50,7 +50,7 @@ polygon_t createExpansionPolygon(
   const linestring_t & base_ls, const double dist, const bool is_left_side)
 {
   namespace strategy = boost::geometry::strategy::buffer;
-  multipolygon_t polygons;
+  multi_polygon_t polygons;
   // set a non 0 value for the buffer as it sometimes causes no polygon to be returned by bg:buffer
   constexpr auto zero = 0.1;
   const auto left_dist = is_left_side ? dist : zero;
@@ -66,7 +66,7 @@ std::array<double, 3> calculate_arc_length_range_and_distance(
   const linestring_t & path_ls, const polygon_t & footprint, const linestring_t & bound,
   const bool is_left, const double path_length)
 {
-  multipoint_t intersections;
+  multi_point_t intersections;
   double expansion_dist = 0.0;
   double from_arc_length = std::numeric_limits<double>::max();
   double to_arc_length = std::numeric_limits<double>::min();
@@ -93,7 +93,7 @@ std::array<double, 3> calculate_arc_length_range_and_distance(
 
 polygon_t create_compensation_polygon(
   const linestring_t & base_ls, const double compensation_dist, const bool is_left,
-  const multilinestring_t uncrossable_lines, const multipolygon_t & predicted_paths)
+  const multi_linestring_t uncrossable_lines, const multi_polygon_t & predicted_paths)
 {
   polygon_t compensation_polygon = createExpansionPolygon(base_ls, compensation_dist, !is_left);
   double dist_limit = std::min(
@@ -106,9 +106,9 @@ polygon_t create_compensation_polygon(
   return compensation_polygon;
 }
 
-multipolygon_t createExpansionPolygons(
-  const PathWithLaneId & path, const multipolygon_t & path_footprints,
-  const multipolygon_t & predicted_paths, const multilinestring_t & uncrossable_lines,
+multi_polygon_t createExpansionPolygons(
+  const PathWithLaneId & path, const multi_polygon_t & path_footprints,
+  const multi_polygon_t & predicted_paths, const multi_linestring_t & uncrossable_lines,
   const DrivableAreaExpansionParameters & params)
 {
   linestring_t path_ls;
@@ -118,9 +118,32 @@ multipolygon_t createExpansionPolygons(
     path_ls.emplace_back(p.point.pose.position.x, p.point.pose.position.y);
   for (const auto & p : path.left_bound) left_ls.emplace_back(p.x, p.y);
   for (const auto & p : path.right_bound) right_ls.emplace_back(p.x, p.y);
+  // extend the path linestring to the beginning and end of the drivable area
+  if (!right_ls.empty() && !left_ls.empty() && path_ls.size() > 2) {
+    const auto left_proj_begin = point_to_line_projection(left_ls.front(), path_ls[0], path_ls[1]);
+    const auto right_proj_begin =
+      point_to_line_projection(right_ls.front(), path_ls[0], path_ls[1]);
+    const auto left_ls_proj_begin = point_to_linestring_projection(left_proj_begin.point, path_ls);
+    const auto right_ls_proj_begin =
+      point_to_linestring_projection(right_proj_begin.point, path_ls);
+    if (left_ls_proj_begin.arc_length < right_ls_proj_begin.arc_length)
+      path_ls.insert(path_ls.begin(), left_proj_begin.point);
+    else
+      path_ls.insert(path_ls.begin(), right_proj_begin.point);
+    const auto left_proj_end =
+      point_to_line_projection(left_ls.back(), path_ls[path_ls.size() - 2], path_ls.back());
+    const auto right_proj_end =
+      point_to_line_projection(right_ls.back(), path_ls[path_ls.size() - 2], path_ls.back());
+    const auto left_ls_proj_end = point_to_linestring_projection(left_proj_end.point, path_ls);
+    const auto right_ls_proj_end = point_to_linestring_projection(right_proj_end.point, path_ls);
+    if (left_ls_proj_end.arc_length > right_ls_proj_end.arc_length)
+      path_ls.push_back(left_proj_end.point);
+    else
+      path_ls.push_back(right_proj_end.point);
+  }
   const auto path_length = static_cast<double>(boost::geometry::length(path_ls));
 
-  multipolygon_t expansion_polygons;
+  multi_polygon_t expansion_polygons;
   for (const auto & footprint : path_footprints) {
     bool is_left = true;
     for (const auto & bound : {left_ls, right_ls}) {
@@ -161,12 +184,12 @@ multipolygon_t createExpansionPolygons(
   return expansion_polygons;
 }
 
-multipolygon_t createExpansionLaneletPolygons(
+multi_polygon_t createExpansionLaneletPolygons(
   const lanelet::ConstLanelets & path_lanes, const route_handler::RouteHandler & route_handler,
-  const multipolygon_t & path_footprints, const multipolygon_t & predicted_paths,
+  const multi_polygon_t & path_footprints, const multi_polygon_t & predicted_paths,
   const DrivableAreaExpansionParameters & params)
 {
-  multipolygon_t expansion_polygons;
+  multi_polygon_t expansion_polygons;
   lanelet::ConstLanelets candidates;
   const auto already_added = [&](const auto & ll) {
     return std::find_if(candidates.begin(), candidates.end(), [&](const auto & l) {

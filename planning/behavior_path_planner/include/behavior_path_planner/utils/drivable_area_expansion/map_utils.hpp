@@ -28,7 +28,7 @@ namespace drivable_area_expansion
 /// @param[in] lanelet_map lanelet map
 /// @param[in] uncrossable_types types that cannot be crossed
 /// @return the uncrossable linestrings
-multilinestring_t extractUncrossableLines(
+multi_linestring_t extractUncrossableLines(
   const lanelet::LaneletMap & lanelet_map, const std::vector<std::string> & uncrossable_types);
 
 /// @brief Determine if the given linestring has one of the given types

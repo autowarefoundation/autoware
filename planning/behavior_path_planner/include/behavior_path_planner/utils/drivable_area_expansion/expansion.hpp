@@ -36,7 +36,7 @@ namespace drivable_area_expansion
 /// @return distance limit
 double calculateDistanceLimit(
   const linestring_t & base_ls, const polygon_t & expansion_polygon,
-  const multilinestring_t & limit_lines);
+  const multi_linestring_t & limit_lines);
 
 /// @brief Calculate the distance limit required for the polygon to not cross the limit polygons.
 /// @details Calculate the minimum distance from base_ls to an intersection of limit_polygons and
@@ -47,7 +47,7 @@ double calculateDistanceLimit(
 /// @return distance limit
 double calculateDistanceLimit(
   const linestring_t & base_ls, const polygon_t & expansion_polygon,
-  const multipolygon_t & limit_polygons);
+  const multi_polygon_t & limit_polygons);
 
 /// @brief Create a polygon from a base line with a given expansion distance
 /// @param[in] base_ls base linestring from which the polygon is created
@@ -64,9 +64,9 @@ polygon_t createExpansionPolygon(
 /// @param[in] uncrossable_lines lines that should not be crossed by the expanded drivable area
 /// @param[in] params expansion parameters
 /// @return expansion polygons
-multipolygon_t createExpansionPolygons(
-  const PathWithLaneId & path, const multipolygon_t & path_footprints,
-  const multipolygon_t & predicted_paths, const multilinestring_t & uncrossable_lines,
+multi_polygon_t createExpansionPolygons(
+  const PathWithLaneId & path, const multi_polygon_t & path_footprints,
+  const multi_polygon_t & predicted_paths, const multi_linestring_t & uncrossable_lines,
   const DrivableAreaExpansionParameters & params);
 
 /// @brief Create polygons for the area where the drivable area should be expanded
@@ -76,9 +76,9 @@ multipolygon_t createExpansionPolygons(
 /// @param[in] predicted_paths polygons of the dynamic objects' predicted paths
 /// @param[in] params expansion parameters
 /// @return expansion polygons
-multipolygon_t createExpansionLaneletPolygons(
+multi_polygon_t createExpansionLaneletPolygons(
   const lanelet::ConstLanelets & path_lanes, const route_handler::RouteHandler & route_handler,
-  const multipolygon_t & path_footprints, const multipolygon_t & predicted_paths,
+  const multi_polygon_t & path_footprints, const multi_polygon_t & predicted_paths,
   const DrivableAreaExpansionParameters & params);
 }  // namespace drivable_area_expansion
 

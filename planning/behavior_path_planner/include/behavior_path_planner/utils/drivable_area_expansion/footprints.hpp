@@ -55,7 +55,7 @@ polygon_t createFootprint(const geometry_msgs::msg::Pose & pose, const polygon_t
 /// @param [in] objects objects from which to create polygons
 /// @param[in] params expansion parameters containing extra offsets to add to the dynamic objects
 /// @return footprint polygons of the object's predicted paths
-multipolygon_t createObjectFootprints(
+multi_polygon_t createObjectFootprints(
   const autoware_auto_perception_msgs::msg::PredictedObjects & objects,
   const DrivableAreaExpansionParameters & params);
 
@@ -63,7 +63,7 @@ multipolygon_t createObjectFootprints(
 /// @param[in] path the path for which to create a footprint
 /// @param[in] params expansion parameters defining how to create the footprint
 /// @return footprint polygons of the path
-multipolygon_t createPathFootprints(
+multi_polygon_t createPathFootprints(
   const PathWithLaneId & path, const DrivableAreaExpansionParameters & params);
 }  // namespace drivable_area_expansion
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__DRIVABLE_AREA_EXPANSION__FOOTPRINTS_HPP_

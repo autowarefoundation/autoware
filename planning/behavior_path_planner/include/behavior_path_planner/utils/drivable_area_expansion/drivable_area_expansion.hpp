@@ -40,7 +40,7 @@ void expandDrivableArea(
 /// @param[in] expansion_polygons polygons to add to the drivable area
 /// @return expanded drivable area polygon
 polygon_t createExpandedDrivableAreaPolygon(
-  const PathWithLaneId & path, const multipolygon_t & expansion_polygons);
+  const PathWithLaneId & path, const multi_polygon_t & expansion_polygons);
 
 /// @brief Update the drivable area of the given path with the given polygon
 /// @details this function splits the polygon into a left and right bound and sets it in the path

@@ -26,10 +26,10 @@
 
 namespace drivable_area_expansion
 {
-multilinestring_t extractUncrossableLines(
+multi_linestring_t extractUncrossableLines(
   const lanelet::LaneletMap & lanelet_map, const std::vector<std::string> & uncrossable_types)
 {
-  multilinestring_t lines;
+  multi_linestring_t lines;
   linestring_t line;
   for (const auto & ls : lanelet_map.lineStringLayer) {
     if (hasTypes(ls, uncrossable_types)) {
