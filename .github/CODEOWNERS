@@ -79,6 +79,7 @@ launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp
 launch/tier4_simulator_launch/** keisuke.shima@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 launch/tier4_system_launch/** akihiro.sakurai@tier4.jp fumihito.ito@tier4.jp
 launch/tier4_vehicle_launch/** yukihiro.saito@tier4.jp
+localization/ar_tag_based_localizer/** masahiro.sakamoto@tier4.jp shintaro.sakoda@tier4.jp
 localization/ekf_localizer/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp takamasa.horibe@tier4.jp takeshi.ishita@tier4.jp yamato.ando@tier4.jp
 localization/gyro_odometer/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
 localization/initial_pose_button_panel/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
@@ -95,6 +96,7 @@ localization/yabloc/yabloc_particle_filter/** kento.yabuuchi.2@tier4.jp masahiro
 localization/yabloc/yabloc_pose_initializer/** kento.yabuuchi.2@tier4.jp masahiro.sakamoto@tier4.jp
 map/map_height_fitter/** isamu.takagi@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
 map/map_loader/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp ryohsuke.mitsudome@tier4.jp ryu.yamamoto@tier4.jp
+map/map_projection_loader/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
 map/map_tf_generator/** azumi.suzuki@tier4.jp
 map/util/lanelet2_map_preprocessor/** ryohsuke.mitsudome@tier4.jp
 perception/bytetrack/** manato.hirabayashi@tier4.jp
