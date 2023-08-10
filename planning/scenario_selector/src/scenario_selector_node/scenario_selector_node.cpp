@@ -197,8 +197,13 @@ void ScenarioSelectorNode::onMap(
 void ScenarioSelectorNode::onRoute(
   const autoware_planning_msgs::msg::LaneletRoute::ConstSharedPtr msg)
 {
+  // When the route id is the same (e.g. reporting with modified goal) keep the current scenario.
+  // Otherwise, reset the scenario.
+  if (!route_handler_ || route_handler_->getRouteUuid() != msg->uuid) {
+    current_scenario_ = tier4_planning_msgs::msg::Scenario::EMPTY;
+  }
+
   route_ = msg;
-  current_scenario_ = tier4_planning_msgs::msg::Scenario::EMPTY;
 }
 
 void ScenarioSelectorNode::onOdom(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
