@@ -622,7 +622,7 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     return;
   }
 
-  // insertPrepareVelocity(path);
+  insertPrepareVelocity(path);
 
   switch (data.state) {
     case AvoidanceState::NOT_AVOID: {
