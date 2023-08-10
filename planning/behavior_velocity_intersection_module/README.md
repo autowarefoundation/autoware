@@ -8,7 +8,7 @@ The _intersection_ module is responsible for safely going through urban intersec
 2. recognizing the occluded area in the intersection
 3. reacting to arrow signals of associated traffic lights
 
-The module is desinged to be agnositc to left-hand/right-hand traffic rules and works on crossroads, T-shape junctions, etc.
+The module is designed to be agnostic to left-hand/right-hand traffic rules and works on crossroads, T-shape junctions, etc.
 
 ![topology](./docs/intersection-topology.drawio.svg)
 
@@ -26,7 +26,7 @@ This module is activated when the path contains the lanes with `turn_direction` 
 
 The `Attention Area` in the intersection are defined as the set of lanes that are conflicting with ego vehicle's path and their preceding lanes up to `attention_area_length` meters. `RightOfWay` tag is used to rule out the lanes that each lane has priority given the traffic light relation and `turn_direction` priority.
 
-`Intersection Area`, which is supposed to be defined on the HDMap, is an area convering the entire intersection.
+`Intersection Area`, which is supposed to be defined on the HDMap, is an area converting the entire intersection.
 
 ![attention_area](./docs/intersection-attention.drawio.svg)
 
@@ -38,7 +38,7 @@ Following table shows an example of how to assign `right_of_way` tag and set `yi
 | ------------------------------ | --------------------------------------------------------------- | ------------------------------------------------ |
 | straight                       | Highest priority of all                                         | Priority over left/right lanes of the same group |
 | left(Left hand traffic)        | Priority over the other group and right lanes of the same group | Priority over right lanes of the same group      |
-| right(Left hand traffic)       | Priority only over the other group                              | priority only over the other gruop               |
+| right(Left hand traffic)       | Priority only over the other group                              | priority only over the other group               |
 | left(Right hand traffic)       | Priority only over the other group                              | Priority only over the other group               |
 | right(Right hand traffic)      | Priority over the other group and left lanes of the same group  | priority over left lanes of the same group       |
 
@@ -108,7 +108,7 @@ To avoid a rapid braking, if deceleration and jerk more than a threshold (`behav
 | `common.path_interpolation_ds`                      | double | [m] path interpolation interval                                                                |
 | `stuck_vehicle.stuck_vehicle_detect_dist`           | double | [m] length toward from the exit of intersection for stuck vehicle detection                    |
 | `stuck_vehicle.stuck_vehicle_ignore_dist`           | double | [m] length behind the exit of intersection for stuck vehicle detection                         |
-| `stuck_vehicle.stuck_vehicle_vel_thr`               | double | [m/s] velocity threhsold for stuck vehicle detection                                           |
+| `stuck_vehicle.stuck_vehicle_vel_thr`               | double | [m/s] velocity threshold for stuck vehicle detection                                           |
 | `collision_detection.state_transit_margin_time`     | double | [m] time margin to change state                                                                |
 | `collision_detection.min_predicted_path_confidence` | double | [-] minimum confidence value of predicted path to use for collision detection                  |
 | `collision_detection.collision_start_margin_time`   | double | [s] time margin for the beginning of collision with upcoming vehicle                           |
