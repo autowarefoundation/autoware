@@ -32,8 +32,24 @@ tier4_map_msgs::msg::MapProjectorInfo load_info_from_lanelet2_map(const std::str
     throw std::runtime_error("Error occurred while loading lanelet2 map");
   }
 
+  // If the lat & lon values in all the points of lanelet2 map are all zeros,
+  // it will be interpreted as a local map.
+  // If any single point exists with non-zero lat or lon values, it will be interpreted as MGRS.
+  bool is_local = true;
+  for (const auto & point : map->pointLayer) {
+    const auto gps_point = projector.reverse(point);
+    if (gps_point.lat != 0.0 || gps_point.lon != 0.0) {
+      is_local = false;
+      break;
+    }
+  }
+
   tier4_map_msgs::msg::MapProjectorInfo msg;
-  msg.type = "MGRS";
-  msg.mgrs_grid = projector.getProjectedMGRSGrid();
+  if (is_local) {
+    msg.type = "local";
+  } else {
+    msg.type = "MGRS";
+    msg.mgrs_grid = projector.getProjectedMGRSGrid();
+  }
   return msg;
 }
