@@ -95,6 +95,11 @@ bool isDrivingSameLane(
 
   return !same_ids.empty();
 }
+
+bool isBestEffort(const std::string & policy)
+{
+  return policy == "best_effort";
+}
 }  // namespace
 
 AvoidanceModule::AvoidanceModule(
@@ -129,7 +134,7 @@ bool AvoidanceModule::isExecutionRequested() const
 bool AvoidanceModule::isExecutionReady() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionReady");
-  return avoidance_data_.safe;
+  return avoidance_data_.safe && avoidance_data_.comfortable;
 }
 
 bool AvoidanceModule::canTransitSuccessState()
@@ -448,6 +453,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * Check avoidance path safety. For each target objects and the objects in adjacent lanes,
    * check that there is a certain amount of margin in the lateral and longitudinal direction.
    */
+  data.comfortable = isComfortable(data.unapproved_new_sl);
   data.safe = isSafePath(data.candidate_path, debug);
 }
 
@@ -616,7 +622,7 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     return;
   }
 
-  insertPrepareVelocity(path);
+  // insertPrepareVelocity(path);
 
   switch (data.state) {
     case AvoidanceState::NOT_AVOID: {
@@ -624,20 +630,20 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     }
     case AvoidanceState::YIELD: {
       insertYieldVelocity(path);
-      insertWaitPoint(parameters_->use_constraints_for_decel, path);
+      insertWaitPoint(isBestEffort(parameters_->policy_deceleration), path);
       removeRegisteredShiftLines();
       break;
     }
     case AvoidanceState::AVOID_PATH_NOT_READY: {
-      insertWaitPoint(parameters_->use_constraints_for_decel, path);
+      insertWaitPoint(isBestEffort(parameters_->policy_deceleration), path);
       break;
     }
     case AvoidanceState::AVOID_PATH_READY: {
-      insertWaitPoint(parameters_->use_constraints_for_decel, path);
+      insertWaitPoint(isBestEffort(parameters_->policy_deceleration), path);
       break;
     }
     case AvoidanceState::AVOID_EXECUTE: {
-      insertStopPoint(parameters_->use_constraints_for_decel, path);
+      insertStopPoint(isBestEffort(parameters_->policy_deceleration), path);
       break;
     }
     default:
@@ -835,6 +841,10 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
     const auto avoiding_shift = desire_shift_length - current_ego_shift;
     const auto nominal_avoid_distance = helper_.getMaxAvoidanceDistance(avoiding_shift);
 
+    if (!isBestEffort(parameters_->policy_lateral_margin)) {
+      return desire_shift_length;
+    }
+
     // ego already has enough positive shift.
     const auto has_enough_positive_shift = avoiding_shift < -1e-3 && desire_shift_length > 1e-3;
     if (is_object_on_right && has_enough_positive_shift) {
@@ -844,6 +854,11 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
     // ego already has enough negative shift.
     const auto has_enough_negative_shift = avoiding_shift > 1e-3 && desire_shift_length < -1e-3;
     if (!is_object_on_right && has_enough_negative_shift) {
+      return desire_shift_length;
+    }
+
+    // don't relax shift length since it can stop in front of the object.
+    if (object.is_stoppable && !parameters_->use_shorten_margin_immediately) {
       return desire_shift_length;
     }
 
@@ -883,7 +898,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
     }
 
     // avoidance distance is not enough. unavoidable.
-    if (!parameters_->use_constraints_for_decel) {
+    if (!isBestEffort(parameters_->policy_deceleration)) {
       object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
       return boost::none;
     }
@@ -2369,13 +2384,6 @@ AvoidLineArray AvoidanceModule::findNewShiftLine(const AvoidLineArray & candidat
     return subsequent;
   };
 
-  // check jerk limit.
-  const auto is_large_jerk = [this](const auto & s) {
-    const auto jerk = PathShifter::calcJerkFromLatLonDistance(
-      s.getRelativeLength(), s.getRelativeLongitudinal(), helper_.getAvoidanceEgoSpeed());
-    return jerk > helper_.getLateralMaxJerkLimit();
-  };
-
   // check ignore or not.
   const auto is_ignore_shift = [this](const auto & s) {
     return std::abs(helper_.getRelativeShiftToPath(s)) < parameters_->lateral_execution_threshold;
@@ -2392,10 +2400,6 @@ AvoidLineArray AvoidanceModule::findNewShiftLine(const AvoidLineArray & candidat
     }
 
     if (!is_ignore_shift(candidate)) {
-      if (is_large_jerk(candidate)) {
-        break;
-      }
-
       return get_subsequent_shift(i);
     }
   }

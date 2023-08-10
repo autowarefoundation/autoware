@@ -480,6 +480,15 @@ private:
    */
   bool isSafePath(ShiftedPath & shifted_path, DebugData & debug) const;
 
+  bool isComfortable(const AvoidLineArray & shift_lines) const
+  {
+    return std::all_of(shift_lines.begin(), shift_lines.end(), [&](const auto & line) {
+      return PathShifter::calcJerkFromLatLonDistance(
+               line.getRelativeLength(), line.getRelativeLongitudinal(),
+               helper_.getAvoidanceEgoSpeed()) < helper_.getLateralMaxJerkLimit();
+    });
+  }
+
   // post process
 
   /**

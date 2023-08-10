@@ -725,7 +725,7 @@ void fillObjectStoppableJudge(
   ObjectData & object_data, const ObjectDataArray & registered_objects,
   const double feasible_stop_distance, const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  if (!parameters->use_constraints_for_decel) {
+  if (parameters->policy_deceleration == "reliable") {
     object_data.is_stoppable = true;
     return;
   }

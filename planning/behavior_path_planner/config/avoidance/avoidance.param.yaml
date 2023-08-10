@@ -175,16 +175,29 @@
         max_distance: 20.0                              # [m]
         stop_buffer: 1.0                                # [m]
 
-      constraints:
-        # vehicle slows down under longitudinal constraints
-        use_constraints_for_decel: false                # [-]
+      policy:
+        # policy for vehicle slow down behavior. select "best_effort" or "reliable".
+        # "best_effort": slow down deceleration & jerk are limited by constraints.
+        #                but there is a possibility that the vehicle can't stop in front of the vehicle.
+        # "reliable": insert stop or slow down point with ignoring decel/jerk constraints.
+        #             make it possible to increase chance to avoid but uncomfortable deceleration maybe happen.
+        deceleration: "best_effort"                     # [-]
+        # policy for avoidance lateral margin. select "best_effort" or "reliable".
+        # "best_effort": output avoidance path with shorten lateral margin when there is no enough longitudinal
+        #                margin to avoid.
+        # "reliable": module output avoidance path with safe (rtc cooperate) state only when the vehicle can avoid
+        #             with expected lateral margin.
+        lateral_margin: "best_effort"                   # [-]
+        # if true, module doesn't wait deceleration and outputs avoidance path by best effort margin.
+        use_shorten_margin_immediately: true            # [-]
 
+      constraints:
         # lateral constraints
         lateral:
           velocity: [1.0, 1.38, 11.1]                   # [m/s]
           max_accel_values: [0.5, 0.5, 0.5]             # [m/ss]
           min_jerk_values: [0.2, 0.2, 0.2]              # [m/sss]
-          max_jerk_values: [1.0, 1.0, 1.0]             # [m/sss]
+          max_jerk_values: [1.0, 1.0, 1.0]              # [m/sss]
 
         # longitudinal constraints
         longitudinal:
