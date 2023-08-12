@@ -25,31 +25,27 @@ StateEquationGenerator::Matrix StateEquationGenerator::calcMatrix(
 {
   time_keeper_ptr_->tic(__func__);
 
-  const size_t N_ref = ref_points.size();
   const size_t D_x = vehicle_model_ptr_->getDimX();
   const size_t D_u = vehicle_model_ptr_->getDimU();
-  const size_t D_v = D_x + D_u * (N_ref - 1);
+
+  const size_t N_ref = ref_points.size();
+  const size_t N_x = N_ref * D_x;
+  const size_t N_u = (N_ref - 1) * D_u;
 
   // matrices for whole state equation
-  Eigen::MatrixXd B = Eigen::MatrixXd::Zero(D_x * N_ref, D_v);
-  Eigen::VectorXd W = Eigen::VectorXd::Zero(D_x * N_ref);
+  Eigen::MatrixXd A = Eigen::MatrixXd::Zero(N_x, N_x);
+  Eigen::MatrixXd B = Eigen::MatrixXd::Zero(N_x, N_u);
+  Eigen::VectorXd W = Eigen::VectorXd::Zero(N_x);
 
   // matrices for one-step state equation
   Eigen::MatrixXd Ad(D_x, D_x);
   Eigen::MatrixXd Bd(D_x, D_u);
   Eigen::MatrixXd Wd(D_x, 1);
 
+  A.block(0, 0, D_x, D_x) = Eigen::MatrixXd::Identity(D_x, D_x);
+
   // calculate one-step state equation considering kinematics N_ref times
-  for (size_t i = 0; i < N_ref; ++i) {
-    if (i == 0) {
-      B.block(0, 0, D_x, D_x) = Eigen::MatrixXd::Identity(D_x, D_x);
-      continue;
-    }
-
-    const int idx_x_i = i * D_x;
-    const int idx_x_i_prev = (i - 1) * D_x;
-    const int idx_u_i_prev = (i - 1) * D_u;
-
+  for (size_t i = 1; i < N_ref; ++i) {
     // get discrete kinematics matrix A, B, W
     const auto & p = ref_points.at(i - 1);
 
@@ -59,24 +55,13 @@ StateEquationGenerator::Matrix StateEquationGenerator::calcMatrix(
     // p.delta_arc_length);
     vehicle_model_ptr_->calculateStateEquationMatrix(Ad, Bd, Wd, 0.0, p.delta_arc_length);
 
-    B.block(idx_x_i, 0, D_x, D_x) = Ad * B.block(idx_x_i_prev, 0, D_x, D_x);
-    B.block(idx_x_i, D_x + idx_u_i_prev, D_x, D_u) = Bd;
-
-    for (size_t j = 0; j < i - 1; ++j) {
-      size_t idx_u_j = j * D_u;
-      B.block(idx_x_i, D_x + idx_u_j, D_x, D_u) =
-        Ad * B.block(idx_x_i_prev, D_x + idx_u_j, D_x, D_u);
-    }
-
-    W.segment(idx_x_i, D_x) = Ad * W.block(idx_x_i_prev, 0, D_x, 1) + Wd;
+    A.block(i * D_x, (i - 1) * D_x, D_x, D_x) = Ad;
+    B.block(i * D_x, (i - 1) * D_u, D_x, D_u) = Bd;
+    W.segment(i * D_x, D_x) = Wd;
   }
 
-  Matrix mat;
-  mat.B = B;
-  mat.W = W;
-
   time_keeper_ptr_->toc(__func__, "        ");
-  return mat;
+  return Matrix{A, B, W};
 }
 
 Eigen::VectorXd StateEquationGenerator::predict(

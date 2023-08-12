@@ -31,6 +31,7 @@ class StateEquationGenerator
 public:
   struct Matrix
   {
+    Eigen::MatrixXd A;
     Eigen::MatrixXd B;
     Eigen::VectorXd W;
   };
