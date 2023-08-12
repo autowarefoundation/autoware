@@ -74,6 +74,7 @@ struct DynamicAvoidanceParameters
   double max_oncoming_crossing_object_angle{0.0};
 
   // drivable area generation
+  std::string polygon_generation_method{};
   double lat_offset_from_obstacle{0.0};
   double max_lat_offset_to_avoid{0.0};
   double max_time_for_lat_shift{0.0};
@@ -335,7 +336,9 @@ private:
 
   std::pair<lanelet::ConstLanelets, lanelet::ConstLanelets> getAdjacentLanes(
     const double forward_distance, const double backward_distance) const;
-  std::optional<tier4_autoware_utils::Polygon2d> calcDynamicObstaclePolygon(
+  std::optional<tier4_autoware_utils::Polygon2d> calcEgoPathBasedDynamicObstaclePolygon(
+    const DynamicAvoidanceObject & object) const;
+  std::optional<tier4_autoware_utils::Polygon2d> calcObjectPathBasedDynamicObstaclePolygon(
     const DynamicAvoidanceObject & object) const;
 
   void printIgnoreReason(const std::string & obj_uuid, const std::string & reason)

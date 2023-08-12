@@ -274,7 +274,15 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   // create obstacles to avoid (= extract from the drivable area)
   std::vector<DrivableAreaInfo::Obstacle> obstacles_for_drivable_area;
   for (const auto & object : target_objects_) {
-    const auto obstacle_poly = calcDynamicObstaclePolygon(object);
+    const auto obstacle_poly = [&]() {
+      if (parameters_->polygon_generation_method == "ego_path_base") {
+        return calcEgoPathBasedDynamicObstaclePolygon(object);
+      }
+      if (parameters_->polygon_generation_method == "object_path_base") {
+        return calcObjectPathBasedDynamicObstaclePolygon(object);
+      }
+      throw std::logic_error("The polygon_generation_method's string is invalid.");
+    }();
     if (obstacle_poly) {
       obstacles_for_drivable_area.push_back(
         {object.pose, obstacle_poly.value(), object.is_collision_left});
@@ -836,7 +844,8 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
 }
 
 // NOTE: object does not have const only to update min_bound_lat_offset.
-std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynamicObstaclePolygon(
+std::optional<tier4_autoware_utils::Polygon2d>
+DynamicAvoidanceModule::calcEgoPathBasedDynamicObstaclePolygon(
   const DynamicAvoidanceObject & object) const
 {
   if (!object.lon_offset_to_avoid || !object.lat_offset_to_avoid) {
@@ -889,6 +898,54 @@ std::optional<tier4_autoware_utils::Polygon2d> DynamicAvoidanceModule::calcDynam
   }
   std::reverse(obj_outer_bound_points.begin(), obj_outer_bound_points.end());
   for (const auto & bound_point : obj_outer_bound_points) {
+    const auto obj_poly_point = tier4_autoware_utils::Point2d(bound_point.x, bound_point.y);
+    obj_poly.outer().push_back(obj_poly_point);
+  }
+
+  boost::geometry::correct(obj_poly);
+  return obj_poly;
+}
+
+std::optional<tier4_autoware_utils::Polygon2d>
+DynamicAvoidanceModule::calcObjectPathBasedDynamicObstaclePolygon(
+  const DynamicAvoidanceObject & object) const
+{
+  const auto obj_path = *std::max_element(
+    object.predicted_paths.begin(), object.predicted_paths.end(),
+    [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
+
+  // calculate left and right bound
+  std::vector<geometry_msgs::msg::Point> obj_left_bound_points;
+  std::vector<geometry_msgs::msg::Point> obj_right_bound_points;
+  for (size_t i = 0; i < obj_path.path.size(); ++i) {
+    const double lon_offset = [&]() {
+      if (i == 0) return -object.shape.dimensions.x / 2.0 - parameters_->lat_offset_from_obstacle;
+      if (i == obj_path.path.size() - 1)
+        return object.shape.dimensions.x / 2.0 + parameters_->lat_offset_from_obstacle;
+      return 0.0;
+    }();
+
+    const auto & obj_pose = obj_path.path.at(i);
+    obj_left_bound_points.push_back(
+      tier4_autoware_utils::calcOffsetPose(
+        obj_pose, lon_offset,
+        object.shape.dimensions.y / 2.0 + parameters_->lat_offset_from_obstacle, 0.0)
+        .position);
+    obj_right_bound_points.push_back(
+      tier4_autoware_utils::calcOffsetPose(
+        obj_pose, lon_offset,
+        -object.shape.dimensions.y / 2.0 - parameters_->lat_offset_from_obstacle, 0.0)
+        .position);
+  }
+
+  // create obj_polygon from inner/outer bound points
+  tier4_autoware_utils::Polygon2d obj_poly;
+  for (const auto & bound_point : obj_right_bound_points) {
+    const auto obj_poly_point = tier4_autoware_utils::Point2d(bound_point.x, bound_point.y);
+    obj_poly.outer().push_back(obj_poly_point);
+  }
+  std::reverse(obj_left_bound_points.begin(), obj_left_bound_points.end());
+  for (const auto & bound_point : obj_left_bound_points) {
     const auto obj_poly_point = tier4_autoware_utils::Point2d(bound_point.x, bound_point.y);
     obj_poly.outer().push_back(obj_poly_point);
   }
