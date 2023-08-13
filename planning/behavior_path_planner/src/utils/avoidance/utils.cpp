@@ -855,6 +855,10 @@ void filterTargetObjects(
   using lanelet::geometry::toArcCoordinates;
   using lanelet::utils::to2D;
 
+  if (data.current_lanelets.empty()) {
+    return;
+  }
+
   const auto & rh = planner_data->route_handler;
   const auto & path_points = data.reference_path_rough.points;
   const auto & ego_pos = planner_data->self_odometry->pose.pose.position;
