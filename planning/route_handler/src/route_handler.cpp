@@ -942,6 +942,16 @@ bool RouteHandler::isBijectiveConnection(
 boost::optional<lanelet::ConstLanelet> RouteHandler::getRightLanelet(
   const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const
 {
+  // right road lanelet of shoulder lanelet
+  if (isShoulderLanelet(lanelet)) {
+    for (const auto & road_lanelet : road_lanelets_) {
+      if (lanelet::geometry::rightOf(road_lanelet, lanelet)) {
+        return road_lanelet;
+      }
+    }
+    return boost::none;
+  }
+
   // routable lane
   const auto & right_lane = routing_graph_ptr_->right(lanelet);
   if (right_lane) {
@@ -999,6 +1009,16 @@ bool RouteHandler::getLeftLaneletWithinRoute(
 boost::optional<lanelet::ConstLanelet> RouteHandler::getLeftLanelet(
   const lanelet::ConstLanelet & lanelet, const bool enable_same_root) const
 {
+  // left road lanelet of shoulder lanelet
+  if (isShoulderLanelet(lanelet)) {
+    for (const auto & road_lanelet : road_lanelets_) {
+      if (lanelet::geometry::leftOf(road_lanelet, lanelet)) {
+        return road_lanelet;
+      }
+    }
+    return boost::none;
+  }
+
   // routable lane
   const auto & left_lane = routing_graph_ptr_->left(lanelet);
   if (left_lane) {
