@@ -534,18 +534,22 @@ PathWithLaneId StartPlannerModule::generateStopPath() const
   return path;
 }
 
-lanelet::ConstLanelets StartPlannerModule::getPathLanes(const PathWithLaneId & path) const
+lanelet::ConstLanelets StartPlannerModule::getPathRoadLanes(const PathWithLaneId & path) const
 {
+  const auto & route_handler = planner_data_->route_handler;
+  const auto & lanelet_layer = route_handler->getLaneletMapPtr()->laneletLayer;
+
   std::vector<lanelet::Id> lane_ids;
   for (const auto & p : path.points) {
     for (const auto & id : p.lane_ids) {
+      if (route_handler->isShoulderLanelet(lanelet_layer.get(id))) {
+        continue;
+      }
       if (std::find(lane_ids.begin(), lane_ids.end(), id) == lane_ids.end()) {
         lane_ids.push_back(id);
       }
     }
   }
-
-  const auto & lanelet_layer = planner_data_->route_handler->getLaneletMapPtr()->laneletLayer;
 
   lanelet::ConstLanelets path_lanes;
   path_lanes.reserve(lane_ids.size());
@@ -561,7 +565,22 @@ lanelet::ConstLanelets StartPlannerModule::getPathLanes(const PathWithLaneId & p
 std::vector<DrivableLanes> StartPlannerModule::generateDrivableLanes(
   const PathWithLaneId & path) const
 {
-  return utils::generateDrivableLanesWithShoulderLanes(getPathLanes(path), status_.pull_out_lanes);
+  const auto path_road_lanes = getPathRoadLanes(path);
+
+  if (!path_road_lanes.empty()) {
+    return utils::generateDrivableLanesWithShoulderLanes(
+      getPathRoadLanes(path), status_.pull_out_lanes);
+  }
+
+  // if path_road_lanes is empty, use only pull_out_lanes as drivable lanes
+  std::vector<DrivableLanes> drivable_lanes;
+  for (const auto & lane : status_.pull_out_lanes) {
+    DrivableLanes drivable_lane;
+    drivable_lane.right_lane = lane;
+    drivable_lane.left_lane = lane;
+    drivable_lanes.push_back(drivable_lane);
+  }
+  return drivable_lanes;
 }
 
 void StartPlannerModule::updatePullOutStatus()
@@ -702,10 +721,15 @@ bool StartPlannerModule::hasFinishedPullOut() const
   const auto current_pose = planner_data_->self_odometry->pose.pose;
 
   // check that ego has passed pull out end point
-  const auto path_lanes = getPathLanes(getFullPath());
-  const auto arclength_current = lanelet::utils::getArcCoordinates(path_lanes, current_pose);
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+  const auto current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
+    /*forward_only_in_route*/ true);
+
+  const auto arclength_current = lanelet::utils::getArcCoordinates(current_lanes, current_pose);
   const auto arclength_pull_out_end =
-    lanelet::utils::getArcCoordinates(path_lanes, status_.pull_out_path.end_pose);
+    lanelet::utils::getArcCoordinates(current_lanes, status_.pull_out_path.end_pose);
 
   // offset to not finish the module before engage
   constexpr double offset = 0.1;
