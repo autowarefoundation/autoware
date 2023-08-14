@@ -186,12 +186,6 @@ boost::optional<size_t> getLeadingStaticObjectIdx(
 std::optional<lanelet::BasicPolygon2d> createPolygon(
   const lanelet::ConstLanelets & lanes, const double start_dist, const double end_dist);
 
-LaneChangeTargetObjectIndices filterObject(
-  const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes, const lanelet::ConstLanelets & target_backward_lanes,
-  const Pose & current_pose, const RouteHandler & route_handler,
-  const LaneChangeParameters & lane_change_parameters);
-
 ExtendedPredictedObject transform(
   const PredictedObject & object, const BehaviorPathPlannerParameters & common_parameters,
   const LaneChangeParameters & lane_change_parameters);
