@@ -185,7 +185,7 @@ void SideShiftModule::updateData()
     }
   }
 
-  if (current_state_ != ModuleStatus::RUNNING) {
+  if (current_state_ != ModuleStatus::RUNNING && current_state_ != ModuleStatus::IDLE) {
     return;
   }
 
