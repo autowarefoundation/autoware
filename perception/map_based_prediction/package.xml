@@ -23,6 +23,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tier4_autoware_utils</depend>
+  <depend>tier4_debug_msgs</depend>
   <depend>unique_identifier_msgs</depend>
   <depend>visualization_msgs</depend>
 

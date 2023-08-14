@@ -40,6 +40,8 @@
 namespace map_based_prediction
 {
 
+namespace
+{
 /**
  * @brief First order Low pass filtering
  *
@@ -586,6 +588,15 @@ ObjectClassification::_label_type changeLabelForPrediction(
   }
 }
 
+StringStamped createStringStamped(const rclcpp::Time & now, const double data)
+{
+  StringStamped msg;
+  msg.stamp = now;
+  msg.data = std::to_string(data);
+  return msg;
+}
+}  // namespace
+
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
 : Node("map_based_prediction", node_options), debug_accumulated_time_(0.0)
 {
@@ -649,6 +660,7 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
   pub_objects_ = this->create_publisher<PredictedObjects>("objects", rclcpp::QoS{1});
   pub_debug_markers_ =
     this->create_publisher<visualization_msgs::msg::MarkerArray>("maneuver", rclcpp::QoS{1});
+  pub_calculation_time_ = create_publisher<StringStamped>("~/debug/calculation_time", 1);
 }
 
 PredictedObjectKinematics MapBasedPredictionNode::convertToPredictedKinematics(
@@ -691,6 +703,7 @@ void MapBasedPredictionNode::mapCallback(const HADMapBin::ConstSharedPtr msg)
 
 void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPtr in_objects)
 {
+  stop_watch_.tic();
   // Guard for map pointer and frame transformation
   if (!lanelet_map_ptr_) {
     return;
@@ -869,6 +882,8 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
   // Publish Results
   pub_objects_->publish(output);
   pub_debug_markers_->publish(debug_markers);
+  const auto calculation_time_msg = createStringStamped(now(), stop_watch_.toc());
+  pub_calculation_time_->publish(calculation_time_msg);
 }
 
 PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
@@ -1076,36 +1091,45 @@ LaneletsData MapBasedPredictionNode::getCurrentLanelets(const TrackedObject & ob
     return {};
   }
 
-  LaneletsData closest_lanelets;
+  LaneletsData object_lanelets;
+  std::optional<std::pair<double, lanelet::Lanelet>> closest_lanelet{std::nullopt};
   for (const auto & lanelet : surrounding_lanelets) {
     // Check if the close lanelets meet the necessary condition for start lanelets and
-    // Check if similar lanelet is inside the closest lanelet
-    if (
-      !checkCloseLaneletCondition(lanelet, object, search_point) ||
-      isDuplicated(lanelet, closest_lanelets)) {
+    // Check if similar lanelet is inside the object lanelet
+    if (!checkCloseLaneletCondition(lanelet, object) || isDuplicated(lanelet, object_lanelets)) {
       continue;
     }
 
-    LaneletData closest_lanelet;
-    closest_lanelet.lanelet = lanelet.second;
-    closest_lanelet.probability = calculateLocalLikelihood(lanelet.second, object);
-    closest_lanelets.push_back(closest_lanelet);
+    // Memorize closest lanelet
+    // NOTE: The object may be outside the lanelet.
+    if (!closest_lanelet || lanelet.first < closest_lanelet->first) {
+      closest_lanelet = lanelet;
+    }
+
+    // Check if the obstacle is inside of this lanelet
+    constexpr double epsilon = 1e-3;
+    if (lanelet.first < epsilon) {
+      const auto object_lanelet =
+        LaneletData{lanelet.second, calculateLocalLikelihood(lanelet.second, object)};
+      object_lanelets.push_back(object_lanelet);
+    }
   }
 
-  return closest_lanelets;
+  if (!object_lanelets.empty()) {
+    return object_lanelets;
+  }
+  if (closest_lanelet) {
+    return LaneletsData{LaneletData{
+      closest_lanelet->second, calculateLocalLikelihood(closest_lanelet->second, object)}};
+  }
+  return LaneletsData{};
 }
 
 bool MapBasedPredictionNode::checkCloseLaneletCondition(
-  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
-  const lanelet::BasicPoint2d & search_point)
+  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object)
 {
   // Step1. If we only have one point in the centerline, we will ignore the lanelet
   if (lanelet.second.centerline().size() <= 1) {
-    return false;
-  }
-
-  // Step2. Check if the obstacle is inside of this lanelet
-  if (!lanelet::geometry::inside(lanelet.second, search_point)) {
     return false;
   }
 
@@ -1124,7 +1148,7 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
     }
   }
 
-  // Step3. Calculate the angle difference between the lane angle and obstacle angle
+  // Step2. Calculate the angle difference between the lane angle and obstacle angle
   const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
   const double lane_yaw = lanelet::utils::getLaneletAngle(
     lanelet.second, object.kinematics.pose_with_covariance.pose.position);
@@ -1132,7 +1156,7 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
   const double abs_norm_delta = std::fabs(normalized_delta_yaw);
 
-  // Step4. Check if the closest lanelet is valid, and add all
+  // Step3. Check if the closest lanelet is valid, and add all
   // of the lanelets that are below max_dist and max_delta_yaw
   const double object_vel = object.kinematics.twist_with_covariance.twist.linear.x;
   const bool is_yaw_reversed =
