@@ -3247,9 +3247,11 @@ std::vector<DrivableLanes> combineDrivableLanes(
   }
   // NOTE: If original_drivable_lanes_vec is shorter than new_drivable_lanes_vec, push back remained
   // new_drivable_lanes_vec.
-  updated_drivable_lanes_vec.insert(
-    updated_drivable_lanes_vec.end(), new_drivable_lanes_vec.begin() + new_drivable_lanes_idx + 1,
-    new_drivable_lanes_vec.end());
+  if (new_drivable_lanes_idx + 1 < new_drivable_lanes_vec.size()) {
+    updated_drivable_lanes_vec.insert(
+      updated_drivable_lanes_vec.end(), new_drivable_lanes_vec.begin() + new_drivable_lanes_idx + 1,
+      new_drivable_lanes_vec.end());
+  }
 
   return updated_drivable_lanes_vec;
 }
