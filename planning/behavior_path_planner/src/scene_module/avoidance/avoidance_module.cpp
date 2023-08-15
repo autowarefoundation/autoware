@@ -480,18 +480,14 @@ void AvoidanceModule::fillEgoStatus(
 
   const auto can_yield_maneuver = canYieldManeuver(data);
 
-  const size_t ego_seg_idx =
-    planner_data_->findEgoSegmentIndex(helper_.getPreviousSplineShiftPath().path.points);
-  const auto offset = std::abs(motion_utils::calcLateralOffset(
-    helper_.getPreviousSplineShiftPath().path.points, getEgoPosition(), ego_seg_idx));
-
-  // don't output new candidate path if the offset between the ego and previous output path is
-  // larger than threshold.
-  // TODO(Satoshi OTA): remove this workaround
-  if (offset > parameters_->safety_check_ego_offset) {
+  /**
+   * If the output path is locked by outside of this module, don't update output path.
+   */
+  if (isOutputPathLocked()) {
     data.safe_new_sl.clear();
     data.candidate_path = helper_.getPreviousSplineShiftPath();
-    RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 500, "unsafe. canceling candidate path...");
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 500, "this module is locked now. keep current path.");
     return;
   }
 
@@ -2172,8 +2168,6 @@ BehaviorModuleOutput AvoidanceModule::plan()
   generateExtendedDrivableArea(output);
   setDrivableLanes(output.drivable_area_info.drivable_lanes);
 
-  // updateRegisteredRTCStatus(spline_shift_path.path);
-
   return output;
 }
 
@@ -2515,8 +2509,6 @@ void AvoidanceModule::initVariables()
 
 void AvoidanceModule::initRTCStatus()
 {
-  removeRTCStatus();
-  clearWaitingApproval();
   left_shift_array_.clear();
   right_shift_array_.clear();
   uuid_map_.at("left") = generateUUID();

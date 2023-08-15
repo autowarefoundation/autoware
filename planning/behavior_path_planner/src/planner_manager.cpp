@@ -129,6 +129,9 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
     return BehaviorModuleOutput{};
   }();
 
+  std::for_each(
+    manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
+
   generateCombinedDrivableArea(result_output, data);
 
   return result_output;
@@ -449,6 +452,16 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
   BehaviorModuleOutput output = getReferencePath(data);
   results.emplace("root", output);
 
+  if (approved_module_ptrs_.empty()) {
+    return output;
+  }
+
+  // lock approved modules besides last one
+  std::for_each(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [&](const auto & m) {
+    m->lockOutputPath();
+  });
+  approved_module_ptrs_.back()->unlockOutputPath();
+
   /**
    * execute all approved modules.
    */
@@ -468,21 +481,22 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     const auto waiting_approval_modules = [](const auto & m) { return m->isWaitingApproval(); };
 
     const auto itr = std::find_if(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(), waiting_approval_modules);
+      approved_module_ptrs_.rbegin(), approved_module_ptrs_.rend(), waiting_approval_modules);
 
-    if (itr != approved_module_ptrs_.end()) {
-      clearCandidateModules();
-      candidate_module_ptrs_.push_back(*itr);
+    if (itr != approved_module_ptrs_.rend()) {
+      const auto is_last_module = std::distance(approved_module_ptrs_.rbegin(), itr) == 0;
+      if (is_last_module) {
+        clearCandidateModules();
+        candidate_module_ptrs_.push_back(*itr);
 
-      std::for_each(
-        std::next(itr), approved_module_ptrs_.end(), [this](auto & m) { deleteExpiredModules(m); });
+        debug_info_.emplace_back(*itr, Action::MOVE, "Back To Waiting Approval");
+
+        approved_module_ptrs_.pop_back();
+      }
+
       std::for_each(
         manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
-
-      debug_info_.emplace_back(*itr, Action::MOVE, "Back To Waiting Approval");
     }
-
-    approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
   }
 
   /**

@@ -126,10 +126,10 @@ public:
    */
   void reset()
   {
+    std::for_each(manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->reset(); });
     approved_module_ptrs_.clear();
     candidate_module_ptrs_.clear();
     root_lanelet_ = boost::none;
-    std::for_each(manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->reset(); });
     resetProcessingTime();
   }
 

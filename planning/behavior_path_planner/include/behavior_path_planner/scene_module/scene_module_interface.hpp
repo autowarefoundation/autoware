@@ -161,7 +161,9 @@ public:
 
     clearWaitingApproval();
     removeRTCStatus();
+    publishRTCStatus();
     unlockNewModuleLaunch();
+    unlockOutputPath();
     steering_factor_interface_ptr_->clearSteeringFactors();
 
     stop_reason_ = StopReason();
@@ -219,6 +221,10 @@ public:
    * @brief set planner data
    */
   virtual void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
+
+  void lockOutputPath() { is_locked_output_path_ = true; }
+
+  void unlockOutputPath() { is_locked_output_path_ = false; }
 
   bool isWaitingApproval() const
   {
@@ -339,6 +345,8 @@ private:
   bool is_simultaneously_executable_as_candidate_module_{false};
 
   bool is_locked_new_module_launch_{false};
+
+  bool is_locked_output_path_{false};
 
 protected:
   /**
@@ -506,6 +514,8 @@ protected:
   }
 
   BehaviorModuleOutput getPreviousModuleOutput() const { return previous_module_output_; }
+
+  bool isOutputPathLocked() const { return is_locked_output_path_; }
 
   void lockNewModuleLaunch() { is_locked_new_module_launch_ = true; }
 
