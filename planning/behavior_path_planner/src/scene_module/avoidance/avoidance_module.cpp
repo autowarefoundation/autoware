@@ -2460,6 +2460,10 @@ void AvoidanceModule::updateData()
 
   debug_data_ = DebugData();
   avoidance_data_ = calcAvoidancePlanningData(debug_data_);
+  if (avoidance_data_.reference_path.points.empty()) {
+    // an empty path will kill further processing
+    return;
+  }
 
   utils::avoidance::updateRegisteredObject(
     registered_objects_, avoidance_data_.target_objects, parameters_);
