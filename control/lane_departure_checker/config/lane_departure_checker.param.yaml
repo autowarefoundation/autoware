@@ -7,6 +7,7 @@
     include_left_lanes: false
     include_opposite_lanes: false
     include_conflicting_lanes: false
+    road_border_departure_checker: false
 
     # Core
     footprint_margin_scale: 1.0

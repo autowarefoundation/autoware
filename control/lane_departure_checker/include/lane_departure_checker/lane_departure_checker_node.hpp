@@ -51,6 +51,7 @@ struct NodeParam
   bool include_left_lanes;
   bool include_opposite_lanes;
   bool include_conflicting_lanes;
+  bool road_border_departure_checker;
 };
 
 class LaneDepartureCheckerNode : public rclcpp::Node

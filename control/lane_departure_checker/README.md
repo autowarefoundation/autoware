@@ -8,6 +8,7 @@ This package includes the following features:
 
 - **Lane Departure**: Check if ego vehicle is going to be out of lane boundaries based on output from control module (predicted trajectory).
 - **Trajectory Deviation**: Check if ego vehicle's pose does not deviate from the trajectory. Checking lateral, longitudinal and yaw deviation.
+- **Road Border Departure**: Check if ego vehicle's footprint, generated from the control's output, extends beyond the road border.
 
 ## Inner-workings / Algorithms
 
@@ -62,10 +63,15 @@ This package includes the following features:
 
 ### Node Parameters
 
-| Name              | Type   | Description                   | Default value |
-| :---------------- | :----- | :---------------------------- | :------------ |
-| update_rate       | double | Frequency for publishing [Hz] | 10.0          |
-| visualize_lanelet | bool   | Flag for visualizing lanelet  | False         |
+| Name                          | Type   | Description                                                   | Default value |
+| :---------------------------- | :----- | :------------------------------------------------------------ | :------------ |
+| update_rate                   | double | Frequency for publishing [Hz]                                 | 10.0          |
+| visualize_lanelet             | bool   | Flag for visualizing lanelet                                  | False         |
+| include_right_lanes           | bool   | Flag for including right lanelet in borders                   | False         |
+| include_left_lanes            | bool   | Flag for including left lanelet in borders                    | False         |
+| include_opposite_lanes        | bool   | Flag for including opposite lanelet in borders                | False         |
+| include_conflicting_lanes     | bool   | Flag for including conflicting lanelet in borders             | False         |
+| road_border_departure_checker | bool   | Flag for checking if the vehicle will departs the road border | False         |
 
 ### Core Parameters
 

@@ -132,6 +132,8 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
   node_param_.include_left_lanes = declare_parameter<bool>("include_left_lanes");
   node_param_.include_opposite_lanes = declare_parameter<bool>("include_opposite_lanes");
   node_param_.include_conflicting_lanes = declare_parameter<bool>("include_conflicting_lanes");
+  node_param_.road_border_departure_checker =
+    declare_parameter<bool>("road_border_departure_checker");
 
   // Vehicle Info
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
@@ -415,6 +417,11 @@ void LaneDepartureCheckerNode::checkLaneDeparture(
   if (output_.is_out_of_lane) {
     level = DiagStatus::ERROR;
     msg = "vehicle is out of lane";
+  }
+
+  if (output_.will_cross_road_border && node_param_.road_border_departure_checker) {
+    level = DiagStatus::ERROR;
+    msg = "vehicle will cross road border";
   }
 
   stat.summary(level, msg);
