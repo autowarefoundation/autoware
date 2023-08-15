@@ -3,6 +3,7 @@
     "**/perception/**",
     "**/planning/**",
     "**/sensing/**",
+    "**/control/**",
     "perception/bytetrack/lib/**"
   ],
   "ignoreRegExpList": [],
