@@ -23,6 +23,37 @@ from PyQt5.QtWidgets import QSlider
 from PyQt5.QtWidgets import QWidget
 
 
+# With QSlider, the slider's handle cannot be captured if the mouse cursor is not the handle position when pressing the mouse.
+class QJumpSlider(QSlider):
+    def __init__(self, slider_direction, max_value):
+        super(self.__class__, self).__init__(slider_direction)
+
+        self.max_value = max_value
+        self.is_mouse_pressed = False
+
+    def mouse_to_value(self, event):
+        x = event.pos().x()
+        return int(self.max_value * x / self.width())
+
+    def mousePressEvent(self, event):
+        super(self.__class__, self).mousePressEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            self.setValue(self.mouse_to_value(event))
+            self.is_mouse_pressed = True
+
+    def mouseMoveEvent(self, event):
+        super(self.__class__, self).mouseMoveEvent(event)
+        if self.is_mouse_pressed:
+            self.setValue(self.mouse_to_value(event))
+
+    def mouseReleaseEvent(self, event):
+        super(self.__class__, self).mouseReleaseEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            self.is_mouse_pressed = False
+
+
 class TimeManagerWidget(QMainWindow):
     def __init__(self, start_timestamp, end_timestamp):
         super(self.__class__, self).__init__()
@@ -60,7 +91,7 @@ class TimeManagerWidget(QMainWindow):
         self.grid_layout.addWidget(self.button, 1, 0, 1, -1)
 
         # slider
-        self.slider = QSlider(QtCore.Qt.Horizontal)
+        self.slider = QJumpSlider(QtCore.Qt.Horizontal, self.max_value)
         self.slider.setMinimum(0)
         self.slider.setMaximum(self.max_value)
         self.slider.setValue(0)
@@ -77,5 +108,5 @@ class TimeManagerWidget(QMainWindow):
 
     def value_to_timestamp(self, value):
         return self.start_timestamp + self.slider.value() / self.max_value * (
-            self.end_value - self.start_value
+            self.end_timestamp - self.start_timestamp
         )

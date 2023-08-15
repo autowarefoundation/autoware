@@ -32,7 +32,7 @@ class PerceptionReproducer(PerceptionReplayerCommon):
         self.prev_traffic_signals_msg = None
 
         # start timer callback
-        self.timer = self.create_timer(0.01, self.on_timer)
+        self.timer = self.create_timer(0.1, self.on_timer)
         print("Start timer callback")
 
     def on_timer(self):
