@@ -118,6 +118,7 @@ public:
   void onParam(const std::vector<rclcpp::Parameter> & parameters);
 
   double getTrajectoryLength() const;
+  double getDeltaArcLength() const;
   int getNumberOfPoints() const;
 
 private:

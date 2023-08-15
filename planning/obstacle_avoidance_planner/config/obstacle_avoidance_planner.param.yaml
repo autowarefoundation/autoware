@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     option:
-      enable_skip_optimization: false                              # skip model predictive trajectory
+      enable_skip_optimization: false                              # skip elastic band and model predictive trajectory
       enable_reset_prev_optimization: false                        # If true, optimization has no fix constraint to the previous result.
       enable_outside_drivable_area_stop: true                      # stop if the ego's trajectory footprint is outside the drivable area
       use_footprint_polygon_for_outside_drivable_area_check: false # If false, only the footprint's corner points are considered.
@@ -9,6 +9,7 @@
       debug:
         # flag to publish
         enable_pub_debug_marker: true           # publish debug marker
+        enable_pub_extra_debug_marker: false    # publish extra debug marker
 
         # flag to show
         enable_debug_info: false
@@ -19,7 +20,7 @@
       output_delta_arc_length: 0.5     #  delta arc length for output trajectory [m]
       output_backward_traj_length: 5.0  # backward length for backward trajectory from base_link [m]
 
-      vehicle_stop_margin_outside_drivable_area: 1.5 # vehicle stop margin to let the vehicle stop before the calculated stop point if it is calculated outside the drivable area [m] .
+      vehicle_stop_margin_outside_drivable_area: 0.0 # vehicle stop margin to let the vehicle stop before the calculated stop point if it is calculated outside the drivable area [m] .
                                                      # This margin will be realized with delta_arc_length_for_mpt_points m precision.
 
     # replanning & trimming trajectory param outside algorithm
@@ -77,7 +78,7 @@
 
       # avoidance
       avoidance:
-        max_bound_fixing_time: 3.0 # [s]
+        max_bound_fixing_time: 1.0 # [s]
         max_longitudinal_margin_for_bound_violation: 1.0 # [m]
         max_avoidance_cost: 0.5                          # [m]
         avoidance_cost_margin: 0.0                       # [m]

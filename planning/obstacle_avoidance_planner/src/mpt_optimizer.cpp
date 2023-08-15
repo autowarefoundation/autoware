@@ -687,6 +687,8 @@ void MPTOptimizer::updateDeltaArcLength(std::vector<ReferencePoint> & ref_points
 
 void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) const
 {
+  time_keeper_ptr_->tic(__func__);
+
   // alpha
   for (size_t i = 0; i < ref_points.size(); ++i) {
     const auto front_wheel_pos =
@@ -774,6 +776,8 @@ void MPTOptimizer::updateExtraPoints(std::vector<ReferencePoint> & ref_points) c
       }
     }
   }
+
+  time_keeper_ptr_->toc(__func__, "          ");
 }
 
 void MPTOptimizer::updateBounds(
@@ -1273,7 +1277,7 @@ MPTOptimizer::ObjectiveMatrix MPTOptimizer::calcObjectiveMatrix(
   obj_matrix.hessian = H;
   obj_matrix.gradient = g;
 
-  time_keeper_ptr_->toc(__func__, "          ");
+  time_keeper_ptr_->toc(__func__, "        ");
   return obj_matrix;
 }
 
@@ -1325,6 +1329,7 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
     A_rows += N_u;
   }
 
+  // NOTE: The following takes 1 [ms]
   Eigen::MatrixXd A = Eigen::MatrixXd::Zero(A_rows, N_v);
   Eigen::VectorXd lb = Eigen::VectorXd::Constant(A_rows, -autoware::common::osqp::INF);
   Eigen::VectorXd ub = Eigen::VectorXd::Constant(A_rows, autoware::common::osqp::INF);
@@ -1437,13 +1442,8 @@ MPTOptimizer::ConstraintMatrix MPTOptimizer::calcConstraintMatrix(
     A_rows_end += N_u;
   }
 
-  ConstraintMatrix constraint_matrix;
-  constraint_matrix.linear = A;
-  constraint_matrix.lower_bound = lb;
-  constraint_matrix.upper_bound = ub;
-
-  time_keeper_ptr_->toc(__func__, "          ");
-  return constraint_matrix;
+  time_keeper_ptr_->toc(__func__, "        ");
+  return ConstraintMatrix{A, lb, ub};
 }
 
 void MPTOptimizer::addSteerWeightR(
@@ -1700,6 +1700,8 @@ void MPTOptimizer::publishDebugTrajectories(
   const std_msgs::msg::Header & header, const std::vector<ReferencePoint> & ref_points,
   const std::vector<TrajectoryPoint> & mpt_traj_points) const
 {
+  time_keeper_ptr_->tic(__func__);
+
   // reference points
   const auto ref_traj = trajectory_utils::createTrajectory(
     header, trajectory_utils::convertToTrajectoryPoints(ref_points));
@@ -1713,6 +1715,8 @@ void MPTOptimizer::publishDebugTrajectories(
   // mpt points
   const auto mpt_traj = trajectory_utils::createTrajectory(header, mpt_traj_points);
   debug_mpt_traj_pub_->publish(mpt_traj);
+
+  time_keeper_ptr_->toc(__func__, "        ");
 }
 
 std::vector<TrajectoryPoint> MPTOptimizer::extractFixedPoints(
@@ -1736,6 +1740,11 @@ double MPTOptimizer::getTrajectoryLength() const
   const double forward_traj_length = mpt_param_.num_points * mpt_param_.delta_arc_length;
   const double backward_traj_length = traj_param_.output_backward_traj_length;
   return forward_traj_length + backward_traj_length;
+}
+
+double MPTOptimizer::getDeltaArcLength() const
+{
+  return mpt_param_.delta_arc_length;
 }
 
 int MPTOptimizer::getNumberOfPoints() const

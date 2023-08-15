@@ -100,7 +100,7 @@ if __name__ == "__main__":
         "-f",
         "--functions",
         type=str,
-        default="onPath, optimizeTrajectory, publishDebugMarkerOfOptimization, solveOsqp",
+        default="onPath, calcReferencePoints, calcOptimizedSteerAngles, publishDebugMarkerOfOptimization",
     )
     parser.add_argument(
         "-d",

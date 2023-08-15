@@ -61,6 +61,7 @@ protected:  // for the static_centerline_optimizer package
 
   // flags for some functions
   bool enable_pub_debug_marker_;
+  bool enable_pub_extra_debug_marker_;
   bool enable_debug_info_;
   bool enable_outside_drivable_area_stop_;
   bool enable_skip_optimization_;
