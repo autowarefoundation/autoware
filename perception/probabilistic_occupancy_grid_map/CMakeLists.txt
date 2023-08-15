@@ -60,3 +60,19 @@ ament_auto_package(
     launch
     config
 )
+
+# test
+if(BUILD_TESTING)
+  # launch_testing
+  find_package(launch_testing_ament_cmake REQUIRED)
+  add_launch_test(test/test_pointcloud_based_method.py)
+
+  # gtest
+  ament_add_gtest(test_utils
+  test/test_utils.cpp
+  )
+  target_link_libraries(test_utils
+    ${PCL_LIBRARIES}
+    ${PROJECT_NAME}_common
+  )
+endif()

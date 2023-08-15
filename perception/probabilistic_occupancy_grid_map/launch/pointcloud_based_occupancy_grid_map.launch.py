@@ -116,7 +116,7 @@ def generate_launch_description():
             add_launch_arg(
                 "updater_param_file",
                 get_package_share_directory("probabilistic_occupancy_grid_map")
-                + "/config/updater.param.yaml",
+                + "/config/binary_bayes_filter_updater.param.yaml",
             ),
             set_container_executable,
             set_container_mt_executable,
