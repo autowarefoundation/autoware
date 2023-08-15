@@ -183,7 +183,8 @@ private:
 
   LaneletsData getCurrentLanelets(const TrackedObject & object);
   bool checkCloseLaneletCondition(
-    const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object);
+    const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
+    const bool check_distance = true);
   float calculateLocalLikelihood(
     const lanelet::Lanelet & current_lanelet, const TrackedObject & object) const;
   void updateObjectData(TrackedObject & object);

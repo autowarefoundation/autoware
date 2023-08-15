@@ -595,6 +595,45 @@ StringStamped createStringStamped(const rclcpp::Time & now, const double data)
   msg.data = std::to_string(data);
   return msg;
 }
+
+// NOTE: These two functions are copied from the route_handler package.
+lanelet::Lanelets getRightOppositeLanelets(
+  const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
+  const lanelet::ConstLanelet & lanelet)
+{
+  const auto opposite_candidate_lanelets =
+    lanelet_map_ptr->laneletLayer.findUsages(lanelet.rightBound().invert());
+
+  lanelet::Lanelets opposite_lanelets;
+  for (const auto & candidate_lanelet : opposite_candidate_lanelets) {
+    if (candidate_lanelet.leftBound().id() == lanelet.rightBound().id()) {
+      continue;
+    }
+
+    opposite_lanelets.push_back(candidate_lanelet);
+  }
+
+  return opposite_lanelets;
+}
+
+lanelet::Lanelets getLeftOppositeLanelets(
+  const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
+  const lanelet::ConstLanelet & lanelet)
+{
+  const auto opposite_candidate_lanelets =
+    lanelet_map_ptr->laneletLayer.findUsages(lanelet.leftBound().invert());
+
+  lanelet::Lanelets opposite_lanelets;
+  for (const auto & candidate_lanelet : opposite_candidate_lanelets) {
+    if (candidate_lanelet.rightBound().id() == lanelet.leftBound().id()) {
+      continue;
+    }
+
+    opposite_lanelets.push_back(candidate_lanelet);
+  }
+
+  return opposite_lanelets;
+}
 }  // namespace
 
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
@@ -1086,47 +1125,87 @@ LaneletsData MapBasedPredictionNode::getCurrentLanelets(const TrackedObject & ob
   std::vector<std::pair<double, lanelet::Lanelet>> surrounding_lanelets =
     lanelet::geometry::findNearest(lanelet_map_ptr_->laneletLayer, search_point, 10);
 
-  // No Closest Lanelets
-  if (surrounding_lanelets.empty()) {
-    return {};
-  }
-
-  LaneletsData object_lanelets;
-  std::optional<std::pair<double, lanelet::Lanelet>> closest_lanelet{std::nullopt};
-  for (const auto & lanelet : surrounding_lanelets) {
-    // Check if the close lanelets meet the necessary condition for start lanelets and
-    // Check if similar lanelet is inside the object lanelet
-    if (!checkCloseLaneletCondition(lanelet, object) || isDuplicated(lanelet, object_lanelets)) {
-      continue;
+  {  // Step 1. Search same directional lanelets
+    // No Closest Lanelets
+    if (surrounding_lanelets.empty()) {
+      return {};
     }
 
-    // Memorize closest lanelet
-    // NOTE: The object may be outside the lanelet.
-    if (!closest_lanelet || lanelet.first < closest_lanelet->first) {
-      closest_lanelet = lanelet;
+    LaneletsData object_lanelets;
+    std::optional<std::pair<double, lanelet::Lanelet>> closest_lanelet{std::nullopt};
+    for (const auto & lanelet : surrounding_lanelets) {
+      // Check if the close lanelets meet the necessary condition for start lanelets and
+      // Check if similar lanelet is inside the object lanelet
+      if (!checkCloseLaneletCondition(lanelet, object) || isDuplicated(lanelet, object_lanelets)) {
+        continue;
+      }
+
+      // Memorize closest lanelet
+      // NOTE: The object may be outside the lanelet.
+      if (!closest_lanelet || lanelet.first < closest_lanelet->first) {
+        closest_lanelet = lanelet;
+      }
+
+      // Check if the obstacle is inside of this lanelet
+      constexpr double epsilon = 1e-3;
+      if (lanelet.first < epsilon) {
+        const auto object_lanelet =
+          LaneletData{lanelet.second, calculateLocalLikelihood(lanelet.second, object)};
+        object_lanelets.push_back(object_lanelet);
+      }
     }
 
-    // Check if the obstacle is inside of this lanelet
-    constexpr double epsilon = 1e-3;
-    if (lanelet.first < epsilon) {
-      const auto object_lanelet =
-        LaneletData{lanelet.second, calculateLocalLikelihood(lanelet.second, object)};
-      object_lanelets.push_back(object_lanelet);
+    if (!object_lanelets.empty()) {
+      return object_lanelets;
+    }
+    if (closest_lanelet) {
+      return LaneletsData{LaneletData{
+        closest_lanelet->second, calculateLocalLikelihood(closest_lanelet->second, object)}};
     }
   }
 
-  if (!object_lanelets.empty()) {
-    return object_lanelets;
+  {  // Step 2. Search opposite directional lanelets
+    // Get opposite lanelets and calculate distance to search point.
+    std::vector<std::pair<double, lanelet::Lanelet>> surrounding_opposite_lanelets;
+    for (const auto & surrounding_lanelet : surrounding_lanelets) {
+      for (const auto & left_opposite_lanelet :
+           getLeftOppositeLanelets(lanelet_map_ptr_, surrounding_lanelet.second)) {
+        const double distance = lanelet::geometry::distance2d(left_opposite_lanelet, search_point);
+        surrounding_opposite_lanelets.push_back(std::make_pair(distance, left_opposite_lanelet));
+      }
+      for (const auto & right_opposite_lanelet :
+           getRightOppositeLanelets(lanelet_map_ptr_, surrounding_lanelet.second)) {
+        const double distance = lanelet::geometry::distance2d(right_opposite_lanelet, search_point);
+        surrounding_opposite_lanelets.push_back(std::make_pair(distance, right_opposite_lanelet));
+      }
+    }
+
+    std::optional<std::pair<double, lanelet::Lanelet>> opposite_closest_lanelet{std::nullopt};
+    for (const auto & lanelet : surrounding_opposite_lanelets) {
+      // Check if the close lanelets meet the necessary condition for start lanelets
+      // except for distance checking
+      if (!checkCloseLaneletCondition(lanelet, object, false)) {
+        continue;
+      }
+
+      // Memorize closest lanelet
+      if (!opposite_closest_lanelet || lanelet.first < opposite_closest_lanelet->first) {
+        opposite_closest_lanelet = lanelet;
+      }
+    }
+    if (opposite_closest_lanelet) {
+      return LaneletsData{LaneletData{
+        opposite_closest_lanelet->second,
+        calculateLocalLikelihood(opposite_closest_lanelet->second, object)}};
+    }
   }
-  if (closest_lanelet) {
-    return LaneletsData{LaneletData{
-      closest_lanelet->second, calculateLocalLikelihood(closest_lanelet->second, object)}};
-  }
+
   return LaneletsData{};
 }
 
 bool MapBasedPredictionNode::checkCloseLaneletCondition(
-  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object)
+  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
+  const bool check_distance)
 {
   // Step1. If we only have one point in the centerline, we will ignore the lanelet
   if (lanelet.second.centerline().size() <= 1) {
@@ -1161,13 +1240,14 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   const double object_vel = object.kinematics.twist_with_covariance.twist.linear.x;
   const bool is_yaw_reversed =
     M_PI - delta_yaw_threshold_for_searching_lanelet_ < abs_norm_delta && object_vel < 0.0;
-  if (
-    lanelet.first < dist_threshold_for_searching_lanelet_ &&
-    (is_yaw_reversed || abs_norm_delta < delta_yaw_threshold_for_searching_lanelet_)) {
-    return true;
+  if (check_distance && dist_threshold_for_searching_lanelet_ < lanelet.first) {
+    return false;
+  }
+  if (!is_yaw_reversed && delta_yaw_threshold_for_searching_lanelet_ < abs_norm_delta) {
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 float MapBasedPredictionNode::calculateLocalLikelihood(
