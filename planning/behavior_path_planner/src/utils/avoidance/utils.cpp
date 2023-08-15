@@ -992,18 +992,27 @@ void filterTargetObjects(
 
     // calculate avoid_margin dynamically
     // NOTE: This calculation must be after calculating to_road_shoulder_distance.
-    const double max_avoid_margin = object_parameter.safety_buffer_lateral * o.distance_factor +
-                                    object_parameter.avoid_margin_lateral + 0.5 * vehicle_width;
-    const double min_safety_lateral_distance =
-      object_parameter.safety_buffer_lateral + 0.5 * vehicle_width;
-    const auto max_allowable_lateral_distance =
-      o.to_road_shoulder_distance - parameters->road_shoulder_safety_margin - 0.5 * vehicle_width;
+    const auto max_avoid_margin = object_parameter.safety_buffer_lateral * o.distance_factor +
+                                  object_parameter.avoid_margin_lateral + 0.5 * vehicle_width;
+    const auto min_avoid_margin = object_parameter.safety_buffer_lateral + 0.5 * vehicle_width;
+    const auto soft_lateral_distance_limit =
+      o.to_road_shoulder_distance - parameters->soft_road_shoulder_margin - 0.5 * vehicle_width;
+    const auto hard_lateral_distance_limit =
+      o.to_road_shoulder_distance - parameters->hard_road_shoulder_margin - 0.5 * vehicle_width;
 
     const auto avoid_margin = [&]() -> boost::optional<double> {
-      if (max_allowable_lateral_distance < min_safety_lateral_distance) {
+      // Step1. check avoidable or not.
+      if (hard_lateral_distance_limit < min_avoid_margin) {
         return boost::none;
       }
-      return std::min(max_allowable_lateral_distance, max_avoid_margin);
+
+      // Step2. check if it should expand road shoulder margin.
+      if (soft_lateral_distance_limit < min_avoid_margin) {
+        return min_avoid_margin;
+      }
+
+      // Step3. nominal case. avoid margin is limited by soft constraint.
+      return std::min(soft_lateral_distance_limit, max_avoid_margin);
     }();
 
     if (!!avoid_margin) {

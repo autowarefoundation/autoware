@@ -154,7 +154,8 @@
           lateral_execution_threshold: 0.499            # [m]
           lateral_small_shift_threshold: 0.101          # [m]
           lateral_avoid_check_threshold: 0.1            # [m]
-          road_shoulder_safety_margin: 0.3              # [m]
+          soft_road_shoulder_margin: 0.8                # [m]
+          hard_road_shoulder_margin: 0.3                # [m]
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
         # avoidance distance parameters

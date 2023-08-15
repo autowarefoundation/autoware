@@ -157,7 +157,8 @@ AvoidanceModuleManager::AvoidanceModuleManager(
   // avoidance maneuver (lateral)
   {
     std::string ns = "avoidance.avoidance.lateral.";
-    p.road_shoulder_safety_margin = get_parameter<double>(node, ns + "road_shoulder_safety_margin");
+    p.soft_road_shoulder_margin = get_parameter<double>(node, ns + "soft_road_shoulder_margin");
+    p.hard_road_shoulder_margin = get_parameter<double>(node, ns + "hard_road_shoulder_margin");
     p.lateral_execution_threshold = get_parameter<double>(node, ns + "lateral_execution_threshold");
     p.lateral_small_shift_threshold =
       get_parameter<double>(node, ns + "lateral_small_shift_threshold");
@@ -316,8 +317,8 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
       parameters, ns + "lateral_small_shift_threshold", p->lateral_small_shift_threshold);
     updateParam<double>(
       parameters, ns + "lateral_avoid_check_threshold", p->lateral_avoid_check_threshold);
-    updateParam<double>(
-      parameters, ns + "road_shoulder_safety_margin", p->road_shoulder_safety_margin);
+    updateParam<double>(parameters, ns + "soft_road_shoulder_margin", p->soft_road_shoulder_margin);
+    updateParam<double>(parameters, ns + "hard_road_shoulder_margin", p->hard_road_shoulder_margin);
   }
 
   {
