@@ -1,0 +1,155 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="496px"
+  height="165px"
+  viewBox="-0.5 -0.5 496 165"
+  content="&lt;mxfile host=&quot;0i6112g2df9b6ngu9buda4iblme4t77dtbb7m4umbjihr1cp3ej8&quot; modified=&quot;2023-08-12T13:28:30.582Z&quot; agent=&quot;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.81.1 Chrome/108.0.5359.215 Electron/22.3.18 Safari/537.36&quot; etag=&quot;H8KSlqQTqsTi61dqFnkA&quot; version=&quot;12.2.4&quot; pages=&quot;1&quot;&gt;&lt;diagram id=&quot;U03Aw2_6lbGUJ5V6ckVM&quot; name=&quot;ページ1&quot;&gt;7Vhdc9soFP01emxGH5YsPyZO2p3Z6TQT70f71CESlthg4QKK7f76XgRYQjhTN3XTdrzxTCwOcLm65xiOFCTz1fYNR+v6LSsxDeKw3AbJdRDHkzyD/wrYaSCexBqoOCk1FPXAgnzGBgwN2pISC2egZIxKsnbBgjUNLqSDIc7Zxh22ZNRddY0q7AGLAlEf/ZeUstZonoY9/gcmVW1XjkLTc4+Kh4qztjHrNazBumeFbBgzVNSoZJsBlNwEyZwzJvXVajvHVFXVVkzPe/1E7z5ljht5zATDyCOirblrqKbkjH4EiJRIMm4SlTtbl+7OsAoQBsnVpiYSL9aoUL0bEAJgtVxRaEVw6SdkcnzEXOLtADIJvsFshSXfwRDTm9iKGx2ltnibnpXIYvWQkcyAyCih2sfuSwIXpiqHK5R4FbrluCSFhAqAIDn6D7THTMxhmXBTXioVQqugSAhSuJWBgvDde1PFrvFBNS6iPLfA9XbYfb0btm4xJ3AzmBvwyULj0pG5X+ZBGdMDVbQYxxRJ8uj+OA5V1qxwywhksmcxDl0Ws3BEjmAtL7CZNZTsKNBYDhDoIpzO+j83rES8wtIL29G+L8JRSph6SsAV+/hAGgw/a1KIkykgTr8igN+O6/RUXI8DnY7dmcfuNUFVwwRQu5BItgf4hWovTLPb4112t0S+H1wPuYVmT61qfD+z30lZlo822elxlfYCTbLZxeDHOMvdsNCbJ0eJ4RkcWucwIHGuj7N/7Gl2hlRm8Q+h0gt7Qh59WxLEGYUyXi1Zl2FPXfapZbbjlehM5CUMiML1tu/sXCJl3JkRxEkeqs8Qyir1/dQRDwY0ULetc7nndvw91tkqjalJuh9uU6erB3miA/8jXaEJ0OoDnptUjRCXhNIRBCtVjTpWQFvKAVwpN0XAul6ajhUpS7XMQXvmGrgndXq8Q4vD6ehITgPPoSUHzpvkBAYt8h3ay4rlb9HpZKmscijrgRQIa85PC9H4yJ68oBbSn6yFv9T+IMD4jUQAe7poqbQ7iFaJ2AmJV3rZd3/Cvd3c3b27OzvFTDzrkXiK2TvKkysm+yUUU8NTgpXFXiqok5EFkeiEpLcZBqj6XrGypRj8zOtWYC7OUDuzkSnJ/N1mmh3QzuQE2vGfCG8pahrSVMH/rwae/7iYTkbP8M99XIRAL/NqIMq/tot8055g54o1ao7egbppo0B3eImB9QIf9LGda10yStnGMa16WTeVs9lRxl42/YH+BZr9q14tu/5NenLzBQ==&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <rect x="157" y="0" width="120" height="160" fill="#ffffff" stroke="#000000" pointer-events="all"/>
+    <g transform="translate(172.5,73.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="88" height="12">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 89px; white-space: nowrap; overflow-wrap: normal; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">control_validator</div>
+        </div>
+      </foreignObject>
+    </g>
+    <path d="M 7 80 L 150.63 80.08" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 155.88 80.08 L 148.88 83.58 L 150.63 80.08 L 148.88 76.58 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(33.5,74.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="95" height="11">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;background-color:#ffffff;">Predicted trajectory</div>
+        </div>
+      </foreignObject>
+    </g>
+    <path d="M 7 130 L 150.63 130" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 155.88 130 L 148.88 133.5 L 150.63 130 L 148.88 126.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(43.5,124.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="76" height="11">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;background-color:#ffffff;">ego_kinematics</div>
+        </div>
+      </foreignObject>
+    </g>
+    <path d="M 277 49.83 L 480.63 49.99" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 485.88 50 L 478.88 53.49 L 480.63 49.99 L 478.88 46.49 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(340.5,43.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="82" height="11">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;background-color:#ffffff;">DiagnosticStatus</div>
+        </div>
+      </foreignObject>
+    </g>
+    <path d="M 277 100 L 480.63 100" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 485.88 100 L 478.88 103.5 L 480.63 100 L 478.88 96.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(326.5,94.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="109" height="11">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;background-color:#ffffff;">ControlValidatorStatus</div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="14" y="85" width="130" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(30.5,86.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="97" height="27">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 98px; white-space: nowrap; overflow-wrap: normal; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">
+            <font style="font-size: 10px" color="#808080">
+              Predicted trajectory to
+              <br/>
+              be validated
+            </font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="17" y="134" width="130" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(32.5,142.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="99" height="12">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 100px; white-space: nowrap; overflow-wrap: normal; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">
+            <font style="font-size: 10px" color="#808080">Used for the validation</font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="287" y="53" width="200" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(287.5,54.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="198" height="27">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 198px; white-space: nowrap; overflow-wrap: normal; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">
+            <font style="font-size: 10px" color="#808080">To send validation result to the system: OK/ERROR</font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="296" y="106" width="176" height="34" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(296.5,109.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="174" height="27">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 174px; white-space: nowrap; overflow-wrap: normal; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">
+            <font style="font-size: 10px" color="#808080">To show the result and the reason for other modules/users</font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <path d="M 7 29 L 150.63 29.08" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 155.88 29.08 L 148.88 32.58 L 150.63 29.08 L 148.88 25.58 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(35.5,23.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="91" height="11">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;background-color:#ffffff;">Planning trajectory</div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="14" y="34" width="130" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(14.5,35.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="128" height="27">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 128px; white-space: nowrap; overflow-wrap: normal; text-align: center;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">
+            <font color="#808080">
+              <span style="font-size: 10px">Reference trajectory to be followed</span>
+            </font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+  </g>
+</svg>

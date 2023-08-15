@@ -1,0 +1,16 @@
+<launch>
+  <arg name="control_validator_param_path" default="$(find-pkg-share control_validator)/config/control_validator.param.yaml"/>
+  <arg name="input_reference_trajectory" default="/planning/scenario_planning/trajectory"/>
+  <arg name="input_predicted_trajectory" default="/control/trajectory_follower/lateral/predicted_trajectory"/>
+
+  <node name="control_validator" exec="control_validator_node" pkg="control_validator" output="screen">
+    <!-- load config a file -->
+    <param from="$(var control_validator_param_path)"/>
+
+    <!-- remap topic name -->
+    <remap from="~/input/reference_trajectory" to="$(var input_reference_trajectory)"/>
+    <remap from="~/input/predicted_trajectory" to="$(var input_predicted_trajectory)"/>
+    <remap from="~/input/kinematics" to="/localization/kinematic_state"/>
+    <remap from="~/output/validation_status" to="~/validation_status"/>
+  </node>
+</launch>

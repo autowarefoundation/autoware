@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+
+    publish_diag: true  # if true, diagnostic msg is published
+
+    # If the number of consecutive invalid trajectory exceeds this threshold, the Diag will be set to ERROR.
+    # (For example, threshold = 1 means, even if the trajectory is invalid, Diag will not be ERROR if
+    #  the next trajectory is valid.)
+    diag_error_count_threshold: 0
+
+    display_on_terminal: true # show error msg on terminal
+
+    thresholds:
+      max_distance_deviation: 1.0

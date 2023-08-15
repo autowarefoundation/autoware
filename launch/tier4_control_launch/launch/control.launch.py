@@ -49,6 +49,8 @@ def launch_setup(context, *args, **kwargs):
         vehicle_cmd_gate_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("lane_departure_checker_param_path").perform(context), "r") as f:
         lane_departure_checker_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(LaunchConfiguration("control_validator_param_path").perform(context), "r") as f:
+        control_validator_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(
         LaunchConfiguration("operation_mode_transition_manager_param_path").perform(context), "r"
     ) as f:
@@ -110,6 +112,23 @@ def launch_setup(context, *args, **kwargs):
             ),
         ],
         parameters=[nearest_search_param, lane_departure_checker_param, vehicle_info_param],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+    # control validator checker
+    control_validator_component = ComposableNode(
+        package="control_validator",
+        plugin="control_validator::ControlValidator",
+        name="control_validator",
+        remappings=[
+            ("~/input/kinematics", "/localization/kinematic_state"),
+            ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
+            (
+                "~/input/predicted_trajectory",
+                "/control/trajectory_follower/lateral/predicted_trajectory",
+            ),
+            ("~/output/validation_status", "~/validation_status"),
+        ],
+        parameters=[control_validator_param],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
 
@@ -295,6 +314,7 @@ def launch_setup(context, *args, **kwargs):
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=[
             controller_component,
+            control_validator_component,
             lane_departure_component,
             shift_decider_component,
             vehicle_cmd_gate_component,
@@ -338,6 +358,7 @@ def generate_launch_description():
     add_launch_arg("lon_controller_param_path")
     add_launch_arg("vehicle_cmd_gate_param_path")
     add_launch_arg("lane_departure_checker_param_path")
+    add_launch_arg("control_validator_param_path")
     add_launch_arg("operation_mode_transition_manager_param_path")
     add_launch_arg("shift_decider_param_path")
     add_launch_arg("obstacle_collision_checker_param_path")
