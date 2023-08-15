@@ -100,10 +100,6 @@ public:
       return;
     }
 
-    observer.lock()->setIsSimultaneousExecutableAsApprovedModule(
-      enable_simultaneous_execution_as_approved_module_);
-    observer.lock()->setIsSimultaneousExecutableAsCandidateModule(
-      enable_simultaneous_execution_as_candidate_module_);
     observer.lock()->setData(planner_data_);
     observer.lock()->setPreviousModuleOutput(previous_module_output);
     observer.lock()->onEntry();
@@ -218,36 +214,14 @@ public:
 
   bool canLaunchNewModule() const { return observers_.size() < max_module_num_; }
 
-  bool isSimultaneousExecutableAsApprovedModule() const
+  virtual bool isSimultaneousExecutableAsApprovedModule() const
   {
-    if (observers_.empty()) {
-      return enable_simultaneous_execution_as_approved_module_;
-    }
-
-    const auto checker = [this](const SceneModuleObserver & observer) {
-      if (observer.expired()) {
-        return enable_simultaneous_execution_as_approved_module_;
-      }
-      return observer.lock()->isSimultaneousExecutableAsApprovedModule();
-    };
-
-    return std::all_of(observers_.begin(), observers_.end(), checker);
+    return enable_simultaneous_execution_as_approved_module_;
   }
 
-  bool isSimultaneousExecutableAsCandidateModule() const
+  virtual bool isSimultaneousExecutableAsCandidateModule() const
   {
-    if (observers_.empty()) {
-      return enable_simultaneous_execution_as_candidate_module_;
-    }
-
-    const auto checker = [this](const SceneModuleObserver & observer) {
-      if (observer.expired()) {
-        return enable_simultaneous_execution_as_candidate_module_;
-      }
-      return observer.lock()->isSimultaneousExecutableAsCandidateModule();
-    };
-
-    return std::all_of(observers_.begin(), observers_.end(), checker);
+    return enable_simultaneous_execution_as_candidate_module_;
   }
 
   void setData(const std::shared_ptr<PlannerData> & planner_data) { planner_data_ = planner_data; }

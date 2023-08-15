@@ -51,6 +51,11 @@ PredictedObjects filterObjectsByLateralDistance(
   const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
   const double distance_thresh, const bool filter_inside);
 
+bool isAllowedGoalModification(
+  const std::shared_ptr<RouteHandler> & route_handler, const bool left_side_parking);
+bool checkOriginalGoalIsInShoulder(
+  const std::shared_ptr<RouteHandler> & route_handler, const bool left_side_parking);
+
 // debug
 MarkerArray createPullOverAreaMarkerArray(
   const tier4_autoware_utils::MultiPolygon2d area_polygons, const std_msgs::msg::Header & header,

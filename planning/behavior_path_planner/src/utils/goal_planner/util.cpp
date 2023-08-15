@@ -180,5 +180,27 @@ MarkerArray createGoalCandidatesMarkerArray(
 
   return marker_array;
 }
+
+bool isAllowedGoalModification(
+  const std::shared_ptr<RouteHandler> & route_handler, const bool left_side_parking)
+{
+  return route_handler->isAllowedGoalModification() ||
+         checkOriginalGoalIsInShoulder(route_handler, left_side_parking);
+}
+
+bool checkOriginalGoalIsInShoulder(
+  const std::shared_ptr<RouteHandler> & route_handler, const bool left_side_parking)
+{
+  const Pose & goal_pose = route_handler->getGoalPose();
+
+  const lanelet::ConstLanelets pull_over_lanes =
+    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking);
+  lanelet::ConstLanelet target_lane{};
+  lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &target_lane);
+
+  return route_handler->isShoulderLanelet(target_lane) &&
+         lanelet::utils::isInLanelet(goal_pose, target_lane, 0.1);
+}
+
 }  // namespace goal_planner_utils
 }  // namespace behavior_path_planner

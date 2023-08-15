@@ -40,6 +40,10 @@ public:
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
 
+  bool isSimultaneousExecutableAsApprovedModule() const override;
+
+  bool isSimultaneousExecutableAsCandidateModule() const override;
+
 private:
   std::shared_ptr<StartPlannerParameters> parameters_;
 };
