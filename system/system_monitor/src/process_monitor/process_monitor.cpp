@@ -451,27 +451,21 @@ void ProcessMonitor::getTopratedProcesses(
     return;
   }
 
-  std::vector<std::string> list;
   std::string line;
   int index = 0;
 
   while (std::getline(is_out, line) && !line.empty()) {
-    boost::trim_left(line);
-    boost::split(list, line, boost::is_space(), boost::token_compress_on);
+    std::istringstream stream(line);
+
+    ProcessInfo info;
+    stream >> info.processId >> info.userName >> info.priority >> info.niceValue >>
+      info.virtualImage >> info.residentSize >> info.sharedMemSize >> info.processStatus >>
+      info.cpuUsage >> info.memoryUsage >> info.cpuTime;
+
+    std::getline(stream, info.commandName);
 
     tasks->at(index)->setDiagnosticsStatus(DiagStatus::OK, "OK");
-    tasks->at(index)->setProcessId(list[0]);
-    tasks->at(index)->setUserName(list[1]);
-    tasks->at(index)->setPriority(list[2]);
-    tasks->at(index)->setNiceValue(list[3]);
-    tasks->at(index)->setVirtualImage(list[4]);
-    tasks->at(index)->setResidentSize(list[5]);
-    tasks->at(index)->setSharedMemSize(list[6]);
-    tasks->at(index)->setProcessStatus(list[7]);
-    tasks->at(index)->setCPUUsage(list[8]);
-    tasks->at(index)->setMemoryUsage(list[9]);
-    tasks->at(index)->setCPUTime(list[10]);
-    tasks->at(index)->setCommandName(list[11]);
+    tasks->at(index)->setProcessInformation(info);
     ++index;
   }
 }
@@ -521,7 +515,7 @@ void ProcessMonitor::onTimer()
   std::ostringstream os;
 
   // Get processes
-  bp::child c("top -bn1 -o %CPU -w 128", bp::std_out > is_out, bp::std_err > is_err);
+  bp::child c("top -bcn1 -o %CPU -w 256", bp::std_out > is_out, bp::std_err > is_err);
   c.wait();
 
   if (c.exit_code() != 0) {

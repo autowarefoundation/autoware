@@ -24,6 +24,25 @@
 
 #include <string>
 
+/**
+ * @brief Struct for storing process information
+ */
+struct ProcessInfo
+{
+  std::string processId;
+  std::string userName;
+  std::string priority;
+  std::string niceValue;
+  std::string virtualImage;
+  std::string residentSize;
+  std::string sharedMemSize;
+  std::string processStatus;
+  std::string cpuUsage;
+  std::string memoryUsage;
+  std::string cpuTime;
+  std::string commandName;
+};
+
 class DiagTask : public diagnostic_updater::DiagnosticTask
 {
 public:
@@ -46,18 +65,18 @@ public:
     if (level_ != DiagStatus::OK) {
       stat.add("content", content_);
     } else {
-      stat.add("COMMAND", command_);
-      stat.add("%CPU", cpu_);
-      stat.add("%MEM", mem_);
-      stat.add("PID", pid_);
-      stat.add("USER", user_);
-      stat.add("PR", pr_);
-      stat.add("NI", ni_);
-      stat.add("VIRT", virt_);
-      stat.add("RES", res_);
-      stat.add("SHR", shr_);
-      stat.add("S", s_);
-      stat.add("TIME+", time_);
+      stat.add("COMMAND", info_.commandName);
+      stat.add("%CPU", info_.cpuUsage);
+      stat.add("%MEM", info_.memoryUsage);
+      stat.add("PID", info_.processId);
+      stat.add("USER", info_.userName);
+      stat.add("PR", info_.priority);
+      stat.add("NI", info_.niceValue);
+      stat.add("VIRT", info_.virtualImage);
+      stat.add("RES", info_.residentSize);
+      stat.add("SHR", info_.sharedMemSize);
+      stat.add("S", info_.processStatus);
+      stat.add("TIME+", info_.cpuTime);
     }
     stat.summary(level_, message_);
   }
@@ -85,95 +104,17 @@ public:
   }
 
   /**
-   * @brief set process id
-   * @param [in] pid process id
+   * @brief Set process information
+   * @param [in] info Process information
    */
-  void setProcessId(const std::string & pid) { pid_ = pid; }
-
-  /**
-   * @brief set user name
-   * @param [in] user user name
-   */
-  void setUserName(const std::string & user) { user_ = user; }
-
-  /**
-   * @brief set priority
-   * @param [in] pr priority
-   */
-  void setPriority(const std::string & pr) { pr_ = pr; }
-
-  /**
-   * @brief set nice value
-   * @param [in] ni nice value
-   */
-  void setNiceValue(const std::string & ni) { ni_ = ni; }
-
-  /**
-   * @brief set virtual image
-   * @param [in] virt virtual image
-   */
-  void setVirtualImage(const std::string & virt) { virt_ = virt; }
-
-  /**
-   * @brief set resident size
-   * @param [in] res resident size
-   */
-  void setResidentSize(const std::string & res) { res_ = res; }
-
-  /**
-   * @brief set shared mem size
-   * @param [in] shr shared mem size
-   */
-  void setSharedMemSize(const std::string & shr) { shr_ = shr; }
-
-  /**
-   * @brief set process status
-   * @param [in] s process status
-   */
-  void setProcessStatus(const std::string & s) { s_ = s; }
-
-  /**
-   * @brief set CPU usage
-   * @param [in] cpu CPU usage
-   */
-  void setCPUUsage(const std::string & cpu) { cpu_ = cpu; }
-
-  /**
-   * @brief set memory usage
-   * @param [in] mem memory usage
-   */
-  void setMemoryUsage(const std::string & mem) { mem_ = mem; }
-
-  /**
-   * @brief set CPU time
-   * @param [in] time CPU time
-   */
-  void setCPUTime(const std::string & time) { time_ = time; }
-
-  /**
-   * @brief set Command name/line
-   * @param [in] command Command name/line
-   */
-  void setCommandName(const std::string & command) { command_ = command; }
+  void setProcessInformation(const struct ProcessInfo & info) { info_ = info; }
 
 private:
   int level_;                  //!< @brief Diagnostics error level
   std::string message_;        //!< @brief Diagnostics status message
   std::string error_command_;  //!< @brief Error command
   std::string content_;        //!< @brief Error content
-
-  std::string pid_;      //!< @brief Process Id
-  std::string user_;     //!< @brief User Name
-  std::string pr_;       //!< @brief Priority
-  std::string ni_;       //!< @brief Nice value
-  std::string virt_;     //!< @brief Virtual Image (kb)
-  std::string res_;      //!< @brief Resident size (kb)
-  std::string shr_;      //!< @brief Shared Mem size (kb)
-  std::string s_;        //!< @brief Process Status
-  std::string cpu_;      //!< @brief CPU usage
-  std::string mem_;      //!< @brief Memory usage
-  std::string time_;     //!< @brief CPU Time
-  std::string command_;  //!< @brief Command name/line
+  struct ProcessInfo info_;    //!< @brief Struct for storing process information
 };
 
 #endif  // SYSTEM_MONITOR__PROCESS_MONITOR__DIAG_TASK_HPP_
