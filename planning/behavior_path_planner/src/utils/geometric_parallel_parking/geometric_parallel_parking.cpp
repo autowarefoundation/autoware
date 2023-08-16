@@ -15,6 +15,7 @@
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 
 #include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
@@ -272,13 +273,10 @@ bool GeometricParallelParking::planPullOut(
 
     // get road center line path from pull_out end to goal, and combine after the second arc path
     const double s_start = getArcCoordinates(road_lanes, *end_pose).length;
-    const double s_goal = getArcCoordinates(road_lanes, goal_pose).length;
-    const double road_lanes_length = std::accumulate(
-      road_lanes.begin(), road_lanes.end(), 0.0, [](const double sum, const auto & lane) {
-        return sum + lanelet::utils::getLaneletLength2d(lane);
-      });
-    const bool goal_is_behind = s_goal < s_start;
-    const double s_end = goal_is_behind ? road_lanes_length : s_goal;
+    const auto path_end_info = start_planner_utils::calcEndArcLength(
+      s_start, planner_data_->parameters.forward_path_length, road_lanes, goal_pose);
+    const double s_end = path_end_info.first;
+    const bool path_terminal_is_goal = path_end_info.second;
     PathWithLaneId road_center_line_path =
       planner_data_->route_handler->getCenterLinePath(road_lanes, s_start, s_end, true);
 
@@ -305,7 +303,7 @@ bool GeometricParallelParking::planPullOut(
     paths.back().points = motion_utils::removeOverlapPoints(paths.back().points);
 
     // if the end point is the goal, set the velocity to 0
-    if (!goal_is_behind) {
+    if (path_terminal_is_goal) {
       paths.back().points.back().point.longitudinal_velocity_mps = 0.0;
     }
 
