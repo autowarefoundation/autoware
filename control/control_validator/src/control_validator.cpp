@@ -194,10 +194,11 @@ bool ControlValidator::isAllValid(const ControlValidatorStatus & s)
 void ControlValidator::displayStatus()
 {
   if (!display_on_terminal_) return;
+  rclcpp::Clock clock{RCL_ROS_TIME};
 
-  const auto warn = [this](const bool status, const std::string & msg) {
+  const auto warn = [this, &clock](const bool status, const std::string & msg) {
     if (!status) {
-      RCLCPP_WARN(get_logger(), "%s", msg.c_str());
+      RCLCPP_WARN_THROTTLE(get_logger(), clock, 1000, "%s", msg.c_str());
     }
   };
 
