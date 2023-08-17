@@ -64,9 +64,10 @@ multipolygon_t createObjectPolygons(
 {
   multipolygon_t polygons;
   for (const auto & object : objects.objects) {
-    if (
-      object.kinematics.initial_twist_with_covariance.twist.linear.x >= min_velocity ||
-      object.kinematics.initial_twist_with_covariance.twist.linear.x <= -min_velocity) {
+    const double obj_vel_norm = std::hypot(
+      object.kinematics.initial_twist_with_covariance.twist.linear.x,
+      object.kinematics.initial_twist_with_covariance.twist.linear.y);
+    if (min_velocity <= obj_vel_norm) {
       polygons.push_back(createObjectPolygon(
         object.kinematics.initial_pose_with_covariance.pose, object.shape.dimensions, buffer));
     }
