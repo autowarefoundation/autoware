@@ -193,10 +193,6 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
       get_parameter<double>(node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
       get_parameter<double>(node, ns + "resample_interval_for_output");
-    p.detection_area_right_expand_dist =
-      get_parameter<double>(node, ns + "detection_area_right_expand_dist");
-    p.detection_area_left_expand_dist =
-      get_parameter<double>(node, ns + "detection_area_left_expand_dist");
     p.enable_force_avoidance_for_stopped_vehicle =
       get_parameter<bool>(node, ns + "enable_force_avoidance_for_stopped_vehicle");
   }

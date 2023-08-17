@@ -122,7 +122,7 @@ MarkerArray createFurthestLineStringMarkerArray(const lanelet::ConstLineStrings3
 
 MarkerArray createPolygonMarkerArray(
   const Polygon & polygon, std::string && ns, const int64_t & lane_id, const float & r,
-  const float & g, const float & b);
+  const float & g, const float & b, const float & w = 0.3);
 
 MarkerArray createObjectsMarkerArray(
   const PredictedObjects & objects, std::string && ns, const int64_t & lane_id, const float & r,

@@ -222,62 +222,6 @@ MarkerArray createEgoStatusMarkerArray(
   return msg;
 }
 
-MarkerArray createSafetyCheckMarkerArray(
-  const AvoidanceState & state, const Pose & pose, const DebugData & data)
-{
-  const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
-  MarkerArray msg;
-
-  if (data.exist_adjacent_objects) {
-    auto marker = createDefaultMarker(
-      "map", current_time, "safety_alert", 0L, Marker::CYLINDER, createMarkerScale(0.2, 0.2, 2.0),
-      createMarkerColor(1.0, 1.0, 0.0, 0.8));
-
-    marker.color = state == AvoidanceState::YIELD ? createMarkerColor(1.0, 0.0, 0.0, 0.8)
-                                                  : createMarkerColor(1.0, 1.0, 0.0, 0.8);
-
-    marker.pose = calcOffsetPose(pose, 0.0, 1.5, 1.0);
-    msg.markers.push_back(marker);
-
-    marker.pose = calcOffsetPose(pose, 0.0, -1.5, 1.0);
-    marker.id++;
-    msg.markers.push_back(marker);
-  }
-
-  if (state == AvoidanceState::YIELD) {
-    return msg;
-  }
-
-  {
-    auto marker = createDefaultMarker(
-      "map", current_time, "safety_longitudinal_margin", 0L, Marker::CUBE,
-      createMarkerScale(3.0, 1.5, 1.5), createMarkerColor(1.0, 1.0, 1.0, 0.1));
-
-    for (const auto & m : data.margin_data_array) {
-      if (m.enough_lateral_margin) {
-        continue;
-      }
-
-      constexpr double max_x = 10.0;
-
-      const auto offset = 0.5 * (m.base_link2front + m.base_link2rear) - m.base_link2rear;
-      const auto diff = m.longitudinal_distance - m.longitudinal_margin;
-      const auto scale_x = std::min(max_x, 2.0 * (m.base_link2front + m.base_link2rear + diff));
-
-      const auto ratio = std::clamp(diff / max_x, 0.0, 1.0);
-
-      marker.pose = calcOffsetPose(m.pose, offset, 0.0, 0.0);
-      marker.pose.position.z += 1.0;
-      marker.scale = createMarkerScale(scale_x, 2.0 * m.vehicle_width, 2.0);
-      marker.color = createMarkerColor(1.0 - ratio, ratio, 0.0, 0.1);
-      marker.id++;
-      msg.markers.push_back(marker);
-    }
-  }
-
-  return msg;
-}
-
 MarkerArray createAvoidLineMarkerArray(
   const AvoidLineArray & shift_lines, std::string && ns, const float & r, const float & g,
   const float & b, const double & w)

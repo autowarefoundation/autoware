@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace behavior_path_planner::utils::avoidance
@@ -160,6 +161,11 @@ ExtendedPredictedObject transform(
 std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
   const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift);
+
+std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
+  const AvoidancePlanningData & data, const std::shared_ptr<AvoidanceParameters> & parameters,
+  DebugData & debug);
 }  // namespace behavior_path_planner::utils::avoidance
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__UTILS_HPP_

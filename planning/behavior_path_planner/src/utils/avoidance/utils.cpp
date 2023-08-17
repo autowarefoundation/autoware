@@ -142,6 +142,59 @@ double calcSignedArcLengthToFirstNearestPoint(
 
   return signed_length_on_traj - signed_length_src_offset + signed_length_dst_offset;
 }
+
+geometry_msgs::msg::Polygon createVehiclePolygon(
+  const vehicle_info_util::VehicleInfo & vehicle_info, const double offset)
+{
+  const auto & i = vehicle_info;
+  const auto & front_m = i.max_longitudinal_offset_m;
+  const auto & width_m = i.vehicle_width_m / 2.0 + offset;
+  const auto & back_m = i.rear_overhang_m;
+
+  geometry_msgs::msg::Polygon polygon{};
+
+  polygon.points.push_back(createPoint32(front_m, -width_m, 0.0));
+  polygon.points.push_back(createPoint32(front_m, width_m, 0.0));
+  polygon.points.push_back(createPoint32(-back_m, width_m, 0.0));
+  polygon.points.push_back(createPoint32(-back_m, -width_m, 0.0));
+
+  return polygon;
+}
+
+Polygon2d createOneStepPolygon(
+  const geometry_msgs::msg::Pose & p_front, const geometry_msgs::msg::Pose & p_back,
+  const geometry_msgs::msg::Polygon & base_polygon)
+{
+  Polygon2d one_step_polygon{};
+
+  {
+    geometry_msgs::msg::Polygon out_polygon{};
+    geometry_msgs::msg::TransformStamped geometry_tf{};
+    geometry_tf.transform = pose2transform(p_front);
+    tf2::doTransform(base_polygon, out_polygon, geometry_tf);
+
+    for (const auto & p : out_polygon.points) {
+      one_step_polygon.outer().push_back(Point2d(p.x, p.y));
+    }
+  }
+
+  {
+    geometry_msgs::msg::Polygon out_polygon{};
+    geometry_msgs::msg::TransformStamped geometry_tf{};
+    geometry_tf.transform = pose2transform(p_back);
+    tf2::doTransform(base_polygon, out_polygon, geometry_tf);
+
+    for (const auto & p : out_polygon.points) {
+      one_step_polygon.outer().push_back(Point2d(p.x, p.y));
+    }
+  }
+
+  Polygon2d hull_polygon{};
+  boost::geometry::convex_hull(one_step_polygon, hull_polygon);
+  boost::geometry::correct(hull_polygon);
+
+  return hull_polygon;
+}
 }  // namespace
 
 bool isOnRight(const ObjectData & obj)
@@ -1556,5 +1609,59 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
   }
 
   return target_objects;
+}
+
+std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
+  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
+  const AvoidancePlanningData & data, const std::shared_ptr<AvoidanceParameters> & parameters,
+  DebugData & debug)
+{
+  PredictedObjects target_objects;
+  PredictedObjects other_objects;
+
+  double max_offset = 0.0;
+  for (const auto & object_parameter : parameters->object_parameters) {
+    const auto p = object_parameter.second;
+    const auto offset = p.envelope_buffer_margin + p.safety_buffer_lateral + p.avoid_margin_lateral;
+    max_offset = std::max(max_offset, offset);
+  }
+
+  const auto detection_area =
+    createVehiclePolygon(planner_data->parameters.vehicle_info, max_offset);
+  const auto ego_idx = planner_data->findEgoIndex(path.points);
+
+  Polygon2d attention_area;
+  for (size_t i = 0; i < path.points.size() - 1; ++i) {
+    const auto & p_ego_front = path.points.at(i).point.pose;
+    const auto & p_ego_back = path.points.at(i + 1).point.pose;
+
+    const auto distance_from_ego = calcSignedArcLength(path.points, ego_idx, i);
+    if (distance_from_ego > parameters->object_check_forward_distance) {
+      break;
+    }
+
+    const auto ego_one_step_polygon = createOneStepPolygon(p_ego_front, p_ego_back, detection_area);
+
+    std::vector<Polygon2d> unions;
+    boost::geometry::union_(attention_area, ego_one_step_polygon, unions);
+    if (!unions.empty()) {
+      attention_area = unions.front();
+      boost::geometry::correct(attention_area);
+    }
+  }
+
+  debug.detection_area = toMsg(attention_area, data.reference_pose.position.z);
+
+  const auto objects = planner_data->dynamic_object->objects;
+  std::for_each(objects.begin(), objects.end(), [&](const auto & object) {
+    const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
+    if (boost::geometry::disjoint(obj_polygon, attention_area)) {
+      other_objects.objects.push_back(object);
+    } else {
+      target_objects.objects.push_back(object);
+    }
+  });
+
+  return std::make_pair(target_objects, other_objects);
 }
 }  // namespace behavior_path_planner::utils::avoidance

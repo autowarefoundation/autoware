@@ -79,12 +79,6 @@ struct AvoidanceParameters
   // computational cost for latter modules.
   double resample_interval_for_output = 3.0;
 
-  // lanelet expand length for right side to find avoidance target vehicles
-  double detection_area_right_expand_dist = 0.0;
-
-  // lanelet expand length for left side to find avoidance target vehicles
-  double detection_area_left_expand_dist = 1.0;
-
   // enable avoidance to be perform only in lane with same direction
   bool use_adjacent_lane{true};
 
@@ -514,33 +508,13 @@ struct ShiftLineData
 };
 
 /*
- * Data struct for longitudinal margin
- */
-struct MarginData
-{
-  Pose pose{};
-
-  bool enough_lateral_margin{true};
-
-  double longitudinal_distance{std::numeric_limits<double>::max()};
-
-  double longitudinal_margin{std::numeric_limits<double>::lowest()};
-
-  double vehicle_width;
-
-  double base_link2front;
-
-  double base_link2rear;
-};
-using MarginDataArray = std::vector<MarginData>;
-
-/*
  * Debug information for marker array
  */
 struct DebugData
 {
-  std::shared_ptr<lanelet::ConstLanelets> expanded_lanelets;
   std::shared_ptr<lanelet::ConstLanelets> current_lanelets;
+
+  geometry_msgs::msg::Polygon detection_area;
 
   lanelet::ConstLineStrings3d bounds;
 
@@ -576,13 +550,8 @@ struct DebugData
   // shift path
   std::vector<double> proposed_spline_shift;
 
-  bool exist_adjacent_objects{false};
-
   // future pose
   PathWithLaneId path_with_planned_velocity;
-
-  // margin
-  MarginDataArray margin_data_array;
 
   // avoidance require objects
   ObjectDataArray unavoidable_objects;

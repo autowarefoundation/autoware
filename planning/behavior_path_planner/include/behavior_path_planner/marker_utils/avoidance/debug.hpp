@@ -49,9 +49,6 @@ using visualization_msgs::msg::MarkerArray;
 MarkerArray createEgoStatusMarkerArray(
   const AvoidancePlanningData & data, const Pose & p_ego, std::string && ns);
 
-MarkerArray createSafetyCheckMarkerArray(
-  const AvoidanceState & state, const Pose & pose, const DebugData & data);
-
 MarkerArray createAvoidLineMarkerArray(
   const AvoidLineArray & shift_points, std::string && ns, const float & r, const float & g,
   const float & b, const double & w);

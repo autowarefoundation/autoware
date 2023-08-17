@@ -50,10 +50,6 @@ AvoidanceModuleManager::AvoidanceModuleManager(
       get_parameter<double>(node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
       get_parameter<double>(node, ns + "resample_interval_for_output");
-    p.detection_area_right_expand_dist =
-      get_parameter<double>(node, ns + "detection_area_right_expand_dist");
-    p.detection_area_left_expand_dist =
-      get_parameter<double>(node, ns + "detection_area_left_expand_dist");
     p.enable_bound_clipping = get_parameter<bool>(node, ns + "enable_bound_clipping");
     p.enable_cancel_maneuver = get_parameter<bool>(node, ns + "enable_cancel_maneuver");
     p.enable_force_avoidance_for_stopped_vehicle =

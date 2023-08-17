@@ -4,8 +4,6 @@
     avoidance:
       resample_interval_for_planning: 0.3               # [m]
       resample_interval_for_output: 4.0                 # [m]
-      detection_area_right_expand_dist: 0.0             # [m]
-      detection_area_left_expand_dist: 1.0              # [m]
       drivable_area_right_bound_offset: 0.0             # [m]
       drivable_area_left_bound_offset: 0.0              # [m]
 

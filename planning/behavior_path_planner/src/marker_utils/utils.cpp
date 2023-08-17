@@ -314,11 +314,11 @@ MarkerArray createFurthestLineStringMarkerArray(const lanelet::ConstLineStrings3
 
 MarkerArray createPolygonMarkerArray(
   const Polygon & polygon, std::string && ns, const int64_t & lane_id, const float & r,
-  const float & g, const float & b)
+  const float & g, const float & b, const float & w)
 {
   Marker marker = createDefaultMarker(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, static_cast<int32_t>(lane_id), Marker::LINE_STRIP,
-    createMarkerScale(0.3, 0.0, 0.0), createMarkerColor(r, g, b, 0.8));
+    createMarkerScale(w, 0.0, 0.0), createMarkerColor(r, g, b, 0.8));
 
   marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
 

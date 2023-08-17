@@ -266,12 +266,9 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   using utils::avoidance::getTargetLanelets;
 
   // Separate dynamic objects based on whether they are inside or outside of the expanded lanelets.
-  const auto expanded_lanelets = getTargetLanelets(
-    planner_data_, data.current_lanelets, parameters_->detection_area_left_expand_dist,
-    parameters_->detection_area_right_expand_dist * (-1.0));
-
   const auto [object_within_target_lane, object_outside_target_lane] =
-    utils::separateObjectsByLanelets(*planner_data_->dynamic_object, expanded_lanelets);
+    utils::avoidance::separateObjectsByPath(
+      helper_.getPreviousSplineShiftPath().path, planner_data_, data, parameters_, debug);
 
   for (const auto & object : object_outside_target_lane.objects) {
     ObjectData other_object;
@@ -298,7 +295,6 @@ void AvoidanceModule::fillAvoidanceTargetObjects(
   // debug
   {
     debug.current_lanelets = std::make_shared<lanelet::ConstLanelets>(data.current_lanelets);
-    debug.expanded_lanelets = std::make_shared<lanelet::ConstLanelets>(expanded_lanelets);
 
     std::vector<AvoidanceDebugMsg> debug_info_array;
     const auto append = [&](const auto & o) {
@@ -2654,6 +2650,7 @@ void AvoidanceModule::updateDebugMarker(
   using marker_utils::createLaneletsAreaMarkerArray;
   using marker_utils::createObjectsMarkerArray;
   using marker_utils::createPathMarkerArray;
+  using marker_utils::createPolygonMarkerArray;
   using marker_utils::createPoseMarkerArray;
   using marker_utils::createShiftGradMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
@@ -2663,7 +2660,6 @@ void AvoidanceModule::updateDebugMarker(
   using marker_utils::avoidance_marker::createOtherObjectsMarkerArray;
   using marker_utils::avoidance_marker::createOverhangFurthestLineStringMarkerArray;
   using marker_utils::avoidance_marker::createPredictedVehiclePositions;
-  using marker_utils::avoidance_marker::createSafetyCheckMarkerArray;
   using marker_utils::avoidance_marker::createUnsafeObjectsMarkerArray;
   using marker_utils::avoidance_marker::makeOverhangToRoadShoulderMarkerArray;
   using tier4_autoware_utils::appendMarkerArray;
@@ -2699,10 +2695,8 @@ void AvoidanceModule::updateDebugMarker(
     helper_.getPreviousLinearShiftPath().path, "prev_linear_shift", 0, 0.5, 0.4, 0.6));
   add(createPoseMarkerArray(data.reference_pose, "reference_pose", 0, 0.9, 0.3, 0.3));
 
-  add(createSafetyCheckMarkerArray(data.state, getEgoPose(), debug));
-
   add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
-  add(createLaneletsAreaMarkerArray(*debug.expanded_lanelets, "expanded_lanelet", 0.8, 0.8, 0.0));
+  add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
 
   add(createOtherObjectsMarkerArray(
     data.other_objects, AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD));
