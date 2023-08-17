@@ -84,7 +84,9 @@ class PerceptionReplayer(PerceptionReplayerCommon):
                     return
 
                 ego_odom = self.find_ego_odom_by_timestamp(self.bag_timestamp)
-                log_ego_pose = ego_odom[1].pose.pose
+                if not ego_odom:
+                    return
+                log_ego_pose = ego_odom.pose.pose
 
                 translate_objects_coordinate(self.ego_pose, log_ego_pose, objects_msg)
             self.objects_pub.publish(objects_msg)
