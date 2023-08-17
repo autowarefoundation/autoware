@@ -147,14 +147,14 @@ void TrafficLightArbiter::arbitrateAndPublish(const builtin_interfaces::msg::Tim
 
   const auto get_highest_confidence_elements =
     [](const std::vector<ElementAndPriority> & elements_and_priority_vector) {
-      using Key = std::tuple<Element::_color_type, Element::_shape_type>;
+      using Key = Element::_shape_type;
       std::map<Key, ElementAndPriority> highest_score_element_and_priority_map;
       std::vector<Element> highest_score_elements_vector;
 
       for (const auto & elements_and_priority : elements_and_priority_vector) {
         const auto & element = elements_and_priority.first;
         const auto & element_priority = elements_and_priority.second;
-        const auto key = std::make_tuple(element.color, element.shape);
+        const auto key = element.shape;
         auto [iter, success] =
           highest_score_element_and_priority_map.try_emplace(key, elements_and_priority);
         const auto & iter_element = iter->second.first;
