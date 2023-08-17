@@ -186,15 +186,19 @@ bool isVehicle(const PredictedObject & obj)
 bool isStuckVehicle(const PredictedObject & obj, const double min_vel)
 {
   if (!isVehicle(obj)) return false;
-  const auto & obj_vel = obj.kinematics.initial_twist_with_covariance.twist.linear.x;
-  return std::abs(obj_vel) <= min_vel;
+  const auto & obj_vel_norm = std::hypot(
+    obj.kinematics.initial_twist_with_covariance.twist.linear.x,
+    obj.kinematics.initial_twist_with_covariance.twist.linear.y);
+  return obj_vel_norm <= min_vel;
 }
 
 bool isMovingVehicle(const PredictedObject & obj, const double min_vel)
 {
   if (!isVehicle(obj)) return false;
-  const auto & obj_vel = obj.kinematics.initial_twist_with_covariance.twist.linear.x;
-  return std::abs(obj_vel) > min_vel;
+  const auto & obj_vel_norm = std::hypot(
+    obj.kinematics.initial_twist_with_covariance.twist.linear.x,
+    obj.kinematics.initial_twist_with_covariance.twist.linear.y);
+  return obj_vel_norm > min_vel;
 }
 
 std::vector<PredictedObject> extractVehicles(
