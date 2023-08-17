@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Joy Controller node",
+  "type": "object",
+  "definitions": {
+    "joy_controller": {
+      "type": "object",
+      "properties": {
+        "joy_type": {
+          "type": "string",
+          "description": "Joy controller type",
+          "default": "DS4",
+          "enum": ["P65", "DS4", "G29"]
+        },
+        "update_rate": {
+          "type": "number",
+          "description": "Update rate to publish control commands",
+          "default": "10.0",
+          "exclusiveMinimum": 0
+        },
+        "accel_ratio": {
+          "type": "number",
+          "description": "Ratio to calculate acceleration (commanded acceleration is ratio * operation)",
+          "default": "3.0"
+        },
+        "brake_ratio": {
+          "type": "number",
+          "description": "Ratio to calculate deceleration (commanded acceleration is -ratio * operation)",
+          "default": "5.0"
+        },
+        "steer_ratio": {
+          "type": "number",
+          "description": "Ratio to calculate deceleration (commanded steer is ratio * operation)",
+          "default": "0.5"
+        },
+        "steering_angle_velocity": {
+          "type": "number",
+          "description": "Steering angle velocity for operation",
+          "default": "0.1"
+        },
+        "accel_sensitivity": {
+          "type": "number",
+          "description": "Sensitivity to calculate acceleration for external API (commanded acceleration is pow(operation, 1 / sensitivity))",
+          "default": "1.0",
+          "maximum": 1.0,
+          "exclusiveMinimum": 0.0
+        },
+        "brake_sensitivity": {
+          "type": "number",
+          "description": "Sensitivity to calculate deceleration for external API (commanded acceleration is pow(operation, 1 / sensitivity))",
+          "default": "1.0",
+          "maximum": 1.0,
+          "exclusiveMinimum": 0.0
+        },
+        "control_command": {
+          "type": "object",
+          "properties": {
+            "velocity_gain": {
+              "type": "number",
+              "description": "Ratio to calculate velocity by acceleration",
+              "default": "3.0"
+            },
+            "max_forward_velocity": {
+              "type": "number",
+              "description": "Absolute max velocity to go forward",
+              "default": "20.0",
+              "minimum": 0
+            },
+            "max_backward_velocity": {
+              "type": "number",
+              "description": "Absolute max velocity to go backward",
+              "default": "3.0",
+              "minimum": 0
+            },
+            "backward_accel_ratio": {
+              "type": "number",
+              "description": "Ratio to calculate deceleration (commanded acceleration is -ratio * operation)",
+              "default": "1.0"
+            }
+          },
+          "required": [
+            "velocity_gain",
+            "max_forward_velocity",
+            "max_backward_velocity",
+            "backward_accel_ratio"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "joy_type",
+        "update_rate",
+        "accel_ratio",
+        "brake_ratio",
+        "steer_ratio",
+        "steering_angle_velocity",
+        "accel_sensitivity",
+        "brake_sensitivity",
+        "control_command"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/joy_controller"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
