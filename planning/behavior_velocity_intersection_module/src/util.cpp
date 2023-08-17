@@ -923,8 +923,10 @@ bool checkStuckVehicleInIntersection(
     if (!isTargetStuckVehicleType(object)) {
       continue;  // not target vehicle type
     }
-    const auto obj_v = std::fabs(object.kinematics.initial_twist_with_covariance.twist.linear.x);
-    if (obj_v > stuck_vehicle_vel_thr) {
+    const auto obj_v_norm = std::hypot(
+      object.kinematics.initial_twist_with_covariance.twist.linear.x,
+      object.kinematics.initial_twist_with_covariance.twist.linear.y);
+    if (obj_v_norm > stuck_vehicle_vel_thr) {
       continue;  // not stop vehicle
     }
 

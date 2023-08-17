@@ -800,8 +800,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     util::isOverTargetIndex(*path, closest_idx, current_pose, pass_judge_line_idx);
   const bool is_over_default_stop_line =
     util::isOverTargetIndex(*path, closest_idx, current_pose, default_stop_line_idx);
-  const double vel = std::fabs(planner_data_->current_velocity->twist.linear.x);
-  const bool keep_detection = (vel < planner_param_.collision_detection.keep_detection_vel_thr);
+  const double vel_norm = std::hypot(
+    planner_data_->current_velocity->twist.linear.x,
+    planner_data_->current_velocity->twist.linear.y);
+  const bool keep_detection =
+    (vel_norm < planner_param_.collision_detection.keep_detection_vel_thr);
   // if ego is over the pass judge line and not stopped
   if (is_peeking_) {
     // do nothing
@@ -871,7 +874,9 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     target_objects.objects.begin(), target_objects.objects.end(),
     std::back_inserter(parked_attention_objects),
     [thresh = planner_param_.occlusion.ignore_parked_vehicle_speed_threshold](const auto & object) {
-      return std::fabs(object.kinematics.initial_twist_with_covariance.twist.linear.x) <= thresh;
+      return std::hypot(
+               object.kinematics.initial_twist_with_covariance.twist.linear.x,
+               object.kinematics.initial_twist_with_covariance.twist.linear.y) <= thresh;
     });
   const bool is_occlusion_cleared =
     (enable_occlusion_detection_ && !occlusion_attention_lanelets.empty() && !tl_arrow_solid_on)
