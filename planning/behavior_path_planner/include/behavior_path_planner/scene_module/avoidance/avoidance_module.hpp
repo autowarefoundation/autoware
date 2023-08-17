@@ -329,6 +329,8 @@ private:
   AvoidLineArray applyPreProcessToRawShiftLines(
     AvoidLineArray & current_raw_shift_points, DebugData & debug) const;
 
+  AvoidLineArray getFillGapShiftLines(const AvoidLineArray & shift_lines) const;
+
   /*
    * @brief merge negative & positive shift lines.
    * @param original shift lines.
