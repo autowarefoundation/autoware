@@ -814,10 +814,17 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   if (path.points.empty()) {
     return {};
   }
-  const auto closest_idx = motion_utils::findNearestIndex(path.points, start_pose.position);
-  const auto lane_id = path.points.at(closest_idx).lane_ids.front();
-  const auto lane = planner_data_->route_handler->getLaneletMapPtr()->laneletLayer.get(lane_id);
-  const double lateral_offset = lanelet::utils::getLateralDistanceToCenterline(lane, start_pose);
+
+  // calculate lateral offset from pull out target lane center line
+  lanelet::ConstLanelet closest_road_lane;
+  const double backward_path_length =
+    planner_data_->parameters.backward_path_length + parameters_->max_back_distance;
+  const auto road_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
+    /*forward_only_in_route*/ true);
+  lanelet::utils::query::getClosestLanelet(road_lanes, start_pose, &closest_road_lane);
+  const double lateral_offset =
+    lanelet::utils::getLateralDistanceToCenterline(closest_road_lane, start_pose);
 
   if (distance_from_end < 0.0 && lateral_offset > parameters_->th_turn_signal_on_lateral_offset) {
     turn_signal.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
