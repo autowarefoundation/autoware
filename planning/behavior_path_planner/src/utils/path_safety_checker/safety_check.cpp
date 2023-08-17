@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "behavior_path_planner/utils/safety_check.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 
 #include "behavior_path_planner/marker_utils/utils.hpp"
 #include "interpolation/linear_interpolation.hpp"

@@ -17,7 +17,7 @@
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
-#include "behavior_path_planner/utils/safety_check.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 
 #include <algorithm>
 #include <memory>

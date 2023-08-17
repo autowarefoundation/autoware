@@ -30,7 +30,7 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/turn_signal_decider.cpp
   src/utils/utils.cpp
   src/utils/path_utils.cpp
-  src/utils/safety_check.cpp
+  src/utils/path_safety_checker/safety_check.cpp
   src/utils/avoidance/utils.cpp
   src/utils/lane_change/utils.cpp
   src/utils/side_shift/util.cpp

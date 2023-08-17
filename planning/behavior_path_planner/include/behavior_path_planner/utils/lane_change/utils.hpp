@@ -19,7 +19,7 @@
 #include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
-#include "behavior_path_planner/utils/safety_check.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <route_handler/route_handler.hpp>
