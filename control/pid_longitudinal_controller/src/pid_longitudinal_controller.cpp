@@ -626,7 +626,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
   Motion target_motion{};
   if (m_control_state == ControlState::DRIVE) {
     const auto target_pose = longitudinal_utils::calcPoseAfterTimeDelay(
-      current_pose, m_delay_compensation_time, current_vel);
+      current_pose, m_delay_compensation_time, current_vel, current_acc);
     const auto target_interpolated_point = calcInterpolatedTargetValue(m_trajectory, target_pose);
     target_motion = Motion{
       target_interpolated_point.longitudinal_velocity_mps,

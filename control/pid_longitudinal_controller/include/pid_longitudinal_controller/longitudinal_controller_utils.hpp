@@ -72,11 +72,12 @@ double getPitchByTraj(
 double calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to);
 
 /**
- * @brief calculate vehicle pose after time delay by moving the vehicle at current velocity for
- * delayed time
+ * @brief calculate vehicle pose after time delay by moving the vehicle at current velocity and
+ * acceleration for delayed time
  */
 Pose calcPoseAfterTimeDelay(
-  const Pose & current_pose, const double delay_time, const double current_vel);
+  const Pose & current_pose, const double delay_time, const double current_vel,
+  const double current_acc);
 
 /**
  * @brief apply linear interpolation to orientation

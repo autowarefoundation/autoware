@@ -197,25 +197,30 @@ TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay)
   quaternion_tf.setRPY(0.0, 0.0, 0.0);
   current_pose.orientation = tf2::toMsg(quaternion_tf);
 
-  // With a delay and/or a velocity of 0.0 there is no change of position
+  // With a delay acceleration and/or a velocity of 0.0 there is no change of position
   double delay_time = 0.0;
   double current_vel = 0.0;
+  double current_acc = 0.0;
   Pose delayed_pose =
-    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x, abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   delay_time = 1.0;
   current_vel = 0.0;
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
+  current_acc = 0.0;
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x, abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   delay_time = 0.0;
   current_vel = 1.0;
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
+  current_acc = 0.0;
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x, abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
@@ -223,46 +228,89 @@ TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay)
   // With both delay and velocity: change of position
   delay_time = 1.0;
   current_vel = 1.0;
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
+  current_acc = 0.0;
+
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x + current_vel * delay_time, abs_err);
+  EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
+  EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
+
+  // With all, acceleration, delay and velocity: change of position
+  delay_time = 1.0;
+  current_vel = 1.0;
+  current_acc = 1.0;
+
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
+  EXPECT_NEAR(
+    delayed_pose.position.x,
+    current_pose.position.x + current_vel * delay_time +
+      0.5 * current_acc * delay_time * delay_time,
+    abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   // Vary the yaw
   quaternion_tf.setRPY(0.0, 0.0, M_PI);
   current_pose.orientation = tf2::toMsg(quaternion_tf);
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
-  EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x - current_vel * delay_time, abs_err);
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
+  EXPECT_NEAR(
+    delayed_pose.position.x,
+    current_pose.position.x - current_vel * delay_time -
+      0.5 * current_acc * delay_time * delay_time,
+    abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   quaternion_tf.setRPY(0.0, 0.0, M_PI_2);
   current_pose.orientation = tf2::toMsg(quaternion_tf);
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x, abs_err);
-  EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y + current_vel * delay_time, abs_err);
+  EXPECT_NEAR(
+    delayed_pose.position.y,
+    current_pose.position.y + current_vel * delay_time +
+      0.5 * current_acc * delay_time * delay_time,
+    abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   quaternion_tf.setRPY(0.0, 0.0, -M_PI_2);
   current_pose.orientation = tf2::toMsg(quaternion_tf);
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x, abs_err);
-  EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y - current_vel * delay_time, abs_err);
+  EXPECT_NEAR(
+    delayed_pose.position.y,
+    current_pose.position.y - current_vel * delay_time -
+      0.5 * current_acc * delay_time * delay_time,
+    abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   // Vary the pitch : no effect /!\ NOTE: bug with roll of +-PI/2 which rotates the yaw by PI
   quaternion_tf.setRPY(0.0, M_PI_4, 0.0);
   current_pose.orientation = tf2::toMsg(quaternion_tf);
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
-  EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x + current_vel * delay_time, abs_err);
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
+  EXPECT_NEAR(
+    delayed_pose.position.x,
+    current_pose.position.x + current_vel * delay_time +
+      0.5 * current_acc * delay_time * delay_time,
+    abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 
   // Vary the roll : no effect
   quaternion_tf.setRPY(M_PI_2, 0.0, 0.0);
   current_pose.orientation = tf2::toMsg(quaternion_tf);
-  delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
-  EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x + current_vel * delay_time, abs_err);
+  delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel, current_acc);
+  EXPECT_NEAR(
+    delayed_pose.position.x,
+    current_pose.position.x + current_vel * delay_time +
+      0.5 * current_acc * delay_time * delay_time,
+    abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 }
