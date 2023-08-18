@@ -242,9 +242,8 @@ private:
 
   /**
    * @brief update main avoidance data for avoidance path generation based on latest planner data.
-   * @return avoidance data.
    */
-  AvoidancePlanningData calcAvoidancePlanningData(DebugData & debug) const;
+  void fillFundamentalData(AvoidancePlanningData & data, DebugData & debug);
 
   /**
    * @brief fill additional data so that the module judges target objects.
@@ -555,7 +554,7 @@ private:
 
   helper::avoidance::AvoidanceHelper helper_;
 
-  AvoidancePlanningData avoidance_data_;
+  AvoidancePlanningData avoid_data_;
 
   PathShifter path_shifter_;
 
