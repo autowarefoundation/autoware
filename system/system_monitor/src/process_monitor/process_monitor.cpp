@@ -401,7 +401,7 @@ void ProcessMonitor::getHighMemoryProcesses(const std::string & output)
     bp::pipe err_pipe{err_fd[0], err_fd[1]};
     bp::ipstream is_err{std::move(err_pipe)};
 
-    bp::child c("sort -r -k 10", bp::std_out > p2, bp::std_err > is_err, bp::std_in < p1);
+    bp::child c("sort -r -k 10 -n", bp::std_out > p2, bp::std_err > is_err, bp::std_in < p1);
     c.wait();
     if (c.exit_code() != 0) {
       is_err >> os.rdbuf();
