@@ -3246,4 +3246,21 @@ void extractObstaclesFromDrivableArea(
     bound = drivable_area_processing::updateBoundary(bound, unique_polygons);
   }
 }
+
+lanelet::ConstLanelets combineLanelets(
+  const lanelet::ConstLanelets & base_lanes, const lanelet::ConstLanelets & added_lanes)
+{
+  lanelet::ConstLanelets combined_lanes = base_lanes;
+  for (const auto & added_lane : added_lanes) {
+    const auto it = std::find_if(
+      combined_lanes.begin(), combined_lanes.end(),
+      [&added_lane](const lanelet::ConstLanelet & lane) { return lane.id() == added_lane.id(); });
+    if (it == combined_lanes.end()) {
+      combined_lanes.push_back(added_lane);
+    }
+  }
+
+  return combined_lanes;
+}
+
 }  // namespace behavior_path_planner::utils
