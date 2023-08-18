@@ -1223,7 +1223,7 @@ AvoidLineArray AvoidanceModule::getFillGapShiftLines(const AvoidLineArray & shif
     ret.push_back(calc_gap_shift_line(shift_lines.at(i), shift_lines.at(i + 1)));
   }
 
-  utils::avoidance::fillAdditionalInfoFromLongitudinal(avoidance_data_, ret);
+  utils::avoidance::fillAdditionalInfoFromLongitudinal(avoid_data_, ret);
 
   return ret;
 }
