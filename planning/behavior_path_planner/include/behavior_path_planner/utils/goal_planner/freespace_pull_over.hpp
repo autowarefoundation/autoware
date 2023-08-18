@@ -47,6 +47,7 @@ protected:
   std::unique_ptr<AbstractPlanningAlgorithm> planner_;
   double velocity_;
   bool use_back_;
+  bool left_side_parking_;
 };
 }  // namespace behavior_path_planner
 

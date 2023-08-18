@@ -336,14 +336,19 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
 }
 
 PathWithLaneId convertWayPointsToPathWithLaneId(
-  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity)
+  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity,
+  const lanelet::ConstLanelets & lanelets)
 {
   PathWithLaneId path;
   path.header = waypoints.header;
   for (const auto & waypoint : waypoints.waypoints) {
     PathPointWithLaneId point{};
     point.point.pose = waypoint.pose.pose;
-    // point.lane_id = // todo
+    for (const auto & lane : lanelets) {
+      if (lanelet::utils::isInLanelet(point.point.pose, lane)) {
+        point.lane_ids.push_back(lane.id());
+      }
+    }
     point.point.longitudinal_velocity_mps = (waypoint.is_back ? -1 : 1) * velocity;
     path.points.push_back(point);
   }

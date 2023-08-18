@@ -75,7 +75,8 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const BehaviorPathPlannerParameters & common_parameter);
 
 PathWithLaneId convertWayPointsToPathWithLaneId(
-  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity);
+  const freespace_planning_algorithms::PlannerWaypoints & waypoints, const double velocity,
+  const lanelet::ConstLanelets & lanelets);
 
 std::vector<size_t> getReversingIndices(const PathWithLaneId & path);
 
