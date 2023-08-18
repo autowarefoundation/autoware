@@ -110,7 +110,7 @@ class TestLoadMGRSFromYaml(unittest.TestCase):
         # Create subscription to map_projector_info topic
         subscription = self.test_node.create_subscription(
             MapProjectorInfo,
-            "/map_projection_loader/map_projector_info",
+            "/map/map_projector_type",
             self.callback,
             custom_qos_profile,
         )
@@ -125,7 +125,7 @@ class TestLoadMGRSFromYaml(unittest.TestCase):
             get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
         )
         with open(map_projection_info_path) as f:
-            yaml_data = yaml.load(f)
+            yaml_data = yaml.load(f, Loader=yaml.FullLoader)
 
         # Test if message received
         self.assertIsNotNone(

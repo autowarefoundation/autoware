@@ -17,7 +17,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "tier4_map_msgs/msg/map_projector_info.hpp"
+#include <component_interface_specs/map.hpp>
+#include <component_interface_utils/rclcpp.hpp>
 
 #include <string>
 
@@ -29,7 +30,8 @@ public:
   MapProjectionLoader();
 
 private:
-  rclcpp::Publisher<tier4_map_msgs::msg::MapProjectorInfo>::SharedPtr publisher_;
+  using MapProjectorInfo = map_interface::MapProjectorInfo;
+  component_interface_utils::Publisher<MapProjectorInfo>::SharedPtr publisher_;
 };
 
 #endif  // MAP_PROJECTION_LOADER__MAP_PROJECTION_LOADER_HPP_

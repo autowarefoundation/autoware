@@ -16,6 +16,8 @@
 
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_map_msgs</depend>
+  <depend>component_interface_specs</depend>
+  <depend>component_interface_utils</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>

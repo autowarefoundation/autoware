@@ -64,7 +64,6 @@ def launch_setup(context, *args, **kwargs):
         name="lanelet2_map_loader",
         remappings=[
             ("output/lanelet2_map", "vector_map"),
-            ("input/map_projector_info", "map_projector_type"),
         ],
         parameters=[
             {
