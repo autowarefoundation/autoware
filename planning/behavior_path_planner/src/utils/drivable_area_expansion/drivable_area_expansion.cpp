@@ -200,11 +200,39 @@ void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_
         end_right.update(*inter_end, it, dist);
     }
   }
-  if (  // ill-formed expanded drivable area -> keep the original bounds
-    start_left.segment_it == da.end() || start_right.segment_it == da.end() ||
-    end_left.segment_it == da.end() || end_right.segment_it == da.end()) {
-    return;
+  if (start_left.segment_it == da.end()) {
+    const auto closest_it =
+      std::min_element(da.begin(), da.end(), [&](const auto & a, const auto & b) {
+        return boost::geometry::distance(a, start_segment.first) <
+               boost::geometry::distance(b, start_segment.first);
+      });
+    start_left.update(*closest_it, closest_it, 0.0);
   }
+  if (start_right.segment_it == da.end()) {
+    const auto closest_it =
+      std::min_element(da.begin(), da.end(), [&](const auto & a, const auto & b) {
+        return boost::geometry::distance(a, start_segment.second) <
+               boost::geometry::distance(b, start_segment.second);
+      });
+    start_right.update(*closest_it, closest_it, 0.0);
+  }
+  if (end_left.segment_it == da.end()) {
+    const auto closest_it =
+      std::min_element(da.begin(), da.end(), [&](const auto & a, const auto & b) {
+        return boost::geometry::distance(a, end_segment.first) <
+               boost::geometry::distance(b, end_segment.first);
+      });
+    end_left.update(*closest_it, closest_it, 0.0);
+  }
+  if (end_right.segment_it == da.end()) {
+    const auto closest_it =
+      std::min_element(da.begin(), da.end(), [&](const auto & a, const auto & b) {
+        return boost::geometry::distance(a, end_segment.second) <
+               boost::geometry::distance(b, end_segment.second);
+      });
+    end_right.update(*closest_it, closest_it, 0.0);
+  }
+
   // extract the expanded left and right bound from the expanded drivable area
   path.left_bound.clear();
   path.right_bound.clear();
@@ -238,8 +266,11 @@ void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_
   const auto point_cmp = [](const auto & p1, const auto & p2) {
     return p1.x == p2.x && p1.y == p2.y;
   };
-  std::unique(path.left_bound.begin(), path.left_bound.end(), point_cmp);
-  std::unique(path.right_bound.begin(), path.right_bound.end(), point_cmp);
+  path.left_bound.erase(
+    std::unique(path.left_bound.begin(), path.left_bound.end(), point_cmp), path.left_bound.end());
+  path.right_bound.erase(
+    std::unique(path.right_bound.begin(), path.right_bound.end(), point_cmp),
+    path.right_bound.end());
   copy_z_over_arc_length(original_left_bound, path.left_bound);
   copy_z_over_arc_length(original_right_bound, path.right_bound);
 }
