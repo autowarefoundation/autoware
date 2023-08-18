@@ -19,7 +19,7 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "object_recognition_utils/predicted_path_utils.hpp"
 
-namespace behavior_path_planner::utils::safety_check
+namespace behavior_path_planner::utils::path_safety_checker
 {
 void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point)
 {
@@ -303,4 +303,4 @@ bool checkCollision(
 
   return true;
 }
-}  // namespace behavior_path_planner::utils::safety_check
+}  // namespace behavior_path_planner::utils::path_safety_checker

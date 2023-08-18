@@ -17,6 +17,7 @@
 #include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
@@ -1895,11 +1896,11 @@ bool AvoidanceModule::isSafePath(
     avoidance_data_, planner_data_, parameters_, is_right_shift.value());
 
   for (const auto & object : safety_check_target_objects) {
-    const auto obj_predicted_paths =
-      utils::getPredictedPathFromObj(object, parameters_->check_all_predicted_path);
+    const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
+      object, parameters_->check_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
       CollisionCheckDebug collision{};
-      if (!utils::safety_check::checkCollision(
+      if (!utils::path_safety_checker::checkCollision(
             shifted_path.path, ego_predicted_path, object, obj_path, p,
             p.expected_front_deceleration, p.expected_rear_deceleration, collision)) {
         return false;

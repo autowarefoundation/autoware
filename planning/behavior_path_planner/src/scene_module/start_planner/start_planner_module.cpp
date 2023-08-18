@@ -15,9 +15,9 @@
 #include "behavior_path_planner/scene_module/start_planner/start_planner_module.hpp"
 
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_planner/util.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
@@ -631,9 +631,10 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoses()
 
   // filter pull out lanes stop objects
   const auto [pull_out_lane_objects, others] =
-    utils::separateObjectsByLanelets(*planner_data_->dynamic_object, status_.pull_out_lanes);
-  const auto pull_out_lane_stop_objects =
-    utils::filterObjectsByVelocity(pull_out_lane_objects, parameters_->th_moving_object_velocity);
+    utils::path_safety_checker::separateObjectsByLanelets(
+      *planner_data_->dynamic_object, status_.pull_out_lanes);
+  const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    pull_out_lane_objects, parameters_->th_moving_object_velocity);
 
   // lateral shift to current_pose
   const double distance_from_center_line = arc_position_pose.distance;

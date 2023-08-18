@@ -15,6 +15,7 @@
 #include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
 
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -136,7 +137,8 @@ void AvoidanceByLaneChange::fillAvoidanceTargetObjects(
   const auto p = std::dynamic_pointer_cast<AvoidanceParameters>(avoidance_parameters_);
 
   const auto [object_within_target_lane, object_outside_target_lane] =
-    utils::separateObjectsByLanelets(*planner_data_->dynamic_object, data.current_lanelets);
+    utils::path_safety_checker::separateObjectsByLanelets(
+      *planner_data_->dynamic_object, data.current_lanelets);
 
   // Assume that the maximum allocation for data.other object is the sum of
   // objects_within_target_lane and object_outside_target_lane. The maximum allocation for

@@ -14,6 +14,7 @@
 
 #include "behavior_path_planner/utils/start_planner/shift_pull_out.hpp"
 
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
@@ -64,9 +65,9 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
 
   // extract stop objects in pull out lane for collision check
   const auto [pull_out_lane_objects, others] =
-    utils::separateObjectsByLanelets(*dynamic_objects, pull_out_lanes);
-  const auto pull_out_lane_stop_objects =
-    utils::filterObjectsByVelocity(pull_out_lane_objects, parameters_.th_moving_object_velocity);
+    utils::path_safety_checker::separateObjectsByLanelets(*dynamic_objects, pull_out_lanes);
+  const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    pull_out_lane_objects, parameters_.th_moving_object_velocity);
 
   // get safe path
   for (auto & pull_out_path : pull_out_paths) {

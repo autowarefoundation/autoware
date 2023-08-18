@@ -14,6 +14,7 @@
 
 #include "behavior_path_planner/utils/start_planner/geometric_pull_out.hpp"
 
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
@@ -69,9 +70,10 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
   // collision check with stop objects in pull out lanes
   const auto arc_path = planner_.getArcPath();
   const auto [pull_out_lane_objects, others] =
-    utils::separateObjectsByLanelets(*(planner_data_->dynamic_object), pull_out_lanes);
-  const auto pull_out_lane_stop_objects =
-    utils::filterObjectsByVelocity(pull_out_lane_objects, parameters_.th_moving_object_velocity);
+    utils::path_safety_checker::separateObjectsByLanelets(
+      *(planner_data_->dynamic_object), pull_out_lanes);
+  const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    pull_out_lane_objects, parameters_.th_moving_object_velocity);
 
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
         vehicle_footprint_, arc_path, pull_out_lane_stop_objects,

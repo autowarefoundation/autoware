@@ -15,6 +15,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__LANE_CHANGE_MODULE_DATA_HPP_
 
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 #include "lanelet2_core/geometry/Lanelet.h"
 
@@ -132,9 +133,9 @@ struct LaneChangeTargetObjectIndices
 
 struct LaneChangeTargetObjects
 {
-  std::vector<utils::safety_check::ExtendedPredictedObject> current_lane{};
-  std::vector<utils::safety_check::ExtendedPredictedObject> target_lane{};
-  std::vector<utils::safety_check::ExtendedPredictedObject> other_lane{};
+  std::vector<utils::path_safety_checker::ExtendedPredictedObject> current_lane{};
+  std::vector<utils::path_safety_checker::ExtendedPredictedObject> target_lane{};
+  std::vector<utils::path_safety_checker::ExtendedPredictedObject> other_lane{};
 };
 
 enum class LaneChangeModuleType {
