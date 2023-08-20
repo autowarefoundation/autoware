@@ -359,9 +359,6 @@ std::pair<bool, VectorXd> MPC::updateStateForDelayCompensation(
 
   MatrixXd x_curr = x0_orig;
   double mpc_curr_time = start_time;
-  // for (const auto & tt : traj.relative_time) {
-  //   std::cerr << "traj.relative_time = " << tt << std::endl;
-  // }
   for (size_t i = 0; i < m_input_buffer.size(); ++i) {
     double k, v = 0.0;
     try {
@@ -573,47 +570,16 @@ std::pair<bool, VectorXd> MPC::executeOptimization(
     A(i, i - 1) = -1.0;
   }
 
-  const bool is_vehicle_stopped = std::fabs(current_velocity) < 0.01;
-  const auto get_adaptive_steer_rate_lim = [&](const double curvature, const double velocity) {
-    if (is_vehicle_stopped) {
-      return std::numeric_limits<double>::max();
-    }
-
-    double steer_rate_lim_by_curvature = m_steer_rate_lim_map_by_curvature.back().second;
-    for (const auto & steer_rate_lim_info : m_steer_rate_lim_map_by_curvature) {
-      if (std::abs(curvature) <= steer_rate_lim_info.first) {
-        steer_rate_lim_by_curvature = steer_rate_lim_info.second;
-        break;
-      }
-    }
-
-    double steer_rate_lim_by_velocity = m_steer_rate_lim_map_by_velocity.back().second;
-    for (const auto & steer_rate_lim_info : m_steer_rate_lim_map_by_velocity) {
-      if (std::abs(velocity) <= steer_rate_lim_info.first) {
-        steer_rate_lim_by_velocity = steer_rate_lim_info.second;
-        break;
-      }
-    }
-
-    return std::min(steer_rate_lim_by_curvature, steer_rate_lim_by_velocity);
-  };
-
+  // steering angle limit
   VectorXd lb = VectorXd::Constant(DIM_U_N, -m_steer_lim);  // min steering angle
   VectorXd ub = VectorXd::Constant(DIM_U_N, m_steer_lim);   // max steering angle
 
-  VectorXd lbA(DIM_U_N);
-  VectorXd ubA(DIM_U_N);
-  for (int i = 0; i < DIM_U_N; ++i) {
-    const double adaptive_steer_rate_lim =
-      get_adaptive_steer_rate_lim(traj.smooth_k.at(i), traj.vx.at(i));
-    const double adaptive_delta_steer_lim = adaptive_steer_rate_lim * prediction_dt;
-    lbA(i) = -adaptive_delta_steer_lim;
-    ubA(i) = adaptive_delta_steer_lim;
-  }
-  const double adaptive_steer_rate_lim =
-    get_adaptive_steer_rate_lim(traj.smooth_k.at(0), traj.vx.at(0));
-  lbA(0, 0) = m_raw_steer_cmd_prev - adaptive_steer_rate_lim * m_ctrl_period;
-  ubA(0, 0) = m_raw_steer_cmd_prev + adaptive_steer_rate_lim * m_ctrl_period;
+  // steering angle rate limit
+  VectorXd steer_rate_limits = calcSteerRateLimitOnTrajectory(traj, current_velocity);
+  VectorXd ubA = steer_rate_limits * prediction_dt;
+  VectorXd lbA = -steer_rate_limits * prediction_dt;
+  ubA(0) = m_raw_steer_cmd_prev + steer_rate_limits(0) * m_ctrl_period;
+  lbA(0) = m_raw_steer_cmd_prev - steer_rate_limits(0) * m_ctrl_period;
 
   auto t_start = std::chrono::system_clock::now();
   bool solve_result = m_qpsolver_ptr->solve(H, f.transpose(), A, lb, ub, lbA, ubA, Uex);
@@ -759,6 +725,58 @@ double MPC::calcDesiredSteeringRate(
   const auto steer_rate = (steer_1 - steer_0) / predict_dt;
 
   return steer_rate;
+}
+
+VectorXd MPC::calcSteerRateLimitOnTrajectory(
+  const MPCTrajectory & trajectory, const double current_velocity) const
+{
+  const auto interp = [&](const auto & steer_rate_limit_map, const auto & current) {
+    std::vector<double> reference, limits;
+    for (const auto & p : steer_rate_limit_map) {
+      reference.push_back(p.first);
+      limits.push_back(p.second);
+    }
+
+    // If the speed is out of range of the reference, apply zero-order hold.
+    if (current <= reference.front()) {
+      return limits.front();
+    }
+    if (current >= reference.back()) {
+      return limits.back();
+    }
+
+    // Apply linear interpolation
+    for (size_t i = 0; i < reference.size() - 1; ++i) {
+      if (reference.at(i) <= current && current <= reference.at(i + 1)) {
+        auto ratio =
+          (current - reference.at(i)) / std::max(reference.at(i + 1) - reference.at(i), 1.0e-5);
+        ratio = std::clamp(ratio, 0.0, 1.0);
+        const auto interp = limits.at(i) + ratio * (limits.at(i + 1) - limits.at(i));
+        return interp;
+      }
+    }
+
+    std::cerr << "MPC::calcSteerRateLimitOnTrajectory() interpolation logic is broken. Command "
+                 "filter is not working. Please check the code."
+              << std::endl;
+    return reference.back();
+  };
+
+  // when the vehicle is stopped, no steering rate limit.
+  const bool is_vehicle_stopped = std::fabs(current_velocity) < 0.01;
+  if (is_vehicle_stopped) {
+    return VectorXd::Zero(m_param.prediction_horizon);
+  }
+
+  // calculate steering rate limit
+  VectorXd steer_rate_limits = VectorXd::Zero(m_param.prediction_horizon);
+  for (int i = 0; i < m_param.prediction_horizon; ++i) {
+    const auto limit_by_curvature = interp(m_steer_rate_lim_map_by_curvature, trajectory.k.at(i));
+    const auto limit_by_velocity = interp(m_steer_rate_lim_map_by_velocity, trajectory.vx.at(i));
+    steer_rate_limits(i) = std::min(limit_by_curvature, limit_by_velocity);
+  }
+
+  return steer_rate_limits;
 }
 
 bool MPC::isValid(const MPCMatrix & m) const

@@ -379,6 +379,14 @@ private:
     const MPCMatrix & mpc_matrix, const AckermannLateralCommand & ctrl_cmd, const VectorXd & Uex,
     const Odometry & current_kinematics) const;
 
+  /**
+   * @brief calculate steering rate limit along with the target trajectory
+   * @param reference_trajectory The reference trajectory.
+   * @param current_velocity current velocity of ego.
+   */
+  VectorXd calcSteerRateLimitOnTrajectory(
+    const MPCTrajectory & trajectory, const double current_velocity) const;
+
   //!< @brief logging with warn and return false
   template <typename... Args>
   inline bool fail_warn_throttle(Args &&... args) const
