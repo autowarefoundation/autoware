@@ -341,14 +341,23 @@ PathWithLaneId convertWayPointsToPathWithLaneId(
 {
   PathWithLaneId path;
   path.header = waypoints.header;
-  for (const auto & waypoint : waypoints.waypoints) {
+  for (size_t i = 0; i < waypoints.waypoints.size(); ++i) {
+    const auto & waypoint = waypoints.waypoints.at(i);
     PathPointWithLaneId point{};
     point.point.pose = waypoint.pose.pose;
+    // put the lane that contain waypoints in lane_ids.
+    bool is_in_lanes = false;
     for (const auto & lane : lanelets) {
       if (lanelet::utils::isInLanelet(point.point.pose, lane)) {
         point.lane_ids.push_back(lane.id());
+        is_in_lanes = true;
       }
     }
+    // If none of them corresponds, assign the previous lane_ids.
+    if (!is_in_lanes && i > 0) {
+      point.lane_ids = path.points.at(i - 1).lane_ids;
+    }
+
     point.point.longitudinal_velocity_mps = (waypoint.is_back ? -1 : 1) * velocity;
     path.points.push_back(point);
   }
