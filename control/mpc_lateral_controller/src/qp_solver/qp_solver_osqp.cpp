@@ -72,12 +72,10 @@ bool QPSolverOSQP::solve(
 
   // polish status: successful (1), unperformed (0), (-1) unsuccessful
   int status_polish = std::get<2>(result);
-  if (status_polish == -1) {
-    RCLCPP_WARN(logger_, "osqp status_polish = %d (unsuccessful)", status_polish);
-    return false;
-  }
-  if (status_polish == 0) {
-    RCLCPP_WARN(logger_, "osqp status_polish = %d (unperformed)", status_polish);
+  if (status_polish == -1 || status_polish == 0) {
+    const auto s = (status_polish == 0) ? "Polish process is not performed in osqp."
+                                        : "Polish process failed in osqp.";
+    RCLCPP_INFO(logger_, "%s The required accuracy is met, but the solution can be inaccurate.", s);
     return true;
   }
   return true;

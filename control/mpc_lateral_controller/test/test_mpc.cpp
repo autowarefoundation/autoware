@@ -252,9 +252,8 @@ TEST_F(MPCTest, OsqpCalculate)
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
   Float32MultiArrayStamped diag;
-  // with OSQP this function returns false despite finding correct solutions
   const auto odom = makeOdometry(pose_zero, default_velocity);
-  EXPECT_FALSE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
+  EXPECT_TRUE(mpc.calculateMPC(neutral_steer, odom, ctrl_cmd, pred_traj, diag));
   EXPECT_EQ(ctrl_cmd.steering_tire_angle, 0.0f);
   EXPECT_EQ(ctrl_cmd.steering_tire_rotation_rate, 0.0f);
 }
