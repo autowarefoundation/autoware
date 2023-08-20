@@ -36,3 +36,39 @@
       th_turn_signal_on_lateral_offset: 1.0
       intersection_search_length: 30.0
       length_ratio_for_turn_signal_deactivation_near_intersection: 0.5
+      # freespace planner
+      freespace_planner:
+        enable_freespace_planner: true
+        end_pose_search_start_distance: 20.0
+        end_pose_search_end_distance: 30.0
+        end_pose_search_interval: 2.0
+        freespace_planner_algorithm: "astar"  # options: astar, rrtstar
+        velocity: 1.0
+        vehicle_shape_margin: 1.0
+        time_limit: 3000.0
+        minimum_turning_radius: 5.0
+        maximum_turning_radius: 5.0
+        turning_radius_size: 1
+        # search configs
+        search_configs:
+          theta_size: 144
+          angle_goal_range: 6.0
+          curve_weight: 1.2
+          reverse_weight: 1.0
+          lateral_goal_range: 0.5
+          longitudinal_goal_range: 2.0
+        # costmap configs
+        costmap_configs:
+          obstacle_threshold: 30
+        # -- A* search Configurations --
+        astar:
+          only_behind_solutions: false
+          use_back: false
+          distance_heuristic_weight: 1.0
+        # -- RRT* search Configurations --
+        rrtstar:
+          enable_update: true
+          use_informed_sampling: true
+          max_planning_time: 150.0
+          neighbor_radius: 8.0
+          margin: 1.0

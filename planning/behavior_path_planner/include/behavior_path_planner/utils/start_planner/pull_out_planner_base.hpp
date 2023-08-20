@@ -40,6 +40,7 @@ enum class PlannerType {
   SHIFT = 1,
   GEOMETRIC = 2,
   STOP = 3,
+  FREESPACE = 4,
 };
 
 class PullOutPlannerBase

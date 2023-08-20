@@ -18,6 +18,7 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
+#include "behavior_path_planner/utils/start_planner/freespace_pull_out.hpp"
 #include "behavior_path_planner/utils/start_planner/geometric_pull_out.hpp"
 #include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
 #include "behavior_path_planner/utils/start_planner/shift_pull_out.hpp"
@@ -96,7 +97,9 @@ public:
   {
   }
 
+  // Condition to disable simultaneous execution
   bool isBackFinished() const { return status_.back_finished; }
+  bool isFreespacePlanning() const { return status_.planner_type == PlannerType::FREESPACE; }
 
 private:
   bool canTransitSuccessState() override { return false; }
@@ -117,7 +120,15 @@ private:
   std::unique_ptr<rclcpp::Time> last_pull_out_start_update_time_;
   std::unique_ptr<Pose> last_approved_pose_;
 
-  std::shared_ptr<PullOutPlannerBase> getCurrentPlanner() const;
+  // generate freespace pull out paths in a separate thread
+  std::unique_ptr<PullOutPlannerBase> freespace_planner_;
+  rclcpp::TimerBase::SharedPtr freespace_planner_timer_;
+  rclcpp::CallbackGroup::SharedPtr freespace_planner_timer_cb_group_;
+  // TODO(kosuke55)
+  // Currently, we only do lock when updating a member of status_.
+  // However, we need to ensure that the value does not change when referring to it.
+  std::mutex mutex_;
+
   PathWithLaneId getFullPath() const;
   std::vector<Pose> searchPullOutStartPoses();
 
@@ -141,13 +152,19 @@ private:
   bool hasFinishedPullOut() const;
   void checkBackFinished();
   bool isStopped();
+  bool isStuck();
   bool hasFinishedCurrentPath();
+  void setDrivableAreaInfo(BehaviorModuleOutput & output) const;
 
   // check if the goal is located behind the ego in the same route segment.
   bool IsGoalBehindOfEgoInSameRouteSegment() const;
 
   // generate BehaviorPathOutput with stopping path and update status
   BehaviorModuleOutput generateStopOutput();
+
+  // freespace planner
+  void onFreespacePlannerTimer();
+  bool planFreespacePath();
 
   void setDebugData() const;
 };

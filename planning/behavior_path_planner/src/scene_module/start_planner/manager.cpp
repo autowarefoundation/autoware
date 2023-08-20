@@ -78,6 +78,75 @@ StartPlannerModuleManager::StartPlannerModuleManager(
     node->declare_parameter<double>(ns + "backward_path_update_duration");
   p.ignore_distance_from_lane_end =
     node->declare_parameter<double>(ns + "ignore_distance_from_lane_end");
+  // freespace planner general params
+  {
+    std::string ns = "start_planner.freespace_planner.";
+    p.enable_freespace_planner = node->declare_parameter<bool>(ns + "enable_freespace_planner");
+    p.freespace_planner_algorithm =
+      node->declare_parameter<std::string>(ns + "freespace_planner_algorithm");
+    p.end_pose_search_start_distance =
+      node->declare_parameter<double>(ns + "end_pose_search_start_distance");
+    p.end_pose_search_end_distance =
+      node->declare_parameter<double>(ns + "end_pose_search_end_distance");
+    p.end_pose_search_interval = node->declare_parameter<double>(ns + "end_pose_search_interval");
+    p.freespace_planner_velocity = node->declare_parameter<double>(ns + "velocity");
+    p.vehicle_shape_margin = node->declare_parameter<double>(ns + "vehicle_shape_margin");
+    p.freespace_planner_common_parameters.time_limit =
+      node->declare_parameter<double>(ns + "time_limit");
+    p.freespace_planner_common_parameters.minimum_turning_radius =
+      node->declare_parameter<double>(ns + "minimum_turning_radius");
+    p.freespace_planner_common_parameters.maximum_turning_radius =
+      node->declare_parameter<double>(ns + "maximum_turning_radius");
+    p.freespace_planner_common_parameters.turning_radius_size =
+      node->declare_parameter<int>(ns + "turning_radius_size");
+    p.freespace_planner_common_parameters.maximum_turning_radius = std::max(
+      p.freespace_planner_common_parameters.maximum_turning_radius,
+      p.freespace_planner_common_parameters.minimum_turning_radius);
+    p.freespace_planner_common_parameters.turning_radius_size =
+      std::max(p.freespace_planner_common_parameters.turning_radius_size, 1);
+  }
+  //  freespace planner search config
+  {
+    std::string ns = "start_planner.freespace_planner.search_configs.";
+    p.freespace_planner_common_parameters.theta_size =
+      node->declare_parameter<int>(ns + "theta_size");
+    p.freespace_planner_common_parameters.angle_goal_range =
+      node->declare_parameter<double>(ns + "angle_goal_range");
+    p.freespace_planner_common_parameters.curve_weight =
+      node->declare_parameter<double>(ns + "curve_weight");
+    p.freespace_planner_common_parameters.reverse_weight =
+      node->declare_parameter<double>(ns + "reverse_weight");
+    p.freespace_planner_common_parameters.lateral_goal_range =
+      node->declare_parameter<double>(ns + "lateral_goal_range");
+    p.freespace_planner_common_parameters.longitudinal_goal_range =
+      node->declare_parameter<double>(ns + "longitudinal_goal_range");
+  }
+  //  freespace planner costmap configs
+  {
+    std::string ns = "start_planner.freespace_planner.costmap_configs.";
+    p.freespace_planner_common_parameters.obstacle_threshold =
+      node->declare_parameter<int>(ns + "obstacle_threshold");
+  }
+  //  freespace planner astar
+  {
+    std::string ns = "start_planner.freespace_planner.astar.";
+    p.astar_parameters.only_behind_solutions =
+      node->declare_parameter<bool>(ns + "only_behind_solutions");
+    p.astar_parameters.use_back = node->declare_parameter<bool>(ns + "use_back");
+    p.astar_parameters.distance_heuristic_weight =
+      node->declare_parameter<double>(ns + "distance_heuristic_weight");
+  }
+  //   freespace planner rrtstar
+  {
+    std::string ns = "start_planner.freespace_planner.rrtstar.";
+    p.rrt_star_parameters.enable_update = node->declare_parameter<bool>(ns + "enable_update");
+    p.rrt_star_parameters.use_informed_sampling =
+      node->declare_parameter<bool>(ns + "use_informed_sampling");
+    p.rrt_star_parameters.max_planning_time =
+      node->declare_parameter<double>(ns + "max_planning_time");
+    p.rrt_star_parameters.neighbor_radius = node->declare_parameter<double>(ns + "neighbor_radius");
+    p.rrt_star_parameters.margin = node->declare_parameter<double>(ns + "margin");
+  }
 
   // validation of parameters
   if (p.lateral_acceleration_sampling_num < 1) {
@@ -128,6 +197,11 @@ bool StartPlannerModuleManager::isSimultaneousExecutableAsApprovedModule() const
       return false;
     }
 
+    // Other modules are not needed when freespace planning
+    if (start_planner_ptr->isFreespacePlanning()) {
+      return false;
+    }
+
     return enable_simultaneous_execution_as_approved_module_;
   };
 
@@ -151,6 +225,12 @@ bool StartPlannerModuleManager::isSimultaneousExecutableAsCandidateModule() cons
     if (!start_planner_ptr->isBackFinished()) {
       return false;
     }
+
+    // Other modules are not needed when freespace planning
+    if (start_planner_ptr->isFreespacePlanning()) {
+      return false;
+    }
+
     return enable_simultaneous_execution_as_candidate_module_;
   };
 

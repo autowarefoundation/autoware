@@ -44,6 +44,7 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/utils/start_planner/util.cpp
   src/utils/start_planner/shift_pull_out.cpp
   src/utils/start_planner/geometric_pull_out.cpp
+  src/utils/start_planner/freespace_pull_out.cpp
   src/utils/path_shifter/path_shifter.cpp
   src/utils/drivable_area_expansion/drivable_area_expansion.cpp
   src/utils/drivable_area_expansion/map_utils.cpp

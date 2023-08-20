@@ -18,11 +18,20 @@
 
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
 
+#include <freespace_planning_algorithms/abstract_algorithm.hpp>
+#include <freespace_planning_algorithms/astar_search.hpp>
+#include <freespace_planning_algorithms/rrtstar.hpp>
+
 #include <string>
 #include <vector>
 
 namespace behavior_path_planner
 {
+
+using freespace_planning_algorithms::AstarParam;
+using freespace_planning_algorithms::PlannerCommonParam;
+using freespace_planning_algorithms::RRTStarParam;
+
 struct StartPlannerParameters
 {
   double th_arrived_distance;
@@ -56,6 +65,17 @@ struct StartPlannerParameters
   double backward_search_resolution;
   double backward_path_update_duration;
   double ignore_distance_from_lane_end;
+  // freespace planner
+  bool enable_freespace_planner;
+  std::string freespace_planner_algorithm;
+  double end_pose_search_start_distance;
+  double end_pose_search_end_distance;
+  double end_pose_search_interval;
+  double freespace_planner_velocity;
+  double vehicle_shape_margin;
+  PlannerCommonParam freespace_planner_common_parameters;
+  AstarParam astar_parameters;
+  RRTStarParam rrt_star_parameters;
 };
 
 }  // namespace behavior_path_planner
