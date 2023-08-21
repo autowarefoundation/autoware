@@ -216,7 +216,7 @@ std::pair<double, size_t> calcMaxRelativeAngles(const Trajectory & trajectory)
 }
 
 void calcSteeringAngles(
-  const Trajectory & trajectory, const double wheelbase, std::vector<double> & steerings)
+  const Trajectory & trajectory, const double wheelbase, std::vector<double> & steering_array)
 {
   const auto curvatureToSteering = [](const auto k, const auto wheelbase) {
     return std::atan(k * wheelbase);
@@ -225,19 +225,19 @@ void calcSteeringAngles(
   std::vector<double> curvatures;
   calcCurvature(trajectory, curvatures);
 
-  steerings.clear();
+  steering_array.clear();
   for (const auto k : curvatures) {
-    steerings.push_back(curvatureToSteering(k, wheelbase));
+    steering_array.push_back(curvatureToSteering(k, wheelbase));
   }
 }
 
 std::pair<double, size_t> calcMaxSteeringAngles(
   const Trajectory & trajectory, const double wheelbase)
 {
-  std::vector<double> steerings;
-  calcSteeringAngles(trajectory, wheelbase, steerings);
+  std::vector<double> steering_array;
+  calcSteeringAngles(trajectory, wheelbase, steering_array);
 
-  return getAbsMaxValAndIdx(steerings);
+  return getAbsMaxValAndIdx(steering_array);
 }
 
 std::pair<double, size_t> calcMaxSteeringRates(
@@ -247,8 +247,8 @@ std::pair<double, size_t> calcMaxSteeringRates(
     return {0.0, 0};
   }
 
-  std::vector<double> steerings;
-  calcSteeringAngles(trajectory, wheelbase, steerings);
+  std::vector<double> steering_array;
+  calcSteeringAngles(trajectory, wheelbase, steering_array);
 
   double max_steering_rate = 0.0;
   size_t max_index = 0;
@@ -259,8 +259,8 @@ std::pair<double, size_t> calcMaxSteeringRates(
     const auto v = 0.5 * (p_next.longitudinal_velocity_mps + p_prev.longitudinal_velocity_mps);
     const auto dt = delta_s / std::max(v, 1.0e-5);
 
-    const auto steer_prev = steerings.at(i);
-    const auto steer_next = steerings.at(i + 1);
+    const auto steer_prev = steering_array.at(i);
+    const auto steer_next = steering_array.at(i + 1);
 
     const auto steer_rate = (steer_next - steer_prev) / dt;
     takeBigger(max_steering_rate, max_index, steer_rate, i);
