@@ -25,7 +25,7 @@ namespace map_interface
 struct MapProjectorInfo
 {
   using Message = tier4_map_msgs::msg::MapProjectorInfo;
-  static constexpr char name[] = "/map/map_projector_type";
+  static constexpr char name[] = "/map/map_projector_info";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
   static constexpr auto durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;

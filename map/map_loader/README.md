@@ -140,7 +140,7 @@ Please see [the description of `GetSelectedPointCloudMap.srv`](https://github.co
 ### Feature
 
 lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_auto_mapping_msgs/HADMapBin message.
-The node projects lan/lon coordinates into arbitrary coordinates defined in `/map/map_projector_type` from `map_projection_loader`.
+The node projects lan/lon coordinates into arbitrary coordinates defined in `/map/map_projector_info` from `map_projection_loader`.
 The node supports the following three types of coordinate systems:
 
 - MGRS
