@@ -57,13 +57,16 @@ Lanelet2MapLoaderNode::Lanelet2MapLoaderNode(const rclcpp::NodeOptions & options
   adaptor.init_sub(
     sub_map_projector_type_,
     [this](const MapProjectorInfo::Message::ConstSharedPtr msg) { on_map_projector_info(msg); });
+
+  declare_parameter("lanelet2_map_path", "");
+  declare_parameter("center_line_resolution", 5.0);
 }
 
 void Lanelet2MapLoaderNode::on_map_projector_info(
   const MapProjectorInfo::Message::ConstSharedPtr msg)
 {
-  const auto lanelet2_filename = declare_parameter("lanelet2_map_path", "");
-  const auto center_line_resolution = declare_parameter("center_line_resolution", 5.0);
+  const auto lanelet2_filename = get_parameter("lanelet2_map_path").as_string();
+  const auto center_line_resolution = get_parameter("center_line_resolution").as_double();
 
   // load map from file
   const auto map =
