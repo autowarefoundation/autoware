@@ -223,6 +223,6 @@ if __name__ == "__main__":
             plt.savefig(file_name)
             print("saved to {}".format(file_name))
 
-        algowise_summary_file = os.path.join("/tmp", "summary-{}.png".format(algo_name))
+        algo_summary_file = os.path.join("/tmp", "summary-{}.png".format(algo_name))
         if concat:
-            create_concat_png(algo_png_images, algowise_summary_file, True)
+            create_concat_png(algo_png_images, algo_summary_file, True)
