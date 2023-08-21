@@ -1622,7 +1622,8 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
   double max_offset = 0.0;
   for (const auto & object_parameter : parameters->object_parameters) {
     const auto p = object_parameter.second;
-    const auto offset = p.envelope_buffer_margin + p.safety_buffer_lateral + p.avoid_margin_lateral;
+    const auto offset =
+      2.0 * p.envelope_buffer_margin + p.safety_buffer_lateral + p.avoid_margin_lateral;
     max_offset = std::max(max_offset, offset);
   }
 
