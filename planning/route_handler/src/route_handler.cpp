@@ -969,13 +969,18 @@ boost::optional<lanelet::ConstLanelet> RouteHandler::getRightLanelet(
     return adjacent_right_lane;
   }
 
-  lanelet::ConstLanelet next_lanelet;
-  if (!getNextLaneletWithinRoute(lanelet, &next_lanelet)) {
+  lanelet::ConstLanelets prev_lanelet;
+  if (!getPreviousLaneletsWithinRoute(lanelet, &prev_lanelet)) {
     return adjacent_right_lane;
   }
 
-  lanelet::ConstLanelets prev_lanelet;
-  if (!getPreviousLaneletsWithinRoute(lanelet, &prev_lanelet)) {
+  lanelet::ConstLanelet next_lanelet;
+  if (!getNextLaneletWithinRoute(lanelet, &next_lanelet)) {
+    for (const auto & lane : getNextLanelets(prev_lanelet.front())) {
+      if (lanelet.rightBound().back().id() == lane.leftBound().back().id()) {
+        return lane;
+      }
+    }
     return adjacent_right_lane;
   }
 
@@ -1036,13 +1041,18 @@ boost::optional<lanelet::ConstLanelet> RouteHandler::getLeftLanelet(
     return adjacent_left_lane;
   }
 
-  lanelet::ConstLanelet next_lanelet;
-  if (!getNextLaneletWithinRoute(lanelet, &next_lanelet)) {
+  lanelet::ConstLanelets prev_lanelet;
+  if (!getPreviousLaneletsWithinRoute(lanelet, &prev_lanelet)) {
     return adjacent_left_lane;
   }
 
-  lanelet::ConstLanelets prev_lanelet;
-  if (!getPreviousLaneletsWithinRoute(lanelet, &prev_lanelet)) {
+  lanelet::ConstLanelet next_lanelet;
+  if (!getNextLaneletWithinRoute(lanelet, &next_lanelet)) {
+    for (const auto & lane : getNextLanelets(prev_lanelet.front())) {
+      if (lanelet.leftBound().back().id() == lane.rightBound().back().id()) {
+        return lane;
+      }
+    }
     return adjacent_left_lane;
   }
 
