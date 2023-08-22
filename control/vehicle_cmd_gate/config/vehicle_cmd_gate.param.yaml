@@ -5,6 +5,7 @@
     use_emergency_handling: false
     check_external_emergency_heartbeat: false
     use_start_request: false
+    enable_cmd_limit_filter: true
     external_emergency_stop_heartbeat_timeout: 0.0
     stop_hold_acceleration: -1.5
     emergency_acceleration: -2.4

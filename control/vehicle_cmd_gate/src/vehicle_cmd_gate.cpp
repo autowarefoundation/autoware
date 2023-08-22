@@ -150,6 +150,7 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   moderate_stop_service_acceleration_ =
     declare_parameter<double>("moderate_stop_service_acceleration");
   stop_check_duration_ = declare_parameter<double>("stop_check_duration");
+  enable_cmd_limit_filter_ = declare_parameter<bool>("enable_cmd_limit_filter");
 
   // Vehicle Parameter
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
@@ -411,9 +412,11 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
     filtered_commands.control.longitudinal.acceleration = stop_hold_acceleration_;
   }
 
-  // Apply limit filtering
-  filtered_commands.control = filterControlCommand(filtered_commands.control);
-
+  // Check if command filtering option is enable
+  if (enable_cmd_limit_filter_) {
+    // Apply limit filtering
+    filtered_commands.control = filterControlCommand(filtered_commands.control);
+  }
   // tmp: Publish vehicle emergency status
   VehicleEmergencyStamped vehicle_cmd_emergency;
   vehicle_cmd_emergency.emergency = (use_emergency_handling_ && is_system_emergency_);

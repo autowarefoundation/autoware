@@ -164,6 +164,7 @@ private:
   double stop_hold_acceleration_;
   double emergency_acceleration_;
   double moderate_stop_service_acceleration_;
+  bool enable_cmd_limit_filter_;
 
   // Service
   rclcpp::Service<EngageSrv>::SharedPtr srv_engage_;
