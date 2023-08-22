@@ -209,7 +209,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
   }
 
   BehaviorModuleOutput output;
-  if (!status_.is_safe) {
+  if (!status_.is_safe_static_objects) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
     const auto output = generateStopOutput();
@@ -314,7 +314,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
   }
 
   BehaviorModuleOutput output;
-  if (!status_.is_safe) {
+  if (!status_.is_safe_static_objects) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
     clearWaitingApproval();
@@ -427,7 +427,7 @@ void StartPlannerModule::planWithPriority(
     // use current path if back is not needed
     if (status_.back_finished) {
       const std::lock_guard<std::mutex> lock(mutex_);
-      status_.is_safe = true;
+      status_.is_safe_static_objects = true;
       status_.pull_out_path = *pull_out_path;
       status_.pull_out_start_pose = pull_out_start_pose;
       status_.planner_type = planner->getPlannerType();
@@ -448,7 +448,7 @@ void StartPlannerModule::planWithPriority(
     // Update status variables with the next path information
     {
       const std::lock_guard<std::mutex> lock(mutex_);
-      status_.is_safe = true;
+      status_.is_safe_static_objects = true;
       status_.pull_out_path = *pull_out_path_next;
       status_.pull_out_start_pose = pull_out_start_pose_next;
       status_.planner_type = planner->getPlannerType();
@@ -503,7 +503,7 @@ void StartPlannerModule::planWithPriority(
   // not found safe path
   if (status_.planner_type != PlannerType::FREESPACE) {
     const std::lock_guard<std::mutex> lock(mutex_);
-    status_.is_safe = false;
+    status_.is_safe_static_objects = false;
     status_.planner_type = PlannerType::NONE;
   }
 }
@@ -713,7 +713,7 @@ bool StartPlannerModule::isOverlappedWithLane(
 
 bool StartPlannerModule::hasFinishedPullOut() const
 {
-  if (!status_.back_finished || !status_.is_safe) {
+  if (!status_.back_finished || !status_.is_safe_static_objects) {
     return false;
   }
 
@@ -800,7 +800,7 @@ bool StartPlannerModule::isStuck()
   }
 
   // not found safe path
-  if (!status_.is_safe) {
+  if (!status_.is_safe_static_objects) {
     return true;
   }
 
@@ -1011,7 +1011,7 @@ bool StartPlannerModule::planFreespacePath()
     status_.pull_out_path = *freespace_path;
     status_.pull_out_start_pose = current_pose;
     status_.planner_type = freespace_planner_->getPlannerType();
-    status_.is_safe = true;
+    status_.is_safe_static_objects = true;
     status_.back_finished = true;
     return true;
   }
@@ -1063,8 +1063,8 @@ void StartPlannerModule::setDebugData() const
   const auto header = planner_data_->route_handler->getRouteHeader();
   {
     visualization_msgs::msg::MarkerArray planner_type_marker_array{};
-    const auto color = status_.is_safe ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
-                                       : createMarkerColor(1.0, 0.0, 0.0, 0.99);
+    const auto color = status_.is_safe_static_objects ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
+                                                      : createMarkerColor(1.0, 0.0, 0.0, 0.99);
     auto marker = createDefaultMarker(
       header.frame_id, header.stamp, "planner_type", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0), color);
