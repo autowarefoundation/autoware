@@ -458,7 +458,7 @@ std::vector<TrajectoryPoint> PathSampler::generatePath(const PlannerData & plann
     prev_path_ = selected_path;
   } else {
     RCLCPP_WARN(
-      get_logger(), "No valid path found (out of %lu) outputing %s\n", candidate_paths.size(),
+      get_logger(), "No valid path found (out of %lu) outputting %s\n", candidate_paths.size(),
       prev_path_ ? "previous path" : "stopping path");
     int coll = 0;
     int da = 0;

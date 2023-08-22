@@ -126,15 +126,15 @@ struct Trajectory : sampler_common::Trajectory
 
   [[nodiscard]] Trajectory * subset(const size_t from_idx, const size_t to_idx) const override
   {
-    auto * subtraj = new Trajectory(*sampler_common::Trajectory::subset(from_idx, to_idx));
+    auto * sub_trajectory = new Trajectory(*sampler_common::Trajectory::subset(from_idx, to_idx));
     assert(to_idx >= from_idx);
-    subtraj->reserve(to_idx - from_idx);
+    sub_trajectory->reserve(to_idx - from_idx);
 
     const auto copy_subset = [&](const auto & from, auto & to) {
       to.insert(to.end(), std::next(from.begin(), from_idx), std::next(from.begin(), to_idx));
     };
-    copy_subset(frenet_points, subtraj->frenet_points);
-    return subtraj;
+    copy_subset(frenet_points, sub_trajectory->frenet_points);
+    return sub_trajectory;
   };
 };
 

@@ -33,6 +33,7 @@ struct SamplingParameters
   double mk_max;  // Minimum normalized curvature vector magnitude
 };
 /// @brief sample Bezier curves given an initial and final state and sampling parameters
+// cspell: ignore Artuñedoet
 /// @details from Section IV of A. Artuñedoet al.: Real-Time Motion Planning Approach for Automated
 /// Driving in Urban Environments
 std::vector<Bezier> sample(

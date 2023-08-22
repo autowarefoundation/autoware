@@ -125,11 +125,11 @@ sampler_common::transform::Spline2D preparePathSpline(
     control_points.transposeInPlace();
     const auto nb_knots = path.size() + spline_dim + 3;
     Eigen::RowVectorXd knots(nb_knots);
-    constexpr auto repeat_endknots = 3lu;
-    const auto knot_step = 1.0 / static_cast<double>(nb_knots - 2 * repeat_endknots);
+    constexpr auto repeat_end_knots = 3lu;
+    const auto knot_step = 1.0 / static_cast<double>(nb_knots - 2 * repeat_end_knots);
     auto i = 0lu;
-    for (; i < repeat_endknots; ++i) knots[i] = 0.0;
-    for (; i < nb_knots - repeat_endknots; ++i) knots[i] = knots[i - 1] + knot_step;
+    for (; i < repeat_end_knots; ++i) knots[i] = 0.0;
+    for (; i < nb_knots - repeat_end_knots; ++i) knots[i] = knots[i - 1] + knot_step;
     for (; i < nb_knots; ++i) knots[i] = 1.0;
     const auto spline = Eigen::Spline<double, 2, spline_dim>(knots, control_points);
     x.reserve(path.size());

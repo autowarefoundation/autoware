@@ -183,17 +183,17 @@ void calculateCartesian(
     for (const auto & fp : trajectory.frenet_points)
       trajectory.points.push_back(reference.cartesian(fp));
     calculateLengthsAndYaws(trajectory);
-    std::vector<double> dyaws;
-    dyaws.reserve(trajectory.yaws.size());
+    std::vector<double> d_yaws;
+    d_yaws.reserve(trajectory.yaws.size());
     for (size_t i = 0; i + 1 < trajectory.yaws.size(); ++i)
-      dyaws.push_back(autoware::common::helper_functions::wrap_angle(
+      d_yaws.push_back(autoware::common::helper_functions::wrap_angle(
         trajectory.yaws[i + 1] - trajectory.yaws[i]));
-    dyaws.push_back(0.0);
+    d_yaws.push_back(0.0);
     // Calculate curvatures
     for (size_t i = 1; i < trajectory.yaws.size(); ++i) {
       const auto curvature = trajectory.lengths[i] == trajectory.lengths[i - 1]
                                ? 0.0
-                               : dyaws[i] / (trajectory.lengths[i] - trajectory.lengths[i - 1]);
+                               : d_yaws[i] / (trajectory.lengths[i] - trajectory.lengths[i - 1]);
       trajectory.curvatures.push_back(curvature);
     }
     const auto last_curvature = trajectory.curvatures.empty() ? 0.0 : trajectory.curvatures.back();
@@ -205,7 +205,7 @@ void calculateCartesian(
       const auto s_acc = trajectory.longitudinal_polynomial->acceleration(time);
       const auto d_vel = trajectory.lateral_polynomial->velocity(time);
       const auto d_acc = trajectory.lateral_polynomial->acceleration(time);
-      Eigen::Rotation2D rotation(dyaws[i]);
+      Eigen::Rotation2D rotation(d_yaws[i]);
       Eigen::Vector2d vel_vector{s_vel, d_vel};
       Eigen::Vector2d acc_vector{s_acc, d_acc};
       const auto vel = rotation * vel_vector;

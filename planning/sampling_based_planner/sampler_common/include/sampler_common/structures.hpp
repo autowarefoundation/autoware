@@ -227,19 +227,19 @@ struct Trajectory : Path
 
   [[nodiscard]] Trajectory * subset(const size_t from_idx, const size_t to_idx) const override
   {
-    auto * subtraj = new Trajectory(*Path::subset(from_idx, to_idx));
+    auto * sub_trajectory = new Trajectory(*Path::subset(from_idx, to_idx));
 
     const auto copy_subset = [&](const auto & from, auto & to) {
       to.insert(to.end(), std::next(from.begin(), from_idx), std::next(from.begin(), to_idx));
     };
 
-    copy_subset(longitudinal_velocities, subtraj->longitudinal_velocities);
-    copy_subset(longitudinal_accelerations, subtraj->longitudinal_accelerations);
-    copy_subset(lateral_velocities, subtraj->lateral_velocities);
-    copy_subset(lateral_accelerations, subtraj->lateral_accelerations);
-    copy_subset(jerks, subtraj->jerks);
-    copy_subset(times, subtraj->times);
-    return subtraj;
+    copy_subset(longitudinal_velocities, sub_trajectory->longitudinal_velocities);
+    copy_subset(longitudinal_accelerations, sub_trajectory->longitudinal_accelerations);
+    copy_subset(lateral_velocities, sub_trajectory->lateral_velocities);
+    copy_subset(lateral_accelerations, sub_trajectory->lateral_accelerations);
+    copy_subset(jerks, sub_trajectory->jerks);
+    copy_subset(times, sub_trajectory->times);
+    return sub_trajectory;
   }
 
   [[nodiscard]] Trajectory resample(const double fixed_interval) const

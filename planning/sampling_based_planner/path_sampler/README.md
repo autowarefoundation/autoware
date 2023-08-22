@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This package implements a node that uses sampling based planning to generate a drivable trajectry.
+This package implements a node that uses sampling based planning to generate a drivable trajectory.
 
 ## Feature
 
@@ -33,7 +33,7 @@ Note that the velocity is just taken over from the input path.
 
 ## Algorithm
 
-Sampling based planning is decomposed into 3 successives steps:
+Sampling based planning is decomposed into 3 successive steps:
 
 1. Sampling: candidate trajectories are generated.
 2. Pruning: invalid candidates are discarded.
@@ -65,7 +65,7 @@ Each soft constraint is associated with a weight to allow tuning of the preferen
 ## Limitations
 
 The quality of the candidates generated with polynomials in frenet frame greatly depend on the reference path.
-If the reference path is not smooth, the resulting candidates will probably be undrivable.
+If the reference path is not smooth, the resulting candidates will probably be undriveable.
 
 Failure to find a valid trajectory current results in a suddenly stopping trajectory.
 

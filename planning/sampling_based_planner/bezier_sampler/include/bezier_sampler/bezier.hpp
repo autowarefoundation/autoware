@@ -50,11 +50,11 @@ public:
   explicit Bezier(const std::vector<Eigen::Vector2d> & control_points);
   /// @brief return the control points
   [[nodiscard]] const Eigen::Matrix<double, 6, 2> & getControlPoints() const;
-  /// @brief return the curve in cartersian frame with the desired resolution
+  /// @brief return the curve in cartesian frame with the desired resolution
   [[nodiscard]] std::vector<Eigen::Vector2d> cartesian(const double resolution) const;
-  /// @brief return the curve in cartersian frame with the desired number of points
+  /// @brief return the curve in cartesian frame with the desired number of points
   [[nodiscard]] std::vector<Eigen::Vector2d> cartesian(const int nb_points) const;
-  /// @brief return the curve in cartersian frame (including angle) with the desired number of
+  /// @brief return the curve in cartesian frame (including angle) with the desired number of
   /// points
   [[nodiscard]] std::vector<Eigen::Vector3d> cartesianWithHeading(const int nb_points) const;
   /// @brief calculate the curve value for the given parameter t
@@ -65,7 +65,7 @@ public:
   [[nodiscard]] Eigen::Vector2d velocity(const double t) const;
   /// @brief calculate the acceleration (2nd derivative) for the given parameter t
   [[nodiscard]] Eigen::Vector2d acceleration(const double t) const;
-  /// @breif return the heading (in radians) of the tangent for the given parameter t
+  /// @brief return the heading (in radians) of the tangent for the given parameter t
   [[nodiscard]] double heading(const double t) const;
   /// @brief calculate the curvature for the given parameter t
   [[nodiscard]] double curvature(const double t) const;
