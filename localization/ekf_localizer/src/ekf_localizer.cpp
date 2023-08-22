@@ -446,7 +446,15 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
     poseMeasurementCovariance(pose.pose.covariance, params_.pose_smoothing_steps);
 
   ekf_.updateWithDelay(y, C, R, delay_step);
-  updateSimple1DFilters(pose, params_.pose_smoothing_steps);
+
+  // Considering change of z value due to measurement pose delay
+  const auto rpy = tier4_autoware_utils::getRPY(pose.pose.pose.orientation);
+  const double dz_delay = current_ekf_twist_.twist.linear.x * delay_time * std::sin(-rpy.y);
+  geometry_msgs::msg::PoseWithCovarianceStamped pose_with_z_delay;
+  pose_with_z_delay = pose;
+  pose_with_z_delay.pose.pose.position.z += dz_delay;
+
+  updateSimple1DFilters(pose_with_z_delay, params_.pose_smoothing_steps);
 
   // debug
   const Eigen::MatrixXd X_result = ekf_.getLatestX();
