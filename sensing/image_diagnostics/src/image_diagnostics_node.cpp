@@ -42,10 +42,10 @@ ImageDiagNode::ImageDiagNode(const rclcpp::NodeOptions & node_options)
 
 void ImageDiagNode::onImageDiagChecker(DiagnosticStatusWrapper & stat)
 {
-  stat.add("number dark blocks ", std::to_string(params_.num_of_regions_dark));
-  stat.add("number blockaged blocks ", std::to_string(params_.num_of_regions_blockage));
-  stat.add("number low visibility blocks ", std::to_string(params_.num_of_regions_low_visibility));
-  stat.add("number backlight  blocks ", std::to_string(params_.num_of_regions_backlight));
+  stat.add("number dark regions ", std::to_string(params_.num_of_regions_dark));
+  stat.add("number blockage regions ", std::to_string(params_.num_of_regions_blockage));
+  stat.add("number low visibility regions ", std::to_string(params_.num_of_regions_low_visibility));
+  stat.add("number backlight  regions ", std::to_string(params_.num_of_regions_backlight));
 
   auto level = DiagnosticStatusWrapper::OK;
   if (params_.diagnostic_status < 0) {

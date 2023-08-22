@@ -26,14 +26,14 @@ def launch_setup(context, *args, **kwargs):
     ns = "pointcloud_preprocessor"
     pkg = "pointcloud_preprocessor"
 
-    separate_concatenate_node_and_timesync_node = LaunchConfiguration(
-        "separate_concatenate_node_and_timesync_node"
+    separate_concatenate_node_and_time_sync_node = LaunchConfiguration(
+        "separate_concatenate_node_and_time_sync_node"
     ).perform(context)
-    is_separate_concatenate_node_and_timesync_node = (
-        separate_concatenate_node_and_timesync_node.lower() == "true"
+    is_separate_concatenate_node_and_time_sync_node = (
+        separate_concatenate_node_and_time_sync_node.lower() == "true"
     )
 
-    if not is_separate_concatenate_node_and_timesync_node:
+    if not is_separate_concatenate_node_and_time_sync_node:
         sync_and_concat_component = ComposableNode(
             package=pkg,
             plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
@@ -155,9 +155,9 @@ def generate_launch_description():
     add_launch_arg("output_points_raw", "/points_raw/cropbox/filtered")
     add_launch_arg("tf_output_frame", "base_link")
     add_launch_arg(
-        "separate_concatenate_node_and_timesync_node",
+        "separate_concatenate_node_and_time_sync_node",
         "true",
-        "Set True to separate concatenate node and timesync node. which will cause to larger memory usage.",
+        "Set True to separate concatenate node and time_sync node. which will cause to larger memory usage.",
     )
 
     return launch.LaunchDescription(launch_arguments + [OpaqueFunction(function=launch_setup)])

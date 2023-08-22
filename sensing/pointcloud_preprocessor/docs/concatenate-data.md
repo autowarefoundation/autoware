@@ -49,7 +49,7 @@ For the example of actual usage of this node, please refer to the [preprocessor.
 
 ### How to tuning timeout_sec and input_offset
 
-The values in `timeout_sec` and `input_offset` are used in the timercallback to control concatenation timings.
+The values in `timeout_sec` and `input_offset` are used in the timer_callback to control concatenation timings.
 
 - Assumptions
   - when the timer runs out, we concatenate the pointclouds in the buffer

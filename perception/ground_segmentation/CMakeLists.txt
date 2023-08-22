@@ -75,7 +75,7 @@ find_library(YAML_CPP_LIBRARY
             PATHS ${YAML_CPP_LIBRARY_DIRS})
 
 link_directories(${YAML_CPP_LIBRARY_DIRS})
-
+# cspell:ignore DHAVE, YAMLCPP
 if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
   add_definitions(-DHAVE_NEW_YAMLCPP)
 endif()
