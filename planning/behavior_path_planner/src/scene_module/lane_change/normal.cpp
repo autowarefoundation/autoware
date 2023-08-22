@@ -974,7 +974,16 @@ bool NormalLaneChange::getLaneChangePaths(
       const lanelet::BasicPoint2d lc_start_point(
         prepare_segment.points.back().point.pose.position.x,
         prepare_segment.points.back().point.pose.position.y);
-      if (!boost::geometry::covered_by(lc_start_point, target_neighbor_preferred_lane_poly_2d)) {
+
+      const auto target_lane_polygon = lanelet::utils::getPolygonFromArcLength(
+        target_lanes, 0, std::numeric_limits<double>::max());
+      const auto target_lane_poly_2d = lanelet::utils::to2D(target_lane_polygon).basicPolygon();
+
+      const auto is_valid_start_point =
+        boost::geometry::covered_by(lc_start_point, target_neighbor_preferred_lane_poly_2d) ||
+        boost::geometry::covered_by(lc_start_point, target_lane_poly_2d);
+
+      if (!is_valid_start_point) {
         // lane changing points are not inside of the target preferred lanes or its neighbors
         continue;
       }
