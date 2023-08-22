@@ -31,7 +31,8 @@
       # object recognition
       object_recognition:
         use_object_recognition: true
-        object_recognition_collision_check_margin: 1.0
+        object_recognition_collision_check_margin: 0.6 # this should be larger than `surround_check_distance` of surround_obstacle_checker
+        object_recognition_collision_check_max_extra_stopping_margin: 1.0
 
       # pull over
       pull_over:

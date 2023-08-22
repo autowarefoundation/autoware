@@ -165,6 +165,16 @@ double getDistanceBetweenPredictedPathAndObject(
   const double end_time, const double resolution);
 
 /**
+ * @brief Check collision between ego path footprints with extra longitudinal stopping margin and
+ * objects.
+ * @return Has collision or not
+ */
+bool checkCollisionWithExtraStoppingMargin(
+  const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects,
+  const double base_to_front, const double base_to_rear, const double width,
+  const double maximum_deceleration, const double margin, const double max_stopping_margin);
+
+/**
  * @brief Check collision between ego path footprints and objects.
  * @return Has collision or not
  */

@@ -101,6 +101,15 @@ bool checkCollision(
   const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
   const double rear_object_deceleration, CollisionCheckDebug & debug);
 
+/**
+ * @brief Check collision between ego path footprints with extra longitudinal stopping margin and
+ * objects.
+ * @return Has collision or not
+ */
+bool checkCollisionWithExtraStoppingMargin(
+  const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects,
+  const double base_to_front, const double base_to_rear, const double width,
+  const double maximum_deceleration, const double margin, const double max_stopping_margin);
 }  // namespace behavior_path_planner::utils::path_safety_checker
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_SAFETY_CHECKER__SAFETY_CHECK_HPP_

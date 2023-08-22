@@ -88,6 +88,9 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
     p.use_object_recognition = node->declare_parameter<bool>(ns + "use_object_recognition");
     p.object_recognition_collision_check_margin =
       node->declare_parameter<double>(ns + "object_recognition_collision_check_margin");
+    p.object_recognition_collision_check_max_extra_stopping_margin =
+      node->declare_parameter<double>(
+        ns + "object_recognition_collision_check_max_extra_stopping_margin");
   }
 
   // pull over general params

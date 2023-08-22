@@ -303,4 +303,28 @@ bool checkCollision(
 
   return true;
 }
+
+bool checkCollisionWithExtraStoppingMargin(
+  const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects,
+  const double base_to_front, const double base_to_rear, const double width,
+  const double maximum_deceleration, const double collision_check_margin,
+  const double max_extra_stopping_margin)
+{
+  for (const auto & p : ego_path.points) {
+    const double extra_stopping_margin = std::min(
+      std::pow(p.point.longitudinal_velocity_mps, 2) * 0.5 / maximum_deceleration,
+      max_extra_stopping_margin);
+
+    const auto ego_polygon = tier4_autoware_utils::toFootprint(
+      p.point.pose, base_to_front + extra_stopping_margin, base_to_rear, width);
+
+    for (const auto & object : dynamic_objects.objects) {
+      const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
+      const double distance = boost::geometry::distance(obj_polygon, ego_polygon);
+      if (distance < collision_check_margin) return true;
+    }
+  }
+
+  return false;
+}
 }  // namespace behavior_path_planner::utils::path_safety_checker
