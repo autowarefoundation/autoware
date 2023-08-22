@@ -14,7 +14,6 @@
 
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <boost/geometry/io/wkt/write.hpp>
 
@@ -49,7 +48,7 @@ TEST(TestObstacles, ObstacleTreeLines)
   /*
   using obstacle_velocity_limiter::point_t;
   using obstacle_velocity_limiter::linestring_t;
-  const obstacle_velocity_limiter::multilinestring_t lines = {
+  const obstacle_velocity_limiter::multi_linestring_t lines = {
       {point_t{-0.5, -0.5}, point_t{0.5,0.5}},
       {point_t{0, 0}, point_t{1,1}},
       {point_t(2, 2), point_t(-2, 2)},

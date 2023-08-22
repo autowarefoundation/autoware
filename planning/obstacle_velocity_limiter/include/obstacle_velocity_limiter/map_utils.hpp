@@ -16,7 +16,6 @@
 #define OBSTACLE_VELOCITY_LIMITER__MAP_UTILS_HPP_
 
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <lanelet2_core/LaneletMap.h>
 
@@ -30,7 +29,7 @@ namespace obstacle_velocity_limiter
 /// @param[in] lanelet_map lanelet map
 /// @param[in] tags tags to identify obstacle linestrings
 /// @return the extracted obstacles
-multilinestring_t extractStaticObstacles(
+multi_linestring_t extractStaticObstacles(
   const lanelet::LaneletMap & lanelet_map, const std::vector<std::string> & tags);
 
 /// @brief Determine if the given linestring is an obstacle

@@ -17,7 +17,6 @@
 
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <tier4_autoware_utils/ros/transform_listener.hpp>
 
@@ -41,7 +40,7 @@ namespace obstacle_velocity_limiter
 
 struct Obstacles
 {
-  multilinestring_t lines;
+  multi_linestring_t lines;
   multipoint_t points;
 };
 
@@ -69,11 +68,11 @@ struct ObstacleTree<multipoint_t>
 };
 
 template <>
-struct ObstacleTree<multilinestring_t>
+struct ObstacleTree<multi_linestring_t>
 {
   bgi::rtree<segment_t, bgi::rstar<16>> segments_rtree;
 
-  explicit ObstacleTree(const multilinestring_t & obstacles)
+  explicit ObstacleTree(const multi_linestring_t & obstacles)
   {
     auto segment_count = 0lu;
     for (const auto & line : obstacles)
@@ -115,7 +114,7 @@ struct CollisionChecker
 {
   const Obstacles obstacles;
   std::unique_ptr<ObstacleTree<multipoint_t>> point_obstacle_tree_ptr;
-  std::unique_ptr<ObstacleTree<multilinestring_t>> line_obstacle_tree_ptr;
+  std::unique_ptr<ObstacleTree<multi_linestring_t>> line_obstacle_tree_ptr;
 
   explicit CollisionChecker(
     Obstacles obs, const size_t rtree_min_points, const size_t rtree_min_segments)
@@ -125,7 +124,7 @@ struct CollisionChecker
     for (const auto & line : obstacles.lines)
       if (!line.empty()) segment_count += line.size() - 1;
     if (segment_count > rtree_min_segments)
-      line_obstacle_tree_ptr = std::make_unique<ObstacleTree<multilinestring_t>>(obstacles.lines);
+      line_obstacle_tree_ptr = std::make_unique<ObstacleTree<multi_linestring_t>>(obstacles.lines);
     if (obstacles.points.size() > rtree_min_points)
       point_obstacle_tree_ptr = std::make_unique<ObstacleTree<multipoint_t>>(obstacles.points);
   }
@@ -163,7 +162,7 @@ polygon_t createObjectPolygon(
 /// @param [in] buffer buffer to add to the objects dimensions
 /// @param [in] min_velocity objects with velocity lower will be ignored
 /// @return polygons of the objects
-multipolygon_t createObjectPolygons(
+multi_polygon_t createObjectPolygons(
   const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const double buffer,
   const double min_velocity);
 

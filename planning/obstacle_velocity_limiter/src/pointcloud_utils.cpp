@@ -15,7 +15,6 @@
 #include "obstacle_velocity_limiter/pointcloud_utils.hpp"
 
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <pcl_ros/transforms.hpp>
 

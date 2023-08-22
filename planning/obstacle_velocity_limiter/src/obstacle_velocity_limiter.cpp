@@ -34,7 +34,7 @@ Float calculateSafeVelocity(
     std::max(min_adjusted_velocity, static_cast<Float>(dist_to_collision / time_buffer)));
 }
 
-multipolygon_t createPolygonMasks(
+multi_polygon_t createPolygonMasks(
   const autoware_auto_perception_msgs::msg::PredictedObjects & dynamic_obstacles,
   const Float buffer, const Float min_vel)
 {
@@ -42,7 +42,7 @@ multipolygon_t createPolygonMasks(
 }
 
 std::vector<polygon_t> createFootprintPolygons(
-  const std::vector<multilinestring_t> & projected_linestrings, const Float lateral_offset)
+  const std::vector<multi_linestring_t> & projected_linestrings, const Float lateral_offset)
 {
   std::vector<polygon_t> footprints;
   footprints.reserve(projected_linestrings.size());
@@ -84,8 +84,8 @@ polygon_t createEnvelopePolygon(
 
 polygon_t createEnvelopePolygon(const std::vector<polygon_t> & footprints)
 {
-  multipolygon_t unions;
-  multipolygon_t result;
+  multi_polygon_t unions;
+  multi_polygon_t result;
   for (const auto & footprint : footprints) {
     boost::geometry::union_(footprint, unions, result);
     unions = result;
@@ -95,10 +95,10 @@ polygon_t createEnvelopePolygon(const std::vector<polygon_t> & footprints)
   return unions.front();
 }
 
-std::vector<multilinestring_t> createProjectedLines(
+std::vector<multi_linestring_t> createProjectedLines(
   const Trajectory & trajectory, ProjectionParameters & params)
 {
-  std::vector<multilinestring_t> projections;
+  std::vector<multi_linestring_t> projections;
   projections.reserve(trajectory.points.size());
   for (const auto & point : trajectory.points) {
     params.update(point);
@@ -114,7 +114,7 @@ std::vector<multilinestring_t> createProjectedLines(
 
 void limitVelocity(
   Trajectory & trajectory, const CollisionChecker & collision_checker,
-  const std::vector<multilinestring_t> & projections, const std::vector<polygon_t> & footprints,
+  const std::vector<multi_linestring_t> & projections, const std::vector<polygon_t> & footprints,
   ProjectionParameters & projection_params, const VelocityParameters & velocity_params)
 {
   Float time = 0.0;

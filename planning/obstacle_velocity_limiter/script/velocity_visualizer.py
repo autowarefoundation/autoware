@@ -22,6 +22,7 @@ import rclpy
 from rclpy.node import Node
 
 
+# cspell: ignore axhline, relim
 class TrajectoryVisualizer(Node):
     def __init__(self):
         super().__init__("trajectory_visualizer")

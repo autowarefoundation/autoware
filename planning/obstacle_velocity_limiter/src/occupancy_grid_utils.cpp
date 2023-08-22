@@ -15,7 +15,6 @@
 #include "obstacle_velocity_limiter/occupancy_grid_utils.hpp"
 
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <grid_map_core/Polygon.hpp>
 #include <grid_map_core/iterators/GridMapIterator.hpp>
@@ -70,7 +69,7 @@ grid_map::GridMap convertToGridMap(const OccupancyGrid & occupancy_grid)
   return grid_map;
 }
 
-multilinestring_t extractObstacles(
+multi_linestring_t extractObstacles(
   const grid_map::GridMap & grid_map, const OccupancyGrid & occupancy_grid)
 {
   cv::Mat cv_image;
@@ -79,7 +78,7 @@ multilinestring_t extractObstacles(
   cv::erode(cv_image, cv_image, cv::Mat(), cv::Point(-1, -1), 2);
   std::vector<std::vector<cv::Point>> contours;
   cv::findContours(cv_image, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-  multilinestring_t obstacles;
+  multi_linestring_t obstacles;
   const auto & info = occupancy_grid.info;
   for (const auto & contour : contours) {
     linestring_t line;

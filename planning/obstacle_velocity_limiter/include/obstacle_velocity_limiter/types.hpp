@@ -23,7 +23,6 @@
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
-// cspell: ignore multipolygon, multilinestring
 namespace obstacle_velocity_limiter
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
@@ -36,15 +35,15 @@ using Float = decltype(TrajectoryPoint::longitudinal_velocity_mps);
 using point_t = tier4_autoware_utils::Point2d;
 using multipoint_t = tier4_autoware_utils::MultiPoint2d;
 using polygon_t = tier4_autoware_utils::Polygon2d;
-using multipolygon_t = tier4_autoware_utils::MultiPolygon2d;
+using multi_polygon_t = tier4_autoware_utils::MultiPolygon2d;
 using segment_t = tier4_autoware_utils::Segment2d;
 using linestring_t = tier4_autoware_utils::LineString2d;
-using multilinestring_t = tier4_autoware_utils::MultiLineString2d;
+using multi_linestring_t = tier4_autoware_utils::MultiLineString2d;
 
 struct ObstacleMasks
 {
-  polygon_t positive_mask;        // discard obstacles outside of this polygon
-  multipolygon_t negative_masks;  // discard obstacles inside of these polygons
+  polygon_t positive_mask;         // discard obstacles outside of this polygon
+  multi_polygon_t negative_masks;  // discard obstacles inside of these polygons
 };
 
 }  // namespace obstacle_velocity_limiter

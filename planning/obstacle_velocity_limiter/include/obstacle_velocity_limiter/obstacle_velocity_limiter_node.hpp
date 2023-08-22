@@ -18,7 +18,6 @@
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
@@ -75,7 +74,7 @@ private:
   OccupancyGrid::ConstSharedPtr occupancy_grid_ptr_;
   PointCloud::ConstSharedPtr pointcloud_ptr_;
   lanelet::LaneletMapPtr lanelet_map_ptr_{new lanelet::LaneletMap};
-  multilinestring_t static_map_obstacles_;
+  multi_linestring_t static_map_obstacles_;
   nav_msgs::msg::Odometry::ConstSharedPtr current_odometry_ptr_;
 
   // parameters

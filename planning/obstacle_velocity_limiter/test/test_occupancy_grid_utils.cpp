@@ -14,7 +14,6 @@
 
 #include "obstacle_velocity_limiter/occupancy_grid_utils.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <boost/geometry/algorithms/correct.hpp>
 
@@ -22,7 +21,7 @@
 
 TEST(TestOccupancyGridUtils, extractObstacleLines)
 {
-  using obstacle_velocity_limiter::multipolygon_t;
+  using obstacle_velocity_limiter::multi_polygon_t;
   using obstacle_velocity_limiter::polygon_t;
   constexpr int8_t occupied_thr = 10;
   nav_msgs::msg::OccupancyGrid occupancy_grid;
@@ -37,7 +36,7 @@ TEST(TestOccupancyGridUtils, extractObstacleLines)
 
   constexpr auto extractObstacles = [](
                                       const nav_msgs::msg::OccupancyGrid & occupancy_grid,
-                                      const multipolygon_t & negative_masks,
+                                      const multi_polygon_t & negative_masks,
                                       const polygon_t & positive_mask, const double thr) {
     obstacle_velocity_limiter::ObstacleMasks masks;
     masks.negative_masks = negative_masks;

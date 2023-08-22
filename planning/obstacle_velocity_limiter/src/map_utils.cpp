@@ -17,7 +17,6 @@
 
 #include "lanelet2_core/primitives/LineString.h"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <boost/geometry.hpp>
 
@@ -27,10 +26,10 @@
 
 namespace obstacle_velocity_limiter
 {
-multilinestring_t extractStaticObstacles(
+multi_linestring_t extractStaticObstacles(
   const lanelet::LaneletMap & lanelet_map, const std::vector<std::string> & tags)
 {
-  multilinestring_t lines;
+  multi_linestring_t lines;
   linestring_t line;
   linestring_t simplified_line;
   for (const auto & ls : lanelet_map.lineStringLayer) {

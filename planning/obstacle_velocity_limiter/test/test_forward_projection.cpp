@@ -14,7 +14,6 @@
 
 #include "obstacle_velocity_limiter/forward_projection.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <geometry_msgs/msg/point.hpp>
@@ -149,10 +148,10 @@ TEST(TestForwardProjection, generateFootprintMultiLinestrings)
 {
   using obstacle_velocity_limiter::generateFootprint;
   using obstacle_velocity_limiter::linestring_t;
-  using obstacle_velocity_limiter::multilinestring_t;
+  using obstacle_velocity_limiter::multi_linestring_t;
 
   auto footprint = generateFootprint(
-    multilinestring_t{
+    multi_linestring_t{
       linestring_t{{0.0, 0.0}, {0.0, 1.0}}, linestring_t{{0.0, 0.0}, {0.8, 0.8}},
       linestring_t{{0.0, 0.0}, {1.0, 0.0}}},
     0.5);

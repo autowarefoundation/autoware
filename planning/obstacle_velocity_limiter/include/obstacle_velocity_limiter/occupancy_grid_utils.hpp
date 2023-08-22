@@ -17,7 +17,6 @@
 
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <grid_map_core/GridMap.hpp>
 
@@ -42,7 +41,7 @@ grid_map::GridMap convertToGridMap(const OccupancyGrid & occupancy_grid);
 /// @param[in] occupancy_grid input occupancy grid
 /// @param[in] occupied_threshold threshold to use for identifying obstacles in the occupancy grid
 /// @return extracted obstacle linestrings
-multilinestring_t extractObstacles(
+multi_linestring_t extractObstacles(
   const grid_map::GridMap & grid_map, const OccupancyGrid & occupancy_grid);
 }  // namespace obstacle_velocity_limiter
 

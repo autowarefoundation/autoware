@@ -17,7 +17,6 @@
 
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
 
@@ -36,7 +35,7 @@ segment_t forwardSimulatedSegment(
 /// @param [in] origin origin of the projection
 /// @param [in] params parameters of the forward projection
 /// @return lines from the origin to its positions after forward projection, ordered left to right
-multilinestring_t bicycleProjectionLines(
+multi_linestring_t bicycleProjectionLines(
   const geometry_msgs::msg::Point & origin, const ProjectionParameters & params);
 
 /// @brief generate projection line using the bicycle model
@@ -64,7 +63,7 @@ polygon_t generateFootprint(const linestring_t & linestring, const double latera
 /// @param [in] lines linestring from which to create the footprint
 /// @param [in] lateral_offset offset around the segment used to create the footprint
 /// @return footprint polygon
-polygon_t generateFootprint(const multilinestring_t & lines, const double lateral_offset);
+polygon_t generateFootprint(const multi_linestring_t & lines, const double lateral_offset);
 
 /// @brief generate a footprint from a left, right, and middle linestrings and a lateral offset
 /// @param [in] left left linestring

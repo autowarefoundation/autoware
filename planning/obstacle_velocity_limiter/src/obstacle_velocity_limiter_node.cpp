@@ -21,7 +21,6 @@
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/trajectory_preprocessing.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/motion_utils.hpp>
@@ -151,7 +150,7 @@ rcl_interfaces::msg::SetParametersResult ObstacleVelocityLimiterNode::onParamete
         result.successful = false;
         result.reason = "Unknown forward projection model";
       }
-    } else if (parameter.get_name() == ProjectionParameters::NBPOINTS_PARAM) {
+    } else if (parameter.get_name() == ProjectionParameters::NB_POINTS_PARAM) {
       if (!projection_params_.updateNbPoints(*this, static_cast<int>(parameter.as_int()))) {
         result.successful = false;
         result.reason = "number of points for projections must be at least 2";

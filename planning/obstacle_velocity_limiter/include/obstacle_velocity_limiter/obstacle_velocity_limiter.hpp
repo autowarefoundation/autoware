@@ -18,7 +18,6 @@
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
@@ -63,7 +62,7 @@ void calculateSteeringAngles(Trajectory & trajectory, const Float wheel_base);
 /// @param[in] buffer buffer used to enlarge the mask
 /// @param[in] min_vel minimum velocity for an object to be masked
 /// @return polygon masks around dynamic objects
-multipolygon_t createPolygonMasks(
+multi_polygon_t createPolygonMasks(
   const autoware_auto_perception_msgs::msg::PredictedObjects & dynamic_obstacles,
   const Float buffer, const Float min_vel);
 
@@ -74,7 +73,7 @@ multipolygon_t createPolygonMasks(
 /// @param[in] lateral_offset offset to create polygons around the lines
 /// @return polygon footprint of each projection lines
 std::vector<polygon_t> createFootprintPolygons(
-  const std::vector<multilinestring_t> & projected_linestrings, const Float lateral_offset);
+  const std::vector<multi_linestring_t> & projected_linestrings, const Float lateral_offset);
 
 /// @brief create the footprint polygon from a trajectory
 /// @param[in] trajectory the trajectory for which to create a footprint
@@ -104,7 +103,7 @@ polygon_t createEnvelopePolygon(const std::vector<polygon_t> & footprints);
 /// @param[in] trajectory input trajectory
 /// @param[in] params projection parameters
 /// @return projection lines for each trajectory point
-std::vector<multilinestring_t> createProjectedLines(
+std::vector<multi_linestring_t> createProjectedLines(
   const Trajectory & trajectory, ProjectionParameters & params);
 
 /// @brief limit the velocity of the given trajectory
@@ -116,7 +115,7 @@ std::vector<multilinestring_t> createProjectedLines(
 /// @param[in] velocity_params velocity parameters
 void limitVelocity(
   Trajectory & trajectory, const CollisionChecker & collision_checker,
-  const std::vector<multilinestring_t> & projections, const std::vector<polygon_t> & footprints,
+  const std::vector<multi_linestring_t> & projections, const std::vector<polygon_t> & footprints,
   ProjectionParameters & projection_params, const VelocityParameters & velocity_params);
 
 /// @brief copy the velocity profile of a downsampled trajectory to the original trajectory

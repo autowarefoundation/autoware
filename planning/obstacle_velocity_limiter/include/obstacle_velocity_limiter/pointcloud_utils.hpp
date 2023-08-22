@@ -17,7 +17,6 @@
 
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
-// cspell: ignore multipolygon, multilinestring
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include <geometry_msgs/msg/transform.hpp>
