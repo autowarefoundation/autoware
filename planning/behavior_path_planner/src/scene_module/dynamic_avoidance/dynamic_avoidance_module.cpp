@@ -101,15 +101,20 @@ std::pair<double, double> projectObstacleVelocityToTrajectory(
   const std::vector<PathPointWithLaneId> & path_points, const PredictedObject & object)
 {
   const auto & obj_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const double obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear.x;
+  const double obj_vel_norm = std::hypot(
+    object.kinematics.initial_twist_with_covariance.twist.linear.x,
+    object.kinematics.initial_twist_with_covariance.twist.linear.y);
 
   const size_t obj_idx = motion_utils::findNearestIndex(path_points, obj_pose.position);
 
-  const double obj_yaw = tf2::getYaw(obj_pose.orientation);
+  const double obj_vel_yaw = std::atan2(
+    object.kinematics.initial_twist_with_covariance.twist.linear.y,
+    object.kinematics.initial_twist_with_covariance.twist.linear.x);
   const double path_yaw = tf2::getYaw(path_points.at(obj_idx).point.pose.orientation);
 
   return std::make_pair(
-    obj_vel * std::cos(obj_yaw - path_yaw), obj_vel * std::sin(obj_yaw - path_yaw));
+    obj_vel_norm * std::cos(obj_vel_yaw - path_yaw),
+    obj_vel_norm * std::sin(obj_vel_yaw - path_yaw));
 }
 
 double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
@@ -365,7 +370,9 @@ void DynamicAvoidanceModule::updateTargetObjects()
   for (const auto & predicted_object : predicted_objects) {
     const auto obj_uuid = tier4_autoware_utils::toHexString(predicted_object.object_id);
     const auto & obj_pose = predicted_object.kinematics.initial_pose_with_covariance.pose;
-    const double obj_vel = predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x;
+    const double obj_vel_norm = std::hypot(
+      predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x,
+      predicted_object.kinematics.initial_twist_with_covariance.twist.linear.y);
     const auto prev_object = getObstacleFromUuid(prev_objects, obj_uuid);
 
     // 1.a. check label
@@ -393,7 +400,7 @@ void DynamicAvoidanceModule::updateTargetObjects()
                                              ? parameters_->min_overtaking_crossing_object_vel
                                              : parameters_->min_oncoming_crossing_object_vel;
     const bool is_crossing_object_to_ignore =
-      min_crossing_object_vel < std::abs(obj_vel) && is_obstacle_crossing_path;
+      min_crossing_object_vel < obj_vel_norm && is_obstacle_crossing_path;
     if (is_crossing_object_to_ignore) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,

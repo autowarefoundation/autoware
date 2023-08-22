@@ -693,9 +693,9 @@ void fillObjectMovingTime(
   const auto object_type = utils::getHighestProbLabel(object_data.object.classification);
   const auto object_parameter = parameters->object_parameters.at(object_type);
 
-  const auto & object_vel =
-    object_data.object.kinematics.initial_twist_with_covariance.twist.linear.x;
-  const auto is_faster_than_threshold = object_vel > object_parameter.moving_speed_threshold;
+  const auto & object_twist = object_data.object.kinematics.initial_twist_with_covariance.twist;
+  const auto object_vel_norm = std::hypot(object_twist.linear.x, object_twist.linear.y);
+  const auto is_faster_than_threshold = object_vel_norm > object_parameter.moving_speed_threshold;
 
   const auto id = object_data.object.object_id;
   const auto same_id_obj = std::find_if(
@@ -1475,7 +1475,8 @@ ExtendedPredictedObject transform(
   extended_object.initial_acceleration = object.kinematics.initial_acceleration_with_covariance;
   extended_object.shape = object.shape;
 
-  const auto & obj_velocity = extended_object.initial_twist.twist.linear.x;
+  const auto & obj_velocity_norm = std::hypot(
+    extended_object.initial_twist.twist.linear.x, extended_object.initial_twist.twist.linear.y);
   const auto & time_horizon = parameters->safety_check_time_horizon;
   const auto & time_resolution = parameters->safety_check_time_resolution;
 
@@ -1490,7 +1491,7 @@ ExtendedPredictedObject transform(
       if (obj_pose) {
         const auto obj_polygon = tier4_autoware_utils::toPolygon2d(*obj_pose, object.shape);
         extended_object.predicted_paths.at(i).path.emplace_back(
-          t, *obj_pose, obj_velocity, obj_polygon);
+          t, *obj_pose, obj_velocity_norm, obj_polygon);
       }
     }
   }
