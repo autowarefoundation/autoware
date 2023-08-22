@@ -220,14 +220,14 @@
                       <br/>
                       <div style="text-align: left">
                         <span style="text-align: center">
-                          <font color="#00cc00">---  safe velocity to stop before collisopn</font>
+                          <font color="#00cc00">---  safe velocity to stop before collision</font>
                         </span>
                       </div>
                     </font>
                   </span>
                   <font style="font-size: 20px">
                     <font color="#0066cc">
-                      ---- safe slow donw velocity
+                      ---- safe slow down velocity
                       <br/>
                     </font>
                     <font color="#ff0000">
