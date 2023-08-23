@@ -21,7 +21,6 @@ namespace gnss_poser
 enum class CoordinateSystem {
   UTM = 0,
   MGRS = 1,
-  PLANE = 2,
   LOCAL_CARTESIAN_WGS84 = 3,
   LOCAL_CARTESIAN_UTM = 4
 };

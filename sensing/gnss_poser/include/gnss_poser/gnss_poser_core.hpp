@@ -100,8 +100,6 @@ private:
 
   boost::circular_buffer<geometry_msgs::msg::Point> position_buffer_;
 
-  int plane_zone_;
-
   autoware_sensing_msgs::msg::GnssInsOrientationStamped::SharedPtr
     msg_gnss_ins_orientation_stamped_;
   int height_system_;

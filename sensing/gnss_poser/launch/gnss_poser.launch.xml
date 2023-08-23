@@ -13,10 +13,9 @@
   <arg name="gnss_frame" default="gnss"/>
   <arg name="map_frame" default="map"/>
 
-  <arg name="coordinate_system" default="4" description="0:UTM, 1:MGRS, 2:PLANE, 3:LocalCartesianWGS84, 4:LocalCartesianUTM"/>
+  <arg name="coordinate_system" default="4" description="0:UTM, 1:MGRS, 3:LocalCartesianWGS84, 4:LocalCartesianUTM"/>
   <arg name="buff_epoch" default="1"/>
   <arg name="use_gnss_ins_orientation" default="true"/>
-  <arg name="plane_zone" default="9"/>
   <arg name="height_system" default="1" description="0:Orthometric Height 1:Ellipsoid Height"/>
   <arg name="gnss_pose_pub_method" default="0" description="0: Instant Value 1: Average Value 2: Median Value"/>
 
@@ -34,7 +33,6 @@
 
     <param name="coordinate_system" value="$(var coordinate_system)"/>
     <param name="buff_epoch" value="$(var buff_epoch)"/>
-    <param name="plane_zone" value="$(var plane_zone)"/>
     <param name="use_gnss_ins_orientation" value="$(var use_gnss_ins_orientation)"/>
     <param from="$(var param_file)"/>
     <param name="height_system" value="$(var height_system)"/>

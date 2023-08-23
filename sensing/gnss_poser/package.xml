@@ -14,7 +14,6 @@
   <build_depend>libboost-dev</build_depend>
 
   <depend>autoware_sensing_msgs</depend>
-  <depend>geo_pos_conv</depend>
   <depend>geographiclib</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
