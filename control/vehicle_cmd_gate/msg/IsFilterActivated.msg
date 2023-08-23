@@ -1,0 +1,10 @@
+builtin_interfaces/Time stamp
+
+bool is_activated
+
+# for additional information
+bool is_activated_on_steering
+bool is_activated_on_steering_rate
+bool is_activated_on_speed
+bool is_activated_on_acceleration
+bool is_activated_on_jerk

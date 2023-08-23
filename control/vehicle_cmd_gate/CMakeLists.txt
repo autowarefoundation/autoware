@@ -13,13 +13,31 @@ ament_auto_add_library(vehicle_cmd_gate_node SHARED
 
 rclcpp_components_register_node(vehicle_cmd_gate_node
   PLUGIN "vehicle_cmd_gate::VehicleCmdGate"
-  EXECUTABLE vehicle_cmd_gate
+  EXECUTABLE vehicle_cmd_gate_exe
 )
+
+rosidl_generate_interfaces(
+  ${PROJECT_NAME}
+  "msg/IsFilterActivated.msg"
+  DEPENDENCIES builtin_interfaces
+)
+
+# to use same package defined message
+if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)
+    rosidl_target_interfaces(vehicle_cmd_gate_node
+    ${PROJECT_NAME} "rosidl_typesupport_cpp")
+else()
+    rosidl_get_typesupport_target(
+            cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+    target_link_libraries(vehicle_cmd_gate_node "${cpp_typesupport_target}")
+endif()
+
 
 if(BUILD_TESTING)
   ament_add_ros_isolated_gtest(test_vehicle_cmd_gate
     test/src/test_main.cpp
     test/src/test_vehicle_cmd_filter.cpp
+    test/src/test_filter_in_vehicle_cmd_gate_node.cpp
   )
   ament_target_dependencies(test_vehicle_cmd_gate
     rclcpp

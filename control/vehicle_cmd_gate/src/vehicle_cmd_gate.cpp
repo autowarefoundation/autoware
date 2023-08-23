@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace vehicle_cmd_gate
 {
@@ -70,6 +71,9 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   pub_external_emergency_ = create_publisher<Emergency>("output/external_emergency", durable_qos);
   operation_mode_pub_ = create_publisher<OperationModeState>("output/operation_mode", durable_qos);
 
+  is_filter_activated_pub_ =
+    create_publisher<IsFilterActivated>("~/is_filter_activated", durable_qos);
+
   // Subscriber
   external_emergency_stop_heartbeat_sub_ = create_subscription<Heartbeat>(
     "input/external_emergency_stop_heartbeat", 1,
@@ -79,7 +83,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   engage_sub_ = create_subscription<EngageMsg>(
     "input/engage", 1, std::bind(&VehicleCmdGate::onEngage, this, _1));
   kinematics_sub_ = create_subscription<Odometry>(
-    "input/kinematics", 1, [this](Odometry::SharedPtr msg) { current_kinematics_ = *msg; });
+    "/localization/kinematic_state", 1,
+    [this](Odometry::SharedPtr msg) { current_kinematics_ = *msg; });
   acc_sub_ = create_subscription<AccelWithCovarianceStamped>(
     "input/acceleration", 1, [this](AccelWithCovarianceStamped::SharedPtr msg) {
       current_acceleration_ = msg->accel.accel.linear.x;
@@ -158,11 +163,14 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     VehicleCmdFilterParam p;
     p.wheel_base = vehicle_info.wheel_base_m;
     p.vel_lim = declare_parameter<double>("nominal.vel_lim");
-    p.lon_acc_lim = declare_parameter<double>("nominal.lon_acc_lim");
-    p.lon_jerk_lim = declare_parameter<double>("nominal.lon_jerk_lim");
-    p.lat_acc_lim = declare_parameter<double>("nominal.lat_acc_lim");
-    p.lat_jerk_lim = declare_parameter<double>("nominal.lat_jerk_lim");
-    p.actual_steer_diff_lim = declare_parameter<double>("nominal.actual_steer_diff_lim");
+    p.reference_speed_points =
+      declare_parameter<std::vector<double>>("nominal.reference_speed_points");
+    p.lon_acc_lim = declare_parameter<std::vector<double>>("nominal.lon_acc_lim");
+    p.lon_jerk_lim = declare_parameter<std::vector<double>>("nominal.lon_jerk_lim");
+    p.lat_acc_lim = declare_parameter<std::vector<double>>("nominal.lat_acc_lim");
+    p.lat_jerk_lim = declare_parameter<std::vector<double>>("nominal.lat_jerk_lim");
+    p.actual_steer_diff_lim =
+      declare_parameter<std::vector<double>>("nominal.actual_steer_diff_lim");
     filter_.setParam(p);
   }
 
@@ -170,11 +178,14 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     VehicleCmdFilterParam p;
     p.wheel_base = vehicle_info.wheel_base_m;
     p.vel_lim = declare_parameter<double>("on_transition.vel_lim");
-    p.lon_acc_lim = declare_parameter<double>("on_transition.lon_acc_lim");
-    p.lon_jerk_lim = declare_parameter<double>("on_transition.lon_jerk_lim");
-    p.lat_acc_lim = declare_parameter<double>("on_transition.lat_acc_lim");
-    p.lat_jerk_lim = declare_parameter<double>("on_transition.lat_jerk_lim");
-    p.actual_steer_diff_lim = declare_parameter<double>("on_transition.actual_steer_diff_lim");
+    p.reference_speed_points =
+      declare_parameter<std::vector<double>>("on_transition.reference_speed_points");
+    p.lon_acc_lim = declare_parameter<std::vector<double>>("on_transition.lon_acc_lim");
+    p.lon_jerk_lim = declare_parameter<std::vector<double>>("on_transition.lon_jerk_lim");
+    p.lat_acc_lim = declare_parameter<std::vector<double>>("on_transition.lat_acc_lim");
+    p.lat_jerk_lim = declare_parameter<std::vector<double>>("on_transition.lat_jerk_lim");
+    p.actual_steer_diff_lim =
+      declare_parameter<std::vector<double>>("on_transition.actual_steer_diff_lim");
     filter_on_transition_.setParam(p);
   }
 
@@ -503,9 +514,14 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   const auto ego_is_stopped = vehicle_stop_checker_->isVehicleStopped(stop_check_duration_);
   const auto input_cmd_is_stopping = in.longitudinal.acceleration < 0.0;
 
+  filter_.setCurrentSpeed(current_kinematics_.twist.twist.linear.x);
+  filter_on_transition_.setCurrentSpeed(current_kinematics_.twist.twist.linear.x);
+
+  IsFilterActivated is_filter_activated;
+
   // Apply transition_filter when transiting from MANUAL to AUTO.
   if (mode.is_in_transition) {
-    filter_on_transition_.filterAll(dt, current_steer_, out);
+    filter_on_transition_.filterAll(dt, current_steer_, out, is_filter_activated);
   } else {
     // When ego is stopped and the input command is not stopping,
     // use the higher of actual vehicle longitudinal state
@@ -524,7 +540,7 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
           : current_status_cmd.longitudinal.speed;
       filter_.setPrevCmd(prev_cmd);
     }
-    filter_.filterAll(dt, current_steer_, out);
+    filter_.filterAll(dt, current_steer_, out, is_filter_activated);
   }
 
   // set prev value for both to keep consistency over switching:
@@ -546,6 +562,9 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
 
   filter_.setPrevCmd(prev_values);
   filter_on_transition_.setPrevCmd(prev_values);
+
+  is_filter_activated.stamp = now();
+  is_filter_activated_pub_->publish(is_filter_activated);
 
   return out;
 }

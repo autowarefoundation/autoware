@@ -22,6 +22,7 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <vehicle_cmd_gate/msg/is_filter_activated.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/mrm_state.hpp>
@@ -64,6 +65,7 @@ using tier4_external_api_msgs::msg::Heartbeat;
 using tier4_external_api_msgs::srv::SetEmergency;
 using tier4_system_msgs::msg::MrmBehaviorStatus;
 using tier4_vehicle_msgs::msg::VehicleEmergencyStamped;
+using vehicle_cmd_gate::msg::IsFilterActivated;
 
 using diagnostic_msgs::msg::DiagnosticStatus;
 using nav_msgs::msg::Odometry;
@@ -99,6 +101,7 @@ private:
   rclcpp::Publisher<GateMode>::SharedPtr gate_mode_pub_;
   rclcpp::Publisher<EngageMsg>::SharedPtr engage_pub_;
   rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_pub_;
+  rclcpp::Publisher<IsFilterActivated>::SharedPtr is_filter_activated_pub_;
 
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
