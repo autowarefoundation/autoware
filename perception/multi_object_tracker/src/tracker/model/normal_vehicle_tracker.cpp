@@ -54,7 +54,7 @@ NormalVehicleTracker::NormalVehicleTracker(
   float q_stddev_y = 1.0;                                     // object coordinate [m/s]
   float q_stddev_yaw = tier4_autoware_utils::deg2rad(20);     // map coordinate[rad/s]
   float q_stddev_vx = tier4_autoware_utils::kmph2mps(10);     // object coordinate [m/(s*s)]
-  float q_stddev_slip = tier4_autoware_utils::deg2rad(20);    // object coordinate [rad/(s*s)]
+  float q_stddev_slip = tier4_autoware_utils::deg2rad(5);     // object coordinate [rad/(s*s)]
   float r_stddev_x = 1.0;                                     // object coordinate [m]
   float r_stddev_y = 0.3;                                     // object coordinate [m]
   float r_stddev_yaw = tier4_autoware_utils::deg2rad(30);     // map coordinate [rad]

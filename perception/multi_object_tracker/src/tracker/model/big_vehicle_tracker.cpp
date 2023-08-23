@@ -54,7 +54,7 @@ BigVehicleTracker::BigVehicleTracker(
   float q_stddev_y = 1.5;                                     // [m/s]
   float q_stddev_yaw = tier4_autoware_utils::deg2rad(20);     // [rad/s]
   float q_stddev_vx = tier4_autoware_utils::kmph2mps(10);     // [m/(s*s)]
-  float q_stddev_slip = tier4_autoware_utils::deg2rad(20);    // [rad/(s*s)]
+  float q_stddev_slip = tier4_autoware_utils::deg2rad(5);     // [rad/(s*s)]
   float r_stddev_x = 1.5;                                     // [m]
   float r_stddev_y = 0.5;                                     // [m]
   float r_stddev_yaw = tier4_autoware_utils::deg2rad(30);     // [rad]
@@ -150,7 +150,7 @@ BigVehicleTracker::BigVehicleTracker(
   setNearestCornerOrSurfaceIndex(self_transform);  // this index is used in next measure step
 
   // Set lf, lr
-  double point_ratio = 0.1;  // under steered if smaller than 0.5
+  double point_ratio = 0.2;  // under steered if smaller than 0.5
   lf_ = bounding_box_.length * point_ratio;
   lr_ = bounding_box_.length * (1.0 - point_ratio);
 }
