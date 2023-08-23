@@ -54,7 +54,9 @@ void LineSegmentDetector::execute(const cv::Mat & image, const rclcpp::Time & st
   {
     tier4_autoware_utils::StopWatch stop_watch;
     line_segment_detector_->detect(gray_image, lines);
-    line_segment_detector_->drawSegments(gray_image, lines);
+    if (lines.size().width != 0) {
+      line_segment_detector_->drawSegments(gray_image, lines);
+    }
     RCLCPP_INFO_STREAM(this->get_logger(), "lsd: " << stop_watch.toc() << "[ms]");
   }
 
