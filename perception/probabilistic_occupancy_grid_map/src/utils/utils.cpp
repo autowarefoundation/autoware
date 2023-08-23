@@ -25,8 +25,16 @@ bool transformPointcloud(
   const std::string & target_frame, sensor_msgs::msg::PointCloud2 & output)
 {
   geometry_msgs::msg::TransformStamped tf_stamped;
-  tf_stamped = tf2.lookupTransform(
-    target_frame, input.header.frame_id, input.header.stamp, rclcpp::Duration::from_seconds(0.5));
+  // lookup transform
+  try {
+    tf_stamped = tf2.lookupTransform(
+      target_frame, input.header.frame_id, input.header.stamp, rclcpp::Duration::from_seconds(0.5));
+  } catch (tf2::TransformException & ex) {
+    RCLCPP_WARN(
+      rclcpp::get_logger("probabilistic_occupancy_grid_map"), "Failed to lookup transform: %s",
+      ex.what());
+    return false;
+  }
   // transform pointcloud
   Eigen::Matrix4f tf_matrix = tf2::transformToEigen(tf_stamped.transform).matrix().cast<float>();
   pcl_ros::transformPointCloud(tf_matrix, input, output);

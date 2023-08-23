@@ -238,6 +238,29 @@ class TestNodeIO(unittest.TestCase):
         self.assertIn("occupancy_grid_map_node", nodes)
         self.assertEqual(len(self.msg_buffer), 1)
 
+    def test_null_input2(self, proc_info):
+        """Test null input.
+
+        input: null pointcloud without even frame_id
+        output: null ogm
+        """
+        # wait for the node to be ready
+        time.sleep(3)
+        input_points = []
+        pub_raw, pub_obstacle, sub = self.create_pub_sub()
+        # publish input pointcloud
+        pt_msg = get_pointcloud_msg(input_points)
+        pt_msg.header.frame_id = ""
+        pub_raw.publish(pt_msg)
+        pub_obstacle.publish(pt_msg)
+        # try to subscribe output pointcloud once
+        rclpy.spin_once(self.node, timeout_sec=3.0)
+
+        # check if process is successfully terminated
+        nodes = self.node.get_node_names()
+        self.assertIn("occupancy_grid_map_node", nodes)
+        self.assertEqual(len(self.msg_buffer), 0)
+
 
 @launch_testing.post_shutdown_test()
 class TestProcessOutput(unittest.TestCase):
