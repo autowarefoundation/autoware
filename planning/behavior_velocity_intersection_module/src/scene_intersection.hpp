@@ -258,8 +258,8 @@ private:
   bool checkCollision(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const autoware_auto_perception_msgs::msg::PredictedObjects & target_objects,
-    const lanelet::ConstLanelets & ego_lane_with_next_lane, const int closest_idx,
-    const double time_delay, const bool tl_arrow_solid_on);
+    const util::PathLanelets & path_lanelets, const int closest_idx, const double time_delay,
+    const bool tl_arrow_solid_on);
 
   bool isOcclusionCleared(
     const nav_msgs::msg::OccupancyGrid & occ_grid,

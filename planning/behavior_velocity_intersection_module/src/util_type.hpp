@@ -132,6 +132,18 @@ struct IntersectionStopLines
   size_t pass_judge_line;
 };
 
+struct PathLanelets
+{
+  lanelet::ConstLanelets prev;
+  // lanelet::Constlanelet entry2ego; this is included in `all` if exists
+  lanelet::ConstLanelet
+    ego_or_entry2exit;  // this is `assigned lane` part of the path(not from
+                        // ego) if ego is before the intersection, otherwise from ego to exit
+  std::optional<lanelet::ConstLanelet> next =
+    std::nullopt;  // this is nullopt is the goal is inside intersection
+  lanelet::ConstLanelets all;
+};
+
 }  // namespace behavior_velocity_planner::util
 
 #endif  // UTIL_TYPE_HPP_
