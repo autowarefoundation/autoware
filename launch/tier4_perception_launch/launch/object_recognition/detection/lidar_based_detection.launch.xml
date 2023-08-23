@@ -11,6 +11,13 @@
   <arg name="container_name" default="pointcloud_container"/>
   <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
   <arg name="score_threshold" default="0.35"/>
+  <arg name="centerpoint_model_name" default="centerpoint_tiny"/>
+  <arg name="centerpoint_model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>
+  <arg name="lidar_model_param_path" default="$(find-pkg-share lidar_centerpoint)/config"/>
+  <arg name="objects_validation_method" default="obstacle_pointcloud"/>
+  <arg name="objects_filter_method" default="lanelet_filter"/>
+  <arg name="object_recognition_detection_object_merger_data_association_matrix_param_path" default="$(find-pkg-share object_merger)/config/data_association_matrix.param.yaml"/>
+  <arg name="object_recognition_detection_object_merger_distance_threshold_list_path" default="$(find-pkg-share object_merger)/config/overlapped_judge.param.yaml"/>
 
   <!-- Pointcloud map filter -->
   <group>
