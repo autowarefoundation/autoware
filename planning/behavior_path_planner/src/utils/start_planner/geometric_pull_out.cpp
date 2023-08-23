@@ -80,15 +80,48 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
         parameters_.collision_check_margin)) {
     return {};
   }
+  const double velocity = parallel_parking_parameters_.forward_parking_velocity;
 
   if (parameters_.divide_pull_out_path) {
     output.partial_paths = planner_.getPaths();
+    /*
+    Calculate the acceleration required to reach the forward parking velocity at the center of
+    the front path, assuming constant acceleration and deceleration.
+    v                     v
+    |                     |
+    |    /\               |    /\
+    |   /  \              |   /  \
+    |  /    \             |  /    \
+    | /      \            | /      \
+    |/________\_____ x    |/________\______ t
+    0  a_l/2  a_l         0    t_c 2*t_c
+    Notes:
+    a_l represents "arc_length_on_path_front"
+    t_c represents "time_to_center"
+    */
     // insert stop velocity to first arc path end
     output.partial_paths.front().points.back().point.longitudinal_velocity_mps = 0.0;
+    const double arc_length_on_first_arc_path =
+      motion_utils::calcArcLength(output.partial_paths.front().points);
+    const double time_to_center = arc_length_on_first_arc_path / (2 * velocity);
+    const double average_velocity = arc_length_on_first_arc_path / (time_to_center * 2);
+    const double average_acceleration = average_velocity / (time_to_center * 2);
+    output.pairs_terminal_velocity_and_accel.push_back(
+      std::make_pair(average_velocity, average_acceleration));
+    const double arc_length_on_second_arc_path =
+      motion_utils::calcArcLength(planner_.getArcPaths().at(1).points);
+    output.pairs_terminal_velocity_and_accel.push_back(
+      std::make_pair(velocity, velocity * velocity / (2 * arc_length_on_second_arc_path)));
   } else {
-    auto partial_paths = planner_.getPaths();
+    const auto partial_paths = planner_.getPaths();
     const auto combined_path = combineReferencePath(partial_paths.at(0), partial_paths.at(1));
     output.partial_paths.push_back(combined_path);
+
+    // Calculate the acceleration required to reach the forward parking velocity at the center of
+    // the path, assuming constant acceleration and deceleration.
+    const double arc_length_on_path = motion_utils::calcArcLength(combined_path.points);
+    output.pairs_terminal_velocity_and_accel.push_back(
+      std::make_pair(velocity, velocity * velocity / 2 * arc_length_on_path));
   }
   output.start_pose = planner_.getArcPaths().at(0).points.front().point.pose;
   output.end_pose = planner_.getArcPaths().at(1).points.back().point.pose;
