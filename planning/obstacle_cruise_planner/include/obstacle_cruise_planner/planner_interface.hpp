@@ -254,6 +254,11 @@ private:
   SlowDownParam slow_down_param_;
 
   std::vector<SlowDownOutput> prev_slow_down_output_;
+  // previous trajectory and distance to stop
+  // NOTE: Previous trajectory is memorized to deal with nearest index search for overlapping or
+  // crossing lanes.
+  std::optional<std::pair<std::vector<TrajectoryPoint>, double>> prev_stop_distance_info_{
+    std::nullopt};
 };
 
 #endif  // OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_

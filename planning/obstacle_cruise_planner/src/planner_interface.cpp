@@ -228,6 +228,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
       motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
     tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
 
+    prev_stop_distance_info_ = std::nullopt;
     return planner_data.traj_points;
   }
 
@@ -244,6 +245,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
       motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
     tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
 
+    prev_stop_distance_info_ = std::nullopt;
     return planner_data.traj_points;
   }
 
@@ -315,9 +317,36 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
   }
 
   // Generate Output Trajectory
+  const double zero_vel_dist = [&]() {
+    const double current_zero_vel_dist =
+      std::max(0.0, closest_obstacle_dist - abs_ego_offset - feasible_margin_from_obstacle);
+
+    // Hold previous stop distance if necessary
+    if (
+      std::abs(planner_data.ego_vel) < longitudinal_info_.hold_stop_velocity_threshold &&
+      prev_stop_distance_info_) {
+      // NOTE: We assume that the current trajectory's front point is ahead of the previous
+      // trajectory's front point.
+      const size_t traj_front_point_prev_seg_idx =
+        motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+          prev_stop_distance_info_->first, planner_data.traj_points.front().pose);
+      const double diff_dist_front_points = motion_utils::calcSignedArcLength(
+        prev_stop_distance_info_->first, 0, planner_data.traj_points.front().pose.position,
+        traj_front_point_prev_seg_idx);
+
+      const double prev_zero_vel_dist = prev_stop_distance_info_->second - diff_dist_front_points;
+      if (
+        std::abs(prev_zero_vel_dist - current_zero_vel_dist) <
+        longitudinal_info_.hold_stop_distance_threshold) {
+        return prev_zero_vel_dist;
+      }
+    }
+
+    return current_zero_vel_dist;
+  }();
+
+  // Insert stop point
   auto output_traj_points = planner_data.traj_points;
-  const double zero_vel_dist =
-    std::max(0.0, closest_obstacle_dist - abs_ego_offset - feasible_margin_from_obstacle);
   const auto zero_vel_idx = motion_utils::insertStopPoint(0, zero_vel_dist, output_traj_points);
   if (zero_vel_idx) {
     // virtual wall marker for stop obstacle
@@ -338,6 +367,8 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     const auto stop_speed_exceeded_msg =
       createStopSpeedExceededMsg(planner_data.current_time, will_collide_with_obstacle);
     stop_speed_exceeded_pub_->publish(stop_speed_exceeded_msg);
+
+    prev_stop_distance_info_ = std::make_pair(output_traj_points, zero_vel_dist);
   }
 
   stop_planning_debug_info_.set(
