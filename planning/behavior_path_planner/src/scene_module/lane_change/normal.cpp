@@ -1045,8 +1045,7 @@ bool NormalLaneChange::getLaneChangePaths(
       }
 
       const auto [is_safe, is_object_coming_from_rear] = isLaneChangePathSafe(
-        *candidate_path, target_objects, common_parameters.expected_front_deceleration,
-        common_parameters.expected_rear_deceleration, object_debug_);
+        *candidate_path, target_objects, lane_change_parameters_->rss_params, object_debug_);
 
       if (is_safe) {
         return true;
@@ -1059,7 +1058,6 @@ bool NormalLaneChange::getLaneChangePaths(
 
 PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
 {
-  const auto & common_parameters = getCommonParam();
   const auto & path = status_.lane_change_path;
   const auto & current_lanes = status_.current_lanes;
   const auto & target_lanes = status_.target_lanes;
@@ -1068,8 +1066,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
 
   CollisionCheckDebugMap debug_data;
   const auto safety_status = isLaneChangePathSafe(
-    path, target_objects, common_parameters.expected_front_deceleration_for_abort,
-    common_parameters.expected_rear_deceleration_for_abort, debug_data);
+    path, target_objects, lane_change_parameters_->rss_params_for_abort, debug_data);
   {
     // only for debug purpose
     object_debug_.clear();
@@ -1326,7 +1323,7 @@ bool NormalLaneChange::getAbortPath()
 
 PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const LaneChangeTargetObjects & target_objects,
-  const double front_decel, const double rear_decel,
+  const utils::path_safety_checker::RSSparams & rss_params,
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data) const
 {
   PathSafetyStatus path_safety_status;
@@ -1388,7 +1385,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
       obj, lane_change_parameters_->use_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::path_safety_checker::checkCollision(
-            path, ego_predicted_path, obj, obj_path, common_parameters, front_decel, rear_decel,
+            path, ego_predicted_path, obj, obj_path, common_parameters, rss_params,
             current_debug_data.second)) {
         path_safety_status.is_safe = false;
         updateDebugInfo(current_debug_data, path_safety_status.is_safe);

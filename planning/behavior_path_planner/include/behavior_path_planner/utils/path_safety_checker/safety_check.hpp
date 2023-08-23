@@ -65,8 +65,7 @@ Polygon2d createExtendedPolygon(
 
 double calcRssDistance(
   const double front_object_velocity, const double rear_object_velocity,
-  const double front_object_deceleration, const double rear_object_deceleration,
-  const BehaviorPathPlannerParameters & params);
+  const RSSparams & rss_params);
 
 double calcMinimumLongitudinalLength(
   const double front_object_velocity, const double rear_object_velocity,
@@ -98,8 +97,8 @@ bool checkCollision(
   const std::vector<PoseWithVelocityStamped> & predicted_ego_path,
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
-  const BehaviorPathPlannerParameters & common_parameters, const double front_object_deceleration,
-  const double rear_object_deceleration, CollisionCheckDebug & debug);
+  const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
+  CollisionCheckDebug & debug);
 
 /**
  * @brief Check collision between ego path footprints with extra longitudinal stopping margin and

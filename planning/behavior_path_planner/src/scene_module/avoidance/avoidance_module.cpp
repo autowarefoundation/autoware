@@ -1879,8 +1879,8 @@ bool AvoidanceModule::isSafePath(
     for (const auto & obj_path : obj_predicted_paths) {
       CollisionCheckDebug collision{};
       if (!utils::path_safety_checker::checkCollision(
-            shifted_path.path, ego_predicted_path, object, obj_path, p,
-            p.expected_front_deceleration, p.expected_rear_deceleration, collision)) {
+            shifted_path.path, ego_predicted_path, object, obj_path, p, parameters_->rss_params,
+            collision)) {
         return false;
       }
     }

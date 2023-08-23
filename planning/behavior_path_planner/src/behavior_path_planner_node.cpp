@@ -391,23 +391,6 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
   p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
-  p.lateral_distance_max_threshold = declare_parameter<double>("lateral_distance_max_threshold");
-  p.longitudinal_distance_min_threshold =
-    declare_parameter<double>("longitudinal_distance_min_threshold");
-  p.longitudinal_velocity_delta_time =
-    declare_parameter<double>("longitudinal_velocity_delta_time");
-
-  p.expected_front_deceleration = declare_parameter<double>("expected_front_deceleration");
-  p.expected_rear_deceleration = declare_parameter<double>("expected_rear_deceleration");
-
-  p.expected_front_deceleration_for_abort =
-    declare_parameter<double>("expected_front_deceleration_for_abort");
-  p.expected_rear_deceleration_for_abort =
-    declare_parameter<double>("expected_rear_deceleration_for_abort");
-
-  p.rear_vehicle_reaction_time = declare_parameter<double>("rear_vehicle_reaction_time");
-  p.rear_vehicle_safety_time_margin = declare_parameter<double>("rear_vehicle_safety_time_margin");
-
   if (p.backward_length_buffer_for_end_of_lane < 1.0) {
     RCLCPP_WARN_STREAM(
       get_logger(), "Lane change buffer must be more than 1 meter. Modifying the buffer.");

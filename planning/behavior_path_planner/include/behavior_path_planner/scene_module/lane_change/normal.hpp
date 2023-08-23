@@ -140,7 +140,7 @@ protected:
 
   PathSafetyStatus isLaneChangePathSafe(
     const LaneChangePath & lane_change_path, const LaneChangeTargetObjects & target_objects,
-    const double front_decel, const double rear_decel,
+    const utils::path_safety_checker::RSSparams & rss_params,
     std::unordered_map<std::string, CollisionCheckDebug> & debug_data) const;
 
   LaneChangeTargetObjectIndices filterObject(

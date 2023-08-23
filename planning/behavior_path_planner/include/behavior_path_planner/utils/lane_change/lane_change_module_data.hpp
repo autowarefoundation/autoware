@@ -76,6 +76,10 @@ struct LaneChangeParameters
   bool check_motorcycle{true};  // check object motorbike
   bool check_pedestrian{true};  // check object pedestrian
 
+  // safety check
+  utils::path_safety_checker::RSSparams rss_params;
+  utils::path_safety_checker::RSSparams rss_params_for_abort;
+
   // abort
   LaneChangeCancelParameters cancel;
 

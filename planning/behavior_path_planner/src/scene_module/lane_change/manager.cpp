@@ -85,6 +85,36 @@ LaneChangeModuleManager::LaneChangeModuleManager(
     get_parameter<bool>(node, parameter("check_objects_on_other_lanes"));
   p.use_all_predicted_path = get_parameter<bool>(node, parameter("use_all_predicted_path"));
 
+  p.rss_params.longitudinal_distance_min_threshold =
+    get_parameter<double>(node, parameter("safety_check.longitudinal_distance_min_threshold"));
+  p.rss_params.longitudinal_velocity_delta_time =
+    get_parameter<double>(node, parameter("safety_check.longitudinal_velocity_delta_time"));
+  p.rss_params.front_vehicle_deceleration =
+    get_parameter<double>(node, parameter("safety_check.expected_front_deceleration"));
+  p.rss_params.rear_vehicle_deceleration =
+    get_parameter<double>(node, parameter("safety_check.expected_rear_deceleration"));
+  p.rss_params.rear_vehicle_reaction_time =
+    get_parameter<double>(node, parameter("safety_check.rear_vehicle_reaction_time"));
+  p.rss_params.rear_vehicle_safety_time_margin =
+    get_parameter<double>(node, parameter("safety_check.rear_vehicle_safety_time_margin"));
+  p.rss_params.lateral_distance_max_threshold =
+    get_parameter<double>(node, parameter("safety_check.lateral_distance_max_threshold"));
+
+  p.rss_params_for_abort.longitudinal_distance_min_threshold =
+    get_parameter<double>(node, parameter("safety_check.longitudinal_distance_min_threshold"));
+  p.rss_params_for_abort.longitudinal_velocity_delta_time =
+    get_parameter<double>(node, parameter("safety_check.longitudinal_velocity_delta_time"));
+  p.rss_params_for_abort.front_vehicle_deceleration =
+    get_parameter<double>(node, parameter("safety_check.expected_front_deceleration_for_abort"));
+  p.rss_params_for_abort.rear_vehicle_deceleration =
+    get_parameter<double>(node, parameter("safety_check.expected_rear_deceleration_for_abort"));
+  p.rss_params_for_abort.rear_vehicle_reaction_time =
+    get_parameter<double>(node, parameter("safety_check.rear_vehicle_reaction_time"));
+  p.rss_params_for_abort.rear_vehicle_safety_time_margin =
+    get_parameter<double>(node, parameter("safety_check.rear_vehicle_safety_time_margin"));
+  p.rss_params_for_abort.lateral_distance_max_threshold =
+    get_parameter<double>(node, parameter("safety_check.lateral_distance_max_threshold"));
+
   // target object
   {
     std::string ns = "lane_change.target_object.";

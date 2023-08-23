@@ -25,19 +25,6 @@
 
     visualize_maximum_drivable_area: true
 
-    lateral_distance_max_threshold: 2.0
-    longitudinal_distance_min_threshold: 3.0
-    longitudinal_velocity_delta_time: 0.8 # [s]
-
-    expected_front_deceleration: -1.0
-    expected_rear_deceleration: -1.0
-
-    expected_front_deceleration_for_abort: -1.0
-    expected_rear_deceleration_for_abort: -2.0
-
-    rear_vehicle_reaction_time: 2.0
-    rear_vehicle_safety_time_margin: 1.0
-
     lane_following:
       drivable_area_right_bound_offset: 0.0
       drivable_area_left_bound_offset: 0.0

@@ -123,6 +123,8 @@ struct RSSparams
   double longitudinal_distance_min_threshold{
     0.0};                                        ///< Minimum threshold for longitudinal distance.
   double longitudinal_velocity_delta_time{0.0};  ///< Delta time for longitudinal velocity.
+  double front_vehicle_deceleration;             ///< brake parameter
+  double rear_vehicle_deceleration;              ///< brake parameter
 };
 
 /**

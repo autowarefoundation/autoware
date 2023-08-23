@@ -26,6 +26,18 @@
       min_longitudinal_acc: -1.0
       max_longitudinal_acc: 1.0
 
+      # safety check
+      safety_check:
+        expected_front_deceleration: -1.0
+        expected_rear_deceleration: -1.0
+        expected_front_deceleration_for_abort: -1.0
+        expected_rear_deceleration_for_abort: -2.0
+        rear_vehicle_reaction_time: 2.0
+        rear_vehicle_safety_time_margin: 1.0
+        lateral_distance_max_threshold: 2.0
+        longitudinal_distance_min_threshold: 3.0
+        longitudinal_velocity_delta_time: 0.8
+
       # lateral acceleration map
       lateral_acceleration:
         velocity: [0.0, 4.0, 10.0]
