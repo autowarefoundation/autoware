@@ -1606,6 +1606,10 @@ std::vector<geometry_msgs::msg::Point> calcBound(
       const auto polygon =
         route_handler->getLaneletMapPtr()->polygonLayer.get(std::atoi(id.c_str()));
 
+      const auto is_clockwise_polygon =
+        boost::geometry::is_valid(lanelet::utils::to2D(polygon.basicPolygon()));
+      const auto is_clockwise_iteration = is_clockwise_polygon ? is_left : !is_left;
+
       const auto start_itr = std::find_if(polygon.begin(), polygon.end(), [&bound](const auto & p) {
         return p.id() == bound.front().id();
       });
@@ -1621,7 +1625,8 @@ std::vector<geometry_msgs::msg::Point> calcBound(
       // extract line strings between start_idx and end_idx.
       const size_t start_idx = std::distance(polygon.begin(), start_itr);
       const size_t end_idx = std::distance(polygon.begin(), end_itr);
-      for (const auto & point : extract_bound_from_polygon(polygon, start_idx, end_idx, is_left)) {
+      for (const auto & point :
+           extract_bound_from_polygon(polygon, start_idx, end_idx, is_clockwise_iteration)) {
         output_points.push_back(point);
       }
 
