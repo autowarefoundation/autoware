@@ -18,18 +18,12 @@
 
 namespace gnss_poser
 {
-enum class CoordinateSystem {
-  UTM = 0,
-  MGRS = 1,
-  LOCAL_CARTESIAN_WGS84 = 3,
-  LOCAL_CARTESIAN_UTM = 4
-};
+enum class CoordinateSystem { MGRS = 1, LOCAL_CARTESIAN_WGS84 = 3, LOCAL_CARTESIAN_UTM = 4 };
 
 struct GNSSStat
 {
   GNSSStat()
-  : coordinate_system(CoordinateSystem::MGRS),
-    east_north_up(true),
+  : east_north_up(true),
     zone(0),
     mgrs_zone(""),
     x(0),
@@ -41,7 +35,6 @@ struct GNSSStat
   {
   }
 
-  CoordinateSystem coordinate_system;
   bool east_north_up;
   int zone;
   std::string mgrs_zone;

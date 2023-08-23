@@ -61,7 +61,6 @@ GNSSStat NavSatFix2LocalCartesianWGS84(
   sensor_msgs::msg::NavSatFix nav_sat_fix_origin_, const rclcpp::Logger & logger)
 {
   GNSSStat local_cartesian;
-  local_cartesian.coordinate_system = CoordinateSystem::LOCAL_CARTESIAN_WGS84;
 
   try {
     GeographicLib::LocalCartesian localCartesian_origin(
@@ -83,7 +82,6 @@ GNSSStat NavSatFix2UTM(
   int height_system)
 {
   GNSSStat utm;
-  utm.coordinate_system = CoordinateSystem::UTM;
 
   try {
     GeographicLib::UTMUPS::Forward(
@@ -107,11 +105,9 @@ GNSSStat NavSatFix2LocalCartesianUTM(
   sensor_msgs::msg::NavSatFix nav_sat_fix_origin, const rclcpp::Logger & logger, int height_system)
 {
   GNSSStat utm_local;
-  utm_local.coordinate_system = CoordinateSystem::UTM;
   try {
     // origin of the local coordinate system in global frame
     GNSSStat utm_origin;
-    utm_origin.coordinate_system = CoordinateSystem::UTM;
     GeographicLib::UTMUPS::Forward(
       nav_sat_fix_origin.latitude, nav_sat_fix_origin.longitude, utm_origin.zone,
       utm_origin.east_north_up, utm_origin.x, utm_origin.y);
@@ -150,7 +146,6 @@ GNSSStat UTM2MGRS(
   constexpr int GZD_ID_size = 5;  // size of header like "53SPU"
 
   GNSSStat mgrs = utm;
-  mgrs.coordinate_system = CoordinateSystem::MGRS;
   try {
     std::string mgrs_code;
     GeographicLib::MGRS::Forward(

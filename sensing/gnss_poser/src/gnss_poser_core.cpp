@@ -190,9 +190,7 @@ GNSSStat GNSSPoser::convert(
   int height_system)
 {
   GNSSStat gnss_stat;
-  if (coordinate_system == CoordinateSystem::UTM) {
-    gnss_stat = NavSatFix2UTM(nav_sat_fix_msg, this->get_logger(), height_system);
-  } else if (coordinate_system == CoordinateSystem::LOCAL_CARTESIAN_UTM) {
+  if (coordinate_system == CoordinateSystem::LOCAL_CARTESIAN_UTM) {
     gnss_stat = NavSatFix2LocalCartesianUTM(
       nav_sat_fix_msg, nav_sat_fix_origin_, this->get_logger(), height_system);
   } else if (coordinate_system == CoordinateSystem::MGRS) {
