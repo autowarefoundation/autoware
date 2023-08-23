@@ -1223,6 +1223,7 @@ boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> 
         boost::geometry::intersection(
           lanelet.polygon2d().basicPolygon(), target_lanelet.polygon2d().basicPolygon(),
           intersections);
+
         // if only one point intersects, it is assumed not to be overlapped
         if (intersections.size() > 1) {
           return true;
@@ -1265,35 +1266,69 @@ std::vector<DrivableLanes> cutOverlappedLanes(
   std::vector<DrivableLanes> shorten_lanes{lanes.begin(), lanes.begin() + *overlapped_lanelet_idx};
   const auto shorten_lanelets = utils::transformToLanelets(shorten_lanes);
 
-  // create removed lanelets
-  std::vector<int64_t> removed_lane_ids;
-  for (size_t i = *overlapped_lanelet_idx; i < lanes.size(); ++i) {
-    const auto target_lanelets = utils::transformToLanelets(lanes.at(i));
-    for (const auto & target_lanelet : target_lanelets) {
-      // if target lane is inside of the shorten lanelets, we do not remove it
-      if (checkHasSameLane(shorten_lanelets, target_lanelet)) {
-        continue;
+  const auto original_points = path.points;
+
+  path.points.clear();
+
+  const auto has_same_id_lane = [](const auto & lanelet, const auto & p) {
+    return std::any_of(p.lane_ids.begin(), p.lane_ids.end(), [&lanelet](const auto id) {
+      return lanelet.id() == id;
+    });
+  };
+
+  const auto has_same_id_lanes = [&has_same_id_lane](const auto & lanelets, const auto & p) {
+    return std::any_of(
+      lanelets.begin(), lanelets.end(),
+      [&has_same_id_lane, &p](const auto & lanelet) { return has_same_id_lane(lanelet, p); });
+  };
+
+  // Step1. find first path point within drivable lanes
+  size_t start_point_idx = std::numeric_limits<size_t>::max();
+  for (const auto & lanes : shorten_lanes) {
+    for (size_t i = 0; i < original_points.size(); ++i) {
+      // check right lane
+      if (has_same_id_lane(lanes.right_lane, original_points.at(i))) {
+        start_point_idx = std::min(start_point_idx, i);
       }
-      removed_lane_ids.push_back(target_lanelet.id());
+
+      // check left lane
+      if (has_same_id_lane(lanes.left_lane, original_points.at(i))) {
+        start_point_idx = std::min(start_point_idx, i);
+      }
+
+      // check middle lanes
+      if (has_same_id_lanes(lanes.middle_lanes, original_points.at(i))) {
+        start_point_idx = std::min(start_point_idx, i);
+      }
     }
   }
 
-  const auto is_same_lane_id = [&removed_lane_ids](const auto & point) {
-    const auto & lane_ids = point.lane_ids;
-    for (const auto & lane_id : lane_ids) {
-      const auto is_same_id = [&lane_id](const auto id) { return lane_id == id; };
-
-      if (std::any_of(removed_lane_ids.begin(), removed_lane_ids.end(), is_same_id)) {
-        return true;
+  // Step2. pick up only path points within drivable lanes
+  for (const auto & lanes : shorten_lanes) {
+    for (size_t i = start_point_idx; i < original_points.size(); ++i) {
+      // check right lane
+      if (has_same_id_lane(lanes.right_lane, original_points.at(i))) {
+        path.points.push_back(original_points.at(i));
+        continue;
       }
+
+      // check left lane
+      if (has_same_id_lane(lanes.left_lane, original_points.at(i))) {
+        path.points.push_back(original_points.at(i));
+        continue;
+      }
+
+      // check middle lanes
+      if (has_same_id_lanes(lanes.middle_lanes, original_points.at(i))) {
+        path.points.push_back(original_points.at(i));
+        continue;
+      }
+
+      start_point_idx = i;
+      break;
     }
-    return false;
-  };
+  }
 
-  const auto points_with_overlapped_id =
-    std::remove_if(path.points.begin(), path.points.end(), is_same_lane_id);
-
-  path.points.erase(points_with_overlapped_id, path.points.end());
   return shorten_lanes;
 }
 
