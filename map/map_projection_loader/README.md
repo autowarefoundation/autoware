@@ -38,13 +38,13 @@ type: "MGRS"
 mgrs_grid: "54SUE"
 ```
 
-### Using UTM
+### Using LocalCartesianUTM
 
-If you want to use UTM, please specify the map origin as well.
+If you want to use local cartesian UTM, please specify the map origin as well.
 
 ```yaml
 # map_projector_info.yaml
-type: "UTM"
+type: "LocalCartesianUTM"
 map_origin:
   latitude: 35.6092
   longitude: 139.7303

@@ -33,7 +33,7 @@ import yaml
 
 logger = get_logger(__name__)
 
-YAML_FILE_PATH = "test/data/projection_info_utm.yaml"
+YAML_FILE_PATH = "test/data/projection_info_local_cartesian_utm.yaml"
 
 
 @pytest.mark.launch_test

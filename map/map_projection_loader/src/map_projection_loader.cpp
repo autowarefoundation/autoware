@@ -30,14 +30,14 @@ tier4_map_msgs::msg::MapProjectorInfo load_info_from_yaml(const std::string & fi
   msg.type = data["type"].as<std::string>();
   if (msg.type == "MGRS") {
     msg.mgrs_grid = data["mgrs_grid"].as<std::string>();
-  } else if (msg.type == "UTM") {
+  } else if (msg.type == "LocalCartesianUTM") {
     msg.map_origin.latitude = data["map_origin"]["latitude"].as<double>();
     msg.map_origin.longitude = data["map_origin"]["longitude"].as<double>();
   } else if (msg.type == "local") {
     ;  // do nothing
   } else {
     throw std::runtime_error(
-      "Invalid map projector type. Currently supported types: MGRS, UTM, and local");
+      "Invalid map projector type. Currently supported types: MGRS, LocalCartesianUTM, and local");
   }
   return msg;
 }

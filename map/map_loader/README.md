@@ -144,7 +144,7 @@ The node projects lan/lon coordinates into arbitrary coordinates defined in `/ma
 The node supports the following three types of coordinate systems:
 
 - MGRS
-- UTM
+- LocalCartesianUTM
 - local
 
 ### How to run
