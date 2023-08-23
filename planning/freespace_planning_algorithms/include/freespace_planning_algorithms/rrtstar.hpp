@@ -47,11 +47,11 @@ public:
   : RRTStar(
       planner_common_param, original_vehicle_shape,
       RRTStarParam{
-        node.declare_parameter("rrtstar.enable_update", true),
-        node.declare_parameter("rrtstar.use_informed_sampling", true),
-        node.declare_parameter("rrtstar.max_planning_time", 150.0),
-        node.declare_parameter("rrtstar.neighbor_radius", 8.0),
-        node.declare_parameter("rrtstar.margin", 0.1)})
+        node.declare_parameter<bool>("rrtstar.enable_update"),
+        node.declare_parameter<bool>("rrtstar.use_informed_sampling"),
+        node.declare_parameter<double>("rrtstar.max_planning_time"),
+        node.declare_parameter<double>("rrtstar.neighbor_radius"),
+        node.declare_parameter<double>("rrtstar.margin")})
   {
   }
 

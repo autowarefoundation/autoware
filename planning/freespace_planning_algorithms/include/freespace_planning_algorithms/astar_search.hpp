@@ -118,9 +118,9 @@ public:
   : AstarSearch(
       planner_common_param, collision_vehicle_shape,
       AstarParam{
-        node.declare_parameter("astar.only_behind_solutions", false),
-        node.declare_parameter("astar.use_back", true),
-        node.declare_parameter("astar.distance_heuristic_weight", 1.0)})
+        node.declare_parameter<bool>("astar.only_behind_solutions"),
+        node.declare_parameter<bool>("astar.use_back"),
+        node.declare_parameter<double>("astar.distance_heuristic_weight")})
   {
   }
 

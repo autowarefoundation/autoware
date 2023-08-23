@@ -33,3 +33,11 @@
       only_behind_solutions: false
       use_back: true
       distance_heuristic_weight: 1.0
+
+    # -- RRT* search Configurations --
+    rrtstar:
+      enable_update: true
+      use_informed_sampling: true
+      max_planning_time: 150.0
+      neighbor_radius: 8.0
+      margin: 0.1
