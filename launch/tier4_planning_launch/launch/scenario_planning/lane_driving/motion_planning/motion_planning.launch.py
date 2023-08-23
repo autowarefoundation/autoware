@@ -309,6 +309,16 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(LaunchConfiguration("use_surround_obstacle_check")),
     )
 
+    glog_component = ComposableNode(
+        package="glog_component",
+        plugin="GlogComponent",
+        name="glog_component",
+    )
+    glog_component_loader = LoadComposableNodes(
+        composable_node_descriptions=[glog_component],
+        target_container=container,
+    )
+
     group = GroupAction(
         [
             container,
@@ -319,6 +329,7 @@ def launch_setup(context, *args, **kwargs):
             obstacle_cruise_planner_loader,
             obstacle_cruise_planner_relay_loader,
             surround_obstacle_checker_loader,
+            glog_component_loader,
         ]
     )
     return [group]
