@@ -270,23 +270,40 @@ The last behavior will also occur if the ego vehicle has departed from the curre
 
 The following parameters are configurable in `lane_change.param.yaml`.
 
-| Name                                     | Unit   | Type   | Description                                                                                          | Default value |
-| :--------------------------------------- | ------ | ------ | ---------------------------------------------------------------------------------------------------- | ------------- |
-| `prepare_duration`                       | [m]    | double | The preparation time for the ego vehicle to be ready to perform lane change.                         | 4.0           |
-| `lane_changing_safety_check_duration`    | [m]    | double | The total time that is taken to complete the lane-changing task.                                     | 8.0           |
-| `backward_length_buffer_for_end_of_lane` | [m]    | double | The end of lane buffer to ensure ego vehicle has enough distance to start lane change                | 2.0           |
-| `lane_change_finish_judge_buffer`        | [m]    | double | The additional buffer used to confirm lane change process completion                                 | 3.0           |
-| `lane_changing_lateral_jerk`             | [m/s3] | double | Lateral jerk value for lane change path generation                                                   | 0.5           |
-| `minimum_lane_changing_velocity`         | [m/s]  | double | Minimum speed during lane changing process.                                                          | 2.78          |
-| `prediction_time_resolution`             | [s]    | double | Time resolution for object's path interpolation and collision check.                                 | 0.5           |
-| `longitudinal_acceleration_sampling_num` | [-]    | int    | Number of possible lane-changing trajectories that are being influenced by longitudinal acceleration | 5             |
-| `lateral_acceleration_sampling_num`      | [-]    | int    | Number of possible lane-changing trajectories that are being influenced by lateral acceleration      | 3             |
-| `max_longitudinal_acc`                   | [-]    | double | maximum longitudinal acceleration for lane change                                                    | 1.0           |
-| `min_longitudinal_acc`                   | [-]    | double | maximum longitudinal deceleration for lane change                                                    | -1.0          |
+| Name                                        | Unit   | Type    | Description                                                                                                     | Default value      |
+| :------------------------------------------ | ------ | ------- | --------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `backward_lane_length`                      | [m]    | double  | The backward length to check incoming objects in lane change target lane.                                       | 200.0              |
+| `prepare_duration`                          | [m]    | double  | The preparation time for the ego vehicle to be ready to perform lane change.                                    | 4.0                |
+| `backward_length_buffer_for_end_of_lane`    | [m]    | double  | The end of lane buffer to ensure ego vehicle has enough distance to start lane change                           | 2.0                |
+| `lane_change_finish_judge_buffer`           | [m]    | double  | The additional buffer used to confirm lane change process completion                                            | 3.0                |
+| `finish_judge_lateral_threshold`            | [m]    | double  | Lateral distance threshold to confirm lane change process completion                                            | 0.2                |
+| `lane_changing_lateral_jerk`                | [m/s3] | double  | Lateral jerk value for lane change path generation                                                              | 0.5                |
+| `minimum_lane_changing_velocity`            | [m/s]  | double  | Minimum speed during lane changing process.                                                                     | 2.78               |
+| `prediction_time_resolution`                | [s]    | double  | Time resolution for object's path interpolation and collision check.                                            | 0.5                |
+| `longitudinal_acceleration_sampling_num`    | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by longitudinal acceleration            | 5                  |
+| `lateral_acceleration_sampling_num`         | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by lateral acceleration                 | 3                  |
+| `object_check_min_road_shoulder_width`      | [m]    | double  | Vehicles around the center line within this distance will be excluded from parking objects                      | 0.5                |
+| `object_shiftable_ratio_threshold`          | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                | 0.6                |
+| `min_length_for_turn_signal_activation`     | [m]    | double  | Turn signal will be acitvated if the ego vehicle approaches to this length from minimum lane change length      | 10.0               |
+| `length_ratio_for_turn_signal_deactivation` | [-]    | double  | Turn signal will be deacitvated if the ego vehicle approaches to this length ratio for lane change finish point | 0.8                |
+| `object_shiftable_ratio_threshold`          | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                | 0.6                |
+| `max_longitudinal_acc`                      | [-]    | double  | maximum longitudinal acceleration for lane change                                                               | 1.0                |
+| `min_longitudinal_acc`                      | [-]    | double  | maximum longitudinal deceleration for lane change                                                               | -1.0               |
+| `lateral_acceleration.velocity`             | [m/s]  | double  | Reference velocity for lateral acceleration calculation (look up table)                                         | [0.0, 4.0, 10.0]   |
+| `lateral_acceleration.min_values`           | [m/ss] | double  | Min lateral acceleration values corresponding to velocity (look up table)                                       | [0.15, 0.15, 0.15] |
+| `lateral_acceleration.max_values`           | [m/ss] | double  | Max lateral acceleration values corresponding to velocity (look up table)                                       | [0.5, 0.5, 0.5]    |
+| `target_object.car`                         | [-]    | boolean | Include car objects for safety check                                                                            | true               |
+| `target_object.truck`                       | [-]    | boolean | Include truck objects for safety check                                                                          | true               |
+| `target_object.bus`                         | [-]    | boolean | Include bus objects for safety check                                                                            | true               |
+| `target_object.trailer`                     | [-]    | boolean | Include trailer objects for safety check                                                                        | true               |
+| `target_object.unknown`                     | [-]    | boolean | Include unknown objects for safety check                                                                        | true               |
+| `target_object.bicycle`                     | [-]    | boolean | Include bicycle objects for safety check                                                                        | true               |
+| `target_object.motorcycle`                  | [-]    | boolean | Include motorcycle objects for safety check                                                                     | true               |
+| `target_object.pedestrian`                  | [-]    | boolean | Include pedestrian objects for safety check                                                                     | true               |
 
 ### Collision checks during lane change
 
-The following parameters are configurable in `behavior_path_planner.param.yaml`.
+The following parameters are configurable in `behavior_path_planner.param.yaml` and `lane_change.param.yaml`.
 
 | Name                                       | Unit    | Type    | Description                                                                                                                                                    | Default value |
 | :----------------------------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
