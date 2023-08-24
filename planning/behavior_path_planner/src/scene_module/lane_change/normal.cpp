@@ -645,10 +645,6 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
   const auto & route_handler = *getRouteHandler();
   const auto & common_parameters = planner_data_->parameters;
   const auto & objects = *planner_data_->dynamic_object;
-  const auto & object_check_min_road_shoulder_width =
-    lane_change_parameters_->object_check_min_road_shoulder_width;
-  const auto & object_shiftable_ratio_threshold =
-    lane_change_parameters_->object_shiftable_ratio_threshold;
 
   // Guard
   if (objects.objects.empty()) {
@@ -709,9 +705,8 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
     // check if the object intersects with target lanes
     if (target_polygon && boost::geometry::intersects(target_polygon.value(), obj_polygon)) {
       // ignore static parked object that are in front of the ego vehicle in target lanes
-      bool is_parked_object = utils::lane_change::isParkedObject(
-        target_path, route_handler, extended_object, object_check_min_road_shoulder_width,
-        object_shiftable_ratio_threshold);
+      bool is_parked_object =
+        utils::lane_change::isParkedObject(target_path, route_handler, extended_object, 0.0, 0.0);
       if (is_parked_object && min_dist_ego_to_obj > min_dist_to_lane_changing_start) {
         continue;
       }
