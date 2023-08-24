@@ -114,7 +114,7 @@ bool isTrafficLightArrowActivated(
   lanelet::ConstLanelet lane,
   const std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped> & tl_infos);
 
-std::vector<DescritizedLane> generateDetectionLaneDivisions(
+std::vector<DiscretizedLane> generateDetectionLaneDivisions(
   lanelet::ConstLanelets detection_lanelets,
   const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution);
 

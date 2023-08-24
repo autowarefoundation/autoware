@@ -235,7 +235,7 @@ private:
     }
     void reset(const std::string & uuid) { counter_.emplace(uuid, 0); }
 
-    // NOTE: positive is for meeting entrying condition, and negative is for exiting.
+    // NOTE: positive is for meeting entering condition, and negative is for exiting.
     std::unordered_map<std::string, int> counter_;
     std::vector<std::string> current_uuids_;
   };

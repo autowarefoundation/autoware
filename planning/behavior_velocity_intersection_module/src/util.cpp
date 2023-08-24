@@ -709,7 +709,7 @@ bool isTrafficLightArrowActivated(
   return false;
 }
 
-std::vector<DescritizedLane> generateDetectionLaneDivisions(
+std::vector<DiscretizedLane> generateDetectionLaneDivisions(
   lanelet::ConstLanelets detection_lanelets_all,
   [[maybe_unused]] const lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const double resolution)
@@ -778,15 +778,15 @@ std::vector<DescritizedLane> generateDetectionLaneDivisions(
     auto & branch = branches[(ind2id[src])];
     int node_iter = ind2id[src];
     while (true) {
-      const auto & dsts = adjacency[(id2ind[node_iter])];
+      const auto & destinations = adjacency[(id2ind[node_iter])];
       // NOTE: assuming detection lanelets have only one previous lanelet
-      const auto next = std::find(dsts.begin(), dsts.end(), true);
-      if (next == dsts.end()) {
+      const auto next = std::find(destinations.begin(), destinations.end(), true);
+      if (next == destinations.end()) {
         branch.push_back(node_iter);
         break;
       }
       branch.push_back(node_iter);
-      node_iter = ind2id[std::distance(dsts.begin(), next)];
+      node_iter = ind2id[std::distance(destinations.begin(), next)];
     }
   }
   for (decltype(branches)::iterator it = branches.begin(); it != branches.end(); it++) {
@@ -818,9 +818,9 @@ std::vector<DescritizedLane> generateDetectionLaneDivisions(
   }
 
   // (3) discretize each merged lanelet
-  std::vector<DescritizedLane> detection_divisions;
+  std::vector<DiscretizedLane> detection_divisions;
   for (const auto & [last_lane_id, branch] : merged_branches) {
-    DescritizedLane detection_division;
+    DiscretizedLane detection_division;
     detection_division.lane_id = last_lane_id;
     const auto detection_lanelet = branch.first;
     const double area = branch.second;
@@ -1118,14 +1118,14 @@ void IntersectionLanelets::update(
 static lanelet::ConstLanelets getPrevLanelets(
   const lanelet::ConstLanelets & lanelets_on_path, const std::set<int> & associative_ids)
 {
-  lanelet::ConstLanelets prevs;
+  lanelet::ConstLanelets previous_lanelets;
   for (const auto & ll : lanelets_on_path) {
     if (associative_ids.find(ll.id()) != associative_ids.end()) {
-      return prevs;
+      return previous_lanelets;
     }
-    prevs.push_back(ll);
+    previous_lanelets.push_back(ll);
   }
-  return prevs;
+  return previous_lanelets;
 }
 
 std::optional<PathLanelets> generatePathLanelets(

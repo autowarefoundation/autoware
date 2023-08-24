@@ -1166,7 +1166,7 @@ bool IntersectionModule::isOcclusionCleared(
   const lanelet::ConstLanelets & adjacent_lanelets,
   const lanelet::CompoundPolygon3d & first_attention_area,
   const util::InterpolatedPathInfo & interpolated_path_info,
-  const std::vector<util::DescritizedLane> & lane_divisions,
+  const std::vector<util::DiscretizedLane> & lane_divisions,
   const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & parked_attention_objects,
   const double occlusion_dist_thr)
 {
