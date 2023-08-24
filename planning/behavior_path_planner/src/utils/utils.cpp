@@ -1795,8 +1795,22 @@ void makeBoundLongitudinallyMonotonic(
         continue;
       }
 
-      for (size_t j = intersect_idx.get() + 1; j < bound_with_pose.size(); j++) {
-        set_orientation(ret, j, getPose(path_points.at(i)).orientation);
+      if (i + 1 == path_points.size()) {
+        for (size_t j = intersect_idx.get(); j < bound_with_pose.size(); j++) {
+          if (j + 1 == bound_with_pose.size()) {
+            const auto yaw =
+              calcAzimuthAngle(bound_with_pose.at(j - 1).position, bound_with_pose.at(j).position);
+            set_orientation(ret, j, createQuaternionFromRPY(0.0, 0.0, yaw));
+          } else {
+            const auto yaw =
+              calcAzimuthAngle(bound_with_pose.at(j).position, bound_with_pose.at(j + 1).position);
+            set_orientation(ret, j, createQuaternionFromRPY(0.0, 0.0, yaw));
+          }
+        }
+      } else {
+        for (size_t j = intersect_idx.get() + 1; j < bound_with_pose.size(); j++) {
+          set_orientation(ret, j, getPose(path_points.at(i)).orientation);
+        }
       }
 
       constexpr size_t OVERLAP_CHECK_NUM = 3;
