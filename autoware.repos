@@ -19,10 +19,6 @@ repositories:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
     version: tier4/main
-  autoware.universe:
-    type: git
-    url: https://github.com/autowarefoundation/autoware.universe.git
-    version: main
   tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
@@ -71,3 +67,39 @@ repositories:
     type: git
     url: https://github.com/tier4/image_pipeline.git
     version: 47964112293eb19f9f57254b2e6b68706954cc63
+  external/muSSP:
+      type: git
+      url: https://github.com/tier4/muSSP.git
+      version: tier4/main
+  external/ndt_omp:
+      type: git
+      url: https://github.com/tier4/ndt_omp.git
+      version: tier4/main
+  external/eagleye:
+      type: git
+      url: https://github.com/MapIV/eagleye.git
+      version: autoware-main
+  external/morai_msgs:
+      type: git
+      url: https://github.com/MORAI-Autonomous/MORAI-ROS2_morai_msgs.git
+      version: main
+  external/autoware_launch:
+      type: git
+      url: https://github.com/autowarefoundation/autoware_launch.git
+      version: main
+  external/transport_drivers:
+      type: git
+      url: https://github.com/MapIV/transport_drivers
+      version: boost
+  external/rtklib_ros_bridge:
+    type: git
+    url: https://github.com/MapIV/rtklib_ros_bridge.git
+    version: ros2-v0.1.0
+  external/llh_converter:
+    type: git
+    url: https://github.com/MapIV/llh_converter.git
+    version: ros2
+  external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
+    type: git
+    url: https://github.com/tier4/tier4_ad_api_adaptor.git
+    version: tier4/universe
