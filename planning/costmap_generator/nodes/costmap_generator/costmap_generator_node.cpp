@@ -350,6 +350,7 @@ bool CostmapGenerator::isActive()
     return false;
   } else {
     const auto & current_pose_wrt_map = getCurrentPose(tf_buffer_, this->get_logger());
+    if (!current_pose_wrt_map) return false;
     return isInParkingLot(lanelet_map_, current_pose_wrt_map->pose);
   }
 }
