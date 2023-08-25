@@ -24,15 +24,25 @@
     </group>
     <!-- motion velocity smoother -->
     <group>
-      <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
-      <set_remap from="~/output/trajectory" to="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
-      <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
-        <arg name="velocity_smoother_type" value="$(var velocity_smoother_type)"/>
-        <arg name="common_param_path" value="$(var common_param_path)"/>
-        <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
-        <arg name="param_path" value="$(var motion_velocity_smoother_param_path)"/>
-        <arg name="velocity_smoother_param_path" value="$(var velocity_smoother_type_param_path)"/>
-      </include>
+      <node_container pkg="rclcpp_components" exec="component_container" name="motion_velocity_smoother_container" namespace="">
+        <composable_node pkg="motion_velocity_smoother" plugin="motion_velocity_smoother::MotionVelocitySmootherNode" name="motion_velocity_smoother" namespace="">
+          <param name="algorithm_type" value="$(var velocity_smoother_type)"/>
+          <param from="$(var common_param_path)"/>
+          <param from="$(var nearest_search_param_path)"/>
+          <param from="$(var motion_velocity_smoother_param_path)"/>
+          <param from="$(var velocity_smoother_type_param_path)"/>
+
+          <param name="publish_debug_trajs" value="false"/>
+          <remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
+          <remap from="~/output/trajectory" to="/planning/scenario_planning/motion_velocity_smoother/trajectory"/>
+
+          <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/>
+          <remap from="~/input/acceleration" to="/localization/acceleration"/>
+          <remap from="~/input/operation_mode_state" to="/system/operation_mode/state"/>
+          <remap from="~/output/current_velocity_limit_mps" to="/planning/scenario_planning/current_max_velocity"/>
+        </composable_node>
+        <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
+      </node_container>
     </group>
   </group>
 
