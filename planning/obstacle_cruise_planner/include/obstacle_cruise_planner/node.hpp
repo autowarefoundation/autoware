@@ -100,6 +100,7 @@ private:
   bool enable_debug_info_;
   bool enable_calculation_time_info_;
   double min_behavior_stop_margin_;
+  bool suppress_sudden_obstacle_stop_;
 
   std::vector<int> stop_obstacle_types_;
   std::vector<int> inside_cruise_obstacle_types_;

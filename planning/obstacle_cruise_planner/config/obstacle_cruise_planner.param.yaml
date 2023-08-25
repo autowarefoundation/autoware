@@ -20,6 +20,7 @@
       nearest_dist_deviation_threshold: 3.0 # [m] for finding nearest index
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
       min_behavior_stop_margin: 3.0 # [m]
+      suppress_sudden_obstacle_stop: false
 
       stop_obstacle_type:
         unknown: true

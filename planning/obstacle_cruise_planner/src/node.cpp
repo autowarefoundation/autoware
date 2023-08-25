@@ -397,8 +397,11 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     }
 
     min_behavior_stop_margin_ = declare_parameter<double>("common.min_behavior_stop_margin");
+    suppress_sudden_obstacle_stop_ =
+      declare_parameter<bool>("common.suppress_sudden_obstacle_stop");
     planner_ptr_->setParam(
-      enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_);
+      enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_,
+      suppress_sudden_obstacle_stop_);
   }
 
   {  // stop/cruise/slow down obstacle type
@@ -436,7 +439,8 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
   tier4_autoware_utils::updateParam<bool>(
     parameters, "common.enable_calculation_time_info", enable_calculation_time_info_);
   planner_ptr_->setParam(
-    enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_);
+    enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_,
+    suppress_sudden_obstacle_stop_);
 
   tier4_autoware_utils::updateParam<bool>(
     parameters, "common.enable_slow_down_planning", enable_slow_down_planning_);

@@ -300,26 +300,31 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     return longitudinal_info_.safe_distance_margin;
   }();
 
-  // Calculate feasible stop margin (Check the feasibility)
-  const double feasible_stop_dist = calcMinimumDistanceToStop(
-                                      planner_data.ego_vel, longitudinal_info_.limit_max_accel,
-                                      longitudinal_info_.limit_min_accel) +
-                                    dist_to_ego;
-  const double closest_obstacle_stop_dist =
-    closest_obstacle_dist - margin_from_obstacle - abs_ego_offset;
+  const auto [stop_margin_from_obstacle, will_collide_with_obstacle] = [&]() {
+    // Check feasibility to stop
+    if (suppress_sudden_obstacle_stop_) {
+      const double closest_obstacle_stop_dist =
+        closest_obstacle_dist - margin_from_obstacle - abs_ego_offset;
 
-  bool will_collide_with_obstacle = false;
-  double feasible_margin_from_obstacle = margin_from_obstacle;
-  if (closest_obstacle_stop_dist < feasible_stop_dist) {
-    feasible_margin_from_obstacle =
-      margin_from_obstacle - (feasible_stop_dist - closest_obstacle_stop_dist);
-    will_collide_with_obstacle = true;
-  }
+      // Calculate feasible stop margin (Check the feasibility)
+      const double feasible_stop_dist = calcMinimumDistanceToStop(
+                                          planner_data.ego_vel, longitudinal_info_.limit_max_accel,
+                                          longitudinal_info_.limit_min_accel) +
+                                        dist_to_ego;
+
+      if (closest_obstacle_stop_dist < feasible_stop_dist) {
+        const auto feasible_margin_from_obstacle =
+          margin_from_obstacle - (feasible_stop_dist - closest_obstacle_stop_dist);
+        return std::make_pair(feasible_margin_from_obstacle, true);
+      }
+    }
+    return std::make_pair(margin_from_obstacle, false);
+  }();
 
   // Generate Output Trajectory
   const double zero_vel_dist = [&]() {
     const double current_zero_vel_dist =
-      std::max(0.0, closest_obstacle_dist - abs_ego_offset - feasible_margin_from_obstacle);
+      std::max(0.0, closest_obstacle_dist - abs_ego_offset - stop_margin_from_obstacle);
 
     // Hold previous stop distance if necessary
     if (
@@ -378,7 +383,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     StopPlanningDebugInfo::TYPE::STOP_CURRENT_OBSTACLE_VELOCITY, closest_stop_obstacle->velocity);
 
   stop_planning_debug_info_.set(
-    StopPlanningDebugInfo::TYPE::STOP_TARGET_OBSTACLE_DISTANCE, feasible_margin_from_obstacle);
+    StopPlanningDebugInfo::TYPE::STOP_TARGET_OBSTACLE_DISTANCE, stop_margin_from_obstacle);
   stop_planning_debug_info_.set(StopPlanningDebugInfo::TYPE::STOP_TARGET_VELOCITY, 0.0);
   stop_planning_debug_info_.set(StopPlanningDebugInfo::TYPE::STOP_TARGET_ACCELERATION, 0.0);
 
