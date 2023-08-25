@@ -1034,6 +1034,9 @@ void CrosswalkModule::setDistanceToStop(
 void CrosswalkModule::planGo(
   PathWithLaneId & ego_path, const std::optional<StopFactor> & stop_factor) const
 {
+  if (!stop_factor.has_value()) {
+    return;
+  }
   // Plan slow down
   const auto target_velocity = calcTargetVelocity(stop_factor->stop_pose.position, ego_path);
   insertDecelPointWithDebugInfo(
