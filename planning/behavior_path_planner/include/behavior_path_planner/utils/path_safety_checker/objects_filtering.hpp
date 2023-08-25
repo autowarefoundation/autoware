@@ -55,24 +55,37 @@ PredictedObjects filterObjects(
   const std::shared_ptr<ObjectsFilteringParams> & params);
 
 /**
- * @brief Filter objects based on their velocity.
+ * @brief Filters objects based on their velocity.
  *
- * @param objects The predicted objects to filter.
- * @param lim_v Velocity limit for filtering.
- * @return PredictedObjects The filtered objects.
- */
-PredictedObjects filterObjectsByVelocity(const PredictedObjects & objects, double lim_v);
-
-/**
- * @brief Filter objects based on a velocity range.
+ * Depending on the remove_above_threshold parameter, this function either removes objects with
+ * velocities above the given threshold or only keeps those objects. It uses the helper function
+ * filterObjectsByVelocity() to do the actual filtering.
  *
- * @param objects The predicted objects to filter.
- * @param min_v Minimum velocity for filtering.
- * @param max_v Maximum velocity for filtering.
- * @return PredictedObjects The filtered objects.
+ * @param objects The objects to be filtered.
+ * @param velocity_threshold The velocity threshold for the filtering.
+ * @param remove_above_threshold If true, objects with velocities above the threshold are removed.
+ *                               If false, only objects with velocities above the threshold are
+ * kept.
+ * @return A new collection of objects that have been filtered according to the rules.
  */
 PredictedObjects filterObjectsByVelocity(
-  const PredictedObjects & objects, double min_v, double max_v);
+  const PredictedObjects & objects, const double velocity_threshold,
+  const bool remove_above_threshold = true);
+
+/**
+ * @brief Helper function to filter objects based on their velocity.
+ *
+ * This function iterates over all objects and calculates their velocity norm. If the velocity norm
+ * is within the velocity_threshold and max_velocity range, the object is added to a new collection.
+ * This new collection is then returned.
+ *
+ * @param objects The objects to be filtered.
+ * @param velocity_threshold The minimum velocity for an object to be included in the output.
+ * @param max_velocity The maximum velocity for an object to be included in the output.
+ * @return A new collection of objects that have been filtered according to the rules.
+ */
+PredictedObjects filterObjectsByVelocity(
+  const PredictedObjects & objects, double velocity_threshold, double max_velocity);
 
 /**
  * @brief Filter objects based on their position relative to a current_pose.
