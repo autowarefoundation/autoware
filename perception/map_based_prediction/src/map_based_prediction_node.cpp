@@ -639,33 +639,31 @@ lanelet::Lanelets getLeftOppositeLanelets(
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
 : Node("map_based_prediction", node_options), debug_accumulated_time_(0.0)
 {
-  enable_delay_compensation_ = declare_parameter("enable_delay_compensation", true);
-  prediction_time_horizon_ = declare_parameter("prediction_time_horizon", 10.0);
-  prediction_sampling_time_interval_ = declare_parameter("prediction_sampling_delta_time", 0.5);
+  enable_delay_compensation_ = declare_parameter<bool>("enable_delay_compensation");
+  prediction_time_horizon_ = declare_parameter<double>("prediction_time_horizon");
+  prediction_sampling_time_interval_ = declare_parameter<double>("prediction_sampling_delta_time");
   min_velocity_for_map_based_prediction_ =
-    declare_parameter("min_velocity_for_map_based_prediction", 1.0);
-  min_crosswalk_user_velocity_ = declare_parameter("min_crosswalk_user_velocity", 1.0);
+    declare_parameter<double>("min_velocity_for_map_based_prediction");
+  min_crosswalk_user_velocity_ = declare_parameter<double>("min_crosswalk_user_velocity");
   dist_threshold_for_searching_lanelet_ =
-    declare_parameter("dist_threshold_for_searching_lanelet", 3.0);
+    declare_parameter<double>("dist_threshold_for_searching_lanelet");
   delta_yaw_threshold_for_searching_lanelet_ =
-    declare_parameter("delta_yaw_threshold_for_searching_lanelet", 0.785);
-  sigma_lateral_offset_ = declare_parameter("sigma_lateral_offset", 0.5);
-  sigma_yaw_angle_deg_ = declare_parameter("sigma_yaw_angle_deg", 5.0);
-  object_buffer_time_length_ = declare_parameter("object_buffer_time_length", 2.0);
-  history_time_length_ = declare_parameter("history_time_length", 1.0);
+    declare_parameter<double>("delta_yaw_threshold_for_searching_lanelet");
+  sigma_lateral_offset_ = declare_parameter<double>("sigma_lateral_offset");
+  sigma_yaw_angle_deg_ = declare_parameter<double>("sigma_yaw_angle_deg");
+  object_buffer_time_length_ = declare_parameter<double>("object_buffer_time_length");
+  history_time_length_ = declare_parameter<double>("history_time_length");
   {  // lane change detection
     lane_change_detection_method_ = declare_parameter<std::string>("lane_change_detection.method");
 
     // lane change detection by time_to_change_lane
-    dist_threshold_to_bound_ = declare_parameter(
-      "lane_change_detection.time_to_change_lane.dist_threshold_for_lane_change_detection",
-      1.0);  // 1m
-    time_threshold_to_bound_ = declare_parameter(
-      "lane_change_detection.time_to_change_lane.time_threshold_for_lane_change_detection",
-      5.0);  // 5 sec
-    cutoff_freq_of_velocity_lpf_ = declare_parameter(
-      "lane_change_detection.time_to_change_lane.cutoff_freq_of_velocity_for_lane_change_detection",
-      0.1);  // 0.1Hz
+    dist_threshold_to_bound_ = declare_parameter<double>(
+      "lane_change_detection.time_to_change_lane.dist_threshold_for_lane_change_detection");  // 1m
+    time_threshold_to_bound_ = declare_parameter<double>(
+      "lane_change_detection.time_to_change_lane.time_threshold_for_lane_change_detection");
+    cutoff_freq_of_velocity_lpf_ = declare_parameter<double>(
+      "lane_change_detection.time_to_change_lane.cutoff_freq_of_velocity_for_lane_change_"
+      "detection");
 
     // lane change detection by lat_diff_distance
     dist_ratio_threshold_to_left_bound_ = declare_parameter<double>(
@@ -680,11 +678,11 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
     num_continuous_state_transition_ =
       declare_parameter<int>("lane_change_detection.num_continuous_state_transition");
   }
-  reference_path_resolution_ = declare_parameter("reference_path_resolution", 0.5);
+  reference_path_resolution_ = declare_parameter<double>("reference_path_resolution");
   /* prediction path will disabled when the estimated path length exceeds lanelet length. This
    * parameter control the estimated path length = vx * th * (rate)  */
   prediction_time_horizon_rate_for_validate_lane_length_ =
-    declare_parameter("prediction_time_horizon_rate_for_validate_lane_length", 0.8);
+    declare_parameter<double>("prediction_time_horizon_rate_for_validate_shoulder_lane_length");
 
   path_generator_ = std::make_shared<PathGenerator>(
     prediction_time_horizon_, prediction_sampling_time_interval_, min_crosswalk_user_velocity_);

@@ -11,7 +11,10 @@
     sigma_yaw_angle_deg: 5.0 #[angle degree]
     object_buffer_time_length: 2.0 #[s]
     history_time_length: 1.0 #[s]
+    # parameter for shoulder lane prediction
+    prediction_time_horizon_rate_for_validate_shoulder_lane_length: 0.8
 
+    # parameters for lc prediction
     lane_change_detection:
       method: "lat_diff_distance" # choose from "lat_diff_distance" or "time_to_change_lane"
       time_to_change_lane:
