@@ -321,7 +321,7 @@ std::pair<std::vector<double>, std::vector<double>> PathShifter::calcBaseLengths
 
   if (lateral_a_max < lateral_acc_limit_) {
     // no need to consider acceleration limit
-    RCLCPP_WARN_THROTTLE(
+    RCLCPP_DEBUG_THROTTLE(
       logger_, clock_, 3000, "No need to consider lateral acc limit. max: %f, limit: %f",
       lateral_a_max, lateral_acc_limit_);
     return getBaseLengthsWithoutAccelLimit(S, shift_length, v0, a, T, offset_back);

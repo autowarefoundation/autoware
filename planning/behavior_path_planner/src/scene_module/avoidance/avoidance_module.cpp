@@ -461,7 +461,7 @@ void AvoidanceModule::fillEgoStatus(
   if (isOutputPathLocked()) {
     data.safe_new_sl.clear();
     data.candidate_path = helper_.getPreviousSplineShiftPath();
-    RCLCPP_WARN_THROTTLE(
+    RCLCPP_DEBUG_THROTTLE(
       getLogger(), *clock_, 500, "this module is locked now. keep current path.");
     return;
   }
@@ -2455,7 +2455,7 @@ bool AvoidanceModule::isValidShiftLine(
     constexpr double THRESHOLD = 0.1;
     const auto offset = std::abs(new_shift_length - helper_.getEgoShift());
     if (offset > THRESHOLD) {
-      RCLCPP_WARN_THROTTLE(
+      RCLCPP_DEBUG_THROTTLE(
         getLogger(), *clock_, 1000, "new shift line is invalid. [HUGE OFFSET (%.2f)]", offset);
       return false;
     }
