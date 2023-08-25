@@ -408,4 +408,59 @@ MarkerArray createDrivableLanesMarkerArray(
 
   return msg;
 }
+MarkerArray createPredictedPathMarkerArray(
+  const PredictedPath & predicted_path, const vehicle_info_util::VehicleInfo & vehicle_info,
+  std::string && ns, const int32_t & id, const float & r, const float & g, const float & b)
+{
+  if (predicted_path.path.empty()) {
+    return MarkerArray{};
+  }
+
+  const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
+  MarkerArray msg;
+
+  const auto & path = predicted_path.path;
+
+  Marker marker = createDefaultMarker(
+    "map", current_time, ns, id, Marker::LINE_STRIP, createMarkerScale(0.1, 0.1, 0.1),
+
+    createMarkerColor(r, g, b, 0.999));
+  marker.lifetime = rclcpp::Duration::from_seconds(1.5);
+
+  MarkerArray marker_array;
+  for (size_t i = 0; i < path.size(); ++i) {
+    marker.id = i + id;
+    marker.points.clear();
+
+    const auto & predicted_path_pose = path.at(i);
+    const double half_width = vehicle_info.vehicle_width_m / 2.0;
+    const double base_to_front = vehicle_info.vehicle_length_m - vehicle_info.rear_overhang_m;
+    const double base_to_rear = vehicle_info.rear_overhang_m;
+
+    marker.points.push_back(
+      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, base_to_front, -half_width, 0.0)
+        .position);
+    marker.points.push_back(
+      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, base_to_front, half_width, 0.0)
+        .position);
+    marker.points.push_back(
+      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, -base_to_rear, half_width, 0.0)
+        .position);
+    marker.points.push_back(
+      tier4_autoware_utils::calcOffsetPose(predicted_path_pose, -base_to_rear, -half_width, 0.0)
+        .position);
+    marker.points.push_back(marker.points.front());
+
+    marker_array.markers.push_back(marker);
+  }
+  return marker_array;
+
+  marker.points.reserve(path.size());
+  for (const auto & point : path) {
+    marker.points.push_back(point.position);
+  }
+  msg.markers.push_back(marker);
+  return msg;
+}
+
 }  // namespace marker_utils

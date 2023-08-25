@@ -131,6 +131,10 @@ MarkerArray createObjectsMarkerArray(
 MarkerArray createDrivableLanesMarkerArray(
   const std::vector<DrivableLanes> & drivable_lanes, std::string && ns);
 
+MarkerArray createPredictedPathMarkerArray(
+  const PredictedPath & ego_predicted_path, const vehicle_info_util::VehicleInfo & vehicle_info,
+  std::string && ns, const int32_t & id, const float & r, const float & g, const float & b);
+
 }  // namespace marker_utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTILS__UTILS_HPP_

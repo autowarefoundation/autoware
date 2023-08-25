@@ -63,6 +63,9 @@ Polygon2d createExtendedPolygon(
   const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin,
   CollisionCheckDebug & debug);
 
+PredictedPath convertToPredictedPath(
+  const std::vector<PoseWithVelocityStamped> & path, const double time_resolution);
+
 double calcRssDistance(
   const double front_object_velocity, const double rear_object_velocity,
   const RSSparams & rss_params);

@@ -133,6 +133,19 @@ Polygon2d createExtendedPolygon(
            : tier4_autoware_utils::inverseClockwise(polygon);
 }
 
+PredictedPath convertToPredictedPath(
+  const std::vector<PoseWithVelocityStamped> & path, const double time_resolution)
+{
+  PredictedPath predicted_path;
+  predicted_path.time_step = rclcpp::Duration::from_seconds(time_resolution);
+  predicted_path.path.resize(path.size());
+
+  for (size_t i = 0; i < path.size(); ++i) {
+    predicted_path.path.at(i) = path.at(i).pose;
+  }
+  return predicted_path;
+}
+
 double calcRssDistance(
   const double front_object_velocity, const double rear_object_velocity,
   const RSSparams & rss_params)
