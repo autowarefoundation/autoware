@@ -602,7 +602,6 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
     case AvoidanceState::YIELD: {
       insertYieldVelocity(path);
       insertWaitPoint(isBestEffort(parameters_->policy_deceleration), path);
-      removeRegisteredShiftLines();
       break;
     }
     case AvoidanceState::AVOID_PATH_NOT_READY: {
@@ -2115,6 +2114,10 @@ BehaviorModuleOutput AvoidanceModule::plan()
 
   updatePathShifter(data.safe_new_sl);
 
+  if (data.yield_required) {
+    removeRegisteredShiftLines();
+  }
+
   // generate path with shift points that have been inserted.
   ShiftedPath linear_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
   ShiftedPath spline_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
@@ -2546,12 +2549,14 @@ void AvoidanceModule::updateRTCData()
 
   updateRegisteredRTCStatus(helper_.getPreviousSplineShiftPath().path);
 
-  if (data.safe_new_sl.empty()) {
+  const auto candidates = data.safe ? data.safe_new_sl : data.unapproved_new_sl;
+
+  if (candidates.empty()) {
     removeCandidateRTCStatus();
     return;
   }
 
-  const auto shift_line = helper_.getMainShiftLine(data.safe_new_sl);
+  const auto shift_line = helper_.getMainShiftLine(candidates);
   if (helper_.getRelativeShiftToPath(shift_line) > 0.0) {
     removePreviousRTCStatusRight();
   } else if (helper_.getRelativeShiftToPath(shift_line) < 0.0) {
@@ -2562,8 +2567,8 @@ void AvoidanceModule::updateRTCData()
 
   CandidateOutput output;
 
-  const auto sl_front = data.safe_new_sl.front();
-  const auto sl_back = data.safe_new_sl.back();
+  const auto sl_front = candidates.front();
+  const auto sl_back = candidates.back();
 
   output.path_candidate = data.candidate_path.path;
   output.lateral_shift = helper_.getRelativeShiftToPath(shift_line);
