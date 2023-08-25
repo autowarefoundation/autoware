@@ -346,9 +346,13 @@ protected:
   {
     std_msgs::msg::ColorRGBA sample_color;
     sample_color.r = 1.0;
-    sample_color.g = 0.0;
-    sample_color.b = 1.0;
-    colors.push_back(sample_color);  // magenta
+    sample_color.g = 0.65;
+    sample_color.b = 0.0;
+    colors.push_back(sample_color);  // orange
+    sample_color.r = 1.0;
+    sample_color.g = 1.0;
+    sample_color.b = 0.0;
+    colors.push_back(sample_color);  // yellow
     sample_color.r = 0.69;
     sample_color.g = 1.0;
     sample_color.b = 0.18;
@@ -361,22 +365,18 @@ protected:
     sample_color.g = 1.0;
     sample_color.b = 0.0;
     colors.push_back(sample_color);  // chartreuse green
-    sample_color.r = 0.12;
-    sample_color.g = 0.56;
-    sample_color.b = 1.0;
-    colors.push_back(sample_color);  // dodger blue
     sample_color.r = 0.0;
     sample_color.g = 1.0;
     sample_color.b = 1.0;
     colors.push_back(sample_color);  // cyan
-    sample_color.r = 0.54;
-    sample_color.g = 0.168;
-    sample_color.b = 0.886;
-    colors.push_back(sample_color);  // blueviolet
-    sample_color.r = 0.0;
-    sample_color.g = 1.0;
-    sample_color.b = 0.5;
-    colors.push_back(sample_color);  // spring green
+    sample_color.r = 0.53;
+    sample_color.g = 0.81;
+    sample_color.b = 0.98;
+    colors.push_back(sample_color);  // light skyblue
+    sample_color.r = 1.0;
+    sample_color.g = 0.41;
+    sample_color.b = 0.71;
+    colors.push_back(sample_color);  // hot pink
   }
 
   double get_line_width() { return m_line_width_property.getFloat(); }
