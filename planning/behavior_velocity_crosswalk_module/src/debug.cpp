@@ -44,8 +44,8 @@ visualization_msgs::msg::MarkerArray createCrosswalkMarkers(
   {
     for (size_t i = 0; i < debug_data.collision_points.size(); ++i) {
       const auto & collision_point = debug_data.collision_points.at(i);
-      const auto & point = collision_point.first;
-      const auto & state = collision_point.second;
+      const auto & point = std::get<1>(collision_point);
+      const auto & state = std::get<2>(collision_point);
 
       auto marker = createDefaultMarker(
         "map", now, "collision point state", uid + i++, Marker::TEXT_VIEW_FACING,
@@ -134,7 +134,7 @@ visualization_msgs::msg::MarkerArray createCrosswalkMarkers(
       "map", now, "collision point", uid, Marker::POINTS, createMarkerScale(0.25, 0.25, 0.0),
       createMarkerColor(1.0, 0.0, 1.0, 0.999));
     for (const auto & collision_point : debug_data.collision_points) {
-      marker.points.push_back(collision_point.first.collision_point);
+      marker.points.push_back(std::get<1>(collision_point).collision_point);
     }
     msg.markers.push_back(marker);
   }

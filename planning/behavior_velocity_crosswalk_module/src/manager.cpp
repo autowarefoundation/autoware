@@ -129,7 +129,7 @@ void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)
     const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
 
     registerModule(std::make_shared<CrosswalkModule>(
-      id, lanelet_map_ptr, p, *opt_use_regulatory_element_, logger, clock_));
+      node_, id, lanelet_map_ptr, p, *opt_use_regulatory_element_, logger, clock_));
     generateUUID(id);
     updateRTCStatus(getUUID(id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
   };

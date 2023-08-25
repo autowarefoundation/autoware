@@ -26,6 +26,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -73,7 +74,7 @@ struct DebugData
   std::optional<geometry_msgs::msg::Point> range_near_point{std::nullopt};
   std::optional<geometry_msgs::msg::Point> range_far_point{std::nullopt};
 
-  std::vector<std::pair<CollisionPoint, CollisionState>> collision_points;
+  std::vector<std::tuple<std::string, CollisionPoint, CollisionState>> collision_points;
 
   std::vector<geometry_msgs::msg::Pose> stop_poses;
   std::vector<geometry_msgs::msg::Pose> slow_poses;

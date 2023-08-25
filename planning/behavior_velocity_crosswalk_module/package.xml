@@ -34,6 +34,7 @@
   <depend>sensor_msgs</depend>
   <depend>tier4_api_msgs</depend>
   <depend>tier4_autoware_utils</depend>
+  <depend>tier4_debug_msgs</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 

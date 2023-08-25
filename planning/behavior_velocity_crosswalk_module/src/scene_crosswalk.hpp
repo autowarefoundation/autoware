@@ -26,6 +26,7 @@
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_debug_msgs/msg/string_stamped.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>
@@ -257,7 +258,7 @@ public:
   };
 
   CrosswalkModule(
-    const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+    rclcpp::Node & node, const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
     const PlannerParam & planner_param, const bool use_regulatory_element,
     const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock);
 
@@ -359,6 +360,8 @@ private:
   }
 
   const int64_t module_id_;
+
+  rclcpp::Publisher<tier4_debug_msgs::msg::StringStamped>::SharedPtr collision_info_pub_;
 
   lanelet::ConstLanelet crosswalk_;
 

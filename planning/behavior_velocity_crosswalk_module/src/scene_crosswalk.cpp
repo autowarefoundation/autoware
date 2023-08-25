@@ -25,6 +25,7 @@
 #include <cmath>
 #include <limits>
 #include <set>
+#include <tuple>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -164,10 +165,27 @@ std::optional<geometry_msgs::msg::Pose> toStdOptional(
   }
   return std::nullopt;
 }
+
+tier4_debug_msgs::msg::StringStamped createStringStampedMessage(
+  const rclcpp::Time & now, const int64_t module_id_,
+  const std::vector<std::tuple<std::string, CollisionPoint, CollisionState>> & collision_points)
+{
+  tier4_debug_msgs::msg::StringStamped msg;
+  msg.stamp = now;
+  for (const auto & collision_point : collision_points) {
+    std::stringstream ss;
+    ss << module_id_ << "," << std::get<0>(collision_point).substr(0, 4) << ","
+       << std::get<1>(collision_point).time_to_collision << ","
+       << std::get<1>(collision_point).time_to_vehicle << ","
+       << static_cast<int>(std::get<2>(collision_point)) << ",";
+    msg.data += ss.str();
+  }
+  return msg;
+}
 }  // namespace
 
 CrosswalkModule::CrosswalkModule(
-  const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  rclcpp::Node & node, const int64_t module_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const PlannerParam & planner_param, const bool use_regulatory_element,
   const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
@@ -190,6 +208,9 @@ CrosswalkModule::CrosswalkModule(
     }
     crosswalk_ = lanelet_map_ptr->laneletLayer.get(module_id);
   }
+
+  collision_info_pub_ =
+    node.create_publisher<tier4_debug_msgs::msg::StringStamped>("~/debug/collision_info", 1);
 }
 
 bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -263,6 +284,10 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     planStop(*path, nearest_stop_factor, default_stop_pose, stop_reason);
   }
   recordTime(4);
+
+  const auto collision_info_msg =
+    createStringStampedMessage(clock_->now(), module_id_, debug_data_.collision_points);
+  collision_info_pub_->publish(collision_info_msg);
 
   return true;
 }
@@ -882,7 +907,8 @@ void CrosswalkModule::updateObjectState(
 
     if (collision_point) {
       const auto collision_state = object_info_manager_.getCollisionState(obj_uuid);
-      debug_data_.collision_points.push_back(std::make_pair(*collision_point, collision_state));
+      debug_data_.collision_points.push_back(
+        std::make_tuple(obj_uuid, *collision_point, collision_state));
     }
   }
   object_info_manager_.finalize();

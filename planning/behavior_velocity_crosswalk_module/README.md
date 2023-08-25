@@ -218,6 +218,16 @@ When multiple crosswalks are nearby (such as intersection), this module may make
 
 ### Known Issues
 
+### Debugging
+
+By `ros2 run behavior_velocity_crosswalk_module time_to_collision_plotter.py`, you can visualize the following figure of the ego and pedestrian's time to collision.
+The label of each plot is `<crosswalk module id>-<pedestrian uuid>`.
+
+<figure markdown>
+  ![limitation](docs/time_to_collision_plot.png){width=1000}
+  <figcaption>Plot of time to collision</figcaption>
+</figure>
+
 ### References/External links
 
 [1] 佐藤 みなみ, 早坂 祥一, 清水 政行, 村野 隆彦, 横断歩行者に対するドライバのリスク回避行動のモデル化, 自動車技術会論文集, 2013, 44 巻, 3 号, p. 931-936.
