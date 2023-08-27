@@ -232,7 +232,7 @@ bool checkCollision(
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
-  CollisionCheckDebug & debug)
+  double hysteresis_factor, CollisionCheckDebug & debug)
 {
   debug.lerped_path.reserve(target_object_path.path.size());
 
@@ -286,8 +286,8 @@ bool checkCollision(
     const auto min_lon_length =
       calcMinimumLongitudinalLength(front_object_velocity, rear_object_velocity, rss_parameters);
 
-    const auto & lon_offset = std::max(rss_dist, min_lon_length);
-    const auto & lat_margin = rss_parameters.lateral_distance_max_threshold;
+    const auto & lon_offset = std::max(rss_dist, min_lon_length) * hysteresis_factor;
+    const auto & lat_margin = rss_parameters.lateral_distance_max_threshold * hysteresis_factor;
     const auto & extended_ego_polygon =
       is_object_front
         ? createExtendedPolygon(ego_pose, ego_vehicle_info, lon_offset, lat_margin, debug)

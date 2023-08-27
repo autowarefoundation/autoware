@@ -771,7 +771,7 @@ void fillAvoidanceNecessity(
   }
 
   // TRUE -> ? (check with hysteresis factor)
-  object_data.avoid_required = check_necessity(parameters->safety_check_hysteresis_factor);
+  object_data.avoid_required = check_necessity(parameters->hysteresis_factor_expand_rate);
 }
 
 void fillObjectStoppableJudge(

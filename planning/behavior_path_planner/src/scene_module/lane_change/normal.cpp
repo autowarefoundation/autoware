@@ -1380,7 +1380,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
       obj, lane_change_parameters_->use_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
       if (!utils::path_safety_checker::checkCollision(
-            path, ego_predicted_path, obj, obj_path, common_parameters, rss_params,
+            path, ego_predicted_path, obj, obj_path, common_parameters, rss_params, 1.0,
             current_debug_data.second)) {
         path_safety_status.is_safe = false;
         updateDebugInfo(current_debug_data, path_safety_status.is_safe);

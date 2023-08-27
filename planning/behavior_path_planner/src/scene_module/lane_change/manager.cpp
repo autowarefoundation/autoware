@@ -288,8 +288,8 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
   // safety check
   {
     std::string ns = "avoidance.safety_check.";
-    p.safety_check_hysteresis_factor =
-      get_parameter<double>(node, ns + "safety_check_hysteresis_factor");
+    p.hysteresis_factor_expand_rate =
+      get_parameter<double>(node, ns + "hysteresis_factor_expand_rate");
   }
 
   avoidance_parameters_ = std::make_shared<AvoidanceByLCParameters>(p);

@@ -142,7 +142,8 @@
         time_resolution: 0.5                             # [s]
         time_horizon: 10.0                               # [s]
         safety_check_backward_distance: 100.0            # [m]
-        safety_check_hysteresis_factor: 2.0              # [-]
+        hysteresis_factor_expand_rate: 2.0               # [-]
+        hysteresis_factor_safe_count: 10                 # [-]
         # rss parameters
         expected_front_deceleration: -1.0                # [m/ss]
         expected_rear_deceleration: -1.0                 # [m/ss]

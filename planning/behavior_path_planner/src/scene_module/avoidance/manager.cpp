@@ -145,8 +145,9 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.safety_check_time_resolution = get_parameter<double>(node, ns + "time_resolution");
     p.safety_check_backward_distance =
       get_parameter<double>(node, ns + "safety_check_backward_distance");
-    p.safety_check_hysteresis_factor =
-      get_parameter<double>(node, ns + "safety_check_hysteresis_factor");
+    p.hysteresis_factor_expand_rate =
+      get_parameter<double>(node, ns + "hysteresis_factor_expand_rate");
+    p.hysteresis_factor_safe_count = get_parameter<int>(node, ns + "hysteresis_factor_safe_count");
   }
 
   // safety check rss params

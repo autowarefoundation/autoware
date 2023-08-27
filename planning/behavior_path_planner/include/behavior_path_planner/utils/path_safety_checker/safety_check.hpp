@@ -101,7 +101,7 @@ bool checkCollision(
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
-  CollisionCheckDebug & debug);
+  const double hysteresis_factor, CollisionCheckDebug & debug);
 
 /**
  * @brief Check collision between ego path footprints with extra longitudinal stopping margin and
