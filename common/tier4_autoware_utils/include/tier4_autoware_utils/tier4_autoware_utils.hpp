@@ -31,6 +31,7 @@
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 #include "tier4_autoware_utils/ros/msg_covariance.hpp"
 #include "tier4_autoware_utils/ros/msg_operation.hpp"
+#include "tier4_autoware_utils/ros/parameter.hpp"
 #include "tier4_autoware_utils/ros/processing_time_publisher.hpp"
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
