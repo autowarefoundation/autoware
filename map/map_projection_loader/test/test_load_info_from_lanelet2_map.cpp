@@ -95,7 +95,7 @@ TEST(TestLoadFromLanelet2Map, LoadMGRSGrid)
   const auto projector_info = load_info_from_lanelet2_map(output_path);
 
   // Check the result
-  EXPECT_EQ(projector_info.type, "MGRS");
+  EXPECT_EQ(projector_info.projector_type, "MGRS");
   EXPECT_EQ(projector_info.mgrs_grid, mgrs_grid);
 }
 
@@ -109,7 +109,7 @@ TEST(TestLoadFromLanelet2Map, LoadLocalGrid)
   const auto projector_info = load_info_from_lanelet2_map(output_path);
 
   // Check the result
-  EXPECT_EQ(projector_info.type, "local");
+  EXPECT_EQ(projector_info.projector_type, "local");
 }
 
 TEST(TestLoadFromLanelet2Map, LoadNoLocalGrid)
@@ -122,7 +122,7 @@ TEST(TestLoadFromLanelet2Map, LoadNoLocalGrid)
   const auto projector_info = load_info_from_lanelet2_map(output_path);
 
   // Check the result
-  EXPECT_EQ(projector_info.type, "MGRS");
+  EXPECT_EQ(projector_info.projector_type, "MGRS");
 }
 
 int main(int argc, char ** argv)

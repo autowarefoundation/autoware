@@ -131,7 +131,8 @@ class TestLoadMGRSFromYaml(unittest.TestCase):
         self.assertIsNotNone(
             self.received_message, "No message received on map_projector_info topic"
         )
-        self.assertEqual(self.received_message.type, yaml_data["type"])
+        self.assertEqual(self.received_message.projector_type, yaml_data["projector_type"])
+        self.assertEqual(self.received_message.vertical_datum, yaml_data["vertical_datum"])
         self.assertEqual(self.received_message.mgrs_grid, yaml_data["mgrs_grid"])
 
         self.test_node.destroy_subscription(subscription)
