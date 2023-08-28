@@ -1436,7 +1436,7 @@ AvoidLineArray combineRawShiftLinesWithUniqueCheck(
 
 std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const std::shared_ptr<AvoidanceParameters> & parameters)
+  const bool is_object_front, const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   if (path.points.empty()) {
     return {};
@@ -1445,7 +1445,8 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const auto & acceleration = parameters->max_acceleration;
   const auto & vehicle_pose = planner_data->self_odometry->pose.pose;
   const auto & initial_velocity = std::abs(planner_data->self_odometry->twist.twist.linear.x);
-  const auto & time_horizon = parameters->safety_check_time_horizon;
+  const auto & time_horizon = is_object_front ? parameters->time_horizon_for_front_object
+                                              : parameters->time_horizon_for_rear_object;
   const auto & time_resolution = parameters->safety_check_time_resolution;
 
   const size_t ego_seg_idx = planner_data->findEgoSegmentIndex(path.points);
@@ -1477,7 +1478,8 @@ ExtendedPredictedObject transform(
 
   const auto & obj_velocity_norm = std::hypot(
     extended_object.initial_twist.twist.linear.x, extended_object.initial_twist.twist.linear.y);
-  const auto & time_horizon = parameters->safety_check_time_horizon;
+  const auto & time_horizon =
+    std::max(parameters->time_horizon_for_front_object, parameters->time_horizon_for_rear_object);
   const auto & time_resolution = parameters->safety_check_time_resolution;
 
   extended_object.predicted_paths.resize(object.kinematics.predicted_paths.size());

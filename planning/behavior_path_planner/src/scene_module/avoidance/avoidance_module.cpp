@@ -1845,8 +1845,10 @@ bool AvoidanceModule::isSafePath(
     return true;  // if safety check is disabled, it always return safe.
   }
 
-  const auto ego_predicted_path =
-    utils::avoidance::convertToPredictedPath(shifted_path.path, planner_data_, parameters_);
+  const auto ego_predicted_path_for_front_object =
+    utils::avoidance::convertToPredictedPath(shifted_path.path, planner_data_, true, parameters_);
+  const auto ego_predicted_path_for_rear_object =
+    utils::avoidance::convertToPredictedPath(shifted_path.path, planner_data_, false, parameters_);
 
   const auto ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   const auto is_right_shift = [&]() -> std::optional<bool> {
@@ -1875,8 +1877,18 @@ bool AvoidanceModule::isSafePath(
     avoid_data_, planner_data_, parameters_, is_right_shift.value());
 
   for (const auto & object : safety_check_target_objects) {
+    const auto obj_polygon =
+      tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape);
+
+    const auto is_object_front = utils::path_safety_checker::isTargetObjectFront(
+      shifted_path.path, getEgoPose(), p.vehicle_info, obj_polygon);
+
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       object, parameters_->check_all_predicted_path);
+
+    const auto & ego_predicted_path =
+      is_object_front ? ego_predicted_path_for_front_object : ego_predicted_path_for_rear_object;
+
     for (const auto & obj_path : obj_predicted_paths) {
       CollisionCheckDebug collision{};
       if (!utils::path_safety_checker::checkCollision(

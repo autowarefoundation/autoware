@@ -140,7 +140,8 @@
         # collision check parameters
         check_all_predicted_path: false                  # [-]
         time_resolution: 0.5                             # [s]
-        time_horizon: 10.0                               # [s]
+        time_horizon_for_front_object: 10.0              # [s]
+        time_horizon_for_rear_object: 10.0               # [s]
         safety_check_backward_distance: 100.0            # [m]
         hysteresis_factor_expand_rate: 2.0               # [-]
         hysteresis_factor_safe_count: 10                 # [-]

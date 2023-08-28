@@ -187,7 +187,8 @@ struct AvoidanceParameters
 
   // parameters for collision check.
   bool check_all_predicted_path{false};
-  double safety_check_time_horizon{0.0};
+  double time_horizon_for_front_object{0.0};
+  double time_horizon_for_rear_object{0.0};
   double safety_check_time_resolution{0.0};
 
   // find adjacent lane vehicles

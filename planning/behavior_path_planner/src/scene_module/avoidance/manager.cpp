@@ -139,7 +139,10 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.check_other_object = getOrDeclareParameter<bool>(*node, ns + "check_other_object");
     p.check_all_predicted_path =
       getOrDeclareParameter<bool>(*node, ns + "check_all_predicted_path");
-    p.safety_check_time_horizon = getOrDeclareParameter<double>(*node, ns + "time_horizon");
+    p.time_horizon_for_front_object =
+      getOrDeclareParameter<double>(*node, ns + "time_horizon_for_front_object");
+    p.time_horizon_for_rear_object =
+      getOrDeclareParameter<double>(*node, ns + "time_horizon_for_rear_object");
     p.safety_check_time_resolution = getOrDeclareParameter<double>(*node, ns + "time_resolution");
     p.safety_check_backward_distance =
       getOrDeclareParameter<double>(*node, ns + "safety_check_backward_distance");
