@@ -15,6 +15,7 @@
 #include "manager.hpp"
 
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <memory>
 #include <set>
@@ -25,6 +26,7 @@
 namespace behavior_velocity_planner
 {
 using lanelet::autoware::VirtualTrafficLight;
+using tier4_autoware_utils::getOrDeclareParameter;
 
 VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -33,14 +35,15 @@ VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node 
 
   {
     auto & p = planner_param_;
-    p.max_delay_sec = node.declare_parameter<double>(ns + ".max_delay_sec");
-    p.near_line_distance = node.declare_parameter<double>(ns + ".near_line_distance");
-    p.dead_line_margin = node.declare_parameter<double>(ns + ".dead_line_margin");
-    p.hold_stop_margin_distance = node.declare_parameter<double>(ns + ".hold_stop_margin_distance");
-    p.max_yaw_deviation_rad =
-      tier4_autoware_utils::deg2rad(node.declare_parameter<double>(ns + ".max_yaw_deviation_deg"));
+    p.max_delay_sec = getOrDeclareParameter<double>(node, ns + ".max_delay_sec");
+    p.near_line_distance = getOrDeclareParameter<double>(node, ns + ".near_line_distance");
+    p.dead_line_margin = getOrDeclareParameter<double>(node, ns + ".dead_line_margin");
+    p.hold_stop_margin_distance =
+      getOrDeclareParameter<double>(node, ns + ".hold_stop_margin_distance");
+    p.max_yaw_deviation_rad = tier4_autoware_utils::deg2rad(
+      getOrDeclareParameter<double>(node, ns + ".max_yaw_deviation_deg"));
     p.check_timeout_after_stop_line =
-      node.declare_parameter<bool>(ns + ".check_timeout_after_stop_line");
+      getOrDeclareParameter<bool>(node, ns + ".check_timeout_after_stop_line");
   }
 }
 
