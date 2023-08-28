@@ -14,14 +14,14 @@
 
 #include "manager.hpp"
 
+#include <tier4_autoware_utils/ros/parameter.hpp>
+
 #include <string>
 #include <utility>
 
 namespace behavior_velocity_planner
 {
-namespace
-{
-}  // namespace
+using tier4_autoware_utils::getOrDeclareParameter;
 
 RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -48,82 +48,75 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
 
   {
     auto & p = planner_param_.common;
-    p.normal_min_jerk = node.has_parameter("normal.min_jerk")
-                          ? node.get_parameter("normal.min_jerk").get_value<double>()
-                          : node.declare_parameter<double>("normal.min_jerk");
-    p.normal_min_acc = node.has_parameter("normal.min_acc")
-                         ? node.get_parameter("normal.min_acc").get_value<double>()
-                         : node.declare_parameter<double>("normal.min_acc");
-    p.limit_min_jerk = node.has_parameter("limit.min_jerk")
-                         ? node.get_parameter("limit.min_jerk").get_value<double>()
-                         : node.declare_parameter<double>("limit.min_jerk");
-    p.limit_min_acc = node.has_parameter("limit.min_acc")
-                        ? node.get_parameter("limit.min_acc").get_value<double>()
-                        : node.declare_parameter<double>("limit.min_acc");
+    p.normal_min_jerk = getOrDeclareParameter<double>(node, "normal.min_jerk");
+    p.normal_min_acc = getOrDeclareParameter<double>(node, "normal.min_acc");
+    p.limit_min_jerk = getOrDeclareParameter<double>(node, "limit.min_jerk");
+    p.limit_min_acc = getOrDeclareParameter<double>(node, "limit.min_acc");
   }
 
   {
     auto & p = planner_param_.run_out;
-    p.detection_method = node.declare_parameter<std::string>(ns + ".detection_method");
-    p.use_partition_lanelet = node.declare_parameter<bool>(ns + ".use_partition_lanelet");
-    p.specify_decel_jerk = node.declare_parameter<bool>(ns + ".specify_decel_jerk");
-    p.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");
-    p.passing_margin = node.declare_parameter<double>(ns + ".passing_margin");
-    p.deceleration_jerk = node.declare_parameter<double>(ns + ".deceleration_jerk");
-    p.detection_distance = node.declare_parameter<double>(ns + ".detection_distance");
-    p.detection_span = node.declare_parameter<double>(ns + ".detection_span");
-    p.min_vel_ego_kmph = node.declare_parameter<double>(ns + ".min_vel_ego_kmph");
+    p.detection_method = getOrDeclareParameter<std::string>(node, ns + ".detection_method");
+    p.use_partition_lanelet = getOrDeclareParameter<bool>(node, ns + ".use_partition_lanelet");
+    p.specify_decel_jerk = getOrDeclareParameter<bool>(node, ns + ".specify_decel_jerk");
+    p.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");
+    p.passing_margin = getOrDeclareParameter<double>(node, ns + ".passing_margin");
+    p.deceleration_jerk = getOrDeclareParameter<double>(node, ns + ".deceleration_jerk");
+    p.detection_distance = getOrDeclareParameter<double>(node, ns + ".detection_distance");
+    p.detection_span = getOrDeclareParameter<double>(node, ns + ".detection_span");
+    p.min_vel_ego_kmph = getOrDeclareParameter<double>(node, ns + ".min_vel_ego_kmph");
   }
 
   {
     auto & p = planner_param_.detection_area;
     const std::string ns_da = ns + ".detection_area";
-    p.margin_ahead = node.declare_parameter<double>(ns_da + ".margin_ahead");
-    p.margin_behind = node.declare_parameter<double>(ns_da + ".margin_behind");
+    p.margin_ahead = getOrDeclareParameter<double>(node, ns_da + ".margin_ahead");
+    p.margin_behind = getOrDeclareParameter<double>(node, ns_da + ".margin_behind");
   }
 
   {
     auto & p = planner_param_.mandatory_area;
     const std::string ns_da = ns + ".mandatory_area";
-    p.decel_jerk = node.declare_parameter<double>(ns_da + ".decel_jerk");
+    p.decel_jerk = getOrDeclareParameter<double>(node, ns_da + ".decel_jerk");
   }
 
   {
     auto & p = planner_param_.dynamic_obstacle;
     const std::string ns_do = ns + ".dynamic_obstacle";
-    p.use_mandatory_area = node.declare_parameter<bool>(ns_do + ".use_mandatory_area");
-    p.min_vel_kmph = node.declare_parameter<double>(ns_do + ".min_vel_kmph");
-    p.max_vel_kmph = node.declare_parameter<double>(ns_do + ".max_vel_kmph");
-    p.diameter = node.declare_parameter<double>(ns_do + ".diameter");
-    p.height = node.declare_parameter<double>(ns_do + ".height");
-    p.max_prediction_time = node.declare_parameter<double>(ns_do + ".max_prediction_time");
-    p.time_step = node.declare_parameter<double>(ns_do + ".time_step");
-    p.points_interval = node.declare_parameter<double>(ns_do + ".points_interval");
+    p.use_mandatory_area = getOrDeclareParameter<bool>(node, ns_do + ".use_mandatory_area");
+    p.min_vel_kmph = getOrDeclareParameter<double>(node, ns_do + ".min_vel_kmph");
+    p.max_vel_kmph = getOrDeclareParameter<double>(node, ns_do + ".max_vel_kmph");
+    p.diameter = getOrDeclareParameter<double>(node, ns_do + ".diameter");
+    p.height = getOrDeclareParameter<double>(node, ns_do + ".height");
+    p.max_prediction_time = getOrDeclareParameter<double>(node, ns_do + ".max_prediction_time");
+    p.time_step = getOrDeclareParameter<double>(node, ns_do + ".time_step");
+    p.points_interval = getOrDeclareParameter<double>(node, ns_do + ".points_interval");
   }
 
   {
     auto & p = planner_param_.approaching;
     const std::string ns_a = ns + ".approaching";
-    p.enable = node.declare_parameter<bool>(ns_a + ".enable");
-    p.margin = node.declare_parameter<double>(ns_a + ".margin");
-    p.limit_vel_kmph = node.declare_parameter<double>(ns_a + ".limit_vel_kmph");
+    p.enable = getOrDeclareParameter<bool>(node, ns_a + ".enable");
+    p.margin = getOrDeclareParameter<double>(node, ns_a + ".margin");
+    p.limit_vel_kmph = getOrDeclareParameter<double>(node, ns_a + ".limit_vel_kmph");
   }
 
   {
     auto & p = planner_param_.state_param;
     const std::string ns_s = ns + ".state";
-    p.stop_thresh = node.declare_parameter<double>(ns_s + ".stop_thresh");
-    p.stop_time_thresh = node.declare_parameter<double>(ns_s + ".stop_time_thresh");
-    p.disable_approach_dist = node.declare_parameter<double>(ns_s + ".disable_approach_dist");
-    p.keep_approach_duration = node.declare_parameter<double>(ns_s + ".keep_approach_duration");
+    p.stop_thresh = getOrDeclareParameter<double>(node, ns_s + ".stop_thresh");
+    p.stop_time_thresh = getOrDeclareParameter<double>(node, ns_s + ".stop_time_thresh");
+    p.disable_approach_dist = getOrDeclareParameter<double>(node, ns_s + ".disable_approach_dist");
+    p.keep_approach_duration =
+      getOrDeclareParameter<double>(node, ns_s + ".keep_approach_duration");
   }
 
   {
     auto & p = planner_param_.slow_down_limit;
     const std::string ns_m = ns + ".slow_down_limit";
-    p.enable = node.declare_parameter<bool>(ns_m + ".enable");
-    p.max_jerk = node.declare_parameter<double>(ns_m + ".max_jerk");
-    p.max_acc = node.declare_parameter<double>(ns_m + ".max_acc");
+    p.enable = getOrDeclareParameter<bool>(node, ns_m + ".enable");
+    p.max_jerk = getOrDeclareParameter<double>(node, ns_m + ".max_jerk");
+    p.max_acc = getOrDeclareParameter<double>(node, ns_m + ".max_acc");
   }
 
   debug_ptr_ = std::make_shared<RunOutDebug>(node);
