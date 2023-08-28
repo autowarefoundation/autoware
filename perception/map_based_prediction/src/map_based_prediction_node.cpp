@@ -313,8 +313,11 @@ bool validateIsolatedLaneletLength(
   const auto & end_point = center_line.back();
   // calc approx distance between closest point and end point
   const double approx_distance = lanelet::geometry::distance2d(obj_point, end_point);
-  const double min_length =
-    object.kinematics.twist_with_covariance.twist.linear.x * prediction_time;
+  // calc min length for prediction
+  const double abs_speed = std::hypot(
+    object.kinematics.twist_with_covariance.twist.linear.x,
+    object.kinematics.twist_with_covariance.twist.linear.y);
+  const double min_length = abs_speed * prediction_time;
   return approx_distance > min_length;
 }
 
@@ -553,8 +556,11 @@ ObjectClassification::_label_type changeLabelForPrediction(
     // if object is within road lanelet and satisfies yaw constraints
     const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
     const float high_speed_threshold = 25.0 / 18.0 * 5.0;  // High speed bicycle 25 km/h
-    const bool high_speed_object =
-      object.kinematics.twist_with_covariance.twist.linear.x > high_speed_threshold;
+    // calc abs speed from x and y velocity
+    const double abs_speed = std::hypot(
+      object.kinematics.twist_with_covariance.twist.linear.x,
+      object.kinematics.twist_with_covariance.twist.linear.y);
+    const bool high_speed_object = abs_speed > high_speed_threshold;
 
     // if the object is within lanelet, do the same estimation with vehicle
     if (within_road_lanelet) {
@@ -570,8 +576,10 @@ ObjectClassification::_label_type changeLabelForPrediction(
     const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
     const float max_velocity_for_human_mps =
       25.0 / 18.0 * 5.0;  // Max human being motion speed is 25km/h
-    const bool high_speed_object =
-      object.kinematics.twist_with_covariance.twist.linear.x > max_velocity_for_human_mps;
+    const double abs_speed = std::hypot(
+      object.kinematics.twist_with_covariance.twist.linear.x,
+      object.kinematics.twist_with_covariance.twist.linear.y);
+    const bool high_speed_object = abs_speed > max_velocity_for_human_mps;
     // fast, human-like object: like segway
     if (within_road_lanelet && high_speed_object) {
       return label;  // currently do nothing
@@ -826,9 +834,10 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
       }
 
       // For too-slow vehicle
-      if (
-        std::fabs(transformed_object.kinematics.twist_with_covariance.twist.linear.x) <
-        min_velocity_for_map_based_prediction_) {
+      const double abs_obj_speed = std::hypot(
+        transformed_object.kinematics.twist_with_covariance.twist.linear.x,
+        transformed_object.kinematics.twist_with_covariance.twist.linear.y);
+      if (std::fabs(abs_obj_speed) < min_velocity_for_map_based_prediction_) {
         PredictedPath predicted_path =
           path_generator_->generatePathForLowSpeedVehicle(transformed_object);
         predicted_path.confidence = 1.0;
@@ -1046,6 +1055,7 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
   const auto future_object_pose = tier4_autoware_utils::calcOffsetPose(
     object_pose, object_twist.linear.x * 0.1, object_twist.linear.y * 0.1, 0.0);
 
+  // assumption: the object vx is much larger than vy
   if (object.kinematics.twist_with_covariance.twist.linear.x < 0.0) {
     if (
       object.kinematics.orientation_availability ==
@@ -1064,6 +1074,7 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
     }
 
     object.kinematics.twist_with_covariance.twist.linear.x *= -1.0;
+    object.kinematics.twist_with_covariance.twist.linear.y *= -1.0;
   }
 
   return;
@@ -1326,7 +1337,9 @@ std::vector<PredictedRefPath> MapBasedPredictionNode::getPredictedReferencePath(
   const TrackedObject & object, const LaneletsData & current_lanelets_data,
   const double object_detected_time)
 {
-  const double obj_vel = std::fabs(object.kinematics.twist_with_covariance.twist.linear.x);
+  const double obj_vel = std::hypot(
+    object.kinematics.twist_with_covariance.twist.linear.x,
+    object.kinematics.twist_with_covariance.twist.linear.y);
 
   std::vector<PredictedRefPath> all_ref_paths;
   for (const auto & current_lanelet_data : current_lanelets_data) {
@@ -1667,21 +1680,22 @@ geometry_msgs::msg::Pose MapBasedPredictionNode::compensateTimeDelay(
 
   /*  == Nonlinear model ==
    *
-   * x_{k+1}   = x_k + vx_k * cos(yaw_k) * dt
-   * y_{k+1}   = y_k + vx_k * sin(yaw_k) * dt
+   * x_{k+1}   = x_k + vx_k * cos(yaw_k) * dt - vy_k * sin(yaw_k) * dt
+   * y_{k+1}   = y_k + vx_k * sin(yaw_k) * dt + vy_k * cos(yaw_k) * dt
    * yaw_{k+1} = yaw_k + (wz_k) * dt
    *
    */
 
   const double vx = twist.linear.x;
+  const double vy = twist.linear.y;
   const double wz = twist.angular.z;
   const double prev_yaw = tf2::getYaw(delayed_pose.orientation);
   const double prev_x = delayed_pose.position.x;
   const double prev_y = delayed_pose.position.y;
   const double prev_z = delayed_pose.position.z;
 
-  const double curr_x = prev_x + vx * std::cos(prev_yaw) * dt;
-  const double curr_y = prev_y + vx * std::sin(prev_yaw) * dt;
+  const double curr_x = prev_x + vx * std::cos(prev_yaw) * dt - vy * std::sin(prev_yaw) * dt;
+  const double curr_y = prev_y + vx * std::sin(prev_yaw) * dt + vy * std::cos(prev_yaw) * dt;
   const double curr_z = prev_z;
   const double curr_yaw = prev_yaw + wz * dt;
 
