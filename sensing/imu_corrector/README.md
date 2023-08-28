@@ -1,6 +1,6 @@
 # imu_corrector
 
-## Purpose
+## imu_corrector
 
 `imu_corrector_node` is a node that correct imu data.
 
@@ -19,8 +19,6 @@ We also assume that $n\sim\mathcal{N}(0, \sigma^2)$.
 <!-- TODO(TIER IV): Make this repository public or change the link. -->
 <!-- Use the value estimated by [deviation_estimator](https://github.com/tier4/calibration_tools/tree/main/localization/deviation_estimation_tools) as the parameters for this node. -->
 
-## Inputs / Outputs
-
 ### Input
 
 | Name     | Type                    | Description  |
@@ -33,9 +31,7 @@ We also assume that $n\sim\mathcal{N}(0, \sigma^2)$.
 | --------- | ----------------------- | ------------------ |
 | `~output` | `sensor_msgs::msg::Imu` | corrected imu data |
 
-## Parameters
-
-### Core Parameters
+### Parameters
 
 | Name                         | Type   | Description                                      |
 | ---------------------------- | ------ | ------------------------------------------------ |
@@ -47,12 +43,33 @@ We also assume that $n\sim\mathcal{N}(0, \sigma^2)$.
 | `angular_velocity_stddev_zz` | double | yaw rate standard deviation imu_link [rad/s]     |
 | `acceleration_stddev`        | double | acceleration standard deviation imu_link [m/s^2] |
 
-## Assumptions / Known limits
+## gyro_bias_estimator
 
-## (Optional) Error detection and handling
+`gyro_bias_validator` is a node that validates the bias of the gyroscope. It subscribes to the `sensor_msgs::msg::Imu` topic and validate if the bias of the gyroscope is within the specified range.
 
-## (Optional) Performance characterization
+Note that the node calculates bias from the gyroscope data by averaging the data only when the vehicle is stopped.
 
-## (Optional) References/External links
+### Input
 
-## (Optional) Future extensions / Unimplemented parts
+| Name              | Type                                             | Description      |
+| ----------------- | ------------------------------------------------ | ---------------- |
+| `~/input/imu_raw` | `sensor_msgs::msg::Imu`                          | **raw** imu data |
+| `~/input/twist`   | `geometry_msgs::msg::TwistWithCovarianceStamped` | vehicle velocity |
+
+### Output
+
+| Name                 | Type                                 | Description                   |
+| -------------------- | ------------------------------------ | ----------------------------- |
+| `~/output/gyro_bias` | `geometry_msgs::msg::Vector3Stamped` | bias of the gyroscope [rad/s] |
+
+### Parameters
+
+| Name                        | Type   | Description                                                                   |
+| --------------------------- | ------ | ----------------------------------------------------------------------------- |
+| `angular_velocity_offset_x` | double | roll rate offset in imu_link [rad/s]                                          |
+| `angular_velocity_offset_y` | double | pitch rate offset imu_link [rad/s]                                            |
+| `angular_velocity_offset_z` | double | yaw rate offset imu_link [rad/s]                                              |
+| `gyro_bias_threshold`       | double | threshold of the bias of the gyroscope [rad/s]                                |
+| `velocity_threshold`        | double | threshold of the vehicle velocity to determine if the vehicle is stopped[m/s] |
+| `timestamp_threshold`       | double | threshold of the timestamp diff between IMU and twist [s]                     |
+| `data_num_threshold`        | int    | number of data used to calculate bias                                         |
