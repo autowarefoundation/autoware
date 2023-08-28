@@ -14,6 +14,8 @@
 
 #include "manager.hpp"
 
+#include "tier4_autoware_utils/ros/parameter.hpp"
+
 #include <memory>
 #include <set>
 #include <string>
@@ -22,20 +24,22 @@
 namespace behavior_velocity_planner
 {
 using lanelet::TrafficSign;
+using tier4_autoware_utils::getOrDeclareParameter;
 
 StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
   const std::string ns(getModuleName());
   auto & p = planner_param_;
-  p.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");
-  p.hold_stop_margin_distance = node.declare_parameter<double>(ns + ".hold_stop_margin_distance");
-  p.stop_duration_sec = node.declare_parameter<double>(ns + ".stop_duration_sec");
+  p.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");
+  p.hold_stop_margin_distance =
+    getOrDeclareParameter<double>(node, ns + ".hold_stop_margin_distance");
+  p.stop_duration_sec = getOrDeclareParameter<double>(node, ns + ".stop_duration_sec");
   p.use_initialization_stop_line_state =
-    node.declare_parameter<bool>(ns + ".use_initialization_stop_line_state");
+    getOrDeclareParameter<bool>(node, ns + ".use_initialization_stop_line_state");
   // debug
   p.show_stop_line_collision_check =
-    node.declare_parameter<bool>(ns + ".debug.show_stop_line_collision_check");
+    getOrDeclareParameter<bool>(node, ns + ".debug.show_stop_line_collision_check");
 }
 
 std::vector<StopLineWithLaneId> StopLineModuleManager::getStopLinesWithLaneIdOnPath(
