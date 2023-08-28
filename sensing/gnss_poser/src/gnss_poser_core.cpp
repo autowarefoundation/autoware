@@ -196,9 +196,6 @@ GNSSStat GNSSPoser::convert(
   } else if (coordinate_system == CoordinateSystem::MGRS) {
     gnss_stat = NavSatFix2MGRS(
       nav_sat_fix_msg, MGRSPrecision::_100MICRO_METER, this->get_logger(), height_system);
-  } else if (coordinate_system == CoordinateSystem::LOCAL_CARTESIAN_WGS84) {
-    gnss_stat =
-      NavSatFix2LocalCartesianWGS84(nav_sat_fix_msg, nav_sat_fix_origin_, this->get_logger());
   } else {
     RCLCPP_ERROR_STREAM_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),

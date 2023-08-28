@@ -18,7 +18,7 @@
 
 namespace gnss_poser
 {
-enum class CoordinateSystem { MGRS = 1, LOCAL_CARTESIAN_WGS84 = 3, LOCAL_CARTESIAN_UTM = 4 };
+enum class CoordinateSystem { MGRS = 1, LOCAL_CARTESIAN_UTM = 4 };
 
 struct GNSSStat
 {

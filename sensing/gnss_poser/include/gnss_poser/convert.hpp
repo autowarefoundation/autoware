@@ -17,7 +17,6 @@
 #include "gnss_poser/gnss_stat.hpp"
 
 #include <GeographicLib/Geoid.hpp>
-#include <GeographicLib/LocalCartesian.hpp>
 #include <GeographicLib/MGRS.hpp>
 #include <GeographicLib/UTMUPS.hpp>
 #include <rclcpp/logging.hpp>
@@ -55,27 +54,6 @@ double EllipsoidHeight2OrthometricHeight(
       logger, "Failed to convert Height from Ellipsoid to Orthometric" << err.what());
   }
   return OrthometricHeight;
-}
-GNSSStat NavSatFix2LocalCartesianWGS84(
-  const sensor_msgs::msg::NavSatFix & nav_sat_fix_msg,
-  sensor_msgs::msg::NavSatFix nav_sat_fix_origin_, const rclcpp::Logger & logger)
-{
-  GNSSStat local_cartesian;
-
-  try {
-    GeographicLib::LocalCartesian localCartesian_origin(
-      nav_sat_fix_origin_.latitude, nav_sat_fix_origin_.longitude, nav_sat_fix_origin_.altitude);
-    localCartesian_origin.Forward(
-      nav_sat_fix_msg.latitude, nav_sat_fix_msg.longitude, nav_sat_fix_msg.altitude,
-      local_cartesian.x, local_cartesian.y, local_cartesian.z);
-
-    local_cartesian.latitude = nav_sat_fix_msg.latitude;
-    local_cartesian.longitude = nav_sat_fix_msg.longitude;
-    local_cartesian.altitude = nav_sat_fix_msg.altitude;
-  } catch (const GeographicLib::GeographicErr & err) {
-    RCLCPP_ERROR_STREAM(logger, "Failed to convert NavSatFix to LocalCartesian" << err.what());
-  }
-  return local_cartesian;
 }
 GNSSStat NavSatFix2UTM(
   const sensor_msgs::msg::NavSatFix & nav_sat_fix_msg, const rclcpp::Logger & logger,
