@@ -15,6 +15,7 @@
 #include "manager.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <limits>
 #include <memory>
@@ -26,6 +27,7 @@ namespace behavior_velocity_planner
 {
 
 using lanelet::autoware::Crosswalk;
+using tier4_autoware_utils::getOrDeclareParameter;
 
 WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -35,8 +37,8 @@ WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
   // for walkway parameters
   auto & wp = walkway_planner_param_;
   wp.stop_distance_from_crosswalk =
-    node.declare_parameter<double>(ns + ".stop_distance_from_crosswalk");
-  wp.stop_duration = node.declare_parameter<double>(ns + ".stop_duration");
+    getOrDeclareParameter<double>(node, ns + ".stop_distance_from_crosswalk");
+  wp.stop_duration = getOrDeclareParameter<double>(node, ns + ".stop_duration");
 }
 
 void WalkwayModuleManager::launchNewModules(const PathWithLaneId & path)
