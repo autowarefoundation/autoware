@@ -16,6 +16,7 @@
 
 #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -27,22 +28,26 @@
 
 namespace behavior_velocity_planner
 {
+using tier4_autoware_utils::getOrDeclareParameter;
+
 BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
     node, getModuleName(),
-    node.declare_parameter<bool>(std::string(getModuleName()) + ".enable_rtc"))
+    getOrDeclareParameter<bool>(node, std::string(getModuleName()) + ".enable_rtc"))
 {
   const std::string ns(getModuleName());
-  planner_param_.use_pass_judge_line = node.declare_parameter<bool>(ns + ".use_pass_judge_line");
-  planner_param_.stop_line_margin = node.declare_parameter<double>(ns + ".stop_line_margin");
-  planner_param_.backward_length = node.declare_parameter<double>(ns + ".backward_length");
+  planner_param_.use_pass_judge_line =
+    getOrDeclareParameter<bool>(node, ns + ".use_pass_judge_line");
+  planner_param_.stop_line_margin = getOrDeclareParameter<double>(node, ns + ".stop_line_margin");
+  planner_param_.backward_length = getOrDeclareParameter<double>(node, ns + ".backward_length");
   planner_param_.ignore_width_from_center_line =
-    node.declare_parameter<double>(ns + ".ignore_width_from_center_line");
+    getOrDeclareParameter<double>(node, ns + ".ignore_width_from_center_line");
   planner_param_.max_future_movement_time =
-    node.declare_parameter<double>(ns + ".max_future_movement_time");
-  planner_param_.threshold_yaw_diff = node.declare_parameter<double>(ns + ".threshold_yaw_diff");
+    getOrDeclareParameter<double>(node, ns + ".max_future_movement_time");
+  planner_param_.threshold_yaw_diff =
+    getOrDeclareParameter<double>(node, ns + ".threshold_yaw_diff");
   planner_param_.adjacent_extend_width =
-    node.declare_parameter<double>(ns + ".adjacent_extend_width");
+    getOrDeclareParameter<double>(node, ns + ".adjacent_extend_width");
 }
 
 void BlindSpotModuleManager::launchNewModules(
