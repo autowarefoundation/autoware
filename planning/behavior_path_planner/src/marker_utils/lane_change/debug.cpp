@@ -56,12 +56,13 @@ MarkerArray showObjectInfo(
 
     std::ostringstream ss;
 
-    ss << "Idx: " << ++idx << "\nReason: " << info.failed_reason
+    ss << "Idx: " << ++idx << "\nReason: " << info.unsafe_reason
        << "\nRSS dist: " << std::setprecision(4) << info.rss_longitudinal
-       << "\nEgo to obj: " << info.ego_to_obj_margin << "\nLateral offset: " << info.lateral_offset
-       << "\nLongitudinal offset: " << info.longitudinal_offset
+       << "\nEgo to obj: " << info.inter_vehicle_distance
+       << "\nExtended polygon lateral offset: " << info.extended_polygon_lat_offset
+       << "\nExtended polygon longitudinal offset: " << info.extended_polygon_lon_offset
        << "\nPosition: " << (info.is_front ? "front" : "back")
-       << "\nSafe: " << (info.allow_lane_change ? "Yes" : "No");
+       << "\nSafe: " << (info.is_safe ? "Yes" : "No");
 
     obj_marker.text = ss.str();
 
@@ -195,8 +196,8 @@ MarkerArray showPolygon(
   int32_t idx = {0};
 
   for (const auto & [uuid, info] : obj_debug_vec) {
-    const auto & color = info.allow_lane_change ? green_color : red_color;
-    const auto & ego_polygon = info.ego_polygon.outer();
+    const auto & color = info.is_safe ? green_color : red_color;
+    const auto & ego_polygon = info.extended_ego_polygon.outer();
     const auto poly_z = info.current_pose.position.z;  // temporally
     ego_marker.id = ++id;
     ego_marker.color = createMarkerColor(color[0], color[1], color[2], 0.8);
@@ -214,7 +215,7 @@ MarkerArray showPolygon(
 
     marker_array.markers.push_back(text_marker);
 
-    const auto & obj_polygon = info.obj_polygon.outer();
+    const auto & obj_polygon = info.extended_obj_polygon.outer();
     obj_marker.id = ++id;
     obj_marker.color = createMarkerColor(color[0], color[1], color[2], 0.8);
     obj_marker.points.reserve(obj_polygon.size());

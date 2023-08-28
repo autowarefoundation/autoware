@@ -51,24 +51,22 @@ using visualization_msgs::msg::MarkerArray;
 
 struct CollisionCheckDebug
 {
-  std::string failed_reason;
-  std::size_t lane_id{0};
-  Pose current_pose{};
-  Twist current_twist{};
-  Twist object_twist{};
-  Pose expected_ego_pose{};
-  Pose expected_obj_pose{};
-  Pose relative_to_ego{};
-  double rss_longitudinal{0.0};
-  double ego_to_obj_margin{0.0};
-  double longitudinal_offset{0.0};
-  double lateral_offset{0.0};
-  bool is_front{false};
-  bool allow_lane_change{false};
-  std::vector<Pose> lerped_path;
-  std::vector<PredictedPath> ego_predicted_path{};
-  Polygon2d ego_polygon{};
-  Polygon2d obj_polygon{};
+  std::string unsafe_reason;                ///< Reason indicating unsafe situation.
+  Pose current_pose{};                      ///< Ego vehicle's current pose.
+  Twist current_twist{};                    ///< Ego vehicle's current velocity and rotation.
+  Twist object_twist{};                     ///< Detected object's velocity and rotation.
+  Pose expected_ego_pose{};                 ///< Predicted future pose of ego vehicle.
+  Pose expected_obj_pose{};                 ///< Predicted future pose of object.
+  double rss_longitudinal{0.0};             ///< Longitudinal RSS measure.
+  double inter_vehicle_distance{0.0};       ///< Distance between ego vehicle and object.
+  double extended_polygon_lon_offset{0.0};  ///< Longitudinal offset for extended polygon.
+  double extended_polygon_lat_offset{0.0};  ///< Lateral offset for extended polygon.
+  bool is_front{false};                     ///< True if object is in front of ego vehicle.
+  bool is_safe{false};                      ///< True if situation is deemed safe.
+  std::vector<Pose> lerped_path;            ///< Interpolated ego vehicle path.
+  std::vector<PredictedPath> ego_predicted_path{};  ///< Predicted future path of ego vehicle.
+  Polygon2d extended_ego_polygon{};                 ///< Ego vehicle's extended collision polygon.
+  Polygon2d extended_obj_polygon{};  ///< Detected object's extended collision polygon.
 };
 using CollisionCheckDebugMap = std::unordered_map<std::string, CollisionCheckDebug>;
 

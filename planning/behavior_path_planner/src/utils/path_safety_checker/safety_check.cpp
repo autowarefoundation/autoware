@@ -62,8 +62,8 @@ Polygon2d createExtendedPolygon(
   const double lat_offset = width / 2.0 + lat_margin;
 
   {
-    debug.longitudinal_offset = lon_offset;
-    debug.lateral_offset = lat_offset;
+    debug.extended_polygon_lon_offset = lon_offset;
+    debug.extended_polygon_lat_offset = lat_offset;
   }
 
   const auto p1 = tier4_autoware_utils::calcOffsetPose(base_link_pose, lon_offset, lat_offset, 0.0);
@@ -113,8 +113,8 @@ Polygon2d createExtendedPolygon(
   const double right_lat_offset = min_y - lat_margin;
 
   {
-    debug.longitudinal_offset = lon_offset;
-    debug.lateral_offset = (left_lat_offset + right_lat_offset) / 2;
+    debug.extended_polygon_lon_offset = lon_offset;
+    debug.extended_polygon_lat_offset = (left_lat_offset + right_lat_offset) / 2;
   }
 
   const auto p1 = tier4_autoware_utils::calcOffsetPose(obj_pose, lon_offset, left_lat_offset, 0.0);
@@ -261,13 +261,13 @@ bool checkCollision(
       debug.lerped_path.push_back(ego_pose);
       debug.expected_ego_pose = ego_pose;
       debug.expected_obj_pose = obj_pose;
-      debug.ego_polygon = ego_polygon;
-      debug.obj_polygon = obj_polygon;
+      debug.extended_ego_polygon = ego_polygon;
+      debug.extended_obj_polygon = obj_polygon;
     }
 
     // check overlap
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {
-      debug.failed_reason = "overlap_polygon";
+      debug.unsafe_reason = "overlap_polygon";
       return false;
     }
 
@@ -299,15 +299,15 @@ bool checkCollision(
 
     {
       debug.rss_longitudinal = rss_dist;
-      debug.ego_to_obj_margin = min_lon_length;
-      debug.ego_polygon = extended_ego_polygon;
-      debug.obj_polygon = extended_obj_polygon;
+      debug.inter_vehicle_distance = min_lon_length;
+      debug.extended_ego_polygon = extended_ego_polygon;
+      debug.extended_obj_polygon = extended_obj_polygon;
       debug.is_front = is_object_front;
     }
 
     // check overlap with extended polygon
     if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
-      debug.failed_reason = "overlap_extended_polygon";
+      debug.unsafe_reason = "overlap_extended_polygon";
       return false;
     }
   }

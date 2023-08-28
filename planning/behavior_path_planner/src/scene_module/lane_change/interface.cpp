@@ -332,10 +332,9 @@ std::shared_ptr<LaneChangeDebugMsgArray> LaneChangeInterface::get_debug_msg_arra
   for (const auto & [uuid, debug_data] : debug_data) {
     LaneChangeDebugMsg debug_msg;
     debug_msg.object_id = uuid;
-    debug_msg.allow_lane_change = debug_data.allow_lane_change;
+    debug_msg.allow_lane_change = debug_data.is_safe;
     debug_msg.is_front = debug_data.is_front;
-    debug_msg.relative_distance = debug_data.relative_to_ego;
-    debug_msg.failed_reason = debug_data.failed_reason;
+    debug_msg.failed_reason = debug_data.unsafe_reason;
     debug_msg.velocity =
       std::hypot(debug_data.object_twist.linear.x, debug_data.object_twist.linear.y);
     debug_msg_array.lane_change_info.push_back(debug_msg);
