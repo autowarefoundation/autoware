@@ -27,122 +27,114 @@ namespace behavior_path_planner
 using route_handler::Direction;
 using utils::convertToSnakeCase;
 
-namespace
-{
-template <typename T>
-T get_parameter(rclcpp::Node * node, const std::string & ns)
-{
-  if (node->has_parameter(ns)) {
-    return node->get_parameter(ns).get_value<T>();
-  }
-
-  return node->declare_parameter<T>(ns);
-}
-}  // namespace
-
 LaneChangeModuleManager::LaneChangeModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config,
   const Direction direction, const LaneChangeModuleType type)
 : SceneModuleManagerInterface(node, name, config, {""}), direction_{direction}, type_{type}
 {
+  using tier4_autoware_utils::getOrDeclareParameter;
+
   LaneChangeParameters p{};
 
   const auto parameter = [](std::string && name) { return "lane_change." + name; };
 
   // trajectory generation
-  p.backward_lane_length = get_parameter<double>(node, parameter("backward_lane_length"));
+  p.backward_lane_length = getOrDeclareParameter<double>(*node, parameter("backward_lane_length"));
   p.prediction_time_resolution =
-    get_parameter<double>(node, parameter("prediction_time_resolution"));
+    getOrDeclareParameter<double>(*node, parameter("prediction_time_resolution"));
   p.longitudinal_acc_sampling_num =
-    get_parameter<int>(node, parameter("longitudinal_acceleration_sampling_num"));
+    getOrDeclareParameter<int>(*node, parameter("longitudinal_acceleration_sampling_num"));
   p.lateral_acc_sampling_num =
-    get_parameter<int>(node, parameter("lateral_acceleration_sampling_num"));
+    getOrDeclareParameter<int>(*node, parameter("lateral_acceleration_sampling_num"));
 
   // parked vehicle detection
   p.object_check_min_road_shoulder_width =
-    get_parameter<double>(node, parameter("object_check_min_road_shoulder_width"));
+    getOrDeclareParameter<double>(*node, parameter("object_check_min_road_shoulder_width"));
   p.object_shiftable_ratio_threshold =
-    get_parameter<double>(node, parameter("object_shiftable_ratio_threshold"));
+    getOrDeclareParameter<double>(*node, parameter("object_shiftable_ratio_threshold"));
 
   // turn signal
   p.min_length_for_turn_signal_activation =
-    get_parameter<double>(node, parameter("min_length_for_turn_signal_activation"));
+    getOrDeclareParameter<double>(*node, parameter("min_length_for_turn_signal_activation"));
   p.length_ratio_for_turn_signal_deactivation =
-    get_parameter<double>(node, parameter("length_ratio_for_turn_signal_deactivation"));
+    getOrDeclareParameter<double>(*node, parameter("length_ratio_for_turn_signal_deactivation"));
 
   // acceleration
-  p.min_longitudinal_acc = get_parameter<double>(node, parameter("min_longitudinal_acc"));
-  p.max_longitudinal_acc = get_parameter<double>(node, parameter("max_longitudinal_acc"));
+  p.min_longitudinal_acc = getOrDeclareParameter<double>(*node, parameter("min_longitudinal_acc"));
+  p.max_longitudinal_acc = getOrDeclareParameter<double>(*node, parameter("max_longitudinal_acc"));
 
   // collision check
   p.enable_prepare_segment_collision_check =
-    get_parameter<bool>(node, parameter("enable_prepare_segment_collision_check"));
-  p.prepare_segment_ignore_object_velocity_thresh =
-    get_parameter<double>(node, parameter("prepare_segment_ignore_object_velocity_thresh"));
+    getOrDeclareParameter<bool>(*node, parameter("enable_prepare_segment_collision_check"));
+  p.prepare_segment_ignore_object_velocity_thresh = getOrDeclareParameter<double>(
+    *node, parameter("prepare_segment_ignore_object_velocity_thresh"));
   p.check_objects_on_current_lanes =
-    get_parameter<bool>(node, parameter("check_objects_on_current_lanes"));
+    getOrDeclareParameter<bool>(*node, parameter("check_objects_on_current_lanes"));
   p.check_objects_on_other_lanes =
-    get_parameter<bool>(node, parameter("check_objects_on_other_lanes"));
-  p.use_all_predicted_path = get_parameter<bool>(node, parameter("use_all_predicted_path"));
+    getOrDeclareParameter<bool>(*node, parameter("check_objects_on_other_lanes"));
+  p.use_all_predicted_path =
+    getOrDeclareParameter<bool>(*node, parameter("use_all_predicted_path"));
 
-  p.rss_params.longitudinal_distance_min_threshold =
-    get_parameter<double>(node, parameter("safety_check.longitudinal_distance_min_threshold"));
-  p.rss_params.longitudinal_velocity_delta_time =
-    get_parameter<double>(node, parameter("safety_check.longitudinal_velocity_delta_time"));
+  p.rss_params.longitudinal_distance_min_threshold = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.longitudinal_distance_min_threshold"));
+  p.rss_params.longitudinal_velocity_delta_time = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.longitudinal_velocity_delta_time"));
   p.rss_params.front_vehicle_deceleration =
-    get_parameter<double>(node, parameter("safety_check.expected_front_deceleration"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.expected_front_deceleration"));
   p.rss_params.rear_vehicle_deceleration =
-    get_parameter<double>(node, parameter("safety_check.expected_rear_deceleration"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.expected_rear_deceleration"));
   p.rss_params.rear_vehicle_reaction_time =
-    get_parameter<double>(node, parameter("safety_check.rear_vehicle_reaction_time"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.rear_vehicle_reaction_time"));
   p.rss_params.rear_vehicle_safety_time_margin =
-    get_parameter<double>(node, parameter("safety_check.rear_vehicle_safety_time_margin"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.rear_vehicle_safety_time_margin"));
   p.rss_params.lateral_distance_max_threshold =
-    get_parameter<double>(node, parameter("safety_check.lateral_distance_max_threshold"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.lateral_distance_max_threshold"));
 
-  p.rss_params_for_abort.longitudinal_distance_min_threshold =
-    get_parameter<double>(node, parameter("safety_check.longitudinal_distance_min_threshold"));
-  p.rss_params_for_abort.longitudinal_velocity_delta_time =
-    get_parameter<double>(node, parameter("safety_check.longitudinal_velocity_delta_time"));
-  p.rss_params_for_abort.front_vehicle_deceleration =
-    get_parameter<double>(node, parameter("safety_check.expected_front_deceleration_for_abort"));
-  p.rss_params_for_abort.rear_vehicle_deceleration =
-    get_parameter<double>(node, parameter("safety_check.expected_rear_deceleration_for_abort"));
+  p.rss_params_for_abort.longitudinal_distance_min_threshold = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.longitudinal_distance_min_threshold"));
+  p.rss_params_for_abort.longitudinal_velocity_delta_time = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.longitudinal_velocity_delta_time"));
+  p.rss_params_for_abort.front_vehicle_deceleration = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.expected_front_deceleration_for_abort"));
+  p.rss_params_for_abort.rear_vehicle_deceleration = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.expected_rear_deceleration_for_abort"));
   p.rss_params_for_abort.rear_vehicle_reaction_time =
-    get_parameter<double>(node, parameter("safety_check.rear_vehicle_reaction_time"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.rear_vehicle_reaction_time"));
   p.rss_params_for_abort.rear_vehicle_safety_time_margin =
-    get_parameter<double>(node, parameter("safety_check.rear_vehicle_safety_time_margin"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.rear_vehicle_safety_time_margin"));
   p.rss_params_for_abort.lateral_distance_max_threshold =
-    get_parameter<double>(node, parameter("safety_check.lateral_distance_max_threshold"));
+    getOrDeclareParameter<double>(*node, parameter("safety_check.lateral_distance_max_threshold"));
 
   // target object
   {
     std::string ns = "lane_change.target_object.";
-    p.check_car = get_parameter<bool>(node, ns + "car");
-    p.check_truck = get_parameter<bool>(node, ns + "truck");
-    p.check_bus = get_parameter<bool>(node, ns + "bus");
-    p.check_trailer = get_parameter<bool>(node, ns + "trailer");
-    p.check_unknown = get_parameter<bool>(node, ns + "unknown");
-    p.check_bicycle = get_parameter<bool>(node, ns + "bicycle");
-    p.check_motorcycle = get_parameter<bool>(node, ns + "motorcycle");
-    p.check_pedestrian = get_parameter<bool>(node, ns + "pedestrian");
+    p.check_car = getOrDeclareParameter<bool>(*node, ns + "car");
+    p.check_truck = getOrDeclareParameter<bool>(*node, ns + "truck");
+    p.check_bus = getOrDeclareParameter<bool>(*node, ns + "bus");
+    p.check_trailer = getOrDeclareParameter<bool>(*node, ns + "trailer");
+    p.check_unknown = getOrDeclareParameter<bool>(*node, ns + "unknown");
+    p.check_bicycle = getOrDeclareParameter<bool>(*node, ns + "bicycle");
+    p.check_motorcycle = getOrDeclareParameter<bool>(*node, ns + "motorcycle");
+    p.check_pedestrian = getOrDeclareParameter<bool>(*node, ns + "pedestrian");
   }
 
   // lane change cancel
   p.cancel.enable_on_prepare_phase =
-    get_parameter<bool>(node, parameter("cancel.enable_on_prepare_phase"));
+    getOrDeclareParameter<bool>(*node, parameter("cancel.enable_on_prepare_phase"));
   p.cancel.enable_on_lane_changing_phase =
-    get_parameter<bool>(node, parameter("cancel.enable_on_lane_changing_phase"));
-  p.cancel.delta_time = get_parameter<double>(node, parameter("cancel.delta_time"));
-  p.cancel.duration = get_parameter<double>(node, parameter("cancel.duration"));
-  p.cancel.max_lateral_jerk = get_parameter<double>(node, parameter("cancel.max_lateral_jerk"));
-  p.cancel.overhang_tolerance = get_parameter<double>(node, parameter("cancel.overhang_tolerance"));
+    getOrDeclareParameter<bool>(*node, parameter("cancel.enable_on_lane_changing_phase"));
+  p.cancel.delta_time = getOrDeclareParameter<double>(*node, parameter("cancel.delta_time"));
+  p.cancel.duration = getOrDeclareParameter<double>(*node, parameter("cancel.duration"));
+  p.cancel.max_lateral_jerk =
+    getOrDeclareParameter<double>(*node, parameter("cancel.max_lateral_jerk"));
+  p.cancel.overhang_tolerance =
+    getOrDeclareParameter<double>(*node, parameter("cancel.overhang_tolerance"));
 
   p.finish_judge_lateral_threshold =
-    get_parameter<double>(node, parameter("finish_judge_lateral_threshold"));
+    getOrDeclareParameter<double>(*node, parameter("finish_judge_lateral_threshold"));
 
   // debug marker
-  p.publish_debug_marker = get_parameter<bool>(node, parameter("publish_debug_marker"));
+  p.publish_debug_marker = getOrDeclareParameter<bool>(*node, parameter("publish_debug_marker"));
 
   // validation of parameters
   if (p.longitudinal_acc_sampling_num < 1 || p.lateral_acc_sampling_num < 1) {
@@ -196,6 +188,7 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
     node, name, config, Direction::NONE, LaneChangeModuleType::AVOIDANCE_BY_LANE_CHANGE)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using tier4_autoware_utils::getOrDeclareParameter;
 
   rtc_interface_ptr_map_.clear();
   const std::vector<std::string> rtc_types = {"left", "right"};
@@ -211,34 +204,39 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
   {
     std::string ns = "avoidance_by_lane_change.";
     p.execute_object_longitudinal_margin =
-      get_parameter<double>(node, ns + "execute_object_longitudinal_margin");
+      getOrDeclareParameter<double>(*node, ns + "execute_object_longitudinal_margin");
     p.execute_only_when_lane_change_finish_before_object =
-      get_parameter<bool>(node, ns + "execute_only_when_lane_change_finish_before_object");
+      getOrDeclareParameter<bool>(*node, ns + "execute_only_when_lane_change_finish_before_object");
   }
 
   // general params
   {
     std::string ns = "avoidance.";
     p.resample_interval_for_planning =
-      get_parameter<double>(node, ns + "resample_interval_for_planning");
+      getOrDeclareParameter<double>(*node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
-      get_parameter<double>(node, ns + "resample_interval_for_output");
+      getOrDeclareParameter<double>(*node, ns + "resample_interval_for_output");
     p.enable_force_avoidance_for_stopped_vehicle =
-      get_parameter<bool>(node, ns + "enable_force_avoidance_for_stopped_vehicle");
+      getOrDeclareParameter<bool>(*node, ns + "enable_force_avoidance_for_stopped_vehicle");
   }
 
   // target object
   {
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
-      param.is_target = get_parameter<bool>(node, ns + "is_target");
-      param.execute_num = get_parameter<int>(node, ns + "execute_num");
-      param.moving_speed_threshold = get_parameter<double>(node, ns + "moving_speed_threshold");
-      param.moving_time_threshold = get_parameter<double>(node, ns + "moving_time_threshold");
-      param.max_expand_ratio = get_parameter<double>(node, ns + "max_expand_ratio");
-      param.envelope_buffer_margin = get_parameter<double>(node, ns + "envelope_buffer_margin");
-      param.avoid_margin_lateral = get_parameter<double>(node, ns + "avoid_margin_lateral");
-      param.safety_buffer_lateral = get_parameter<double>(node, ns + "safety_buffer_lateral");
+      param.is_target = getOrDeclareParameter<bool>(*node, ns + "is_target");
+      param.execute_num = getOrDeclareParameter<int>(*node, ns + "execute_num");
+      param.moving_speed_threshold =
+        getOrDeclareParameter<double>(*node, ns + "moving_speed_threshold");
+      param.moving_time_threshold =
+        getOrDeclareParameter<double>(*node, ns + "moving_time_threshold");
+      param.max_expand_ratio = getOrDeclareParameter<double>(*node, ns + "max_expand_ratio");
+      param.envelope_buffer_margin =
+        getOrDeclareParameter<double>(*node, ns + "envelope_buffer_margin");
+      param.avoid_margin_lateral =
+        getOrDeclareParameter<double>(*node, ns + "avoid_margin_lateral");
+      param.safety_buffer_lateral =
+        getOrDeclareParameter<double>(*node, ns + "safety_buffer_lateral");
       return param;
     };
 
@@ -255,41 +253,43 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
     p.object_parameters.emplace(ObjectClassification::UNKNOWN, get_object_param(ns + "unknown."));
 
     p.lower_distance_for_polygon_expansion =
-      get_parameter<double>(node, ns + "lower_distance_for_polygon_expansion");
+      getOrDeclareParameter<double>(*node, ns + "lower_distance_for_polygon_expansion");
     p.upper_distance_for_polygon_expansion =
-      get_parameter<double>(node, ns + "upper_distance_for_polygon_expansion");
+      getOrDeclareParameter<double>(*node, ns + "upper_distance_for_polygon_expansion");
   }
 
   // target filtering
   {
     std::string ns = "avoidance.target_filtering.";
-    p.threshold_time_force_avoidance_for_stopped_vehicle =
-      get_parameter<double>(node, ns + "threshold_time_force_avoidance_for_stopped_vehicle");
-    p.object_ignore_section_traffic_light_in_front_distance =
-      get_parameter<double>(node, ns + "object_ignore_section_traffic_light_in_front_distance");
-    p.object_ignore_section_crosswalk_in_front_distance =
-      get_parameter<double>(node, ns + "object_ignore_section_crosswalk_in_front_distance");
+    p.threshold_time_force_avoidance_for_stopped_vehicle = getOrDeclareParameter<double>(
+      *node, ns + "threshold_time_force_avoidance_for_stopped_vehicle");
+    p.object_ignore_section_traffic_light_in_front_distance = getOrDeclareParameter<double>(
+      *node, ns + "object_ignore_section_traffic_light_in_front_distance");
+    p.object_ignore_section_crosswalk_in_front_distance = getOrDeclareParameter<double>(
+      *node, ns + "object_ignore_section_crosswalk_in_front_distance");
     p.object_ignore_section_crosswalk_behind_distance =
-      get_parameter<double>(node, ns + "object_ignore_section_crosswalk_behind_distance");
+      getOrDeclareParameter<double>(*node, ns + "object_ignore_section_crosswalk_behind_distance");
     p.object_check_forward_distance =
-      get_parameter<double>(node, ns + "object_check_forward_distance");
+      getOrDeclareParameter<double>(*node, ns + "object_check_forward_distance");
     p.object_check_backward_distance =
-      get_parameter<double>(node, ns + "object_check_backward_distance");
-    p.object_check_goal_distance = get_parameter<double>(node, ns + "object_check_goal_distance");
+      getOrDeclareParameter<double>(*node, ns + "object_check_backward_distance");
+    p.object_check_goal_distance =
+      getOrDeclareParameter<double>(*node, ns + "object_check_goal_distance");
     p.threshold_distance_object_is_on_center =
-      get_parameter<double>(node, ns + "threshold_distance_object_is_on_center");
+      getOrDeclareParameter<double>(*node, ns + "threshold_distance_object_is_on_center");
     p.object_check_shiftable_ratio =
-      get_parameter<double>(node, ns + "object_check_shiftable_ratio");
+      getOrDeclareParameter<double>(*node, ns + "object_check_shiftable_ratio");
     p.object_check_min_road_shoulder_width =
-      get_parameter<double>(node, ns + "object_check_min_road_shoulder_width");
-    p.object_last_seen_threshold = get_parameter<double>(node, ns + "object_last_seen_threshold");
+      getOrDeclareParameter<double>(*node, ns + "object_check_min_road_shoulder_width");
+    p.object_last_seen_threshold =
+      getOrDeclareParameter<double>(*node, ns + "object_last_seen_threshold");
   }
 
   // safety check
   {
     std::string ns = "avoidance.safety_check.";
     p.hysteresis_factor_expand_rate =
-      get_parameter<double>(node, ns + "hysteresis_factor_expand_rate");
+      getOrDeclareParameter<double>(*node, ns + "hysteresis_factor_expand_rate");
   }
 
   avoidance_parameters_ = std::make_shared<AvoidanceByLCParameters>(p);

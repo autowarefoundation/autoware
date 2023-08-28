@@ -23,68 +23,62 @@
 namespace behavior_path_planner
 {
 
-namespace
-{
-template <typename T>
-T get_parameter(rclcpp::Node * node, const std::string & ns)
-{
-  if (node->has_parameter(ns)) {
-    return node->get_parameter(ns).get_value<T>();
-  }
-
-  return node->declare_parameter<T>(ns);
-}
-}  // namespace
-
 AvoidanceModuleManager::AvoidanceModuleManager(
   rclcpp::Node * node, const std::string & name, const ModuleConfigParameters & config)
 : SceneModuleManagerInterface(node, name, config, {"left", "right"})
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
+  using tier4_autoware_utils::getOrDeclareParameter;
 
   AvoidanceParameters p{};
   // general params
   {
     std::string ns = "avoidance.";
     p.resample_interval_for_planning =
-      get_parameter<double>(node, ns + "resample_interval_for_planning");
+      getOrDeclareParameter<double>(*node, ns + "resample_interval_for_planning");
     p.resample_interval_for_output =
-      get_parameter<double>(node, ns + "resample_interval_for_output");
-    p.enable_bound_clipping = get_parameter<bool>(node, ns + "enable_bound_clipping");
-    p.enable_cancel_maneuver = get_parameter<bool>(node, ns + "enable_cancel_maneuver");
+      getOrDeclareParameter<double>(*node, ns + "resample_interval_for_output");
+    p.enable_bound_clipping = getOrDeclareParameter<bool>(*node, ns + "enable_bound_clipping");
+    p.enable_cancel_maneuver = getOrDeclareParameter<bool>(*node, ns + "enable_cancel_maneuver");
     p.enable_force_avoidance_for_stopped_vehicle =
-      get_parameter<bool>(node, ns + "enable_force_avoidance_for_stopped_vehicle");
-    p.enable_yield_maneuver = get_parameter<bool>(node, ns + "enable_yield_maneuver");
+      getOrDeclareParameter<bool>(*node, ns + "enable_force_avoidance_for_stopped_vehicle");
+    p.enable_yield_maneuver = getOrDeclareParameter<bool>(*node, ns + "enable_yield_maneuver");
     p.enable_yield_maneuver_during_shifting =
-      get_parameter<bool>(node, ns + "enable_yield_maneuver_during_shifting");
-    p.disable_path_update = get_parameter<bool>(node, ns + "disable_path_update");
-    p.publish_debug_marker = get_parameter<bool>(node, ns + "publish_debug_marker");
-    p.print_debug_info = get_parameter<bool>(node, ns + "print_debug_info");
+      getOrDeclareParameter<bool>(*node, ns + "enable_yield_maneuver_during_shifting");
+    p.disable_path_update = getOrDeclareParameter<bool>(*node, ns + "disable_path_update");
+    p.publish_debug_marker = getOrDeclareParameter<bool>(*node, ns + "publish_debug_marker");
+    p.print_debug_info = getOrDeclareParameter<bool>(*node, ns + "print_debug_info");
   }
 
   // drivable area
   {
     std::string ns = "avoidance.";
-    p.use_adjacent_lane = get_parameter<bool>(node, ns + "use_adjacent_lane");
-    p.use_opposite_lane = get_parameter<bool>(node, ns + "use_opposite_lane");
-    p.use_intersection_areas = get_parameter<bool>(node, ns + "use_intersection_areas");
-    p.use_hatched_road_markings = get_parameter<bool>(node, ns + "use_hatched_road_markings");
+    p.use_adjacent_lane = getOrDeclareParameter<bool>(*node, ns + "use_adjacent_lane");
+    p.use_opposite_lane = getOrDeclareParameter<bool>(*node, ns + "use_opposite_lane");
+    p.use_intersection_areas = getOrDeclareParameter<bool>(*node, ns + "use_intersection_areas");
+    p.use_hatched_road_markings =
+      getOrDeclareParameter<bool>(*node, ns + "use_hatched_road_markings");
   }
 
   // target object
   {
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
-      param.is_target = get_parameter<bool>(node, ns + "is_target");
-      param.execute_num = get_parameter<int>(node, ns + "execute_num");
-      param.moving_speed_threshold = get_parameter<double>(node, ns + "moving_speed_threshold");
-      param.moving_time_threshold = get_parameter<double>(node, ns + "moving_time_threshold");
-      param.max_expand_ratio = get_parameter<double>(node, ns + "max_expand_ratio");
-      param.envelope_buffer_margin = get_parameter<double>(node, ns + "envelope_buffer_margin");
-      param.avoid_margin_lateral = get_parameter<double>(node, ns + "avoid_margin_lateral");
-      param.safety_buffer_lateral = get_parameter<double>(node, ns + "safety_buffer_lateral");
+      param.is_target = getOrDeclareParameter<bool>(*node, ns + "is_target");
+      param.execute_num = getOrDeclareParameter<int>(*node, ns + "execute_num");
+      param.moving_speed_threshold =
+        getOrDeclareParameter<double>(*node, ns + "moving_speed_threshold");
+      param.moving_time_threshold =
+        getOrDeclareParameter<double>(*node, ns + "moving_time_threshold");
+      param.max_expand_ratio = getOrDeclareParameter<double>(*node, ns + "max_expand_ratio");
+      param.envelope_buffer_margin =
+        getOrDeclareParameter<double>(*node, ns + "envelope_buffer_margin");
+      param.avoid_margin_lateral =
+        getOrDeclareParameter<double>(*node, ns + "avoid_margin_lateral");
+      param.safety_buffer_lateral =
+        getOrDeclareParameter<double>(*node, ns + "safety_buffer_lateral");
       param.safety_buffer_longitudinal =
-        get_parameter<double>(node, ns + "safety_buffer_longitudinal");
+        getOrDeclareParameter<double>(*node, ns + "safety_buffer_longitudinal");
       return param;
     };
 
@@ -101,119 +95,128 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     p.object_parameters.emplace(ObjectClassification::UNKNOWN, get_object_param(ns + "unknown."));
 
     p.lower_distance_for_polygon_expansion =
-      get_parameter<double>(node, ns + "lower_distance_for_polygon_expansion");
+      getOrDeclareParameter<double>(*node, ns + "lower_distance_for_polygon_expansion");
     p.upper_distance_for_polygon_expansion =
-      get_parameter<double>(node, ns + "upper_distance_for_polygon_expansion");
+      getOrDeclareParameter<double>(*node, ns + "upper_distance_for_polygon_expansion");
   }
 
   // target filtering
   {
     std::string ns = "avoidance.target_filtering.";
-    p.threshold_time_force_avoidance_for_stopped_vehicle =
-      get_parameter<double>(node, ns + "threshold_time_force_avoidance_for_stopped_vehicle");
-    p.object_ignore_section_traffic_light_in_front_distance =
-      get_parameter<double>(node, ns + "object_ignore_section_traffic_light_in_front_distance");
-    p.object_ignore_section_crosswalk_in_front_distance =
-      get_parameter<double>(node, ns + "object_ignore_section_crosswalk_in_front_distance");
+    p.threshold_time_force_avoidance_for_stopped_vehicle = getOrDeclareParameter<double>(
+      *node, ns + "threshold_time_force_avoidance_for_stopped_vehicle");
+    p.object_ignore_section_traffic_light_in_front_distance = getOrDeclareParameter<double>(
+      *node, ns + "object_ignore_section_traffic_light_in_front_distance");
+    p.object_ignore_section_crosswalk_in_front_distance = getOrDeclareParameter<double>(
+      *node, ns + "object_ignore_section_crosswalk_in_front_distance");
     p.object_ignore_section_crosswalk_behind_distance =
-      get_parameter<double>(node, ns + "object_ignore_section_crosswalk_behind_distance");
+      getOrDeclareParameter<double>(*node, ns + "object_ignore_section_crosswalk_behind_distance");
     p.object_check_forward_distance =
-      get_parameter<double>(node, ns + "object_check_forward_distance");
+      getOrDeclareParameter<double>(*node, ns + "object_check_forward_distance");
     p.object_check_backward_distance =
-      get_parameter<double>(node, ns + "object_check_backward_distance");
-    p.object_check_goal_distance = get_parameter<double>(node, ns + "object_check_goal_distance");
+      getOrDeclareParameter<double>(*node, ns + "object_check_backward_distance");
+    p.object_check_goal_distance =
+      getOrDeclareParameter<double>(*node, ns + "object_check_goal_distance");
     p.threshold_distance_object_is_on_center =
-      get_parameter<double>(node, ns + "threshold_distance_object_is_on_center");
+      getOrDeclareParameter<double>(*node, ns + "threshold_distance_object_is_on_center");
     p.object_check_shiftable_ratio =
-      get_parameter<double>(node, ns + "object_check_shiftable_ratio");
+      getOrDeclareParameter<double>(*node, ns + "object_check_shiftable_ratio");
     p.object_check_min_road_shoulder_width =
-      get_parameter<double>(node, ns + "object_check_min_road_shoulder_width");
-    p.object_last_seen_threshold = get_parameter<double>(node, ns + "object_last_seen_threshold");
+      getOrDeclareParameter<double>(*node, ns + "object_check_min_road_shoulder_width");
+    p.object_last_seen_threshold =
+      getOrDeclareParameter<double>(*node, ns + "object_last_seen_threshold");
   }
 
   // safety check general params
   {
     std::string ns = "avoidance.safety_check.";
-    p.enable_safety_check = get_parameter<bool>(node, ns + "enable");
-    p.check_current_lane = get_parameter<bool>(node, ns + "check_current_lane");
-    p.check_shift_side_lane = get_parameter<bool>(node, ns + "check_shift_side_lane");
-    p.check_other_side_lane = get_parameter<bool>(node, ns + "check_other_side_lane");
-    p.check_unavoidable_object = get_parameter<bool>(node, ns + "check_unavoidable_object");
-    p.check_other_object = get_parameter<bool>(node, ns + "check_other_object");
-    p.check_all_predicted_path = get_parameter<bool>(node, ns + "check_all_predicted_path");
-    p.safety_check_time_horizon = get_parameter<double>(node, ns + "time_horizon");
-    p.safety_check_time_resolution = get_parameter<double>(node, ns + "time_resolution");
+    p.enable_safety_check = getOrDeclareParameter<bool>(*node, ns + "enable");
+    p.check_current_lane = getOrDeclareParameter<bool>(*node, ns + "check_current_lane");
+    p.check_shift_side_lane = getOrDeclareParameter<bool>(*node, ns + "check_shift_side_lane");
+    p.check_other_side_lane = getOrDeclareParameter<bool>(*node, ns + "check_other_side_lane");
+    p.check_unavoidable_object =
+      getOrDeclareParameter<bool>(*node, ns + "check_unavoidable_object");
+    p.check_other_object = getOrDeclareParameter<bool>(*node, ns + "check_other_object");
+    p.check_all_predicted_path =
+      getOrDeclareParameter<bool>(*node, ns + "check_all_predicted_path");
+    p.safety_check_time_horizon = getOrDeclareParameter<double>(*node, ns + "time_horizon");
+    p.safety_check_time_resolution = getOrDeclareParameter<double>(*node, ns + "time_resolution");
     p.safety_check_backward_distance =
-      get_parameter<double>(node, ns + "safety_check_backward_distance");
+      getOrDeclareParameter<double>(*node, ns + "safety_check_backward_distance");
     p.hysteresis_factor_expand_rate =
-      get_parameter<double>(node, ns + "hysteresis_factor_expand_rate");
-    p.hysteresis_factor_safe_count = get_parameter<int>(node, ns + "hysteresis_factor_safe_count");
+      getOrDeclareParameter<double>(*node, ns + "hysteresis_factor_expand_rate");
+    p.hysteresis_factor_safe_count =
+      getOrDeclareParameter<int>(*node, ns + "hysteresis_factor_safe_count");
   }
 
   // safety check rss params
   {
     std::string ns = "avoidance.safety_check.";
     p.rss_params.longitudinal_distance_min_threshold =
-      get_parameter<double>(node, ns + "longitudinal_distance_min_threshold");
+      getOrDeclareParameter<double>(*node, ns + "longitudinal_distance_min_threshold");
     p.rss_params.longitudinal_velocity_delta_time =
-      get_parameter<double>(node, ns + "longitudinal_velocity_delta_time");
+      getOrDeclareParameter<double>(*node, ns + "longitudinal_velocity_delta_time");
     p.rss_params.front_vehicle_deceleration =
-      get_parameter<double>(node, ns + "expected_front_deceleration");
+      getOrDeclareParameter<double>(*node, ns + "expected_front_deceleration");
     p.rss_params.rear_vehicle_deceleration =
-      get_parameter<double>(node, ns + "expected_rear_deceleration");
+      getOrDeclareParameter<double>(*node, ns + "expected_rear_deceleration");
     p.rss_params.rear_vehicle_reaction_time =
-      get_parameter<double>(node, ns + "rear_vehicle_reaction_time");
+      getOrDeclareParameter<double>(*node, ns + "rear_vehicle_reaction_time");
     p.rss_params.rear_vehicle_safety_time_margin =
-      get_parameter<double>(node, ns + "rear_vehicle_safety_time_margin");
+      getOrDeclareParameter<double>(*node, ns + "rear_vehicle_safety_time_margin");
     p.rss_params.lateral_distance_max_threshold =
-      get_parameter<double>(node, ns + "lateral_distance_max_threshold");
+      getOrDeclareParameter<double>(*node, ns + "lateral_distance_max_threshold");
   }
 
   // avoidance maneuver (lateral)
   {
     std::string ns = "avoidance.avoidance.lateral.";
-    p.soft_road_shoulder_margin = get_parameter<double>(node, ns + "soft_road_shoulder_margin");
-    p.hard_road_shoulder_margin = get_parameter<double>(node, ns + "hard_road_shoulder_margin");
-    p.lateral_execution_threshold = get_parameter<double>(node, ns + "lateral_execution_threshold");
+    p.soft_road_shoulder_margin =
+      getOrDeclareParameter<double>(*node, ns + "soft_road_shoulder_margin");
+    p.hard_road_shoulder_margin =
+      getOrDeclareParameter<double>(*node, ns + "hard_road_shoulder_margin");
+    p.lateral_execution_threshold =
+      getOrDeclareParameter<double>(*node, ns + "lateral_execution_threshold");
     p.lateral_small_shift_threshold =
-      get_parameter<double>(node, ns + "lateral_small_shift_threshold");
+      getOrDeclareParameter<double>(*node, ns + "lateral_small_shift_threshold");
     p.lateral_avoid_check_threshold =
-      get_parameter<double>(node, ns + "lateral_avoid_check_threshold");
-    p.max_right_shift_length = get_parameter<double>(node, ns + "max_right_shift_length");
-    p.max_left_shift_length = get_parameter<double>(node, ns + "max_left_shift_length");
+      getOrDeclareParameter<double>(*node, ns + "lateral_avoid_check_threshold");
+    p.max_right_shift_length = getOrDeclareParameter<double>(*node, ns + "max_right_shift_length");
+    p.max_left_shift_length = getOrDeclareParameter<double>(*node, ns + "max_left_shift_length");
   }
 
   // avoidance maneuver (longitudinal)
   {
     std::string ns = "avoidance.avoidance.longitudinal.";
-    p.prepare_time = get_parameter<double>(node, ns + "prepare_time");
-    p.min_prepare_distance = get_parameter<double>(node, ns + "min_prepare_distance");
-    p.remain_buffer_distance = get_parameter<double>(node, ns + "remain_buffer_distance");
-    p.min_slow_down_speed = get_parameter<double>(node, ns + "min_slow_down_speed");
-    p.buf_slow_down_speed = get_parameter<double>(node, ns + "buf_slow_down_speed");
-    p.nominal_avoidance_speed = get_parameter<double>(node, ns + "nominal_avoidance_speed");
+    p.prepare_time = getOrDeclareParameter<double>(*node, ns + "prepare_time");
+    p.min_prepare_distance = getOrDeclareParameter<double>(*node, ns + "min_prepare_distance");
+    p.remain_buffer_distance = getOrDeclareParameter<double>(*node, ns + "remain_buffer_distance");
+    p.min_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "min_slow_down_speed");
+    p.buf_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "buf_slow_down_speed");
+    p.nominal_avoidance_speed =
+      getOrDeclareParameter<double>(*node, ns + "nominal_avoidance_speed");
   }
 
   // yield
   {
     std::string ns = "avoidance.yield.";
-    p.yield_velocity = get_parameter<double>(node, ns + "yield_velocity");
+    p.yield_velocity = getOrDeclareParameter<double>(*node, ns + "yield_velocity");
   }
 
   // stop
   {
     std::string ns = "avoidance.stop.";
-    p.stop_max_distance = get_parameter<double>(node, ns + "max_distance");
-    p.stop_buffer = get_parameter<double>(node, ns + "stop_buffer");
+    p.stop_max_distance = getOrDeclareParameter<double>(*node, ns + "max_distance");
+    p.stop_buffer = getOrDeclareParameter<double>(*node, ns + "stop_buffer");
   }
 
   // policy
   {
     std::string ns = "avoidance.policy.";
-    p.policy_deceleration = get_parameter<std::string>(node, ns + "deceleration");
-    p.policy_lateral_margin = get_parameter<std::string>(node, ns + "lateral_margin");
+    p.policy_deceleration = getOrDeclareParameter<std::string>(*node, ns + "deceleration");
+    p.policy_lateral_margin = getOrDeclareParameter<std::string>(*node, ns + "lateral_margin");
     p.use_shorten_margin_immediately =
-      get_parameter<bool>(node, ns + "use_shorten_margin_immediately");
+      getOrDeclareParameter<bool>(*node, ns + "use_shorten_margin_immediately");
 
     if (p.policy_deceleration != "best_effort" && p.policy_deceleration != "reliable") {
       throw std::domain_error("invalid policy. please select 'best_effort' or 'reliable'.");
@@ -227,20 +230,23 @@ AvoidanceModuleManager::AvoidanceModuleManager(
   // constraints (longitudinal)
   {
     std::string ns = "avoidance.constraints.longitudinal.";
-    p.nominal_deceleration = get_parameter<double>(node, ns + "nominal_deceleration");
-    p.nominal_jerk = get_parameter<double>(node, ns + "nominal_jerk");
-    p.max_deceleration = get_parameter<double>(node, ns + "max_deceleration");
-    p.max_jerk = get_parameter<double>(node, ns + "max_jerk");
-    p.max_acceleration = get_parameter<double>(node, ns + "max_acceleration");
+    p.nominal_deceleration = getOrDeclareParameter<double>(*node, ns + "nominal_deceleration");
+    p.nominal_jerk = getOrDeclareParameter<double>(*node, ns + "nominal_jerk");
+    p.max_deceleration = getOrDeclareParameter<double>(*node, ns + "max_deceleration");
+    p.max_jerk = getOrDeclareParameter<double>(*node, ns + "max_jerk");
+    p.max_acceleration = getOrDeclareParameter<double>(*node, ns + "max_acceleration");
   }
 
   // constraints (lateral)
   {
     std::string ns = "avoidance.constraints.lateral.";
-    p.velocity_map = get_parameter<std::vector<double>>(node, ns + "velocity");
-    p.lateral_max_accel_map = get_parameter<std::vector<double>>(node, ns + "max_accel_values");
-    p.lateral_min_jerk_map = get_parameter<std::vector<double>>(node, ns + "min_jerk_values");
-    p.lateral_max_jerk_map = get_parameter<std::vector<double>>(node, ns + "max_jerk_values");
+    p.velocity_map = getOrDeclareParameter<std::vector<double>>(*node, ns + "velocity");
+    p.lateral_max_accel_map =
+      getOrDeclareParameter<std::vector<double>>(*node, ns + "max_accel_values");
+    p.lateral_min_jerk_map =
+      getOrDeclareParameter<std::vector<double>>(*node, ns + "min_jerk_values");
+    p.lateral_max_jerk_map =
+      getOrDeclareParameter<std::vector<double>>(*node, ns + "max_jerk_values");
 
     if (p.velocity_map.empty()) {
       throw std::domain_error("invalid velocity map.");
@@ -263,15 +269,15 @@ AvoidanceModuleManager::AvoidanceModuleManager(
   {
     std::string ns = "avoidance.shift_line_pipeline.";
     p.quantize_filter_threshold =
-      get_parameter<double>(node, ns + "trim.quantize_filter_threshold");
+      getOrDeclareParameter<double>(*node, ns + "trim.quantize_filter_threshold");
     p.same_grad_filter_1_threshold =
-      get_parameter<double>(node, ns + "trim.same_grad_filter_1_threshold");
+      getOrDeclareParameter<double>(*node, ns + "trim.same_grad_filter_1_threshold");
     p.same_grad_filter_2_threshold =
-      get_parameter<double>(node, ns + "trim.same_grad_filter_2_threshold");
+      getOrDeclareParameter<double>(*node, ns + "trim.same_grad_filter_2_threshold");
     p.same_grad_filter_3_threshold =
-      get_parameter<double>(node, ns + "trim.same_grad_filter_3_threshold");
+      getOrDeclareParameter<double>(*node, ns + "trim.same_grad_filter_3_threshold");
     p.sharp_shift_filter_threshold =
-      get_parameter<double>(node, ns + "trim.sharp_shift_filter_threshold");
+      getOrDeclareParameter<double>(*node, ns + "trim.sharp_shift_filter_threshold");
   }
 
   parameters_ = std::make_shared<AvoidanceParameters>(p);
