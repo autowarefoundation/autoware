@@ -15,6 +15,7 @@
 #include "manager.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
+#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <tf2/utils.h>
 
@@ -29,22 +30,24 @@
 namespace behavior_velocity_planner
 {
 using lanelet::autoware::DetectionArea;
+using tier4_autoware_utils::getOrDeclareParameter;
 
 DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterfaceWithRTC(
     node, getModuleName(),
-    node.declare_parameter<bool>(std::string(getModuleName()) + ".enable_rtc"))
+    getOrDeclareParameter<bool>(node, std::string(getModuleName()) + ".enable_rtc"))
 {
   const std::string ns(getModuleName());
-  planner_param_.stop_margin = node.declare_parameter<double>(ns + ".stop_margin");
-  planner_param_.use_dead_line = node.declare_parameter<bool>(ns + ".use_dead_line");
-  planner_param_.dead_line_margin = node.declare_parameter<double>(ns + ".dead_line_margin");
-  planner_param_.use_pass_judge_line = node.declare_parameter<bool>(ns + ".use_pass_judge_line");
-  planner_param_.state_clear_time = node.declare_parameter<double>(ns + ".state_clear_time");
+  planner_param_.stop_margin = getOrDeclareParameter<double>(node, ns + ".stop_margin");
+  planner_param_.use_dead_line = getOrDeclareParameter<bool>(node, ns + ".use_dead_line");
+  planner_param_.dead_line_margin = getOrDeclareParameter<double>(node, ns + ".dead_line_margin");
+  planner_param_.use_pass_judge_line =
+    getOrDeclareParameter<bool>(node, ns + ".use_pass_judge_line");
+  planner_param_.state_clear_time = getOrDeclareParameter<double>(node, ns + ".state_clear_time");
   planner_param_.hold_stop_margin_distance =
-    node.declare_parameter<double>(ns + ".hold_stop_margin_distance");
+    getOrDeclareParameter<double>(node, ns + ".hold_stop_margin_distance");
   planner_param_.distance_to_judge_over_stop_line =
-    node.declare_parameter<double>(ns + ".distance_to_judge_over_stop_line");
+    getOrDeclareParameter<double>(node, ns + ".distance_to_judge_over_stop_line");
 }
 
 void DetectionAreaModuleManager::launchNewModules(
