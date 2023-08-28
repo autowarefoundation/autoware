@@ -33,12 +33,12 @@ import yaml
 
 logger = get_logger(__name__)
 
-YAML_FILE_PATH = "test/data/projection_info_mgrs.yaml"
+YAML_FILE_PATH = "test/data/map_projector_info_mgrs.yaml"
 
 
 @pytest.mark.launch_test
 def generate_test_description():
-    map_projection_info_path = os.path.join(
+    map_projector_info_path = os.path.join(
         get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
     )
 
@@ -48,7 +48,7 @@ def generate_test_description():
         output="screen",
         parameters=[
             {
-                "map_projector_info_path": map_projection_info_path,
+                "map_projector_info_path": map_projector_info_path,
                 "lanelet2_map_path": "",
                 "use_local_projector": False,
             },
@@ -121,10 +121,10 @@ class TestLoadMGRSFromYaml(unittest.TestCase):
         )
 
         # Load the yaml file directly
-        map_projection_info_path = os.path.join(
+        map_projector_info_path = os.path.join(
             get_package_share_directory("map_projection_loader"), YAML_FILE_PATH
         )
-        with open(map_projection_info_path) as f:
+        with open(map_projector_info_path) as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)
 
         # Test if message received
