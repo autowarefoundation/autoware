@@ -17,6 +17,7 @@
 #include "scene_occlusion_spot.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
@@ -28,6 +29,7 @@ namespace behavior_velocity_planner
 {
 using occlusion_spot_utils::DETECTION_METHOD;
 using occlusion_spot_utils::PASS_JUDGE;
+using tier4_autoware_utils::getOrDeclareParameter;
 
 OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -36,7 +38,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   auto & pp = planner_param_;
   // for detection type
   {
-    const std::string method = node.declare_parameter<std::string>(ns + ".detection_method");
+    const std::string method = getOrDeclareParameter<std::string>(node, ns + ".detection_method");
     if (method == "occupancy_grid") {  // module id 0
       pp.detection_method = DETECTION_METHOD::OCCUPANCY_GRID;
       module_id_ = DETECTION_METHOD::OCCUPANCY_GRID;
@@ -50,7 +52,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   }
   // for passable judgement
   {
-    const std::string pass_judge = node.declare_parameter<std::string>(ns + ".pass_judge");
+    const std::string pass_judge = getOrDeclareParameter<std::string>(node, ns + ".pass_judge");
     if (pass_judge == "current_velocity") {
       pp.pass_judge = PASS_JUDGE::CURRENT_VELOCITY;
     } else if (pass_judge == "smooth_velocity") {
@@ -60,48 +62,52 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
         "[behavior_velocity]: occlusion spot pass judge method has invalid argument"};
     }
   }
-  pp.use_object_info = node.declare_parameter<bool>(ns + ".use_object_info");
-  pp.use_moving_object_ray_cast = node.declare_parameter<bool>(ns + ".use_moving_object_ray_cast");
-  pp.use_partition_lanelet = node.declare_parameter<bool>(ns + ".use_partition_lanelet");
-  pp.pedestrian_vel = node.declare_parameter<double>(ns + ".pedestrian_vel");
-  pp.pedestrian_radius = node.declare_parameter<double>(ns + ".pedestrian_radius");
+  pp.use_object_info = getOrDeclareParameter<bool>(node, ns + ".use_object_info");
+  pp.use_moving_object_ray_cast =
+    getOrDeclareParameter<bool>(node, ns + ".use_moving_object_ray_cast");
+  pp.use_partition_lanelet = getOrDeclareParameter<bool>(node, ns + ".use_partition_lanelet");
+  pp.pedestrian_vel = getOrDeclareParameter<double>(node, ns + ".pedestrian_vel");
+  pp.pedestrian_radius = getOrDeclareParameter<double>(node, ns + ".pedestrian_radius");
 
   // debug
-  pp.is_show_occlusion = node.declare_parameter<bool>(ns + ".debug.is_show_occlusion");
-  pp.is_show_cv_window = node.declare_parameter<bool>(ns + ".debug.is_show_cv_window");
-  pp.is_show_processing_time = node.declare_parameter<bool>(ns + ".debug.is_show_processing_time");
+  pp.is_show_occlusion = getOrDeclareParameter<bool>(node, ns + ".debug.is_show_occlusion");
+  pp.is_show_cv_window = getOrDeclareParameter<bool>(node, ns + ".debug.is_show_cv_window");
+  pp.is_show_processing_time =
+    getOrDeclareParameter<bool>(node, ns + ".debug.is_show_processing_time");
 
   // threshold
   pp.detection_area_offset =
-    node.declare_parameter<double>(ns + ".threshold.detection_area_offset");
+    getOrDeclareParameter<double>(node, ns + ".threshold.detection_area_offset");
   pp.detection_area_length =
-    node.declare_parameter<double>(ns + ".threshold.detection_area_length");
-  pp.stuck_vehicle_vel = node.declare_parameter<double>(ns + ".threshold.stuck_vehicle_vel");
-  pp.lateral_distance_thr = node.declare_parameter<double>(ns + ".threshold.lateral_distance");
-  pp.dist_thr = node.declare_parameter<double>(ns + ".threshold.search_dist");
-  pp.angle_thr = node.declare_parameter<double>(ns + ".threshold.search_angle");
+    getOrDeclareParameter<double>(node, ns + ".threshold.detection_area_length");
+  pp.stuck_vehicle_vel = getOrDeclareParameter<double>(node, ns + ".threshold.stuck_vehicle_vel");
+  pp.lateral_distance_thr = getOrDeclareParameter<double>(node, ns + ".threshold.lateral_distance");
+  pp.dist_thr = getOrDeclareParameter<double>(node, ns + ".threshold.search_dist");
+  pp.angle_thr = getOrDeclareParameter<double>(node, ns + ".threshold.search_angle");
 
   // ego additional velocity config
-  pp.v.safety_ratio = node.declare_parameter<double>(ns + ".motion.safety_ratio");
-  pp.v.safe_margin = node.declare_parameter<double>(ns + ".motion.safe_margin");
-  pp.v.max_slow_down_jerk = node.declare_parameter<double>(ns + ".motion.max_slow_down_jerk");
-  pp.v.max_slow_down_accel = node.declare_parameter<double>(ns + ".motion.max_slow_down_accel");
-  pp.v.non_effective_jerk = node.declare_parameter<double>(ns + ".motion.non_effective_jerk");
+  pp.v.safety_ratio = getOrDeclareParameter<double>(node, ns + ".motion.safety_ratio");
+  pp.v.safe_margin = getOrDeclareParameter<double>(node, ns + ".motion.safe_margin");
+  pp.v.max_slow_down_jerk = getOrDeclareParameter<double>(node, ns + ".motion.max_slow_down_jerk");
+  pp.v.max_slow_down_accel =
+    getOrDeclareParameter<double>(node, ns + ".motion.max_slow_down_accel");
+  pp.v.non_effective_jerk = getOrDeclareParameter<double>(node, ns + ".motion.non_effective_jerk");
   pp.v.non_effective_accel =
-    node.declare_parameter<double>(ns + ".motion.non_effective_acceleration");
-  pp.v.min_allowed_velocity = node.declare_parameter<double>(ns + ".motion.min_allowed_velocity");
+    getOrDeclareParameter<double>(node, ns + ".motion.non_effective_acceleration");
+  pp.v.min_allowed_velocity =
+    getOrDeclareParameter<double>(node, ns + ".motion.min_allowed_velocity");
   // detection_area param
   pp.detection_area.min_occlusion_spot_size =
-    node.declare_parameter<double>(ns + ".detection_area.min_occlusion_spot_size");
+    getOrDeclareParameter<double>(node, ns + ".detection_area.min_occlusion_spot_size");
   pp.detection_area.min_longitudinal_offset =
-    node.declare_parameter<double>(ns + ".detection_area.min_longitudinal_offset");
+    getOrDeclareParameter<double>(node, ns + ".detection_area.min_longitudinal_offset");
   pp.detection_area.max_lateral_distance =
-    node.declare_parameter<double>(ns + ".detection_area.max_lateral_distance");
+    getOrDeclareParameter<double>(node, ns + ".detection_area.max_lateral_distance");
   pp.detection_area.slice_length =
-    node.declare_parameter<double>(ns + ".detection_area.slice_length");
+    getOrDeclareParameter<double>(node, ns + ".detection_area.slice_length");
   // occupancy grid param
-  pp.grid.free_space_max = node.declare_parameter<int>(ns + ".grid.free_space_max");
-  pp.grid.occupied_min = node.declare_parameter<int>(ns + ".grid.occupied_min");
+  pp.grid.free_space_max = getOrDeclareParameter<int>(node, ns + ".grid.free_space_max");
+  pp.grid.occupied_min = getOrDeclareParameter<int>(node, ns + ".grid.occupied_min");
 
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
   pp.baselink_to_front = vehicle_info.max_longitudinal_offset_m;
