@@ -1,8 +1,25 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- Interface param -->
+  <arg name="output/objects" default="objects"/>
+
+  <!-- LiDAR param -->
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
-  <arg name="output/objects" default="objects"/>
+  <arg name="container_name" default="pointcloud_container"/>
+
+  <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
+  <arg name="score_threshold" default="0.35"/>
+
+  <arg name="use_pointcloud_map" default="true" description="use pointcloud map in detection"/>
+  <arg name="use_downsample_pointcloud" default="true" description="use downsample pointcloud in perception"/>
+  <arg name="use_object_filter" default="true" description="use object filter"/>
+  <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
+  <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
+  <arg name="remove_unknown" default="true"/>
+  <arg name="trust_distance" default="30.0"/>
+
+  <!-- Camera param -->
   <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
   <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
   <arg name="detection_rois0" default="/perception/object_recognition/detection/rois0" description="detection rois output topic name"/>
@@ -28,16 +45,6 @@
   <arg name="camera_info7" default="/camera_info7"/>
   <arg name="detection_rois7" default="/perception/object_recognition/detection/rois7"/>
   <arg name="image_number" default="1" description="choose image raw number(1-8)"/>
-  <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
-  <arg name="use_pointcloud_map" default="true" description="use pointcloud map in detection"/>
-  <arg name="use_downsample_pointcloud" default="true" description="use downsample pointcloud in perception"/>
-  <arg name="use_object_filter" default="true" description="use object filter"/>
-  <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
-  <arg name="container_name" default="pointcloud_container"/>
-  <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
-  <arg name="score_threshold" default="0.35"/>
-  <arg name="remove_unknown" default="true"/>
-  <arg name="trust_distance" default="30.0"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
