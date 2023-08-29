@@ -17,6 +17,7 @@
   <depend>eigen</depend>
   <depend>kalman_filter</depend>
   <depend>mussp</depend>
+  <depend>nlohmann-json-dev</depend>
   <depend>object_recognition_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
