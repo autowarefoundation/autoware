@@ -146,7 +146,7 @@ void VehicleNode::publish_kinematics()
   vehicle_kinematics.twist.header = kinematic_state_msgs_->header;
   vehicle_kinematics.twist.header.frame_id = kinematic_state_msgs_->child_frame_id;
   vehicle_kinematics.twist.twist = kinematic_state_msgs_->twist;
-  if (map_projector_info_->projector_type == "MGRS") {
+  if (map_projector_info_->projector_type == MapProjectorInfo::MGRS) {
     lanelet::GPSPoint projected_gps_point = lanelet::projection::MGRSProjector::reverse(
       toBasicPoint3dPt(kinematic_state_msgs_->pose.pose.position), map_projector_info_->mgrs_grid);
     vehicle_kinematics.geographic_pose.header = kinematic_state_msgs_->header;
@@ -154,7 +154,7 @@ void VehicleNode::publish_kinematics()
     vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.lat;
     vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.lon;
     vehicle_kinematics.geographic_pose.position.altitude = projected_gps_point.ele;
-  } else if (map_projector_info_->projector_type == "LocalCartesianUTM") {
+  } else if (map_projector_info_->projector_type == MapProjectorInfo::LOCAL_CARTESIAN_UTM) {
     lanelet::GPSPoint position{
       map_projector_info_->map_origin.latitude, map_projector_info_->map_origin.longitude};
     lanelet::Origin origin{position};

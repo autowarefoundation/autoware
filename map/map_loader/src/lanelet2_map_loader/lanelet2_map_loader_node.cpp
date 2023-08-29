@@ -92,13 +92,14 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
   const double & map_origin_lat, const double & map_origin_lon)
 {
   lanelet::ErrorMessages errors{};
-  if (lanelet2_map_projector_type == "MGRS") {
+  if (lanelet2_map_projector_type == tier4_map_msgs::msg::MapProjectorInfo::MGRS) {
     lanelet::projection::MGRSProjector projector{};
     const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
     if (errors.empty()) {
       return map;
     }
-  } else if (lanelet2_map_projector_type == "LocalCartesianUTM") {
+  } else if (
+    lanelet2_map_projector_type == tier4_map_msgs::msg::MapProjectorInfo::LOCAL_CARTESIAN_UTM) {
     lanelet::GPSPoint position{map_origin_lat, map_origin_lon};
     lanelet::Origin origin{position};
     lanelet::projection::UtmProjector projector{origin};
@@ -106,7 +107,7 @@ lanelet::LaneletMapPtr Lanelet2MapLoaderNode::load_map(
     if (errors.empty()) {
       return map;
     }
-  } else if (lanelet2_map_projector_type == "local") {
+  } else if (lanelet2_map_projector_type == tier4_map_msgs::msg::MapProjectorInfo::LOCAL) {
     // Use MGRSProjector as parser
     lanelet::projection::MGRSProjector projector{};
     const lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);

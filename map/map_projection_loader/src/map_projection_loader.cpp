@@ -28,14 +28,14 @@ tier4_map_msgs::msg::MapProjectorInfo load_info_from_yaml(const std::string & fi
 
   tier4_map_msgs::msg::MapProjectorInfo msg;
   msg.projector_type = data["projector_type"].as<std::string>();
-  if (msg.projector_type == "MGRS") {
+  if (msg.projector_type == tier4_map_msgs::msg::MapProjectorInfo::MGRS) {
     msg.vertical_datum = data["vertical_datum"].as<std::string>();
     msg.mgrs_grid = data["mgrs_grid"].as<std::string>();
-  } else if (msg.projector_type == "LocalCartesianUTM") {
+  } else if (msg.projector_type == tier4_map_msgs::msg::MapProjectorInfo::LOCAL_CARTESIAN_UTM) {
     msg.vertical_datum = data["vertical_datum"].as<std::string>();
     msg.map_origin.latitude = data["map_origin"]["latitude"].as<double>();
     msg.map_origin.longitude = data["map_origin"]["longitude"].as<double>();
-  } else if (msg.projector_type == "local") {
+  } else if (msg.projector_type == tier4_map_msgs::msg::MapProjectorInfo::LOCAL) {
     ;  // do nothing
   } else {
     throw std::runtime_error(
