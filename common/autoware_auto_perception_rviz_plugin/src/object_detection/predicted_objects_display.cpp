@@ -15,6 +15,7 @@
 #include <object_detection/predicted_objects_display.hpp>
 
 #include <memory>
+#include <set>
 
 namespace autoware
 {
@@ -130,7 +131,7 @@ std::vector<visualization_msgs::msg::Marker::SharedPtr> PredictedObjectsDisplay:
       auto acceleration_text_marker_ptr = acceleration_text_marker.value();
       acceleration_text_marker_ptr->header = msg->header;
       acceleration_text_marker_ptr->id = uuid_to_marker_id(object.object_id);
-      add_marker(acceleration_text_marker_ptr);
+      markers.push_back(acceleration_text_marker_ptr);
     }
 
     // Get marker for twist
@@ -195,11 +196,19 @@ void PredictedObjectsDisplay::update(float wall_dt, float ros_dt)
   std::unique_lock<std::mutex> lock(mutex);
 
   if (!markers.empty()) {
-    clear_markers();
-
+    std::set new_marker_ids = std::set<rviz_default_plugins::displays::MarkerID>();
     for (const auto & marker : markers) {
+      rviz_default_plugins::displays::MarkerID marker_id =
+        rviz_default_plugins::displays::MarkerID(marker->ns, marker->id);
       add_marker(marker);
+      new_marker_ids.insert(marker_id);
     }
+    for (auto itr = existing_marker_ids.begin(); itr != existing_marker_ids.end(); itr++) {
+      if (new_marker_ids.find(*itr) == new_marker_ids.end()) {
+        deleteMarker(*itr);
+      }
+    }
+    existing_marker_ids = new_marker_ids;
 
     markers.clear();
   }

@@ -24,6 +24,7 @@
 
 #include <condition_variable>
 #include <list>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -112,6 +113,7 @@ private:
   std::mutex mutex;
   std::condition_variable condition;
   std::vector<visualization_msgs::msg::Marker::SharedPtr> markers;
+  std::set<rviz_default_plugins::displays::MarkerID> existing_marker_ids;
 };
 
 }  // namespace object_detection
