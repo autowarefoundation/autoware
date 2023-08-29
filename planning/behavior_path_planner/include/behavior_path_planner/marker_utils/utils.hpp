@@ -52,21 +52,6 @@ using tier4_autoware_utils::Polygon2d;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 
-constexpr std::array<std::array<float, 3>, 10> colorsList()
-{
-  constexpr std::array<float, 3> red = {1., 0., 0.};
-  constexpr std::array<float, 3> green = {0., 1., 0.};
-  constexpr std::array<float, 3> blue = {0., 0., 1.};
-  constexpr std::array<float, 3> yellow = {1., 1., 0.};
-  constexpr std::array<float, 3> aqua = {0., 1., 1.};
-  constexpr std::array<float, 3> magenta = {1., 0., 1.};
-  constexpr std::array<float, 3> medium_orchid = {0.729, 0.333, 0.827};
-  constexpr std::array<float, 3> light_pink = {1, 0.713, 0.756};
-  constexpr std::array<float, 3> light_yellow = {1, 1, 0.878};
-  constexpr std::array<float, 3> light_steel_blue = {0.690, 0.768, 0.870};
-  return {red,     green,         blue,       yellow,       aqua,
-          magenta, medium_orchid, light_pink, light_yellow, light_steel_blue};
-}
 inline int64_t bitShift(int64_t original_id)
 {
   return original_id << (sizeof(int32_t) * 8 / 2);

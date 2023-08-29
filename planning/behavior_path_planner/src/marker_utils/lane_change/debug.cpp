@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "behavior_path_planner/marker_utils/colors.hpp"
 #include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
@@ -33,14 +34,13 @@ namespace marker_utils::lane_change_markers
 {
 using geometry_msgs::msg::Point;
 using tier4_autoware_utils::createDefaultMarker;
-using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 
 MarkerArray showObjectInfo(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)
 {
   Marker obj_marker = createDefaultMarker(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::TEXT_VIEW_FACING,
-    createMarkerScale(0.5, 0.5, 0.5), createMarkerColor(0.0, 1.0, 1.0, 0.999));
+    createMarkerScale(0.5, 0.5, 0.5), colors::aqua());
 
   MarkerArray marker_array;
   int32_t id{0};
@@ -80,7 +80,7 @@ MarkerArray showAllValidLaneChangePath(const std::vector<LaneChangePath> & lanes
   int32_t id{0};
   const auto current_time{rclcpp::Clock{RCL_ROS_TIME}.now()};
 
-  constexpr auto colors = colorsList();
+  const auto colors = colors::colors_list();
   const auto loop_size = std::min(lanes.size(), colors.size());
   marker_array.markers.reserve(loop_size);
 
@@ -91,8 +91,7 @@ MarkerArray showAllValidLaneChangePath(const std::vector<LaneChangePath> & lanes
 
     const auto & color = colors.at(idx);
     Marker marker = createDefaultMarker(
-      "map", current_time, ns, ++id, Marker::LINE_STRIP, createMarkerScale(0.1, 0.1, 0.0),
-      createMarkerColor(color[0], color[1], color[2], 0.9));
+      "map", current_time, ns, ++id, Marker::LINE_STRIP, createMarkerScale(0.1, 0.1, 0.0), color);
     marker.points.reserve(lanes.at(idx).path.points.size());
 
     for (const auto & point : lanes.at(idx).path.points) {
@@ -114,7 +113,7 @@ MarkerArray showLerpedPose(const CollisionCheckDebugMap & obj_debug_vec, std::st
   for (const auto & [uuid, info] : obj_debug_vec) {
     Marker marker = createDefaultMarker(
       "map", current_time, ns, ++id, Marker::POINTS, createMarkerScale(0.3, 0.3, 0.3),
-      createMarkerColor(1.0, 0.3, 1.0, 0.9));
+      colors::magenta());
     marker.points.reserve(info.lerped_path.size());
 
     for (const auto & point : info.lerped_path) {
@@ -137,17 +136,15 @@ MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::strin
   const auto now = rclcpp::Clock{RCL_ROS_TIME}.now();
   Marker ego_marker = createDefaultMarker(
     "map", now, ns, id, Marker::LINE_STRIP, createMarkerScale(scale_val, scale_val, scale_val),
-    createMarkerColor(1.0, 1.0, 1.0, 0.9));
+    colors::green());
   Marker obj_marker = ego_marker;
 
   auto text_marker = createDefaultMarker(
     "map", now, ns + "_text", id, visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
-    createMarkerScale(1.5, 1.5, 1.5), createMarkerColor(1.0, 1.0, 1.0, 1.0));
+    createMarkerScale(1.5, 1.5, 1.5), colors::white());
 
   MarkerArray marker_array;
 
-  constexpr auto red_color = colorsList().at(0);
-  constexpr auto green_color = colorsList().at(1);
   const auto reserve_size = obj_debug_vec.size();
 
   marker_array.markers.reserve(reserve_size * 4);
@@ -155,11 +152,11 @@ MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::strin
   int32_t idx = {0};
 
   for (const auto & [uuid, info] : obj_debug_vec) {
-    const auto & color = info.is_safe ? green_color : red_color;
+    const auto color = info.is_safe ? colors::green() : colors::red();
     const auto & ego_polygon = info.extended_ego_polygon.outer();
     const auto poly_z = info.current_pose.position.z;  // temporally
     ego_marker.id = ++id;
-    ego_marker.color = createMarkerColor(color[0], color[1], color[2], 0.8);
+    ego_marker.color = color;
     ego_marker.points.reserve(ego_polygon.size());
     for (const auto & p : ego_polygon) {
       ego_marker.points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), poly_z));
@@ -176,7 +173,7 @@ MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::strin
 
     const auto & obj_polygon = info.extended_obj_polygon.outer();
     obj_marker.id = ++id;
-    obj_marker.color = createMarkerColor(color[0], color[1], color[2], 0.8);
+    obj_marker.color = color;
     obj_marker.points.reserve(obj_polygon.size());
     for (const auto & p : obj_polygon) {
       obj_marker.points.push_back(tier4_autoware_utils::createPoint(p.x(), p.y(), poly_z));
@@ -196,7 +193,7 @@ MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::strin
 
 MarkerArray showPolygonPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)
 {
-  constexpr auto colors = colorsList();
+  const auto colors = colors::colors_list();
   const auto loop_size = std::min(colors.size(), obj_debug_vec.size());
   MarkerArray marker_array;
   int32_t id{0};
@@ -207,8 +204,7 @@ MarkerArray showPolygonPose(const CollisionCheckDebugMap & obj_debug_vec, std::s
   for (const auto & [uuid, info] : obj_debug_vec) {
     const auto & color = colors.at(idx);
     Marker marker = createDefaultMarker(
-      "map", current_time, ns, ++id, Marker::POINTS, createMarkerScale(0.2, 0.2, 0.2),
-      createMarkerColor(color[0], color[1], color[2], 0.999));
+      "map", current_time, ns, ++id, Marker::POINTS, createMarkerScale(0.2, 0.2, 0.2), color);
     marker.points.reserve(2);
     marker.points.push_back(info.expected_ego_pose.position);
     marker.points.push_back(info.expected_obj_pose.position);
@@ -232,7 +228,7 @@ MarkerArray createLaneChangingVirtualWallMarker(
   {
     auto wall_marker = createDefaultMarker(
       "map", now, ns + "virtual_wall", id, visualization_msgs::msg::Marker::CUBE,
-      createMarkerScale(0.1, 5.0, 2.0), createMarkerColor(0.0, 1.0, 0.0, 0.5));
+      createMarkerScale(0.1, 5.0, 2.0), colors::green());
     wall_marker.pose = lane_changing_pose;
     wall_marker.pose.position.z += 1.0;
     marker_array.markers.push_back(wall_marker);
@@ -241,7 +237,7 @@ MarkerArray createLaneChangingVirtualWallMarker(
   {
     auto text_marker = createDefaultMarker(
       "map", now, ns + "_text", id, visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
-      createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 1.0));
+      createMarkerScale(0.0, 0.0, 1.0), colors::white());
     text_marker.pose = lane_changing_pose;
     text_marker.pose.position.z += 2.0;
     text_marker.text = module_name;
