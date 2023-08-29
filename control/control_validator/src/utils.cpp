@@ -152,8 +152,8 @@ double calcMaxLateralDistance(
     // find nearest segment
     const size_t nearest_segment_idx =
       motion_utils::findNearestSegmentIndex(reference_trajectory.points, p0);
-    double temp_dist =
-      motion_utils::calcLateralOffset(reference_trajectory.points, p0, nearest_segment_idx);
+    const double temp_dist = std::abs(
+      motion_utils::calcLateralOffset(reference_trajectory.points, p0, nearest_segment_idx));
     if (temp_dist > max_dist) {
       max_dist = temp_dist;
     }
