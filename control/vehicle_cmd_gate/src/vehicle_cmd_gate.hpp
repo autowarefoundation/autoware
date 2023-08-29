@@ -44,6 +44,7 @@
 #include <tier4_external_api_msgs/srv/set_emergency.hpp>
 #include <tier4_system_msgs/msg/mrm_behavior_status.hpp>
 #include <tier4_vehicle_msgs/msg/vehicle_emergency_stamped.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <memory>
 
@@ -66,6 +67,7 @@ using tier4_external_api_msgs::srv::SetEmergency;
 using tier4_system_msgs::msg::MrmBehaviorStatus;
 using tier4_vehicle_msgs::msg::VehicleEmergencyStamped;
 using vehicle_cmd_gate::msg::IsFilterActivated;
+using visualization_msgs::msg::MarkerArray;
 
 using diagnostic_msgs::msg::DiagnosticStatus;
 using nav_msgs::msg::Odometry;
@@ -102,6 +104,7 @@ private:
   rclcpp::Publisher<EngageMsg>::SharedPtr engage_pub_;
   rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_pub_;
   rclcpp::Publisher<IsFilterActivated>::SharedPtr is_filter_activated_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr filter_activated_marker_pub_;
 
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
@@ -229,6 +232,9 @@ private:
   // stop checker
   std::unique_ptr<VehicleStopChecker> vehicle_stop_checker_;
   double stop_check_duration_;
+
+  // debug
+  MarkerArray createMarkerArray(const IsFilterActivated & filter_activated);
 };
 
 }  // namespace vehicle_cmd_gate
