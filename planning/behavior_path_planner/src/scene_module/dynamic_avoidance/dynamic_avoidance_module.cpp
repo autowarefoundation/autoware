@@ -949,11 +949,19 @@ DynamicAvoidanceModule::calcObjectPathBasedDynamicObstaclePolygon(
   // calculate left and right bound
   std::vector<geometry_msgs::msg::Point> obj_left_bound_points;
   std::vector<geometry_msgs::msg::Point> obj_right_bound_points;
+  const double obj_path_length = motion_utils::calcArcLength(obj_path.path);
   for (size_t i = 0; i < obj_path.path.size(); ++i) {
     const double lon_offset = [&]() {
-      if (i == 0) return -object.shape.dimensions.x / 2.0 - parameters_->lat_offset_from_obstacle;
+      if (i == 0)
+        return -object.shape.dimensions.x / 2.0 -
+               std::max(
+                 parameters_->min_obj_path_based_lon_polygon_margin,
+                 parameters_->lat_offset_from_obstacle);
       if (i == obj_path.path.size() - 1)
-        return object.shape.dimensions.x / 2.0 + parameters_->lat_offset_from_obstacle;
+        return object.shape.dimensions.x / 2.0 +
+               std::max(
+                 parameters_->min_obj_path_based_lon_polygon_margin - obj_path_length,
+                 parameters_->lat_offset_from_obstacle);
       return 0.0;
     }();
 

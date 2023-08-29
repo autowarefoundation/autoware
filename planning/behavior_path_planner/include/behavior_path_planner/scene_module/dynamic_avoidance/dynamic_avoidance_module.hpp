@@ -75,6 +75,7 @@ struct DynamicAvoidanceParameters
 
   // drivable area generation
   std::string polygon_generation_method{};
+  double min_obj_path_based_lon_polygon_margin{0.0};
   double lat_offset_from_obstacle{0.0};
   double max_lat_offset_to_avoid{0.0};
   double max_time_for_lat_shift{0.0};

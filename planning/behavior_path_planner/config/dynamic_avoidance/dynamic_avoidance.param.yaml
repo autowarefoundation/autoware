@@ -2,7 +2,7 @@
   ros__parameters:
     dynamic_avoidance:
       common:
-        enable_debug_info: true
+        enable_debug_info: false
         use_hatched_road_markings: true
 
       # avoidance is performed for the object type with true
@@ -42,9 +42,13 @@
           max_object_angle: 0.785
 
       drivable_area_generation:
+        polygon_generation_method: "object_path_base" # choose "ego_path_base" and "object_path_base"
+        object_path_base:
+          min_longitudinal_polygon_margin: 3.0 # [m]
+
         lat_offset_from_obstacle: 0.8 # [m]
         max_lat_offset_to_avoid: 0.5 # [m]
-        max_time_for_object_lat_shift: 2.0 # [s]
+        max_time_for_object_lat_shift: 0.0 # [s]
         lpf_gain_for_lat_avoid_to_offset: 0.9 # [-]
 
         # for same directional object
