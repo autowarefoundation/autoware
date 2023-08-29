@@ -419,8 +419,7 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
   // Check pause. Place this check after all other checks as it needs the final output.
   adapi_pause_->update(filtered_commands.control);
   if (adapi_pause_->is_paused()) {
-    filtered_commands.control.longitudinal.speed = 0.0;
-    filtered_commands.control.longitudinal.acceleration = stop_hold_acceleration_;
+    filtered_commands.control = createStopControlCmd();
   }
 
   // Check if command filtering option is enable
