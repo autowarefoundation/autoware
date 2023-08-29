@@ -97,7 +97,7 @@ RadarObjectFusionToDetectedObjectNode::RadarObjectFusionToDetectedObjectNode(
 
   using std::placeholders::_1;
   using std::placeholders::_2;
-  sync_ptr_ = std::make_shared<Sync>(SyncPolicy(10), sub_object_, sub_radar_);
+  sync_ptr_ = std::make_shared<Sync>(SyncPolicy(20), sub_object_, sub_radar_);
   sync_ptr_->registerCallback(
     std::bind(&RadarObjectFusionToDetectedObjectNode::onData, this, _1, _2));
 
