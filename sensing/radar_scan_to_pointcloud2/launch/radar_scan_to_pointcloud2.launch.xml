@@ -2,14 +2,13 @@
   <arg name="input/radar" default="input/radar"/>
   <arg name="output/amplitude_pointcloud" default="output/amplitude_pointcloud"/>
   <arg name="output/doppler_pointcloud" default="output/doppler_pointcloud"/>
-  <arg name="publish_amplitude_pointcloud" default="true"/>
-  <arg name="publish_doppler_pointcloud" default="false"/>
+  <!-- Parameter -->
+  <arg name="param_file" default="$(find-pkg-share radar_scan_to_pointcloud2)/config/radar_scan_to_pointcloud2.param.yaml"/>
 
   <node pkg="radar_scan_to_pointcloud2" exec="radar_scan_to_pointcloud2_node" name="radar_scan_to_pointcloud2" output="screen">
     <remap from="~/input/radar" to="$(var input/radar)"/>
     <remap from="~/output/amplitude_pointcloud" to="$(var output/amplitude_pointcloud)"/>
     <remap from="~/output/doppler_pointcloud" to="$(var output/doppler_pointcloud)"/>
-    <param name="publish_amplitude_pointcloud" value="$(var publish_amplitude_pointcloud)"/>
-    <param name="publish_doppler_pointcloud" value="$(var publish_doppler_pointcloud)"/>
+    <param from="$(var param_file)"/>
   </node>
 </launch>

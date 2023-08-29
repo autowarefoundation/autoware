@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    publish_amplitude_pointcloud: true
+    publish_doppler_pointcloud: false
