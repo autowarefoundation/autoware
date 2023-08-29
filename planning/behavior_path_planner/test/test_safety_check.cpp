@@ -27,10 +27,10 @@
 constexpr double epsilon = 1e-6;
 
 using autoware_auto_perception_msgs::msg::Shape;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using marker_utils::CollisionCheckDebug;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 

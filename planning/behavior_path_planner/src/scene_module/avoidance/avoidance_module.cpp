@@ -45,7 +45,7 @@
 namespace behavior_path_planner
 {
 
-using marker_utils::CollisionCheckDebug;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;

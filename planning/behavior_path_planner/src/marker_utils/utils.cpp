@@ -14,6 +14,7 @@
 
 #include "behavior_path_planner/marker_utils/utils.hpp"
 
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
@@ -23,6 +24,7 @@ namespace marker_utils
 {
 using behavior_path_planner::ShiftLine;
 using behavior_path_planner::utils::calcPathArcLengthArray;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
@@ -31,6 +33,27 @@ using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 using visualization_msgs::msg::Marker;
+
+CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj)
+{
+  CollisionCheckDebug debug;
+  debug.current_pose = obj.initial_pose.pose;
+  debug.current_twist = obj.initial_twist.twist;
+  return {tier4_autoware_utils::toHexString(obj.uuid), debug};
+}
+
+void updateCollisionCheckDebugMap(
+  CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe)
+{
+  auto & [key, element] = object_debug;
+  element.is_safe = is_safe;
+  if (debug_map.find(key) != debug_map.end()) {
+    debug_map[key] = element;
+    return;
+  }
+
+  debug_map.insert(object_debug);
+}
 
 MarkerArray createPoseMarkerArray(
   const Pose & pose, std::string && ns, const int32_t & id, const float & r, const float & g,

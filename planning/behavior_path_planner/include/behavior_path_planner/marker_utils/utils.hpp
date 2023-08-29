@@ -15,6 +15,7 @@
 #define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__UTILS_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
@@ -29,7 +30,6 @@
 #include <lanelet2_core/geometry/Lanelet.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace marker_utils
@@ -39,6 +39,9 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::DrivableLanes;
 using behavior_path_planner::ShiftLineArray;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugPair;
+using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;
 using geometry_msgs::msg::Pose;
@@ -48,27 +51,6 @@ using std_msgs::msg::ColorRGBA;
 using tier4_autoware_utils::Polygon2d;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
-
-struct CollisionCheckDebug
-{
-  std::string unsafe_reason;                ///< Reason indicating unsafe situation.
-  Pose current_pose{};                      ///< Ego vehicle's current pose.
-  Twist current_twist{};                    ///< Ego vehicle's current velocity and rotation.
-  Twist object_twist{};                     ///< Detected object's velocity and rotation.
-  Pose expected_ego_pose{};                 ///< Predicted future pose of ego vehicle.
-  Pose expected_obj_pose{};                 ///< Predicted future pose of object.
-  double rss_longitudinal{0.0};             ///< Longitudinal RSS measure.
-  double inter_vehicle_distance{0.0};       ///< Distance between ego vehicle and object.
-  double extended_polygon_lon_offset{0.0};  ///< Longitudinal offset for extended polygon.
-  double extended_polygon_lat_offset{0.0};  ///< Lateral offset for extended polygon.
-  bool is_front{false};                     ///< True if object is in front of ego vehicle.
-  bool is_safe{false};                      ///< True if situation is deemed safe.
-  std::vector<Pose> lerped_path;            ///< Interpolated ego vehicle path.
-  std::vector<PredictedPath> ego_predicted_path{};  ///< Predicted future path of ego vehicle.
-  Polygon2d extended_ego_polygon{};                 ///< Ego vehicle's extended collision polygon.
-  Polygon2d extended_obj_polygon{};  ///< Detected object's extended collision polygon.
-};
-using CollisionCheckDebugMap = std::unordered_map<std::string, CollisionCheckDebug>;
 
 constexpr std::array<std::array<float, 3>, 10> colorsList()
 {
@@ -85,11 +67,15 @@ constexpr std::array<std::array<float, 3>, 10> colorsList()
   return {red,     green,         blue,       yellow,       aqua,
           magenta, medium_orchid, light_pink, light_yellow, light_steel_blue};
 }
-
 inline int64_t bitShift(int64_t original_id)
 {
   return original_id << (sizeof(int32_t) * 8 / 2);
 }
+
+CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj);
+
+void updateCollisionCheckDebugMap(
+  CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe);
 
 MarkerArray createPoseMarkerArray(
   const Pose & pose, std::string && ns, const int32_t & id, const float & r, const float & g,

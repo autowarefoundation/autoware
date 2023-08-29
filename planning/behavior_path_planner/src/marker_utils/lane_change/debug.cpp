@@ -36,8 +36,7 @@ using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 
-MarkerArray showObjectInfo(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns)
+MarkerArray showObjectInfo(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)
 {
   Marker obj_marker = createDefaultMarker(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, 0L, Marker::TEXT_VIEW_FACING,
@@ -105,8 +104,7 @@ MarkerArray showAllValidLaneChangePath(const std::vector<LaneChangePath> & lanes
   return marker_array;
 }
 
-MarkerArray showLerpedPose(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns)
+MarkerArray showLerpedPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)
 {
   MarkerArray marker_array;
   int32_t id{0};
@@ -128,46 +126,7 @@ MarkerArray showLerpedPose(
   return marker_array;
 }
 
-MarkerArray showEgoPredictedPaths(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns)
-{
-  if (obj_debug_vec.empty()) {
-    return MarkerArray{};
-  }
-
-  MarkerArray marker_array;
-  constexpr auto colors = colorsList();
-  constexpr float scale_val = 0.2;
-  const auto current_time{rclcpp::Clock{RCL_ROS_TIME}.now()};
-  marker_array.markers.reserve(obj_debug_vec.size());
-
-  int32_t id{0};
-  for (const auto & [uuid, info] : obj_debug_vec) {
-    const auto loop_size = std::min(info.ego_predicted_path.size(), colors.size());
-
-    for (std::size_t idx = 0; idx < loop_size; ++idx) {
-      const auto & path = info.ego_predicted_path.at(idx).path;
-      const auto & color = colors.at(idx);
-
-      Marker marker = createDefaultMarker(
-        "map", current_time, ns, ++id, Marker::LINE_STRIP,
-        createMarkerScale(scale_val, scale_val, scale_val),
-        createMarkerColor(color[0], color[1], color[2], 0.9));
-
-      marker.points.reserve(path.size());
-
-      for (const auto & point : path) {
-        marker.points.push_back(point.position);
-      }
-
-      marker_array.markers.push_back(marker);
-    }
-  }
-  return marker_array;
-}
-
-MarkerArray showPolygon(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns)
+MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)
 {
   if (obj_debug_vec.empty()) {
     return MarkerArray{};
@@ -235,8 +194,7 @@ MarkerArray showPolygon(
   return marker_array;
 }
 
-MarkerArray showPolygonPose(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns)
+MarkerArray showPolygonPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns)
 {
   constexpr auto colors = colorsList();
   const auto loop_size = std::min(colors.size(), obj_debug_vec.size());

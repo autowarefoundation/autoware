@@ -48,7 +48,7 @@ using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
 
-using marker_utils::CollisionCheckDebug;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 
 struct ObjectParameter
 {

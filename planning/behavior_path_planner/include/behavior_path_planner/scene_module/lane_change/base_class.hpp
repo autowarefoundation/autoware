@@ -43,11 +43,11 @@
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
 using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using marker_utils::CollisionCheckDebugMap;
 using route_handler::Direction;
 using tier4_autoware_utils::StopWatch;
 using tier4_planning_msgs::msg::LaneChangeDebugMsg;

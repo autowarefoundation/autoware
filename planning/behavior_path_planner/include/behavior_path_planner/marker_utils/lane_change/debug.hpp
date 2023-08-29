@@ -25,20 +25,13 @@
 namespace marker_utils::lane_change_markers
 {
 using behavior_path_planner::LaneChangePath;
-using marker_utils::CollisionCheckDebug;
 using visualization_msgs::msg::MarkerArray;
-MarkerArray showObjectInfo(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
+MarkerArray showObjectInfo(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
 MarkerArray showAllValidLaneChangePath(
   const std::vector<LaneChangePath> & lanes, std::string && ns);
-MarkerArray showLerpedPose(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
-MarkerArray showEgoPredictedPaths(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
-MarkerArray showPolygon(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
-MarkerArray showPolygonPose(
-  const std::unordered_map<std::string, CollisionCheckDebug> & obj_debug_vec, std::string && ns);
+MarkerArray showLerpedPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
+MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
+MarkerArray showPolygonPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
 MarkerArray createLaneChangingVirtualWallMarker(
   const geometry_msgs::msg::Pose & lane_changing_pose, const std::string & module_name,
   const rclcpp::Time & now, const std::string & ns);
