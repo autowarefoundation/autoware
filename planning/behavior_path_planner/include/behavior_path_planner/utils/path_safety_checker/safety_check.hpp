@@ -53,6 +53,9 @@ using vehicle_info_util::VehicleInfo;
 namespace bg = boost::geometry;
 
 bool isTargetObjectFront(
+  const geometry_msgs::msg::Pose & ego_pose, const Polygon2d & obj_polygon,
+  const vehicle_info_util::VehicleInfo & vehicle_info);
+bool isTargetObjectFront(
   const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
   const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon);
 

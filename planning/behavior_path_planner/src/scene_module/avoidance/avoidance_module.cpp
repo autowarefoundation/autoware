@@ -1880,8 +1880,8 @@ bool AvoidanceModule::isSafePath(
     const auto obj_polygon =
       tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape);
 
-    const auto is_object_front = utils::path_safety_checker::isTargetObjectFront(
-      shifted_path.path, getEgoPose(), p.vehicle_info, obj_polygon);
+    const auto is_object_front =
+      utils::path_safety_checker::isTargetObjectFront(getEgoPose(), obj_polygon, p.vehicle_info);
 
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       object, parameters_->check_all_predicted_path);

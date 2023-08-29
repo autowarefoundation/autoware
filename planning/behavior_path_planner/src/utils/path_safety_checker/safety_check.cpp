@@ -31,6 +31,25 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
 }
 
 bool isTargetObjectFront(
+  const geometry_msgs::msg::Pose & ego_pose, const Polygon2d & obj_polygon,
+  const vehicle_info_util::VehicleInfo & vehicle_info)
+{
+  const double base_to_front = vehicle_info.max_longitudinal_offset_m;
+  const auto ego_offset_pose =
+    tier4_autoware_utils::calcOffsetPose(ego_pose, base_to_front, 0.0, 0.0);
+
+  // check all edges in the polygon
+  for (const auto & obj_edge : obj_polygon.outer()) {
+    const auto obj_point = tier4_autoware_utils::createPoint(obj_edge.x(), obj_edge.y(), 0.0);
+    if (tier4_autoware_utils::calcLongitudinalDeviation(ego_offset_pose, obj_point) > 0.0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool isTargetObjectFront(
   const PathWithLaneId & path, const geometry_msgs::msg::Pose & ego_pose,
   const vehicle_info_util::VehicleInfo & vehicle_info, const Polygon2d & obj_polygon)
 {
@@ -227,7 +246,7 @@ boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVeloci
 }
 
 bool checkCollision(
-  const PathWithLaneId & planned_path,
+  [[maybe_unused]] const PathWithLaneId & planned_path,
   const std::vector<PoseWithVelocityStamped> & predicted_ego_path,
   const ExtendedPredictedObject & target_object,
   const PredictedPathWithPolygon & target_object_path,
@@ -272,8 +291,7 @@ bool checkCollision(
     }
 
     // compute which one is at the front of the other
-    const bool is_object_front =
-      isTargetObjectFront(planned_path, ego_pose, ego_vehicle_info, obj_polygon);
+    const bool is_object_front = isTargetObjectFront(ego_pose, obj_polygon, ego_vehicle_info);
     const auto & [front_object_velocity, rear_object_velocity] =
       is_object_front ? std::make_pair(object_velocity, ego_velocity)
                       : std::make_pair(ego_velocity, object_velocity);
