@@ -331,19 +331,18 @@ lanelet::ConstLanelets getLanelets(const map_based_prediction::LaneletsData & da
   return lanelets;
 }
 
-EntryPoint getCrosswalkEntryPoint(const lanelet::ConstLanelet & crosswalk)
+CrosswalkEdgePoints getCrosswalkEdgePoints(const lanelet::ConstLanelet & crosswalk)
 {
-  const auto & r_p_front = crosswalk.rightBound().front();
-  const auto & l_p_front = crosswalk.leftBound().front();
-  const Eigen::Vector2d front_entry_point(
-    (r_p_front.x() + l_p_front.x()) / 2.0, (r_p_front.y() + l_p_front.y()) / 2.0);
+  const Eigen::Vector2d r_p_front = crosswalk.rightBound().front().basicPoint2d();
+  const Eigen::Vector2d l_p_front = crosswalk.leftBound().front().basicPoint2d();
+  const Eigen::Vector2d front_center_point = (r_p_front + l_p_front) / 2.0;
 
-  const auto & r_p_back = crosswalk.rightBound().back();
-  const auto & l_p_back = crosswalk.leftBound().back();
-  const Eigen::Vector2d back_entry_point(
-    (r_p_back.x() + l_p_back.x()) / 2.0, (r_p_back.y() + l_p_back.y()) / 2.0);
+  const Eigen::Vector2d r_p_back = crosswalk.rightBound().back().basicPoint2d();
+  const Eigen::Vector2d l_p_back = crosswalk.leftBound().back().basicPoint2d();
+  const Eigen::Vector2d back_center_point = (r_p_back + l_p_back) / 2.0;
 
-  return std::make_pair(front_entry_point, back_entry_point);
+  return CrosswalkEdgePoints{front_center_point, r_p_front, l_p_front,
+                             back_center_point,  r_p_back,  l_p_back};
 }
 
 bool withinLanelet(
@@ -405,8 +404,8 @@ bool withinRoadLanelet(
   return false;
 }
 
-boost::optional<EntryPoint> isReachableEntryPoint(
-  const TrackedObject & object, const EntryPoint & entry_point,
+boost::optional<CrosswalkEdgePoints> isReachableCrosswalkEdgePoints(
+  const TrackedObject & object, const CrosswalkEdgePoints & edge_points,
   const lanelet::LaneletMapPtr & lanelet_map_ptr, const double time_horizon,
   const double min_object_vel)
 {
@@ -417,15 +416,15 @@ boost::optional<EntryPoint> isReachableEntryPoint(
   const auto & obj_vel = object.kinematics.twist_with_covariance.twist.linear;
   const auto yaw = tier4_autoware_utils::getRPY(object.kinematics.pose_with_covariance.pose).z;
 
-  const auto & p1 = entry_point.first;
-  const auto & p2 = entry_point.second;
+  const auto & p1 = edge_points.front_center_point;
+  const auto & p2 = edge_points.back_center_point;
 
-  auto ret = std::make_pair(p1, p2);
+  CrosswalkEdgePoints ret{p1, {}, {}, p2, {}, {}};
   auto distance_pedestrian_to_p1 = std::hypot(p1.x() - obj_pos.x, p1.y() - obj_pos.y);
   auto distance_pedestrian_to_p2 = std::hypot(p2.x() - obj_pos.x, p2.y() - obj_pos.y);
 
   if (distance_pedestrian_to_p2 < distance_pedestrian_to_p1) {
-    std::swap(ret.first, ret.second);
+    ret.swap();
     std::swap(distance_pedestrian_to_p1, distance_pedestrian_to_p2);
   }
 
@@ -454,7 +453,8 @@ boost::optional<EntryPoint> isReachableEntryPoint(
     }
 
     {
-      const Line object_to_entry_point{{obj_pos.x, obj_pos.y}, {ret.first.x(), ret.first.y()}};
+      const Line object_to_entry_point{
+        {obj_pos.x, obj_pos.y}, {ret.front_center_point.x(), ret.front_center_point.y()}};
       std::vector<Point> tmp_intersects;
       boost::geometry::intersection(
         object_to_entry_point, lanelet.second.polygon2d().basicPolygon(), tmp_intersects);
@@ -464,7 +464,8 @@ boost::optional<EntryPoint> isReachableEntryPoint(
     }
 
     {
-      const Line object_to_entry_point{{obj_pos.x, obj_pos.y}, {ret.second.x(), ret.second.y()}};
+      const Line object_to_entry_point{
+        {obj_pos.x, obj_pos.y}, {ret.back_center_point.x(), ret.back_center_point.y()}};
       std::vector<Point> tmp_intersects;
       boost::geometry::intersection(
         object_to_entry_point, lanelet.second.polygon2d().basicPolygon(), tmp_intersects);
@@ -487,12 +488,12 @@ boost::optional<EntryPoint> isReachableEntryPoint(
   }
 
   if (first_intersect_load && !second_intersect_load) {
-    std::swap(ret.first, ret.second);
+    ret.swap();
   }
 
   const Eigen::Vector2d pedestrian_to_crosswalk(
-    (ret.first.x() + ret.second.x()) / 2.0 - obj_pos.x,
-    (ret.first.y() + ret.second.y()) / 2.0 - obj_pos.y);
+    (ret.front_center_point.x() + ret.back_center_point.x()) / 2.0 - obj_pos.x,
+    (ret.front_center_point.y() + ret.back_center_point.y()) / 2.0 - obj_pos.y);
   const Eigen::Vector2d pedestrian_heading_direction(
     obj_vel.x * std::cos(yaw), obj_vel.x * std::sin(yaw));
   const auto reachable =
@@ -508,8 +509,10 @@ boost::optional<EntryPoint> isReachableEntryPoint(
 }
 
 bool hasPotentialToReach(
-  const TrackedObject & object, const Eigen::Vector2d & point, const double time_horizon,
-  const double min_object_vel)
+  const TrackedObject & object, const Eigen::Vector2d & center_point,
+  const Eigen::Vector2d & right_point, const Eigen::Vector2d & left_point,
+  const double time_horizon, const double min_object_vel,
+  const double max_crosswalk_user_delta_yaw_threshold_for_lanelet)
 {
   const auto & obj_pos = object.kinematics.pose_with_covariance.pose.position;
   const auto & obj_vel = object.kinematics.twist_with_covariance.twist.linear;
@@ -520,13 +523,47 @@ bool hasPotentialToReach(
   const auto is_stop_object = estimated_velocity < stop_velocity_th;
   const auto velocity = std::max(min_object_vel, estimated_velocity);
 
-  const Eigen::Vector2d pedestrian_to_crosswalk(point.x() - obj_pos.x, point.y() - obj_pos.y);
-  const Eigen::Vector2d pedestrian_heading_direction(
-    obj_vel.x * std::cos(yaw), obj_vel.x * std::sin(yaw));
-  const auto heading_for_crosswalk =
-    pedestrian_to_crosswalk.dot(pedestrian_heading_direction) > 0.0;
+  const double pedestrian_to_crosswalk_center_direction =
+    std::atan2(center_point.y() - obj_pos.y, center_point.x() - obj_pos.x);
 
-  const auto reachable = pedestrian_to_crosswalk.norm() < velocity * time_horizon;
+  const auto
+    [pedestrian_to_crosswalk_right_rel_direction, pedestrian_to_crosswalk_left_rel_direction] =
+      [&]() {
+        const double pedestrian_to_crosswalk_right_direction =
+          std::atan2(right_point.y() - obj_pos.y, right_point.x() - obj_pos.x);
+        const double pedestrian_to_crosswalk_left_direction =
+          std::atan2(left_point.y() - obj_pos.y, left_point.x() - obj_pos.x);
+        return std::make_pair(
+          tier4_autoware_utils::normalizeRadian(
+            pedestrian_to_crosswalk_right_direction - pedestrian_to_crosswalk_center_direction),
+          tier4_autoware_utils::normalizeRadian(
+            pedestrian_to_crosswalk_left_direction - pedestrian_to_crosswalk_center_direction));
+      }();
+
+  const double pedestrian_heading_rel_direction = [&]() {
+    const double pedestrian_heading_direction =
+      std::atan2(obj_vel.x * std::sin(yaw), obj_vel.x * std::cos(yaw));
+    return tier4_autoware_utils::normalizeRadian(
+      pedestrian_heading_direction - pedestrian_to_crosswalk_center_direction);
+  }();
+
+  const double pedestrian_to_crosswalk_min_rel_direction = std::min(
+    pedestrian_to_crosswalk_right_rel_direction, pedestrian_to_crosswalk_left_rel_direction);
+  const double pedestrian_to_crosswalk_max_rel_direction = std::max(
+    pedestrian_to_crosswalk_right_rel_direction, pedestrian_to_crosswalk_left_rel_direction);
+  const double pedestrian_vel_angle_against_crosswalk = [&]() {
+    if (pedestrian_heading_rel_direction < pedestrian_to_crosswalk_min_rel_direction) {
+      return pedestrian_to_crosswalk_min_rel_direction - pedestrian_heading_rel_direction;
+    }
+    if (pedestrian_to_crosswalk_max_rel_direction < pedestrian_heading_rel_direction) {
+      return pedestrian_to_crosswalk_max_rel_direction - pedestrian_heading_rel_direction;
+    }
+    return 0.0;
+  }();
+  const auto heading_for_crosswalk = std::abs(pedestrian_vel_angle_against_crosswalk) <
+                                     max_crosswalk_user_delta_yaw_threshold_for_lanelet;
+  const auto reachable = std::hypot(center_point.x() - obj_pos.x, center_point.y() - obj_pos.y) <
+                         velocity * time_horizon;
 
   if (reachable && (heading_for_crosswalk || is_stop_object)) {
     return true;
@@ -653,6 +690,8 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
   min_velocity_for_map_based_prediction_ =
     declare_parameter<double>("min_velocity_for_map_based_prediction");
   min_crosswalk_user_velocity_ = declare_parameter<double>("min_crosswalk_user_velocity");
+  max_crosswalk_user_delta_yaw_threshold_for_lanelet_ =
+    declare_parameter<double>("max_crosswalk_user_delta_yaw_threshold_for_lanelet");
   dist_threshold_for_searching_lanelet_ =
     declare_parameter<double>("dist_threshold_for_searching_lanelet");
   delta_yaw_threshold_for_searching_lanelet_ =
@@ -952,22 +991,24 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
   }
 
   if (crossing_crosswalk) {
-    const auto entry_point = getCrosswalkEntryPoint(crossing_crosswalk.get());
+    const auto edge_points = getCrosswalkEdgePoints(crossing_crosswalk.get());
 
     if (hasPotentialToReach(
-          object, entry_point.first, std::numeric_limits<double>::max(),
-          min_crosswalk_user_velocity_)) {
+          object, edge_points.front_center_point, edge_points.front_right_point,
+          edge_points.front_left_point, std::numeric_limits<double>::max(),
+          min_crosswalk_user_velocity_, max_crosswalk_user_delta_yaw_threshold_for_lanelet_)) {
       PredictedPath predicted_path =
-        path_generator_->generatePathToTargetPoint(object, entry_point.first);
+        path_generator_->generatePathToTargetPoint(object, edge_points.front_center_point);
       predicted_path.confidence = 1.0;
       predicted_object.kinematics.predicted_paths.push_back(predicted_path);
     }
 
     if (hasPotentialToReach(
-          object, entry_point.second, std::numeric_limits<double>::max(),
-          min_crosswalk_user_velocity_)) {
+          object, edge_points.back_center_point, edge_points.back_right_point,
+          edge_points.back_left_point, std::numeric_limits<double>::max(),
+          min_crosswalk_user_velocity_, max_crosswalk_user_delta_yaw_threshold_for_lanelet_)) {
       PredictedPath predicted_path =
-        path_generator_->generatePathToTargetPoint(object, entry_point.second);
+        path_generator_->generatePathToTargetPoint(object, edge_points.back_center_point);
       predicted_path.confidence = 1.0;
       predicted_object.kinematics.predicted_paths.push_back(predicted_path);
     }
@@ -979,22 +1020,24 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       lanelet::utils::query::getClosestLanelet(crosswalks_, obj_pose, &closest_crosswalk);
 
     if (found_closest_crosswalk) {
-      const auto entry_point = getCrosswalkEntryPoint(closest_crosswalk);
+      const auto edge_points = getCrosswalkEdgePoints(closest_crosswalk);
 
       if (hasPotentialToReach(
-            object, entry_point.first, prediction_time_horizon_ * 2.0,
-            min_crosswalk_user_velocity_)) {
+            object, edge_points.front_center_point, edge_points.front_right_point,
+            edge_points.front_left_point, prediction_time_horizon_ * 2.0,
+            min_crosswalk_user_velocity_, max_crosswalk_user_delta_yaw_threshold_for_lanelet_)) {
         PredictedPath predicted_path =
-          path_generator_->generatePathToTargetPoint(object, entry_point.first);
+          path_generator_->generatePathToTargetPoint(object, edge_points.front_center_point);
         predicted_path.confidence = 1.0;
         predicted_object.kinematics.predicted_paths.push_back(predicted_path);
       }
 
       if (hasPotentialToReach(
-            object, entry_point.second, prediction_time_horizon_ * 2.0,
-            min_crosswalk_user_velocity_)) {
+            object, edge_points.back_center_point, edge_points.back_right_point,
+            edge_points.back_left_point, prediction_time_horizon_ * 2.0,
+            min_crosswalk_user_velocity_, max_crosswalk_user_delta_yaw_threshold_for_lanelet_)) {
         PredictedPath predicted_path =
-          path_generator_->generatePathToTargetPoint(object, entry_point.second);
+          path_generator_->generatePathToTargetPoint(object, edge_points.back_center_point);
         predicted_path.confidence = 1.0;
         predicted_object.kinematics.predicted_paths.push_back(predicted_path);
       }
@@ -1002,19 +1045,23 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
 
   } else {
     for (const auto & crosswalk : crosswalks_) {
-      const auto entry_point = getCrosswalkEntryPoint(crosswalk);
+      const auto edge_points = getCrosswalkEdgePoints(crosswalk);
 
       const auto reachable_first = hasPotentialToReach(
-        object, entry_point.first, prediction_time_horizon_, min_crosswalk_user_velocity_);
+        object, edge_points.front_center_point, edge_points.front_right_point,
+        edge_points.front_left_point, prediction_time_horizon_, min_crosswalk_user_velocity_,
+        max_crosswalk_user_delta_yaw_threshold_for_lanelet_);
       const auto reachable_second = hasPotentialToReach(
-        object, entry_point.second, prediction_time_horizon_, min_crosswalk_user_velocity_);
+        object, edge_points.back_center_point, edge_points.back_right_point,
+        edge_points.back_left_point, prediction_time_horizon_, min_crosswalk_user_velocity_,
+        max_crosswalk_user_delta_yaw_threshold_for_lanelet_);
 
       if (!reachable_first && !reachable_second) {
         continue;
       }
 
-      const auto reachable_crosswalk = isReachableEntryPoint(
-        object, entry_point, lanelet_map_ptr_, prediction_time_horizon_,
+      const auto reachable_crosswalk = isReachableCrosswalkEdgePoints(
+        object, edge_points, lanelet_map_ptr_, prediction_time_horizon_,
         min_crosswalk_user_velocity_);
 
       if (!reachable_crosswalk) {

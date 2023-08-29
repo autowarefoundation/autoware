@@ -49,7 +49,31 @@ struct FrenetPoint
   float d_acc;
 };
 
-using EntryPoint = std::pair<Eigen::Vector2d /*in*/, Eigen::Vector2d /*out*/>;
+struct CrosswalkEdgePoints
+{
+  Eigen::Vector2d front_center_point;
+  Eigen::Vector2d front_right_point;
+  Eigen::Vector2d front_left_point;
+  Eigen::Vector2d back_center_point;
+  Eigen::Vector2d back_right_point;
+  Eigen::Vector2d back_left_point;
+
+  void swap()
+  {
+    const Eigen::Vector2d tmp_center_point = front_center_point;
+    const Eigen::Vector2d tmp_right_point = front_right_point;
+    const Eigen::Vector2d tmp_left_point = front_left_point;
+
+    front_center_point = back_center_point;
+    front_right_point = back_right_point;
+    front_left_point = back_left_point;
+
+    back_center_point = tmp_center_point;
+    back_right_point = tmp_right_point;
+    back_left_point = tmp_left_point;
+  }
+};
+
 using FrenetPath = std::vector<FrenetPoint>;
 using PosePath = std::vector<geometry_msgs::msg::Pose>;
 
@@ -70,7 +94,7 @@ public:
     const TrackedObject & object, const PosePath & ref_paths);
 
   PredictedPath generatePathForCrosswalkUser(
-    const TrackedObject & object, const EntryPoint & reachable_crosswalk) const;
+    const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk) const;
 
   PredictedPath generatePathToTargetPoint(
     const TrackedObject & object, const Eigen::Vector2d & point) const;

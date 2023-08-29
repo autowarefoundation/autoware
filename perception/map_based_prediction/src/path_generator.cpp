@@ -70,7 +70,7 @@ PredictedPath PathGenerator::generatePathToTargetPoint(
 }
 
 PredictedPath PathGenerator::generatePathForCrosswalkUser(
-  const TrackedObject & object, const EntryPoint & reachable_crosswalk) const
+  const TrackedObject & object, const CrosswalkEdgePoints & reachable_crosswalk) const
 {
   PredictedPath predicted_path{};
   const double ep = 0.001;
@@ -79,10 +79,11 @@ PredictedPath PathGenerator::generatePathForCrosswalkUser(
   const auto & obj_vel = object.kinematics.twist_with_covariance.twist.linear;
 
   const Eigen::Vector2d pedestrian_to_entry_point(
-    reachable_crosswalk.first.x() - obj_pos.x, reachable_crosswalk.first.y() - obj_pos.y);
+    reachable_crosswalk.front_center_point.x() - obj_pos.x,
+    reachable_crosswalk.front_center_point.y() - obj_pos.y);
   const Eigen::Vector2d entry_to_exit_point(
-    reachable_crosswalk.second.x() - reachable_crosswalk.first.x(),
-    reachable_crosswalk.second.y() - reachable_crosswalk.first.y());
+    reachable_crosswalk.back_center_point.x() - reachable_crosswalk.front_center_point.x(),
+    reachable_crosswalk.back_center_point.y() - reachable_crosswalk.front_center_point.y());
   const auto velocity = std::max(std::hypot(obj_vel.x, obj_vel.y), min_crosswalk_user_velocity_);
   const auto arrival_time = pedestrian_to_entry_point.norm() / velocity;
 
@@ -98,10 +99,10 @@ PredictedPath PathGenerator::generatePathForCrosswalkUser(
       predicted_path.path.push_back(world_frame_pose);
     } else {
       world_frame_pose.position.x =
-        reachable_crosswalk.first.x() +
+        reachable_crosswalk.front_center_point.x() +
         velocity * entry_to_exit_point.normalized().x() * (dt - arrival_time);
       world_frame_pose.position.y =
-        reachable_crosswalk.first.y() +
+        reachable_crosswalk.front_center_point.y() +
         velocity * entry_to_exit_point.normalized().y() * (dt - arrival_time);
       world_frame_pose.position.z = obj_pos.z;
       world_frame_pose.orientation = object.kinematics.pose_with_covariance.pose.orientation;

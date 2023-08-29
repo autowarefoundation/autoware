@@ -5,6 +5,7 @@
     prediction_sampling_delta_time: 0.5 #[s]
     min_velocity_for_map_based_prediction: 1.39 #[m/s]
     min_crosswalk_user_velocity: 1.39 #[m/s]
+    max_crosswalk_user_delta_yaw_threshold_for_lanelet: 0.785 #[m/s]
     dist_threshold_for_searching_lanelet: 3.0 #[m]
     delta_yaw_threshold_for_searching_lanelet: 0.785 #[rad]
     sigma_lateral_offset: 0.5 #[m]
