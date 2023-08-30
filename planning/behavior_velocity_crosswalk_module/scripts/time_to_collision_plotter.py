@@ -109,7 +109,9 @@ class TimeToCollisionPlotter(Node):
             return
 
         for i in range(int(len(collision_info_str_vec) / 5)):
-            collision_info_data_vec.append(CollisionInfo(*collision_info_str_vec[i : i + 5]))
+            collision_info_data_vec.append(
+                CollisionInfo(*collision_info_str_vec[i * 5 : i * 5 + 5])
+            )
 
         # memorize data in the history dictionary
         for collision_info_data in collision_info_data_vec:
