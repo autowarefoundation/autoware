@@ -309,6 +309,9 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
   const std::optional<geometry_msgs::msg::Pose> & default_stop_pose)
 {
   const auto & ego_pos = planner_data_->current_odometry->pose.position;
+  const double ego_vel = planner_data_->current_velocity->twist.linear.x;
+  const double ego_acc = planner_data_->current_acceleration->accel.accel.linear.x;
+
   const auto base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   const auto dist_ego_to_stop =
     calcSignedArcLength(ego_path.points, ego_pos, p_stop_line->first) + p_stop_line->second;
@@ -324,11 +327,18 @@ std::optional<StopFactor> CrosswalkModule::checkStopForCrosswalkUsers(
     dist_ego_to_stop, sparse_resample_path, crosswalk_attention_range, attention_area);
 
   // Check if ego moves forward enough to ignore yield.
+  const auto & p = planner_param_;
   if (!path_intersects.empty()) {
     const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
     const double dist_ego2crosswalk =
       calcSignedArcLength(ego_path.points, ego_pos, path_intersects.front());
-    if (dist_ego2crosswalk - base_link2front < planner_param_.max_offset_to_crosswalk_for_yield) {
+    const auto braking_distance_opt = motion_utils::calcDecelDistWithJerkAndAccConstraints(
+      ego_vel, 0.0, ego_acc, p.min_acc_for_no_stop_decision, p.max_jerk_for_no_stop_decision,
+      p.min_jerk_for_no_stop_decision);
+    const double braking_distance = braking_distance_opt ? *braking_distance_opt : 0.0;
+    if (
+      dist_ego2crosswalk - base_link2front - braking_distance <
+      p.max_offset_to_crosswalk_for_yield) {
       return {};
     }
   }

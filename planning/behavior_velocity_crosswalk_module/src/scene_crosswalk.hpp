@@ -106,6 +106,9 @@ public:
     std::vector<double> ego_pass_later_margin_y;
     double ego_pass_later_additional_margin;
     double max_offset_to_crosswalk_for_yield;
+    double min_acc_for_no_stop_decision;
+    double max_jerk_for_no_stop_decision;
+    double min_jerk_for_no_stop_decision;
     double stop_object_velocity;
     double min_object_velocity;
     bool disable_stop_for_yield_cancel;

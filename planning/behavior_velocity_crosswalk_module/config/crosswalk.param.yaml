@@ -42,12 +42,18 @@
         ego_pass_later_margin_x: [0.0] # [[s]] time to vehicle margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
         ego_pass_later_margin_y: [10.0] # [[s]] time to collision margin vector for object pass first situation (the module judges that ego don't have to stop at TTV + MARGIN < TTC condition)
         ego_pass_later_additional_margin: 0.5 # [s] additional time margin for object pass first situation to suppress chattering
-        max_offset_to_crosswalk_for_yield: 0.0 # [m] maximum offset from ego's front to crosswalk for yield. Positive value means in front of the crosswalk.
+
+        no_stop_decision:
+          max_offset_to_crosswalk_for_yield: 0.0 # [m] maximum offset from ego's front to crosswalk for yield. Positive value means in front of the crosswalk.
+          min_acc: -1.0   # min acceleration [m/ss]
+          min_jerk: -1.0  # min jerk [m/sss]
+          max_jerk: 1.0   # max jerk [m/sss]
+
         stop_object_velocity_threshold: 0.28 # [m/s] velocity threshold for the module to judge whether the objects is stopped (0.28 m/s = 1.0 kmph)
         min_object_velocity: 1.39 # [m/s] minimum object velocity (compare the estimated velocity by perception module with this parameter and adopt the larger one to calculate TTV. 1.39 m/s = 5.0 kmph)
         ## param for yielding
-        disable_stop_for_yield_cancel: false # for the crosswalk where there is a traffic signal
-        disable_yield_for_new_stopped_object: false # for the crosswalk where there is a traffic signal
+        disable_stop_for_yield_cancel: true # for the crosswalk where there is a traffic signal
+        disable_yield_for_new_stopped_object: true # for the crosswalk where there is a traffic signal
         timeout_no_intention_to_walk: 3.0 # [s] if the pedestrian does not move for X seconds after stopping before the crosswalk, the module judge that ego is able to pass first.
         timeout_ego_stop_for_yield: 3.0 # [s] the amount of time which ego should be stopping to query whether it yields or not
 
