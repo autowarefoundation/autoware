@@ -160,7 +160,7 @@ void CrosswalkTrafficLightEstimatorNode::onTrafficLightArray(
 
   TrafficLightIdMap traffic_light_id_map;
   for (const auto & traffic_signal : msg->signals) {
-    traffic_light_id_map[traffic_signal.traffic_light_id] =
+    traffic_light_id_map[traffic_signal.traffic_signal_id] =
       std::pair<TrafficSignal, rclcpp::Time>(traffic_signal, get_clock()->now());
   }
 
@@ -191,11 +191,11 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
       continue;
     }
 
-    if (elements.front().color == TrafficLightElement::UNKNOWN) {
+    if (elements.front().color == TrafficSignalElement::UNKNOWN) {
       continue;
     }
 
-    const auto & id = input_traffic_signal.second.first.traffic_light_id;
+    const auto & id = input_traffic_signal.second.first.traffic_signal_id;
 
     if (last_detect_color_.count(id) == 0) {
       last_detect_color_.insert(std::make_pair(id, input_traffic_signal.second));
@@ -207,7 +207,7 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
 
   std::vector<int32_t> erase_id_list;
   for (auto & last_traffic_signal : last_detect_color_) {
-    const auto & id = last_traffic_signal.second.first.traffic_light_id;
+    const auto & id = last_traffic_signal.second.first.traffic_signal_id;
 
     if (traffic_light_id_map.count(id) == 0) {
       // hold signal recognition results for [last_detect_color_hold_time_] seconds.
@@ -227,19 +227,13 @@ void CrosswalkTrafficLightEstimatorNode::setCrosswalkTrafficSignal(
   const auto tl_reg_elems = crosswalk.regulatoryElementsAs<const lanelet::TrafficLight>();
 
   for (const auto & tl_reg_elem : tl_reg_elems) {
-    const auto crosswalk_traffic_lights = tl_reg_elem->trafficLights();
-
-    for (const auto & traffic_light : crosswalk_traffic_lights) {
-      const auto ll_traffic_light = static_cast<lanelet::ConstLineString3d>(traffic_light);
-
-      TrafficSignal output_traffic_signal;
-      TrafficLightElement output_traffic_light;
-      output_traffic_light.color = color;
-      output_traffic_light.confidence = 1.0;
-      output_traffic_signal.elements.push_back(output_traffic_light);
-      output_traffic_signal.traffic_light_id = ll_traffic_light.id();
-      msg.signals.push_back(output_traffic_signal);
-    }
+    TrafficSignal output_traffic_signal;
+    TrafficSignalElement output_traffic_signal_element;
+    output_traffic_signal_element.color = color;
+    output_traffic_signal_element.confidence = 1.0;
+    output_traffic_signal.elements.push_back(output_traffic_signal_element);
+    output_traffic_signal.traffic_signal_id = tl_reg_elem->id();
+    msg.signals.push_back(output_traffic_signal);
   }
 }
 
@@ -256,34 +250,32 @@ lanelet::ConstLanelets CrosswalkTrafficLightEstimatorNode::getNonRedLanelets(
     }
 
     const auto tl_reg_elem = tl_reg_elems.front();
-    const auto traffic_lights_for_vehicle = tl_reg_elem->trafficLights();
-
     const auto current_detected_signal =
-      getHighestConfidenceTrafficSignal(traffic_lights_for_vehicle, traffic_light_id_map);
+      getHighestConfidenceTrafficSignal(tl_reg_elem->id(), traffic_light_id_map);
 
     if (!current_detected_signal && !use_last_detect_color_) {
       continue;
     }
 
     const auto current_is_not_red =
-      current_detected_signal ? current_detected_signal.get() == TrafficLightElement::GREEN ||
-                                  current_detected_signal.get() == TrafficLightElement::AMBER
+      current_detected_signal ? current_detected_signal.get() == TrafficSignalElement::GREEN ||
+                                  current_detected_signal.get() == TrafficSignalElement::AMBER
                               : true;
 
     const auto current_is_unknown_or_none =
-      current_detected_signal ? current_detected_signal.get() == TrafficLightElement::UNKNOWN
+      current_detected_signal ? current_detected_signal.get() == TrafficSignalElement::UNKNOWN
                               : true;
 
     const auto last_detected_signal =
-      getHighestConfidenceTrafficSignal(traffic_lights_for_vehicle, last_detect_color_);
+      getHighestConfidenceTrafficSignal(tl_reg_elem->id(), last_detect_color_);
 
     if (!last_detected_signal) {
       continue;
     }
 
     const auto was_not_red = current_is_unknown_or_none &&
-                             (last_detected_signal.get() == TrafficLightElement::GREEN ||
-                              last_detected_signal.get() == TrafficLightElement::AMBER) &&
+                             (last_detected_signal.get() == TrafficSignalElement::GREEN ||
+                              last_detected_signal.get() == TrafficSignalElement::AMBER) &&
                              use_last_detect_color_;
 
     if (!current_is_not_red && !was_not_red) {
@@ -324,13 +316,13 @@ uint8_t CrosswalkTrafficLightEstimatorNode::estimateCrosswalkTrafficSignal(
   }
 
   if (has_straight_non_red_lane || has_related_non_red_tl) {
-    return TrafficLightElement::RED;
+    return TrafficSignalElement::RED;
   }
 
   const auto has_merge_lane = hasMergeLane(non_red_lanelets, routing_graph_ptr_);
   return !has_merge_lane && has_left_non_red_lane && has_right_non_red_lane
-           ? TrafficLightElement::RED
-           : TrafficLightElement::UNKNOWN;
+           ? TrafficSignalElement::RED
+           : TrafficSignalElement::UNKNOWN;
 }
 
 boost::optional<uint8_t> CrosswalkTrafficLightEstimatorNode::getHighestConfidenceTrafficSignal(
@@ -363,6 +355,28 @@ boost::optional<uint8_t> CrosswalkTrafficLightEstimatorNode::getHighestConfidenc
 
     highest_confidence = confidence;
     ret = color;
+  }
+
+  return ret;
+}
+
+boost::optional<uint8_t> CrosswalkTrafficLightEstimatorNode::getHighestConfidenceTrafficSignal(
+  const lanelet::Id & id, const TrafficLightIdMap & traffic_light_id_map) const
+{
+  boost::optional<uint8_t> ret{boost::none};
+
+  double highest_confidence = 0.0;
+  if (traffic_light_id_map.count(id) == 0) {
+    return ret;
+  }
+
+  for (const auto & element : traffic_light_id_map.at(id).first.elements) {
+    if (element.confidence < highest_confidence) {
+      continue;
+    }
+
+    highest_confidence = element.confidence;
+    ret = element.color;
   }
 
   return ret;
