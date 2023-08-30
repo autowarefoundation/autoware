@@ -75,6 +75,19 @@
   <arg name="traffic_light_recognition/enable_fine_detection" default="true"/>
   <arg name="traffic_light_recognition/fusion_only" default="false"/>
   <arg name="traffic_light_image_number" default="1" description="choose traffic light image raw number(1-2)"/>
+  <arg
+    name="traffic_light_fine_detector_model_path"
+    default="$(find-pkg-share traffic_light_fine_detector)/data"
+    description="options: `tlr_yolox_s_batch_**`. The batch number must be either one of 1, 4, 6"
+  />
+  <arg name="traffic_light_fine_detector_model_name" default="tlr_yolox_s_batch_6" description="options: `tlr_yolox_s_batch_**`. The batch number must be either one of 1, 4, 6"/>
+  <arg name="traffic_light_classifier_model_path" default="$(find-pkg-share traffic_light_classifier)/data" description="classifier onnx model path"/>
+  <arg
+    name="traffic_light_classifier_model_name"
+    default="traffic_light_classifier_mobilenetv2_batch_6"
+    description="options: `traffic_light_classifier_mobilenetv2_batch_*` or `traffic_light_classifier_efficientNet_b1_batch_*`. The batch number must be either one of 1, 4, 6"
+  />
+
   <!-- Camera Lidar Fusion Parameters -->
   <arg name="remove_unknown" default="true"/>
   <arg name="trust_distance" default="30.0"/>

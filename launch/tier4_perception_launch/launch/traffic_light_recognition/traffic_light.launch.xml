@@ -3,10 +3,12 @@
   <arg name="enable_image_decompressor" default="true" description="enable image decompressor"/>
   <arg name="enable_fine_detection" default="true" description="enable fine position adjustment of traffic light"/>
   <arg name="fusion_only" default="false" description="launch only occlusion_predictor and multi_camera_fusion"/>
-  <arg name="fine_detector_label_path" default="$(find-pkg-share traffic_light_fine_detector)/data/tlr_labels.txt" description="fine detector label path"/>
-  <arg name="fine_detector_model_path" default="$(find-pkg-share traffic_light_fine_detector)/data/tlr_yolox_s_batch_6.onnx" description="fine detector onnx model path"/>
-  <arg name="classifier_label_path" default="$(find-pkg-share traffic_light_classifier)/data/lamp_labels.txt" description="classifier label path"/>
-  <arg name="classifier_model_path" default="$(find-pkg-share traffic_light_classifier)/data/traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model path"/>
+  <arg name="traffic_light_fine_detector_model_path" default="$(find-pkg-share traffic_light_fine_detector)/data" description="fine detector label path"/>
+  <arg name="traffic_light_fine_detector_label_name" default="tlr_labels.txt" description="fine detector label filename"/>
+  <arg name="traffic_light_fine_detector_model_name" default="tlr_yolox_s_batch_6" description="fine detector onnx model filename"/>
+  <arg name="traffic_light_classifier_model_path" default="$(find-pkg-share traffic_light_classifier)/data" description="classifier label path"/>
+  <arg name="traffic_light_classifier_label_name" default="lamp_labels.txt" description="classifier label filename"/>
+  <arg name="traffic_light_classifier_model_name" default="traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model filename"/>
   <arg name="input/cloud" default="/sensing/lidar/top/pointcloud_raw" description="point cloud for occlusion prediction"/>
   <arg name="internal/traffic_signals" default="/perception/traffic_light_recognition/internal/traffic_signals"/>
   <arg name="external/traffic_signals" default="/perception/traffic_light_recognition/external/traffic_signals"/>
@@ -17,6 +19,12 @@
   <arg name="namespace2" default="camera7"/>
   <let name="all_camera_namespaces" value="[$(var namespace1)]" if="$(eval &quot; '$(var image_number)' == '1' &quot;)"/>
   <let name="all_camera_namespaces" value="[$(var namespace1), $(var namespace2)]" if="$(eval &quot; '$(var image_number)' >= '2' &quot;)"/>
+
+  <arg name="fine_detector_label_path" default="$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_label_name)"/>
+  <arg name="fine_detector_model_path" default="$(var traffic_light_fine_detector_model_path)/$(var traffic_light_fine_detector_model_name).onnx"/>
+  <arg name="classifier_label_path" default="$(var traffic_light_classifier_model_path)/$(var traffic_light_classifier_label_name)"/>
+  <arg name="classifier_model_path" default="$(var traffic_light_classifier_model_path)/$(var traffic_light_classifier_model_name).onnx"/>
+
   <!-- namespace1 camera TLR pipeline -->
   <group>
     <push-ros-namespace namespace="$(var namespace1)"/>
