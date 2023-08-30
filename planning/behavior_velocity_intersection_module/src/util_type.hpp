@@ -142,6 +142,9 @@ struct PathLanelets
   std::optional<lanelet::ConstLanelet> next =
     std::nullopt;  // this is nullopt is the goal is inside intersection
   lanelet::ConstLanelets all;
+  lanelet::ConstLanelets
+    conflicting_interval_and_remaining;  // the left/right-most interval of path conflicting with
+                                         // conflicting lanelets plus the next lane part of the path
 };
 
 }  // namespace behavior_velocity_planner::util

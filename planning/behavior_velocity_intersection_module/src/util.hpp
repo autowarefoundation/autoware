@@ -83,7 +83,8 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
 
 std::optional<size_t> getFirstPointInsidePolygon(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const std::pair<size_t, size_t> lane_interval, const lanelet::CompoundPolygon3d & polygon);
+  const std::pair<size_t, size_t> lane_interval, const lanelet::CompoundPolygon3d & polygon,
+  const bool search_forward = true);
 
 /**
  * @brief check if ego is over the target_idx. If the index is same, compare the exact pose
@@ -132,10 +133,7 @@ bool checkStuckVehicleInIntersection(
   DebugData * debug_data);
 
 Polygon2d generateStuckVehicleDetectAreaPolygon(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::ConstLanelets & ego_lane_with_next_lane, const int closest_idx,
-  const double stuck_vehicle_detect_dist, const double stuck_vehicle_ignore_dist,
-  const double vehicle_length_m);
+  const util::PathLanelets & path_lanelets, const double stuck_vehicle_detect_dist);
 
 bool checkAngleForTargetLanelets(
   const geometry_msgs::msg::Pose & pose, const lanelet::ConstLanelets & target_lanelets,
@@ -158,8 +156,10 @@ double calcDistanceUntilIntersectionLanelet(
 
 std::optional<PathLanelets> generatePathLanelets(
   const lanelet::ConstLanelets & lanelets_on_path,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const std::set<int> & associative_ids, const size_t closest_idx, const double width);
+  const util::InterpolatedPathInfo & interpolated_path_info, const std::set<int> & associative_ids,
+  const lanelet::CompoundPolygon3d & first_conflicting_area,
+  const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas, const size_t closest_idx,
+  const double width);
 
 }  // namespace util
 }  // namespace behavior_velocity_planner

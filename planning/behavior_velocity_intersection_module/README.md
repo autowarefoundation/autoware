@@ -62,7 +62,7 @@ Objects that satisfy all of the following conditions are considered as target ob
 
 #### Stuck Vehicle Detection
 
-If there is any object in a certain distance (`stuck_vehicle_ignore_dist` and `stuck_vehicle_detect_dist`) before and after the exit of the intersection lane and the object velocity is less than a threshold (=`stuck_vehicle_vel_thr`), the object is regarded as a stuck vehicle. If stuck vehicles exist, this module inserts a stopline a certain distance (=`stop_line_margin`) before the overlapped region with other lanes. The stuck vehicle detection area is generated based on the vehicle path, so the stuck vehicle stopline is not inserted if the upstream module generated avoidance path
+If there is any object on the path in inside the intersection and at the exit of the intersection (up to `stuck_vehicle_detect_dist`) lane and its velocity is less than a threshold (`stuck_vehicle.stuck_vehicle_vel_thr`), the object is regarded as a stuck vehicle. If stuck vehicles exist, this module inserts a stopline a certain distance (=`stop_line_margin`) before the overlapped region with other lanes. The stuck vehicle detection area is generated based on the vehicle path, so the stuck vehicle stopline is not inserted if the upstream module generated avoidance path
 
 ![stuck_vehicle_detection](./docs/stuck-vehicle.drawio.svg)
 
@@ -107,7 +107,6 @@ To avoid a rapid braking, if deceleration and jerk more than a threshold (`behav
 | `common.stop_overshoot_margin`                      | double | [m] margin for the overshoot from stopline                                                     |
 | `common.path_interpolation_ds`                      | double | [m] path interpolation interval                                                                |
 | `stuck_vehicle.stuck_vehicle_detect_dist`           | double | [m] length toward from the exit of intersection for stuck vehicle detection                    |
-| `stuck_vehicle.stuck_vehicle_ignore_dist`           | double | [m] length behind the exit of intersection for stuck vehicle detection                         |
 | `stuck_vehicle.stuck_vehicle_vel_thr`               | double | [m/s] velocity threshold for stuck vehicle detection                                           |
 | `collision_detection.state_transit_margin_time`     | double | [m] time margin to change state                                                                |
 | `collision_detection.min_predicted_path_confidence` | double | [-] minimum confidence value of predicted path to use for collision detection                  |

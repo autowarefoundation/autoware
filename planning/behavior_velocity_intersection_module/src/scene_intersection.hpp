@@ -65,8 +65,6 @@ public:
     {
       bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
       double stuck_vehicle_detect_dist;  //! distance from end point to finish stuck vehicle check
-      double stuck_vehicle_ignore_dist;  //! distance from intersection start to start stuck vehicle
-                                         //! check
       double stuck_vehicle_vel_thr;      //! Threshold of the speed to be recognized as stopped
       /*
       double
@@ -248,8 +246,8 @@ private:
 
   bool checkStuckVehicle(
     const std::shared_ptr<const PlannerData> & planner_data,
-    const lanelet::ConstLanelets & ego_lane_with_next_lane,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+    const util::PathLanelets & path_lanelets,
+    const util::InterpolatedPathInfo & interpolated_path_info,
     const util::IntersectionStopLines & intersection_stop_lines);
 
   autoware_auto_perception_msgs::msg::PredictedObjects filterTargetObjects(

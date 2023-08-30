@@ -771,22 +771,18 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     [closest_idx, stuck_stop_line_idx, default_stop_line_idx, occlusion_peeking_stop_line_idx,
      pass_judge_line_idx] = intersection_stop_lines;
 
+  const auto & conflicting_area = intersection_lanelets_.value().conflicting_area();
   const auto path_lanelets_opt = util::generatePathLanelets(
-    lanelets_on_path, *path, associative_ids_, closest_idx,
-    planner_data_->vehicle_info_.vehicle_width_m);
+    lanelets_on_path, interpolated_path_info, associative_ids_, first_conflicting_area.value(),
+    conflicting_area, closest_idx, planner_data_->vehicle_info_.vehicle_width_m);
   if (!path_lanelets_opt.has_value()) {
     RCLCPP_DEBUG(logger_, "failed to generate PathLanelets");
     return IntersectionModule::Indecisive{};
   }
   const auto path_lanelets = path_lanelets_opt.value();
 
-  const auto ego_lane_with_next_lane =
-    path_lanelets.next.has_value()
-      ? std::vector<
-          lanelet::ConstLanelet>{path_lanelets.ego_or_entry2exit, path_lanelets.next.value()}
-      : std::vector<lanelet::ConstLanelet>{path_lanelets.ego_or_entry2exit};
-  const bool stuck_detected =
-    checkStuckVehicle(planner_data_, ego_lane_with_next_lane, *path, intersection_stop_lines);
+  const bool stuck_detected = checkStuckVehicle(
+    planner_data_, path_lanelets, interpolated_path_info, intersection_stop_lines);
 
   if (stuck_detected) {
     const double dist_stopline = motion_utils::calcSignedArcLength(
@@ -967,9 +963,8 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
 }
 
 bool IntersectionModule::checkStuckVehicle(
-  const std::shared_ptr<const PlannerData> & planner_data,
-  const lanelet::ConstLanelets & ego_lane_with_next_lane,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  const std::shared_ptr<const PlannerData> & planner_data, const util::PathLanelets & path_lanelets,
+  const util::InterpolatedPathInfo & interpolated_path_info,
   const util::IntersectionStopLines & intersection_stop_lines)
 {
   const auto & objects_ptr = planner_data->predicted_objects;
@@ -978,20 +973,16 @@ bool IntersectionModule::checkStuckVehicle(
   const auto stuck_line_idx = intersection_stop_lines.stuck_stop_line;
 
   // considering lane change in the intersection, these lanelets are generated from the path
-  const auto ego_lane = ego_lane_with_next_lane.front();
-  debug_data_.ego_lane = ego_lane.polygon3d();
+  const auto & path = interpolated_path_info.path;
   const auto stuck_vehicle_detect_area = util::generateStuckVehicleDetectAreaPolygon(
-    input_path, ego_lane_with_next_lane, closest_idx,
-    planner_param_.stuck_vehicle.stuck_vehicle_detect_dist,
-    planner_param_.stuck_vehicle.stuck_vehicle_ignore_dist,
-    planner_data->vehicle_info_.vehicle_length_m);
+    path_lanelets, planner_param_.stuck_vehicle.stuck_vehicle_detect_dist);
   debug_data_.stuck_vehicle_detect_area = toGeomPoly(stuck_vehicle_detect_area);
 
   const double dist_stuck_stopline = motion_utils::calcSignedArcLength(
-    input_path.points, input_path.points.at(stuck_line_idx).point.pose.position,
-    input_path.points.at(closest_idx).point.pose.position);
+    path.points, path.points.at(stuck_line_idx).point.pose.position,
+    path.points.at(closest_idx).point.pose.position);
   const bool is_over_stuck_stopline =
-    util::isOverTargetIndex(input_path, closest_idx, current_pose, stuck_line_idx) &&
+    util::isOverTargetIndex(path, closest_idx, current_pose, stuck_line_idx) &&
     (dist_stuck_stopline > planner_param_.common.stop_overshoot_margin);
 
   bool is_stuck = false;
@@ -1079,6 +1070,7 @@ bool IntersectionModule::checkCollision(
   const auto closest_arc_coords = getArcCoordinates(
     concat_lanelets, tier4_autoware_utils::getPose(path.points.at(closest_idx).point));
   const auto & ego_lane = path_lanelets.ego_or_entry2exit;
+  debug_data_.ego_lane = ego_lane.polygon3d();
 
   const auto ego_poly = ego_lane.polygon2d().basicPolygon();
   // check collision between predicted_path and ego_area
