@@ -82,10 +82,19 @@ IntersectionModule::IntersectionModule(
   turn_direction_ = assigned_lanelet.attributeOr("turn_direction", "else");
   collision_state_machine_.setMarginTime(
     planner_param_.collision_detection.state_transit_margin_time);
-  before_creep_state_machine_.setMarginTime(planner_param_.occlusion.before_creep_stop_time);
-  before_creep_state_machine_.setState(StateMachine::State::STOP);
-  stuck_private_area_timeout_.setMarginTime(planner_param_.stuck_vehicle.timeout_private_area);
-  stuck_private_area_timeout_.setState(StateMachine::State::STOP);
+  {
+    before_creep_state_machine_.setMarginTime(planner_param_.occlusion.before_creep_stop_time);
+    before_creep_state_machine_.setState(StateMachine::State::STOP);
+  }
+  {
+    occlusion_stop_state_machine_.setMarginTime(planner_param_.occlusion.stop_release_margin_time);
+    occlusion_stop_state_machine_.setState(StateMachine::State::GO);
+  }
+  {
+    stuck_private_area_timeout_.setMarginTime(planner_param_.stuck_vehicle.timeout_private_area);
+    stuck_private_area_timeout_.setState(StateMachine::State::STOP);
+  }
+
   decision_state_pub_ =
     node_.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
 }
@@ -639,6 +648,35 @@ void reactRTCApproval(
   return;
 }
 
+static std::string formatDecisionResult(const IntersectionModule::DecisionResult & decision_result)
+{
+  if (std::holds_alternative<IntersectionModule::Indecisive>(decision_result)) {
+    return "Indecisive";
+  }
+  if (std::holds_alternative<IntersectionModule::Safe>(decision_result)) {
+    return "Safe";
+  }
+  if (std::holds_alternative<IntersectionModule::StuckStop>(decision_result)) {
+    return "StuckStop";
+  }
+  if (std::holds_alternative<IntersectionModule::NonOccludedCollisionStop>(decision_result)) {
+    return "NonOccludedCollisionStop";
+  }
+  if (std::holds_alternative<IntersectionModule::FirstWaitBeforeOcclusion>(decision_result)) {
+    return "FirstWaitBeforeOcclusion";
+  }
+  if (std::holds_alternative<IntersectionModule::PeekingTowardOcclusion>(decision_result)) {
+    return "PeekingTowardOcclusion";
+  }
+  if (std::holds_alternative<IntersectionModule::OccludedCollisionStop>(decision_result)) {
+    return "OccludedCollisionStop";
+  }
+  if (std::holds_alternative<IntersectionModule::TrafficLightArrowSolidOn>(decision_result)) {
+    return "TrafficLightArrowSolidOn";
+  }
+  return "";
+}
+
 bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   debug_data_ = util::DebugData();
@@ -650,31 +688,8 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   // calculate the
   const auto decision_result = modifyPathVelocityDetail(path, stop_reason);
 
-  std::string decision_type = "intersection" + std::to_string(module_id_) + " : ";
-  if (std::get_if<IntersectionModule::Indecisive>(&decision_result)) {
-    decision_type += "Indecisive";
-  }
-  if (std::get_if<IntersectionModule::StuckStop>(&decision_result)) {
-    decision_type += "StuckStop";
-  }
-  if (std::get_if<IntersectionModule::NonOccludedCollisionStop>(&decision_result)) {
-    decision_type += "NonOccludedCollisionStop";
-  }
-  if (std::get_if<IntersectionModule::FirstWaitBeforeOcclusion>(&decision_result)) {
-    decision_type += "FirstWaitBeforeOcclusion";
-  }
-  if (std::get_if<IntersectionModule::PeekingTowardOcclusion>(&decision_result)) {
-    decision_type += "PeekingTowardOcclusion";
-  }
-  if (std::get_if<IntersectionModule::OccludedCollisionStop>(&decision_result)) {
-    decision_type += "OccludedCollisionStop";
-  }
-  if (std::get_if<IntersectionModule::Safe>(&decision_result)) {
-    decision_type += "Safe";
-  }
-  if (std::get_if<IntersectionModule::TrafficLightArrowSolidOn>(&decision_result)) {
-    decision_type += "TrafficLightArrowSolidOn";
-  }
+  const std::string decision_type =
+    "intersection" + std::to_string(module_id_) + " : " + formatDecisionResult(decision_result);
   std_msgs::msg::String decision_result_msg;
   decision_result_msg.data = decision_type;
   decision_state_pub_->publish(decision_result_msg);
@@ -898,10 +913,15 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
           first_attention_area.value(), interpolated_path_info,
           occlusion_attention_divisions_.value(), parked_attention_objects, occlusion_dist_thr)
       : true;
+  occlusion_stop_state_machine_.setStateWithMarginTime(
+    is_occlusion_cleared ? StateMachine::State::GO : StateMachine::STOP,
+    logger_.get_child("occlusion_stop"), *clock_);
 
   // check safety
   const bool ext_occlusion_requested = (is_occlusion_cleared && !occlusion_activated_);
-  if (!is_occlusion_cleared || ext_occlusion_requested) {
+  if (
+    occlusion_stop_state_machine_.getState() == StateMachine::State::STOP ||
+    ext_occlusion_requested) {
     const double dist_stopline = motion_utils::calcSignedArcLength(
       path->points, path->points.at(closest_idx).point.pose.position,
       path->points.at(default_stop_line_idx).point.pose.position);

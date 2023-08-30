@@ -48,6 +48,7 @@
         denoise_kernel: 1.0 # [m]
         possible_object_bbox: [1.0, 2.0] # [m x m]
         ignore_parked_vehicle_speed_threshold: 0.333 # == 1.2km/h
+        stop_release_margin_time: 1.0 # [s]
 
       enable_rtc: # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
         intersection: true
