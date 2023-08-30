@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Radar Fusion to Detected Object Node",
+  "type": "object",
+  "definitions": {
+    "radar_fusion_to_detected_object": {
+      "type": "object",
+      "properties": {
+        "node_params": {
+          "type": "object",
+          "properties": {
+            "update_rate_hz": {
+              "type": "number",
+              "description": "Update rate for parameters. [hz]",
+              "default": "10.0",
+              "minimum": 0.0
+            }
+          },
+          "required": ["update_rate_hz"]
+        },
+        "core_params": {
+          "type": "object",
+          "properties": {
+            "bounding_box_margin": {
+              "type": "number",
+              "description": "The distance to extend the 2D bird's-eye view Bounding Box on each side. This distance is used as a threshold to find radar centroids falling inside the extended box. [m]",
+              "default": "2.0",
+              "minimum": 0.0
+            },
+            "split_threshold_velocity": {
+              "type": "number",
+              "description": "The object's velocity threshold to decide to split for two objects from radar information (currently not implemented) [m/s]",
+              "default": "5.0",
+              "minimum": 0.0
+            },
+            "threshold_yaw_diff": {
+              "type": "number",
+              "description": "The yaw orientation threshold. If ∣θob−θra∣<threshold×yaw_diff attached to radar information include estimated velocity, where `θob` is yaw angle from 3d detected object, `θra` is yaw angle from radar object. [rad]",
+              "default": "0.35"
+            },
+            "velocity_weight_min_distance": {
+              "type": "number",
+              "description": "The twist coefficient of radar data nearest to the center of bounding box in velocity estimation.",
+              "default": "1.0"
+            },
+            "velocity_weight_average": {
+              "type": "number",
+              "description": "The twist coefficient of average twist of radar data in velocity estimation.",
+              "default": "0.0"
+            },
+            "velocity_weight_median": {
+              "type": "number",
+              "description": "The twist coefficient of median twist of radar data in velocity estimation.",
+              "default": "0.0"
+            },
+            "velocity_weight_target_value_average": {
+              "type": "number",
+              "description": "The twist coefficient of target value weighted average in velocity estimation. Target value is amplitude if using radar pointcloud. Target value is probability if using radar objects.",
+              "default": "0.0"
+            },
+            "velocity_weight_target_value_top": {
+              "type": "number",
+              "description": "The twist coefficient of top target value radar data in velocity estimation. Target value is amplitude if using radar pointcloud. Target value is probability if using radar objects.",
+              "default": "0.0"
+            },
+            "convert_doppler_to_twist": {
+              "type": "boolean",
+              "description": "Convert doppler velocity to twist using the yaw information of a detected object.",
+              "default": "false"
+            },
+            "threshold_probability": {
+              "type": "number",
+              "description": "If the probability of an output object is lower than this parameter, and the output object does not have radar points/objects, then delete the object.",
+              "default": "0.4",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "compensate_probability": {
+              "type": "boolean",
+              "description": "If this parameter is true, compensate probability of objects to threshold probability.",
+              "default": "false"
+            }
+          },
+          "required": [
+            "bounding_box_margin",
+            "split_threshold_velocity",
+            "threshold_yaw_diff",
+            "velocity_weight_min_distance",
+            "velocity_weight_average",
+            "velocity_weight_median",
+            "velocity_weight_target_value_average",
+            "velocity_weight_target_value_top",
+            "convert_doppler_to_twist",
+            "threshold_probability",
+            "compensate_probability"
+          ]
+        }
+      },
+      "required": ["node_params", "core_params"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/radar_fusion_to_detected_object"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
