@@ -55,12 +55,12 @@ where `common_param` is vehicle common parameter, which defines vehicle common m
 The `longitudinal_acceleration_resolution` is determine by the following
 
 ```C++
-longitudinal_acceleration_resolution = (maximum_longitudinal_acceleration - minimum_longitudinal_deceleration) / longitudinal_acceleration_sampling_num
+longitudinal_acceleration_resolution = (maximum_longitudinal_acceleration - minimum_longitudinal_acceleration) / longitudinal_acceleration_sampling_num
 ```
 
 Note that when the `current_velocity` is lower than `minimum_lane_changing_velocity`, the vehicle needs to accelerate its velocity to `minimum_lane_changing_velocity`. Therefore, longitudinal acceleration becomes positive value (not decelerate).
 
-The following figure illustrates when `lane_change_sampling_num = 4`. Assuming that `maximum_deceleration = 1.0` then `a0 == 0.0 == no deceleration`, `a1 == 0.25`, `a2 == 0.5`, `a3 == 0.75` and `a4 == 1.0 == maximum_deceleration`. `a0` is the expected lane change trajectories should ego vehicle do not decelerate, and `a1`'s path is the expected lane change trajectories should ego vehicle decelerate at `0.25 m/s^2`.
+The following figure illustrates when `longitudinal_acceleration_sampling_num = 4`. Assuming that `maximum_deceleration = 1.0` then `a0 == 0.0 == no deceleration`, `a1 == 0.25`, `a2 == 0.5`, `a3 == 0.75` and `a4 == 1.0 == maximum_deceleration`. `a0` is the expected lane change trajectories should ego vehicle do not decelerate, and `a1`'s path is the expected lane change trajectories should ego vehicle decelerate at `0.25 m/s^2`.
 
 ![path_samples](../image/lane_change/lane_change-candidate_path_samples.png)
 
@@ -79,12 +79,12 @@ The maximum and minimum lateral accelerations are defined in the lane change par
 | 4.0          | 0.3                          | 0.4                          |
 | 6.0          | 0.3                          | 0.5                          |
 
-In this case, when the current velocity of the ego vehicle is 3.0, the minimum and maximum lateral accelerations are 0.2 and 0.35 respectively. These values are obtained by linearly interpolating the second and third rows of the map, which provide the minimum and maximum lateral acceleration values.
+In this case, when the current velocity of the ego vehicle is 3.0, the minimum and maximum lateral accelerations are 0.25 and 0.4 respectively. These values are obtained by linearly interpolating the second and third rows of the map, which provide the minimum and maximum lateral acceleration values.
 
 Within this range, we sample the lateral acceleration for the ego vehicle. Similar to the method used for sampling longitudinal acceleration, the resolution of lateral acceleration (lateral_acceleration_resolution) is determined by the following:
 
 ```C++
-lateral_acceleration_resolution = (maximum_lateral_acceleration - minimum_lateral_deceleration) / lateral_acceleration_sampling_num
+lateral_acceleration_resolution = (maximum_lateral_acceleration - minimum_lateral_acceleration) / lateral_acceleration_sampling_num
 ```
 
 #### Candidate Path's validity check
@@ -280,7 +280,6 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | `object_shiftable_ratio_threshold`          | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                | 0.6                |
 | `min_length_for_turn_signal_activation`     | [m]    | double  | Turn signal will be activated if the ego vehicle approaches to this length from minimum lane change length      | 10.0               |
 | `length_ratio_for_turn_signal_deactivation` | [-]    | double  | Turn signal will be deactivated if the ego vehicle approaches to this length ratio for lane change finish point | 0.8                |
-| `object_shiftable_ratio_threshold`          | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                | 0.6                |
 | `max_longitudinal_acc`                      | [-]    | double  | maximum longitudinal acceleration for lane change                                                               | 1.0                |
 | `min_longitudinal_acc`                      | [-]    | double  | maximum longitudinal deceleration for lane change                                                               | -1.0               |
 | `lateral_acceleration.velocity`             | [m/s]  | double  | Reference velocity for lateral acceleration calculation (look up table)                                         | [0.0, 4.0, 10.0]   |
