@@ -65,6 +65,7 @@
     keep_steer_control_until_converged: true
     new_traj_duration_time: 1.0
     new_traj_end_dist: 0.3
+    mpc_converged_threshold_rps:  0.01 # threshold of mpc convergence check [rad/s]
 
     # steer offset
     steering_offset:
