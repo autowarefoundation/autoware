@@ -520,7 +520,12 @@ void GoalPlannerModule::generateGoalCandidates()
 
 BehaviorModuleOutput GoalPlannerModule::plan()
 {
+  resetPathCandidate();
+  resetPathReference();
+
   generateGoalCandidates();
+
+  path_reference_ = getPreviousModuleOutput().reference_path;
 
   if (goal_planner_utils::isAllowedGoalModification(
         planner_data_->route_handler, left_side_parking_)) {
@@ -840,6 +845,11 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 
 BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
 {
+  resetPathCandidate();
+  resetPathReference();
+
+  path_reference_ = getPreviousModuleOutput().reference_path;
+
   if (goal_planner_utils::isAllowedGoalModification(
         planner_data_->route_handler, left_side_parking_)) {
     return planWaitingApprovalWithGoalModification();
