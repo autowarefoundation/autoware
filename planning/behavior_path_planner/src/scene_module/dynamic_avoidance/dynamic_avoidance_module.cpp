@@ -63,7 +63,7 @@ void appendObjectMarker(MarkerArray & marker_array, const geometry_msgs::msg::Po
 }
 
 void appendExtractedPolygonMarker(
-  MarkerArray & marker_array, const tier4_autoware_utils::Polygon2d & obj_poly)
+  MarkerArray & marker_array, const tier4_autoware_utils::Polygon2d & obj_poly, const double obj_z)
 {
   auto marker = tier4_autoware_utils::createDefaultMarker(
     "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "extracted_polygons", marker_array.markers.size(),
@@ -78,6 +78,7 @@ void appendExtractedPolygonMarker(
     geometry_msgs::msg::Point bound_geom_point;
     bound_geom_point.x = bound_point.x();
     bound_geom_point.y = bound_point.y();
+    bound_geom_point.z = obj_z;
     marker.points.push_back(bound_geom_point);
   }
 
@@ -149,6 +150,25 @@ double calcDiffAngleAgainstPath(
 
   const double diff_yaw = tier4_autoware_utils::normalizeRadian(target_yaw - traj_yaw);
   return diff_yaw;
+}
+
+double calcDiffAngleBetweenPaths(
+  const std::vector<PathPointWithLaneId> & path_points, const PredictedPath & predicted_path)
+{
+  const size_t nearest_idx =
+    motion_utils::findNearestSegmentIndex(path_points, predicted_path.path.front().position);
+  const double ego_yaw = tf2::getYaw(path_points.at(nearest_idx).point.pose.orientation);
+
+  constexpr size_t max_predicted_path_size = 5;
+  double signed_max_angle{0.0};
+  for (size_t i = 0; i < std::min(max_predicted_path_size, predicted_path.path.size()); ++i) {
+    const double obj_yaw = tf2::getYaw(predicted_path.path.at(i).orientation);
+    const double diff_yaw = tier4_autoware_utils::normalizeRadian(obj_yaw - ego_yaw);
+    if (std::abs(signed_max_angle) < std::abs(diff_yaw)) {
+      signed_max_angle = diff_yaw;
+    }
+  }
+  return signed_max_angle;
 }
 
 double calcDistanceToPath(
@@ -281,10 +301,10 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
   std::vector<DrivableAreaInfo::Obstacle> obstacles_for_drivable_area;
   for (const auto & object : target_objects_) {
     const auto obstacle_poly = [&]() {
-      if (parameters_->polygon_generation_method == "ego_path_base") {
+      if (object.polygon_generation_method == PolygonGenerationMethod::EGO_PATH_BASE) {
         return calcEgoPathBasedDynamicObstaclePolygon(object);
       }
-      if (parameters_->polygon_generation_method == "object_path_base") {
+      if (object.polygon_generation_method == PolygonGenerationMethod::OBJECT_PATH_BASE) {
         return calcObjectPathBasedDynamicObstaclePolygon(object);
       }
       throw std::logic_error("The polygon_generation_method's string is invalid.");
@@ -294,7 +314,7 @@ BehaviorModuleOutput DynamicAvoidanceModule::plan()
         {object.pose, obstacle_poly.value(), object.is_collision_left});
 
       appendObjectMarker(info_marker_, object.pose);
-      appendExtractedPolygonMarker(debug_marker_, obstacle_poly.value());
+      appendExtractedPolygonMarker(debug_marker_, obstacle_poly.value(), object.pose.position.z);
     }
   }
 
@@ -375,6 +395,10 @@ void DynamicAvoidanceModule::updateTargetObjects()
       predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x,
       predicted_object.kinematics.initial_twist_with_covariance.twist.linear.y);
     const auto prev_object = getObstacleFromUuid(prev_objects, obj_uuid);
+    const auto obj_path = *std::max_element(
+      predicted_object.kinematics.predicted_paths.begin(),
+      predicted_object.kinematics.predicted_paths.end(),
+      [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
 
     // 1.a. check label
     const bool is_label_target_obstacle =
@@ -391,7 +415,7 @@ void DynamicAvoidanceModule::updateTargetObjects()
     }
 
     // 1.c. check if object is not crossing ego's path
-    const double obj_angle = calcDiffAngleAgainstPath(prev_module_path->points, obj_pose);
+    const double obj_angle = calcDiffAngleBetweenPaths(prev_module_path->points, obj_path);
     const double max_crossing_object_angle = 0.0 <= obj_tangent_vel
                                                ? parameters_->max_overtaking_crossing_object_angle
                                                : parameters_->max_oncoming_crossing_object_angle;
@@ -448,6 +472,7 @@ void DynamicAvoidanceModule::updateTargetObjects()
 
   // 2. Precise filtering of target objects and check if they should be avoided
   for (const auto & object : target_objects_manager_.getValidObjects()) {
+    PolygonGenerationMethod polygon_generation_method{PolygonGenerationMethod::EGO_PATH_BASE};
     const auto obj_uuid = object.uuid;
     const auto prev_object = getObstacleFromUuid(prev_objects, obj_uuid);
     const auto obj_path = *std::max_element(
@@ -472,8 +497,8 @@ void DynamicAvoidanceModule::updateTargetObjects()
       getLateralLongitudinalOffset(prev_module_path->points, object.pose, object.shape);
 
     // 2.c. check if object will not cut in
-    const bool will_object_cut_in =
-      willObjectCutIn(prev_module_path->points, obj_path, object.vel, lat_lon_offset);
+    const bool will_object_cut_in = willObjectCutIn(
+      prev_module_path->points, obj_path, object.vel, lat_lon_offset, polygon_generation_method);
     if (will_object_cut_in) {
       RCLCPP_INFO_EXPRESSION(
         getLogger(), parameters_->enable_debug_info,
@@ -551,7 +576,8 @@ void DynamicAvoidanceModule::updateTargetObjects()
 
     const bool should_be_avoided = true;
     target_objects_manager_.updateObject(
-      obj_uuid, lon_offset_to_avoid, lat_offset_to_avoid, is_collision_left, should_be_avoided);
+      obj_uuid, lon_offset_to_avoid, lat_offset_to_avoid, is_collision_left, should_be_avoided,
+      polygon_generation_method);
   }
 }
 
@@ -627,16 +653,26 @@ bool DynamicAvoidanceModule::isObjectFarFromPath(
 
 bool DynamicAvoidanceModule::willObjectCutIn(
   const std::vector<PathPointWithLaneId> & ego_path, const PredictedPath & predicted_path,
-  const double obj_tangent_vel, const LatLonOffset & lat_lon_offset) const
+  const double obj_tangent_vel, const LatLonOffset & lat_lon_offset,
+  PolygonGenerationMethod & polygon_generation_method) const
 {
-  constexpr double epsilon_path_lat_diff = 0.3;
-
-  // Ignore oncoming object
-  if (obj_tangent_vel < 0) {
+  // Check if ego's path and object's path are close.
+  const bool will_object_cut_in = [&]() {
+    for (const auto & predicted_path_point : predicted_path.path) {
+      const double paths_lat_diff =
+        motion_utils::calcLateralOffset(ego_path, predicted_path_point.position);
+      if (std::abs(paths_lat_diff) < planner_data_->parameters.vehicle_width / 2.0) {
+        return true;
+      }
+    }
+    return false;
+  }();
+  if (!will_object_cut_in) {
+    // The object's path will not cut in
     return false;
   }
 
-  // Ignore object close to the ego
+  // Ignore object longitudinally close to the ego
   const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(ego_path);
   const double relative_velocity = getEgoSpeed() - obj_tangent_vel;
   const double lon_offset_ego_to_obj =
@@ -647,17 +683,11 @@ bool DynamicAvoidanceModule::willObjectCutIn(
     lon_offset_ego_to_obj < std::max(
                               parameters_->min_lon_offset_ego_to_cut_in_object,
                               relative_velocity * parameters_->min_time_to_start_cut_in)) {
+    polygon_generation_method = PolygonGenerationMethod::EGO_PATH_BASE;
     return false;
   }
 
-  for (const auto & predicted_path_point : predicted_path.path) {
-    const double paths_lat_diff =
-      motion_utils::calcLateralOffset(ego_path, predicted_path_point.position);
-    if (std::abs(paths_lat_diff) < epsilon_path_lat_diff) {
-      return true;
-    }
-  }
-  return false;
+  return true;
 }
 
 DynamicAvoidanceModule::DecisionWithReason DynamicAvoidanceModule::willObjectCutOut(

@@ -81,8 +81,6 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
 
   {  // drivable_area_generation
     std::string ns = "dynamic_avoidance.drivable_area_generation.";
-    p.polygon_generation_method =
-      node->declare_parameter<std::string>(ns + "polygon_generation_method");
     p.min_obj_path_based_lon_polygon_margin =
       node->declare_parameter<double>(ns + "object_path_base.min_longitudinal_polygon_margin");
     p.lat_offset_from_obstacle = node->declare_parameter<double>(ns + "lat_offset_from_obstacle");
@@ -181,9 +179,6 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
 
   {  // drivable_area_generation
     const std::string ns = "dynamic_avoidance.drivable_area_generation.";
-
-    updateParam<std::string>(
-      parameters, ns + "polygon_generation_method", p->polygon_generation_method);
     updateParam<double>(
       parameters, ns + "object_path_base.min_longitudinal_polygon_margin",
       p->min_obj_path_based_lon_polygon_margin);
