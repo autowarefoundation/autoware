@@ -14,6 +14,8 @@
 
 #include "vehicle.hpp"
 
+#include <geography_utils/height.hpp>
+
 #include <limits>
 
 namespace default_ad_api
@@ -153,7 +155,9 @@ void VehicleNode::publish_kinematics()
     vehicle_kinematics.geographic_pose.header.frame_id = "global";
     vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.lat;
     vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.lon;
-    vehicle_kinematics.geographic_pose.position.altitude = projected_gps_point.ele;
+    vehicle_kinematics.geographic_pose.position.altitude = geography_utils::convert_height(
+      projected_gps_point.ele, projected_gps_point.lat, projected_gps_point.lon,
+      map_projector_info_->vertical_datum, "WGS84");
   } else if (map_projector_info_->projector_type == MapProjectorInfo::LOCAL_CARTESIAN_UTM) {
     lanelet::GPSPoint position{
       map_projector_info_->map_origin.latitude, map_projector_info_->map_origin.longitude};
@@ -165,7 +169,9 @@ void VehicleNode::publish_kinematics()
     vehicle_kinematics.geographic_pose.header.frame_id = "global";
     vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.lat;
     vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.lon;
-    vehicle_kinematics.geographic_pose.position.altitude = projected_gps_point.ele;
+    vehicle_kinematics.geographic_pose.position.altitude = geography_utils::convert_height(
+      projected_gps_point.ele, projected_gps_point.lat, projected_gps_point.lon,
+      map_projector_info_->vertical_datum, "WGS84");
   } else {
     vehicle_kinematics.geographic_pose.position.latitude = std::numeric_limits<double>::quiet_NaN();
     vehicle_kinematics.geographic_pose.position.longitude =

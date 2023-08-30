@@ -15,6 +15,7 @@
 
   <depend>autoware_sensing_msgs</depend>
   <depend>geographiclib</depend>
+  <depend>geography_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
