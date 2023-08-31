@@ -21,6 +21,7 @@
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_core/primitives/LaneletSequence.h>
 #include <lanelet2_io/Io.h>
+#include <lanelet2_routing/RoutingGraph.h>
 
 #include <iostream>
 #include <unordered_set>

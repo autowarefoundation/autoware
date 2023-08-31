@@ -16,6 +16,7 @@
 #include <rclcpp/time.hpp>
 #include <traffic_light_arbiter/traffic_light_arbiter.hpp>
 
+#include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
 #include <map>

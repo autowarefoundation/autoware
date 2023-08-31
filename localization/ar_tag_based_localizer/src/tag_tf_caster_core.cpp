@@ -19,6 +19,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <lanelet2_core/LaneletMap.h>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #else
