@@ -36,6 +36,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 #include <memory>
 #include <string>
