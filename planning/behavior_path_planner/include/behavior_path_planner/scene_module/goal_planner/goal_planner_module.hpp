@@ -177,7 +177,6 @@ private:
 
   // for parking policy
   bool left_side_parking_{true};
-  mutable bool allow_goal_modification_{false};  // need to be set in isExecutionRequested
 
   // pre-generate lane parking paths in a separate thread
   rclcpp::TimerBase::SharedPtr lane_parking_timer_;
