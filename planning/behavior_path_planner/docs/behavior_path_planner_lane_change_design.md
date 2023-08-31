@@ -163,7 +163,7 @@ First, we divide the target objects into obstacles in the target lane, obstacles
 
 ![object lanes](../image/lane_change/lane_objects.drawio.svg)
 
-Furthermore, to change lanes behind a vehicle waiting at a traffic light, we skip the safety check for the stopping vehicles near the traffic light.
+Furthermore, to change lanes behind a vehicle waiting at a traffic light, we skip the safety check for the stopping vehicles near the traffic light.　The explanation for parked car detection is written in [documentation for avoidance module](../docs/behavior_path_planner_avoidance_design.md).
 
 ##### Collision check in prepare phase
 
@@ -276,7 +276,7 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | `prediction_time_resolution`                | [s]    | double  | Time resolution for object's path interpolation and collision check.                                            | 0.5                |
 | `longitudinal_acceleration_sampling_num`    | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by longitudinal acceleration            | 5                  |
 | `lateral_acceleration_sampling_num`         | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by lateral acceleration                 | 3                  |
-| `object_check_min_road_shoulder_width`      | [m]    | double  | Vehicles around the center line within this distance will be excluded from parking objects                      | 0.5                |
+| `object_check_min_road_shoulder_width`      | [m]    | double  | Width considered as a road shoulder if the lane does not have a road shoulder                                   | 0.5                |
 | `object_shiftable_ratio_threshold`          | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                | 0.6                |
 | `min_length_for_turn_signal_activation`     | [m]    | double  | Turn signal will be activated if the ego vehicle approaches to this length from minimum lane change length      | 10.0               |
 | `length_ratio_for_turn_signal_deactivation` | [-]    | double  | Turn signal will be deactivated if the ego vehicle approaches to this length ratio for lane change finish point | 0.8                |
