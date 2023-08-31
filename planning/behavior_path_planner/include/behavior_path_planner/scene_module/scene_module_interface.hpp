@@ -50,12 +50,8 @@ namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::SteeringFactor;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using motion_utils::createDeadLineVirtualWallMarker;
-using motion_utils::createSlowDownVirtualWallMarker;
-using motion_utils::createStopVirtualWallMarker;
 using rtc_interface::RTCInterface;
 using steering_factor_interface::SteeringFactorInterface;
-using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::generateUUID;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
@@ -79,16 +75,16 @@ class SceneModuleInterface
 public:
   SceneModuleInterface(
     const std::string & name, rclcpp::Node & node,
-    const std::unordered_map<std::string, std::shared_ptr<RTCInterface>> & rtc_interface_ptr_map)
+    std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map)
   : name_{name},
     logger_{node.get_logger().get_child(name)},
     clock_{node.get_clock()},
-    rtc_interface_ptr_map_(rtc_interface_ptr_map),
+    rtc_interface_ptr_map_(std::move(rtc_interface_ptr_map)),
     steering_factor_interface_ptr_(
       std::make_unique<SteeringFactorInterface>(&node, utils::convertToSnakeCase(name)))
   {
-    for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
-      uuid_map_.emplace(itr->first, generateUUID());
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      uuid_map_.emplace(module_name, generateUUID());
     }
   }
 
@@ -176,9 +172,9 @@ public:
    */
   void publishRTCStatus()
   {
-    for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
-      if (itr->second) {
-        itr->second->publishCooperateStatus(clock_->now());
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      if (ptr) {
+        ptr->publishCooperateStatus(clock_->now());
       }
     }
   }
@@ -193,18 +189,18 @@ public:
 
   void lockRTCCommand()
   {
-    for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
-      if (itr->second) {
-        itr->second->lockCommandUpdate();
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      if (ptr) {
+        ptr->lockCommandUpdate();
       }
     }
   }
 
   void unlockRTCCommand()
   {
-    for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
-      if (itr->second) {
-        itr->second->unlockCommandUpdate();
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      if (ptr) {
+        ptr->unlockCommandUpdate();
       }
     }
   }
@@ -398,10 +394,10 @@ protected:
 
   virtual void updateRTCStatus(const double start_distance, const double finish_distance)
   {
-    for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
-      if (itr->second) {
-        itr->second->updateCooperateStatus(
-          uuid_map_.at(itr->first), isExecutionReady(), start_distance, finish_distance,
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      if (ptr) {
+        ptr->updateCooperateStatus(
+          uuid_map_.at(module_name), isExecutionReady(), start_distance, finish_distance,
           clock_->now());
       }
     }
@@ -483,9 +479,9 @@ protected:
 
   void removeRTCStatus()
   {
-    for (auto itr = rtc_interface_ptr_map_.begin(); itr != rtc_interface_ptr_map_.end(); ++itr) {
-      if (itr->second) {
-        itr->second->clearCooperateStatus();
+    for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
+      if (ptr) {
+        ptr->clearCooperateStatus();
       }
     }
   }

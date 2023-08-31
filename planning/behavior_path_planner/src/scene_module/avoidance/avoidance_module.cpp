@@ -50,6 +50,7 @@ using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
 using motion_utils::findNearestSegmentIndex;
+using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcInterpolatedPose;
 using tier4_autoware_utils::calcLateralDeviation;

@@ -31,6 +31,7 @@
 
 namespace behavior_path_planner
 {
+using tier4_autoware_utils::appendMarkerArray;
 using utils::lane_change::assignToCandidate;
 
 LaneChangeInterface::LaneChangeInterface(
