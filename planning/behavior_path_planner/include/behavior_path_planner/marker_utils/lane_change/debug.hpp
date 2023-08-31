@@ -26,12 +26,8 @@ namespace marker_utils::lane_change_markers
 {
 using behavior_path_planner::LaneChangePath;
 using visualization_msgs::msg::MarkerArray;
-MarkerArray showObjectInfo(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
 MarkerArray showAllValidLaneChangePath(
   const std::vector<LaneChangePath> & lanes, std::string && ns);
-MarkerArray showLerpedPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
-MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
-MarkerArray showPolygonPose(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
 MarkerArray createLaneChangingVirtualWallMarker(
   const geometry_msgs::msg::Pose & lane_changing_pose, const std::string & module_name,
   const rclcpp::Time & now, const std::string & ns);

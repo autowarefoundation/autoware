@@ -104,6 +104,11 @@ MarkerArray createPredictedPathMarkerArray(
   const PredictedPath & ego_predicted_path, const vehicle_info_util::VehicleInfo & vehicle_info,
   std::string && ns, const int32_t & id, const float & r, const float & g, const float & b);
 
+MarkerArray showPolygon(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
+
+MarkerArray showPredictedPath(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
+
+MarkerArray showSafetyCheckInfo(const CollisionCheckDebugMap & obj_debug_vec, std::string && ns);
 }  // namespace marker_utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__MARKER_UTILS__UTILS_HPP_

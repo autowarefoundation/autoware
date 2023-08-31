@@ -253,7 +253,11 @@ bool checkCollision(
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
   double hysteresis_factor, CollisionCheckDebug & debug)
 {
-  debug.lerped_path.reserve(target_object_path.path.size());
+  {
+    debug.ego_predicted_path = predicted_ego_path;
+    debug.obj_predicted_path = target_object_path.path;
+    debug.current_obj_pose = target_object.initial_pose.pose;
+  }
 
   for (const auto & obj_pose_with_poly : target_object_path.path) {
     const auto & current_time = obj_pose_with_poly.time;
@@ -277,7 +281,6 @@ bool checkCollision(
     const auto & ego_velocity = interpolated_data->velocity;
 
     {
-      debug.lerped_path.push_back(ego_pose);
       debug.expected_ego_pose = ego_pose;
       debug.expected_obj_pose = obj_pose;
       debug.extended_ego_polygon = ego_polygon;

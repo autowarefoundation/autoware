@@ -296,11 +296,10 @@ void LaneChangeInterface::setObjectDebugVisualization() const
   if (!parameters_->publish_debug_marker) {
     return;
   }
+  using marker_utils::showPolygon;
+  using marker_utils::showPredictedPath;
+  using marker_utils::showSafetyCheckInfo;
   using marker_utils::lane_change_markers::showAllValidLaneChangePath;
-  using marker_utils::lane_change_markers::showLerpedPose;
-  using marker_utils::lane_change_markers::showObjectInfo;
-  using marker_utils::lane_change_markers::showPolygon;
-  using marker_utils::lane_change_markers::showPolygonPose;
 
   const auto debug_data = module_type_->getDebugData();
   const auto debug_after_approval = module_type_->getAfterApprovalDebugData();
@@ -313,14 +312,14 @@ void LaneChangeInterface::setObjectDebugVisualization() const
 
   add(showAllValidLaneChangePath(debug_valid_path, "lane_change_valid_paths"));
   if (!debug_data.empty()) {
-    add(showObjectInfo(debug_data, "object_debug_info"));
-    add(showLerpedPose(debug_data, "ego_predicted_path"));
+    add(showSafetyCheckInfo(debug_data, "object_debug_info"));
+    add(showPredictedPath(debug_data, "ego_predicted_path"));
     add(showPolygon(debug_data, "ego_and_target_polygon_relation"));
   }
 
   if (!debug_after_approval.empty()) {
-    add(showObjectInfo(debug_after_approval, "object_debug_info_after_approval"));
-    add(showLerpedPose(debug_after_approval, "ego_predicted_path_after_approval"));
+    add(showSafetyCheckInfo(debug_after_approval, "object_debug_info_after_approval"));
+    add(showPredictedPath(debug_after_approval, "ego_predicted_path_after_approval"));
     add(showPolygon(debug_after_approval, "ego_and_target_polygon_relation_after_approval"));
   }
 }
