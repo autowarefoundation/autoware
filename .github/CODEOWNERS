@@ -14,6 +14,7 @@ common/component_interface_tools/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp m
 common/component_interface_utils/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp yukihiro.saito@tier4.jp
 common/cuda_utils/** daisuke.nishimatsu@tier4.jp manato.hirabayashi@tier4.jp
 common/fake_test_node/** opensource@apex.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
+common/geography_utils/** koji.minoda@tier4.jp
 common/global_parameter_loader/** ryohsuke.mitsudome@tier4.jp
 common/glog_component/** takamasa.horibe@tier4.jp
 common/goal_distance_calculator/** taiki.tanaka@tier4.jp
@@ -117,7 +118,7 @@ perception/lidar_apollo_segmentation_tvm/** ambroise.vincent@arm.com xinyu.wang@
 perception/lidar_apollo_segmentation_tvm_nodes/** ambroise.vincent@arm.com xinyu.wang@tier4.jp
 perception/lidar_centerpoint/** kenzo.lobos@tier4.jp yusuke.muramatsu@tier4.jp
 perception/lidar_centerpoint_tvm/** carl.liu@autocore.ai xinyu.wang@tier4.jp
-perception/map_based_prediction/** shunsuke.miura@tier4.jp tomoya.kimura@tier4.jp yoshi.ri@tier4.jp yutaka.shimizu@tier4.jp
+perception/map_based_prediction/** kyoichi.sugahara@tier4.jp shunsuke.miura@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp yoshi.ri@tier4.jp yutaka.shimizu@tier4.jp
 perception/multi_object_tracker/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/object_merger/** yoshi.ri@tier4.jp yukihiro.saito@tier4.jp
 perception/object_range_splitter/** yukihiro.saito@tier4.jp
@@ -166,7 +167,7 @@ planning/freespace_planning_algorithms/** kosuke.takeuchi@tier4.jp takamasa.hori
 planning/mission_planner/** isamu.takagi@tier4.jp kosuke.takeuchi@tier4.jp ryohsuke.mitsudome@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
 planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp makoto.kurihara@tier4.jp takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp
 planning/obstacle_avoidance_planner/** kosuke.takeuchi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
-planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
+planning/obstacle_cruise_planner/** kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
 planning/obstacle_stop_planner/** berkay@leodrive.ai satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
 planning/obstacle_velocity_limiter/** maxime.clement@tier4.jp
 planning/path_smoother/** maxime.clement@tier4.jp takayuki.murooka@tier4.jp
