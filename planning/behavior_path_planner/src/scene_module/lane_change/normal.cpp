@@ -138,6 +138,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
     const auto stop_dist =
       -(current_velocity * current_velocity / (2.0 * planner_data_->parameters.min_acc));
     const auto stop_point = utils::insertStopPoint(stop_dist + current_dist, *output.path);
+    setStopPose(stop_point.point.pose);
   }
 
   const auto current_seg_idx = planner_data_->findEgoSegmentIndex(output.path->points);
@@ -198,6 +199,7 @@ void NormalLaneChange::insertStopPoint(
   const double stopping_distance = distance_to_terminal - lane_change_buffer - stop_point_buffer;
   if (stopping_distance > 0.0) {
     const auto stop_point = utils::insertStopPoint(stopping_distance, path);
+    setStopPose(stop_point.point.pose);
   }
 }
 
@@ -1379,4 +1381,10 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
 
   return path_safety_status;
 }
+
+void NormalLaneChange::setStopPose(const Pose & stop_pose)
+{
+  lane_change_stop_pose_ = stop_pose;
+}
+
 }  // namespace behavior_path_planner
