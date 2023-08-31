@@ -49,6 +49,10 @@ The input are non-ground points as a PointCloud2 message from the sensor_msgs pa
 
 The output is a [DetectedObjectsWithFeature](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_perception_msgs/msg/object_recognition/DetectedObjectsWithFeature.msg).
 
+#### Parameters
+
+{{ json_to_markdown("perception/lidar_apollo_segmentation_tvm_nodes/schema/lidar_apollo_segmentation_tvm_nodes.schema.json") }}
+
 ### Error detection and handling
 
 Abort and warn when the input frame can't be converted to `base_link`.

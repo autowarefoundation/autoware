@@ -55,7 +55,8 @@ plugins:
       regex:
         - ^(?!(.*/)?assets/).*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?gif|(.*\.)?jpg).*$
         - ^(.*/)?[^.]*$
-  - macros
+  - macros:
+      module_name: mkdocs_macros
   - mkdocs-video
   - same-dir
   - search
