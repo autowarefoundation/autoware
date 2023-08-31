@@ -55,6 +55,7 @@ public:
     enable_simultaneous_execution_as_candidate_module_(
       config.enable_simultaneous_execution_as_candidate_module),
     enable_rtc_(config.enable_rtc),
+    keep_last_(config.keep_last),
     max_module_num_(config.max_module_size),
     priority_(config.priority)
   {
@@ -224,6 +225,8 @@ public:
     return enable_simultaneous_execution_as_candidate_module_;
   }
 
+  bool isKeepLast() const { return keep_last_; }
+
   void setData(const std::shared_ptr<PlannerData> & planner_data) { planner_data_ = planner_data; }
 
   void reset()
@@ -289,6 +292,8 @@ protected:
 
 private:
   bool enable_rtc_;
+
+  bool keep_last_;
 
   size_t max_module_num_;
 

@@ -284,6 +284,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
       declare_parameter<bool>(ns + "enable_simultaneous_execution_as_approved_module");
     config.enable_simultaneous_execution_as_candidate_module =
       declare_parameter<bool>(ns + "enable_simultaneous_execution_as_candidate_module");
+    config.keep_last = declare_parameter<bool>(ns + "keep_last");
     config.priority = declare_parameter<int>(ns + "priority");
     config.max_module_size = declare_parameter<int>(ns + "max_module_size");
     return config;
