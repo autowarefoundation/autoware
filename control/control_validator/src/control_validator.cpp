@@ -204,7 +204,9 @@ void ControlValidator::displayStatus()
 
   const auto & s = validation_status_;
 
-  warn(s.is_valid_max_distance_deviation, "planning trajectory is too far from ego!!");
+  warn(
+    s.is_valid_max_distance_deviation,
+    "predicted trajectory is too far from planning trajectory!!");
 }
 
 }  // namespace control_validator
