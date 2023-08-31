@@ -25,10 +25,15 @@ double calculateDistanceLimit(
   const multi_linestring_t & limit_lines)
 {
   auto dist_limit = std::numeric_limits<double>::max();
-  multi_point_t intersections;
-  boost::geometry::intersection(expansion_polygon, limit_lines, intersections);
-  for (const auto & p : intersections)
-    dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
+  for (const auto & line : limit_lines) {
+    multi_point_t intersections;
+    boost::geometry::intersection(expansion_polygon, limit_lines, intersections);
+    for (const auto & p : intersections)
+      dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
+    for (const auto & p : line)
+      if (boost::geometry::within(p, expansion_polygon))
+        dist_limit = std::min(dist_limit, boost::geometry::distance(p, base_ls));
+  }
   return dist_limit;
 }
 
