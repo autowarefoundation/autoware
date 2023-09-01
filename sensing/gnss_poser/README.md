@@ -12,6 +12,7 @@ The `gnss_poser` is a node that subscribes gnss sensing messages and calculates 
 
 | Name                           | Type                                                    | Description                                                                                                                    |
 | ------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `/map/map_projector_info`      | `tier4_map_msgs::msg::MapProjectorInfo`                 | map projection info                                                                                                            |
 | `~/input/fix`                  | `sensor_msgs::msg::NavSatFix`                           | gnss status message                                                                                                            |
 | `~/input/autoware_orientation` | `autoware_sensing_msgs::msg::GnssInsOrientationStamped` | orientation [click here for more details](https://github.com/autowarefoundation/autoware_msgs/tree/main/autoware_sensing_msgs) |
 
@@ -33,7 +34,6 @@ The `gnss_poser` is a node that subscribes gnss sensing messages and calculates 
 | `gnss_frame`           | string | "gnss"           | frame id                                                                                               |
 | `gnss_base_frame`      | string | "gnss_base_link" | frame id                                                                                               |
 | `map_frame`            | string | "map"            | frame id                                                                                               |
-| `coordinate_system`    | int    | "4"              | coordinate system enumeration; 1: MGRS, 4: UTM Local Coordinate System                                 |
 | `gnss_pose_pub_method` | int    | 0                | 0: Instant Value 1: Average Value 2: Median Value. If 0 is chosen buffer_epoch parameter loses affect. |
 
 ## Assumptions / Known limits

@@ -2,7 +2,6 @@
 <launch>
   <arg name="input_topic_fix" default="/fix"/>
   <arg name="input_topic_orientation" default="/autoware_orientation"/>
-  <arg name="param_file" default="$(find-pkg-share gnss_poser)/config/set_local_origin.param.yaml"/>
 
   <arg name="output_topic_gnss_pose" default="gnss_pose"/>
   <arg name="output_topic_gnss_pose_cov" default="gnss_pose_cov"/>
@@ -13,10 +12,8 @@
   <arg name="gnss_frame" default="gnss"/>
   <arg name="map_frame" default="map"/>
 
-  <arg name="coordinate_system" default="4" description="1:MGRS, 4:LocalCartesianUTM"/>
   <arg name="buff_epoch" default="1"/>
   <arg name="use_gnss_ins_orientation" default="true"/>
-  <arg name="height_system" default="1" description="0:Orthometric Height 1:Ellipsoid Height"/>
   <arg name="gnss_pose_pub_method" default="0" description="0: Instant Value 1: Average Value 2: Median Value"/>
 
   <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="screen">
@@ -31,11 +28,8 @@
     <param name="gnss_frame" value="$(var gnss_frame)"/>
     <param name="map_frame" value="$(var map_frame)"/>
 
-    <param name="coordinate_system" value="$(var coordinate_system)"/>
     <param name="buff_epoch" value="$(var buff_epoch)"/>
     <param name="use_gnss_ins_orientation" value="$(var use_gnss_ins_orientation)"/>
-    <param from="$(var param_file)"/>
-    <param name="height_system" value="$(var height_system)"/>
     <param name="gnss_pose_pub_method" value="$(var gnss_pose_pub_method)"/>
   </node>
 </launch>
