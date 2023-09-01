@@ -35,6 +35,7 @@ tier4_map_msgs::msg::MapProjectorInfo load_info_from_yaml(const std::string & fi
     msg.vertical_datum = data["vertical_datum"].as<std::string>();
     msg.map_origin.latitude = data["map_origin"]["latitude"].as<double>();
     msg.map_origin.longitude = data["map_origin"]["longitude"].as<double>();
+    msg.map_origin.altitude = data["map_origin"]["altitude"].as<double>();
   } else if (msg.projector_type == tier4_map_msgs::msg::MapProjectorInfo::LOCAL) {
     ;  // do nothing
   } else {
