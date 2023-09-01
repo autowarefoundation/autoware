@@ -18,7 +18,7 @@
 #include <autoware_ad_api_specs/planning.hpp>
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_specs/planning.hpp>
-#include <motion_utils/motion_utils.hpp>
+#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>

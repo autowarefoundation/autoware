@@ -14,6 +14,8 @@
 
 #include "planning.hpp"
 
+#include <motion_utils/trajectory/trajectory.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
