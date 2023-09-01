@@ -18,8 +18,6 @@
 #include "motion_utils/marker/marker_helper.hpp"
 
 #include <geometry_msgs/msg/pose.hpp>
-#include <visualization_msgs/msg/marker.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
 #include <unordered_map>
