@@ -284,13 +284,15 @@ TEST(DrivableAreaExpansionProjection, expandDrivableArea)
   }
 
   // expanded left bound
-  ASSERT_EQ(path.left_bound.size(), 3ul);
+  ASSERT_EQ(path.left_bound.size(), 4ul);
   EXPECT_NEAR(path.left_bound[0].x, 0.0, eps);
   EXPECT_NEAR(path.left_bound[0].y, 1.0, eps);
   EXPECT_NEAR(path.left_bound[1].x, 0.0, eps);
   EXPECT_NEAR(path.left_bound[1].y, 2.0, eps);
   EXPECT_NEAR(path.left_bound[2].x, 2.0, eps);
   EXPECT_NEAR(path.left_bound[2].y, 2.0, eps);
+  EXPECT_NEAR(path.left_bound[3].x, 2.0, eps);
+  EXPECT_NEAR(path.left_bound[3].y, 1.0, eps);
   // expanded right bound
   ASSERT_EQ(path.right_bound.size(), 3ul);
   EXPECT_NEAR(path.right_bound[0].x, 0.0, eps);

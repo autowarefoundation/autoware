@@ -165,8 +165,8 @@ void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_
 {
   const auto original_left_bound = path.left_bound;
   const auto original_right_bound = path.right_bound;
-  const auto is_left_of_segment = [](const point_t & a, const point_t & b, const point_t & p) {
-    return (b.x() - a.x()) * (p.y() - a.y()) - (b.y() - a.y()) * (p.x() - a.x()) > 0;
+  const auto is_left_of_path = [&](const point_t & p) {
+    return motion_utils::calcLateralOffset(path.points, convert_point(p)) > 0.0;
   };
   // prepare delimiting lines: start and end of the original expanded drivable area
   const auto start_segment =
@@ -230,12 +230,10 @@ void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_
             *it, *std::next(it), start_segment.first, start_segment.second);
     if (inter_start) {
       const auto dist = boost::geometry::distance(*inter_start, path_start_segment);
-      const auto is_left_of_path_start = is_left_of_segment(
-        convert_point(path.points[0].point.pose.position),
-        convert_point(path.points[1].point.pose.position), *inter_start);
-      if (is_left_of_path_start && dist < start_left.distance)
+      const auto is_left = is_left_of_path(*inter_start);
+      if (is_left && dist < start_left.distance)
         start_left.update(*inter_start, it, dist);
-      else if (!is_left_of_path_start && dist < start_right.distance)
+      else if (!is_left && dist < start_right.distance)
         start_right.update(*inter_start, it, dist);
     }
     const auto inter_end =
@@ -244,11 +242,10 @@ void updateDrivableAreaBounds(PathWithLaneId & path, const polygon_t & expanded_
         : segment_to_line_intersection(*it, *std::next(it), end_segment.first, end_segment.second);
     if (inter_end) {
       const auto dist = boost::geometry::distance(*inter_end, path_end_segment);
-      const auto is_left_of_path_end = is_left_of_segment(
-        convert_point(path.points.back().point.pose.position), end_segment_center, *inter_end);
-      if (is_left_of_path_end && dist < end_left.distance)
+      const auto is_left = is_left_of_path(*inter_end);
+      if (is_left && dist < end_left.distance)
         end_left.update(*inter_end, it, dist);
-      else if (!is_left_of_path_end && dist < end_right.distance)
+      else if (!is_left && dist < end_right.distance)
         end_right.update(*inter_end, it, dist);
     }
   }
