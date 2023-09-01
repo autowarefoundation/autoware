@@ -580,7 +580,7 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
       [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
 
     if (success_lane_change) {
-      root_lanelet_ = updateRootLanelet(data, true);
+      root_lanelet_ = updateRootLanelet(data);
     }
 
     std::for_each(success_module_itr, approved_module_ptrs_.end(), [&](auto & m) {

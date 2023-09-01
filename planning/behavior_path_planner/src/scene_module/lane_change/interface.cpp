@@ -88,14 +88,11 @@ ModuleStatus LaneChangeInterface::updateState()
   }
 
   if (!module_type_->isValidPath()) {
-    return ModuleStatus::RUNNING;
+    return ModuleStatus::SUCCESS;
   }
 
   if (module_type_->isAbortState()) {
-    if (module_type_->hasFinishedAbort()) {
-      resetLaneChangeModule();
-    }
-    return ModuleStatus::RUNNING;
+    return module_type_->hasFinishedAbort() ? ModuleStatus::SUCCESS : ModuleStatus::RUNNING;
   }
 
   if (module_type_->hasFinishedLaneChange()) {
@@ -154,10 +151,7 @@ ModuleStatus LaneChangeInterface::updateState()
       getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000,
       "Lane change path is unsafe. Cancel lane change.");
     module_type_->toCancelState();
-    if (!isWaitingApproval()) {
-      resetLaneChangeModule();
-    }
-    return ModuleStatus::RUNNING;
+    return isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::SUCCESS;
   }
 
   if (!module_type_->isAbortEnabled()) {
@@ -190,13 +184,6 @@ ModuleStatus LaneChangeInterface::updateState()
     "Lane change path is unsafe. Abort lane change.");
   module_type_->toAbortState();
   return ModuleStatus::RUNNING;
-}
-
-void LaneChangeInterface::resetLaneChangeModule()
-{
-  processOnExit();
-  removeRTCStatus();
-  processOnEntry();
 }
 
 void LaneChangeInterface::updateData()
