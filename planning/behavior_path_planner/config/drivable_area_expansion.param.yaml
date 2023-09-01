@@ -21,12 +21,14 @@
           rear: 0.5 # [m] extra length to add to the rear of the dynamic object footprint
           left: 0.5 # [m] extra length to add to the left of the dynamic object footprint
           right: 0.5 # [m] extra length to add to the rear of the dynamic object footprint
+      path_preprocessing:
+        max_arc_length: 50.0 # [m] maximum arc length along the path where the ego footprint is projected (0.0 means no limit)
+        resample_interval: 2.0 # [m] fixed interval between resampled path points (0.0 means path points are directly used)
       expansion:
         method: polygon # method used to expand the drivable area. Either 'lanelet' or 'polygon'.
                          # 'lanelet': add lanelets overlapped by the ego footprints
                          # 'polygon': add polygons built around sections of the ego footprint that go out of the drivable area
         max_distance: 0.0 # [m] maximum distance by which the drivable area can be expended (0.0 means no limit)
-        max_path_arc_length: 50.0 # [m] maximum arc length along the path where the ego footprint is projected (0.0 means no limit)
         extra_arc_length: 0.5 # [m] extra expansion arc length around an ego footprint
       avoid_linestring:
         types: # linestring types in the lanelet maps that will not be crossed when expanding the drivable area

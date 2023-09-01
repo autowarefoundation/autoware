@@ -1045,6 +1045,9 @@ SetParametersResult BehaviorPathPlannerNode::onSetParam(
       parameters, DrivableAreaExpansionParameters::MAX_PATH_ARC_LENGTH_PARAM,
       planner_data_->drivable_area_expansion_parameters.max_path_arc_length);
     updateParam(
+      parameters, DrivableAreaExpansionParameters::RESAMPLE_INTERVAL_PARAM,
+      planner_data_->drivable_area_expansion_parameters.resample_interval);
+    updateParam(
       parameters, DrivableAreaExpansionParameters::EXTRA_ARC_LENGTH_PARAM,
       planner_data_->drivable_area_expansion_parameters.extra_arc_length);
     updateParam(

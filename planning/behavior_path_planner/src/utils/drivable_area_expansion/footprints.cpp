@@ -66,7 +66,7 @@ multi_polygon_t createObjectFootprints(
 }
 
 multi_polygon_t createPathFootprints(
-  const PathWithLaneId & path, const DrivableAreaExpansionParameters & params)
+  const std::vector<PathPointWithLaneId> & points, const DrivableAreaExpansionParameters & params)
 {
   const auto left = params.ego_left_offset + params.ego_extra_left_offset;
   const auto right = params.ego_right_offset - params.ego_extra_right_offset;
@@ -78,9 +78,9 @@ multi_polygon_t createPathFootprints(
     point_t{front, left}};
   multi_polygon_t footprints;
   // skip the last footprint as its orientation is usually wrong
-  footprints.reserve(path.points.size() - 1);
+  footprints.reserve(points.size() - 1);
   double arc_length = 0.0;
-  for (auto it = path.points.begin(); std::next(it) != path.points.end(); ++it) {
+  for (auto it = points.begin(); std::next(it) != points.end(); ++it) {
     footprints.push_back(createFootprint(it->point.pose, base_footprint));
     if (params.max_path_arc_length > 0.0) {
       arc_length += tier4_autoware_utils::calcDistance2d(it->point.pose, std::next(it)->point.pose);

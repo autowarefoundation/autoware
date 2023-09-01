@@ -64,6 +64,6 @@ multi_polygon_t createObjectFootprints(
 /// @param[in] params expansion parameters defining how to create the footprint
 /// @return footprint polygons of the path
 multi_polygon_t createPathFootprints(
-  const PathWithLaneId & path, const DrivableAreaExpansionParameters & params);
+  const std::vector<PathPointWithLaneId> & path, const DrivableAreaExpansionParameters & params);
 }  // namespace drivable_area_expansion
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__DRIVABLE_AREA_EXPANSION__FOOTPRINTS_HPP_

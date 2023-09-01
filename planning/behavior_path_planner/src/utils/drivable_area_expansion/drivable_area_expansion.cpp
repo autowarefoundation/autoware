@@ -19,20 +19,71 @@
 #include "behavior_path_planner/utils/drivable_area_expansion/map_utils.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/parameters.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/types.hpp"
-#include "interpolation/linear_interpolation.hpp"
 
 #include <Eigen/Geometry>
+#include <interpolation/linear_interpolation.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 
 #include <boost/geometry.hpp>
 
 namespace drivable_area_expansion
 {
 
+std::vector<PathPointWithLaneId> crop_and_resample(
+  const std::vector<PathPointWithLaneId> & points,
+  const std::shared_ptr<const behavior_path_planner::PlannerData> planner_data,
+  const double resample_interval)
+{
+  auto lon_offset = 0.0;
+  auto crop_pose = *planner_data->drivable_area_expansion_prev_crop_pose;
+  // reuse or update the previous crop point
+  if (planner_data->drivable_area_expansion_prev_crop_pose) {
+    const auto lon_offset = motion_utils::calcSignedArcLength(
+      points, points.front().point.pose.position, crop_pose.position);
+    if (lon_offset < 0.0) {
+      planner_data->drivable_area_expansion_prev_crop_pose.reset();
+    } else {
+      const auto is_behind_ego =
+        motion_utils::calcSignedArcLength(
+          points, crop_pose.position, planner_data->self_odometry->pose.pose.position) > 0.0;
+      const auto is_too_far = motion_utils::calcLateralOffset(points, crop_pose.position) > 0.1;
+      if (!is_behind_ego || is_too_far)
+        planner_data->drivable_area_expansion_prev_crop_pose.reset();
+    }
+  }
+  if (!planner_data->drivable_area_expansion_prev_crop_pose) {
+    crop_pose = planner_data->drivable_area_expansion_prev_crop_pose.value_or(
+      motion_utils::calcInterpolatedPose(points, resample_interval - lon_offset));
+  }
+  // crop
+  const auto crop_seg_idx = motion_utils::findNearestSegmentIndex(points, crop_pose.position);
+  const auto cropped_points = motion_utils::cropPoints(
+    points, crop_pose.position, crop_seg_idx + 1,
+    planner_data->drivable_area_expansion_parameters.max_path_arc_length, 0.0);
+  planner_data->drivable_area_expansion_prev_crop_pose = crop_pose;
+  // resample
+  PathWithLaneId cropped_path;
+  if (tier4_autoware_utils::calcDistance2d(crop_pose, cropped_points.front()) > 1e-3) {
+    PathPointWithLaneId crop_path_point;
+    crop_path_point.point.pose = crop_pose;
+    cropped_path.points.push_back(crop_path_point);
+  }
+  cropped_path.points.insert(
+    cropped_path.points.end(), cropped_points.begin(), cropped_points.end());
+  const auto resampled_path =
+    motion_utils::resamplePath(cropped_path, resample_interval, true, true, false);
+
+  return resampled_path.points;
+}
+
 void expandDrivableArea(
-  PathWithLaneId & path, const DrivableAreaExpansionParameters & params,
-  const PredictedObjects & dynamic_objects, const route_handler::RouteHandler & route_handler,
+  PathWithLaneId & path,
+  const std::shared_ptr<const behavior_path_planner::PlannerData> planner_data,
   const lanelet::ConstLanelets & path_lanes)
 {
+  const auto & params = planner_data->drivable_area_expansion_parameters;
+  const auto & dynamic_objects = *planner_data->dynamic_object;
+  const auto & route_handler = *planner_data->route_handler;
   const auto uncrossable_lines =
     extractUncrossableLines(*route_handler.getLaneletMapPtr(), params.avoid_linestring_types);
   multi_linestring_t uncrossable_lines_in_range;
@@ -40,7 +91,8 @@ void expandDrivableArea(
   for (const auto & line : uncrossable_lines)
     if (boost::geometry::distance(line, point_t{p.x, p.y}) < params.max_path_arc_length)
       uncrossable_lines_in_range.push_back(line);
-  const auto path_footprints = createPathFootprints(path, params);
+  const auto points = crop_and_resample(path.points, planner_data, params.resample_interval);
+  const auto path_footprints = createPathFootprints(points, params);
   const auto predicted_paths = createObjectFootprints(dynamic_objects, params);
   const auto expansion_polygons =
     params.expansion_method == "lanelet"

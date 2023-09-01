@@ -48,8 +48,10 @@ struct DrivableAreaExpansionParameters
     "dynamic_expansion.dynamic_objects.extra_footprint_offset.right";
   static constexpr auto EXPANSION_METHOD_PARAM = "dynamic_expansion.expansion.method";
   static constexpr auto MAX_EXP_DIST_PARAM = "dynamic_expansion.expansion.max_distance";
+  static constexpr auto RESAMPLE_INTERVAL_PARAM =
+    "dynamic_expansion.path_preprocessing.resample_interval";
   static constexpr auto MAX_PATH_ARC_LENGTH_PARAM =
-    "dynamic_expansion.expansion.max_path_arc_length";
+    "dynamic_expansion.path_preprocessing.max_arc_length";
   static constexpr auto EXTRA_ARC_LENGTH_PARAM = "dynamic_expansion.expansion.extra_arc_length";
   static constexpr auto AVOID_DYN_OBJECTS_PARAM = "dynamic_expansion.dynamic_objects.avoid";
   static constexpr auto AVOID_LINESTRING_TYPES_PARAM = "dynamic_expansion.avoid_linestring.types";
@@ -78,6 +80,7 @@ struct DrivableAreaExpansionParameters
   double dynamic_objects_extra_front_offset{};
   double max_expansion_distance{};
   double max_path_arc_length{};
+  double resample_interval{};
   double extra_arc_length{};
   bool avoid_dynamic_objects{};
   std::vector<std::string> avoid_linestring_types{};
@@ -98,6 +101,7 @@ struct DrivableAreaExpansionParameters
     enabled = node.declare_parameter<bool>(ENABLED_PARAM);
     max_expansion_distance = node.declare_parameter<double>(MAX_EXP_DIST_PARAM);
     max_path_arc_length = node.declare_parameter<double>(MAX_PATH_ARC_LENGTH_PARAM);
+    resample_interval = node.declare_parameter<double>(RESAMPLE_INTERVAL_PARAM);
     ego_extra_front_offset = node.declare_parameter<double>(EGO_EXTRA_OFFSET_FRONT);
     ego_extra_rear_offset = node.declare_parameter<double>(EGO_EXTRA_OFFSET_REAR);
     ego_extra_left_offset = node.declare_parameter<double>(EGO_EXTRA_OFFSET_LEFT);
