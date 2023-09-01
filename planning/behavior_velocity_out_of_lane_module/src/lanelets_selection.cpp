@@ -54,16 +54,21 @@ lanelet::ConstLanelets calculate_other_lanelets(
   const auto lanelets_within_range = lanelet::geometry::findWithin2d(
     route_handler.getLaneletMapPtr()->laneletLayer, ego_point,
     std::max(params.slow_dist_threshold, params.stop_dist_threshold));
+  const auto is_overlapped_by_path_lanelets = [&](const auto & l) {
+    for (const auto & path_ll : path_lanelets) {
+      if (
+        boost::geometry::overlaps(
+          path_ll.polygon2d().basicPolygon(), l.polygon2d().basicPolygon()) ||
+        boost::geometry::within(path_ll.polygon2d().basicPolygon(), l.polygon2d().basicPolygon()) ||
+        boost::geometry::within(l.polygon2d().basicPolygon(), path_ll.polygon2d().basicPolygon())) {
+        return true;
+      }
+    }
+    return false;
+  };
   for (const auto & ll : lanelets_within_range) {
     const auto is_path_lanelet = contains_lanelet(path_lanelets, ll.second.id());
     const auto is_ignored_lanelet = contains_lanelet(ignored_lanelets, ll.second.id());
-    const auto is_overlapped_by_path_lanelets = [&](const auto & l) {
-      for (const auto & path_ll : path_lanelets)
-        if (boost::geometry::overlaps(
-              path_ll.polygon2d().basicPolygon(), l.polygon2d().basicPolygon()))
-          return true;
-      return false;
-    };
     if (!is_path_lanelet && !is_ignored_lanelet && !is_overlapped_by_path_lanelets(ll.second))
       other_lanelets.push_back(ll.second);
   }
