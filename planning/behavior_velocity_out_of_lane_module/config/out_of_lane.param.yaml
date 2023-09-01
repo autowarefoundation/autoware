@@ -34,6 +34,7 @@
           distance_threshold: 15.0 # [m] insert a stop when closer than this distance from an overlap
 
       ego:
+        min_assumed_velocity: 2.0 # [m/s] minimum velocity used to calculate the enter and exit times of ego
         extra_front_offset: 0.0 # [m] extra front distance
         extra_rear_offset: 0.0 # [m] extra rear distance
         extra_right_offset: 0.0 # [m] extra right distance

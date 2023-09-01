@@ -30,11 +30,11 @@ double distance_along_path(const EgoData & ego_data, const size_t target_idx)
     ego_data.path->points, ego_data.pose.position, ego_data.first_path_idx + target_idx);
 }
 
-double time_along_path(const EgoData & ego_data, const size_t target_idx)
+double time_along_path(const EgoData & ego_data, const size_t target_idx, const double min_velocity)
 {
   const auto dist = distance_along_path(ego_data, target_idx);
   const auto v = std::max(
-    ego_data.velocity,
+    std::max(ego_data.velocity, min_velocity),
     ego_data.path->points[ego_data.first_path_idx + target_idx].point.longitudinal_velocity_mps *
       0.5);
   return dist / v;
@@ -55,8 +55,7 @@ bool object_is_incoming(
 
 std::optional<std::pair<double, double>> object_time_to_range(
   const autoware_auto_perception_msgs::msg::PredictedObject & object, const OverlapRange & range,
-  const std::shared_ptr<route_handler::RouteHandler> route_handler, const double min_confidence,
-  const rclcpp::Logger & logger)
+  const std::shared_ptr<route_handler::RouteHandler> route_handler, const rclcpp::Logger & logger)
 {
   // skip the dynamic object if it is not in a lane preceding the overlapped lane
   // lane changes are intentionally not considered
@@ -65,13 +64,12 @@ std::optional<std::pair<double, double>> object_time_to_range(
     object.kinematics.initial_pose_with_covariance.pose.position.y);
   if (!object_is_incoming(object_point, route_handler, range.lane)) return {};
 
-  const auto max_deviation = object.shape.dimensions.y * 2.0;
+  const auto max_deviation = object.shape.dimensions.y + range.inside_distance;
 
   auto worst_enter_time = std::optional<double>();
   auto worst_exit_time = std::optional<double>();
 
   for (const auto & predicted_path : object.kinematics.predicted_paths) {
-    if (predicted_path.confidence < min_confidence) continue;
     const auto time_step = rclcpp::Duration(predicted_path.time_step).seconds();
     const auto enter_point =
       geometry_msgs::msg::Point().set__x(range.entering_point.x()).set__y(range.entering_point.y());
@@ -281,8 +279,10 @@ bool should_not_enter(
   const rclcpp::Logger & logger)
 {
   RangeTimes range_times{};
-  range_times.ego.enter_time = time_along_path(inputs.ego_data, range.entering_path_idx);
-  range_times.ego.exit_time = time_along_path(inputs.ego_data, range.exiting_path_idx);
+  range_times.ego.enter_time =
+    time_along_path(inputs.ego_data, range.entering_path_idx, params.ego_min_velocity);
+  range_times.ego.exit_time =
+    time_along_path(inputs.ego_data, range.exiting_path_idx, params.ego_min_velocity);
   RCLCPP_DEBUG(
     logger, "\t[%lu -> %lu] %ld | ego enters at %2.2f, exits at %2.2f\n", range.entering_path_idx,
     range.exiting_path_idx, range.lane.id(), range_times.ego.enter_time, range_times.ego.exit_time);
@@ -298,8 +298,7 @@ bool should_not_enter(
     // skip objects that are already on the interval
     const auto enter_exit_time =
       params.objects_use_predicted_paths
-        ? object_time_to_range(
-            object, range, inputs.route_handler, params.objects_min_confidence, logger)
+        ? object_time_to_range(object, range, inputs.route_handler, logger)
         : object_time_to_range(object, range, inputs, logger);
     if (!enter_exit_time) {
       RCLCPP_DEBUG(logger, " SKIP (no enter/exit times found)\n");
