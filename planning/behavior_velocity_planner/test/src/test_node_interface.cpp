@@ -79,7 +79,8 @@ std::shared_ptr<BehaviorVelocityPlannerNode> generateNode()
      get_behavior_velocity_module_config("stop_line"),
      get_behavior_velocity_module_config("traffic_light"),
      get_behavior_velocity_module_config("virtual_traffic_light"),
-     get_behavior_velocity_module_config("out_of_lane")});
+     get_behavior_velocity_module_config("out_of_lane"),
+     get_behavior_velocity_module_config("no_drivable_lane")});
 
   // TODO(Takagi, Isamu): set launch_modules
   // TODO(Kyoichi Sugahara) set to true launch_virtual_traffic_light
