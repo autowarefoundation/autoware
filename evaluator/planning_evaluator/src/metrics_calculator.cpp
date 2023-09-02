@@ -14,13 +14,12 @@
 
 #include "planning_evaluator/metrics_calculator.hpp"
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "planning_evaluator/metrics/deviation_metrics.hpp"
 #include "planning_evaluator/metrics/obstacle_metrics.hpp"
 #include "planning_evaluator/metrics/stability_metrics.hpp"
 #include "planning_evaluator/metrics/trajectory_metrics.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
-
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 namespace planning_diagnostics
 {
 std::optional<Stat<double>> MetricsCalculator::calculate(

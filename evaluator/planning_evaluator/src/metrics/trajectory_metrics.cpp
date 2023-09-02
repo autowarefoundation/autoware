@@ -15,8 +15,7 @@
 #include "planning_evaluator/metrics/trajectory_metrics.hpp"
 
 #include "planning_evaluator/metrics/metrics_utils.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
-
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 namespace planning_diagnostics
 {
 namespace metrics
