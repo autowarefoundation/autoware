@@ -44,7 +44,8 @@ void insertPointInPredictedTrajectory(
 
 TrajectoryPoints reverseTrajectoryPoints(const TrajectoryPoints & trajectory_points)
 {
-  TrajectoryPoints reversed_trajectory_points(trajectory_points.size());
+  TrajectoryPoints reversed_trajectory_points;
+  reversed_trajectory_points.reserve(trajectory_points.size());
   std::reverse_copy(
     trajectory_points.begin(), trajectory_points.end(),
     std::back_inserter(reversed_trajectory_points));
@@ -106,7 +107,7 @@ Trajectory alignTrajectoryWithReferenceTrajectory(
   // predicted_trajectory:   　　　　p1-----p2-----p3----//------pN
   // trajectory:                               t1--------//------tN
   // ↓
-  // predicted_trajectory:   　　　　        tNew--p3----//------pN
+  // predicted_trajectory:   　　　　        pNew--p3----//------pN
   // trajectory:                               t1--------//------tN
   auto predicted_trajectory_point_removed = removeFrontTrajectoryPoint(
     trajectory_points, modified_trajectory_points, predicted_trajectory_points);
