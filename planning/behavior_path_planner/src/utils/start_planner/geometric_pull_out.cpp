@@ -69,11 +69,10 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
 
   // collision check with stop objects in pull out lanes
   const auto arc_path = planner_.getArcPath();
-  const auto [pull_out_lane_objects, others] =
-    utils::path_safety_checker::separateObjectsByLanelets(
-      *(planner_data_->dynamic_object), pull_out_lanes);
-  const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-    pull_out_lane_objects, parameters_.th_moving_object_velocity);
+  const auto & stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
+  const auto [pull_out_lane_stop_objects, others] =
+    utils::path_safety_checker::separateObjectsByLanelets(stop_objects, pull_out_lanes);
 
   if (utils::checkCollisionBetweenPathFootprintsAndObjects(
         vehicle_footprint_, arc_path, pull_out_lane_stop_objects,
@@ -123,6 +122,7 @@ boost::optional<PullOutPath> GeometricPullOut::plan(Pose start_pose, Pose goal_p
     output.pairs_terminal_velocity_and_accel.push_back(
       std::make_pair(velocity, velocity * velocity / 2 * arc_length_on_path));
   }
+
   output.start_pose = planner_.getArcPaths().at(0).points.front().point.pose;
   output.end_pose = planner_.getArcPaths().at(1).points.back().point.pose;
 

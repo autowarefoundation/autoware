@@ -204,6 +204,7 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
   PullOverPath pull_over_path{};
   pull_over_path.type = getPlannerType();
   pull_over_path.partial_paths.push_back(shifted_path.path);
+  pull_over_path.pairs_terminal_velocity_and_accel.push_back(std::make_pair(pull_over_velocity, 0));
   pull_over_path.start_pose = path_shifter.getShiftLines().front().start;
   pull_over_path.end_pose = path_shifter.getShiftLines().front().end;
   pull_over_path.debug_poses.push_back(shift_end_pose_road_lane);

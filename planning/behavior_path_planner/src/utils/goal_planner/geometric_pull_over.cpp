@@ -75,6 +75,7 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
   PullOverPath pull_over_path{};
   pull_over_path.type = getPlannerType();
   pull_over_path.partial_paths = planner_.getPaths();
+  pull_over_path.pairs_terminal_velocity_and_accel = planner_.getPairsTerminalVelocityAndAccel();
   pull_over_path.start_pose = planner_.getStartPose();
   pull_over_path.end_pose = planner_.getArcEndPose();
 

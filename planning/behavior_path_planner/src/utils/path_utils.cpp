@@ -418,6 +418,7 @@ void correctDividedPathVelocity(std::vector<PathWithLaneId> & divided_paths)
 {
   for (auto & path : divided_paths) {
     const auto is_driving_forward = motion_utils::isDrivingForward(path.points);
+    // If the number of points in the path is less than 2, don't correct the velocity
     if (!is_driving_forward) {
       continue;
     }

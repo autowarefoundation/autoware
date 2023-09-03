@@ -65,7 +65,7 @@ enum class PathType {
   FREESPACE,
 };
 
-struct PUllOverStatus
+struct PullOverStatus
 {
   std::shared_ptr<PullOverPath> pull_over_path{};
   std::shared_ptr<PullOverPath> lane_parking_pull_over_path{};
@@ -76,7 +76,8 @@ struct PUllOverStatus
   lanelet::ConstLanelets pull_over_lanes{};
   std::vector<DrivableLanes> lanes{};  // current + pull_over
   bool has_decided_path{false};
-  bool is_safe{false};
+  bool is_safe_static_objects{false};   // current path is safe against static objects
+  bool is_safe_dynamic_objects{false};  // current path is safe against dynamic objects
   bool prev_is_safe{false};
   bool has_decided_velocity{false};
   bool has_requested_approval{false};
@@ -134,7 +135,7 @@ private:
 
   bool canTransitIdleToRunningState() override { return false; }
 
-  PUllOverStatus status_;
+  PullOverStatus status_;
 
   std::shared_ptr<GoalPlannerParameters> parameters_;
 
@@ -205,7 +206,6 @@ private:
     const Pose & search_start_offset_pose, PathWithLaneId & path) const;
   PathWithLaneId generateStopPath();
   PathWithLaneId generateFeasibleStopPath();
-  boost::optional<double> calcFeasibleDecelDistance(const double target_velocity) const;
   void keepStoppedWithCurrentPath(PathWithLaneId & path);
   double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
 

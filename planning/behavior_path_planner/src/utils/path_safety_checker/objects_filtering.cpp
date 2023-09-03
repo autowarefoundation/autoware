@@ -343,13 +343,13 @@ TargetObjectsOnLane createTargetObjectsOnLane(
   };
 
   // TODO(Sugahara): Consider shoulder and other lane objects
-  if (object_lane_configuration.check_current_lane) {
+  if (object_lane_configuration.check_current_lane && !current_lanes.empty()) {
     append_objects_on_lane(target_objects_on_lane.on_current_lane, current_lanes);
   }
-  if (object_lane_configuration.check_left_lane) {
+  if (object_lane_configuration.check_left_lane && !all_left_lanelets.empty()) {
     append_objects_on_lane(target_objects_on_lane.on_left_lane, all_left_lanelets);
   }
-  if (object_lane_configuration.check_right_lane) {
+  if (object_lane_configuration.check_right_lane && !all_right_lanelets.empty()) {
     append_objects_on_lane(target_objects_on_lane.on_right_lane, all_right_lanelets);
   }
 

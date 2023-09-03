@@ -17,6 +17,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_PLANNER_PARAMETERS_HPP_
 
 #include "behavior_path_planner/utils/geometric_parallel_parking/geometric_parallel_parking.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
 #include <freespace_planning_algorithms/abstract_algorithm.hpp>
 #include <freespace_planning_algorithms/astar_search.hpp>
@@ -98,6 +99,18 @@ struct GoalPlannerParameters
   PlannerCommonParam freespace_parking_common_parameters;
   AstarParam astar_parameters;
   RRTStarParam rrt_star_parameters;
+
+  // stop condition
+  double maximum_deceleration_for_stop;
+  double maximum_jerk_for_stop;
+
+  // hysteresis parameter
+  double hysteresis_factor_expand_rate;
+
+  // path safety checker
+  utils::path_safety_checker::EgoPredictedPathParams ego_predicted_path_params;
+  utils::path_safety_checker::ObjectsFilteringParams objects_filtering_params;
+  utils::path_safety_checker::SafetyCheckParams safety_check_params;
 
   // debug
   bool print_debug_info;

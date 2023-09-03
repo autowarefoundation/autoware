@@ -94,6 +94,10 @@ public:
 
   std::vector<PathWithLaneId> getArcPaths() const { return arc_paths_; }
   std::vector<PathWithLaneId> getPaths() const { return paths_; }
+  std::vector<std::pair<double, double>> getPairsTerminalVelocityAndAccel() const
+  {
+    return pairs_terminal_velocity_and_accel_;
+  }
   PathWithLaneId getPathByIdx(size_t const idx) const;
   PathWithLaneId getCurrentPath() const;
   PathWithLaneId getFullPath() const;
@@ -112,6 +116,7 @@ private:
 
   std::vector<PathWithLaneId> arc_paths_;
   std::vector<PathWithLaneId> paths_;
+  std::vector<std::pair<double, double>> pairs_terminal_velocity_and_accel_;
   size_t current_path_idx_ = 0;
 
   void clearPaths();
