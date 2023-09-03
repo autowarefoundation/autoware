@@ -40,6 +40,13 @@ parser.add_argument(
     help="Options  VEL(default): show velocity only, VEL_ACC_JERK: show vel & acc & jerk",
 )
 
+parser.add_argument(
+    "-v",
+    "--max-velocity",
+    type=int,
+    help="maximum plotting velocity in Matplotlib",
+)
+
 args = parser.parse_args()
 
 PLOT_MIN_ARCLENGTH = -5
@@ -60,6 +67,11 @@ else:
     print("invalid type. set default VEL.")
     PLOT_TYPE = "VEL"
 print("plot type = " + PLOT_TYPE)
+
+if args.max_velocity is None:
+    MAX_VELOCITY = 20
+else:
+    MAX_VELOCITY = args.max_velocity
 
 
 class TrajectoryVisualizer(Node):
@@ -274,6 +286,7 @@ class TrajectoryVisualizer(Node):
         self.ax1.set_title("trajectory's velocity")
         self.ax1.legend()
         self.ax1.set_xlim([PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH])
+        self.ax1.set_ylim([0, MAX_VELOCITY])
         self.ax1.set_ylabel("vel [m/s]")
 
         return (
@@ -397,9 +410,6 @@ class TrajectoryVisualizer(Node):
 
             if len(y) != 0:
                 self.min_vel = np.min(y)
-
-        # change y-range
-        self.ax1.set_ylim([self.min_vel - 1.0, self.max_vel + 1.0])
 
         return (
             self.im1,
@@ -577,6 +587,7 @@ class TrajectoryVisualizer(Node):
         self.ax1.set_title("trajectory's velocity")
         self.ax1.legend()
         self.ax1.set_xlim([PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH])
+        self.ax1.set_ylim([0, MAX_VELOCITY])
         self.ax1.set_ylabel("vel [m/s]")
 
         self.ax2 = plt.subplot(3, 1, 2)
