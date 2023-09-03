@@ -1,0 +1,9 @@
+<library path="tier4_target_object_type_rviz_plugin">
+
+  <class
+    type="TargetObjectTypePanel"
+    base_class_type="rviz_common::Panel">
+    <description>TargetObjectTypePanel</description>
+  </class>
+
+</library>
