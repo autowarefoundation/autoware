@@ -526,11 +526,32 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
     return output;
   }
 
+  const auto move_to_end = [](auto & modules, const auto & cond) {
+    auto itr = modules.begin();
+    while (itr != modules.end()) {
+      const auto satisfied_exit_cond =
+        std::all_of(itr, modules.end(), [&cond](const auto & m) { return cond(m); });
+
+      if (satisfied_exit_cond) {
+        return;
+      }
+
+      if (cond(*itr)) {
+        auto tmp = std::move(*itr);
+        itr = modules.erase(itr);
+        modules.insert(modules.end(), std::move(tmp));
+      } else {
+        itr++;
+      }
+    }
+  };
+
   // move modules whose keep last flag is true to end of the approved_module_ptrs_.
   {
-    std::sort(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), [this](auto a, auto b) {
-      return !getManager(a)->isKeepLast() && getManager(b)->isKeepLast();
-    });
+    const auto keep_last_module_cond = [this](const auto & m) {
+      return getManager(m)->isKeepLast();
+    };
+    move_to_end(approved_module_ptrs_, keep_last_module_cond);
   }
 
   // lock approved modules besides last one
@@ -641,24 +662,28 @@ BehaviorModuleOutput PlannerManager::runApprovedModules(const std::shared_ptr<Pl
    * remove success module immediately. if lane change module has succeeded, update root lanelet.
    */
   {
-    const auto success_module_itr = std::partition(
-      approved_module_ptrs_.begin(), approved_module_ptrs_.end(),
-      [](const auto & m) { return m->getCurrentStatus() != ModuleStatus::SUCCESS; });
+    const auto success_module_cond = [](const auto & m) {
+      return m->getCurrentStatus() == ModuleStatus::SUCCESS;
+    };
+    move_to_end(approved_module_ptrs_, success_module_cond);
+
+    const auto itr =
+      std::find_if(approved_module_ptrs_.begin(), approved_module_ptrs_.end(), success_module_cond);
 
     const auto success_lane_change = std::any_of(
-      success_module_itr, approved_module_ptrs_.end(),
+      itr, approved_module_ptrs_.end(),
       [](const auto & m) { return m->name().find("lane_change") != std::string::npos; });
 
     if (success_lane_change) {
       root_lanelet_ = updateRootLanelet(data);
     }
 
-    std::for_each(success_module_itr, approved_module_ptrs_.end(), [&](auto & m) {
+    std::for_each(itr, approved_module_ptrs_.end(), [&](auto & m) {
       debug_info_.emplace_back(m, Action::DELETE, "From Approved");
       deleteExpiredModules(m);
     });
 
-    approved_module_ptrs_.erase(success_module_itr, approved_module_ptrs_.end());
+    approved_module_ptrs_.erase(itr, approved_module_ptrs_.end());
 
     std::for_each(
       manager_ptrs_.begin(), manager_ptrs_.end(), [](const auto & m) { m->updateObserver(); });
