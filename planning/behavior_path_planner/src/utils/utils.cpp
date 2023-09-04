@@ -1900,18 +1900,18 @@ void makeBoundLongitudinallyMonotonic(
 
     std::vector<Point> ret;
 
-    ret.push_back(bound.front());
+    for (size_t i = 0; i < bound.size(); i++) {
+      const auto & p_new = bound.at(i);
+      const auto duplicated_points_itr = std::find_if(
+        ret.begin(), ret.end(),
+        [&p_new](const auto & p) { return calcDistance2d(p, p_new) < 0.1; });
 
-    for (size_t i = 0; i < bound.size() - 2; i++) {
-      try {
-        motion_utils::validateNonSharpAngle(bound.at(i), bound.at(i + 1), bound.at(i + 2));
-        ret.push_back(bound.at(i + 1));
-      } catch (const std::exception & e) {
-        continue;
+      if (duplicated_points_itr != ret.end() && std::next(duplicated_points_itr, 2) == ret.end()) {
+        ret.erase(duplicated_points_itr, ret.end());
       }
-    }
 
-    ret.push_back(bound.back());
+      ret.push_back(p_new);
+    }
 
     return ret;
   };
