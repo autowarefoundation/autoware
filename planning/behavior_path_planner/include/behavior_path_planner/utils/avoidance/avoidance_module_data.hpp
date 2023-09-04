@@ -556,9 +556,6 @@ struct DebugData
   // shift path
   std::vector<double> proposed_spline_shift;
 
-  // future pose
-  PathWithLaneId path_with_planned_velocity;
-
   // avoidance require objects
   ObjectDataArray unavoidable_objects;
 
@@ -568,6 +565,10 @@ struct DebugData
   // tmp for plot
   PathWithLaneId center_line;
 
+  // collision check debug map
+  utils::path_safety_checker::CollisionCheckDebugMap collision_check;
+
+  // debug msg array
   AvoidanceDebugMsgArray avoidance_debug_msg_array;
 };
 

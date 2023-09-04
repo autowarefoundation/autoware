@@ -1856,25 +1856,35 @@ bool AvoidanceModule::isSafePath(
     avoid_data_, planner_data_, parameters_, is_right_shift.value());
 
   for (const auto & object : safety_check_target_objects) {
+    auto current_debug_data = marker_utils::createObjectDebug(object);
+
     const auto obj_polygon =
       tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape);
 
     const auto is_object_front =
       utils::path_safety_checker::isTargetObjectFront(getEgoPose(), obj_polygon, p.vehicle_info);
 
+    const auto is_object_incoming =
+      std::abs(calcYawDeviation(getEgoPose(), object.initial_pose.pose)) > M_PI_2;
+
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       object, parameters_->check_all_predicted_path);
 
-    const auto & ego_predicted_path =
-      is_object_front ? ego_predicted_path_for_front_object : ego_predicted_path_for_rear_object;
+    const auto & ego_predicted_path = is_object_front && !is_object_incoming
+                                        ? ego_predicted_path_for_front_object
+                                        : ego_predicted_path_for_rear_object;
 
     for (const auto & obj_path : obj_predicted_paths) {
-      CollisionCheckDebug collision{};
       if (!utils::path_safety_checker::checkCollision(
             shifted_path.path, ego_predicted_path, object, obj_path, p, parameters_->rss_params,
-            hysteresis_factor, collision)) {
+            hysteresis_factor, current_debug_data.second)) {
+        marker_utils::updateCollisionCheckDebugMap(
+          debug.collision_check, current_debug_data, false);
+
         safe_count_ = 0;
         return false;
+      } else {
+        marker_utils::updateCollisionCheckDebugMap(debug.collision_check, current_debug_data, true);
       }
     }
   }
@@ -2686,12 +2696,14 @@ void AvoidanceModule::updateDebugMarker(
   using marker_utils::createShiftGradMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
   using marker_utils::createShiftLineMarkerArray;
+  using marker_utils::showPolygon;
+  using marker_utils::showPredictedPath;
+  using marker_utils::showSafetyCheckInfo;
   using marker_utils::avoidance_marker::createAvoidLineMarkerArray;
   using marker_utils::avoidance_marker::createEgoStatusMarkerArray;
   using marker_utils::avoidance_marker::createOtherObjectsMarkerArray;
   using marker_utils::avoidance_marker::createOverhangFurthestLineStringMarkerArray;
   using marker_utils::avoidance_marker::createPredictedVehiclePositions;
-  using marker_utils::avoidance_marker::createUnsafeObjectsMarkerArray;
   using marker_utils::avoidance_marker::makeOverhangToRoadShoulderMarkerArray;
   using tier4_autoware_utils::appendMarkerArray;
 
@@ -2715,9 +2727,11 @@ void AvoidanceModule::updateDebugMarker(
       add(createShiftLineMarkerArray(sl_arr, shifter.getBaseOffset(), ns, r, g, b, w));
     };
 
+  const auto addObjects = [&](const ObjectDataArray & objects, const auto & ns) {
+    add(createOtherObjectsMarkerArray(objects, ns));
+  };
+
   add(createEgoStatusMarkerArray(data, getEgoPose(), "ego_status"));
-  add(createPredictedVehiclePositions(
-    debug.path_with_planned_velocity, "predicted_vehicle_positions"));
 
   const auto & path = data.reference_path;
   add(createPathMarkerArray(debug.center_line, "centerline", 0, 0.0, 0.5, 0.9));
@@ -2729,31 +2743,37 @@ void AvoidanceModule::updateDebugMarker(
   add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
   add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
 
-  add(createOtherObjectsMarkerArray(
-    data.other_objects, AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD));
-  add(createOtherObjectsMarkerArray(
-    data.other_objects, AvoidanceDebugFactor::OBJECT_IS_IN_FRONT_THRESHOLD));
-  add(createOtherObjectsMarkerArray(
-    data.other_objects, AvoidanceDebugFactor::OBJECT_BEHIND_PATH_GOAL));
-  add(createOtherObjectsMarkerArray(
-    data.other_objects, AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE));
-  add(createOtherObjectsMarkerArray(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE));
-  add(createOtherObjectsMarkerArray(data.other_objects, AvoidanceDebugFactor::NOT_PARKING_OBJECT));
-  add(createOtherObjectsMarkerArray(data.other_objects, std::string("MovingObject")));
-  add(createOtherObjectsMarkerArray(data.other_objects, std::string("CrosswalkUser")));
-  add(createOtherObjectsMarkerArray(data.other_objects, std::string("OutOfTargetArea")));
-  add(createOtherObjectsMarkerArray(data.other_objects, std::string("NotNeedAvoidance")));
-  add(createOtherObjectsMarkerArray(data.other_objects, std::string("LessThanExecutionThreshold")));
-
   add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
   add(createOverhangFurthestLineStringMarkerArray(debug.bounds, "bounds", 1.0, 0.0, 1.0));
 
-  add(createUnsafeObjectsMarkerArray(debug.unsafe_objects, "unsafe_objects"));
+  // ignore objects
+  {
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD);
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_IN_FRONT_THRESHOLD);
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE);
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_BEHIND_PATH_GOAL);
+    addObjects(data.other_objects, AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE);
+    addObjects(data.other_objects, AvoidanceDebugFactor::NOT_PARKING_OBJECT);
+    addObjects(data.other_objects, std::string("MovingObject"));
+    addObjects(data.other_objects, std::string("CrosswalkUser"));
+    addObjects(data.other_objects, std::string("OutOfTargetArea"));
+    addObjects(data.other_objects, std::string("NotNeedAvoidance"));
+    addObjects(data.other_objects, std::string("LessThanExecutionThreshold"));
+  }
 
   // parent object info
-  addAvoidLine(debug.registered_raw_shift, "p_registered_shift", 0.8, 0.8, 0.0);
-  addAvoidLine(debug.current_raw_shift, "p_current_raw_shift", 0.5, 0.2, 0.2);
-  addAvoidLine(debug.extra_return_shift, "p_extra_return_shift", 0.0, 0.5, 0.8);
+  {
+    addAvoidLine(debug.registered_raw_shift, "p_registered_shift", 0.8, 0.8, 0.0);
+    addAvoidLine(debug.current_raw_shift, "p_current_raw_shift", 0.5, 0.2, 0.2);
+    addAvoidLine(debug.extra_return_shift, "p_extra_return_shift", 0.0, 0.5, 0.8);
+  }
+
+  // safety check
+  {
+    add(showSafetyCheckInfo(debug.collision_check, "object_debug_info"));
+    add(showPredictedPath(debug.collision_check, "ego_predicted_path"));
+    add(showPolygon(debug.collision_check, "ego_and_target_polygon_relation"));
+  }
 
   // shift length
   {

@@ -416,12 +416,6 @@ MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const
   return msg;
 }
 
-MarkerArray createUnsafeObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns)
-{
-  return createObjectsCubeMarkerArray(
-    objects, ns + "_cube", createMarkerScale(3.2, 1.7, 2.0), createMarkerColor(0.0, 0.0, 1.0, 0.8));
-}
-
 MarkerArray makeOverhangToRoadShoulderMarkerArray(
   const ObjectDataArray & objects, std::string && ns)
 {

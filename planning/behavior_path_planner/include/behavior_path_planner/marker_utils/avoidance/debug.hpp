@@ -59,8 +59,6 @@ MarkerArray createTargetObjectsMarkerArray(const ObjectDataArray & objects, cons
 
 MarkerArray createOtherObjectsMarkerArray(const ObjectDataArray & objects, const std::string & ns);
 
-MarkerArray createUnsafeObjectsMarkerArray(const ObjectDataArray & objects, std::string && ns);
-
 MarkerArray makeOverhangToRoadShoulderMarkerArray(
   const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
 
