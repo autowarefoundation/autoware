@@ -406,13 +406,14 @@ void fillLongitudinalAndLengthByClosestEnvelopeFootprint(
 }
 
 double calcEnvelopeOverhangDistance(
-  const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose)
+  const ObjectData & object_data, const PathWithLaneId & path, Point & overhang_pose)
 {
   double largest_overhang = isOnRight(object_data) ? -100.0 : 100.0;  // large number
 
   for (const auto & p : object_data.envelope_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    const auto lateral = tier4_autoware_utils::calcLateralDeviation(base_pose, point);
+    const auto idx = findFirstNearestIndex(path.points, point);
+    const auto lateral = calcLateralDeviation(getPose(path.points.at(idx)), point);
 
     const auto & overhang_pose_on_right = [&overhang_pose, &largest_overhang, &point, &lateral]() {
       if (lateral > largest_overhang) {
@@ -1014,7 +1015,7 @@ void filterTargetObjects(
         const auto lines =
           rh->getFurthestLinestring(target_lanelet, get_right, get_left, get_opposite, true);
         const auto & line = isOnRight(o) ? lines.back() : lines.front();
-        const auto d = distance2d(to2D(overhang_basic_pose), to2D(line.basicLineString()));
+        const auto d = boost::geometry::distance(o.envelope_poly, to2D(line.basicLineString()));
         if (d < o.to_road_shoulder_distance) {
           o.to_road_shoulder_distance = d;
           target_line = line;
