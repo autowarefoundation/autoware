@@ -17,7 +17,7 @@ The document of core algorithm is [here](docs/algorithm.md)
 | :----------------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
 | bounding_box_margin      | double | The distance to extend the 2D bird's-eye view Bounding Box on each side. This distance is used as a threshold to find radar centroids falling inside the extended box. [m]                                                     | 2.0           |
 | split_threshold_velocity | double | The object's velocity threshold to decide to split for two objects from radar information (currently not implemented) [m/s]                                                                                                    | 5.0           |
-| threshold_yaw_diff       | double | The yaw orientation threshold. If ∣*θob* − *θra*∣ < threshold × yaw*diff attached to radar information include estimated velocity, where*θob*is yaw angle from 3d detected object,*θra\_ is yaw angle from radar object. [rad] | 0.35          |
+| threshold_yaw_diff       | double | The yaw orientation threshold. If ∣ θ_ob − θ_ra ∣ < threshold × yaw_diff attached to radar information include estimated velocity, where*θob*is yaw angle from 3d detected object,\*θ_ra is yaw angle from radar object. [rad] | 0.35          |
 
 ### Weight parameters for velocity estimation
 

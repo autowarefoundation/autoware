@@ -40,7 +40,7 @@ void RadarFusionToDetectedObject::setParam(const Param & param)
   // Radar fusion param
   param_.bounding_box_margin = param.bounding_box_margin;
   param_.split_threshold_velocity = param.split_threshold_velocity;
-  param_.threshold_yaw_diff = param.split_threshold_velocity;
+  param_.threshold_yaw_diff = param.threshold_yaw_diff;
 
   // Normalize weight param
   double sum_weight = param.velocity_weight_median + param.velocity_weight_min_distance +
