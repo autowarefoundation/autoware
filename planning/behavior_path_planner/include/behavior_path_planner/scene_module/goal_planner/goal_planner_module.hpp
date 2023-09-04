@@ -139,6 +139,8 @@ private:
 
   std::shared_ptr<GoalPlannerParameters> parameters_;
 
+  vehicle_info_util::VehicleInfo vehicle_info_;
+
   // planner
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;
   std::unique_ptr<PullOverPlannerBase> freespace_planner_;

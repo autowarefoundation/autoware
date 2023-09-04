@@ -53,10 +53,12 @@ GoalPlannerModule::GoalPlannerModule(
   const std::string & name, rclcpp::Node & node,
   const std::shared_ptr<GoalPlannerParameters> & parameters,
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
-: SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
+: SceneModuleInterface{name, node, rtc_interface_ptr_map},
+  parameters_{parameters},
+  vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
 {
   LaneDepartureChecker lane_departure_checker{};
-  lane_departure_checker.setVehicleInfo(vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo());
+  lane_departure_checker.setVehicleInfo(vehicle_info_);
 
   occupancy_grid_map_ = std::make_shared<OccupancyGridBasedCollisionDetector>();
 
