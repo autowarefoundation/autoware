@@ -1867,6 +1867,7 @@ void makeBoundLongitudinallyMonotonic(
         if (intersect_point) {
           Pose pose;
           pose.position = *intersect_point;
+          pose.position.z = bound_with_pose.at(i).position.z;
           const auto yaw = calcAzimuthAngle(*intersect_point, bound_with_pose.at(i + 1).position);
           pose.orientation = createQuaternionFromRPY(0.0, 0.0, yaw);
           monotonic_bound.push_back(pose);
