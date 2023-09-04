@@ -735,13 +735,13 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
     prediction_time_horizon_, prediction_sampling_time_interval_, min_crosswalk_user_velocity_);
 
   sub_objects_ = this->create_subscription<TrackedObjects>(
-    "/perception/object_recognition/tracking/objects", 1,
+    "~/input/objects", 1,
     std::bind(&MapBasedPredictionNode::objectsCallback, this, std::placeholders::_1));
   sub_map_ = this->create_subscription<HADMapBin>(
     "/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&MapBasedPredictionNode::mapCallback, this, std::placeholders::_1));
 
-  pub_objects_ = this->create_publisher<PredictedObjects>("objects", rclcpp::QoS{1});
+  pub_objects_ = this->create_publisher<PredictedObjects>("~/output/objects", rclcpp::QoS{1});
   pub_debug_markers_ =
     this->create_publisher<visualization_msgs::msg::MarkerArray>("maneuver", rclcpp::QoS{1});
   pub_calculation_time_ = create_publisher<StringStamped>("~/debug/calculation_time", 1);
