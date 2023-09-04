@@ -27,6 +27,8 @@
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <pluginlib/class_loader.hpp>
 
+#include <tier4_map_msgs/msg/map_projector_info.hpp>
+
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_io/Io.h>
 #include <lanelet2_projection/UTM.h>
@@ -242,7 +244,9 @@ void StaticCenterlineOptimizerNode::load_map(const std::string & lanelet2_input_
   map_bin_ptr_ = [&]() -> HADMapBin::ConstSharedPtr {
     // load map
     lanelet::LaneletMapPtr map_ptr;
-    map_ptr = Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, "MGRS");
+    tier4_map_msgs::msg::MapProjectorInfo map_projector_info;
+    map_projector_info.projector_type = tier4_map_msgs::msg::MapProjectorInfo::MGRS;
+    map_ptr = Lanelet2MapLoaderNode::load_map(lanelet2_input_file_path, map_projector_info);
     if (!map_ptr) {
       return nullptr;
     }

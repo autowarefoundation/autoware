@@ -14,6 +14,7 @@ find_library(GeographicLib_LIBRARIES NAMES Geographic)
 
 ament_auto_add_library(geography_utils SHARED
   src/height.cpp
+  src/lanelet2_projector.cpp
 )
 
 target_link_libraries(geography_utils

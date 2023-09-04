@@ -19,6 +19,7 @@
   <depend>component_interface_specs</depend>
   <depend>component_interface_utils</depend>
   <depend>fmt</depend>
+  <depend>geography_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>libpcl-all-dev</depend>

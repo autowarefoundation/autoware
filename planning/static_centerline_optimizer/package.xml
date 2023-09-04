@@ -32,6 +32,7 @@
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
   <depend>tier4_autoware_utils</depend>
+  <depend>tier4_map_msgs</depend>
   <depend>vehicle_info_util</depend>
 
   <exec_depend>python3-flask-cors</exec_depend>
