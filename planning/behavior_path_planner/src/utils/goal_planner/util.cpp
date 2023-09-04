@@ -181,25 +181,20 @@ MarkerArray createGoalCandidatesMarkerArray(
   return marker_array;
 }
 
-bool isAllowedGoalModification(
-  const std::shared_ptr<RouteHandler> & route_handler, const bool left_side_parking)
+bool isAllowedGoalModification(const std::shared_ptr<RouteHandler> & route_handler)
 {
-  return route_handler->isAllowedGoalModification() ||
-         checkOriginalGoalIsInShoulder(route_handler, left_side_parking);
+  return route_handler->isAllowedGoalModification() || checkOriginalGoalIsInShoulder(route_handler);
 }
 
-bool checkOriginalGoalIsInShoulder(
-  const std::shared_ptr<RouteHandler> & route_handler, const bool left_side_parking)
+bool checkOriginalGoalIsInShoulder(const std::shared_ptr<RouteHandler> & route_handler)
 {
   const Pose & goal_pose = route_handler->getGoalPose();
+  const auto shoulder_lanes = route_handler->getShoulderLanelets();
 
-  const lanelet::ConstLanelets pull_over_lanes =
-    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking);
-  lanelet::ConstLanelet target_lane{};
-  lanelet::utils::query::getClosestLanelet(pull_over_lanes, goal_pose, &target_lane);
+  lanelet::ConstLanelet closest_shoulder_lane{};
+  lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &closest_shoulder_lane);
 
-  return route_handler->isShoulderLanelet(target_lane) &&
-         lanelet::utils::isInLanelet(goal_pose, target_lane, 0.1);
+  return lanelet::utils::isInLanelet(goal_pose, closest_shoulder_lane, 0.1);
 }
 
 }  // namespace goal_planner_utils
