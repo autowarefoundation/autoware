@@ -15,8 +15,6 @@
 #ifndef VEHICLE_HPP_
 #define VEHICLE_HPP_
 
-#include "lanelet2_extension/projection/mgrs_projector.hpp"
-
 #include <autoware_ad_api_specs/vehicle.hpp>
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_specs/map.hpp>
@@ -26,9 +24,6 @@
 #include <autoware_adapi_v1_msgs/msg/gear.hpp>
 #include <autoware_adapi_v1_msgs/msg/hazard_lights.hpp>
 #include <autoware_adapi_v1_msgs/msg/turn_indicators.hpp>
-
-#include <lanelet2_core/primitives/Lanelet.h>
-#include <lanelet2_projection/UTM.h>
 
 #include <unordered_map>
 
@@ -83,7 +78,6 @@ private:
   void publish_kinematics();
   void publish_status();
   void on_timer();
-  Eigen::Vector3d toBasicPoint3dPt(const geometry_msgs::msg::Point src);
 };
 
 }  // namespace default_ad_api

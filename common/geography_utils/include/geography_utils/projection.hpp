@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef GEOGRAPHY_UTILS__HEIGHT_HPP_
-#define GEOGRAPHY_UTILS__HEIGHT_HPP_
+#ifndef GEOGRAPHY_UTILS__PROJECTION_HPP_
+#define GEOGRAPHY_UTILS__PROJECTION_HPP_
 
-#include <string>
+#include <geographic_msgs/msg/geo_point.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <tier4_map_msgs/msg/map_projector_info.hpp>
 
 namespace geography_utils
 {
+using MapProjectorInfo = tier4_map_msgs::msg::MapProjectorInfo;
+using GeoPoint = geographic_msgs::msg::GeoPoint;
+using LocalPoint = geometry_msgs::msg::Point;
 
-typedef double (*HeightConversionFunction)(
-  const double height, const double latitude, const double longitude);
-double convert_wgs84_to_egm2008(const double height, const double latitude, const double longitude);
-double convert_egm2008_to_wgs84(const double height, const double latitude, const double longitude);
-double convert_height(
-  const double height, const double latitude, const double longitude,
-  const std::string & source_vertical_datum, const std::string & target_vertical_datum);
+LocalPoint project_forward(const GeoPoint & geo_point, const MapProjectorInfo & projector_info);
+GeoPoint project_reverse(const LocalPoint & local_point, const MapProjectorInfo & projector_info);
 
 }  // namespace geography_utils
 
-#endif  // GEOGRAPHY_UTILS__HEIGHT_HPP_
+#endif  // GEOGRAPHY_UTILS__PROJECTION_HPP_

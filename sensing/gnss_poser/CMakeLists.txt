@@ -16,9 +16,7 @@ find_library(GeographicLib_LIBRARIES
 )
 
 set(GNSS_POSER_HEADERS
-  include/gnss_poser/convert.hpp
   include/gnss_poser/gnss_poser_core.hpp
-  include/gnss_poser/gnss_stat.hpp
 )
 
 ament_auto_add_library(gnss_poser_node SHARED

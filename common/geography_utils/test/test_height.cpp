@@ -20,7 +20,7 @@
 #include <string>
 
 // Test case to verify if same source and target datums return original height
-TEST(Tier4GeographyUtils, SameSourceTargetDatum)
+TEST(GeographyUtils, SameSourceTargetDatum)
 {
   const double height = 10.0;
   const double latitude = 35.0;
@@ -34,7 +34,7 @@ TEST(Tier4GeographyUtils, SameSourceTargetDatum)
 }
 
 // Test case to verify valid source and target datums
-TEST(Tier4GeographyUtils, ValidSourceTargetDatum)
+TEST(GeographyUtils, ValidSourceTargetDatum)
 {
   // Calculated with
   // https://www.unavco.org/software/geodetic-utilities/geoid-height-calculator/geoid-height-calculator.html
@@ -50,7 +50,7 @@ TEST(Tier4GeographyUtils, ValidSourceTargetDatum)
 }
 
 // Test case to verify invalid source and target datums
-TEST(Tier4GeographyUtils, InvalidSourceTargetDatum)
+TEST(GeographyUtils, InvalidSourceTargetDatum)
 {
   const double height = 10.0;
   const double latitude = 35.0;
@@ -62,7 +62,7 @@ TEST(Tier4GeographyUtils, InvalidSourceTargetDatum)
 }
 
 // Test case to verify invalid source datums
-TEST(Tier4GeographyUtils, InvalidSourceDatum)
+TEST(GeographyUtils, InvalidSourceDatum)
 {
   const double height = 10.0;
   const double latitude = 35.0;
@@ -74,7 +74,7 @@ TEST(Tier4GeographyUtils, InvalidSourceDatum)
 }
 
 // Test case to verify invalid target datums
-TEST(Tier4GeographyUtils, InvalidTargetDatum)
+TEST(GeographyUtils, InvalidTargetDatum)
 {
   const double height = 10.0;
   const double latitude = 35.0;
@@ -83,10 +83,4 @@ TEST(Tier4GeographyUtils, InvalidTargetDatum)
   EXPECT_THROW(
     geography_utils::convert_height(height, latitude, longitude, "WGS84", "INVALID2"),
     std::invalid_argument);
-}
-
-int main(int argc, char ** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

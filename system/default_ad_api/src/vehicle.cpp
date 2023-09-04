@@ -15,6 +15,9 @@
 #include "vehicle.hpp"
 
 #include <geography_utils/height.hpp>
+#include <geography_utils/projection.hpp>
+
+#include <geographic_msgs/msg/geo_point.hpp>
 
 #include <limits>
 
@@ -91,15 +94,6 @@ void VehicleNode::kinematic_state(
   kinematic_state_msgs_ = msg_ptr;
 }
 
-Eigen::Vector3d VehicleNode::toBasicPoint3dPt(const geometry_msgs::msg::Point src)
-{
-  Eigen::Vector3d dst;
-  dst.x() = src.x;
-  dst.y() = src.y;
-  dst.z() = src.z;
-  return dst;
-}
-
 void VehicleNode::acceleration_status(
   const localization_interface::Acceleration::Message::ConstSharedPtr msg_ptr)
 {
@@ -148,30 +142,16 @@ void VehicleNode::publish_kinematics()
   vehicle_kinematics.twist.header = kinematic_state_msgs_->header;
   vehicle_kinematics.twist.header.frame_id = kinematic_state_msgs_->child_frame_id;
   vehicle_kinematics.twist.twist = kinematic_state_msgs_->twist;
-  if (map_projector_info_->projector_type == MapProjectorInfo::MGRS) {
-    lanelet::GPSPoint projected_gps_point = lanelet::projection::MGRSProjector::reverse(
-      toBasicPoint3dPt(kinematic_state_msgs_->pose.pose.position), map_projector_info_->mgrs_grid);
+  if (map_projector_info_->projector_type != MapProjectorInfo::LOCAL) {
+    const geographic_msgs::msg::GeoPoint projected_gps_point = geography_utils::project_reverse(
+      kinematic_state_msgs_->pose.pose.position, *map_projector_info_);
     vehicle_kinematics.geographic_pose.header = kinematic_state_msgs_->header;
     vehicle_kinematics.geographic_pose.header.frame_id = "global";
-    vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.lat;
-    vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.lon;
+    vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.latitude;
+    vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.longitude;
     vehicle_kinematics.geographic_pose.position.altitude = geography_utils::convert_height(
-      projected_gps_point.ele, projected_gps_point.lat, projected_gps_point.lon,
-      map_projector_info_->vertical_datum, "WGS84");
-  } else if (map_projector_info_->projector_type == MapProjectorInfo::LOCAL_CARTESIAN_UTM) {
-    lanelet::GPSPoint position{
-      map_projector_info_->map_origin.latitude, map_projector_info_->map_origin.longitude};
-    lanelet::Origin origin{position};
-    lanelet::projection::UtmProjector projector{origin};
-    lanelet::GPSPoint projected_gps_point =
-      projector.reverse(toBasicPoint3dPt(kinematic_state_msgs_->pose.pose.position));
-    vehicle_kinematics.geographic_pose.header = kinematic_state_msgs_->header;
-    vehicle_kinematics.geographic_pose.header.frame_id = "global";
-    vehicle_kinematics.geographic_pose.position.latitude = projected_gps_point.lat;
-    vehicle_kinematics.geographic_pose.position.longitude = projected_gps_point.lon;
-    vehicle_kinematics.geographic_pose.position.altitude = geography_utils::convert_height(
-      projected_gps_point.ele, projected_gps_point.lat, projected_gps_point.lon,
-      map_projector_info_->vertical_datum, "WGS84");
+      projected_gps_point.altitude, projected_gps_point.latitude, projected_gps_point.longitude,
+      map_projector_info_->vertical_datum, MapProjectorInfo::WGS84);
   } else {
     vehicle_kinematics.geographic_pose.position.latitude = std::numeric_limits<double>::quiet_NaN();
     vehicle_kinematics.geographic_pose.position.longitude =
