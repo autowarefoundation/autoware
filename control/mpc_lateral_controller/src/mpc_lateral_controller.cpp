@@ -14,7 +14,7 @@
 
 #include "mpc_lateral_controller/mpc_lateral_controller.hpp"
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "mpc_lateral_controller/qp_solver/qp_solver_osqp.hpp"
 #include "mpc_lateral_controller/qp_solver/qp_solver_unconstraint_fast.hpp"
 #include "mpc_lateral_controller/vehicle_model/vehicle_model_bicycle_dynamics.hpp"

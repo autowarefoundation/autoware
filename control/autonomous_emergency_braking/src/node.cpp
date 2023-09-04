@@ -15,7 +15,9 @@
 #include "autonomous_emergency_braking/node.hpp"
 
 #include <motion_utils/trajectory/trajectory.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <pcl/filters/voxel_grid.h>
 #include <tf2/utils.h>

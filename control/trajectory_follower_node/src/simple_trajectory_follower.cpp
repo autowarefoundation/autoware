@@ -14,8 +14,8 @@
 
 #include "trajectory_follower_node/simple_trajectory_follower.hpp"
 
-#include <motion_utils/motion_utils.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
+#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 
 #include <algorithm>
 
