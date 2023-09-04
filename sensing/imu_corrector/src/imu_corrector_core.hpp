@@ -34,7 +34,7 @@ class ImuCorrector : public rclcpp::Node
   using COV_IDX = tier4_autoware_utils::xyz_covariance_index::XYZ_COV_IDX;
 
 public:
-  explicit ImuCorrector(const rclcpp::NodeOptions & node_options);
+  ImuCorrector();
 
 private:
   void callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr);

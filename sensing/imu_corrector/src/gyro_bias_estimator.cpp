@@ -16,8 +16,8 @@
 
 namespace imu_corrector
 {
-GyroBiasEstimator::GyroBiasEstimator(const rclcpp::NodeOptions & node_options)
-: Node("gyro_bias_validator", node_options),
+GyroBiasEstimator::GyroBiasEstimator()
+: Node("gyro_bias_validator"),
   gyro_bias_threshold_(declare_parameter<double>("gyro_bias_threshold")),
   angular_velocity_offset_x_(declare_parameter<double>("angular_velocity_offset_x")),
   angular_velocity_offset_y_(declare_parameter<double>("angular_velocity_offset_y")),
@@ -104,6 +104,3 @@ void GyroBiasEstimator::update_diagnostics(diagnostic_updater::DiagnosticStatusW
 }
 
 }  // namespace imu_corrector
-
-#include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(imu_corrector::GyroBiasEstimator)

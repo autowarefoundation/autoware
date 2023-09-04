@@ -38,7 +38,7 @@ private:
   using Vector3 = geometry_msgs::msg::Vector3;
 
 public:
-  explicit GyroBiasEstimator(const rclcpp::NodeOptions & node_options);
+  GyroBiasEstimator();
 
 private:
   void update_diagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
