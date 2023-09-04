@@ -28,110 +28,110 @@
 namespace autoware::motion::control::pid_longitudinal_controller
 {
 PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
-: node_{&node}, diagnostic_updater_(&node)
+: node_parameters_(node.get_node_parameters_interface()),
+  clock_(node.get_clock()),
+  logger_(node.get_logger()),
+  diagnostic_updater_(&node)
 {
   using std::placeholders::_1;
 
   // parameters timer
-  m_longitudinal_ctrl_period = node_->get_parameter("ctrl_period").as_double();
+  m_longitudinal_ctrl_period = node.get_parameter("ctrl_period").as_double();
 
-  m_wheel_base = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo().wheel_base_m;
+  m_wheel_base = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo().wheel_base_m;
 
   // parameters for delay compensation
-  m_delay_compensation_time = node_->declare_parameter<double>("delay_compensation_time");  // [s]
+  m_delay_compensation_time = node.declare_parameter<double>("delay_compensation_time");  // [s]
 
   // parameters to enable functions
-  m_enable_smooth_stop = node_->declare_parameter<bool>("enable_smooth_stop");
-  m_enable_overshoot_emergency = node_->declare_parameter<bool>("enable_overshoot_emergency");
+  m_enable_smooth_stop = node.declare_parameter<bool>("enable_smooth_stop");
+  m_enable_overshoot_emergency = node.declare_parameter<bool>("enable_overshoot_emergency");
   m_enable_large_tracking_error_emergency =
-    node_->declare_parameter<bool>("enable_large_tracking_error_emergency");
-  m_enable_slope_compensation = node_->declare_parameter<bool>("enable_slope_compensation");
+    node.declare_parameter<bool>("enable_large_tracking_error_emergency");
+  m_enable_slope_compensation = node.declare_parameter<bool>("enable_slope_compensation");
   m_enable_keep_stopped_until_steer_convergence =
-    node_->declare_parameter<bool>("enable_keep_stopped_until_steer_convergence");
+    node.declare_parameter<bool>("enable_keep_stopped_until_steer_convergence");
 
   // parameters for state transition
   {
     auto & p = m_state_transition_params;
     // drive
-    p.drive_state_stop_dist = node_->declare_parameter<double>("drive_state_stop_dist");  // [m]
+    p.drive_state_stop_dist = node.declare_parameter<double>("drive_state_stop_dist");  // [m]
     p.drive_state_offset_stop_dist =
-      node_->declare_parameter<double>("drive_state_offset_stop_dist");  // [m]
+      node.declare_parameter<double>("drive_state_offset_stop_dist");  // [m]
     // stopping
-    p.stopping_state_stop_dist =
-      node_->declare_parameter<double>("stopping_state_stop_dist");  // [m]
+    p.stopping_state_stop_dist = node.declare_parameter<double>("stopping_state_stop_dist");  // [m]
     p.stopped_state_entry_duration_time =
-      node_->declare_parameter<double>("stopped_state_entry_duration_time");  // [s]
+      node.declare_parameter<double>("stopped_state_entry_duration_time");  // [s]
     // stop
-    p.stopped_state_entry_vel =
-      node_->declare_parameter<double>("stopped_state_entry_vel");  // [m/s]
+    p.stopped_state_entry_vel = node.declare_parameter<double>("stopped_state_entry_vel");  // [m/s]
     p.stopped_state_entry_acc =
-      node_->declare_parameter<double>("stopped_state_entry_acc");  // [m/s²]
+      node.declare_parameter<double>("stopped_state_entry_acc");  // [m/s²]
 
     // emergency
     p.emergency_state_overshoot_stop_dist =
-      node_->declare_parameter<double>("emergency_state_overshoot_stop_dist");  // [m]
+      node.declare_parameter<double>("emergency_state_overshoot_stop_dist");  // [m]
     p.emergency_state_traj_trans_dev =
-      node_->declare_parameter<double>("emergency_state_traj_trans_dev");  // [m]
+      node.declare_parameter<double>("emergency_state_traj_trans_dev");  // [m]
     p.emergency_state_traj_rot_dev =
-      node_->declare_parameter<double>("emergency_state_traj_rot_dev");  // [m]
+      node.declare_parameter<double>("emergency_state_traj_rot_dev");  // [m]
   }
 
   // parameters for drive state
   {
     // initialize PID gain
-    const double kp{node_->declare_parameter<double>("kp")};
-    const double ki{node_->declare_parameter<double>("ki")};
-    const double kd{node_->declare_parameter<double>("kd")};
+    const double kp{node.declare_parameter<double>("kp")};
+    const double ki{node.declare_parameter<double>("ki")};
+    const double kd{node.declare_parameter<double>("kd")};
     m_pid_vel.setGains(kp, ki, kd);
 
     // initialize PID limits
-    const double max_pid{node_->declare_parameter<double>("max_out")};     // [m/s^2]
-    const double min_pid{node_->declare_parameter<double>("min_out")};     // [m/s^2]
-    const double max_p{node_->declare_parameter<double>("max_p_effort")};  // [m/s^2]
-    const double min_p{node_->declare_parameter<double>("min_p_effort")};  // [m/s^2]
-    const double max_i{node_->declare_parameter<double>("max_i_effort")};  // [m/s^2]
-    const double min_i{node_->declare_parameter<double>("min_i_effort")};  // [m/s^2]
-    const double max_d{node_->declare_parameter<double>("max_d_effort")};  // [m/s^2]
-    const double min_d{node_->declare_parameter<double>("min_d_effort")};  // [m/s^2]
+    const double max_pid{node.declare_parameter<double>("max_out")};     // [m/s^2]
+    const double min_pid{node.declare_parameter<double>("min_out")};     // [m/s^2]
+    const double max_p{node.declare_parameter<double>("max_p_effort")};  // [m/s^2]
+    const double min_p{node.declare_parameter<double>("min_p_effort")};  // [m/s^2]
+    const double max_i{node.declare_parameter<double>("max_i_effort")};  // [m/s^2]
+    const double min_i{node.declare_parameter<double>("min_i_effort")};  // [m/s^2]
+    const double max_d{node.declare_parameter<double>("max_d_effort")};  // [m/s^2]
+    const double min_d{node.declare_parameter<double>("min_d_effort")};  // [m/s^2]
     m_pid_vel.setLimits(max_pid, min_pid, max_p, min_p, max_i, min_i, max_d, min_d);
 
     // set lowpass filter for vel error and pitch
-    const double lpf_vel_error_gain{node_->declare_parameter<double>("lpf_vel_error_gain")};
+    const double lpf_vel_error_gain{node.declare_parameter<double>("lpf_vel_error_gain")};
     m_lpf_vel_error = std::make_shared<LowpassFilter1d>(0.0, lpf_vel_error_gain);
 
     m_current_vel_threshold_pid_integrate =
-      node_->declare_parameter<double>("current_vel_threshold_pid_integration");  // [m/s]
+      node.declare_parameter<double>("current_vel_threshold_pid_integration");  // [m/s]
 
     m_enable_brake_keeping_before_stop =
-      node_->declare_parameter<bool>("enable_brake_keeping_before_stop");         // [-]
-    m_brake_keeping_acc = node_->declare_parameter<double>("brake_keeping_acc");  // [m/s^2]
+      node.declare_parameter<bool>("enable_brake_keeping_before_stop");         // [-]
+    m_brake_keeping_acc = node.declare_parameter<double>("brake_keeping_acc");  // [m/s^2]
   }
 
   // parameters for smooth stop state
   {
     const double max_strong_acc{
-      node_->declare_parameter<double>("smooth_stop_max_strong_acc")};  // [m/s^2]
+      node.declare_parameter<double>("smooth_stop_max_strong_acc")};  // [m/s^2]
     const double min_strong_acc{
-      node_->declare_parameter<double>("smooth_stop_min_strong_acc")};                // [m/s^2]
-    const double weak_acc{node_->declare_parameter<double>("smooth_stop_weak_acc")};  // [m/s^2]
+      node.declare_parameter<double>("smooth_stop_min_strong_acc")};                // [m/s^2]
+    const double weak_acc{node.declare_parameter<double>("smooth_stop_weak_acc")};  // [m/s^2]
     const double weak_stop_acc{
-      node_->declare_parameter<double>("smooth_stop_weak_stop_acc")};  // [m/s^2]
+      node.declare_parameter<double>("smooth_stop_weak_stop_acc")};  // [m/s^2]
     const double strong_stop_acc{
-      node_->declare_parameter<double>("smooth_stop_strong_stop_acc")};  // [m/s^2]
+      node.declare_parameter<double>("smooth_stop_strong_stop_acc")};  // [m/s^2]
 
-    const double max_fast_vel{
-      node_->declare_parameter<double>("smooth_stop_max_fast_vel")};  // [m/s]
+    const double max_fast_vel{node.declare_parameter<double>("smooth_stop_max_fast_vel")};  // [m/s]
     const double min_running_vel{
-      node_->declare_parameter<double>("smooth_stop_min_running_vel")};  // [m/s]
+      node.declare_parameter<double>("smooth_stop_min_running_vel")};  // [m/s]
     const double min_running_acc{
-      node_->declare_parameter<double>("smooth_stop_min_running_acc")};  // [m/s^2]
+      node.declare_parameter<double>("smooth_stop_min_running_acc")};  // [m/s^2]
     const double weak_stop_time{
-      node_->declare_parameter<double>("smooth_stop_weak_stop_time")};  // [s]
+      node.declare_parameter<double>("smooth_stop_weak_stop_time")};  // [s]
 
     const double weak_stop_dist{
-      node_->declare_parameter<double>("smooth_stop_weak_stop_dist")};  // [m]
+      node.declare_parameter<double>("smooth_stop_weak_stop_dist")};  // [m]
     const double strong_stop_dist{
-      node_->declare_parameter<double>("smooth_stop_strong_stop_dist")};  // [m]
+      node.declare_parameter<double>("smooth_stop_strong_stop_dist")};  // [m]
 
     m_smooth_stop.setParams(
       max_strong_acc, min_strong_acc, weak_acc, weak_stop_acc, strong_stop_acc, max_fast_vel,
@@ -141,52 +141,52 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
   // parameters for stop state
   {
     auto & p = m_stopped_state_params;
-    p.vel = node_->declare_parameter<double>("stopped_vel");    // [m/s]
-    p.acc = node_->declare_parameter<double>("stopped_acc");    // [m/s^2]
-    p.jerk = node_->declare_parameter<double>("stopped_jerk");  // [m/s^3]
+    p.vel = node.declare_parameter<double>("stopped_vel");    // [m/s]
+    p.acc = node.declare_parameter<double>("stopped_acc");    // [m/s^2]
+    p.jerk = node.declare_parameter<double>("stopped_jerk");  // [m/s^3]
   }
 
   // parameters for emergency state
   {
     auto & p = m_emergency_state_params;
-    p.vel = node_->declare_parameter<double>("emergency_vel");    // [m/s]
-    p.acc = node_->declare_parameter<double>("emergency_acc");    // [m/s^2]
-    p.jerk = node_->declare_parameter<double>("emergency_jerk");  // [m/s^3]
+    p.vel = node.declare_parameter<double>("emergency_vel");    // [m/s]
+    p.acc = node.declare_parameter<double>("emergency_acc");    // [m/s^2]
+    p.jerk = node.declare_parameter<double>("emergency_jerk");  // [m/s^3]
   }
 
   // parameters for acceleration limit
-  m_max_acc = node_->declare_parameter<double>("max_acc");  // [m/s^2]
-  m_min_acc = node_->declare_parameter<double>("min_acc");  // [m/s^2]
+  m_max_acc = node.declare_parameter<double>("max_acc");  // [m/s^2]
+  m_min_acc = node.declare_parameter<double>("min_acc");  // [m/s^2]
 
   // parameters for jerk limit
-  m_max_jerk = node_->declare_parameter<double>("max_jerk");  // [m/s^3]
-  m_min_jerk = node_->declare_parameter<double>("min_jerk");  // [m/s^3]
+  m_max_jerk = node.declare_parameter<double>("max_jerk");  // [m/s^3]
+  m_min_jerk = node.declare_parameter<double>("min_jerk");  // [m/s^3]
 
   // parameters for slope compensation
-  m_use_traj_for_pitch = node_->declare_parameter<bool>("use_trajectory_for_pitch_calculation");
-  const double lpf_pitch_gain{node_->declare_parameter<double>("lpf_pitch_gain")};
+  m_use_traj_for_pitch = node.declare_parameter<bool>("use_trajectory_for_pitch_calculation");
+  const double lpf_pitch_gain{node.declare_parameter<double>("lpf_pitch_gain")};
   m_lpf_pitch = std::make_shared<LowpassFilter1d>(0.0, lpf_pitch_gain);
-  m_max_pitch_rad = node_->declare_parameter<double>("max_pitch_rad");  // [rad]
-  m_min_pitch_rad = node_->declare_parameter<double>("min_pitch_rad");  // [rad]
+  m_max_pitch_rad = node.declare_parameter<double>("max_pitch_rad");  // [rad]
+  m_min_pitch_rad = node.declare_parameter<double>("min_pitch_rad");  // [rad]
 
   // ego nearest index search
   m_ego_nearest_dist_threshold =
-    node_->has_parameter("ego_nearest_dist_threshold")
-      ? node_->get_parameter("ego_nearest_dist_threshold").as_double()
-      : node_->declare_parameter<double>("ego_nearest_dist_threshold");  // [m]
+    node.has_parameter("ego_nearest_dist_threshold")
+      ? node.get_parameter("ego_nearest_dist_threshold").as_double()
+      : node.declare_parameter<double>("ego_nearest_dist_threshold");  // [m]
   m_ego_nearest_yaw_threshold =
-    node_->has_parameter("ego_nearest_yaw_threshold")
-      ? node_->get_parameter("ego_nearest_yaw_threshold").as_double()
-      : node_->declare_parameter<double>("ego_nearest_yaw_threshold");  // [rad]
+    node.has_parameter("ego_nearest_yaw_threshold")
+      ? node.get_parameter("ego_nearest_yaw_threshold").as_double()
+      : node.declare_parameter<double>("ego_nearest_yaw_threshold");  // [rad]
 
   // subscriber, publisher
-  m_pub_slope = node_->create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
+  m_pub_slope = node.create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
     "~/output/slope_angle", rclcpp::QoS{1});
-  m_pub_debug = node_->create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
+  m_pub_debug = node.create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
     "~/output/longitudinal_diagnostic", rclcpp::QoS{1});
 
   // set parameter callback
-  m_set_param_res = node_->add_on_set_parameters_callback(
+  m_set_param_res = node.add_on_set_parameters_callback(
     std::bind(&PidLongitudinalController::paramCallback, this, _1));
 
   // diagnostic
@@ -213,14 +213,12 @@ void PidLongitudinalController::setTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & msg)
 {
   if (!longitudinal_utils::isValidTrajectory(msg)) {
-    RCLCPP_ERROR_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), 3000, "received invalid trajectory. ignore.");
+    RCLCPP_ERROR_THROTTLE(logger_, *clock_, 3000, "received invalid trajectory. ignore.");
     return;
   }
 
   if (msg.points.size() < 2) {
-    RCLCPP_WARN_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), 3000, "Unexpected trajectory size < 2. Ignored.");
+    RCLCPP_WARN_THROTTLE(logger_, *clock_, 3000, "Unexpected trajectory size < 2. Ignored.");
     return;
   }
 
@@ -259,22 +257,22 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
 
   // drive state
   {
-    double kp{node_->get_parameter("kp").as_double()};
-    double ki{node_->get_parameter("ki").as_double()};
-    double kd{node_->get_parameter("kd").as_double()};
+    double kp{node_parameters_->get_parameter("kp").as_double()};
+    double ki{node_parameters_->get_parameter("ki").as_double()};
+    double kd{node_parameters_->get_parameter("kd").as_double()};
     update_param("kp", kp);
     update_param("ki", ki);
     update_param("kd", kd);
     m_pid_vel.setGains(kp, ki, kd);
 
-    double max_pid{node_->get_parameter("max_out").as_double()};
-    double min_pid{node_->get_parameter("min_out").as_double()};
-    double max_p{node_->get_parameter("max_p_effort").as_double()};
-    double min_p{node_->get_parameter("min_p_effort").as_double()};
-    double max_i{node_->get_parameter("max_i_effort").as_double()};
-    double min_i{node_->get_parameter("min_i_effort").as_double()};
-    double max_d{node_->get_parameter("max_d_effort").as_double()};
-    double min_d{node_->get_parameter("min_d_effort").as_double()};
+    double max_pid{node_parameters_->get_parameter("max_out").as_double()};
+    double min_pid{node_parameters_->get_parameter("min_out").as_double()};
+    double max_p{node_parameters_->get_parameter("max_p_effort").as_double()};
+    double min_p{node_parameters_->get_parameter("min_p_effort").as_double()};
+    double max_i{node_parameters_->get_parameter("max_i_effort").as_double()};
+    double min_i{node_parameters_->get_parameter("min_i_effort").as_double()};
+    double max_d{node_parameters_->get_parameter("max_d_effort").as_double()};
+    double min_d{node_parameters_->get_parameter("min_d_effort").as_double()};
     update_param("max_out", max_pid);
     update_param("min_out", min_pid);
     update_param("max_p_effort", max_p);
@@ -290,17 +288,25 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
 
   // stopping state
   {
-    double max_strong_acc{node_->get_parameter("smooth_stop_max_strong_acc").as_double()};
-    double min_strong_acc{node_->get_parameter("smooth_stop_min_strong_acc").as_double()};
-    double weak_acc{node_->get_parameter("smooth_stop_weak_acc").as_double()};
-    double weak_stop_acc{node_->get_parameter("smooth_stop_weak_stop_acc").as_double()};
-    double strong_stop_acc{node_->get_parameter("smooth_stop_strong_stop_acc").as_double()};
-    double max_fast_vel{node_->get_parameter("smooth_stop_max_fast_vel").as_double()};
-    double min_running_vel{node_->get_parameter("smooth_stop_min_running_vel").as_double()};
-    double min_running_acc{node_->get_parameter("smooth_stop_min_running_acc").as_double()};
-    double weak_stop_time{node_->get_parameter("smooth_stop_weak_stop_time").as_double()};
-    double weak_stop_dist{node_->get_parameter("smooth_stop_weak_stop_dist").as_double()};
-    double strong_stop_dist{node_->get_parameter("smooth_stop_strong_stop_dist").as_double()};
+    double max_strong_acc{
+      node_parameters_->get_parameter("smooth_stop_max_strong_acc").as_double()};
+    double min_strong_acc{
+      node_parameters_->get_parameter("smooth_stop_min_strong_acc").as_double()};
+    double weak_acc{node_parameters_->get_parameter("smooth_stop_weak_acc").as_double()};
+    double weak_stop_acc{node_parameters_->get_parameter("smooth_stop_weak_stop_acc").as_double()};
+    double strong_stop_acc{
+      node_parameters_->get_parameter("smooth_stop_strong_stop_acc").as_double()};
+    double max_fast_vel{node_parameters_->get_parameter("smooth_stop_max_fast_vel").as_double()};
+    double min_running_vel{
+      node_parameters_->get_parameter("smooth_stop_min_running_vel").as_double()};
+    double min_running_acc{
+      node_parameters_->get_parameter("smooth_stop_min_running_acc").as_double()};
+    double weak_stop_time{
+      node_parameters_->get_parameter("smooth_stop_weak_stop_time").as_double()};
+    double weak_stop_dist{
+      node_parameters_->get_parameter("smooth_stop_weak_stop_dist").as_double()};
+    double strong_stop_dist{
+      node_parameters_->get_parameter("smooth_stop_strong_stop_dist").as_double()};
     update_param("smooth_stop_max_strong_acc", max_strong_acc);
     update_param("smooth_stop_min_strong_acc", min_strong_acc);
     update_param("smooth_stop_weak_acc", weak_acc);
@@ -471,8 +477,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcEmergencyCtrlCm
     longitudinal_utils::applyDiffLimitFilter(p.acc, m_prev_raw_ctrl_cmd.acc, dt, p.jerk);
 
   RCLCPP_ERROR_THROTTLE(
-    node_->get_logger(), *node_->get_clock(), 3000, "[Emergency stop] vel: %3.3f, acc: %3.3f", vel,
-    acc);
+    logger_, *clock_, 3000, "[Emergency stop] vel: %3.3f, acc: %3.3f", vel, acc);
 
   return Motion{vel, acc};
 }
@@ -497,11 +502,11 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   if (
     std::fabs(current_vel) > p.stopped_state_entry_vel ||
     std::fabs(current_acc) > p.stopped_state_entry_acc) {
-    m_last_running_time = std::make_shared<rclcpp::Time>(node_->now());
+    m_last_running_time = std::make_shared<rclcpp::Time>(clock_->now());
   }
   const bool stopped_condition =
     m_last_running_time
-      ? (node_->now() - *m_last_running_time).seconds() > p.stopped_state_entry_duration_time
+      ? (clock_->now() - *m_last_running_time).seconds() > p.stopped_state_entry_duration_time
       : false;
 
   static constexpr double vel_epsilon =
@@ -516,15 +521,14 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   const auto changeState = [this](const auto s) {
     if (s != m_control_state) {
       RCLCPP_DEBUG_STREAM(
-        node_->get_logger(),
-        "controller state changed: " << toStr(m_control_state) << " -> " << toStr(s));
+        logger_, "controller state changed: " << toStr(m_control_state) << " -> " << toStr(s));
     }
     m_control_state = s;
     return;
   };
 
   const auto info_throttle = [this](const auto & s) {
-    RCLCPP_INFO_SKIPFIRST_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000, "%s", s);
+    RCLCPP_INFO_SKIPFIRST_THROTTLE(logger_, *clock_, 5000, "%s", s);
   };
 
   // if current operation mode is not autonomous mode, then change state to stopped
@@ -611,7 +615,7 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     return;
   }
 
-  RCLCPP_FATAL(node_->get_logger(), "invalid state found.");
+  RCLCPP_FATAL(logger_, "invalid state found.");
   return;
 }
 
@@ -642,7 +646,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
     raw_ctrl_cmd.vel = target_motion.vel;
     raw_ctrl_cmd.acc = applyVelocityFeedback(target_motion, control_data.dt, pred_vel_in_target);
     RCLCPP_DEBUG(
-      node_->get_logger(),
+      logger_,
       "[feedback control]  vel: %3.3f, acc: %3.3f, dt: %3.3f, v_curr: %3.3f, v_ref: %3.3f "
       "feedback_ctrl_cmd.ac: %3.3f",
       raw_ctrl_cmd.vel, raw_ctrl_cmd.acc, control_data.dt, current_vel, target_motion.vel,
@@ -653,8 +657,8 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
     raw_ctrl_cmd.vel = m_stopped_state_params.vel;
 
     RCLCPP_DEBUG(
-      node_->get_logger(), "[smooth stop]: Smooth stopping. vel: %3.3f, acc: %3.3f",
-      raw_ctrl_cmd.vel, raw_ctrl_cmd.acc);
+      logger_, "[smooth stop]: Smooth stopping. vel: %3.3f, acc: %3.3f", raw_ctrl_cmd.vel,
+      raw_ctrl_cmd.acc);
   } else if (m_control_state == ControlState::STOPPED) {
     // This acceleration is without slope compensation
     const auto & p = m_stopped_state_params;
@@ -662,8 +666,7 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
     raw_ctrl_cmd.acc = longitudinal_utils::applyDiffLimitFilter(
       p.acc, m_prev_raw_ctrl_cmd.acc, control_data.dt, p.jerk);
 
-    RCLCPP_DEBUG(
-      node_->get_logger(), "[Stopped]. vel: %3.3f, acc: %3.3f", raw_ctrl_cmd.vel, raw_ctrl_cmd.acc);
+    RCLCPP_DEBUG(logger_, "[Stopped]. vel: %3.3f, acc: %3.3f", raw_ctrl_cmd.vel, raw_ctrl_cmd.acc);
   } else if (m_control_state == ControlState::EMERGENCY) {
     raw_ctrl_cmd = calcEmergencyCtrlCmd(control_data.dt);
   }
@@ -687,12 +690,12 @@ autoware_auto_control_msgs::msg::LongitudinalCommand PidLongitudinalController::
 {
   // publish control command
   autoware_auto_control_msgs::msg::LongitudinalCommand cmd{};
-  cmd.stamp = node_->now();
+  cmd.stamp = clock_->now();
   cmd.speed = static_cast<decltype(cmd.speed)>(ctrl_cmd.vel);
   cmd.acceleration = static_cast<decltype(cmd.acceleration)>(ctrl_cmd.acc);
 
   // store current velocity history
-  m_vel_hist.push_back({node_->now(), current_vel});
+  m_vel_hist.push_back({clock_->now(), current_vel});
   while (m_vel_hist.size() > static_cast<size_t>(0.5 / m_longitudinal_ctrl_period)) {
     m_vel_hist.erase(m_vel_hist.begin());
   }
@@ -715,7 +718,7 @@ void PidLongitudinalController::publishDebugData(
 
   // publish debug values
   tier4_debug_msgs::msg::Float32MultiArrayStamped debug_msg{};
-  debug_msg.stamp = node_->now();
+  debug_msg.stamp = clock_->now();
   for (const auto & v : m_debug_values.getValues()) {
     debug_msg.data.push_back(static_cast<decltype(debug_msg.data)::value_type>(v));
   }
@@ -723,7 +726,7 @@ void PidLongitudinalController::publishDebugData(
 
   // slope angle
   tier4_debug_msgs::msg::Float32MultiArrayStamped slope_msg{};
-  slope_msg.stamp = node_->now();
+  slope_msg.stamp = clock_->now();
   slope_msg.data.push_back(
     static_cast<decltype(slope_msg.data)::value_type>(control_data.slope_angle));
   m_pub_slope->publish(slope_msg);
@@ -734,10 +737,10 @@ double PidLongitudinalController::getDt()
   double dt;
   if (!m_prev_control_time) {
     dt = m_longitudinal_ctrl_period;
-    m_prev_control_time = std::make_shared<rclcpp::Time>(node_->now());
+    m_prev_control_time = std::make_shared<rclcpp::Time>(clock_->now());
   } else {
-    dt = (node_->now() - *m_prev_control_time).seconds();
-    *m_prev_control_time = node_->now();
+    dt = (clock_->now() - *m_prev_control_time).seconds();
+    *m_prev_control_time = clock_->now();
   }
   const double max_dt = m_longitudinal_ctrl_period * 2.0;
   const double min_dt = m_longitudinal_ctrl_period * 0.5;
@@ -786,7 +789,7 @@ void PidLongitudinalController::storeAccelCmd(const double accel)
   if (m_control_state == ControlState::DRIVE) {
     // convert format
     autoware_auto_control_msgs::msg::LongitudinalCommand cmd;
-    cmd.stamp = node_->now();
+    cmd.stamp = clock_->now();
     cmd.acceleration = static_cast<decltype(cmd.acceleration)>(accel);
 
     // store published ctrl cmd
@@ -800,7 +803,7 @@ void PidLongitudinalController::storeAccelCmd(const double accel)
   if (m_ctrl_cmd_vec.size() <= 2) {
     return;
   }
-  if ((node_->now() - m_ctrl_cmd_vec.at(1).stamp).seconds() > m_delay_compensation_time) {
+  if ((clock_->now() - m_ctrl_cmd_vec.at(1).stamp).seconds() > m_delay_compensation_time) {
     m_ctrl_cmd_vec.erase(m_ctrl_cmd_vec.begin());
   }
 }
@@ -887,9 +890,9 @@ double PidLongitudinalController::predictedVelocityInTargetPoint(
   double pred_vel = current_vel_abs;
 
   const auto past_delay_time =
-    node_->now() - rclcpp::Duration::from_seconds(delay_compensation_time);
+    clock_->now() - rclcpp::Duration::from_seconds(delay_compensation_time);
   for (std::size_t i = 0; i < m_ctrl_cmd_vec.size(); ++i) {
-    if ((node_->now() - m_ctrl_cmd_vec.at(i).stamp).seconds() < m_delay_compensation_time) {
+    if ((clock_->now() - m_ctrl_cmd_vec.at(i).stamp).seconds() < m_delay_compensation_time) {
       if (i == 0) {
         // size of m_ctrl_cmd_vec is less than m_delay_compensation_time
         pred_vel = current_vel_abs +
@@ -908,7 +911,7 @@ double PidLongitudinalController::predictedVelocityInTargetPoint(
 
   const double last_acc = m_ctrl_cmd_vec.at(m_ctrl_cmd_vec.size() - 1).acceleration;
   const double time_to_current =
-    (node_->now() - m_ctrl_cmd_vec.at(m_ctrl_cmd_vec.size() - 1).stamp).seconds();
+    (clock_->now() - m_ctrl_cmd_vec.at(m_ctrl_cmd_vec.size() - 1).stamp).seconds();
   pred_vel += last_acc * time_to_current;
 
   // avoid to change sign of current_vel and pred_vel
