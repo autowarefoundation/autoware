@@ -150,11 +150,11 @@ Generate footprints from ego-vehicle path points and determine obstacle collisio
 
 #### Parameters for object recognition based collision check
 
-| Name                                                         | Unit | Type   | Description                                                | Default value |
-| :----------------------------------------------------------- | :--- | :----- | :--------------------------------------------------------- | :------------ | ---------------------------------------------------------------------------------------------------------- |
-| use_object_recognition                                       | [-]  | bool   | flag whether to use object recognition for collision check | true          |
-| object_recognition_collision_check_margin                    | [m]  | double | margin to calculate ego-vehicle cells from footprint.      | 0.6           |
-| object_recognition_collision_check_max_extra_stopping_margin | [m]  | double |                                                            | 1.0           | 　maximum value when adding longitudinal distance margin for collision check considering stopping distance |
+| Name                                                         | Unit | Type   | Description                                                                                              | Default value |
+| :----------------------------------------------------------- | :--- | :----- | :------------------------------------------------------------------------------------------------------- | :------------ |
+| use_object_recognition                                       | [-]  | bool   | flag whether to use object recognition for collision check                                               | true          |
+| object_recognition_collision_check_margin                    | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                    | 0.6           |
+| object_recognition_collision_check_max_extra_stopping_margin | [m]  | double | maximum value when adding longitudinal distance margin for collision check considering stopping distance | 1.0           |
 
 ## **Goal Search**
 
