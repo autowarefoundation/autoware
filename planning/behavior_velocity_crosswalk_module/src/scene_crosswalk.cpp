@@ -231,9 +231,12 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   // Calculate stop point with margin
   const auto p_stop_line = getStopPointWithMargin(*path, path_intersects);
-  // TODO(murooka) add a guard of p_stop_line
-  const auto default_stop_pose = toStdOptional(
-    calcLongitudinalOffsetPose(path->points, p_stop_line->first, p_stop_line->second));
+
+  std::optional<geometry_msgs::msg::Pose> default_stop_pose = std::nullopt;
+  if (p_stop_line.has_value()) {
+    default_stop_pose = toStdOptional(
+      calcLongitudinalOffsetPose(path->points, p_stop_line->first, p_stop_line->second));
+  }
 
   // Resample path sparsely for less computation cost
   constexpr double resample_interval = 4.0;
@@ -1068,6 +1071,8 @@ void CrosswalkModule::setDistanceToStop(
     const auto & ego_pos = planner_data_->current_odometry->pose.position;
     const double dist_ego2stop = calcSignedArcLength(ego_path.points, ego_pos, *stop_pos);
     setDistance(dist_ego2stop);
+  } else {
+    setDistance(std::numeric_limits<double>::lowest());
   }
 }
 
