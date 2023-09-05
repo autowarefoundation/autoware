@@ -1,5 +1,9 @@
 {
-  "ignorePaths": ["**/perception/**", "**/sensing/**", "perception/bytetrack/lib/**"],
+  "ignorePaths": [
+    "**/perception/**",
+    "sensing/tier4_pcl_extensions/include/**",
+    "perception/bytetrack/lib/**"
+  ],
   "ignoreRegExpList": [],
   "words": []
 }
