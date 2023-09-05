@@ -18,7 +18,6 @@
 #include "utils/utils.hpp"
 
 #include <pcl_ros/transforms.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
 

@@ -16,7 +16,7 @@
 
 #include "object_association_merger/utils/utils.hpp"
 #include "object_recognition_utils/object_recognition_utils.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <boost/optional.hpp>
 

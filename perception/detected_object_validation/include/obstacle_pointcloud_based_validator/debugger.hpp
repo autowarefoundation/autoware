@@ -16,7 +16,6 @@
 #define OBSTACLE_POINTCLOUD_BASED_VALIDATOR__DEBUGGER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>

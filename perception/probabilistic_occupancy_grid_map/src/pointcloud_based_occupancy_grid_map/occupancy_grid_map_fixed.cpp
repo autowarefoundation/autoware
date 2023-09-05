@@ -19,7 +19,7 @@
 
 #include <grid_map_costmap_2d/grid_map_costmap_2d.hpp>
 #include <pcl_ros/transforms.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 

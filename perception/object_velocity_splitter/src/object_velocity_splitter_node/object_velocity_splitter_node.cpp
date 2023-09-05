@@ -14,7 +14,7 @@
 
 #include "object_velocity_splitter/object_velocity_splitter_node.hpp"
 
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <memory>
 #include <string>

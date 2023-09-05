@@ -14,6 +14,8 @@
 
 #include "simple_object_merger/simple_object_merger_node.hpp"
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>

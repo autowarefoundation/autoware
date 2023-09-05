@@ -19,7 +19,7 @@
 #include "pcl/point_types.h"
 #include "pcl_conversions/pcl_conversions.h"
 #include "rclcpp/logger.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 
 #include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
 #include "nav_msgs/msg/odometry.hpp"

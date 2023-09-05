@@ -14,6 +14,8 @@
 
 #include "utils/utils.hpp"
 
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+
 #include <string>
 
 namespace utils

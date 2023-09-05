@@ -21,13 +21,15 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_object.hpp>
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
 #include <autoware_auto_perception_msgs/msg/tracked_object.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
+#include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
+
+#include <tf2/utils.h>
 
 #include <algorithm>
 #include <cmath>

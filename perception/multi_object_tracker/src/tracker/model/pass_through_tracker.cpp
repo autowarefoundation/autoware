@@ -34,7 +34,6 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 PassThroughTracker::PassThroughTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,

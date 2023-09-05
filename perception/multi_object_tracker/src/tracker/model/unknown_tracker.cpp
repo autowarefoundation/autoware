@@ -30,7 +30,9 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 UnknownTracker::UnknownTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,

@@ -16,7 +16,7 @@
 #define SIMPLE_OBJECT_MERGER__SIMPLE_OBJECT_MERGER_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
 

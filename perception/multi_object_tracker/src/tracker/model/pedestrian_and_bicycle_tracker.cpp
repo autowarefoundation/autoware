@@ -18,8 +18,6 @@
 
 #include "multi_object_tracker/tracker/model/pedestrian_and_bicycle_tracker.hpp"
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
-
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 PedestrianAndBicycleTracker::PedestrianAndBicycleTracker(

@@ -19,8 +19,6 @@
 #ifndef OBJECT_ASSOCIATION_MERGER__UTILS__UTILS_HPP_
 #define OBJECT_ASSOCIATION_MERGER__UTILS__UTILS_HPP_
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
-
 #include <autoware_auto_perception_msgs/msg/detected_object.hpp>
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/polygon.hpp>

@@ -16,6 +16,9 @@
 
 #include "object_recognition_utils/object_recognition_utils.hpp"
 
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
+
 #include <chrono>
 #include <memory>
 #include <optional>

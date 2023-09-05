@@ -14,8 +14,6 @@
 
 #include "detected_object_filter/object_position_filter.hpp"
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
-
 namespace object_position_filter
 {
 ObjectPositionFilterNode::ObjectPositionFilterNode(const rclcpp::NodeOptions & node_options)

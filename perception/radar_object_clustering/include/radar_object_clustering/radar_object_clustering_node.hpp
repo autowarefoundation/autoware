@@ -16,7 +16,6 @@
 #define RADAR_OBJECT_CLUSTERING__RADAR_OBJECT_CLUSTERING_NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
 
