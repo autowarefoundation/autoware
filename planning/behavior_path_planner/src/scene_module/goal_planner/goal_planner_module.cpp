@@ -359,6 +359,10 @@ double GoalPlannerModule::calcModuleRequestLength() const
 
 Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
 {
+  const double vehicle_width = planner_data_->parameters.vehicle_width;
+  const double base_link2front = planner_data_->parameters.base_link2front;
+  const double base_link2rear = planner_data_->parameters.base_link2rear;
+
   const lanelet::ConstLanelets pull_over_lanes =
     goal_planner_utils::getPullOverLanes(*(planner_data_->route_handler), left_side_parking_);
 
@@ -390,15 +394,18 @@ Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
     center_pose.orientation = tf2::toMsg(tf_quat);
   }
 
-  const auto distance_from_left_bound = utils::getSignedDistanceFromBoundary(
-    pull_over_lanes, vehicle_footprint_, center_pose, left_side_parking_);
-  if (!distance_from_left_bound) {
+  const auto distance_from_bound = utils::getSignedDistanceFromBoundary(
+    pull_over_lanes, vehicle_width, base_link2front, base_link2rear, center_pose,
+    left_side_parking_);
+  if (!distance_from_bound) {
     RCLCPP_ERROR(getLogger(), "fail to calculate refined goal");
     return goal_pose;
   }
 
+  const double sign = left_side_parking_ ? -1.0 : 1.0;
   const double offset_from_center_line =
-    distance_from_left_bound.value() + parameters_->margin_from_boundary;
+    sign * (distance_from_bound.value() + parameters_->margin_from_boundary);
+
   const auto refined_goal_pose = calcOffsetPose(center_pose, 0, -offset_from_center_line, 0);
 
   return refined_goal_pose;
