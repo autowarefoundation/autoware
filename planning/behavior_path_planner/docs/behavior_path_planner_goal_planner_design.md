@@ -174,7 +174,7 @@ searched for in certain range of the shoulder lane.
 | longitudinal_margin             | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
 | max_lateral_offset              | [m]  | double | maximum offset of goal search in the lateral direction                                                                                                                                                                   | 0.5            |
 | lateral_offset_interval         | [m]  | double | distance interval of goal search in the lateral direction                                                                                                                                                                | 0.25           |
-| ignore_distance_from_lane_start | [m]  | double | distance from start of pull over lanes for ignoring goal candidates                                                                                                                                                      | 15.0           |
+| ignore_distance_from_lane_start | [m]  | double | distance from start of pull over lanes for ignoring goal candidates                                                                                                                                                      | 0.0            |
 
 ## **Path Generation**
 

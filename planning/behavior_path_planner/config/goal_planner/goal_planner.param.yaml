@@ -17,7 +17,7 @@
         longitudinal_margin: 3.0
         max_lateral_offset: 0.5
         lateral_offset_interval: 0.25
-        ignore_distance_from_lane_start: 15.0
+        ignore_distance_from_lane_start: 0.0
         margin_from_boundary: 0.5
 
       # occupancy grid map
