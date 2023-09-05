@@ -16,6 +16,9 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__UTIL_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
+#include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
 
 #include <route_handler/route_handler.hpp>
 
@@ -36,6 +39,7 @@ namespace behavior_path_planner::start_planner_utils
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using route_handler::RouteHandler;

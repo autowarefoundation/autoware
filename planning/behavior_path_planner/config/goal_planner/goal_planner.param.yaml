@@ -104,6 +104,66 @@
             neighbor_radius: 8.0
             margin: 1.0
 
+      stop_condition:
+        maximum_deceleration_for_stop: 1.0
+        maximum_jerk_for_stop: 1.0
+      path_safety_check:
+        # EgoPredictedPath
+        ego_predicted_path:
+          acceleration: 1.0
+          time_horizon: 10.0
+          time_resolution: 0.5
+          min_slow_speed: 0.0
+          delay_until_departure: 1.0
+          target_velocity: 1.0
+        # For target object filtering
+        target_filtering:
+          safety_check_time_horizon: 5.0
+          safety_check_time_resolution: 1.0
+          # detection range
+          object_check_forward_distance: 10.0
+          object_check_backward_distance: 100.0
+          ignore_object_velocity_threshold: 0.0
+          # ObjectTypesToCheck
+          object_types_to_check:
+            check_car: true
+            check_truck: true
+            check_bus: true
+            check_trailer: true
+            check_bicycle: true
+            check_motorcycle: true
+            check_pedestrian: true
+            check_unknown: false
+          # ObjectLaneConfiguration
+          object_lane_configuration:
+            check_current_lane: true
+            check_right_side_lane: true
+            check_left_side_lane: true
+            check_shoulder_lane: true
+            check_other_lane: false
+          include_opposite_lane: false
+          invert_opposite_lane: false
+          check_all_predicted_path: true
+          use_all_predicted_path: true
+          use_predicted_path_outside_lanelet: false
+
+        # For safety check
+        safety_check_params:
+          # safety check configuration
+          enable_safety_check: true
+          # collision check parameters
+          check_all_predicted_path: true
+          publish_debug_marker: false
+          rss_params:
+            rear_vehicle_reaction_time: 1.0
+            rear_vehicle_safety_time_margin: 1.0
+            lateral_distance_max_threshold: 1.0
+            longitudinal_distance_min_threshold: 1.0
+            longitudinal_velocity_delta_time: 1.0
+          # temporary
+          backward_path_length: 30.0
+          forward_path_length: 100.0
+
       # debug
       debug:
         print_debug_info: false

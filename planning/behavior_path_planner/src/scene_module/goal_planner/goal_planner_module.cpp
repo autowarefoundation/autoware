@@ -16,6 +16,7 @@
 
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/utils.hpp"
@@ -340,6 +341,22 @@ bool GoalPlannerModule::isExecutionRequested() const
 
 bool GoalPlannerModule::isExecutionReady() const
 {
+  // TODO(Sugahara): should check safe or not but in the current flow, it is not possible.
+  if (status_.pull_over_path == nullptr) {
+    return true;
+  }
+
+  if (status_.is_safe_static_objects && parameters_->safety_check_params.enable_safety_check) {
+    utils::start_goal_planner_common::updateEgoPredictedPathParams(
+      ego_predicted_path_params_, parameters_);
+    utils::start_goal_planner_common::updateSafetyCheckParams(safety_check_params_, parameters_);
+    utils::start_goal_planner_common::updateObjectsFilteringParams(
+      objects_filtering_params_, parameters_);
+    if (!isSafePath()) {
+      RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
+      return false;
+    }
+  }
   return true;
 }
 
@@ -1441,12 +1458,82 @@ bool GoalPlannerModule::isCrossingPossible(const PullOverPath & pull_over_path) 
   return isCrossingPossible(start_pose, end_pose, lanes);
 }
 
+void GoalPlannerModule::updateSafetyCheckTargetObjectsData(
+  const PredictedObjects & filtered_objects, const TargetObjectsOnLane & target_objects_on_lane,
+  const std::vector<PoseWithVelocityStamped> & ego_predicted_path) const
+{
+  goal_planner_data_.filtered_objects = filtered_objects;
+  goal_planner_data_.target_objects_on_lane = target_objects_on_lane;
+  goal_planner_data_.ego_predicted_path = ego_predicted_path;
+}
+
+bool GoalPlannerModule::isSafePath() const
+{
+  const auto & pull_over_path = getCurrentPath();
+  const auto & current_pose = planner_data_->self_odometry->pose.pose;
+  const auto & current_velocity = std::hypot(
+    planner_data_->self_odometry->twist.twist.linear.x,
+    planner_data_->self_odometry->twist.twist.linear.y);
+  const auto & dynamic_object = planner_data_->dynamic_object;
+  const auto & route_handler = planner_data_->route_handler;
+  const double backward_path_length = planner_data_->parameters.backward_path_length;
+  const auto current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
+    /*forward_only_in_route*/ true);
+  const auto & pull_over_lanes =
+    goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
+  const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(pull_over_path.points);
+  const auto & common_param = planner_data_->parameters;
+  const std::pair<double, double> terminal_velocity_and_accel =
+    utils::start_goal_planner_common::getPairsTerminalVelocityAndAccel(
+      status_.pull_over_path->pairs_terminal_velocity_and_accel, status_.current_path_idx);
+  RCLCPP_DEBUG(
+    getLogger(), "pairs_terminal_velocity_and_accel: %f, %f", terminal_velocity_and_accel.first,
+    terminal_velocity_and_accel.second);
+  RCLCPP_DEBUG(getLogger(), "current_path_idx %ld", status_.current_path_idx);
+  utils::start_goal_planner_common::updatePathProperty(
+    ego_predicted_path_params_, terminal_velocity_and_accel);
+  const auto & ego_predicted_path =
+    behavior_path_planner::utils::path_safety_checker::createPredictedPath(
+      ego_predicted_path_params_, pull_over_path.points, current_pose, current_velocity,
+      ego_seg_idx);
+
+  const auto & filtered_objects = utils::path_safety_checker::filterObjects(
+    dynamic_object, route_handler, pull_over_lanes, current_pose.position,
+    objects_filtering_params_);
+
+  const auto & target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
+    pull_over_lanes, route_handler, filtered_objects, objects_filtering_params_);
+
+  const double hysteresis_factor =
+    status_.is_safe_dynamic_objects ? 1.0 : parameters_->hysteresis_factor_expand_rate;
+
+  updateSafetyCheckTargetObjectsData(filtered_objects, target_objects_on_lane, ego_predicted_path);
+
+  for (const auto & object : target_objects_on_lane.on_current_lane) {
+    const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
+      object, objects_filtering_params_->check_all_predicted_path);
+    for (const auto & obj_path : obj_predicted_paths) {
+      CollisionCheckDebug collision{};
+      if (!utils::path_safety_checker::checkCollision(
+            pull_over_path, ego_predicted_path, object, obj_path, common_param,
+            safety_check_params_->rss_params, hysteresis_factor, collision)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void GoalPlannerModule::setDebugData()
 {
   debug_marker_.markers.clear();
 
+  using marker_utils::createObjectsMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
+  using marker_utils::createPredictedPathMarkerArray;
   using motion_utils::createStopVirtualWallMarker;
   using tier4_autoware_utils::createDefaultMarker;
   using tier4_autoware_utils::createMarkerColor;
@@ -1487,6 +1574,17 @@ void GoalPlannerModule::setDebugData()
       const auto & partial_path = status_.pull_over_path->partial_paths.at(i);
       add(
         createPathMarkerArray(partial_path, "partial_path_" + std::to_string(i), 0, 0.9, 0.5, 0.9));
+    }
+    if (goal_planner_data_.ego_predicted_path.size() > 0) {
+      const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
+        goal_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
+      add(createPredictedPathMarkerArray(
+        ego_predicted_path, vehicle_info_, "ego_predicted_path", 0, 0.0, 0.5, 0.9));
+    }
+
+    if (goal_planner_data_.filtered_objects.objects.size() > 0) {
+      add(createObjectsMarkerArray(
+        goal_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
     }
   }
 

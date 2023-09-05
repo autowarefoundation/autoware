@@ -131,8 +131,15 @@ void updatePathProperty(
   std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::pair<double, double> & pairs_terminal_velocity_and_accel)
 {
+  // If acceleration is close to 0, the ego predicted path will be too short, so a minimum value is
+  // necessary to ensure a reasonable path length.
+  // TODO(Sugahara): define them as parameter
+  const double min_accel_for_ego_predicted_path = 1.0;
+  const double acceleration =
+    std::max(pairs_terminal_velocity_and_accel.second, min_accel_for_ego_predicted_path);
+
   ego_predicted_path_params->target_velocity = pairs_terminal_velocity_and_accel.first;
-  ego_predicted_path_params->acceleration = pairs_terminal_velocity_and_accel.second;
+  ego_predicted_path_params->acceleration = acceleration;
 }
 
 std::pair<double, double> getPairsTerminalVelocityAndAccel(

@@ -24,6 +24,9 @@
 #include "behavior_path_planner/utils/goal_planner/goal_searcher.hpp"
 #include "behavior_path_planner/utils/goal_planner/shift_pull_over.hpp"
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
+#include "behavior_path_planner/utils/start_goal_planner_common/common_module_data.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include <freespace_planning_algorithms/astar_search.hpp>
 #include <freespace_planning_algorithms/rrtstar.hpp>
@@ -56,6 +59,12 @@ using freespace_planning_algorithms::AstarSearch;
 using freespace_planning_algorithms::PlannerCommonParam;
 using freespace_planning_algorithms::RRTStar;
 using freespace_planning_algorithms::RRTStarParam;
+
+using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
+using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
+using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
+using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
+using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 
 enum class PathType {
   NONE = 0,
@@ -107,6 +116,13 @@ public:
   void updateModuleParams(const std::any & parameters) override
   {
     parameters_ = std::any_cast<std::shared_ptr<GoalPlannerParameters>>(parameters);
+    if (parameters_->safety_check_params.enable_safety_check) {
+      ego_predicted_path_params_ =
+        std::make_shared<EgoPredictedPathParams>(parameters_->ego_predicted_path_params);
+      objects_filtering_params_ =
+        std::make_shared<ObjectsFilteringParams>(parameters_->objects_filtering_params);
+      safety_check_params_ = std::make_shared<SafetyCheckParams>(parameters_->safety_check_params);
+    }
   }
 
   // TODO(someone): remove this, and use base class function
@@ -137,7 +153,13 @@ private:
 
   PullOverStatus status_;
 
+  mutable StartGoalPlannerData goal_planner_data_;
+
   std::shared_ptr<GoalPlannerParameters> parameters_;
+
+  mutable std::shared_ptr<EgoPredictedPathParams> ego_predicted_path_params_;
+  mutable std::shared_ptr<ObjectsFilteringParams> objects_filtering_params_;
+  mutable std::shared_ptr<SafetyCheckParams> safety_check_params_;
 
   vehicle_info_util::VehicleInfo vehicle_info_;
 
@@ -275,6 +297,13 @@ private:
 
   // rtc
   std::pair<double, double> calcDistanceToPathChange() const;
+
+  // safety check
+  SafetyCheckParams createSafetyCheckParams() const;
+  void updateSafetyCheckTargetObjectsData(
+    const PredictedObjects & filtered_objects, const TargetObjectsOnLane & target_objects_on_lane,
+    const std::vector<PoseWithVelocityStamped> & ego_predicted_path) const;
+  bool isSafePath() const;
 
   // debug
   void setDebugData();
