@@ -44,7 +44,7 @@ FreespacePullOut::FreespacePullOut(
   }
 }
 
-boost::optional<PullOutPath> FreespacePullOut::plan(const Pose start_pose, const Pose end_pose)
+boost::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, const Pose & end_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
   const double backward_path_length = planner_data_->parameters.backward_path_length;
@@ -86,7 +86,7 @@ boost::optional<PullOutPath> FreespacePullOut::plan(const Pose start_pose, const
   }
 
   // push back generate road lane path between end pose and goal pose to last path
-  const auto & goal_pose = route_handler->getGoalPose();
+  const Pose goal_pose = route_handler->getGoalPose();
   constexpr double offset_from_end_pose = 1.0;
   const auto arc_position_end = lanelet::utils::getArcCoordinates(road_lanes, end_pose);
   const double s_start = std::max(arc_position_end.length + offset_from_end_pose, 0.0);

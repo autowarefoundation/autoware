@@ -110,7 +110,7 @@ bool StartPlannerModule::isExecutionRequested() const
 {
   // TODO(Sugahara): if required lateral shift distance is small, don't engage this module.
   // Execute when current pose is near route start pose
-  const Pose & start_pose = planner_data_->route_handler->getOriginalStartPose();
+  const Pose start_pose = planner_data_->route_handler->getOriginalStartPose();
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   if (
     tier4_autoware_utils::calcDistance2d(start_pose.position, current_pose.position) >
@@ -119,7 +119,7 @@ bool StartPlannerModule::isExecutionRequested() const
   }
 
   // Check if ego arrives at goal
-  const Pose & goal_pose = planner_data_->route_handler->getGoalPose();
+  const Pose goal_pose = planner_data_->route_handler->getGoalPose();
   if (
     tier4_autoware_utils::calcDistance2d(goal_pose.position, current_pose.position) <
     parameters_->th_arrived_distance) {
@@ -953,9 +953,9 @@ bool StartPlannerModule::isSafePath() const
 {
   // TODO(Sugahara): should safety check for backward path
 
-  const auto & pull_out_path = getCurrentPath();
+  const auto pull_out_path = getCurrentPath();
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
-  const auto & current_velocity = std::hypot(
+  const double current_velocity = std::hypot(
     planner_data_->self_odometry->twist.twist.linear.x,
     planner_data_->self_odometry->twist.twist.linear.y);
   const auto & dynamic_object = planner_data_->dynamic_object;
@@ -972,15 +972,15 @@ bool StartPlannerModule::isSafePath() const
       status_.pull_out_path.pairs_terminal_velocity_and_accel, status_.current_path_idx);
   utils::start_goal_planner_common::updatePathProperty(
     ego_predicted_path_params_, terminal_velocity_and_accel);
-  const auto & ego_predicted_path =
+  const auto ego_predicted_path =
     behavior_path_planner::utils::path_safety_checker::createPredictedPath(
       ego_predicted_path_params_, pull_out_path.points, current_pose, current_velocity,
       ego_seg_idx);
 
-  const auto & filtered_objects = utils::path_safety_checker::filterObjects(
+  const auto filtered_objects = utils::path_safety_checker::filterObjects(
     dynamic_object, route_handler, current_lanes, current_pose.position, objects_filtering_params_);
 
-  const auto & target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
+  const auto target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
     current_lanes, route_handler, filtered_objects, objects_filtering_params_);
 
   const double hysteresis_factor =

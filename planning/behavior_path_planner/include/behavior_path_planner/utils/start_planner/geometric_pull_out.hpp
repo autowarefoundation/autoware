@@ -29,7 +29,7 @@ public:
   explicit GeometricPullOut(rclcpp::Node & node, const StartPlannerParameters & parameters);
 
   PlannerType getPlannerType() override { return PlannerType::GEOMETRIC; };
-  boost::optional<PullOutPath> plan(Pose start_pose, Pose goal_pose) override;
+  boost::optional<PullOutPath> plan(const Pose & start_pose, const Pose & goal_pose) override;
 
   GeometricParallelParking planner_;
   ParallelParkingParameters parallel_parking_parameters_;

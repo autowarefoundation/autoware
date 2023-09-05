@@ -40,7 +40,7 @@ ShiftPullOut::ShiftPullOut(
 {
 }
 
-boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
+boost::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const Pose & goal_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
   const auto & common_parameters = planner_data_->parameters;

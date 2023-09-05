@@ -276,7 +276,7 @@ bool GoalPlannerModule::isExecutionRequested() const
 
   const auto & route_handler = planner_data_->route_handler;
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const Pose & goal_pose = route_handler->getOriginalGoalPose();
+  const Pose goal_pose = route_handler->getOriginalGoalPose();
 
   // check if goal_pose is in current_lanes.
   lanelet::ConstLanelet current_lane{};
@@ -1145,7 +1145,7 @@ bool GoalPlannerModule::isStuck()
 
 bool GoalPlannerModule::hasFinishedCurrentPath()
 {
-  const auto & current_path_end = getCurrentPath().points.back();
+  const auto current_path_end = getCurrentPath().points.back();
   const auto & self_pose = planner_data_->self_odometry->pose.pose;
   const bool is_near_target = tier4_autoware_utils::calcDistance2d(current_path_end, self_pose) <
                               parameters_->th_arrived_distance;
@@ -1469,9 +1469,9 @@ void GoalPlannerModule::updateSafetyCheckTargetObjectsData(
 
 bool GoalPlannerModule::isSafePath() const
 {
-  const auto & pull_over_path = getCurrentPath();
+  const auto pull_over_path = getCurrentPath();
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
-  const auto & current_velocity = std::hypot(
+  const double current_velocity = std::hypot(
     planner_data_->self_odometry->twist.twist.linear.x,
     planner_data_->self_odometry->twist.twist.linear.y);
   const auto & dynamic_object = planner_data_->dynamic_object;
@@ -1480,7 +1480,7 @@ bool GoalPlannerModule::isSafePath() const
   const auto current_lanes = utils::getExtendedCurrentLanes(
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
     /*forward_only_in_route*/ true);
-  const auto & pull_over_lanes =
+  const auto pull_over_lanes =
     goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
   const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(pull_over_path.points);
   const auto & common_param = planner_data_->parameters;
@@ -1493,16 +1493,16 @@ bool GoalPlannerModule::isSafePath() const
   RCLCPP_DEBUG(getLogger(), "current_path_idx %ld", status_.current_path_idx);
   utils::start_goal_planner_common::updatePathProperty(
     ego_predicted_path_params_, terminal_velocity_and_accel);
-  const auto & ego_predicted_path =
+  const auto ego_predicted_path =
     behavior_path_planner::utils::path_safety_checker::createPredictedPath(
       ego_predicted_path_params_, pull_over_path.points, current_pose, current_velocity,
       ego_seg_idx);
 
-  const auto & filtered_objects = utils::path_safety_checker::filterObjects(
+  const auto filtered_objects = utils::path_safety_checker::filterObjects(
     dynamic_object, route_handler, pull_over_lanes, current_pose.position,
     objects_filtering_params_);
 
-  const auto & target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
+  const auto target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
     pull_over_lanes, route_handler, filtered_objects, objects_filtering_params_);
 
   const double hysteresis_factor =
