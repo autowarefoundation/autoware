@@ -122,14 +122,24 @@ bool AutonomousMode::isModeChangeCompleted()
   const auto closest_point = trajectory_.points.at(*closest_idx);
 
   // check for lateral deviation
-  const auto dist_deviation = calcDistance2d(closest_point.pose, kinematics_.pose.pose);
+  const auto dist_deviation =
+    motion_utils::calcLateralOffset(trajectory_.points, kinematics_.pose.pose.position);
+  if (std::isnan(dist_deviation)) {
+    RCLCPP_INFO(logger_, "Not stable yet: lateral offset calculation failed.");
+    return unstable();
+  }
   if (dist_deviation > stable_check_param_.dist_threshold) {
     RCLCPP_INFO(logger_, "Not stable yet: distance deviation is too large: %f", dist_deviation);
     return unstable();
   }
 
   // check for yaw deviation
-  const auto yaw_deviation = calcYawDeviation(closest_point.pose, kinematics_.pose.pose);
+  const auto yaw_deviation =
+    motion_utils::calcYawDeviation(trajectory_.points, kinematics_.pose.pose);
+  if (std::isnan(yaw_deviation)) {
+    RCLCPP_INFO(logger_, "Not stable yet: lateral offset calculation failed.");
+    return unstable();
+  }
   if (yaw_deviation > stable_check_param_.yaw_threshold) {
     RCLCPP_INFO(logger_, "Not stable yet: yaw deviation is too large: %f", yaw_deviation);
     return unstable();
