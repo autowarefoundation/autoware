@@ -416,6 +416,9 @@ void StartPlannerModule::planWithPriority(
   }
 
   const auto is_safe_with_pose_planner = [&](const size_t i, const auto & planner) {
+    // Set back_finished flag based on the current index
+    status_.back_finished = i == 0;
+
     // Get the pull_out_start_pose for the current index
     const auto & pull_out_start_pose = start_pose_candidates.at(i);
 
@@ -495,8 +498,6 @@ void StartPlannerModule::planWithPriority(
   for (const auto & p : order_priority) {
     if (is_safe_with_pose_planner(p.first, p.second)) {
       const std::lock_guard<std::mutex> lock(mutex_);
-      // Set back_finished flag based on the current index
-      status_.back_finished = p.first == 0;
       return;
     }
   }
