@@ -275,7 +275,7 @@ bool GoalPlannerModule::isExecutionRequested() const
 
   const auto & route_handler = planner_data_->route_handler;
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
-  const Pose & goal_pose = route_handler->getGoalPose();
+  const Pose & goal_pose = route_handler->getOriginalGoalPose();
 
   // check if goal_pose is in current_lanes.
   lanelet::ConstLanelet current_lane{};
@@ -511,7 +511,7 @@ void GoalPlannerModule::generateGoalCandidates()
   }
 
   // calculate goal candidates
-  const Pose goal_pose = route_handler->getGoalPose();
+  const Pose goal_pose = route_handler->getOriginalGoalPose();
   refined_goal_pose_ = calcRefinedGoal(goal_pose);
   if (goal_planner_utils::isAllowedGoalModification(route_handler)) {
     goal_searcher_->setPlannerData(planner_data_);
@@ -1548,7 +1548,7 @@ void GoalPlannerModule::printParkingPositionError() const
 bool GoalPlannerModule::checkOriginalGoalIsInShoulder() const
 {
   const auto & route_handler = planner_data_->route_handler;
-  const Pose & goal_pose = route_handler->getGoalPose();
+  const Pose & goal_pose = route_handler->getOriginalGoalPose();
 
   const lanelet::ConstLanelets pull_over_lanes =
     goal_planner_utils::getPullOverLanes(*(route_handler), left_side_parking_);
