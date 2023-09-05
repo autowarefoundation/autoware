@@ -86,8 +86,8 @@ Either one is activated when all conditions are met.
 
 ### fixed_goal_planner
 
-- The distance between the goal and ego-vehicle is shorter than `minimum_request_length`.
 - Route is set with `allow_goal_modification=false` by default.
+- ego-vehicle is in the same lane as the goal.
 
 <img src="https://user-images.githubusercontent.com/39142679/237929955-c0adf01b-9e3c-45e3-848d-98cf11e52b65.png" width="600">
 
@@ -95,7 +95,7 @@ Either one is activated when all conditions are met.
 
 #### pull over on road lane
 
-- The distance between the goal and ego-vehicle is shorter than `minimum_request_length`.
+- The distance between the goal and ego-vehicle is shorter than `pull_over_minimum_request_length`.
 - Route is set with `allow_goal_modification=true` .
   - We can set this option with [SetRoute](https://github.com/autowarefoundation/autoware_adapi_msgs/blob/main/autoware_adapi_v1_msgs/routing/srv/SetRoute.srv#L2) api service.
   - We support `2D Rough Goal Pose` with the key bind `r` in RViz, but in the future there will be a panel of tools to manipulate various Route API from RViz.
@@ -105,7 +105,7 @@ Either one is activated when all conditions are met.
 
 #### pull over on shoulder lane
 
-- The distance between the goal and ego-vehicle is shorter than `minimum_request_length`.
+- The distance between the goal and ego-vehicle is shorter than `pull_over_minimum_request_length`.
 - Goal is set in the `road_shoulder`.
 
 <img src="https://user-images.githubusercontent.com/39142679/237929941-2ce26ea5-c84d-4d17-8cdc-103f5246db90.png" width="600">
@@ -118,17 +118,11 @@ Either one is activated when all conditions are met.
 
 ## General parameters for goal_planner
 
-| Name                       | Unit   | Type   | Description                                                                                                                             | Default value |
-| :------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| minimum_request_length     | [m]    | double | when the ego-vehicle approaches the goal by this distance or a safe distance to stop, the module is activated.                          | 100.0         |
-| th_arrived_distance        | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
-| th_stopped_velocity        | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
-| th_stopped_time            | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
-| pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 3.0           |
-| pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 1.38          |
-| margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
-| decide_path_distance       | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
-| maximum_deceleration       | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 1.0           |
+| Name                | Unit  | Type   | Description                                        | Default value |
+| :------------------ | :---- | :----- | :------------------------------------------------- | :------------ |
+| th_arrived_distance | [m]   | double | distance threshold for arrival of path termination | 1.0           |
+| th_stopped_velocity | [m/s] | double | velocity threshold for arrival of path termination | 0.01          |
+| th_stopped_time     | [s]   | double | time threshold for arrival of path termination     | 2.0           |
 
 ## **collision check**
 
@@ -175,11 +169,21 @@ searched for in certain range of the shoulder lane.
 | max_lateral_offset              | [m]  | double | maximum offset of goal search in the lateral direction                                                                                                                                                                   | 0.5            |
 | lateral_offset_interval         | [m]  | double | distance interval of goal search in the lateral direction                                                                                                                                                                | 0.25           |
 | ignore_distance_from_lane_start | [m]  | double | distance from start of pull over lanes for ignoring goal candidates                                                                                                                                                      | 0.0            |
+| ignore_distance_from_lane_start | [m]  | double | distance from start of pull over lanes for ignoring goal candidates                                                                                                                                                      | 0.0            |
+| margin_from_boundary            | [m]  | double | distance margin from edge of the shoulder lane                                                                                                                                                                           | 0.5            |
 
-## **Path Generation**
+## **Pull Over**
 
 There are three path generation methods.
-The path is generated with a certain margin (default: `0.5 m`) from left boundary of shoulder lane.
+The path is generated with a certain margin (default: `0.5 m`) from the boundary of shoulder lane.
+
+| Name                             | Unit   | Type   | Description                                                                                                                             | Default value |
+| :------------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| pull_over_minimum_request_length | [m]    | double | when the ego-vehicle approaches the goal by this distance or a safe distance to stop, pull over is activated.                           | 100.0         |
+| pull_over_velocity               | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 3.0           |
+| pull_over_minimum_velocity       | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 1.38          |
+| decide_path_distance             | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
+| maximum_deceleration             | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 1.0           |
 
 ### **shift parking**
 

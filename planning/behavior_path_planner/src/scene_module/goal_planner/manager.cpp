@@ -35,7 +35,6 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   const std::string base_ns = "goal_planner.";
   // general params
   {
-    p.minimum_request_length = node->declare_parameter<double>(base_ns + "minimum_request_length");
     p.th_stopped_velocity = node->declare_parameter<double>(base_ns + "th_stopped_velocity");
     p.th_arrived_distance = node->declare_parameter<double>(base_ns + "th_arrived_distance");
     p.th_stopped_time = node->declare_parameter<double>(base_ns + "th_stopped_time");
@@ -96,6 +95,8 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   // pull over general params
   {
     const std::string ns = base_ns + "pull_over.";
+    p.pull_over_minimum_request_length =
+      node->declare_parameter<double>(ns + "minimum_request_length");
     p.pull_over_velocity = node->declare_parameter<double>(ns + "pull_over_velocity");
     p.pull_over_minimum_velocity =
       node->declare_parameter<double>(ns + "pull_over_minimum_velocity");

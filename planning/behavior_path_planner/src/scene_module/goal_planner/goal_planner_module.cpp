@@ -307,12 +307,19 @@ bool GoalPlannerModule::isExecutionRequested() const
     return false;
   }
 
+  // if goal modification is not allowed
+  // 1) goal_pose is in current_lanes, plan path to the original fixed goal
+  // 2) goal_pose is NOT in current_lanes, do not execute goal_planner
+  if (!goal_planner_utils::isAllowedGoalModification(route_handler)) {
+    return goal_is_in_current_lanes;
+  }
+
   // if goal arc coordinates can be calculated, check if goal is in request_length
   const double self_to_goal_arc_length =
     utils::getSignedDistance(current_pose, goal_pose, current_lanes);
   const double request_length = goal_planner_utils::isAllowedGoalModification(route_handler)
                                   ? calcModuleRequestLength()
-                                  : parameters_->minimum_request_length;
+                                  : parameters_->pull_over_minimum_request_length;
   if (self_to_goal_arc_length < 0.0 || self_to_goal_arc_length > request_length) {
     // if current position is far from goal or behind goal, do not execute goal_planner
     return false;
@@ -365,13 +372,13 @@ double GoalPlannerModule::calcModuleRequestLength() const
   const auto min_stop_distance = calcFeasibleDecelDistance(
     planner_data_, parameters_->maximum_deceleration, parameters_->maximum_jerk, 0.0);
   if (!min_stop_distance) {
-    return parameters_->minimum_request_length;
+    return parameters_->pull_over_minimum_request_length;
   }
 
   const double minimum_request_length =
     *min_stop_distance + parameters_->backward_goal_search_length + approximate_pull_over_distance_;
 
-  return std::max(minimum_request_length, parameters_->minimum_request_length);
+  return std::max(minimum_request_length, parameters_->pull_over_minimum_request_length);
 }
 
 Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
