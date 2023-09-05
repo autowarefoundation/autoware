@@ -270,7 +270,8 @@ void NDTScanMatcher::timer_diagnostic()
     }
     if (
       state_ptr_->count("skipping_publish_num") &&
-      std::stoi((*state_ptr_)["skipping_publish_num"]) > 1) {
+      std::stoi((*state_ptr_)["skipping_publish_num"]) > 1 &&
+      std::stoi((*state_ptr_)["skipping_publish_num"]) < 5) {
       diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
       diag_status_msg.message += "skipping_publish_num > 1. ";
     }
