@@ -47,13 +47,12 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
   const auto road_lanes = utils::getExtendedCurrentLanes(
     planner_data_, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
     /*forward_only_in_route*/ false);
-  const auto shoulder_lanes =
+  const auto pull_over_lanes =
     goal_planner_utils::getPullOverLanes(*route_handler, left_side_parking_);
-  if (road_lanes.empty() || shoulder_lanes.empty()) {
+  if (road_lanes.empty() || pull_over_lanes.empty()) {
     return {};
   }
-  auto lanes = road_lanes;
-  lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
+  const auto lanes = utils::combineLanelets(road_lanes, pull_over_lanes);
 
   const auto & p = parallel_parking_parameters_;
   const double max_steer_angle =
@@ -62,7 +61,7 @@ boost::optional<PullOverPath> GeometricPullOver::plan(const Pose & goal_pose)
   planner_.setPlannerData(planner_data_);
 
   const bool found_valid_path =
-    planner_.planPullOver(goal_pose, road_lanes, shoulder_lanes, is_forward_);
+    planner_.planPullOver(goal_pose, road_lanes, pull_over_lanes, is_forward_);
   if (!found_valid_path) {
     return {};
   }

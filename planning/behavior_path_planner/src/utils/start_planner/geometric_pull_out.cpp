@@ -47,16 +47,6 @@ boost::optional<PullOutPath> GeometricPullOut::plan(const Pose & start_pose, con
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
     /*forward_only_in_route*/ true);
   const auto pull_out_lanes = getPullOutLanes(planner_data_, backward_path_length);
-  auto lanes = road_lanes;
-  for (const auto & pull_out_lane : pull_out_lanes) {
-    auto it = std::find_if(
-      lanes.begin(), lanes.end(), [&pull_out_lane](const lanelet::ConstLanelet & lane) {
-        return lane.id() == pull_out_lane.id();
-      });
-    if (it == lanes.end()) {
-      lanes.push_back(pull_out_lane);
-    }
-  }
 
   planner_.setTurningRadius(
     planner_data_->parameters, parallel_parking_parameters_.pull_out_max_steer_angle);

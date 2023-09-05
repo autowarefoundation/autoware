@@ -150,17 +150,7 @@ bool StartPlannerModule::isExecutionRequested() const
     /*forward_only_in_route*/ true);
   const auto pull_out_lanes =
     start_planner_utils::getPullOutLanes(planner_data_, backward_path_length);
-  auto lanes = current_lanes;
-  for (const auto & pull_out_lane : pull_out_lanes) {
-    auto it = std::find_if(
-      lanes.begin(), lanes.end(), [&pull_out_lane](const lanelet::ConstLanelet & lane) {
-        return lane.id() == pull_out_lane.id();
-      });
-
-    if (it == lanes.end()) {
-      lanes.push_back(pull_out_lane);
-    }
-  }
+  const auto lanes = utils::combineLanelets(current_lanes, pull_out_lanes);
 
   if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
     return false;
