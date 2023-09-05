@@ -426,7 +426,7 @@ Pose RouteHandler::getStartPose() const
 {
   if (!route_ptr_) {
     RCLCPP_WARN(logger_, "[Route Handler] getStartPose: Route has not been set yet");
-    Pose();
+    return Pose();
   }
   return route_ptr_->start_pose;
 }
@@ -440,7 +440,7 @@ Pose RouteHandler::getGoalPose() const
 {
   if (!route_ptr_) {
     RCLCPP_WARN(logger_, "[Route Handler] getGoalPose: Route has not been set yet");
-    Pose();
+    return Pose();
   }
   return route_ptr_->goal_pose;
 }
