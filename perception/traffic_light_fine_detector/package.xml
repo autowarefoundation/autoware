@@ -4,7 +4,7 @@
   <name>traffic_light_fine_detector</name>
   <version>0.1.0</version>
   <description>The traffic_light_fine_detector package</description>
-  <maintainer email="mingyu.li@tier4.jp">Mingyu Li</maintainer>
+  <maintainer email="tao.zhong@tier4.jp">Tao Zhong</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <license>Apache License 2.0</license>
 

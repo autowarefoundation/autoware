@@ -4,7 +4,6 @@
   <name>perception_utils</name>
   <version>0.1.0</version>
   <description>The perception_utils package</description>
-  <maintainer email="mingyu.li@tier4.jp">Mingyu Li</maintainer>
   <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <maintainer email="yusuke.muramatsu@tier4.jp">Yusuke Muramatsu</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
