@@ -881,17 +881,35 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(
     }
 
     // output avoidance path under lateral jerk constraints.
-    const auto feasible_shift_length = PathShifter::calcLateralDistFromJerk(
+    const auto feasible_relative_shift_length = PathShifter::calcLateralDistFromJerk(
       remaining_distance, helper_.getLateralMaxJerkLimit(), helper_.getAvoidanceEgoSpeed());
 
-    RCLCPP_WARN_THROTTLE(
-      getLogger(), *clock_, 1000,
-      "original shift length is not feasible. generate avoidance path under the constraints. "
-      "[original: (%.2f) actual: (%.2f)]",
-      std::abs(avoiding_shift), feasible_shift_length);
+    if (std::abs(feasible_relative_shift_length) < parameters_->lateral_execution_threshold) {
+      object.reason = "LessThanExecutionThreshold";
+      return boost::none;
+    }
 
-    return desire_shift_length > 0.0 ? feasible_shift_length + current_ego_shift
-                                     : -1.0 * feasible_shift_length + current_ego_shift;
+    const auto feasible_shift_length =
+      desire_shift_length > 0.0 ? feasible_relative_shift_length + current_ego_shift
+                                : -1.0 * feasible_relative_shift_length + current_ego_shift;
+
+    const auto feasible =
+      std::abs(feasible_shift_length - object.overhang_dist) <
+      0.5 * planner_data_->parameters.vehicle_width + object_parameter.safety_buffer_lateral;
+    if (feasible) {
+      RCLCPP_WARN_THROTTLE(
+        getLogger(), *clock_, 1000, "feasible shift length is not enough to avoid. ");
+      object.reason = AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN;
+      return boost::none;
+    }
+
+    {
+      RCLCPP_WARN_THROTTLE(
+        getLogger(), *clock_, 1000, "use feasible shift length. [original: (%.2f) actual: (%.2f)]",
+        std::abs(avoiding_shift), feasible_relative_shift_length);
+    }
+
+    return feasible_shift_length;
   };
 
   const auto is_forward_object = [](const auto & object) { return object.longitudinal > 0.0; };
