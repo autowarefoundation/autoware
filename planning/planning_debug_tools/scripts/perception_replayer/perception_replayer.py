@@ -73,7 +73,7 @@ class PerceptionReplayer(PerceptionReplayerCommon):
         # extract message by the timestamp
         msgs = copy.deepcopy(self.find_topics_by_timestamp(self.bag_timestamp))
         objects_msg = msgs[0]
-        traffic_signals_msg = msgs[1]
+        # traffic_signals_msg = msgs[1]
 
         # objects
         if objects_msg:
@@ -92,13 +92,13 @@ class PerceptionReplayer(PerceptionReplayerCommon):
             self.objects_pub.publish(objects_msg)
 
         # traffic signals
-        if traffic_signals_msg:
-            traffic_signals_msg.header.stamp = timestamp
-            self.traffic_signals_pub.publish(traffic_signals_msg)
-            self.prev_traffic_signals_msg = traffic_signals_msg
-        elif self.prev_traffic_signals_msg:
-            self.prev_traffic_signals_msg.header.stamp = timestamp
-            self.traffic_signals_pub.publish(self.prev_traffic_signals_msg)
+        # if traffic_signals_msg:
+        #     traffic_signals_msg.header.stamp = timestamp
+        #     self.traffic_signals_pub.publish(traffic_signals_msg)
+        #     self.prev_traffic_signals_msg = traffic_signals_msg
+        # elif self.prev_traffic_signals_msg:
+        #     self.prev_traffic_signals_msg.header.stamp = timestamp
+        #     self.traffic_signals_pub.publish(self.prev_traffic_signals_msg)
 
     def onPushed(self, event):
         if self.widget.button.isChecked():
