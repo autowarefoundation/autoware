@@ -178,10 +178,6 @@ def launch_setup(context, *args, **kwargs):
                 "/perception/traffic_light_recognition/traffic_signals",
             ),
             (
-                "~/input/external_traffic_signals",
-                "/external/traffic_light_recognition/traffic_signals",
-            ),
-            (
                 "~/input/external_velocity_limit_mps",
                 "/planning/scenario_planning/max_velocity_default",
             ),

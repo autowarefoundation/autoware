@@ -55,8 +55,7 @@ private:
     const lanelet::TrafficLightConstPtr registered_element) const;
 
   // Debug
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::LookingTrafficSignal>::SharedPtr
-    pub_tl_state_;
+  rclcpp::Publisher<autoware_perception_msgs::msg::TrafficSignal>::SharedPtr pub_tl_state_;
 
   boost::optional<int> first_ref_stop_path_point_index_;
 };

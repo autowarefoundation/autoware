@@ -61,7 +61,7 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_vehicle_odometry_;
   rclcpp::Subscription<geometry_msgs::msg::AccelWithCovarianceStamped>::SharedPtr sub_acceleration_;
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_lanelet_map_;
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>::SharedPtr
+  rclcpp::Subscription<autoware_perception_msgs::msg::TrafficSignalArray>::SharedPtr
     sub_traffic_signals_;
   rclcpp::Subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>::SharedPtr
     sub_virtual_traffic_light_states_;
@@ -77,7 +77,7 @@ private:
   void onAcceleration(const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg);
   void onLaneletMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
   void onTrafficSignals(
-    const autoware_auto_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg);
+    const autoware_perception_msgs::msg::TrafficSignalArray::ConstSharedPtr msg);
   void onVirtualTrafficLightStates(
     const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg);
   void onOccupancyGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);

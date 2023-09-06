@@ -29,15 +29,15 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 
 ## Input topics
 
-| Name                                      | Type                                                   | Description                                                                                                                     |
-| ----------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `~input/path_with_lane_id`                | autoware_auto_planning_msgs::msg::PathWithLaneId       | path with lane_id                                                                                                               |
-| `~input/vector_map`                       | autoware_auto_mapping_msgs::msg::HADMapBin             | vector map                                                                                                                      |
-| `~input/vehicle_odometry`                 | nav_msgs::msg::Odometry                                | vehicle velocity                                                                                                                |
-| `~input/dynamic_objects`                  | autoware_auto_perception_msgs::msg::PredictedObjects   | dynamic objects                                                                                                                 |
-| `~input/no_ground_pointcloud`             | sensor_msgs::msg::PointCloud2                          | obstacle pointcloud                                                                                                             |
-| `~/input/compare_map_filtered_pointcloud` | sensor_msgs::msg::PointCloud2                          | obstacle pointcloud filtered by compare map. Note that this is used only when the detection method of run out module is Points. |
-| `~input/traffic_signals`                  | autoware_auto_perception_msgs::msg::TrafficSignalArray | traffic light states                                                                                                            |
+| Name                                      | Type                                                 | Description                                                                                                                     |
+| ----------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `~input/path_with_lane_id`                | autoware_auto_planning_msgs::msg::PathWithLaneId     | path with lane_id                                                                                                               |
+| `~input/vector_map`                       | autoware_auto_mapping_msgs::msg::HADMapBin           | vector map                                                                                                                      |
+| `~input/vehicle_odometry`                 | nav_msgs::msg::Odometry                              | vehicle velocity                                                                                                                |
+| `~input/dynamic_objects`                  | autoware_auto_perception_msgs::msg::PredictedObjects | dynamic objects                                                                                                                 |
+| `~input/no_ground_pointcloud`             | sensor_msgs::msg::PointCloud2                        | obstacle pointcloud                                                                                                             |
+| `~/input/compare_map_filtered_pointcloud` | sensor_msgs::msg::PointCloud2                        | obstacle pointcloud filtered by compare map. Note that this is used only when the detection method of run out module is Points. |
+| `~input/traffic_signals`                  | autoware_perception_msgs::msg::TrafficSignalArray    | traffic light states                                                                                                            |
 
 ## Output topics
 

@@ -41,7 +41,7 @@ TrafficLightModuleManager::TrafficLightModuleManager(rclcpp::Node & node)
   planner_param_.enable_pass_judge = getOrDeclareParameter<bool>(node, ns + ".enable_pass_judge");
   planner_param_.yellow_lamp_period =
     getOrDeclareParameter<double>(node, ns + ".yellow_lamp_period");
-  pub_tl_state_ = node.create_publisher<autoware_auto_perception_msgs::msg::LookingTrafficSignal>(
+  pub_tl_state_ = node.create_publisher<autoware_perception_msgs::msg::TrafficSignal>(
     "~/output/traffic_signal", 1);
 }
 
@@ -51,9 +51,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
   visualization_msgs::msg::MarkerArray debug_marker_array;
   visualization_msgs::msg::MarkerArray virtual_wall_marker_array;
 
-  autoware_auto_perception_msgs::msg::LookingTrafficSignal tl_state;
-  tl_state.header.stamp = path->header.stamp;
-  tl_state.is_module_running = false;
+  autoware_perception_msgs::msg::TrafficSignal tl_state;
 
   autoware_adapi_v1_msgs::msg::VelocityFactorArray velocity_factor_array;
   velocity_factor_array.header.frame_id = "map";

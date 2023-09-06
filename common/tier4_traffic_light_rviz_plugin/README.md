@@ -8,9 +8,9 @@ This plugin panel publishes dummy traffic light signals.
 
 ### Output
 
-| Name                                                    | Type                                                     | Description                   |
-| ------------------------------------------------------- | -------------------------------------------------------- | ----------------------------- |
-| `/perception/traffic_light_recognition/traffic_signals` | `autoware_auto_perception_msgs::msg::TrafficSignalArray` | Publish traffic light signals |
+| Name                                                    | Type                                                | Description                   |
+| ------------------------------------------------------- | --------------------------------------------------- | ----------------------------- |
+| `/perception/traffic_light_recognition/traffic_signals` | `autoware_perception_msgs::msg::TrafficSignalArray` | Publish traffic light signals |
 
 ## HowToUse
 

@@ -29,8 +29,6 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_auto_perception_msgs/msg/looking_traffic_signal.hpp>
-
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
 
@@ -39,15 +37,15 @@ namespace behavior_velocity_planner
 class TrafficLightModule : public SceneModuleInterface
 {
 public:
+  using TrafficSignal = autoware_perception_msgs::msg::TrafficSignal;
+  using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
   enum class State { APPROACH, GO_OUT };
-  enum class Input { PERCEPTION, NONE };  // EXTERNAL: FOA, V2X, etc.
 
   struct DebugData
   {
     double base_link2front;
     std::vector<std::tuple<
-      std::shared_ptr<const lanelet::TrafficLight>,
-      autoware_auto_perception_msgs::msg::TrafficSignal>>
+      std::shared_ptr<const lanelet::TrafficLight>, autoware_perception_msgs::msg::TrafficSignal>>
       tl_state;
     std::vector<geometry_msgs::msg::Pose> stop_poses;
     geometry_msgs::msg::Pose first_stop_pose;
@@ -77,10 +75,7 @@ public:
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
   motion_utils::VirtualWalls createVirtualWalls() override;
 
-  inline autoware_auto_perception_msgs::msg::LookingTrafficSignal getTrafficSignal() const
-  {
-    return looking_tl_state_;
-  }
+  inline TrafficSignal getTrafficSignal() const { return looking_tl_state_; }
 
   inline State getTrafficLightModuleState() const { return state_; }
 
@@ -90,10 +85,9 @@ public:
   }
 
 private:
-  bool isStopSignal(const lanelet::ConstLineStringsOrPolygons3d & traffic_lights);
+  bool isStopSignal();
 
-  bool isTrafficSignalStop(
-    const autoware_auto_perception_msgs::msg::TrafficSignal & tl_state) const;
+  bool isTrafficSignalStop(const TrafficSignal & tl_state) const;
 
   autoware_auto_planning_msgs::msg::PathWithLaneId insertStopPose(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
@@ -102,22 +96,13 @@ private:
 
   bool isPassthrough(const double & signed_arc_length) const;
 
-  bool hasTrafficLightCircleColor(
-    const autoware_auto_perception_msgs::msg::TrafficSignal & tl_state,
-    const uint8_t & lamp_color) const;
+  bool hasTrafficLightCircleColor(const TrafficSignal & tl_state, const uint8_t & lamp_color) const;
 
-  bool hasTrafficLightShape(
-    const autoware_auto_perception_msgs::msg::TrafficSignal & tl_state,
-    const uint8_t & lamp_shape) const;
+  bool hasTrafficLightShape(const TrafficSignal & tl_state, const uint8_t & lamp_shape) const;
 
-  bool getHighestConfidenceTrafficSignal(
-    const lanelet::ConstLineStringsOrPolygons3d & traffic_lights,
-    autoware_auto_perception_msgs::msg::TrafficSignalStamped & highest_confidence_tl_state);
+  bool findValidTrafficSignal(TrafficSignal & valid_traffic_signal);
 
-  bool updateTrafficSignal(const lanelet::ConstLineStringsOrPolygons3d & traffic_lights);
-
-  autoware_auto_perception_msgs::msg::TrafficSignalWithJudge generateTlStateWithJudgeFromTlState(
-    const autoware_auto_perception_msgs::msg::TrafficSignal tl_state) const;
+  bool updateTrafficSignal();
 
   // Lane id
   const int64_t lane_id_;
@@ -128,9 +113,6 @@ private:
 
   // State
   State state_;
-
-  // Input
-  Input input_;
 
   // Parameter
   PlannerParam planner_param_;
@@ -144,7 +126,7 @@ private:
   boost::optional<int> first_ref_stop_path_point_index_;
 
   // Traffic Light State
-  autoware_auto_perception_msgs::msg::LookingTrafficSignal looking_tl_state_;
+  TrafficSignal looking_tl_state_;
 };
 }  // namespace behavior_velocity_planner
 

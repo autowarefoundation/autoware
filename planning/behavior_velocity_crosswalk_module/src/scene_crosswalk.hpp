@@ -50,8 +50,8 @@ namespace behavior_velocity_planner
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
-using autoware_auto_perception_msgs::msg::TrafficLight;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using autoware_perception_msgs::msg::TrafficSignalElement;
 using lanelet::autoware::Crosswalk;
 using tier4_api_msgs::msg::CrosswalkStatus;
 using tier4_autoware_utils::Polygon2d;

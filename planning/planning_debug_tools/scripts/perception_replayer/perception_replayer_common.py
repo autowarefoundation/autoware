@@ -22,7 +22,7 @@ import time
 from autoware_auto_perception_msgs.msg import DetectedObjects
 from autoware_auto_perception_msgs.msg import PredictedObjects
 from autoware_auto_perception_msgs.msg import TrackedObjects
-from autoware_auto_perception_msgs.msg import TrafficSignalArray
+from autoware_perception_msgs.msg import TrafficSignalArray
 from nav_msgs.msg import Odometry
 import psutil
 from rclpy.node import Node

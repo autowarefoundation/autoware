@@ -27,7 +27,7 @@
 #include <rviz_common/panel.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/traffic_signal_array.hpp>
+#include <autoware_perception_msgs/msg/traffic_signal_array.hpp>
 #endif
 
 #include <set>
@@ -36,10 +36,9 @@ namespace rviz_plugins
 {
 
 using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_auto_perception_msgs::msg::TrafficLight;
-using autoware_auto_perception_msgs::msg::TrafficSignal;
-using autoware_auto_perception_msgs::msg::TrafficSignalArray;
-
+using autoware_perception_msgs::msg::TrafficSignal;
+using autoware_perception_msgs::msg::TrafficSignalArray;
+using autoware_perception_msgs::msg::TrafficSignalElement;
 class TrafficLightPublishPanel : public rviz_common::Panel
 {
   Q_OBJECT

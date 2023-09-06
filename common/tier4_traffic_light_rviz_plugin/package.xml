@@ -11,7 +11,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>autoware_auto_mapping_msgs</depend>
-  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
