@@ -55,36 +55,37 @@ PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWith
   return path;
 }
 
-lanelet::ConstLanelets getPullOverLanes(const RouteHandler & route_handler, const bool left_side)
+lanelet::ConstLanelets getPullOverLanes(
+  const RouteHandler & route_handler, const bool left_side, const double backward_distance,
+  const double forward_distance)
 {
   const Pose goal_pose = route_handler.getOriginalGoalPose();
+
+  // Buffer to get enough lanes in front of the goal, need much longer than the pull over distance.
+  // In the case of loop lanes, it may not be possible to extend the lane forward.
+  // todo(kosuek55): automatically calculates this distance.
+  const double backward_distance_with_buffer = backward_distance + 100;
 
   lanelet::ConstLanelet target_shoulder_lane{};
   if (route_handler::RouteHandler::getPullOverTarget(
         route_handler.getShoulderLanelets(), goal_pose, &target_shoulder_lane)) {
     // pull over on shoulder lane
-    return route_handler.getShoulderLaneletSequence(target_shoulder_lane, goal_pose);
+    return route_handler.getShoulderLaneletSequence(
+      target_shoulder_lane, goal_pose, backward_distance_with_buffer, forward_distance);
   }
 
-  // pull over on road lane
   lanelet::ConstLanelet closest_lane{};
   route_handler.getClosestLaneletWithinRoute(goal_pose, &closest_lane);
-
   lanelet::ConstLanelet outermost_lane{};
   if (left_side) {
-    outermost_lane = route_handler.getMostLeftLanelet(closest_lane);
+    outermost_lane = route_handler.getMostLeftLanelet(closest_lane, false, true);
   } else {
-    outermost_lane = route_handler.getMostRightLanelet(closest_lane);
+    outermost_lane = route_handler.getMostRightLanelet(closest_lane, false, true);
   }
 
-  lanelet::ConstLanelet outermost_shoulder_lane;
-  if (route_handler.getLeftShoulderLanelet(outermost_lane, &outermost_shoulder_lane)) {
-    return route_handler.getShoulderLaneletSequence(outermost_shoulder_lane, goal_pose);
-  }
-
-  const bool dist = std::numeric_limits<double>::max();
   constexpr bool only_route_lanes = false;
-  return route_handler.getLaneletSequence(outermost_lane, dist, dist, only_route_lanes);
+  return route_handler.getLaneletSequence(
+    outermost_lane, backward_distance_with_buffer, forward_distance, only_route_lanes);
 }
 
 PredictedObjects filterObjectsByLateralDistance(
