@@ -335,9 +335,16 @@ void reactRTCApprovalByDecisionResult(
     rclcpp::get_logger("reactRTCApprovalByDecisionResult"),
     "StuckStop, approval = (default: %d, occlusion: %d)", rtc_default_approved,
     rtc_occlusion_approved);
+  const auto closest_idx = decision_result.stop_lines.closest_idx;
   if (!rtc_default_approved) {
     // use default_rtc uuid for stuck vehicle detection
-    const auto stop_line_idx = decision_result.stop_line_idx;
+    auto stop_line_idx = decision_result.stop_line_idx;
+    if (
+      !decision_result.is_detection_area_empty &&
+      motion_utils::calcSignedArcLength(path->points, stop_line_idx, closest_idx) >
+        planner_param.common.stop_overshoot_margin) {
+      stop_line_idx = decision_result.stop_lines.default_stop_line;
+    }
     planning_utils::setVelocityFromIndex(stop_line_idx, 0.0, path);
     debug_data->collision_stop_wall_pose =
       planning_utils::getAheadPose(stop_line_idx, baselink2front, *path);
@@ -347,7 +354,7 @@ void reactRTCApprovalByDecisionResult(
       stop_factor.stop_factor_points = planning_utils::toRosPoints(debug_data->conflicting_targets);
       planning_utils::appendStopReason(stop_factor, stop_reason);
       velocity_factor->set(
-        path->points, path->points.at(decision_result.stop_lines.closest_idx).point.pose,
+        path->points, path->points.at(closest_idx).point.pose,
         path->points.at(stop_line_idx).point.pose, VelocityFactor::INTERSECTION);
     }
   }
@@ -363,7 +370,7 @@ void reactRTCApprovalByDecisionResult(
       stop_factor.stop_pose = path->points.at(occlusion_stop_line_idx).point.pose;
       planning_utils::appendStopReason(stop_factor, stop_reason);
       velocity_factor->set(
-        path->points, path->points.at(decision_result.stop_lines.closest_idx).point.pose,
+        path->points, path->points.at(closest_idx).point.pose,
         path->points.at(occlusion_stop_line_idx).point.pose, VelocityFactor::INTERSECTION);
     }
   }
@@ -774,7 +781,8 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const auto & conflicting_area = intersection_lanelets_.value().conflicting_area();
   const auto path_lanelets_opt = util::generatePathLanelets(
     lanelets_on_path, interpolated_path_info, associative_ids_, first_conflicting_area.value(),
-    conflicting_area, closest_idx, planner_data_->vehicle_info_.vehicle_width_m);
+    conflicting_area, first_attention_area, intersection_lanelets_.value().attention_area(),
+    closest_idx, planner_data_->vehicle_info_.vehicle_width_m);
   if (!path_lanelets_opt.has_value()) {
     RCLCPP_DEBUG(logger_, "failed to generate PathLanelets");
     return IntersectionModule::Indecisive{};
