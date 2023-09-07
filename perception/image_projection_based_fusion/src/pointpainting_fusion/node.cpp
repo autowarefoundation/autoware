@@ -133,7 +133,7 @@ PointPaintingFusionNode::PointPaintingFusionNode(const rclcpp::NodeOptions & opt
     auto it = find(paint_class_names.begin(), paint_class_names.end(), cls);
     if (it != paint_class_names.end()) {
       int index = it - paint_class_names.begin();
-      class_index_[cls] = index + 1;
+      class_index_[cls] = pow(2, index);  // regard each class as a bit in binary
     } else {
       isClassTable_.erase(cls);
     }
@@ -345,7 +345,8 @@ dc   | dc dc dc  dc ||zc|
         data = &painted_pointcloud_msg.data[0];
         auto p_class = reinterpret_cast<float *>(&output[stride + class_offset]);
         for (const auto & cls : isClassTable_) {
-          *p_class = cls.second(label2d) ? class_index_[cls.first] : *p_class;
+          // add up the class values if the point belongs to multiple classes
+          *p_class = cls.second(label2d) ? (class_index_[cls.first] + *p_class) : *p_class;
         }
       }
 #if 0

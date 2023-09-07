@@ -17,6 +17,7 @@
 
 #include <lidar_centerpoint/preprocess/voxel_generator.hpp>
 
+#include <bitset>
 #include <vector>
 
 namespace image_projection_based_fusion
