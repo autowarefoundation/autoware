@@ -31,15 +31,15 @@ TEST(EKFCovarianceToPoseMessageCovariance, SmokeTest)
     P(2, 2) = 9.;
 
     std::array<double, 36> covariance = ekfCovarianceToPoseMessageCovariance(P);
-    EXPECT_EQ(covariance(0), 1.);
-    EXPECT_EQ(covariance(1), 2.);
-    EXPECT_EQ(covariance(5), 3.);
-    EXPECT_EQ(covariance(6), 4.);
-    EXPECT_EQ(covariance(7), 5.);
-    EXPECT_EQ(covariance(11), 6.);
-    EXPECT_EQ(covariance(30), 7.);
-    EXPECT_EQ(covariance(31), 8.);
-    EXPECT_EQ(covariance(35), 9.);
+    EXPECT_EQ(covariance[0], 1.);
+    EXPECT_EQ(covariance[1], 2.);
+    EXPECT_EQ(covariance[5], 3.);
+    EXPECT_EQ(covariance[6], 4.);
+    EXPECT_EQ(covariance[7], 5.);
+    EXPECT_EQ(covariance[11], 6.);
+    EXPECT_EQ(covariance[30], 7.);
+    EXPECT_EQ(covariance[31], 8.);
+    EXPECT_EQ(covariance[35], 9.);
   }
 
   // ensure other elements are zero
@@ -62,10 +62,10 @@ TEST(EKFCovarianceToTwistMessageCovariance, SmokeTest)
     P(5, 5) = 4.;
 
     std::array<double, 36> covariance = ekfCovarianceToTwistMessageCovariance(P);
-    EXPECT_EQ(covariance(0), 1.);
-    EXPECT_EQ(covariance(5), 2.);
-    EXPECT_EQ(covariance(30), 3.);
-    EXPECT_EQ(covariance(35), 4.);
+    EXPECT_EQ(covariance[0], 1.);
+    EXPECT_EQ(covariance[5], 2.);
+    EXPECT_EQ(covariance[30], 3.);
+    EXPECT_EQ(covariance[35], 4.);
   }
 
   // ensure other elements are zero

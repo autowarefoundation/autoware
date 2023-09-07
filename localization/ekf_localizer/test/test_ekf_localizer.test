@@ -1,5 +1,0 @@
-<launch>
-
-  <test test-name="ekf_localizer-test" pkg="ekf_localizer" type="ekf_localizer-test" name="test"/>
-
-</launch>
