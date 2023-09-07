@@ -10,6 +10,7 @@
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <maintainer email="kyoichi.sugahara@tier4.jp">Kyoichi Sugahara</maintainer>
+  <maintainer email="kotaro.uetake@tier4.jp">Kotaro Uetake</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
