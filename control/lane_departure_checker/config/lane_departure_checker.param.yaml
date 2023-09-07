@@ -1,5 +1,10 @@
 /**:
   ros__parameters:
+    # Enable feature
+    will_out_of_lane_checker: true
+    out_of_lane_checker: true
+    boundary_departure_checker: false
+
     # Node
     update_rate: 10.0
     visualize_lanelet: false
@@ -7,7 +12,8 @@
     include_left_lanes: false
     include_opposite_lanes: false
     include_conflicting_lanes: false
-    road_border_departure_checker: false
+    boundary_types_to_detect: [road_border]
+
 
     # Core
     footprint_margin_scale: 1.0

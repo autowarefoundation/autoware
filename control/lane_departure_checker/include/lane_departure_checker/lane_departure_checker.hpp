@@ -72,6 +72,7 @@ struct Input
   lanelet::ConstLanelets shoulder_lanelets{};
   Trajectory::ConstSharedPtr reference_trajectory{};
   Trajectory::ConstSharedPtr predicted_trajectory{};
+  std::vector<std::string> boundary_types_to_detect{};
 };
 
 struct Output
@@ -79,7 +80,7 @@ struct Output
   std::map<std::string, double> processing_time_map{};
   bool will_leave_lane{};
   bool is_out_of_lane{};
-  bool will_cross_road_border{};
+  bool will_cross_boundary{};
   PoseDeviation trajectory_deviation{};
   lanelet::ConstLanelets candidate_lanelets{};
   TrajectoryPoints resampled_trajectory{};
@@ -136,9 +137,10 @@ private:
     const lanelet::ConstLanelets & candidate_lanelets,
     const std::vector<LinearRing2d> & vehicle_footprints);
 
-  static bool willCrossRoadBorder(
+  static bool willCrossBoundary(
     const lanelet::ConstLanelets & candidate_lanelets,
-    const std::vector<LinearRing2d> & vehicle_footprints);
+    const std::vector<LinearRing2d> & vehicle_footprints,
+    const std::vector<std::string> & boundary_types_to_detects);
 
   static bool isCrossingRoadBorder(
     const lanelet::BasicLineString2d & road_border, const std::vector<LinearRing2d> & footprints);

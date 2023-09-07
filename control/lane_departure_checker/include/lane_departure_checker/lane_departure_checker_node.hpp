@@ -37,6 +37,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace lane_departure_checker
@@ -45,13 +46,17 @@ using autoware_auto_mapping_msgs::msg::HADMapBin;
 
 struct NodeParam
 {
+  bool will_out_of_lane_checker;
+  bool out_of_lane_checker;
+  bool boundary_departure_checker;
+
   double update_rate;
   bool visualize_lanelet;
   bool include_right_lanes;
   bool include_left_lanes;
   bool include_opposite_lanes;
   bool include_conflicting_lanes;
-  bool road_border_departure_checker;
+  std::vector<std::string> boundary_types_to_detect;
 };
 
 class LaneDepartureCheckerNode : public rclcpp::Node
