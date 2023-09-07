@@ -18,6 +18,7 @@
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
+#include "behavior_path_planner/utils/start_goal_planner_common/common_module_data.hpp"
 #include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
 #include "behavior_path_planner/utils/start_planner/start_planner_parameters.hpp"
 
@@ -31,6 +32,7 @@ namespace behavior_path_planner::utils::start_goal_planner_common
 {
 
 using behavior_path_planner::StartPlannerParameters;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
 using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
 using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
@@ -84,6 +86,13 @@ void updateObjectsFilteringParams(
 void updatePathProperty(
   std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::pair<double, double> & pairs_terminal_velocity_and_accel);
+
+void initializeCollisionCheckDebugMap(CollisionCheckDebugMap & collision_check_debug_map);
+
+void updateSafetyCheckTargetObjectsData(
+  StartGoalPlannerData & data, const PredictedObjects & filtered_objects,
+  const TargetObjectsOnLane & target_objects_on_lane,
+  const std::vector<PoseWithVelocityStamped> & ego_predicted_path);
 
 std::pair<double, double> getPairsTerminalVelocityAndAccel(
   const std::vector<std::pair<double, double>> & pairs_terminal_velocity_and_accel,

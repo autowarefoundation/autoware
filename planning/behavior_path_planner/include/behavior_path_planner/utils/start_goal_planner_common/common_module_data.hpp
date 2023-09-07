@@ -27,6 +27,7 @@
 namespace behavior_path_planner
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
+using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebugMap;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 /*
@@ -38,6 +39,8 @@ struct StartGoalPlannerData
   PredictedObjects filtered_objects;
   TargetObjectsOnLane target_objects_on_lane;
   std::vector<PoseWithVelocityStamped> ego_predicted_path;
+  // collision check debug map
+  CollisionCheckDebugMap collision_check;
 };
 
 }  // namespace behavior_path_planner
