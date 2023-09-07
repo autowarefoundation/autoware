@@ -63,13 +63,14 @@ For the backward compatibility (to be removed):
 
 ## Parameters
 
-| Name                               | Type     | Description                                                                                       | Default value |
-| :--------------------------------- | :------- | :------------------------------------------------------------------------------------------------ | :------------ |
-| `transition_timeout`               | `double` | If the state transition is not completed within this time, it is considered a transition failure. | 10.0          |
-| `frequency_hz`                     | `double` | running hz                                                                                        | 10.0          |
-| `check_engage_condition`           | `double` | If false, autonomous transition is always available                                               | 0.1           |
-| `nearest_dist_deviation_threshold` | `double` | distance threshold used to find nearest trajectory point                                          | 3.0           |
-| `nearest_yaw_deviation_threshold`  | `double` | angle threshold used to find nearest trajectory point                                             | 1.57          |
+| Name                               | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Default value |
+| :--------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| `transition_timeout`               | `double` | If the state transition is not completed within this time, it is considered a transition failure.                                                                                                                                                                                                                                                                                                                             | 10.0          |
+| `frequency_hz`                     | `double` | running hz                                                                                                                                                                                                                                                                                                                                                                                                                    | 10.0          |
+| `enable_engage_on_driving`         | `bool`   | Set true if you want to engage the autonomous driving mode while the vehicle is driving. If set to false, it will deny Engage in any situation where the vehicle speed is not zero. Note that if you use this feature without adjusting the parameters, it may cause issues like sudden deceleration. Before using, please ensure the engage condition and the vehicle_cmd_gate transition filter are appropriately adjusted. | 0.1           |
+| `check_engage_condition`           | `bool`   | If false, autonomous transition is always available                                                                                                                                                                                                                                                                                                                                                                           | 0.1           |
+| `nearest_dist_deviation_threshold` | `double` | distance threshold used to find nearest trajectory point                                                                                                                                                                                                                                                                                                                                                                      | 3.0           |
+| `nearest_yaw_deviation_threshold`  | `double` | angle threshold used to find nearest trajectory point                                                                                                                                                                                                                                                                                                                                                                         | 1.57          |
 
 For `engage_acceptable_limits` related parameters:
 
@@ -93,6 +94,21 @@ For `stable_check` related parameters:
 | `yaw_threshold`         | `double` | the yaw angle between trajectory and ego vehicle must be within this threshold to complete `Autonomous` transition.               | 0.262         |
 | `speed_upper_threshold` | `double` | the velocity deviation between control command and ego vehicle must be within this threshold to complete `Autonomous` transition. | 2.0           |
 | `speed_lower_threshold` | `double` | the velocity deviation between control command and ego vehicle must be within this threshold to complete `Autonomous` transition. | 2.0           |
+
+## Engage check behavior on each parameter setting
+
+This matrix describes the scenarios in which the vehicle can be engaged based on the combinations of parameter settings:
+
+| `enable_engage_on_driving` | `check_engage_condition` | `allow_autonomous_in_stopped` | Scenarios where engage is permitted                               |
+| :------------------------: | :----------------------: | :---------------------------: | :---------------------------------------------------------------- |
+|             x              |            x             |               x               | Only when the vehicle is stationary.                              |
+|             x              |            x             |               o               | Only when the vehicle is stationary.                              |
+|             x              |            o             |               x               | When the vehicle is stationary and all engage conditions are met. |
+|             x              |            o             |               o               | Only when the vehicle is stationary.                              |
+|             o              |            x             |               x               | At any time (Caution: Not recommended).                           |
+|             o              |            x             |               o               | At any time (Caution: Not recommended).                           |
+|             o              |            o             |               x               | When all engage conditions are met, regardless of vehicle status. |
+|             o              |            o             |               o               | When all engage conditions are met or the vehicle is stationary.  |
 
 ## Future extensions / Unimplemented parts
 

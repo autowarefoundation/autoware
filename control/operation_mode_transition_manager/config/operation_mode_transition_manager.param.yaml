@@ -2,11 +2,16 @@
   ros__parameters:
     transition_timeout: 10.0
     frequency_hz: 10.0
+
+    # set true if you want to engage the autonomous driving mode while the vehicle is driving. If set to false, it will deny Engage in any situation where the vehicle speed is not zero. Note that if you use this feature without adjusting the parameters, it may cause issues like sudden deceleration. Before using, please ensure the engage condition and the vehicle_cmd_gate transition filter are appropriately adjusted.
+    enable_engage_on_driving: false
+
     check_engage_condition: false # set false if you do not want to care about the engage condition.
+
     nearest_dist_deviation_threshold: 3.0 # [m] for finding nearest index
     nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
     engage_acceptable_limits:
-      allow_autonomous_in_stopped: true  # no check if the velocity is zero, always allowed.
+      allow_autonomous_in_stopped: true  # if true, all engage check is skipped.
       dist_threshold: 1.5
       yaw_threshold: 0.524
       speed_upper_threshold: 10.0

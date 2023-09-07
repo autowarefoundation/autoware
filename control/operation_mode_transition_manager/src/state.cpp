@@ -46,6 +46,7 @@ AutonomousMode::AutonomousMode(rclcpp::Node * node)
     "trajectory", 1, [this](const Trajectory::SharedPtr msg) { trajectory_ = *msg; });
 
   check_engage_condition_ = node->declare_parameter<bool>("check_engage_condition");
+  enable_engage_on_driving_ = node->declare_parameter<bool>("enable_engage_on_driving");
   nearest_dist_deviation_threshold_ =
     node->declare_parameter<double>("nearest_dist_deviation_threshold");
   nearest_yaw_deviation_threshold_ =
@@ -217,6 +218,15 @@ bool AutonomousMode::isModeChangeAvailable()
   const auto current_speed = kinematics_.twist.twist.linear.x;
   const auto target_control_speed = control_cmd_.longitudinal.speed;
   const auto & param = engage_acceptable_param_;
+
+  if (!enable_engage_on_driving_ && std::fabs(current_speed) > 1.0e-2) {
+    RCLCPP_INFO(
+      logger_,
+      "Engage unavailable: enable_engage_on_driving is false, and the vehicle is not "
+      "stationary.");
+    debug_info_ = DebugInfo{};  // all false
+    return false;
+  }
 
   if (trajectory_.points.size() < 2) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
