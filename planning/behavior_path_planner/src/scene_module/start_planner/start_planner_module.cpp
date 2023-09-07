@@ -553,10 +553,15 @@ std::vector<DrivableLanes> StartPlannerModule::generateDrivableLanes(
   const PathWithLaneId & path) const
 {
   const auto path_road_lanes = getPathRoadLanes(path);
-
   if (!path_road_lanes.empty()) {
-    return utils::generateDrivableLanesWithShoulderLanes(
-      getPathRoadLanes(path), status_.pull_out_lanes);
+    lanelet::ConstLanelets shoulder_lanes;
+    const auto & rh = planner_data_->route_handler;
+    std::copy_if(
+      status_.pull_out_lanes.begin(), status_.pull_out_lanes.end(),
+      std::back_inserter(shoulder_lanes),
+      [&rh](const auto & pull_out_lane) { return rh->isShoulderLanelet(pull_out_lane); });
+
+    return utils::generateDrivableLanesWithShoulderLanes(getPathRoadLanes(path), shoulder_lanes);
   }
 
   // if path_road_lanes is empty, use only pull_out_lanes as drivable lanes
