@@ -91,6 +91,7 @@ NDTScanMatcher::NDTScanMatcher()
   converged_param_transform_probability_(4.5),
   converged_param_nearest_voxel_transformation_likelihood_(2.3),
   initial_estimate_particles_num_(100),
+  lidar_topic_timeout_sec_(1.0),
   initial_pose_timeout_sec_(1.0),
   initial_pose_distance_tolerance_m_(10.0),
   inversion_vector_threshold_(-0.9),
@@ -140,6 +141,9 @@ NDTScanMatcher::NDTScanMatcher()
   converged_param_nearest_voxel_transformation_likelihood_ = this->declare_parameter(
     "converged_param_nearest_voxel_transformation_likelihood",
     converged_param_nearest_voxel_transformation_likelihood_);
+
+  lidar_topic_timeout_sec_ =
+    this->declare_parameter("lidar_topic_timeout_sec", lidar_topic_timeout_sec_);
 
   initial_pose_timeout_sec_ =
     this->declare_parameter("initial_pose_timeout_sec", initial_pose_timeout_sec_);
@@ -269,6 +273,12 @@ void NDTScanMatcher::timer_diagnostic()
       diag_status_msg.message += "Initializing State. ";
     }
     if (
+      state_ptr_->count("lidar_topic_delay_time_sec") &&
+      std::stod((*state_ptr_)["lidar_topic_delay_time_sec"]) > lidar_topic_timeout_sec_) {
+      diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+      diag_status_msg.message += "lidar_topic_delay_time_sec exceed limit. ";
+    }
+    if (
       state_ptr_->count("skipping_publish_num") &&
       std::stoi((*state_ptr_)["skipping_publish_num"]) > 1 &&
       std::stoi((*state_ptr_)["skipping_publish_num"]) < 5) {
@@ -347,11 +357,29 @@ void NDTScanMatcher::callback_sensor_points(
     return;
   }
 
+  const rclcpp::Time sensor_ros_time = sensor_points_msg_in_sensor_frame->header.stamp;
+  const double lidar_topic_delay_time_sec = (this->now() - sensor_ros_time).seconds();
+  (*state_ptr_)["lidar_topic_delay_time_sec"] = std::to_string(lidar_topic_delay_time_sec);
+
+  if (lidar_topic_delay_time_sec > lidar_topic_timeout_sec_) {
+    RCLCPP_WARN(
+      this->get_logger(),
+      "The LiDAR topic is experiencing latency. The delay time is %lf[sec] (the tolerance is "
+      "%lf[sec])",
+      lidar_topic_delay_time_sec, lidar_topic_timeout_sec_);
+
+    // If the delay time of the LiDAR topic exceeds the delay compensation time of ekf_localizer,
+    // even if further processing continues, the estimated result will be rejected by ekf_localizer.
+    // Therefore, it would be acceptable to exit the function here.
+    // However, for now, we will continue the processing as it is.
+
+    // return;
+  }
+
   // mutex ndt_ptr_
   std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);
 
   const auto exe_start_time = std::chrono::system_clock::now();
-  const rclcpp::Time sensor_ros_time = sensor_points_msg_in_sensor_frame->header.stamp;
 
   // preprocess input pointcloud
   pcl::shared_ptr<pcl::PointCloud<PointSource>> sensor_points_in_sensor_frame(

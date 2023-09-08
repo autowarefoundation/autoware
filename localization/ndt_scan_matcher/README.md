@@ -64,6 +64,7 @@ One optional function is regularization. Please see the regularization chapter i
 | `max_iterations`                        | int    | The number of iterations required to calculate alignment                                        |
 | `converged_param_type`                  | int    | The type of indicators for scan matching score (0: TP, 1: NVTL)                                 |
 | `converged_param_transform_probability` | double | Threshold for deciding whether to trust the estimation result                                   |
+| `lidar_topic_timeout_sec`               | double | Tolerance of timestamp difference between current time and sensor pointcloud                    |
 | `num_threads`                           | int    | Number of threads used for parallel computing                                                   |
 
 (TP: Transform Probability, NVTL: Nearest Voxel Transform Probability)
