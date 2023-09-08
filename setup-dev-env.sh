@@ -9,6 +9,8 @@ SCRIPT_DIR=$(readlink -f "$(dirname "$0")")
 
 # Parse arguments
 args=()
+option_data_dir="$HOME/autoware_data"
+
 while [ "$1" != "" ]; do
     case "$1" in
     -y)
@@ -30,6 +32,11 @@ while [ "$1" != "" ]; do
     --runtime)
         # Disable installation dev package of role 'cuda' and 'tensorrt'.
         option_runtime=true
+        ;;
+    --data-dir)
+        # Set data directory
+        option_data_dir="$2"
+        shift
         ;;
     *)
         args+=("$1")
@@ -89,6 +96,8 @@ if [ "$option_runtime" = "true" ]; then
 else
     ansible_args+=("--extra-vars" "install_devel=true")
 fi
+
+ansible_args+=("--extra-vars" "data_dir=$option_data_dir")
 
 # Load env
 source "$SCRIPT_DIR/amd64.env"
