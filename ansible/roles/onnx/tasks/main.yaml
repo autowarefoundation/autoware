@@ -1,146 +1,253 @@
-- name: Download pts_backbone_neck_head_centerpoint_tiny.onnx
+# yabloc_pose_initializer
+- name: Download yabloc_pose_initializer/resources.tar.gz
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint_tiny.onnx
-    dest: "{{ data_dir }}/pts_backbone_neck_head_centerpoint_tiny.onnx"
-    checksum: sha256:9bb0b634f3664bd098ce7d6a3d8a9fb7cc8d9b8252b27f302c71e43316bab551
+    url: https://s3.ap-northeast-2.wasabisys.com/pinto-model-zoo/136_road-segmentation-adas-0001/resources.tar.gz
+    dest: "{{ data_dir }}/yabloc_pose_initializer/resources.tar.gz"
+    checksum: sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a
 
-- name: Download pts_backbone_neck_head_centerpoint.onnx
+# image_projection_based_fusion
+- name: Download image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint.onnx
-    dest: "{{ data_dir }}/pts_backbone_neck_head_centerpoint.onnx"
-    checksum: sha256:3fe7e128955646740c41a25be0c8f141d5a94594fe79d7405fe2a859e391542e
+    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/pts_voxel_encoder_pointpainting.onnx
+    dest: "{{ data_dir }}/image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx"
+    checksum: md5:25c70f76a45a64944ccd19f604c99410
 
-- name: Download pts_voxel_encoder_centerpoint_tiny.onnx
+- name: Download image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_voxel_encoder_centerpoint_tiny.onnx
-    dest: "{{ data_dir }}/pts_voxel_encoder_centerpoint_tiny.onnx"
-    checksum: sha256:2c53465715c1fd2e9dc5727ef3fca74f4cdf0538f74286b0946e219d0ca5693b
+    url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/pts_backbone_neck_head_pointpainting.onnx
+    dest: "{{ data_dir }}/image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx"
+    checksum: md5:2c7108245240fbd7bf0104dd68225868
 
-- name: Download pts_voxel_encoder_centerpoint.onnx
+# lidar_apollo_instance_segmentation
+- name: Download lidar_apollo_instance_segmentation/vlp-16.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/vlp-16.onnx
+    dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/vlp-16.onnx"
+    checksum: md5:63a5a1bb73f7dbb64cf70d04eca45fb4
+
+- name: Download lidar_apollo_instance_segmentation/hdl-64.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/hdl-64.onnx
+    dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/hdl-64.onnx"
+    checksum: md5:009745e33b1df44b68296431cc384cd2
+
+- name: Download lidar_apollo_instance_segmentation/vls-128.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/vls-128.onnx
+    dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/vls-128.onnx"
+    checksum: md5:b2d709f56f73ae2518c9bf4d0214468f
+
+# lidar_centerpoint
+- name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_voxel_encoder_centerpoint.onnx
-    dest: "{{ data_dir }}/pts_voxel_encoder_centerpoint.onnx"
+    dest: "{{ data_dir }}/lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx"
     checksum: sha256:dc1a876580d86ee7a341d543f8ade2ede7f43bd032dc5b44155b1f0175405764
 
-- name: Download coco.names
+- name: Download lidar_centerpoint/pts_backbone_neck_head_centerpoint.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/coco.names
-    dest: "{{ data_dir }}/coco.names"
-    checksum: sha256:634a1132eb33f8091d60f2c346ababe8b905ae08387037aed883953b7329af84
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint.onnx
+    dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint.onnx"
+    checksum: sha256:3fe7e128955646740c41a25be0c8f141d5a94594fe79d7405fe2a859e391542e
 
-- name: Download hdl-64.caffemodel
+- name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint_tiny.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/hdl-64.caffemodel
-    dest: "{{ data_dir }}/hdl-64.caffemodel"
-    checksum: sha256:0fbcf449ff0e4571b23245eba0e787055b38f77de5c7e0a90d619775e54c740b
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_voxel_encoder_centerpoint_tiny.onnx
+    dest: "{{ data_dir }}/lidar_centerpoint/pts_voxel_encoder_centerpoint_tiny.onnx"
+    checksum: sha256:2c53465715c1fd2e9dc5727ef3fca74f4cdf0538f74286b0946e219d0ca5693b
 
-- name: Download label.txt
+- name: Download lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/label.txt
-    dest: "{{ data_dir }}/label.txt"
-    checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
+    url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint_tiny.onnx
+    dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx"
+    checksum: md5:e4658325b70222f7c3637fe00e586b82
 
-- name: Download lamp_labels.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/lamp_labels.txt
-    dest: "{{ data_dir }}/lamp_labels.txt"
-    checksum: sha256:baac220ef86b70c94673bbf982121f7d43591b1768ac05e98f235b23772a9bed
-
-- name: Download mb2-ssd-lite-tlr.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/mb2-ssd-lite-tlr.onnx
-    dest: "{{ data_dir }}/mb2-ssd-lite-tlr.onnx"
-    checksum: sha256:e29e6ee68751a270fb285fd037713939ca7f61a897b4c3a7ab22b0d6a9a21ddf
-
-- name: Download traffic_light_classifier_mobilenetv2.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier_mobilenetv2.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2.onnx"
-    checksum: sha256:5e1bbdeeb1589cab19cbb69d70553e0fd81fb302b09167ae2946112dcf898b24
-
-- name: Download vlp-16.caffemodel
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/vlp-16.caffemodel
-    dest: "{{ data_dir }}/vlp-16.caffemodel"
-    checksum: sha256:0fbcf449ff0e4571b23245eba0e787055b38f77de5c7e0a90d619775e54c740b
-
-- name: Download vls-128.caffemodel
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/vls-128.caffemodel
-    dest: "{{ data_dir }}/vls-128.caffemodel"
-    checksum: sha256:b3efd450f867e66bb316aa2cba72ab69c93f6f7d2550d502b8fdea623e953166
-
-- name: Download voc_labels_tl.txt
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
-    dest: "{{ data_dir }}/voc_labels_tl.txt"
-    checksum: sha256:a41e6e3324e32c30b3b2fe38908eaf3471e2bfdaeb9e14ca0c1c3bc0275119c6
-
-- name: Download yolov3.onnx
+# tensorrt_yolo
+- name: Download tensorrt_yolo/yolov3.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/yolov3.onnx
-    dest: "{{ data_dir }}/yolov3.onnx"
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov3.onnx"
     checksum: sha256:61e922f76918dd3d8e0abdc5fb7406f390609e08bd8ab9e5d3b97afb00f30f8c
 
-- name: Download yolov4-tiny.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/yolov4-tiny.onnx
-    dest: "{{ data_dir }}/yolov4-tiny.onnx"
-    checksum: sha256:0e877c716fbf8a2b431ee3e57f6c7411a6741319b52c32c6dafc53c7e1b17027
-
-- name: Download yolov4.onnx
+- name: Download tensorrt_yolo/yolov4.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/yolov4.onnx
-    dest: "{{ data_dir }}/yolov4.onnx"
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov4.onnx"
     checksum: sha256:7c7343156c1bd4b397fd1e44b27334691a6219db3ce2e29a03b72af65ddb8f39
 
-- name: Download yolov5l.onnx
+- name: Download tensorrt_yolo/yolov4-tiny.onnx
   become: true
   ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/yolov5l.onnx
-    dest: "{{ data_dir }}/yolov5l.onnx"
-    checksum: sha256:a627e5f70180a8746482b572194090466db62c8d1256602c1cd20374dd960e34
+    url: https://awf.ml.dev.web.auto/perception/models/yolov4-tiny.onnx
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov4-tiny.onnx"
+    checksum: sha256:0e877c716fbf8a2b431ee3e57f6c7411a6741319b52c32c6dafc53c7e1b17027
 
-- name: Download yolov5m.onnx
-  become: true
-  ansible.builtin.get_url:
-    url: https://awf.ml.dev.web.auto/perception/models/yolov5m.onnx
-    dest: "{{ data_dir }}/yolov5m.onnx"
-    checksum: sha256:ee6f67f7c00a34cc4cef2fdd9db30dd714df1a4fb2d7e9fc1731cfe85b673133
-
-- name: Download yolov5s.onnx
+- name: Download tensorrt_yolo/yolov5s.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/yolov5s.onnx
-    dest: "{{ data_dir }}/yolov5s.onnx"
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov5s.onnx"
     checksum: sha256:be335ff7746957debf1a6903a61fa3f568b780b4afe4958edf2d4bc98e9e0825
 
-- name: Download yolov5x.onnx
+- name: Download tensorrt_yolo/yolov5m.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/yolov5m.onnx
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov5m.onnx"
+    checksum: sha256:ee6f67f7c00a34cc4cef2fdd9db30dd714df1a4fb2d7e9fc1731cfe85b673133
+
+- name: Download tensorrt_yolo/yolov5l.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/yolov5l.onnx
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov5l.onnx"
+    checksum: sha256:a627e5f70180a8746482b572194090466db62c8d1256602c1cd20374dd960e34
+
+- name: Download tensorrt_yolo/yolov5x.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/yolov5x.onnx
-    dest: "{{ data_dir }}/yolov5x.onnx"
+    dest: "{{ data_dir }}/tensorrt_yolo/yolov5x.onnx"
     checksum: sha256:d7cb4cd7078f87bda22a37828d72867accecedf9f74d0d87b5cc1f6f1180a019
 
-- name: Download yolox-tiny.onnx
+- name: Download tensorrt_yolo/coco.names
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/coco.names
+    dest: "{{ data_dir }}/tensorrt_yolo/coco.names"
+    checksum: sha256:634a1132eb33f8091d60f2c346ababe8b905ae08387037aed883953b7329af84
+
+# tensorrt_yolox
+- name: Download tensorrt_yolox/yolox-tiny.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/yolox-tiny.onnx
-    dest: "{{ data_dir }}/yolox-tiny.onnx"
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-tiny.onnx"
     checksum: sha256:471a665f4243e654dff62578394e508db22ee29fe65d9e389dfc3b0f2dee1255
+
+- name: Download tensorrt_yolox/yolox-sPlus-opt.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.onnx
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.onnx"
+    checksum: md5:bf3b0155351f90fcdca2626acbfd3bcf
+
+- name: Download tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.EntropyV2-calibration.table
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table"
+    checksum: md5:c6e6f1999d5724a017516a956096701f
+
+- name: Download tensorrt_yolox/label.txt
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/label.txt
+    dest: "{{ data_dir }}/tensorrt_yolox/label.txt"
+    checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
+
+# traffic_light_classifier
+- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_1.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2_batch_1.onnx"
+    checksum: md5:caa51f2080aa2df943e4f884c41898eb
+
+- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_4.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2_batch_4.onnx"
+    checksum: md5:c2beaf60210f471debfe72b86d076ca0
+
+- name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2_batch_6.onnx"
+    checksum: md5:47255a11bde479320d703f1f45db1242
+
+- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_1.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier_efficientNet_b1_batch_1.onnx"
+    checksum: md5:82baba4fcf1abe0c040cd55005e34510
+
+- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_4.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier_efficientNet_b1_batch_4.onnx"
+    checksum: md5:21b549c2fe4fbb20d32cc019e6d70cd7
+
+- name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_6.onnx
+    dest: "{{ data_dir }}/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
+    checksum: md5:28b408710bcb24f4cdd4d746301d4e78
+
+- name: Download traffic_light_classifier/lamp_labels.txt
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/lamp_labels.txt
+    dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
+    checksum: sha256:baac220ef86b70c94673bbf982121f7d43591b1768ac05e98f235b23772a9bed
+
+# traffic_light_fine_detector
+- name: Download traffic_light_fine_detector/tlr_yolox_s_batch_1.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_yolox_s_batch_1.onnx
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_yolox_s_batch_1.onnx"
+    checksum: md5:2b72d085022b8ee6aacff06bd722cfda
+
+- name: Download traffic_light_fine_detector/tlr_yolox_s_batch_4.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_yolox_s_batch_4.onnx
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_yolox_s_batch_4.onnx"
+    checksum: md5:4044daa86e7776ce241e94d98a09cc0e
+
+- name: Download traffic_light_fine_detector/tlr_yolox_s_batch_6.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_yolox_s_batch_6.onnx
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_yolox_s_batch_6.onnx"
+    checksum: md5:47255a11bde479320d703f1f45db1242
+
+- name: Download traffic_light_fine_detector/tlr_labels.txt
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_labels.txt
+    dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_labels.txt"
+    checksum: md5:e9f45efb02f2a9aa8ac27b3d5c164905
+
+# traffic_light_ssd_fine_detector
+- name: Download traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/mb2-ssd-lite-tlr.onnx
+    dest: "{{ data_dir }}/traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx"
+    checksum: sha256:e29e6ee68751a270fb285fd037713939ca7f61a897b4c3a7ab22b0d6a9a21ddf
+
+- name: Download traffic_light_ssd_fine_detector/voc_labels_tl.txt
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
+    dest: "{{ data_dir }}/traffic_light_ssd_fine_detector/voc_labels_tl.txt"
+    checksum: sha256:a41e6e3324e32c30b3b2fe38908eaf3471e2bfdaeb9e14ca0c1c3bc0275119c6
