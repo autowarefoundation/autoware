@@ -92,13 +92,22 @@ class PerceptionReplayer(PerceptionReplayerCommon):
             self.objects_pub.publish(objects_msg)
 
         # traffic signals
+        # temporary support old auto msgs
         if traffic_signals_msg:
-            traffic_signals_msg.stamp = timestamp
-            self.traffic_signals_pub.publish(traffic_signals_msg)
+            if self.is_auto_traffic_signals:
+                traffic_signals_msg.header.stamp = timestamp
+                self.auto_traffic_signals_pub.publish(traffic_signals_msg)
+            else:
+                traffic_signals_msg.stamp = timestamp
+                self.traffic_signals_pub.publish(traffic_signals_msg)
             self.prev_traffic_signals_msg = traffic_signals_msg
         elif self.prev_traffic_signals_msg:
-            self.prev_traffic_signals_msg.stamp = timestamp
-            self.traffic_signals_pub.publish(self.prev_traffic_signals_msg)
+            if self.is_auto_traffic_signals:
+                self.prev_traffic_signals_msg.header.stamp = timestamp
+                self.auto_traffic_signals_pub.publish(self.prev_traffic_signals_msg)
+            else:
+                self.prev_traffic_signals_msg.stamp = timestamp
+                self.traffic_signals_pub.publish(self.prev_traffic_signals_msg)
 
     def onPushed(self, event):
         if self.widget.button.isChecked():
