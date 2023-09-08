@@ -163,42 +163,42 @@
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2_batch_1.onnx"
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx"
     checksum: md5:caa51f2080aa2df943e4f884c41898eb
 
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2_batch_4.onnx"
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx"
     checksum: md5:c2beaf60210f471debfe72b86d076ca0
 
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_mobilenetv2_batch_6.onnx"
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
     checksum: md5:47255a11bde479320d703f1f45db1242
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_1.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_efficientNet_b1_batch_1.onnx"
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx"
     checksum: md5:82baba4fcf1abe0c040cd55005e34510
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_4.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_efficientNet_b1_batch_4.onnx"
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx"
     checksum: md5:21b549c2fe4fbb20d32cc019e6d70cd7
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_6.onnx
-    dest: "{{ data_dir }}/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
+    dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
     checksum: md5:28b408710bcb24f4cdd4d746301d4e78
 
 - name: Download traffic_light_classifier/lamp_labels.txt
