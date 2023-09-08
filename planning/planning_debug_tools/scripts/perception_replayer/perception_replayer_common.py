@@ -24,6 +24,7 @@ from autoware_auto_perception_msgs.msg import PredictedObjects
 from autoware_auto_perception_msgs.msg import TrackedObjects
 from autoware_auto_perception_msgs.msg import TrafficSignalArray as AutoTrafficSignalArray
 from autoware_perception_msgs.msg import TrafficSignalArray
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 import psutil
 from rclpy.node import Node
@@ -66,6 +67,7 @@ class PerceptionReplayerCommon(Node):
         self.pointcloud_pub = self.create_publisher(
             PointCloud2, "/perception/obstacle_segmentation/pointcloud", 1
         )
+        self.recorded_ego_pub = self.create_publisher(PoseWithCovarianceStamped, "/initialpose", 1)
 
         # load rosbag
         print("Stared loading rosbag")

@@ -89,13 +89,15 @@ class TimeManagerWidget(QMainWindow):
         self.button.setCheckable(True)
         self.button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.grid_layout.addWidget(self.button, 1, 0, 1, -1)
+        self.pub_recorded_ego_pose_button = QPushButton("publish recorded ego pose")
+        self.grid_layout.addWidget(self.pub_recorded_ego_pose_button, 2, 0, 1, -1)
 
         # slider
         self.slider = QJumpSlider(QtCore.Qt.Horizontal, self.max_value)
         self.slider.setMinimum(0)
         self.slider.setMaximum(self.max_value)
         self.slider.setValue(0)
-        self.grid_layout.addWidget(self.slider, 2, 0, 1, -1)
+        self.grid_layout.addWidget(self.slider, 3, 0, 1, -1)
 
         self.setCentralWidget(self.central_widget)
 
