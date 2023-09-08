@@ -25,7 +25,27 @@ There is also an `In Transition` state that occurs during each mode transitions.
 
 ## Design
 
-<!-- ## Assumptions / Known limits -->
+A rough design of the relationship between `operation_mode_transition_manager`` and the other nodes is shown below.
+
+![transition_rough_structure](image/transition_rough_structure.drawio.svg)
+
+A more detailed structure is below.
+
+![transition_detailed_structure](image/transition_detailed_structure.drawio.svg)
+
+Here we see that `operation_mode_transition_manager` has multiple state transitions as follows
+
+- **AUTOWARE ENABLED <---> DISABLED**
+  - **ENABLED**: the vehicle is controlled by Autoware.
+  - **DISABLED**: the vehicle is out of Autoware control, expecting the e.g. manual driving.
+- **AUTOWARE ENABLED <---> AUTO/LOCAL/REMOTE/NONE**
+  - **AUTO**: the vehicle is controlled by Autoware, with the autonomous control command calculated by the planning/control component.
+  - **LOCAL**: the vehicle is controlled by Autoware, with the locally connected operator, e.g. joystick controller.
+  - **REMOTE**: the vehicle is controlled by Autoware, with the remotely connected operator.
+  - **NONE**: the vehicle is not controlled by any operator.
+- **IN TRANSITION <---> COMPLETED**
+  - **IN TRANSITION**: the mode listed above is in the transition process, expecting the former operator to have a responsibility to confirm the transition is completed.
+  - **COMPLETED**: the mode transition is completed.
 
 ## Inputs / Outputs / API
 
