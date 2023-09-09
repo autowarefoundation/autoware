@@ -506,6 +506,10 @@ protected:
       vehicle_footprint_info_ = std::make_shared<VehicleFootprintInfo>(
         vehicle_info_->vehicle_length_m, vehicle_info_->vehicle_width_m,
         vehicle_info_->rear_overhang_m);
+
+      property_vehicle_length_.setValue(vehicle_info_->vehicle_length_m);
+      property_vehicle_width_.setValue(vehicle_info_->vehicle_width_m);
+      property_rear_overhang_.setValue(vehicle_info_->rear_overhang_m);
     } else {
       const float length{property_vehicle_length_.getFloat()};
       const float width{property_vehicle_width_.getFloat()};
