@@ -15,6 +15,7 @@
 #define STATIC_CENTERLINE_OPTIMIZER__TYPE_ALIAS_HPP_
 
 #include "route_handler/route_handler.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include "autoware_auto_mapping_msgs/msg/had_map_bin.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"

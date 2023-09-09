@@ -14,6 +14,8 @@
 
 #include "debug.hpp"
 
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
+
 #include <visualization_msgs/msg/marker.hpp>
 
 namespace behavior_velocity_planner::out_of_lane::debug

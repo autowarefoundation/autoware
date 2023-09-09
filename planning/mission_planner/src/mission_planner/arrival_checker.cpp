@@ -14,7 +14,9 @@
 
 #include "arrival_checker.hpp"
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <tf2/utils.h>
 

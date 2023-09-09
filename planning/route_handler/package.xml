@@ -24,7 +24,6 @@
   <depend>autoware_planning_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
-  <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2_ros</depend>

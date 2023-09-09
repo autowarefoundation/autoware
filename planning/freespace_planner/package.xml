@@ -19,6 +19,7 @@
   <depend>autoware_auto_planning_msgs</depend>
   <depend>freespace_planning_algorithms</depend>
   <depend>geometry_msgs</depend>
+  <depend>motion_utils</depend>
   <depend>nav_msgs</depend>
   <depend>planning_test_utils</depend>
   <depend>rclcpp</depend>
