@@ -16,6 +16,7 @@
 #define SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
+#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
@@ -38,6 +39,7 @@ using geometry_msgs::msg::PolygonStamped;
 using tier4_planning_msgs::msg::StopFactor;
 using tier4_planning_msgs::msg::StopReason;
 using tier4_planning_msgs::msg::StopReasonArray;
+using vehicle_info_util::VehicleInfo;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 
@@ -52,15 +54,19 @@ class SurroundObstacleCheckerDebugNode
 {
 public:
   explicit SurroundObstacleCheckerDebugNode(
-    const Polygon2d & ego_polygon, const double base_link2front,
-    const double & surround_check_distance, const double & surround_check_recover_distance,
-    const geometry_msgs::msg::Pose & self_pose, const rclcpp::Clock::SharedPtr clock,
-    rclcpp::Node & node);
+    const vehicle_info_util::VehicleInfo & vehicle_info, const double base_link2front,
+    const std::string & object_label, const double & surround_check_front_distance,
+    const double & surround_check_side_distance, const double & surround_check_back_distance,
+    const double & surround_check_hysteresis_distance, const geometry_msgs::msg::Pose & self_pose,
+    const rclcpp::Clock::SharedPtr clock, rclcpp::Node & node);
 
   bool pushPose(const geometry_msgs::msg::Pose & pose, const PoseType & type);
   bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
   void publish();
   void publishFootprints();
+  void updateFootprintMargin(
+    const std::string & object_label, const double front_distance, const double side_distance,
+    const double back_distance);
 
 private:
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_virtual_wall_pub_;
@@ -72,10 +78,13 @@ private:
   rclcpp::Publisher<PolygonStamped>::SharedPtr vehicle_footprint_offset_pub_;
   rclcpp::Publisher<PolygonStamped>::SharedPtr vehicle_footprint_recover_offset_pub_;
 
-  Polygon2d ego_polygon_;
+  vehicle_info_util::VehicleInfo vehicle_info_;
   double base_link2front_;
-  double surround_check_distance_;
-  double surround_check_recover_distance_;
+  std::string object_label_;
+  double surround_check_front_distance_;
+  double surround_check_side_distance_;
+  double surround_check_back_distance_;
+  double surround_check_hysteresis_distance_;
   geometry_msgs::msg::Pose self_pose_;
 
   MarkerArray makeVirtualWallMarker();
@@ -83,7 +92,6 @@ private:
   StopReasonArray makeStopReasonArray();
   VelocityFactorArray makeVelocityFactorArray();
 
-  Polygon2d createSelfPolygonWithOffset(const Polygon2d & base_polygon, const double & offset);
   PolygonStamped boostPolygonToPolygonStamped(const Polygon2d & boost_polygon, const double & z);
 
   std::shared_ptr<geometry_msgs::msg::Point> stop_obstacle_point_ptr_;

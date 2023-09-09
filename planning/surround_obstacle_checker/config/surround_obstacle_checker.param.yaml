@@ -1,12 +1,61 @@
 /**:
   ros__parameters:
-
     # obstacle check
-    use_pointcloud: true # use pointcloud as obstacle check
-    use_dynamic_object: true # use dynamic object as obstacle check
-    surround_check_distance: 0.5 # if objects exist in this distance, transit to "exist-surrounding-obstacle" status [m]
-    surround_check_recover_distance: 0.8 # if no object exists in this distance, transit to "non-surrounding-obstacle" status [m]
+    # surround_check_*_distance: if objects exist in this distance, transit to "exist-surrounding-obstacle" status [m]
+    # surround_check_hysteresis_distance: if no object exists in this hysteresis distance added to the above distance, transit to "non-surrounding-obstacle" status [m]
+    pointcloud:
+      enable_check: false
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.5
+      surround_check_back_distance: 0.5
+    unknown:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.5
+      surround_check_back_distance: 0.5
+    car:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.0
+      surround_check_back_distance: 0.5
+    truck:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.0
+      surround_check_back_distance: 0.5
+    bus:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.0
+      surround_check_back_distance: 0.5
+    trailer:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.0
+      surround_check_back_distance: 0.5
+    motorcycle:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.0
+      surround_check_back_distance: 0.5
+    bicycle:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.5
+      surround_check_back_distance: 0.5
+    pedestrian:
+      enable_check: true
+      surround_check_front_distance: 0.5
+      surround_check_side_distance: 0.5
+      surround_check_back_distance: 0.5
+
+    surround_check_hysteresis_distance: 0.3
+
     state_clear_time: 2.0
+
+    # ego stop state
+    stop_state_ego_speed: 0.1 #[m/s]
 
     # debug
     publish_debug_footprints: true # publish vehicle footprint & footprints with surround_check_distance and surround_check_recover_distance offsets
+    debug_footprint_label: "car"
