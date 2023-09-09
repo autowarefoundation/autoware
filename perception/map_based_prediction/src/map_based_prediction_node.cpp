@@ -16,7 +16,10 @@
 
 #include <interpolation/linear_interpolation.hpp>
 #include <motion_utils/resample/resample.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/constants.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
+#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 
