@@ -15,7 +15,8 @@
 #include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <geometry_msgs/msg/pose.hpp>
 

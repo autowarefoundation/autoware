@@ -19,6 +19,7 @@
 #include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/lane_following/module_data.hpp"
+#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>

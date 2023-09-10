@@ -15,8 +15,8 @@
 #include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
 
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
 
-#include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>

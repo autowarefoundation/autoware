@@ -20,6 +20,7 @@
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 

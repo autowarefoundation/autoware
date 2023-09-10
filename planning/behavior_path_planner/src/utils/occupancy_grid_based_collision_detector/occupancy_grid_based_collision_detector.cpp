@@ -15,7 +15,7 @@
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
 
 #include <vector>
 

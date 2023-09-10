@@ -19,7 +19,7 @@
 
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <motion_utils/trajectory/path_with_lane_id.hpp>
 
 #include <limits>
 #include <string>

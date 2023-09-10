@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

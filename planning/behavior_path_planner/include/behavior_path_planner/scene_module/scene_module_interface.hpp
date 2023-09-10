@@ -22,10 +22,15 @@
 #include <behavior_path_planner/steering_factor_interface.hpp>
 #include <behavior_path_planner/turn_signal_decider.hpp>
 #include <magic_enum.hpp>
+#include <motion_utils/marker/marker_helper.hpp>
+#include <motion_utils/trajectory/path_with_lane_id.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
 #include <rtc_interface/rtc_interface.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>

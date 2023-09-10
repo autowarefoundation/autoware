@@ -15,11 +15,13 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 
 #include "behavior_path_planner/utils/utils.hpp"
+#include "motion_utils/trajectory/path_with_lane_id.hpp"
 
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/resample/resample.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <motion_utils/trajectory/interpolation.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <tf2/utils.h>
 

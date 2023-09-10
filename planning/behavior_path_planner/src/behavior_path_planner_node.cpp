@@ -19,7 +19,7 @@
 #include "behavior_path_planner/utils/drivable_area_expansion/map_utils.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/ros/update_param.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <tier4_planning_msgs/msg/path_change_module_id.hpp>

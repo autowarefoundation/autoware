@@ -14,6 +14,8 @@
 
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 
+#include "tier4_autoware_utils/ros/update_param.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>

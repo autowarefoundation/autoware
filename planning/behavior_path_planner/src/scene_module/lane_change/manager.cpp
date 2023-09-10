@@ -14,6 +14,9 @@
 
 #include "behavior_path_planner/scene_module/lane_change/manager.hpp"
 
+#include "tier4_autoware_utils/ros/parameter.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
