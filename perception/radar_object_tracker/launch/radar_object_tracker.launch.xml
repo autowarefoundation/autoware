@@ -7,16 +7,18 @@
   <arg name="enable_delay_compensation" default="false"/>
   <arg name="tracker_setting_path" default="$(find-pkg-share radar_object_tracker)/config/default_tracker.param.yaml"/>
   <arg name="data_association_matrix_path" default="$(find-pkg-share radar_object_tracker)/config/data_association_matrix.param.yaml"/>
+  <arg name="radar_object_tracker_param_path" default="$(find-pkg-share radar_object_tracker)/config/radar_object_tracker.param.yaml"/>
+  <arg name="vector_map_topic" default="/map/vector_map"/>
 
   <node pkg="radar_object_tracker" exec="radar_object_tracker" name="radar_object_tracker" output="screen">
     <remap from="input" to="$(var input)"/>
     <remap from="output" to="$(var output)"/>
+    <remap from="/vector_map" to="$(var vector_map_topic)"/>
+    <param from="$(var tracker_setting_path)"/>
+    <param from="$(var data_association_matrix_path)"/>
+    <param from="$(var radar_object_tracker_param_path)"/>
     <param name="world_frame_id" value="$(var world_frame_id)"/>
     <param name="publish_rate" value="$(var publish_rate)"/>
     <param name="enable_delay_compensation" value="$(var enable_delay_compensation)"/>
-    <param name="enable_logging" value="false"/>
-    <param name="logging_file_path" value="association_log.json"/>
-    <param from="$(var tracker_setting_path)"/>
-    <param from="$(var data_association_matrix_path)"/>
   </node>
 </launch>

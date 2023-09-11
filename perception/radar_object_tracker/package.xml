@@ -16,6 +16,7 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>eigen</depend>
   <depend>kalman_filter</depend>
+  <depend>lanelet2_extension</depend>
   <depend>mussp</depend>
   <depend>nlohmann-json-dev</depend>
   <depend>object_recognition_utils</depend>

@@ -33,6 +33,16 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
+#include <lanelet2_extension/utility/utilities.hpp>
+
+#include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/BoundingBox.h>
+#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -41,8 +51,11 @@
 #include <memory>
 #include <string>
 
+using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_auto_perception_msgs::msg::DetectedObject;
 using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_auto_perception_msgs::msg::TrackedObject;
+using autoware_auto_perception_msgs::msg::TrackedObjects;
 
 class RadarObjectTrackerNode : public rclcpp::Node
 {
@@ -50,20 +63,23 @@ public:
   explicit RadarObjectTrackerNode(const rclcpp::NodeOptions & node_options);
 
 private:
+  // pub-sub
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr
     tracked_objects_pub_;
   rclcpp::Subscription<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
     detected_object_sub_;
-  rclcpp::TimerBase::SharedPtr publish_timer_;  // publish timer
+  rclcpp::TimerBase::SharedPtr publish_timer_;          // publish timer
+  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_;  // map subscriber
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-
+  float tracker_lifetime_;
   std::map<std::uint8_t, std::string> tracker_map_;
 
   void onMeasurement(
     const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg);
   void onTimer();
+  void onMap(const HADMapBin::ConstSharedPtr map_msg);
 
   std::string world_frame_id_;  // tracking frame
   std::string tracker_config_directory_;
@@ -77,11 +93,36 @@ private:
     std::string path;
   } logging_;
 
+  // noise reduction
+  bool use_distance_based_noise_filtering_;
+  bool use_map_based_noise_filtering_;
+
+  // distance based noise reduction
+  double minimum_range_threshold_;
+  std::string sensor_frame_ = "base_link";
+
+  // map based noise reduction
+  bool map_is_loaded_ = false;
+  double max_distance_from_lane_;
+  double max_lateral_velocity_;
+  double max_angle_diff_from_lane_;
+  // Lanelet Map Pointers
+  std::shared_ptr<lanelet::LaneletMap> lanelet_map_ptr_;
+  std::shared_ptr<lanelet::routing::RoutingGraph> routing_graph_ptr_;
+  std::shared_ptr<lanelet::traffic_rules::TrafficRules> traffic_rules_ptr_;
+  // Crosswalk Entry Points
+  // lanelet::ConstLanelets crosswalks_;
+
   void checkTrackerLifeCycle(
     std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform);
   void sanitizeTracker(
     std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time);
+  void mapBasedNoiseFilter(
+    std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time);
+  void distanceBasedNoiseFilter(
+    std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time,
+    const geometry_msgs::msg::Transform & self_transform);
   std::shared_ptr<Tracker> createNewTracker(
     const autoware_auto_perception_msgs::msg::DetectedObject & object, const rclcpp::Time & time,
     const geometry_msgs::msg::Transform & self_transform) const;

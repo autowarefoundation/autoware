@@ -60,6 +60,131 @@ boost::optional<geometry_msgs::msg::Transform> getTransformAnonymous(
   }
 }
 
+// check if lanelet is close enough to the target lanelet
+bool isDuplicated(
+  const std::pair<double, lanelet::ConstLanelet> & target_lanelet,
+  const lanelet::ConstLanelets & lanelets)
+{
+  const double CLOSE_LANELET_THRESHOLD = 0.1;
+  for (const auto & lanelet : lanelets) {
+    const auto target_lanelet_end_p = target_lanelet.second.centerline2d().back();
+    const auto lanelet_end_p = lanelet.centerline2d().back();
+    const double dist = std::hypot(
+      target_lanelet_end_p.x() - lanelet_end_p.x(), target_lanelet_end_p.y() - lanelet_end_p.y());
+    if (dist < CLOSE_LANELET_THRESHOLD) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// check if the lanelet is valid for object tracking
+bool checkCloseLaneletCondition(
+  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
+  const double max_distance_from_lane, const double max_angle_diff_from_lane)
+{
+  // Step1. If we only have one point in the centerline, we will ignore the lanelet
+  if (lanelet.second.centerline().size() <= 1) {
+    return false;
+  }
+
+  // Step2. Check if the obstacle is inside or close enough to the lanelet
+  lanelet::BasicPoint2d search_point(
+    object.kinematics.pose_with_covariance.pose.position.x,
+    object.kinematics.pose_with_covariance.pose.position.y);
+  if (!lanelet::geometry::inside(lanelet.second, search_point)) {
+    const auto distance = lanelet.first;
+    if (distance > max_distance_from_lane) {
+      return false;
+    }
+  }
+
+  // Step3. Calculate the angle difference between the lane angle and obstacle angle
+  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+  const double lane_yaw = lanelet::utils::getLaneletAngle(
+    lanelet.second, object.kinematics.pose_with_covariance.pose.position);
+  const double delta_yaw = object_yaw - lane_yaw;
+  const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+  const double abs_norm_delta = std::fabs(normalized_delta_yaw);
+
+  // Step4. Check if the closest lanelet is valid, and add all
+  // of the lanelets that are below max_dist and max_delta_yaw
+  const double object_vel = object.kinematics.twist_with_covariance.twist.linear.x;
+  const bool is_yaw_reversed = M_PI - max_angle_diff_from_lane < abs_norm_delta && object_vel < 0.0;
+  if (is_yaw_reversed || abs_norm_delta < max_angle_diff_from_lane) {
+    return true;
+  }
+
+  return false;
+}
+
+lanelet::ConstLanelets getClosestValidLanelets(
+  const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const double max_distance_from_lane, const double max_angle_diff_from_lane)
+{
+  // obstacle point
+  lanelet::BasicPoint2d search_point(
+    object.kinematics.pose_with_covariance.pose.position.x,
+    object.kinematics.pose_with_covariance.pose.position.y);
+
+  // nearest lanelet
+  std::vector<std::pair<double, lanelet::Lanelet>> surrounding_lanelets =
+    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, 10);
+
+  // No Closest Lanelets
+  if (surrounding_lanelets.empty()) {
+    return {};
+  }
+
+  lanelet::ConstLanelets closest_lanelets;
+  for (const auto & lanelet : surrounding_lanelets) {
+    // Check if the close lanelets meet the necessary condition for start lanelets and
+    // Check if similar lanelet is inside the closest lanelet
+    if (
+      !checkCloseLaneletCondition(
+        lanelet, object, max_distance_from_lane, max_angle_diff_from_lane) ||
+      isDuplicated(lanelet, closest_lanelets)) {
+      continue;
+    }
+
+    closest_lanelets.push_back(lanelet.second);
+  }
+
+  return closest_lanelets;
+}
+
+bool hasValidVelocityDirectionToLanelet(
+  const TrackedObject & object, const lanelet::ConstLanelets & lanelets,
+  const double max_lateral_velocity)
+{
+  // get object velocity direction
+  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+  const double object_vel_x = object.kinematics.twist_with_covariance.twist.linear.x;
+  const double object_vel_y = object.kinematics.twist_with_covariance.twist.linear.y;
+  const double object_vel_yaw = std::atan2(object_vel_y, object_vel_x);  // local frame
+  const double object_vel_yaw_global =
+    tier4_autoware_utils::normalizeRadian(object_yaw + object_vel_yaw);
+  const double object_vel = std::hypot(object_vel_x, object_vel_y);
+
+  for (const auto & lanelet : lanelets) {
+    // get lanelet angle
+    const double lane_yaw = lanelet::utils::getLaneletAngle(
+      lanelet, object.kinematics.pose_with_covariance.pose.position);
+    const double delta_yaw = object_vel_yaw_global - lane_yaw;
+    const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
+
+    // get lateral velocity
+    const double lane_vel = object_vel * std::sin(normalized_delta_yaw);
+    // std::cout << "lane_vel: " << lane_vel <<  "  , delta yaw:" <<  normalized_delta_yaw << "  ,
+    // object_vel " << object_vel <<std::endl;
+    if (std::fabs(lane_vel) < max_lateral_velocity) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
@@ -75,15 +200,27 @@ RadarObjectTrackerNode::RadarObjectTrackerNode(const rclcpp::NodeOptions & node_
     std::bind(&RadarObjectTrackerNode::onMeasurement, this, std::placeholders::_1));
   tracked_objects_pub_ =
     create_publisher<autoware_auto_perception_msgs::msg::TrackedObjects>("output", rclcpp::QoS{1});
+  sub_map_ = this->create_subscription<HADMapBin>(
+    "/vector_map", rclcpp::QoS{1}.transient_local(),
+    std::bind(&RadarObjectTrackerNode::onMap, this, std::placeholders::_1));
 
   // Parameters
-  double publish_rate = declare_parameter<double>("publish_rate", 30.0);
-  world_frame_id_ = declare_parameter<std::string>("world_frame_id", "world");
-  bool enable_delay_compensation{declare_parameter("enable_delay_compensation", false)};
-  tracker_config_directory_ = declare_parameter<std::string>("tracking_config_directory", "");
-  logging_.enable = declare_parameter<bool>("enable_logging", false);
-  logging_.path =
-    declare_parameter<std::string>("logging_file_path", "~/.ros/association_log.json");
+  tracker_lifetime_ = declare_parameter<double>("tracker_lifetime");
+  double publish_rate = declare_parameter<double>("publish_rate");
+  world_frame_id_ = declare_parameter<std::string>("world_frame_id");
+  bool enable_delay_compensation{declare_parameter<bool>("enable_delay_compensation")};
+  tracker_config_directory_ = declare_parameter<std::string>("tracking_config_directory");
+  logging_.enable = declare_parameter<bool>("enable_logging");
+  logging_.path = declare_parameter<std::string>("logging_file_path");
+
+  // noise filter
+  use_distance_based_noise_filtering_ =
+    declare_parameter<bool>("use_distance_based_noise_filtering");
+  use_map_based_noise_filtering_ = declare_parameter<bool>("use_map_based_noise_filtering");
+  minimum_range_threshold_ = declare_parameter<double>("minimum_range_threshold");
+  max_distance_from_lane_ = declare_parameter<double>("max_distance_from_lane");
+  max_angle_diff_from_lane_ = declare_parameter<double>("max_angle_diff_from_lane");
+  max_lateral_velocity_ = declare_parameter<double>("max_lateral_velocity");
 
   // Load tracking config file
   if (tracker_config_directory_.empty()) {
@@ -132,6 +269,17 @@ RadarObjectTrackerNode::RadarObjectTrackerNode(const rclcpp::NodeOptions & node_
     std::make_pair(Label::MOTORCYCLE, this->declare_parameter<std::string>("motorcycle_tracker")));
 }
 
+// load map information to node parameter
+void RadarObjectTrackerNode::onMap(const HADMapBin::ConstSharedPtr msg)
+{
+  RCLCPP_INFO(get_logger(), "[Radar Object Tracker]: Start loading lanelet");
+  lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
+  lanelet::utils::conversion::fromBinMsg(
+    *msg, lanelet_map_ptr_, &traffic_rules_ptr_, &routing_graph_ptr_);
+  RCLCPP_INFO(get_logger(), "[Radar Object Tracker]: Map is loaded");
+  map_is_loaded_ = true;
+}
+
 void RadarObjectTrackerNode::onMeasurement(
   const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg)
 {
@@ -176,6 +324,14 @@ void RadarObjectTrackerNode::onMeasurement(
 
   /* life cycle check */
   checkTrackerLifeCycle(list_tracker_, measurement_time, *self_transform);
+  /* map based noise filter */
+  if (map_is_loaded_ && use_map_based_noise_filtering_) {
+    mapBasedNoiseFilter(list_tracker_, measurement_time);
+  }
+  /* distance based noise filter */
+  if (use_distance_based_noise_filtering_) {
+    distanceBasedNoiseFilter(list_tracker_, measurement_time, *self_transform);
+  }
   /* sanitize trackers */
   sanitizeTracker(list_tracker_, measurement_time);
 
@@ -227,6 +383,16 @@ void RadarObjectTrackerNode::onTimer()
 
   /* life cycle check */
   checkTrackerLifeCycle(list_tracker_, current_time, *self_transform);
+
+  /* map based noise filter */
+  if (map_is_loaded_ && use_map_based_noise_filtering_) {
+    mapBasedNoiseFilter(list_tracker_, current_time);
+  }
+  /* distance based noise filter */
+  if (use_distance_based_noise_filtering_) {
+    distanceBasedNoiseFilter(list_tracker_, current_time, *self_transform);
+  }
+
   /* sanitize trackers */
   sanitizeTracker(list_tracker_, current_time);
 
@@ -238,16 +404,58 @@ void RadarObjectTrackerNode::checkTrackerLifeCycle(
   std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time,
   [[maybe_unused]] const geometry_msgs::msg::Transform & self_transform)
 {
-  /* params */
-  constexpr float max_elapsed_time = 1.0;
-
   /* delete tracker */
   for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
-    const bool is_old = max_elapsed_time < (*itr)->getElapsedTimeFromLastUpdate(time);
+    const bool is_old = tracker_lifetime_ < (*itr)->getElapsedTimeFromLastUpdate(time);
     if (is_old) {
       auto erase_itr = itr;
       --itr;
       list_tracker.erase(erase_itr);
+    }
+  }
+}
+
+// remove objects by lanelet information
+void RadarObjectTrackerNode::mapBasedNoiseFilter(
+  std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time)
+{
+  for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
+    autoware_auto_perception_msgs::msg::TrackedObject object;
+    (*itr)->getTrackedObject(time, object);
+    const auto closest_lanelets = getClosestValidLanelets(
+      object, lanelet_map_ptr_, max_distance_from_lane_, max_angle_diff_from_lane_);
+
+    // 1. If the object is not close to any lanelet, delete the tracker
+    const bool no_closest_lanelet = closest_lanelets.empty();
+    // 2. If the object velocity direction is not close to the lanelet direction, delete the tracker
+    const bool is_velocity_direction_close_to_lanelet =
+      hasValidVelocityDirectionToLanelet(object, closest_lanelets, max_lateral_velocity_);
+    if (no_closest_lanelet || !is_velocity_direction_close_to_lanelet) {
+      // std::cout << "object removed due to map based noise filter" << " no close lanelet: " <<
+      // no_closest_lanelet << " velocity direction flag:" << is_velocity_direction_close_to_lanelet
+      // << std::endl;
+      itr = list_tracker.erase(itr);
+      --itr;
+    }
+  }
+}
+
+// remove objects by distance
+void RadarObjectTrackerNode::distanceBasedNoiseFilter(
+  std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time,
+  const geometry_msgs::msg::Transform & self_transform)
+{
+  // remove objects that are too close
+  for (auto itr = list_tracker.begin(); itr != list_tracker.end(); ++itr) {
+    autoware_auto_perception_msgs::msg::TrackedObject object;
+    (*itr)->getTrackedObject(time, object);
+    const double distance = std::hypot(
+      object.kinematics.pose_with_covariance.pose.position.x - self_transform.translation.x,
+      object.kinematics.pose_with_covariance.pose.position.y - self_transform.translation.y);
+    if (distance < minimum_range_threshold_) {
+      // std::cout << "object removed due to small distance. distance: " << distance << std::endl;
+      itr = list_tracker.erase(itr);
+      --itr;
     }
   }
 }

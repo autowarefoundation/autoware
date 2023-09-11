@@ -26,9 +26,10 @@ See more details in the [models.md](models.md).
 
 ### Input
 
-| Name      | Type                                                  | Description      |
-| --------- | ----------------------------------------------------- | ---------------- |
-| `~/input` | `autoware_auto_perception_msgs::msg::DetectedObjects` | Detected objects |
+| Name          | Type                                                  | Description      |
+| ------------- | ----------------------------------------------------- | ---------------- |
+| `~/input`     | `autoware_auto_perception_msgs::msg::DetectedObjects` | Detected objects |
+| `/vector/map` | `autoware_auto_msgs::msg::HADMapBin`                  | Map data         |
 
 ### Output
 
@@ -40,20 +41,29 @@ See more details in the [models.md](models.md).
 
 ### Node Parameters
 
-| Name                        | Type   | Default Value                 | Description                                                 |
-| --------------------------- | ------ | ----------------------------- | ----------------------------------------------------------- |
-| `publish_rate`              | double | 30.0                          | The rate at which to publish the output messages            |
-| `world_frame_id`            | string | "world"                       | The frame ID of the world coordinate system                 |
-| `enable_delay_compensation` | bool   | false                         | Whether to enable delay compensation                        |
-| `tracking_config_directory` | string | ""                            | The directory containing the tracking configuration files   |
-| `enable_logging`            | bool   | false                         | Whether to enable logging                                   |
-| `logging_file_path`         | string | "~/.ros/association_log.json" | The path to the file where logs should be written           |
-| `can_assign_matrix`         | array  |                               | An array of integers used in the data association algorithm |
-| `max_dist_matrix`           | array  |                               | An array of doubles used in the data association algorithm  |
-| `max_area_matrix`           | array  |                               | An array of doubles used in the data association algorithm  |
-| `min_area_matrix`           | array  |                               | An array of doubles used in the data association algorithm  |
-| `max_rad_matrix`            | array  |                               | An array of doubles used in the data association algorithm  |
-| `min_iou_matrix`            | array  |                               | An array of doubles used in the data association algorithm  |
+| Name                                 | Type   | Default Value               | Description                                                                                                     |
+| ------------------------------------ | ------ | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `publish_rate`                       | double | 10.0                        | The rate at which to publish the output messages                                                                |
+| `world_frame_id`                     | string | "map"                       | The frame ID of the world coordinate system                                                                     |
+| `enable_delay_compensation`          | bool   | false                       | Whether to enable delay compensation. If set to `true`, output topic is published by timer with `publish_rate`. |
+| `tracking_config_directory`          | string | ""                          | The directory containing the tracking configuration files                                                       |
+| `enable_logging`                     | bool   | false                       | Whether to enable logging                                                                                       |
+| `logging_file_path`                  | string | "/tmp/association_log.json" | The path to the file where logs should be written                                                               |
+| `tracker_lifetime`                   | double | 1.0                         | The lifetime of the tracker in seconds                                                                          |
+| `use_distance_based_noise_filtering` | bool   | true                        | Whether to use distance based filtering                                                                         |
+| `minimum_range_threshold`            | double | 70.0                        | Minimum distance threshold for filtering in meters                                                              |
+| `use_map_based_noise_filtering`      | bool   | true                        | Whether to use map based filtering                                                                              |
+| `max_distance_from_lane`             | double | 5.0                         | Maximum distance from lane for filtering in meters                                                              |
+| `max_angle_diff_from_lane`           | double | 0.785398                    | Maximum angle difference from lane for filtering in radians                                                     |
+| `max_lateral_velocity`               | double | 5.0                         | Maximum lateral velocity for filtering in m/s                                                                   |
+| `can_assign_matrix`                  | array  |                             | An array of integers used in the data association algorithm                                                     |
+| `max_dist_matrix`                    | array  |                             | An array of doubles used in the data association algorithm                                                      |
+| `max_area_matrix`                    | array  |                             | An array of doubles used in the data association algorithm                                                      |
+| `min_area_matrix`                    | array  |                             | An array of doubles used in the data association algorithm                                                      |
+| `max_rad_matrix`                     | array  |                             | An array of doubles used in the data association algorithm                                                      |
+| `min_iou_matrix`                     | array  |                             | An array of doubles used in the data association algorithm                                                      |
+
+See more details in the [models.md](models.md).
 
 ## Assumptions / Known limits
 
