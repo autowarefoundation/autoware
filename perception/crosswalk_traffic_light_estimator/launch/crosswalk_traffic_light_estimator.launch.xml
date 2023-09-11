@@ -1,9 +1,23 @@
-<?xml version="1.0"?>
+<!--
+  Copyright 2023 UCI SORA Lab
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
 <launch>
+  <arg name="crosswalk_traffic_light_estimator_param_file" default="$(find-pkg-share crosswalk_traffic_light_estimator)/config/crosswalk_traffic_light_estimator.param.yaml"/>
+
   <node pkg="crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
     <remap from="~/input/vector_map" to="/map/vector_map"/>
     <remap from="~/input/route" to="/planning/mission_planning/route"/>
     <remap from="~/input/classified/traffic_signals" to="classified/traffic_signals"/>
     <remap from="~/output/traffic_signals" to="traffic_signals"/>
+    <param from="$(var crosswalk_traffic_light_estimator_param_file)"/>
   </node>
 </launch>

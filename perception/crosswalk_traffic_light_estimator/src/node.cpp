@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2022-2023 UCI SORA Lab, TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,8 +81,8 @@ CrosswalkTrafficLightEstimatorNode::CrosswalkTrafficLightEstimatorNode(
 {
   using std::placeholders::_1;
 
-  use_last_detect_color_ = this->declare_parameter("use_last_detect_color", true);
-  last_detect_color_hold_time_ = this->declare_parameter("last_detect_color_hold_time", 2.0);
+  use_last_detect_color_ = declare_parameter<bool>("use_last_detect_color");
+  last_detect_color_hold_time_ = declare_parameter<double>("last_detect_color_hold_time");
 
   sub_map_ = create_subscription<HADMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Crosswalk Traffic Light Estimator Node",
+  "type": "object",
+  "definitions": {
+    "crosswalk_traffic_light_estimator": {
+      "type": "object",
+      "properties": {
+        "use_last_detect_color": {
+          "type": "boolean",
+          "default": true,
+          "description": "If this parameter is true, this module estimates pedestrian's traffic signal as RED not only when vehicle's traffic signal is detected as GREEN/AMBER but also when detection results change GREEN/AMBER to UNKNOWN. (If detection results change RED or AMBER to UNKNOWN, this module estimates pedestrian's traffic signal as UNKNOWN.) If this parameter is false, this module use only latest detection results for estimation. (Only when the detection result is GREEN/AMBER, this module estimates pedestrian's traffic signal as RED.)."
+        },
+        "last_detect_color_hold_time": {
+          "type": "number",
+          "default": 2.0,
+          "exclusiveMinimum": 0.0,
+          "description": "The time threshold to hold for last detect color."
+        }
+      },
+      "required": ["use_last_detect_color", "last_detect_color_hold_time"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/crosswalk_traffic_light_estimator"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
