@@ -26,8 +26,11 @@
 
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <pluginlib/class_loader.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <tier4_map_msgs/msg/map_projector_info.hpp>
+
+#include <boost/geometry/algorithms/correct.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_io/Io.h>
