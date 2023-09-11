@@ -81,6 +81,7 @@ private:
   bool setParameterWithValidation(const VehicleCmdFilterParam & p);
 
   double calcLatAcc(const AckermannControlCommand & cmd) const;
+  double calcLatAcc(const AckermannControlCommand & cmd, const double v) const;
   double calcSteerFromLatacc(const double v, const double latacc) const;
   double limitDiff(const double curr, const double prev, const double diff_lim) const;
 

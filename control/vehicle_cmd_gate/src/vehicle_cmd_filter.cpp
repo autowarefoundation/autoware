@@ -104,25 +104,28 @@ void VehicleCmdFilter::VehicleCmdFilter::limitLongitudinalWithJerk(
     std::clamp(static_cast<double>(input.longitudinal.jerk), -lon_jerk_lim, lon_jerk_lim);
 }
 
+// Use ego vehicle speed (not speed command) for the lateral acceleration calculation, otherwise the
+// filtered steering angle oscillates if the input velocity oscillates.
 void VehicleCmdFilter::limitLateralWithLatAcc(
   [[maybe_unused]] const double dt, AckermannControlCommand & input) const
 {
   const auto lat_acc_lim = getLatAccLim();
 
-  double latacc = calcLatAcc(input);
+  double latacc = calcLatAcc(input, current_speed_);
   if (std::fabs(latacc) > lat_acc_lim) {
-    double v_sq =
-      std::max(static_cast<double>(input.longitudinal.speed * input.longitudinal.speed), 0.001);
+    double v_sq = std::max(static_cast<double>(current_speed_ * current_speed_), 0.001);
     double steer_lim = std::atan(lat_acc_lim * param_.wheel_base / v_sq);
     input.lateral.steering_tire_angle = latacc > 0.0 ? steer_lim : -steer_lim;
   }
 }
 
+// Use ego vehicle speed (not speed command) for the lateral acceleration calculation, otherwise the
+// filtered steering angle oscillates if the input velocity oscillates.
 void VehicleCmdFilter::limitLateralWithLatJerk(
   const double dt, AckermannControlCommand & input) const
 {
-  double curr_latacc = calcLatAcc(input);
-  double prev_latacc = calcLatAcc(prev_cmd_);
+  double curr_latacc = calcLatAcc(input, current_speed_);
+  double prev_latacc = calcLatAcc(prev_cmd_, current_speed_);
 
   const auto lat_jerk_lim = getLatJerkLim();
 
@@ -130,9 +133,9 @@ void VehicleCmdFilter::limitLateralWithLatJerk(
   const double latacc_min = prev_latacc - lat_jerk_lim * dt;
 
   if (curr_latacc > latacc_max) {
-    input.lateral.steering_tire_angle = calcSteerFromLatacc(input.longitudinal.speed, latacc_max);
+    input.lateral.steering_tire_angle = calcSteerFromLatacc(current_speed_, latacc_max);
   } else if (curr_latacc < latacc_min) {
-    input.lateral.steering_tire_angle = calcSteerFromLatacc(input.longitudinal.speed, latacc_min);
+    input.lateral.steering_tire_angle = calcSteerFromLatacc(current_speed_, latacc_min);
   }
 }
 
@@ -202,6 +205,11 @@ double VehicleCmdFilter::calcSteerFromLatacc(const double v, const double latacc
 double VehicleCmdFilter::calcLatAcc(const AckermannControlCommand & cmd) const
 {
   double v = cmd.longitudinal.speed;
+  return v * v * std::tan(cmd.lateral.steering_tire_angle) / param_.wheel_base;
+}
+
+double VehicleCmdFilter::calcLatAcc(const AckermannControlCommand & cmd, const double v) const
+{
   return v * v * std::tan(cmd.lateral.steering_tire_angle) / param_.wheel_base;
 }
 
