@@ -15,6 +15,7 @@
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
 #include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -22,6 +23,11 @@
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
+
+#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 
@@ -47,13 +53,14 @@ autoware_auto_vehicle_msgs::msg::VelocityReport to_velocity_report(
   return velocity;
 }
 
-nav_msgs::msg::Odometry to_odometry(const std::shared_ptr<SimModelInterface> vehicle_model_ptr)
+nav_msgs::msg::Odometry to_odometry(
+  const std::shared_ptr<SimModelInterface> vehicle_model_ptr, const double ego_pitch_angle)
 {
   nav_msgs::msg::Odometry odometry;
   odometry.pose.pose.position.x = vehicle_model_ptr->getX();
   odometry.pose.pose.position.y = vehicle_model_ptr->getY();
-  odometry.pose.pose.orientation =
-    tier4_autoware_utils::createQuaternionFromYaw(vehicle_model_ptr->getYaw());
+  odometry.pose.pose.orientation = tier4_autoware_utils::createQuaternionFromRPY(
+    0.0, ego_pitch_angle, vehicle_model_ptr->getYaw());
   odometry.twist.twist.linear.x = vehicle_model_ptr->getVx();
   odometry.twist.twist.angular.z = vehicle_model_ptr->getWz();
 
@@ -68,6 +75,19 @@ autoware_auto_vehicle_msgs::msg::SteeringReport to_steering_report(
   return steer;
 }
 
+std::vector<geometry_msgs::msg::Point> convert_centerline_to_points(
+  const lanelet::Lanelet & lanelet)
+{
+  std::vector<geometry_msgs::msg::Point> centerline_points;
+  for (const auto & point : lanelet.centerline()) {
+    geometry_msgs::msg::Point center_point;
+    center_point.x = point.basicPoint().x();
+    center_point.y = point.basicPoint().y();
+    center_point.z = point.basicPoint().z();
+    centerline_points.push_back(center_point);
+  }
+  return centerline_points;
+}
 }  // namespace
 
 namespace simulation
@@ -82,11 +102,15 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   origin_frame_id_ = declare_parameter("origin_frame_id", "odom");
   add_measurement_noise_ = declare_parameter("add_measurement_noise", false);
   simulate_motion_ = declare_parameter<bool>("initial_engage_state");
+  enable_road_slope_simulation_ = declare_parameter("enable_road_slope_simulation", false);
 
   using rclcpp::QoS;
   using std::placeholders::_1;
   using std::placeholders::_2;
 
+  sub_map_ = create_subscription<HADMapBin>(
+    "input/vector_map", rclcpp::QoS(10).transient_local(),
+    std::bind(&SimplePlanningSimulator::on_map, this, _1));
   sub_init_pose_ = create_subscription<PoseWithCovarianceStamped>(
     "input/initialpose", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialpose, this, _1));
   sub_init_twist_ = create_subscription<TwistStamped>(
@@ -253,6 +277,44 @@ rcl_interfaces::msg::SetParametersResult SimplePlanningSimulator::on_parameter(
   return result;
 }
 
+double SimplePlanningSimulator::calculate_ego_pitch() const
+{
+  const double ego_x = vehicle_model_ptr_->getX();
+  const double ego_y = vehicle_model_ptr_->getY();
+  const double ego_yaw = vehicle_model_ptr_->getYaw();
+
+  geometry_msgs::msg::Pose ego_pose;
+  ego_pose.position.x = ego_x;
+  ego_pose.position.y = ego_y;
+  ego_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(ego_yaw);
+
+  // calculate prev/next point of lanelet centerline nearest to ego pose.
+  lanelet::Lanelet ego_lanelet;
+  if (!lanelet::utils::query::getClosestLaneletWithConstrains(
+        road_lanelets_, ego_pose, &ego_lanelet, 2.0, std::numeric_limits<double>::max())) {
+    return 0.0;
+  }
+  const auto centerline_points = convert_centerline_to_points(ego_lanelet);
+  const size_t ego_seg_idx =
+    motion_utils::findNearestSegmentIndex(centerline_points, ego_pose.position);
+
+  const auto & prev_point = centerline_points.at(ego_seg_idx);
+  const auto & next_point = centerline_points.at(ego_seg_idx + 1);
+
+  // calculate ego yaw angle on lanelet coordinates
+  const double lanelet_yaw = std::atan2(next_point.y - prev_point.y, next_point.x - prev_point.x);
+  const double ego_yaw_against_lanelet = ego_yaw - lanelet_yaw;
+
+  // calculate ego pitch angle considering ego yaw.
+  const double diff_z = next_point.z - prev_point.z;
+  const double diff_xy = std::hypot(next_point.x - prev_point.x, next_point.y - prev_point.y) /
+                         std::cos(ego_yaw_against_lanelet);
+  const bool reverse_sign = std::cos(ego_yaw_against_lanelet) < 0.0;
+  const double ego_pitch_angle =
+    reverse_sign ? std::atan2(-diff_z, -diff_xy) : std::atan2(diff_z, diff_xy);
+  return ego_pitch_angle;
+}
+
 void SimplePlanningSimulator::on_timer()
 {
   if (!is_initialized_) {
@@ -260,16 +322,21 @@ void SimplePlanningSimulator::on_timer()
     return;
   }
 
+  // calculate longitudinal acceleration by slope
+  const double ego_pitch_angle = calculate_ego_pitch();
+  const double acc_by_slope =
+    enable_road_slope_simulation_ ? -9.81 * std::sin(ego_pitch_angle) : 0.0;
+
   // update vehicle dynamics
   {
     const double dt = delta_time_.get_dt(get_clock()->now());
 
     if (current_control_mode_.mode == ControlModeReport::AUTONOMOUS) {
       vehicle_model_ptr_->setGear(current_gear_cmd_.command);
-      set_input(current_ackermann_cmd_);
+      set_input(current_ackermann_cmd_, acc_by_slope);
     } else {
       vehicle_model_ptr_->setGear(current_manual_gear_cmd_.command);
-      set_input(current_manual_ackermann_cmd_);
+      set_input(current_manual_ackermann_cmd_, acc_by_slope);
     }
 
     if (simulate_motion_) {
@@ -278,7 +345,7 @@ void SimplePlanningSimulator::on_timer()
   }
 
   // set current state
-  current_odometry_ = to_odometry(vehicle_model_ptr_);
+  current_odometry_ = to_odometry(vehicle_model_ptr_, ego_pitch_angle);
   current_odometry_.pose.pose.position.z = get_z_pose_from_trajectory(
     current_odometry_.pose.pose.position.x, current_odometry_.pose.pose.position.y);
 
@@ -308,6 +375,19 @@ void SimplePlanningSimulator::on_timer()
   publish_turn_indicators_report();
   publish_hazard_lights_report();
   publish_tf(current_odometry_);
+}
+
+void SimplePlanningSimulator::on_map(const HADMapBin::ConstSharedPtr msg)
+{
+  auto lanelet_map_ptr = std::make_shared<lanelet::LaneletMap>();
+
+  lanelet::routing::RoutingGraphPtr routing_graph_ptr;
+  lanelet::traffic_rules::TrafficRulesPtr traffic_rules_ptr;
+  lanelet::utils::conversion::fromBinMsg(
+    *msg, lanelet_map_ptr, &traffic_rules_ptr, &routing_graph_ptr);
+
+  lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(lanelet_map_ptr);
+  road_lanelets_ = lanelet::utils::query::roadLanelets(all_lanelets);
 }
 
 void SimplePlanningSimulator::on_initialpose(const PoseWithCovarianceStamped::ConstSharedPtr msg)
@@ -346,7 +426,8 @@ void SimplePlanningSimulator::on_set_pose(
   response->status = tier4_api_utils::response_success();
 }
 
-void SimplePlanningSimulator::set_input(const AckermannControlCommand & cmd)
+void SimplePlanningSimulator::set_input(
+  const AckermannControlCommand & cmd, const double acc_by_slope)
 {
   const auto steer = cmd.lateral.steering_tire_angle;
   const auto vel = cmd.longitudinal.speed;
@@ -358,11 +439,11 @@ void SimplePlanningSimulator::set_input(const AckermannControlCommand & cmd)
 
   // TODO(Watanabe): The definition of the sign of acceleration in REVERSE mode is different
   // between .auto and proposal.iv, and will be discussed later.
-  float acc = accel;
+  float acc = accel + acc_by_slope;
   if (gear == GearCommand::NONE) {
     acc = 0.0;
   } else if (gear == GearCommand::REVERSE || gear == GearCommand::REVERSE_2) {
-    acc = -accel;
+    acc = -accel - acc_by_slope;
   }
 
   if (

@@ -53,6 +53,7 @@ def launch_setup(context, *args, **kwargs):
             },
         ],
         remappings=[
+            ("input/vector_map", "/map/vector_map"),
             ("input/initialpose", "/initialpose3d"),
             ("input/ackermann_control_command", "/control/command/control_cmd"),
             ("input/manual_ackermann_control_command", "/vehicle/command/manual_control_cmd"),

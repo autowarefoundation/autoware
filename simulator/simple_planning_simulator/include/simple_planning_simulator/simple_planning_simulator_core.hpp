@@ -22,6 +22,7 @@
 
 #include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
 #include "autoware_auto_geometry_msgs/msg/complex32.hpp"
+#include "autoware_auto_mapping_msgs/msg/had_map_bin.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_vehicle_msgs/msg/control_mode_command.hpp"
 #include "autoware_auto_vehicle_msgs/msg/control_mode_report.hpp"
@@ -47,6 +48,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "tier4_external_api_msgs/srv/initialize_pose.hpp"
 
+#include <lanelet2_core/geometry/Lanelet.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -62,6 +64,7 @@ namespace simple_planning_simulator
 
 using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_geometry_msgs::msg::Complex32;
+using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_vehicle_msgs::msg::ControlModeReport;
 using autoware_auto_vehicle_msgs::msg::Engage;
@@ -143,6 +146,7 @@ private:
   rclcpp::Subscription<VehicleControlCommand>::SharedPtr sub_vehicle_cmd_;
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_ackermann_cmd_;
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_manual_ackermann_cmd_;
+  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_init_twist_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
@@ -159,6 +163,8 @@ private:
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
   rcl_interfaces::msg::SetParametersResult on_parameter(
     const std::vector<rclcpp::Parameter> & parameters);
+
+  lanelet::ConstLanelets road_lanelets_;
 
   /* tf */
   tf2_ros::Buffer tf_buffer_;
@@ -179,6 +185,7 @@ private:
   Trajectory::ConstSharedPtr current_trajectory_ptr_;
   bool simulate_motion_;  //!< stop vehicle motion simulation if false
   ControlModeReport current_control_mode_;
+  bool enable_road_slope_simulation_;
 
   /* frame_id */
   std::string simulated_frame_id_;  //!< @brief simulated vehicle frame id
@@ -214,7 +221,7 @@ private:
   /**
    * @brief set input steering, velocity, and acceleration of the vehicle model
    */
-  void set_input(const AckermannControlCommand & cmd);
+  void set_input(const AckermannControlCommand & cmd, const double acc_by_slope);
 
   /**
    * @brief set current_vehicle_state_ with received message
@@ -225,6 +232,11 @@ private:
    * @brief set current_vehicle_state_ with received message
    */
   void on_hazard_lights_cmd(const HazardLightsCommand::ConstSharedPtr msg);
+
+  /**
+   * @brief subscribe lanelet map
+   */
+  void on_map(const HADMapBin::ConstSharedPtr msg);
 
   /**
    * @brief set initial pose for simulation with received message
@@ -275,6 +287,12 @@ private:
    * @return transform from parent frame to child frame
    */
   TransformStamped get_transform_msg(const std::string parent_frame, const std::string child_frame);
+
+  /**
+   * @brief calculate ego pitch angle from trajectory
+   * @return ego pitch angle
+   */
+  double calculate_ego_pitch() const;
 
   /**
    * @brief timer callback for simulation with loop_rate
