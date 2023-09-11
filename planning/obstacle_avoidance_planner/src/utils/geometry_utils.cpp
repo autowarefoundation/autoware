@@ -14,14 +14,20 @@
 
 #include "obstacle_avoidance_planner/utils/geometry_utils.hpp"
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_avoidance_planner/mpt_optimizer.hpp"
 #include "tf2/utils.h"
+
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include "autoware_auto_planning_msgs/msg/path_point.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "geometry_msgs/msg/pose.hpp"
+
+#include <boost/geometry/algorithms/correct.hpp>
+#include <boost/geometry/algorithms/intersects.hpp>
+#include <boost/geometry/algorithms/within.hpp>
 
 #include <algorithm>
 #include <limits>

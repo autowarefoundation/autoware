@@ -18,7 +18,7 @@
 
 #include "obstacle_stop_planner/planner_data.hpp"
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
@@ -46,7 +46,6 @@ using diagnostic_msgs::msg::KeyValue;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
-using geometry_msgs::msg::TransformStamped;
 using std_msgs::msg::Header;
 
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;

@@ -19,7 +19,6 @@
 #include "obstacle_cruise_planner/optimization_based_planner/velocity_optimizer.hpp"
 #include "obstacle_cruise_planner/planner_interface.hpp"
 #include "obstacle_cruise_planner/type_alias.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>

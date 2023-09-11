@@ -17,10 +17,13 @@
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/trajectory/tmp_conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
+#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
 #include <diagnostic_msgs/msg/key_value.hpp>
 
 #include <boost/format.hpp>
+#include <boost/geometry/algorithms/distance.hpp>
+#include <boost/geometry/algorithms/within.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
 

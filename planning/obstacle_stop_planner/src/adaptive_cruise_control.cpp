@@ -28,6 +28,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <tier4_autoware_utils/math/normalization.hpp>
+
 #include <algorithm>
 #include <limits>
 #include <string>

@@ -17,7 +17,8 @@
 
 #include "obstacle_avoidance_planner/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
+#include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <memory>
 #include <optional>

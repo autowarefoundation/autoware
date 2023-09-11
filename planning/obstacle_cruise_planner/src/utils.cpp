@@ -15,6 +15,7 @@
 #include "obstacle_cruise_planner/utils.hpp"
 
 #include "object_recognition_utils/predicted_path_utils.hpp"
+#include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 namespace obstacle_cruise_utils
 {
