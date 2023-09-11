@@ -35,6 +35,7 @@ class PerceptionReplayer(PerceptionReplayerCommon):
         self.bag_timestamp = self.rosbag_objects_data[0][0]
         self.is_pause = False
         self.rate = 1.0
+        self.prev_traffic_signals_msg = None
 
         # initialize widget
         self.widget = TimeManagerWidget(

@@ -44,6 +44,7 @@ class PerceptionReplayerCommon(Node):
         self.rosbag_objects_data = []
         self.rosbag_ego_odom_data = []
         self.rosbag_traffic_signals_data = []
+        self.is_auto_traffic_signals = False
 
         # subscriber
         self.sub_odom = self.create_subscription(
