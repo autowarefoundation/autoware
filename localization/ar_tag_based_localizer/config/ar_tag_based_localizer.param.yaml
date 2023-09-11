@@ -4,21 +4,19 @@
     marker_size: 0.6
 
     # target_tag_ids
-    target_tag_ids: ['0','4','5']
+    target_tag_ids: ['0','1','2','3','4','5','6']
 
-    # covariance
-    covariance: [0.1, 0.0, 0.0, 0.0,  0.0,  0.0,
-                 0.0, 0.1, 0.0, 0.0,  0.0,  0.0,
-                 0.0, 0.0, 0.1, 0.0,  0.0,  0.0,
-                 0.0, 0.0, 0.0, 0.01, 0.0,  0.0,
-                 0.0, 0.0, 0.0, 0.0,  0.01, 0.0,
-                 0.0, 0.0, 0.0, 0.0,  0.0,  0.01]
+    # base_covariance
+    #   This value is dynamically scaled according to the distance at which AR tags are detected.
+    base_covariance: [0.2, 0.0, 0.0, 0.0,  0.0,  0.0,
+                      0.0, 0.2, 0.0, 0.0,  0.0,  0.0,
+                      0.0, 0.0, 0.2, 0.0,  0.0,  0.0,
+                      0.0, 0.0, 0.0, 0.02, 0.0,  0.0,
+                      0.0, 0.0, 0.0, 0.0,  0.02, 0.0,
+                      0.0, 0.0, 0.0, 0.0,  0.0,  0.02]
 
     # Detect AR-Tags within this range and publish the pose of ego vehicle
-    distance_threshold: 6.0  # [m]
-
-    # Camera frame id
-    camera_frame: "camera"
+    distance_threshold: 13.0  # [m]
 
     # Detector parameters
     # See https://github.com/pal-robotics/aruco_ros/blob/7787a6794d30c248bc546d1582e65dd47bc40c12/aruco/include/aruco/markerdetector.h#L106-L126

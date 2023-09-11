@@ -69,9 +69,8 @@ bool ArTagBasedLocalizer::setup()
   */
   marker_size_ = static_cast<float>(this->declare_parameter<double>("marker_size"));
   target_tag_ids_ = this->declare_parameter<std::vector<std::string>>("target_tag_ids");
-  covariance_ = this->declare_parameter<std::vector<double>>("covariance");
+  base_covariance_ = this->declare_parameter<std::vector<double>>("base_covariance");
   distance_threshold_squared_ = std::pow(this->declare_parameter<double>("distance_threshold"), 2);
-  camera_frame_ = this->declare_parameter<std::string>("camera_frame");
   std::string detection_mode = this->declare_parameter<std::string>("detection_mode");
   float min_marker_size = static_cast<float>(this->declare_parameter<double>("min_marker_size"));
   if (detection_mode == "DM_NORMAL") {
@@ -109,20 +108,22 @@ bool ArTagBasedLocalizer::setup()
   /*
     Subscribers
   */
-  image_sub_ = it_->subscribe("~/input/image", 1, &ArTagBasedLocalizer::image_callback, this);
+  rclcpp::QoS qos_sub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+  qos_sub.best_effort();
+  image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
+    "~/input/image", qos_sub,
+    std::bind(&ArTagBasedLocalizer::image_callback, this, std::placeholders::_1));
   cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(
-    "~/input/camera_info", 1,
+    "~/input/camera_info", qos_sub,
     std::bind(&ArTagBasedLocalizer::cam_info_callback, this, std::placeholders::_1));
 
   /*
     Publishers
   */
-  auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
-  qos.reliable();
-  qos.transient_local();
+  rclcpp::QoS qos_pub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
   image_pub_ = it_->advertise("~/debug/result", 1);
   pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    "~/output/pose_with_covariance", qos);
+    "~/output/pose_with_covariance", qos_pub);
 
   RCLCPP_INFO(this->get_logger(), "Setup of ar_tag_based_localizer node is successful!");
   return true;
@@ -164,7 +165,7 @@ void ArTagBasedLocalizer::image_callback(const sensor_msgs::msg::Image::ConstSha
     geometry_msgs::msg::TransformStamped tf_cam_to_marker_stamped;
     tf2::toMsg(tf_cam_to_marker, tf_cam_to_marker_stamped.transform);
     tf_cam_to_marker_stamped.header.stamp = curr_stamp;
-    tf_cam_to_marker_stamped.header.frame_id = camera_frame_;
+    tf_cam_to_marker_stamped.header.frame_id = msg->header.frame_id;
     tf_cam_to_marker_stamped.child_frame_id = "detected_marker_" + std::to_string(marker.id);
     tf_broadcaster_->sendTransform(tf_cam_to_marker_stamped);
 
@@ -172,7 +173,7 @@ void ArTagBasedLocalizer::image_callback(const sensor_msgs::msg::Image::ConstSha
     tf2::toMsg(tf_cam_to_marker, pose_cam_to_marker.pose);
     pose_cam_to_marker.header.stamp = curr_stamp;
     pose_cam_to_marker.header.frame_id = std::to_string(marker.id);
-    publish_pose_as_base_link(pose_cam_to_marker);
+    publish_pose_as_base_link(pose_cam_to_marker, msg->header.frame_id);
 
     // drawing the detected markers
     marker.draw(in_image, cv::Scalar(0, 0, 255), 2);
@@ -206,7 +207,8 @@ void ArTagBasedLocalizer::cam_info_callback(const sensor_msgs::msg::CameraInfo &
   cam_info_received_ = true;
 }
 
-void ArTagBasedLocalizer::publish_pose_as_base_link(const geometry_msgs::msg::PoseStamped & msg)
+void ArTagBasedLocalizer::publish_pose_as_base_link(
+  const geometry_msgs::msg::PoseStamped & msg, const std::string & camera_frame_id)
 {
   // Check if frame_id is in target_tag_ids
   if (
@@ -241,7 +243,7 @@ void ArTagBasedLocalizer::publish_pose_as_base_link(const geometry_msgs::msg::Po
   geometry_msgs::msg::TransformStamped camera_to_base_link_tf;
   try {
     camera_to_base_link_tf =
-      tf_buffer_->lookupTransform(camera_frame_, "base_link", tf2::TimePointZero);
+      tf_buffer_->lookupTransform(camera_frame_id, "base_link", tf2::TimePointZero);
   } catch (tf2::TransformException & ex) {
     RCLCPP_INFO(this->get_logger(), "Could not transform base_link to camera: %s", ex.what());
     return;
@@ -265,8 +267,15 @@ void ArTagBasedLocalizer::publish_pose_as_base_link(const geometry_msgs::msg::Po
   pose_with_covariance_stamped.header.stamp = msg.header.stamp;
   pose_with_covariance_stamped.header.frame_id = "map";
   pose_with_covariance_stamped.pose.pose = tf2::toMsg(map_to_base_link);
-  std::copy(
-    covariance_.begin(), covariance_.end(), pose_with_covariance_stamped.pose.covariance.begin());
+
+  // ~5[m]: base_covariance
+  // 5~[m]: scaling base_covariance by std::pow(distance/5, 3)
+  const double distance = std::sqrt(distance_squared);
+  const double scale = distance / 5;
+  const double coeff = std::max(1.0, std::pow(scale, 3));
+  for (int i = 0; i < 36; i++) {
+    pose_with_covariance_stamped.pose.covariance[i] = coeff * base_covariance_[i];
+  }
 
   pose_pub_->publish(pose_with_covariance_stamped);
 }

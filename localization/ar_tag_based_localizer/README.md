@@ -55,7 +55,26 @@ ros2 launch autoware_launch ... \
     ...
 ```
 
-[Sample rosbag and map](https://drive.google.com/file/d/1wiCQjyjRnYbb0dg8G6mRecdSGh8tv3zR/view)
+### Rosbag
+
+#### [Sample rosbag and map (AWSIM data)](https://drive.google.com/file/d/1uMVwQQFcfs8JOqfoA1FqfH_fLPwQ71jK/view)
+
+This data is simulated data created by [AWSIM](https://tier4.github.io/AWSIM/).
+Essentially, AR tag-based self-localization is not intended for such public road driving, but for driving in a smaller area, so the max driving speed is set at 15 km/h.
+
+It is a known problem that the timing of when each AR tag begins to be detected can cause significant changes in estimation.
+
+![sample_result_in_awsim](./doc_image/sample_result_in_awsim.png)
+
+#### [Sample rosbag and map (Real world data)](https://drive.google.com/file/d/1wiCQjyjRnYbb0dg8G6mRecdSGh8tv3zR/view)
+
+Please remap the topic names and play it.
+
+```bash
+ros2 bag play /path/to/ar_tag_based_localizer_sample_bag/ -r 0.5 -s sqlite3 \
+     --remap /sensing/camera/front/image:=/sensing/camera/traffic_light/image_raw \
+             /sensing/camera/front/image/info:=/sensing/camera/traffic_light/camera_info
+```
 
 This dataset contains issues such as missing IMU data, and overall the accuracy is low. Even when running AR tag-based self-localization, significant difference from the true trajectory can be observed.
 
