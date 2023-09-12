@@ -69,6 +69,7 @@ struct GoalPlannerParameters
   bool use_object_recognition;
   double object_recognition_collision_check_margin;
   double object_recognition_collision_check_max_extra_stopping_margin;
+  double th_moving_object_velocity;
 
   // pull over general params
   double pull_over_minimum_request_length;

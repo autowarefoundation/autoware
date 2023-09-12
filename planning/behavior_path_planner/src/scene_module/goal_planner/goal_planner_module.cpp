@@ -1300,12 +1300,20 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
   }
 
   if (parameters_->use_object_recognition) {
+    const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
+      *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
+      parameters_->forward_goal_search_length);
+    const auto [pull_over_lane_objects, others] =
+      utils::path_safety_checker::separateObjectsByLanelets(
+        *(planner_data_->dynamic_object), pull_over_lanes);
+    const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+      pull_over_lane_objects, parameters_->th_moving_object_velocity);
     const auto common_parameters = planner_data_->parameters;
     const double base_link2front = common_parameters.base_link2front;
     const double base_link2rear = common_parameters.base_link2rear;
     const double vehicle_width = common_parameters.vehicle_width;
     if (utils::path_safety_checker::checkCollisionWithExtraStoppingMargin(
-          path, *(planner_data_->dynamic_object), base_link2front, base_link2rear, vehicle_width,
+          path, pull_over_lane_stop_objects, base_link2front, base_link2rear, vehicle_width,
           parameters_->maximum_deceleration, parameters_->object_recognition_collision_check_margin,
           parameters_->object_recognition_collision_check_max_extra_stopping_margin)) {
       return true;

@@ -90,6 +90,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
     p.object_recognition_collision_check_max_extra_stopping_margin =
       node->declare_parameter<double>(
         ns + "object_recognition_collision_check_max_extra_stopping_margin");
+    p.th_moving_object_velocity = node->declare_parameter<double>(ns + "th_moving_object_velocity");
   }
 
   // pull over general params
