@@ -81,13 +81,16 @@ struct PullOverStatus
   size_t current_path_idx{0};
   bool require_increment_{true};  // if false, keep current path idx.
   std::shared_ptr<PathWithLaneId> prev_stop_path{nullptr};
+  std::shared_ptr<PathWithLaneId> prev_stop_path_after_approval{nullptr};
+  // stop path after approval, stop path is not updated until safety is confirmed
   lanelet::ConstLanelets current_lanes{};    // TODO(someone): explain
   lanelet::ConstLanelets pull_over_lanes{};  // TODO(someone): explain
   std::vector<DrivableLanes> lanes{};        // current + pull_over
-  bool has_decided_path{false};  // if true, the path is decided and safe against static objects
+  bool has_decided_path{false};  // if true, the path has is decided and safe against static objects
   bool is_safe_static_objects{false};   // current path is safe against *static* objects
   bool is_safe_dynamic_objects{false};  // current path is safe against *dynamic* objects
   bool prev_is_safe{false};
+  bool prev_is_safe_dynamic_objects{false};
   bool has_decided_velocity{false};
   bool has_requested_approval{false};
   bool is_ready{false};
@@ -230,6 +233,18 @@ private:
     const Pose & search_start_offset_pose, PathWithLaneId & path) const;
   PathWithLaneId generateStopPath();
   PathWithLaneId generateFeasibleStopPath();
+
+  /**
+   * @brief Generate a stop point in the current path based on the vehicle's pose and constraints.
+   *
+   * This function generates a stop point in the current path. If no lanes are available or if
+   * stopping is not feasible due to constraints (maximum deceleration, maximum jerk), no stop point
+   * is inserted into the path.
+   *
+   * @return the modified path with the stop point inserted.  If no feasible stop point can be
+   * determined, returns an empty optional.
+   */
+  std::optional<PathWithLaneId> generateStopInsertedCurrentPath();
   void keepStoppedWithCurrentPath(PathWithLaneId & path);
   double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
 
@@ -277,6 +292,17 @@ private:
   // output setter
   void setOutput(BehaviorModuleOutput & output);
   void setStopPath(BehaviorModuleOutput & output);
+
+  /**
+   * @brief Sets a stop path in the current path based on safety conditions and previous paths.
+   *
+   * This function sets a stop path in the current path. Depending on whether the previous safety
+   * judgement against dynamic objects were safe or if a previous stop path existed, it either
+   * generates a new stop path or uses the previous stop path.
+   *
+   * @param output BehaviorModuleOutput
+   */
+  void setStopPathFromCurrentPath(BehaviorModuleOutput & output);
   void setModifiedGoal(BehaviorModuleOutput & output) const;
   void setTurnSignalInfo(BehaviorModuleOutput & output) const;
 
