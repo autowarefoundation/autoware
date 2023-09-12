@@ -599,7 +599,7 @@ void StartPlannerModule::updatePullOutStatus()
 
   // skip updating if enough time has not passed for preventing chattering between back and
   // start_planner
-  if (!has_received_new_route && !last_pull_out_start_update_time_ && !status_.back_finished) {
+  if (!has_received_new_route) {
     if (!last_pull_out_start_update_time_) {
       last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
     }
