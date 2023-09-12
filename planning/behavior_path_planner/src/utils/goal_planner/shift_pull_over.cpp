@@ -16,6 +16,7 @@
 
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/start_goal_planner_common/utils.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
@@ -170,6 +171,9 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
     }
     shifted_path.path.points.push_back(p);
   }
+
+  shifted_path.path =
+    utils::start_goal_planner_common::removeInverseOrderPathPoints(shifted_path.path);
 
   // set the same z as the goal
   for (auto & p : shifted_path.path.points) {

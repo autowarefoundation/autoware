@@ -169,4 +169,19 @@ std::pair<double, double> getPairsTerminalVelocityAndAccel(
   return pairs_terminal_velocity_and_accel.at(current_path_idx);
 }
 
+PathWithLaneId removeInverseOrderPathPoints(const PathWithLaneId & path)
+{
+  PathWithLaneId fixed_path;
+  fixed_path.header = path.header;
+  fixed_path.points.push_back(path.points.at(0));
+  for (size_t i = 1; i < path.points.size(); i++) {
+    const auto p1 = path.points.at(i - 1).point.pose;
+    const auto p2 = path.points.at(i).point.pose;
+    if (tier4_autoware_utils::isDrivingForward(p1, p2)) {
+      fixed_path.points.push_back(path.points.at(i));
+    }
+  }
+  return fixed_path;
+}
+
 }  // namespace behavior_path_planner::utils::start_goal_planner_common
