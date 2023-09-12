@@ -54,11 +54,16 @@ public:
 
   void setParam(
     const bool enable_debug_info, const bool enable_calculation_time_info,
-    const double min_behavior_stop_margin, const bool suppress_sudden_obstacle_stop)
+    const double min_behavior_stop_margin, const double enable_approaching_on_curve,
+    const double additional_safe_distance_margin_on_curve,
+    const double min_safe_distance_margin_on_curve, const bool suppress_sudden_obstacle_stop)
   {
     enable_debug_info_ = enable_debug_info;
     enable_calculation_time_info_ = enable_calculation_time_info;
     min_behavior_stop_margin_ = min_behavior_stop_margin;
+    enable_approaching_on_curve_ = enable_approaching_on_curve;
+    additional_safe_distance_margin_on_curve_ = additional_safe_distance_margin_on_curve;
+    min_safe_distance_margin_on_curve_ = min_safe_distance_margin_on_curve;
     suppress_sudden_obstacle_stop_ = suppress_sudden_obstacle_stop;
   }
 
@@ -103,6 +108,9 @@ protected:
   bool enable_calculation_time_info_{false};
   LongitudinalInfo longitudinal_info_;
   double min_behavior_stop_margin_;
+  bool enable_approaching_on_curve_;
+  double additional_safe_distance_margin_on_curve_;
+  double min_safe_distance_margin_on_curve_;
   bool suppress_sudden_obstacle_stop_;
 
   // stop watch
@@ -195,6 +203,8 @@ private:
     std::optional<geometry_msgs::msg::Pose> start_point{std::nullopt};
     std::optional<geometry_msgs::msg::Pose> end_point{std::nullopt};
   };
+  double calculateMarginFromObstacleOnCurve(
+    const PlannerData & planner_data, const StopObstacle & stop_obstacle) const;
   double calculateSlowDownVelocity(
     const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output) const;
   std::optional<std::tuple<double, double, double>> calculateDistanceToSlowDownWithConstraints(

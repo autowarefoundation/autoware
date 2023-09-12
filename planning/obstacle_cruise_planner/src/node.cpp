@@ -398,11 +398,18 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     }
 
     min_behavior_stop_margin_ = declare_parameter<double>("common.min_behavior_stop_margin");
+    additional_safe_distance_margin_on_curve_ =
+      declare_parameter<double>("common.stop_on_curve.additional_safe_distance_margin");
+    enable_approaching_on_curve_ =
+      declare_parameter<bool>("common.stop_on_curve.enable_approaching");
+    min_safe_distance_margin_on_curve_ =
+      declare_parameter<double>("common.stop_on_curve.min_safe_distance_margin");
     suppress_sudden_obstacle_stop_ =
       declare_parameter<bool>("common.suppress_sudden_obstacle_stop");
     planner_ptr_->setParam(
       enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_,
-      suppress_sudden_obstacle_stop_);
+      enable_approaching_on_curve_, additional_safe_distance_margin_on_curve_,
+      min_safe_distance_margin_on_curve_, suppress_sudden_obstacle_stop_);
   }
 
   {  // stop/cruise/slow down obstacle type
@@ -439,9 +446,20 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
     parameters, "common.enable_debug_info", enable_debug_info_);
   tier4_autoware_utils::updateParam<bool>(
     parameters, "common.enable_calculation_time_info", enable_calculation_time_info_);
+
+  tier4_autoware_utils::updateParam<bool>(
+    parameters, "common.stop_on_curve.enable_approaching", enable_approaching_on_curve_);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "common.stop_on_curve.additional_safe_distance_margin",
+    additional_safe_distance_margin_on_curve_);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "common.stop_on_curve.min_safe_distance_margin",
+    min_safe_distance_margin_on_curve_);
+
   planner_ptr_->setParam(
     enable_debug_info_, enable_calculation_time_info_, min_behavior_stop_margin_,
-    suppress_sudden_obstacle_stop_);
+    enable_approaching_on_curve_, additional_safe_distance_margin_on_curve_,
+    min_safe_distance_margin_on_curve_, suppress_sudden_obstacle_stop_);
 
   tier4_autoware_utils::updateParam<bool>(
     parameters, "common.enable_slow_down_planning", enable_slow_down_planning_);
@@ -912,7 +930,7 @@ std::optional<StopObstacle> ObstacleCruisePlannerNode::createStopObstacle(
   }
 
   const auto [tangent_vel, normal_vel] = projectObstacleVelocityToTrajectory(traj_points, obstacle);
-  return StopObstacle{obstacle.uuid, obstacle.stamp, obstacle.pose,
+  return StopObstacle{obstacle.uuid, obstacle.stamp, obstacle.pose,   obstacle.shape,
                       tangent_vel,   normal_vel,     *collision_point};
 }
 

@@ -100,6 +100,9 @@ private:
   bool enable_debug_info_;
   bool enable_calculation_time_info_;
   double min_behavior_stop_margin_;
+  bool enable_approaching_on_curve_;
+  double additional_safe_distance_margin_on_curve_;
+  double min_safe_distance_margin_on_curve_;
   bool suppress_sudden_obstacle_stop_;
 
   std::vector<int> stop_obstacle_types_;

@@ -108,12 +108,15 @@ struct StopObstacle : public TargetObstacleInterface
 {
   StopObstacle(
     const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
-    const geometry_msgs::msg::Pose & arg_pose, const double arg_lon_velocity,
-    const double arg_lat_velocity, const geometry_msgs::msg::Point arg_collision_point)
+    const geometry_msgs::msg::Pose & arg_pose, const Shape & arg_shape,
+    const double arg_lon_velocity, const double arg_lat_velocity,
+    const geometry_msgs::msg::Point arg_collision_point)
   : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_lon_velocity, arg_lat_velocity),
+    shape(arg_shape),
     collision_point(arg_collision_point)
   {
   }
+  Shape shape;
   geometry_msgs::msg::Point collision_point;
 };
 
