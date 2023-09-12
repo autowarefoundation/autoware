@@ -36,7 +36,12 @@ void FasterVoxelGridDownsampleFilter::set_field_offsets(const PointCloud2ConstPt
   x_offset_ = input->fields[pcl::getFieldIndex(*input, "x")].offset;
   y_offset_ = input->fields[pcl::getFieldIndex(*input, "y")].offset;
   z_offset_ = input->fields[pcl::getFieldIndex(*input, "z")].offset;
-  intensity_offset_ = input->fields[pcl::getFieldIndex(*input, "intensity")].offset;
+  int intensity_index = pcl::getFieldIndex(*input, "intensity");
+  if (intensity_index != -1) {
+    intensity_offset_ = input->fields[intensity_index].offset;
+  } else {
+    intensity_offset_ = z_offset_ + sizeof(float);
+  }
   offset_initialized_ = true;
 }
 
