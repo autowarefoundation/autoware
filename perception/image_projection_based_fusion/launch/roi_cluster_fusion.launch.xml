@@ -48,9 +48,10 @@
       <param name="use_iou" value="true"/>
       <param name="use_iou_x" value="false"/>
       <param name="use_iou_y" value="false"/>
+      <param name="use_cluster_semantic_type" value="false"/>
       <param name="only_allow_inside_cluster" value="true"/>
       <param name="roi_scale_factor" value="1.1"/>
-      <param name="iou_threshold" value="0.35"/>
+      <param name="iou_threshold" value="0.65"/>
       <param name="unknown_iou_threshold" value="0.1"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
       <param name="remove_unknown" value="$(var remove_unknown)"/>

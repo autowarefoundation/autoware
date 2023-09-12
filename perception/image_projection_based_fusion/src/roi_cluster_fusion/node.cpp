@@ -36,16 +36,16 @@ namespace image_projection_based_fusion
 RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
 : FusionNode<DetectedObjectsWithFeature, DetectedObjectWithFeature>("roi_cluster_fusion", options)
 {
-  use_iou_x_ = declare_parameter("use_iou_x", true);
-  use_iou_y_ = declare_parameter("use_iou_y", false);
-  use_iou_ = declare_parameter("use_iou", false);
-  use_cluster_semantic_type_ = declare_parameter("use_cluster_semantic_type", false);
-  only_allow_inside_cluster_ = declare_parameter("only_allow_inside_cluster_", true);
-  roi_scale_factor_ = declare_parameter("roi_scale_factor", 1.1);
-  iou_threshold_ = declare_parameter("iou_threshold", 0.1);
-  unknown_iou_threshold_ = declare_parameter("unknown_iou_threshold", 0.1);
-  remove_unknown_ = declare_parameter("remove_unknown", false);
-  trust_distance_ = declare_parameter("trust_distance", 100.0);
+  use_iou_x_ = declare_parameter<bool>("use_iou_x");
+  use_iou_y_ = declare_parameter<bool>("use_iou_y");
+  use_iou_ = declare_parameter<bool>("use_iou");
+  use_cluster_semantic_type_ = declare_parameter<bool>("use_cluster_semantic_type");
+  only_allow_inside_cluster_ = declare_parameter<bool>("only_allow_inside_cluster");
+  roi_scale_factor_ = declare_parameter<double>("roi_scale_factor");
+  iou_threshold_ = declare_parameter<double>("iou_threshold");
+  unknown_iou_threshold_ = declare_parameter<double>("unknown_iou_threshold");
+  remove_unknown_ = declare_parameter<bool>("remove_unknown");
+  trust_distance_ = declare_parameter<double>("trust_distance");
 }
 
 void RoiClusterFusionNode::preprocess(DetectedObjectsWithFeature & output_cluster_msg)
