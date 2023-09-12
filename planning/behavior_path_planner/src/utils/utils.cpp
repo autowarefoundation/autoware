@@ -2851,7 +2851,7 @@ BehaviorModuleOutput getReferencePath(
   // clip backward length
   // NOTE: In order to keep backward_path_length at least, resampling interval is added to the
   // backward.
-  const size_t current_seg_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     reference_path.points, no_shift_pose, p.ego_nearest_dist_threshold,
     p.ego_nearest_yaw_threshold);
   reference_path.points = motion_utils::cropPoints(
