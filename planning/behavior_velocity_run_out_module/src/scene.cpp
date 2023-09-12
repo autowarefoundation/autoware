@@ -18,6 +18,7 @@
 
 #include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <motion_utils/distance/distance.hpp>
 
 #include <algorithm>
 #include <limits>

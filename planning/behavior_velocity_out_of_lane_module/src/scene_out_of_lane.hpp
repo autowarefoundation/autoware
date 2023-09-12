@@ -18,6 +18,7 @@
 #include "types.hpp"
 
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
+#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>

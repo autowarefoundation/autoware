@@ -20,9 +20,9 @@
 #include <behavior_velocity_planner_common/scene_module_interface.hpp>
 #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
 #include <behavior_velocity_planner_common/utilization/state_machine.hpp>
-#include <motion_utils/motion_utils.hpp>
+#include <grid_map_core/grid_map_core.hpp>
+#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <std_msgs/msg/string.hpp>

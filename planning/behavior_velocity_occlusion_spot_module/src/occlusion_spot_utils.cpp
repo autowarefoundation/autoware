@@ -20,7 +20,9 @@
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
 
 #include <deque>

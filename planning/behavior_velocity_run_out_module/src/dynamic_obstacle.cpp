@@ -14,6 +14,11 @@
 
 #include "dynamic_obstacle.hpp"
 
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <tier4_autoware_utils/transform/transforms.hpp>
+
 #include <pcl/filters/voxel_grid.h>
 
 #include <algorithm>

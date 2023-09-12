@@ -17,7 +17,8 @@
 
 #include <behavior_velocity_planner_common/utilization/debug.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_utils/motion_utils.hpp>
+#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <string>
 #include <vector>

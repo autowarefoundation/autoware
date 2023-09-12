@@ -14,10 +14,11 @@
 
 #include "util.hpp"
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/path_with_lane_id.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/linestring.hpp>

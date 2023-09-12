@@ -14,7 +14,6 @@
 
 #include "gtest/gtest.h"
 #include "occlusion_spot_utils.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "utils.hpp"
 
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>

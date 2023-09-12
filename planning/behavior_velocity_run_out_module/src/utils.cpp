@@ -14,6 +14,9 @@
 
 #include "utils.hpp"
 
+#include <motion_utils/distance/distance.hpp>
+#include <motion_utils/trajectory/path_with_lane_id.hpp>
+
 #include <algorithm>
 #include <limits>
 

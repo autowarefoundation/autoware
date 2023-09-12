@@ -17,8 +17,9 @@
 
 #include <behavior_velocity_planner_common/planner_data.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_utils/distance/distance.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
+
+#include <tier4_debug_msgs/msg/float32_stamped.hpp>
 
 #include <string>
 #include <vector>

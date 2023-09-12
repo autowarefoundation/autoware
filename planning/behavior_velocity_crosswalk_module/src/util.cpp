@@ -15,7 +15,9 @@
 #include "behavior_velocity_crosswalk_module/util.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <motion_utils/trajectory/path_with_lane_id.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 
