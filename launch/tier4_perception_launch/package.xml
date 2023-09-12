@@ -12,6 +12,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <exec_depend>cluster_merger</exec_depend>
   <exec_depend>compare_map_segmentation</exec_depend>
   <exec_depend>crosswalk_traffic_light_estimator</exec_depend>
   <exec_depend>detected_object_feature_remover</exec_depend>

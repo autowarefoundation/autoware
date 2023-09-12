@@ -171,12 +171,16 @@ void RoiClusterFusionNode::fuseOnSingleImage(
   for (const auto & feature_obj : input_roi_msg.feature_objects) {
     int index = 0;
     double max_iou = 0.0;
+    bool is_roi_label_known =
+      feature_obj.object.classification.front().label != ObjectClassification::UNKNOWN;
     for (const auto & cluster_map : m_cluster_roi) {
       double iou(0.0), iou_x(0.0), iou_y(0.0);
       if (use_iou_) {
         iou = calcIoU(cluster_map.second, feature_obj.feature.roi);
       }
-      if (use_iou_x_) {
+      // use for unknown roi to improve small objects like traffic cone detect
+      // TODO(badai-nguyen): add option to disable roi_cluster mode
+      if (use_iou_x_ || !is_roi_label_known) {
         iou_x = calcIoUX(cluster_map.second, feature_obj.feature.roi);
       }
       if (use_iou_y_) {
@@ -192,8 +196,6 @@ void RoiClusterFusionNode::fuseOnSingleImage(
       }
     }
     if (!output_cluster_msg.feature_objects.empty()) {
-      bool is_roi_label_known = feature_obj.object.classification.front().label !=
-                                autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
       bool is_roi_existence_prob_higher =
         output_cluster_msg.feature_objects.at(index).object.existence_probability <=
         feature_obj.object.existence_probability;

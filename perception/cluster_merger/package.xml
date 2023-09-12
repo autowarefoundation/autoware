@@ -1,36 +1,24 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>image_projection_based_fusion</name>
+  <name>cluster_merger</name>
   <version>0.1.0</version>
-  <description>The image_projection_based_fusion package</description>
+  <description>The ROS 2 cluster merger package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
-  <maintainer email="yusuke.muramatsu@tier4.jp">Yusuke Muramatsu</maintainer>
+  <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
+  <maintainer email="dai.nguyen@tier4.jp">autoware</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-  <buildtool_depend>autoware_cmake</buildtool_depend>
 
-  <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_point_types</depend>
-  <depend>cv_bridge</depend>
-  <depend>euclidean_cluster</depend>
-  <depend>image_transport</depend>
-  <depend>lidar_centerpoint</depend>
+  <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
   <depend>object_recognition_utils</depend>
-  <depend>pcl_conversions</depend>
-  <depend>pcl_ros</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>sensor_msgs</depend>
-  <depend>tf2</depend>
-  <depend>tf2_eigen</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_sensor_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tier4_perception_msgs</depend>
-
+  <build_depend>autoware_cmake</build_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 
