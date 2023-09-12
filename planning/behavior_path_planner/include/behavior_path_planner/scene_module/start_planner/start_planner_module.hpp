@@ -93,7 +93,7 @@ public:
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
-
+  void processOnEntry() override;
   void processOnExit() override;
 
   void setParameters(const std::shared_ptr<StartPlannerParameters> & parameters)
@@ -124,6 +124,8 @@ private:
   bool canTransitFailureState() override { return false; }
 
   bool canTransitIdleToRunningState() override { return false; }
+
+  void initializeSafetyCheckParameters();
 
   std::shared_ptr<StartPlannerParameters> parameters_;
   mutable std::shared_ptr<EgoPredictedPathParams> ego_predicted_path_params_;

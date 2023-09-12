@@ -98,6 +98,16 @@ BehaviorModuleOutput StartPlannerModule::run()
   return plan();
 }
 
+void StartPlannerModule::processOnEntry()
+{
+  // Initialize safety checker
+  if (parameters_->safety_check_params.enable_safety_check) {
+    initializeSafetyCheckParameters();
+    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
+      start_planner_data_.collision_check);
+  }
+}
+
 void StartPlannerModule::processOnExit()
 {
   resetPathCandidate();
@@ -149,11 +159,6 @@ bool StartPlannerModule::isExecutionReady() const
   }
 
   if (status_.is_safe_static_objects && parameters_->safety_check_params.enable_safety_check) {
-    utils::start_goal_planner_common::updateEgoPredictedPathParams(
-      ego_predicted_path_params_, parameters_);
-    utils::start_goal_planner_common::updateSafetyCheckParams(safety_check_params_, parameters_);
-    utils::start_goal_planner_common::updateObjectsFilteringParams(
-      objects_filtering_params_, parameters_);
     if (!isSafePath()) {
       RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
       return false;
@@ -270,6 +275,15 @@ BehaviorModuleOutput StartPlannerModule::plan()
 CandidateOutput StartPlannerModule::planCandidate() const
 {
   return CandidateOutput{};
+}
+
+void StartPlannerModule::initializeSafetyCheckParameters()
+{
+  utils::start_goal_planner_common::updateEgoPredictedPathParams(
+    ego_predicted_path_params_, parameters_);
+  utils::start_goal_planner_common::updateSafetyCheckParams(safety_check_params_, parameters_);
+  utils::start_goal_planner_common::updateObjectsFilteringParams(
+    objects_filtering_params_, parameters_);
 }
 
 PathWithLaneId StartPlannerModule::getFullPath() const
@@ -982,8 +996,6 @@ bool StartPlannerModule::isSafePath() const
 
   utils::start_goal_planner_common::updateSafetyCheckTargetObjectsData(
     start_planner_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);
-  utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
-    start_planner_data_.collision_check);
 
   bool is_safe_dynamic_objects = true;
   // Check for collisions with each predicted path of the object

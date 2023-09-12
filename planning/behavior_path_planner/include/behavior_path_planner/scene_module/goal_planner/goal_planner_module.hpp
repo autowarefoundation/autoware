@@ -81,12 +81,12 @@ struct PullOverStatus
   size_t current_path_idx{0};
   bool require_increment_{true};  // if false, keep current path idx.
   std::shared_ptr<PathWithLaneId> prev_stop_path{nullptr};
-  lanelet::ConstLanelets current_lanes{};
-  lanelet::ConstLanelets pull_over_lanes{};
-  std::vector<DrivableLanes> lanes{};  // current + pull_over
-  bool has_decided_path{false};
-  bool is_safe_static_objects{false};   // current path is safe against static objects
-  bool is_safe_dynamic_objects{false};  // current path is safe against dynamic objects
+  lanelet::ConstLanelets current_lanes{};    // TODO(someone): explain
+  lanelet::ConstLanelets pull_over_lanes{};  // TODO(someone): explain
+  std::vector<DrivableLanes> lanes{};        // current + pull_over
+  bool has_decided_path{false};  // if true, the path is decided and safe against static objects
+  bool is_safe_static_objects{false};   // current path is safe against *static* objects
+  bool is_safe_dynamic_objects{false};  // current path is safe against *dynamic* objects
   bool prev_is_safe{false};
   bool has_decided_velocity{false};
   bool has_requested_approval{false};
@@ -299,6 +299,7 @@ private:
   std::pair<double, double> calcDistanceToPathChange() const;
 
   // safety check
+  void initializeSafetyCheckParameters();
   SafetyCheckParams createSafetyCheckParams() const;
   void updateSafetyCheckTargetObjectsData(
     const PredictedObjects & filtered_objects, const TargetObjectsOnLane & target_objects_on_lane,
