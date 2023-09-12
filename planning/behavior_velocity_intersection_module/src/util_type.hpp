@@ -55,10 +55,10 @@ struct DebugData
 struct InterpolatedPathInfo
 {
   autoware_auto_planning_msgs::msg::PathWithLaneId path;
-  double ds;
-  int lane_id;
-  std::set<int> associative_lane_ids;
-  std::optional<std::pair<size_t, size_t>> lane_id_interval;
+  double ds{0.0};
+  int lane_id{0};
+  std::set<int> associative_lane_ids{};
+  std::optional<std::pair<size_t, size_t>> lane_id_interval{std::nullopt};
 };
 
 struct IntersectionLanelets
@@ -117,19 +117,23 @@ public:
 
 struct DiscretizedLane
 {
-  int lane_id;
+  int lane_id{0};
   // discrete fine lines from left to right
-  std::vector<lanelet::ConstLineString2d> divisions;
+  std::vector<lanelet::ConstLineString2d> divisions{};
 };
 
 struct IntersectionStopLines
 {
   // NOTE: for baselink
-  size_t closest_idx;
-  size_t stuck_stop_line;
-  size_t default_stop_line;
-  size_t occlusion_peeking_stop_line;
-  size_t pass_judge_line;
+  size_t closest_idx{0};
+  // NOTE: null if path does not conflict with first_conflicting_area
+  std::optional<size_t> stuck_stop_line{std::nullopt};
+  // NOTE: null if path is over map stop_line OR its value is calculated negative area
+  std::optional<size_t> default_stop_line{std::nullopt};
+  // NOTE: null if footprints do not change from outside to inside of detection area
+  std::optional<size_t> occlusion_peeking_stop_line{std::nullopt};
+  // if the value is calculated negative, its value is 0
+  size_t pass_judge_line{0};
 };
 
 struct PathLanelets
