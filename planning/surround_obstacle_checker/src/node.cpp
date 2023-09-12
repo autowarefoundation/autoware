@@ -15,6 +15,9 @@
 #include "surround_obstacle_checker/node.hpp"
 
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/update_param.hpp>
+#include <tier4_autoware_utils/transform/transforms.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>

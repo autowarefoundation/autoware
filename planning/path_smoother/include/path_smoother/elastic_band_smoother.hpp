@@ -15,13 +15,12 @@
 #ifndef PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
 #define PATH_SMOOTHER__ELASTIC_BAND_SMOOTHER_HPP_
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "path_smoother/common_structs.hpp"
 #include "path_smoother/elastic_band.hpp"
 #include "path_smoother/replan_checker.hpp"
 #include "path_smoother/type_alias.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <algorithm>
 #include <memory>

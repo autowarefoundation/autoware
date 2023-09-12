@@ -14,8 +14,8 @@
 
 #include "planning_validator/debug_marker.hpp"
 
-#include <motion_utils/motion_utils.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <motion_utils/marker/marker_helper.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <memory>
 #include <string>

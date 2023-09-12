@@ -18,6 +18,7 @@
 #include "path_sampler/utils/geometry_utils.hpp"
 #include "sampler_common/structures.hpp"
 #include "sampler_common/transform/spline_transform.hpp"
+#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <eigen3/unsupported/Eigen/Splines>
 

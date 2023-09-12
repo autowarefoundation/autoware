@@ -17,10 +17,8 @@
 
 #include "surround_obstacle_checker/debug_marker.hpp"
 
-#include <motion_utils/motion_utils.hpp>
+#include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
-#include <tier4_autoware_utils/transform/transforms.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
@@ -31,6 +29,8 @@
 #include <tier4_planning_msgs/msg/velocity_limit.hpp>
 #include <tier4_planning_msgs/msg/velocity_limit_clear_command.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+
+#include <boost/optional/optional.hpp>
 
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>

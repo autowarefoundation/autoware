@@ -14,7 +14,7 @@
 
 #include "path_smoother/elastic_band.hpp"
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "path_smoother/type_alias.hpp"
 #include "path_smoother/utils/geometry_utils.hpp"
 #include "path_smoother/utils/trajectory_utils.hpp"

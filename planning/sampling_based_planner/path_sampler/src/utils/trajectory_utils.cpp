@@ -14,7 +14,8 @@
 
 #include "path_sampler/utils/trajectory_utils.hpp"
 
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/resample/resample.hpp"
+#include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "path_sampler/utils/geometry_utils.hpp"
 #include "tf2/utils.h"
 

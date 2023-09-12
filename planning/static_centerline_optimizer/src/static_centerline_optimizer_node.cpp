@@ -18,11 +18,13 @@
 #include "lanelet2_extension/utility/query.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "map_loader/lanelet2_map_loader_node.hpp"
-#include "motion_utils/motion_utils.hpp"
+#include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "static_centerline_optimizer/msg/points_with_lane_id.hpp"
 #include "static_centerline_optimizer/successive_trajectory_optimizer_node.hpp"
 #include "static_centerline_optimizer/type_alias.hpp"
 #include "static_centerline_optimizer/utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 #include <mission_planner/mission_planner_plugin.hpp>
 #include <pluginlib/class_loader.hpp>
