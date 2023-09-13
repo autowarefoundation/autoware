@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- cspell:ignore finetune -->
   <arg name="input/image" default="/sensing/camera/camera0/image_rect_color"/>
   <arg name="output/objects" default="/perception/object_recognition/detection/rois0"/>
-  <arg name="model_name" default="yolox-sPlus-opt"/>
+  <arg name="model_name" default="yolox-sPlus-T4-960x960-pseudo-finetune"/>
   <arg name="model_path" default="$(find-pkg-share tensorrt_yolox)/data"/>
   <arg name="score_threshold" default="0.35"/>
   <arg name="nms_threshold" default="0.7"/>
