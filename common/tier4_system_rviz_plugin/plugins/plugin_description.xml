@@ -1,0 +1,6 @@
+<library path="tier4_system_rviz_plugin">
+  <class name="rviz_plugins/MrmSummaryOverlayDisplay"
+         type="rviz_plugins::MrmSummaryOverlayDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
+</library>
