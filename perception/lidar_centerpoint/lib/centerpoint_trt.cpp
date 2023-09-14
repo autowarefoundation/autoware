@@ -189,7 +189,7 @@ void CenterPointTRT::postProcess(std::vector<Box3D> & det_boxes3d)
     head_out_heatmap_d_.get(), head_out_offset_d_.get(), head_out_z_d_.get(), head_out_dim_d_.get(),
     head_out_rot_d_.get(), head_out_vel_d_.get(), det_boxes3d, stream_));
   if (det_boxes3d.size() == 0) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("lidar_centerpoint"), "No detected boxes.");
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("lidar_centerpoint"), "No detected boxes.");
   }
 }
 
