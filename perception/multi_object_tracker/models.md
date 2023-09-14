@@ -2,6 +2,8 @@
 
 ## Tracking model
 
+<!-- cspell:ignore CRTV -->
+
 ### CTRV model [1]
 
 CTRV model is a model that assumes constant turn rate and velocity magnitude.
@@ -106,5 +108,10 @@ In other words, the offset value must be adjusted so that the input BBOX and the
 
 ## References
 
-[1] Schubert, Robin & Richter, Eric & Wanielik, Gerd. (2008). Comparison and evaluation of advanced motion models for vehicle tracking. 1 - 6. 10.1109/ICIF.2008.4632283.  
+<!-- cspell:ignore Wanielik, Gerd, ICIF -->
+
+[1] Schubert, Robin & Richter, Eric & Wanielik, Gerd. (2008). Comparison and evaluation of advanced motion models for vehicle tracking. 1 - 6. 10.1109/ICIF.2008.4632283.
+
+<!-- cspell:ignore Pfeiffer, Schildbach, Georg, Borrelli, Francesco -->
+
 [2] Kong, Jason & Pfeiffer, Mark & Schildbach, Georg & Borrelli, Francesco. (2015). Kinematic and dynamic vehicle models for autonomous driving control design. 1094-1099. 10.1109/IVS.2015.7225830.
