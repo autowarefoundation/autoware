@@ -366,7 +366,10 @@ void RTCManagerPanel::onRTCStatus(const CooperateStatusArray::ConstSharedPtr msg
   rtc_table_->clearContents();
   num_rtc_status_ptr_->setText(
     QString::fromStdString("The Number of RTC Statuses: " + std::to_string(msg->statuses.size())));
-  if (msg->statuses.empty()) return;
+  if (msg->statuses.empty()) {
+    rtc_table_->update();
+    return;
+  }
   // this is to stable rtc display not to occupy too much
   size_t min_display_size{5};
   size_t max_display_size{10};
@@ -374,8 +377,17 @@ void RTCManagerPanel::onRTCStatus(const CooperateStatusArray::ConstSharedPtr msg
   rtc_table_->setRowCount(
     std::max(min_display_size, std::min(msg->statuses.size(), max_display_size)));
   int cnt = 0;
-  for (auto status : msg->statuses) {
-    if (static_cast<size_t>(cnt) >= max_display_size) return;
+
+  auto sorted_statuses = msg->statuses;
+  std::partition(sorted_statuses.begin(), sorted_statuses.end(), [](const auto & status) {
+    return !status.auto_mode && !uint2bool(status.command_status.type);
+  });
+
+  for (auto status : sorted_statuses) {
+    if (static_cast<size_t>(cnt) >= max_display_size) {
+      rtc_table_->update();
+      return;
+    }
     // uuid
     {
       std::stringstream uuid;
