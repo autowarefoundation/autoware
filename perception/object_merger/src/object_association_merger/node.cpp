@@ -77,20 +77,13 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
   tf_buffer_(get_clock()),
   tf_listener_(tf_buffer_),
   object0_sub_(this, "input/object0", rclcpp::QoS{1}.get_rmw_qos_profile()),
-  object1_sub_(this, "input/object1", rclcpp::QoS{1}.get_rmw_qos_profile()),
-  sync_(SyncPolicy(10), object0_sub_, object1_sub_)
+  object1_sub_(this, "input/object1", rclcpp::QoS{1}.get_rmw_qos_profile())
 {
-  // Create publishers and subscribers
-  using std::placeholders::_1;
-  using std::placeholders::_2;
-  sync_.registerCallback(std::bind(&ObjectAssociationMergerNode::objectsCallback, this, _1, _2));
-  merged_object_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
-    "output/object", rclcpp::QoS{1});
-
   // Parameters
   base_link_frame_id_ = declare_parameter<std::string>("base_link_frame_id", "base_link");
   priority_mode_ = static_cast<PriorityMode>(
     declare_parameter<int>("priority_mode", static_cast<int>(PriorityMode::Confidence)));
+  sync_queue_size_ = declare_parameter<int>("sync_queue_size", 20);
   remove_overlapped_unknown_objects_ =
     declare_parameter<bool>("remove_overlapped_unknown_objects", true);
   overlapped_judge_param_.precision_threshold =
@@ -115,6 +108,16 @@ ObjectAssociationMergerNode::ObjectAssociationMergerNode(const rclcpp::NodeOptio
   const auto min_iou_matrix = this->declare_parameter<std::vector<double>>("min_iou_matrix");
   data_association_ = std::make_unique<DataAssociation>(
     can_assign_matrix, max_dist_matrix, max_rad_matrix, min_iou_matrix);
+
+  // Create publishers and subscribers
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  sync_ptr_ = std::make_shared<Sync>(SyncPolicy(sync_queue_size_), object0_sub_, object1_sub_);
+  sync_ptr_->registerCallback(
+    std::bind(&ObjectAssociationMergerNode::objectsCallback, this, _1, _2));
+
+  merged_object_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
+    "output/object", rclcpp::QoS{1});
 }
 
 void ObjectAssociationMergerNode::objectsCallback(

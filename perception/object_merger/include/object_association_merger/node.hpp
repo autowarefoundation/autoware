@@ -59,14 +59,16 @@ private:
   tf2_ros::TransformListener tf_listener_;
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr
     merged_object_pub_;
-  message_filters::Subscriber<autoware_auto_perception_msgs::msg::DetectedObjects> object0_sub_;
-  message_filters::Subscriber<autoware_auto_perception_msgs::msg::DetectedObjects> object1_sub_;
-  typedef message_filters::sync_policies::ApproximateTime<
+  message_filters::Subscriber<autoware_auto_perception_msgs::msg::DetectedObjects> object0_sub_{};
+  message_filters::Subscriber<autoware_auto_perception_msgs::msg::DetectedObjects> object1_sub_{};
+
+  using SyncPolicy = message_filters::sync_policies::ApproximateTime<
     autoware_auto_perception_msgs::msg::DetectedObjects,
-    autoware_auto_perception_msgs::msg::DetectedObjects>
-    SyncPolicy;
-  typedef message_filters::Synchronizer<SyncPolicy> Sync;
-  Sync sync_;
+    autoware_auto_perception_msgs::msg::DetectedObjects>;
+  using Sync = message_filters::Synchronizer<SyncPolicy>;
+  typename std::shared_ptr<Sync> sync_ptr_;
+
+  int sync_queue_size_;
   std::unique_ptr<DataAssociation> data_association_;
   std::string base_link_frame_id_;  // associated with the base_link frame
 
