@@ -179,7 +179,7 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
 
 bool GoalSearcher::checkCollision(const Pose & pose) const
 {
-  if (parameters_.use_occupancy_grid) {
+  if (parameters_.use_occupancy_grid_for_goal_search) {
     const Pose pose_grid_coords = global2local(occupancy_grid_map_->getMap(), pose);
     const auto idx = pose2index(
       occupancy_grid_map_->getMap(), pose_grid_coords, occupancy_grid_map_->getParam().theta_size);
@@ -210,7 +210,9 @@ bool GoalSearcher::checkCollision(const Pose & pose) const
 bool GoalSearcher::checkCollisionWithLongitudinalDistance(
   const Pose & ego_pose, const PredictedObjects & dynamic_objects) const
 {
-  if (parameters_.use_occupancy_grid && parameters_.use_occupancy_grid_for_longitudinal_margin) {
+  if (
+    parameters_.use_occupancy_grid_for_goal_search &&
+    parameters_.use_occupancy_grid_for_goal_longitudinal_margin) {
     constexpr bool check_out_of_range = false;
     const double offset = std::max(
       parameters_.longitudinal_margin - parameters_.occupancy_grid_collision_check_margin, 0.0);

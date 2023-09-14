@@ -21,15 +21,16 @@
 
       # occupancy grid map
       occupancy_grid:
-        use_occupancy_grid: true
-        use_occupancy_grid_for_longitudinal_margin: false
+        use_occupancy_grid_for_goal_search: true
+        use_occupancy_grid_for_goal_longitudinal_margin: false
+        use_occupancy_grid_for_path_collision_check: false
         occupancy_grid_collision_check_margin: 0.0
         theta_size: 360
         obstacle_threshold: 60
 
       # object recognition
       object_recognition:
-        use_object_recognition: true
+        use_object_recognition: false
         object_recognition_collision_check_margin: 0.6 # this should be larger than `surround_check_distance` of surround_obstacle_checker
         object_recognition_collision_check_max_extra_stopping_margin: 1.0
         th_moving_object_velocity: 1.0
