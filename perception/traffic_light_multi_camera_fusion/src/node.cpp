@@ -14,6 +14,9 @@
 
 #include "traffic_light_multi_camera_fusion/node.hpp"
 
+#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
+
 #include <algorithm>
 #include <memory>
 #include <string>

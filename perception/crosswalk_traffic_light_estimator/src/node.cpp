@@ -13,6 +13,7 @@
 // limitations under the License.
 #include "crosswalk_traffic_light_estimator/node.hpp"
 
+#include <lanelet2_extension/regulatory_elements/Forward.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 
 #include <iostream>

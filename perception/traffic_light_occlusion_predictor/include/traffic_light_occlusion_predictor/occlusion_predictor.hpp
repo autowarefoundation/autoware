@@ -25,9 +25,7 @@
 #include <tier4_perception_msgs/msg/traffic_light_roi_array.hpp>
 
 #include <image_geometry/pinhole_camera_model.h>
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
+#include <lanelet2_core/Forward.h>
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>

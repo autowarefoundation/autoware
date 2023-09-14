@@ -19,8 +19,6 @@
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_pcl/GridMapPclLoader.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
@@ -30,6 +28,7 @@
 #include <autoware_map_msgs/srv/get_selected_point_cloud_map.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#include <lanelet2_core/LaneletMap.h>
 #include <pcl/pcl_base.h>
 #include <pcl/point_types.h>
 
