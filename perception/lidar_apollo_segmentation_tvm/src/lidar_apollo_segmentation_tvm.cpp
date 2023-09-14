@@ -15,6 +15,7 @@
 #include <baidu_cnn/inference_engine_tvm_config.hpp>
 #include <lidar_apollo_segmentation_tvm/feature_map.hpp>
 #include <lidar_apollo_segmentation_tvm/lidar_apollo_segmentation_tvm.hpp>
+#include <tier4_autoware_utils/transform/transforms.hpp>
 #include <tvm_utility/pipeline.hpp>
 
 #include <memory>
