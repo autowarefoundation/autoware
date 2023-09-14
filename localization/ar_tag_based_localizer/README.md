@@ -18,10 +18,11 @@ This package includes two nodes.
 
 #### Input
 
-| Name                  | Type                           | Description  |
-| :-------------------- | :----------------------------- | :----------- |
-| `~/input/image`       | `sensor_msgs::msg::Image`      | Camera Image |
-| `~/input/camera_info` | `sensor_msgs::msg::CameraInfo` | Camera Info  |
+| Name                  | Type                                            | Description                                                                                                                                                                                                                                                               |
+| :-------------------- | :---------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `~/input/image`       | `sensor_msgs::msg::Image`                       | Camera Image                                                                                                                                                                                                                                                              |
+| `~/input/camera_info` | `sensor_msgs::msg::CameraInfo`                  | Camera Info                                                                                                                                                                                                                                                               |
+| `~/input/ekf_pose`    | `geometry_msgs::msg::PoseWithCovarianceStamped` | EKF Pose without IMU correction. It is used to validate detected AR tags by filtering out False Positives. Only if the EKF Pose and the AR tag-detected Pose are within a certain temporal and spatial range, the AR tag-detected Pose is considered valid and published. |
 
 #### Output
 

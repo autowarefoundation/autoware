@@ -22,3 +22,16 @@
     # See https://github.com/pal-robotics/aruco_ros/blob/7787a6794d30c248bc546d1582e65dd47bc40c12/aruco/include/aruco/markerdetector.h#L106-L126
     detection_mode: "DM_NORMAL"  # select from [DM_NORMAL, DM_FAST, DM_VIDEO_FAST]
     min_marker_size: 0.02
+
+    # Parameters for comparison with EKF Pose
+    # If the difference between the EKF pose and the current pose is within the range of values set below, the current pose is published.
+    # [How to determine the value]
+    # * ekf_time_tolerance: Since it is abnormal if the data comes too old from EKF, the tentative tolerance value is set at 5 seconds.
+    #                       This value is assumed to be unaffected even if it is increased or decreased by some amount.
+    # * ekf_position_tolerance: Since it is possible that multiple AR tags with the same ID could be placed, the tolerance should be as small as possible.
+    #                           And if the vehicle is running only on odometry in a section without AR tags,
+    #                           it is possible that self-position estimation could be off by a few meters.
+    #                           it should be fixed by AR tag detection, so tolerance should not be smaller than 10 meters.
+    #                           Therefore, the tolerance is set at 10 meters.
+    ekf_time_tolerance: 5.0 # [s]
+    ekf_position_tolerance: 10.0 # [m]

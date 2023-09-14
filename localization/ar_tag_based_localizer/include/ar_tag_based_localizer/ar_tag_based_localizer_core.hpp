@@ -69,6 +69,7 @@ public:
 private:
   void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & msg);
   void cam_info_callback(const sensor_msgs::msg::CameraInfo & msg);
+  void ekf_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped & msg);
   void publish_pose_as_base_link(
     const geometry_msgs::msg::PoseStamped & msg, const std::string & camera_frame_id);
 
@@ -77,6 +78,8 @@ private:
   std::vector<std::string> target_tag_ids_;
   std::vector<double> base_covariance_;
   double distance_threshold_squared_{};
+  double ekf_time_tolerance_{};
+  double ekf_position_tolerance_{};
 
   // tf
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -89,6 +92,7 @@ private:
   // Subscribers
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ekf_pose_sub_;
 
   // Publishers
   image_transport::Publisher image_pub_;
@@ -98,6 +102,7 @@ private:
   aruco::MarkerDetector detector_;
   aruco::CameraParameters cam_param_;
   bool cam_info_received_;
+  geometry_msgs::msg::PoseWithCovarianceStamped latest_ekf_pose_{};
 };
 
 #endif  // AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_

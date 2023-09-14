@@ -71,6 +71,8 @@ bool ArTagBasedLocalizer::setup()
   target_tag_ids_ = this->declare_parameter<std::vector<std::string>>("target_tag_ids");
   base_covariance_ = this->declare_parameter<std::vector<double>>("base_covariance");
   distance_threshold_squared_ = std::pow(this->declare_parameter<double>("distance_threshold"), 2);
+  ekf_time_tolerance_ = this->declare_parameter<double>("ekf_time_tolerance");
+  ekf_position_tolerance_ = this->declare_parameter<double>("ekf_position_tolerance");
   std::string detection_mode = this->declare_parameter<std::string>("detection_mode");
   float min_marker_size = static_cast<float>(this->declare_parameter<double>("min_marker_size"));
   if (detection_mode == "DM_NORMAL") {
@@ -116,6 +118,9 @@ bool ArTagBasedLocalizer::setup()
   cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(
     "~/input/camera_info", qos_sub,
     std::bind(&ArTagBasedLocalizer::cam_info_callback, this, std::placeholders::_1));
+  ekf_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    "~/input/ekf_pose", qos_sub,
+    std::bind(&ArTagBasedLocalizer::ekf_pose_callback, this, std::placeholders::_1));
 
   /*
     Publishers
@@ -207,6 +212,12 @@ void ArTagBasedLocalizer::cam_info_callback(const sensor_msgs::msg::CameraInfo &
   cam_info_received_ = true;
 }
 
+void ArTagBasedLocalizer::ekf_pose_callback(
+  const geometry_msgs::msg::PoseWithCovarianceStamped & msg)
+{
+  latest_ekf_pose_ = msg;
+}
+
 void ArTagBasedLocalizer::publish_pose_as_base_link(
   const geometry_msgs::msg::PoseStamped & msg, const std::string & camera_frame_id)
 {
@@ -267,6 +278,40 @@ void ArTagBasedLocalizer::publish_pose_as_base_link(
   pose_with_covariance_stamped.header.stamp = msg.header.stamp;
   pose_with_covariance_stamped.header.frame_id = "map";
   pose_with_covariance_stamped.pose.pose = tf2::toMsg(map_to_base_link);
+
+  // If latest_ekf_pose_ is older than <ekf_time_tolerance_> seconds compared to current frame, it
+  // will not be published.
+  const rclcpp::Duration tolerance{
+    static_cast<int32_t>(ekf_time_tolerance_),
+    static_cast<uint32_t>((ekf_time_tolerance_ - std::floor(ekf_time_tolerance_)) * 1e9)};
+  if (rclcpp::Time(latest_ekf_pose_.header.stamp) + tolerance < rclcpp::Time(msg.header.stamp)) {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "latest_ekf_pose_ is older than %f seconds compared to current frame. "
+      "latest_ekf_pose_.header.stamp: %d.%d, msg.header.stamp: %d.%d",
+      ekf_time_tolerance_, latest_ekf_pose_.header.stamp.sec, latest_ekf_pose_.header.stamp.nanosec,
+      msg.header.stamp.sec, msg.header.stamp.nanosec);
+    return;
+  }
+
+  // If curr_pose differs from latest_ekf_pose_ by more than <ekf_position_tolerance_>, it will not
+  // be published.
+  const geometry_msgs::msg::Pose curr_pose = pose_with_covariance_stamped.pose.pose;
+  const geometry_msgs::msg::Pose latest_ekf_pose = latest_ekf_pose_.pose.pose;
+  const double diff_x = curr_pose.position.x - latest_ekf_pose.position.x;
+  const double diff_y = curr_pose.position.y - latest_ekf_pose.position.y;
+  const double diff_z = curr_pose.position.z - latest_ekf_pose.position.z;
+  const double diff_distance_squared = diff_x * diff_x + diff_y * diff_y + diff_z * diff_z;
+  const double threshold = ekf_position_tolerance_ * ekf_position_tolerance_;
+  if (threshold < diff_distance_squared) {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "curr_pose differs from latest_ekf_pose_ by more than %f m. "
+      "curr_pose: (%f, %f, %f), latest_ekf_pose: (%f, %f, %f)",
+      ekf_position_tolerance_, curr_pose.position.x, curr_pose.position.y, curr_pose.position.z,
+      latest_ekf_pose.position.x, latest_ekf_pose.position.y, latest_ekf_pose.position.z);
+    return;
+  }
 
   // ~5[m]: base_covariance
   // 5~[m]: scaling base_covariance by std::pow(distance/5, 3)
