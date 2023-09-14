@@ -395,7 +395,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * STEP 2
    * Modify the raw shift points. (Merging, Trimming)
    */
-  const auto processed_raw_sp = applyPreProcessToRawShiftLines(data.unapproved_raw_sl, debug);
+  const auto processed_raw_sp = applyPreProcess(data.unapproved_raw_sl, debug);
 
   /**
    * STEP 3
@@ -533,9 +533,8 @@ void AvoidanceModule::fillEgoStatus(
 
 void AvoidanceModule::fillDebugData(const AvoidancePlanningData & data, DebugData & debug) const
 {
-  debug.output_shift = data.candidate_path.shift_length;
-  debug.current_raw_shift = data.unapproved_raw_sl;
-  debug.new_shift_lines = data.unapproved_new_sl;
+  debug.step1_current_raw_shift_line = data.unapproved_raw_sl;
+  debug.step4_new_shift_line = data.unapproved_new_sl;
 
   if (!data.stop_target_object) {
     return;
@@ -678,13 +677,13 @@ void AvoidanceModule::updateRegisteredRawShiftLines()
   printShiftLines(avoid_lines, "registered_raw_shift_lines_ (after)");
 
   registered_raw_shift_lines_ = avoid_lines;
-  debug_data_.registered_raw_shift = registered_raw_shift_lines_;
+  debug_data_.step1_registered_shift_line = registered_raw_shift_lines_;
 }
 
-AvoidLineArray AvoidanceModule::applyPreProcessToRawShiftLines(
+AvoidLineArray AvoidanceModule::applyPreProcess(
   AvoidLineArray & raw_shift_lines, DebugData & debug) const
 {
-  const auto fill_gap_shift_lines = getFillGapShiftLines(raw_shift_lines);
+  const auto fill_gap_shift_lines = applyFillGapProcess(raw_shift_lines, debug);
 
   /**
    * Use all registered points. For the current points, if the similar one of the current
@@ -709,7 +708,7 @@ AvoidLineArray AvoidanceModule::applyPreProcessToRawShiftLines(
   // It is temporally solved by changing the threshold of trimSimilarGrad, but it needs to be
   // fixed in a proper way.
   // Maybe after merge, all shift points before the prepare distance can be deleted.
-  addReturnShiftLineFromEgo(raw_shift_lines);
+  raw_shift_lines = addReturnShiftLine(raw_shift_lines, debug);
 
   /*
    * Add gap filled shift lines so that merged shift lines connect smoothly.
@@ -717,7 +716,7 @@ AvoidLineArray AvoidanceModule::applyPreProcessToRawShiftLines(
   fillShiftLineGap(raw_shift_lines);
   raw_shift_lines.insert(
     raw_shift_lines.end(), fill_gap_shift_lines.begin(), fill_gap_shift_lines.end());
-  debug.gap_filled = raw_shift_lines;
+  debug.step1_filled_shift_line = raw_shift_lines;
 
   /**
    * On each path point, compute shift length with considering the raw shift points.
@@ -728,8 +727,8 @@ AvoidLineArray AvoidanceModule::applyPreProcessToRawShiftLines(
    * Note: Because this function just foolishly extracts points, it includes
    *       insignificant small (useless) shift points, which should be removed in post-process.
    */
-  auto merged_shift_lines = mergeShiftLines(raw_shift_lines, debug);
-  debug.merged = merged_shift_lines;
+  auto merged_shift_lines = applyMergeProcess(raw_shift_lines, debug);
+  debug.step2_merged_shift_line = merged_shift_lines;
 
   /*
    * Remove unnecessary shift points
@@ -738,7 +737,7 @@ AvoidLineArray AvoidanceModule::applyPreProcessToRawShiftLines(
    *  - Combine shift points that have almost same gradient
    *  - Remove unnecessary return shift (back to the center line).
    */
-  auto shift_lines = trimShiftLine(merged_shift_lines, debug);
+  auto shift_lines = applyTrimProcess(merged_shift_lines, debug);
   DEBUG_PRINT("final shift point size = %lu", shift_lines.size());
 
   return shift_lines;
@@ -1222,7 +1221,8 @@ AvoidLineArray AvoidanceModule::extractShiftLinesFromLine(ShiftLineData & shift_
   return merged_avoid_lines;
 }
 
-AvoidLineArray AvoidanceModule::getFillGapShiftLines(const AvoidLineArray & shift_lines) const
+AvoidLineArray AvoidanceModule::applyFillGapProcess(
+  const AvoidLineArray & shift_lines, [[maybe_unused]] DebugData & debug) const
 {
   AvoidLineArray ret{};
 
@@ -1301,7 +1301,7 @@ void AvoidanceModule::fillShiftLineGap(AvoidLineArray & shift_lines) const
   helper_.alignShiftLinesOrder(shift_lines, false);
 }
 
-AvoidLineArray AvoidanceModule::mergeShiftLines(
+AvoidLineArray AvoidanceModule::applyMergeProcess(
   const AvoidLineArray & raw_shift_lines, DebugData & debug) const
 {
   // Generate shift line by merging raw_shift_lines.
@@ -1333,7 +1333,7 @@ AvoidLineArray AvoidanceModule::mergeShiftLines(
   return merged_shift_lines;
 }
 
-AvoidLineArray AvoidanceModule::trimShiftLine(
+AvoidLineArray AvoidanceModule::applyTrimProcess(
   const AvoidLineArray & shift_lines, DebugData & debug) const
 {
   if (shift_lines.empty()) {
@@ -1348,41 +1348,37 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
   // - Change the shift length to the previous one if the deviation is small.
   {
     constexpr double SHIFT_DIFF_THRES = 1.0;
-    trimSmallShiftLine(sl_array_trimmed, SHIFT_DIFF_THRES);
+    applySmallShiftFilter(sl_array_trimmed, SHIFT_DIFF_THRES);
   }
 
   // - Combine avoid points that have almost same gradient.
   // this is to remove the noise.
   {
     const auto THRESHOLD = parameters_->same_grad_filter_1_threshold;
-    trimSimilarGradShiftLine(sl_array_trimmed, THRESHOLD);
-    debug.trim_similar_grad_shift = sl_array_trimmed;
-    printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift");
+    applySimilarGradFilter(sl_array_trimmed, THRESHOLD);
+    debug.step3_grad_filtered_first = sl_array_trimmed;
   }
 
   // - Quantize the shift length to reduce the shift point noise
   // This is to remove the noise coming from detection accuracy, interpolation, resampling, etc.
   {
     const auto THRESHOLD = parameters_->quantize_filter_threshold;
-    quantizeShiftLine(sl_array_trimmed, THRESHOLD);
-    printShiftLines(sl_array_trimmed, "after sl_array_trimmed");
-    debug.quantized = sl_array_trimmed;
+    applyQuantizeProcess(sl_array_trimmed, THRESHOLD);
+    debug.step3_quantized_shift_line = sl_array_trimmed;
   }
 
   // - Change the shift length to the previous one if the deviation is small.
   {
     constexpr double SHIFT_DIFF_THRES = 1.0;
-    trimSmallShiftLine(sl_array_trimmed, SHIFT_DIFF_THRES);
-    debug.trim_small_shift = sl_array_trimmed;
-    printShiftLines(sl_array_trimmed, "after trim_small_shift");
+    applySmallShiftFilter(sl_array_trimmed, SHIFT_DIFF_THRES);
+    debug.step3_noise_removed = sl_array_trimmed;
   }
 
   // - Combine avoid points that have almost same gradient (again)
   {
     const auto THRESHOLD = parameters_->same_grad_filter_2_threshold;
-    trimSimilarGradShiftLine(sl_array_trimmed, THRESHOLD);
-    debug.trim_similar_grad_shift_second = sl_array_trimmed;
-    printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift_second");
+    applySimilarGradFilter(sl_array_trimmed, THRESHOLD);
+    debug.step3_grad_filtered_second = sl_array_trimmed;
   }
 
   // - trimTooSharpShift
@@ -1390,23 +1386,21 @@ AvoidLineArray AvoidanceModule::trimShiftLine(
   // If the shift is sharp, it is combined with the next shift point until it gets non-sharp.
   {
     const auto THRESHOLD = parameters_->sharp_shift_filter_threshold;
-    trimSharpReturn(sl_array_trimmed, THRESHOLD);
-    debug.trim_too_sharp_shift = sl_array_trimmed;
-    printShiftLines(sl_array_trimmed, "after trimSharpReturn");
+    applySharpShiftFilter(sl_array_trimmed, THRESHOLD);
   }
 
   // - Combine avoid points that have almost same gradient (again)
   {
     const auto THRESHOLD = parameters_->same_grad_filter_3_threshold;
-    trimSimilarGradShiftLine(sl_array_trimmed, THRESHOLD);
-    debug.trim_similar_grad_shift_third = sl_array_trimmed;
-    printShiftLines(sl_array_trimmed, "after trim_similar_grad_shift_second");
+    applySimilarGradFilter(sl_array_trimmed, THRESHOLD);
+    debug.step3_grad_filtered_third = sl_array_trimmed;
   }
 
   return sl_array_trimmed;
 }
 
-void AvoidanceModule::quantizeShiftLine(AvoidLineArray & shift_lines, const double threshold) const
+void AvoidanceModule::applyQuantizeProcess(
+  AvoidLineArray & shift_lines, const double threshold) const
 {
   if (threshold < 1.0e-5) {
     return;  // no need to process
@@ -1419,7 +1413,8 @@ void AvoidanceModule::quantizeShiftLine(AvoidLineArray & shift_lines, const doub
   helper_.alignShiftLinesOrder(shift_lines);
 }
 
-void AvoidanceModule::trimSmallShiftLine(AvoidLineArray & shift_lines, const double threshold) const
+void AvoidanceModule::applySmallShiftFilter(
+  AvoidLineArray & shift_lines, const double threshold) const
 {
   if (shift_lines.empty()) {
     return;
@@ -1437,7 +1432,7 @@ void AvoidanceModule::trimSmallShiftLine(AvoidLineArray & shift_lines, const dou
   }
 }
 
-void AvoidanceModule::trimSimilarGradShiftLine(
+void AvoidanceModule::applySimilarGradFilter(
   AvoidLineArray & avoid_lines, const double threshold) const
 {
   if (avoid_lines.empty()) {
@@ -1501,7 +1496,8 @@ void AvoidanceModule::trimSimilarGradShiftLine(
   DEBUG_PRINT("size %lu -> %lu", input.size(), avoid_lines.size());
 }
 
-void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines, const double threshold) const
+void AvoidanceModule::applySharpShiftFilter(
+  AvoidLineArray & shift_lines, const double threshold) const
 {
   AvoidLineArray shift_lines_orig = shift_lines;
   shift_lines.clear();
@@ -1638,29 +1634,30 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines, const double
   }
 
   helper_.alignShiftLinesOrder(shift_lines);
-
-  DEBUG_PRINT("trimSharpReturn: size %lu -> %lu", shift_lines_orig.size(), shift_lines.size());
 }
 
-void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) const
+AvoidLineArray AvoidanceModule::addReturnShiftLine(
+  const AvoidLineArray & shift_lines, DebugData & debug) const
 {
   constexpr double ep = 1.0e-3;
   const auto & data = avoid_data_;
-  const bool has_candidate_point = !sl_candidates.empty();
+  const bool has_candidate_point = !shift_lines.empty();
   const bool has_registered_point = !path_shifter_.getShiftLines().empty();
 
   // If the return-to-center shift points are already registered, do nothing.
   if (!has_registered_point && std::fabs(getCurrentBaseShift()) < ep) {
     DEBUG_PRINT("No shift points, not base offset. Do not have to add return-shift.");
-    return;
+    return shift_lines;
   }
 
   constexpr double RETURN_SHIFT_THRESHOLD = 0.1;
   DEBUG_PRINT("registered last shift = %f", path_shifter_.getLastShiftLength());
   if (std::abs(path_shifter_.getLastShiftLength()) < RETURN_SHIFT_THRESHOLD) {
     DEBUG_PRINT("Return shift is already registered. do nothing.");
-    return;
+    return shift_lines;
   }
+
+  AvoidLineArray ret = shift_lines;
 
   // From here, the return-to-center is not registered. But perhaps the candidate is
   // already generated.
@@ -1671,8 +1668,8 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
   {
     // avoidance points: Yes, shift points: No -> select last avoidance point.
     if (has_candidate_point && !has_registered_point) {
-      helper_.alignShiftLinesOrder(sl_candidates, false);
-      last_sl = sl_candidates.back();
+      helper_.alignShiftLinesOrder(ret, false);
+      last_sl = ret.back();
     }
 
     // avoidance points: No, shift points: Yes -> select last shift point.
@@ -1683,8 +1680,8 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
 
     // avoidance points: Yes, shift points: Yes -> select the last one from both.
     if (has_candidate_point && has_registered_point) {
-      helper_.alignShiftLinesOrder(sl_candidates, false);
-      const auto & al = sl_candidates.back();
+      helper_.alignShiftLinesOrder(ret, false);
+      const auto & al = ret.back();
       const auto & sl = utils::avoidance::fillAdditionalInfo(
         data, AvoidLine{path_shifter_.getLastShiftLine().get()});
       last_sl = (sl.end_longitudinal > al.end_longitudinal) ? sl : al;
@@ -1698,7 +1695,6 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
       last_sl.end_shift_length = getCurrentBaseShift();
     }
   }
-  printShiftLines(ShiftLineArray{last_sl}, "last shift point");
 
   // There already is a shift point candidates to go back to center line, but it could be too sharp
   // due to detection noise or timing.
@@ -1707,7 +1703,7 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
     const auto current_base_shift = helper_.getEgoShift();
     if (std::abs(current_base_shift) < ep) {
       DEBUG_PRINT("last shift almost is zero, and current base_shift is zero. do nothing.");
-      return;
+      return ret;
     }
 
     // Is there a shift point in the opposite direction of the current_base_shift?
@@ -1715,21 +1711,21 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
     //          the shift length are for return-shift.
     //   Yes -> we can NOT overwrite, because it might be not a return-shift, but a avoiding
     //          shift to the opposite direction which can not be overwritten by the return-shift.
-    for (const auto & sl : sl_candidates) {
+    for (const auto & sl : ret) {
       if (
         (current_base_shift > 0.0 && sl.end_shift_length < -ep) ||
         (current_base_shift < 0.0 && sl.end_shift_length > ep)) {
         DEBUG_PRINT(
           "try to put overwrite return shift, but there is shift for opposite direction. Skip "
           "adding return shift.");
-        return;
+        return ret;
       }
     }
 
     // If return shift already exists in candidate or registered shift lines, skip adding return
     // shift.
     if (has_candidate_point || has_registered_point) {
-      return;
+      return ret;
     }
 
     // set the return-shift from ego.
@@ -1746,7 +1742,7 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
   const auto nominal_avoid_distance = helper_.getMaxAvoidanceDistance(last_sl.end_shift_length);
 
   if (arclength_from_ego.empty()) {
-    return;
+    return ret;
   }
 
   const auto remaining_distance = arclength_from_ego.back() - parameters_->remain_buffer_distance;
@@ -1757,7 +1753,7 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
   // check if there is enough distance for return.
   if (last_sl_distance > remaining_distance) {  // tmp: add some small number (+1.0)
     RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 1000, "No enough distance for return.");
-    return;
+    return ret;
   }
 
   // If the remaining distance is not enough, the return shift needs to be shrunk.
@@ -1809,9 +1805,8 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
     al.end_longitudinal = arclength_from_ego.at(al.end_idx);
     al.end_shift_length = last_sl.end_shift_length;
     al.start_shift_length = last_sl.end_shift_length;
-    sl_candidates.push_back(al);
-    printShiftLines(AvoidLineArray{al}, "prepare for return");
-    debug_data_.extra_return_shift.push_back(al);
+    ret.push_back(al);
+    debug.step1_return_shift_line.push_back(al);
   }
 
   // shift point for return to center line
@@ -1828,12 +1823,11 @@ void AvoidanceModule::addReturnShiftLineFromEgo(AvoidLineArray & sl_candidates) 
     al.end_longitudinal = arclength_from_ego.at(al.end_idx);
     al.end_shift_length = 0.0;
     al.start_shift_length = last_sl.end_shift_length;
-    sl_candidates.push_back(al);
-    printShiftLines(AvoidLineArray{al}, "return point");
-    debug_data_.extra_return_shift.push_back(al);
+    ret.push_back(al);
+    debug.step1_return_shift_line.push_back(al);
   }
 
-  DEBUG_PRINT("Return Shift is added.");
+  return ret;
 }
 
 bool AvoidanceModule::isSafePath(
@@ -2473,6 +2467,9 @@ bool AvoidanceModule::isValidShiftLine(
   ShiftedPath proposed_shift_path;
   shifter_for_validate.generate(&proposed_shift_path);
 
+  debug_data_.proposed_spline_shift = proposed_shift_path.shift_length;
+  debug_data_.step4_valid_shift_line = shift_lines;
+
   // check offset between new shift path and ego position.
   {
     const auto new_idx = planner_data_->findEgoIndex(proposed_shift_path.path.points);
@@ -2486,8 +2483,6 @@ bool AvoidanceModule::isValidShiftLine(
       return false;
     }
   }
-
-  debug_data_.proposed_spline_shift = proposed_shift_path.shift_length;
 
   return true;  // valid shift line.
 }
@@ -2734,6 +2729,8 @@ void AvoidanceModule::updateDebugMarker(
     return;
   }
 
+  const auto & path = data.reference_path;
+
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
 
   const auto add = [this](const MarkerArray & added) { appendMarkerArray(added, &debug_marker_); };
@@ -2752,20 +2749,16 @@ void AvoidanceModule::updateDebugMarker(
     add(createOtherObjectsMarkerArray(objects, ns));
   };
 
-  add(createEgoStatusMarkerArray(data, getEgoPose(), "ego_status"));
+  const auto addShiftLength =
+    [&](const auto & shift_length, const auto & ns, auto r, auto g, auto b) {
+      add(createShiftLengthMarkerArray(shift_length, path, ns, r, g, b));
+    };
 
-  const auto & path = data.reference_path;
-  add(createPathMarkerArray(debug.center_line, "centerline", 0, 0.0, 0.5, 0.9));
-  add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
-  add(createPathMarkerArray(
-    helper_.getPreviousLinearShiftPath().path, "prev_linear_shift", 0, 0.5, 0.4, 0.6));
-  add(createPoseMarkerArray(data.reference_pose, "reference_pose", 0, 0.9, 0.3, 0.3));
-
-  add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
-  add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
-
-  add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
-  add(createOverhangFurthestLineStringMarkerArray(debug.bounds, "bounds", 1.0, 0.0, 1.0));
+  const auto addShiftGrad = [&](
+                              const auto & shift_grad, const auto & shift_length, const auto & ns,
+                              auto r, auto g, auto b) {
+    add(createShiftGradMarkerArray(shift_grad, shift_length, path, ns, r, g, b));
+  };
 
   // ignore objects
   {
@@ -2782,11 +2775,33 @@ void AvoidanceModule::updateDebugMarker(
     addObjects(data.other_objects, std::string("LessThanExecutionThreshold"));
   }
 
-  // parent object info
+  // shift line pre-process
   {
-    addAvoidLine(debug.registered_raw_shift, "p_registered_shift", 0.8, 0.8, 0.0);
-    addAvoidLine(debug.current_raw_shift, "p_current_raw_shift", 0.5, 0.2, 0.2);
-    addAvoidLine(debug.extra_return_shift, "p_extra_return_shift", 0.0, 0.5, 0.8);
+    addAvoidLine(debug.step1_registered_shift_line, "step1_registered_shift_line", 1.0, 1.0, 1.0);
+    addAvoidLine(debug.step1_current_raw_shift_line, "step1_current_raw_shift_line", 0.9, 1.0, 1.0);
+    addAvoidLine(debug.step1_return_shift_line, "step1_return_shift_line", 0.8, 1.0, 1.0);
+    addAvoidLine(debug.step1_filled_shift_line, "step1_filled_shift_line", 0.7, 1.0, 1.0);
+  }
+
+  // merge process
+  {
+    addAvoidLine(debug.step2_merged_shift_line, "step2_merged_shift_line", 0.0, 1.0, 1.0);
+  }
+
+  // trimming process
+  {
+    addAvoidLine(debug.step3_grad_filtered_first, "step3_grad_filtered_first", 0.0, 0.0, 1.0);
+    addAvoidLine(debug.step3_grad_filtered_second, "step3_grad_filtered_second", 0.0, 0.1, 1.0);
+    addAvoidLine(debug.step3_grad_filtered_third, "step3_grad_filtered_third", 0.0, 0.2, 1.0);
+    addAvoidLine(debug.step3_quantized_shift_line, "step3_quantized_shift_line", 0.0, 0.3, 1.0);
+    addAvoidLine(debug.step3_noise_removed, "step3_noise_removed", 0.0, 0.4, 1.0);
+  }
+
+  // registering process
+  {
+    addShiftLine(shifter.getShiftLines(), "step4_old_shift_line", 1.0, 1.0, 0.0, 0.3);
+    addAvoidLine(debug.step4_new_shift_line, "step4_new_shift_line", 1.0, 0.0, 0.0, 0.3);
+    addAvoidLine(debug.step4_valid_shift_line, "step4_valid_shift_line", 1.0, 0.0, 0.0, 0.3);
   }
 
   // safety check
@@ -2798,58 +2813,28 @@ void AvoidanceModule::updateDebugMarker(
 
   // shift length
   {
-    const std::string ns = "shift_length";
-    add(createShiftLengthMarkerArray(debug.pos_shift, path, ns + "_pos", 0.0, 0.7, 0.5));
-    add(createShiftLengthMarkerArray(debug.neg_shift, path, ns + "_neg", 0.0, 0.5, 0.7));
-    add(createShiftLengthMarkerArray(debug.total_shift, path, ns + "_total", 0.99, 0.4, 0.2));
+    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
+    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
+    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
   }
 
   // shift grad
   {
-    const std::string ns = "shift_grad";
-    add(createShiftGradMarkerArray(
-      debug.pos_shift_grad, debug.pos_shift, path, ns + "_pos", 0.0, 0.7, 0.5));
-    add(createShiftGradMarkerArray(
-      debug.neg_shift_grad, debug.neg_shift, path, ns + "_neg", 0.0, 0.5, 0.7));
-    add(createShiftGradMarkerArray(
-      debug.total_forward_grad, debug.total_shift, path, ns + "_total_forward", 0.99, 0.4, 0.2));
-    add(createShiftGradMarkerArray(
-      debug.total_backward_grad, debug.total_shift, path, ns + "_total_backward", 0.4, 0.2, 0.99));
+    addShiftGrad(debug.pos_shift_grad, debug.pos_shift, "merged_grad_pos", 0.0, 0.7, 0.5);
+    addShiftGrad(debug.neg_shift_grad, debug.neg_shift, "merged_grad_neg", 0.0, 0.5, 0.7);
+    addShiftGrad(debug.total_forward_grad, debug.total_shift, "grad_forward", 0.99, 0.4, 0.2);
+    addShiftGrad(debug.total_backward_grad, debug.total_shift, "grad_backward", 0.4, 0.2, 0.9);
   }
 
-  // shift path
+  // misc
   {
-    const std::string ns = "shift_line";
-    add(createShiftLengthMarkerArray(
-      helper_.getPreviousLinearShiftPath().shift_length, path, ns + "_linear_registered", 0.9, 0.3,
-      0.3));
-    add(createShiftLengthMarkerArray(
-      debug.proposed_spline_shift, path, ns + "_spline_proposed", 1.0, 1.0, 1.0));
+    add(createEgoStatusMarkerArray(data, getEgoPose(), "ego_status"));
+    add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
+    add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
+    add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
+    add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
+    add(createOverhangFurthestLineStringMarkerArray(debug.bounds, "bounds", 1.0, 0.0, 1.0));
   }
-
-  // child shift points
-  {
-    const std::string ns = "pipeline";
-    add(createAvoidLineMarkerArray(debug.gap_filled, ns + "_1_gap_filled", 0.5, 0.8, 1.0, 0.05));
-    add(createAvoidLineMarkerArray(debug.merged, ns + "_2_merge", 0.345, 0.968, 1.0, 0.05));
-    add(createAvoidLineMarkerArray(
-      debug.trim_similar_grad_shift, ns + "_3_concat_by_grad", 0.976, 0.328, 0.910, 0.05));
-    add(
-      createAvoidLineMarkerArray(debug.quantized, ns + "_4_quantized", 0.505, 0.745, 0.969, 0.05));
-    add(createAvoidLineMarkerArray(
-      debug.trim_small_shift, ns + "_5_trim_small_shift", 0.663, 0.525, 0.941, 0.05));
-    add(createAvoidLineMarkerArray(
-      debug.trim_similar_grad_shift_second, ns + "_6_concat_by_grad", 0.97, 0.32, 0.91, 0.05));
-    add(createAvoidLineMarkerArray(
-      debug.trim_momentary_return, ns + "_7_trim_momentary_return", 0.976, 0.078, 0.878, 0.05));
-    add(createAvoidLineMarkerArray(
-      debug.trim_too_sharp_shift, ns + "_8_trim_sharp_shift", 0.576, 0.0, 0.978, 0.05));
-    add(createAvoidLineMarkerArray(
-      debug.trim_similar_grad_shift_third, ns + "_9_concat_by_grad", 1.0, 0.0, 0.0, 0.05));
-  }
-
-  addShiftLine(shifter.getShiftLines(), "path_shifter_registered_points", 0.99, 0.99, 0.0, 0.5);
-  addAvoidLine(debug.new_shift_lines, "path_shifter_proposed_points", 0.99, 0.0, 0.0, 0.5);
 }
 
 void AvoidanceModule::updateAvoidanceDebugData(

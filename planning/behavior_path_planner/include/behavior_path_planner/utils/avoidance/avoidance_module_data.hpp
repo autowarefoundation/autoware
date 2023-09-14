@@ -525,22 +525,29 @@ struct DebugData
 
   lanelet::ConstLineStrings3d bounds;
 
-  AvoidLineArray current_shift_lines;  // in path shifter
-  AvoidLineArray new_shift_lines;      // in path shifter
+  // combine process
+  AvoidLineArray step1_registered_shift_line;
+  AvoidLineArray step1_current_raw_shift_line;
+  AvoidLineArray step1_filled_shift_line;
+  AvoidLineArray step1_merged_shift_line;
+  AvoidLineArray step1_combined_shift_line;
+  AvoidLineArray step1_return_shift_line;
+  AvoidLineArray step1_front_shift_line;
+  AvoidLineArray step1_shift_line;
 
-  AvoidLineArray registered_raw_shift;
-  AvoidLineArray current_raw_shift;
-  AvoidLineArray extra_return_shift;
+  // create outline process
+  AvoidLineArray step2_merged_shift_line;
 
-  AvoidLineArray merged;
-  AvoidLineArray gap_filled;
-  AvoidLineArray trim_similar_grad_shift;
-  AvoidLineArray quantized;
-  AvoidLineArray trim_small_shift;
-  AvoidLineArray trim_similar_grad_shift_second;
-  AvoidLineArray trim_similar_grad_shift_third;
-  AvoidLineArray trim_momentary_return;
-  AvoidLineArray trim_too_sharp_shift;
+  // trimming process
+  AvoidLineArray step3_quantized_shift_line;
+  AvoidLineArray step3_noise_removed;
+  AvoidLineArray step3_grad_filtered_first;
+  AvoidLineArray step3_grad_filtered_second;
+  AvoidLineArray step3_grad_filtered_third;
+
+  // registered process
+  AvoidLineArray step4_new_shift_line;
+  AvoidLineArray step4_valid_shift_line;
 
   // shift length
   std::vector<double> pos_shift;

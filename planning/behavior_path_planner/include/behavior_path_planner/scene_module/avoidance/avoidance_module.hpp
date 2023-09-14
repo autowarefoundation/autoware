@@ -325,10 +325,16 @@ private:
    * 3. merge raw shirt lines.
    * 4. trim unnecessary shift lines.
    */
-  AvoidLineArray applyPreProcessToRawShiftLines(
+  AvoidLineArray applyPreProcess(
     AvoidLineArray & current_raw_shift_points, DebugData & debug) const;
 
-  AvoidLineArray getFillGapShiftLines(const AvoidLineArray & shift_lines) const;
+  /*
+   * @brief fill gap among shift lines.
+   * @param original shift lines.
+   * @param debug data.
+   * @return processed shift lines.
+   */
+  AvoidLineArray applyFillGapProcess(const AvoidLineArray & shift_lines, DebugData & debug) const;
 
   /*
    * @brief merge negative & positive shift lines.
@@ -336,7 +342,18 @@ private:
    * @param debug data.
    * @return processed shift lines.
    */
-  AvoidLineArray mergeShiftLines(const AvoidLineArray & raw_shift_lines, DebugData & debug) const;
+  AvoidLineArray applyMergeProcess(const AvoidLineArray & shift_lines, DebugData & debug) const;
+
+  /*
+   * @brief add return shift line from ego position.
+   * @param shift lines which the return shift is added.
+   * Pick up the last shift point, which is the most farthest from ego, from the current candidate
+   * avoidance points and registered points in the shifter. If the last shift length of the point is
+   * non-zero, add a return-shift to center line from the point. If there is no shift point in
+   * candidate avoidance points nor registered points, and base_shift > 0, add a return-shift to
+   * center line from ego.
+   */
+  AvoidLineArray addReturnShiftLine(const AvoidLineArray & shift_lines, DebugData & debug) const;
 
   /*
    * @brief extract shift lines from total shift lines based on their gradient.
@@ -356,7 +373,7 @@ private:
    * - Change the shift length to the previous one if the deviation is small.
    * - Remove unnecessary return shift (back to the center line).
    */
-  AvoidLineArray trimShiftLine(const AvoidLineArray & shift_lines, DebugData & debug) const;
+  AvoidLineArray applyTrimProcess(const AvoidLineArray & shift_lines, DebugData & debug) const;
 
   /*
    * @brief extract new shift lines based on current shifted path. the module makes a RTC request
@@ -365,17 +382,6 @@ private:
    * @return new shift lines.
    */
   AvoidLineArray findNewShiftLine(const AvoidLineArray & shift_lines) const;
-
-  /*
-   * @brief add return shift line from ego position.
-   * @param shift lines which the return shift is added.
-   * Pick up the last shift point, which is the most farthest from ego, from the current candidate
-   * avoidance points and registered points in the shifter. If the last shift length of the point is
-   * non-zero, add a return-shift to center line from the point. If there is no shift point in
-   * candidate avoidance points nor registered points, and base_shift > 0, add a return-shift to
-   * center line from ego.
-   */
-  void addReturnShiftLineFromEgo(AvoidLineArray & shift_lines) const;
 
   /*
    * @brief fill gap between two shift lines.
@@ -397,27 +403,27 @@ private:
    * @param threshold. shift length is quantized by this value. (if it is 0.3[m], the output shift
    * length is 0.0, 0.3, 0.6...)
    */
-  void quantizeShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
+  void applyQuantizeProcess(AvoidLineArray & shift_lines, const double threshold) const;
 
   /*
    * @brief trim shift line whose relative longitudinal distance is less than threshold.
    * @param target shift lines.
    * @param threshold.
    */
-  void trimSmallShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
+  void applySmallShiftFilter(AvoidLineArray & shift_lines, const double threshold) const;
 
   /*
    * @brief merge multiple shift lines whose relative gradient is less than threshold.
    * @param target shift lines.
    * @param threshold.
    */
-  void trimSimilarGradShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
+  void applySimilarGradFilter(AvoidLineArray & shift_lines, const double threshold) const;
 
   /*
    * @brief trim invalid shift lines whose gradient it too large to follow.
    * @param target shift lines.
    */
-  void trimSharpReturn(AvoidLineArray & shift_lines, const double threshold) const;
+  void applySharpShiftFilter(AvoidLineArray & shift_lines, const double threshold) const;
 
   /**
    * @brief add new shift line to path shifter if the RTC status is activated.
@@ -432,7 +438,8 @@ private:
   void addNewShiftLines(PathShifter & path_shifter, const AvoidLineArray & shift_lines) const;
 
   /**
-   * @brief validate shift lines.
+   * @brief once generate avoidance path from new shift lines, and calculate lateral offset between
+   * ego and the path.
    * @param new shift lines.
    * @param path shifter.
    * @return result. if there is huge gap between the ego position and candidate path, return false.
