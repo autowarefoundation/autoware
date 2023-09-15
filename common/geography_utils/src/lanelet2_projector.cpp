@@ -15,6 +15,7 @@
 #include <GeographicLib/Geoid.hpp>
 #include <geography_utils/lanelet2_projector.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
+#include <lanelet2_extension/projection/transverse_mercator_projector.hpp>
 
 #include <lanelet2_projection/UTM.h>
 
@@ -30,12 +31,23 @@ std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInf
     lanelet::Origin origin{position};
     lanelet::projection::UtmProjector projector{origin};
     return std::make_unique<lanelet::projection::UtmProjector>(projector);
+
   } else if (projector_info.projector_type == MapProjectorInfo::MGRS) {
     lanelet::projection::MGRSProjector projector{};
     return std::make_unique<lanelet::projection::MGRSProjector>(projector);
+
+  } else if (projector_info.projector_type == MapProjectorInfo::TRANSVERSE_MERCATOR) {
+    lanelet::GPSPoint position{
+      projector_info.map_origin.latitude, projector_info.map_origin.longitude,
+      projector_info.map_origin.altitude};
+    lanelet::Origin origin{position};
+    lanelet::projection::TransverseMercatorProjector projector{origin};
+    return std::make_unique<lanelet::projection::TransverseMercatorProjector>(projector);
+
   } else {
-    const std::string error_msg = "Invalid map projector type: " + projector_info.projector_type +
-                                  ". Currently supported types: MGRS, and LocalCartesianUTM";
+    const std::string error_msg =
+      "Invalid map projector type: " + projector_info.projector_type +
+      ". Currently supported types: MGRS, LocalCartesianUTM, and TransverseMercator";
     throw std::invalid_argument(error_msg);
   }
 }

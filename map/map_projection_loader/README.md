@@ -53,6 +53,20 @@ map_origin:
   altitude: 0.0 # [m]
 ```
 
+### Using TransverseMercator
+
+If you want to use Transverse Mercator projection, please specify the map origin as well.
+
+```yaml
+# map_projector_info.yaml
+projector_type: TransverseMercator
+vertical_datum: WGS84
+map_origin:
+  latitude: 35.6762 # [deg]
+  longitude: 139.6503 # [deg]
+  altitude: 0.0 # [m]
+```
+
 ## Published Topics
 
 - ~/map_projector_info (tier4_map_msgs/MapProjectorInfo) : Topic for defining map projector information
