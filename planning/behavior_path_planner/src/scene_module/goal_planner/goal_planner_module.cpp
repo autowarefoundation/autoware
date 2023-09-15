@@ -73,19 +73,19 @@ GoalPlannerModule::GoalPlannerModule(
     pull_over_planners_.push_back(std::make_shared<ShiftPullOver>(
       node, *parameters, lane_departure_checker, occupancy_grid_map_));
   }
-  // currently only support geometric_parallel_parking for left side parking
-  if (left_side_parking_) {
-    if (parameters_->enable_arc_forward_parking) {
-      constexpr bool is_forward = true;
-      pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-        node, *parameters, lane_departure_checker, occupancy_grid_map_, is_forward));
-    }
-    if (parameters_->enable_arc_backward_parking) {
-      constexpr bool is_forward = false;
-      pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
-        node, *parameters, lane_departure_checker, occupancy_grid_map_, is_forward));
-    }
+
+  // set geometric pull over
+  if (parameters_->enable_arc_forward_parking) {
+    constexpr bool is_forward = true;
+    pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
+      node, *parameters, lane_departure_checker, occupancy_grid_map_, is_forward));
   }
+  if (parameters_->enable_arc_backward_parking) {
+    constexpr bool is_forward = false;
+    pull_over_planners_.push_back(std::make_shared<GeometricPullOver>(
+      node, *parameters, lane_departure_checker, occupancy_grid_map_, is_forward));
+  }
+
   if (pull_over_planners_.empty()) {
     RCLCPP_ERROR(getLogger(), "Not found enabled planner");
   }
