@@ -14,6 +14,8 @@
 
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 
+#include "motion_utils/trajectory/trajectory.hpp"
+
 #include <boost/algorithm/clamp.hpp>
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>
@@ -371,9 +373,7 @@ void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   /* get total distance to collision point */
   double dist_to_point = 0;
   // get distance from self to next nearest point
-  dist_to_point += boost::geometry::distance(
-    convertPointRosToBoost(self_pose.position),
-    convertPointRosToBoost(trajectory.at(1).pose.position));
+  dist_to_point += motion_utils::calcSignedArcLength(trajectory, self_pose.position, size_t(1));
 
   // add distance from next self-nearest-point(=idx:0) to prev point of nearest_point_idx
   for (int i = 1; i < nearest_point_idx - 1; i++) {
@@ -678,15 +678,13 @@ void AdaptiveCruiseController::insertMaxVelocityToPath(
   const geometry_msgs::msg::Pose self_pose, const double current_vel, const double target_vel,
   const double dist_to_collision_point, TrajectoryPoints * output_trajectory)
 {
-  // plus distance from self to next nearest point
-  double dist = dist_to_collision_point;
+  // signed distance from self pose to the point of index 1
   double dist_to_first_point = 0.0;
+
   if (output_trajectory->size() > 1) {
-    dist_to_first_point = boost::geometry::distance(
-      convertPointRosToBoost(self_pose.position),
-      convertPointRosToBoost(output_trajectory->at(1).pose.position));
+    dist_to_first_point =
+      motion_utils::calcSignedArcLength(*output_trajectory, self_pose.position, size_t(1));
   }
-  dist += dist_to_first_point;
 
   double margin_to_insert = dist_to_collision_point * param_.margin_rate_to_change_vel;
   // accel = (v_after^2 - v_before^2 ) / 2x
@@ -695,7 +693,7 @@ void AdaptiveCruiseController::insertMaxVelocityToPath(
   const double clipped_acc = boost::algorithm::clamp(
     target_acc, param_.min_standard_acceleration, param_.max_standard_acceleration);
   double pre_vel = current_vel;
-  double total_dist = 0.0;
+  double total_dist = dist_to_first_point;
   for (size_t i = 1; i < output_trajectory->size(); i++) {
     // calc velocity of each point by gradient deceleration
     const auto current_p = output_trajectory->at(i);
@@ -708,7 +706,8 @@ void AdaptiveCruiseController::insertMaxVelocityToPath(
         next_pre_vel = pre_vel;
       } else {
         // v_after = sqrt (2x*accel + v_before^2)
-        next_pre_vel = std::sqrt(2 * p_dist * clipped_acc + std::pow(pre_vel, 2));
+        next_pre_vel =
+          std::sqrt(2 * std::min(p_dist, total_dist) * clipped_acc + std::pow(pre_vel, 2));
       }
       if (target_acc >= 0) {
         next_pre_vel = std::min(next_pre_vel, target_vel);
