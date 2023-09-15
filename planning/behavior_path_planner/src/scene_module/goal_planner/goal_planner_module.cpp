@@ -666,29 +666,27 @@ void GoalPlannerModule::setLanes()
 
 void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
 {
-  if (status_.is_safe_static_objects) {
-    if (isSafePath()) {
-      // clear stop pose when the path is safe against static/dynamic objects and activated
-      if (isActivated()) {
-        resetWallPoses();
-      }
-      // keep stop if not enough time passed,
-      // because it takes time for the trajectory to be reflected
-      auto current_path = getCurrentPath();
-      keepStoppedWithCurrentPath(current_path);
-
-      output.path = std::make_shared<PathWithLaneId>(current_path);
-      output.reference_path = getPreviousModuleOutput().reference_path;
-    } else if (status_.has_decided_path && isActivated()) {
-      // situation : not safe against dynamic objects after approval
-      // insert stop point in current path if ego is able to stop with acceleration and jerk
-      // constraints
-      setStopPathFromCurrentPath(output);
-    }
-
-  } else {
-    // not safe: use stop_path
+  if (!status_.is_safe_static_objects) {
+    // situation : not safe against static objects use stop_path
     setStopPath(output);
+  } else if (!isSafePath() && status_.has_decided_path && isActivated()) {
+    // situation : not safe against dynamic objects after approval
+    // insert stop point in current path if ego is able to stop with acceleration and jerk
+    // constraints
+    setStopPathFromCurrentPath(output);
+  } else {
+    // situation : (safe against static and dynamic objects) or (safe against static objects and
+    // before approval) don't stop
+    if (isActivated()) {
+      resetWallPoses();
+    }
+    // keep stop if not enough time passed,
+    // because it takes time for the trajectory to be reflected
+    auto current_path = getCurrentPath();
+    keepStoppedWithCurrentPath(current_path);
+
+    output.path = std::make_shared<PathWithLaneId>(current_path);
+    output.reference_path = getPreviousModuleOutput().reference_path;
   }
 
   setDrivableAreaInfo(output);
@@ -703,7 +701,7 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
   // for the next loop setOutput().
   // this is used to determine whether to generate a new stop path or keep the current stop path.
   status_.prev_is_safe = status_.is_safe_static_objects;
-  status_.prev_is_safe_dynamic_objects = status_.is_safe_dynamic_objects;
+  status_.prev_is_safe_dynamic_objects = isSafePath();
 }
 
 void GoalPlannerModule::setStopPath(BehaviorModuleOutput & output)
@@ -1601,7 +1599,7 @@ bool GoalPlannerModule::isSafePath() const
     pull_over_lanes, route_handler, filtered_objects, objects_filtering_params_);
 
   const double hysteresis_factor =
-    status_.is_safe_dynamic_objects ? 1.0 : parameters_->hysteresis_factor_expand_rate;
+    status_.prev_is_safe_dynamic_objects ? 1.0 : parameters_->hysteresis_factor_expand_rate;
 
   utils::start_goal_planner_common::updateSafetyCheckTargetObjectsData(
     goal_planner_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);

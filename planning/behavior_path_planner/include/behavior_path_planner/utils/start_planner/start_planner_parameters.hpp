@@ -35,6 +35,7 @@ using freespace_planning_algorithms::RRTStarParam;
 
 struct StartPlannerParameters
 {
+  // TODO(someone): initialize variables
   double th_arrived_distance;
   double th_stopped_velocity;
   double th_stopped_time;
