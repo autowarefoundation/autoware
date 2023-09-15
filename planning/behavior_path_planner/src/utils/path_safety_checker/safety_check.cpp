@@ -32,6 +32,12 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
   bg::append(polygon.outer(), point);
 }
 
+bool isTargetObjectOncoming(
+  const geometry_msgs::msg::Pose & vehicle_pose, const geometry_msgs::msg::Pose & object_pose)
+{
+  return std::abs(calcYawDeviation(vehicle_pose, object_pose)) > M_PI_2;
+}
+
 bool isTargetObjectFront(
   const geometry_msgs::msg::Pose & ego_pose, const Polygon2d & obj_polygon,
   const vehicle_info_util::VehicleInfo & vehicle_info)
