@@ -26,7 +26,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 
-#include <lanelet2_core/primitives/Primitive.h>
+#include <lanelet2_core/Forward.h>
 
 #include <memory>
 #include <string>

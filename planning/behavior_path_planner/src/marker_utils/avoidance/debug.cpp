@@ -20,6 +20,7 @@
 
 #include <magic_enum.hpp>
 
+#include <lanelet2_core/primitives/LineString.h>
 #include <tf2/utils.h>
 
 #include <string>

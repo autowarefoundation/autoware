@@ -21,9 +21,14 @@
 #include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 
+#include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+#include <boost/geometry/algorithms/within.hpp>
+
+#include <lanelet2_core/geometry/Lanelet.h>
 
 #include <algorithm>
 #include <memory>

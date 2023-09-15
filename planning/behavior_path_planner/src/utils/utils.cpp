@@ -20,6 +20,9 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+// #include <lanelet2_core/geometry/Lanelet.h>
+// #include <lanelet2_routing/RoutingGraphContainer.h>
+
 #include <motion_utils/resample/resample.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
@@ -27,7 +30,9 @@
 #include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_path.hpp"
 
-#include <boost/assign/list_of.hpp>
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_core/geometry/Polygon.h>
+#include <lanelet2_routing/RoutingGraphContainer.h>
 
 #include <algorithm>
 #include <limits>

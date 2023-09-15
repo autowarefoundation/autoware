@@ -24,6 +24,7 @@
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>

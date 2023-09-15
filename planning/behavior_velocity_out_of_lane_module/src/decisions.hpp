@@ -25,6 +25,7 @@
 #include <lanelet2_core/LaneletMap.h>
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 

@@ -21,6 +21,8 @@
 
 #include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
 
+#include <lanelet2_core/primitives/Lanelet.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>

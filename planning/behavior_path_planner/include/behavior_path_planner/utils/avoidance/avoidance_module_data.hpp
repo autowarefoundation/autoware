@@ -27,7 +27,8 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
-#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/primitives/Lanelet.h>
+#include <lanelet2_core/primitives/LineString.h>
 
 #include <limits>
 #include <memory>

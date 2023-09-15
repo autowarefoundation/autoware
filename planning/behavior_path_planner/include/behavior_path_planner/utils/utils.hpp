@@ -39,8 +39,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 
-#include <lanelet2_core/geometry/Lanelet.h>
-#include <lanelet2_routing/RoutingGraphContainer.h>
+#include <lanelet2_core/Forward.h>
 #include <tf2/utils.h>
 
 #ifdef ROS_DISTRO_GALACTIC

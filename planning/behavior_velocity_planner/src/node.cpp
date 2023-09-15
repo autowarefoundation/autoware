@@ -18,6 +18,7 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
+#include <motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <tier4_autoware_utils/ros/wait_for_param.hpp>
 #include <tier4_autoware_utils/transform/transforms.hpp>
 
@@ -27,7 +28,6 @@
 #include <lanelet2_routing/Route.h>
 #include <pcl/common/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
-
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #else

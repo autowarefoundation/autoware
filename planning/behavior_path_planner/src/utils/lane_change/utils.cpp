@@ -22,7 +22,6 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
-#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
@@ -32,6 +31,9 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/LineString.h>
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_core/geometry/Polygon.h>
 #include <tf2/utils.h>
 #include <tf2_ros/transform_listener.h>
 

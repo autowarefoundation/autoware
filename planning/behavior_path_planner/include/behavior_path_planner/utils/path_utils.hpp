@@ -26,7 +26,7 @@
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <geometry_msgs/msg/point.hpp>
 
-#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/Forward.h>
 
 #include <limits>
 #include <memory>

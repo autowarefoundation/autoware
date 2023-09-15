@@ -14,6 +14,7 @@
 #include "behavior_path_planner/utils/utils.hpp"
 #include "input.hpp"
 #include "lanelet2_core/Attribute.h"
+#include "lanelet2_core/geometry/LineString.h"
 #include "lanelet2_core/geometry/Point.h"
 #include "lanelet2_core/primitives/Lanelet.h"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"

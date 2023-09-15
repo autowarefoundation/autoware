@@ -16,7 +16,6 @@
 #define BEHAVIOR_VELOCITY_PLANNER_COMMON__UTILIZATION__UTIL_HPP_
 
 #include <behavior_velocity_planner_common/utilization/boost_geometry_helper.hpp>
-#include <lanelet2_extension/utility/query.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
@@ -25,8 +24,6 @@
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_point.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
 #include <autoware_perception_msgs/msg/traffic_signal.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -34,14 +31,9 @@
 #include <tier4_planning_msgs/msg/stop_reason.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/linestring.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-
+#include <lanelet2_core/Forward.h>
 #include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_core/geometry/Lanelet.h>
-#include <lanelet2_core/geometry/Point.h>
-#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_routing/Forward.h>
 #include <pcl/point_types.h>
 #include <tf2/utils.h>
 
@@ -85,7 +77,10 @@ struct TrafficSignalStamped
   autoware_perception_msgs::msg::TrafficSignal signal;
 };
 
-using geometry_msgs::msg::Pose;
+using Pose = geometry_msgs::msg::Pose;
+using Point2d = tier4_autoware_utils::Point2d;
+using LineString2d = tier4_autoware_utils::LineString2d;
+using Polygon2d = tier4_autoware_utils::Polygon2d;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 using Polygons2d = std::vector<Polygon2d>;
 using autoware_auto_perception_msgs::msg::PredictedObject;

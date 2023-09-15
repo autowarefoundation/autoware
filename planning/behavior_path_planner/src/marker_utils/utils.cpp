@@ -19,9 +19,13 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
+
+#include <lanelet2_core/primitives/CompoundPolygon.h>
+#include <lanelet2_core/primitives/Lanelet.h>
+#include <lanelet2_core/primitives/LineString.h>
+
 namespace marker_utils
 {
 using behavior_path_planner::ShiftLine;

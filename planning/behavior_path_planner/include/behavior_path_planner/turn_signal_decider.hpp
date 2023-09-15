@@ -22,7 +22,7 @@
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 
-#include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/Forward.h>
 
 #include <limits>
 #include <map>

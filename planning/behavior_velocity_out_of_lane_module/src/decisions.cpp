@@ -20,12 +20,17 @@
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
+#include <boost/geometry/algorithms/within.hpp>
+
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_core/geometry/Polygon.h>
+#include <lanelet2_routing/RoutingGraph.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
-
 namespace behavior_velocity_planner::out_of_lane
 {
 double distance_along_path(const EgoData & ego_data, const size_t target_idx)

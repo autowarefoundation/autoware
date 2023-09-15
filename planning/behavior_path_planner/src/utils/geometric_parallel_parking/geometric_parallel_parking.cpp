@@ -22,7 +22,6 @@
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <interpolation/spline_interpolation.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -32,7 +31,11 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#include <lanelet2_core/geometry/Polygon.h>
 #endif
+
+#include <boost/geometry/algorithms/within.hpp>
 
 #include <limits>
 #include <string>

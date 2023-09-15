@@ -36,7 +36,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <tier4_planning_msgs/msg/lateral_offset.hpp>
 
-#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/primitives/Lanelet.h>
 
 #include <limits>
 #include <memory>

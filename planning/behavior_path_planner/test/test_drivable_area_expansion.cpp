@@ -20,6 +20,7 @@
 #include "lanelet2_extension/utility/message_conversion.hpp"
 
 #include <gtest/gtest.h>
+#include <lanelet2_core/LaneletMap.h>
 
 using drivable_area_expansion::linestring_t;
 using drivable_area_expansion::point_t;

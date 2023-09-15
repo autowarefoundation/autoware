@@ -18,7 +18,6 @@
 #include "route_handler/route_handler.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
 #include <motion_velocity_smoother/smoother/smoother_base.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -38,10 +37,6 @@
 
 #include <boost/optional.hpp>
 
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <lanelet2_routing/RoutingGraphContainer.h>
-#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <tf2_ros/transform_listener.h>

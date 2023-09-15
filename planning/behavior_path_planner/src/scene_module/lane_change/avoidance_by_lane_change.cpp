@@ -19,6 +19,10 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+
+#include <boost/geometry/algorithms/centroid.hpp>
+#include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
 
 #include <utility>
 

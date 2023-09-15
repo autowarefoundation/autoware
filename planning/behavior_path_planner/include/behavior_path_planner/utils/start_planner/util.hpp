@@ -28,7 +28,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
-#include <lanelet2_core/primitives/Primitive.h>
+#include <lanelet2_core/Forward.h>
 
 #include <memory>
 #include <utility>

@@ -15,6 +15,7 @@
 #include "behavior_velocity_crosswalk_module/util.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -27,6 +28,8 @@
 #include <boost/geometry/geometries/linestring.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 
+#include <lanelet2_routing/RoutingGraphContainer.h>
+
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -37,9 +40,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>
-#include <lanelet2_extension/utility/query.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
 
+#include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 
 namespace behavior_velocity_planner

@@ -24,6 +24,8 @@
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include <lanelet2_core/geometry/LineString.h>
+
 #include <algorithm>
 #include <array>
 #include <random>

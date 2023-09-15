@@ -24,6 +24,8 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #endif
 
+#include <lanelet2_core/geometry/Polygon.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>

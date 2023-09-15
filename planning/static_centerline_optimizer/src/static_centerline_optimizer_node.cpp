@@ -32,8 +32,10 @@
 #include <tier4_map_msgs/msg/map_projector_info.hpp>
 
 #include <boost/geometry/algorithms/correct.hpp>
+#include <boost/geometry/algorithms/distance.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_io/Io.h>
 #include <lanelet2_projection/UTM.h>
 

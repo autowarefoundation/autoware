@@ -18,15 +18,13 @@
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
-
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/Forward.h>
 
 #include <string>
 #include <vector>

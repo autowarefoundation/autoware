@@ -17,6 +17,7 @@
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 
 #include <lanelet2_core/geometry/LaneletMap.h>
+#include <lanelet2_routing/RoutingGraph.h>
 
 #include <algorithm>
 

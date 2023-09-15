@@ -13,7 +13,11 @@
 // limitations under the License.
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
+
+#include <lanelet2_core/geometry/Polygon.h>
+#include <lanelet2_routing/RoutingGraph.h>
 
 #include <algorithm>
 #include <limits>

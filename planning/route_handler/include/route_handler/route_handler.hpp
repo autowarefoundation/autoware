@@ -15,24 +15,19 @@
 #ifndef ROUTE_HANDLER__ROUTE_HANDLER_HPP_
 #define ROUTE_HANDLER__ROUTE_HANDLER_HPP_
 
-#include <lanelet2_extension/utility/query.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/logger.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <autoware_planning_msgs/msg/lanelet_primitive.hpp>
 #include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_planning_msgs/msg/lanelet_segment.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
-#include <lanelet2_routing/Route.h>
-#include <lanelet2_routing/RoutingCost.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <lanelet2_routing/RoutingGraphContainer.h>
-#include <lanelet2_traffic_rules/TrafficRulesFactory.h>
+#include <lanelet2_core/Forward.h>
+#include <lanelet2_core/primitives/Lanelet.h>
+#include <lanelet2_routing/Forward.h>
+#include <lanelet2_traffic_rules/TrafficRules.h>
 
 #include <limits>
 #include <memory>
@@ -41,8 +36,6 @@
 namespace route_handler
 {
 using autoware_auto_mapping_msgs::msg::HADMapBin;
-using autoware_auto_planning_msgs::msg::Path;
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::LaneletSegment;

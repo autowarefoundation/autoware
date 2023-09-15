@@ -24,6 +24,9 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
+#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_routing/RoutingGraphContainer.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>

@@ -19,6 +19,8 @@
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 
+#include <lanelet2_core/geometry/Polygon.h>
+
 #include <algorithm>
 
 namespace behavior_velocity_planner

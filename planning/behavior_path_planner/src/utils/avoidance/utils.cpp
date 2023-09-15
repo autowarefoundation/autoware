@@ -28,6 +28,8 @@
 
 #include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
 
+#include <lanelet2_routing/RoutingGraphContainer.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>

@@ -27,6 +27,7 @@
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <limits>
+#include <queue>
 #include <string>
 #include <utility>
 

@@ -28,8 +28,6 @@
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
 #include <vehicle_info_util/vehicle_info.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 

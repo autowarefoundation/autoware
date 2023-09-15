@@ -18,7 +18,7 @@
 #include "behavior_path_planner/utils/utils.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
-#include <lanelet2_extension/utility/utilities.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <magic_enum.hpp>
 
 #include <boost/format.hpp>
@@ -340,6 +340,34 @@ std::vector<SceneModulePtr> PlannerManager::getRequestModules(
   }
 
   return request_modules;
+}
+
+BehaviorModuleOutput PlannerManager::getReferencePath(
+  const std::shared_ptr<PlannerData> & data) const
+{
+  const auto & route_handler = data->route_handler;
+  const auto & pose = data->self_odometry->pose.pose;
+  const auto p = data->parameters;
+
+  constexpr double extra_margin = 10.0;
+  const auto backward_length =
+    std::max(p.backward_path_length, p.backward_path_length + extra_margin);
+
+  const auto lanelet_sequence = route_handler->getLaneletSequence(
+    root_lanelet_.get(), pose, backward_length, std::numeric_limits<double>::max());
+
+  lanelet::ConstLanelet closest_lane{};
+  if (lanelet::utils::query::getClosestLaneletWithConstrains(
+        lanelet_sequence, pose, &closest_lane, p.ego_nearest_dist_threshold,
+        p.ego_nearest_yaw_threshold)) {
+    return utils::getReferencePath(closest_lane, data);
+  }
+
+  if (lanelet::utils::query::getClosestLanelet(lanelet_sequence, pose, &closest_lane)) {
+    return utils::getReferencePath(closest_lane, data);
+  }
+
+  return {};  // something wrong.
 }
 
 SceneModulePtr PlannerManager::selectHighestPriorityModule(

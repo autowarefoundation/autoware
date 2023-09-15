@@ -21,8 +21,8 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
+#include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/utility/Optional.h>
-
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #else

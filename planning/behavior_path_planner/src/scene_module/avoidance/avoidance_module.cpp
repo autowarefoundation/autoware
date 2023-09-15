@@ -32,6 +32,9 @@
 #include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 
+#include <boost/geometry/algorithms/centroid.hpp>
+#include <boost/geometry/strategies/cartesian/centroid_bashein_detmer.hpp>
+
 #include <algorithm>
 #include <limits>
 #include <memory>

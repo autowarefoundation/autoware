@@ -25,8 +25,7 @@
 #include <geometry_msgs/msg/polygon.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_core/Forward.h>
 
 #include <string>
 #include <vector>

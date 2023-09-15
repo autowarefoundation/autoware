@@ -17,6 +17,8 @@
 
 #include "types.hpp"
 
+#include <motion_utils/trajectory/trajectory.hpp>
+
 #include <string>
 
 namespace behavior_velocity_planner::out_of_lane

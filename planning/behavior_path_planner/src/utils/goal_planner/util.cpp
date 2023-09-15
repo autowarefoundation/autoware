@@ -20,11 +20,11 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <boost/geometry/algorithms/dispatch/distance.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/primitives/Lanelet.h>
 #include <tf2/utils.h>
 #include <tf2_ros/transform_listener.h>
 
