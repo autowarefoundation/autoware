@@ -1,4 +1,9 @@
 # yabloc_pose_initializer
+- name: Create {{ data_dir }}/yabloc_pose_initializer directory
+  file:
+    path: "{{ data_dir }}/yabloc_pose_initializer"
+    state: directory
+
 - name: Download yabloc_pose_initializer/resources.tar.gz
   become: true
   ansible.builtin.get_url:
@@ -7,6 +12,11 @@
     checksum: sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a
 
 # image_projection_based_fusion
+- name: Create {{ data_dir }}/image_projection_based_fusion directory
+  file:
+    path: "{{ data_dir }}/image_projection_based_fusion"
+    state: directory
+
 - name: Download image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx
   become: true
   ansible.builtin.get_url:
@@ -22,6 +32,11 @@
     checksum: md5:2c7108245240fbd7bf0104dd68225868
 
 # lidar_apollo_instance_segmentation
+- name: Create {{ data_dir }}/lidar_apollo_instance_segmentation directory
+  file:
+    path: "{{ data_dir }}/lidar_apollo_instance_segmentation"
+    state: directory
+
 - name: Download lidar_apollo_instance_segmentation/vlp-16.onnx
   become: true
   ansible.builtin.get_url:
@@ -44,6 +59,11 @@
     checksum: md5:b2d709f56f73ae2518c9bf4d0214468f
 
 # lidar_centerpoint
+- name: Create {{ data_dir }}/lidar_centerpoint directory
+  file:
+    path: "{{ data_dir }}/lidar_centerpoint"
+    state: directory
+
 - name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx
   become: true
   ansible.builtin.get_url:
@@ -73,6 +93,11 @@
     checksum: md5:e4658325b70222f7c3637fe00e586b82
 
 # tensorrt_yolo
+- name: Create {{ data_dir }}/tensorrt_yolo directory
+  file:
+    path: "{{ data_dir }}/tensorrt_yolo"
+    state: directory
+
 - name: Download tensorrt_yolo/yolov3.onnx
   become: true
   ansible.builtin.get_url:
@@ -130,6 +155,11 @@
     checksum: sha256:634a1132eb33f8091d60f2c346ababe8b905ae08387037aed883953b7329af84
 
 # tensorrt_yolox
+- name: Create {{ data_dir }}/tensorrt_yolox directory
+  file:
+    path: "{{ data_dir }}/tensorrt_yolox"
+    state: directory
+
 - name: Download tensorrt_yolox/yolox-tiny.onnx
   become: true
   ansible.builtin.get_url:
@@ -159,6 +189,11 @@
     checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
 
 # traffic_light_classifier
+- name: Create {{ data_dir }}/traffic_light_classifier directory
+  file:
+    path: "{{ data_dir }}/traffic_light_classifier"
+    state: directory
+
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx
   become: true
   ansible.builtin.get_url:
@@ -178,7 +213,7 @@
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
-    checksum: md5:47255a11bde479320d703f1f45db1242
+    checksum: md5:28b408710bcb24f4cdd4d746301d4e78
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
   become: true
@@ -199,16 +234,21 @@
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
-    checksum: md5:28b408710bcb24f4cdd4d746301d4e78
+    checksum: md5:378526d9aa9fc6705cf399f7b35b3053
 
 - name: Download traffic_light_classifier/lamp_labels.txt
   become: true
   ansible.builtin.get_url:
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/lamp_labels.txt
     dest: "{{ data_dir }}/traffic_light_classifier/lamp_labels.txt"
-    checksum: sha256:baac220ef86b70c94673bbf982121f7d43591b1768ac05e98f235b23772a9bed
+    checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
 
 # traffic_light_fine_detector
+- name: Create {{ data_dir }}/traffic_light_fine_detector directory
+  file:
+    path: "{{ data_dir }}/traffic_light_fine_detector"
+    state: directory
+
 - name: Download traffic_light_fine_detector/tlr_yolox_s_batch_1.onnx
   become: true
   ansible.builtin.get_url:
@@ -238,6 +278,11 @@
     checksum: md5:e9f45efb02f2a9aa8ac27b3d5c164905
 
 # traffic_light_ssd_fine_detector
+- name: Create {{ data_dir }}/traffic_light_ssd_fine_detector directory
+  file:
+    path: "{{ data_dir }}/traffic_light_ssd_fine_detector"
+    state: directory
+
 - name: Download traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx
   become: true
   ansible.builtin.get_url:
