@@ -182,6 +182,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t", "--tracked-object", help="publish tracked object", action="store_true"
     )
+    parser.add_argument(
+        "-f", "--rosbag-format", help="rosbag data format (default is db3)", default="db3"
+    )
     args = parser.parse_args()
 
     app = QApplication(sys.argv)

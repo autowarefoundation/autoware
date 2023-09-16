@@ -74,7 +74,8 @@ class PerceptionReplayerCommon(Node):
         print("Stared loading rosbag")
         if os.path.isdir(args.bag):
             for bag_file in sorted(os.listdir(args.bag)):
-                self.load_rosbag(args.bag + "/" + bag_file)
+                if bag_file.endswith(self.args.rosbag_format):
+                    self.load_rosbag(args.bag + "/" + bag_file)
         else:
             self.load_rosbag(args.bag)
         print("Ended loading rosbag")
