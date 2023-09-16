@@ -243,6 +243,8 @@ StartPlannerModuleManager::StartPlannerModuleManager(
   {
     p.safety_check_params.enable_safety_check =
       node->declare_parameter<bool>(safety_check_ns + "enable_safety_check");
+    p.safety_check_params.hysteresis_factor_expand_rate =
+      node->declare_parameter<double>(safety_check_ns + "hysteresis_factor_expand_rate");
     p.safety_check_params.backward_path_length =
       node->declare_parameter<double>(safety_check_ns + "backward_path_length");
     p.safety_check_params.forward_path_length =

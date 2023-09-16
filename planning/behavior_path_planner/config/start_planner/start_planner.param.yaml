@@ -129,6 +129,8 @@
             lateral_distance_max_threshold: 1.0
             longitudinal_distance_min_threshold: 1.0
             longitudinal_velocity_delta_time: 1.0
+          # hysteresis factor to expand/shrink polygon
+          hysteresis_factor_expand_rate: 1.0
           # temporary
           backward_path_length: 30.0
           forward_path_length: 100.0

@@ -1004,7 +1004,7 @@ bool StartPlannerModule::isSafePath() const
     current_lanes, route_handler, filtered_objects, objects_filtering_params_);
 
   const double hysteresis_factor =
-    status_.is_safe_dynamic_objects ? 1.0 : parameters_->hysteresis_factor_expand_rate;
+    status_.is_safe_dynamic_objects ? 1.0 : safety_check_params_->hysteresis_factor_expand_rate;
 
   utils::start_goal_planner_common::updateSafetyCheckTargetObjectsData(
     start_planner_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);
