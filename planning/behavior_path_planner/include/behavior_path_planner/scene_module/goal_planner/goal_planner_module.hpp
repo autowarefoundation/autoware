@@ -164,7 +164,7 @@ private:
   mutable std::shared_ptr<ObjectsFilteringParams> objects_filtering_params_;
   mutable std::shared_ptr<SafetyCheckParams> safety_check_params_;
 
-  vehicle_info_util::VehicleInfo vehicle_info_;
+  vehicle_info_util::VehicleInfo vehicle_info_{};
 
   // planner
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;
@@ -174,8 +174,8 @@ private:
   // goal searcher
   std::shared_ptr<GoalSearcherBase> goal_searcher_;
   std::optional<GoalCandidate> modified_goal_pose_;
-  Pose refined_goal_pose_;
-  GoalCandidates goal_candidates_;
+  Pose refined_goal_pose_{};
+  GoalCandidates goal_candidates_{};
 
   // collision detector
   // need to be shared_ptr to be used in planner and goal searcher

@@ -37,8 +37,8 @@ namespace behavior_path_planner
 {
 struct MinMaxValue
 {
-  double min_value;
-  double max_value;
+  double min_value{0.0};
+  double max_value{0.0};
 };
 
 struct DynamicAvoidanceParameters
@@ -116,12 +116,12 @@ public:
       }
     }
 
-    std::string uuid;
-    geometry_msgs::msg::Pose pose;
+    std::string uuid{};
+    geometry_msgs::msg::Pose pose{};
     autoware_auto_perception_msgs::msg::Shape shape;
-    double vel;
-    double lat_vel;
-    bool is_object_on_ego_path;
+    double vel{0.0};
+    double lat_vel{0.0};
+    bool is_object_on_ego_path{false};
     std::optional<rclcpp::Time> latest_time_inside_ego_path{std::nullopt};
     std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths{};
 
@@ -129,7 +129,7 @@ public:
     //       Therefore, they has to be initialized as nullopt.
     std::optional<MinMaxValue> lon_offset_to_avoid{std::nullopt};
     std::optional<MinMaxValue> lat_offset_to_avoid{std::nullopt};
-    bool is_collision_left;
+    bool is_collision_left{false};
     bool should_be_avoided{false};
     PolygonGenerationMethod polygon_generation_method{PolygonGenerationMethod::OBJECT_PATH_BASE};
 
@@ -152,8 +152,8 @@ public:
     : max_count_(arg_max_count), min_count_(arg_min_count)
     {
     }
-    int max_count_;
-    int min_count_;
+    int max_count_{0};
+    int min_count_{0};
 
     void initialize() { current_uuids_.clear(); }
     void updateObject(const std::string & uuid, const DynamicAvoidanceObject & object)

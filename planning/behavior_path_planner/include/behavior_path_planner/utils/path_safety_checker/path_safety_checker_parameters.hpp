@@ -128,8 +128,8 @@ struct RSSparams
   double longitudinal_distance_min_threshold{
     0.0};                                        ///< Minimum threshold for longitudinal distance.
   double longitudinal_velocity_delta_time{0.0};  ///< Delta time for longitudinal velocity.
-  double front_vehicle_deceleration;             ///< brake parameter
-  double rear_vehicle_deceleration;              ///< brake parameter
+  double front_vehicle_deceleration{0.0};        ///< brake parameter
+  double rear_vehicle_deceleration{0.0};         ///< brake parameter
 };
 
 /**
@@ -137,12 +137,12 @@ struct RSSparams
  */
 struct EgoPredictedPathParams
 {
-  double acceleration;           ///< Acceleration value.
-  double time_horizon;           ///< Time horizon for prediction.
-  double time_resolution;        ///< Time resolution for prediction.
-  double min_slow_speed;         ///< Minimum slow speed.
-  double delay_until_departure;  ///< Delay before departure.
-  double target_velocity;        ///< Target velocity.
+  double acceleration{0.0};           ///< Acceleration value.
+  double time_horizon{0.0};           ///< Time horizon for prediction.
+  double time_resolution{0.0};        ///< Time resolution for prediction.
+  double min_slow_speed{0.0};         ///< Minimum slow speed.
+  double delay_until_departure{0.0};  ///< Delay before departure.
+  double target_velocity{0.0};        ///< Target velocity.
 };
 
 /**
@@ -150,18 +150,18 @@ struct EgoPredictedPathParams
  */
 struct ObjectsFilteringParams
 {
-  double safety_check_time_horizon;                   ///< Time horizon for object's prediction.
-  double safety_check_time_resolution;                ///< Time resolution for object's prediction.
-  double object_check_forward_distance;               ///< Forward distance for object checks.
-  double object_check_backward_distance;              ///< Backward distance for object checks.
-  double ignore_object_velocity_threshold;            ///< Velocity threshold for ignoring objects.
-  ObjectTypesToCheck object_types_to_check;           ///< Specifies which object types to check.
-  ObjectLaneConfiguration object_lane_configuration;  ///< Configuration for which lanes to check.
-  bool include_opposite_lane;                         ///< Include the opposite lane in checks.
-  bool invert_opposite_lane;                          ///< Invert the opposite lane in checks.
-  bool check_all_predicted_path;                      ///< Check all predicted paths.
-  bool use_all_predicted_path;                        ///< Use all predicted paths.
-  bool use_predicted_path_outside_lanelet;            ///< Use predicted paths outside of lanelets.
+  double safety_check_time_horizon{0.0};         ///< Time horizon for object's prediction.
+  double safety_check_time_resolution{0.0};      ///< Time resolution for object's prediction.
+  double object_check_forward_distance{0.0};     ///< Forward distance for object checks.
+  double object_check_backward_distance{0.0};    ///< Backward distance for object checks.
+  double ignore_object_velocity_threshold{0.0};  ///< Velocity threshold for ignoring objects.
+  ObjectTypesToCheck object_types_to_check{};    ///< Specifies which object types to check.
+  ObjectLaneConfiguration object_lane_configuration{};  ///< Configuration for which lanes to check.
+  bool include_opposite_lane{false};                    ///< Include the opposite lane in checks.
+  bool invert_opposite_lane{false};                     ///< Invert the opposite lane in checks.
+  bool check_all_predicted_path{false};                 ///< Check all predicted paths.
+  bool use_all_predicted_path{false};                   ///< Use all predicted paths.
+  bool use_predicted_path_outside_lanelet{false};  ///< Use predicted paths outside of lanelets.
 };
 
 /**
@@ -169,12 +169,12 @@ struct ObjectsFilteringParams
  */
 struct SafetyCheckParams
 {
-  bool enable_safety_check;  ///< Enable safety checks.
-  double
-    hysteresis_factor_expand_rate;   ///< Hysteresis factor to expand/shrink polygon with the value.
-  double backward_path_length;       ///< Length of the backward lane for path generation.
-  double forward_path_length;        ///< Length of the forward path lane for path generation.
-  RSSparams rss_params;              ///< Parameters related to the RSS model.
+  bool enable_safety_check{false};  ///< Enable safety checks.
+  double hysteresis_factor_expand_rate{
+    0.0};                            ///< Hysteresis factor to expand/shrink polygon with the value.
+  double backward_path_length{0.0};  ///< Length of the backward lane for path generation.
+  double forward_path_length{0.0};   ///< Length of the forward path lane for path generation.
+  RSSparams rss_params{};            ///< Parameters related to the RSS model.
   bool publish_debug_marker{false};  ///< Option to publish debug markers.
 };
 
