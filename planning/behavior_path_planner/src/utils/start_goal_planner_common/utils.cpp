@@ -140,7 +140,7 @@ void updatePathProperty(
   const double acceleration =
     std::max(pairs_terminal_velocity_and_accel.second, min_accel_for_ego_predicted_path);
 
-  ego_predicted_path_params->target_velocity = pairs_terminal_velocity_and_accel.first;
+  ego_predicted_path_params->max_velocity = pairs_terminal_velocity_and_accel.first;
   ego_predicted_path_params->acceleration = acceleration;
 }
 

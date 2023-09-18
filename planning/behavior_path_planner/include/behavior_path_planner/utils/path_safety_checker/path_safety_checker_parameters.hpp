@@ -137,12 +137,13 @@ struct RSSparams
  */
 struct EgoPredictedPathParams
 {
-  double acceleration{0.0};           ///< Acceleration value.
-  double time_horizon{0.0};           ///< Time horizon for prediction.
-  double time_resolution{0.0};        ///< Time resolution for prediction.
-  double min_slow_speed{0.0};         ///< Minimum slow speed.
-  double delay_until_departure{0.0};  ///< Delay before departure.
-  double target_velocity{0.0};        ///< Target velocity.
+  double min_velocity{0.0};                   ///< Minimum velocity.
+  double acceleration{0.0};                   ///< Acceleration value.
+  double max_velocity{0.0};                   ///< Maximum velocity.
+  double time_horizon_for_front_object{0.0};  ///< Time horizon for front object.
+  double time_horizon_for_rear_object{0.0};   ///< Time horizon for rear object.
+  double time_resolution{0.0};                ///< Time resolution for prediction.
+  double delay_until_departure{0.0};          ///< Delay before departure.
 };
 
 /**

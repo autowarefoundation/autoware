@@ -225,15 +225,20 @@ std::vector<PredictedPathWithPolygon> getPredictedPathFromObj(
 std::vector<PoseWithVelocityStamped> createPredictedPath(
   const std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::vector<PathPointWithLaneId> & path_points,
-  const geometry_msgs::msg::Pose & vehicle_pose, const double current_velocity, size_t ego_seg_idx)
+  const geometry_msgs::msg::Pose & vehicle_pose, const double current_velocity,
+  const size_t ego_seg_idx, const bool is_object_front, const bool limit_to_max_velocity)
 {
   if (path_points.empty()) {
     return {};
   }
 
-  const double min_slow_down_speed = ego_predicted_path_params->min_slow_speed;
+  const double min_velocity = ego_predicted_path_params->min_velocity;
   const double acceleration = ego_predicted_path_params->acceleration;
-  const double time_horizon = ego_predicted_path_params->time_horizon;
+  const double max_velocity = limit_to_max_velocity ? ego_predicted_path_params->max_velocity
+                                                    : std::numeric_limits<double>::infinity();
+  const double time_horizon = is_object_front
+                                ? ego_predicted_path_params->time_horizon_for_front_object
+                                : ego_predicted_path_params->time_horizon_for_rear_object;
   const double time_resolution = ego_predicted_path_params->time_resolution;
 
   std::vector<PoseWithVelocityStamped> predicted_path;
@@ -241,7 +246,8 @@ std::vector<PoseWithVelocityStamped> createPredictedPath(
     convertToFrenetPoint(path_points, vehicle_pose.position, ego_seg_idx);
 
   for (double t = 0.0; t < time_horizon + 1e-3; t += time_resolution) {
-    const double velocity = std::max(current_velocity + acceleration * t, min_slow_down_speed);
+    const double velocity =
+      std::clamp(current_velocity + acceleration * t, min_velocity, max_velocity);
     const double length = current_velocity * t + 0.5 * acceleration * t * t;
     const auto pose =
       motion_utils::calcInterpolatedPose(path_points, vehicle_pose_frenet.length + length);

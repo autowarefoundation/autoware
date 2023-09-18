@@ -1584,10 +1584,13 @@ bool GoalPlannerModule::isSafePath() const
   RCLCPP_DEBUG(getLogger(), "current_path_idx %ld", status_.current_path_idx);
   utils::start_goal_planner_common::updatePathProperty(
     ego_predicted_path_params_, terminal_velocity_and_accel);
+  // TODO(Sugahara): shoule judge is_object_front properly
+  const bool is_object_front = true;
+  const bool limit_to_max_velocity = true;
   const auto ego_predicted_path =
     behavior_path_planner::utils::path_safety_checker::createPredictedPath(
       ego_predicted_path_params_, pull_over_path.points, current_pose, current_velocity,
-      ego_seg_idx);
+      ego_seg_idx, is_object_front, limit_to_max_velocity);
 
   // filtering objects with velocity, position and class
   const auto & filtered_objects = utils::path_safety_checker::filterObjects(

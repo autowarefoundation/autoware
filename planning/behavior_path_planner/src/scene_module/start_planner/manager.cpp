@@ -163,18 +163,20 @@ StartPlannerModuleManager::StartPlannerModuleManager(
   // EgoPredictedPath
   std::string ego_path_ns = base_ns + "ego_predicted_path.";
   {
+    p.ego_predicted_path_params.min_velocity =
+      node->declare_parameter<double>(ego_path_ns + "min_velocity");
     p.ego_predicted_path_params.acceleration =
       node->declare_parameter<double>(ego_path_ns + "acceleration");
-    p.ego_predicted_path_params.time_horizon =
-      node->declare_parameter<double>(ego_path_ns + "time_horizon");
+    p.ego_predicted_path_params.max_velocity =
+      node->declare_parameter<double>(ego_path_ns + "max_velocity");
+    p.ego_predicted_path_params.time_horizon_for_front_object =
+      node->declare_parameter<double>(ego_path_ns + "time_horizon_for_front_object");
+    p.ego_predicted_path_params.time_horizon_for_rear_object =
+      node->declare_parameter<double>(ego_path_ns + "time_horizon_for_rear_object");
     p.ego_predicted_path_params.time_resolution =
       node->declare_parameter<double>(ego_path_ns + "time_resolution");
-    p.ego_predicted_path_params.min_slow_speed =
-      node->declare_parameter<double>(ego_path_ns + "min_slow_speed");
     p.ego_predicted_path_params.delay_until_departure =
       node->declare_parameter<double>(ego_path_ns + "delay_until_departure");
-    p.ego_predicted_path_params.target_velocity =
-      node->declare_parameter<double>(ego_path_ns + "target_velocity");
   }
 
   // ObjectFilteringParams

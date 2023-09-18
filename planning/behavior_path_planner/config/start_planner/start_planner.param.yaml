@@ -79,12 +79,13 @@
       path_safety_check:
         # EgoPredictedPath
         ego_predicted_path:
+          min_velocity: 0.0
           acceleration: 1.0
-          time_horizon: 10.0
+          max_velocity: 1.0
+          time_horizon_for_front_object: 10.0
+          time_horizon_for_rear_object: 10.0
           time_resolution: 0.5
-          min_slow_speed: 0.0
           delay_until_departure: 1.0
-          target_velocity: 1.0
         # For target object filtering
         target_filtering:
           safety_check_time_horizon: 5.0
