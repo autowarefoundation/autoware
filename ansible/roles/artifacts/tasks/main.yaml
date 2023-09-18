@@ -2,6 +2,7 @@
 - name: Create {{ data_dir }}/yabloc_pose_initializer directory
   ansible.builtin.file:
     path: "{{ data_dir }}/yabloc_pose_initializer"
+    mode: "755"
     state: directory
 
 - name: Download yabloc_pose_initializer/resources.tar.gz
@@ -16,6 +17,7 @@
 - name: Create {{ data_dir }}/image_projection_based_fusion directory
   ansible.builtin.file:
     path: "{{ data_dir }}/image_projection_based_fusion"
+    mode: "755"
     state: directory
 
 - name: Download image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx
@@ -38,6 +40,7 @@
 - name: Create {{ data_dir }}/lidar_apollo_instance_segmentation directory
   ansible.builtin.file:
     path: "{{ data_dir }}/lidar_apollo_instance_segmentation"
+    mode: "755"
     state: directory
 
 - name: Download lidar_apollo_instance_segmentation/vlp-16.onnx
@@ -68,6 +71,7 @@
 - name: Create {{ data_dir }}/lidar_centerpoint directory
   ansible.builtin.file:
     path: "{{ data_dir }}/lidar_centerpoint"
+    mode: "755"
     state: directory
 
 - name: Download lidar_centerpoint/pts_voxel_encoder_centerpoint.onnx
@@ -106,6 +110,7 @@
 - name: Create {{ data_dir }}/tensorrt_yolo directory
   ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_yolo"
+    mode: "755"
     state: directory
 
 - name: Download tensorrt_yolo/yolov3.onnx
@@ -176,6 +181,7 @@
 - name: Create {{ data_dir }}/tensorrt_yolox directory
   ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_yolox"
+    mode: "755"
     state: directory
 
 - name: Download tensorrt_yolox/yolox-tiny.onnx
@@ -214,6 +220,7 @@
 - name: Create {{ data_dir }}/traffic_light_classifier directory
   ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_classifier"
+    mode: "755"
     state: directory
 
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx
@@ -276,6 +283,7 @@
 - name: Create {{ data_dir }}/traffic_light_fine_detector directory
   ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_fine_detector"
+    mode: "755"
     state: directory
 
 - name: Download traffic_light_fine_detector/tlr_yolox_s_batch_1.onnx
@@ -314,6 +322,7 @@
 - name: Create {{ data_dir }}/traffic_light_ssd_fine_detector directory
   ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_ssd_fine_detector"
+    mode: "755"
     state: directory
 
 - name: Download traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx
