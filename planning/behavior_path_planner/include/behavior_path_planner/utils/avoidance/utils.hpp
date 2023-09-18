@@ -89,7 +89,8 @@ std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
 
 std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const bool is_object_front, const std::shared_ptr<AvoidanceParameters> & parameters);
+  const bool is_object_front, const bool limit_to_max_velocity,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
 
 double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const double v);
 

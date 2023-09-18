@@ -16,6 +16,7 @@
 
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
@@ -1445,34 +1446,29 @@ AvoidLineArray combineRawShiftLinesWithUniqueCheck(
 
 std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const bool is_object_front, const std::shared_ptr<AvoidanceParameters> & parameters)
+  const bool is_object_front, const bool limit_to_max_velocity,
+  const std::shared_ptr<AvoidanceParameters> & parameters)
 {
-  if (path.points.empty()) {
-    return {};
-  }
-
-  const auto & acceleration = parameters->max_acceleration;
   const auto & vehicle_pose = planner_data->self_odometry->pose.pose;
   const auto & initial_velocity = std::abs(planner_data->self_odometry->twist.twist.linear.x);
-  const auto & time_horizon = is_object_front ? parameters->time_horizon_for_front_object
-                                              : parameters->time_horizon_for_rear_object;
-  const auto & time_resolution = parameters->safety_check_time_resolution;
-
   const size_t ego_seg_idx = planner_data->findEgoSegmentIndex(path.points);
-  std::vector<PoseWithVelocityStamped> predicted_path;
-  const auto vehicle_pose_frenet =
-    convertToFrenetPoint(path.points, vehicle_pose.position, ego_seg_idx);
 
-  for (double t = 0.0; t < time_horizon + 1e-3; t += time_resolution) {
-    const double velocity =
-      std::max(initial_velocity + acceleration * t, parameters->min_slow_down_speed);
-    const double length = initial_velocity * t + 0.5 * acceleration * t * t;
-    const auto pose =
-      motion_utils::calcInterpolatedPose(path.points, vehicle_pose_frenet.length + length);
-    predicted_path.emplace_back(t, pose, velocity);
-  }
+  auto ego_predicted_path_params =
+    std::make_shared<behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams>();
 
-  return predicted_path;
+  ego_predicted_path_params->min_velocity = parameters->min_slow_down_speed;
+  ego_predicted_path_params->acceleration = parameters->max_acceleration;
+  ego_predicted_path_params->max_velocity = std::numeric_limits<double>::infinity();
+  ego_predicted_path_params->time_horizon_for_front_object =
+    parameters->time_horizon_for_front_object;
+  ego_predicted_path_params->time_horizon_for_rear_object =
+    parameters->time_horizon_for_rear_object;
+  ego_predicted_path_params->time_resolution = parameters->safety_check_time_resolution;
+  ego_predicted_path_params->delay_until_departure = 0.0;
+
+  return behavior_path_planner::utils::path_safety_checker::createPredictedPath(
+    ego_predicted_path_params, path.points, vehicle_pose, initial_velocity, ego_seg_idx,
+    is_object_front, limit_to_max_velocity);
 }
 
 ExtendedPredictedObject transform(

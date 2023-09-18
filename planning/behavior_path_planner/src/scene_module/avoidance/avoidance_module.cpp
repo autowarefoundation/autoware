@@ -1842,10 +1842,11 @@ bool AvoidanceModule::isSafePath(
     return true;  // if safety check is disabled, it always return safe.
   }
 
-  const auto ego_predicted_path_for_front_object =
-    utils::avoidance::convertToPredictedPath(shifted_path.path, planner_data_, true, parameters_);
-  const auto ego_predicted_path_for_rear_object =
-    utils::avoidance::convertToPredictedPath(shifted_path.path, planner_data_, false, parameters_);
+  const bool limit_to_max_velocity = false;
+  const auto ego_predicted_path_for_front_object = utils::avoidance::convertToPredictedPath(
+    shifted_path.path, planner_data_, true, limit_to_max_velocity, parameters_);
+  const auto ego_predicted_path_for_rear_object = utils::avoidance::convertToPredictedPath(
+    shifted_path.path, planner_data_, false, limit_to_max_velocity, parameters_);
 
   const auto ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   const auto is_right_shift = [&]() -> std::optional<bool> {
