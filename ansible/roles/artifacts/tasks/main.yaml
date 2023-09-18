@@ -1,6 +1,6 @@
 # yabloc_pose_initializer
 - name: Create {{ data_dir }}/yabloc_pose_initializer directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/yabloc_pose_initializer"
     state: directory
 
@@ -14,7 +14,7 @@
 
 # image_projection_based_fusion
 - name: Create {{ data_dir }}/image_projection_based_fusion directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/image_projection_based_fusion"
     state: directory
 
@@ -36,7 +36,7 @@
 
 # lidar_apollo_instance_segmentation
 - name: Create {{ data_dir }}/lidar_apollo_instance_segmentation directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/lidar_apollo_instance_segmentation"
     state: directory
 
@@ -66,7 +66,7 @@
 
 # lidar_centerpoint
 - name: Create {{ data_dir }}/lidar_centerpoint directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/lidar_centerpoint"
     state: directory
 
@@ -104,7 +104,7 @@
 
 # tensorrt_yolo
 - name: Create {{ data_dir }}/tensorrt_yolo directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_yolo"
     state: directory
 
@@ -174,7 +174,7 @@
 
 # tensorrt_yolox
 - name: Create {{ data_dir }}/tensorrt_yolox directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_yolox"
     state: directory
 
@@ -212,7 +212,7 @@
 
 # traffic_light_classifier
 - name: Create {{ data_dir }}/traffic_light_classifier directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_classifier"
     state: directory
 
@@ -274,7 +274,7 @@
 
 # traffic_light_fine_detector
 - name: Create {{ data_dir }}/traffic_light_fine_detector directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_fine_detector"
     state: directory
 
@@ -312,7 +312,7 @@
 
 # traffic_light_ssd_fine_detector
 - name: Create {{ data_dir }}/traffic_light_ssd_fine_detector directory
-  file:
+  ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_ssd_fine_detector"
     state: directory
 
