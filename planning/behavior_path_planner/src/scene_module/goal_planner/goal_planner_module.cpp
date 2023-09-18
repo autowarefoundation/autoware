@@ -669,7 +669,9 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
   if (!status_.is_safe_static_objects) {
     // situation : not safe against static objects use stop_path
     setStopPath(output);
-  } else if (!isSafePath() && status_.has_decided_path && isActivated()) {
+  } else if (
+    parameters_->safety_check_params.enable_safety_check && !isSafePath() &&
+    status_.has_decided_path && isActivated()) {
     // situation : not safe against dynamic objects after approval
     // insert stop point in current path if ego is able to stop with acceleration and jerk
     // constraints
@@ -701,7 +703,8 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output)
   // for the next loop setOutput().
   // this is used to determine whether to generate a new stop path or keep the current stop path.
   status_.prev_is_safe = status_.is_safe_static_objects;
-  status_.prev_is_safe_dynamic_objects = isSafePath();
+  status_.prev_is_safe_dynamic_objects =
+    parameters_->safety_check_params.enable_safety_check ? isSafePath() : true;
 }
 
 void GoalPlannerModule::setStopPath(BehaviorModuleOutput & output)
