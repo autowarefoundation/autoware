@@ -1,5 +1,5 @@
 # yabloc_pose_initializer
-- name: Create {{ data_dir }}/yabloc_pose_initializer directory
+- name: Create yabloc_pose_initializer directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/yabloc_pose_initializer"
     mode: "755"
@@ -14,7 +14,7 @@
     checksum: sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a
 
 # image_projection_based_fusion
-- name: Create {{ data_dir }}/image_projection_based_fusion directory
+- name: Create image_projection_based_fusion directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/image_projection_based_fusion"
     mode: "755"
@@ -37,7 +37,7 @@
     checksum: md5:2c7108245240fbd7bf0104dd68225868
 
 # lidar_apollo_instance_segmentation
-- name: Create {{ data_dir }}/lidar_apollo_instance_segmentation directory
+- name: Create lidar_apollo_instance_segmentation directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/lidar_apollo_instance_segmentation"
     mode: "755"
@@ -68,7 +68,7 @@
     checksum: md5:b2d709f56f73ae2518c9bf4d0214468f
 
 # lidar_centerpoint
-- name: Create {{ data_dir }}/lidar_centerpoint directory
+- name: Create lidar_centerpoint directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/lidar_centerpoint"
     mode: "755"
@@ -107,7 +107,7 @@
     checksum: md5:e4658325b70222f7c3637fe00e586b82
 
 # tensorrt_yolo
-- name: Create {{ data_dir }}/tensorrt_yolo directory
+- name: Create tensorrt_yolo directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_yolo"
     mode: "755"
@@ -178,7 +178,7 @@
     checksum: sha256:634a1132eb33f8091d60f2c346ababe8b905ae08387037aed883953b7329af84
 
 # tensorrt_yolox
-- name: Create {{ data_dir }}/tensorrt_yolox directory
+- name: Create tensorrt_yolox directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/tensorrt_yolox"
     mode: "755"
@@ -217,7 +217,7 @@
     checksum: sha256:3540a365bfd6d8afb1b5d8df4ec47f82cb984760d3270c9b41dbbb3422d09a0c
 
 # traffic_light_classifier
-- name: Create {{ data_dir }}/traffic_light_classifier directory
+- name: Create traffic_light_classifier directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_classifier"
     mode: "755"
@@ -280,7 +280,7 @@
     checksum: sha256:1a5a49eeec5593963eab8d70f48b8a01bfb07e753e9688eb1510ad26e803579d
 
 # traffic_light_fine_detector
-- name: Create {{ data_dir }}/traffic_light_fine_detector directory
+- name: Create traffic_light_fine_detector directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_fine_detector"
     mode: "755"
@@ -319,7 +319,7 @@
     checksum: md5:e9f45efb02f2a9aa8ac27b3d5c164905
 
 # traffic_light_ssd_fine_detector
-- name: Create {{ data_dir }}/traffic_light_ssd_fine_detector directory
+- name: Create traffic_light_ssd_fine_detector directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/traffic_light_ssd_fine_detector"
     mode: "755"
