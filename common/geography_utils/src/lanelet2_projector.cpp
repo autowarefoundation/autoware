@@ -43,13 +43,11 @@ std::unique_ptr<lanelet::Projector> get_lanelet2_projector(const MapProjectorInf
     lanelet::Origin origin{position};
     lanelet::projection::TransverseMercatorProjector projector{origin};
     return std::make_unique<lanelet::projection::TransverseMercatorProjector>(projector);
-
-  } else {
-    const std::string error_msg =
-      "Invalid map projector type: " + projector_info.projector_type +
-      ". Currently supported types: MGRS, LocalCartesianUTM, and TransverseMercator";
-    throw std::invalid_argument(error_msg);
   }
+  const std::string error_msg =
+    "Invalid map projector type: " + projector_info.projector_type +
+    ". Currently supported types: MGRS, LocalCartesianUTM, and TransverseMercator";
+  throw std::invalid_argument(error_msg);
 }
 
 }  // namespace geography_utils
