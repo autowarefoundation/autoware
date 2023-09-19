@@ -289,6 +289,10 @@ bool GeometricParallelParking::planPullOut(
     PathWithLaneId road_center_line_path =
       planner_data_->route_handler->getCenterLinePath(road_lanes, s_start, s_end, true);
 
+    if (road_center_line_path.points.empty()) {
+      continue;
+    }
+
     // check the continuity of straight path and arc path
     const Pose & road_path_first_pose = road_center_line_path.points.front().point.pose;
     const Pose & arc_path_last_pose = arc_paths.back().points.back().point.pose;
