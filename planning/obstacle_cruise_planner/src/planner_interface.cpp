@@ -380,7 +380,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateStopTrajectory(
     // virtual wall marker for stop obstacle
     const auto markers = motion_utils::createStopVirtualWallMarker(
       output_traj_points.at(*zero_vel_idx).pose, "obstacle stop", planner_data.current_time, 0,
-      abs_ego_offset);
+      abs_ego_offset, "", planner_data.is_driving_forward);
     tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->stop_wall_marker);
     debug_data_ptr_->obstacles_to_stop.push_back(*closest_stop_obstacle);
 
@@ -623,7 +623,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
 
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(slow_down_wall_idx).pose, "obstacle slow down",
-        planner_data.current_time, i, abs_ego_offset);
+        planner_data.current_time, i, abs_ego_offset, "", planner_data.is_driving_forward);
       tier4_autoware_utils::appendMarkerArray(markers, &debug_data_ptr_->slow_down_wall_marker);
     }
 
@@ -631,14 +631,14 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     if (slow_down_start_idx) {
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(*slow_down_start_idx).pose, "obstacle slow down start",
-        planner_data.current_time, i * 2, abs_ego_offset);
+        planner_data.current_time, i * 2, abs_ego_offset, "", planner_data.is_driving_forward);
       tier4_autoware_utils::appendMarkerArray(
         markers, &debug_data_ptr_->slow_down_debug_wall_marker);
     }
     if (slow_down_end_idx) {
       const auto markers = motion_utils::createSlowDownVirtualWallMarker(
         slow_down_traj_points.at(*slow_down_end_idx).pose, "obstacle slow down end",
-        planner_data.current_time, i * 2 + 1, abs_ego_offset);
+        planner_data.current_time, i * 2 + 1, abs_ego_offset, "", planner_data.is_driving_forward);
       tier4_autoware_utils::appendMarkerArray(
         markers, &debug_data_ptr_->slow_down_debug_wall_marker);
     }

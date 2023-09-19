@@ -36,6 +36,7 @@ struct VirtualWall
   std::string ns{};
   VirtualWallType style = stop;
   double longitudinal_offset{};
+  bool is_driving_forward{true};
 };
 typedef std::vector<VirtualWall> VirtualWalls;
 
@@ -52,7 +53,7 @@ class VirtualWallMarkerCreator
   using create_wall_function = std::function<visualization_msgs::msg::MarkerArray(
     const geometry_msgs::msg::Pose & pose, const std::string & module_name,
     const rclcpp::Time & now, const int32_t id, const double longitudinal_offset,
-    const std::string & ns_prefix)>;
+    const std::string & ns_prefix, const bool is_driving_forward)>;
 
   VirtualWalls virtual_walls;
   std::unordered_map<std::string, MarkerCount> marker_count_per_namespace;

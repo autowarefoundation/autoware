@@ -90,10 +90,11 @@ namespace motion_utils
 {
 visualization_msgs::msg::MarkerArray createStopVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
-  const int32_t id, const double longitudinal_offset, const std::string & ns_prefix)
+  const int32_t id, const double longitudinal_offset, const std::string & ns_prefix,
+  const bool is_driving_forward)
 {
-  const auto pose_with_offset =
-    tier4_autoware_utils::calcOffsetPose(pose, longitudinal_offset, 0.0, 0.0);
+  const auto pose_with_offset = tier4_autoware_utils::calcOffsetPose(
+    pose, longitudinal_offset * (is_driving_forward ? 1.0 : -1.0), 0.0, 0.0);
   return createVirtualWallMarkerArray(
     pose_with_offset, module_name, ns_prefix + "stop_", now, id,
     createMarkerColor(1.0, 0.0, 0.0, 0.5));
@@ -101,10 +102,11 @@ visualization_msgs::msg::MarkerArray createStopVirtualWallMarker(
 
 visualization_msgs::msg::MarkerArray createSlowDownVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
-  const int32_t id, const double longitudinal_offset, const std::string & ns_prefix)
+  const int32_t id, const double longitudinal_offset, const std::string & ns_prefix,
+  const bool is_driving_forward)
 {
-  const auto pose_with_offset =
-    tier4_autoware_utils::calcOffsetPose(pose, longitudinal_offset, 0.0, 0.0);
+  const auto pose_with_offset = tier4_autoware_utils::calcOffsetPose(
+    pose, longitudinal_offset * (is_driving_forward ? 1.0 : -1.0), 0.0, 0.0);
   return createVirtualWallMarkerArray(
     pose_with_offset, module_name, ns_prefix + "slow_down_", now, id,
     createMarkerColor(1.0, 1.0, 0.0, 0.5));
@@ -112,10 +114,11 @@ visualization_msgs::msg::MarkerArray createSlowDownVirtualWallMarker(
 
 visualization_msgs::msg::MarkerArray createDeadLineVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
-  const int32_t id, const double longitudinal_offset, const std::string & ns_prefix)
+  const int32_t id, const double longitudinal_offset, const std::string & ns_prefix,
+  const bool is_driving_forward)
 {
-  const auto pose_with_offset =
-    tier4_autoware_utils::calcOffsetPose(pose, longitudinal_offset, 0.0, 0.0);
+  const auto pose_with_offset = tier4_autoware_utils::calcOffsetPose(
+    pose, longitudinal_offset * (is_driving_forward ? 1.0 : -1.0), 0.0, 0.0);
   return createVirtualWallMarkerArray(
     pose_with_offset, module_name, ns_prefix + "dead_line_", now, id,
     createMarkerColor(0.0, 1.0, 0.0, 0.5));

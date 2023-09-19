@@ -66,7 +66,7 @@ visualization_msgs::msg::MarkerArray VirtualWallMarkerCreator::create_markers(
     }
     auto markers = create_fn(
       virtual_wall.pose, virtual_wall.text, now, 0, virtual_wall.longitudinal_offset,
-      virtual_wall.ns);
+      virtual_wall.ns, virtual_wall.is_driving_forward);
     for (auto & marker : markers.markers) {
       marker.id = marker_count_per_namespace[marker.ns].current++;
       marker_array.markers.push_back(marker);
