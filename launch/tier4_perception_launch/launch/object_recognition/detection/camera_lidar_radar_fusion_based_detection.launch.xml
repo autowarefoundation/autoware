@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- Interface param -->
+  <!-- Interface parameters -->
   <arg name="output/objects" default="objects"/>
 
-  <!-- LiDAR param -->
+  <!-- LiDAR parameters -->
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="container_name" default="pointcloud_container"/>
 
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`, `pointpainting`, `clustering`"/>
-  <arg name="score_threshold" default="0.35"/>
+  <arg name="lidar_detection_score_threshold" default="0.35"/>
 
   <arg name="use_object_filter" default="true" description="use object filter"/>
   <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
@@ -17,7 +17,7 @@
   <arg name="remove_unknown" default="true"/>
   <arg name="trust_distance" default="30.0"/>
 
-  <!-- Camera param -->
+  <!-- Camera parameters -->
   <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
   <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
   <arg name="detection_rois0" default="/perception/object_recognition/detection/rois0" description="detection rois output topic name"/>
@@ -44,8 +44,9 @@
   <arg name="detection_rois7" default="/perception/object_recognition/detection/rois7"/>
   <arg name="image_number" default="1" description="choose image raw number(1-8)"/>
 
-  <!-- Radar param -->
+  <!-- Radar parameters -->
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
+  <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
@@ -60,7 +61,7 @@
     <arg name="image_number" value="$(var image_number)"/>
   </include> -->
 
-  <!-- Radar detection-->
+  <!-- Radar detection -->
   <group>
     <push-ros-namespace namespace="radar"/>
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/radar_based_detection.launch.xml">
@@ -218,7 +219,7 @@
       <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
         <arg name="output/objects" value="objects"/>
-        <arg name="score_threshold" value="$(var score_threshold)"/>
+        <arg name="score_threshold" value="$(var lidar_detection_score_threshold)"/>
         <arg name="model_name" value="$(var centerpoint_model_name)"/>
         <arg name="model_path" value="$(var centerpoint_model_path)"/>
         <arg name="model_param_path" value="$(var lidar_model_param_path)/$(var centerpoint_model_name).param.yaml"/>
@@ -290,7 +291,7 @@
     </include>
   </group>
 
-  <!-- Radar fusion-->
+  <!-- Radar fusion -->
   <group>
     <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
       <arg name="input/objects" value="$(var lidar_detection_model)/objects"/>
@@ -299,7 +300,7 @@
     </include>
   </group>
 
-  <!-- Camera late fusion-->
+  <!-- Camera late fusion -->
   <group>
     <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_detected_object_fusion.launch.xml">
       <arg name="input/camera_info0" value="$(var camera_info0)"/>
@@ -381,7 +382,7 @@
   <group if="$(eval &quot;'$(var objects_filter_method)'=='lanelet_filter'&quot;)">
     <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml" if="$(var use_object_filter)">
       <arg name="input/object" value="objects_before_filter"/>
-      <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="output/object" value="near_objects"/>
       <arg name="filtering_range_param" value="$(var object_recognition_detection_object_lanelet_filter_param_path)"/>
     </include>
   </group>
@@ -389,8 +390,18 @@
   <group if="$(eval &quot;'$(var objects_filter_method)'=='position_filter'&quot;)">
     <include file="$(find-pkg-share detected_object_validation)/launch/object_position_filter.launch.xml" if="$(var use_object_filter)">
       <arg name="input/object" value="objects_before_filter"/>
-      <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="output/object" value="near_objects"/>
       <arg name="filtering_range_param" value="$(var object_recognition_detection_object_position_filter_param_path)"/>
     </include>
   </group>
+
+  <!-- Merge far_objects and near_objects. This merger will be removed after tracking fusion operates stably. -->
+  <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+    <arg name="input/object0" value="near_objects"/>
+    <arg name="input/object1" value="radar/far_objects"/>
+    <arg name="output/object" value="$(var output/objects)"/>
+    <arg name="priority_mode" value="0"/>
+    <arg name="data_association_matrix_path" value="$(var object_recognition_detection_object_merger_data_association_matrix_param_path)"/>
+    <arg name="distance_threshold_list_path" value="$(var object_recognition_detection_object_merger_distance_threshold_list_path)"/>
+  </include>
 </launch>

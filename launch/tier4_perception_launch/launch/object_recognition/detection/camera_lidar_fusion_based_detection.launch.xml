@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- Interface param -->
+  <!-- Interface parameters -->
   <arg name="output/objects" default="objects"/>
 
-  <!-- LiDAR param -->
+  <!-- LiDAR parameters -->
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="container_name" default="pointcloud_container"/>
@@ -18,7 +18,7 @@
   <arg name="trust_distance" default="30.0"/>
   <arg name="use_roi_based_cluster" default="false"/>
 
-  <!-- Camera param -->
+  <!-- Camera parameters -->
   <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
   <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
   <arg name="detection_rois0" default="/perception/object_recognition/detection/rois0" description="detection rois output topic name"/>

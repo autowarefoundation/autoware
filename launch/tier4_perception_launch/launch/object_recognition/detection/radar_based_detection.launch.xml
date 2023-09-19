@@ -2,14 +2,14 @@
 <launch>
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
   <arg name="output/objects" default="far_objects"/>
-  <arg name="filter/angle_threshold" default="1.0472"/>
-  <arg name="filter/velocity_threshold" default="3.0"/>
-  <arg name="split/velocity_threshold" default="4.5"/>
-  <arg name="split_range" default="70.0"/>
-  <arg name="clustering/angle_threshold" default="0.174"/>
+  <arg name="filter/angle_threshold" default="1.221"/>
+  <arg name="filter/velocity_threshold" default="1.5"/>
+  <arg name="split/velocity_threshold" default="5.5"/>
+  <arg name="split_range" default="80.0"/>
+  <arg name="clustering/angle_threshold" default="0.349"/>
   <arg name="clustering/distance_threshold" default="10.0"/>
-  <arg name="clustering/velocity_threshold" default="4.0"/>
-  <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_position_filter.param.yaml"/>
+  <arg name="clustering/velocity_threshold" default="5.0"/>
+  <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
 
   <!-- Detection for far dynamic objects -->
   <include file="$(find-pkg-share radar_crossing_objects_noise_filter)/launch/radar_crossing_objects_noise_filter.launch.xml">
