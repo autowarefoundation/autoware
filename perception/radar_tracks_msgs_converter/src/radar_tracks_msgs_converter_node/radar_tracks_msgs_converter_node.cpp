@@ -214,8 +214,15 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
     kinematics.orientation_availability = TrackedObjectKinematics::AVAILABLE;
     kinematics.is_stationary = false;
 
-    // Twist conversion
-    geometry_msgs::msg::Vector3 compensated_velocity = radar_track.velocity;
+    geometry_msgs::msg::Vector3 compensated_velocity{};
+    {
+      double rotate_yaw = tf2::getYaw(transform_->transform.rotation);
+      const geometry_msgs::msg::Vector3 & vel = radar_track.velocity;
+      compensated_velocity.x = vel.x * std::cos(rotate_yaw) - vel.y * std::sin(rotate_yaw);
+      compensated_velocity.y = vel.x * std::sin(rotate_yaw) + vel.y * std::cos(rotate_yaw);
+      compensated_velocity.z = radar_track.velocity.z;
+    }
+
     if (node_param_.use_twist_compensation) {
       if (odometry_data_) {
         compensated_velocity.x += odometry_data_->twist.twist.linear.x;
@@ -235,12 +242,12 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
 
     double yaw = tier4_autoware_utils::normalizeRadian(
       std::atan2(compensated_velocity.y, compensated_velocity.x));
-    radar_pose_stamped.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
 
     geometry_msgs::msg::PoseStamped transformed_pose_stamped{};
     tf2::doTransform(radar_pose_stamped, transformed_pose_stamped, *transform_);
     kinematics.pose_with_covariance.pose = transformed_pose_stamped.pose;
-
+    kinematics.pose_with_covariance.pose.orientation =
+      tier4_autoware_utils::createQuaternionFromYaw(yaw);
     {
       auto & pose_cov = kinematics.pose_with_covariance.covariance;
       auto & radar_position_cov = radar_track.position_covariance;
