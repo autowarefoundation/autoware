@@ -131,11 +131,11 @@ double calcObstacleMaxLength(const Shape & shape)
 }
 
 TrajectoryPoint getExtendTrajectoryPoint(
-  const double extend_distance, const TrajectoryPoint & goal_point)
+  const double extend_distance, const TrajectoryPoint & goal_point, const bool is_driving_forward)
 {
   TrajectoryPoint extend_trajectory_point;
-  extend_trajectory_point.pose =
-    tier4_autoware_utils::calcOffsetPose(goal_point.pose, extend_distance, 0.0, 0.0);
+  extend_trajectory_point.pose = tier4_autoware_utils::calcOffsetPose(
+    goal_point.pose, extend_distance * (is_driving_forward ? 1.0 : -1.0), 0.0, 0.0);
   extend_trajectory_point.longitudinal_velocity_mps = goal_point.longitudinal_velocity_mps;
   extend_trajectory_point.lateral_velocity_mps = goal_point.lateral_velocity_mps;
   extend_trajectory_point.acceleration_mps2 = goal_point.acceleration_mps2;
@@ -147,6 +147,8 @@ std::vector<TrajectoryPoint> extendTrajectoryPoints(
   const double step_length)
 {
   auto output_points = input_points;
+  const auto is_driving_forward_opt = motion_utils::isDrivingForwardWithTwist(input_points);
+  const bool is_driving_forward = is_driving_forward_opt ? *is_driving_forward_opt : true;
 
   if (extend_distance < std::numeric_limits<double>::epsilon()) {
     return output_points;
@@ -156,11 +158,13 @@ std::vector<TrajectoryPoint> extendTrajectoryPoints(
 
   double extend_sum = 0.0;
   while (extend_sum <= (extend_distance - step_length)) {
-    const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_sum, goal_point);
+    const auto extend_trajectory_point =
+      getExtendTrajectoryPoint(extend_sum, goal_point, is_driving_forward);
     output_points.push_back(extend_trajectory_point);
     extend_sum += step_length;
   }
-  const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_distance, goal_point);
+  const auto extend_trajectory_point =
+    getExtendTrajectoryPoint(extend_distance, goal_point, is_driving_forward);
   output_points.push_back(extend_trajectory_point);
 
   return output_points;
