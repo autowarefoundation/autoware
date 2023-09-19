@@ -66,7 +66,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   turn_signal_publisher_ =
     create_publisher<TurnIndicatorsCommand>("~/output/turn_indicators_cmd", 1);
   hazard_signal_publisher_ = create_publisher<HazardLightsCommand>("~/output/hazard_lights_cmd", 1);
-  modified_goal_publisher_ = create_publisher<PoseWithUuidStamped>("~/output/modified_goal", 1);
+  const auto durable_qos = rclcpp::QoS(1).transient_local();
+  modified_goal_publisher_ =
+    create_publisher<PoseWithUuidStamped>("~/output/modified_goal", durable_qos);
   stop_reason_publisher_ = create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
   reroute_availability_publisher_ =
     create_publisher<RerouteAvailability>("~/output/is_reroute_available", 1);

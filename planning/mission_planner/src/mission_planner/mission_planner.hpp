@@ -75,12 +75,15 @@ private:
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
   rclcpp::Subscription<HADMapBin>::SharedPtr sub_vector_map_;
   rclcpp::Subscription<RerouteAvailability>::SharedPtr sub_reroute_availability_;
+  rclcpp::Subscription<PoseWithUuidStamped>::SharedPtr sub_modified_goal_;
+
   Odometry::ConstSharedPtr odometry_;
   HADMapBin::ConstSharedPtr map_ptr_;
   RerouteAvailability::ConstSharedPtr reroute_availability_;
   void on_odometry(const Odometry::ConstSharedPtr msg);
   void on_map(const HADMapBin::ConstSharedPtr msg);
   void on_reroute_availability(const RerouteAvailability::ConstSharedPtr msg);
+  void on_modified_goal(const PoseWithUuidStamped::ConstSharedPtr msg);
 
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   void clear_route();
@@ -128,8 +131,6 @@ private:
     const ClearMrmRoute::Service::Request::SharedPtr req,
     const ClearMrmRoute::Service::Response::SharedPtr res);
 
-  component_interface_utils::Subscription<ModifiedGoal>::SharedPtr sub_modified_goal_;
-  void on_modified_goal(const ModifiedGoal::Message::ConstSharedPtr msg);
   void on_change_route(
     const SetRoute::Service::Request::SharedPtr req,
     const SetRoute::Service::Response::SharedPtr res);
