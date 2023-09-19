@@ -36,10 +36,8 @@ cv::Point2i to_cv_point(const Eigen::Vector3f & v)
   return pt;
 }
 
-cv::Mat ProjectorModule::project_image(const sensor_msgs::msg::Image & image_msg)
+cv::Mat ProjectorModule::project_image(const cv::Mat & mask_image)
 {
-  cv::Mat mask_image = common::decompress_to_cv_mat(image_msg);
-
   // project semantics on plane
   std::vector<cv::Mat> masks;
   cv::split(mask_image, masks);

@@ -18,10 +18,10 @@
 #include "yabloc_pose_initializer/camera/lane_image.hpp"
 #include "yabloc_pose_initializer/camera/marker_module.hpp"
 #include "yabloc_pose_initializer/camera/projector_module.hpp"
+#include "yabloc_pose_initializer/camera/semantic_segmentation.hpp"
 
 #include <opencv2/core.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <yabloc_pose_initializer/srv/semantic_segmentation.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -42,7 +42,6 @@ public:
   using Image = sensor_msgs::msg::Image;
   using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
   using RequestPoseAlignment = tier4_localization_msgs::srv::PoseWithCovarianceStamped;
-  using SegmentationSrv = yabloc_pose_initializer::srv::SemanticSegmentation;
 
   CameraPoseInitializer();
 
@@ -57,11 +56,12 @@ private:
   rclcpp::Subscription<Image>::SharedPtr sub_image_;
 
   rclcpp::Service<RequestPoseAlignment>::SharedPtr align_server_;
-  rclcpp::Client<SegmentationSrv>::SharedPtr segmentation_client_;
   rclcpp::CallbackGroup::SharedPtr service_callback_group_;
 
   std::optional<Image::ConstSharedPtr> latest_image_msg_{std::nullopt};
   lanelet::ConstLanelets const_lanelets_;
+
+  std::unique_ptr<SemanticSegmentation> semantic_segmentation_{nullptr};
 
   void on_map(const HADMapBin & msg);
   void on_service(

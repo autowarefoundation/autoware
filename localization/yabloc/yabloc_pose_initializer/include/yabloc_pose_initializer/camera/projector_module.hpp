@@ -33,7 +33,7 @@ public:
 
   bool define_project_func();
 
-  cv::Mat project_image(const sensor_msgs::msg::Image & image_msg);
+  cv::Mat project_image(const cv::Mat & mask_image);
 
 private:
   common::CameraInfoSubscriber info_;

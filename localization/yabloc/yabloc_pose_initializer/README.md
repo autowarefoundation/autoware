@@ -1,9 +1,8 @@
 # yabloc_pose_initializer
 
-This package contains some nodes related to initial pose estimation.
+This package contains a node related to initial pose estimation.
 
 - [camera_pose_initializer](#camera_pose_initializer)
-- [semantic_segmentation_server](#semantic_segmentation_server)
 
 Ideally, this package downloads a pre-trained semantic segmentation model during the build and loads it at runtime for initialization.
 However, to handle cases where network connectivity is not available at build time, **the default behavior is not to download the model during build.**
@@ -71,21 +70,3 @@ Converted model URL
 | Name               | Type                                                      | Description                     |
 | ------------------ | --------------------------------------------------------- | ------------------------------- |
 | `yabloc_align_srv` | `tier4_localization_msgs::srv::PoseWithCovarianceStamped` | initial pose estimation request |
-
-### Clients
-
-| Name                        | Type                                                 | Description                   |
-| --------------------------- | ---------------------------------------------------- | ----------------------------- |
-| `semantic_segmentation_srv` | `yabloc_pose_initializer::srv::SemanticSegmentation` | semantic segmentation request |
-
-## semantic_segmentation_server
-
-### Purpose
-
-- This node performs semantic segmentation.
-
-### Services
-
-| Name                        | Type                                                 | Description                   |
-| --------------------------- | ---------------------------------------------------- | ----------------------------- |
-| `semantic_segmentation_srv` | `yabloc_pose_initializer::srv::SemanticSegmentation` | semantic segmentation request |

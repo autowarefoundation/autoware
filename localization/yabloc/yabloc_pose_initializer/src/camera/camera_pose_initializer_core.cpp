@@ -20,6 +20,10 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <cv_bridge/cv_bridge.h>
+
+#include <filesystem>
+
 namespace yabloc
 {
 CameraPoseInitializer::CameraPoseInitializer()
@@ -39,17 +43,17 @@ CameraPoseInitializer::CameraPoseInitializer()
   sub_map_ = create_subscription<HADMapBin>("~/input/vector_map", map_qos, on_map);
   sub_image_ = create_subscription<Image>("~/input/image_raw", 10, on_image);
 
-  // Client
-  segmentation_client_ = create_client<SegmentationSrv>(
-    "~/semantic_segmentation_srv", rmw_qos_profile_services_default, service_callback_group_);
-
   // Server
   auto on_service = std::bind(&CameraPoseInitializer::on_service, this, _1, _2);
   align_server_ = create_service<RequestPoseAlignment>("~/yabloc_align_srv", on_service);
 
-  using namespace std::literals::chrono_literals;
-  while (!segmentation_client_->wait_for_service(1s) && rclcpp::ok()) {
-    RCLCPP_INFO_STREAM(get_logger(), "Waiting for " << segmentation_client_->get_service_name());
+  const std::string model_path = declare_parameter<std::string>("model_path");
+  RCLCPP_INFO_STREAM(get_logger(), "segmentation model path: " + model_path);
+  if (std::filesystem::exists(model_path)) {
+    semantic_segmentation_ = std::make_unique<SemanticSegmentation>(model_path);
+  } else {
+    semantic_segmentation_ = nullptr;
+    SemanticSegmentation::print_error_message(get_logger());
   }
 }
 
@@ -97,31 +101,20 @@ std::optional<double> CameraPoseInitializer::estimate_pose(
     return std::nullopt;
   }
 
-  Image segmented_image;
+  cv::Mat segmented_image;
   {
-    // Call semantic segmentation service
-    auto request = std::make_shared<SegmentationSrv::Request>();
-    request->src_image = *latest_image_msg_.value();
-    auto result_future = segmentation_client_->async_send_request(request);
-    using namespace std::literals::chrono_literals;
-    std::future_status status = result_future.wait_for(1000ms);
-    if (status == std::future_status::ready) {
-      const auto response = result_future.get();
-      if (response->success) {
-        segmented_image = response->dst_image;
-      } else {
-        RCLCPP_WARN_STREAM(get_logger(), "segmentation service failed unexpectedly");
-        // NOTE: Even if the segmentation service fails, the function will still return the
-        // yaw_angle_rad as it is and complete the initialization. The service fails
-        // when the DNN model is not downloaded. Ideally, initialization should rely on
-        // segmentation, but this implementation allows initialization even in cases where network
-        // connectivity is not available.
-        return yaw_angle_rad;
-      }
+    if (semantic_segmentation_) {
+      const cv::Mat src_image =
+        cv_bridge::toCvCopy(*latest_image_msg_.value(), sensor_msgs::image_encodings::BGR8)->image;
+      segmented_image = semantic_segmentation_->inference(src_image);
     } else {
-      RCLCPP_ERROR_STREAM(
-        get_logger(), "segmentation service did not return within the expected time");
-      return std::nullopt;
+      RCLCPP_WARN_STREAM(get_logger(), "segmentation service failed unexpectedly");
+      // NOTE: Even if the segmentation service fails, the function will still return the
+      // yaw_angle_rad as it is and complete the initialization. The service fails
+      // when the DNN model is not downloaded. Ideally, initialization should rely on
+      // segmentation, but this implementation allows initialization even in cases where network
+      // connectivity is not available.
+      return yaw_angle_rad;
     }
   }
 

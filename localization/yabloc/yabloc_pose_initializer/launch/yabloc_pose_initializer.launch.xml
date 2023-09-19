@@ -1,17 +1,13 @@
 <launch>
+  <arg name="model_path" default="$(find-pkg-share yabloc_pose_initializer)/data/saved_model/model_float32.pb"/>
+
   <node name="camera_pose_initializer_node" pkg="yabloc_pose_initializer" exec="camera_pose_initializer_node" output="screen" args="--ros-args --log-level info">
     <param from="$(var camera_pose_initializer_param_path)"/>
+    <param name="model_path" value="$(var model_path)"/>
     <remap from="~/input/camera_info" to="/localization/pose_estimator/yabloc/image_processing/undistorted/camera_info"/>
     <remap from="~/input/image_raw" to="/localization/pose_estimator/yabloc/image_processing/undistorted/image_raw"/>
     <remap from="~/input/vector_map" to="/map/vector_map"/>
     <remap from="~/debug/init_candidates" to="init_candidates"/>
     <remap from="~/yabloc_align_srv" to="/localization/pose_estimator/yabloc/initializer/yabloc_align_srv"/>
-    <remap from="~/semantic_segmentation_srv" to="/localization/pose_estimator/yabloc/initializer/segmentation_srv"/>
-  </node>
-
-  <arg name="model_path" default="$(find-pkg-share yabloc_pose_initializer)/data/saved_model/model_float32.pb"/>
-  <node name="semantic_segmentation_node" pkg="yabloc_pose_initializer" exec="semantic_segmentation_server.py" output="screen" args="--ros-args --log-level info">
-    <param name="model_path" value="$(var model_path)"/>
-    <remap from="semantic_segmentation_srv" to="/localization/pose_estimator/yabloc/initializer/segmentation_srv"/>
   </node>
 </launch>
