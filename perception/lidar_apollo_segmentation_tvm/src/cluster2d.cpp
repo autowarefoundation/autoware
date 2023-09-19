@@ -218,13 +218,13 @@ void Cluster2D::classify(const float * inferred_data)
     for (size_t grid_id = 0; grid_id < obs->grids.size(); grid_id++) {
       int32_t grid = obs->grids[grid_id];
       for (int k = 0; k < num_classes; k++) {
-        obs->meta_type_probs[k] += classify_pt_data[k * siz_ + grid];
+        obs->meta_type_probabilities[k] += classify_pt_data[k * siz_ + grid];
       }
     }
     int meta_type_id = 0;
     for (int k = 0; k < num_classes; k++) {
-      obs->meta_type_probs[k] /= static_cast<float>(obs->grids.size());
-      if (obs->meta_type_probs[k] > obs->meta_type_probs[meta_type_id]) {
+      obs->meta_type_probabilities[k] /= static_cast<float>(obs->grids.size());
+      if (obs->meta_type_probabilities[k] > obs->meta_type_probabilities[meta_type_id]) {
         meta_type_id = k;
       }
     }

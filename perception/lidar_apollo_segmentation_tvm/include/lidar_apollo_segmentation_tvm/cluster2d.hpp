@@ -57,12 +57,12 @@ struct Obstacle
   float height;
   float heading;
   MetaType meta_type;
-  std::vector<float> meta_type_probs;
+  std::vector<float> meta_type_probabilities;
 
   Obstacle() : score(0.0), height(-5.0), heading(0.0), meta_type(MetaType::META_UNKNOWN)
   {
     cloud_ptr.reset(new pcl::PointCloud<pcl::PointXYZI>);
-    meta_type_probs.assign(static_cast<int>(MetaType::MAX_META_TYPE), 0.0);
+    meta_type_probabilities.assign(static_cast<int>(MetaType::MAX_META_TYPE), 0.0);
   }
 };
 
