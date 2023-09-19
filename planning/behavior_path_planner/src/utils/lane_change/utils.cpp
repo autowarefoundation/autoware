@@ -829,19 +829,6 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   return predicted_path;
 }
 
-PredictedPath convertToPredictedPath(
-  const std::vector<PoseWithVelocityStamped> & path, const double time_resolution)
-{
-  PredictedPath predicted_path;
-  predicted_path.time_step = rclcpp::Duration::from_seconds(time_resolution);
-  predicted_path.path.resize(path.size());
-
-  for (size_t i = 0; i < path.size(); ++i) {
-    predicted_path.path.at(i) = path.at(i).pose;
-  }
-  return predicted_path;
-}
-
 bool isParkedObject(
   const PathWithLaneId & path, const RouteHandler & route_handler,
   const ExtendedPredictedObject & object, const double object_check_min_road_shoulder_width,

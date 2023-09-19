@@ -1346,7 +1346,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
   const auto ego_predicted_path = utils::lane_change::convertToPredictedPath(
     lane_change_path, current_twist, current_pose, common_parameters, time_resolution);
   const auto debug_predicted_path =
-    utils::lane_change::convertToPredictedPath(ego_predicted_path, time_resolution);
+    utils::path_safety_checker::convertToPredictedPath(ego_predicted_path, time_resolution);
 
   auto collision_check_objects = target_objects.target_lane;
 

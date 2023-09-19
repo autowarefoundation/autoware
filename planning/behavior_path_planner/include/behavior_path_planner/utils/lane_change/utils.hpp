@@ -160,9 +160,6 @@ std::vector<PoseWithVelocityStamped> convertToPredictedPath(
   const LaneChangePath & lane_change_path, const Twist & vehicle_twist, const Pose & pose,
   const BehaviorPathPlannerParameters & common_parameters, const double resolution);
 
-PredictedPath convertToPredictedPath(
-  const std::vector<PoseWithVelocityStamped> & path, const double time_resolution);
-
 bool isParkedObject(
   const PathWithLaneId & path, const RouteHandler & route_handler,
   const ExtendedPredictedObject & object, const double object_check_min_road_shoulder_width,
