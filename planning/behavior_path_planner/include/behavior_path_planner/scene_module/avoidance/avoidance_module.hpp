@@ -311,8 +311,32 @@ private:
    * @param debug data.
    * @return processed shift lines.
    */
-  AvoidLineArray calcRawShiftLinesFromObjects(
-    AvoidancePlanningData & data, DebugData & debug) const;
+  AvoidOutlines generateAvoidOutline(AvoidancePlanningData & data, DebugData & debug) const;
+
+  /*
+   * @brief merge avoid outlines.
+   * @param original shift lines.
+   * @param debug data.
+   * @return processed shift lines.
+   */
+  AvoidOutlines applyMergeProcess(const AvoidOutlines & outlines, DebugData & debug) const;
+
+  /*
+   * @brief fill gap between two shift lines.
+   * @param original shift lines.
+   * @param debug data.
+   * @return processed shift lines.
+   */
+  AvoidOutlines applyFillGapProcess(const AvoidOutlines & outlines, DebugData & debug) const;
+
+  /*
+   * @brief generate candidate shift lines.
+   * @param one-shot shift lines.
+   * @param path shifter.
+   * @param debug data.
+   */
+  AvoidLineArray generateCandidateShiftLine(
+    const AvoidLineArray & shift_lines, const PathShifter & path_shifter, DebugData & debug) const;
 
   /**
    * @brief clean up raw shift lines.
@@ -325,8 +349,7 @@ private:
    * 3. merge raw shirt lines.
    * 4. trim unnecessary shift lines.
    */
-  AvoidLineArray applyPreProcess(
-    AvoidLineArray & current_raw_shift_points, DebugData & debug) const;
+  AvoidLineArray applyPreProcess(const AvoidOutlines & outlines, DebugData & debug) const;
 
   /*
    * @brief fill gap among shift lines.
@@ -343,6 +366,16 @@ private:
    * @return processed shift lines.
    */
   AvoidLineArray applyMergeProcess(const AvoidLineArray & shift_lines, DebugData & debug) const;
+
+  /*
+   * @brief add return shift line from ego position.
+   * @param current raw shift line.
+   * @param current registered shift line.
+   * @param debug data.
+   */
+  AvoidLineArray applyCombineProcess(
+    const AvoidLineArray & shift_lines, const AvoidLineArray & registered_lines,
+    [[maybe_unused]] DebugData & debug) const;
 
   /*
    * @brief add return shift line from ego position.
@@ -381,13 +414,7 @@ private:
    * @param candidate shift lines.
    * @return new shift lines.
    */
-  AvoidLineArray findNewShiftLine(const AvoidLineArray & shift_lines) const;
-
-  /*
-   * @brief fill gap between two shift lines.
-   * @param original shift lines.
-   */
-  void fillShiftLineGap(AvoidLineArray & shift_lines) const;
+  AvoidLineArray findNewShiftLine(const AvoidLineArray & shift_lines, DebugData & debug) const;
 
   /*
    * @brief generate total shift line. total shift line has shift length and gradient array.
@@ -418,12 +445,6 @@ private:
    * @param threshold.
    */
   void applySimilarGradFilter(AvoidLineArray & shift_lines, const double threshold) const;
-
-  /*
-   * @brief trim invalid shift lines whose gradient it too large to follow.
-   * @param target shift lines.
-   */
-  void applySharpShiftFilter(AvoidLineArray & shift_lines, const double threshold) const;
 
   /**
    * @brief add new shift line to path shifter if the RTC status is activated.

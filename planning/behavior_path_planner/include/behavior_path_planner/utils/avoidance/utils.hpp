@@ -150,6 +150,11 @@ double extendToRoadShoulderDistanceWithPolygon(
 
 void fillAdditionalInfoFromPoint(const AvoidancePlanningData & data, AvoidLineArray & lines);
 
+void fillAdditionalInfoFromLongitudinal(const AvoidancePlanningData & data, AvoidLine & line);
+
+void fillAdditionalInfoFromLongitudinal(
+  const AvoidancePlanningData & data, AvoidOutlines & outlines);
+
 void fillAdditionalInfoFromLongitudinal(const AvoidancePlanningData & data, AvoidLineArray & lines);
 
 AvoidLine fillAdditionalInfo(const AvoidancePlanningData & data, const AvoidLine & line);

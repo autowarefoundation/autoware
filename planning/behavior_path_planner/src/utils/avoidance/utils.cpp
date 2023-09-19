@@ -382,20 +382,7 @@ std::vector<size_t> calcParentIds(const AvoidLineArray & lines1, const AvoidLine
       continue;
     }
 
-    // Id the shift is overlapped, insert the shift point. Additionally, the shift which refers
-    // to the same object id (created by the same object) will be set.
-    //
-    // Why? : think that there are two shifts, avoiding and .
-    // If you register only the avoiding shift, the return-to-center shift will not be generated
-    // when you get too close to or over the obstacle. The return-shift can be handled with
-    // addReturnShift(), but it maybe reasonable to register the return-to-center shift for the
-    // object at the same time as registering the avoidance shift to remove the complexity of the
-    // addReturnShift().
-    for (const auto & al_local : lines1) {
-      if (al_local.object.object.object_id == al.object.object.object_id) {
-        ids.insert(al_local.id);
-      }
-    }
+    ids.insert(al.id);
   }
   return std::vector<size_t>(ids.begin(), ids.end());
 }
@@ -1405,6 +1392,30 @@ void fillAdditionalInfoFromPoint(const AvoidancePlanningData & data, AvoidLineAr
     sl.start_longitudinal = arc.at(sl.start_idx);
     sl.end_idx = findNearestIndex(path.points, sl.end.position);
     sl.end_longitudinal = arc.at(sl.end_idx);
+  }
+}
+
+void fillAdditionalInfoFromLongitudinal(const AvoidancePlanningData & data, AvoidLine & line)
+{
+  const auto & path = data.reference_path;
+  const auto & arc = data.arclength_from_ego;
+
+  line.start_idx = findPathIndexFromArclength(arc, line.start_longitudinal);
+  line.start = path.points.at(line.start_idx).point.pose;
+  line.end_idx = findPathIndexFromArclength(arc, line.end_longitudinal);
+  line.end = path.points.at(line.end_idx).point.pose;
+}
+
+void fillAdditionalInfoFromLongitudinal(
+  const AvoidancePlanningData & data, AvoidOutlines & outlines)
+{
+  for (auto & outline : outlines) {
+    fillAdditionalInfoFromLongitudinal(data, outline.avoid_line);
+    fillAdditionalInfoFromLongitudinal(data, outline.return_line);
+
+    std::for_each(outline.middle_lines.begin(), outline.middle_lines.end(), [&](auto & line) {
+      fillAdditionalInfoFromLongitudinal(data, line);
+    });
   }
 }
 

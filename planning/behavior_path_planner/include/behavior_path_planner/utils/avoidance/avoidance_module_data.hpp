@@ -396,6 +396,9 @@ using ObjectDataArray = std::vector<ObjectData>;
  */
 struct AvoidLine : public ShiftLine
 {
+  // object side
+  bool object_on_right = true;
+
   // Distance from ego to start point in Frenet
   double start_longitudinal = 0.0;
 
@@ -418,6 +421,21 @@ struct AvoidLine : public ShiftLine
   double getGradient() const { return getRelativeLength() / getRelativeLongitudinal(); }
 };
 using AvoidLineArray = std::vector<AvoidLine>;
+
+struct AvoidOutline
+{
+  AvoidOutline(const AvoidLine & avoid_line, const AvoidLine & return_line)
+  : avoid_line{avoid_line}, return_line{return_line}
+  {
+  }
+
+  AvoidLine avoid_line{};
+
+  AvoidLine return_line{};
+
+  AvoidLineArray middle_lines{};
+};
+using AvoidOutlines = std::vector<AvoidOutline>;
 
 /*
  * avoidance state
@@ -534,7 +552,6 @@ struct DebugData
   AvoidLineArray step1_combined_shift_line;
   AvoidLineArray step1_return_shift_line;
   AvoidLineArray step1_front_shift_line;
-  AvoidLineArray step1_shift_line;
 
   // create outline process
   AvoidLineArray step2_merged_shift_line;
@@ -548,7 +565,6 @@ struct DebugData
 
   // registered process
   AvoidLineArray step4_new_shift_line;
-  AvoidLineArray step4_valid_shift_line;
 
   // shift length
   std::vector<double> pos_shift;
