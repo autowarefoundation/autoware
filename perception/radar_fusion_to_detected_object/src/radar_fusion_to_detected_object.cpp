@@ -296,7 +296,7 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
 bool RadarFusionToDetectedObject::isQualified(
   const DetectedObject & object, std::shared_ptr<std::vector<RadarInput>> & radars)
 {
-  if (object.classification[0].probability > param_.threshold_probability) {
+  if (object.existence_probability > param_.threshold_probability) {
     return true;
   } else {
     if (!radars || !(*radars).empty()) {
