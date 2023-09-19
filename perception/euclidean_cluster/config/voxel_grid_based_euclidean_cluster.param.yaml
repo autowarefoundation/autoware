@@ -7,9 +7,11 @@
     max_cluster_size: 3000
     use_height: false
     input_frame: "base_link"
-    max_x: 70.0
-    min_x: -70.0
-    max_y: 70.0
-    min_y: -70.0
-    max_z: 4.5
-    min_z: -4.5
+
+    # low height crop box filter param
+    max_x: 200.0
+    min_x: -200.0
+    max_y: 200.0
+    min_y: -200.0
+    max_z: 2.0
+    min_z: -10.0

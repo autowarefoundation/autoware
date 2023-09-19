@@ -35,7 +35,6 @@ class PointcloudMapFilterPipeline:
         )
         with open(pointcloud_map_filter_param_path, "r") as f:
             self.pointcloud_map_filter_param = yaml.safe_load(f)["/**"]["ros__parameters"]
-        self.use_down_sample_filter = self.pointcloud_map_filter_param["use_down_sample_filter"]
         self.voxel_size = self.pointcloud_map_filter_param["down_sample_voxel_size"]
         self.distance_threshold = self.pointcloud_map_filter_param["distance_threshold"]
         self.downsize_ratio_z_axis = self.pointcloud_map_filter_param["downsize_ratio_z_axis"]
@@ -46,47 +45,40 @@ class PointcloudMapFilterPipeline:
         ]
         self.map_loader_radius = self.pointcloud_map_filter_param["map_loader_radius"]
         self.publish_debug_pcd = self.pointcloud_map_filter_param["publish_debug_pcd"]
+        self.use_pointcloud_map = LaunchConfiguration("use_pointcloud_map").perform(context)
 
     def create_pipeline(self):
-        if self.use_down_sample_filter:
-            return self.create_down_sample_pipeline()
+        if self.use_pointcloud_map == "true":
+            return self.create_compare_map_pipeline()
         else:
-            return self.create_normal_pipeline()
+            return self.create_no_compare_map_pipeline()
 
-    def create_normal_pipeline(self):
+    def create_no_compare_map_pipeline(self):
         components = []
         components.append(
             ComposableNode(
-                package="compare_map_segmentation",
-                plugin="compare_map_segmentation::VoxelBasedCompareMapFilterComponent",
-                name="voxel_based_compare_map_filter",
+                package="pointcloud_preprocessor",
+                plugin="pointcloud_preprocessor::ApproximateDownsampleFilterComponent",
+                name="voxel_grid_downsample_filter",
                 remappings=[
                     ("input", LaunchConfiguration("input_topic")),
-                    ("map", "/map/pointcloud_map"),
                     ("output", LaunchConfiguration("output_topic")),
-                    ("map_loader_service", "/map/get_differential_pointcloud_map"),
-                    ("kinematic_state", "/localization/kinematic_state"),
                 ],
                 parameters=[
                     {
-                        "distance_threshold": self.distance_threshold,
-                        "downsize_ratio_z_axis": self.downsize_ratio_z_axis,
-                        "timer_interval_ms": self.timer_interval_ms,
-                        "use_dynamic_map_loading": self.use_dynamic_map_loading,
-                        "map_update_distance_threshold": self.map_update_distance_threshold,
-                        "map_loader_radius": self.map_loader_radius,
-                        "publish_debug_pcd": self.publish_debug_pcd,
-                        "input_frame": "map",
+                        "voxel_size_x": self.voxel_size,
+                        "voxel_size_y": self.voxel_size,
+                        "voxel_size_z": self.voxel_size,
                     }
                 ],
                 extra_arguments=[
-                    {"use_intra_process_comms": False},
+                    {"use_intra_process_comms": LaunchConfiguration("use_intra_process")}
                 ],
-            )
+            ),
         )
         return components
 
-    def create_down_sample_pipeline(self):
+    def create_compare_map_pipeline(self):
         components = []
         down_sample_topic = (
             "/perception/obstacle_segmentation/pointcloud_map_filtered/downsampled/pointcloud"
@@ -94,7 +86,7 @@ class PointcloudMapFilterPipeline:
         components.append(
             ComposableNode(
                 package="pointcloud_preprocessor",
-                plugin="pointcloud_preprocessor::VoxelGridDownsampleFilterComponent",
+                plugin="pointcloud_preprocessor::ApproximateDownsampleFilterComponent",
                 name="voxel_grid_downsample_filter",
                 remappings=[
                     ("input", LaunchConfiguration("input_topic")),
@@ -177,6 +169,7 @@ def generate_launch_description():
     add_launch_arg("use_intra_process", "True")
     add_launch_arg("use_pointcloud_container", "False")
     add_launch_arg("container_name", "pointcloud_map_filter_pipeline_container")
+    add_launch_arg("use_pointcloud_map", "true")
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
         "component_container",

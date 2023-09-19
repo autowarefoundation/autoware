@@ -35,61 +35,35 @@ def launch_setup(context, *args, **kwargs):
     ns = ""
     pkg = "euclidean_cluster"
 
-    # set voxel grid filter as a component
-    voxel_grid_filter_component = ComposableNode(
+    low_height_cropbox_filter_component = ComposableNode(
         package="pointcloud_preprocessor",
-        plugin="pointcloud_preprocessor::VoxelGridDownsampleFilterComponent",
-        name=AnonName("voxel_grid_filter"),
+        namespace=ns,
+        plugin="pointcloud_preprocessor::CropBoxFilterComponent",
+        name="low_height_crop_box_filter",
         remappings=[
             ("input", LaunchConfiguration("input_pointcloud")),
-            ("output", "voxel_grid_filtered/pointcloud"),
+            ("output", "low_height/pointcloud"),
         ],
-        parameters=[load_composable_node_param("voxel_grid_param_path")],
+        parameters=[load_composable_node_param("voxel_grid_based_euclidean_param_path")],
     )
 
-    # set compare map filter as a component
-    compare_map_filter_component = ComposableNode(
-        package="compare_map_segmentation",
-        plugin="compare_map_segmentation::VoxelBasedCompareMapFilterComponent",
-        name=AnonName("compare_map_filter"),
-        remappings=[
-            ("input", "voxel_grid_filtered/pointcloud"),
-            ("map", LaunchConfiguration("input_map")),
-            ("output", "compare_map_filtered/pointcloud"),
-            ("map_loader_service", "/map/get_differential_pointcloud_map"),
-            ("kinematic_state", "/localization/kinematic_state"),
-        ],
-        parameters=[
-            {
-                "distance_threshold": 0.5,
-                "timer_interval_ms": 100,
-                "use_dynamic_map_loading": True,
-                "downsize_ratio_z_axis": 0.5,
-                "map_update_distance_threshold": 10.0,
-                "map_loader_radius": 150.0,
-                "publish_debug_pcd": True,
-                "input_frame": "map",
-            }
-        ],
-    )
-
-    use_map_euclidean_cluster_component = ComposableNode(
+    use_low_height_euclidean_component = ComposableNode(
         package=pkg,
         plugin="euclidean_cluster::EuclideanClusterNode",
         name=AnonName("euclidean_cluster"),
         remappings=[
-            ("input", "compare_map_filtered/pointcloud"),
+            ("input", "low_height/pointcloud"),
             ("output", LaunchConfiguration("output_clusters")),
         ],
         parameters=[load_composable_node_param("euclidean_param_path")],
     )
 
-    disuse_map_euclidean_cluster_component = ComposableNode(
+    disuse_low_height_euclidean_component = ComposableNode(
         package=pkg,
         plugin="euclidean_cluster::EuclideanClusterNode",
         name=AnonName("euclidean_cluster"),
         remappings=[
-            ("input", "voxel_grid_filtered/pointcloud"),
+            ("input", LaunchConfiguration("input_pointcloud")),
             ("output", LaunchConfiguration("output_clusters")),
         ],
         parameters=[load_composable_node_param("euclidean_param_path")],
@@ -100,26 +74,26 @@ def launch_setup(context, *args, **kwargs):
         namespace=ns,
         package="rclcpp_components",
         executable="component_container",
-        composable_node_descriptions=[voxel_grid_filter_component],
+        composable_node_descriptions=[],
         output="screen",
     )
 
-    use_map_loader = LoadComposableNodes(
+    use_low_height_pointcloud_loader = LoadComposableNodes(
         composable_node_descriptions=[
-            compare_map_filter_component,
-            use_map_euclidean_cluster_component,
+            low_height_cropbox_filter_component,
+            use_low_height_euclidean_component,
         ],
         target_container=container,
-        condition=IfCondition(LaunchConfiguration("use_pointcloud_map")),
+        condition=IfCondition(LaunchConfiguration("use_low_height_cropbox")),
     )
 
-    disuse_map_loader = LoadComposableNodes(
-        composable_node_descriptions=[disuse_map_euclidean_cluster_component],
+    disuse_low_height_pointcloud_loader = LoadComposableNodes(
+        composable_node_descriptions=[disuse_low_height_euclidean_component],
         target_container=container,
-        condition=UnlessCondition(LaunchConfiguration("use_pointcloud_map")),
+        condition=UnlessCondition(LaunchConfiguration("use_low_height_cropbox")),
     )
 
-    return [container, use_map_loader, disuse_map_loader]
+    return [container, use_low_height_pointcloud_loader, disuse_low_height_pointcloud_loader]
 
 
 def generate_launch_description():
@@ -131,14 +105,7 @@ def generate_launch_description():
             add_launch_arg("input_pointcloud", "/perception/obstacle_segmentation/pointcloud"),
             add_launch_arg("input_map", "/map/pointcloud_map"),
             add_launch_arg("output_clusters", "clusters"),
-            add_launch_arg("use_pointcloud_map", "false"),
-            add_launch_arg(
-                "voxel_grid_param_path",
-                [
-                    FindPackageShare("autoware_launch"),
-                    "/config/perception/object_recognition/detection/clustering/voxel_grid.param.yaml",
-                ],
-            ),
+            add_launch_arg("use_low_height_cropbox", "false"),
             add_launch_arg(
                 "euclidean_param_path",
                 [
