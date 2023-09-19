@@ -20,6 +20,8 @@
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
 
+#include <boost/geometry/algorithms/distance.hpp>
+
 namespace behavior_path_planner::utils::path_safety_checker
 {
 

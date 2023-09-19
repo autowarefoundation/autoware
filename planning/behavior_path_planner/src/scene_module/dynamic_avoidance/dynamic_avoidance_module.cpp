@@ -22,6 +22,8 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
+#include <boost/geometry/algorithms/correct.hpp>
+
 #include <lanelet2_core/geometry/Point.h>
 #include <lanelet2_core/geometry/Polygon.h>
 
@@ -31,7 +33,6 @@
 #include <set>
 #include <string>
 #include <vector>
-
 namespace behavior_path_planner
 {
 namespace

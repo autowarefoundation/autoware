@@ -21,7 +21,6 @@
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #include <geometry_msgs/msg/point.hpp>
 

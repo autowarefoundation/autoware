@@ -20,6 +20,8 @@
 #include "tier4_autoware_utils/geometry/pose_deviation.hpp"
 #include "tier4_autoware_utils/math/constants.hpp"
 
+#include <Eigen/Geometry>
+
 #include <boost/optional.hpp>
 
 #include <algorithm>
@@ -27,7 +29,6 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
-
 namespace motion_utils
 {
 

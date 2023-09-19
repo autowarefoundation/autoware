@@ -16,6 +16,8 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
+#include <boost/geometry/geometry.hpp>
+
 #include <tf2/utils.h>
 
 namespace

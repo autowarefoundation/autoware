@@ -29,6 +29,11 @@
 
 #include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
 
+#include <boost/geometry/algorithms/convex_hull.hpp>
+#include <boost/geometry/algorithms/correct.hpp>
+#include <boost/geometry/algorithms/union.hpp>
+#include <boost/geometry/strategies/convex_hull.hpp>
+
 #include <lanelet2_routing/RoutingGraphContainer.h>
 
 #include <algorithm>

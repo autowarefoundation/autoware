@@ -22,6 +22,8 @@
 #include "signal_processing/lowpass_filter_1d.hpp"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 
+#include <boost/geometry/algorithms/distance.hpp>
+#include <boost/geometry/strategies/strategies.hpp>
 namespace
 {
 StopSpeedExceeded createStopSpeedExceededMsg(
