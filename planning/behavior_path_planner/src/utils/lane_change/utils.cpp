@@ -657,22 +657,6 @@ lanelet::ConstLanelets getBackwardLanelets(
   return backward_lanes;
 }
 
-bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameters)
-{
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
-  const auto t = utils::getHighestProbLabel(object.classification);
-  const auto is_object_type =
-    ((t == ObjectClassification::CAR && parameters.check_car) ||
-     (t == ObjectClassification::TRUCK && parameters.check_truck) ||
-     (t == ObjectClassification::BUS && parameters.check_bus) ||
-     (t == ObjectClassification::TRAILER && parameters.check_trailer) ||
-     (t == ObjectClassification::UNKNOWN && parameters.check_unknown) ||
-     (t == ObjectClassification::BICYCLE && parameters.check_bicycle) ||
-     (t == ObjectClassification::MOTORCYCLE && parameters.check_motorcycle) ||
-     (t == ObjectClassification::PEDESTRIAN && parameters.check_pedestrian));
-  return is_object_type;
-}
-
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer)
 {
   return lateral_buffer + 0.5 * vehicle_width;

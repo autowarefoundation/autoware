@@ -113,21 +113,10 @@ void filterObjectsByPosition(
 void filterObjectsByClass(
   PredictedObjects & objects, const ObjectTypesToCheck & target_object_types)
 {
-  using autoware_auto_perception_msgs::msg::ObjectClassification;
-
   PredictedObjects filtered_objects;
 
   for (auto & object : objects.objects) {
-    const auto t = utils::getHighestProbLabel(object.classification);
-    const auto is_object_type =
-      ((t == ObjectClassification::CAR && target_object_types.check_car) ||
-       (t == ObjectClassification::TRUCK && target_object_types.check_truck) ||
-       (t == ObjectClassification::BUS && target_object_types.check_bus) ||
-       (t == ObjectClassification::TRAILER && target_object_types.check_trailer) ||
-       (t == ObjectClassification::UNKNOWN && target_object_types.check_unknown) ||
-       (t == ObjectClassification::BICYCLE && target_object_types.check_bicycle) ||
-       (t == ObjectClassification::MOTORCYCLE && target_object_types.check_motorcycle) ||
-       (t == ObjectClassification::PEDESTRIAN && target_object_types.check_pedestrian));
+    const auto is_object_type = isTargetObjectType(object, target_object_types);
 
     // If the object type matches any of the target types, add it to the filtered list
     if (is_object_type) {
@@ -137,8 +126,6 @@ void filterObjectsByClass(
 
   // Replace the original objects with the filtered list
   objects = std::move(filtered_objects);
-
-  return;
 }
 
 std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanelets(
@@ -380,4 +367,19 @@ TargetObjectsOnLane createTargetObjectsOnLane(
   return target_objects_on_lane;
 }
 
+bool isTargetObjectType(
+  const PredictedObject & object, const ObjectTypesToCheck & target_object_types)
+{
+  using autoware_auto_perception_msgs::msg::ObjectClassification;
+  const auto t = utils::getHighestProbLabel(object.classification);
+  return (
+    (t == ObjectClassification::CAR && target_object_types.check_car) ||
+    (t == ObjectClassification::TRUCK && target_object_types.check_truck) ||
+    (t == ObjectClassification::BUS && target_object_types.check_bus) ||
+    (t == ObjectClassification::TRAILER && target_object_types.check_trailer) ||
+    (t == ObjectClassification::UNKNOWN && target_object_types.check_unknown) ||
+    (t == ObjectClassification::BICYCLE && target_object_types.check_bicycle) ||
+    (t == ObjectClassification::MOTORCYCLE && target_object_types.check_motorcycle) ||
+    (t == ObjectClassification::PEDESTRIAN && target_object_types.check_pedestrian));
+}
 }  // namespace behavior_path_planner::utils::path_safety_checker

@@ -68,15 +68,8 @@ struct LaneChangeParameters
   bool check_objects_on_other_lanes{true};
   bool use_all_predicted_path{false};
 
-  // true by default
-  bool check_car{true};         // check object car
-  bool check_truck{true};       // check object truck
-  bool check_bus{true};         // check object bus
-  bool check_trailer{true};     // check object trailer
-  bool check_unknown{true};     // check object unknown
-  bool check_bicycle{true};     // check object bicycle
-  bool check_motorcycle{true};  // check object motorbike
-  bool check_pedestrian{true};  // check object pedestrian
+  // true by default for all objects
+  utils::path_safety_checker::ObjectTypesToCheck object_types_to_check;
 
   // safety check
   utils::path_safety_checker::RSSparams rss_params{};

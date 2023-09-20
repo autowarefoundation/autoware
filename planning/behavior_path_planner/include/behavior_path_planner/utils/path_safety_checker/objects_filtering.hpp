@@ -200,6 +200,20 @@ TargetObjectsOnLane createTargetObjectsOnLane(
   const PredictedObjects & filtered_objects,
   const std::shared_ptr<ObjectsFilteringParams> & params);
 
+/**
+ * @brief Determines whether the predicted object type matches any of the target object types
+ * specified by the user.
+ *
+ * @param object The predicted object whose type is to be checked.
+ * @param target_object_types A structure containing boolean flags for each object type that the
+ * user is interested in checking.
+ *
+ * @return Returns true if the predicted object's highest probability label matches any of the
+ * specified target object types.
+ */
+bool isTargetObjectType(
+  const PredictedObject & object, const ObjectTypesToCheck & target_object_types);
+
 }  // namespace behavior_path_planner::utils::path_safety_checker
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_SAFETY_CHECKER__OBJECTS_FILTERING_HPP_

@@ -142,8 +142,6 @@ lanelet::ConstLanelets getBackwardLanelets(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & current_pose, const double backward_length);
 
-bool isTargetObjectType(const PredictedObject & object, const LaneChangeParameters & parameters);
-
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer = 0.0);
 
 double calcLateralBufferForFiltering(const double vehicle_width, const double lateral_buffer);
