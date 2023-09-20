@@ -38,6 +38,10 @@ AutonomousMode::AutonomousMode(rclcpp::Node * node)
   sub_control_cmd_ = node->create_subscription<AckermannControlCommand>(
     "control_cmd", 1,
     [this](const AckermannControlCommand::SharedPtr msg) { control_cmd_ = *msg; });
+  sub_trajectory_follower_control_cmd_ = node->create_subscription<AckermannControlCommand>(
+    "trajectory_follower_control_cmd", 1, [this](const AckermannControlCommand::SharedPtr msg) {
+      trajectory_follower_control_cmd_ = *msg;
+    });
 
   sub_kinematics_ = node->create_subscription<Odometry>(
     "kinematics", 1, [this](const Odometry::SharedPtr msg) { kinematics_ = *msg; });
@@ -261,7 +265,10 @@ bool AutonomousMode::isModeChangeAvailable()
   const bool speed_lower_deviation_ok = speed_deviation >= param.speed_lower_threshold;
 
   // No engagement if the vehicle is moving but the target speed is zero.
-  const bool stop_ok = !(std::abs(current_speed) > 0.1 && std::abs(target_control_speed) < 0.01);
+  const bool is_stop_cmd_indicated =
+    std::abs(target_control_speed) < 0.01 ||
+    std::abs(trajectory_follower_control_cmd_.longitudinal.speed) < 0.01;
+  const bool stop_ok = !(std::abs(current_speed) > 0.1 && is_stop_cmd_indicated);
 
   // No engagement if the large acceleration is commanded.
   const bool large_acceleration_ok = !hasDangerAcceleration();

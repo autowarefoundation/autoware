@@ -67,6 +67,7 @@ private:
   using Odometry = nav_msgs::msg::Odometry;
   using Trajectory = autoware_auto_planning_msgs::msg::Trajectory;
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_control_cmd_;
+  rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_trajectory_follower_control_cmd_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_kinematics_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
   rclcpp::Logger logger_;
@@ -79,6 +80,7 @@ private:
   EngageAcceptableParam engage_acceptable_param_;
   StableCheckParam stable_check_param_;
   AckermannControlCommand control_cmd_;
+  AckermannControlCommand trajectory_follower_control_cmd_;
   Odometry kinematics_;
   Trajectory trajectory_;
   vehicle_info_util::VehicleInfo vehicle_info_;

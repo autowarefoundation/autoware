@@ -239,6 +239,7 @@ def launch_setup(context, *args, **kwargs):
             ("steering", "/vehicle/status/steering_status"),
             ("trajectory", "/planning/scenario_planning/trajectory"),
             ("control_cmd", "/control/command/control_cmd"),
+            ("trajectory_follower_control_cmd", "/control/trajectory_follower/control_cmd"),
             ("control_mode_report", "/vehicle/status/control_mode"),
             ("gate_operation_mode", "/control/vehicle_cmd_gate/operation_mode"),
             # output
