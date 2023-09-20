@@ -263,10 +263,10 @@ private:
    * @brief fill candidate shift lines.
    * @param avoidance data.
    * @param debug data.
-   * @details in this function, three shift line sets are generated.
+   * @details in this function, following two shift line arrays are generated.
    * - unapproved raw shift lines.
    * - unapproved new shift lines.
-   * - safe new shift lines. (avoidance path is generated from this shift line set.)
+   * and check whether the new shift lines are safe or not.
    */
   void fillShiftLine(AvoidancePlanningData & data, DebugData & debug) const;
 
