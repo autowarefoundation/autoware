@@ -9,7 +9,10 @@
         "msg_type_target": {
           "type": "string",
           "description": "Target message type",
-          "enum": ["autoware_auto_control_msgs/msg/AckermannControlCommand"],
+          "enum": [
+            "autoware_auto_control_msgs/msg/AckermannControlCommand",
+            "autoware_auto_perception_msgs/msg/PredictedObjects"
+          ],
           "default": "autoware_auto_control_msgs/msg/AckermannControlCommand"
         },
         "topic_name_source": {

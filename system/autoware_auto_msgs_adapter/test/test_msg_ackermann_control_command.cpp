@@ -112,5 +112,5 @@ TEST(AutowareAutoMsgsAdapter, TestMsgAckermannControlCommand)  // NOLINT for gte
   EXPECT_TRUE(test_completed);
   EXPECT_FALSE(timed_out);
 
-  rclcpp::shutdown();
+  // rclcpp::shutdown();
 }

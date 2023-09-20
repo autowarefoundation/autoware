@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    msg_type_target: "autoware_auto_perception_msgs/msg/PredictedObjects"
+    topic_name_source: "/perception/object_recognition/objects"
+    topic_name_target: "/perception/object_recognition/objects_auto"
