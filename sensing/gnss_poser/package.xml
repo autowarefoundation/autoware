@@ -5,6 +5,7 @@
   <version>1.0.0</version>
   <description>The ROS 2 gnss_poser package</description>
   <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
+  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
   <license>Apache License 2.0</license>
   <author email="ryo.watanabe@tier4.jp">Ryo Watanabe</author>
 
