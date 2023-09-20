@@ -18,7 +18,6 @@
 #include <motion_utils/constants.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
 
 #include <vector>
 

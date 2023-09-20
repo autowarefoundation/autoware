@@ -20,9 +20,6 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-// #include <lanelet2_core/geometry/Lanelet.h>
-// #include <lanelet2_routing/RoutingGraphContainer.h>
-
 #include <motion_utils/resample/resample.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>

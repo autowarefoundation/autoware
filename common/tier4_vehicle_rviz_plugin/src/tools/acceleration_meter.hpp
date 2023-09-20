@@ -25,7 +25,7 @@
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/ros_topic_display.hpp>
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #endif

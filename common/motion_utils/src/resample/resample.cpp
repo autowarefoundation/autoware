@@ -14,8 +14,15 @@
 
 #include "motion_utils/resample/resample.hpp"
 
+#include "interpolation/interpolation_utils.hpp"
+#include "interpolation/linear_interpolation.hpp"
+#include "interpolation/spline_interpolation.hpp"
+#include "interpolation/zero_order_hold.hpp"
 #include "motion_utils/resample/resample_utils.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/geometry/pose_deviation.hpp"
+#include "tier4_autoware_utils/math/constants.hpp"
 
 namespace motion_utils
 {

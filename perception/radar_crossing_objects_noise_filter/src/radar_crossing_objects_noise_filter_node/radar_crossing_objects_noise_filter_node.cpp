@@ -14,7 +14,8 @@
 
 #include "radar_crossing_objects_noise_filter/radar_crossing_objects_noise_filter_node.hpp"
 
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/math/normalization.hpp"
 
 #include <tf2/utils.h>
 

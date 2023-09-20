@@ -15,6 +15,7 @@
 #include "motion_utils/constants.hpp"
 #include "motion_utils/resample/resample.hpp"
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/constants.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 

@@ -14,8 +14,6 @@
 
 #include "behavior_path_planner/utils/start_goal_planner_common/utils.hpp"
 
-#include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
-
 namespace behavior_path_planner::utils::start_goal_planner_common
 {
 

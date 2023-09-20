@@ -109,3 +109,9 @@ const size_t ego_nearest_seg_idx = findFirstNearestSegmentIndex(points, ego_pose
 const size_t dyn_obj_nearest_seg_idx = findFirstNearestSegmentIndex(points, dyn_obj_pose, dyn_obj_nearest_dist_threshold);
 const double length_from_ego_to_obj = calcSignedArcLength(points, ego_pose, ego_nearest_seg_idx, dyn_obj_pose, dyn_obj_nearest_seg_idx);
 ```
+
+## For developers
+
+Some of the template functions in `trajectory.hpp` are mostly used for specific types (`autoware_auto_planning_msgs::msg::PathPoint`, `autoware_auto_planning_msgs::msg::PathPoint`, `autoware_auto_planning_msgs::msg::TrajectoryPoint`), so they are exported as `extern template` functions to speed-up compilation time.
+
+`motion_utils.hpp` header file was removed because the source files that directly/indirectly include this file took a long time for preprocessing.

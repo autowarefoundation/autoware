@@ -16,7 +16,6 @@
 
 #include <behavior_velocity_planner_common/utilization/arc_lane_util.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
-#include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
 
 #include <gtest/gtest.h>
 

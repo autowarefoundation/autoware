@@ -25,7 +25,6 @@
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include <Eigen/Dense>
-#include <motion_utils/motion_utils.hpp>
 
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
@@ -44,6 +43,7 @@
 #include "tier4_vehicle_msgs/msg/actuation_command_stamped.hpp"
 #include "tier4_vehicle_msgs/msg/actuation_status_stamped.hpp"
 #include "tier4_vehicle_msgs/srv/update_accel_brake_map.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 #include <fstream>
 #include <iomanip>

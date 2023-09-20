@@ -24,8 +24,6 @@
 // autoware
 #include "utils/utils.hpp"
 
-#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
-
 // create pointcloud function
 pcl::PointCloud<pcl::PointXYZ> createPCLPointCloudWithIteratedHeight(const size_t width)
 {

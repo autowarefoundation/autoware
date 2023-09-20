@@ -15,13 +15,11 @@
 #ifndef MOTION_UTILS__MARKER__MARKER_HELPER_HPP_
 #define MOTION_UTILS__MARKER__MARKER_HELPER_HPP_
 
-#include "motion_utils/resample/resample_utils.hpp"
+#include <rclcpp/time.hpp>
 
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <functional>
 #include <string>
-#include <vector>
 
 namespace motion_utils
 {

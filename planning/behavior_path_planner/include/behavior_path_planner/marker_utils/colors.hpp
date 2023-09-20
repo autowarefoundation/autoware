@@ -14,7 +14,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__MARKER_UTILS__COLORS_HPP_
 #define BEHAVIOR_PATH_PLANNER__MARKER_UTILS__COLORS_HPP_
 
-#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+#include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 #include "std_msgs/msg/color_rgba.hpp"
 

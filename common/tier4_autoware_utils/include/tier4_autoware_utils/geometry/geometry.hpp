@@ -28,6 +28,7 @@
 #include <Eigen/Core>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
+#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -140,6 +141,13 @@ inline geometry_msgs::msg::Point getPoint(const autoware_auto_planning_msgs::msg
 
 template <>
 inline geometry_msgs::msg::Point getPoint(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.pose.position;
+}
+
+template <>
+inline geometry_msgs::msg::Point getPoint(
   const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
 {
   return p.pose.position;
@@ -171,6 +179,13 @@ inline geometry_msgs::msg::Pose getPose(const autoware_auto_planning_msgs::msg::
 }
 
 template <>
+inline geometry_msgs::msg::Pose getPose(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.pose;
+}
+
+template <>
 inline geometry_msgs::msg::Pose getPose(const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
 {
   return p.pose;
@@ -187,6 +202,13 @@ template <>
 inline double getLongitudinalVelocity(const autoware_auto_planning_msgs::msg::PathPoint & p)
 {
   return p.longitudinal_velocity_mps;
+}
+
+template <>
+inline double getLongitudinalVelocity(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.longitudinal_velocity_mps;
 }
 
 template <>
@@ -223,6 +245,13 @@ inline void setPose(
 
 template <>
 inline void setPose(
+  const geometry_msgs::msg::Pose & pose, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  p.point.pose = pose;
+}
+
+template <>
+inline void setPose(
   const geometry_msgs::msg::Pose & pose, autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
 {
   p.pose = pose;
@@ -255,6 +284,13 @@ inline void setLongitudinalVelocity(
   const double velocity, autoware_auto_planning_msgs::msg::PathPoint & p)
 {
   p.longitudinal_velocity_mps = velocity;
+}
+
+template <>
+inline void setLongitudinalVelocity(
+  const double velocity, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  p.point.longitudinal_velocity_mps = velocity;
 }
 
 inline geometry_msgs::msg::Point createPoint(const double x, const double y, const double z)

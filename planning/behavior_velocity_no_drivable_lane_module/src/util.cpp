@@ -18,6 +18,7 @@
 #include "motion_utils/trajectory/trajectory.hpp"
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <motion_utils/marker/virtual_wall_marker_creator.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 

@@ -13,8 +13,7 @@
 // limitations under the License.
 
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
-// #include "tier4_autoware_utils/geometry/geometry.hpp"
-// #include "tier4_autoware_utils/math/unit_conversion.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <gtest/gtest.h>
 

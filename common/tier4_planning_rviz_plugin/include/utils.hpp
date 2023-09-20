@@ -16,7 +16,6 @@
 #define UTILS_HPP_
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
 
 #include <tf2/utils.h>

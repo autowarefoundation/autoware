@@ -17,6 +17,7 @@
 #include <interpolation/spline_interpolation.hpp>
 #include <interpolation/zero_order_hold.hpp>
 #include <motion_utils/resample/resample.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <tf2/LinearMath/Quaternion.h>

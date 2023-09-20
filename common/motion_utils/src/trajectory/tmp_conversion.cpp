@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2023 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
-#define MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#include "motion_utils/trajectory/tmp_conversion.hpp"
 
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/geometry/pose_deviation.hpp"
 
-#include <vector>
+#include <algorithm>
 
 namespace motion_utils
 {
@@ -34,15 +33,28 @@ namespace motion_utils
  * points larger than the capacity. (Tier IV)
  */
 autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
-  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & trajectory);
+  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & trajectory)
+{
+  autoware_auto_planning_msgs::msg::Trajectory output{};
+  for (const auto & pt : trajectory) {
+    output.points.push_back(pt);
+    if (output.points.size() >= output.CAPACITY) {
+      break;
+    }
+  }
+  return output;
+}
 
 /**
  * @brief Convert autoware_auto_planning_msgs::msg::Trajectory to
  * std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>.
  */
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajectoryPointArray(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory);
+  const autoware_auto_planning_msgs::msg::Trajectory & trajectory)
+{
+  std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> output(trajectory.points.size());
+  std::copy(trajectory.points.begin(), trajectory.points.end(), output.begin());
+  return output;
+}
 
 }  // namespace motion_utils
-
-#endif  // MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_

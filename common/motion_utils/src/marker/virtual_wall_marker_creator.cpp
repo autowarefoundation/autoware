@@ -14,7 +14,7 @@
 
 #include "motion_utils/marker/virtual_wall_marker_creator.hpp"
 
-#include <visualization_msgs/msg/marker_array.hpp>
+#include "motion_utils/marker/marker_helper.hpp"
 
 namespace motion_utils
 {
