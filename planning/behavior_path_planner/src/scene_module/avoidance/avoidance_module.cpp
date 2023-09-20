@@ -654,6 +654,8 @@ void AvoidanceModule::updateEgoBehavior(const AvoidancePlanningData & data, Shif
       throw std::domain_error("invalid behavior");
   }
 
+  insertReturnDeadLine(isBestEffort(parameters_->policy_deceleration), path);
+
   setStopReason(StopReason::AVOIDANCE, path.path);
 }
 
@@ -2744,6 +2746,77 @@ double AvoidanceModule::calcDistanceToStopLine(const ObjectData & object) const
                         base_link2front + p->stop_buffer;
 
   return object.longitudinal - std::min(variable + constant, p->stop_max_distance);
+}
+
+void AvoidanceModule::insertReturnDeadLine(
+  const bool use_constraints_for_decel, ShiftedPath & shifted_path) const
+{
+  const auto & data = avoid_data_;
+
+  if (!planner_data_->route_handler->isInGoalRouteSection(data.current_lanelets.back())) {
+    RCLCPP_DEBUG(getLogger(), "goal is far enough.");
+    return;
+  }
+
+  const auto shift_length = path_shifter_.getLastShiftLength();
+
+  if (std::abs(shift_length) < 1e-3) {
+    RCLCPP_DEBUG(getLogger(), "don't have to consider return shift.");
+    return;
+  }
+
+  const auto min_return_distance = helper_.getMinAvoidanceDistance(shift_length);
+
+  const auto to_goal = calcSignedArcLength(
+    shifted_path.path.points, getEgoPosition(), shifted_path.path.points.size() - 1);
+  const auto to_stop_line = to_goal - min_return_distance - parameters_->remain_buffer_distance;
+
+  // If we don't need to consider deceleration constraints, insert a deceleration point
+  // and return immediately
+  if (!use_constraints_for_decel) {
+    utils::avoidance::insertDecelPoint(
+      getEgoPosition(), to_stop_line - parameters_->stop_buffer, 0.0, shifted_path.path,
+      stop_pose_);
+    return;
+  }
+
+  // If the stop distance is not enough for comfortable stop, don't insert wait point.
+  const auto is_comfortable_stop = helper_.getFeasibleDecelDistance(0.0) < to_stop_line;
+  if (!is_comfortable_stop) {
+    RCLCPP_DEBUG(getLogger(), "stop distance is not enough.");
+    return;
+  }
+
+  utils::avoidance::insertDecelPoint(
+    getEgoPosition(), to_stop_line - parameters_->stop_buffer, 0.0, shifted_path.path, stop_pose_);
+
+  // insert slow down speed.
+  const double current_target_velocity = PathShifter::calcFeasibleVelocityFromJerk(
+    shift_length, helper_.getLateralMinJerkLimit(), to_stop_line);
+  if (current_target_velocity < getEgoSpeed()) {
+    RCLCPP_DEBUG(getLogger(), "current velocity exceeds target slow down speed.");
+    return;
+  }
+
+  const auto start_idx = planner_data_->findEgoIndex(shifted_path.path.points);
+  for (size_t i = start_idx; i < shifted_path.path.points.size(); ++i) {
+    const auto distance_from_ego = calcSignedArcLength(shifted_path.path.points, start_idx, i);
+
+    // slow down speed is inserted only in front of the object.
+    const auto shift_longitudinal_distance = to_stop_line - distance_from_ego;
+    if (shift_longitudinal_distance < 0.0) {
+      break;
+    }
+
+    // target speed with nominal jerk limits.
+    const double v_target = PathShifter::calcFeasibleVelocityFromJerk(
+      shift_length, helper_.getLateralMinJerkLimit(), shift_longitudinal_distance);
+    const double v_original = shifted_path.path.points.at(i).point.longitudinal_velocity_mps;
+    const double v_insert =
+      std::max(v_target - parameters_->buf_slow_down_speed, parameters_->min_slow_down_speed);
+
+    shifted_path.path.points.at(i).point.longitudinal_velocity_mps = std::min(v_original, v_insert);
+  }
 }
 
 void AvoidanceModule::insertWaitPoint(

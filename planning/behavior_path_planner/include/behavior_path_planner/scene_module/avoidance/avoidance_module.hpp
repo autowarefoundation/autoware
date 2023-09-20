@@ -219,6 +219,8 @@ private:
    */
   void insertStopPoint(const bool use_constraints_for_decel, ShiftedPath & shifted_path) const;
 
+  void insertReturnDeadLine(const bool use_constraints_for_decel, ShiftedPath & shifted_path) const;
+
   /**
    * @brief insert stop point in output path.
    * @param target path.
