@@ -385,6 +385,11 @@ void EKFLocalizer::callbackPoseWithCovariance(
 void EKFLocalizer::callbackTwistWithCovariance(
   geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg)
 {
+  // Ignore twist if velocity is too small.
+  // Note that this inequality must not include "equal".
+  if (msg->twist.twist.linear.x < params_.threshold_observable_velocity_mps) {
+    msg->twist.covariance[0 * 6 + 0] = 10000.0;
+  }
   twist_queue_.push(msg);
 }
 

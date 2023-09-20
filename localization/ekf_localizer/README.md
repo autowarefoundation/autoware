@@ -161,6 +161,12 @@ note: process noise for positions x & y are calculated automatically from nonlin
 | twist_no_update_count_threshold_warn  | size_t | The threshold at which a WARN state is triggered due to the Twist Topic update not happening continuously for a certain number of times.   | 50            |
 | twist_no_update_count_threshold_error | size_t | The threshold at which an ERROR state is triggered due to the Twist Topic update not happening continuously for a certain number of times. | 250           |
 
+### Misc
+
+| Name                              | Type   | Description                                                                                        | Default value  |
+| :-------------------------------- | :----- | :------------------------------------------------------------------------------------------------- | :------------- |
+| threshold_observable_velocity_mps | double | Minimum value for velocity that will be used for EKF. Mainly used for dead zone in velocity sensor | 0.0 (disabled) |
+
 ## How to tune EKF parameters
 
 ### 0. Preliminaries

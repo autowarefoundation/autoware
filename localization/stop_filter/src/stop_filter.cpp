@@ -27,8 +27,8 @@ using std::placeholders::_1;
 StopFilter::StopFilter(const std::string & node_name, const rclcpp::NodeOptions & node_options)
 : rclcpp::Node(node_name, node_options)
 {
-  vx_threshold_ = declare_parameter("vx_threshold", 0.01);
-  wz_threshold_ = declare_parameter("wz_threshold", 0.01);
+  vx_threshold_ = declare_parameter<double>("vx_threshold");
+  wz_threshold_ = declare_parameter<double>("wz_threshold");
 
   sub_odom_ = create_subscription<nav_msgs::msg::Odometry>(
     "input/odom", 1, std::bind(&StopFilter::callbackOdometry, this, _1));

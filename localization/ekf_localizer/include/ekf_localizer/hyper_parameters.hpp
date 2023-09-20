@@ -47,7 +47,9 @@ public:
     twist_no_update_count_threshold_warn(
       node->declare_parameter("twist_no_update_count_threshold_warn", 50)),
     twist_no_update_count_threshold_error(
-      node->declare_parameter("twist_no_update_count_threshold_error", 250))
+      node->declare_parameter("twist_no_update_count_threshold_error", 250)),
+    threshold_observable_velocity_mps(
+      node->declare_parameter("threshold_observable_velocity_mps", 0.5))
   {
   }
 
@@ -71,6 +73,7 @@ public:
   const size_t pose_no_update_count_threshold_error;
   const size_t twist_no_update_count_threshold_warn;
   const size_t twist_no_update_count_threshold_error;
+  const double threshold_observable_velocity_mps;
 };
 
 #endif  // EKF_LOCALIZER__HYPER_PARAMETERS_HPP_

@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    vx_threshold: 0.1  # [m/s]
+    wz_threshold: 0.02  # [rad/s]
