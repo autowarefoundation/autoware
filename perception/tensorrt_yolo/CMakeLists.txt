@@ -70,52 +70,6 @@ else()
   set(CUDNN_AVAIL OFF)
 endif()
 
-# Download onnx
-set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
-if(NOT EXISTS "${DATA_PATH}")
-  execute_process(COMMAND mkdir -p ${DATA_PATH})
-endif()
-function(download FILE_NAME FILE_HASH)
-  message(STATUS "Checking and downloading ${FILE_NAME}")
-  set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-  set(STATUS_CODE 0)
-  message(STATUS "start ${FILE_NAME}")
-  if(EXISTS ${FILE_PATH})
-    message(STATUS "found ${FILE_NAME}")
-    file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-    if(${FILE_HASH} STREQUAL ${EXISTING_FILE_HASH})
-      message(STATUS "same ${FILE_NAME}")
-      message(STATUS "File already exists.")
-    else()
-      message(STATUS "diff ${FILE_NAME}")
-      message(STATUS "File hash changes. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 3600)
-      list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-      list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-    endif()
-  else()
-    message(STATUS "not found ${FILE_NAME}")
-    message(STATUS "File doesn't exists. Downloading now ...")
-    file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 3600)
-    list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-    list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-  endif()
-  if(${STATUS_CODE} EQUAL 0)
-    message(STATUS "Download completed successfully!")
-  else()
-    message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
-  endif()
-endfunction()
-
-download(yolov3.onnx bde3b120f51db251d9a89cd25205e062)
-download(yolov4.onnx 99ed8c5d18acad2ebb5ee80860d9cbaf)
-download(yolov4-tiny.onnx d16dfd56dddfce75f25d5aaf4c8f4c40)
-download(yolov5s.onnx 646b295db6089597e79163446d6eedca)
-download(yolov5m.onnx 8fc91d70599ac59ae92c6490001fd84b)
-download(yolov5l.onnx 99ff1fc966bda8efbc45c3b8bf00eea2)
-download(yolov5x.onnx c51beebed276735cb16a18ca32959e9f)
-download(coco.names 8fc50561361f8bcf96b0177086e7616c)
-
 # create calib image directory for int8 calibration
 set(CALIB_IMAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/calib_image")
 if(NOT EXISTS "${CALIB_IMAGE_PATH}")
@@ -186,7 +140,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
   ament_auto_package(INSTALL_TO_SHARE
     config
-    data
     launch
   )
 
@@ -204,7 +157,6 @@ else()
   message("TensorrtYolo won't be built, CUDA and/or TensorRT were not found.")
   ament_auto_package(INSTALL_TO_SHARE
     config
-    data
     launch
   )
 endif()
