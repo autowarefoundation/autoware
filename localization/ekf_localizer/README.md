@@ -88,6 +88,10 @@ The parameters and input topic names can be set in the `ekf_localizer.launch` fi
 
   The estimated twist with covariance.
 
+- diagnostics (diagnostic_msgs/DiagnosticArray)
+
+  The diagnostic information.
+
 ### Published TF
 
 - base_link
@@ -148,6 +152,15 @@ The parameters are set in `launch/ekf_localizer.launch` .
 
 note: process noise for positions x & y are calculated automatically from nonlinear dynamics.
 
+### For diagnostics
+
+| Name                                  | Type   | Description                                                                                                                                | Default value |
+| :------------------------------------ | :----- | :----------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| pose_no_update_count_threshold_warn   | size_t | The threshold at which a WARN state is triggered due to the Pose Topic update not happening continuously for a certain number of times.    | 50            |
+| pose_no_update_count_threshold_error  | size_t | The threshold at which an ERROR state is triggered due to the Pose Topic update not happening continuously for a certain number of times.  | 250           |
+| twist_no_update_count_threshold_warn  | size_t | The threshold at which a WARN state is triggered due to the Twist Topic update not happening continuously for a certain number of times.   | 50            |
+| twist_no_update_count_threshold_error | size_t | The threshold at which an ERROR state is triggered due to the Twist Topic update not happening continuously for a certain number of times. | 250           |
+
 ## How to tune EKF parameters
 
 ### 0. Preliminaries
@@ -193,6 +206,23 @@ Note that, although the dimension gets larger since the analytical expansion can
 <p align="center">
 <img src="./media/ekf_autoware_res.png" width="600">
 </p>
+
+## Diagnostics
+
+<p align="center">
+<img src="./media/ekf_diagnostics.png" width="320">
+</p>
+
+### The conditions that result in a WARN state
+
+- The node is not in the activate state.
+- The number of consecutive no measurement update via the Pose/Twist topic exceeds the `pose_no_update_count_threshold_warn`/`twist_no_update_count_threshold_warn`.
+- The timestamp of the Pose/Twist topic is beyond the delay compensation range.
+- The Pose/Twist topic is beyond the range of Mahalanobis distance for covariance estimation.
+
+### The conditions that result in an ERROR state
+
+- The number of consecutive no measurement update via the Pose/Twist topic exceeds the `pose_no_update_count_threshold_error`/`twist_no_update_count_threshold_error`.
 
 ## Known issues
 

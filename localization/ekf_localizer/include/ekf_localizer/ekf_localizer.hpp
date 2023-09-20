@@ -25,6 +25,7 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
 
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -126,6 +127,8 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_biased_pose_;
   //!< @brief ekf estimated yaw bias publisher
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pub_biased_pose_cov_;
+  //!< @brief diagnostics publisher
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr pub_diag_;
   //!< @brief initial pose subscriber
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_initialpose_;
   //!< @brief measurement pose with covariance subscriber
@@ -144,6 +147,7 @@ private:
   rclcpp::TimerBase::SharedPtr timer_tf_;
   //!< @brief tf broadcaster
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_br_;
+
   //!< @brief  extended kalman filter instance.
   TimeDelayKalmanFilter ekf_;
   Simple1DFilter z_filter_;
@@ -166,6 +170,22 @@ private:
   double proc_cov_wz_d_;        //!< @brief  discrete process noise in d_wz=0
 
   bool is_activated_;
+
+  size_t pose_no_update_count_;
+  size_t pose_queue_size_;
+  bool pose_is_passed_delay_gate_;
+  double pose_delay_time_;
+  double pose_delay_time_threshold_;
+  bool pose_is_passed_mahalanobis_gate_;
+  double pose_mahalanobis_distance_;
+
+  size_t twist_no_update_count_;
+  size_t twist_queue_size_;
+  bool twist_is_passed_delay_gate_;
+  double twist_delay_time_;
+  double twist_delay_time_threshold_;
+  bool twist_is_passed_mahalanobis_gate_;
+  double twist_mahalanobis_distance_;
 
   AgedObjectQueue<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr> pose_queue_;
   AgedObjectQueue<geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr> twist_queue_;
@@ -221,13 +241,13 @@ private:
    * @brief compute EKF update with pose measurement
    * @param pose measurement value
    */
-  void measurementUpdatePose(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
+  bool measurementUpdatePose(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
 
   /**
    * @brief compute EKF update with pose measurement
    * @param twist measurement value
    */
-  void measurementUpdateTwist(const geometry_msgs::msg::TwistWithCovarianceStamped & twist);
+  bool measurementUpdateTwist(const geometry_msgs::msg::TwistWithCovarianceStamped & twist);
 
   /**
    * @brief get transform from frame_id
@@ -245,6 +265,11 @@ private:
    * @brief publish current EKF estimation result
    */
   void publishEstimateResult();
+
+  /**
+   * @brief publish diagnostics message
+   */
+  void publishDiagnostics();
 
   /**
    * @brief for debug

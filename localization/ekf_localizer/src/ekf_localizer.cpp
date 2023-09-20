@@ -15,6 +15,7 @@
 #include "ekf_localizer/ekf_localizer.hpp"
 
 #include "ekf_localizer/covariance.hpp"
+#include "ekf_localizer/diagnostics.hpp"
 #include "ekf_localizer/mahalanobis.hpp"
 #include "ekf_localizer/matrix_types.hpp"
 #include "ekf_localizer/measurement.hpp"
@@ -87,6 +88,7 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   pub_biased_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("ekf_biased_pose", 1);
   pub_biased_pose_cov_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "ekf_biased_pose_with_covariance", 1);
+  pub_diag_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   sub_initialpose_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", 1, std::bind(&EKFLocalizer::callbackInitialPose, this, _1));
   sub_pose_with_cov_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
@@ -143,6 +145,7 @@ void EKFLocalizer::timerCallback()
   if (!is_activated_) {
     warning_.warnThrottle(
       "The node is not activated. Provide initial pose to pose_initializer", 2000);
+    publishDiagnostics();
     return;
   }
 
@@ -176,6 +179,16 @@ void EKFLocalizer::timerCallback()
   DEBUG_INFO(get_logger(), "------------------------- end prediction -------------------------\n");
 
   /* pose measurement update */
+
+  pose_queue_size_ = pose_queue_.size();
+  pose_is_passed_delay_gate_ = true;
+  pose_delay_time_ = 0.0;
+  pose_delay_time_threshold_ = 0.0;
+  pose_is_passed_mahalanobis_gate_ = true;
+  pose_mahalanobis_distance_ = 0.0;
+
+  bool pose_is_updated = false;
+
   if (!pose_queue_.empty()) {
     DEBUG_INFO(get_logger(), "------------------------- start Pose -------------------------");
     stop_watch_.tic();
@@ -184,13 +197,27 @@ void EKFLocalizer::timerCallback()
     const size_t n = pose_queue_.size();
     for (size_t i = 0; i < n; ++i) {
       const auto pose = pose_queue_.pop_increment_age();
-      measurementUpdatePose(*pose);
+      bool is_updated = measurementUpdatePose(*pose);
+      if (is_updated) {
+        pose_is_updated = true;
+      }
     }
     DEBUG_INFO(get_logger(), "[EKF] measurementUpdatePose calc time = %f [ms]", stop_watch_.toc());
     DEBUG_INFO(get_logger(), "------------------------- end Pose -------------------------\n");
   }
+  pose_no_update_count_ = pose_is_updated ? 0 : (pose_no_update_count_ + 1);
 
   /* twist measurement update */
+
+  twist_queue_size_ = twist_queue_.size();
+  twist_is_passed_delay_gate_ = true;
+  twist_delay_time_ = 0.0;
+  twist_delay_time_threshold_ = 0.0;
+  twist_is_passed_mahalanobis_gate_ = true;
+  twist_mahalanobis_distance_ = 0.0;
+
+  bool twist_is_updated = false;
+
   if (!twist_queue_.empty()) {
     DEBUG_INFO(get_logger(), "------------------------- start Twist -------------------------");
     stop_watch_.tic();
@@ -199,11 +226,15 @@ void EKFLocalizer::timerCallback()
     const size_t n = twist_queue_.size();
     for (size_t i = 0; i < n; ++i) {
       const auto twist = twist_queue_.pop_increment_age();
-      measurementUpdateTwist(*twist);
+      bool is_updated = measurementUpdateTwist(*twist);
+      if (is_updated) {
+        twist_is_updated = true;
+      }
     }
     DEBUG_INFO(get_logger(), "[EKF] measurementUpdateTwist calc time = %f [ms]", stop_watch_.toc());
     DEBUG_INFO(get_logger(), "------------------------- end Twist -------------------------\n");
   }
+  twist_no_update_count_ = twist_is_updated ? 0 : (twist_no_update_count_ + 1);
 
   const double x = ekf_.getXelement(IDX::X);
   const double y = ekf_.getXelement(IDX::Y);
@@ -235,6 +266,7 @@ void EKFLocalizer::timerCallback()
 
   /* publish ekf result */
   publishEstimateResult();
+  publishDiagnostics();
 }
 
 void EKFLocalizer::showCurrentX()
@@ -376,7 +408,7 @@ void EKFLocalizer::initEKF()
 /*
  * measurementUpdatePose
  */
-void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovarianceStamped & pose)
+bool EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovarianceStamped & pose)
 {
   if (pose.header.frame_id != params_.pose_frame_id) {
     warning_.warnThrottle(
@@ -400,10 +432,14 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   delay_time = std::max(delay_time, 0.0);
 
   int delay_step = std::roundf(delay_time / ekf_dt_);
+
+  pose_delay_time_ = std::max(delay_time, pose_delay_time_);
+  pose_delay_time_threshold_ = params_.extend_state_step * ekf_dt_;
   if (delay_step >= params_.extend_state_step) {
+    pose_is_passed_delay_gate_ = false;
     warning_.warnThrottle(
       poseDelayStepWarningMessage(delay_time, params_.extend_state_step, ekf_dt_), 2000);
-    return;
+    return false;
   }
   DEBUG_INFO(get_logger(), "delay_time: %f [s]", delay_time);
 
@@ -420,7 +456,7 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   if (hasNan(y) || hasInf(y)) {
     warning_.warn(
       "[EKF] pose measurement matrix includes NaN of Inf. ignore update. check pose message.");
-    return;
+    return false;
   }
 
   /* Gate */
@@ -431,10 +467,12 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   const Eigen::MatrixXd P_y = P_curr.block(0, 0, dim_y, dim_y);
 
   const double distance = mahalanobis(y_ekf, y, P_y);
+  pose_mahalanobis_distance_ = std::max(distance, pose_mahalanobis_distance_);
   if (distance > params_.pose_gate_dist) {
+    pose_is_passed_mahalanobis_gate_ = false;
     warning_.warnThrottle(mahalanobisWarningMessage(distance, params_.pose_gate_dist), 2000);
     warning_.warnThrottle("Ignore the measurement data.", 2000);
-    return;
+    return false;
   }
 
   DEBUG_PRINT_MAT(y.transpose());
@@ -460,12 +498,14 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   const Eigen::MatrixXd X_result = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_result.transpose());
   DEBUG_PRINT_MAT((X_result - X_curr).transpose());
+
+  return true;
 }
 
 /*
  * measurementUpdateTwist
  */
-void EKFLocalizer::measurementUpdateTwist(
+bool EKFLocalizer::measurementUpdateTwist(
   const geometry_msgs::msg::TwistWithCovarianceStamped & twist)
 {
   if (twist.header.frame_id != "base_link") {
@@ -488,10 +528,14 @@ void EKFLocalizer::measurementUpdateTwist(
   delay_time = std::max(delay_time, 0.0);
 
   int delay_step = std::roundf(delay_time / ekf_dt_);
+
+  twist_delay_time_ = std::max(delay_time, twist_delay_time_);
+  twist_delay_time_threshold_ = params_.extend_state_step * ekf_dt_;
   if (delay_step >= params_.extend_state_step) {
+    twist_is_passed_delay_gate_ = false;
     warning_.warnThrottle(
       twistDelayStepWarningMessage(delay_time, params_.extend_state_step, ekf_dt_), 2000);
-    return;
+    return false;
   }
   DEBUG_INFO(get_logger(), "delay_time: %f [s]", delay_time);
 
@@ -502,7 +546,7 @@ void EKFLocalizer::measurementUpdateTwist(
   if (hasNan(y) || hasInf(y)) {
     warning_.warn(
       "[EKF] twist measurement matrix includes NaN of Inf. ignore update. check twist message.");
-    return;
+    return false;
   }
 
   const Eigen::Vector2d y_ekf(
@@ -512,10 +556,12 @@ void EKFLocalizer::measurementUpdateTwist(
   const Eigen::MatrixXd P_y = P_curr.block(4, 4, dim_y, dim_y);
 
   const double distance = mahalanobis(y_ekf, y, P_y);
+  twist_mahalanobis_distance_ = std::max(distance, twist_mahalanobis_distance_);
   if (distance > params_.twist_gate_dist) {
+    twist_is_passed_mahalanobis_gate_ = false;
     warning_.warnThrottle(mahalanobisWarningMessage(distance, params_.twist_gate_dist), 2000);
     warning_.warnThrottle("Ignore the measurement data.", 2000);
-    return;
+    return false;
   }
 
   DEBUG_PRINT_MAT(y.transpose());
@@ -532,6 +578,8 @@ void EKFLocalizer::measurementUpdateTwist(
   const Eigen::MatrixXd X_result = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_result.transpose());
   DEBUG_PRINT_MAT((X_result - X_curr).transpose());
+
+  return true;
 }
 
 /*
@@ -605,6 +653,45 @@ void EKFLocalizer::publishEstimateResult()
   msg.data.push_back(tier4_autoware_utils::rad2deg(pose_yaw));      // [1] measurement yaw angle
   msg.data.push_back(tier4_autoware_utils::rad2deg(X(IDX::YAWB)));  // [2] yaw bias
   pub_debug_->publish(msg);
+}
+
+void EKFLocalizer::publishDiagnostics()
+{
+  std::vector<diagnostic_msgs::msg::DiagnosticStatus> diag_status_array;
+
+  diag_status_array.push_back(checkProcessActivated(is_activated_));
+
+  if (is_activated_) {
+    diag_status_array.push_back(checkMeasurementUpdated(
+      "pose", pose_no_update_count_, params_.pose_no_update_count_threshold_warn,
+      params_.pose_no_update_count_threshold_error));
+    diag_status_array.push_back(checkMeasurementQueueSize("pose", pose_queue_size_));
+    diag_status_array.push_back(checkMeasurementDelayGate(
+      "pose", pose_is_passed_delay_gate_, pose_delay_time_, pose_delay_time_threshold_));
+    diag_status_array.push_back(checkMeasurementMahalanobisGate(
+      "pose", pose_is_passed_mahalanobis_gate_, pose_mahalanobis_distance_,
+      params_.pose_gate_dist));
+
+    diag_status_array.push_back(checkMeasurementUpdated(
+      "twist", twist_no_update_count_, params_.twist_no_update_count_threshold_warn,
+      params_.twist_no_update_count_threshold_error));
+    diag_status_array.push_back(checkMeasurementQueueSize("twist", twist_queue_size_));
+    diag_status_array.push_back(checkMeasurementDelayGate(
+      "twist", twist_is_passed_delay_gate_, twist_delay_time_, twist_delay_time_threshold_));
+    diag_status_array.push_back(checkMeasurementMahalanobisGate(
+      "twist", twist_is_passed_mahalanobis_gate_, twist_mahalanobis_distance_,
+      params_.twist_gate_dist));
+  }
+
+  diagnostic_msgs::msg::DiagnosticStatus diag_merged_status;
+  diag_merged_status = mergeDiagnosticStatus(diag_status_array);
+  diag_merged_status.name = "localization: " + std::string(this->get_name());
+  diag_merged_status.hardware_id = this->get_name();
+
+  diagnostic_msgs::msg::DiagnosticArray diag_msg;
+  diag_msg.header.stamp = this->now();
+  diag_msg.status.push_back(diag_merged_status);
+  pub_diag_->publish(diag_msg);
 }
 
 void EKFLocalizer::updateSimple1DFilters(

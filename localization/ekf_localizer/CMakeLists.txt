@@ -16,6 +16,7 @@ ament_auto_find_build_dependencies()
 ament_auto_add_library(ekf_localizer_lib SHARED
   src/ekf_localizer.cpp
   src/covariance.cpp
+  src/diagnostics.cpp
   src/mahalanobis.cpp
   src/measurement.cpp
   src/state_transition.cpp

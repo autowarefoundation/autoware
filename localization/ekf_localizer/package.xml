@@ -18,6 +18,7 @@
 
   <build_depend>eigen</build_depend>
 
+  <depend>diagnostic_msgs</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
   <depend>kalman_filter</depend>

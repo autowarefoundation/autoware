@@ -21,3 +21,9 @@
     proc_stddev_yaw_c: 0.005
     proc_stddev_vx_c: 10.0
     proc_stddev_wz_c: 5.0
+
+    # for diagnostics
+    pose_no_update_count_threshold_warn: 50
+    pose_no_update_count_threshold_error: 250
+    twist_no_update_count_threshold_warn: 50
+    twist_no_update_count_threshold_error: 250
