@@ -70,48 +70,6 @@ else()
   set(CUDNN_AVAIL OFF)
 endif()
 
-# Download caffemodel and prototxt
-set(PRETRAINED_MODEL_HASH 34ce7f2cbacbf6da8bc35769f027b73f)
-set(LAMP_LABEL_HASH e9f45efb02f2a9aa8ac27b3d5c164905)
-
-set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
-if(NOT EXISTS "${DATA_PATH}")
-  execute_process(COMMAND mkdir -p ${DATA_PATH})
-endif()
-function(download FILE_NAME FILE_HASH)
-  message(STATUS "Checking and downloading ${FILE_NAME}")
-  set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-  set(STATUS_CODE 0)
-  message(STATUS "start ${FILE_NAME}")
-  if(EXISTS ${FILE_PATH})
-    message(STATUS "found ${FILE_NAME}")
-    file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-    if(${FILE_HASH} STREQUAL ${EXISTING_FILE_HASH})
-      message(STATUS "same ${FILE_NAME}")
-      message(STATUS "File already exists.")
-    else()
-      message(STATUS "diff ${FILE_NAME}")
-      message(STATUS "File hash changes. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-      list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-      list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-    endif()
-  else()
-    message(STATUS "not found ${FILE_NAME}")
-    message(STATUS "File doesn't exists. Downloading now ...")
-    file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-    list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-    list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-  endif()
-  if(${STATUS_CODE} EQUAL 0)
-    message(STATUS "Download completed successfully!")
-  else()
-    message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
-  endif()
-endfunction()
-download(mb2-ssd-lite-tlr.onnx 34ce7f2cbacbf6da8bc35769f027b73f)
-download(voc_labels_tl.txt e9f45efb02f2a9aa8ac27b3d5c164905)
-
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   include_directories(
     ${OpenCV_INCLUDE_DIRS}
@@ -174,7 +132,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   )
 
   ament_auto_package(INSTALL_TO_SHARE
-    data
     launch
   )
 
