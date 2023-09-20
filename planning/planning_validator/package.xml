@@ -5,7 +5,7 @@
   <version>0.1.0</version>
   <description>ros node for planning_validator</description>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
