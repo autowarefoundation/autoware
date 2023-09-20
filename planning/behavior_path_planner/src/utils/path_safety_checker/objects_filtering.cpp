@@ -223,7 +223,6 @@ std::vector<PredictedPathWithPolygon> getPredictedPathFromObj(
   return obj.predicted_paths;
 }
 
-// TODO(Sugahara): should consider delay before departure
 std::vector<PoseWithVelocityStamped> createPredictedPath(
   const std::shared_ptr<EgoPredictedPathParams> & ego_predicted_path_params,
   const std::vector<PathPointWithLaneId> & path_points,
@@ -242,15 +241,28 @@ std::vector<PoseWithVelocityStamped> createPredictedPath(
                                 ? ego_predicted_path_params->time_horizon_for_front_object
                                 : ego_predicted_path_params->time_horizon_for_rear_object;
   const double time_resolution = ego_predicted_path_params->time_resolution;
+  const double delay_until_departure = ego_predicted_path_params->delay_until_departure;
 
   std::vector<PoseWithVelocityStamped> predicted_path;
   const auto vehicle_pose_frenet =
     convertToFrenetPoint(path_points, vehicle_pose.position, ego_seg_idx);
 
-  for (double t = 0.0; t < time_horizon + 1e-3; t += time_resolution) {
-    const double velocity =
-      std::clamp(current_velocity + acceleration * t, min_velocity, max_velocity);
-    const double length = current_velocity * t + 0.5 * acceleration * t * t;
+  for (double t = 0.0; t < time_horizon; t += time_resolution) {
+    double velocity;
+    double length;
+
+    if (t < delay_until_departure) {
+      // Before the departure, the velocity is 0 and there's no change in position.
+      velocity = 0.0;
+      length = 0.0;
+    } else {
+      // Adjust time to consider the delay.
+      double t_with_delay = t - delay_until_departure;
+      velocity =
+        std::clamp(current_velocity + acceleration * t_with_delay, min_velocity, max_velocity);
+      length = current_velocity * t_with_delay + 0.5 * acceleration * t_with_delay * t_with_delay;
+    }
+
     const auto pose =
       motion_utils::calcInterpolatedPose(path_points, vehicle_pose_frenet.length + length);
     predicted_path.emplace_back(t, pose, velocity);

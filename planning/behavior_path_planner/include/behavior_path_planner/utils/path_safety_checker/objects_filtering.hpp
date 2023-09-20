@@ -142,7 +142,11 @@ std::vector<PredictedPathWithPolygon> getPredictedPathFromObj(
  *
  * The function predicts the path based on the current vehicle pose, its current velocity,
  * and certain parameters related to the vehicle's behavior and environment. The prediction
- * considers acceleration and maximum velocity constraints.
+ * considers acceleration, delay before departure, and maximum velocity constraints.
+ *
+ * During the delay before departure, the vehicle's velocity is assumed to be zero, and it does
+ * not move. After the delay, the vehicle starts to accelerate as per the provided parameters
+ * until it reaches the maximum allowable velocity or the specified time horizon.
  *
  * @param ego_predicted_path_params Parameters associated with the ego's predicted path behavior.
  * @param path_points Path points to be followed by the vehicle.
