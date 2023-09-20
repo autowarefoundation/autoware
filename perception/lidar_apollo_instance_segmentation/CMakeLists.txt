@@ -24,55 +24,6 @@ if(NOT ${tensorrt_common_FOUND})
 endif()
 find_package(cuda_utils REQUIRED)
 
-
-# download weight files
-set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
-if(NOT EXISTS "${DATA_PATH}")
-  execute_process(COMMAND mkdir -p ${DATA_PATH})
-endif()
-
-function(download FILE_NAME FILE_HASH)
-  message(STATUS "Checking and downloading ${FILE_NAME}")
-  set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-  set(STATUS_CODE 0)
-  message(STATUS "start ${FILE_NAME}")
-  if(EXISTS ${FILE_PATH})
-    message(STATUS "found ${FILE_NAME}")
-    file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-    if(${FILE_HASH} STREQUAL ${EXISTING_FILE_HASH})
-      message(STATUS "same ${FILE_NAME}")
-      message(STATUS "File already exists.")
-    else()
-      message(STATUS "diff ${FILE_NAME}")
-      message(STATUS "File hash changes. Downloading now ...")
-      file(DOWNLOAD
-        https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/${FILE_NAME} ${FILE_PATH}
-        STATUS DOWNLOAD_STATUS TIMEOUT 300
-      )
-      list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-      list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-    endif()
-  else()
-    message(STATUS "not found ${FILE_NAME}")
-    message(STATUS "File doesn't exists. Downloading now ...")
-    file(DOWNLOAD
-      https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/${FILE_NAME} ${FILE_PATH}
-      STATUS DOWNLOAD_STATUS TIMEOUT 300
-    )
-    list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-    list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-  endif()
-  if(${STATUS_CODE} EQUAL 0)
-    message(STATUS "Download completed successfully!")
-  else()
-    message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
-  endif()
-endfunction()
-
-download(vlp-16.onnx 63a5a1bb73f7dbb64cf70d04eca45fb4)
-download(hdl-64.onnx 009745e33b1df44b68296431cc384cd2)
-download(vls-128.onnx b2d709f56f73ae2518c9bf4d0214468f)
-
 add_library(${PROJECT_NAME} SHARED
   src/node.cpp
   src/detector.cpp
@@ -129,7 +80,6 @@ ament_package()
 install(
   DIRECTORY
     config
-    data
     launch
   DESTINATION share/${PROJECT_NAME}
 )
