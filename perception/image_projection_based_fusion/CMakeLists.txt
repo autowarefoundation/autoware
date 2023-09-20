@@ -107,52 +107,8 @@ else()
   set(CUDNN_AVAIL OFF)
 endif()
 
-# Create folder to store trained models.
-# NOTE: This must be created regardless of CUDA_AVAIL to be specified in ament_auto_package()
-set(DATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data)
-execute_process(COMMAND mkdir -p ${DATA_PATH})
-
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
-  # Download trained models
 
-  message(STATUS "start to download")
-  function(download FILE_NAME FILE_HASH)
-    message(STATUS "Checking and downloading ${FILE_NAME}")
-    set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-    set(STATUS_CODE 0)
-    message(STATUS "start ${FILE_NAME}")
-    if(EXISTS ${FILE_PATH})
-      message(STATUS "found ${FILE_NAME}")
-      file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-      if("${FILE_HASH}" STREQUAL "${EXISTING_FILE_HASH}")
-        message(STATUS "same ${FILE_NAME}")
-        message(STATUS "File already exists.")
-      else()
-        message(STATUS "diff ${FILE_NAME}")
-        message(STATUS "File hash changes. Downloading now ...")
-        file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/${FILE_NAME}
-                      ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-        list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-        list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-      endif()
-    else()
-      message(STATUS "not found ${FILE_NAME}")
-      message(STATUS "File doesn't exists. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/${FILE_NAME}
-                    ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-      list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-      list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-    endif()
-    if(${STATUS_CODE} EQUAL 0)
-      message(STATUS "Download completed successfully!")
-    else()
-      message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
-    endif()
-  endfunction()
-
-  # default model
-  download(pts_voxel_encoder_pointpainting.onnx 25c70f76a45a64944ccd19f604c99410)
-  download(pts_backbone_neck_head_pointpainting.onnx 2c7108245240fbd7bf0104dd68225868)
   find_package(OpenCV REQUIRED)
   find_package(Eigen3 REQUIRED)
 
@@ -197,5 +153,4 @@ endif()
 ament_auto_package(INSTALL_TO_SHARE
     launch
     config
-    data
 )
