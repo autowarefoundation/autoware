@@ -69,54 +69,7 @@ else()
   set(CUDNN_AVAIL OFF)
 endif()
 
-message(STATUS "start to download")
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
-# Download trained models
-  set(DATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data)
-  set(DOWNLOAD_BASE_URL https://awf.ml.dev.web.auto/perception/models/centerpoint)
-  execute_process(COMMAND mkdir -p ${DATA_PATH})
-
-  function(download VERSION FILE_NAME FILE_HASH)
-    message(STATUS "Checking and downloading ${FILE_NAME} ")
-    set(DOWNLOAD_URL ${DOWNLOAD_BASE_URL}/${VERSION}/${FILE_NAME})
-    set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-    set(STATUS_CODE 0)
-    message(STATUS "start ${FILE_NAME}")
-    if(EXISTS ${FILE_PATH})
-      message(STATUS "found ${FILE_NAME}")
-      file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-      if("${FILE_HASH}" STREQUAL "${EXISTING_FILE_HASH}")
-        message(STATUS "same ${FILE_NAME}")
-        message(STATUS "File already exists.")
-      else()
-        message(STATUS "diff ${FILE_NAME}")
-        message(STATUS "File hash changes. Downloading now ...")
-        file(DOWNLOAD ${DOWNLOAD_URL} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-        list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-        list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-      endif()
-    else()
-      message(STATUS "not found ${FILE_NAME}")
-      message(STATUS "File doesn't exists. Downloading now ...")
-      file(DOWNLOAD ${DOWNLOAD_URL} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 300)
-      list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-      list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-    endif()
-    if(${STATUS_CODE} EQUAL 0)
-      message(STATUS "Download completed successfully!")
-    else()
-      message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE} ${DOWNLOAD_URL}")
-    endif()
-  endfunction()
-
-  # centerpoint
-  download(v2 pts_voxel_encoder_centerpoint.onnx e8369d7e0f59951cf87c0274830de1fe)
-  download(v2 pts_backbone_neck_head_centerpoint.onnx 44e44d26781a69c741bf9bddde57fbb3)
-
-  # centerpoint_tiny
-  download(v2 pts_voxel_encoder_centerpoint_tiny.onnx 5fb774fac44dc83949d05eb3ba077309)
-  download(v2 pts_backbone_neck_head_centerpoint_tiny.onnx e4658325b70222f7c3637fe00e586b82)
-
   find_package(ament_cmake_auto REQUIRED)
   ament_auto_find_build_dependencies()
 
@@ -206,7 +159,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   ament_auto_package(
     INSTALL_TO_SHARE
       launch
-      data
       config
   )
 
