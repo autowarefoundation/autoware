@@ -51,6 +51,7 @@ PoseArrayInterpolator::PoseArrayInterpolator(
 
   // all validations must be true
   if (!(is_old_pose_valid && is_new_pose_valid && is_pose_diff_valid)) {
+    success_ = false;
     RCLCPP_WARN(logger_, "Validation error.");
   }
 }
