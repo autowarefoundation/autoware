@@ -33,6 +33,7 @@
 #include <cmath>
 #include <deque>
 #include <random>
+#include <string>
 #include <vector>
 
 // ref by http://takacity.blog.fc2.com/blog-entry-69.html
@@ -85,5 +86,9 @@ T transform(const T & input, const geometry_msgs::msg::TransformStamped & transf
 }
 
 double norm(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2);
+
+void output_pose_with_cov_to_log(
+  const rclcpp::Logger logger, const std::string & prefix,
+  const geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_cov);
 
 #endif  // NDT_SCAN_MATCHER__UTIL_FUNC_HPP_

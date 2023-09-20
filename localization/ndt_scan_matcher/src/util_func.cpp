@@ -287,3 +287,24 @@ double norm(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Poin
   const double dz = p1.z - p2.z;
   return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
+
+void output_pose_with_cov_to_log(
+  const rclcpp::Logger logger, const std::string & prefix,
+  const geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_cov)
+{
+  const Eigen::Map<const RowMatrixXd> covariance =
+    make_eigen_covariance(pose_with_cov.pose.covariance);
+  const geometry_msgs::msg::Pose pose = pose_with_cov.pose.pose;
+  geometry_msgs::msg::Vector3 rpy = get_rpy(pose);
+  rpy.x = rpy.x * 180.0 / M_PI;
+  rpy.y = rpy.y * 180.0 / M_PI;
+  rpy.z = rpy.z * 180.0 / M_PI;
+
+  RCLCPP_INFO_STREAM(
+    logger, std::fixed << prefix << "," << pose.position.x << "," << pose.position.y << ","
+                       << pose.position.z << "," << pose.orientation.x << "," << pose.orientation.y
+                       << "," << pose.orientation.z << "," << pose.orientation.w << "," << rpy.x
+                       << "," << rpy.y << "," << rpy.z << "," << covariance(0, 0) << ","
+                       << covariance(1, 1) << "," << covariance(2, 2) << "," << covariance(3, 3)
+                       << "," << covariance(4, 4) << "," << covariance(5, 5));
+}

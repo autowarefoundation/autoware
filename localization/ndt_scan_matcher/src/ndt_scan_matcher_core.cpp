@@ -783,6 +783,8 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_
     return geometry_msgs::msg::PoseWithCovarianceStamped();
   }
 
+  output_pose_with_cov_to_log(get_logger(), "align_using_monte_carlo_input", initial_pose_with_cov);
+
   // generateParticle
   const auto initial_poses =
     create_random_pose_array(initial_pose_with_cov, initial_estimate_particles_num_);
@@ -819,6 +821,10 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_
   result_pose_with_cov_msg.header.stamp = initial_pose_with_cov.header.stamp;
   result_pose_with_cov_msg.header.frame_id = map_frame_;
   result_pose_with_cov_msg.pose.pose = best_particle_ptr->result_pose;
+
+  output_pose_with_cov_to_log(
+    get_logger(), "align_using_monte_carlo_output", result_pose_with_cov_msg);
+  RCLCPP_INFO_STREAM(get_logger(), "best_score," << best_particle_ptr->score);
 
   return result_pose_with_cov_msg;
 }
