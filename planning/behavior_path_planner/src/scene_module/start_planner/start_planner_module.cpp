@@ -1191,35 +1191,26 @@ void StartPlannerModule::setDebugData() const
   add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
-  if (start_planner_data_.ego_predicted_path.size() > 0) {
-    const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
-      start_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
-    add(createPredictedPathMarkerArray(
-      ego_predicted_path, vehicle_info_, "ego_predicted_path", 0, 0.0, 0.5, 0.9));
-  }
-
-  if (start_planner_data_.filtered_objects.objects.size() > 0) {
-    add(createObjectsMarkerArray(
-      start_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
-  }
 
   // safety check
-  {
+  if (parameters_->safety_check_params.enable_safety_check) {
+    if (start_planner_data_.ego_predicted_path.size() > 0) {
+      const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
+        start_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
+      add(createPredictedPathMarkerArray(
+        ego_predicted_path, vehicle_info_, "ego_predicted_path_start_planner", 0, 0.0, 0.5, 0.9));
+    }
+
+    if (start_planner_data_.filtered_objects.objects.size() > 0) {
+      add(createObjectsMarkerArray(
+        start_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
+    }
+
     add(showSafetyCheckInfo(start_planner_data_.collision_check, "object_debug_info"));
     add(showPredictedPath(start_planner_data_.collision_check, "ego_predicted_path"));
     add(showPolygon(start_planner_data_.collision_check, "ego_and_target_polygon_relation"));
-  }
-
-  if (start_planner_data_.ego_predicted_path.size() > 0) {
-    const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
-      start_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
-    add(createPredictedPathMarkerArray(
-      ego_predicted_path, vehicle_info_, "ego_predicted_path", 0, 0.0, 0.5, 0.9));
-  }
-
-  if (start_planner_data_.filtered_objects.objects.size() > 0) {
-    add(createObjectsMarkerArray(
-      start_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
+    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
+      start_planner_data_.collision_check);
   }
 
   // Visualize planner type text

@@ -1626,6 +1626,9 @@ void GoalPlannerModule::setDebugData()
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
   using marker_utils::createPredictedPathMarkerArray;
+  using marker_utils::showPolygon;
+  using marker_utils::showPredictedPath;
+  using marker_utils::showSafetyCheckInfo;
   using motion_utils::createStopVirtualWallMarker;
   using tier4_autoware_utils::createDefaultMarker;
   using tier4_autoware_utils::createMarkerColor;
@@ -1667,17 +1670,26 @@ void GoalPlannerModule::setDebugData()
       add(
         createPathMarkerArray(partial_path, "partial_path_" + std::to_string(i), 0, 0.9, 0.5, 0.9));
     }
+  }
+  // safety check
+  if (parameters_->safety_check_params.enable_safety_check) {
     if (goal_planner_data_.ego_predicted_path.size() > 0) {
       const auto & ego_predicted_path = utils::path_safety_checker::convertToPredictedPath(
         goal_planner_data_.ego_predicted_path, ego_predicted_path_params_->time_resolution);
       add(createPredictedPathMarkerArray(
-        ego_predicted_path, vehicle_info_, "ego_predicted_path", 0, 0.0, 0.5, 0.9));
+        ego_predicted_path, vehicle_info_, "ego_predicted_path_goal_planner", 0, 0.0, 0.5, 0.9));
     }
 
     if (goal_planner_data_.filtered_objects.objects.size() > 0) {
       add(createObjectsMarkerArray(
         goal_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
     }
+
+    add(showSafetyCheckInfo(goal_planner_data_.collision_check, "object_debug_info"));
+    add(showPredictedPath(goal_planner_data_.collision_check, "ego_predicted_path"));
+    add(showPolygon(goal_planner_data_.collision_check, "ego_and_target_polygon_relation"));
+    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
+      goal_planner_data_.collision_check);
   }
 
   // Visualize planner type text
