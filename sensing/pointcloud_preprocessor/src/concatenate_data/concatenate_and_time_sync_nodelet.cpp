@@ -400,12 +400,6 @@ void PointCloudConcatenateDataSynchronizerComponent::convertToXYZICloud(
 {
   output_ptr->header = input_ptr->header;
 
-  if (input_ptr->data.empty()) {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
-    return;
-  }
-
   PointCloud2Modifier<PointXYZI> output_modifier{*output_ptr, input_ptr->header.frame_id};
   output_modifier.reserve(input_ptr->width);
 
@@ -460,6 +454,12 @@ void PointCloudConcatenateDataSynchronizerComponent::cloud_callback(
 {
   std::lock_guard<std::mutex> lock(mutex_);
   auto input = std::make_shared<sensor_msgs::msg::PointCloud2>(*input_ptr);
+  if (input->data.empty()) {
+    RCLCPP_WARN_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
+    return;
+  }
+
   sensor_msgs::msg::PointCloud2::SharedPtr xyzi_input_ptr(new sensor_msgs::msg::PointCloud2());
   convertToXYZICloud(input, xyzi_input_ptr);
 
