@@ -13,7 +13,7 @@ Any tool that can download files from the web (e.g. `wget` or `curl`) is the onl
 #### yabloc_pose_initializer
 
 | file             | checksum                                                                |
-|------------------|-------------------------------------------------------------------------| 
+| ---------------- | ----------------------------------------------------------------------- |
 | resources.tar.gz | sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a |
 
 ```console
@@ -24,9 +24,9 @@ $ wget -P ~/autoware_data/yabloc_pose_initializer/ \
 
 #### image_projection_based_fusion
 
-| file             | checksum                                                                |
-|------------------|-------------------------------------------------------------------------| 
-| pts_voxel_encoder_pointpainting.onnx | md5:25c70f76a45a64944ccd19f604c99410 |
+| file                                      | checksum                             |
+| ----------------------------------------- | ------------------------------------ |
+| pts_voxel_encoder_pointpainting.onnx      | md5:25c70f76a45a64944ccd19f604c99410 |
 | pts_backbone_neck_head_pointpainting.onnx | md5:2c7108245240fbd7bf0104dd68225868 |
 
 ```console
@@ -38,8 +38,8 @@ $ wget -P ~/autoware_data/image_projection_based_fusion/ \
 
 #### lidar_apollo_instance_segmentation
 
-| file             | checksum                                                                |
-|------------------|-------------------------------------------------------------------------| 
+| file                   | checksum                             |
+| ---------------------- | ------------------------------------ |
 | vlp-16.onnx checksum:  | md5:63a5a1bb73f7dbb64cf70d04eca45fb4 |
 | hdl-64.onnx checksum:  | md5:009745e33b1df44b68296431cc384cd2 |
 | vls-128.onnx checksum: | md5:b2d709f56f73ae2518c9bf4d0214468f |
@@ -54,8 +54,8 @@ $ wget -P ~/autoware_data/lidar_apollo_instance_segmentation/ \
 
 #### lidar_centerpoint
 
-| file             | checksum                                                                |
-|------------------|-------------------------------------------------------------------------|
+| file                                         | checksum                                                                |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
 | pts_voxel_encoder_centerpoint.onnx           | sha256:dc1a876580d86ee7a341d543f8ade2ede7f43bd032dc5b44155b1f0175405764 |
 | pts_backbone_neck_head_centerpoint.onnx      | sha256:3fe7e128955646740c41a25be0c8f141d5a94594fe79d7405fe2a859e391542e |
 | pts_voxel_encoder_centerpoint_tiny.onnx      | sha256:2c53465715c1fd2e9dc5727ef3fca74f4cdf0538f74286b0946e219d0ca5693b |
@@ -73,7 +73,7 @@ $ wget -P ~/autoware_data/lidar_centerpoint/ \
 #### tensorrt_yolo
 
 | file             | checksum                                                                |
-|------------------|-------------------------------------------------------------------------|
+| ---------------- | ----------------------------------------------------------------------- |
 | yolov3.onnx      | sha256:61e922f76918dd3d8e0abdc5fb7406f390609e08bd8ab9e5d3b97afb00f30f8c |
 | yolov4.onnx      | sha256:7c7343156c1bd4b397fd1e44b27334691a6219db3ce2e29a03b72af65ddb8f39 |
 | yolov4-tiny.onnx | sha256:0e877c716fbf8a2b431ee3e57f6c7411a6741319b52c32c6dafc53c7e1b17027 |
@@ -98,8 +98,8 @@ $ wget -P ~/autoware_data/tensorrt_yolo/ \
 
 #### tensorrt_yolox
 
-| file             | checksum                                                                |
-|------------------|-------------------------------------------------------------------------|
+| file                                        | checksum                                                                |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
 | yolox-tiny.onnx                             | sha256:471a665f4243e654dff62578394e508db22ee29fe65d9e389dfc3b0f2dee1255 |
 | yolox-sPlus-opt.onnx                        | md5:bf3b0155351f90fcdca2626acbfd3bcf                                    |
 | yolox-sPlus-opt.EntropyV2-calibration.table | md5:c6e6f1999d5724a017516a956096701f                                    |
@@ -114,10 +114,10 @@ $ wget -P ~/autoware_data/tensorrt_yolox/ \
        https://awf.ml.dev.web.auto/perception/models/label.txt
 ```
 
-#### traffic_light_classifier 
+#### traffic_light_classifier
 
-| file             | checksum                                                                                                     |
-|------------------|--------------------------------------------------------------------------------------------------------------|
+| file                                                  | checksum                                                                |
+| ----------------------------------------------------- | ----------------------------------------------------------------------- |
 | traffic_light_classifier_mobilenetv2_batch_1.onnx     | md5:caa51f2080aa2df943e4f884c41898eb                                    |
 | traffic_light_classifier_mobilenetv2_batch_4.onnx     | md5:c2beaf60210f471debfe72b86d076ca0                                    |
 | traffic_light_classifier_mobilenetv2_batch_6.onnx     | md5:28b408710bcb24f4cdd4d746301d4e78                                    |
@@ -140,8 +140,8 @@ $ wget -P ~/autoware_data/traffic_light_classifier/ \
 
 #### traffic_light_fine_detector
 
-| file             | checksum                                     |
-|------------------|----------------------------------------------|
+| file                     | checksum                             |
+| ------------------------ | ------------------------------------ |
 | tlr_yolox_s_batch_1.onnx | md5:2b72d085022b8ee6aacff06bd722cfda |
 | tlr_yolox_s_batch_4.onnx | md5:4044daa86e7776ce241e94d98a09cc0e |
 | tlr_yolox_s_batch_6.onnx | md5:47255a11bde479320d703f1f45db1242 |
@@ -158,8 +158,8 @@ $ wget -P ~/autoware_data/traffic_light_fine_detector/ \
 
 #### traffic_light_ssd_fine_detector
 
-| file             | checksum                                                                     |
-|------------------|------------------------------------------------------------------------------|
+| file                  | checksum                                                                |
+| --------------------- | ----------------------------------------------------------------------- |
 | mb2-ssd-lite-tlr.onnx | sha256:e29e6ee68751a270fb285fd037713939ca7f61a897b4c3a7ab22b0d6a9a21ddf |
 | voc_labels_tl.txt     | sha256:a41e6e3324e32c30b3b2fe38908eaf3471e2bfdaeb9e14ca0c1c3bc0275119c6 |
 
