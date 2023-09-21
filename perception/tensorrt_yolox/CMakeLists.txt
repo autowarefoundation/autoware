@@ -25,52 +25,6 @@ if(OpenMP_FOUND)
 endif()
 
 ##########
-# Download pretrained model
-set(DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/data")
-if(NOT EXISTS "${DATA_PATH}")
-  execute_process(COMMAND mkdir -p ${DATA_PATH})
-endif()
-function(download SUB_DIR FILE_NAME FILE_HASH)
-  message(STATUS "Checking and downloading ${FILE_NAME}")
-  set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
-  set(STATUS_CODE 0)
-  message(STATUS "start ${FILE_NAME}")
-  if(EXISTS ${FILE_PATH})
-    message(STATUS "found ${FILE_NAME}")
-    file(MD5 ${FILE_PATH} EXISTING_FILE_HASH)
-    if(${FILE_HASH} STREQUAL ${EXISTING_FILE_HASH})
-      message(STATUS "same ${FILE_NAME}")
-      message(STATUS "File already exists.")
-    else()
-      message(STATUS "diff ${FILE_NAME}")
-      message(STATUS "File hash changes. Downloading now ...")
-      file(DOWNLOAD https://awf.ml.dev.web.auto/perception/${SUB_DIR}/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 3600)
-      list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-      list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-    endif()
-  else()
-    message(STATUS "not found ${FILE_NAME}")
-    message(STATUS "File doesn't exists. Downloading now ...")
-    file(DOWNLOAD https://awf.ml.dev.web.auto/perception/${SUB_DIR}/${FILE_NAME} ${FILE_PATH} STATUS DOWNLOAD_STATUS TIMEOUT 3600)
-    list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
-    list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
-  endif()
-  if(${STATUS_CODE} EQUAL 0)
-    message(STATUS "Download completed successfully!")
-  else()
-    message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
-  endif()
-endfunction()
-
-set(V1_PATH models/object_detection_yolox_s/v1)
-download(models yolox-tiny.onnx 97028baf73ce55e115599c9c60651b08)
-download(models yolox-sPlus-opt.onnx bf3b0155351f90fcdca2626acbfd3bcf)
-download(models yolox-sPlus-opt.EntropyV2-calibration.table c6e6f1999d5724a017516a956096701f)
-download(${V1_PATH} yolox-sPlus-T4-960x960-pseudo-finetune.onnx 37165a7e67bdaf6acff93925c628f2b2)
-download(${V1_PATH} yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table d266ea9846b10e4dab53572152c6fd8f)
-download(models label.txt 9ceadca8b72b6169ee6aabb861fe3e1e)
-
-##########
 # tensorrt_yolox
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/tensorrt_yolox.cpp
@@ -160,5 +114,4 @@ endif()
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
-  data
 )
