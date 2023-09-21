@@ -16,6 +16,8 @@
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <algorithm>
 #include <limits>

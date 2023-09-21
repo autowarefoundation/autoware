@@ -17,6 +17,8 @@
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
 
+#include <boost/geometry/algorithms/distance.hpp>
+#include <boost/geometry/algorithms/intersection.hpp>
 #include <boost/optional.hpp>  // To be replaced by std::optional in C++17
 
 #include <tf2/utils.h>

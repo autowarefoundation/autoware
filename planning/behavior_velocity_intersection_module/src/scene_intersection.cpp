@@ -24,8 +24,13 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <magic_enum.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <opencv2/imgproc.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/uuid_helper.hpp>
+
+#include <boost/geometry/algorithms/correct.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
@@ -35,7 +40,6 @@
 #include <memory>
 #include <tuple>
 #include <vector>
-
 namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;

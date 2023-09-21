@@ -39,7 +39,7 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   using std::placeholders::_1;
 
   // set common params
-  const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   wheelbase_ = vehicle_info.wheel_base_m;
   initCommonParam();
   over_stop_velocity_warn_thr_ = declare_parameter<double>("over_stop_velocity_warn_thr");

@@ -14,6 +14,8 @@
 
 #include "manager.hpp"
 
+#include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 

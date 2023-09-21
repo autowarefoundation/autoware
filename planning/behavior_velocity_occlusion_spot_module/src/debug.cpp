@@ -32,6 +32,7 @@ using builtin_interfaces::msg::Time;
 using BasicPolygons = std::vector<lanelet::BasicPolygon2d>;
 using occlusion_spot_utils::PossibleCollisionInfo;
 using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerOrientation;

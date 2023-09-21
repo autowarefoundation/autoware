@@ -16,8 +16,10 @@
 
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/tmp_conversion.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "motion_velocity_smoother/resample.hpp"
 #include "motion_velocity_smoother/trajectory_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <algorithm>
@@ -26,7 +28,6 @@
 
 namespace motion_velocity_smoother
 {
-using vehicle_info_util::VehicleInfoUtil;
 
 SmootherBase::SmootherBase(rclcpp::Node & node)
 {

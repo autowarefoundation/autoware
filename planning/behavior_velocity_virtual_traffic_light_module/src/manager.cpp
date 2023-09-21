@@ -14,6 +14,7 @@
 
 #include "manager.hpp"
 
+#include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 

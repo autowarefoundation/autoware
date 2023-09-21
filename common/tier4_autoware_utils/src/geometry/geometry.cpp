@@ -16,7 +16,10 @@
 
 #include <Eigen/Geometry>
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 #include <tf2/convert.h>
+
 namespace tf2
 {
 void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf2::Transform> & out)

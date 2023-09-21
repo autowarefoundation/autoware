@@ -14,6 +14,7 @@
 
 #include "manager.hpp"
 
+#include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/parameter.hpp>
 
 #include <tf2/utils.h>
@@ -24,7 +25,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-
 namespace behavior_velocity_planner
 {
 using lanelet::TrafficLight;

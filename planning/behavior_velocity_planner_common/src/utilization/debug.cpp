@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #include <behavior_velocity_planner_common/utilization/debug.hpp>
+#include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
-
 namespace behavior_velocity_planner
 {
 namespace debug

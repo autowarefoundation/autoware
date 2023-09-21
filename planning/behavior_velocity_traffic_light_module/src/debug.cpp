@@ -16,8 +16,8 @@
 
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
-
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else

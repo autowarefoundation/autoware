@@ -16,6 +16,8 @@
 
 #include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/tmp_conversion.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
+#include "motion_velocity_smoother/trajectory_utils.hpp"
 
 #include <algorithm>
 #include <vector>

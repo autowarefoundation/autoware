@@ -17,6 +17,7 @@
 #include <behavior_velocity_planner_common/utilization/util.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 

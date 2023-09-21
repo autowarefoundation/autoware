@@ -17,9 +17,22 @@
 #include <motion_utils/distance/distance.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 
+#include <boost/geometry/algorithms/correct.hpp>
+#include <boost/geometry/algorithms/intersects.hpp>
+#include <boost/geometry/algorithms/make.hpp>
+
+#include <tf2/utils.h>
+
 #include <algorithm>
 #include <limits>
 
+#ifdef ROS_DISTRO_GALACTIC
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
+#include <motion_utils/trajectory/trajectory.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 namespace behavior_velocity_planner
 {
 namespace run_out_utils

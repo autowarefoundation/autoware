@@ -23,9 +23,11 @@
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
 
+#include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
@@ -40,7 +42,6 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
-
 namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;

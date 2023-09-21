@@ -12,6 +12,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/scene.cpp
   src/state_machine.cpp
   src/utils.cpp
+  src/path_utils.cpp
 )
 
 ament_auto_package(INSTALL_TO_SHARE config)

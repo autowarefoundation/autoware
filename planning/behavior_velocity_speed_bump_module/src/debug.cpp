@@ -18,6 +18,7 @@
 #include <lanelet2_extension/regulatory_elements/speed_bump.hpp>
 #include <motion_utils/marker/marker_helper.hpp>
 #include <motion_utils/marker/virtual_wall_marker_creator.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <vector>

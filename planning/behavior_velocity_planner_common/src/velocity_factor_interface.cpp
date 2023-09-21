@@ -1,4 +1,4 @@
-// Copyright 2022 TIER IV, Inc.
+// Copyright 2023 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PATH_UTILS_HPP_
-#define PATH_UTILS_HPP_
-
-#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
-#include <geometry_msgs/msg/point.hpp>
-
-#include <algorithm>
-#include <limits>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
+#include <behavior_velocity_planner_common/velocity_factor_interface.hpp>
+#include <motion_utils/trajectory/trajectory.hpp>
 namespace behavior_velocity_planner
 {
-namespace run_out_utils
-{
-
-geometry_msgs::msg::Point findLongitudinalNearestPoint(
+void VelocityFactorInterface::set(
   const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
-  const geometry_msgs::msg::Point & src_point,
-  const std::vector<geometry_msgs::msg::Point> & target_points);
+  const Pose & curr_pose, const Pose & stop_pose, const VelocityFactorStatus status,
+  const std::string detail)
+{
+  const auto & curr_point = curr_pose.position;
+  const auto & stop_point = stop_pose.position;
+  velocity_factor_.type = type_;
+  velocity_factor_.pose = stop_pose;
+  velocity_factor_.distance = motion_utils::calcSignedArcLength(points, curr_point, stop_point);
+  velocity_factor_.status = status;
+  velocity_factor_.detail = detail;
+}
 
-}  // namespace run_out_utils
 }  // namespace behavior_velocity_planner
-#endif  // PATH_UTILS_HPP_
