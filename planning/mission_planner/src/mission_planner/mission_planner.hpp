@@ -85,6 +85,9 @@ private:
   void on_reroute_availability(const RerouteAvailability::ConstSharedPtr msg);
   void on_modified_goal(const PoseWithUuidStamped::ConstSharedPtr msg);
 
+  rclcpp::TimerBase::SharedPtr data_check_timer_;
+  void checkInitialization();
+
   rclcpp::Publisher<MarkerArray>::SharedPtr pub_marker_;
   void clear_route();
   void clear_mrm_route();
