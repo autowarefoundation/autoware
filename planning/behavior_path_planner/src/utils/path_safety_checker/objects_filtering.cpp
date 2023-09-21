@@ -234,14 +234,12 @@ std::vector<PoseWithVelocityStamped> createPredictedPath(
     convertToFrenetPoint(path_points, vehicle_pose.position, ego_seg_idx);
 
   for (double t = 0.0; t < time_horizon; t += time_resolution) {
-    double velocity;
-    double length;
+    double velocity = 0.0;
+    double length = 0.0;
 
-    if (t < delay_until_departure) {
-      // Before the departure, the velocity is 0 and there's no change in position.
-      velocity = 0.0;
-      length = 0.0;
-    } else {
+    // If t < delay_until_departure, it means ego have not depart yet, therefore the velocity is
+    // 0 and there's no change in position.
+    if (t >= delay_until_departure) {
       // Adjust time to consider the delay.
       double t_with_delay = t - delay_until_departure;
       velocity =
