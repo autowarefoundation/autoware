@@ -47,7 +47,7 @@ ControlPerformanceAnalysisNode::ControlPerformanceAnalysisNode(
   // Node Parameters.
   param_.curvature_interval_length_ = declare_parameter<double>("curvature_interval_length");
   param_.prevent_zero_division_value_ = declare_parameter<double>("prevent_zero_division_value");
-  param_.odom_interval_ = declare_parameter<int>("odom_interval");
+  param_.odom_interval_ = declare_parameter<int64_t>("odom_interval");
   param_.acceptable_max_distance_to_waypoint_ =
     declare_parameter<double>("acceptable_max_distance_to_waypoint");
   param_.acceptable_max_yaw_difference_rad_ =

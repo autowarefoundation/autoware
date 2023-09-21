@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Control Performance Analysis Node",
+  "type": "object",
+  "definitions": {
+    "control_performance_analysis": {
+      "type": "object",
+      "properties": {
+        "curvature_interval_length": {
+          "type": "number",
+          "default": 5.0,
+          "description": "Used for estimating current curvature."
+        },
+        "prevent_zero_division_value": {
+          "type": "number",
+          "default": 0.001,
+          "description": "Value to avoid zero division.."
+        },
+        "odom_interval": {
+          "type": "integer",
+          "default": 0,
+          "description": "Interval between odom messages, increase it for smoother curve."
+        },
+        "acceptable_max_distance_to_waypoint": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Maximum distance between trajectory point and vehicle [m]."
+        },
+        "acceptable_max_yaw_difference_rad": {
+          "type": "number",
+          "default": 0.95,
+          "description": "Maximum yaw difference between trajectory point and vehicle [rad]."
+        },
+        "low_pass_filter_gain": {
+          "type": "number",
+          "default": 1.0472,
+          "description": "Low pass filter gain."
+        }
+      },
+      "required": [
+        "curvature_interval_length",
+        "prevent_zero_division_value",
+        "odom_interval",
+        "acceptable_max_distance_to_waypoint",
+        "acceptable_max_yaw_difference_rad",
+        "low_pass_filter_gain"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/control_performance_analysis"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
