@@ -36,7 +36,9 @@ std::pair<double, size_t> getAbsMaxValAndIdx(const std::vector<double> & v);
 
 Trajectory resampleTrajectory(const Trajectory & trajectory, const double min_interval);
 
-void calcCurvature(const Trajectory & trajectory, std::vector<double> & curvatures);
+void calcCurvature(
+  const Trajectory & trajectory, std::vector<double> & curvatures,
+  const double curvature_distance = 1.0);
 
 void calcSteeringAngles(
   const Trajectory & trajectory, const double wheelbase, std::vector<double> & steering_array);

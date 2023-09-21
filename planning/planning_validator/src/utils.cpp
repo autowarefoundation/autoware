@@ -89,26 +89,68 @@ Trajectory resampleTrajectory(const Trajectory & trajectory, const double min_in
   return resampled;
 }
 
-void calcCurvature(const Trajectory & trajectory, std::vector<double> & curvature_arr)
+// calculate curvature from three points with curvature_distance
+void calcCurvature(
+  const Trajectory & trajectory, std::vector<double> & curvature_arr,
+  const double curvature_distance)
 {
   if (trajectory.points.size() < 3) {
     curvature_arr = std::vector<double>(trajectory.points.size(), 0.0);
     return;
   }
 
-  curvature_arr.push_back(0.0);
+  // calc arc length array: arc_length(3) - arc_length(0) is distance from point(3) to point(0)
+  std::vector<double> arc_length(trajectory.points.size(), 0.0);
+  for (size_t i = 1; i < trajectory.points.size(); ++i) {
+    arc_length.at(i) =
+      arc_length.at(i - 1) + calcDistance2d(trajectory.points.at(i - 1), trajectory.points.at(i));
+  }
+
+  // initialize with 0 curvature
+  curvature_arr = std::vector<double>(trajectory.points.size(), 0.0);
+
+  size_t first_distant_index = 0;
+  size_t last_distant_index = trajectory.points.size() - 1;
   for (size_t i = 1; i < trajectory.points.size() - 1; ++i) {
-    const auto p1 = getPoint(trajectory.points.at(i - 1));
+    // find the previous point
+    size_t prev_idx = 0;
+    for (size_t j = i - 1; j > 0; --j) {
+      if (arc_length.at(i) - arc_length.at(j) > curvature_distance) {
+        if (first_distant_index == 0) {
+          first_distant_index = i;  // save first index that meets distance requirement
+        }
+        prev_idx = j;
+        break;
+      }
+    }
+
+    // find the next point
+    size_t next_idx = trajectory.points.size() - 1;
+    for (size_t j = i + 1; j < trajectory.points.size(); ++j) {
+      if (arc_length.at(j) - arc_length.at(i) > curvature_distance) {
+        last_distant_index = i;  // save last index that meets distance requirement
+        next_idx = j;
+        break;
+      }
+    }
+
+    const auto p1 = getPoint(trajectory.points.at(prev_idx));
     const auto p2 = getPoint(trajectory.points.at(i));
-    const auto p3 = getPoint(trajectory.points.at(i + 1));
+    const auto p3 = getPoint(trajectory.points.at(next_idx));
     try {
-      curvature_arr.push_back(tier4_autoware_utils::calcCurvature(p1, p2, p3));
+      curvature_arr.at(i) = tier4_autoware_utils::calcCurvature(p1, p2, p3);
     } catch (...) {
-      // maybe distance is too close
-      curvature_arr.push_back(0.0);
+      curvature_arr.at(i) = 0.0;  // maybe distance is too close
     }
   }
-  curvature_arr.push_back(0.0);
+
+  // use previous or last curvature where the distance is not enough
+  for (size_t i = first_distant_index; i > 0; --i) {
+    curvature_arr.at(i - 1) = curvature_arr.at(i);
+  }
+  for (size_t i = last_distant_index; i < curvature_arr.size() - 1; ++i) {
+    curvature_arr.at(i + 1) = curvature_arr.at(i);
+  }
 }
 
 std::pair<double, size_t> calcMaxCurvature(const Trajectory & trajectory)
@@ -117,22 +159,13 @@ std::pair<double, size_t> calcMaxCurvature(const Trajectory & trajectory)
     return {0.0, 0};
   }
 
-  double max_curvature = 0.0;
-  size_t max_index = 0;
-  for (size_t i = 1; i < trajectory.points.size() - 1; ++i) {
-    const auto p1 = getPoint(trajectory.points.at(i - 1));
-    const auto p2 = getPoint(trajectory.points.at(i));
-    const auto p3 = getPoint(trajectory.points.at(i + 1));
+  std::vector<double> curvature_arr;
+  calcCurvature(trajectory, curvature_arr);
 
-    try {
-      const auto k = tier4_autoware_utils::calcCurvature(p1, p2, p3);
-      takeBigger(max_curvature, max_index, std::abs(k), i);
-    } catch (...) {
-      // maybe distance is too close
-    }
-  }
+  const auto max_curvature_it = std::max_element(curvature_arr.begin(), curvature_arr.end());
+  const size_t index = std::distance(curvature_arr.begin(), max_curvature_it);
 
-  return {max_curvature, max_index};
+  return {*max_curvature_it, index};
 }
 
 std::pair<double, size_t> calcMaxIntervalDistance(const Trajectory & trajectory)
