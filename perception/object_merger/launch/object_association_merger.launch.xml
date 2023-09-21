@@ -15,7 +15,7 @@
     <param from="$(var data_association_matrix_path)"/>
     <param from="$(var distance_threshold_list_path)"/>
     <param name="priority_mode" value="$(var priority_mode)"/>
-    <param name="sync_queue_size" value="sync_queue_size"/>
+    <param name="sync_queue_size" value="$(var sync_queue_size)"/>
     <param name="precision_threshold_to_judge_overlapped" value="0.4"/>
     <param name="remove_overlapped_unknown_objects" value="true"/>
   </node>
