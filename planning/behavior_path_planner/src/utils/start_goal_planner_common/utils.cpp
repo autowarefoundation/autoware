@@ -182,4 +182,36 @@ PathWithLaneId removeInverseOrderPathPoints(const PathWithLaneId & path)
   return fixed_path;
 }
 
+std::optional<PathWithLaneId> generateFeasibleStopPath(
+  PathWithLaneId & current_path, std::shared_ptr<const PlannerData> planner_data,
+  geometry_msgs::msg::Pose & stop_pose, const double maximum_deceleration,
+  const double maximum_jerk)
+{
+  if (current_path.points.empty()) {
+    return {};
+  }
+
+  // try to insert stop point in current_path after approval
+  // but if can't stop with constraints(maximum deceleration, maximum jerk), don't insert stop point
+  const auto min_stop_distance =
+    behavior_path_planner::utils::start_goal_planner_common::calcFeasibleDecelDistance(
+      planner_data, maximum_deceleration, maximum_jerk, 0.0);
+
+  if (!min_stop_distance) {
+    return {};
+  }
+
+  // set stop point
+  const auto stop_idx = motion_utils::insertStopPoint(
+    planner_data->self_odometry->pose.pose, *min_stop_distance, current_path.points);
+
+  if (!stop_idx) {
+    return {};
+  }
+
+  stop_pose = current_path.points.at(*stop_idx).point.pose;
+
+  return current_path;
+}
+
 }  // namespace behavior_path_planner::utils::start_goal_planner_common

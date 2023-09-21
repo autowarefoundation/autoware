@@ -736,8 +736,13 @@ void GoalPlannerModule::setStopPathFromCurrentPath(BehaviorModuleOutput & output
 {
   // safe or not safe(no feasible stop_path found) -> not_safe: try to find new feasible stop_path
   if (status_.prev_is_safe_dynamic_objects || status_.prev_stop_path_after_approval == nullptr) {
-    if (const auto stop_inserted_path = generateStopInsertedCurrentPath()) {
-      output.path = std::make_shared<PathWithLaneId>(*stop_inserted_path);
+    auto current_path = getCurrentPath();
+    const auto stop_path =
+      behavior_path_planner::utils::start_goal_planner_common::generateFeasibleStopPath(
+        current_path, planner_data_, *stop_pose_, parameters_->maximum_deceleration_for_stop,
+        parameters_->maximum_jerk_for_stop);
+    if (stop_path) {
+      output.path = std::make_shared<PathWithLaneId>(*stop_path);
       status_.prev_stop_path_after_approval = output.path;
       RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 5000, "Collision detected, generate stop path");
     } else {
@@ -1113,34 +1118,6 @@ PathWithLaneId GoalPlannerModule::generateFeasibleStopPath()
   }
 
   return stop_path;
-}
-
-std::optional<PathWithLaneId> GoalPlannerModule::generateStopInsertedCurrentPath()
-{
-  auto current_path = getCurrentPath();
-  if (current_path.points.empty()) {
-    return {};
-  }
-
-  // try to insert stop point in current_path after approval
-  // but if can't stop with constraints(maximum deceleration, maximum jerk), don't insert stop point
-  const auto min_stop_distance = calcFeasibleDecelDistance(
-    planner_data_, parameters_->maximum_deceleration, parameters_->maximum_jerk, 0.0);
-  if (!min_stop_distance) {
-    return {};
-  }
-
-  // set stop point
-  const auto stop_idx = motion_utils::insertStopPoint(
-    planner_data_->self_odometry->pose.pose, *min_stop_distance, current_path.points);
-
-  if (!stop_idx) {
-    return {};
-  } else {
-    stop_pose_ = current_path.points.at(*stop_idx).point.pose;
-  }
-
-  return current_path;
 }
 
 void GoalPlannerModule::transitionToNextPathIfFinishingCurrentPath()

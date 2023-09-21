@@ -113,6 +113,11 @@ std::pair<double, double> getPairsTerminalVelocityAndAccel(
  */
 PathWithLaneId removeInverseOrderPathPoints(const PathWithLaneId & path);
 
+std::optional<PathWithLaneId> generateFeasibleStopPath(
+  PathWithLaneId & current_path, std::shared_ptr<const PlannerData> planner_data,
+  geometry_msgs::msg::Pose & stop_pose, const double maximum_deceleration,
+  const double maximum_jerk);
+
 }  // namespace behavior_path_planner::utils::start_goal_planner_common
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__START_GOAL_PLANNER_COMMON__UTILS_HPP_

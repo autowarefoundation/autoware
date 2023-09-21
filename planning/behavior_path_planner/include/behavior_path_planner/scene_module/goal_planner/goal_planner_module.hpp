@@ -234,17 +234,6 @@ private:
   PathWithLaneId generateStopPath();
   PathWithLaneId generateFeasibleStopPath();
 
-  /**
-   * @brief Generate a stop point in the current path based on the vehicle's pose and constraints.
-   *
-   * This function generates a stop point in the current path. If no lanes are available or if
-   * stopping is not feasible due to constraints (maximum deceleration, maximum jerk), no stop point
-   * is inserted into the path.
-   *
-   * @return the modified path with the stop point inserted.  If no feasible stop point can be
-   * determined, returns an empty optional.
-   */
-  std::optional<PathWithLaneId> generateStopInsertedCurrentPath();
   void keepStoppedWithCurrentPath(PathWithLaneId & path);
   double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
 
