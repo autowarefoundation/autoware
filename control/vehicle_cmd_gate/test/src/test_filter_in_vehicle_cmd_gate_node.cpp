@@ -45,6 +45,8 @@ void print_values(int i, const T1 & name, const T2 & a, const T3 &... b)
 
 // global params
 const std::vector<double> reference_speed_points = {5., 10., 15., 20.};
+const std::vector<double> steer_lim = {0.5, 0.3, 0.2, 0.1};
+const std::vector<double> steer_rate_lim = {0.5, 0.3, 0.2, 0.1};
 const std::vector<double> lon_acc_lim = {1.5, 1.0, 0.8, 0.6};
 const std::vector<double> lon_jerk_lim = {1.4, 0.9, 0.7, 0.5};
 const std::vector<double> lat_acc_lim = {2.0, 1.6, 1.2, 0.8};
@@ -336,6 +338,8 @@ std::shared_ptr<VehicleCmdGate> generateNode()
   node_options.append_parameter_override("wheel_base", wheelbase);
   override("nominal.reference_speed_points", reference_speed_points);
   override("nominal.reference_speed_points", reference_speed_points);
+  override("nominal.steer_lim", steer_lim);
+  override("nominal.steer_rate_lim", steer_rate_lim);
   override("nominal.lon_acc_lim", lon_acc_lim);
   override("nominal.lon_jerk_lim", lon_jerk_lim);
   override("nominal.lat_acc_lim", lat_acc_lim);

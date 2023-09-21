@@ -31,12 +31,15 @@ constexpr double NOMINAL_INTERVAL = 1.0;
 
 void setFilterParams(
   vehicle_cmd_gate::VehicleCmdFilter & f, double v, LimitArray speed_points, LimitArray a,
-  LimitArray j, LimitArray lat_a, LimitArray lat_j, LimitArray steer_diff, const double wheelbase)
+  LimitArray j, LimitArray lat_a, LimitArray lat_j, LimitArray steer_diff, LimitArray steer_lim,
+  LimitArray steer_rate_lim, const double wheelbase)
 {
   vehicle_cmd_gate::VehicleCmdFilterParam p;
   p.vel_lim = v;
   p.wheel_base = wheelbase;
   p.reference_speed_points = speed_points;
+  p.steer_lim = steer_lim;
+  p.steer_rate_lim = steer_rate_lim;
   p.lat_acc_lim = lat_a;
   p.lat_jerk_lim = lat_j;
   p.lon_acc_lim = a;
@@ -97,8 +100,8 @@ double calcLatJerk(
 
 void test_1d_limit(
   double ego_v, double V_LIM, double A_LIM, double J_LIM, double LAT_A_LIM, double LAT_J_LIM,
-  double STEER_DIFF, const AckermannControlCommand & prev_cmd,
-  const AckermannControlCommand & raw_cmd)
+  double STEER_DIFF, double STEER_LIM, double STEER_RATE_LIM,
+  const AckermannControlCommand & prev_cmd, const AckermannControlCommand & raw_cmd)
 {
   const double WHEELBASE = 3.0;
   const double DT = 0.1;  // [s]
@@ -106,7 +109,8 @@ void test_1d_limit(
   vehicle_cmd_gate::VehicleCmdFilter filter;
   filter.setCurrentSpeed(ego_v);
   setFilterParams(
-    filter, V_LIM, {0.0}, {A_LIM}, {J_LIM}, {LAT_A_LIM}, {LAT_J_LIM}, {STEER_DIFF}, WHEELBASE);
+    filter, V_LIM, {0.0}, {A_LIM}, {J_LIM}, {LAT_A_LIM}, {LAT_J_LIM}, {STEER_DIFF}, {STEER_LIM},
+    {STEER_RATE_LIM}, WHEELBASE);
   filter.setPrevCmd(prev_cmd);
 
   // velocity filter
@@ -233,6 +237,8 @@ TEST(VehicleCmdFilter, VehicleCmdFilter)
   const std::vector<double> lat_a_arr = {0.01, 1.0, 100.0};
   const std::vector<double> lat_j_arr = {0.01, 1.0, 100.0};
   const std::vector<double> steer_diff_arr = {0.01, 1.0, 100.0};
+  const std::vector<double> steer_lim_arr = {0.01, 1.0, 100.0};
+  const std::vector<double> steer_rate_lim_arr = {0.01, 1.0, 100.0};
   const std::vector<double> ego_v_arr = {0.0, 0.1, 1.0, 3.0, 15.0};
 
   const std::vector<AckermannControlCommand> prev_cmd_arr = {
@@ -249,8 +255,13 @@ TEST(VehicleCmdFilter, VehicleCmdFilter)
             for (const auto & prev_cmd : prev_cmd_arr) {
               for (const auto & raw_cmd : raw_cmd_arr) {
                 for (const auto & steer_diff : steer_diff_arr) {
-                  for (const auto & ego_v : ego_v_arr) {
-                    test_1d_limit(ego_v, v, a, j, la, lj, steer_diff, prev_cmd, raw_cmd);
+                  for (const auto & steer : steer_lim_arr) {
+                    for (const auto & steer_rate : steer_rate_lim_arr) {
+                      for (const auto & ego_v : ego_v_arr) {
+                        test_1d_limit(
+                          ego_v, v, a, j, la, lj, steer_diff, steer, steer_rate, prev_cmd, raw_cmd);
+                      }
+                    }
                   }
                 }
               }
@@ -271,6 +282,8 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
   p.wheel_base = WHEELBASE;
   p.vel_lim = 20.0;
   p.reference_speed_points = std::vector<double>{2.0, 4.0, 10.0};
+  p.steer_lim = std::vector<double>{0.1, 0.2, 0.3};
+  p.steer_rate_lim = std::vector<double>{0.2, 0.1, 0.05};
   p.lon_acc_lim = std::vector<double>{0.3, 0.4, 0.5};
   p.lon_jerk_lim = std::vector<double>{0.4, 0.4, 0.7};
   p.lat_acc_lim = std::vector<double>{0.1, 0.2, 0.3};
@@ -293,7 +306,16 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
   const auto set_speed_and_reset_prev = [&](const auto & current_vel) {
     filter.setCurrentSpeed(current_vel);
   };
-
+  const auto _limitSteer = [&](const auto & in) {
+    auto out = in;
+    filter.limitLateralSteer(out);
+    return out;
+  };
+  const auto _limitSteerRate = [&](const auto & in) {
+    auto out = in;
+    filter.limitLateralSteerRate(DT, out);
+    return out;
+  };
   const auto _limitLongitudinalWithVel = [&](const auto & in) {
     auto out = in;
     filter.limitLongitudinalWithVel(out);
@@ -332,6 +354,77 @@ TEST(VehicleCmdFilter, VehicleCmdFilterInterpolate)
   {
     set_speed_and_reset_prev(0.0);
     EXPECT_NEAR(_limitLongitudinalWithVel(orig_cmd).longitudinal.speed, 20.0, ep);
+  }
+
+  // steer angle lim
+  // p.reference_speed_points = std::vector<double>{2.0, 4.0, 10.0};
+  // p.steer_lim = std::vector<double>{0.1, 0.2, 0.3};
+  {
+    set_speed_and_reset_prev(0.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.1, ep);
+
+    set_speed_and_reset_prev(2.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.1, ep);
+
+    set_speed_and_reset_prev(3.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.15, ep);
+
+    set_speed_and_reset_prev(5.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.2 + 0.1 / 6.0, ep);
+
+    set_speed_and_reset_prev(8.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.2 + 0.1 * 4.0 / 6.0, ep);
+
+    set_speed_and_reset_prev(10.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.3, ep);
+
+    set_speed_and_reset_prev(15.0);
+    EXPECT_NEAR(_limitSteer(orig_cmd).lateral.steering_tire_angle, 0.3, ep);
+  }
+
+  // steer angle rate lim
+  // p.reference_speed_points = std::vector<double>{2.0, 4.0, 10.0};
+  // p.steer_rate_lim = std::vector<double>{0.2, 0.1, 0.05};
+  {
+    const auto calcSteerRateFromAngle = [&](const auto & cmd) {
+      return (cmd.steering_tire_angle - 0.0) / DT;
+    };
+    autoware_auto_control_msgs::msg::AckermannLateralCommand filtered;
+
+    set_speed_and_reset_prev(0.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.2, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.2, ep);
+
+    set_speed_and_reset_prev(2.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.2, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.2, ep);
+
+    set_speed_and_reset_prev(3.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.15, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.15, ep);
+
+    set_speed_and_reset_prev(5.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.1 - 0.05 * 1.0 / 6.0, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.1 - 0.05 * 1.0 / 6.0, ep);
+
+    set_speed_and_reset_prev(8.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.1 - 0.05 * 4.0 / 6.0, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.1 - 0.05 * 4.0 / 6.0, ep);
+
+    set_speed_and_reset_prev(10.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.05, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.05, ep);
+
+    set_speed_and_reset_prev(15.0);
+    filtered = _limitSteerRate(orig_cmd).lateral;
+    EXPECT_NEAR(calcSteerRateFromAngle(filtered), 0.05, ep);
+    EXPECT_NEAR(filtered.steering_tire_rotation_rate, 0.05, ep);
   }
 
   // longitudinal acc lim

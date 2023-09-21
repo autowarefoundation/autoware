@@ -15,6 +15,8 @@
     nominal:
       vel_lim: 25.0
       reference_speed_points: [20.0, 30.0]
+      steer_lim: [1.0, 0.8]
+      steer_rate_lim: [1.0, 0.8]
       lon_acc_lim: [5.0, 4.0]
       lon_jerk_lim: [5.0, 4.0]
       lat_acc_lim: [5.0, 4.0]
@@ -23,6 +25,8 @@
     on_transition:
       vel_lim: 50.0
       reference_speed_points: [20.0, 30.0]
+      steer_lim: [1.0, 0.8]
+      steer_rate_lim: [1.0, 0.8]
       lon_acc_lim: [1.0, 0.9]
       lon_jerk_lim: [0.5, 0.4]
       lat_acc_lim: [2.0, 1.8]
