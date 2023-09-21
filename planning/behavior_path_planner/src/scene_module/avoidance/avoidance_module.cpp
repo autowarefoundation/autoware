@@ -2078,37 +2078,35 @@ CandidateOutput AvoidanceModule::planCandidate() const
 
   auto shifted_path = data.candidate_path;
 
-  if (!data.safe_shift_line.empty()) {  // clip from shift start index for visualize
-    utils::clipPathLength(
-      shifted_path.path, data.safe_shift_line.front().start_idx, std::numeric_limits<double>::max(),
-      0.0);
+  if (data.safe_shift_line.empty()) {
+    const size_t ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
+    utils::clipPathLength(shifted_path.path, ego_idx, planner_data_->parameters);
 
-    const auto sl = helper_.getMainShiftLine(data.safe_shift_line);
-    const auto sl_front = data.safe_shift_line.front();
-    const auto sl_back = data.safe_shift_line.back();
-
-    output.lateral_shift = helper_.getRelativeShiftToPath(sl);
-    output.start_distance_to_path_change = sl_front.start_longitudinal;
-    output.finish_distance_to_path_change = sl_back.end_longitudinal;
-
-    const uint16_t steering_factor_direction = std::invoke([&output]() {
-      if (output.lateral_shift > 0.0) {
-        return SteeringFactor::LEFT;
-      }
-      return SteeringFactor::RIGHT;
-    });
-    steering_factor_interface_ptr_->updateSteeringFactor(
-      {sl_front.start, sl_back.end},
-      {output.start_distance_to_path_change, output.finish_distance_to_path_change},
-      SteeringFactor::AVOIDANCE_PATH_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING,
-      "");
+    output.path_candidate = shifted_path.path;
+    return output;
   }
 
-  const size_t ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
-  utils::clipPathLength(shifted_path.path, ego_idx, planner_data_->parameters);
+  const auto sl = helper_.getMainShiftLine(data.safe_shift_line);
+  const auto sl_front = data.safe_shift_line.front();
+  const auto sl_back = data.safe_shift_line.back();
+
+  utils::clipPathLength(
+    shifted_path.path, sl_front.start_idx, std::numeric_limits<double>::max(), 0.0);
+
+  output.lateral_shift = helper_.getRelativeShiftToPath(sl);
+  output.start_distance_to_path_change = sl_front.start_longitudinal;
+  output.finish_distance_to_path_change = sl_back.end_longitudinal;
+
+  const uint16_t steering_factor_direction = std::invoke([&output]() {
+    return output.lateral_shift > 0.0 ? SteeringFactor::LEFT : SteeringFactor::RIGHT;
+  });
+  steering_factor_interface_ptr_->updateSteeringFactor(
+    {sl_front.start, sl_back.end},
+    {output.start_distance_to_path_change, output.finish_distance_to_path_change},
+    SteeringFactor::AVOIDANCE_PATH_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING,
+    "");
 
   output.path_candidate = shifted_path.path;
-
   return output;
 }
 
