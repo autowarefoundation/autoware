@@ -187,7 +187,7 @@ private:
    * @brief Set the current trajectory using the received message.
    * @param msg Received trajectory message.
    */
-  void setTrajectory(const Trajectory & msg);
+  void setTrajectory(const Trajectory & msg, const Odometry & current_kinematics);
 
   /**
    * @brief Check if the received data is valid.

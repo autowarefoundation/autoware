@@ -27,6 +27,19 @@
 
 namespace autoware::motion::control::mpc_lateral_controller
 {
+namespace
+{
+double calcLongitudinalOffset(
+  const geometry_msgs::msg::Point & p_front, const geometry_msgs::msg::Point & p_back,
+  const geometry_msgs::msg::Point & p_target)
+{
+  const Eigen::Vector3d segment_vec{p_back.x - p_front.x, p_back.y - p_front.y, 0};
+  const Eigen::Vector3d target_vec{p_target.x - p_front.x, p_target.y - p_front.y, 0};
+
+  return segment_vec.dot(target_vec) / segment_vec.norm();
+}
+}  // namespace
+
 namespace MPCUtils
 {
 using tier4_autoware_utils::calcDistance2d;
@@ -77,7 +90,8 @@ void calcMPCTrajectoryArcLength(const MPCTrajectory & trajectory, std::vector<do
 }
 
 std::pair<bool, MPCTrajectory> resampleMPCTrajectoryByDistance(
-  const MPCTrajectory & input, const double resample_interval_dist)
+  const MPCTrajectory & input, const double resample_interval_dist, const size_t nearest_seg_idx,
+  const double ego_offset_to_segment)
 {
   MPCTrajectory output;
 
@@ -92,7 +106,18 @@ std::pair<bool, MPCTrajectory> resampleMPCTrajectoryByDistance(
   }
 
   std::vector<double> output_arclength;
-  for (double s = 0; s < input_arclength.back(); s += resample_interval_dist) {
+  // To accurately sample the ego point, resample separately in the forward direction and the
+  // backward direction from the current position.
+  for (double s = std::clamp(
+         input_arclength.at(nearest_seg_idx) + ego_offset_to_segment, 0.0,
+         input_arclength.back() - 1e-6);
+       0 <= s; s -= resample_interval_dist) {
+    output_arclength.push_back(s);
+  }
+  std::reverse(output_arclength.begin(), output_arclength.end());
+  for (double s = std::max(input_arclength.at(nearest_seg_idx) + ego_offset_to_segment, 0.0) +
+                  resample_interval_dist;
+       s < input_arclength.back(); s += resample_interval_dist) {
     output_arclength.push_back(s);
   }
 
@@ -274,13 +299,17 @@ bool calcMPCTrajectoryTime(MPCTrajectory & traj)
 }
 
 void dynamicSmoothingVelocity(
-  const size_t start_idx, const double start_vel, const double acc_lim, const double tau,
+  const size_t start_seg_idx, const double start_vel, const double acc_lim, const double tau,
   MPCTrajectory & traj)
 {
   double curr_v = start_vel;
-  traj.vx.at(start_idx) = start_vel;
+  // set current velocity in both start and end point of the segment
+  traj.vx.at(start_seg_idx) = start_vel;
+  if (1 < traj.vx.size()) {
+    traj.vx.at(start_seg_idx + 1) = start_vel;
+  }
 
-  for (size_t i = start_idx + 1; i < traj.size(); ++i) {
+  for (size_t i = start_seg_idx + 2; i < traj.size(); ++i) {
     const double ds = calcDistance2d(traj, i, i - 1);
     const double dt = ds / std::max(std::fabs(curr_v), std::numeric_limits<double>::epsilon());
     const double a = tau / std::max(tau + dt, std::numeric_limits<double>::epsilon());
@@ -320,29 +349,40 @@ bool calcNearestPoseInterp(
     return true;
   }
 
-  auto calcSquaredDist = [](const Pose & p, const MPCTrajectory & t, const size_t idx) {
-    const double dx = p.position.x - t.x.at(idx);
-    const double dy = p.position.y - t.y.at(idx);
-    return dx * dx + dy * dy;
-  };
-
   /* get second nearest index = next to nearest_index */
-  const size_t next = static_cast<size_t>(
-    std::min(static_cast<int>(*nearest_index) + 1, static_cast<int>(traj_size) - 1));
-  const size_t prev =
-    static_cast<size_t>(std::max(static_cast<int>(*nearest_index) - 1, static_cast<int>(0)));
-  const double dist_to_next = calcSquaredDist(self_pose, traj, next);
-  const double dist_to_prev = calcSquaredDist(self_pose, traj, prev);
-  const size_t second_nearest_index = (dist_to_next < dist_to_prev) ? next : prev;
+  const auto [prev, next] = [&]() -> std::pair<size_t, size_t> {
+    if (*nearest_index == 0) {
+      return std::make_pair(0, 1);
+    }
+    if (*nearest_index == traj_size - 1) {
+      return std::make_pair(traj_size - 2, traj_size - 1);
+    }
 
-  const double a_sq = calcSquaredDist(self_pose, traj, *nearest_index);
-  const double b_sq = calcSquaredDist(self_pose, traj, second_nearest_index);
-  const double dx3 = traj.x.at(*nearest_index) - traj.x.at(second_nearest_index);
-  const double dy3 = traj.y.at(*nearest_index) - traj.y.at(second_nearest_index);
-  const double c_sq = dx3 * dx3 + dy3 * dy3;
+    geometry_msgs::msg::Point nearest_traj_point;
+    nearest_traj_point.x = traj.x.at(*nearest_index);
+    nearest_traj_point.y = traj.y.at(*nearest_index);
+    geometry_msgs::msg::Point next_nearest_traj_point;
+    next_nearest_traj_point.x = traj.x.at(*nearest_index + 1);
+    next_nearest_traj_point.y = traj.y.at(*nearest_index + 1);
 
+    const double signed_length =
+      calcLongitudinalOffset(nearest_traj_point, next_nearest_traj_point, self_pose.position);
+    if (signed_length <= 0) {
+      return std::make_pair(*nearest_index - 1, *nearest_index);
+    }
+    return std::make_pair(*nearest_index, *nearest_index + 1);
+  }();
+
+  geometry_msgs::msg::Point next_traj_point;
+  next_traj_point.x = traj.x.at(next);
+  next_traj_point.y = traj.y.at(next);
+  geometry_msgs::msg::Point prev_traj_point;
+  prev_traj_point.x = traj.x.at(prev);
+  prev_traj_point.y = traj.y.at(prev);
+  const double traj_seg_length =
+    tier4_autoware_utils::calcDistance2d(prev_traj_point, next_traj_point);
   /* if distance between two points are too close */
-  if (c_sq < 1.0E-5) {
+  if (traj_seg_length < 1.0E-5) {
     nearest_pose->position.x = traj.x.at(*nearest_index);
     nearest_pose->position.y = traj.y.at(*nearest_index);
     nearest_pose->orientation = createQuaternionFromYaw(traj.yaw.at(*nearest_index));
@@ -351,18 +391,15 @@ bool calcNearestPoseInterp(
   }
 
   /* linear interpolation */
-  const double alpha = std::max(std::min(0.5 * (c_sq - a_sq + b_sq) / c_sq, 1.0), 0.0);
-  nearest_pose->position.x =
-    alpha * traj.x.at(*nearest_index) + (1 - alpha) * traj.x.at(second_nearest_index);
-  nearest_pose->position.y =
-    alpha * traj.y.at(*nearest_index) + (1 - alpha) * traj.y.at(second_nearest_index);
-  const double tmp_yaw_err =
-    normalizeRadian(traj.yaw.at(*nearest_index) - traj.yaw.at(second_nearest_index));
-  const double nearest_yaw =
-    normalizeRadian(traj.yaw.at(second_nearest_index) + alpha * tmp_yaw_err);
+  const double ratio = std::clamp(
+    calcLongitudinalOffset(prev_traj_point, next_traj_point, self_pose.position) / traj_seg_length,
+    0.0, 1.0);
+  nearest_pose->position.x = (1 - ratio) * traj.x.at(prev) + ratio * traj.x.at(next);
+  nearest_pose->position.y = (1 - ratio) * traj.y.at(prev) + ratio * traj.y.at(next);
+  const double tmp_yaw_err = normalizeRadian(traj.yaw.at(prev) - traj.yaw.at(next));
+  const double nearest_yaw = normalizeRadian(traj.yaw.at(next) + (1 - ratio) * tmp_yaw_err);
   nearest_pose->orientation = createQuaternionFromYaw(nearest_yaw);
-  *nearest_time = alpha * traj.relative_time.at(*nearest_index) +
-                  (1 - alpha) * traj.relative_time.at(second_nearest_index);
+  *nearest_time = (1 - ratio) * traj.relative_time.at(prev) + ratio * traj.relative_time.at(next);
   return true;
 }
 

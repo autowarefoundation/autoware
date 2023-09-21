@@ -447,7 +447,8 @@ public:
    * @param param Trajectory filtering parameters.
    */
   void setReferenceTrajectory(
-    const Trajectory & trajectory_msg, const TrajectoryFilteringParam & param);
+    const Trajectory & trajectory_msg, const TrajectoryFilteringParam & param,
+    const Odometry & current_kinematics);
 
   /**
    * @brief Reset the previous result of MPC.

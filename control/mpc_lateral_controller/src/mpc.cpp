@@ -175,13 +175,20 @@ Float32MultiArrayStamped MPC::generateDiagData(
 }
 
 void MPC::setReferenceTrajectory(
-  const Trajectory & trajectory_msg, const TrajectoryFilteringParam & param)
+  const Trajectory & trajectory_msg, const TrajectoryFilteringParam & param,
+  const Odometry & current_kinematics)
 {
+  const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    trajectory_msg.points, current_kinematics.pose.pose, ego_nearest_dist_threshold,
+    ego_nearest_yaw_threshold);
+  const double ego_offset_to_segment = motion_utils::calcLongitudinalOffsetToSegment(
+    trajectory_msg.points, nearest_seg_idx, current_kinematics.pose.pose.position);
+
   const auto mpc_traj_raw = MPCUtils::convertToMPCTrajectory(trajectory_msg);
 
   // resampling
-  const auto [success_resample, mpc_traj_resampled] =
-    MPCUtils::resampleMPCTrajectoryByDistance(mpc_traj_raw, param.traj_resample_dist);
+  const auto [success_resample, mpc_traj_resampled] = MPCUtils::resampleMPCTrajectoryByDistance(
+    mpc_traj_raw, param.traj_resample_dist, nearest_seg_idx, ego_offset_to_segment);
   if (!success_resample) {
     warn_throttle("[setReferenceTrajectory] spline error when resampling by distance");
     return;
@@ -391,13 +398,13 @@ MPCTrajectory MPC::applyVelocityDynamicsFilter(
     return input;
   }
 
-  const size_t nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+  const size_t nearest_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     autoware_traj.points, current_kinematics.pose.pose, ego_nearest_dist_threshold,
     ego_nearest_yaw_threshold);
 
   MPCTrajectory output = input;
   MPCUtils::dynamicSmoothingVelocity(
-    nearest_idx, current_kinematics.twist.twist.linear.x, m_param.acceleration_limit,
+    nearest_seg_idx, current_kinematics.twist.twist.linear.x, m_param.acceleration_limit,
     m_param.velocity_time_constant, output);
 
   auto last_point = output.back();

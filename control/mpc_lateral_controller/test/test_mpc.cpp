@@ -163,7 +163,9 @@ protected:
     mpc.initializeSteeringPredictor();
 
     // Init trajectory
-    mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param);
+    const auto current_kinematics =
+      makeOdometry(dummy_straight_trajectory.points.front().pose, 0.0);
+    mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
   }
 
   nav_msgs::msg::Odometry makeOdometry(const geometry_msgs::msg::Pose & pose, const double velocity)
@@ -221,7 +223,9 @@ TEST_F(MPCTest, InitializeAndCalculateRightTurn)
 
   // Init parameters and reference trajectory
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param);
+  const auto current_kinematics =
+    makeOdometry(dummy_right_turn_trajectory.points.front().pose, 0.0);
+  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
 
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
@@ -237,7 +241,8 @@ TEST_F(MPCTest, OsqpCalculate)
 {
   MPC mpc;
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param);
+  const auto current_kinematics = makeOdometry(dummy_straight_trajectory.points.front().pose, 0.0);
+  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
@@ -262,7 +267,9 @@ TEST_F(MPCTest, OsqpCalculateRightTurn)
 {
   MPC mpc;
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param);
+  const auto current_kinematics =
+    makeOdometry(dummy_right_turn_trajectory.points.front().pose, 0.0);
+  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModel>(wheelbase, steer_limit, steer_tau);
@@ -300,7 +307,8 @@ TEST_F(MPCTest, KinematicsNoDelayCalculate)
   // Init filters
   mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
   // Init trajectory
-  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param);
+  const auto current_kinematics = makeOdometry(dummy_straight_trajectory.points.front().pose, 0.0);
+  mpc.setReferenceTrajectory(dummy_straight_trajectory, trajectory_param, current_kinematics);
   // Calculate MPC
   AckermannLateralCommand ctrl_cmd;
   Trajectory pred_traj;
@@ -315,7 +323,9 @@ TEST_F(MPCTest, KinematicsNoDelayCalculateRightTurn)
 {
   MPC mpc;
   initializeMPC(mpc);
-  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param);
+  const auto current_kinematics =
+    makeOdometry(dummy_right_turn_trajectory.points.front().pose, 0.0);
+  mpc.setReferenceTrajectory(dummy_right_turn_trajectory, trajectory_param, current_kinematics);
 
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr =
     std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase, steer_limit);

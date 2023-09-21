@@ -227,7 +227,7 @@ trajectory_follower::LateralOutput MpcLateralController::run(
   trajectory_follower::InputData const & input_data)
 {
   // set input data
-  setTrajectory(input_data.current_trajectory);
+  setTrajectory(input_data.current_trajectory, input_data.current_odometry);
 
   m_current_kinematic_state = input_data.current_odometry;
   m_current_steering = input_data.current_steering;
@@ -319,7 +319,7 @@ bool MpcLateralController::isSteerConverged(const AckermannLateralCommand & cmd)
 
 bool MpcLateralController::isReady(const trajectory_follower::InputData & input_data)
 {
-  setTrajectory(input_data.current_trajectory);
+  setTrajectory(input_data.current_trajectory, input_data.current_odometry);
   m_current_kinematic_state = input_data.current_odometry;
   m_current_steering = input_data.current_steering;
 
@@ -339,7 +339,8 @@ bool MpcLateralController::isReady(const trajectory_follower::InputData & input_
   return true;
 }
 
-void MpcLateralController::setTrajectory(const Trajectory & msg)
+void MpcLateralController::setTrajectory(
+  const Trajectory & msg, const Odometry & current_kinematics)
 {
   m_current_trajectory = msg;
 
@@ -353,7 +354,7 @@ void MpcLateralController::setTrajectory(const Trajectory & msg)
     return;
   }
 
-  m_mpc.setReferenceTrajectory(msg, m_trajectory_filtering_param);
+  m_mpc.setReferenceTrajectory(msg, m_trajectory_filtering_param, current_kinematics);
 
   // update trajectory buffer to check the trajectory shape change.
   m_trajectory_buffer.push_back(m_current_trajectory);
