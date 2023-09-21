@@ -38,6 +38,8 @@ StartPlannerModuleManager::StartPlannerModuleManager(
   p.th_stopped_time = node->declare_parameter<double>(ns + "th_stopped_time");
   p.th_turn_signal_on_lateral_offset =
     node->declare_parameter<double>(ns + "th_turn_signal_on_lateral_offset");
+  p.th_distance_to_middle_of_the_road =
+    node->declare_parameter<double>(ns + "th_distance_to_middle_of_the_road");
   p.intersection_search_length = node->declare_parameter<double>(ns + "intersection_search_length");
   p.length_ratio_for_turn_signal_deactivation_near_intersection = node->declare_parameter<double>(
     ns + "length_ratio_for_turn_signal_deactivation_near_intersection");

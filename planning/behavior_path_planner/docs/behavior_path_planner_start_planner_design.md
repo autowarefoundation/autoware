@@ -59,16 +59,17 @@ PullOutPath --o PullOutPlannerBase
 
 ## General parameters for start_planner
 
-| Name                                                        | Unit  | Type   | Description                                                          | Default value |
-| :---------------------------------------------------------- | :---- | :----- | :------------------------------------------------------------------- | :------------ |
-| th_arrived_distance_m                                       | [m]   | double | distance threshold for arrival of path termination                   | 1.0           |
-| th_stopped_velocity_mps                                     | [m/s] | double | velocity threshold for arrival of path termination                   | 0.01          |
-| th_stopped_time_sec                                         | [s]   | double | time threshold for arrival of path termination                       | 1.0           |
-| th_turn_signal_on_lateral_offset                            | [m]   | double | lateral distance threshold for turning on blinker                    | 1.0           |
-| intersection_search_length                                  | [m]   | double | check if intersections exist within this length                      | 30.0          |
-| length_ratio_for_turn_signal_deactivation_near_intersection | [m]   | double | deactivate turn signal of this module near intersection              | 0.5           |
-| collision_check_margin                                      | [m]   | double | Obstacle collision check margin                                      | 1.0           |
-| collision_check_distance_from_end                           | [m]   | double | collision check distance from end point. currently only for pull out | 15.0          |
+| Name                                                        | Unit  | Type   | Description                                                                 | Default value |
+| :---------------------------------------------------------- | :---- | :----- | :-------------------------------------------------------------------------- | :------------ |
+| th_arrived_distance_m                                       | [m]   | double | distance threshold for arrival of path termination                          | 1.0           |
+| th_distance_to_middle_of_the_road                           | [m]   | double | distance threshold to determine if the vehicle is on the middle of the road |
+| th_stopped_velocity_mps                                     | [m/s] | double | velocity threshold for arrival of path termination                          | 0.01          |
+| th_stopped_time_sec                                         | [s]   | double | time threshold for arrival of path termination                              | 1.0           |
+| th_turn_signal_on_lateral_offset                            | [m]   | double | lateral distance threshold for turning on blinker                           | 1.0           |
+| intersection_search_length                                  | [m]   | double | check if intersections exist within this length                             | 30.0          |
+| length_ratio_for_turn_signal_deactivation_near_intersection | [m]   | double | deactivate turn signal of this module near intersection                     | 0.5           |
+| collision_check_margin                                      | [m]   | double | Obstacle collision check margin                                             | 1.0           |
+| collision_check_distance_from_end                           | [m]   | double | collision check distance from end point. currently only for pull out        | 15.0          |
 
 ## Safety check with static obstacles
 

@@ -7,6 +7,7 @@
       collision_check_margin: 1.0
       collision_check_distance_from_end: 1.0
       th_moving_object_velocity: 1.0
+      th_distance_to_middle_of_the_road: 0.1
       # shift pull out
       enable_shift_pull_out: true
       check_shift_path_lane_departure: false
