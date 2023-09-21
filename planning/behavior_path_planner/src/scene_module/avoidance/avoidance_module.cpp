@@ -1432,8 +1432,9 @@ AvoidLineArray AvoidanceModule::applyFillGapProcess(
 
 AvoidLineArray AvoidanceModule::applyCombineProcess(
   const AvoidLineArray & shift_lines, const AvoidLineArray & registered_lines,
-  [[maybe_unused]] DebugData & debug) const
+  DebugData & debug) const
 {
+  debug.step1_registered_shift_line = registered_lines;
   return utils::avoidance::combineRawShiftLinesWithUniqueCheck(registered_lines, shift_lines);
 }
 
@@ -1936,14 +1937,17 @@ void AvoidanceModule::generateExpandDrivableLanes(BehaviorModuleOutput & output)
 
 PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & original_path) const
 {
-  // special for avoidance: take behind distance upt ot shift-start-point if it exist.
+  const auto previous_path = helper_.getPreviousReferencePath();
+
   const auto longest_dist_to_shift_point = [&]() {
     double max_dist = 0.0;
     for (const auto & pnt : path_shifter_.getShiftLines()) {
-      max_dist = std::max(max_dist, calcDistance2d(getEgoPose(), pnt.start));
+      max_dist = std::max(
+        max_dist, calcSignedArcLength(previous_path.points, pnt.start.position, getEgoPosition()));
     }
     for (const auto & sp : registered_raw_shift_lines_) {
-      max_dist = std::max(max_dist, calcDistance2d(getEgoPose(), sp.start));
+      max_dist = std::max(
+        max_dist, calcSignedArcLength(previous_path.points, sp.start.position, getEgoPosition()));
     }
     return max_dist;
   }();
@@ -1951,11 +1955,11 @@ PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & orig
   const auto extra_margin = 10.0;  // Since distance does not consider arclength, but just line.
   const auto backward_length = std::max(
     planner_data_->parameters.backward_path_length, longest_dist_to_shift_point + extra_margin);
-  const auto previous_path = helper_.getPreviousReferencePath();
 
   const size_t orig_ego_idx = planner_data_->findEgoIndex(original_path.points);
-  const size_t prev_ego_idx =
-    findNearestSegmentIndex(previous_path.points, getPoint(original_path.points.at(orig_ego_idx)));
+  const size_t prev_ego_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    previous_path.points, getPose(original_path.points.at(orig_ego_idx)),
+    std::numeric_limits<double>::max(), planner_data_->parameters.ego_nearest_yaw_threshold);
 
   size_t clip_idx = 0;
   for (size_t i = 0; i < prev_ego_idx; ++i) {
