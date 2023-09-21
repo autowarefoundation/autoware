@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Mission Planner nodes",
+  "type": "object",
+  "definitions": {
+    "mission_planner_nodes": {
+      "type": "object",
+      "properties": {
+        "map_frame": {
+          "type": "string",
+          "description": "The frame name for map ",
+          "default": "map"
+        },
+        "arrival_check_angle_deg": {
+          "type": "number",
+          "description": "Angle threshold for goal check ",
+          "default": "45.0"
+        },
+        "arrival_check_distance": {
+          "type": "number",
+          "description": "Distance threshold for goal check",
+          "default": "1.0",
+          "minimum": 0.0
+        },
+        "arrival_check_duration": {
+          "type": "number",
+          "description": "Duration threshold for goal check",
+          "default": "1.0",
+          "minimum": 0.0
+        },
+        "goal_angle_threshold_deg": {
+          "type": "number",
+          "description": "Max goal pose angle for goal approve",
+          "default": "45.0"
+        },
+        "enable_correct_goal_pose": {
+          "type": "boolean",
+          "description": "Enabling correction of goal pose according to the closest lanelet orientation",
+          "default": "false"
+        },
+        "reroute_time_threshold": {
+          "type": "number",
+          "description": "If the time to the rerouting point at the current velocity is greater than this threshold, rerouting is possible",
+          "default": "10.0",
+          "minimum": 0.0
+        },
+        "minimum_reroute_length": {
+          "type": "number",
+          "description": "Minimum Length for publishing a new route",
+          "default": "30.0"
+        },
+        "consider_no_drivable_lanes": {
+          "type": "boolean",
+          "description": "This flag is for considering no_drivable_lanes in planning or not",
+          "default": "false"
+        }
+      },
+      "required": [
+        "map_frame",
+        "arrival_check_angle_deg",
+        "arrival_check_distance",
+        "arrival_check_duration",
+        "goal_angle_threshold_deg",
+        "enable_correct_goal_pose",
+        "reroute_time_threshold",
+        "minimum_reroute_length",
+        "consider_no_drivable_lanes"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/mission_planner_nodes"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
