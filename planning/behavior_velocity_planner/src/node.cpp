@@ -75,6 +75,8 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   planner_data_(*this)
 {
   using std::placeholders::_1;
+  using std::placeholders::_2;
+
   // Trigger Subscriber
   trigger_sub_path_with_lane_id_ =
     this->create_subscription<autoware_auto_planning_msgs::msg::PathWithLaneId>(
@@ -118,6 +120,12 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     "~/input/occupancy_grid", 1, std::bind(&BehaviorVelocityPlannerNode::onOccupancyGrid, this, _1),
     createSubscriptionOptions(this));
 
+  srv_load_plugin_ = create_service<LoadPlugin>(
+    "~/service/load_plugin", std::bind(&BehaviorVelocityPlannerNode::onLoadPlugin, this, _1, _2));
+  srv_unload_plugin_ = create_service<UnloadPlugin>(
+    "~/service/unload_plugin",
+    std::bind(&BehaviorVelocityPlannerNode::onUnloadPlugin, this, _1, _2));
+
   // set velocity smoother param
   onParam();
 
@@ -143,6 +151,22 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
     planner_manager_.launchScenePlugin(*this, name);
   }
+}
+
+void BehaviorVelocityPlannerNode::onLoadPlugin(
+  const LoadPlugin::Request::SharedPtr request,
+  [[maybe_unused]] const LoadPlugin::Response::SharedPtr response)
+{
+  std::unique_lock<std::mutex> lk(mutex_);
+  planner_manager_.launchScenePlugin(*this, request->plugin_name);
+}
+
+void BehaviorVelocityPlannerNode::onUnloadPlugin(
+  const UnloadPlugin::Request::SharedPtr request,
+  [[maybe_unused]] const UnloadPlugin::Response::SharedPtr response)
+{
+  std::unique_lock<std::mutex> lk(mutex_);
+  planner_manager_.removeScenePlugin(*this, request->plugin_name);
 }
 
 // NOTE: argument planner_data must not be referenced for multithreading

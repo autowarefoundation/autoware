@@ -17,6 +17,8 @@
 
 #include "planner_manager.hpp"
 
+#include <behavior_velocity_planner/srv/load_plugin.hpp>
+#include <behavior_velocity_planner/srv/unload_plugin.hpp>
 #include <behavior_velocity_planner_common/planner_data.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -38,11 +40,15 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <vector>
 
 namespace behavior_velocity_planner
 {
 using autoware_auto_mapping_msgs::msg::HADMapBin;
+using behavior_velocity_planner::srv::LoadPlugin;
+using behavior_velocity_planner::srv::UnloadPlugin;
 using tier4_planning_msgs::msg::VelocityLimit;
+
 class BehaviorVelocityPlannerNode : public rclcpp::Node
 {
 public:
@@ -102,6 +108,14 @@ private:
   bool is_driving_forward_{true};
   HADMapBin::ConstSharedPtr map_ptr_{nullptr};
   bool has_received_map_;
+
+  rclcpp::Service<LoadPlugin>::SharedPtr srv_load_plugin_;
+  rclcpp::Service<UnloadPlugin>::SharedPtr srv_unload_plugin_;
+  void onUnloadPlugin(
+    const UnloadPlugin::Request::SharedPtr request,
+    const UnloadPlugin::Response::SharedPtr response);
+  void onLoadPlugin(
+    const LoadPlugin::Request::SharedPtr request, const LoadPlugin::Response::SharedPtr response);
 
   // mutex for planner_data_
   std::mutex mutex_;
