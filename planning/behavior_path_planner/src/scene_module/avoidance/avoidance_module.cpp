@@ -207,7 +207,10 @@ bool AvoidanceModule::canTransitSuccessState()
     }
   }
 
-  const bool has_avoidance_target = !data.target_objects.empty();
+  const bool has_avoidance_target =
+    std::any_of(data.target_objects.begin(), data.target_objects.end(), [](const auto & o) {
+      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+    });
   const bool has_shift_point = !path_shifter_.getShiftLines().empty();
   const bool has_base_offset =
     std::abs(path_shifter_.getBaseOffset()) > parameters_->lateral_avoid_check_threshold;
@@ -2948,6 +2951,12 @@ void AvoidanceModule::insertPrepareVelocity(ShiftedPath & shifted_path) const
   }
 
   const auto object = data.target_objects.front();
+
+  const auto enough_space =
+    object.is_avoidable || object.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+  if (!enough_space) {
+    return;
+  }
 
   // calculate shift length for front object.
   const auto & vehicle_width = planner_data_->parameters.vehicle_width;
