@@ -57,6 +57,7 @@ One optional function is regularization. Please see the regularization chapter i
 | Name                                    | Type   | Description                                                                                     |
 | --------------------------------------- | ------ | ----------------------------------------------------------------------------------------------- |
 | `base_frame`                            | string | Vehicle reference frame                                                                         |
+| `ndt_base_frame`                        | string | NDT reference frame                                                                             |
 | `input_sensor_points_queue_size`        | int    | Subscriber queue size                                                                           |
 | `trans_epsilon`                         | double | The maximum difference between two consecutive transformations in order to consider convergence |
 | `step_size`                             | double | The newton line search maximum step length                                                      |
