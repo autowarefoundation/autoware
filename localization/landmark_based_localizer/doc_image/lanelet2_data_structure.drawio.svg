@@ -6,7 +6,7 @@
   width="336px"
   height="336px"
   viewBox="-0.5 -0.5 336 336"
-  content="&lt;mxfile&gt;&lt;diagram id=&quot;z_GJx55S16-dNHi1224P&quot; name=&quot;ページ1&quot;&gt;5ZhNj5swEIZ/DVJ7wzYBcsymu+2lUtVU6tmCCVg1ODLOhuyvr1kMBDsROdBk1eQQ4ddfzDPj8SQeWRf1V0l3+XeRAvewn9Ye+eJhHC1i/d0Ix1Ygy6gVMsnSVkKDsGFvYETfqHuWQjUaqITgiu3GYiLKEhI10qiU4jAethV8vOuOZuAIm4RyV/3NUpW3aoyjQf8GLMu7nVG4bHsK2g02llQ5TcXhRCLPHllLIVT7VNRr4A27jks77+VCb/9iEkp1zYRg0c54pXxvjDMvpo6dtVLsyxSaCb5Hng45U7DZ0aTpPWj3ai1XBdctpB/NciAV1BffCfWW6ggBUYCSRz2kmxAaOCY6UAfrMLDux+SnnDuRGv9m/doDAv1gKFwgEjpEkINET9GxBtM4aLVrA3DL6gbhLHyCMR8cu3zwGTx4DjqRQ8cNmLvSIfiOdGKHDvnYdJB/QzpLh07wsejYJ+uWdBb+dCaGMl0115duJZxWFUvOJV9IndtrEsCJgYszBnaaBE4Vex0vf85qs8MPwfTGPd/YOpq+xa0Se5mAmXR6a1nrBP7EQorKDJSz0LsPequvcwty3FI7ftERp8aeqJQUf2AtuJBaKUXZRPSWcW5JlLOsbNypHQRaf2ril+lKY2U6Cpam/NJxGN/MW1EqUyuhcKZ0EVkHInIPBDkTL2SOA4Ed8sfHId/Xuscu5G8Hnvz/mQhbmZ7YpeO1qcheKPh3mSi4wi33vD2xXVvcsPJauFX7jHBO04enz9j7Zy5okQUtcqCFLrNwBmRuKf/2OPkVLS3uIbldgnV/Jqx+6vYvmn16kdrWz4/jh3jymkNoHjfo5vC/Spt/hz+nyPNf&lt;/diagram&gt;&lt;/mxfile&gt;"
+  content="&lt;mxfile&gt;&lt;diagram id=&quot;z_GJx55S16-dNHi1224P&quot; name=&quot;ページ1&quot;&gt;5ZhNb6MwEIZ/DdLuDWwC9Nhm2+5hV1ophz1beAJWDY6Mk5D++jXFfNmJkgNNqk0OEbz+wPPMeDzg4WVRv0qyyX8LCtxDPq09/MNDCCeJ/m+EQytEKGyFTDLaSsEgrNg7GNE36pZRqCYdlRBcsc1UTEVZQqomGpFS7Kfd1oJPn7ohGTjCKiXcVf8yqvJWTVA86D+BZXn35CB6aFsK0nU2llQ5oWI/kvCzh5dSCNVeFfUSeMOu49KOeznR2i9MQqkuGRAu2hE7wrfGOLMwdeislWJbUmgG+B5+2udMwWpD0qZ1r92rtVwVXN8F+tJdgFnTDqSCeiSZBb2CKEDJg+7StUYGjomOoIO1H1j3ffIx504kxr9ZP/eAQF8YCieIRA6RwEGih+hYg/M4SLVpA3DN6gbhLHzCKR+UuHzQETxoDjqxQ8cNmJvSweiGdBKHDv7adAL/inQeHDrh16Jj76xr0ln45zMxlPSxOb70XcpJVbH0wuQLdHKguQBGBi6OGNhpEjhRbDfNi8esNk/4I5heSc83sbamb3GrxFamYAaNTy1rntA/M5EiMgPlTPThg97qy9wSOG6pHb/o8FJTT1RKijdYCi6kVkpRNhG9ZpxbEuEsKxt3ao+B1p+aYGW60ng0DQWjlJ/aDtOTeS1KZWqlIJopXcTWhojdDYGPxAueY0Mgh/zhfsj3te6hC/nrgcf/fyZCVqbHdul4aSqyJwo/LxOFF7jllqcnsmuLK1ZeC7dqnxHOOH14eo99/OaCFlvQYgda5DKLZkDmlvLv95NfgweLe4Svl2Dd14RfpKQFkW/fXqS29fv9+CE5e8wFwTxu0LfDd5U2/w4fp/DzPw==&lt;/diagram&gt;&lt;/mxfile&gt;"
 >
   <defs/>
   <g>
@@ -138,12 +138,12 @@
           <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 108px; height: 1px; padding-top: 22px; margin-left: 8px;">
             <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
-                AR Tag(Front)
+                Landmark(Front)
               </div>
             </div>
           </div>
         </foreignObject>
-        <text x="62" y="27" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="16px" text-anchor="middle">AR Tag(Front)</text>
+        <text x="62" y="27" fill="rgb(0, 0, 0)" font-family="Helvetica" font-size="16px" text-anchor="middle">Landmark(Front)</text>
       </switch>
     </g>
   </g>

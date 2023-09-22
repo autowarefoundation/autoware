@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AR_TAG_BASED_LOCALIZER__TAG_TF_CASTER_CORE_HPP_
-#define AR_TAG_BASED_LOCALIZER__TAG_TF_CASTER_CORE_HPP_
+#ifndef LANDMARK_TF_CASTER__LANDMARK_TF_CASTER_CORE_HPP_
+#define LANDMARK_TF_CASTER__LANDMARK_TF_CASTER_CORE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -26,10 +26,10 @@
 
 #include <memory>
 
-class TagTfCaster : public rclcpp::Node
+class LandmarkTfCaster : public rclcpp::Node
 {
 public:
-  TagTfCaster();
+  LandmarkTfCaster();
 
 private:
   void map_bin_callback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg);
@@ -46,4 +46,4 @@ private:
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_bin_sub_;
 };
 
-#endif  // AR_TAG_BASED_LOCALIZER__TAG_TF_CASTER_CORE_HPP_
+#endif  // LANDMARK_TF_CASTER__LANDMARK_TF_CASTER_CORE_HPP_

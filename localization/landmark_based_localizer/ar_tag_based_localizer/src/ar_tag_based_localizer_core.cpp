@@ -44,12 +44,12 @@
 
 #include "ar_tag_based_localizer/ar_tag_based_localizer_core.hpp"
 
-#include "ar_tag_based_localizer/utils.hpp"
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <opencv4/opencv2/calib3d.hpp>
 
 #include <cv_bridge/cv_bridge.h>
+#include <tf2/LinearMath/Transform.h>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
@@ -208,7 +208,30 @@ void ArTagBasedLocalizer::cam_info_callback(const sensor_msgs::msg::CameraInfo &
     return;
   }
 
-  cam_param_ = ros_camera_info_to_aruco_cam_params(msg, true);
+  cv::Mat camera_matrix(3, 4, CV_64FC1, 0.0);
+  cv::Mat distortion_coeff(4, 1, CV_64FC1);
+  cv::Size size(static_cast<int>(msg.width), static_cast<int>(msg.height));
+
+  camera_matrix.setTo(0);
+  camera_matrix.at<double>(0, 0) = msg.p[0];
+  camera_matrix.at<double>(0, 1) = msg.p[1];
+  camera_matrix.at<double>(0, 2) = msg.p[2];
+  camera_matrix.at<double>(0, 3) = msg.p[3];
+  camera_matrix.at<double>(1, 0) = msg.p[4];
+  camera_matrix.at<double>(1, 1) = msg.p[5];
+  camera_matrix.at<double>(1, 2) = msg.p[6];
+  camera_matrix.at<double>(1, 3) = msg.p[7];
+  camera_matrix.at<double>(2, 0) = msg.p[8];
+  camera_matrix.at<double>(2, 1) = msg.p[9];
+  camera_matrix.at<double>(2, 2) = msg.p[10];
+  camera_matrix.at<double>(2, 3) = msg.p[11];
+
+  for (int i = 0; i < 4; ++i) {
+    distortion_coeff.at<double>(i, 0) = 0;
+  }
+
+  cam_param_ = aruco::CameraParameters(camera_matrix, distortion_coeff, size);
+
   cam_info_received_ = true;
 }
 
@@ -323,4 +346,23 @@ void ArTagBasedLocalizer::publish_pose_as_base_link(
   }
 
   pose_pub_->publish(pose_with_covariance_stamped);
+}
+
+tf2::Transform ArTagBasedLocalizer::aruco_marker_to_tf2(const aruco::Marker & marker)
+{
+  cv::Mat rot(3, 3, CV_64FC1);
+  cv::Mat r_vec64;
+  marker.Rvec.convertTo(r_vec64, CV_64FC1);
+  cv::Rodrigues(r_vec64, rot);
+  cv::Mat tran64;
+  marker.Tvec.convertTo(tran64, CV_64FC1);
+
+  tf2::Matrix3x3 tf_rot(
+    rot.at<double>(0, 0), rot.at<double>(0, 1), rot.at<double>(0, 2), rot.at<double>(1, 0),
+    rot.at<double>(1, 1), rot.at<double>(1, 2), rot.at<double>(2, 0), rot.at<double>(2, 1),
+    rot.at<double>(2, 2));
+
+  tf2::Vector3 tf_orig(tran64.at<double>(0, 0), tran64.at<double>(1, 0), tran64.at<double>(2, 0));
+
+  return tf2::Transform(tf_rot, tf_orig);
 }

@@ -14,9 +14,9 @@
     </group>
 
     <group>
-      <include file="$(find-pkg-share ar_tag_based_localizer)/launch/tag_tf_caster.launch.xml">
+      <include file="$(find-pkg-share landmark_tf_caster)/launch/landmark_tf_caster.launch.xml">
         <arg name="input_lanelet2_map" value="/map/vector_map"/>
-        <arg name="param_file" value="$(find-pkg-share ar_tag_based_localizer)/config/tag_tf_caster.param.yaml"/>
+        <arg name="param_file" value="$(find-pkg-share landmark_tf_caster)/config/landmark_tf_caster.param.yaml"/>
       </include>
     </group>
   </group>

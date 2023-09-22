@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ar_tag_based_localizer/tag_tf_caster_core.hpp"
+#include "landmark_tf_caster/landmark_tf_caster_core.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<TagTfCaster>());
+  rclcpp::spin(std::make_shared<LandmarkTfCaster>());
   rclcpp::shutdown();
 }

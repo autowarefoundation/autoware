@@ -14,31 +14,15 @@ ament_auto_find_build_dependencies()
 
 find_package(OpenCV REQUIRED)
 
-#
-# ar_tag_based_localizer
-#
 ament_auto_add_executable(ar_tag_based_localizer
   src/ar_tag_based_localizer_node.cpp
   src/ar_tag_based_localizer_core.cpp
-  src/utils.cpp
 )
 target_include_directories(ar_tag_based_localizer
   SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(ar_tag_based_localizer ${OpenCV_LIBRARIES})
-
-#
-# tag_tf_caster
-#
-ament_auto_add_executable(tag_tf_caster
-  src/tag_tf_caster_node.cpp
-  src/tag_tf_caster_core.cpp
-)
-target_include_directories(tag_tf_caster
-  SYSTEM PUBLIC
-  ${OpenCV_INCLUDE_DIRS}
-)
 
 ament_auto_package(
   INSTALL_TO_SHARE

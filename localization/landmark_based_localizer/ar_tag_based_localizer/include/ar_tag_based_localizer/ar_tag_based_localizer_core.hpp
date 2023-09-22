@@ -42,25 +42,68 @@
  or implied, of Rafael Muñoz Salinas.
  ********************************/
 
-#ifndef AR_TAG_BASED_LOCALIZER__UTILS_HPP_
-#define AR_TAG_BASED_LOCALIZER__UTILS_HPP_
+#ifndef AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_
+#define AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_
 
-#include <sensor_msgs/msg/camera_info.hpp>
+#include <image_transport/image_transport.hpp>
+#include <rclcpp/rclcpp.hpp>
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 
 #include <aruco/aruco.h>
-#include <tf2/LinearMath/Transform.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
-/**
- * @brief ros_camera_info_to_aruco_cam_params gets the camera intrinsics from a CameraInfo message
- * and copies them to aruco's data structure
- * @param cam_info
- * @param use_rectified_parameters if true, the intrinsics are taken from cam_info.P and the
- * distortion parameters are set to 0. Otherwise, cam_info.K and cam_info.D are taken.
- * @return
- */
-aruco::CameraParameters ros_camera_info_to_aruco_cam_params(
-  const sensor_msgs::msg::CameraInfo & cam_info, bool use_rectified_parameters);
+#include <memory>
+#include <string>
+#include <vector>
 
-tf2::Transform aruco_marker_to_tf2(const aruco::Marker & marker);
+class ArTagBasedLocalizer : public rclcpp::Node
+{
+public:
+  ArTagBasedLocalizer();
+  bool setup();
 
-#endif  // AR_TAG_BASED_LOCALIZER__UTILS_HPP_
+private:
+  void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & msg);
+  void cam_info_callback(const sensor_msgs::msg::CameraInfo & msg);
+  void ekf_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped & msg);
+  void publish_pose_as_base_link(
+    const geometry_msgs::msg::PoseStamped & msg, const std::string & camera_frame_id);
+  static tf2::Transform aruco_marker_to_tf2(const aruco::Marker & marker);
+
+  // Parameters
+  float marker_size_{};
+  std::vector<std::string> target_tag_ids_;
+  std::vector<double> base_covariance_;
+  double distance_threshold_squared_{};
+  double ekf_time_tolerance_{};
+  double ekf_position_tolerance_{};
+
+  // tf
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
+  // image transport
+  std::unique_ptr<image_transport::ImageTransport> it_;
+
+  // Subscribers
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ekf_pose_sub_;
+
+  // Publishers
+  image_transport::Publisher image_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_pub_;
+
+  // Others
+  aruco::MarkerDetector detector_;
+  aruco::CameraParameters cam_param_;
+  bool cam_info_received_;
+  geometry_msgs::msg::PoseWithCovarianceStamped latest_ekf_pose_{};
+};
+
+#endif  // AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_
