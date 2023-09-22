@@ -68,6 +68,10 @@ struct LaneChangeParameters
   bool check_objects_on_other_lanes{true};
   bool use_all_predicted_path{false};
 
+  // regulatory elements
+  bool regulate_on_crosswalk{false};
+  bool regulate_on_intersection{false};
+
   // true by default for all objects
   utils::path_safety_checker::ObjectTypesToCheck object_types_to_check;
 

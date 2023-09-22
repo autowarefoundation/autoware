@@ -186,6 +186,11 @@ The following figure illustrates when the lane is blocked in multiple lane chang
 
 ![multiple-lane-changes](../image/lane_change/lane_change-when_cannot_change_lanes.png)
 
+### Lane change regulations
+
+If you want to regulate lane change on crosswalks or intersections, the lane change module finds a lane change path excluding it includes crosswalks or intersections.
+To regulate lane change on crosswalks or intersections, change `regulation.crosswalk` or `regulation.intersection` to `true`.
+
 ### Aborting lane change
 
 The abort process may result in three different outcome; Cancel, Abort and Stop/Cruise.
@@ -293,6 +298,13 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | `target_object.bicycle`                     | [-]    | boolean | Include bicycle objects for safety check                                                                        | true               |
 | `target_object.motorcycle`                  | [-]    | boolean | Include motorcycle objects for safety check                                                                     | true               |
 | `target_object.pedestrian`                  | [-]    | boolean | Include pedestrian objects for safety check                                                                     | true               |
+
+### Lane change regulations
+
+| Name                      | Unit | Type    | Description                           | Default value |
+| :------------------------ | ---- | ------- | ------------------------------------- | ------------- |
+| `regulation.crosswalk`    | [-]  | boolean | Regulate lane change on crosswalks    | false         |
+| `regulation.intersection` | [-]  | boolean | Regulate lane change on intersections | false         |
 
 ### Collision checks during lane change
 

@@ -78,6 +78,11 @@ LaneChangeModuleManager::LaneChangeModuleManager(
   p.use_all_predicted_path =
     getOrDeclareParameter<bool>(*node, parameter("use_all_predicted_path"));
 
+  // lane change regulations
+  p.regulate_on_crosswalk = getOrDeclareParameter<bool>(*node, parameter("regulation.crosswalk"));
+  p.regulate_on_intersection =
+    getOrDeclareParameter<bool>(*node, parameter("regulation.intersection"));
+
   p.rss_params.longitudinal_distance_min_threshold = getOrDeclareParameter<double>(
     *node, parameter("safety_check.longitudinal_distance_min_threshold"));
   p.rss_params.longitudinal_velocity_delta_time = getOrDeclareParameter<double>(

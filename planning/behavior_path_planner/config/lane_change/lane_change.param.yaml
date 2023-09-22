@@ -55,6 +55,11 @@
         motorcycle: true
         pedestrian: true
 
+      # lane change regulations
+      regulation:
+        crosswalk: false
+        intersection: false
+
       # collision check
       enable_prepare_segment_collision_check: true
       prepare_segment_ignore_object_velocity_thresh: 0.1 # [m/s]
