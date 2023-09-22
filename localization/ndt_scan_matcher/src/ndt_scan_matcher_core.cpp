@@ -97,31 +97,30 @@ NDTScanMatcher::NDTScanMatcher()
   inversion_vector_threshold_(-0.9),
   oscillation_threshold_(10),
   output_pose_covariance_(),
-  regularization_enabled_(declare_parameter("regularization_enabled", false)),
+  regularization_enabled_(declare_parameter<bool>("regularization_enabled")),
   estimate_scores_for_degrounded_scan_(
-    declare_parameter("estimate_scores_for_degrounded_scan", false)),
-  z_margin_for_ground_removal_(declare_parameter("z_margin_for_ground_removal", 0.8))
+    declare_parameter<bool>("estimate_scores_for_degrounded_scan")),
+  z_margin_for_ground_removal_(declare_parameter<double>("z_margin_for_ground_removal"))
 {
   (*state_ptr_)["state"] = "Initializing";
   is_activated_ = false;
 
-  int points_queue_size =
-    static_cast<int>(this->declare_parameter("input_sensor_points_queue_size", 0));
+  int points_queue_size = this->declare_parameter<int>("input_sensor_points_queue_size");
   points_queue_size = std::max(points_queue_size, 0);
   RCLCPP_INFO(get_logger(), "points_queue_size: %d", points_queue_size);
 
-  base_frame_ = this->declare_parameter("base_frame", base_frame_);
+  base_frame_ = this->declare_parameter<std::string>("base_frame");
   RCLCPP_INFO(get_logger(), "base_frame_id: %s", base_frame_.c_str());
 
-  ndt_base_frame_ = this->declare_parameter("ndt_base_frame", ndt_base_frame_);
+  ndt_base_frame_ = this->declare_parameter<std::string>("ndt_base_frame");
   RCLCPP_INFO(get_logger(), "ndt_base_frame_id: %s", ndt_base_frame_.c_str());
 
   pclomp::NdtParams ndt_params{};
   ndt_params.trans_epsilon = this->declare_parameter<double>("trans_epsilon");
   ndt_params.step_size = this->declare_parameter<double>("step_size");
   ndt_params.resolution = this->declare_parameter<double>("resolution");
-  ndt_params.max_iterations = static_cast<int>(this->declare_parameter<int>("max_iterations"));
-  ndt_params.num_threads = static_cast<int>(this->declare_parameter<int>("num_threads"));
+  ndt_params.max_iterations = this->declare_parameter<int>("max_iterations");
+  ndt_params.num_threads = this->declare_parameter<int>("num_threads");
   ndt_params.num_threads = std::max(ndt_params.num_threads, 1);
   ndt_params.regularization_scale_factor =
     static_cast<float>(this->declare_parameter<float>("regularization_scale_factor"));
@@ -132,24 +131,20 @@ NDTScanMatcher::NDTScanMatcher()
     ndt_params.trans_epsilon, ndt_params.step_size, ndt_params.resolution,
     ndt_params.max_iterations);
 
-  int converged_param_type_tmp =
-    static_cast<int>(this->declare_parameter("converged_param_type", 0));
+  int converged_param_type_tmp = this->declare_parameter<int>("converged_param_type");
   converged_param_type_ = static_cast<ConvergedParamType>(converged_param_type_tmp);
 
-  converged_param_transform_probability_ = this->declare_parameter(
-    "converged_param_transform_probability", converged_param_transform_probability_);
-  converged_param_nearest_voxel_transformation_likelihood_ = this->declare_parameter(
-    "converged_param_nearest_voxel_transformation_likelihood",
-    converged_param_nearest_voxel_transformation_likelihood_);
+  converged_param_transform_probability_ =
+    this->declare_parameter<double>("converged_param_transform_probability");
+  converged_param_nearest_voxel_transformation_likelihood_ =
+    this->declare_parameter<double>("converged_param_nearest_voxel_transformation_likelihood");
 
-  lidar_topic_timeout_sec_ =
-    this->declare_parameter("lidar_topic_timeout_sec", lidar_topic_timeout_sec_);
+  lidar_topic_timeout_sec_ = this->declare_parameter<double>("lidar_topic_timeout_sec");
 
-  initial_pose_timeout_sec_ =
-    this->declare_parameter("initial_pose_timeout_sec", initial_pose_timeout_sec_);
+  initial_pose_timeout_sec_ = this->declare_parameter<double>("initial_pose_timeout_sec");
 
-  initial_pose_distance_tolerance_m_ = this->declare_parameter(
-    "initial_pose_distance_tolerance_m", initial_pose_distance_tolerance_m_);
+  initial_pose_distance_tolerance_m_ =
+    this->declare_parameter<double>("initial_pose_distance_tolerance_m");
 
   std::vector<double> output_pose_covariance =
     this->declare_parameter<std::vector<double>>("output_pose_covariance");
@@ -157,8 +152,7 @@ NDTScanMatcher::NDTScanMatcher()
     output_pose_covariance_[i] = output_pose_covariance[i];
   }
 
-  initial_estimate_particles_num_ = static_cast<int>(
-    this->declare_parameter("initial_estimate_particles_num", initial_estimate_particles_num_));
+  initial_estimate_particles_num_ = this->declare_parameter<int>("initial_estimate_particles_num");
 
   rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group;
   initial_pose_callback_group =

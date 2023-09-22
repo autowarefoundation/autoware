@@ -6,6 +6,9 @@
     # Vehicle reference frame
     base_frame: "base_link"
 
+    # NDT reference frame
+    ndt_base_frame: "ndt_base_link"
+
     # Subscriber queue size
     input_sensor_points_queue_size: 1
 
