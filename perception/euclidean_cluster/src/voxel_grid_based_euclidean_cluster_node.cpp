@@ -56,11 +56,19 @@ void VoxelGridBasedEuclideanClusterNode::onPointCloud(
 
   // convert ros to pcl
   pcl::PointCloud<pcl::PointXYZ>::Ptr raw_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*input_msg, *raw_pointcloud_ptr);
+  if (input_msg->data.empty()) {
+    // NOTE: prevent pcl log spam
+    RCLCPP_WARN_STREAM_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Empty sensor points!");
+  } else {
+    pcl::fromROSMsg(*input_msg, *raw_pointcloud_ptr);
+  }
 
   // clustering
   std::vector<pcl::PointCloud<pcl::PointXYZ>> clusters;
-  cluster_->cluster(raw_pointcloud_ptr, clusters);
+  if (!raw_pointcloud_ptr->empty()) {
+    cluster_->cluster(raw_pointcloud_ptr, clusters);
+  }
 
   // build output msg
   tier4_perception_msgs::msg::DetectedObjectsWithFeature output;
