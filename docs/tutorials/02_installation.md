@@ -52,8 +52,6 @@ Install ros package dependencies and build your ROS workspace.
 
 ```sh
 rosdep update
-rosdep install -y -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO
-
 ./build.sh
 
 ...
