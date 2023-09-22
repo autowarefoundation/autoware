@@ -49,7 +49,7 @@ public:
   {
     current_odom_sub_ = create_subscription<Odometry>(
       "output/odometry", rclcpp::QoS{1},
-      [this](const Odometry::SharedPtr msg) { current_odom_ = msg; });
+      [this](const Odometry::ConstSharedPtr msg) { current_odom_ = msg; });
     pub_ackermann_command_ =
       create_publisher<AckermannControlCommand>("input/ackermann_control_command", rclcpp::QoS{1});
     pub_initialpose_ =
@@ -62,7 +62,7 @@ public:
   rclcpp::Publisher<GearCommand>::SharedPtr pub_gear_cmd_;
   rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr pub_initialpose_;
 
-  Odometry::SharedPtr current_odom_;
+  Odometry::ConstSharedPtr current_odom_;
 };
 
 /**

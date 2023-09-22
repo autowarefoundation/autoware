@@ -269,7 +269,7 @@ private:
    * @brief ControlModeRequest server
    */
   void on_control_mode_request(
-    const ControlModeCommand::Request::SharedPtr request,
+    const ControlModeCommand::Request::ConstSharedPtr request,
     const ControlModeCommand::Response::SharedPtr response);
 
   /**
