@@ -31,7 +31,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/pts_voxel_encoder_pointpainting.onnx
     dest: "{{ data_dir }}/image_projection_based_fusion/pts_voxel_encoder_pointpainting.onnx"
     mode: "644"
-    checksum: md5:25c70f76a45a64944ccd19f604c99410
+    checksum: sha256:3ca452ea5ca9467bf782955f75704ba8466841e275e8b8acd991b9911d53249e
 
 - name: Download image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx
   become: true
@@ -39,7 +39,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/pointpainting/v4/pts_backbone_neck_head_pointpainting.onnx
     dest: "{{ data_dir }}/image_projection_based_fusion/pts_backbone_neck_head_pointpainting.onnx"
     mode: "644"
-    checksum: md5:2c7108245240fbd7bf0104dd68225868
+    checksum: sha256:7fe62fcebe0e0f62a000d06aa94d779feb444d933671a4a3189fe01be8c19a00
 
 # lidar_apollo_instance_segmentation
 - name: Create lidar_apollo_instance_segmentation directory inside {{ data_dir }}
@@ -54,7 +54,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/vlp-16.onnx
     dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/vlp-16.onnx"
     mode: "644"
-    checksum: md5:63a5a1bb73f7dbb64cf70d04eca45fb4
+    checksum: sha256:eec521ebad7553d0ea2c90472a293aecb7499ab592632f0e100481c8196eb421
 
 - name: Download lidar_apollo_instance_segmentation/hdl-64.onnx
   become: true
@@ -62,7 +62,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/hdl-64.onnx
     dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/hdl-64.onnx"
     mode: "644"
-    checksum: md5:009745e33b1df44b68296431cc384cd2
+    checksum: sha256:86348d8c4bced750f54288b01cc471c0d4f1ec9c693466169ef19413731e6ecc
 
 - name: Download lidar_apollo_instance_segmentation/vls-128.onnx
   become: true
@@ -70,7 +70,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/lidar_apollo_instance_segmentation/vls-128.onnx
     dest: "{{ data_dir }}/lidar_apollo_instance_segmentation/vls-128.onnx"
     mode: "644"
-    checksum: md5:b2d709f56f73ae2518c9bf4d0214468f
+    checksum: sha256:95ef950bb694bd6de91b7e47f5d191d557e92a7f5e2a6bdf655a8b5eed4075cc
 
 # lidar_centerpoint
 - name: Create lidar_centerpoint directory inside {{ data_dir }}
@@ -109,7 +109,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/centerpoint/v2/pts_backbone_neck_head_centerpoint_tiny.onnx
     dest: "{{ data_dir }}/lidar_centerpoint/pts_backbone_neck_head_centerpoint_tiny.onnx"
     mode: "644"
-    checksum: md5:e4658325b70222f7c3637fe00e586b82
+    checksum: sha256:9bb0b634f3664bd098ce7d6a3d8a9fb7cc8d9b8252b27f302c71e43316bab551
 
 # tensorrt_yolo
 - name: Create tensorrt_yolo directory inside {{ data_dir }}
@@ -203,7 +203,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.onnx
     dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.onnx"
     mode: "644"
-    checksum: md5:bf3b0155351f90fcdca2626acbfd3bcf
+    checksum: sha256:36b0832177b01e6b278e00c7369f1de71e616c36261cbae50f0753d41289da01
 
 - name: Download tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table
   become: true
@@ -211,7 +211,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.EntropyV2-calibration.table
     dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table"
     mode: "644"
-    checksum: md5:c6e6f1999d5724a017516a956096701f
+    checksum: sha256:b9e9d7da33342262ccaea4469b4d02b8abb32b6d7bf737f9e0883fece1b8f580
 
 - name: Download tensorrt_yolox/label.txt
   become: true
@@ -234,7 +234,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_1.onnx"
     mode: "644"
-    checksum: md5:caa51f2080aa2df943e4f884c41898eb
+    checksum: sha256:455b71b3b20d3a96aa0e49f32714ba50421f668a2f9b9907c30b1346ac8a3703
 
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx
   become: true
@@ -242,7 +242,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_4.onnx"
     mode: "644"
-    checksum: md5:c2beaf60210f471debfe72b86d076ca0
+    checksum: sha256:41bb79a23a4ac57956adb8e9cb3904420db1b0cd032e97b670cc4f8b174ae3fe
 
 - name: Download traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx
   become: true
@@ -250,7 +250,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_mobilenetv2_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx"
     mode: "644"
-    checksum: md5:28b408710bcb24f4cdd4d746301d4e78
+    checksum: sha256:e4792eed6a46fdbd02be2f3a4f1ce91f36fa77698493caf3102e445178c0f058
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx
   become: true
@@ -258,7 +258,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_1.onnx"
     mode: "644"
-    checksum: md5:82baba4fcf1abe0c040cd55005e34510
+    checksum: sha256:55ebb0d117a5e8943f8d1c6769f1d856b533079d4d871d8e923255cc992ad48a
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx
   become: true
@@ -266,7 +266,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_4.onnx"
     mode: "644"
-    checksum: md5:21b549c2fe4fbb20d32cc019e6d70cd7
+    checksum: sha256:684e29843e3128eadb774018730644b3ab9b0a06dc4cdaeed579c2f3fa5d5265
 
 - name: Download traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx
   become: true
@@ -274,7 +274,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/traffic_light_classifier/v2/traffic_light_classifier_efficientNet_b1_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_classifier/traffic_light_classifier_efficientNet_b1_batch_6.onnx"
     mode: "644"
-    checksum: md5:378526d9aa9fc6705cf399f7b35b3053
+    checksum: sha256:44d94540fa8b89dfb39cd9a8523cf010ddfb10ea2f1f9b53bf3618ce7f4912ad
 
 - name: Download traffic_light_classifier/lamp_labels.txt
   become: true
@@ -297,7 +297,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_yolox_s_batch_1.onnx
     dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_yolox_s_batch_1.onnx"
     mode: "644"
-    checksum: md5:2b72d085022b8ee6aacff06bd722cfda
+    checksum: sha256:922839fcf22bd32ae5065146fcec193e9d6360ca03bd4c83faea835045daf8eb
 
 - name: Download traffic_light_fine_detector/tlr_yolox_s_batch_4.onnx
   become: true
@@ -305,7 +305,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_yolox_s_batch_4.onnx
     dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_yolox_s_batch_4.onnx"
     mode: "644"
-    checksum: md5:4044daa86e7776ce241e94d98a09cc0e
+    checksum: sha256:b3c6e00acc6ff547d165469684ffb620a9a6330e9d591d445f50c4cf5cb4e292
 
 - name: Download traffic_light_fine_detector/tlr_yolox_s_batch_6.onnx
   become: true
@@ -313,7 +313,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_yolox_s_batch_6.onnx
     dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_yolox_s_batch_6.onnx"
     mode: "644"
-    checksum: md5:47255a11bde479320d703f1f45db1242
+    checksum: sha256:2824d4c5b7ab5f6bfd41e43e82747107c53e1c727b1cf1dd6746bc49e6749128
 
 - name: Download traffic_light_fine_detector/tlr_labels.txt
   become: true
@@ -321,7 +321,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/tlr_yolox_s/v2/tlr_labels.txt
     dest: "{{ data_dir }}/traffic_light_fine_detector/tlr_labels.txt"
     mode: "644"
-    checksum: md5:e9f45efb02f2a9aa8ac27b3d5c164905
+    checksum: sha256:a41e6e3324e32c30b3b2fe38908eaf3471e2bfdaeb9e14ca0c1c3bc0275119c6
 
 # traffic_light_ssd_fine_detector
 - name: Create traffic_light_ssd_fine_detector directory inside {{ data_dir }}
