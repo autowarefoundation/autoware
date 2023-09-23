@@ -451,13 +451,6 @@ Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
 
 ModuleStatus GoalPlannerModule::updateState()
 {
-  // finish module only when the goal is fixed
-  if (
-    !goal_planner_utils::isAllowedGoalModification(planner_data_->route_handler) &&
-    hasFinishedGoalPlanner()) {
-    return ModuleStatus::SUCCESS;
-  }
-
   // start_planner module will be run when setting new goal, so not need finishing pull_over module.
   // Finishing it causes wrong lane_following path generation.
   return current_state_;
@@ -1225,11 +1218,6 @@ bool GoalPlannerModule::isOnModifiedGoal() const
   const Pose current_pose = planner_data_->self_odometry->pose.pose;
   return calcDistance2d(current_pose, modified_goal_pose_->goal_pose) <
          parameters_->th_arrived_distance;
-}
-
-bool GoalPlannerModule::hasFinishedGoalPlanner()
-{
-  return isOnModifiedGoal() && isStopped();
 }
 
 TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo() const

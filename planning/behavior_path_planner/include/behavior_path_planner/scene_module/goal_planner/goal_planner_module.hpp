@@ -242,7 +242,6 @@ private:
   bool isStopped(
     std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> & odometry_buffer, const double time);
   bool hasFinishedCurrentPath();
-  bool hasFinishedGoalPlanner();
   bool isOnModifiedGoal() const;
   double calcModuleRequestLength() const;
   void resetStatus();
