@@ -1191,6 +1191,7 @@ void StartPlannerModule::setDebugData() const
   add(createPoseMarkerArray(status_.pull_out_path.start_pose, "start_pose", 0, 0.3, 0.9, 0.3));
   add(createPoseMarkerArray(status_.pull_out_path.end_pose, "end_pose", 0, 0.9, 0.9, 0.3));
   add(createPathMarkerArray(getFullPath(), "full_path", 0, 0.0, 0.5, 0.9));
+  add(createPathMarkerArray(status_.backward_path, "backward_driving_path", 0, 0.0, 0.9, 0.0));
 
   // safety check
   if (parameters_->safety_check_params.enable_safety_check) {
