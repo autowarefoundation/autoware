@@ -87,6 +87,9 @@ public:
   // Getter method for waiting approval modules
   std::vector<std::string> getWaitingApprovalModules();
 
+  // Getter method for running modules
+  std::vector<std::string> getRunningModules();
+
 private:
   rclcpp::Subscription<LaneletRoute>::SharedPtr route_subscriber_;
   rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_;
