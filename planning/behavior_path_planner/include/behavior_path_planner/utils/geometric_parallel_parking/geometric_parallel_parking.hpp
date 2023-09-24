@@ -46,29 +46,25 @@ using geometry_msgs::msg::PoseArray;
 
 struct ParallelParkingParameters
 {
-  double th_arrived_distance;
-  double th_stopped_velocity;
-  double maximum_deceleration;
-
   // forward parking
-  double after_forward_parking_straight_distance;
-  double forward_parking_velocity;
-  double forward_parking_lane_departure_margin;
-  double forward_parking_path_interval;
-  double forward_parking_max_steer_angle;
+  double after_forward_parking_straight_distance{0.0};
+  double forward_parking_velocity{0.0};
+  double forward_parking_lane_departure_margin{0.0};
+  double forward_parking_path_interval{0.0};
+  double forward_parking_max_steer_angle{0.0};
 
   // backward parking
-  double after_backward_parking_straight_distance;
-  double backward_parking_velocity;
-  double backward_parking_lane_departure_margin;
-  double backward_parking_path_interval;
-  double backward_parking_max_steer_angle;
+  double after_backward_parking_straight_distance{0.0};
+  double backward_parking_velocity{0.0};
+  double backward_parking_lane_departure_margin{0.0};
+  double backward_parking_path_interval{0.0};
+  double backward_parking_max_steer_angle{0.0};
 
   // pull_out
-  double pull_out_velocity;
-  double pull_out_lane_departure_margin;
-  double pull_out_path_interval;
-  double pull_out_max_steer_angle;
+  double pull_out_velocity{0.0};
+  double pull_out_lane_departure_margin{0.0};
+  double pull_out_path_interval{0.0};
+  double pull_out_max_steer_angle{0.0};
 };
 
 class GeometricParallelParking
@@ -108,11 +104,11 @@ public:
   Pose getArcEndPose() const { return arc_end_pose_; }
 
 private:
-  std::shared_ptr<const PlannerData> planner_data_;
-  ParallelParkingParameters parameters_;
+  std::shared_ptr<const PlannerData> planner_data_{nullptr};
+  ParallelParkingParameters parameters_{};
 
-  double R_E_min_;   // base_link
-  double R_Bl_min_;  // front_left
+  double R_E_min_{0.0};   // base_link
+  double R_Bl_min_{0.0};  // front_left
 
   std::vector<PathWithLaneId> arc_paths_;
   std::vector<PathWithLaneId> paths_;
@@ -146,10 +142,10 @@ private:
     std::vector<PathWithLaneId> & arc_paths, const double velocity, const bool set_stop_end);
 
   // debug
-  Pose Cr_;
-  Pose Cl_;
-  Pose start_pose_;
-  Pose arc_end_pose_;
+  Pose Cr_{};
+  Pose Cl_{};
+  Pose start_pose_{};
+  Pose arc_end_pose_{};
 };
 }  // namespace behavior_path_planner
 
