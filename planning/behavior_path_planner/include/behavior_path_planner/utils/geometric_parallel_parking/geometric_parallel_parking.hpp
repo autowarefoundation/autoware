@@ -46,6 +46,9 @@ using geometry_msgs::msg::PoseArray;
 
 struct ParallelParkingParameters
 {
+  // common
+  double center_line_path_interval{0.0};
+
   // forward parking
   double after_forward_parking_straight_distance{0.0};
   double forward_parking_velocity{0.0};

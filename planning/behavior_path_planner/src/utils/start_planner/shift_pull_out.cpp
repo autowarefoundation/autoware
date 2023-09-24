@@ -59,8 +59,7 @@ boost::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const P
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
     /*forward_only_in_route*/ true);
   // find candidate paths
-  auto pull_out_paths = calcPullOutPaths(
-    *route_handler, road_lanes, start_pose, goal_pose, common_parameters, parameters_);
+  auto pull_out_paths = calcPullOutPaths(*route_handler, road_lanes, start_pose, goal_pose);
   if (pull_out_paths.empty()) {
     return boost::none;
   }
@@ -160,8 +159,7 @@ boost::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const P
 
 std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
-  const Pose & start_pose, const Pose & goal_pose,
-  const BehaviorPathPlannerParameters & common_parameter, const StartPlannerParameters & parameter)
+  const Pose & start_pose, const Pose & goal_pose)
 {
   std::vector<PullOutPath> candidate_paths{};
 
@@ -170,12 +168,16 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   }
 
   // rename parameter
-  const double forward_path_length = common_parameter.forward_path_length;
-  const double backward_path_length = common_parameter.backward_path_length;
-  const double lateral_jerk = parameter.lateral_jerk;
-  const double minimum_lateral_acc = parameter.minimum_lateral_acc;
-  const double maximum_lateral_acc = parameter.maximum_lateral_acc;
-  const int lateral_acceleration_sampling_num = parameter.lateral_acceleration_sampling_num;
+  const auto & common_parameters = planner_data_->parameters;
+  const double forward_path_length = common_parameters.forward_path_length;
+  const double backward_path_length = common_parameters.backward_path_length;
+  const double lateral_jerk = parameters_.lateral_jerk;
+  const double minimum_lateral_acc = parameters_.minimum_lateral_acc;
+  const double maximum_lateral_acc = parameters_.maximum_lateral_acc;
+  const double maximum_curvature = parameters_.maximum_curvature;
+  const double minimum_shift_pull_out_distance = parameters_.minimum_shift_pull_out_distance;
+  const int lateral_acceleration_sampling_num = parameters_.lateral_acceleration_sampling_num;
+
   // set minimum acc for breaking loop when sampling num is 1
   const double acc_resolution = std::max(
     std::abs(maximum_lateral_acc - minimum_lateral_acc) / lateral_acceleration_sampling_num,
@@ -189,9 +191,9 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
   const double s_end = path_end_info.first;
   const bool path_terminal_is_goal = path_end_info.second;
 
-  constexpr double RESAMPLE_INTERVAL = 1.0;
   PathWithLaneId road_lane_reference_path = utils::resamplePathWithSpline(
-    route_handler.getCenterLinePath(road_lanes, s_start, s_end), RESAMPLE_INTERVAL);
+    route_handler.getCenterLinePath(road_lanes, s_start, s_end),
+    parameters_.center_line_path_interval);
 
   // non_shifted_path for when shift length or pull out distance is too short
   const PullOutPath non_shifted_path = std::invoke([&]() {
@@ -230,8 +232,8 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
       PathShifter::calcShiftTimeFromJerk(shift_length, lateral_jerk, lateral_acc);
     const double longitudinal_acc = std::clamp(road_velocity / shift_time, 0.0, /* max acc */ 1.0);
     const auto pull_out_distance = calcPullOutLongitudinalDistance(
-      longitudinal_acc, shift_time, shift_length, parameter.maximum_curvature,
-      parameter.minimum_shift_pull_out_distance);
+      longitudinal_acc, shift_time, shift_length, maximum_curvature,
+      minimum_shift_pull_out_distance);
     const double terminal_velocity = longitudinal_acc * shift_time;
 
     // clip from ego pose
@@ -253,7 +255,9 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
       std::max(pull_out_distance, pull_out_distance_converted);
 
     // if before_shifted_pull_out_distance is too short, shifting path fails, so add non shifted
-    if (before_shifted_pull_out_distance < RESAMPLE_INTERVAL && !has_non_shifted_path) {
+    if (
+      before_shifted_pull_out_distance < parameters_.center_line_path_interval &&
+      !has_non_shifted_path) {
       candidate_paths.push_back(non_shifted_path);
       has_non_shifted_path = true;
       continue;

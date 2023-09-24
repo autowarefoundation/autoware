@@ -96,7 +96,9 @@ boost::optional<PullOutPath> FreespacePullOut::plan(const Pose & start_pose, con
   const bool path_terminal_is_goal = path_end_info.second;
 
   const auto road_center_line_path = route_handler->getCenterLinePath(road_lanes, s_start, s_end);
-  last_path = start_planner_utils::combineReferencePath(last_path, road_center_line_path);
+  last_path = utils::resamplePathWithSpline(
+    start_planner_utils::combineReferencePath(last_path, road_center_line_path),
+    parameters_.center_line_path_interval);
 
   const double original_terminal_velocity = last_path.points.back().point.longitudinal_velocity_mps;
   utils::correctDividedPathVelocity(partial_paths);

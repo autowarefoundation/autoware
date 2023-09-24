@@ -118,11 +118,12 @@ Either one is activated when all conditions are met.
 
 ## General parameters for goal_planner
 
-| Name                | Unit  | Type   | Description                                        | Default value |
-| :------------------ | :---- | :----- | :------------------------------------------------- | :------------ |
-| th_arrived_distance | [m]   | double | distance threshold for arrival of path termination | 1.0           |
-| th_stopped_velocity | [m/s] | double | velocity threshold for arrival of path termination | 0.01          |
-| th_stopped_time     | [s]   | double | time threshold for arrival of path termination     | 2.0           |
+| Name                      | Unit  | Type   | Description                                        | Default value |
+| :------------------------ | :---- | :----- | :------------------------------------------------- | :------------ |
+| th_arrived_distance       | [m]   | double | distance threshold for arrival of path termination | 1.0           |
+| th_stopped_velocity       | [m/s] | double | velocity threshold for arrival of path termination | 0.01          |
+| th_stopped_time           | [s]   | double | time threshold for arrival of path termination     | 2.0           |
+| center_line_path_interval | [m]   | double | reference center line path point interval          | 1.0           |
 
 ## **collision check**
 

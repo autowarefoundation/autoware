@@ -57,7 +57,6 @@ protected:
   LaneDepartureChecker lane_departure_checker_{};
   std::shared_ptr<OccupancyGridBasedCollisionDetector> occupancy_grid_map_{};
 
-  static constexpr double resample_interval_{1.0};
   bool left_side_parking_{true};
 };
 }  // namespace behavior_path_planner

@@ -45,6 +45,7 @@ struct StartPlannerParameters
   double collision_check_margin{0.0};
   double collision_check_distance_from_end{0.0};
   double th_moving_object_velocity{0.0};
+  double center_line_path_interval{0.0};
 
   // shift pull out
   bool enable_shift_pull_out{false};

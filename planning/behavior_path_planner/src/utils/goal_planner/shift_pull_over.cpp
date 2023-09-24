@@ -112,7 +112,7 @@ boost::optional<PullOverPath> ShiftPullOver::generatePullOverPath(
 
   // generate road lane reference path to shift end
   const auto road_lane_reference_path_to_shift_end = utils::resamplePathWithSpline(
-    generateReferencePath(road_lanes, shift_end_pose), resample_interval_);
+    generateReferencePath(road_lanes, shift_end_pose), parameters_.center_line_path_interval);
 
   // calculate shift length
   const Pose & shift_end_pose_road_lane =

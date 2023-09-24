@@ -38,6 +38,8 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
     p.th_stopped_velocity = node->declare_parameter<double>(base_ns + "th_stopped_velocity");
     p.th_arrived_distance = node->declare_parameter<double>(base_ns + "th_arrived_distance");
     p.th_stopped_time = node->declare_parameter<double>(base_ns + "th_stopped_time");
+    p.center_line_path_interval =
+      node->declare_parameter<double>(base_ns + "center_line_path_interval");
   }
 
   // goal search
@@ -119,6 +121,13 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
     p.deceleration_interval = node->declare_parameter<double>(ns + "deceleration_interval");
     p.after_shift_straight_distance =
       node->declare_parameter<double>(ns + "after_shift_straight_distance");
+  }
+
+  // parallel parking common
+  {
+    const std::string ns = base_ns + "pull_over.parallel_parking.";
+    p.parallel_parking_parameters.center_line_path_interval =
+      p.center_line_path_interval;  // for geometric parallel parking
   }
 
   // forward parallel parking forward

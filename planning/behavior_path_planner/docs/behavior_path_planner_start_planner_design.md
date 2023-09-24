@@ -70,6 +70,7 @@ PullOutPath --o PullOutPlannerBase
 | length_ratio_for_turn_signal_deactivation_near_intersection | [m]   | double | deactivate turn signal of this module near intersection                     | 0.5           |
 | collision_check_margin                                      | [m]   | double | Obstacle collision check margin                                             | 1.0           |
 | collision_check_distance_from_end                           | [m]   | double | collision check distance from end point. currently only for pull out        | 15.0          |
+| center_line_path_interval                                   | [m]   | double | reference center line path point interval                                   | 1.0           |
 
 ## Safety check with static obstacles
 

@@ -41,9 +41,7 @@ public:
 
   std::vector<PullOutPath> calcPullOutPaths(
     const RouteHandler & route_handler, const lanelet::ConstLanelets & road_lanes,
-    const Pose & start_pose, const Pose & goal_pose,
-    const BehaviorPathPlannerParameters & common_parameter,
-    const behavior_path_planner::StartPlannerParameters & parameter);
+    const Pose & start_pose, const Pose & goal_pose);
 
   double calcBeforeShiftedArcLength(
     const PathWithLaneId & path, const double target_after_arc_length, const double dr);
