@@ -531,16 +531,20 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     RCLCPP_INFO_SKIPFIRST_THROTTLE(logger_, *clock_, 5000, "%s", s);
   };
 
-  // if current operation mode is not autonomous mode, then change state to stopped
-  if (m_current_operation_mode.mode != OperationModeState::AUTONOMOUS) {
-    return changeState(ControlState::STOPPED);
-  }
+  const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
+                                m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
 
   // transit state
   // in DRIVE state
   if (m_control_state == ControlState::DRIVE) {
     if (emergency_condition) {
       return changeState(ControlState::EMERGENCY);
+    }
+
+    if (!is_under_control && stopped_condition && keep_stopped_condition) {
+      // NOTE: When the ego is stopped on manual driving, since the driving state may transit to
+      //       autonomous, keep_stopped_condition should be checked.
+      return changeState(ControlState::STOPPED);
     }
 
     if (m_enable_smooth_stop) {
@@ -609,8 +613,14 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
 
   // in EMERGENCY state
   if (m_control_state == ControlState::EMERGENCY) {
-    if (stopped_condition && !emergency_condition) {
-      return changeState(ControlState::STOPPED);
+    if (!emergency_condition) {
+      if (stopped_condition) {
+        return changeState(ControlState::STOPPED);
+      }
+      if (!is_under_control) {
+        // NOTE: On manual driving, no need stopping to exit the emergency.
+        return changeState(ControlState::DRIVE);
+      }
     }
     return;
   }
