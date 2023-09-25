@@ -91,32 +91,22 @@ double getPitchByTraj(
     return 0.0;
   }
 
-  for (size_t i = nearest_idx + 1; i < trajectory.points.size(); ++i) {
-    const double dist = tier4_autoware_utils::calcDistance2d(
-      trajectory.points.at(nearest_idx), trajectory.points.at(i));
-    if (dist > wheel_base) {
-      // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
-      return tier4_autoware_utils::calcElevationAngle(
-        trajectory.points.at(nearest_idx).pose.position, trajectory.points.at(i).pose.position);
+  const auto [prev_idx, next_idx] = [&]() {
+    for (size_t i = nearest_idx + 1; i < trajectory.points.size(); ++i) {
+      const double dist = tier4_autoware_utils::calcDistance2d(
+        trajectory.points.at(nearest_idx), trajectory.points.at(i));
+      if (dist > wheel_base) {
+        // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
+        return std::make_pair(nearest_idx, i);
+      }
     }
-  }
+    // NOTE: The ego pose is close to the goal.
+    return std::make_pair(
+      std::min(nearest_idx, trajectory.points.size() - 2), trajectory.points.size() - 1);
+  }();
 
-  // close to goal
-  for (size_t i = trajectory.points.size() - 1; i > 0; --i) {
-    const double dist =
-      tier4_autoware_utils::calcDistance2d(trajectory.points.back(), trajectory.points.at(i));
-
-    if (dist > wheel_base) {
-      // calculate pitch from trajectory
-      // between wheelbase behind the end of trajectory (i) and the end of trajectory (back)
-      return tier4_autoware_utils::calcElevationAngle(
-        trajectory.points.at(i).pose.position, trajectory.points.back().pose.position);
-    }
-  }
-
-  // calculate pitch from trajectory between the beginning and end of trajectory
   return tier4_autoware_utils::calcElevationAngle(
-    trajectory.points.at(0).pose.position, trajectory.points.back().pose.position);
+    trajectory.points.at(prev_idx).pose.position, trajectory.points.at(next_idx).pose.position);
 }
 
 Pose calcPoseAfterTimeDelay(
