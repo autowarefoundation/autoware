@@ -96,7 +96,8 @@ double getPitchByTraj(
       trajectory.points.at(nearest_idx), trajectory.points.at(i));
     if (dist > wheel_base) {
       // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
-      return calcElevationAngle(trajectory.points.at(nearest_idx), trajectory.points.at(i));
+      return tier4_autoware_utils::calcElevationAngle(
+        trajectory.points.at(nearest_idx).pose.position, trajectory.points.at(i).pose.position);
     }
   }
 
@@ -108,24 +109,14 @@ double getPitchByTraj(
     if (dist > wheel_base) {
       // calculate pitch from trajectory
       // between wheelbase behind the end of trajectory (i) and the end of trajectory (back)
-      return calcElevationAngle(trajectory.points.at(i), trajectory.points.back());
+      return tier4_autoware_utils::calcElevationAngle(
+        trajectory.points.at(i).pose.position, trajectory.points.back().pose.position);
     }
   }
 
   // calculate pitch from trajectory between the beginning and end of trajectory
-  return calcElevationAngle(trajectory.points.at(0), trajectory.points.back());
-}
-
-double calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to)
-{
-  const double dx = p_from.pose.position.x - p_to.pose.position.x;
-  const double dy = p_from.pose.position.y - p_to.pose.position.y;
-  const double dz = p_from.pose.position.z - p_to.pose.position.z;
-
-  const double dxy = std::max(std::hypot(dx, dy), std::numeric_limits<double>::epsilon());
-  const double pitch = std::atan2(dz, dxy);
-
-  return pitch;
+  return tier4_autoware_utils::calcElevationAngle(
+    trajectory.points.at(0).pose.position, trajectory.points.back().pose.position);
 }
 
 Pose calcPoseAfterTimeDelay(

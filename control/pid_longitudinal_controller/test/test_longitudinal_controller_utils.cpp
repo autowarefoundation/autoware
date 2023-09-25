@@ -158,33 +158,6 @@ TEST(TestLongitudinalControllerUtils, getPitchByTraj)
     std::atan2(0.5, 1));
 }
 
-TEST(TestLongitudinalControllerUtils, calcElevationAngle)
-{
-  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-  TrajectoryPoint p_from;
-  p_from.pose.position.x = 0.0;
-  p_from.pose.position.y = 0.0;
-  TrajectoryPoint p_to;
-  p_to.pose.position.x = 1.0;
-  p_to.pose.position.y = 0.0;
-  EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), 0.0);
-  p_to.pose.position.x = 1.0;
-  p_to.pose.position.z = 1.0;
-  EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), -M_PI_4);
-  p_to.pose.position.x = -1.0;
-  p_to.pose.position.z = 1.0;
-  EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), -M_PI_4);
-  p_to.pose.position.x = 0.0;
-  p_to.pose.position.z = 1.0;
-  EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), -M_PI_2);
-  p_to.pose.position.x = 1.0;
-  p_to.pose.position.z = -1.0;
-  EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), M_PI_4);
-  p_to.pose.position.x = -1.0;
-  p_to.pose.position.z = -1.0;
-  EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), M_PI_4);
-}
-
 TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay)
 {
   using geometry_msgs::msg::Pose;

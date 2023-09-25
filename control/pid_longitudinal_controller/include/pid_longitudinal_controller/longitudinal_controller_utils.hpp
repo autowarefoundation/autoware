@@ -67,11 +67,6 @@ double getPitchByTraj(
   const Trajectory & trajectory, const size_t closest_idx, const double wheel_base);
 
 /**
- * @brief calculate elevation angle
- */
-double calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to);
-
-/**
  * @brief calculate vehicle pose after time delay by moving the vehicle at current velocity and
  * acceleration for delayed time
  */

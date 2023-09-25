@@ -817,7 +817,7 @@ double PidLongitudinalController::applySlopeCompensation(
   const double pitch_limited = std::min(std::max(pitch, m_min_pitch_rad), m_max_pitch_rad);
 
   // Acceleration command is always positive independent of direction (= shift) when car is running
-  double sign = (shift == Shift::Forward) ? -1 : (shift == Shift::Reverse ? 1 : 0);
+  double sign = (shift == Shift::Forward) ? 1.0 : (shift == Shift::Reverse ? -1.0 : 0);
   double compensated_acc = input_acc + sign * 9.81 * std::sin(pitch_limited);
   return compensated_acc;
 }
