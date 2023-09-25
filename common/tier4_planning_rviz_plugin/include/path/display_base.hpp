@@ -133,7 +133,10 @@ public:
     property_point_alpha_{"Alpha", 1.0, "", &property_point_view_},
     property_point_color_{"Color", QColor(0, 60, 255), "", &property_point_view_},
     property_point_radius_{"Radius", 0.1, "", &property_point_view_},
-    property_point_offset_{"Offset", 0.0, "", &property_point_view_}
+    property_point_offset_{"Offset", 0.0, "", &property_point_view_},
+    // slope
+    property_slope_text_view_{"View Text Slope", false, "", this},
+    property_slope_text_scale_{"Scale", 0.3, "", &property_slope_text_view_}
   {
     // path
     property_path_width_.setMin(0.0);
@@ -171,6 +174,12 @@ public:
         node->detachAllObjects();
         this->scene_manager_->destroySceneNode(node);
       }
+      for (size_t i = 0; i < slope_text_nodes_.size(); i++) {
+        Ogre::SceneNode * node = slope_text_nodes_.at(i);
+        node->removeAndDestroyAllChildren();
+        node->detachAllObjects();
+        this->scene_manager_->destroySceneNode(node);
+      }
       this->scene_manager_->destroyManualObject(footprint_manual_object_);
       this->scene_manager_->destroyManualObject(point_manual_object_);
     }
@@ -198,6 +207,7 @@ public:
     rviz_common::MessageFilterDisplay<T>::MFDClass::reset();
     path_manual_object_->clear();
     velocity_manual_object_->clear();
+
     for (size_t i = 0; i < velocity_texts_.size(); i++) {
       Ogre::SceneNode * node = velocity_text_nodes_.at(i);
       node->detachAllObjects();
@@ -206,6 +216,16 @@ public:
     }
     velocity_text_nodes_.clear();
     velocity_texts_.clear();
+
+    for (size_t i = 0; i < slope_texts_.size(); i++) {
+      Ogre::SceneNode * node = slope_text_nodes_.at(i);
+      node->detachAllObjects();
+      node->removeAndDestroyAllChildren();
+      this->scene_manager_->destroySceneNode(node);
+    }
+    slope_text_nodes_.clear();
+    slope_texts_.clear();
+
     footprint_manual_object_->clear();
     point_manual_object_->clear();
   }
@@ -298,6 +318,29 @@ protected:
       }
       velocity_texts_.resize(msg_ptr->points.size());
       velocity_text_nodes_.resize(msg_ptr->points.size());
+    }
+
+    if (msg_ptr->points.size() > slope_texts_.size()) {
+      for (size_t i = slope_texts_.size(); i < msg_ptr->points.size(); i++) {
+        Ogre::SceneNode * node = this->scene_node_->createChildSceneNode();
+        rviz_rendering::MovableText * text =
+          new rviz_rendering::MovableText("not initialized", "Liberation Sans", 0.1);
+        text->setVisible(false);
+        text->setTextAlignment(
+          rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_ABOVE);
+        node->attachObject(text);
+        slope_texts_.push_back(text);
+        slope_text_nodes_.push_back(node);
+      }
+    } else if (msg_ptr->points.size() < slope_texts_.size()) {
+      for (size_t i = slope_texts_.size() - 1; i >= msg_ptr->points.size(); i--) {
+        Ogre::SceneNode * node = slope_text_nodes_.at(i);
+        node->detachAllObjects();
+        node->removeAndDestroyAllChildren();
+        this->scene_manager_->destroySceneNode(node);
+      }
+      slope_texts_.resize(msg_ptr->points.size());
+      slope_text_nodes_.resize(msg_ptr->points.size());
     }
 
     const auto info = vehicle_footprint_info_;
@@ -393,6 +436,38 @@ protected:
         text->setVisible(true);
       } else {
         rviz_rendering::MovableText * text = velocity_texts_.at(point_idx);
+        text->setVisible(false);
+      }
+
+      // slope text
+      if (property_slope_text_view_.getBool() && 1 < msg_ptr->points.size()) {
+        const size_t prev_idx =
+          (point_idx != msg_ptr->points.size() - 1) ? point_idx : point_idx - 1;
+        const size_t next_idx =
+          (point_idx != msg_ptr->points.size() - 1) ? point_idx + 1 : point_idx;
+
+        const auto & prev_path_pos =
+          tier4_autoware_utils::getPose(msg_ptr->points.at(prev_idx)).position;
+        const auto & next_path_pos =
+          tier4_autoware_utils::getPose(msg_ptr->points.at(next_idx)).position;
+
+        Ogre::Vector3 position;
+        position.x = pose.position.x;
+        position.y = pose.position.y;
+        position.z = pose.position.z;
+        Ogre::SceneNode * node = slope_text_nodes_.at(point_idx);
+        node->setPosition(position);
+
+        rviz_rendering::MovableText * text = slope_texts_.at(point_idx);
+        const double slope = tier4_autoware_utils::calcElevationAngle(prev_path_pos, next_path_pos);
+
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(2) << slope;
+        text->setCaption(ss.str());
+        text->setCharacterHeight(property_slope_text_scale_.getFloat());
+        text->setVisible(true);
+      } else {
+        rviz_rendering::MovableText * text = slope_texts_.at(point_idx);
         text->setVisible(false);
       }
     }
@@ -526,6 +601,8 @@ protected:
   Ogre::ManualObject * point_manual_object_{nullptr};
   std::vector<rviz_rendering::MovableText *> velocity_texts_;
   std::vector<Ogre::SceneNode *> velocity_text_nodes_;
+  std::vector<rviz_rendering::MovableText *> slope_texts_;
+  std::vector<Ogre::SceneNode *> slope_text_nodes_;
 
   rviz_common::properties::BoolProperty property_path_view_;
   rviz_common::properties::BoolProperty property_path_width_view_;
@@ -555,6 +632,9 @@ protected:
   rviz_common::properties::ColorProperty property_point_color_;
   rviz_common::properties::FloatProperty property_point_radius_;
   rviz_common::properties::FloatProperty property_point_offset_;
+
+  rviz_common::properties::BoolProperty property_slope_text_view_;
+  rviz_common::properties::FloatProperty property_slope_text_scale_;
 
   std::shared_ptr<VehicleInfo> vehicle_info_;
 
