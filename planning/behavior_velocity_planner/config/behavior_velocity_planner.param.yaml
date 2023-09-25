@@ -22,5 +22,6 @@
       # behavior_velocity_planner::OcclusionSpotModulePlugin
       # behavior_velocity_planner::RunOutModulePlugin
       # behavior_velocity_planner::SpeedBumpModulePlugin
+      # behavior_velocity_planner::TemplateModulePlugin
       - behavior_velocity_planner::OutOfLaneModulePlugin
       - behavior_velocity_planner::NoDrivableLaneModulePlugin

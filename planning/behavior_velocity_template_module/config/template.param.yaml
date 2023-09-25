@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    template:
+      dummy: 1.2

@@ -19,6 +19,7 @@
   <arg name="launch_occlusion_spot" default="true"/>
   <arg name="launch_no_stopping_area" default="true"/>
   <arg name="launch_speed_bump" default="true"/>
+  <!--<arg name="launch_template" default="true"/>-->
   <arg name="launch_no_drivable_lane" default="true"/>
 
   <arg name="forward_path_length" default="1000.0"/>
@@ -40,6 +41,7 @@
     <param from="$(find-pkg-share behavior_velocity_planner)/config/occlusion_spot.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/no_stopping_area.param.yaml"/>
     <param from="$(find-pkg-share behavior_velocity_planner)/config/speed_bump.param.yaml"/>
+    <!--<param from="$(find-pkg-share behavior_velocity_planner)/config/template.param.yaml"/>-->
     <param from="$(find-pkg-share behavior_velocity_planner)/config/no_drivable_lane.param.yaml"/>
 
     <param from="$(var vehicle_info_param_file)"/>
@@ -68,6 +70,7 @@
     <param name="launch_occlusion_spot" value="$(var launch_occlusion_spot)"/>
     <param name="launch_no_stopping_area" value="$(var launch_no_stopping_area)"/>
     <param name="launch_speed_bump" value="$(var launch_speed_bump)"/>
+    <!--<param name="launch_template" value="$(var launch_template)"/>-->
     <param name="launch_no_drivable_lane" value="$(var launch_no_drivable_lane)"/>
 
     <param name="forward_path_length" value="$(var forward_path_length)"/>

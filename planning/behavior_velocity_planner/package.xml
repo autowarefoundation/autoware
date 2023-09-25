@@ -81,6 +81,7 @@
   <test_depend>behavior_velocity_traffic_light_module</test_depend>
   <test_depend>behavior_velocity_virtual_traffic_light_module</test_depend>
   <test_depend>behavior_velocity_walkway_module</test_depend>
+  <!--<test_depend>behavior_velocity_template_module</test_depend>-->
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
