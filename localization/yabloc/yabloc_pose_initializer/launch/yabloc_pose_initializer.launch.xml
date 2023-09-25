@@ -1,5 +1,6 @@
 <launch>
-  <arg name="model_path" default="$(find-pkg-share yabloc_pose_initializer)/data/saved_model/model_float32.pb"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data"/>
+  <arg name="model_path" default="$(var data_path)/yabloc_pose_initializer/saved_model/model_float32.pb"/>
 
   <node name="camera_pose_initializer_node" pkg="yabloc_pose_initializer" exec="camera_pose_initializer_node" output="screen" args="--ros-args --log-level info">
     <param from="$(var camera_pose_initializer_param_path)"/>

@@ -109,11 +109,9 @@ cv::Mat SemanticSegmentation::draw_overlay(const cv::Mat & image, const cv::Mat 
 
 void SemanticSegmentation::print_error_message(const rclcpp::Logger & logger)
 {
-  // cspell: ignore DDOWNLOAD
   const std::string ERROR_MESSAGE =
     R"(The yabloc_pose_initializer is not working correctly because the DNN model has not been downloaded correctly.
-To download models, "-DDOWNLOAD_ARTIFACTS=ON" is required at build time.
-Please see the README of yabloc_pose_initializer for more information.)";
+Please check the README of yabloc_pose_initializer to know how download models.)";
 
   std::istringstream stream(ERROR_MESSAGE);
   std::string line;

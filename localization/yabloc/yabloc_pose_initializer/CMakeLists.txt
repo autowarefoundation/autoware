@@ -15,10 +15,6 @@ find_package(PCL REQUIRED COMPONENTS common kdtree)
 find_package(Sophus REQUIRED)
 
 # ===================================================
-# Download DNN model
-include(download.cmake)
-
-# ===================================================
 # Executable
 # Camera
 set(TARGET camera_pose_initializer_node)
@@ -34,4 +30,4 @@ target_include_directories(${TARGET} SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS} ${PCL
 target_link_libraries(${TARGET} ${PCL_LIBRARIES} Sophus::Sophus)
 
 # ===================================================
-ament_auto_package(INSTALL_TO_SHARE config data launch)
+ament_auto_package(INSTALL_TO_SHARE config launch)
