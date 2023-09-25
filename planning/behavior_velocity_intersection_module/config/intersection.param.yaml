@@ -2,7 +2,7 @@
   ros__parameters:
     intersection:
       common:
-        attention_area_margin: 0.5 # [m]
+        attention_area_margin: 0.75 # [m]
         attention_area_length: 200.0 # [m]
         attention_area_angle_threshold: 0.785 # [rad]
         stop_line_margin: 3.0
@@ -14,7 +14,7 @@
         consider_wrong_direction_vehicle: false
       stuck_vehicle:
         use_stuck_stopline: true # stopline generated before the first conflicting area
-        stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
+        stuck_vehicle_detect_dist: 5.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
         stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
         # enable_front_car_decel_prediction: false # By default this feature is disabled
         # assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
@@ -45,14 +45,15 @@
         min_vehicle_brake_for_rss: -2.5 # [m/s^2]
         max_vehicle_velocity_for_rss: 16.66 # [m/s] == 60kmph
         denoise_kernel: 1.0 # [m]
-        possible_object_bbox: [1.0, 2.0] # [m x m]
-        ignore_parked_vehicle_speed_threshold: 0.333 # == 1.2km/h
-        stop_release_margin_time: 1.0 # [s]
+        possible_object_bbox: [1.5, 2.5] # [m x m]
+        ignore_parked_vehicle_speed_threshold: 0.8333 # == 3.0km/h
+        stop_release_margin_time: 1.5 # [s]
 
-      enable_rtc: # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
-        intersection: true
+      enable_rtc:
+        intersection: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
         intersection_to_occlusion: true
 
     merge_from_private:
       stop_line_margin: 3.0
       stop_duration_sec: 1.0
+      stop_distance_threshold: 1.0

@@ -273,6 +273,7 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
   mp.stop_line_margin = getOrDeclareParameter<double>(node, ns + ".stop_line_margin");
   mp.path_interpolation_ds =
     node.get_parameter("intersection.common.path_interpolation_ds").as_double();
+  mp.stop_distance_threshold = getOrDeclareParameter<double>(node, ns + ".stop_distance_threshold");
 }
 
 void MergeFromPrivateModuleManager::launchNewModules(
