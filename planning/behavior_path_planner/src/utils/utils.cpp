@@ -1675,6 +1675,13 @@ std::vector<geometry_msgs::msg::Point> calcBound(
       continue;
     }
 
+    if (!enable_expanding_hatched_road_markings) {
+      for (const auto & point : bound) {
+        output_points.push_back(lanelet::utils::conversion::toGeomMsgPt(point));
+      }
+      continue;
+    }
+
     // expand drivable area by hatched road markings.
     for (size_t bound_point_idx = 0; bound_point_idx < bound.size(); ++bound_point_idx) {
       const auto & bound_point = bound[bound_point_idx];
