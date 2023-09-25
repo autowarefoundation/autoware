@@ -51,6 +51,7 @@
         possible_object_bbox: [1.5, 2.5] # [m x m]
         ignore_parked_vehicle_speed_threshold: 0.8333 # == 3.0km/h
         stop_release_margin_time: 1.5 # [s]
+        temporal_stop_before_attention_area: false
 
       enable_rtc:
         intersection: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

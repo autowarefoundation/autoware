@@ -279,6 +279,8 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
       }
     }
   }
+  const auto first_attention_stop_line_ip = static_cast<size_t>(occlusion_peeking_line_ip_int);
+  const bool first_attention_stop_line_valid = occlusion_peeking_line_valid;
   occlusion_peeking_line_ip_int += std::ceil(peeking_offset / ds);
   const auto occlusion_peeking_line_ip = static_cast<size_t>(
     std::clamp<int>(occlusion_peeking_line_ip_int, 0, static_cast<int>(path_ip.points.size()) - 1));
@@ -324,6 +326,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     size_t closest_idx{0};
     size_t stuck_stop_line{0};
     size_t default_stop_line{0};
+    size_t first_attention_stop_line{0};
     size_t occlusion_peeking_stop_line{0};
     size_t pass_judge_line{0};
   };
@@ -333,6 +336,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     {&closest_idx_ip, &intersection_stop_lines_temp.closest_idx},
     {&stuck_stop_line_ip, &intersection_stop_lines_temp.stuck_stop_line},
     {&default_stop_line_ip, &intersection_stop_lines_temp.default_stop_line},
+    {&first_attention_stop_line_ip, &intersection_stop_lines_temp.first_attention_stop_line},
     {&occlusion_peeking_line_ip, &intersection_stop_lines_temp.occlusion_peeking_stop_line},
     {&pass_judge_line_ip, &intersection_stop_lines_temp.pass_judge_line},
   };
@@ -366,6 +370,10 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   }
   if (default_stop_line_valid) {
     intersection_stop_lines.default_stop_line = intersection_stop_lines_temp.default_stop_line;
+  }
+  if (first_attention_stop_line_valid) {
+    intersection_stop_lines.first_attention_stop_line =
+      intersection_stop_lines_temp.first_attention_stop_line;
   }
   if (occlusion_peeking_line_valid) {
     intersection_stop_lines.occlusion_peeking_stop_line =
