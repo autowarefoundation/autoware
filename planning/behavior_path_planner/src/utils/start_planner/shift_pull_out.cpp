@@ -303,9 +303,6 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
       continue;
     }
 
-    shifted_path.path =
-      utils::start_goal_planner_common::removeInverseOrderPathPoints(shifted_path.path);
-
     // set velocity
     const size_t pull_out_end_idx =
       findNearestIndex(shifted_path.path.points, shift_end_pose_ptr->position);

@@ -1850,7 +1850,8 @@ insertOrientation<std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>
 
 /**
  * @brief Remove points with invalid orientation differences from a given points container
- * (trajectory, path, ...)
+ * (trajectory, path, ...). Check the difference between the angles of two points and the difference
+ * between the azimuth angle between the two points and the angle of the next point.
  * @param points Points of trajectory, path, or other point container (input / output)
  * @param max_yaw_diff Maximum acceptable yaw angle difference between two consecutive points in
  * radians (default: M_PI_2)
@@ -1859,10 +1860,14 @@ template <class T>
 void removeInvalidOrientationPoints(T & points, const double max_yaw_diff = M_PI_2)
 {
   for (size_t i = 1; i < points.size();) {
-    const double yaw1 = tf2::getYaw(tier4_autoware_utils::getPose(points.at(i - 1)).orientation);
-    const double yaw2 = tf2::getYaw(tier4_autoware_utils::getPose(points.at(i)).orientation);
+    const auto p1 = tier4_autoware_utils::getPose(points.at(i - 1));
+    const auto p2 = tier4_autoware_utils::getPose(points.at(i));
+    const double yaw1 = tf2::getYaw(p1.orientation);
+    const double yaw2 = tf2::getYaw(p2.orientation);
 
-    if (max_yaw_diff < std::abs(tier4_autoware_utils::normalizeRadian(yaw1 - yaw2))) {
+    if (
+      max_yaw_diff < std::abs(tier4_autoware_utils::normalizeRadian(yaw1 - yaw2)) ||
+      !tier4_autoware_utils::isDrivingForward(p1, p2)) {
       points.erase(points.begin() + i);
     } else {
       ++i;

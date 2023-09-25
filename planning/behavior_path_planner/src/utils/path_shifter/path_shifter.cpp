@@ -56,6 +56,7 @@ namespace behavior_path_planner
 using motion_utils::findNearestIndex;
 using motion_utils::insertOrientation;
 using motion_utils::removeInvalidOrientationPoints;
+using motion_utils::removeOverlapPoints;
 
 void PathShifter::setPath(const PathWithLaneId & path)
 {
@@ -147,9 +148,18 @@ bool PathShifter::generate(
   type == SHIFT_TYPE::SPLINE ? applySplineShifter(shifted_path, offset_back)
                              : applyLinearShifter(shifted_path);
 
-  const bool is_driving_forward = true;
-  insertOrientation(shifted_path->path.points, is_driving_forward);
+  shifted_path->path.points = removeOverlapPoints(shifted_path->path.points);
+  // Use orientation before shift to remove points in reverse order
+  // before setting wrong azimuth orientation
   removeInvalidOrientationPoints(shifted_path->path.points);
+  size_t previous_size{shifted_path->path.points.size()};
+  do {
+    previous_size = shifted_path->path.points.size();
+    // Set the azimuth orientation to the next point at each point
+    insertOrientation(shifted_path->path.points, true);
+    // Use azimuth orientation to remove points in reverse order
+    removeInvalidOrientationPoints(shifted_path->path.points);
+  } while (previous_size != shifted_path->path.points.size());
 
   // DEBUG
   RCLCPP_DEBUG_STREAM_THROTTLE(
