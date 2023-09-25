@@ -123,6 +123,9 @@ private:
 
   struct Param
   {
+    bool enable_lateral_acc_limit;
+    bool enable_steering_rate_limit;
+
     double max_velocity;                              // max velocity [m/s]
     double margin_to_insert_external_velocity_limit;  // for external velocity limit [m]
     double replan_vel_deviation;                      // if speed error exceeds this [m/s],

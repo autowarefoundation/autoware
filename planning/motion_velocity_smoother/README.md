@@ -140,6 +140,7 @@ After the optimization, a resampling called `post resampling` is performed befor
 
 | Name                                   | Type     | Description                                                                                                                                                                                                  | Default value |
 | :------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| `enable_lateral_acc_limit`             | `bool`   | To toggle the lateral acceleration filter on and off. You can switch it dynamically at runtime.                                                                                                              | true          |
 | `max_lateral_accel`                    | `double` | Max lateral acceleration limit [m/ss]                                                                                                                                                                        | 0.5           |
 | `min_curve_velocity`                   | `double` | Min velocity at lateral acceleration limit [m/ss]                                                                                                                                                            | 2.74          |
 | `decel_distance_before_curve`          | `double` | Distance to slowdown before a curve for lateral acceleration limit [m]                                                                                                                                       | 3.5           |
@@ -197,12 +198,13 @@ After the optimization, a resampling called `post resampling` is performed befor
 
 ### Limit steering angle rate parameters
 
-| Name                             | Type     | Description                                                              | Default value |
-| :------------------------------- | :------- | :----------------------------------------------------------------------- | :------------ |
-| `max_steering_angle_rate`        | `double` | Maximum steering angle rate [degree/s]                                   | 40.0          |
-| `resample_ds`                    | `double` | Distance between trajectory points [m]                                   | 0.1           |
-| `curvature_threshold`            | `double` | If curvature > curvature_threshold, steeringRateLimit is triggered [1/m] | 0.02          |
-| `curvature_calculation_distance` | `double` | Distance of points while curvature is calculating [m]                    | 1.0           |
+| Name                             | Type     | Description                                                                           | Default value |
+| :------------------------------- | :------- | :------------------------------------------------------------------------------------ | :------------ |
+| `enable_steering_rate_limit`     | `bool`   | To toggle the steer rate filter on and off. You can switch it dynamically at runtime. | true          |
+| `max_steering_angle_rate`        | `double` | Maximum steering angle rate [degree/s]                                                | 40.0          |
+| `resample_ds`                    | `double` | Distance between trajectory points [m]                                                | 0.1           |
+| `curvature_threshold`            | `double` | If curvature > curvature_threshold, steeringRateLimit is triggered [1/m]              | 0.02          |
+| `curvature_calculation_distance` | `double` | Distance of points while curvature is calculating [m]                                 | 1.0           |
 
 ### Weights for optimization
 

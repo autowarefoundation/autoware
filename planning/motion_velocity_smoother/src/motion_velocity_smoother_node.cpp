@@ -165,6 +165,9 @@ rcl_interfaces::msg::SetParametersResult MotionVelocitySmootherNode::onParameter
 
   {
     auto & p = node_param_;
+    update_param_bool("enable_lateral_acc_limit", p.enable_lateral_acc_limit);
+    update_param_bool("enable_steering_rate_limit", p.enable_steering_rate_limit);
+
     update_param("max_velocity", p.max_velocity);
     update_param(
       "margin_to_insert_external_velocity_limit", p.margin_to_insert_external_velocity_limit);
@@ -266,6 +269,9 @@ rcl_interfaces::msg::SetParametersResult MotionVelocitySmootherNode::onParameter
 void MotionVelocitySmootherNode::initCommonParam()
 {
   auto & p = node_param_;
+  p.enable_lateral_acc_limit = declare_parameter<bool>("enable_lateral_acc_limit");
+  p.enable_steering_rate_limit = declare_parameter<bool>("enable_steering_rate_limit");
+
   p.max_velocity = declare_parameter<double>("max_velocity");  // 72.0 kmph
   p.margin_to_insert_external_velocity_limit =
     declare_parameter<double>("margin_to_insert_external_velocity_limit");
@@ -572,12 +578,17 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   // Lateral acceleration limit
   constexpr bool enable_smooth_limit = true;
   constexpr bool use_resampling = true;
-  const auto traj_lateral_acc_filtered = smoother_->applyLateralAccelerationFilter(
-    input, initial_motion.vel, initial_motion.acc, enable_smooth_limit, use_resampling);
+  const auto traj_lateral_acc_filtered =
+    node_param_.enable_lateral_acc_limit
+      ? smoother_->applyLateralAccelerationFilter(
+          input, initial_motion.vel, initial_motion.acc, enable_smooth_limit, use_resampling)
+      : input;
 
   // Steering angle rate limit (Note: set use_resample = false since it is resampled above)
   const auto traj_steering_rate_limited =
-    smoother_->applySteeringRateLimit(traj_lateral_acc_filtered, false);
+    node_param_.enable_steering_rate_limit
+      ? smoother_->applySteeringRateLimit(traj_lateral_acc_filtered, false)
+      : traj_lateral_acc_filtered;
 
   // Resample trajectory with ego-velocity based interval distance
   auto traj_resampled = smoother_->resampleTrajectory(
