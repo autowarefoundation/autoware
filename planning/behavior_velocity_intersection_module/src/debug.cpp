@@ -113,7 +113,33 @@ visualization_msgs::msg::MarkerArray createPoseMarkerArray(
   return msg;
 }
 
-visualization_msgs::msg::Marker createPointMarkerArray(
+visualization_msgs::msg::MarkerArray createLineMarkerArray(
+  const geometry_msgs::msg::Point & point_start, const geometry_msgs::msg::Point & point_end,
+  const std::string & ns, const int64_t id, const double r, const double g, const double b)
+{
+  visualization_msgs::msg::MarkerArray msg;
+
+  visualization_msgs::msg::Marker marker;
+  marker.header.frame_id = "map";
+  marker.ns = ns + "_line";
+  marker.id = id;
+  marker.lifetime = rclcpp::Duration::from_seconds(0.3);
+  marker.type = visualization_msgs::msg::Marker::ARROW;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+  geometry_msgs::msg::Vector3 arrow;
+  arrow.x = 1.0;
+  arrow.y = 1.0;
+  arrow.z = 1.0;
+  marker.scale = arrow;
+  marker.color = createMarkerColor(r, g, b, 0.999);
+  marker.points.push_back(point_start);
+  marker.points.push_back(point_end);
+
+  msg.markers.push_back(marker);
+  return msg;
+}
+
+[[maybe_unused]] visualization_msgs::msg::Marker createPointMarkerArray(
   const geometry_msgs::msg::Point & point, const std::string & ns, const int64_t id, const double r,
   const double g, const double b)
 {
@@ -185,17 +211,6 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array, now);
   }
 
-  if (debug_data_.nearest_occlusion_point) {
-    debug_marker_array.markers.push_back(createPointMarkerArray(
-      debug_data_.nearest_occlusion_point.value(), "nearest_occlusion", module_id_, 0.5, 0.5, 0.0));
-  }
-
-  if (debug_data_.nearest_occlusion_projection_point) {
-    debug_marker_array.markers.push_back(createPointMarkerArray(
-      debug_data_.nearest_occlusion_projection_point.value(), "nearest_occlusion_projection",
-      module_id_, 0.5, 0.5, 0.0));
-  }
-
   size_t i{0};
   for (const auto & p : debug_data_.candidate_collision_object_polygons) {
     appendMarkerArray(
@@ -238,6 +253,13 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array, now);
   }
 
+  if (debug_data_.nearest_occlusion_projection) {
+    const auto [point_start, point_end] = debug_data_.nearest_occlusion_projection.value();
+    appendMarkerArray(
+      createLineMarkerArray(
+        point_start, point_end, "nearest_occlusion_projection", lane_id_, 0.5, 0.5, 0.0),
+      &debug_marker_array, now);
+  }
   return debug_marker_array;
 }
 
