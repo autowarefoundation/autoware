@@ -765,12 +765,11 @@ bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane)
   return tl_id.has_value();
 }
 
-bool isTrafficLightArrowActivated(
+TrafficPrioritizedLevel getTrafficPrioritizedLevel(
   lanelet::ConstLanelet lane, const std::map<int, TrafficSignalStamped> & tl_infos)
 {
   using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
 
-  const auto & turn_direction = lane.attributeOr("turn_direction", "else");
   std::optional<int> tl_id = std::nullopt;
   for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
     tl_id = tl_reg_elem->id();
@@ -778,24 +777,28 @@ bool isTrafficLightArrowActivated(
   }
   if (!tl_id) {
     // this lane has no traffic light
-    return false;
+    return TrafficPrioritizedLevel::NOT_PRIORITIZED;
   }
   const auto tl_info_it = tl_infos.find(tl_id.value());
   if (tl_info_it == tl_infos.end()) {
     // the info of this traffic light is not available
-    return false;
+    return TrafficPrioritizedLevel::NOT_PRIORITIZED;
   }
   const auto & tl_info = tl_info_it->second;
+  bool has_amber_signal{false};
   for (auto && tl_light : tl_info.signal.elements) {
-    if (tl_light.color != TrafficSignalElement::GREEN) continue;
-    if (tl_light.status != TrafficSignalElement::SOLID_ON) continue;
-    if (turn_direction == std::string("left") && tl_light.shape == TrafficSignalElement::LEFT_ARROW)
-      return true;
-    if (
-      turn_direction == std::string("right") && tl_light.shape == TrafficSignalElement::RIGHT_ARROW)
-      return true;
+    if (tl_light.color == TrafficSignalElement::AMBER) {
+      has_amber_signal = true;
+    }
+    if (tl_light.color == TrafficSignalElement::RED) {
+      // NOTE: Return here since the red signal has the highest priority.
+      return TrafficPrioritizedLevel::FULLY_PRIORITIZED;
+    }
   }
-  return false;
+  if (has_amber_signal) {
+    return TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED;
+  }
+  return TrafficPrioritizedLevel::NOT_PRIORITIZED;
 }
 
 std::vector<DiscretizedLane> generateDetectionLaneDivisions(
@@ -1178,9 +1181,9 @@ double calcDistanceUntilIntersectionLanelet(
 }
 
 void IntersectionLanelets::update(
-  const bool tl_arrow_solid_on, const InterpolatedPathInfo & interpolated_path_info)
+  const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info)
 {
-  tl_arrow_solid_on_ = tl_arrow_solid_on;
+  is_prioritized_ = is_prioritized;
   // find the first conflicting/detection area polygon intersecting the path
   const auto & path = interpolated_path_info.path;
   const auto & lane_interval = interpolated_path_info.lane_id_interval.value();

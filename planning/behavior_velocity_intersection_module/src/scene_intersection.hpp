@@ -79,16 +79,21 @@ public:
       //! minimum confidence value of predicted path to use for collision detection
       double minimum_ego_predicted_velocity;  //! used to calculate ego's future velocity profile
       double state_transit_margin_time;
-      struct Normal
+      struct FullyPrioritized
       {
         double collision_start_margin_time;  //! start margin time to check collision
         double collision_end_margin_time;    //! end margin time to check collision
-      } normal;
-      struct Relaxed
+      } fully_prioritized;
+      struct PartiallyPrioritized
       {
-        double collision_start_margin_time;
-        double collision_end_margin_time;
-      } relaxed;
+        double collision_start_margin_time;  //! start margin time to check collision
+        double collision_end_margin_time;    //! end margin time to check collision
+      } partially_prioritized;
+      struct NotPrioritized
+      {
+        double collision_start_margin_time;  //! start margin time to check collision
+        double collision_end_margin_time;    //! end margin time to check collision
+      } not_prioritized;
       double keep_detection_vel_thr;  //! keep detection if ego is ego.vel < keep_detection_vel_thr
     } collision_detection;
     struct Occlusion
@@ -250,7 +255,7 @@ private:
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const autoware_auto_perception_msgs::msg::PredictedObjects & target_objects,
     const util::PathLanelets & path_lanelets, const int closest_idx, const double time_delay,
-    const bool tl_arrow_solid_on);
+    const util::TrafficPrioritizedLevel & traffic_prioritized_level);
 
   bool isOcclusionCleared(
     const nav_msgs::msg::OccupancyGrid & occ_grid,

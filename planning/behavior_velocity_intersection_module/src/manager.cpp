@@ -84,14 +84,23 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".collision_detection.minimum_ego_predicted_velocity");
   ip.collision_detection.state_transit_margin_time =
     getOrDeclareParameter<double>(node, ns + ".collision_detection.state_transit_margin_time");
-  ip.collision_detection.normal.collision_start_margin_time = getOrDeclareParameter<double>(
-    node, ns + ".collision_detection.normal.collision_start_margin_time");
-  ip.collision_detection.normal.collision_end_margin_time = getOrDeclareParameter<double>(
-    node, ns + ".collision_detection.normal.collision_end_margin_time");
-  ip.collision_detection.relaxed.collision_start_margin_time = getOrDeclareParameter<double>(
-    node, ns + ".collision_detection.relaxed.collision_start_margin_time");
-  ip.collision_detection.relaxed.collision_end_margin_time = getOrDeclareParameter<double>(
-    node, ns + ".collision_detection.relaxed.collision_end_margin_time");
+  ip.collision_detection.fully_prioritized.collision_start_margin_time =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.fully_prioritized.collision_start_margin_time");
+  ip.collision_detection.fully_prioritized.collision_end_margin_time =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.fully_prioritized.collision_end_margin_time");
+  ip.collision_detection.partially_prioritized.collision_start_margin_time =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.partially_prioritized.collision_start_margin_time");
+  ip.collision_detection.partially_prioritized.collision_end_margin_time =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.partially_prioritized.collision_end_margin_time");
+  ip.collision_detection.not_prioritized.collision_start_margin_time =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.not_prioritized.collision_start_margin_time");
+  ip.collision_detection.not_prioritized.collision_end_margin_time = getOrDeclareParameter<double>(
+    node, ns + ".collision_detection.not_prioritized.collision_end_margin_time");
   ip.collision_detection.keep_detection_vel_thr =
     getOrDeclareParameter<double>(node, ns + ".collision_detection.keep_detection_vel_thr");
 

@@ -64,20 +64,20 @@ struct InterpolatedPathInfo
 struct IntersectionLanelets
 {
 public:
-  void update(const bool tl_arrow_solid_on, const InterpolatedPathInfo & interpolated_path_info);
+  void update(const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info);
   const lanelet::ConstLanelets & attention() const
   {
-    return tl_arrow_solid_on_ ? attention_non_preceding_ : attention_;
+    return is_prioritized_ ? attention_non_preceding_ : attention_;
   }
   const lanelet::ConstLanelets & conflicting() const { return conflicting_; }
   const lanelet::ConstLanelets & adjacent() const { return adjacent_; }
   const lanelet::ConstLanelets & occlusion_attention() const
   {
-    return tl_arrow_solid_on_ ? attention_non_preceding_ : occlusion_attention_;
+    return is_prioritized_ ? attention_non_preceding_ : occlusion_attention_;
   }
   const std::vector<lanelet::CompoundPolygon3d> & attention_area() const
   {
-    return tl_arrow_solid_on_ ? attention_non_preceding_area_ : attention_area_;
+    return is_prioritized_ ? attention_non_preceding_area_ : attention_area_;
   }
   const std::vector<lanelet::CompoundPolygon3d> & conflicting_area() const
   {
@@ -110,7 +110,7 @@ public:
   // the first area intersecting with the path
   // even if lane change/re-routing happened on the intersection, these areas area are supposed to
   // be invariant under the 'associative' lanes.
-  bool tl_arrow_solid_on_ = false;
+  bool is_prioritized_ = false;
   std::optional<lanelet::CompoundPolygon3d> first_conflicting_area_ = std::nullopt;
   std::optional<lanelet::CompoundPolygon3d> first_attention_area_ = std::nullopt;
 };
@@ -151,6 +151,14 @@ struct PathLanelets
                                          // conflicting lanelets plus the next lane part of the path
 };
 
+enum class TrafficPrioritizedLevel {
+  // The target lane's traffic signal is red or the ego's traffic signal has an arrow.
+  FULLY_PRIORITIZED = 0,
+  // The target lane's traffic signal is amber
+  PARTIALLY_PRIORITIZED,
+  // The target lane's traffic signal is green
+  NOT_PRIORITIZED
+};
 }  // namespace behavior_velocity_planner::util
 
 #endif  // UTIL_TYPE_HPP_
