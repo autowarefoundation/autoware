@@ -203,7 +203,7 @@
     url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.onnx
     dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.onnx"
     mode: "644"
-    checksum: md5:bf3b0155351f90fcdca2626acbfd3bcf
+    checksum: sha256:36b0832177b01e6b278e00c7369f1de71e616c36261cbae50f0753d41289da01
 
 - name: Download tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table
   become: true
@@ -211,7 +211,23 @@
     url: https://awf.ml.dev.web.auto/perception/models/yolox-sPlus-opt.EntropyV2-calibration.table
     dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-opt.EntropyV2-calibration.table"
     mode: "644"
-    checksum: md5:c6e6f1999d5724a017516a956096701f
+    checksum: sha256:b9e9d7da33342262ccaea4469b4d02b8abb32b6d7bf737f9e0883fece1b8f580
+
+- name: Download tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.onnx
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/object_detection_yolox_s/v1/yolox-sPlus-T4-960x960-pseudo-finetune.onnx
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.onnx"
+    mode: "644"
+    checksum: sha256:f5054e8a890c3be86dc1b4b89a5a36fb2279d4f6110b0159e793be062641bf65
+
+- name: Download tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table
+  become: true
+  ansible.builtin.get_url:
+    url: https://awf.ml.dev.web.auto/perception/models/object_detection_yolox_s/v1/yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table
+    dest: "{{ data_dir }}/tensorrt_yolox/yolox-sPlus-T4-960x960-pseudo-finetune.EntropyV2-calibration.table"
+    mode: "644"
+    checksum: sha256:cc378d327db5616b0b3a4d077bf37100c25a50ecd22d2b542f54098da100f34c
 
 - name: Download tensorrt_yolox/label.txt
   become: true
