@@ -13,6 +13,11 @@
     mode: "644"
     checksum: sha256:1f660e15f95074bade32b1f80dbf618e9cee1f0b9f76d3f4671cb9be7f56eb3a
 
+- name: Extract yabloc_pose_initializer/resources.tar.gz
+  ansible.builtin.unarchive:
+    src: "{{ data_dir }}/yabloc_pose_initializer/resources.tar.gz"
+    dest: "{{ data_dir }}/yabloc_pose_initializer/"
+
 # image_projection_based_fusion
 - name: Create image_projection_based_fusion directory inside {{ data_dir }}
   ansible.builtin.file:
