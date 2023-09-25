@@ -103,8 +103,6 @@ TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
     return input;  // cannot calculate lateral acc. do nothing.
   }
 
-  constexpr double curvature_calc_dist = 5.0;  // [m] calc curvature with 5m away points
-
   // Interpolate with constant interval distance for lateral acceleration calculation.
   TrajectoryPoints output;
   const double points_interval =
@@ -124,8 +122,8 @@ TrajectoryPoints SmootherBase::applyLateralAccelerationFilter(
     output = input;
   }
 
-  const size_t idx_dist =
-    static_cast<size_t>(std::max(static_cast<int>((curvature_calc_dist) / points_interval), 1));
+  const size_t idx_dist = static_cast<size_t>(
+    std::max(static_cast<int>((base_param_.curvature_calculation_distance) / points_interval), 1));
 
   // Calculate curvature assuming the trajectory points interval is constant
   const auto curvature_v = trajectory_utils::calcTrajectoryCurvatureFrom3Points(output, idx_dist);

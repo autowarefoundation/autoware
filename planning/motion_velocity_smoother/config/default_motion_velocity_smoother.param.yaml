@@ -7,13 +7,21 @@
     # external velocity limit parameter
     margin_to_insert_external_velocity_limit: 0.3   #  margin distance to insert external velocity limit [m]
 
-    # curve parameters
+    # ---- curve parameters  ----
+    # - common parameters -
+    curvature_calculation_distance: 5.0         # distance of points while curvature is calculating for the steer rate and lateral acceleration limit [m]
+    # - lateral acceleration limit parameters -
     enable_lateral_acc_limit: true     # To toggle the lateral acc filter on and off. You can switch it dynamically at runtime.
     max_lateral_accel: 0.8             # max lateral acceleration limit [m/ss]
-    min_curve_velocity: 2.74           # min velocity at lateral acceleration limit [m/ss]
+    min_curve_velocity: 2.74           # min velocity at lateral acceleration limit and steering angle rate limit [m/s]
     decel_distance_before_curve: 3.5   # slow speed distance before a curve for lateral acceleration limit
     decel_distance_after_curve: 2.0    # slow speed distance after a curve for lateral acceleration limit
     min_decel_for_lateral_acc_lim_filter: -2.5  # deceleration limit applied in the lateral acceleration filter to avoid sudden braking [m/ss]
+    # - steering angle rate limit parameters -
+    enable_steering_rate_limit: true         # To toggle the steer rate filter on and off. You can switch it dynamically at runtime.
+    max_steering_angle_rate: 40.0            # maximum steering angle rate [degree/s]
+    resample_ds: 0.1                         # distance between trajectory points [m]
+    curvature_threshold: 0.02                # if curvature > curvature_threshold, steeringRateLimit is triggered [1/m]
 
     # engage & replan parameters
     replan_vel_deviation: 5.53         # velocity deviation to replan initial velocity [m/s]
@@ -48,13 +56,6 @@
     post_dense_min_interval_distance: 0.1    # minimum points-interval length for dense sampling [m]
     post_sparse_resample_dt: 0.1             # resample time interval for sparse sampling [s]
     post_sparse_min_interval_distance: 1.0   # minimum points-interval length for sparse sampling [m]
-
-    # steering angle rate limit parameters
-    enable_steering_rate_limit: true         # To toggle the steer rate filter on and off. You can switch it dynamically at runtime.
-    max_steering_angle_rate: 40.0            # maximum steering angle rate [degree/s]
-    resample_ds: 0.1                         # distance between trajectory points [m]
-    curvature_threshold: 0.02                # if curvature > curvature_threshold, steeringRateLimit is triggered [1/m]
-    curvature_calculation_distance: 1.0      # distance of points while curvature is calculating [m]
 
     # system
     over_stop_velocity_warn_thr: 1.389  # used to check if the optimization exceeds the input velocity on the stop point
