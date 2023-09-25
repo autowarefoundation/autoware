@@ -15,11 +15,12 @@
 # limitations under the License.
 
 import argparse
-import copy
+import pickle
 
+import numpy as np
 from perception_replayer_common import PerceptionReplayerCommon
 import rclpy
-from utils import calc_squared_distance
+from utils import StopWatch
 from utils import create_empty_pointcloud
 from utils import translate_objects_coordinate
 
@@ -28,17 +29,38 @@ class PerceptionReproducer(PerceptionReplayerCommon):
     def __init__(self, args):
         super().__init__(args, "perception_reproducer")
 
-        self.ego_pose_idx = None
         self.prev_traffic_signals_msg = None
+        self.stopwatch = StopWatch(self.args.verbose)  # for debug
 
-        # start timer callback
+        # to make some data to accelerate computation
+        self.preprocess_data()
+
+        # start main timer callback
         self.timer = self.create_timer(0.1, self.on_timer)
+
+        # kill perception process to avoid a conflict of the perception topics
+        self.timer_check_perception_process = self.create_timer(3.0, self.on_timer_kill_perception)
+
         print("Start timer callback")
 
-    def on_timer(self):
-        timestamp = self.get_clock().now().to_msg()
+    def preprocess_data(self):
+        # closest search with numpy data is much faster than usual
+        self.rosbag_ego_odom_data_numpy = np.array(
+            [
+                [data[1].pose.pose.position.x, data[1].pose.pose.position.y]
+                for data in self.rosbag_ego_odom_data
+            ]
+        )
 
+    def on_timer_kill_perception(self):
         self.kill_online_perception_node()
+
+    def on_timer(self):
+        if self.args.verbose:
+            print("\n-- on_timer start --")
+        self.stopwatch.tic("total on_timer")
+
+        timestamp = self.get_clock().now().to_msg()
 
         if self.args.detected_object:
             pointcloud_msg = create_empty_pointcloud(timestamp)
@@ -49,21 +71,34 @@ class PerceptionReproducer(PerceptionReplayerCommon):
             return
 
         # find nearest ego odom by simulation observation
+        self.stopwatch.tic("find_nearest_ego_odom_by_observation")
         ego_odom = self.find_nearest_ego_odom_by_observation(self.ego_pose)
         pose_timestamp = ego_odom[0]
         log_ego_pose = ego_odom[1].pose.pose
+        self.stopwatch.toc("find_nearest_ego_odom_by_observation")
 
         # extract message by the nearest ego odom timestamp
-        msgs = copy.deepcopy(self.find_topics_by_timestamp(pose_timestamp))
+        self.stopwatch.tic("find_topics_by_timestamp")
+        msgs_orig = self.find_topics_by_timestamp(pose_timestamp)
+        self.stopwatch.toc("find_topics_by_timestamp")
+
+        # copy the messages
+        self.stopwatch.tic("message deepcopy")
+        msgs = pickle.loads(pickle.dumps(msgs_orig))  # this is x5 faster than deepcopy
         objects_msg = msgs[0]
         traffic_signals_msg = msgs[1]
+        self.stopwatch.toc("message deepcopy")
 
+        self.stopwatch.tic("transform and publish")
         # objects
         if objects_msg:
             objects_msg.header.stamp = timestamp
             if self.args.detected_object:
                 translate_objects_coordinate(self.ego_pose, log_ego_pose, objects_msg)
             self.objects_pub.publish(objects_msg)
+
+        # ego odom
+        self.recorded_ego_pub.publish(ego_odom[1])
 
         # traffic signals
         # temporary support old auto msgs
@@ -82,23 +117,15 @@ class PerceptionReproducer(PerceptionReplayerCommon):
             else:
                 self.prev_traffic_signals_msg.stamp = timestamp
                 self.traffic_signals_pub.publish(self.prev_traffic_signals_msg)
+        self.stopwatch.toc("transform and publish")
+
+        self.stopwatch.toc("total on_timer")
 
     def find_nearest_ego_odom_by_observation(self, ego_pose):
-        if self.ego_pose_idx:
-            start_idx = self.ego_pose_idx - 10
-            end_idx = self.ego_pose_idx + 10
-        else:
-            start_idx = 0
-            end_idx = len(self.rosbag_ego_odom_data) - 1
-
-        nearest_idx = 0
-        nearest_dist = float("inf")
-        for idx in range(start_idx, end_idx + 1):
-            data = self.rosbag_ego_odom_data[idx]
-            dist = calc_squared_distance(data[1].pose.pose.position, ego_pose.position)
-            if dist < nearest_dist:
-                nearest_dist = dist
-                nearest_idx = idx
+        # nearest search with numpy format is much (~ x100) faster than regular for loop
+        self_pose = np.array([ego_pose.position.x, ego_pose.position.y])
+        dists_squared = np.sum((self.rosbag_ego_odom_data_numpy - self_pose) ** 2, axis=1)
+        nearest_idx = np.argmin(dists_squared)
 
         return self.rosbag_ego_odom_data[nearest_idx]
 
@@ -114,6 +141,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-f", "--rosbag-format", help="rosbag data format (default is db3)", default="db3"
+    )
+    parser.add_argument(
+        "-v", "--verbose", help="output debug data", action="store_true", default=False
     )
     args = parser.parse_args()
 

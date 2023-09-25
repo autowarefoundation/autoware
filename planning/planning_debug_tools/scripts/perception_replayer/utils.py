@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import math
+import time
 
 from geometry_msgs.msg import Quaternion
 import numpy as np
@@ -123,3 +124,29 @@ def translate_objects_coordinate(ego_pose, log_ego_pose, objects_msg):
         object_pose.position.x = object_pos_vec[0]
         object_pose.position.y = object_pos_vec[1]
         object_pose.orientation = get_quaternion_from_yaw(log_object_yaw + log_ego_yaw - ego_yaw)
+
+
+class StopWatch:
+    def __init__(self, verbose):
+        # A dictionary to store the starting times
+        self.start_times = {}
+        self.verbose = verbose
+
+    def tic(self, name):
+        """Store the current time with the given name."""
+        self.start_times[name] = time.perf_counter()
+
+    def toc(self, name):
+        """Print the elapsed time since the last call to tic() with the same name."""
+        if name not in self.start_times:
+            print(f"No start time found for {name}!")
+            return
+
+        elapsed_time = (
+            time.perf_counter() - self.start_times[name]
+        ) * 1000  # Convert to milliseconds
+        if self.verbose:
+            print(f"Time for {name}: {elapsed_time:.2f} ms")
+
+        # Reset the starting time for the name
+        del self.start_times[name]

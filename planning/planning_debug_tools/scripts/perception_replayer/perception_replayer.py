@@ -169,7 +169,7 @@ class PerceptionReplayer(PerceptionReplayerCommon):
             0.06853892326654787,
         ]
 
-        self.recorded_ego_pub.publish(recorded_ego_pose)
+        self.recorded_ego_pub_as_initialpose.publish(recorded_ego_pose)
         print("Published recorded ego pose as /initialpose")
 
 
