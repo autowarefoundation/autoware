@@ -102,7 +102,7 @@ $ wget -P ~/autoware_data/traffic_light_ssd_fine_detector/ \
        https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
 ```
 
-After downloading you can check intergity of the files with ```sha256sum```.
+After downloading you can check integrity of the files with ```sha256sum```.
 
 You need to put ```SHA256SUMS``` file listed below in to autoware_data directory:
 
