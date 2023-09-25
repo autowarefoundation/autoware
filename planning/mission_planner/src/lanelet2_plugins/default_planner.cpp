@@ -152,6 +152,8 @@ void DefaultPlanner::initialize_common(rclcpp::Node * node)
   param_.goal_angle_threshold_deg = node_->declare_parameter<double>("goal_angle_threshold_deg");
   param_.enable_correct_goal_pose = node_->declare_parameter<bool>("enable_correct_goal_pose");
   param_.consider_no_drivable_lanes = node_->declare_parameter<bool>("consider_no_drivable_lanes");
+  param_.check_footprint_inside_lanes =
+    node_->declare_parameter<bool>("check_footprint_inside_lanes");
 }
 
 void DefaultPlanner::initialize(rclcpp::Node * node)
@@ -349,6 +351,7 @@ bool DefaultPlanner::is_goal_valid(
 
   // check if goal footprint exceeds lane when the goal isn't in parking_lot
   if (
+    param_.check_footprint_inside_lanes &&
     !check_goal_footprint(
       closest_lanelet, combined_prev_lanelet, polygon_footprint, next_lane_length) &&
     !is_in_parking_lot(
