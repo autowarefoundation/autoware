@@ -26,6 +26,8 @@
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <lanelet2_core/primitives/LineString.h>
 
+#include <cstdint>
+
 namespace marker_utils
 {
 using behavior_path_planner::ShiftLine;
@@ -647,6 +649,42 @@ MarkerArray showSafetyCheckInfo(const CollisionCheckDebugMap & obj_debug_vec, st
     safety_check_info_text.text = ss.str();
     marker_array.markers.push_back(safety_check_info_text);
   }
+  return marker_array;
+}
+
+MarkerArray showFilteredObjects(
+  const ExtendedPredictedObjects & predicted_objects, const std::string & ns,
+  const ColorRGBA & color, int32_t id)
+{
+  using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
+  if (predicted_objects.empty()) {
+    return MarkerArray{};
+  }
+
+  const auto now = rclcpp::Clock{RCL_ROS_TIME}.now();
+
+  auto default_cube_marker =
+    [&](const auto & width, const auto & depth, const auto & color = colors::green()) {
+      return createDefaultMarker(
+        "map", now, ns + "_cube", ++id, visualization_msgs::msg::Marker::CUBE,
+        createMarkerScale(width, depth, 1.0), color);
+    };
+
+  MarkerArray marker_array;
+  marker_array.markers.reserve(
+    predicted_objects.size());  // poly ego, text ego, poly obj, text obj, cube obj
+
+  std::for_each(
+    predicted_objects.begin(), predicted_objects.end(), [&](const ExtendedPredictedObject & obj) {
+      const auto insert_cube_marker = [&](const auto & pose) {
+        marker_array.markers.emplace_back();
+        auto & cube_marker = marker_array.markers.back();
+        cube_marker = default_cube_marker(1.0, 1.0, color);
+        cube_marker.pose = pose;
+      };
+      insert_cube_marker(obj.initial_pose.pose);
+    });
+
   return marker_array;
 }
 

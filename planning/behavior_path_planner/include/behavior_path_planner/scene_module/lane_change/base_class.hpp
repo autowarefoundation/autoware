@@ -154,6 +154,11 @@ public:
     return object_debug_after_approval_;
   }
 
+  const LaneChangeTargetObjects & getDebugFilteredObjects() const
+  {
+    return debug_filtered_objects_;
+  }
+
   const Pose & getEgoPose() const { return planner_data_->self_odometry->pose.pose; }
 
   const Point & getEgoPosition() const { return getEgoPose().position; }
@@ -262,6 +267,7 @@ protected:
   mutable LaneChangePaths debug_valid_path_{};
   mutable CollisionCheckDebugMap object_debug_{};
   mutable CollisionCheckDebugMap object_debug_after_approval_{};
+  mutable LaneChangeTargetObjects debug_filtered_objects_{};
   mutable double object_debug_lifetime_{0.0};
   mutable StopWatch<std::chrono::milliseconds> stop_watch_;
 };

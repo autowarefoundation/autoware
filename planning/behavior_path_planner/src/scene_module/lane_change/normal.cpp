@@ -945,6 +945,7 @@ bool NormalLaneChange::getLaneChangePaths(
     utils::lane_change::getTargetNeighborLanesPolygon(route_handler, current_lanes, type_);
 
   const auto target_objects = getTargetObjects(current_lanes, target_lanes);
+  debug_filtered_objects_ = target_objects;
 
   const auto prepare_durations = calcPrepareDuration(current_lanes, target_lanes);
 
@@ -1153,6 +1154,7 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
   const auto & target_lanes = status_.target_lanes;
 
   const auto target_objects = getTargetObjects(current_lanes, target_lanes);
+  debug_filtered_objects_ = target_objects;
 
   CollisionCheckDebugMap debug_data;
   const auto safety_status = isLaneChangePathSafe(

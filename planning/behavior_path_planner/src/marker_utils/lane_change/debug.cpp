@@ -98,4 +98,28 @@ MarkerArray createLaneChangingVirtualWallMarker(
   return marker_array;
 }
 
+MarkerArray showFilteredObjects(
+  const ExtendedPredictedObjects & current_lane_objects,
+  const ExtendedPredictedObjects & target_lane_objects,
+  const ExtendedPredictedObjects & other_lane_objects, const std::string & ns)
+{
+  int32_t update_id = 0;
+  auto current_marker =
+    marker_utils::showFilteredObjects(current_lane_objects, ns, colors::yellow(), update_id);
+  update_id += static_cast<int32_t>(current_marker.markers.size());
+  auto target_marker =
+    marker_utils::showFilteredObjects(target_lane_objects, ns, colors::aqua(), update_id);
+  update_id += static_cast<int32_t>(target_marker.markers.size());
+  auto other_marker =
+    marker_utils::showFilteredObjects(other_lane_objects, ns, colors::medium_orchid(), update_id);
+
+  MarkerArray marker_array;
+  marker_array.markers.insert(
+    marker_array.markers.end(), current_marker.markers.begin(), current_marker.markers.end());
+  marker_array.markers.insert(
+    marker_array.markers.end(), target_marker.markers.begin(), target_marker.markers.end());
+  marker_array.markers.insert(
+    marker_array.markers.end(), other_marker.markers.begin(), other_marker.markers.end());
+  return marker_array;
+}
 }  // namespace marker_utils::lane_change_markers

@@ -77,6 +77,7 @@ struct ExtendedPredictedObject
   autoware_auto_perception_msgs::msg::Shape shape;
   std::vector<PredictedPathWithPolygon> predicted_paths;
 };
+using ExtendedPredictedObjects = std::vector<ExtendedPredictedObject>;
 
 /**
  * @brief Specifies which object class should be checked.
