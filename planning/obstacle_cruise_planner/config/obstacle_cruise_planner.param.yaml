@@ -106,6 +106,13 @@
         successive_num_to_entry_slow_down_condition: 5
         successive_num_to_exit_slow_down_condition: 5
 
+      # consider the current ego pose (it is not the nearest pose on the reference trajectory)
+      # Both the lateral error and the yaw error are assumed to decrease to zero by the time duration "time_to_convergence"
+      # The both errors decrease with constant rates against the time.
+      consider_current_pose:
+        enable_to_consider_current_pose: false
+        time_to_convergence: 1.5 #[s]
+
     cruise:
       pid_based_planner:
         use_velocity_limit_based_planner: true

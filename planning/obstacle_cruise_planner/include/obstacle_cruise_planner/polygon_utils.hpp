@@ -33,6 +33,11 @@ namespace bg = boost::geometry;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 
+Polygon2d createOneStepPolygon(
+  const std::vector<geometry_msgs::msg::Pose> & last_poses,
+  const std::vector<geometry_msgs::msg::Pose> & current_poses,
+  const vehicle_info_util::VehicleInfo & vehicle_info, const double lat_margin);
+
 std::optional<geometry_msgs::msg::Point> getCollisionPoint(
   const std::vector<TrajectoryPoint> & traj_points, const std::vector<Polygon2d> & traj_polygons,
   const Obstacle & obstacle, const bool is_driving_forward);
@@ -45,9 +50,6 @@ std::vector<PointWithStamp> getCollisionPoints(
   const double max_lat_dist = std::numeric_limits<double>::max(),
   const double max_prediction_time_for_collision_check = std::numeric_limits<double>::max());
 
-std::vector<Polygon2d> createOneStepPolygons(
-  const std::vector<TrajectoryPoint> & traj_points,
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double lat_margin = 0.0);
 }  // namespace polygon_utils
 
 #endif  // OBSTACLE_CRUISE_PLANNER__POLYGON_UTILS_HPP_
