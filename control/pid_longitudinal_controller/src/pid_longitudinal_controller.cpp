@@ -654,7 +654,8 @@ PidLongitudinalController::Motion PidLongitudinalController::calcCtrlCmd(
     m_debug_values.setValues(DebugValues::TYPE::PREDICTED_VEL, pred_vel_in_target);
 
     raw_ctrl_cmd.vel = target_motion.vel;
-    raw_ctrl_cmd.acc = applyVelocityFeedback(target_motion, control_data.dt, pred_vel_in_target);
+    raw_ctrl_cmd.acc =
+      applyVelocityFeedback(target_motion, control_data.dt, pred_vel_in_target, control_data.shift);
     RCLCPP_DEBUG(
       logger_,
       "[feedback control]  vel: %3.3f, acc: %3.3f, dt: %3.3f, v_curr: %3.3f, v_ref: %3.3f "
@@ -929,15 +930,16 @@ double PidLongitudinalController::predictedVelocityInTargetPoint(
 }
 
 double PidLongitudinalController::applyVelocityFeedback(
-  const Motion target_motion, const double dt, const double current_vel)
+  const Motion target_motion, const double dt, const double current_vel, const Shift & shift)
 {
-  const double current_vel_abs = std::fabs(current_vel);
-  const double target_vel_abs = std::fabs(target_motion.vel);
+  // NOTE: Acceleration command is always positive even if the ego drives backward.
+  const double vel_sign = (shift == Shift::Forward) ? 1.0 : (shift == Shift::Reverse ? -1.0 : 0.0);
+  const double diff_vel = (target_motion.vel - current_vel) * vel_sign;
   const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
                                 m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
   const bool enable_integration =
-    (current_vel_abs > m_current_vel_threshold_pid_integrate) && is_under_control;
-  const double error_vel_filtered = m_lpf_vel_error->filter(target_vel_abs - current_vel_abs);
+    (std::abs(current_vel) > m_current_vel_threshold_pid_integrate) && is_under_control;
+  const double error_vel_filtered = m_lpf_vel_error->filter(diff_vel);
 
   std::vector<double> pid_contributions(3);
   const double pid_acc =
@@ -950,8 +952,8 @@ double PidLongitudinalController::applyVelocityFeedback(
   // deviation will be bigger.
   constexpr double ff_scale_max = 2.0;  // for safety
   constexpr double ff_scale_min = 0.5;  // for safety
-  const double ff_scale =
-    std::clamp(current_vel_abs / std::max(target_vel_abs, 0.1), ff_scale_min, ff_scale_max);
+  const double ff_scale = std::clamp(
+    std::abs(current_vel) / std::max(std::abs(target_motion.vel), 0.1), ff_scale_min, ff_scale_max);
   const double ff_acc = target_motion.acc * ff_scale;
 
   const double feedback_acc = ff_acc + pid_acc;

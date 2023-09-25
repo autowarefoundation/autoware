@@ -365,7 +365,7 @@ private:
    * @param [in] current_vel current velocity of the vehicle
    */
   double applyVelocityFeedback(
-    const Motion target_motion, const double dt, const double current_vel);
+    const Motion target_motion, const double dt, const double current_vel, const Shift & shift);
 
   /**
    * @brief update variables for debugging about pitch
