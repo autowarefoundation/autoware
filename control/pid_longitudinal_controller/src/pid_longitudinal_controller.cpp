@@ -923,7 +923,8 @@ double PidLongitudinalController::applyVelocityFeedback(
 {
   const double current_vel_abs = std::fabs(current_vel);
   const double target_vel_abs = std::fabs(target_motion.vel);
-  const bool is_under_control = m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
+  const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
+                                m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
   const bool enable_integration =
     (current_vel_abs > m_current_vel_threshold_pid_integrate) && is_under_control;
   const double error_vel_filtered = m_lpf_vel_error->filter(target_vel_abs - current_vel_abs);
