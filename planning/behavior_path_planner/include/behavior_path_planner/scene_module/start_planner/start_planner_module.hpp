@@ -168,11 +168,12 @@ private:
   lanelet::ConstLanelets getPathRoadLanes(const PathWithLaneId & path) const;
   std::vector<DrivableLanes> generateDrivableLanes(const PathWithLaneId & path) const;
   void updatePullOutStatus();
+  void updateStatusAfterBackwardDriving();
   static bool isOverlappedWithLane(
     const lanelet::ConstLanelet & candidate_lanelet,
     const tier4_autoware_utils::LinearRing2d & vehicle_footprint);
   bool hasFinishedPullOut() const;
-  void checkBackFinished();
+  bool isBackwardDrivingComplete() const;
   bool isStopped();
   bool isStuck();
   bool hasFinishedCurrentPath();

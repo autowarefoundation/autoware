@@ -192,7 +192,10 @@ ModuleStatus StartPlannerModule::updateState()
     return ModuleStatus::SUCCESS;
   }
 
-  checkBackFinished();
+  if (isBackwardDrivingComplete()) {
+    updateStatusAfterBackwardDriving();
+    return ModuleStatus::SUCCESS;  // for breaking loop
+  }
 
   return current_state_;
 }
@@ -658,11 +661,25 @@ void StartPlannerModule::updatePullOutStatus()
   planWithPriority(
     start_pose_candidates, *refined_start_pose, goal_pose, parameters_->search_priority);
 
-  checkBackFinished();
-  if (!status_.back_finished) {
+  if (isBackwardDrivingComplete()) {
+    updateStatusAfterBackwardDriving();
+    current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
+  } else {
     status_.backward_path = start_planner_utils::getBackwardPath(
       *route_handler, status_.pull_out_lanes, current_pose, status_.pull_out_start_pose,
       parameters_->backward_velocity);
+  }
+}
+
+void StartPlannerModule::updateStatusAfterBackwardDriving()
+{
+  status_.back_finished = true;
+  // request start_planner approval
+  waitApproval();
+  // To enable approval of the forward path, the RTC status is removed.
+  removeRTCStatus();
+  for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
+    itr->second = generateUUID();
   }
 }
 
@@ -787,9 +804,9 @@ bool StartPlannerModule::hasFinishedPullOut() const
   return has_finished;
 }
 
-void StartPlannerModule::checkBackFinished()
+bool StartPlannerModule::isBackwardDrivingComplete() const
 {
-  // check ego car is close enough to pull out start pose
+  // check ego car is close enough to pull out start pose and stopped
   const auto current_pose = planner_data_->self_odometry->pose.pose;
   const auto distance =
     tier4_autoware_utils::calcDistance2d(current_pose, status_.pull_out_start_pose);
@@ -798,18 +815,12 @@ void StartPlannerModule::checkBackFinished()
   const double ego_vel = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear);
   const bool is_stopped = ego_vel < parameters_->th_stopped_velocity;
 
-  if (!status_.back_finished && is_near && is_stopped) {
+  const bool back_finished = !status_.back_finished && is_near && is_stopped;
+  if (back_finished) {
     RCLCPP_INFO(getLogger(), "back finished");
-    status_.back_finished = true;
-
-    // request start_planner approval
-    waitApproval();
-    removeRTCStatus();
-    for (auto itr = uuid_map_.begin(); itr != uuid_map_.end(); ++itr) {
-      itr->second = generateUUID();
-    }
-    current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
   }
+
+  return back_finished;
 }
 
 bool StartPlannerModule::isStopped()
