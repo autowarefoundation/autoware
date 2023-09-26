@@ -122,12 +122,16 @@ class GroundSegmentationPipeline:
                 plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
                 name="concatenate_data",
                 namespace="plane_fitting",
-                remappings=[("output", "concatenated/pointcloud")],
+                remappings=[
+                    ("~/input/odom", "/localization/kinematic_state"),
+                    ("output", "concatenated/pointcloud"),
+                ],
                 parameters=[
                     {
                         "input_topics": self.ground_segmentation_param["ransac_input_topics"],
                         "output_frame": LaunchConfiguration("base_frame"),
                         "timeout_sec": 1.0,
+                        "input_twist_topic_type": "odom",
                     }
                 ],
                 extra_arguments=[
@@ -432,11 +436,15 @@ class GroundSegmentationPipeline:
             package="pointcloud_preprocessor",
             plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
             name="concatenate_data",
-            remappings=[("output", output_topic)],
+            remappings=[
+                ("~/input/odom", "/localization/kinematic_state"),
+                ("output", output_topic),
+            ],
             parameters=[
                 {
                     "input_topics": input_topics,
                     "output_frame": LaunchConfiguration("base_frame"),
+                    "input_twist_topic_type": "odom",
                 }
             ],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
@@ -448,11 +456,15 @@ class GroundSegmentationPipeline:
             package="pointcloud_preprocessor",
             plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
             name="concatenate_no_ground_data",
-            remappings=[("output", output_topic)],
+            remappings=[
+                ("~/input/odom", "/localization/kinematic_state"),
+                ("output", output_topic),
+            ],
             parameters=[
                 {
                     "input_topics": input_topics,
                     "output_frame": LaunchConfiguration("base_frame"),
+                    "input_twist_topic_type": "odom",
                 }
             ],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],

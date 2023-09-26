@@ -42,6 +42,7 @@ The figure below represents the reception time of each sensor data and how it is
 | `timeout_sec`                     | double           | 0.1           | tolerance of time to publish next pointcloud [s]<br>When this time limit is exceeded, the filter concatenates and publishes pointcloud, even if not all the point clouds are subscribed.                                                                   |
 | `input_offset`                    | vector of double | []            | This parameter can control waiting time for each input sensor pointcloud [s]. You must to set the same length of offsets with input pointclouds numbers. <br> For its tuning, please see [actual usage page](#how-to-tuning-timeout_sec-and-input_offset). |
 | `publish_synchronized_pointcloud` | bool             | false         | If true, publish the time synchronized pointclouds. All input pointclouds are transformed and then re-published as message named `<original_msg_name>_synchronized`.                                                                                       |
+| `input_twist_topic_type`          | std::string      | twist         | Topic type for twist. Currently support `twist` or `odom`.                                                                                                                                                                                                 |
 
 ## Actual Usage
 

@@ -38,13 +38,17 @@ def launch_setup(context, *args, **kwargs):
             package=pkg,
             plugin="pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent",
             name="sync_and_concatenate_filter",
-            remappings=[("output", "points_raw/concatenated")],
+            remappings=[
+                ("~/input/twist", "/sensing/vehicle_velocity_converter/twist_with_covariance"),
+                ("output", "points_raw/concatenated"),
+            ],
             parameters=[
                 {
                     "input_topics": LaunchConfiguration("input_points_raw_list"),
                     "output_frame": LaunchConfiguration("tf_output_frame"),
                     "approximate_sync": True,
                     "publish_synchronized_pointcloud": False,
+                    "input_twist_topic_type": "twist",
                 }
             ],
         )
