@@ -125,15 +125,8 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)
 {
   const auto rh = planner_data_->route_handler_;
-  if (!opt_use_regulatory_element_) {
-    opt_use_regulatory_element_ = checkRegulatoryElementExistence(rh->getLaneletMapPtr());
-    std::ostringstream string_stream;
-    string_stream << "use crosswalk regulatory element: ";
-    string_stream << std::boolalpha << *opt_use_regulatory_element_;
-    RCLCPP_INFO_STREAM(logger_, string_stream.str());
-  }
 
-  const auto launch = [this, &path](const auto id) {
+  const auto launch = [this, &path](const auto id, const auto & use_regulatory_element) {
     if (isModuleRegistered(id)) {
       return;
     }
@@ -143,26 +136,23 @@ void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)
     const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
 
     registerModule(std::make_shared<CrosswalkModule>(
-      node_, id, lanelet_map_ptr, p, *opt_use_regulatory_element_, logger, clock_));
+      node_, id, lanelet_map_ptr, p, use_regulatory_element, logger, clock_));
     generateUUID(id);
     updateRTCStatus(getUUID(id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
   };
 
-  if (*opt_use_regulatory_element_) {
-    const auto crosswalk_leg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
-      path, rh->getLaneletMapPtr(), planner_data_->current_odometry->pose);
+  const auto crosswalk_leg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
+    path, rh->getLaneletMapPtr(), planner_data_->current_odometry->pose);
 
-    for (const auto & crosswalk : crosswalk_leg_elem_map) {
-      launch(crosswalk.first->id());
-    }
-  } else {
-    const auto crosswalk_lanelets = getCrosswalksOnPath(
-      planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(),
-      rh->getOverallGraphPtr());
+  for (const auto & crosswalk : crosswalk_leg_elem_map) {
+    launch(crosswalk.first->id(), true);
+  }
 
-    for (const auto & crosswalk : crosswalk_lanelets) {
-      launch(crosswalk.id());
-    }
+  const auto crosswalk_lanelets = getCrosswalksOnPath(
+    planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
+
+  for (const auto & crosswalk : crosswalk_lanelets) {
+    launch(crosswalk.id(), false);
   }
 }
 
@@ -173,17 +163,14 @@ CrosswalkModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
 
   std::set<int64_t> crosswalk_id_set;
 
-  if (*opt_use_regulatory_element_) {
-    const auto crosswalk_leg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
-      path, rh->getLaneletMapPtr(), planner_data_->current_odometry->pose);
+  crosswalk_id_set = getCrosswalkIdSetOnPath(
+    planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
 
-    for (const auto & crosswalk : crosswalk_leg_elem_map) {
-      crosswalk_id_set.insert(crosswalk.first->id());
-    }
-  } else {
-    crosswalk_id_set = getCrosswalkIdSetOnPath(
-      planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(),
-      rh->getOverallGraphPtr());
+  const auto crosswalk_leg_elem_map = planning_utils::getRegElemMapOnPath<Crosswalk>(
+    path, rh->getLaneletMapPtr(), planner_data_->current_odometry->pose);
+
+  for (const auto & crosswalk : crosswalk_leg_elem_map) {
+    crosswalk_id_set.insert(crosswalk.first->id());
   }
 
   return [crosswalk_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {

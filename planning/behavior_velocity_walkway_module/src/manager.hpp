@@ -50,8 +50,6 @@ private:
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const PathWithLaneId & path) override;
-
-  std::optional<bool> opt_use_regulatory_element_{std::nullopt};
 };
 
 class WalkwayModulePlugin : public PluginWrapper<WalkwayModuleManager>

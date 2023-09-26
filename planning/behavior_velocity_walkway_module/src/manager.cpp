@@ -45,7 +45,7 @@ void WalkwayModuleManager::launchNewModules(const PathWithLaneId & path)
 {
   const auto rh = planner_data_->route_handler_;
 
-  const auto launch = [this, &path](const auto & lanelet, const auto use_regulatory_element) {
+  const auto launch = [this, &path](const auto & lanelet, const auto & use_regulatory_element) {
     const auto attribute =
       lanelet.attributeOr(lanelet::AttributeNamesString::Subtype, std::string(""));
     if (attribute != lanelet::AttributeValueString::Walkway) {
