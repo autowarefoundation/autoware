@@ -56,6 +56,7 @@ struct DynamicAvoidanceParameters
   bool avoid_bicycle{false};
   bool avoid_motorcycle{false};
   bool avoid_pedestrian{false};
+  double max_obstacle_vel{0.0};
   double min_obstacle_vel{0.0};
   int successive_num_to_entry_dynamic_avoidance_condition{0};
   int successive_num_to_exit_dynamic_avoidance_condition{0};

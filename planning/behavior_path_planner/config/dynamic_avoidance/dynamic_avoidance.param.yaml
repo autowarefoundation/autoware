@@ -16,6 +16,7 @@
         motorcycle: true
         pedestrian: false
 
+        max_obstacle_vel: 100.0 # [m/s]
         min_obstacle_vel: 0.0 # [m/s]
 
         successive_num_to_entry_dynamic_avoidance_condition: 5
