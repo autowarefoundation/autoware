@@ -12,6 +12,12 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/bounding_box.cpp
 )
 
+if(tf2_geometry_msgs_VERSION VERSION_LESS 0.25.4)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE
+    DEFINE_LEGACY_FUNCTION
+  )
+endif()
+
 if(BUILD_TESTING)
   set(GEOMETRY_GTEST geometry_gtest)
   set(GEOMETRY_SRC test/src/test_geometry.cpp

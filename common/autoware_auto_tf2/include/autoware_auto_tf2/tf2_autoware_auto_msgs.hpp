@@ -45,7 +45,7 @@ using BoundingBox = autoware_auto_perception_msgs::msg::BoundingBox;
 
 namespace tf2
 {
-
+#ifdef DEFINE_LEGACY_FUNCTION
 /*************/
 /** Point32 **/
 /*************/
@@ -94,6 +94,7 @@ inline void doTransform(
     t_out.points[i].z = static_cast<float>(v_out[2]);
   }
 }
+#endif
 
 /******************/
 /** Quaternion32 **/

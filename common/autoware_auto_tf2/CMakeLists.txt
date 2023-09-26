@@ -17,6 +17,11 @@ if(BUILD_TESTING)
     "tf2_geometry_msgs"
     "tf2_ros"
   )
+  if(tf2_geometry_msgs_VERSION VERSION_LESS 0.25.4)
+    target_compile_definitions(test_tf2_autoware_auto_msgs PRIVATE
+      DEFINE_LEGACY_FUNCTION
+    )
+  endif()
 endif()
 
 ament_auto_package()
