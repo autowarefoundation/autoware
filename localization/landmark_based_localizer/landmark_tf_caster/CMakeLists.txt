@@ -12,15 +12,9 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-find_package(OpenCV REQUIRED)
-
 ament_auto_add_executable(landmark_tf_caster
   src/landmark_tf_caster_node.cpp
   src/landmark_tf_caster_core.cpp
-)
-target_include_directories(landmark_tf_caster
-  SYSTEM PUBLIC
-  ${OpenCV_INCLUDE_DIRS}
 )
 
 ament_auto_package(
