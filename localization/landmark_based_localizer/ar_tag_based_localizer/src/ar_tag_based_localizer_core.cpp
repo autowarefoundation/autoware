@@ -129,6 +129,8 @@ bool ArTagBasedLocalizer::setup()
   image_pub_ = it_->advertise("~/debug/result", 1);
   pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "~/output/pose_with_covariance", qos_pub);
+  diag_pub_ =
+    this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", qos_pub);
 
   RCLCPP_INFO(this->get_logger(), "Setup of ar_tag_based_localizer node is successful!");
   return true;
@@ -199,6 +201,32 @@ void ArTagBasedLocalizer::image_callback(const sensor_msgs::msg::Image::ConstSha
     out_msg.image = in_image;
     image_pub_.publish(out_msg.toImageMsg());
   }
+
+  const int detected_tags = markers.size();
+
+  diagnostic_msgs::msg::DiagnosticStatus diag_status;
+
+  if (detected_tags > 0) {
+    diag_status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    diag_status.message = "AR tags detected. The number of tags: " + std::to_string(detected_tags);
+  } else {
+    diag_status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+    diag_status.message = "No AR tags detected.";
+  }
+
+  diag_status.name = "localization: " + std::string(this->get_name());
+  diag_status.hardware_id = this->get_name();
+
+  diagnostic_msgs::msg::KeyValue key_value;
+  key_value.key = "Number of Detected AR Tags";
+  key_value.value = std::to_string(detected_tags);
+  diag_status.values.push_back(key_value);
+
+  diagnostic_msgs::msg::DiagnosticArray diag_msg;
+  diag_msg.header.stamp = this->now();
+  diag_msg.status.push_back(diag_status);
+
+  diag_pub_->publish(diag_msg);
 }
 
 // wait for one camera info, then shut down that subscriber
