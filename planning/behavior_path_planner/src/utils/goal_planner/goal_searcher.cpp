@@ -38,6 +38,35 @@ using lanelet::autoware::NoStoppingArea;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::inverseTransformPose;
 
+// Sort with smaller longitudinal distances taking precedence over smaller lateral distances.
+struct SortByLongitudinalDistance
+{
+  bool operator()(const GoalCandidate & a, const GoalCandidate & b) const noexcept
+  {
+    const double diff = a.distance_from_original_goal - b.distance_from_original_goal;
+    constexpr double eps = 0.01;
+    // If the longitudinal distances are approximately equal, sort based on lateral offset.
+    if (std::abs(diff) < eps) {
+      return a.lateral_offset < b.lateral_offset;
+    }
+    return a.distance_from_original_goal < b.distance_from_original_goal;
+  }
+};
+
+// Sort with the weighted sum of the longitudinal distance and the lateral distance weighted by
+// lateral_cost.
+struct SortByWeightedDistance
+{
+  double lateral_cost{0.0};
+  explicit SortByWeightedDistance(double cost) : lateral_cost(cost) {}
+
+  bool operator()(const GoalCandidate & a, const GoalCandidate & b) const noexcept
+  {
+    return a.distance_from_original_goal + lateral_cost * a.lateral_offset <
+           b.distance_from_original_goal + lateral_cost * b.lateral_offset;
+  }
+};
+
 GoalSearcher::GoalSearcher(
   const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint,
   const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map)
@@ -141,8 +170,13 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   }
   createAreaPolygons(original_search_poses);
 
-  // Sort with distance from original goal
-  std::sort(goal_candidates.begin(), goal_candidates.end());
+  if (parameters_.goal_priority == "minimum_weighted_distance") {
+    std::sort(
+      goal_candidates.begin(), goal_candidates.end(),
+      SortByWeightedDistance(parameters_.minimum_weighted_distance_lateral_weight));
+  } else if (parameters_.goal_priority == "minimum_longitudinal_distance") {
+    std::sort(goal_candidates.begin(), goal_candidates.end(), SortByLongitudinalDistance());
+  }
 
   return goal_candidates;
 }

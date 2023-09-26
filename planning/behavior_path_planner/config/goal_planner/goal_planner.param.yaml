@@ -9,7 +9,10 @@
 
       # goal search
       goal_search:
-        search_priority: "efficient_path" # "efficient_path" or "close_goal"
+        goal_priority: "minimum_weighted_distance" # "minimum_weighted_distance" or "minimum_longitudinal_distance"
+        minimum_weighted_distance:
+          lateral_weight: 40.0
+        path_priority: "efficient_path" # "efficient_path" or "close_goal"
         parking_policy: "left_side" # "left_side" or "right_side"
         forward_goal_search_length: 20.0
         backward_goal_search_length: 20.0

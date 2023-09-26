@@ -45,7 +45,10 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   // goal search
   {
     const std::string ns = base_ns + "goal_search.";
-    p.search_priority = node->declare_parameter<std::string>(ns + "search_priority");
+    p.goal_priority = node->declare_parameter<std::string>(ns + "goal_priority");
+    p.minimum_weighted_distance_lateral_weight =
+      node->declare_parameter<double>(ns + "minimum_weighted_distance.lateral_weight");
+    p.path_priority = node->declare_parameter<std::string>(ns + "path_priority");
     p.forward_goal_search_length =
       node->declare_parameter<double>(ns + "forward_goal_search_length");
     p.backward_goal_search_length =

@@ -37,17 +37,6 @@ struct GoalCandidate
   double lateral_offset{0.0};
   size_t id{0};
   bool is_safe{true};
-
-  bool operator<(const GoalCandidate & other) const noexcept
-  {
-    const double diff = distance_from_original_goal - other.distance_from_original_goal;
-    constexpr double eps = 0.01;
-    if (std::abs(diff) < eps) {
-      return lateral_offset < other.lateral_offset;
-    }
-
-    return distance_from_original_goal < other.distance_from_original_goal;
-  }
 };
 using GoalCandidates = std::vector<GoalCandidate>;
 

@@ -183,13 +183,13 @@ void GoalPlannerModule::onTimer()
   };
 
   // plan candidate paths and set them to the member variable
-  if (parameters_->search_priority == "efficient_path") {
+  if (parameters_->path_priority == "efficient_path") {
     for (const auto & planner : pull_over_planners_) {
       for (const auto & goal_candidate : goal_candidates) {
         planCandidatePaths(planner, goal_candidate);
       }
     }
-  } else if (parameters_->search_priority == "close_goal") {
+  } else if (parameters_->path_priority == "close_goal") {
     for (const auto & goal_candidate : goal_candidates) {
       for (const auto & planner : pull_over_planners_) {
         planCandidatePaths(planner, goal_candidate);
@@ -197,9 +197,9 @@ void GoalPlannerModule::onTimer()
     }
   } else {
     RCLCPP_ERROR(
-      getLogger(), "search_priority should be efficient_path or close_goal, but %s is given.",
-      parameters_->search_priority.c_str());
-    throw std::domain_error("[pull_over] invalid search_priority");
+      getLogger(), "path_priority should be efficient_path or close_goal, but %s is given.",
+      parameters_->path_priority.c_str());
+    throw std::domain_error("[pull_over] invalid path_priority");
   }
 
   // set member variables
