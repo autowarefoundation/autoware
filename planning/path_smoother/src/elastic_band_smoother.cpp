@@ -270,12 +270,36 @@ void ElasticBandSmoother::applyInputVelocity(
   // insert stop point explicitly
   const auto stop_idx = motion_utils::searchZeroVelocityIndex(forward_cropped_input_traj_points);
   if (stop_idx) {
-    const auto input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.get()).pose;
-    const size_t stop_seg_idx = trajectory_utils::findEgoSegmentIndex(
-      output_traj_points, input_stop_pose, ego_nearest_param_);
+    const auto & input_stop_pose = forward_cropped_input_traj_points.at(stop_idx.get()).pose;
+    // NOTE: motion_utils::findNearestSegmentIndex is used instead of
+    // trajectory_utils::findEgoSegmentIndex
+    //       for the case where input_traj_points is much longer than output_traj_points, and the
+    //       former has a stop point but the latter will not have.
+    const auto stop_seg_idx = motion_utils::findNearestSegmentIndex(
+      output_traj_points, input_stop_pose, ego_nearest_param_.dist_threshold,
+      ego_nearest_param_.yaw_threshold);
 
     // calculate and insert stop pose on output trajectory
-    trajectory_utils::insertStopPoint(output_traj_points, input_stop_pose, stop_seg_idx);
+    const bool is_stop_point_inside_trajectory = [&]() {
+      if (!stop_seg_idx) {
+        return false;
+      }
+      if (*stop_seg_idx == output_traj_points.size() - 2) {
+        const double signed_projected_length_to_segment =
+          motion_utils::calcLongitudinalOffsetToSegment(
+            output_traj_points, *stop_seg_idx, input_stop_pose.position);
+        const double segment_length =
+          motion_utils::calcSignedArcLength(output_traj_points, *stop_seg_idx, *stop_seg_idx + 1);
+        if (segment_length < signed_projected_length_to_segment) {
+          // NOTE: input_stop_pose is outside output_traj_points.
+          return false;
+        }
+      }
+      return true;
+    }();
+    if (is_stop_point_inside_trajectory) {
+      trajectory_utils::insertStopPoint(output_traj_points, input_stop_pose, *stop_seg_idx);
+    }
   }
 
   time_keeper_ptr_->toc(__func__, "    ");
@@ -299,25 +323,25 @@ std::vector<TrajectoryPoint> ElasticBandSmoother::extendTrajectory(
   const auto joint_end_traj_point_idx = trajectory_utils::getPointIndexAfter(
     traj_points, joint_start_pose.position, joint_start_traj_seg_idx,
     joint_traj_max_length_for_smoothing, joint_traj_min_length_for_smoothing);
+  if (!joint_end_traj_point_idx) {
+    return trajectory_utils::resampleTrajectoryPoints(
+      optimized_traj_points, common_param_.output_delta_arc_length);
+  }
 
   // calculate full trajectory points
   const auto full_traj_points = [&]() {
-    if (!joint_end_traj_point_idx) {
-      return optimized_traj_points;
-    }
-
-    const auto extended_traj_points = std::vector<TrajectoryPoint>{
+    auto extended_traj_points = std::vector<TrajectoryPoint>{
       traj_points.begin() + *joint_end_traj_point_idx, traj_points.end()};
 
-    // NOTE: if optimized_traj_points's back is non zero velocity and extended_traj_points' front is
-    // zero velocity, the zero velocity will be inserted in the whole joint trajectory.
-    auto modified_optimized_traj_points = optimized_traj_points;
-    if (!extended_traj_points.empty() && !modified_optimized_traj_points.empty()) {
-      modified_optimized_traj_points.back().longitudinal_velocity_mps =
-        extended_traj_points.front().longitudinal_velocity_mps;
+    if (!extended_traj_points.empty() && !optimized_traj_points.empty()) {
+      // NOTE: Without this code, if optimized_traj_points's back is non zero velocity and
+      // extended_traj_points' front
+      //       is zero velocity, the zero velocity will be inserted in the whole joint trajectory.
+      //       The input stop point will be inserted explicitly in the latter part.
+      extended_traj_points.front().longitudinal_velocity_mps =
+        optimized_traj_points.back().longitudinal_velocity_mps;
     }
-
-    return concatVectors(modified_optimized_traj_points, extended_traj_points);
+    return concatVectors(optimized_traj_points, extended_traj_points);
   }();
 
   // resample trajectory points
@@ -325,7 +349,7 @@ std::vector<TrajectoryPoint> ElasticBandSmoother::extendTrajectory(
     full_traj_points, common_param_.output_delta_arc_length);
 
   // update stop velocity on joint
-  for (size_t i = joint_start_traj_seg_idx + 1; i <= joint_end_traj_point_idx; ++i) {
+  for (size_t i = joint_start_traj_seg_idx + 1; i <= *joint_end_traj_point_idx; ++i) {
     if (hasZeroVelocity(traj_points.at(i))) {
       if (i != 0 && !hasZeroVelocity(traj_points.at(i - 1))) {
         // Here is when current point is 0 velocity, but previous point is not 0 velocity.
