@@ -102,9 +102,9 @@ $ wget -P ~/autoware_data/traffic_light_ssd_fine_detector/ \
        https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
 ```
 
-After downloading you can check integrity of the files with ```sha256sum```:
+After downloading you can check integrity of the files with `sha256sum`:
 
 ```console
-$ cd ~/autoware_data/
-$ wget -q -O - https://raw.githubusercontent.com/autowarefoundation/autoware/main/ansible/roles/artifacts/SHA256SUMS | sha256sum -c
+cd ~/autoware_data/
+wget -q -O - https://raw.githubusercontent.com/autowarefoundation/autoware/main/ansible/roles/artifacts/SHA256SUMS | sha256sum -c
 ```
