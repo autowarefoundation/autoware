@@ -1,0 +1,10 @@
+nodes:
+  - name: /autoware/control
+    type: and
+    list:
+      - type: diag
+        name: "topic_state_monitor_trajectory_follower_control_cmd: control_topic_status"
+        hardware: topic_state_monitor
+      - type: diag
+        name: "topic_state_monitor_control_command_control_cmd: control_topic_status"
+        hardware: topic_state_monitor

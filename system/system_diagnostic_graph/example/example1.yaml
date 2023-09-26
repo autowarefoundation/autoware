@@ -1,0 +1,41 @@
+files:
+  - { package: system_diagnostic_graph, path: example/example2.yaml }
+
+nodes:
+  - name: /autoware/diagnostics
+    type: and
+    list:
+      - { type: unit, name: /autoware/operation/stop }
+      - { type: unit, name: /autoware/operation/autonomous }
+      - { type: unit, name: /autoware/operation/local }
+      - { type: unit, name: /autoware/operation/remote }
+      - { type: unit, name: /autoware/operation/emergency-stop }
+      - { type: unit, name: /autoware/operation/comfortable-stop }
+
+  - name: /autoware/operation/stop
+    type: debug-ok
+
+  - name: /autoware/operation/autonomous
+    type: and
+    list:
+      - { type: unit, name: /autoware/localization }
+      - { type: unit, name: /autoware/planning }
+      - { type: unit, name: /autoware/perception }
+
+  - name: /autoware/operation/local
+    type: debug-ok
+
+  - name: /autoware/operation/remote
+    type: and
+    list:
+      - { type: diag, hardware: test, name: /external/remote_command }
+
+  - name: /autoware/operation/emergency-stop
+    type: debug-ok
+
+  - name: /autoware/operation/comfortable-stop
+    type: and
+    list:
+      - { type: unit, name: /autoware/localization }
+      - { type: unit, name: /autoware/planning }
+      - { type: unit, name: /autoware/perception/front-obstacle-detection }

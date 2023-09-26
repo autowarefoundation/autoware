@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find-pkg-share system_diagnostic_graph)/launch/system_diagnostic_graph.launch.xml">
+    <arg name="graph_file" value="$(find-pkg-share system_diagnostic_monitor)/config/autoware.yaml"/>
+  </include>
+  <executable cmd="python3 $(find-pkg-share system_diagnostic_monitor)/script/component_state_diagnostics.py"/>
+</launch>

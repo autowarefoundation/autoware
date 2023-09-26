@@ -1,0 +1,32 @@
+nodes:
+  - name: /autoware/localization
+    type: and
+    list:
+      - { type: diag, hardware: test, name: /sensing/lidars/top }
+
+  - name: /autoware/planning
+    type: and
+    list:
+      - { type: unit, name: /autoware/planning/route }
+
+  - name: /autoware/planning/route
+    type: and
+    list:
+      - { type: diag, hardware: test, name: /planning/route }
+
+  - name: /autoware/perception
+    type: and
+    list:
+      - { type: unit, name: /autoware/perception/front-obstacle-detection }
+      - { type: unit, name: /autoware/perception/front-obstacle-prediction }
+
+  - name: /autoware/perception/front-obstacle-detection
+    type: or
+    list:
+      - { type: diag, hardware: test, name: /sensing/lidars/front }
+      - { type: diag, hardware: test, name: /sensing/radars/front }
+
+  - name: /autoware/perception/front-obstacle-prediction
+    type: and
+    list:
+      - { type: diag, hardware: test, name: /sensing/lidars/front }

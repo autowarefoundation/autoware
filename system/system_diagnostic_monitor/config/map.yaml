@@ -1,0 +1,7 @@
+nodes:
+  - name: /autoware/map
+    type: and
+    list:
+      - type: diag
+        name: "topic_state_monitor_vector_map: map_topic_status"
+        hardware: topic_state_monitor

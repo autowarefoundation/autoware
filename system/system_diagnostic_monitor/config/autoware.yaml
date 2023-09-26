@@ -1,0 +1,74 @@
+files:
+  - { package: system_diagnostic_monitor, path: config/map.yaml }
+  - { package: system_diagnostic_monitor, path: config/localization.yaml }
+  - { package: system_diagnostic_monitor, path: config/planning.yaml }
+  - { package: system_diagnostic_monitor, path: config/perception.yaml }
+  - { package: system_diagnostic_monitor, path: config/control.yaml }
+  - { package: system_diagnostic_monitor, path: config/vehicle.yaml }
+  - { package: system_diagnostic_monitor, path: config/system.yaml }
+
+nodes:
+  - name: /autoware
+    type: and
+    list:
+      - { type: unit, name: /autoware/operation/stop }
+      - { type: unit, name: /autoware/operation/autonomous }
+      - { type: unit, name: /autoware/operation/local }
+      - { type: unit, name: /autoware/operation/remote }
+      - { type: unit, name: /autoware/operation/emergency-stop }
+      - { type: unit, name: /autoware/operation/comfortable-stop }
+      - { type: unit, name: /autoware/operation/pull-over }
+
+  - name: /autoware/operation/stop
+    type: debug-ok
+
+  - name: /autoware/operation/autonomous
+    type: and
+    list:
+      - { type: unit, name: /autoware/map }
+      - { type: unit, name: /autoware/localization }
+      - { type: unit, name: /autoware/planning }
+      - { type: unit, name: /autoware/perception }
+      - { type: unit, name: /autoware/control }
+      - { type: unit, name: /autoware/vehicle }
+      - { type: unit, name: /autoware/system }
+
+  - name: /autoware/operation/local
+    type: and
+    list:
+      - { type: unit, name: /autoware/vehicle }
+      - { type: unit, name: /autoware/system }
+
+  - name: /autoware/operation/remote
+    type: and
+    list:
+      - { type: unit, name: /autoware/vehicle }
+      - { type: unit, name: /autoware/system }
+
+  - name: /autoware/operation/emergency-stop
+    type: and
+    list:
+      - { type: unit, name: /autoware/vehicle }
+      - { type: unit, name: /autoware/system }
+
+  - name: /autoware/operation/comfortable-stop
+    type: and
+    list:
+      - { type: unit, name: /autoware/map }
+      - { type: unit, name: /autoware/localization }
+      - { type: unit, name: /autoware/planning }
+      - { type: unit, name: /autoware/perception }
+      - { type: unit, name: /autoware/control }
+      - { type: unit, name: /autoware/vehicle }
+      - { type: unit, name: /autoware/system }
+
+  - name: /autoware/operation/pull-over
+    type: and
+    list:
+      - { type: unit, name: /autoware/map }
+      - { type: unit, name: /autoware/localization }
+      - { type: unit, name: /autoware/planning }
+      - { type: unit, name: /autoware/perception }
+      - { type: unit, name: /autoware/control }
+      - { type: unit, name: /autoware/vehicle }
+      - { type: unit, name: /autoware/system }

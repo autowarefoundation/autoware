@@ -1,0 +1,10 @@
+nodes:
+  - name: /autoware/vehicle
+    type: and
+    list:
+      - type: diag
+        name: "topic_state_monitor_vehicle_status_velocity_status: vehicle_topic_status"
+        hardware: topic_state_monitor
+      - type: diag
+        name: "topic_state_monitor_vehicle_status_steering_status: vehicle_topic_status"
+        hardware: topic_state_monitor
