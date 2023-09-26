@@ -3,3 +3,4 @@
     server: ntp.nict.jp
     offset_warn: 0.1
     offset_error: 5.0
+    timeout: 5  # The chronyc execution timeout will trigger a warning when this timer expires.

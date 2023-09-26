@@ -54,6 +54,16 @@ protected:
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
+   * @brief Timer callback to execute chronyc command
+   */
+  void onTimer();
+
+  /**
+   * @brief Timeout callback function for executing chronyc
+   */
+  void onTimeout();
+
+  /**
    * @brief function to execute chronyc
    * @param [out] outOffset offset value of NTP time
    * @param [out] out_tracking_map "chronyc tracking" output for diagnostic
@@ -71,6 +81,19 @@ protected:
 
   float offset_warn_;   //!< @brief NTP offset(sec) to generate warning
   float offset_error_;  //!< @brief NTP offset(sec) to generate error
+  int timeout_;         //!< @brief Timeout duration for executing chronyc
+
+  rclcpp::TimerBase::SharedPtr timer_;  //!< @brief Timer to execute chronyc command
+  rclcpp::CallbackGroup::SharedPtr timer_callback_group_;  //!< @brief Callback Group
+  std::mutex mutex_;           //!< @brief Mutex for output from chronyc command
+  std::string error_str_;      //!< @brief Error string
+  std::string pipe2_err_str_;  //!< @brief Error string regarding pipe2 function call
+  float offset_;               //!< @brief Offset value of NTP time
+  std::map<std::string, std::string> tracking_map_;  //!< @brief Output of chronyc tracking
+  double elapsed_ms_;                                //!< @brief Execution time of chronyc command
+  rclcpp::TimerBase::SharedPtr timeout_timer_;       //!< @brief Timeout for executing chronyc
+  std::mutex timeout_mutex_;  //!< @brief Mutex regarding timeout for executing chronyc
+  bool timeout_expired_;      //!< @brief Timeout for executing chronyc has expired or not
 
   /**
    * @brief NTP offset status messages
