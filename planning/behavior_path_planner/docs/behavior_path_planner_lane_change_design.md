@@ -190,6 +190,9 @@ The following figure illustrates when the lane is blocked in multiple lane chang
 
 If you want to regulate lane change on crosswalks or intersections, the lane change module finds a lane change path excluding it includes crosswalks or intersections.
 To regulate lane change on crosswalks or intersections, change `regulation.crosswalk` or `regulation.intersection` to `true`.
+If the ego vehicle gets stuck, to avoid stuck, it enables lane change in crosswalk/intersection.
+If the ego vehicle stops more than `stuck_detection.stop_time` seconds, it is regarded as a stuck.
+If the ego vehicle velocity is smaller than `stuck_detection.velocity`, it is regarded as stopping.
 
 ### Aborting lane change
 
@@ -305,6 +308,13 @@ The following parameters are configurable in `lane_change.param.yaml`.
 | :------------------------ | ---- | ------- | ------------------------------------- | ------------- |
 | `regulation.crosswalk`    | [-]  | boolean | Regulate lane change on crosswalks    | false         |
 | `regulation.intersection` | [-]  | boolean | Regulate lane change on intersections | false         |
+
+### Ego vehicle stuck detection
+
+| Name                        | Unit  | Type   | Description                                         | Default value |
+| :-------------------------- | ----- | ------ | --------------------------------------------------- | ------------- |
+| `stuck_detection.velocity`  | [m/s] | double | Velocity threshold for ego vehicle stuck detection  | 0.1           |
+| `stuck_detection.stop_time` | [s]   | double | Stop time threshold for ego vehicle stuck detection | 3.0           |
 
 ### Collision checks during lane change
 

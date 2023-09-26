@@ -83,6 +83,12 @@ LaneChangeModuleManager::LaneChangeModuleManager(
   p.regulate_on_intersection =
     getOrDeclareParameter<bool>(*node, parameter("regulation.intersection"));
 
+  // ego vehicle stuck detection
+  p.stop_velocity_threshold =
+    getOrDeclareParameter<double>(*node, parameter("stuck_detection.velocity"));
+  p.stop_time_threshold =
+    getOrDeclareParameter<double>(*node, parameter("stuck_detection.stop_time"));
+
   p.rss_params.longitudinal_distance_min_threshold = getOrDeclareParameter<double>(
     *node, parameter("safety_check.longitudinal_distance_min_threshold"));
   p.rss_params.longitudinal_velocity_delta_time = getOrDeclareParameter<double>(

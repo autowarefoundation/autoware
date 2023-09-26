@@ -155,7 +155,12 @@ protected:
 
   void setStopPose(const Pose & stop_pose);
 
+  void updateStopTime();
+
+  double getStopTime() const { return stop_time_; }
+
   rclcpp::Logger logger_ = rclcpp::get_logger("lane_change").get_child(getModuleTypeStr());
+  double stop_time_{0.0};
 };
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_

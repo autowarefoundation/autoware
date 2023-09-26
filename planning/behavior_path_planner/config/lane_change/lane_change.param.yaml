@@ -60,6 +60,11 @@
         crosswalk: false
         intersection: false
 
+      # ego vehicle stuck detection
+      stuck_detection:
+        velocity: 0.1 # [m/s]
+        stop_time: 3.0 # [s]
+
       # collision check
       enable_prepare_segment_collision_check: true
       prepare_segment_ignore_object_velocity_thresh: 0.1 # [m/s]

@@ -43,10 +43,12 @@ NormalLaneChange::NormalLaneChange(
 : LaneChangeBase(parameters, type, direction)
 {
   stop_watch_.tic(getModuleTypeStr());
+  stop_watch_.tic("stop_time");
 }
 
 void NormalLaneChange::updateLaneChangeStatus()
 {
+  updateStopTime();
   const auto [found_valid_path, found_safe_path] = getSafePath(status_.lane_change_path);
 
   // Update status
@@ -838,29 +840,6 @@ bool NormalLaneChange::hasEnoughLength(
     return false;
   }
 
-  if (lane_change_parameters_->regulate_on_crosswalk) {
-    const double dist_to_crosswalk_from_lane_change_start_pose =
-      utils::getDistanceToCrosswalk(current_pose, current_lanes, *overall_graphs_ptr) -
-      path.info.length.prepare;
-    // Check lane changing section includes crosswalk
-    if (
-      dist_to_crosswalk_from_lane_change_start_pose > 0.0 &&
-      dist_to_crosswalk_from_lane_change_start_pose < path.info.length.lane_changing) {
-      return false;
-    }
-  }
-
-  if (lane_change_parameters_->regulate_on_intersection) {
-    const double dist_to_intersection_from_lane_change_start_pose =
-      utils::getDistanceToNextIntersection(current_pose, current_lanes) - path.info.length.prepare;
-    // Check lane changing section includes intersection
-    if (
-      dist_to_intersection_from_lane_change_start_pose > 0.0 &&
-      dist_to_intersection_from_lane_change_start_pose < path.info.length.lane_changing) {
-      return false;
-    }
-  }
-
   return true;
 }
 
@@ -1113,14 +1092,22 @@ bool NormalLaneChange::getLaneChangePaths(
           lane_change_parameters_->regulate_on_crosswalk &&
           !hasEnoughLengthToCrosswalk(*candidate_path, current_lanes)) {
           RCLCPP_DEBUG(logger_, "Including crosswalk!!");
-          continue;
+          if (getStopTime() < lane_change_parameters_->stop_time_threshold) {
+            continue;
+          }
+          RCLCPP_WARN_STREAM(
+            logger_, "Stop time is over threshold. Allow lane change in crosswalk.");
         }
 
         if (
           lane_change_parameters_->regulate_on_intersection &&
           !hasEnoughLengthToIntersection(*candidate_path, current_lanes)) {
           RCLCPP_DEBUG(logger_, "Including intersection!!");
-          continue;
+          if (getStopTime() < lane_change_parameters_->stop_time_threshold) {
+            continue;
+          }
+          RCLCPP_WARN_STREAM(
+            logger_, "Stop time is over threshold. Allow lane change in intersection.");
         }
 
         if (utils::lane_change::passParkedObject(
@@ -1479,6 +1466,26 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
 void NormalLaneChange::setStopPose(const Pose & stop_pose)
 {
   lane_change_stop_pose_ = stop_pose;
+}
+
+void NormalLaneChange::updateStopTime()
+{
+  const auto current_vel = getEgoVelocity();
+
+  if (std::abs(current_vel) > lane_change_parameters_->stop_velocity_threshold) {
+    stop_time_ = 0.0;
+  } else {
+    const double duration = stop_watch_.toc("stop_time");
+    // clip stop time
+    if (stop_time_ + duration * 0.001 > lane_change_parameters_->stop_time_threshold) {
+      constexpr double eps = 0.1;
+      stop_time_ = lane_change_parameters_->stop_time_threshold + eps;
+    } else {
+      stop_time_ += duration * 0.001;
+    }
+  }
+
+  stop_watch_.tic("stop_time");
 }
 
 }  // namespace behavior_path_planner
