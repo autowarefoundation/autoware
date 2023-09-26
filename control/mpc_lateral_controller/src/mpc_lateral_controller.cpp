@@ -36,7 +36,7 @@ namespace autoware::motion::control::mpc_lateral_controller
 {
 
 MpcLateralController::MpcLateralController(rclcpp::Node & node)
-: clock_(node.get_clock()), logger_(node.get_logger())
+: clock_(node.get_clock()), logger_(node.get_logger().get_child("lateral_controller"))
 {
   const auto dp_int = [&](const std::string & s) { return node.declare_parameter<int>(s); };
   const auto dp_bool = [&](const std::string & s) { return node.declare_parameter<bool>(s); };
