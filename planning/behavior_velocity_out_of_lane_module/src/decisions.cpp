@@ -78,17 +78,18 @@ std::optional<std::pair<double, double>> object_time_to_range(
   auto worst_exit_time = std::optional<double>();
 
   for (const auto & predicted_path : object.kinematics.predicted_paths) {
+    const auto unique_path_points = motion_utils::removeOverlapPoints(predicted_path.path);
     const auto time_step = rclcpp::Duration(predicted_path.time_step).seconds();
     const auto enter_point =
       geometry_msgs::msg::Point().set__x(range.entering_point.x()).set__y(range.entering_point.y());
     const auto enter_segment_idx =
-      motion_utils::findNearestSegmentIndex(predicted_path.path, enter_point);
+      motion_utils::findNearestSegmentIndex(unique_path_points, enter_point);
     const auto enter_offset = motion_utils::calcLongitudinalOffsetToSegment(
-      predicted_path.path, enter_segment_idx, enter_point);
-    const auto enter_lat_dist = std::abs(
-      motion_utils::calcLateralOffset(predicted_path.path, enter_point, enter_segment_idx));
+      unique_path_points, enter_segment_idx, enter_point);
+    const auto enter_lat_dist =
+      std::abs(motion_utils::calcLateralOffset(unique_path_points, enter_point, enter_segment_idx));
     const auto enter_segment_length = tier4_autoware_utils::calcDistance2d(
-      predicted_path.path[enter_segment_idx], predicted_path.path[enter_segment_idx + 1]);
+      unique_path_points[enter_segment_idx], unique_path_points[enter_segment_idx + 1]);
     const auto enter_offset_ratio = enter_offset / enter_segment_length;
     const auto enter_time =
       static_cast<double>(enter_segment_idx) * time_step + enter_offset_ratio * time_step;
@@ -96,13 +97,13 @@ std::optional<std::pair<double, double>> object_time_to_range(
     const auto exit_point =
       geometry_msgs::msg::Point().set__x(range.exiting_point.x()).set__y(range.exiting_point.y());
     const auto exit_segment_idx =
-      motion_utils::findNearestSegmentIndex(predicted_path.path, exit_point);
+      motion_utils::findNearestSegmentIndex(unique_path_points, exit_point);
     const auto exit_offset = motion_utils::calcLongitudinalOffsetToSegment(
-      predicted_path.path, exit_segment_idx, exit_point);
+      unique_path_points, exit_segment_idx, exit_point);
     const auto exit_lat_dist =
-      std::abs(motion_utils::calcLateralOffset(predicted_path.path, exit_point, exit_segment_idx));
+      std::abs(motion_utils::calcLateralOffset(unique_path_points, exit_point, exit_segment_idx));
     const auto exit_segment_length = tier4_autoware_utils::calcDistance2d(
-      predicted_path.path[exit_segment_idx], predicted_path.path[exit_segment_idx + 1]);
+      unique_path_points[exit_segment_idx], unique_path_points[exit_segment_idx + 1]);
     const auto exit_offset_ratio = exit_offset / static_cast<double>(exit_segment_length);
     const auto exit_time =
       static_cast<double>(exit_segment_idx) * time_step + exit_offset_ratio * time_step;
