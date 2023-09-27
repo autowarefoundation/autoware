@@ -45,57 +45,6 @@ using BoundingBox = autoware_auto_perception_msgs::msg::BoundingBox;
 
 namespace tf2
 {
-#ifdef DEFINE_LEGACY_FUNCTION
-/*************/
-/** Point32 **/
-/*************/
-
-/** \brief Apply a geometry_msgs TransformStamped to a geometry_msgs Point32 type.
- * This function is a specialization of the doTransform template defined in tf2/convert.h.
- * \param t_in The point to transform, as a Point32 message.
- * \param t_out The transformed point, as a Point32 message.
- * \param transform The timestamped transform to apply, as a TransformStamped message.
- */
-template <>
-inline void doTransform(
-  const geometry_msgs::msg::Point32 & t_in, geometry_msgs::msg::Point32 & t_out,
-  const geometry_msgs::msg::TransformStamped & transform)
-{
-  const KDL::Vector v_out = gmTransformToKDL(transform) * KDL::Vector(t_in.x, t_in.y, t_in.z);
-  t_out.x = static_cast<float>(v_out[0]);
-  t_out.y = static_cast<float>(v_out[1]);
-  t_out.z = static_cast<float>(v_out[2]);
-}
-
-/*************/
-/** Polygon **/
-/*************/
-
-/** \brief Apply a geometry_msgs TransformStamped to a geometry_msgs Polygon type.
- * This function is a specialization of the doTransform template defined in tf2/convert.h.
- * \param t_in The polygon to transform.
- * \param t_out The transformed polygon.
- * \param transform The timestamped transform to apply, as a TransformStamped message.
- */
-template <>
-inline void doTransform(
-  const geometry_msgs::msg::Polygon & t_in, geometry_msgs::msg::Polygon & t_out,
-  const geometry_msgs::msg::TransformStamped & transform)
-{
-  // Don't call the Point32 doTransform to avoid doing this conversion every time
-  const auto kdl_frame = gmTransformToKDL(transform);
-  // We don't use std::back_inserter to allow aliasing between t_in and t_out
-  t_out.points.resize(t_in.points.size());
-  for (size_t i = 0; i < t_in.points.size(); ++i) {
-    const KDL::Vector v_out =
-      kdl_frame * KDL::Vector(t_in.points[i].x, t_in.points[i].y, t_in.points[i].z);
-    t_out.points[i].x = static_cast<float>(v_out[0]);
-    t_out.points[i].y = static_cast<float>(v_out[1]);
-    t_out.points[i].z = static_cast<float>(v_out[2]);
-  }
-}
-#endif
-
 /******************/
 /** Quaternion32 **/
 /******************/

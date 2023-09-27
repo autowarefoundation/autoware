@@ -18,12 +18,6 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/node.cpp
 )
 
-if(tf2_geometry_msgs_VERSION VERSION_LESS 0.25.4)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE
-    DEFINE_LEGACY_FUNCTION
-  )
-endif()
-
 target_link_libraries(${PROJECT_NAME}
   ${PCL_LIBRARIES}
 )
