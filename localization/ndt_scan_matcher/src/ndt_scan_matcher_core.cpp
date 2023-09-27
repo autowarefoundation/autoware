@@ -144,9 +144,6 @@ NDTScanMatcher::NDTScanMatcher()
   critical_upper_bound_exe_time_ms_ =
     this->declare_parameter("critical_upper_bound_exe_time_ms", critical_upper_bound_exe_time_ms_);
 
-  initial_pose_timeout_sec_ =
-    this->declare_parameter("initial_pose_timeout_sec", initial_pose_timeout_sec_);
-
   initial_pose_timeout_sec_ = this->declare_parameter<double>("initial_pose_timeout_sec");
 
   initial_pose_distance_tolerance_m_ =
