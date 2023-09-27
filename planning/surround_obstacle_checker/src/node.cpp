@@ -188,6 +188,8 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
     p.state_clear_time = this->declare_parameter<double>("state_clear_time");
     p.publish_debug_footprints = this->declare_parameter<bool>("publish_debug_footprints");
     p.debug_footprint_label = this->declare_parameter<std::string>("debug_footprint_label");
+
+    logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
   }
 
   vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();

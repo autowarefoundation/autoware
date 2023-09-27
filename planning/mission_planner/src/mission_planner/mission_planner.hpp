@@ -16,6 +16,7 @@
 #define MISSION_PLANNER__MISSION_PLANNER_HPP_
 
 #include "arrival_checker.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <component_interface_specs/planning.hpp>
 #include <component_interface_utils/rclcpp.hpp>
@@ -147,6 +148,8 @@ private:
 
   std::shared_ptr<LaneletRoute> normal_route_{nullptr};
   std::shared_ptr<LaneletRoute> mrm_route_{nullptr};
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 
 }  // namespace mission_planner

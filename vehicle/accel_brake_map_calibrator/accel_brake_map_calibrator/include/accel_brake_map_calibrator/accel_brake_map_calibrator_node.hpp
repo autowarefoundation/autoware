@@ -22,6 +22,7 @@
 #include "raw_vehicle_cmd_converter/brake_map.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
 #include <Eigen/Dense>
@@ -368,6 +369,8 @@ private:
     STATUS = 0,
     COMMAND = 1,
   };
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 
 public:
   explicit AccelBrakeMapCalibrator(const rclcpp::NodeOptions & node_options);

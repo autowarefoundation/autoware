@@ -95,6 +95,8 @@ ElasticBandSmoother::ElasticBandSmoother(const rclcpp::NodeOptions & node_option
   // set parameter callback
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&ElasticBandSmoother::onParam, this, std::placeholders::_1));
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 rcl_interfaces::msg::SetParametersResult ElasticBandSmoother::onParam(

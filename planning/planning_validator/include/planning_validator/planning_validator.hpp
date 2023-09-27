@@ -17,6 +17,7 @@
 
 #include "planning_validator/debug_marker.hpp"
 #include "planning_validator/msg/planning_validator_status.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -117,6 +118,8 @@ private:
   Odometry::ConstSharedPtr current_kinematics_;
 
   std::shared_ptr<PlanningValidatorDebugMarkerPublisher> debug_pose_publisher_;
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace planning_validator
 

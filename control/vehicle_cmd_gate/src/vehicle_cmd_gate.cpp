@@ -233,6 +233,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&VehicleCmdGate::onTimer, this));
   timer_pub_status_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&VehicleCmdGate::publishStatus, this));
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 bool VehicleCmdGate::isHeartbeatTimeout(

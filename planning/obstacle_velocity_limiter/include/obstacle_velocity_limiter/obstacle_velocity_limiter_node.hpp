@@ -18,6 +18,7 @@
 #include "obstacle_velocity_limiter/obstacles.hpp"
 #include "obstacle_velocity_limiter/parameters.hpp"
 #include "obstacle_velocity_limiter/types.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
@@ -101,6 +102,8 @@ private:
   /// @brief validate the inputs of the node
   /// @return true if the inputs are valid
   bool validInputs();
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace obstacle_velocity_limiter
 

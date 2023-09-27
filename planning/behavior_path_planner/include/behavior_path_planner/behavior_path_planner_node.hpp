@@ -25,6 +25,7 @@
 #include "behavior_path_planner/scene_module/side_shift/manager.hpp"
 #include "behavior_path_planner/scene_module/start_planner/manager.hpp"
 #include "behavior_path_planner/steering_factor_interface.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
 #include <autoware_adapi_v1_msgs/msg/operation_mode_state.hpp>
@@ -221,6 +222,8 @@ private:
   Path convertToPath(
     const std::shared_ptr<PathWithLaneId> & path_candidate_ptr, const bool is_ready,
     const std::shared_ptr<PlannerData> & planner_data);
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace behavior_path_planner
 

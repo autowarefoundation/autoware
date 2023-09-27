@@ -19,6 +19,7 @@
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "trajectory_follower_base/lateral_controller_base.hpp"
 #include "trajectory_follower_base/longitudinal_controller_base.hpp"
 #include "trajectory_follower_node/visibility_control.hpp"
@@ -111,6 +112,8 @@ private:
   void publishDebugMarker(
     const trajectory_follower::InputData & input_data,
     const trajectory_follower::LateralOutput & lat_out) const;
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace trajectory_follower_node
 }  // namespace autoware::motion::control

@@ -258,6 +258,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     timer_ = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&BehaviorPathPlannerNode::run, this));
   }
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 std::vector<std::string> BehaviorPathPlannerNode::getWaitingApprovalModules()

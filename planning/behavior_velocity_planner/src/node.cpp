@@ -151,6 +151,8 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
     planner_manager_.launchScenePlugin(*this, name);
   }
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void BehaviorVelocityPlannerNode::onLoadPlugin(

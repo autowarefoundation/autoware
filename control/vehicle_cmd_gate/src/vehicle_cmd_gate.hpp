@@ -17,6 +17,7 @@
 
 #include "adapi_pause_interface.hpp"
 #include "moderate_stop_interface.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "vehicle_cmd_filter.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -235,6 +236,8 @@ private:
 
   // debug
   MarkerArray createMarkerArray(const IsFilterActivated & filter_activated);
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 
 }  // namespace vehicle_cmd_gate

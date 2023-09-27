@@ -438,6 +438,8 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   // set parameter callback
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&ObstacleCruisePlannerNode::onParam, this, std::placeholders::_1));
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 ObstacleCruisePlannerNode::PlanningAlgorithm ObstacleCruisePlannerNode::getPlanningAlgorithmType(

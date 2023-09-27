@@ -16,6 +16,7 @@
 #define SURROUND_OBSTACLE_CHECKER__NODE_HPP_
 
 #include "surround_obstacle_checker/debug_marker.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <motion_utils/vehicle/vehicle_state_checker.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -138,6 +139,8 @@ private:
   // State Machine
   State state_ = State::PASS;
   std::shared_ptr<const rclcpp::Time> last_obstacle_found_time_;
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace surround_obstacle_checker
 

@@ -285,6 +285,8 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
     timer_ = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&FreespacePlannerNode::onTimer, this));
   }
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 PlannerCommonParam FreespacePlannerNode::getPlannerCommonParam()

@@ -20,6 +20,7 @@
 #include "obstacle_cruise_planner/pid_based_planner/pid_based_planner.hpp"
 #include "obstacle_cruise_planner/type_alias.hpp"
 #include "signal_processing/lowpass_filter_1d.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -259,6 +260,8 @@ private:
 
   // previous closest obstacle
   std::shared_ptr<StopObstacle> prev_closest_stop_obstacle_ptr_{nullptr};
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace motion_planning
 

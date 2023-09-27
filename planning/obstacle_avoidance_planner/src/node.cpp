@@ -140,6 +140,8 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
   // initialized.
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&ObstacleAvoidancePlanner::onParam, this, std::placeholders::_1));
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::onParam(

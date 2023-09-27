@@ -30,6 +30,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
@@ -263,6 +264,8 @@ private:
   bool isReverse(const TrajectoryPoints & points) const;
   void flipVelocity(TrajectoryPoints & points) const;
   void publishStopWatchTime();
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace motion_velocity_smoother
 

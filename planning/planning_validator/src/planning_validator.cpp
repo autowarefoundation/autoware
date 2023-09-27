@@ -49,6 +49,8 @@ PlanningValidator::PlanningValidator(const rclcpp::NodeOptions & options)
   if (publish_diag_) {
     setupDiag();
   }
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void PlanningValidator::setupParameters()

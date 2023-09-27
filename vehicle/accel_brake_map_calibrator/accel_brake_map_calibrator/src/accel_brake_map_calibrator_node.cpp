@@ -232,6 +232,8 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
   // timer
   initTimer(1.0 / update_hz_);
   initOutputCSVTimer(30.0);
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void AccelBrakeMapCalibrator::initOutputCSVTimer(double period_s)

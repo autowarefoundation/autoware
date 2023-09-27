@@ -31,6 +31,8 @@
 #ifndef FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
 #define FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
 
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+
 #include <freespace_planning_algorithms/astar_search.hpp>
 #include <freespace_planning_algorithms/rrtstar.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -158,6 +160,8 @@ private:
   void initializePlanningAlgorithm();
 
   TransformStamped getTransform(const std::string & from, const std::string & to);
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace freespace_planner
 

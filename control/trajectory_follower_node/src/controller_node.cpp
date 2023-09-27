@@ -85,6 +85,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     timer_control_ = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&Controller::callbackTimerControl, this));
   }
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 Controller::LateralControllerMode Controller::getLateralControllerMode(

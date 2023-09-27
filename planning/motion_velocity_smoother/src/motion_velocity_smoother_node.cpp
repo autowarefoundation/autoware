@@ -99,6 +99,8 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   pub_velocity_limit_->publish(max_vel_msg);
 
   clock_ = get_clock();
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void MotionVelocitySmootherNode::setupSmoother(const double wheelbase)

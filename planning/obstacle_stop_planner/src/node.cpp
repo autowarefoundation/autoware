@@ -242,6 +242,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     "~/input/expand_stop_range", 1,
     std::bind(&ObstacleStopPlannerNode::onExpandStopRange, this, std::placeholders::_1),
     createSubscriptionOptions(this));
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void ObstacleStopPlannerNode::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)

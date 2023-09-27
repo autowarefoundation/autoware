@@ -19,6 +19,7 @@
 #include "raw_vehicle_cmd_converter/brake_map.hpp"
 #include "raw_vehicle_cmd_converter/pid.hpp"
 #include "raw_vehicle_cmd_converter/steer_map.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -115,6 +116,8 @@ public:
   // for debugging
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_pub_steer_pid_;
   DebugValues debug_steer_;
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace raw_vehicle_cmd_converter
 

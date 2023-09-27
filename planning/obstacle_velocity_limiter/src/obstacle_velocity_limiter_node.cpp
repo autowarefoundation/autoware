@@ -79,6 +79,8 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
 
   set_param_res_ =
     add_on_set_parameters_callback([this](const auto & params) { return onParameter(params); });
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 rcl_interfaces::msg::SetParametersResult ObstacleVelocityLimiterNode::onParameter(

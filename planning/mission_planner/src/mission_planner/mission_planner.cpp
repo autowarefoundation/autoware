@@ -126,6 +126,8 @@ MissionPlanner::MissionPlanner(const rclcpp::NodeOptions & options)
   // otherwise the mission planner rejects the request for the API.
   data_check_timer_ = create_wall_timer(
     std::chrono::milliseconds(100), std::bind(&MissionPlanner::checkInitialization, this));
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void MissionPlanner::checkInitialization()

@@ -18,6 +18,7 @@
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/planner_data.hpp"
+#include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
 #include <motion_utils/trajectory/tmp_conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -274,6 +275,8 @@ private:
 
     return ret;
   }
+
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 }  // namespace motion_planning
 
