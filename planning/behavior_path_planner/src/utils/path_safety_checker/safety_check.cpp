@@ -258,6 +258,20 @@ boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVeloci
 }
 
 bool checkCollision(
+  const PathWithLaneId & planned_path,
+  const std::vector<PoseWithVelocityStamped> & predicted_ego_path,
+  const ExtendedPredictedObject & target_object,
+  const PredictedPathWithPolygon & target_object_path,
+  const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
+  const double hysteresis_factor, CollisionCheckDebug & debug)
+{
+  const auto collided_polygons = getCollidedPolygons(
+    planned_path, predicted_ego_path, target_object, target_object_path, common_parameters,
+    rss_parameters, hysteresis_factor, debug);
+  return collided_polygons.empty();
+}
+
+std::vector<Polygon2d> getCollidedPolygons(
   [[maybe_unused]] const PathWithLaneId & planned_path,
   const std::vector<PoseWithVelocityStamped> & predicted_ego_path,
   const ExtendedPredictedObject & target_object,
@@ -271,6 +285,8 @@ bool checkCollision(
     debug.current_obj_pose = target_object.initial_pose.pose;
   }
 
+  std::vector<Polygon2d> collided_polygons{};
+  collided_polygons.reserve(target_object_path.path.size());
   for (const auto & obj_pose_with_poly : target_object_path.path) {
     const auto & current_time = obj_pose_with_poly.time;
 
@@ -302,7 +318,8 @@ bool checkCollision(
     // check overlap
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {
       debug.unsafe_reason = "overlap_polygon";
-      return false;
+      collided_polygons.push_back(obj_polygon);
+      continue;
     }
 
     // compute which one is at the front of the other
@@ -341,13 +358,12 @@ bool checkCollision(
     // check overlap with extended polygon
     if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
       debug.unsafe_reason = "overlap_extended_polygon";
-      return false;
+      collided_polygons.push_back(obj_polygon);
     }
   }
 
-  return true;
+  return collided_polygons;
 }
-
 bool checkCollisionWithExtraStoppingMargin(
   const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects,
   const double base_to_front, const double base_to_rear, const double width,

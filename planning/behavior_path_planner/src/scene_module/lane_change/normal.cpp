@@ -1454,18 +1454,31 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       obj, lane_change_parameters_->use_all_predicted_path);
     for (const auto & obj_path : obj_predicted_paths) {
-      if (!utils::path_safety_checker::checkCollision(
-            path, ego_predicted_path, obj, obj_path, common_parameters, rss_params, 1.0,
-            current_debug_data.second)) {
-        path_safety_status.is_safe = false;
-        marker_utils::updateCollisionCheckDebugMap(
-          debug_data, current_debug_data, path_safety_status.is_safe);
-        const auto & obj_pose = obj.initial_pose.pose;
-        const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
-        path_safety_status.is_object_coming_from_rear |=
-          !utils::path_safety_checker::isTargetObjectFront(
-            path, current_pose, common_parameters.vehicle_info, obj_polygon);
+      const auto collided_polygons = utils::path_safety_checker::getCollidedPolygons(
+        path, ego_predicted_path, obj, obj_path, common_parameters, rss_params, 1.0,
+        current_debug_data.second);
+
+      if (collided_polygons.empty()) {
+        continue;
       }
+
+      const auto collision_in_current_lanes = utils::lane_change::isCollidedPolygonsInLanelet(
+        collided_polygons, lane_change_path.info.current_lanes);
+      const auto collision_in_target_lanes = utils::lane_change::isCollidedPolygonsInLanelet(
+        collided_polygons, lane_change_path.info.target_lanes);
+
+      if (!collision_in_current_lanes && !collision_in_target_lanes) {
+        continue;
+      }
+
+      path_safety_status.is_safe = false;
+      marker_utils::updateCollisionCheckDebugMap(
+        debug_data, current_debug_data, path_safety_status.is_safe);
+      const auto & obj_pose = obj.initial_pose.pose;
+      const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
+      path_safety_status.is_object_coming_from_rear |=
+        !utils::path_safety_checker::isTargetObjectFront(
+          path, current_pose, common_parameters.vehicle_info, obj_polygon);
     }
     marker_utils::updateCollisionCheckDebugMap(
       debug_data, current_debug_data, path_safety_status.is_safe);

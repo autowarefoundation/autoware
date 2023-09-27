@@ -1092,4 +1092,16 @@ ExtendedPredictedObject transform(
 
   return extended_object;
 }
+
+bool isCollidedPolygonsInLanelet(
+  const std::vector<Polygon2d> & collided_polygons, const lanelet::ConstLanelets & lanes)
+{
+  const auto lanes_polygon = createPolygon(lanes, 0.0, std::numeric_limits<double>::max());
+
+  const auto is_in_lanes = [&](const auto & collided_polygon) {
+    return lanes_polygon && boost::geometry::intersects(lanes_polygon.value(), collided_polygon);
+  };
+
+  return std::any_of(collided_polygons.begin(), collided_polygons.end(), is_in_lanes);
+}
 }  // namespace behavior_path_planner::utils::lane_change

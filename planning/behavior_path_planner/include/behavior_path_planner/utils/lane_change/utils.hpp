@@ -183,5 +183,8 @@ std::optional<lanelet::BasicPolygon2d> createPolygon(
 ExtendedPredictedObject transform(
   const PredictedObject & object, const BehaviorPathPlannerParameters & common_parameters,
   const LaneChangeParameters & lane_change_parameters);
+
+bool isCollidedPolygonsInLanelet(
+  const std::vector<Polygon2d> & collided_polygons, const lanelet::ConstLanelets & lanes);
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_
