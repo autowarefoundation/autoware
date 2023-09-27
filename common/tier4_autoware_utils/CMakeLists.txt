@@ -14,6 +14,7 @@ ament_auto_add_library(tier4_autoware_utils SHARED
   src/math/trigonometry.cpp
   src/ros/msg_operation.cpp
   src/ros/marker_helper.cpp
+  src/ros/logger_level_configure.cpp
   src/system/backtrace.cpp
 )
 
