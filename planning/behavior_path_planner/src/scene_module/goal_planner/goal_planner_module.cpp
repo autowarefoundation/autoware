@@ -459,6 +459,7 @@ ModuleStatus GoalPlannerModule::updateState()
 bool GoalPlannerModule::planFreespacePath()
 {
   mutex_.lock();
+  goal_searcher_->setPlannerData(planner_data_);
   goal_searcher_->update(goal_candidates_);
   const auto goal_candidates = goal_candidates_;
   debug_data_.freespace_planner.num_goal_candidates = goal_candidates.size();
