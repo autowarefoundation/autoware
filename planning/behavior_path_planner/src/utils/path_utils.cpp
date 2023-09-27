@@ -561,4 +561,25 @@ PathWithLaneId calcCenterLinePath(
 
   return centerline_path;
 }
+
+PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & path2)
+{
+  if (path1.points.empty()) {
+    return path2;
+  }
+  if (path2.points.empty()) {
+    return path1;
+  }
+
+  PathWithLaneId path{};
+  path.points.insert(path.points.end(), path1.points.begin(), path1.points.end());
+
+  // skip overlapping point
+  path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
+
+  PathWithLaneId filtered_path = path;
+  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
+  return filtered_path;
+}
+
 }  // namespace behavior_path_planner::utils

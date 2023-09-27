@@ -38,19 +38,6 @@
 
 namespace behavior_path_planner::start_planner_utils
 {
-PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2)
-{
-  PathWithLaneId path;
-  path.points.insert(path.points.end(), path1.points.begin(), path1.points.end());
-
-  // skip overlapping point
-  path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
-
-  PathWithLaneId filtered_path = path;
-  filtered_path.points = motion_utils::removeOverlapPoints(filtered_path.points);
-  return filtered_path;
-}
-
 PathWithLaneId getBackwardPath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & shoulder_lanes,
   const Pose & current_pose, const Pose & backed_pose, const double velocity)

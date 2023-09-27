@@ -32,7 +32,6 @@ using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
 namespace behavior_path_planner
 {
-using start_planner_utils::combineReferencePath;
 using start_planner_utils::getPullOutLanes;
 
 ShiftPullOut::ShiftPullOut(

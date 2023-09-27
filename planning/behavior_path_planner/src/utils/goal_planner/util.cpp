@@ -44,16 +44,6 @@ namespace behavior_path_planner
 {
 namespace goal_planner_utils
 {
-PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2)
-{
-  PathWithLaneId path;
-  path.points.insert(path.points.end(), path1.points.begin(), path1.points.end());
-
-  // skip overlapping point
-  path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
-
-  return path;
-}
 
 lanelet::ConstLanelets getPullOverLanes(
   const RouteHandler & route_handler, const bool left_side, const double backward_distance,

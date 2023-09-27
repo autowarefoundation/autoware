@@ -102,6 +102,8 @@ PathWithLaneId calcCenterLinePath(
   const std::shared_ptr<const PlannerData> & planner_data, const Pose & ref_pose,
   const double longest_dist_to_shift_line,
   const std::optional<PathWithLaneId> & prev_module_path = std::nullopt);
+
+PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_UTILS_HPP_

@@ -125,7 +125,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 
   const auto found_extended_path = extendPath();
   if (found_extended_path) {
-    *output.path = utils::lane_change::combineReferencePath(*output.path, *found_extended_path);
+    *output.path = utils::combinePath(*output.path, *found_extended_path);
   }
   extendOutputDrivableArea(output);
   output.reference_path = std::make_shared<PathWithLaneId>(getReferencePath());

@@ -180,17 +180,6 @@ std::vector<double> getAccelerationValues(
   return sampled_values;
 }
 
-PathWithLaneId combineReferencePath(const PathWithLaneId & path1, const PathWithLaneId & path2)
-{
-  PathWithLaneId path;
-  path.points.insert(path.points.end(), path1.points.begin(), path1.points.end());
-
-  // skip overlapping point
-  path.points.insert(path.points.end(), next(path2.points.begin()), path2.points.end());
-
-  return path;
-}
-
 lanelet::ConstLanelets getTargetPreferredLanes(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes, const Direction & direction,
@@ -355,7 +344,7 @@ std::optional<LaneChangePath> constructCandidatePath(
     return std::nullopt;
   }
 
-  candidate_path.path = combineReferencePath(prepare_segment, shifted_path.path);
+  candidate_path.path = utils::combinePath(prepare_segment, shifted_path.path);
   candidate_path.shifted_path = shifted_path;
 
   return std::optional<LaneChangePath>{candidate_path};

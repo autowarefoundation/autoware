@@ -44,7 +44,6 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using route_handler::RouteHandler;
 
-PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2);
 PathWithLaneId getBackwardPath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & target_lanes,
   const Pose & current_pose, const Pose & backed_pose, const double velocity);
