@@ -217,6 +217,10 @@ void GoalPlannerModule::onFreespaceParkingTimer()
   if (!planner_data_->costmap) {
     return;
   }
+  // fixed goal planner do not use freespace planner
+  if (!goal_planner_utils::isAllowedGoalModification(planner_data_->route_handler)) {
+    return;
+  }
 
   const bool is_new_costmap =
     (clock_->now() - planner_data_->costmap->header.stamp).seconds() < 1.0;
