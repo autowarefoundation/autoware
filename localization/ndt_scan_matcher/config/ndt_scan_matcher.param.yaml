@@ -85,3 +85,6 @@
 
     # If lidar_point.z - base_link.z <= this threshold , the point will be removed
     z_margin_for_ground_removal: 0.8
+
+    # The execution time which means probably NDT cannot matches scans properly
+    critical_upper_bound_exe_time_ms: 100 # [ms]

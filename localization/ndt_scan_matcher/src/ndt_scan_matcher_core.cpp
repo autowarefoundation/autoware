@@ -99,8 +99,9 @@ NDTScanMatcher::NDTScanMatcher()
   output_pose_covariance_(),
   regularization_enabled_(declare_parameter<bool>("regularization_enabled")),
   estimate_scores_for_degrounded_scan_(
-    declare_parameter<bool>("estimate_scores_for_degrounded_scan")),
-  z_margin_for_ground_removal_(declare_parameter<double>("z_margin_for_ground_removal"))
+    declare_parameter("estimate_scores_for_degrounded_scan", false)),
+  z_margin_for_ground_removal_(declare_parameter("z_margin_for_ground_removal", 0.8)),
+  critical_upper_bound_exe_time_ms_(100)
 {
   (*state_ptr_)["state"] = "Initializing";
   is_activated_ = false;
@@ -140,6 +141,11 @@ NDTScanMatcher::NDTScanMatcher()
     this->declare_parameter<double>("converged_param_nearest_voxel_transformation_likelihood");
 
   lidar_topic_timeout_sec_ = this->declare_parameter<double>("lidar_topic_timeout_sec");
+  critical_upper_bound_exe_time_ms_ =
+    this->declare_parameter("critical_upper_bound_exe_time_ms", critical_upper_bound_exe_time_ms_);
+
+  initial_pose_timeout_sec_ =
+    this->declare_parameter("initial_pose_timeout_sec", initial_pose_timeout_sec_);
 
   initial_pose_timeout_sec_ = this->declare_parameter<double>("initial_pose_timeout_sec");
 
@@ -291,6 +297,13 @@ void NDTScanMatcher::timer_diagnostic()
         converged_param_nearest_voxel_transformation_likelihood_) {
       diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
       diag_status_msg.message += "NDT score is unreliably low. ";
+    }
+    if (
+      state_ptr_->count("execution_time") &&
+      std::stod((*state_ptr_)["execution_time"]) >= critical_upper_bound_exe_time_ms_) {
+      diag_status_msg.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+      diag_status_msg.message +=
+        "NDT exe time is too long. (took " + (*state_ptr_)["execution_time"] + " [ms])";
     }
     // Ignore local optimal solution
     if (
@@ -528,6 +541,7 @@ void NDTScanMatcher::callback_sensor_points(
   } else {
     (*state_ptr_)["is_local_optimal_solution_oscillation"] = "0";
   }
+  (*state_ptr_)["execution_time"] = std::to_string(exe_time);
 }
 
 void NDTScanMatcher::transform_sensor_measurement(
