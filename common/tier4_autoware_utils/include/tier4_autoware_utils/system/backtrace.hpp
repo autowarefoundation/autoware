@@ -15,38 +15,10 @@
 #ifndef TIER4_AUTOWARE_UTILS__SYSTEM__BACKTRACE_HPP_
 #define TIER4_AUTOWARE_UTILS__SYSTEM__BACKTRACE_HPP_
 
-#include <execinfo.h>
-
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <vector>
-
 namespace tier4_autoware_utils
 {
 
-inline void print_backtrace()
-{
-  constexpr size_t max_frames = 100;
-  void * addrlist[max_frames + 1];
-
-  int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void *));
-
-  if (addrlen == 0) {
-    return;
-  }
-
-  char ** symbol_list = backtrace_symbols(addrlist, addrlen);
-
-  std::stringstream ss;
-  ss << "  ********** back trace **********" << std::endl;
-  for (int i = 1; i < addrlen; i++) {
-    ss << "   @   " << symbol_list[i] << std::endl;
-  }
-  std::cerr << ss.str() << std::endl;
-
-  free(symbol_list);
-}
+void print_backtrace();
 
 }  // namespace tier4_autoware_utils
 
