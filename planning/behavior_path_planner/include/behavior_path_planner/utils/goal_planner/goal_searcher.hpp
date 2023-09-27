@@ -41,7 +41,7 @@ public:
 
 private:
   void createAreaPolygons(std::vector<Pose> original_search_poses);
-  bool checkCollision(const Pose & pose) const;
+  bool checkCollision(const Pose & pose, const PredictedObjects & dynamic_objects) const;
   bool checkCollisionWithLongitudinalDistance(
     const Pose & ego_pose, const PredictedObjects & dynamic_objects) const;
   BasicPolygons2d getNoParkingAreaPolygons(const lanelet::ConstLanelets & lanes) const;

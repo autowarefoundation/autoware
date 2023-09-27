@@ -183,25 +183,25 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
 
 void GoalSearcher::update(GoalCandidates & goal_candidates) const
 {
+  const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
+  const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
+    *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
+    parameters_.forward_goal_search_length);
+  const auto [pull_over_lane_stop_objects, others] =
+    utils::path_safety_checker::separateObjectsByLanelets(stop_objects, pull_over_lanes);
+
   // update is_safe
   for (auto & goal_candidate : goal_candidates) {
     const Pose goal_pose = goal_candidate.goal_pose;
 
     // check collision with footprint
-    if (checkCollision(goal_pose)) {
+    if (checkCollision(goal_pose, pull_over_lane_stop_objects)) {
       goal_candidate.is_safe = false;
       continue;
     }
 
     // check longitudinal margin with pull over lane objects
-    const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
-      *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
-      parameters_.forward_goal_search_length);
-    const auto [pull_over_lane_objects, others] =
-      utils::path_safety_checker::separateObjectsByLanelets(
-        *(planner_data_->dynamic_object), pull_over_lanes);
-    const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-      pull_over_lane_objects, parameters_.th_moving_object_velocity);
     constexpr bool filter_inside = true;
     const auto target_objects = goal_planner_utils::filterObjectsByLateralDistance(
       goal_pose, planner_data_->parameters.vehicle_width, pull_over_lane_stop_objects,
@@ -215,7 +215,7 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
   }
 }
 
-bool GoalSearcher::checkCollision(const Pose & pose) const
+bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & dynamic_objects) const
 {
   if (parameters_.use_occupancy_grid_for_goal_search) {
     const Pose pose_grid_coords = global2local(occupancy_grid_map_->getMap(), pose);
@@ -228,16 +228,8 @@ bool GoalSearcher::checkCollision(const Pose & pose) const
   }
 
   if (parameters_.use_object_recognition) {
-    const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
-      *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
-      parameters_.forward_goal_search_length);
-    const auto [pull_over_lane_objects, others] =
-      utils::path_safety_checker::separateObjectsByLanelets(
-        *(planner_data_->dynamic_object), pull_over_lanes);
-    const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-      pull_over_lane_objects, parameters_.th_moving_object_velocity);
     if (utils::checkCollisionBetweenFootprintAndObjects(
-          vehicle_footprint_, pose, pull_over_lane_stop_objects,
+          vehicle_footprint_, pose, dynamic_objects,
           parameters_.object_recognition_collision_check_margin)) {
       return true;
     }
