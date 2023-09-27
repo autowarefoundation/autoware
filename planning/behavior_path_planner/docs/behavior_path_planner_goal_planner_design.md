@@ -89,6 +89,10 @@ Either one is activated when all conditions are met.
 - Route is set with `allow_goal_modification=false` by default.
 - ego-vehicle is in the same lane as the goal.
 
+If the target path contains a goal, modify the points of the path so that the path and the goal are connected smoothly. This process will change the shape of the path by the distance of `refine_goal_search_radius_range` from the goal. Note that this logic depends on the interpolation algorithm that will be executed in a later module (at the moment it uses spline interpolation), so it needs to be updated in the future.
+
+![path_goal_refinement](../image/path_goal_refinement.drawio.svg)
+
 <img src="https://user-images.githubusercontent.com/39142679/237929955-c0adf01b-9e3c-45e3-848d-98cf11e52b65.png" width="600">
 
 ### rough_goal_planner
@@ -264,7 +268,8 @@ If the vehicle gets stuck with `lane_parking`, run `freespace_parking`.
 To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../../costmap_generator/README.md) to `false` and `enable_freespace_parking` to `true`
 
 ![pull_over_freespace_parking_flowchart](../image/pull_over_freespace_parking_flowchart.drawio.svg)
-\*Series execution with `avoidance_module` in the flowchart is under development.
+
+Simultaneous execution with `avoidance_module` in the flowchart is under development.
 
 <img src="https://user-images.githubusercontent.com/39142679/221167581-9a654810-2460-4a0c-8afd-7943ca877cf5.png" width="600">
 

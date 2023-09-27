@@ -173,12 +173,6 @@ struct ShiftLine
 
 Click [here](./docs/behavior_path_planner_path_generation_design.md) for details.
 
-### Smooth goal connection
-
-If the target path contains a goal, modify the points of the path so that the path and the goal are connected smoothly. This process will change the shape of the path by the distance of `refine_goal_search_radius_range` from the goal. Note that this logic depends on the interpolation algorithm that will be executed in a later module (at the moment it uses spline interpolation), so it needs to be updated in the future.
-
-![path_goal_refinement](./image/path_goal_refinement.drawio.svg)
-
 ## References / External links
 
 This module depends on the external [BehaviorTreeCpp](https://github.com/BehaviorTree/BehaviorTree.CPP) library.
