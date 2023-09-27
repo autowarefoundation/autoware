@@ -8,11 +8,11 @@ This module is activated when a new route is received.
 Use cases are as follows
 
 - start smoothly from the current ego position to centerline.
-  - ![case1](../image/start_from_road_lane.drawio.svg)
+  ![case1](../image/start_from_road_lane.drawio.svg)
 - pull out from the side of the road lane to centerline.
-  - ![case2](../image/start_from_road_side.drawio.svg)
+  ![case2](../image/start_from_road_side.drawio.svg)
 - pull out from the shoulder lane to the road lane centerline.
-  - ![case3](../image/start_from_road_shoulder.drawio.svg)
+  ![case3](../image/start_from_road_shoulder.drawio.svg)
 
 ## Design
 
@@ -155,3 +155,27 @@ If a safe path cannot be generated from the current position, search backwards f
 | backward_search_resolution    | [m]  | double | distance interval for searching backward pull out start point                                                                                                        | 2.0            |
 | backward_path_update_duration | [s]  | double | time interval for searching backward pull out start point. this prevents chattering between back driving and pull_out                                                | 3.0            |
 | ignore_distance_from_lane_end | [m]  | double | distance from end of pull out lanes for ignoring start candidates                                                                                                    | 15.0           |
+
+### **freespace pull out**
+
+If the vehicle gets stuck with pull out along lanes, execute freespace pull out.
+To run this feature, you need to set `parking_lot` to the map, `activate_by_scenario` of [costmap_generator](../../costmap_generator/README.md) to `false` and `enable_freespace_planner` to `true`
+
+<img src="https://user-images.githubusercontent.com/39142679/270964106-ae688bca-1709-4e06-98c4-90f671bb8246.png" width="600">
+
+#### Unimplemented parts / limitations for freespace pull out
+
+- When a short path is generated, the ego does can not drive with it.
+- Complex cases take longer to generate or fail.
+- The drivable area is not guaranteed to fit in the parking_lot.
+
+#### Parameters freespace parking
+
+| Name                           | Unit | Type   | Description                                                                                                                              | Default value |
+| :----------------------------- | :--- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| enable_freespace_planner       | [-]  | bool   | this flag activates a free space pullout that is executed when a vehicle is stuck due to obstacles in the lanes where the ego is located | true          |
+| end_pose_search_start_distance | [m]  | double | distance from ego to the start point of the search for the end point in the freespace_pull_out driving lane                              | 20.0          |
+| end_pose_search_end_distance   | [m]  | double | distance from ego to the end point of the search for the end point in the freespace_pull_out driving lane                                | 30.0          |
+| end_pose_search_interval       | [m]  | bool   | interval to search for the end point in the freespace_pull_out driving lane                                                              | 2.0           |
+
+See [freespace_planner](../../freespace_planner/README.md) for other parameters.
