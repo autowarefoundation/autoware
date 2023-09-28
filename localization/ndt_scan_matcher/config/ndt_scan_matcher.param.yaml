@@ -9,6 +9,9 @@
     # NDT reference frame
     ndt_base_frame: "ndt_base_link"
 
+    # map frame
+    map_frame: "map"
+
     # Subscriber queue size
     input_sensor_points_queue_size: 1
 
@@ -53,7 +56,7 @@
     num_threads: 4
 
     # The covariance of output pose
-    # Do note that this covariance matrix is empirically derived
+    # Note that this covariance matrix is empirically derived
     output_pose_covariance:
       [
         0.0225, 0.0,   0.0,   0.0,      0.0,      0.0,
@@ -67,7 +70,7 @@
     # Regularization switch
     regularization_enabled: false
 
-    # regularization scale factor
+    # Regularization scale factor
     regularization_scale_factor: 0.01
 
     # Dynamic map loading distance
@@ -86,5 +89,5 @@
     # If lidar_point.z - base_link.z <= this threshold , the point will be removed
     z_margin_for_ground_removal: 0.8
 
-    # The execution time which means probably NDT cannot matches scans properly
-    critical_upper_bound_exe_time_ms: 100 # [ms]
+    # The execution time which means probably NDT cannot matches scans properly. [ms]
+    critical_upper_bound_exe_time_ms: 100

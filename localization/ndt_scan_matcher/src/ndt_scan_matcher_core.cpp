@@ -84,24 +84,9 @@ NDTScanMatcher::NDTScanMatcher()
   tf2_broadcaster_(*this),
   ndt_ptr_(new NormalDistributionsTransform),
   state_ptr_(new std::map<std::string, std::string>),
-  base_frame_("base_link"),
-  ndt_base_frame_("ndt_base_link"),
-  map_frame_("map"),
-  converged_param_type_(ConvergedParamType::TRANSFORM_PROBABILITY),
-  converged_param_transform_probability_(4.5),
-  converged_param_nearest_voxel_transformation_likelihood_(2.3),
-  initial_estimate_particles_num_(100),
-  lidar_topic_timeout_sec_(1.0),
-  initial_pose_timeout_sec_(1.0),
-  initial_pose_distance_tolerance_m_(10.0),
-  inversion_vector_threshold_(-0.9),
-  oscillation_threshold_(10),
-  output_pose_covariance_(),
-  regularization_enabled_(declare_parameter<bool>("regularization_enabled")),
-  estimate_scores_for_degrounded_scan_(
-    declare_parameter("estimate_scores_for_degrounded_scan", false)),
-  z_margin_for_ground_removal_(declare_parameter("z_margin_for_ground_removal", 0.8)),
-  critical_upper_bound_exe_time_ms_(100)
+  inversion_vector_threshold_(-0.9),  // Not necessary to extract to ndt_scan_matcher.param.yaml
+  oscillation_threshold_(10),         // Not necessary to extract to ndt_scan_matcher.param.yaml
+  regularization_enabled_(declare_parameter<bool>("regularization_enabled"))
 {
   (*state_ptr_)["state"] = "Initializing";
   is_activated_ = false;
@@ -115,6 +100,9 @@ NDTScanMatcher::NDTScanMatcher()
 
   ndt_base_frame_ = this->declare_parameter<std::string>("ndt_base_frame");
   RCLCPP_INFO(get_logger(), "ndt_base_frame_id: %s", ndt_base_frame_.c_str());
+
+  map_frame_ = this->declare_parameter<std::string>("map_frame");
+  RCLCPP_INFO(get_logger(), "map_frame_id: %s", map_frame_.c_str());
 
   pclomp::NdtParams ndt_params{};
   ndt_params.trans_epsilon = this->declare_parameter<double>("trans_epsilon");
@@ -141,8 +129,9 @@ NDTScanMatcher::NDTScanMatcher()
     this->declare_parameter<double>("converged_param_nearest_voxel_transformation_likelihood");
 
   lidar_topic_timeout_sec_ = this->declare_parameter<double>("lidar_topic_timeout_sec");
+
   critical_upper_bound_exe_time_ms_ =
-    this->declare_parameter("critical_upper_bound_exe_time_ms", critical_upper_bound_exe_time_ms_);
+    this->declare_parameter<int>("critical_upper_bound_exe_time_ms");
 
   initial_pose_timeout_sec_ = this->declare_parameter<double>("initial_pose_timeout_sec");
 
@@ -156,6 +145,11 @@ NDTScanMatcher::NDTScanMatcher()
   }
 
   initial_estimate_particles_num_ = this->declare_parameter<int>("initial_estimate_particles_num");
+
+  estimate_scores_for_degrounded_scan_ =
+    this->declare_parameter<bool>("estimate_scores_for_degrounded_scan");
+
+  z_margin_for_ground_removal_ = this->declare_parameter<double>("z_margin_for_ground_removal");
 
   rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group;
   initial_pose_callback_group =
