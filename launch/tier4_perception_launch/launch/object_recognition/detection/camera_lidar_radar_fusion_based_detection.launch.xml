@@ -47,6 +47,8 @@
   <!-- Radar parameters -->
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
   <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
+  <arg name="use_near_radar_fusion" default="false"/>
+  <arg name="far_object_merger_sync_queue_size" default="20"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
@@ -103,6 +105,48 @@
       </include>
     </group>
 
+    <!-- roi based clustering -->
+    <group>
+      <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
+        <arg name="input/camera_info0" value="$(var camera_info0)"/>
+        <arg name="input/rois0" value="$(var detection_rois0)"/>
+        <arg name="input/camera_info1" value="$(var camera_info1)"/>
+        <arg name="input/rois1" value="$(var detection_rois1)"/>
+        <arg name="input/camera_info2" value="$(var camera_info2)"/>
+        <arg name="input/rois2" value="$(var detection_rois2)"/>
+        <arg name="input/camera_info3" value="$(var camera_info3)"/>
+        <arg name="input/rois3" value="$(var detection_rois3)"/>
+        <arg name="input/camera_info4" value="$(var camera_info4)"/>
+        <arg name="input/rois4" value="$(var detection_rois4)"/>
+        <arg name="input/camera_info5" value="$(var camera_info5)"/>
+        <arg name="input/rois5" value="$(var detection_rois5)"/>
+        <arg name="input/camera_info6" value="$(var camera_info6)"/>
+        <arg name="input/rois6" value="$(var detection_rois6)"/>
+        <arg name="input/camera_info7" value="$(var camera_info7)"/>
+        <arg name="input/rois7" value="$(var detection_rois7)"/>
+        <arg name="input/rois_number" value="$(var image_number)"/>
+        <arg name="input/image0" value="$(var image_raw0)"/>
+        <arg name="input/image1" value="$(var image_raw1)"/>
+        <arg name="input/image2" value="$(var image_raw2)"/>
+        <arg name="input/image3" value="$(var image_raw3)"/>
+        <arg name="input/image4" value="$(var image_raw4)"/>
+        <arg name="input/image5" value="$(var image_raw5)"/>
+        <arg name="input/image6" value="$(var image_raw6)"/>
+        <arg name="input/image7" value="$(var image_raw7)"/>
+        <arg name="input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
+        <arg name="output_clusters" value="roi_cluster/clusters"/>
+      </include>
+    </group>
+
+    <!-- simple_cluster_merger -->
+    <group>
+      <include file="$(find-pkg-share cluster_merger)/launch/cluster_merger.launch.xml" if="$(var use_roi_based_cluster)">
+        <arg name="input/cluster0" value="euclidean_cluster/clusters"/>
+        <arg name="input/cluster1" value="roi_cluster/clusters"/>
+        <arg name="output/clusters" value="clusters"/>
+      </include>
+    </group>
+
     <group>
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="input/objects" value="clusters"/>
@@ -114,6 +158,8 @@
       <let name="input/clustering" value="/perception/object_recognition/detection/clustering/clusters"/>
       <push-ros-namespace namespace="camera_lidar_fusion"/>
       <!-- Fusion camera-lidar to classify -->
+
+      <!-- euclidean clustering -->
       <group>
         <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_cluster_fusion.launch.xml">
           <arg name="input/camera_info0" value="$(var camera_info0)"/>
@@ -142,51 +188,9 @@
           <arg name="input/image5" value="$(var image_raw5)"/>
           <arg name="input/image6" value="$(var image_raw6)"/>
           <arg name="input/image7" value="$(var image_raw7)"/>
-          <arg name="output/clusters" value="euclidean_cluster/clusters"/>
+          <arg name="output/clusters" value="clusters"/>
           <arg name="remove_unknown" value="$(var remove_unknown)"/>
           <arg name="trust_distance" value="$(var trust_distance)"/>
-        </include>
-      </group>
-
-      <!-- roi based clustering -->
-      <group>
-        <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_pointcloud_fusion.launch.xml" if="$(var use_roi_based_cluster)">
-          <arg name="input/camera_info0" value="$(var camera_info0)"/>
-          <arg name="input/rois0" value="$(var detection_rois0)"/>
-          <arg name="input/camera_info1" value="$(var camera_info1)"/>
-          <arg name="input/rois1" value="$(var detection_rois1)"/>
-          <arg name="input/camera_info2" value="$(var camera_info2)"/>
-          <arg name="input/rois2" value="$(var detection_rois2)"/>
-          <arg name="input/camera_info3" value="$(var camera_info3)"/>
-          <arg name="input/rois3" value="$(var detection_rois3)"/>
-          <arg name="input/camera_info4" value="$(var camera_info4)"/>
-          <arg name="input/rois4" value="$(var detection_rois4)"/>
-          <arg name="input/camera_info5" value="$(var camera_info5)"/>
-          <arg name="input/rois5" value="$(var detection_rois5)"/>
-          <arg name="input/camera_info6" value="$(var camera_info6)"/>
-          <arg name="input/rois6" value="$(var detection_rois6)"/>
-          <arg name="input/camera_info7" value="$(var camera_info7)"/>
-          <arg name="input/rois7" value="$(var detection_rois7)"/>
-          <arg name="input/rois_number" value="$(var image_number)"/>
-          <arg name="input/image0" value="$(var image_raw0)"/>
-          <arg name="input/image1" value="$(var image_raw1)"/>
-          <arg name="input/image2" value="$(var image_raw2)"/>
-          <arg name="input/image3" value="$(var image_raw3)"/>
-          <arg name="input/image4" value="$(var image_raw4)"/>
-          <arg name="input/image5" value="$(var image_raw5)"/>
-          <arg name="input/image6" value="$(var image_raw6)"/>
-          <arg name="input/image7" value="$(var image_raw7)"/>
-          <arg name="input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud"/>
-          <arg name="output_clusters" value="roi_cluster/clusters"/>
-        </include>
-      </group>
-
-      <!-- simple_cluster_merger -->
-      <group>
-        <include file="$(find-pkg-share cluster_merger)/launch/cluster_merger.launch.xml" if="$(var use_roi_based_cluster)">
-          <arg name="input/cluster0" value="euclidean_cluster/clusters"/>
-          <arg name="input/cluster1" value="roi_cluster/clusters"/>
-          <arg name="output/clusters" value="clusters"/>
         </include>
       </group>
 
@@ -293,7 +297,7 @@
 
   <!-- Radar fusion -->
   <group>
-    <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml">
+    <include file="$(find-pkg-share radar_fusion_to_detected_object)/launch/radar_object_fusion_to_detected_object.launch.xml" if="$(var use_near_radar_fusion)">
       <arg name="input/objects" value="$(var lidar_detection_model)/objects"/>
       <arg name="input/radars" value="radar/noise_filtered_objects"/>
       <arg name="output/objects" value="radar_fusion/objects"/>
@@ -302,6 +306,9 @@
 
   <!-- Camera late fusion -->
   <group>
+    <let name="target_objects" value="radar_fusion/objects" if="$(var use_near_radar_fusion)"/>
+    <let name="target_objects" value="$(var lidar_detection_model)/objects" unless="$(var use_near_radar_fusion)"/>
+
     <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_detected_object_fusion.launch.xml">
       <arg name="input/camera_info0" value="$(var camera_info0)"/>
       <arg name="input/rois0" value="$(var detection_rois0)"/>
@@ -328,7 +335,7 @@
       <arg name="input/image5" value="$(var image_raw5)"/>
       <arg name="input/image6" value="$(var image_raw6)"/>
       <arg name="input/image7" value="$(var image_raw7)"/>
-      <arg name="input/objects" value="radar_fusion/objects"/>
+      <arg name="input/objects" value="$(var target_objects)"/>
       <arg name="output/objects" value="$(var lidar_detection_model)/roi_fusion/objects"/>
     </include>
   </group>
@@ -403,5 +410,6 @@
     <arg name="priority_mode" value="0"/>
     <arg name="data_association_matrix_path" value="$(var object_recognition_detection_object_merger_data_association_matrix_param_path)"/>
     <arg name="distance_threshold_list_path" value="$(var object_recognition_detection_object_merger_distance_threshold_list_path)"/>
+    <arg name="sync_queue_size" value="$(var far_object_merger_sync_queue_size)"/>
   </include>
 </launch>
