@@ -2,8 +2,36 @@
   <arg name="input_topic_name" default="pointcloud_raw_ex"/>
   <arg name="output_topic_name" default="blockage_diag/pointcloud"/>
 
+  <arg name="horizontal_ring_id" default="18"/>
+  <arg name="angle_range" default="[0.0, 360.0]"/>
+  <arg name="vertical_bins" default="40"/>
+  <arg name="model" default="Pandar40P"/>
+  <arg name="blockage_ratio_threshold" default="0.1"/>
+  <arg name="blockage_count_threshold" default="50"/>
+  <arg name="blockage_buffering_frames" default="100"/>
+  <arg name="blockage_buffering_interval" default="5"/>
+  <arg name="dust_ratio_threshold" default="0.2"/>
+  <arg name="dust_count_threshold" default="10"/>
+  <arg name="dust_kernel_size" default="2"/>
+  <arg name="dust_buffering_frames" default="10"/>
+  <arg name="dust_buffering_interval" default="1"/>
+
   <node pkg="pointcloud_preprocessor" exec="blockage_diag_node" name="blockage_diag">
     <remap from="input" to="$(var input_topic_name)"/>
     <remap from="output" to="$(var output_topic_name)"/>
+
+    <param name="horizontal_ring_id" value="$(var horizontal_ring_id)"/>
+    <param name="angle_range" value="$(var angle_range)"/>
+    <param name="vertical_bins" value="$(var vertical_bins)"/>
+    <param name="model" value="$(var model)"/>
+    <param name="blockage_ratio_threshold" value="$(var blockage_ratio_threshold)"/>
+    <param name="blockage_count_threshold" value="$(var blockage_count_threshold)"/>
+    <param name="blockage_buffering_frames" value="$(var blockage_buffering_frames)"/>
+    <param name="blockage_buffering_interval" value="$(var blockage_buffering_interval)"/>
+    <param name="dust_ratio_threshold" value="$(var dust_ratio_threshold)"/>
+    <param name="dust_count_threshold" value="$(var dust_count_threshold)"/>
+    <param name="dust_kernel_size" value="$(var dust_kernel_size)"/>
+    <param name="dust_buffering_frames" value="$(var dust_buffering_frames)"/>
+    <param name="dust_buffering_interval" value="$(var dust_buffering_interval)"/>
   </node>
 </launch>
