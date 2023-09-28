@@ -1,6 +1,7 @@
 <launch>
-  <arg name="fine_detector_label_path" default="$(find-pkg-share traffic_light_fine_detector)/data/tlr_labels.txt" description="fine detector label path"/>
-  <arg name="fine_detector_model_path" default="$(find-pkg-share traffic_light_fine_detector)/data/tlr_yolox_s_batch_6.onnx" description="fine detector onnx model path"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="fine_detector_label_path" default="$(var data_path)/traffic_light_fine_detector/tlr_labels.txt" description="fine detector label path"/>
+  <arg name="fine_detector_model_path" default="$(var data_path)/traffic_light_fine_detector/tlr_yolox_s_batch_6.onnx" description="fine detector onnx model path"/>
   <arg name="fine_detector_precision" default="fp16"/>
   <arg name="fine_detector_score_thresh" default="0.3"/>
   <arg name="fine_detector_nms_thresh" default="0.65"/>
