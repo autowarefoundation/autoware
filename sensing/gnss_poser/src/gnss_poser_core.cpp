@@ -30,14 +30,14 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("gnss_poser", node_options),
   tf2_listener_(tf2_buffer_),
   tf2_broadcaster_(*this),
-  base_frame_(declare_parameter("base_frame", "base_link")),
-  gnss_frame_(declare_parameter("gnss_frame", "gnss")),
-  gnss_base_frame_(declare_parameter("gnss_base_frame", "gnss_base_link")),
-  map_frame_(declare_parameter("map_frame", "map")),
-  use_gnss_ins_orientation_(declare_parameter("use_gnss_ins_orientation", true)),
+  base_frame_(declare_parameter<std::string>("base_frame")),
+  gnss_frame_(declare_parameter<std::string>("gnss_frame")),
+  gnss_base_frame_(declare_parameter<std::string>("gnss_base_frame")),
+  map_frame_(declare_parameter<std::string>("map_frame")),
+  use_gnss_ins_orientation_(declare_parameter<bool>("use_gnss_ins_orientation")),
   msg_gnss_ins_orientation_stamped_(
     std::make_shared<autoware_sensing_msgs::msg::GnssInsOrientationStamped>()),
-  gnss_pose_pub_method(declare_parameter<int>("gnss_pose_pub_method", 0))
+  gnss_pose_pub_method(declare_parameter<int>("gnss_pose_pub_method"))
 {
   // Subscribe to map_projector_info topic
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
@@ -45,7 +45,7 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
     sub_map_projector_info_,
     [this](const MapProjectorInfo::Message::ConstSharedPtr msg) { callbackMapProjectorInfo(msg); });
 
-  int buff_epoch = declare_parameter("buff_epoch", 1);
+  int buff_epoch = declare_parameter<int>("buff_epoch");
   position_buffer_.set_capacity(buff_epoch);
 
   nav_sat_fix_sub_ = create_subscription<sensor_msgs::msg::NavSatFix>(
