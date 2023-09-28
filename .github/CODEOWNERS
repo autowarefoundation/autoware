@@ -41,6 +41,7 @@ common/tier4_datetime_rviz_plugin/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp 
 common/tier4_debug_rviz_plugin/** takayuki.murooka@tier4.jp
 common/tier4_debug_tools/** ryohsuke.mitsudome@tier4.jp
 common/tier4_localization_rviz_plugin/** isamu.takagi@tier4.jp kahhooi.tan@tier4.jp makoto.yabuta@tier4.jp takamasa.horibe@tier4.jp
+common/tier4_logging_level_configure_rviz_plugin/** kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp takamasa.horibe@tier4.jp
 common/tier4_perception_rviz_plugin/** yukihiro.saito@tier4.jp
 common/tier4_planning_rviz_plugin/** takayuki.murooka@tier4.jp yukihiro.saito@tier4.jp yutaka.shimizu@tier4.jp
 common/tier4_screen_capture_rviz_plugin/** taiki.tanaka@tier4.jp
@@ -84,9 +85,10 @@ launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp
 launch/tier4_simulator_launch/** keisuke.shima@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 launch/tier4_system_launch/** akihiro.sakurai@tier4.jp fumihito.ito@tier4.jp
 launch/tier4_vehicle_launch/** yukihiro.saito@tier4.jp
-localization/ar_tag_based_localizer/** masahiro.sakamoto@tier4.jp shintaro.sakoda@tier4.jp
 localization/ekf_localizer/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp takamasa.horibe@tier4.jp takeshi.ishita@tier4.jp yamato.ando@tier4.jp
 localization/gyro_odometer/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
+localization/landmark_based_localizer/ar_tag_based_localizer/** masahiro.sakamoto@tier4.jp shintaro.sakoda@tier4.jp
+localization/landmark_based_localizer/landmark_tf_caster/** masahiro.sakamoto@tier4.jp shintaro.sakoda@tier4.jp
 localization/localization_error_monitor/** koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
 localization/ndt_scan_matcher/** kento.yabuuchi.2@tier4.jp koji.minoda@tier4.jp masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
 localization/pose2twist/** masahiro.sakamoto@tier4.jp yamato.ando@tier4.jp
@@ -150,7 +152,7 @@ planning/behavior_path_planner/** fumiya.watanabe@tier4.jp kosuke.takeuchi@tier4
 planning/behavior_velocity_blind_spot_module/** mamoru.sobue@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_crosswalk_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_detection_area_module/** kyoichi.sugahara@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
-planning/behavior_velocity_intersection_module/** mamoru.sobue@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
+planning/behavior_velocity_intersection_module/** kyoichi.sugahara@tier4.jp mamoru.sobue@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_no_drivable_lane_module/** ahmed.ebrahim@leodrive.ai fumiya.watanabe@tier4.jp satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_no_stopping_area_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_occlusion_spot_module/** shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
@@ -160,6 +162,7 @@ planning/behavior_velocity_planner_common/** isamu.takagi@tier4.jp shumpei.wakab
 planning/behavior_velocity_run_out_module/** makoto.kurihara@tier4.jp shumpei.wakabayashi@tier4.jp tomohito.ando@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_speed_bump_module/** mdogru@leodrive.ai shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_stop_line_module/** shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp yutaka.shimizu@tier4.jp
+planning/behavior_velocity_template_module/** daniel.sanchez@tier4.jp
 planning/behavior_velocity_traffic_light_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_virtual_traffic_light_module/** kosuke.takeuchi@tier4.jp shumpei.wakabayashi@tier4.jp tomoya.kimura@tier4.jp
 planning/behavior_velocity_walkway_module/** satoshi.ota@tier4.jp shumpei.wakabayashi@tier4.jp takayuki.murooka@tier4.jp tomoya.kimura@tier4.jp
@@ -215,6 +218,8 @@ system/dummy_infrastructure/** ryohsuke.mitsudome@tier4.jp
 system/emergency_handler/** makoto.kurihara@tier4.jp
 system/mrm_comfortable_stop_operator/** makoto.kurihara@tier4.jp
 system/mrm_emergency_stop_operator/** makoto.kurihara@tier4.jp
+system/system_diagnostic_graph/** isamu.takagi@tier4.jp
+system/system_diagnostic_monitor/** isamu.takagi@tier4.jp
 system/system_error_monitor/** fumihito.ito@tier4.jp
 system/system_monitor/** akihiro.sakurai@tier4.jp fumihito.ito@tier4.jp
 system/topic_state_monitor/** ryohsuke.mitsudome@tier4.jp
@@ -224,4 +229,4 @@ vehicle/accel_brake_map_calibrator/accel_brake_map_calibrator/** taiki.tanaka@ti
 vehicle/external_cmd_converter/** takamasa.horibe@tier4.jp
 vehicle/raw_vehicle_cmd_converter/** makoto.kurihara@tier4.jp taiki.tanaka@tier4.jp takamasa.horibe@tier4.jp
 vehicle/steer_offset_estimator/** taiki.tanaka@tier4.jp
-vehicle/vehicle_info_util/** shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp yamato.ando@tier4.jp
+vehicle/vehicle_info_util/** shumpei.wakabayashi@tier4.jp taiki.tanaka@tier4.jp tomoya.kimura@tier4.jp
