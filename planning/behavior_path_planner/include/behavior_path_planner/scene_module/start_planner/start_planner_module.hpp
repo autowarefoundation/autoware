@@ -139,7 +139,6 @@ private:
 
   std::unique_ptr<rclcpp::Time> last_route_received_time_;
   std::unique_ptr<rclcpp::Time> last_pull_out_start_update_time_;
-  std::unique_ptr<Pose> last_approved_pose_;
 
   // generate freespace pull out paths in a separate thread
   std::unique_ptr<PullOutPlannerBase> freespace_planner_;

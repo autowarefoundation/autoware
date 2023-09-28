@@ -215,8 +215,6 @@ BehaviorModuleOutput StartPlannerModule::plan()
     clearWaitingApproval();
     resetPathCandidate();
     resetPathReference();
-    // save current_pose when approved for start_point of turn_signal for backward driving
-    last_approved_pose_ = std::make_unique<Pose>(planner_data_->self_odometry->pose.pose);
   }
 
   BehaviorModuleOutput output;
@@ -886,7 +884,7 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   // turn on hazard light when backward driving
   if (!status_.back_finished) {
     turn_signal.hazard_signal.command = HazardLightsCommand::ENABLE;
-    const auto back_start_pose = isWaitingApproval() ? current_pose : *last_approved_pose_;
+    const auto back_start_pose = planner_data_->route_handler->getOriginalStartPose();
     turn_signal.desired_start_point = back_start_pose;
     turn_signal.required_start_point = back_start_pose;
     // pull_out start_pose is same to backward driving end_pose
