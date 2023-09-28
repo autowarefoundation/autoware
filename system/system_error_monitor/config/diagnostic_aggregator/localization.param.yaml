@@ -27,5 +27,5 @@
             localization_accuracy:
               type: diagnostic_aggregator/GenericAnalyzer
               path: localization_accuracy
-              contains: [": localization_accuracy"]
+              contains: ["localization: localization_error_monitor"]
               timeout: 1.0
