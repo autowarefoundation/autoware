@@ -33,14 +33,14 @@
 LocalizationErrorMonitor::LocalizationErrorMonitor()
 : Node("localization_error_monitor"), updater_(this)
 {
-  scale_ = this->declare_parameter("scale", 3.0);
-  error_ellipse_size_ = this->declare_parameter("error_ellipse_size", 1.0);
-  warn_ellipse_size_ = this->declare_parameter("warn_ellipse_size", 0.8);
+  scale_ = this->declare_parameter<double>("scale");
+  error_ellipse_size_ = this->declare_parameter<double>("error_ellipse_size");
+  warn_ellipse_size_ = this->declare_parameter<double>("warn_ellipse_size");
 
   error_ellipse_size_lateral_direction_ =
-    this->declare_parameter("error_ellipse_size_lateral_direction", 0.3);
+    this->declare_parameter<double>("error_ellipse_size_lateral_direction");
   warn_ellipse_size_lateral_direction_ =
-    this->declare_parameter("warn_ellipse_size_lateral_direction", 0.2);
+    this->declare_parameter<double>("warn_ellipse_size_lateral_direction");
 
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
     "input/odom", 1, std::bind(&LocalizationErrorMonitor::onOdom, this, std::placeholders::_1));
