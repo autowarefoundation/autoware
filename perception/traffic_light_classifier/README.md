@@ -55,6 +55,7 @@ These colors and shapes are assigned to the message as follows:
 | Name              | Type | Description                                 |
 | ----------------- | ---- | ------------------------------------------- |
 | `classifier_type` | int  | if the value is `1`, cnn_classifier is used |
+| `data_path`       | str  | packages data and artifacts directory path  |
 
 ### Core Parameters
 

@@ -2,8 +2,9 @@
   <arg name="input/image" default="~/image_raw"/>
   <arg name="input/rois" default="~/rois"/>
   <arg name="output/traffic_signals" default="classified/traffic_signals"/>
-  <arg name="classifier_label_path" default="$(find-pkg-share traffic_light_classifier)/data/lamp_labels.txt" description="classifier label path"/>
-  <arg name="classifier_model_path" default="$(find-pkg-share traffic_light_classifier)/data/traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model path"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="classifier_label_path" default="$(var data_path)/traffic_light_classifier/lamp_labels.txt" description="classifier label path"/>
+  <arg name="classifier_model_path" default="$(var data_path)/traffic_light_classifier/traffic_light_classifier_mobilenetv2_batch_6.onnx" description="classifier onnx model path"/>
   <arg name="classifier_precision" default="fp16"/>
 
   <arg name="use_gpu" default="true"/>
