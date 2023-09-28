@@ -60,7 +60,7 @@ std::vector<PathPointWithLaneId> crop_and_resample(
   // crop
   const auto crop_seg_idx = motion_utils::findNearestSegmentIndex(points, crop_pose.position);
   const auto cropped_points = motion_utils::cropPoints(
-    points, crop_pose.position, crop_seg_idx + 1,
+    points, crop_pose.position, crop_seg_idx,
     planner_data->drivable_area_expansion_parameters.max_path_arc_length, 0.0);
   planner_data->drivable_area_expansion_prev_crop_pose = crop_pose;
   // resample
