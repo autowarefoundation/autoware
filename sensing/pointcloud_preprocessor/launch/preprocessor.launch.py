@@ -58,7 +58,10 @@ def launch_setup(context, *args, **kwargs):
             package=pkg,
             plugin="pointcloud_preprocessor::PointCloudDataSynchronizerComponent",
             name="synchronizer_filter",
-            remappings=[("output", "points_raw/concatenated")],
+            remappings=[
+                ("~/input/twist", "/sensing/vehicle_velocity_converter/twist_with_covariance"),
+                ("output", "points_raw/concatenated"),
+            ],
             parameters=[
                 {
                     "input_topics": LaunchConfiguration("input_points_raw_list"),
