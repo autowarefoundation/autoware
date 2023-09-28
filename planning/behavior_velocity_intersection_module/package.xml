@@ -23,6 +23,7 @@
   <depend>autoware_perception_msgs</depend>
   <depend>behavior_velocity_planner_common</depend>
   <depend>geometry_msgs</depend>
+  <depend>grid_map_core</depend>
   <depend>interpolation</depend>
   <depend>lanelet2_extension</depend>
   <depend>libopencv-dev</depend>
