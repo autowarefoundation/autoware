@@ -55,6 +55,7 @@ Jocher, G., et al. (2021). ultralytics/yolov5: v6.0 - YOLOv5n 'Nano' models, Rob
 
 | Name                    | Type   | Default Value | Description                                                        |
 | ----------------------- | ------ | ------------- | ------------------------------------------------------------------ |
+| `data_path`             | string | ""            | Packages data and artifacts directory path                         |
 | `onnx_file`             | string | ""            | The onnx file name for yolo model                                  |
 | `engine_file`           | string | ""            | The tensorrt engine file name for yolo model                       |
 | `label_file`            | string | ""            | The label file with label names for detected objects written on it |
@@ -71,7 +72,7 @@ This package includes multiple licenses.
 
 All YOLO ONNX models are converted from the officially trained model. If you need information about training datasets and conditions, please refer to the official repositories.
 
-All models are downloaded automatically when building. When launching the node with a model for the first time, the model is automatically converted to TensorRT, although this may take some time.
+All models are downloaded during env preparation by ansible (as mention in [installation](https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/source-installation/)). It is also possible to download them manually, see [Manual downloading of artifacts](https://github.com/autowarefoundation/autoware/tree/main/ansible/roles/artifacts) . When launching the node with a model for the first time, the model is automatically converted to TensorRT, although this may take some time.
 
 ### YOLOv3
 
