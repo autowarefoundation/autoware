@@ -131,7 +131,7 @@ MarkerArray createPosesMarkerArray(
   return msg;
 }
 
-MarkerArray createTextsMarkerArray(
+MarkerArray createGoalPriorityTextsMarkerArray(
   const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color)
 {
   MarkerArray msg{};
@@ -150,22 +150,50 @@ MarkerArray createTextsMarkerArray(
   return msg;
 }
 
+MarkerArray createNumObjectsToAvoidTextsMarkerArray(
+  const GoalCandidates & goal_candidates, std::string && ns, const std_msgs::msg::ColorRGBA & color)
+{
+  MarkerArray msg{};
+  int32_t i = 0;
+  for (const auto & goal_candidate : goal_candidates) {
+    const Pose & pose = goal_candidate.goal_pose;
+    Marker marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.3, 0.3, 0.3), color);
+    marker.pose = calcOffsetPose(pose, -0.5, 0, 1.0);
+    marker.id = i;
+    marker.text = std::to_string(goal_candidate.num_objects_to_avoid);
+    msg.markers.push_back(marker);
+    i++;
+  }
+
+  return msg;
+}
+
 MarkerArray createGoalCandidatesMarkerArray(
   GoalCandidates & goal_candidates, const std_msgs::msg::ColorRGBA & color)
 {
-  // convert to pose vector
+  GoalCandidates safe_goal_candidates{};
+  std::copy_if(
+    goal_candidates.begin(), goal_candidates.end(), std::back_inserter(safe_goal_candidates),
+    [](const auto & goal_candidate) { return goal_candidate.is_safe; });
+
   std::vector<Pose> pose_vector{};
-  for (const auto & goal_candidate : goal_candidates) {
-    if (goal_candidate.is_safe) {
-      pose_vector.push_back(goal_candidate.goal_pose);
-    }
-  }
+  std::transform(
+    safe_goal_candidates.begin(), safe_goal_candidates.end(), std::back_inserter(pose_vector),
+    [](const auto & goal_candidate) { return goal_candidate.goal_pose; });
 
   auto marker_array = createPosesMarkerArray(pose_vector, "goal_candidates", color);
   for (const auto & text_marker :
-       createTextsMarkerArray(
+       createGoalPriorityTextsMarkerArray(
          pose_vector, "goal_candidates_priority", createMarkerColor(1.0, 1.0, 1.0, 0.999))
          .markers) {
+    marker_array.markers.push_back(text_marker);
+  }
+  for (const auto & text_marker : createNumObjectsToAvoidTextsMarkerArray(
+                                    safe_goal_candidates, "goal_candidates_num_objects_to_avoid",
+                                    createMarkerColor(0.5, 0.5, 0.5, 0.999))
+                                    .markers) {
     marker_array.markers.push_back(text_marker);
   }
 

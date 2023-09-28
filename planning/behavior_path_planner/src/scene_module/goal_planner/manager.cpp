@@ -48,7 +48,8 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
     p.goal_priority = node->declare_parameter<std::string>(ns + "goal_priority");
     p.minimum_weighted_distance_lateral_weight =
       node->declare_parameter<double>(ns + "minimum_weighted_distance.lateral_weight");
-    p.path_priority = node->declare_parameter<std::string>(ns + "path_priority");
+    p.prioritize_goals_before_objects =
+      node->declare_parameter<bool>(ns + "prioritize_goals_before_objects");
     p.forward_goal_search_length =
       node->declare_parameter<double>(ns + "forward_goal_search_length");
     p.backward_goal_search_length =
@@ -112,6 +113,9 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
     p.decide_path_distance = node->declare_parameter<double>(ns + "decide_path_distance");
     p.maximum_deceleration = node->declare_parameter<double>(ns + "maximum_deceleration");
     p.maximum_jerk = node->declare_parameter<double>(ns + "maximum_jerk");
+    p.path_priority = node->declare_parameter<std::string>(ns + "path_priority");
+    p.efficient_path_order =
+      node->declare_parameter<std::vector<std::string>>(ns + "efficient_path_order");
   }
 
   // shift parking

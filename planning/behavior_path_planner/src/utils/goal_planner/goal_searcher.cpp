@@ -21,6 +21,7 @@
 #include "lanelet2_extension/regulatory_elements/no_stopping_area.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
 #include "motion_utils/trajectory/path_with_lane_id.hpp"
+#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <boost/geometry/algorithms/union.hpp>
 #include <boost/optional.hpp>
@@ -41,8 +42,20 @@ using tier4_autoware_utils::inverseTransformPose;
 // Sort with smaller longitudinal distances taking precedence over smaller lateral distances.
 struct SortByLongitudinalDistance
 {
+  bool prioritize_goals_before_objects{false};
+  explicit SortByLongitudinalDistance(bool prioritize_goals_before_objects)
+  : prioritize_goals_before_objects(prioritize_goals_before_objects)
+  {
+  }
+
   bool operator()(const GoalCandidate & a, const GoalCandidate & b) const noexcept
   {
+    if (prioritize_goals_before_objects) {
+      if (a.num_objects_to_avoid != b.num_objects_to_avoid) {
+        return a.num_objects_to_avoid < b.num_objects_to_avoid;
+      }
+    }
+
     const double diff = a.distance_from_original_goal - b.distance_from_original_goal;
     constexpr double eps = 0.01;
     // If the longitudinal distances are approximately equal, sort based on lateral offset.
@@ -58,10 +71,21 @@ struct SortByLongitudinalDistance
 struct SortByWeightedDistance
 {
   double lateral_cost{0.0};
-  explicit SortByWeightedDistance(double cost) : lateral_cost(cost) {}
+  bool prioritize_goals_before_objects{false};
+
+  SortByWeightedDistance(double cost, bool prioritize_goals_before_objects)
+  : lateral_cost(cost), prioritize_goals_before_objects(prioritize_goals_before_objects)
+  {
+  }
 
   bool operator()(const GoalCandidate & a, const GoalCandidate & b) const noexcept
   {
+    if (prioritize_goals_before_objects) {
+      if (a.num_objects_to_avoid != b.num_objects_to_avoid) {
+        return a.num_objects_to_avoid < b.num_objects_to_avoid;
+      }
+    }
+
     return a.distance_from_original_goal + lateral_cost * a.lateral_offset <
            b.distance_from_original_goal + lateral_cost * b.lateral_offset;
   }
@@ -77,7 +101,7 @@ GoalSearcher::GoalSearcher(
 {
 }
 
-GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
+GoalCandidates GoalSearcher::search()
 {
   GoalCandidates goal_candidates{};
 
@@ -101,7 +125,7 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
   const auto goal_arc_coords =
-    lanelet::utils::getArcCoordinates(pull_over_lanes, original_goal_pose);
+    lanelet::utils::getArcCoordinates(pull_over_lanes, reference_goal_pose_);
   const double s_start = std::max(0.0, goal_arc_coords.length - backward_length);
   const double s_end = goal_arc_coords.length + forward_length;
   auto center_line_path = utils::resamplePathWithSpline(
@@ -131,10 +155,11 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
     const double sign = left_side_parking_ ? -1.0 : 1.0;
     const double offset_from_center_line =
       -distance_from_bound.value() + sign * margin_from_boundary;
+    // original means non lateral offset poses
     const Pose original_search_pose = calcOffsetPose(center_pose, 0, offset_from_center_line, 0);
     const double longitudinal_distance_from_original_goal =
       std::abs(motion_utils::calcSignedArcLength(
-        center_line_path.points, original_goal_pose.position, original_search_pose.position));
+        center_line_path.points, reference_goal_pose_.position, original_search_pose.position));
     original_search_poses.push_back(original_search_pose);  // for createAreaPolygon
     Pose search_pose{};
     // search goal_pose in lateral direction
@@ -170,15 +195,73 @@ GoalCandidates GoalSearcher::search(const Pose & original_goal_pose)
   }
   createAreaPolygons(original_search_poses);
 
-  if (parameters_.goal_priority == "minimum_weighted_distance") {
-    std::sort(
-      goal_candidates.begin(), goal_candidates.end(),
-      SortByWeightedDistance(parameters_.minimum_weighted_distance_lateral_weight));
-  } else if (parameters_.goal_priority == "minimum_longitudinal_distance") {
-    std::sort(goal_candidates.begin(), goal_candidates.end(), SortByLongitudinalDistance());
-  }
+  update(goal_candidates);
 
   return goal_candidates;
+}
+
+void GoalSearcher::countObjectsToAvoid(
+  GoalCandidates & goal_candidates, const PredictedObjects & objects) const
+{
+  const auto & route_handler = planner_data_->route_handler;
+  const double forward_length = parameters_.forward_goal_search_length;
+  const double backward_length = parameters_.backward_goal_search_length;
+
+  // calculate search start/end pose in pull over lanes
+  const auto [search_start_pose, search_end_pose] = std::invoke([&]() -> std::pair<Pose, Pose> {
+    const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
+      *route_handler, left_side_parking_, parameters_.backward_goal_search_length,
+      parameters_.forward_goal_search_length);
+    const auto goal_arc_coords =
+      lanelet::utils::getArcCoordinates(pull_over_lanes, reference_goal_pose_);
+    const double s_start = std::max(0.0, goal_arc_coords.length - backward_length);
+    const double s_end = goal_arc_coords.length + forward_length;
+    const auto center_line_path = utils::resamplePathWithSpline(
+      route_handler->getCenterLinePath(pull_over_lanes, s_start, s_end),
+      parameters_.goal_search_interval);
+    return std::make_pair(
+      center_line_path.points.front().point.pose, center_line_path.points.back().point.pose);
+  });
+
+  // generate current lane center line path to check collision with objects
+  const auto current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, parameters_.backward_goal_search_length, parameters_.forward_goal_search_length,
+    /*forward_only_in_route*/ false);
+  const auto current_center_line_path = std::invoke([&]() -> PathWithLaneId {
+    const double s_start =
+      lanelet::utils::getArcCoordinates(current_lanes, search_start_pose).length;
+    const double s_end = lanelet::utils::getArcCoordinates(current_lanes, search_end_pose).length;
+    return utils::resamplePathWithSpline(
+      route_handler->getCenterLinePath(current_lanes, s_start, s_end), 1.0);
+  });
+
+  // reset num_objects_to_avoid
+  for (auto & goal_candidate : goal_candidates) {
+    goal_candidate.num_objects_to_avoid = 0;
+  }
+
+  // count number of objects to avoid
+  for (const auto & object : objects.objects) {
+    for (const auto & p : current_center_line_path.points) {
+      const auto transformed_vehicle_footprint =
+        transformVector(vehicle_footprint_, tier4_autoware_utils::pose2transform(p.point.pose));
+      const auto obj_polygon = tier4_autoware_utils::toPolygon2d(object);
+      const double distance = boost::geometry::distance(obj_polygon, transformed_vehicle_footprint);
+      if (distance > parameters_.object_recognition_collision_check_margin) {
+        continue;
+      }
+      const Pose & object_pose = object.kinematics.initial_pose_with_covariance.pose;
+      const double s_object = lanelet::utils::getArcCoordinates(current_lanes, object_pose).length;
+      for (auto & goal_candidate : goal_candidates) {
+        const Pose & goal_pose = goal_candidate.goal_pose;
+        const double s_goal = lanelet::utils::getArcCoordinates(current_lanes, goal_pose).length;
+        if (s_object < s_goal) {
+          goal_candidate.num_objects_to_avoid++;
+        }
+      }
+      break;
+    }
+  }
 }
 
 void GoalSearcher::update(GoalCandidates & goal_candidates) const
@@ -190,6 +273,22 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
     parameters_.forward_goal_search_length);
   const auto [pull_over_lane_stop_objects, others] =
     utils::path_safety_checker::separateObjectsByLanelets(stop_objects, pull_over_lanes);
+
+  if (parameters_.prioritize_goals_before_objects) {
+    countObjectsToAvoid(goal_candidates, pull_over_lane_stop_objects);
+  }
+
+  if (parameters_.goal_priority == "minimum_weighted_distance") {
+    std::sort(
+      goal_candidates.begin(), goal_candidates.end(),
+      SortByWeightedDistance(
+        parameters_.minimum_weighted_distance_lateral_weight,
+        parameters_.prioritize_goals_before_objects));
+  } else if (parameters_.goal_priority == "minimum_longitudinal_distance") {
+    std::sort(
+      goal_candidates.begin(), goal_candidates.end(),
+      SortByLongitudinalDistance(parameters_.prioritize_goals_before_objects));
+  }
 
   // update is_safe
   for (auto & goal_candidate : goal_candidates) {
@@ -215,7 +314,7 @@ void GoalSearcher::update(GoalCandidates & goal_candidates) const
   }
 }
 
-bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & dynamic_objects) const
+bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & objects) const
 {
   if (parameters_.use_occupancy_grid_for_goal_search) {
     const Pose pose_grid_coords = global2local(occupancy_grid_map_->getMap(), pose);
@@ -229,7 +328,7 @@ bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & dy
 
   if (parameters_.use_object_recognition) {
     if (utils::checkCollisionBetweenFootprintAndObjects(
-          vehicle_footprint_, pose, dynamic_objects,
+          vehicle_footprint_, pose, objects,
           parameters_.object_recognition_collision_check_margin)) {
       return true;
     }
@@ -238,7 +337,7 @@ bool GoalSearcher::checkCollision(const Pose & pose, const PredictedObjects & dy
 }
 
 bool GoalSearcher::checkCollisionWithLongitudinalDistance(
-  const Pose & ego_pose, const PredictedObjects & dynamic_objects) const
+  const Pose & ego_pose, const PredictedObjects & objects) const
 {
   if (
     parameters_.use_occupancy_grid_for_goal_search &&
@@ -274,8 +373,7 @@ bool GoalSearcher::checkCollisionWithLongitudinalDistance(
     if (
       utils::calcLongitudinalDistanceFromEgoToObjects(
         ego_pose, planner_data_->parameters.base_link2front,
-        planner_data_->parameters.base_link2rear,
-        dynamic_objects) < parameters_.longitudinal_margin) {
+        planner_data_->parameters.base_link2rear, objects) < parameters_.longitudinal_margin) {
       return true;
     }
   }

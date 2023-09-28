@@ -36,14 +36,16 @@ public:
     const GoalPlannerParameters & parameters, const LinearRing2d & vehicle_footprint,
     const std::shared_ptr<OccupancyGridBasedCollisionDetector> & occupancy_grid_map);
 
-  GoalCandidates search(const Pose & original_goal_pose) override;
+  GoalCandidates search() override;
   void update(GoalCandidates & goal_candidates) const override;
 
 private:
+  void countObjectsToAvoid(
+    GoalCandidates & goal_candidates, const PredictedObjects & objects) const;
   void createAreaPolygons(std::vector<Pose> original_search_poses);
-  bool checkCollision(const Pose & pose, const PredictedObjects & dynamic_objects) const;
+  bool checkCollision(const Pose & pose, const PredictedObjects & objects) const;
   bool checkCollisionWithLongitudinalDistance(
-    const Pose & ego_pose, const PredictedObjects & dynamic_objects) const;
+    const Pose & ego_pose, const PredictedObjects & objects) const;
   BasicPolygons2d getNoParkingAreaPolygons(const lanelet::ConstLanelets & lanes) const;
   BasicPolygons2d getNoStoppingAreaPolygons(const lanelet::ConstLanelets & lanes) const;
   bool isInAreas(const LinearRing2d & footprint, const BasicPolygons2d & areas) const;

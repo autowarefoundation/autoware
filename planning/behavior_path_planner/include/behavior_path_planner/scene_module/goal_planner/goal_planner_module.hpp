@@ -267,6 +267,9 @@ private:
   BehaviorModuleOutput planWithGoalModification();
   BehaviorModuleOutput planWaitingApprovalWithGoalModification();
   void selectSafePullOverPath();
+  void sortPullOverPathCandidatesByGoalPriority(
+    std::vector<PullOverPath> & pull_over_path_candidates,
+    const GoalCandidates & goal_candidates) const;
 
   // deal with pull over partial paths
   PathWithLaneId getCurrentPath() const;

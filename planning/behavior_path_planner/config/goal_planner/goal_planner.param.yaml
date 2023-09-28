@@ -12,7 +12,7 @@
         goal_priority: "minimum_weighted_distance" # "minimum_weighted_distance" or "minimum_longitudinal_distance"
         minimum_weighted_distance:
           lateral_weight: 40.0
-        path_priority: "efficient_path" # "efficient_path" or "close_goal"
+        prioritize_goals_before_objects: true
         parking_policy: "left_side" # "left_side" or "right_side"
         forward_goal_search_length: 20.0
         backward_goal_search_length: 20.0
@@ -47,6 +47,8 @@
         decide_path_distance: 10.0
         maximum_deceleration: 1.0
         maximum_jerk: 1.0
+        path_priority: "efficient_path" # "efficient_path" or "close_goal"
+        efficient_path_order: ["SHIFT", "ARC_FORWARD", "ARC_BACKWARD"] # only lane based pull over(exclude freespace parking)
 
         # shift parking
         shift_parking:
