@@ -1,6 +1,7 @@
 <launch>
-  <arg name="onnx_file" default="$(find-pkg-share traffic_light_ssd_fine_detector)/data/mb2-ssd-lite-tlr.onnx"/>
-  <arg name="label_file" default="$(find-pkg-share traffic_light_ssd_fine_detector)/data/voc_labels_tl.txt"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="onnx_file" default="$(var data_path)/traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx"/>
+  <arg name="label_file" default="$(var data_path)/traffic_light_ssd_fine_detector/voc_labels_tl.txt"/>
   <arg name="mode" default="FP32"/>
   <arg name="dnn_header_type" default="pytorch" description="pytorch or mmdetection"/>
   <arg name="input/image" default="/image_raw"/>

@@ -122,15 +122,16 @@ Based on the camera image and the global ROI array detected by `map_based_detect
 
 ### Node Parameters
 
-| Name               | Type   | Default Value                  | Description                                                          |
-| ------------------ | ------ | ------------------------------ | -------------------------------------------------------------------- |
-| `onnx_file`        | string | "./data/mb2-ssd-lite-tlr.onnx" | The onnx file name for yolo model                                    |
-| `label_file`       | string | "./data/voc_labels_tl.txt"     | The label file with label names for detected objects written on it   |
-| `dnn_header_type`  | string | "pytorch"                      | Name of DNN trained toolbox: "pytorch" or "mmdetection"              |
-| `mode`             | string | "FP32"                         | The inference mode: "FP32", "FP16", "INT8"                           |
-| `max_batch_size`   | int    | 8                              | The size of the batch processed at one time by inference by TensorRT |
-| `approximate_sync` | bool   | false                          | Flag for whether to ues approximate sync policy                      |
-| `build_only`       | bool   | false                          | shutdown node after TensorRT engine file is built                    |
+| Name               | Type   | Default Value                                                            | Description                                                          |
+| ------------------ | ------ | ------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `data_path`        | string | "$(env HOME)/autoware_data"                                              | packages data and artifacts directory path                           |
+| `onnx_file`        | string | "$(var data_path)/traffic_light_ssd_fine_detector/mb2-ssd-lite-tlr.onnx" | The onnx file name for yolo model                                    |
+| `label_file`       | string | "$(var data_path)/traffic_light_ssd_fine_detector/voc_labels_tl.txt"     | The label file with label names for detected objects written on it   |
+| `dnn_header_type`  | string | "pytorch"                                                                | Name of DNN trained toolbox: "pytorch" or "mmdetection"              |
+| `mode`             | string | "FP32"                                                                   | The inference mode: "FP32", "FP16", "INT8"                           |
+| `max_batch_size`   | int    | 8                                                                        | The size of the batch processed at one time by inference by TensorRT |
+| `approximate_sync` | bool   | false                                                                    | Flag for whether to ues approximate sync policy                      |
+| `build_only`       | bool   | false                                                                    | shutdown node after TensorRT engine file is built                    |
 
 ## Assumptions / Known limits
 
