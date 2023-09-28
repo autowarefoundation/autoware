@@ -911,7 +911,9 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     filterTargetObjects(attention_lanelets, adjacent_lanelets, intersection_area);
 
   const bool has_collision = checkCollision(
-    *path, target_objects, path_lanelets, closest_idx, time_delay, traffic_prioritized_level);
+    *path, target_objects, path_lanelets, closest_idx,
+    std::min<size_t>(occlusion_stop_line_idx, path->points.size() - 1), time_delay,
+    traffic_prioritized_level);
   collision_state_machine_.setStateWithMarginTime(
     has_collision ? StateMachine::State::STOP : StateMachine::State::GO,
     logger_.get_child("collision state_machine"), *clock_);
@@ -1097,7 +1099,8 @@ autoware_auto_perception_msgs::msg::PredictedObjects IntersectionModule::filterT
 bool IntersectionModule::checkCollision(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const autoware_auto_perception_msgs::msg::PredictedObjects & objects,
-  const util::PathLanelets & path_lanelets, const int closest_idx, const double time_delay,
+  const util::PathLanelets & path_lanelets, const size_t closest_idx,
+  const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
   const util::TrafficPrioritizedLevel & traffic_prioritized_level)
 {
   using lanelet::utils::getArcCoordinates;
@@ -1106,9 +1109,11 @@ bool IntersectionModule::checkCollision(
   // check collision between target_objects predicted path and ego lane
   // cut the predicted path at passing_time
   const auto time_distance_array = util::calcIntersectionPassingTime(
-    path, planner_data_, associative_ids_, closest_idx, time_delay,
-    planner_param_.common.intersection_velocity,
-    planner_param_.collision_detection.minimum_ego_predicted_velocity);
+    path, planner_data_, associative_ids_, closest_idx, last_intersection_stop_line_candidate_idx,
+    time_delay, planner_param_.common.intersection_velocity,
+    planner_param_.collision_detection.minimum_ego_predicted_velocity,
+    planner_param_.collision_detection.use_upstream_velocity,
+    planner_param_.collision_detection.minimum_upstream_velocity);
   const double passing_time = time_distance_array.back().first;
   auto target_objects = objects;
   util::cutPredictPathWithDuration(&target_objects, clock_, passing_time);

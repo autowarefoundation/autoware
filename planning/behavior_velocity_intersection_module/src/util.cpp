@@ -1108,8 +1108,9 @@ void cutPredictPathWithDuration(
 TimeDistanceArray calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data, const std::set<int> & associative_ids,
-  const int closest_idx, const double time_delay, const double intersection_velocity,
-  const double minimum_ego_velocity)
+  const size_t closest_idx, const size_t last_intersection_stop_line_candidate_idx,
+  const double time_delay, const double intersection_velocity, const double minimum_ego_velocity,
+  const bool use_upstream_velocity, const double minimum_upstream_velocity)
 {
   double dist_sum = 0.0;
   int assigned_lane_found = false;
@@ -1119,7 +1120,9 @@ TimeDistanceArray calcIntersectionPassingTime(
   PathWithLaneId reference_path;
   for (size_t i = closest_idx; i < path.points.size(); ++i) {
     auto reference_point = path.points.at(i);
-    reference_point.point.longitudinal_velocity_mps = intersection_velocity;
+    if (!use_upstream_velocity) {
+      reference_point.point.longitudinal_velocity_mps = intersection_velocity;
+    }
     reference_path.points.push_back(reference_point);
     bool has_objective_lane_id = hasLaneIds(path.points.at(i), associative_ids);
     if (assigned_lane_found && !has_objective_lane_id) {
@@ -1150,10 +1153,13 @@ TimeDistanceArray calcIntersectionPassingTime(
     // use average velocity between p1 and p2
     const double average_velocity =
       (p1.point.longitudinal_velocity_mps + p2.point.longitudinal_velocity_mps) / 2.0;
-    passing_time +=
-      (dist / std::max<double>(
-                minimum_ego_velocity,
-                average_velocity));  // to avoid zero-division
+    const double minimum_ego_velocity_division =
+      (use_upstream_velocity && i > last_intersection_stop_line_candidate_idx)
+        ? minimum_upstream_velocity /* to avoid null division */
+        : minimum_ego_velocity;
+    const double passing_velocity =
+      std::max<double>(minimum_ego_velocity_division, average_velocity);
+    passing_time += (dist / passing_velocity);
 
     time_distance_array.emplace_back(passing_time, dist_sum);
   }

@@ -95,6 +95,8 @@ public:
         double collision_end_margin_time;    //! end margin time to check collision
       } not_prioritized;
       double keep_detection_vel_thr;  //! keep detection if ego is ego.vel < keep_detection_vel_thr
+      bool use_upstream_velocity;
+      double minimum_upstream_velocity;
     } collision_detection;
     struct Occlusion
     {
@@ -260,7 +262,8 @@ private:
   bool checkCollision(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const autoware_auto_perception_msgs::msg::PredictedObjects & target_objects,
-    const util::PathLanelets & path_lanelets, const int closest_idx, const double time_delay,
+    const util::PathLanelets & path_lanelets, const size_t closest_idx,
+    const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
     const util::TrafficPrioritizedLevel & traffic_prioritized_level);
 
   bool isOcclusionCleared(
