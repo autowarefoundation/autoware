@@ -3,7 +3,8 @@
   <arg name="input/image" default="/sensing/camera/camera0/image_rect_color"/>
   <arg name="output/objects" default="/perception/object_recognition/detection/rois0"/>
   <arg name="model_name" default="yolox-tiny"/>
-  <arg name="model_path" default="$(find-pkg-share tensorrt_yolox)/data"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="model_path" default="$(var data_path)/tensorrt_yolox"/>
   <arg name="score_threshold" default="0.35"/>
   <arg name="nms_threshold" default="0.7"/>
   <arg name="precision" default="fp16" description="operation precision to be used on inference. Valid value is one of: [fp32, fp16, int8]"/>
