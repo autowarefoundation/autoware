@@ -13,10 +13,10 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>eigen</buildtool_depend>
 
   <depend>diagnostic_msgs</depend>
   <depend>diagnostic_updater</depend>
-  <depend>eigen</depend>
   <depend>nav_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>

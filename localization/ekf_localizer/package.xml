@@ -24,8 +24,6 @@
   <depend>kalman_filter</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
-  <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>

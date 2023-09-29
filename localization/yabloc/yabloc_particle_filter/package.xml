@@ -13,7 +13,6 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>geometry_msgs</depend>
-  <depend>libgoogle-glog-dev</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>sophus</depend>
@@ -22,7 +21,6 @@
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
-  <depend>tf2_sensor_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
   <depend>yabloc_common</depend>

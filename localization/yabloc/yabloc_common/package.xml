@@ -13,22 +13,16 @@
 
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>cv_bridge</depend>
-  <depend>geographiclib</depend>
   <depend>geometry_msgs</depend>
   <depend>lanelet2_core</depend>
   <depend>lanelet2_extension</depend>
-  <depend>lanelet2_io</depend>
-  <depend>libgoogle-glog-dev</depend>
   <depend>pcl_conversions</depend>
-  <depend>rcl_interfaces</depend>
   <depend>rclcpp</depend>
-  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>signal_processing</depend>
   <depend>sophus</depend>
   <depend>std_msgs</depend>
   <depend>tf2_ros</depend>
-  <depend>ublox_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

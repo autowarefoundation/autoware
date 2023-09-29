@@ -15,11 +15,7 @@
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>rclcpp</depend>
-  <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>std_srvs</depend>
-  <depend>tf2</depend>
   <depend>tier4_localization_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>yabloc_common</depend>

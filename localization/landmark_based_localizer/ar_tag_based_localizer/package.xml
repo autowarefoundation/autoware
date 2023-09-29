@@ -14,10 +14,8 @@
   <depend>aruco</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_msgs</depend>
-  <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>rclcpp</depend>
-  <depend>sensor_msgs</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
