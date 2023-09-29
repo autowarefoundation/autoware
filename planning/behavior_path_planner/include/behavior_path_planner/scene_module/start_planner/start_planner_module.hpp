@@ -63,6 +63,9 @@ struct PullOutStatus
   bool is_safe_dynamic_objects{false};  // current path is safe against dynamic objects
   bool back_finished{false};  // if backward driving is not required, this is also set to true
                               // todo: rename to clear variable name.
+  bool backward_driving_complete{
+    false};  // after backward driving is complete, this is set to true (warning: this is set to
+             // false at next cycle after backward driving is complete)
   Pose pull_out_start_pose{};
 
   PullOutStatus() {}
@@ -87,12 +90,13 @@ public:
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
   // TODO(someone): remove this, and use base class function
-  [[deprecated]] ModuleStatus updateState() override;
+  [[deprecated]] void updateCurrentState() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
   void processOnEntry() override;
   void processOnExit() override;
+  void updateData() override;
 
   void setParameters(const std::shared_ptr<StartPlannerParameters> & parameters)
   {
