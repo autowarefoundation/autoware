@@ -134,43 +134,34 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const auto & p = planner_data_->parameters;
     planner_manager_ = std::make_shared<PlannerManager>(*this, p.verbose);
 
-    const auto register_and_create_publisher = [&](const auto & manager) {
-      const auto & module_name = manager->name();
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        module_name, create_publisher<Path>(path_candidate_name_space + module_name, 1));
-      path_reference_publishers_.emplace(
-        module_name, create_publisher<Path>(path_reference_name_space + module_name, 1));
-    };
+    const auto register_and_create_publisher =
+      [&](const auto & manager, const bool create_publishers) {
+        const auto & module_name = manager->name();
+        planner_manager_->registerSceneModuleManager(manager);
+        if (create_publishers) {
+          path_candidate_publishers_.emplace(
+            module_name, create_publisher<Path>(path_candidate_name_space + module_name, 1));
+          path_reference_publishers_.emplace(
+            module_name, create_publisher<Path>(path_reference_name_space + module_name, 1));
+        }
+      };
 
     if (p.config_start_planner.enable_module) {
       auto manager =
         std::make_shared<StartPlannerModuleManager>(this, "start_planner", p.config_start_planner);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        "start_planner", create_publisher<Path>(path_candidate_name_space + "start_planner", 1));
-      path_reference_publishers_.emplace(
-        "start_planner", create_publisher<Path>(path_reference_name_space + "start_planner", 1));
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_goal_planner.enable_module) {
       auto manager =
         std::make_shared<GoalPlannerModuleManager>(this, "goal_planner", p.config_goal_planner);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        "goal_planner", create_publisher<Path>(path_candidate_name_space + "goal_planner", 1));
-      path_reference_publishers_.emplace(
-        "goal_planner", create_publisher<Path>(path_reference_name_space + "goal_planner", 1));
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_side_shift.enable_module) {
       auto manager =
         std::make_shared<SideShiftModuleManager>(this, "side_shift", p.config_side_shift);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        "side_shift", create_publisher<Path>(path_candidate_name_space + "side_shift", 1));
-      path_reference_publishers_.emplace(
-        "side_shift", create_publisher<Path>(path_reference_name_space + "side_shift", 1));
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_lane_change_left.enable_module) {
@@ -178,7 +169,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_lane_change_left, route_handler::Direction::LEFT,
         LaneChangeModuleType::NORMAL);
-      register_and_create_publisher(manager);
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_lane_change_right.enable_module) {
@@ -186,7 +177,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_lane_change_right, route_handler::Direction::RIGHT,
         LaneChangeModuleType::NORMAL);
-      register_and_create_publisher(manager);
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_ext_request_lane_change_right.enable_module) {
@@ -194,7 +185,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_ext_request_lane_change_right, route_handler::Direction::RIGHT,
         LaneChangeModuleType::EXTERNAL_REQUEST);
-      register_and_create_publisher(manager);
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_ext_request_lane_change_left.enable_module) {
@@ -202,35 +193,25 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       auto manager = std::make_shared<LaneChangeModuleManager>(
         this, module_topic, p.config_ext_request_lane_change_left, route_handler::Direction::LEFT,
         LaneChangeModuleType::EXTERNAL_REQUEST);
-      register_and_create_publisher(manager);
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_avoidance.enable_module) {
       auto manager =
         std::make_shared<AvoidanceModuleManager>(this, "avoidance", p.config_avoidance);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        "avoidance", create_publisher<Path>(path_candidate_name_space + "avoidance", 1));
-      path_reference_publishers_.emplace(
-        "avoidance", create_publisher<Path>(path_reference_name_space + "avoidance", 1));
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_avoidance_by_lc.enable_module) {
       auto manager = std::make_shared<AvoidanceByLaneChangeModuleManager>(
         this, "avoidance_by_lane_change", p.config_avoidance_by_lc);
-      planner_manager_->registerSceneModuleManager(manager);
-      path_candidate_publishers_.emplace(
-        "avoidance_by_lane_change",
-        create_publisher<Path>(path_candidate_name_space + "avoidance_by_lane_change", 1));
-      path_reference_publishers_.emplace(
-        "avoidance_by_lane_change",
-        create_publisher<Path>(path_reference_name_space + "avoidance_by_lane_change", 1));
+      register_and_create_publisher(manager, true);
     }
 
     if (p.config_dynamic_avoidance.enable_module) {
       auto manager = std::make_shared<DynamicAvoidanceModuleManager>(
         this, "dynamic_avoidance", p.config_dynamic_avoidance);
-      planner_manager_->registerSceneModuleManager(manager);
+      register_and_create_publisher(manager, false);
     }
   }
 
