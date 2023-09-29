@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>predicted_path_checker</name>
+  <version>1.0.0</version>
+  <description>The predicted_path_checker package</description>
+
+  <maintainer email="berkay@leodrive.ai">Berkay Karaman</maintainer>
+  <license>Apache 2.0</license>
+  <author email="berkay@leodrive.ai">Berkay Karaman</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>boost</depend>
+  <depend>component_interface_specs</depend>
+  <depend>component_interface_utils</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
+  <depend>motion_utils</depend>
+  <depend>nav_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_control_msgs</depend>
+  <depend>tier4_external_api_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>vehicle_info_util</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>eigen</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

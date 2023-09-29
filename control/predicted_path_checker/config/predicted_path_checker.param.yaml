@@ -1,0 +1,22 @@
+/**:
+  ros__parameters:
+    # Node
+    update_rate: 10.0
+    delay_time: 0.17
+    max_deceleration: 1.5
+    resample_interval: 0.5
+    stop_margin: 0.5 # [m]
+    ego_nearest_dist_threshold: 3.0 # [m]
+    ego_nearest_yaw_threshold: 1.046 # [rad] = 60 [deg]
+    min_trajectory_check_length: 1.5 # [m]
+    trajectory_check_time: 3.0
+    distinct_point_distance_threshold: 0.3
+    distinct_point_yaw_threshold: 5.0 # [deg]
+    filtering_distance_threshold: 1.5 # [m]
+    use_object_prediction: true
+
+    collision_checker_params:
+      width_margin: 0.2
+      chattering_threshold: 0.2
+      z_axis_filtering_buffer: 0.3
+      enable_z_axis_obstacle_filtering: false

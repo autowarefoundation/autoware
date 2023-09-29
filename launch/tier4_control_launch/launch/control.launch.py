@@ -63,6 +63,8 @@ def launch_setup(context, *args, **kwargs):
         obstacle_collision_checker_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     with open(LaunchConfiguration("aeb_param_path").perform(context), "r") as f:
         aeb_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(LaunchConfiguration("predicted_path_checker_param_path").perform(context), "r") as f:
+        predicted_path_checker_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     controller_component = ComposableNode(
         package="trajectory_follower_node",
@@ -173,6 +175,34 @@ def launch_setup(context, *args, **kwargs):
     autonomous_emergency_braking_loader = LoadComposableNodes(
         condition=IfCondition(LaunchConfiguration("enable_autonomous_emergency_braking")),
         composable_node_descriptions=[autonomous_emergency_braking],
+        target_container="/control/control_container",
+    )
+
+    # autonomous emergency braking
+    predicted_path_checker = ComposableNode(
+        package="predicted_path_checker",
+        plugin="autoware::motion::control::predicted_path_checker::PredictedPathCheckerNode",
+        name="predicted_path_checker",
+        remappings=[
+            ("~/input/objects", "/perception/object_recognition/objects"),
+            ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
+            ("~/input/current_accel", "/localization/acceleration"),
+            ("~/input/odometry", "/localization/kinematic_state"),
+            (
+                "~/input/predicted_trajectory",
+                "/control/trajectory_follower/lateral/predicted_trajectory",
+            ),
+        ],
+        parameters=[
+            vehicle_info_param,
+            predicted_path_checker_param,
+        ],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
+    predicted_path_checker_loader = LoadComposableNodes(
+        condition=IfCondition(LaunchConfiguration("enable_predicted_path_checker")),
+        composable_node_descriptions=[predicted_path_checker],
         target_container="/control/control_container",
     )
 
@@ -338,6 +368,7 @@ def launch_setup(context, *args, **kwargs):
             external_cmd_converter_loader,
             obstacle_collision_checker_loader,
             autonomous_emergency_braking_loader,
+            predicted_path_checker_loader,
         ]
     )
 
@@ -372,6 +403,7 @@ def generate_launch_description():
     add_launch_arg("obstacle_collision_checker_param_path")
     add_launch_arg("external_cmd_selector_param_path")
     add_launch_arg("aeb_param_path")
+    add_launch_arg("predicted_path_checker_param_path")
     add_launch_arg("enable_autonomous_emergency_braking")
     add_launch_arg("check_external_emergency_heartbeat")
 

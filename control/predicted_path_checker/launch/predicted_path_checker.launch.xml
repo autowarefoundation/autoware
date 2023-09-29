@@ -1,0 +1,21 @@
+<launch>
+  <arg name="input/objects" default="/perception/object_recognition/objects"/>
+  <arg name="input/reference_trajectory" default="/planning/scenario_planning/trajectory"/>
+  <arg name="input/predicted_trajectory" default="/control/trajectory_follower/lateral/predicted_trajectory"/>
+  <arg name="input/odometry" default="/localization/kinematic_state"/>
+  <arg name="input/current_accel" default="/localization/acceleration"/>
+
+  <arg name="config_file" default="$(find-pkg-share predicted_path_checker)/config/predicted_path_checker.param.yaml"/>
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml"/>
+
+  <node pkg="predicted_path_checker" exec="predicted_path_checker_node" name="predicted_path_checker_node" output="screen">
+    <param from="$(var config_file)"/>
+    <param from="$(var vehicle_info_param_file)"/>
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <remap from="~/input/reference_trajectory" to="$(var input/reference_trajectory)"/>
+    <remap from="~/input/predicted_trajectory" to="$(var input/predicted_trajectory)"/>
+    <remap from="~/input/odometry" to="$(var input/odometry)"/>
+    <remap from="~/input/current_accel" to="$(var input/current_accel)"/>
+  </node>
+</launch>
