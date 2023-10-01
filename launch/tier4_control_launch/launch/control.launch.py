@@ -404,6 +404,7 @@ def generate_launch_description():
     add_launch_arg("external_cmd_selector_param_path")
     add_launch_arg("aeb_param_path")
     add_launch_arg("predicted_path_checker_param_path")
+    add_launch_arg("enable_predicted_path_checker")
     add_launch_arg("enable_autonomous_emergency_braking")
     add_launch_arg("check_external_emergency_heartbeat")
 
