@@ -1251,7 +1251,7 @@ LaneletsData MapBasedPredictionNode::getCurrentLanelets(const TrackedObject & ob
     for (const auto & lanelet : surrounding_opposite_lanelets) {
       // Check if the close lanelets meet the necessary condition for start lanelets
       // except for distance checking
-      if (!checkCloseLaneletCondition(lanelet, object, false)) {
+      if (!checkCloseLaneletCondition(lanelet, object)) {
         continue;
       }
 
@@ -1271,8 +1271,7 @@ LaneletsData MapBasedPredictionNode::getCurrentLanelets(const TrackedObject & ob
 }
 
 bool MapBasedPredictionNode::checkCloseLaneletCondition(
-  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
-  const bool check_distance)
+  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object)
 {
   // Step1. If we only have one point in the centerline, we will ignore the lanelet
   if (lanelet.second.centerline().size() <= 1) {
@@ -1307,7 +1306,7 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   const double object_vel = object.kinematics.twist_with_covariance.twist.linear.x;
   const bool is_yaw_reversed =
     M_PI - delta_yaw_threshold_for_searching_lanelet_ < abs_norm_delta && object_vel < 0.0;
-  if (check_distance && dist_threshold_for_searching_lanelet_ < lanelet.first) {
+  if (dist_threshold_for_searching_lanelet_ < lanelet.first) {
     return false;
   }
   if (!is_yaw_reversed && delta_yaw_threshold_for_searching_lanelet_ < abs_norm_delta) {
