@@ -230,6 +230,12 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       debug_data_.stuck_targets, "stuck_targets", module_id_, now, 0.99, 0.99, 0.2),
     &debug_marker_array, now);
 
+  appendMarkerArray(
+    debug::createObjectsMarkerArray(
+      debug_data_.blocking_attention_objects, "blocking_attention_objects", module_id_, now, 0.99,
+      0.99, 0.6),
+    &debug_marker_array, now);
+
   /*
   appendMarkerArray(
     createPoseMarkerArray(

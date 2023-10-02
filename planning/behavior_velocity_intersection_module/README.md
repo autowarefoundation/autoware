@@ -94,6 +94,16 @@ If a stopline is associated with the intersection lane, that line is used as the
 
 To avoid a rapid braking, if deceleration and jerk more than a threshold (`behavior_velocity_planner.max_accel` and `behavior_velocity_planner.max_jerk`) are needed to stop just in front of the attention area, this module does not insert stopline after passing the default stopline position.
 
+### Occlusion detection
+
+If the flag `occlusion.enable` is true this module checks if there is sufficient field of view (FOV) on the attention area up to `occlusion.occlusion_attention_area_length`. If FOV is not clear enough the ego vehicle will once stop at the _default stop line_ for `occlusion.before_creep_stop_time`, and then slowly creep toward _occlusion peeking stop line_ at the speed of `occlusion.occlusion_creep_velocity` if `occlusion.enable_creeping` is true. During the creeping if collision is detected this module inserts a stop line instantly, and if the FOV gets sufficiently clear the _intersection occlusion_ wall will disappear. If occlusion is cleared and no collision is detected the ego vehicle will pass the intersection.
+
+The occlusion is detected as the common area of occlusion attention area(which is partially the same as the normal attention area) and the unknown cells of the occupancy grid map. The occupancy grid map is denoised using morphology with the window size of `occlusion.denoise_kernel`. The occlusion attention area lanes are discretized to line strings and they are used to generate a grid whose each cell represents the distance from the ego path along the lane as shown below.
+
+![occlusion_detection](./docs/occlusion_grid.drawio.svg)
+
+If the nearest occlusion cell value is below the threshold, occlusion is detected. It is expected that the occlusion gets cleared as the vehicle approaches the occlusion peeking stop line.
+
 ### Module Parameters
 
 | Parameter                                           | Type   | Description                                                                                    |
