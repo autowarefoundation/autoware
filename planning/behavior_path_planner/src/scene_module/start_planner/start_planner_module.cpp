@@ -136,6 +136,12 @@ void StartPlannerModule::updateData()
   if (has_received_new_route) {
     status_ = PullOutStatus();
   }
+  // check safety status after back finished
+  if (parameters_->safety_check_params.enable_safety_check && status_.back_finished) {
+    status_.is_safe_dynamic_objects = isSafePath();
+  } else {
+    status_.is_safe_dynamic_objects = true;
+  }
 }
 
 bool StartPlannerModule::isExecutionRequested() const
@@ -179,17 +185,19 @@ bool StartPlannerModule::isExecutionRequested() const
 
 bool StartPlannerModule::isExecutionReady() const
 {
+  // when is_safe_static_objects is false,the path is not generated and approval shouldn't be
+  // allowed
   if (!status_.is_safe_static_objects) {
+    RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against static objects");
     return false;
   }
 
-  if (status_.pull_out_path.partial_paths.empty()) {
-    return true;
-  }
-
-  if (status_.is_safe_static_objects && parameters_->safety_check_params.enable_safety_check) {
+  if (
+    parameters_->safety_check_params.enable_safety_check && status_.back_finished &&
+    isWaitingApproval()) {
     if (!isSafePath()) {
       RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
+      stop_pose_ = planner_data_->self_odometry->pose.pose;
       return false;
     }
   }
@@ -221,6 +229,7 @@ void StartPlannerModule::updateCurrentState()
   if (status_.backward_driving_complete) {
     current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
   }
+
   print(magic_enum::enum_name(from), magic_enum::enum_name(current_state_));
 }
 
@@ -252,12 +261,42 @@ BehaviorModuleOutput StartPlannerModule::plan()
   }
 
   PathWithLaneId path;
+
+  // Check if backward motion is finished
   if (status_.back_finished) {
+    // Increment path index if the current path is finished
     if (hasFinishedCurrentPath()) {
       RCLCPP_INFO(getLogger(), "Increment path index");
       incrementPathIndex();
     }
-    path = getCurrentPath();
+
+    if (!status_.is_safe_dynamic_objects && !isWaitingApproval() && !status_.has_stop_point) {
+      auto current_path = getCurrentPath();
+      const auto stop_path =
+        behavior_path_planner::utils::start_goal_planner_common::generateFeasibleStopPath(
+          current_path, planner_data_, *stop_pose_, parameters_->maximum_deceleration_for_stop,
+          parameters_->maximum_jerk_for_stop);
+
+      // Insert stop point in the path if needed
+      if (stop_path) {
+        RCLCPP_ERROR_THROTTLE(
+          getLogger(), *clock_, 5000, "Insert stop point in the path because of dynamic objects");
+        path = *stop_path;
+        status_.prev_stop_path_after_approval = std::make_shared<PathWithLaneId>(path);
+        status_.has_stop_point = true;
+      } else {
+        path = current_path;
+      }
+    } else if (!isWaitingApproval() && status_.has_stop_point) {
+      // Delete stop point if conditions are met
+      if (status_.is_safe_dynamic_objects && isStopped()) {
+        status_.has_stop_point = false;
+        path = getCurrentPath();
+      }
+      path = *status_.prev_stop_path_after_approval;
+    } else {
+      path = getCurrentPath();
+    }
   } else {
     path = status_.backward_path;
   }

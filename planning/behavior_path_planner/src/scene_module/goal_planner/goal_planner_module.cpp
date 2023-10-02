@@ -365,12 +365,7 @@ bool GoalPlannerModule::isExecutionRequested() const
 
 bool GoalPlannerModule::isExecutionReady() const
 {
-  // TODO(Sugahara): should check safe or not but in the current flow, it is not possible.
-  if (status_.pull_over_path == nullptr) {
-    return true;
-  }
-
-  if (status_.is_safe_static_objects && parameters_->safety_check_params.enable_safety_check) {
+  if (parameters_->safety_check_params.enable_safety_check && isWaitingApproval()) {
     if (!isSafePath()) {
       RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
       return false;

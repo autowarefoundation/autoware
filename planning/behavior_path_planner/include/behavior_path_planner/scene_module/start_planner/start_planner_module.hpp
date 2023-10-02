@@ -67,6 +67,9 @@ struct PullOutStatus
     false};  // after backward driving is complete, this is set to true (warning: this is set to
              // false at next cycle after backward driving is complete)
   Pose pull_out_start_pose{};
+  bool prev_is_safe_dynamic_objects{false};
+  std::shared_ptr<PathWithLaneId> prev_stop_path_after_approval{nullptr};
+  bool has_stop_point{false};
 
   PullOutStatus() {}
 };
