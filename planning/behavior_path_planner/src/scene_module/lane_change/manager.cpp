@@ -77,7 +77,10 @@ LaneChangeModuleManager::LaneChangeModuleManager(
     getOrDeclareParameter<bool>(*node, parameter("check_objects_on_other_lanes"));
   p.use_all_predicted_path =
     getOrDeclareParameter<bool>(*node, parameter("use_all_predicted_path"));
-
+  p.lane_expansion_left_offset =
+    getOrDeclareParameter<double>(*node, parameter("safety_check.lane_expansion.left_offset"));
+  p.lane_expansion_right_offset =
+    getOrDeclareParameter<double>(*node, parameter("safety_check.lane_expansion.right_offset"));
   // lane change regulations
   p.regulate_on_crosswalk = getOrDeclareParameter<bool>(*node, parameter("regulation.crosswalk"));
   p.regulate_on_intersection =

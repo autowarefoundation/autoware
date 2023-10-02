@@ -186,5 +186,24 @@ ExtendedPredictedObject transform(
 
 bool isCollidedPolygonsInLanelet(
   const std::vector<Polygon2d> & collided_polygons, const lanelet::ConstLanelets & lanes);
+
+/**
+ * @brief Generates expanded lanelets based on the given direction and offsets.
+ *
+ * Expands the provided lanelets in either the left or right direction based on
+ * the specified direction. If the direction is 'LEFT', the lanelets are expanded
+ * using the left_offset; if 'RIGHT', they are expanded using the right_offset.
+ * Otherwise, no expansion occurs.
+ *
+ * @param lanes The lanelets to be expanded.
+ * @param direction The direction of expansion: either LEFT or RIGHT.
+ * @param left_offset The offset value for left expansion.
+ * @param right_offset The offset value for right expansion.
+ * @return lanelet::ConstLanelets A collection of expanded lanelets.
+ */
+lanelet::ConstLanelets generateExpandedLanelets(
+  const lanelet::ConstLanelets & lanes, const Direction direction, const double left_offset,
+  const double right_offset);
+
 }  // namespace behavior_path_planner::utils::lane_change
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_

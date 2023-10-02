@@ -1104,4 +1104,13 @@ bool isCollidedPolygonsInLanelet(
 
   return std::any_of(collided_polygons.begin(), collided_polygons.end(), is_in_lanes);
 }
+
+lanelet::ConstLanelets generateExpandedLanelets(
+  const lanelet::ConstLanelets & lanes, const Direction direction, const double left_offset,
+  const double right_offset)
+{
+  const auto left_extend_offset = (direction == Direction::LEFT) ? left_offset : 0.0;
+  const auto right_extend_offset = (direction == Direction::RIGHT) ? -right_offset : 0.0;
+  return lanelet::utils::getExpandedLanelets(lanes, left_extend_offset, right_extend_offset);
+}
 }  // namespace behavior_path_planner::utils::lane_change

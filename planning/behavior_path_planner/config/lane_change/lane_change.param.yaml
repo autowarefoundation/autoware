@@ -38,6 +38,11 @@
         longitudinal_distance_min_threshold: 3.0
         longitudinal_velocity_delta_time: 0.8
 
+        # lane expansion for object filtering
+        lane_expansion:
+          left_offset: 0.0 # [m]
+          right_offset: 0.0 # [m]
+
       # lateral acceleration map
       lateral_acceleration:
         velocity: [0.0, 4.0, 10.0]
