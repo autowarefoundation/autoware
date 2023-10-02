@@ -178,15 +178,15 @@ class TrajectoryVisualizer(Node):
 
         # main process
         if PLOT_TYPE == "VEL_ACC_JERK":
+            self.setPlotTrajectory()
             self.ani = animation.FuncAnimation(
                 self.fig, self.plotTrajectory, interval=100, blit=True
             )
-            self.setPlotTrajectory()
         else:
+            self.setPlotTrajectoryVelocity()
             self.ani = animation.FuncAnimation(
                 self.fig, self.plotTrajectoryVelocity, interval=100, blit=True
             )
-            self.setPlotTrajectoryVelocity()
 
         plt.show()
 
