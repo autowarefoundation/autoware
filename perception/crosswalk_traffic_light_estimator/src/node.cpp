@@ -231,6 +231,7 @@ void CrosswalkTrafficLightEstimatorNode::setCrosswalkTrafficSignal(
     TrafficSignal output_traffic_signal;
     TrafficSignalElement output_traffic_signal_element;
     output_traffic_signal_element.color = color;
+    output_traffic_signal_element.shape = TrafficSignalElement::CIRCLE;
     output_traffic_signal_element.confidence = 1.0;
     output_traffic_signal.elements.push_back(output_traffic_signal_element);
     output_traffic_signal.traffic_signal_id = tl_reg_elem->id();
