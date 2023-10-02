@@ -17,6 +17,7 @@
 #include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
+#include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
@@ -2543,9 +2544,31 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
       turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
     }
   } else {
-    turn_signal_info.turn_signal.command = TurnIndicatorsCommand::DISABLE;
+    const lanelet::ConstLanelets current_lanes = utils::getCurrentLanes(planner_data_);
+    const auto local_vehicle_footprint =
+      createVehicleFootprint(planner_data_->parameters.vehicle_info);
+    boost::geometry::model::ring<tier4_autoware_utils::Point2d> shifted_vehicle_footprint;
+    for (const auto & cl : current_lanes) {
+      // get left and right bounds of current lane
+      const auto lane_left_bound = cl.leftBound2d().basicLineString();
+      const auto lane_right_bound = cl.rightBound2d().basicLineString();
+      for (size_t i = start_idx; i < end_idx; ++i) {
+        // transform vehicle footprint onto path points
+        shifted_vehicle_footprint = transformVector(
+          local_vehicle_footprint,
+          tier4_autoware_utils::pose2transform(path.path.points.at(i).point.pose));
+        if (
+          boost::geometry::intersects(lane_left_bound, shifted_vehicle_footprint) ||
+          boost::geometry::intersects(lane_right_bound, shifted_vehicle_footprint)) {
+          if (segment_shift_length > 0.0) {
+            turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+          } else {
+            turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+          }
+        }
+      }
+    }
   }
-
   if (ego_front_to_shift_start > 0.0) {
     turn_signal_info.desired_start_point = planner_data_->self_odometry->pose.pose;
   } else {
