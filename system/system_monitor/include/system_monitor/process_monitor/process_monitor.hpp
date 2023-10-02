@@ -89,6 +89,14 @@ protected:
   void getHighMemoryProcesses(const std::string & output);
 
   /**
+   * @brief get command line from process id
+   * @param [in] pid process id
+   * @param [out] command output command line
+   * @return true if success to get command line name
+   */
+  bool getCommandLineFromPiD(const std::string & pid, std::string * command);
+
+  /**
    * @brief get top-rated processes
    * @param [in] tasks list of diagnostics tasks for high load procs
    * @param [in] output top command output

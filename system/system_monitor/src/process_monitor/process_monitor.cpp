@@ -414,6 +414,19 @@ void ProcessMonitor::getHighMemoryProcesses(const std::string & output)
   getTopratedProcesses(&memory_tasks_, &p2);
 }
 
+bool ProcessMonitor::getCommandLineFromPiD(const std::string & pid, std::string * command)
+{
+  std::string commandLineFilePath = "/proc/" + pid + "/cmdline";
+  std::ifstream commandFile(commandLineFilePath);
+  if (commandFile.is_open()) {
+    std::getline(commandFile, *command);
+    commandFile.close();
+    return true;
+  } else {
+    return false;
+  }
+}
+
 void ProcessMonitor::getTopratedProcesses(
   std::vector<std::shared_ptr<DiagTask>> * tasks, bp::pipe * p)
 {
@@ -462,7 +475,14 @@ void ProcessMonitor::getTopratedProcesses(
       info.virtualImage >> info.residentSize >> info.sharedMemSize >> info.processStatus >>
       info.cpuUsage >> info.memoryUsage >> info.cpuTime;
 
-    std::getline(stream, info.commandName);
+    std::string program_name;
+    std::getline(stream, program_name);
+
+    bool flag_find_command_line = getCommandLineFromPiD(info.processId, &info.commandName);
+
+    if (!flag_find_command_line) {
+      info.commandName = program_name;  // if command line is not found, use program name instead
+    }
 
     tasks->at(index)->setDiagnosticsStatus(DiagStatus::OK, "OK");
     tasks->at(index)->setProcessInformation(info);
@@ -515,7 +535,7 @@ void ProcessMonitor::onTimer()
   std::ostringstream os;
 
   // Get processes
-  bp::child c("top -bcn1 -o %CPU -w 256", bp::std_out > is_out, bp::std_err > is_err);
+  bp::child c("top -bn1 -o %CPU -w 128", bp::std_out > is_out, bp::std_err > is_err);
   c.wait();
 
   if (c.exit_code() != 0) {
