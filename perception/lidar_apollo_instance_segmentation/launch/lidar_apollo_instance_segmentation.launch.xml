@@ -7,7 +7,8 @@
   <arg if="$(eval &quot;'$(var model)'=='model_64'&quot;)" name="base_name" default="hdl-64"/>
   <arg if="$(eval &quot;'$(var model)'=='model_128'&quot;)" name="base_name" default="vls-128"/>
 
-  <arg name="trained_onnx_file" default="$(find-pkg-share lidar_apollo_instance_segmentation)/data/$(var base_name).onnx"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="trained_onnx_file" default="$(var data_path)/lidar_apollo_instance_segmentation/$(var base_name).onnx"/>
   <arg name="param_file" default="$(find-pkg-share lidar_apollo_instance_segmentation)/config/$(var base_name).param.yaml"/>
 
   <arg name="target_frame" default="base_link"/>
