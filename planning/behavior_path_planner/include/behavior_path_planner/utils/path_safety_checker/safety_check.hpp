@@ -110,6 +110,10 @@ bool checkCollision(
   const BehaviorPathPlannerParameters & common_parameters, const RSSparams & rss_parameters,
   const double hysteresis_factor, CollisionCheckDebug & debug);
 
+std::vector<Polygon2d> generatePolygonsWithStoppingAndInertialMargin(
+  const PathWithLaneId & ego_path, const double base_to_front, const double base_to_rear,
+  const double width, const double maximum_deceleration, const double max_extra_stopping_margin);
+
 /**
  * @brief Iterate the points in the ego and target's predicted path and
  *        perform safety check for each of the iterated points.
@@ -133,14 +137,12 @@ std::vector<Polygon2d> getCollidedPolygons(
   const double hysteresis_factor, CollisionCheckDebug & debug);
 
 /**
- * @brief Check collision between ego path footprints with extra longitudinal stopping margin and
- * objects.
+ * @brief Check collision between ego polygons with margin and objects.
  * @return Has collision or not
  */
-bool checkCollisionWithExtraStoppingMargin(
-  const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects,
-  const double base_to_front, const double base_to_rear, const double width,
-  const double maximum_deceleration, const double margin, const double max_stopping_margin);
+bool checkCollisionWithMargin(
+  const std::vector<Polygon2d> & ego_polygons, const PredictedObjects & dynamic_objects,
+  const double collision_check_margin);
 }  // namespace behavior_path_planner::utils::path_safety_checker
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_SAFETY_CHECKER__SAFETY_CHECK_HPP_

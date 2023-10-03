@@ -1296,28 +1296,32 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
     }
   }
 
-  if (parameters_->use_object_recognition) {
-    const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
-      *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
-      parameters_->forward_goal_search_length);
-    const auto [pull_over_lane_objects, others] =
-      utils::path_safety_checker::separateObjectsByLanelets(
-        *(planner_data_->dynamic_object), pull_over_lanes);
-    const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
-      pull_over_lane_objects, parameters_->th_moving_object_velocity);
-    const auto common_parameters = planner_data_->parameters;
-    const double base_link2front = common_parameters.base_link2front;
-    const double base_link2rear = common_parameters.base_link2rear;
-    const double vehicle_width = common_parameters.vehicle_width;
-    if (utils::path_safety_checker::checkCollisionWithExtraStoppingMargin(
-          path, pull_over_lane_stop_objects, base_link2front, base_link2rear, vehicle_width,
-          parameters_->maximum_deceleration, parameters_->object_recognition_collision_check_margin,
-          parameters_->object_recognition_collision_check_max_extra_stopping_margin)) {
-      return true;
-    }
+  if (!parameters_->use_object_recognition) {
+    return false;
   }
 
-  return false;
+  const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
+    *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
+    parameters_->forward_goal_search_length);
+  const auto [pull_over_lane_objects, others] =
+    utils::path_safety_checker::separateObjectsByLanelets(
+      *(planner_data_->dynamic_object), pull_over_lanes);
+  const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
+    pull_over_lane_objects, parameters_->th_moving_object_velocity);
+  const auto common_parameters = planner_data_->parameters;
+  const double base_link2front = common_parameters.base_link2front;
+  const double base_link2rear = common_parameters.base_link2rear;
+  const double vehicle_width = common_parameters.vehicle_width;
+
+  const auto ego_polygons_expanded =
+    utils::path_safety_checker::generatePolygonsWithStoppingAndInertialMargin(
+      path, base_link2front, base_link2rear, vehicle_width, parameters_->maximum_deceleration,
+      parameters_->object_recognition_collision_check_max_extra_stopping_margin);
+  debug_data_.ego_polygons_expanded = ego_polygons_expanded;
+
+  return utils::path_safety_checker::checkCollisionWithMargin(
+    ego_polygons_expanded, pull_over_lane_stop_objects,
+    parameters_->object_recognition_collision_check_margin);
 }
 
 bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
@@ -1686,6 +1690,24 @@ void GoalPlannerModule::setDebugData()
       add(
         createPathMarkerArray(partial_path, "partial_path_" + std::to_string(i), 0, 0.9, 0.5, 0.9));
     }
+
+    auto marker = tier4_autoware_utils::createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), "detection_polygons", 0, Marker::LINE_LIST,
+      tier4_autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
+      tier4_autoware_utils::createMarkerColor(0.0, 0.0, 1.0, 0.999));
+
+    for (const auto & ego_polygon : debug_data_.ego_polygons_expanded) {
+      for (size_t ep_idx = 0; ep_idx < ego_polygon.outer().size(); ++ep_idx) {
+        const auto & current_point = ego_polygon.outer().at(ep_idx);
+        const auto & next_point = ego_polygon.outer().at((ep_idx + 1) % ego_polygon.outer().size());
+
+        marker.points.push_back(
+          tier4_autoware_utils::createPoint(current_point.x(), current_point.y(), 0.0));
+        marker.points.push_back(
+          tier4_autoware_utils::createPoint(next_point.x(), next_point.y(), 0.0));
+      }
+    }
+    debug_marker_.markers.push_back(marker);
   }
   // safety check
   if (parameters_->safety_check_params.enable_safety_check) {
@@ -1695,7 +1717,6 @@ void GoalPlannerModule::setDebugData()
       add(createPredictedPathMarkerArray(
         ego_predicted_path, vehicle_info_, "ego_predicted_path_goal_planner", 0, 0.0, 0.5, 0.9));
     }
-
     if (goal_planner_data_.filtered_objects.objects.size() > 0) {
       add(createObjectsMarkerArray(
         goal_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
