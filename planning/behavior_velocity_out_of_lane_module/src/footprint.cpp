@@ -57,9 +57,9 @@ std::vector<lanelet::BasicPolygon2d> calculate_path_footprints(
 {
   const auto base_footprint = make_base_footprint(params);
   std::vector<lanelet::BasicPolygon2d> path_footprints;
-  path_footprints.reserve(ego_data.path->points.size());
-  for (auto i = ego_data.first_path_idx; i < ego_data.path->points.size(); ++i) {
-    const auto & path_pose = ego_data.path->points[i].point.pose;
+  path_footprints.reserve(ego_data.path.points.size());
+  for (auto i = ego_data.first_path_idx; i < ego_data.path.points.size(); ++i) {
+    const auto & path_pose = ego_data.path.points[i].point.pose;
     const auto angle = tf2::getYaw(path_pose.orientation);
     const auto rotated_footprint = tier4_autoware_utils::rotatePolygon(base_footprint, angle);
     lanelet::BasicPolygon2d footprint;

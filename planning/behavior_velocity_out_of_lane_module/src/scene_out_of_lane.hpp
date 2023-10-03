@@ -57,15 +57,6 @@ protected:
   // Debug
   mutable DebugData debug_data_;
 };
-
-/// @brief calculate points along the path where we want ego to slowdown/stop
-/// @param ego_data ego data (path, velocity, etc)
-/// @param decisions decisions (before which point to stop, what lane to avoid entering, etc)
-/// @param params parameters
-/// @return precise points to insert in the path
-std::vector<SlowdownToInsert> calculate_slowdown_points(
-  const EgoData & ego_data, const std::vector<Slowdown> & decisions, PlannerParam params);
-
 }  // namespace behavior_velocity_planner::out_of_lane
 
 #endif  // SCENE_OUT_OF_LANE_HPP_

@@ -56,7 +56,7 @@ OutOfLaneModuleManager::OutOfLaneModuleManager(rclcpp::Node & node)
 
   pp.skip_if_over_max_decel =
     getOrDeclareParameter<bool>(node, ns + ".action.skip_if_over_max_decel");
-  pp.strict = getOrDeclareParameter<bool>(node, ns + ".action.strict");
+  pp.precision = getOrDeclareParameter<double>(node, ns + ".action.precision");
   pp.dist_buffer = getOrDeclareParameter<double>(node, ns + ".action.distance_buffer");
   pp.slow_velocity = getOrDeclareParameter<double>(node, ns + ".action.slowdown.velocity");
   pp.slow_dist_threshold =

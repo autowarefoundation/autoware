@@ -35,7 +35,7 @@ namespace behavior_velocity_planner::out_of_lane
 double distance_along_path(const EgoData & ego_data, const size_t target_idx)
 {
   return motion_utils::calcSignedArcLength(
-    ego_data.path->points, ego_data.pose.position, ego_data.first_path_idx + target_idx);
+    ego_data.path.points, ego_data.pose.position, ego_data.first_path_idx + target_idx);
 }
 
 double time_along_path(const EgoData & ego_data, const size_t target_idx, const double min_velocity)
@@ -43,7 +43,7 @@ double time_along_path(const EgoData & ego_data, const size_t target_idx, const 
   const auto dist = distance_along_path(ego_data, target_idx);
   const auto v = std::max(
     std::max(ego_data.velocity, min_velocity),
-    ego_data.path->points[ego_data.first_path_idx + target_idx].point.longitudinal_velocity_mps *
+    ego_data.path.points[ego_data.first_path_idx + target_idx].point.longitudinal_velocity_mps *
       0.5);
   return dist / v;
 }
@@ -126,11 +126,9 @@ std::optional<std::pair<double, double>> object_time_to_range(
 
     const auto same_driving_direction_as_ego = enter_time < exit_time;
     if (same_driving_direction_as_ego) {
-      RCLCPP_DEBUG(logger, " / SAME DIR \\\n");
       worst_enter_time = worst_enter_time ? std::min(*worst_enter_time, enter_time) : enter_time;
       worst_exit_time = worst_exit_time ? std::max(*worst_exit_time, exit_time) : exit_time;
     } else {
-      RCLCPP_DEBUG(logger, " / OPPOSITE DIR \\\n");
       worst_enter_time = worst_enter_time ? std::max(*worst_enter_time, enter_time) : enter_time;
       worst_exit_time = worst_exit_time ? std::min(*worst_exit_time, exit_time) : exit_time;
     }
@@ -212,8 +210,11 @@ std::optional<std::pair<double, double>> object_time_to_range(
 
 bool threshold_condition(const RangeTimes & range_times, const PlannerParam & params)
 {
-  return std::min(range_times.object.enter_time, range_times.object.exit_time) <
-         params.time_threshold;
+  const auto enter_within_threshold =
+    range_times.object.enter_time > 0.0 && range_times.object.enter_time < params.time_threshold;
+  const auto exit_within_threshold =
+    range_times.object.exit_time > 0.0 && range_times.object.exit_time < params.time_threshold;
+  return enter_within_threshold || exit_within_threshold;
 }
 
 bool intervals_condition(
@@ -357,11 +358,10 @@ std::optional<Slowdown> calculate_decision(
 {
   std::optional<Slowdown> decision;
   if (should_not_enter(range, inputs, params, logger)) {
-    const auto stop_before_range = params.strict ? find_most_preceding_range(range, inputs) : range;
     decision.emplace();
-    decision->target_path_idx = inputs.ego_data.first_path_idx +
-                                stop_before_range.entering_path_idx;  // add offset from curr pose
-    decision->lane_to_avoid = stop_before_range.lane;
+    decision->target_path_idx =
+      inputs.ego_data.first_path_idx + range.entering_path_idx;  // add offset from curr pose
+    decision->lane_to_avoid = range.lane;
     const auto ego_dist_to_range = distance_along_path(inputs.ego_data, range.entering_path_idx);
     set_decision_velocity(decision, ego_dist_to_range, params);
   }

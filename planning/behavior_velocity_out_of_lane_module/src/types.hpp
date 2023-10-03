@@ -52,11 +52,11 @@ struct PlannerParam
   double overlap_min_dist;      // [m] min distance inside another lane to consider an overlap
   // action to insert in the path if an object causes a conflict at an overlap
   bool skip_if_over_max_decel;  // if true, skip the action if it causes more than the max decel
-  bool strict;  // if true stop before entering *any* other lane, not only the lane to avoid
   double dist_buffer;
   double slow_velocity;
   double slow_dist_threshold;
   double stop_dist_threshold;
+  double precision;  // [m] precision when inserting a stop pose in the path
   // ego dimensions used to create its polygon footprint
   double front_offset;        // [m]  front offset (from vehicle info)
   double rear_offset;         // [m]  rear offset (from vehicle info)
@@ -135,7 +135,7 @@ struct OtherLane
 /// @brief data related to the ego vehicle
 struct EgoData
 {
-  autoware_auto_planning_msgs::msg::PathWithLaneId * path{};
+  autoware_auto_planning_msgs::msg::PathWithLaneId path{};
   size_t first_path_idx{};
   double velocity{};   // [m/s]
   double max_decel{};  // [m/s²]
