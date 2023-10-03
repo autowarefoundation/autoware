@@ -89,6 +89,12 @@ _Note_: The steering/velocity/acceleration dynamics is modeled by a first order 
 Since the vehicle outputs `odom`->`base_link` tf, this simulator outputs the tf with the same frame_id configuration.
 In the simple_planning_simulator.launch.py, the node that outputs the `map`->`odom` tf, that usually estimated by the localization module (e.g. NDT), will be launched as well. Since the tf output by this simulator module is an ideal value, `odom`->`map` will always be 0.
 
+### (Caveat) Pitch calculation
+
+Ego vehicle pitch angle is calculated in the following manner.
+
+![pitch calculation](./media/pitch-calculation.drawio.svg)
+
 ## Error detection and handling
 
 The only validation on inputs being done is testing for a valid vehicle model type.

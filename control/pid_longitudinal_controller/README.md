@@ -75,6 +75,10 @@ For instance, if the vehicle is attempting to start with an acceleration of `1.0
 
 A suitable example of a vehicle system for the slope compensation function is one in which the output acceleration from the longitudinal_controller is converted into target accel/brake pedal input without any feedbacks. In this case, the output acceleration is just used as a feedforward term to calculate the target pedal, and hence the issue mentioned above does not arise.
 
+Note: The angle of the slope is defined as positive for an uphill slope, while the pitch angle of the ego pose is defined as negative when facing upward. They have an opposite definition.
+
+![slope_definition](./media/slope_definition.drawio.svg)
+
 #### PID control
 
 For deviations that cannot be handled by FeedForward control, such as model errors, PID control is used to construct a feedback system.
