@@ -54,7 +54,9 @@
         ## param for yielding
         disable_stop_for_yield_cancel: true # for the crosswalk where there is a traffic signal
         disable_yield_for_new_stopped_object: true # for the crosswalk where there is a traffic signal
-        timeout_no_intention_to_walk: 3.0 # [s] if the pedestrian does not move for X seconds after stopping before the crosswalk, the module judge that ego is able to pass first.
+        # if the pedestrian does not move for X seconds after stopping before the crosswalk, the module judge that ego is able to pass first.
+        distance_map_for_no_intention_to_walk: [1.0, 5.0] # [m] ascending order
+        timeout_map_for_no_intention_to_walk: [3.0, 0.0] # [s]
         timeout_ego_stop_for_yield: 3.0 # [s] the amount of time which ego should be stopping to query whether it yields or not
 
       # param for target object filtering

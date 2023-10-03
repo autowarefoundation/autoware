@@ -30,12 +30,15 @@
 #include <boost/assert.hpp>
 #include <boost/assign/list_of.hpp>
 
+#include <lanelet2_core/geometry/Point.h>
+#include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <lanelet2_core/primitives/LineString.h>
 #include <pcl/common/distances.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
@@ -45,6 +48,7 @@
 
 namespace behavior_velocity_planner
 {
+namespace bg = boost::geometry;
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
@@ -70,6 +74,33 @@ double interpolateEgoPassMargin(
     }
   }
   return y_vec.back();
+}
+
+double InterpolateMap(
+  const std::vector<double> & key_map, const std::vector<double> & value_map, const double query)
+{
+  // If the speed is out of range of the key_map, apply zero-order hold.
+  if (query <= key_map.front()) {
+    return value_map.front();
+  }
+  if (query >= key_map.back()) {
+    return value_map.back();
+  }
+
+  // Apply linear interpolation
+  for (size_t i = 0; i < key_map.size() - 1; ++i) {
+    if (key_map.at(i) <= query && query <= key_map.at(i + 1)) {
+      auto ratio = (query - key_map.at(i)) / std::max(key_map.at(i + 1) - key_map.at(i), 1.0e-5);
+      ratio = std::clamp(ratio, 0.0, 1.0);
+      const auto interp = value_map.at(i) + ratio * (value_map.at(i + 1) - value_map.at(i));
+      return interp;
+    }
+  }
+
+  std::cerr << "Crosswalk's InterpolateMap interpolation logic is broken."
+               "Please check the code."
+            << std::endl;
+  return value_map.back();
 }
 }  // namespace
 
@@ -111,7 +142,8 @@ public:
     double min_object_velocity;
     bool disable_stop_for_yield_cancel;
     bool disable_yield_for_new_stopped_object;
-    double timeout_no_intention_to_walk;
+    std::vector<double> distance_map_for_no_intention_to_walk;
+    std::vector<double> timeout_map_for_no_intention_to_walk;
     double timeout_ego_stop_for_yield;
     // param for input data
     double traffic_light_state_timeout;
@@ -132,9 +164,10 @@ public:
     std::optional<CollisionPoint> collision_point{};
 
     void transitState(
-      const rclcpp::Time & now, const double vel, const bool is_ego_yielding,
-      const bool has_traffic_light, const std::optional<CollisionPoint> & collision_point,
-      const PlannerParam & planner_param)
+      const rclcpp::Time & now, const geometry_msgs::msg::Point & position, const double vel,
+      const bool is_ego_yielding, const bool has_traffic_light,
+      const std::optional<CollisionPoint> & collision_point, const PlannerParam & planner_param,
+      const lanelet::BasicPolygon2d & crosswalk_polygon)
     {
       const bool is_stopped = vel < planner_param.stop_object_velocity;
 
@@ -147,8 +180,13 @@ public:
         if (!time_to_start_stopped) {
           time_to_start_stopped = now;
         }
+        const double distance_to_crosswalk =
+          bg::distance(crosswalk_polygon, lanelet::BasicPoint2d(position.x, position.y));
+        const double timeout_no_intention_to_walk = InterpolateMap(
+          planner_param.distance_map_for_no_intention_to_walk,
+          planner_param.timeout_map_for_no_intention_to_walk, distance_to_crosswalk);
         const bool intent_to_cross =
-          (now - *time_to_start_stopped).seconds() < planner_param.timeout_no_intention_to_walk;
+          (now - *time_to_start_stopped).seconds() < timeout_no_intention_to_walk;
         if (
           (is_ego_yielding || (has_traffic_light && planner_param.disable_stop_for_yield_cancel)) &&
           !intent_to_cross) {
@@ -203,7 +241,8 @@ public:
     void update(
       const std::string & uuid, const geometry_msgs::msg::Point & position, const double vel,
       const rclcpp::Time & now, const bool is_ego_yielding, const bool has_traffic_light,
-      const std::optional<CollisionPoint> & collision_point, const PlannerParam & planner_param)
+      const std::optional<CollisionPoint> & collision_point, const PlannerParam & planner_param,
+      const lanelet::BasicPolygon2d & crosswalk_polygon)
     {
       // update current uuids
       current_uuids_.push_back(uuid);
@@ -221,7 +260,8 @@ public:
 
       // update object state
       objects.at(uuid).transitState(
-        now, vel, is_ego_yielding, has_traffic_light, collision_point, planner_param);
+        now, position, vel, is_ego_yielding, has_traffic_light, collision_point, planner_param,
+        crosswalk_polygon);
       objects.at(uuid).collision_point = collision_point;
       objects.at(uuid).position = position;
     }
