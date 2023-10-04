@@ -41,7 +41,7 @@
     converged_param_nearest_voxel_transformation_likelihood: 2.3
 
     # The number of particles to estimate initial pose
-    initial_estimate_particles_num: 100
+    initial_estimate_particles_num: 200
 
     # Tolerance of timestamp difference between current time and sensor pointcloud. [sec]
     lidar_topic_timeout_sec: 1.0
