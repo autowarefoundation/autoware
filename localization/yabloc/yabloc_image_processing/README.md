@@ -108,10 +108,15 @@ This node performs image resizing and undistortion at the same time.
 
 #### Input
 
-| Name                         | Type                                | Description          |
-| ---------------------------- | ----------------------------------- | -------------------- |
-| `input/camera_info`          | `sensor_msgs::msg::CameraInfo`      | raw compressed image |
-| `input/image_raw/compressed` | `sensor_msgs::msg::CompressedImage` | raw sensor info      |
+| Name                         | Type                                | Description             |
+| ---------------------------- | ----------------------------------- | ----------------------- |
+| `input/camera_info`          | `sensor_msgs::msg::CameraInfo`      | camera info             |
+| `input/image_raw`            | `sensor_msgs::msg::Image`           | raw camera image        |
+| `input/image_raw/compressed` | `sensor_msgs::msg::CompressedImage` | compressed camera image |
+
+This node subscribes to both compressed image and raw image topics.
+If raw image is subscribed to even once, compressed image will no longer be subscribed to.
+This is to avoid redundant decompression within Autoware.
 
 #### Output
 

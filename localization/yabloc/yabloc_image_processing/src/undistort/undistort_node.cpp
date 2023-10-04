@@ -50,9 +50,12 @@ public:
     }
 
     auto on_image = std::bind(&UndistortNode::on_image, this, _1);
+    auto on_compressed_image = std::bind(&UndistortNode::on_compressed_image, this, _1);
     auto on_info = std::bind(&UndistortNode::on_info, this, _1);
-    sub_image_ =
-      create_subscription<CompressedImage>("~/input/image_raw", qos, std::move(on_image));
+    sub_image_ = create_subscription<Image>("~/input/image_raw", qos, std::move(on_image));
+    sub_compressed_image_ = create_subscription<CompressedImage>(
+      "~/input/image_raw/compressed", qos, std::move(on_compressed_image));
+
     sub_info_ = create_subscription<CameraInfo>("~/input/camera_info", qos, std::move(on_info));
 
     pub_info_ = create_publisher<CameraInfo>("~/output/resized_info", 10);
@@ -63,7 +66,8 @@ private:
   const int OUTPUT_WIDTH;
   const std::string OVERRIDE_FRAME_ID;
 
-  rclcpp::Subscription<CompressedImage>::SharedPtr sub_image_;
+  rclcpp::Subscription<Image>::SharedPtr sub_image_;
+  rclcpp::Subscription<CompressedImage>::SharedPtr sub_compressed_image_;
   rclcpp::Subscription<CameraInfo>::SharedPtr sub_info_;
   rclcpp::Publisher<Image>::SharedPtr pub_image_;
   rclcpp::Publisher<CameraInfo>::SharedPtr pub_info_;
@@ -99,14 +103,8 @@ private:
     scaled_info_->height = new_size.height;
   }
 
-  void on_image(const CompressedImage & msg)
+  void remap_and_publish(const cv::Mat & image, const std_msgs::msg::Header & header)
   {
-    if (!info_.has_value()) return;
-    if (undistort_map_x.empty()) make_remap_lut();
-
-    tier4_autoware_utils::StopWatch stop_watch;
-    cv::Mat image = common::decompress_to_cv_mat(msg);
-
     cv::Mat undistorted_image;
     cv::remap(image, undistorted_image, undistort_map_x, undistort_map_y, cv::INTER_LINEAR);
 
@@ -120,16 +118,47 @@ private:
     // Publish Image
     {
       cv_bridge::CvImage bridge;
-      bridge.header.stamp = msg.header.stamp;
+      bridge.header.stamp = header.stamp;
       if (OVERRIDE_FRAME_ID != "")
         bridge.header.frame_id = OVERRIDE_FRAME_ID;
       else
-        bridge.header.frame_id = msg.header.frame_id;
+        bridge.header.frame_id = header.frame_id;
       bridge.encoding = "bgr8";
       bridge.image = undistorted_image;
       pub_image_->publish(*bridge.toImageMsg());
     }
+  }
 
+  void on_image(const Image & msg)
+  {
+    if (!info_.has_value()) {
+      return;
+    }
+    if (undistort_map_x.empty()) {
+      make_remap_lut();
+    }
+
+    // To remove redundant decompression, deactivate compressed image subscriber
+    if (sub_compressed_image_) {
+      sub_compressed_image_.reset();
+    }
+
+    tier4_autoware_utils::StopWatch stop_watch;
+    remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
+    RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
+  }
+
+  void on_compressed_image(const CompressedImage & msg)
+  {
+    if (!info_.has_value()) {
+      return;
+    }
+    if (undistort_map_x.empty()) {
+      make_remap_lut();
+    }
+
+    tier4_autoware_utils::StopWatch stop_watch;
+    remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
     RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
   }
 
