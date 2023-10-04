@@ -39,6 +39,7 @@ struct DebugData
   std::optional<geometry_msgs::msg::Pose> occlusion_first_stop_wall_pose{std::nullopt};
   std::optional<geometry_msgs::msg::Pose> pass_judge_wall_pose{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> attention_area{std::nullopt};
+  std::optional<std::vector<lanelet::CompoundPolygon3d>> occlusion_attention_area{std::nullopt};
   std::optional<geometry_msgs::msg::Polygon> intersection_area{std::nullopt};
   std::optional<lanelet::CompoundPolygon3d> ego_lane{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> adjacent_area{std::nullopt};

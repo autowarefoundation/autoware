@@ -20,6 +20,7 @@
 #include <behavior_velocity_planner_common/utilization/path_utilization.hpp>
 #include <behavior_velocity_planner_common/utilization/trajectory_utils.hpp>
 #include <behavior_velocity_planner_common/utilization/util.hpp>
+#include <interpolation/spline_interpolation_points_2d.hpp>
 #include <lanelet2_extension/regulatory_elements/road_marking.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -42,6 +43,22 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+namespace tier4_autoware_utils
+{
+
+template <>
+inline geometry_msgs::msg::Point getPoint(const lanelet::ConstPoint3d & p)
+{
+  geometry_msgs::msg::Point point;
+  point.x = p.x();
+  point.y = p.y();
+  point.z = p.z();
+  return point;
+}
+
+}  // namespace tier4_autoware_utils
+
 namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
@@ -809,10 +826,26 @@ TrafficPrioritizedLevel getTrafficPrioritizedLevel(
   return TrafficPrioritizedLevel::NOT_PRIORITIZED;
 }
 
+double getHighestCurvature(const lanelet::ConstLineString3d & centerline)
+{
+  std::vector<lanelet::ConstPoint3d> points;
+  for (auto point = centerline.begin(); point != centerline.end(); point++) {
+    points.push_back(*point);
+  }
+
+  SplineInterpolationPoints2d interpolation(points);
+  const std::vector<double> curvatures = interpolation.getSplineInterpolatedCurvatures();
+  std::vector<double> curvatures_positive;
+  for (const auto & curvature : curvatures) {
+    curvatures_positive.push_back(std::fabs(curvature));
+  }
+  return *std::max_element(curvatures_positive.begin(), curvatures_positive.end());
+}
+
 std::vector<DiscretizedLane> generateDetectionLaneDivisions(
   lanelet::ConstLanelets detection_lanelets_all,
-  [[maybe_unused]] const lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const double resolution)
+  const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution,
+  const double curvature_threshold, const double curvature_calculation_ds)
 {
   using lanelet::utils::getCenterlineWithOffset;
   using lanelet::utils::to2D;
@@ -822,6 +855,12 @@ std::vector<DiscretizedLane> generateDetectionLaneDivisions(
   for (const auto & detection_lanelet : detection_lanelets_all) {
     const auto turn_direction = getTurnDirection(detection_lanelet);
     if (turn_direction.compare("left") == 0 || turn_direction.compare("right") == 0) {
+      continue;
+    }
+    const auto fine_centerline =
+      lanelet::utils::generateFineCenterline(detection_lanelet, curvature_calculation_ds);
+    const double highest_curvature = getHighestCurvature(fine_centerline);
+    if (highest_curvature > curvature_threshold) {
       continue;
     }
     detection_lanelets.push_back(detection_lanelet);

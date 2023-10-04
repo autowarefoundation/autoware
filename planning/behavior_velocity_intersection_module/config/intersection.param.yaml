@@ -57,6 +57,8 @@
         absence_traffic_light:
           creep_velocity: 1.388 # [m/s]
           maximum_peeking_distance: 6.0 # [m]
+        attention_lane_crop_curvature_threshold: 0.25
+        attention_lane_curvature_calculation_ds: 0.5
 
       enable_rtc:
         intersection: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

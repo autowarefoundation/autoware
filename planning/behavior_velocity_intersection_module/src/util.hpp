@@ -109,7 +109,8 @@ TrafficPrioritizedLevel getTrafficPrioritizedLevel(
 
 std::vector<DiscretizedLane> generateDetectionLaneDivisions(
   lanelet::ConstLanelets detection_lanelets,
-  const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution);
+  const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution,
+  const double curvature_threshold, const double curvature_calculation_ds);
 
 std::optional<InterpolatedPathInfo> generateInterpolatedPath(
   const int lane_id, const std::set<int> & associative_lane_ids,

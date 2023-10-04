@@ -989,6 +989,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const auto & occlusion_attention_lanelets = intersection_lanelets.occlusion_attention();
   const auto & occlusion_attention_area = intersection_lanelets.occlusion_attention_area();
   debug_data_.attention_area = intersection_lanelets.attention_area();
+  debug_data_.occlusion_attention_area = occlusion_attention_area;
   debug_data_.adjacent_area = intersection_lanelets.adjacent_area();
 
   // get intersection area
@@ -1027,7 +1028,9 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   if (!occlusion_attention_divisions_) {
     occlusion_attention_divisions_ = util::generateDetectionLaneDivisions(
       occlusion_attention_lanelets, routing_graph_ptr,
-      planner_data_->occupancy_grid->info.resolution);
+      planner_data_->occupancy_grid->info.resolution,
+      planner_param_.occlusion.attention_lane_crop_curvature_threshold,
+      planner_param_.occlusion.attention_lane_curvature_calculation_ds);
   }
   const auto & occlusion_attention_divisions = occlusion_attention_divisions_.value();
 

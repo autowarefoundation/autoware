@@ -173,6 +173,14 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array);
   }
 
+  if (debug_data_.occlusion_attention_area) {
+    appendMarkerArray(
+      createLaneletPolygonsMarkerArray(
+        debug_data_.occlusion_attention_area.value(), "occlusion_attention_area", lane_id_, 0.917,
+        0.568, 0.596),
+      &debug_marker_array);
+  }
+
   if (debug_data_.adjacent_area) {
     appendMarkerArray(
       createLaneletPolygonsMarkerArray(
