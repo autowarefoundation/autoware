@@ -100,14 +100,15 @@ std::pair<double, double> projectObstacleVelocityToTrajectory(
   const std::vector<TrajectoryPoint> & traj_points, const Obstacle & obstacle)
 {
   const size_t object_idx = motion_utils::findNearestIndex(traj_points, obstacle.pose.position);
-
-  const double object_vel_norm = std::hypot(obstacle.twist.linear.x, obstacle.twist.linear.y);
-  const double object_vel_yaw = std::atan2(obstacle.twist.linear.y, obstacle.twist.linear.x);
   const double traj_yaw = tf2::getYaw(traj_points.at(object_idx).pose.orientation);
 
-  return std::make_pair(
-    object_vel_norm * std::cos(object_vel_yaw - traj_yaw),
-    object_vel_norm * std::sin(object_vel_yaw - traj_yaw));
+  const double obstacle_yaw = tf2::getYaw(obstacle.pose.orientation);
+
+  const Eigen::Rotation2Dd R_ego_to_obstacle(obstacle_yaw - traj_yaw);
+  const Eigen::Vector2d obstacle_velocity(obstacle.twist.linear.x, obstacle.twist.linear.y);
+  const Eigen::Vector2d projected_velocity = R_ego_to_obstacle * obstacle_velocity;
+
+  return std::make_pair(projected_velocity[0], projected_velocity[1]);
 }
 
 double calcObstacleMaxLength(const Shape & shape)
