@@ -44,14 +44,15 @@ When publishing, firstly these values are normalized to [0, 1] using maximum and
 
 ### Core Parameters
 
-| Name                          | Type   | Default Value | Description                                       |
-| ----------------------------- | ------ | ------------- | ------------------------------------------------- |
-| `frame_count`                 | int    | `50`          | The number of frames to publish heatmap           |
-| `map_frame`                   | string | `base_link`   | the frame of heatmap to be respected              |
-| `map_length`                  | float  | `200.0`       | the length of map in meter                        |
-| `map_resolution`              | float  | `0.8`         | the resolution of map                             |
-| `use_confidence`              | bool   | `false`       | the flag if use confidence score as heatmap value |
-| `rename_car_to_truck_and_bus` | bool   | `true`        | the flag if rename car to truck or bus            |
+| Name                  | Type          | Default Value                                                                         | Description                                     |
+| --------------------- | ------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `publish_frame_count` | int           | `50`                                                                                  | The number of frames to publish heatmap         |
+| `heatmap_frame_id`    | string        | `base_link`                                                                           | The frame ID of heatmap to be respected         |
+| `heatmap_length`      | float         | `200.0`                                                                               | A length of map in meter                        |
+| `heatmap_resolution`  | float         | `0.8`                                                                                 | A resolution of map                             |
+| `use_confidence`      | bool          | `false`                                                                               | A flag if use confidence score as heatmap value |
+| `class_names`         | array<string> | `["UNKNOWN", "CAR", "TRUCK", "BUS", "TRAILER", "BICYCLE", "MOTORBIKE", "PEDESTRIAN"]` | An array of class names to be published         |
+| `rename_to_car`       | bool          | `true`                                                                                | A flag if rename car like vehicle to car        |
 
 ## Assumptions / Known limits
 

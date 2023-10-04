@@ -27,13 +27,13 @@ namespace heatmap_visualizer
 HeatmapVisualizerNode::HeatmapVisualizerNode(const rclcpp::NodeOptions & node_options)
 : Node("heatmap_visualizer", node_options), frame_count_(0)
 {
-  total_frame_ = declare_parameter("frame_count", 50);
-  map_frame_ = declare_parameter("map_frame", "base_link");
-  map_length_ = declare_parameter("map_length", 200.0);
-  map_resolution_ = declare_parameter("map_resolution", 0.8);
-  use_confidence_ = declare_parameter("use_confidence", false);
-  class_names_ = declare_parameter("class_names", class_names_);
-  rename_car_to_truck_and_bus_ = declare_parameter("rename_car_to_truck_and_bus", false);
+  total_frame_ = static_cast<uint32_t>(declare_parameter<int64_t>("publish_frame_count"));
+  map_frame_ = declare_parameter<std::string>("heatmap_frame_id");
+  map_length_ = static_cast<float>(declare_parameter<double>("heatmap_length"));
+  map_resolution_ = static_cast<float>(declare_parameter<double>("heatmap_resolution"));
+  use_confidence_ = declare_parameter<bool>("use_confidence");
+  class_names_ = declare_parameter<std::vector<std::string>>("class_names");
+  rename_car_to_truck_and_bus_ = declare_parameter<bool>("rename_to_car");
 
   width_ = static_cast<uint32_t>(map_length_ / map_resolution_);
   height_ = static_cast<uint32_t>(map_length_ / map_resolution_);

@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Heatmap Visualizer Node",
+  "type": "object",
+  "definitions": {
+    "heatmap_visualizer": {
+      "type": "object",
+      "properties": {
+        "publish_frame_count": {
+          "type": "integer",
+          "description": "The number of frames to be published at once.",
+          "default": 50,
+          "minimum": 1
+        },
+        "heatmap_frame_id": {
+          "type": "string",
+          "description": "A frame ID in which visualized heatmap is with respect to.",
+          "default": "base_link"
+        },
+        "heatmap_length": {
+          "type": "number",
+          "description": "A size length of heatmap [m].",
+          "default": 200.0,
+          "exclusiveMinimum": 0.0
+        },
+        "heatmap_resolution": {
+          "type": "number",
+          "description": "A cell resolution of heatmap [m].",
+          "default": 0.8,
+          "exclusiveMinimum": 0.0
+        },
+        "use_confidence": {
+          "type": "boolean",
+          "description": "Indicates whether to use object existence probability as score. It this parameter is false, 1.0 is set to score.",
+          "default": false
+        },
+        "class_names": {
+          "type": "array",
+          "description": "An array of object class names.",
+          "default": [
+            "UNKNOWN",
+            "CAR",
+            "TRUCK",
+            "BUS",
+            "TRAILER",
+            "BICYCLE",
+            "MOTORBIKE",
+            "PEDESTRIAN"
+          ],
+          "uniqueItems": true
+        },
+        "rename_to_car": {
+          "type": "boolean",
+          "description": "Indicates whether to rename car like vehicle into car.",
+          "default": false
+        }
+      },
+      "required": [
+        "publish_frame_count",
+        "heatmap_frame_id",
+        "heatmap_length",
+        "heatmap_resolution",
+        "use_confidence",
+        "class_names",
+        "rename_to_car"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/heatmap_visualizer"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
