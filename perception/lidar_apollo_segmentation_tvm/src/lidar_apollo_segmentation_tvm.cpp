@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+// cspell: ignore bcnn
 using model_zoo::perception::lidar_obstacle_detection::baidu_cnn::onnx_bcnn::config;
 
 namespace autoware

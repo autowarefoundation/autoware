@@ -2,7 +2,7 @@
 
 ## Tracking model
 
-<!-- cspell:ignore CRTV -->
+<!-- cspell:ignore CTRV -->
 
 ### CTRV model [1]
 

@@ -148,6 +148,8 @@ DATASET_ROOT
 
 #### Prerequisites
 
+<!-- cspell:ignore Miniconda -->
+
 **Step 1.** Download and install Miniconda from the [official website](https://mmpretrain.readthedocs.io/en/latest/get_started.html).
 
 **Step 2.** Create a conda virtual environment and activate it
@@ -295,7 +297,7 @@ python tools/train.py configs/mobilenet_v2/mobilenet-v2_8xb32_custom.py
 
 Training logs and weights will be saved in the `work_dirs/mobilenet-v2_8xb32_custom` folder.
 
-### Convert PyTorh model to ONNX model
+### Convert PyTorch model to ONNX model
 
 #### Install mmdeploy
 
