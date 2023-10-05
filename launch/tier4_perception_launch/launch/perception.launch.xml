@@ -17,6 +17,7 @@
   <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
+  <arg name="object_recognition_detection_obstacle_pointcloud_based_validator_param_path"/>
   <arg name="occupancy_grid_map_method"/>
   <arg name="occupancy_grid_map_param_path"/>
   <arg name="occupancy_grid_map_updater"/>

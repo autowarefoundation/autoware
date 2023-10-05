@@ -32,14 +32,14 @@
 
 #include <memory>
 #include <optional>
-
+#include <vector>
 namespace obstacle_pointcloud_based_validator
 {
 struct PointsNumThresholdParam
 {
-  size_t min_points_num;
-  size_t max_points_num;
-  float min_points_and_distance_ratio;
+  std::vector<int64_t> min_points_num;
+  std::vector<int64_t> max_points_num;
+  std::vector<double> min_points_and_distance_ratio;
 };
 class ObstaclePointCloudBasedValidator : public rclcpp::Node
 {

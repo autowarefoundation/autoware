@@ -314,6 +314,7 @@
       <arg name="input/detected_objects" value="$(var lidar_detection_model)/roi_fusion/objects"/>
       <arg name="input/obstacle_pointcloud" value="$(var validator/input/obstacle_pointcloud)"/>
       <arg name="output/objects" value="$(var lidar_detection_model)/validation/objects"/>
+      <arg name="obstacle_pointcloud_based_validator_param_path" value="$(var object_recognition_detection_obstacle_pointcloud_based_validator_param_path)"/>
     </include>
   </group>
 

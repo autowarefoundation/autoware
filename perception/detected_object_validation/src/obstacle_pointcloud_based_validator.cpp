@@ -92,10 +92,12 @@ ObstaclePointCloudBasedValidator::ObstaclePointCloudBasedValidator(
   objects_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "~/output/objects", rclcpp::QoS{1});
 
-  points_num_threshold_param_.min_points_num = declare_parameter<int>("min_points_num", 10);
-  points_num_threshold_param_.max_points_num = declare_parameter<int>("max_points_num", 10);
+  points_num_threshold_param_.min_points_num =
+    declare_parameter<std::vector<int64_t>>("min_points_num");
+  points_num_threshold_param_.max_points_num =
+    declare_parameter<std::vector<int64_t>>("max_points_num");
   points_num_threshold_param_.min_points_and_distance_ratio =
-    declare_parameter<float>("min_points_and_distance_ratio", 800.0);
+    declare_parameter<std::vector<double>>("min_points_and_distance_ratio");
 
   const bool enable_debugger = declare_parameter<bool>("enable_debugger", false);
   if (enable_debugger) debugger_ = std::make_shared<Debugger>(this);
@@ -134,6 +136,7 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
 
   for (size_t i = 0; i < transformed_objects.objects.size(); ++i) {
     const auto & transformed_object = transformed_objects.objects.at(i);
+    const auto object_label_id = transformed_object.classification.front().label;
     const auto & object = input_objects->objects.at(i);
     const auto & transformed_object_position =
       transformed_object.kinematics.pose_with_covariance.pose.position;
@@ -155,13 +158,17 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
     if (debugger_) debugger_->addNeighborPointcloud(neighbor_pointcloud);
 
     // Filter object that have few pointcloud in them.
+    // TODO(badai-nguyen) add 3d validator option
     const auto num = getPointCloudNumWithinPolygon(transformed_object, neighbor_pointcloud);
     const auto object_distance =
       std::hypot(transformed_object_position.x, transformed_object_position.y);
     size_t min_pointcloud_num = std::clamp(
       static_cast<size_t>(
-        points_num_threshold_param_.min_points_and_distance_ratio / object_distance + 0.5f),
-      points_num_threshold_param_.min_points_num, points_num_threshold_param_.max_points_num);
+        points_num_threshold_param_.min_points_and_distance_ratio.at(object_label_id) /
+          object_distance +
+        0.5f),
+      static_cast<size_t>(points_num_threshold_param_.min_points_num.at(object_label_id)),
+      static_cast<size_t>(points_num_threshold_param_.max_points_num.at(object_label_id)));
     if (num) {
       (min_pointcloud_num <= num.value()) ? output.objects.push_back(object)
                                           : removed_objects.objects.push_back(object);
