@@ -17,6 +17,7 @@
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
+#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
@@ -140,9 +141,14 @@ void AvoidanceByLaneChange::fillAvoidanceTargetObjects(
 {
   const auto p = std::dynamic_pointer_cast<AvoidanceParameters>(avoidance_parameters_);
 
+  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
+    const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
+    const auto lanelet_polygon = utils::toPolygon2d(lanelet);
+    return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
+  };
   const auto [object_within_target_lane, object_outside_target_lane] =
     utils::path_safety_checker::separateObjectsByLanelets(
-      *planner_data_->dynamic_object, data.current_lanelets);
+      *planner_data_->dynamic_object, data.current_lanelets, condition);
 
   // Assume that the maximum allocation for data.other object is the sum of
   // objects_within_target_lane and object_outside_target_lane. The maximum allocation for

@@ -564,25 +564,6 @@ double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const 
   return v * std::cos(calcYawDeviation(p_ref, p_target));
 }
 
-bool isCentroidWithinLanelets(
-  const PredictedObject & object, const lanelet::ConstLanelets & target_lanelets)
-{
-  if (target_lanelets.empty()) {
-    return false;
-  }
-
-  const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
-  lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
-
-  for (const auto & llt : target_lanelets) {
-    if (boost::geometry::within(object_centroid, llt.polygon2d().basicPolygon())) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 lanelet::ConstLanelets getTargetLanelets(
   const std::shared_ptr<const PlannerData> & planner_data, lanelet::ConstLanelets & route_lanelets,
   const double left_offset, const double right_offset)
@@ -1591,12 +1572,24 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 
   std::vector<ExtendedPredictedObject> target_objects;
 
-  const auto append_target_objects = [&](const auto & check_lanes, const auto & objects) {
-    std::for_each(objects.begin(), objects.end(), [&](const auto & object) {
-      if (isCentroidWithinLanelets(object.object, check_lanes)) {
-        target_objects.push_back(utils::avoidance::transform(object.object, p));
-      }
+  const auto append = [&](const auto & objects) {
+    std::for_each(objects.objects.begin(), objects.objects.end(), [&](const auto & object) {
+      target_objects.push_back(utils::avoidance::transform(object, p));
     });
+  };
+
+  const auto to_predicted_objects = [&p](const auto & objects) {
+    PredictedObjects ret{};
+    std::for_each(objects.begin(), objects.end(), [&p, &ret](const auto & object) {
+      ret.objects.push_back(object.object);
+    });
+    return ret;
+  };
+
+  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
+    const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
+    lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
+    return boost::geometry::within(object_centroid, lanelet.polygon2d().basicPolygon());
   };
 
   const auto unavoidable_objects = [&data]() {
@@ -1614,11 +1607,15 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     const auto check_lanes = getAdjacentLane(planner_data, p, true);
 
     if (p->check_other_object) {
-      append_target_objects(check_lanes, data.other_objects);
+      const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
+        to_predicted_objects(data.other_objects), check_lanes, condition);
+      append(targets);
     }
 
     if (p->check_unavoidable_object) {
-      append_target_objects(check_lanes, unavoidable_objects);
+      const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
+        to_predicted_objects(unavoidable_objects), check_lanes, condition);
+      append(targets);
     }
   }
 
@@ -1627,11 +1624,15 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     const auto check_lanes = getAdjacentLane(planner_data, p, false);
 
     if (p->check_other_object) {
-      append_target_objects(check_lanes, data.other_objects);
+      const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
+        to_predicted_objects(data.other_objects), check_lanes, condition);
+      append(targets);
     }
 
     if (p->check_unavoidable_object) {
-      append_target_objects(check_lanes, unavoidable_objects);
+      const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
+        to_predicted_objects(unavoidable_objects), check_lanes, condition);
+      append(targets);
     }
   }
 
@@ -1640,11 +1641,15 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     const auto check_lanes = data.current_lanelets;
 
     if (p->check_other_object) {
-      append_target_objects(check_lanes, data.other_objects);
+      const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
+        to_predicted_objects(data.other_objects), check_lanes, condition);
+      append(targets);
     }
 
     if (p->check_unavoidable_object) {
-      append_target_objects(check_lanes, unavoidable_objects);
+      const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
+        to_predicted_objects(unavoidable_objects), check_lanes, condition);
+      append(targets);
     }
   }
 

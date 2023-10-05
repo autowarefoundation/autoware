@@ -117,14 +117,16 @@ void filterObjectsByClass(
  * lanelet.
  */
 std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanelets(
-  const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets);
+  const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,
+  const std::function<bool(const PredictedObject, const lanelet::ConstLanelet)> & condition);
 
 /**
  * @brief Separate the objects into two part based on whether the object is within lanelet.
  * @return Objects pair. first objects are in the lanelet, and second others are out of lanelet.
  */
 std::pair<PredictedObjects, PredictedObjects> separateObjectsByLanelets(
-  const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets);
+  const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,
+  const std::function<bool(const PredictedObject, const lanelet::ConstLanelet)> & condition);
 
 /**
  * @brief Get the predicted path from an object.
