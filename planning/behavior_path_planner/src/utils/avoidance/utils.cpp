@@ -1457,68 +1457,6 @@ AvoidLineArray combineRawShiftLinesWithUniqueCheck(
   return combined;
 }
 
-std::vector<PoseWithVelocityStamped> convertToPredictedPath(
-  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const bool is_object_front, const bool limit_to_max_velocity,
-  const std::shared_ptr<AvoidanceParameters> & parameters)
-{
-  const auto & vehicle_pose = planner_data->self_odometry->pose.pose;
-  const auto & initial_velocity = std::abs(planner_data->self_odometry->twist.twist.linear.x);
-  const size_t ego_seg_idx = planner_data->findEgoSegmentIndex(path.points);
-
-  auto ego_predicted_path_params =
-    std::make_shared<behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams>();
-
-  ego_predicted_path_params->min_velocity = parameters->min_slow_down_speed;
-  ego_predicted_path_params->acceleration = parameters->max_acceleration;
-  ego_predicted_path_params->max_velocity = std::numeric_limits<double>::infinity();
-  ego_predicted_path_params->time_horizon_for_front_object =
-    parameters->time_horizon_for_front_object;
-  ego_predicted_path_params->time_horizon_for_rear_object =
-    parameters->time_horizon_for_rear_object;
-  ego_predicted_path_params->time_resolution = parameters->safety_check_time_resolution;
-  ego_predicted_path_params->delay_until_departure = 0.0;
-
-  return behavior_path_planner::utils::path_safety_checker::createPredictedPath(
-    ego_predicted_path_params, path.points, vehicle_pose, initial_velocity, ego_seg_idx,
-    is_object_front, limit_to_max_velocity);
-}
-
-ExtendedPredictedObject transform(
-  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters)
-{
-  ExtendedPredictedObject extended_object;
-  extended_object.uuid = object.object_id;
-  extended_object.initial_pose = object.kinematics.initial_pose_with_covariance;
-  extended_object.initial_twist = object.kinematics.initial_twist_with_covariance;
-  extended_object.initial_acceleration = object.kinematics.initial_acceleration_with_covariance;
-  extended_object.shape = object.shape;
-
-  const auto & obj_velocity_norm = std::hypot(
-    extended_object.initial_twist.twist.linear.x, extended_object.initial_twist.twist.linear.y);
-  const auto & time_horizon =
-    std::max(parameters->time_horizon_for_front_object, parameters->time_horizon_for_rear_object);
-  const auto & time_resolution = parameters->safety_check_time_resolution;
-
-  extended_object.predicted_paths.resize(object.kinematics.predicted_paths.size());
-  for (size_t i = 0; i < object.kinematics.predicted_paths.size(); ++i) {
-    const auto & path = object.kinematics.predicted_paths.at(i);
-    extended_object.predicted_paths.at(i).confidence = path.confidence;
-
-    // create path
-    for (double t = 0.0; t < time_horizon + 1e-3; t += time_resolution) {
-      const auto obj_pose = object_recognition_utils::calcInterpolatedPose(path, t);
-      if (obj_pose) {
-        const auto obj_polygon = tier4_autoware_utils::toPolygon2d(*obj_pose, object.shape);
-        extended_object.predicted_paths.at(i).path.emplace_back(
-          t, *obj_pose, obj_velocity_norm, obj_polygon);
-      }
-    }
-  }
-
-  return extended_object;
-}
-
 lanelet::ConstLanelets getAdjacentLane(
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters, const bool is_right_shift)
@@ -1572,9 +1510,14 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 
   std::vector<ExtendedPredictedObject> target_objects;
 
+  const auto time_horizon = std::max(
+    parameters->ego_predicted_path_params.time_horizon_for_front_object,
+    parameters->ego_predicted_path_params.time_horizon_for_rear_object);
+
   const auto append = [&](const auto & objects) {
     std::for_each(objects.objects.begin(), objects.objects.end(), [&](const auto & object) {
-      target_objects.push_back(utils::avoidance::transform(object, p));
+      target_objects.push_back(utils::path_safety_checker::transform(
+        object, time_horizon, parameters->ego_predicted_path_params.time_resolution));
     });
   };
 

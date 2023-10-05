@@ -1839,10 +1839,16 @@ bool AvoidanceModule::isSafePath(
   }
 
   const bool limit_to_max_velocity = false;
-  const auto ego_predicted_path_for_front_object = utils::avoidance::convertToPredictedPath(
-    shifted_path.path, planner_data_, true, limit_to_max_velocity, parameters_);
-  const auto ego_predicted_path_for_rear_object = utils::avoidance::convertToPredictedPath(
-    shifted_path.path, planner_data_, false, limit_to_max_velocity, parameters_);
+  const auto ego_predicted_path_params =
+    std::make_shared<utils::path_safety_checker::EgoPredictedPathParams>(
+      parameters_->ego_predicted_path_params);
+  const size_t ego_seg_idx = planner_data_->findEgoSegmentIndex(shifted_path.path.points);
+  const auto ego_predicted_path_for_front_object = utils::path_safety_checker::createPredictedPath(
+    ego_predicted_path_params, shifted_path.path.points, getEgoPose(), getEgoSpeed(), ego_seg_idx,
+    true, limit_to_max_velocity);
+  const auto ego_predicted_path_for_rear_object = utils::path_safety_checker::createPredictedPath(
+    ego_predicted_path_params, shifted_path.path.points, getEgoPose(), getEgoSpeed(), ego_seg_idx,
+    false, limit_to_max_velocity);
 
   const auto ego_idx = planner_data_->findEgoIndex(shifted_path.path.points);
   const auto is_right_shift = [&]() -> std::optional<bool> {

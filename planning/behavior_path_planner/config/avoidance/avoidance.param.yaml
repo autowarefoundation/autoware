@@ -139,12 +139,16 @@
         check_other_object: true                         # [-]
         # collision check parameters
         check_all_predicted_path: false                  # [-]
-        time_resolution: 0.5                             # [s]
-        time_horizon_for_front_object: 10.0              # [s]
-        time_horizon_for_rear_object: 10.0               # [s]
         safety_check_backward_distance: 100.0            # [m]
         hysteresis_factor_expand_rate: 2.0               # [-]
         hysteresis_factor_safe_count: 10                 # [-]
+        # predicted path parameters
+        min_velocity: 1.38                               # [m/s]
+        max_velocity: 50.0                               # [m/s]
+        time_resolution: 0.5                             # [s]
+        time_horizon_for_front_object: 10.0              # [s]
+        time_horizon_for_rear_object: 10.0               # [s]
+        delay_until_departure: 0.0                       # [s]
         # rss parameters
         expected_front_deceleration: -1.0                # [m/ss]
         expected_rear_deceleration: -1.0                 # [m/ss]

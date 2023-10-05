@@ -87,11 +87,6 @@ std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
   const ObjectDataArray & objects, const std::shared_ptr<AvoidanceParameters> & parameters,
   const double vehicle_width);
 
-std::vector<PoseWithVelocityStamped> convertToPredictedPath(
-  const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const bool is_object_front, const bool limit_to_max_velocity,
-  const std::shared_ptr<AvoidanceParameters> & parameters);
-
 double getLongitudinalVelocity(const Pose & p_ref, const Pose & p_target, const double v);
 
 bool isCentroidWithinLanelets(
@@ -161,9 +156,6 @@ AvoidLine fillAdditionalInfo(const AvoidancePlanningData & data, const AvoidLine
 
 AvoidLineArray combineRawShiftLinesWithUniqueCheck(
   const AvoidLineArray & base_lines, const AvoidLineArray & added_lines);
-
-ExtendedPredictedObject transform(
-  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters);
 
 std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
   const AvoidancePlanningData & data, const std::shared_ptr<const PlannerData> & planner_data,

@@ -183,9 +183,6 @@ struct AvoidanceParameters
 
   // parameters for collision check.
   bool check_all_predicted_path{false};
-  double time_horizon_for_front_object{0.0};
-  double time_horizon_for_rear_object{0.0};
-  double safety_check_time_resolution{0.0};
 
   // find adjacent lane vehicles
   double safety_check_backward_distance{0.0};
@@ -294,6 +291,9 @@ struct AvoidanceParameters
 
   // parameters depend on object class
   std::unordered_map<uint8_t, ObjectParameter> object_parameters;
+
+  // ego predicted path params.
+  utils::path_safety_checker::EgoPredictedPathParams ego_predicted_path_params{};
 
   // rss parameters
   utils::path_safety_checker::RSSparams rss_params{};
