@@ -683,6 +683,16 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
     lanelet::utils::getLateralDistanceToClosestLanelet(current_lanes, current_pose);
   std::vector<std::optional<lanelet::BasicPolygon2d>> target_backward_polygons;
   for (const auto & target_backward_lane : target_backward_lanes) {
+    // Check to see is target_backward_lane is in current_lanes
+    // Without this check, current lane object might be treated as target lane object
+    const auto is_current_lane = [&](const lanelet::ConstLanelet & current_lane) {
+      return current_lane.id() == target_backward_lane.id();
+    };
+
+    if (std::any_of(current_lanes.begin(), current_lanes.end(), is_current_lane)) {
+      continue;
+    }
+
     lanelet::ConstLanelets lanelet{target_backward_lane};
     auto lane_polygon =
       utils::lane_change::createPolygon(lanelet, 0.0, std::numeric_limits<double>::max());
