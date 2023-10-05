@@ -24,6 +24,20 @@
 namespace behavior_path_planner::utils::path_safety_checker
 {
 
+bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
+{
+  const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
+  lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
+  return boost::geometry::within(object_centroid, lanelet.polygon2d().basicPolygon());
+}
+
+bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
+{
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
+  const auto lanelet_polygon = utils::toPolygon2d(lanelet);
+  return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
+}
+
 PredictedObjects filterObjects(
   const std::shared_ptr<const PredictedObjects> & objects,
   const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstLanelets & current_lanes,

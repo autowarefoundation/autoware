@@ -39,6 +39,24 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 
 /**
+ * @brief Filters objects based on object centroid position.
+ *
+ * @param objects The predicted objects to filter.
+ * @param lanelet
+ * @return result.
+ */
+bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet);
+
+/**
+ * @brief Filters objects based on object polygon overlapping with lanelet.
+ *
+ * @param objects The predicted objects to filter.
+ * @param lanelet
+ * @return result.
+ */
+bool isPolygonOverlapLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet);
+
+/**
  * @brief Filters objects based on various criteria.
  *
  * @param objects The predicted objects to filter.

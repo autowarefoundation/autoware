@@ -65,14 +65,9 @@ boost::optional<PullOutPath> ShiftPullOut::plan(const Pose & start_pose, const P
   }
 
   // extract stop objects in pull out lane for collision check
-  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
-    const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
-    const auto lanelet_polygon = utils::toPolygon2d(lanelet);
-    return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
-  };
   const auto [pull_out_lane_objects, others] =
     utils::path_safety_checker::separateObjectsByLanelets(
-      *dynamic_objects, pull_out_lanes, condition);
+      *dynamic_objects, pull_out_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
   const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     pull_out_lane_objects, parameters_.th_moving_object_velocity);
 

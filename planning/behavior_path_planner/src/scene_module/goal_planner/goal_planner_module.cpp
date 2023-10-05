@@ -1301,17 +1301,13 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
     return false;
   }
 
-  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
-    const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
-    const auto lanelet_polygon = utils::toPolygon2d(lanelet);
-    return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
-  };
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
     parameters_->forward_goal_search_length);
   const auto [pull_over_lane_objects, others] =
     utils::path_safety_checker::separateObjectsByLanelets(
-      *(planner_data_->dynamic_object), pull_over_lanes, condition);
+      *(planner_data_->dynamic_object), pull_over_lanes,
+      utils::path_safety_checker::isPolygonOverlapLanelet);
   const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     pull_over_lane_objects, parameters_->th_moving_object_velocity);
   const auto common_parameters = planner_data_->parameters;

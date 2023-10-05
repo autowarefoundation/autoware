@@ -1529,12 +1529,6 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     return ret;
   };
 
-  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
-    const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
-    lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
-    return boost::geometry::within(object_centroid, lanelet.polygon2d().basicPolygon());
-  };
-
   const auto unavoidable_objects = [&data]() {
     ObjectDataArray ret;
     std::for_each(data.target_objects.begin(), data.target_objects.end(), [&](const auto & object) {
@@ -1551,13 +1545,15 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 
     if (p->check_other_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
-        to_predicted_objects(data.other_objects), check_lanes, condition);
+        to_predicted_objects(data.other_objects), check_lanes,
+        utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
 
     if (p->check_unavoidable_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
-        to_predicted_objects(unavoidable_objects), check_lanes, condition);
+        to_predicted_objects(unavoidable_objects), check_lanes,
+        utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
   }
@@ -1568,13 +1564,15 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 
     if (p->check_other_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
-        to_predicted_objects(data.other_objects), check_lanes, condition);
+        to_predicted_objects(data.other_objects), check_lanes,
+        utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
 
     if (p->check_unavoidable_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
-        to_predicted_objects(unavoidable_objects), check_lanes, condition);
+        to_predicted_objects(unavoidable_objects), check_lanes,
+        utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
   }
@@ -1585,13 +1583,15 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 
     if (p->check_other_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
-        to_predicted_objects(data.other_objects), check_lanes, condition);
+        to_predicted_objects(data.other_objects), check_lanes,
+        utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
 
     if (p->check_unavoidable_object) {
       const auto [targets, others] = utils::path_safety_checker::separateObjectsByLanelets(
-        to_predicted_objects(unavoidable_objects), check_lanes, condition);
+        to_predicted_objects(unavoidable_objects), check_lanes,
+        utils::path_safety_checker::isCentroidWithinLanelet);
       append(targets);
     }
   }

@@ -266,18 +266,14 @@ void GoalSearcher::countObjectsToAvoid(
 
 void GoalSearcher::update(GoalCandidates & goal_candidates) const
 {
-  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
-    const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
-    const auto lanelet_polygon = utils::toPolygon2d(lanelet);
-    return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
-  };
   const auto stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     *(planner_data_->dynamic_object), parameters_.th_moving_object_velocity);
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *(planner_data_->route_handler), left_side_parking_, parameters_.backward_goal_search_length,
     parameters_.forward_goal_search_length);
   const auto [pull_over_lane_stop_objects, others] =
-    utils::path_safety_checker::separateObjectsByLanelets(stop_objects, pull_over_lanes, condition);
+    utils::path_safety_checker::separateObjectsByLanelets(
+      stop_objects, pull_over_lanes, utils::path_safety_checker::isPolygonOverlapLanelet);
 
   if (parameters_.prioritize_goals_before_objects) {
     countObjectsToAvoid(goal_candidates, pull_over_lane_stop_objects);

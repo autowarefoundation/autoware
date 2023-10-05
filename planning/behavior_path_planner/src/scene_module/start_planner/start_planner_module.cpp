@@ -771,14 +771,10 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoses(
   std::vector<Pose> pull_out_start_pose{};
 
   // filter pull out lanes stop objects
-  const auto condition = [](const PredictedObject & object, const lanelet::ConstLanelet & lanelet) {
-    const auto object_polygon = tier4_autoware_utils::toPolygon2d(object);
-    const auto lanelet_polygon = utils::toPolygon2d(lanelet);
-    return !boost::geometry::disjoint(lanelet_polygon, object_polygon);
-  };
   const auto [pull_out_lane_objects, others] =
     utils::path_safety_checker::separateObjectsByLanelets(
-      *planner_data_->dynamic_object, status_.pull_out_lanes, condition);
+      *planner_data_->dynamic_object, status_.pull_out_lanes,
+      utils::path_safety_checker::isPolygonOverlapLanelet);
   const auto pull_out_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     pull_out_lane_objects, parameters_->th_moving_object_velocity);
 
