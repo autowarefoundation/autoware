@@ -30,14 +30,15 @@
 
 #include <lanelet2_core/geometry/LineString.h>
 #include <lanelet2_core/geometry/Polygon.h>
+#include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 #include <lanelet2_core/primitives/LineString.h>
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <memory>
 #include <tuple>
 #include <vector>
-
 namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
@@ -807,6 +808,36 @@ bool IntersectionModule::modifyPathVelocity(PathWithLaneId * path, StopReason * 
   return true;
 }
 
+static bool isGreenSolidOn(
+  lanelet::ConstLanelet lane, const std::map<int, TrafficSignalStamped> & tl_infos)
+{
+  using TrafficSignalElement = autoware_perception_msgs::msg::TrafficSignalElement;
+
+  std::optional<int> tl_id = std::nullopt;
+  for (auto && tl_reg_elem : lane.regulatoryElementsAs<lanelet::TrafficLight>()) {
+    tl_id = tl_reg_elem->id();
+    break;
+  }
+  if (!tl_id) {
+    // this lane has no traffic light
+    return false;
+  }
+  const auto tl_info_it = tl_infos.find(tl_id.value());
+  if (tl_info_it == tl_infos.end()) {
+    // the info of this traffic light is not available
+    return false;
+  }
+  const auto & tl_info = tl_info_it->second;
+  for (auto && tl_light : tl_info.signal.elements) {
+    if (
+      tl_light.color == TrafficSignalElement::GREEN &&
+      tl_light.shape == TrafficSignalElement::CIRCLE) {
+      return true;
+    }
+  }
+  return false;
+}
+
 IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   PathWithLaneId * path, [[maybe_unused]] StopReason * stop_reason)
 {
@@ -994,13 +1025,52 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     debug_data_.intersection_area = toGeomPoly(intersection_area_2d);
   }
 
+  const auto target_objects =
+    filterTargetObjects(attention_lanelets, adjacent_lanelets, intersection_area);
+
+  // If there are any vehicles on the attention area when ego entered the intersection on green
+  // light, do pseudo collision detection because the vehicles are very slow and no collisions may
+  // be detected. check if ego vehicle entered assigned lanelet
+  const bool is_green_solid_on =
+    isGreenSolidOn(assigned_lanelet, planner_data_->traffic_light_id_map);
+  if (is_green_solid_on) {
+    if (!initial_green_light_observed_time_) {
+      const auto assigned_lane_begin_point = assigned_lanelet.centerline().front();
+      const bool approached_assigned_lane =
+        motion_utils::calcSignedArcLength(
+          path->points, closest_idx,
+          tier4_autoware_utils::createPoint(
+            assigned_lane_begin_point.x(), assigned_lane_begin_point.y(),
+            assigned_lane_begin_point.z())) <
+        planner_param_.collision_detection.yield_on_green_traffic_light
+          .distance_to_assigned_lanelet_start;
+      if (approached_assigned_lane) {
+        initial_green_light_observed_time_ = clock_->now();
+      }
+    }
+    if (initial_green_light_observed_time_) {
+      const auto now = clock_->now();
+      const bool exist_close_vehicles = std::any_of(
+        target_objects.objects.begin(), target_objects.objects.end(), [&](const auto & object) {
+          return tier4_autoware_utils::calcDistance3d(
+                   object.kinematics.initial_pose_with_covariance.pose, current_pose) <
+                 planner_param_.collision_detection.yield_on_green_traffic_light.range;
+        });
+      if (
+        exist_close_vehicles &&
+        rclcpp::Duration((now - initial_green_light_observed_time_.value())).seconds() <
+          planner_param_.collision_detection.yield_on_green_traffic_light.duration) {
+        return IntersectionModule::NonOccludedCollisionStop{
+          closest_idx, collision_stop_line_idx, occlusion_stop_line_idx};
+      }
+    }
+  }
+
   // calculate dynamic collision around attention area
   const double time_to_restart = (is_go_out_ || is_prioritized)
                                    ? 0.0
                                    : (planner_param_.collision_detection.state_transit_margin_time -
                                       collision_state_machine_.getDuration());
-  const auto target_objects =
-    filterTargetObjects(attention_lanelets, adjacent_lanelets, intersection_area);
 
   const bool has_collision = checkCollision(
     *path, target_objects, path_lanelets, closest_idx,

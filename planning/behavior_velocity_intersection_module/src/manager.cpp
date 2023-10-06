@@ -109,6 +109,14 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<bool>(node, ns + ".collision_detection.use_upstream_velocity");
   ip.collision_detection.minimum_upstream_velocity =
     getOrDeclareParameter<double>(node, ns + ".collision_detection.minimum_upstream_velocity");
+  ip.collision_detection.yield_on_green_traffic_light.distance_to_assigned_lanelet_start =
+    getOrDeclareParameter<double>(
+      node,
+      ns + ".collision_detection.yield_on_green_traffic_light.distance_to_assigned_lanelet_start");
+  ip.collision_detection.yield_on_green_traffic_light.duration = getOrDeclareParameter<double>(
+    node, ns + ".collision_detection.yield_on_green_traffic_light.duration");
+  ip.collision_detection.yield_on_green_traffic_light.range = getOrDeclareParameter<double>(
+    node, ns + ".collision_detection.yield_on_green_traffic_light.range");
 
   ip.occlusion.enable = getOrDeclareParameter<bool>(node, ns + ".occlusion.enable");
   ip.occlusion.occlusion_attention_area_length =

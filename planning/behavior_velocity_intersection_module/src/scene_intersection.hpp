@@ -96,6 +96,12 @@ public:
       double keep_detection_vel_thr;  //! keep detection if ego is ego.vel < keep_detection_vel_thr
       bool use_upstream_velocity;
       double minimum_upstream_velocity;
+      struct YieldOnGreeTrafficLight
+      {
+        double distance_to_assigned_lanelet_start;
+        double duration;
+        double range;
+      } yield_on_green_traffic_light;
     } collision_detection;
     struct Occlusion
     {
@@ -234,36 +240,37 @@ private:
   const std::string turn_direction_;
   const bool has_traffic_light_;
 
-  bool is_go_out_ = false;
-  bool is_permanent_go_ = false;
-  DecisionResult prev_decision_result_;
+  bool is_go_out_{false};
+  bool is_permanent_go_{false};
+  DecisionResult prev_decision_result_{Indecisive{""}};
 
   // Parameter
   PlannerParam planner_param_;
 
-  std::optional<util::IntersectionLanelets> intersection_lanelets_;
+  std::optional<util::IntersectionLanelets> intersection_lanelets_{std::nullopt};
 
   // for occlusion detection
   const bool enable_occlusion_detection_;
-  std::optional<std::vector<util::DiscretizedLane>> occlusion_attention_divisions_;
-  // OcclusionState prev_occlusion_state_ = OcclusionState::NONE;
+  std::optional<std::vector<util::DiscretizedLane>> occlusion_attention_divisions_{std::nullopt};
   StateMachine collision_state_machine_;     //! for stable collision checking
   StateMachine before_creep_state_machine_;  //! for two phase stop
   StateMachine occlusion_stop_state_machine_;
   StateMachine temporal_stop_before_attention_state_machine_;
 
-  // NOTE: uuid_ is base member
+  // for pseudo-collision detection when ego just entered intersection on green light and upcoming
+  // vehicles are very slow
+  std::optional<rclcpp::Time> initial_green_light_observed_time_{std::nullopt};
 
   // for stuck vehicle detection
   const bool is_private_area_;
 
   // for RTC
   const UUID occlusion_uuid_;
-  bool occlusion_safety_ = true;
-  double occlusion_stop_distance_;
-  bool occlusion_activated_ = true;
+  bool occlusion_safety_{true};
+  double occlusion_stop_distance_{0.0};
+  bool occlusion_activated_{true};
   // for first stop in two-phase stop
-  bool occlusion_first_stop_required_ = false;
+  bool occlusion_first_stop_required_{false};
 
   void initializeRTCStatus();
   void prepareRTCStatus(
