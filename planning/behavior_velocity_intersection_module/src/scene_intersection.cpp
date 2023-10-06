@@ -97,10 +97,6 @@ IntersectionModule::IntersectionModule(
     occlusion_stop_state_machine_.setState(StateMachine::State::GO);
   }
   {
-    stuck_private_area_timeout_.setMarginTime(planner_param_.stuck_vehicle.timeout_private_area);
-    stuck_private_area_timeout_.setState(StateMachine::State::STOP);
-  }
-  {
     temporal_stop_before_attention_state_machine_.setMarginTime(
       planner_param_.occlusion.before_creep_stop_time);
     temporal_stop_before_attention_state_machine_.setState(StateMachine::State::STOP);
@@ -918,16 +914,13 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const bool stuck_detected = checkStuckVehicle(planner_data_, path_lanelets);
   if (stuck_detected && stuck_stop_line_idx_opt) {
     auto stuck_stop_line_idx = stuck_stop_line_idx_opt.value();
-    const bool stopped_at_stuck_line = stoppedForDuration(
-      stuck_stop_line_idx, planner_param_.stuck_vehicle.timeout_private_area,
-      stuck_private_area_timeout_);
-    const bool timeout = (is_private_area_ && stopped_at_stuck_line);
-    if (!timeout) {
+    if (is_private_area_ && planner_param_.stuck_vehicle.enable_private_area_stuck_disregard) {
       if (
         default_stop_line_idx_opt &&
         fromEgoDist(stuck_stop_line_idx) < -planner_param_.common.stop_overshoot_margin) {
         stuck_stop_line_idx = default_stop_line_idx_opt.value();
       }
+    } else {
       return IntersectionModule::StuckStop{
         closest_idx, stuck_stop_line_idx, occlusion_peeking_stop_line_idx_opt};
     }

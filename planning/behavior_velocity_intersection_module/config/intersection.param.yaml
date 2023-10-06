@@ -19,6 +19,7 @@
         # enable_front_car_decel_prediction: false # By default this feature is disabled
         # assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
         timeout_private_area: 3.0 # [s] cancel stuck vehicle stop in private area
+        enable_private_area_stuck_disregard: false #In the intersections which labeled as "private area", the obstacle vehicles judged as "stuck" are neglected if this param is set as true.
 
       collision_detection:
         state_transit_margin_time: 1.0

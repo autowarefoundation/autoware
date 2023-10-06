@@ -77,6 +77,8 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   */
   ip.stuck_vehicle.timeout_private_area =
     getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.timeout_private_area");
+  ip.stuck_vehicle.enable_private_area_stuck_disregard =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.enable_private_area_stuck_disregard");
 
   ip.collision_detection.min_predicted_path_confidence =
     getOrDeclareParameter<double>(node, ns + ".collision_detection.min_predicted_path_confidence");
