@@ -15,6 +15,7 @@
     </include>
 
     <!--radar long range dynamic object tracking if mode contains radar input-->
+    <!--
     <group if="$(eval '&quot;$(var mode)&quot;==&quot;radar&quot; or &quot;$(var mode)&quot;==&quot;lidar_radar_fusion&quot; or &quot;$(var mode)&quot;==&quot;camera_lidar_radar_fusion&quot;')">
       <include file="$(find-pkg-share radar_object_tracker)/launch/radar_object_tracker.launch.xml">
         <arg name="publish_rate" value="$(var publish_rate)"/>
@@ -25,5 +26,6 @@
         <arg name="tracker_setting_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
       </include>
     </group>
+    -->
   </group>
 </launch>
