@@ -665,7 +665,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
 double PlannerInterface::calculateSlowDownVelocity(
   const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output) const
 {
-  const auto & p = slow_down_param_;
+  const auto & p = slow_down_param_.getObstacleParamByLabel(obstacle.classification);
 
   const double stable_precise_lat_dist = [&]() {
     if (prev_output) {
@@ -691,7 +691,6 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
   const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
   const double dist_to_ego) const
 {
-  const auto & p = slow_down_param_;
   const double abs_ego_offset = planner_data.is_driving_forward
                                   ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
@@ -728,8 +727,8 @@ PlannerInterface::calculateDistanceToSlowDownWithConstraints(
 
   // calculate distance during deceleration, slow down preparation, and slow down
   const double min_slow_down_prepare_dist = 3.0;
-  const double slow_down_prepare_dist =
-    std::max(min_slow_down_prepare_dist, slow_down_vel * p.time_margin_on_target_velocity);
+  const double slow_down_prepare_dist = std::max(
+    min_slow_down_prepare_dist, slow_down_vel * slow_down_param_.time_margin_on_target_velocity);
   const double deceleration_dist = offset_dist_to_collision + dist_to_front_collision -
                                    abs_ego_offset - dist_to_ego - slow_down_prepare_dist;
   const double slow_down_dist =

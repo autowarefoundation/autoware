@@ -137,19 +137,21 @@ struct SlowDownObstacle : public TargetObstacleInterface
 {
   SlowDownObstacle(
     const std::string & arg_uuid, const rclcpp::Time & arg_stamp,
-    const geometry_msgs::msg::Pose & arg_pose, const double arg_lon_velocity,
-    const double arg_lat_velocity, const double arg_precise_lat_dist,
+    const ObjectClassification & object_classification, const geometry_msgs::msg::Pose & arg_pose,
+    const double arg_lon_velocity, const double arg_lat_velocity, const double arg_precise_lat_dist,
     const geometry_msgs::msg::Point & arg_front_collision_point,
     const geometry_msgs::msg::Point & arg_back_collision_point)
   : TargetObstacleInterface(arg_uuid, arg_stamp, arg_pose, arg_lon_velocity, arg_lat_velocity),
     precise_lat_dist(arg_precise_lat_dist),
     front_collision_point(arg_front_collision_point),
-    back_collision_point(arg_back_collision_point)
+    back_collision_point(arg_back_collision_point),
+    classification(object_classification)
   {
   }
   double precise_lat_dist;  // for efficient calculation
   geometry_msgs::msg::Point front_collision_point;
   geometry_msgs::msg::Point back_collision_point;
+  ObjectClassification classification;
 };
 
 struct LongitudinalInfo

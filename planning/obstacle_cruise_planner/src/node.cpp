@@ -1175,9 +1175,9 @@ std::optional<SlowDownObstacle> ObstacleCruisePlannerNode::createSlowDownObstacl
   }
 
   const auto [tangent_vel, normal_vel] = projectObstacleVelocityToTrajectory(traj_points, obstacle);
-  return SlowDownObstacle{obstacle.uuid,         obstacle.stamp,      obstacle.pose,
-                          tangent_vel,           normal_vel,          precise_lat_dist,
-                          front_collision_point, back_collision_point};
+  return SlowDownObstacle{obstacle.uuid,    obstacle.stamp,        obstacle.classification,
+                          obstacle.pose,    tangent_vel,           normal_vel,
+                          precise_lat_dist, front_collision_point, back_collision_point};
 }
 
 void ObstacleCruisePlannerNode::checkConsistency(
