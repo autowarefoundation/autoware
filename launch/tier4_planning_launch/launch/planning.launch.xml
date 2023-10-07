@@ -15,8 +15,6 @@
   <!-- common -->
   <arg name="common_param_path"/>
   <arg name="nearest_search_param_path"/>
-  <!-- rtc -->
-  <arg name="rtc_auto_mode_manager_param_path"/>
   <!-- mission planner -->
   <arg name="mission_planner_param_path"/>
   <!-- behavior path planner -->

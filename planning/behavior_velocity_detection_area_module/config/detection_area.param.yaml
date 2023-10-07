@@ -8,4 +8,4 @@
       state_clear_time: 2.0
       hold_stop_margin_distance: 0.0
       distance_to_judge_over_stop_line: 0.5
-      enable_rtc: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+      enable_rtc: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

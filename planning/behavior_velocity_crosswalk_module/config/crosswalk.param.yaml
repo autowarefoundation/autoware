@@ -5,7 +5,7 @@
         show_processing_time: false # [-] whether to show processing time
         # param for input data
         traffic_light_state_timeout: 3.0 # [s] timeout threshold for traffic light signal
-        enable_rtc: true # if true, the scene modules should be approved by (request to cooperate)rtc function. if false, the module can be run without approval from rtc.
+        enable_rtc: false # if true, the scene modules should be approved by (request to cooperate)rtc function. if false, the module can be run without approval from rtc.
 
       # param for stop position
       stop_position:

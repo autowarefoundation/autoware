@@ -14,11 +14,6 @@
           <arg name="use_experimental_lane_change_function" value="$(var use_experimental_lane_change_function)"/>
         </include>
       </group>
-      <group>
-        <include file="$(find-pkg-share rtc_auto_mode_manager)/launch/rtc_auto_mode_manager.launch.xml">
-          <arg name="param_path" value="$(var rtc_auto_mode_manager_param_path)"/>
-        </include>
-      </group>
     </group>
 
     <!-- motion planning module -->

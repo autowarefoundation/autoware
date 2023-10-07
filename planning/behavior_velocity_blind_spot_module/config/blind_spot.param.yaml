@@ -8,4 +8,4 @@
       max_future_movement_time: 10.0 # [second]
       threshold_yaw_diff: 0.523 # [rad]
       adjacent_extend_width: 1.5 # [m]
-      enable_rtc: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+      enable_rtc: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

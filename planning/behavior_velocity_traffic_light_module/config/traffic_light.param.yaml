@@ -5,4 +5,4 @@
       tl_state_timeout: 1.0
       yellow_lamp_period: 2.75
       enable_pass_judge: true
-      enable_rtc: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+      enable_rtc: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

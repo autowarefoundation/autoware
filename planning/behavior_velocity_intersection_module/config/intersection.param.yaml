@@ -66,8 +66,8 @@
         attention_lane_curvature_calculation_ds: 0.5
 
       enable_rtc:
-        intersection: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
-        intersection_to_occlusion: true
+        intersection: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+        intersection_to_occlusion: false
 
     merge_from_private:
       stop_line_margin: 3.0

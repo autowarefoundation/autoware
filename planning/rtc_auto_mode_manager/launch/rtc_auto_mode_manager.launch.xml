@@ -1,7 +1,0 @@
-<launch>
-  <arg name="param_path" default="$(find-pkg-share rtc_auto_mode_manager)/config/rtc_auto_mode_manager.param.yaml"/>
-
-  <node pkg="rtc_auto_mode_manager" exec="rtc_auto_mode_manager_node" name="rtc_auto_mode_manager" output="screen">
-    <param from="$(var param_path)"/>
-  </node>
-</launch>

@@ -8,4 +8,4 @@
       stop_line_margin: 1.0           # [m] margin to auto-gen stop line at no stopping area
       detection_area_length: 200.0    # [m] used to create detection area polygon
       stuck_vehicle_front_margin: 6.0 # [m] obstacle stop max distance(5.0m)
-      enable_rtc: true # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
+      enable_rtc: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval

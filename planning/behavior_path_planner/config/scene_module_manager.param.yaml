@@ -5,7 +5,7 @@
   ros__parameters:
     external_request_lane_change_left:
       enable_module: false
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: true
       keep_last: false
@@ -14,7 +14,7 @@
 
     external_request_lane_change_right:
       enable_module: false
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: true
       keep_last: false
@@ -23,7 +23,7 @@
 
     lane_change_left:
       enable_module: true
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true
       keep_last: false
@@ -32,7 +32,7 @@
 
     lane_change_right:
       enable_module: true
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true
       keep_last: false
@@ -41,7 +41,7 @@
 
     start_planner:
       enable_module: true
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
       keep_last: false
@@ -50,7 +50,7 @@
 
     side_shift:
       enable_module: true
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
       keep_last: false
@@ -59,7 +59,7 @@
 
     goal_planner:
       enable_module: true
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
       keep_last: true
@@ -68,7 +68,7 @@
 
     avoidance:
       enable_module: true
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: false
       keep_last: false
@@ -77,7 +77,7 @@
 
     avoidance_by_lc:
       enable_module: false
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: false
       enable_simultaneous_execution_as_candidate_module: false
       keep_last: false
@@ -86,7 +86,7 @@
 
     dynamic_avoidance:
       enable_module: false
-      enable_rtc: true
+      enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
       enable_simultaneous_execution_as_candidate_module: true
       keep_last: false
