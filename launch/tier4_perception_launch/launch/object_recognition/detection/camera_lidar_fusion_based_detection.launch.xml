@@ -15,7 +15,8 @@
   <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
   <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
   <arg name="remove_unknown" default="true"/>
-  <arg name="trust_distance" default="30.0"/>
+  <arg name="fusion_distance" default="100.0"/>
+  <arg name="trust_object_distance" default="100.0"/>
   <arg name="use_roi_based_cluster" default="false"/>
 
   <!-- Camera parameters -->
@@ -169,7 +170,8 @@
           <arg name="input/image7" value="$(var image_raw7)"/>
           <arg name="output/clusters" value="clusters"/>
           <arg name="remove_unknown" value="$(var remove_unknown)"/>
-          <arg name="trust_distance" value="$(var trust_distance)"/>
+          <arg name="fusion_distance" value="$(var fusion_distance)"/>
+          <arg name="trust_object_distance" value="$(var trust_object_distance)"/>
         </include>
       </group>
 

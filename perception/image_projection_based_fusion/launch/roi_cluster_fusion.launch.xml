@@ -1,5 +1,5 @@
 <launch>
-  <arg name="input/rois_number" default="1"/>
+  <arg name="input/rois_number" default="6"/>
   <arg name="input/rois0" default="rois0"/>
   <arg name="input/camera_info0" default="/camera_info0"/>
   <arg name="input/rois1" default="rois1"/>
@@ -20,7 +20,8 @@
   <arg name="output/clusters" default="labeled_clusters"/>
   <arg name="sync_param_path" default="$(find-pkg-share image_projection_based_fusion)/config/roi_sync.param.yaml"/>
   <arg name="remove_unknown" default="true"/>
-  <arg name="trust_distance" default="100.0"/>
+  <arg name="fusion_distance" default="100.0"/>
+  <arg name="trust_object_distance" default="100.0"/>
 
   <!-- for eval variable-->
   <arg name="input_rois_number" default="$(var input/rois_number)"/>
@@ -45,9 +46,8 @@
   <arg name="input/image7" default="/image_raw7"/>
   <group>
     <node pkg="image_projection_based_fusion" exec="roi_cluster_fusion_node" name="roi_cluster_fusion" output="screen">
-      <param name="use_iou" value="true"/>
-      <param name="use_iou_x" value="false"/>
-      <param name="use_iou_y" value="false"/>
+      <param name="trust_object_iou_mode" value="iou"/>
+      <param name="non_trust_object_iou_mode" value="iou_x"/>
       <param name="use_cluster_semantic_type" value="false"/>
       <param name="only_allow_inside_cluster" value="true"/>
       <param name="roi_scale_factor" value="1.1"/>
@@ -55,7 +55,8 @@
       <param name="unknown_iou_threshold" value="0.1"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
       <param name="remove_unknown" value="$(var remove_unknown)"/>
-      <param name="trust_distance" value="$(var trust_distance)"/>
+      <param name="fusion_distance" value="$(var fusion_distance)"/>
+      <param name="trust_object_distance" value="$(var trust_object_distance)"/>
       <param from="$(var sync_param_path)"/>
       <remap from="input" to="$(var input/clusters)"/>
       <remap from="output" to="$(var output/clusters)"/>

@@ -36,16 +36,16 @@ namespace image_projection_based_fusion
 RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
 : FusionNode<DetectedObjectsWithFeature, DetectedObjectWithFeature>("roi_cluster_fusion", options)
 {
-  use_iou_x_ = declare_parameter<bool>("use_iou_x");
-  use_iou_y_ = declare_parameter<bool>("use_iou_y");
-  use_iou_ = declare_parameter<bool>("use_iou");
+  trust_object_iou_mode_ = declare_parameter<std::string>("trust_object_iou_mode");
+  non_trust_object_iou_mode_ = declare_parameter<std::string>("non_trust_object_iou_mode");
   use_cluster_semantic_type_ = declare_parameter<bool>("use_cluster_semantic_type");
   only_allow_inside_cluster_ = declare_parameter<bool>("only_allow_inside_cluster");
   roi_scale_factor_ = declare_parameter<double>("roi_scale_factor");
   iou_threshold_ = declare_parameter<double>("iou_threshold");
   unknown_iou_threshold_ = declare_parameter<double>("unknown_iou_threshold");
   remove_unknown_ = declare_parameter<bool>("remove_unknown");
-  trust_distance_ = declare_parameter<double>("trust_distance");
+  fusion_distance_ = declare_parameter<double>("fusion_distance");
+  trust_object_distance_ = declare_parameter<double>("trust_object_distance");
 }
 
 void RoiClusterFusionNode::preprocess(DetectedObjectsWithFeature & output_cluster_msg)
@@ -111,7 +111,7 @@ void RoiClusterFusionNode::fuseOnSingleImage(
       continue;
     }
 
-    if (filter_by_distance(input_cluster_msg.feature_objects.at(i))) {
+    if (is_far_enough(input_cluster_msg.feature_objects.at(i), fusion_distance_)) {
       continue;
     }
 
@@ -175,25 +175,23 @@ void RoiClusterFusionNode::fuseOnSingleImage(
     bool is_roi_label_known =
       feature_obj.object.classification.front().label != ObjectClassification::UNKNOWN;
     for (const auto & cluster_map : m_cluster_roi) {
-      double iou(0.0), iou_x(0.0), iou_y(0.0);
-      if (use_iou_) {
-        iou = calcIoU(cluster_map.second, feature_obj.feature.roi);
+      double iou(0.0);
+      bool is_use_non_trust_object_iou_mode = is_far_enough(
+        input_cluster_msg.feature_objects.at(cluster_map.first), trust_object_distance_);
+      if (is_use_non_trust_object_iou_mode || is_roi_label_known) {
+        iou =
+          cal_iou_by_mode(cluster_map.second, feature_obj.feature.roi, non_trust_object_iou_mode_);
+      } else {
+        iou = cal_iou_by_mode(cluster_map.second, feature_obj.feature.roi, trust_object_iou_mode_);
       }
-      // use for unknown roi to improve small objects like traffic cone detect
-      // TODO(badai-nguyen): add option to disable roi_cluster mode
-      if (use_iou_x_ || !is_roi_label_known) {
-        iou_x = calcIoUX(cluster_map.second, feature_obj.feature.roi);
-      }
-      if (use_iou_y_) {
-        iou_y = calcIoUY(cluster_map.second, feature_obj.feature.roi);
-      }
+
       const bool passed_inside_cluster_gate =
         only_allow_inside_cluster_
           ? is_inside(feature_obj.feature.roi, cluster_map.second, roi_scale_factor_)
           : true;
-      if (max_iou < iou + iou_x + iou_y && passed_inside_cluster_gate) {
+      if (max_iou < iou && passed_inside_cluster_gate) {
         index = cluster_map.first;
-        max_iou = iou + iou_x + iou_y;
+        max_iou = iou;
         associated = true;
       }
     }
@@ -274,11 +272,30 @@ bool RoiClusterFusionNode::out_of_scope(const DetectedObjectWithFeature & obj)
   return is_out;
 }
 
-bool RoiClusterFusionNode::filter_by_distance(const DetectedObjectWithFeature & obj)
+bool RoiClusterFusionNode::is_far_enough(
+  const DetectedObjectWithFeature & obj, const double distance_threshold)
 {
   const auto & position = obj.object.kinematics.pose_with_covariance.pose.position;
-  const auto square_distance = position.x * position.x + position.y + position.y;
-  return square_distance > trust_distance_ * trust_distance_;
+  return position.x * position.x + position.y * position.y >
+         distance_threshold * distance_threshold;
+}
+
+double RoiClusterFusionNode::cal_iou_by_mode(
+  const sensor_msgs::msg::RegionOfInterest & roi_1,
+  const sensor_msgs::msg::RegionOfInterest & roi_2, const std::string iou_mode)
+{
+  switch (IOU_MODE_MAP.at(iou_mode)) {
+    case 0 /* use iou mode */:
+      return calcIoU(roi_1, roi_2);
+
+    case 1 /* use iou_x mode */:
+      return calcIoUX(roi_1, roi_2);
+
+    case 2 /* use iou_y mode */:
+      return calcIoUY(roi_1, roi_2);
+    default:
+      return 0.0;
+  }
 }
 
 }  // namespace image_projection_based_fusion

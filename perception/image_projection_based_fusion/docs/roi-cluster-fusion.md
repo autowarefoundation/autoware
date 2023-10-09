@@ -32,18 +32,20 @@ The clusters are projected onto image planes, and then if the ROIs of clusters a
 
 ### Core Parameters
 
-| Name                        | Type  | Description                                                                      |
-| --------------------------- | ----- | -------------------------------------------------------------------------------- |
-| `use_iou_x`                 | bool  | calculate IoU only along x-axis                                                  |
-| `use_iou_y`                 | bool  | calculate IoU only along y-axis                                                  |
-| `use_iou`                   | bool  | calculate IoU both along x-axis and y-axis                                       |
-| `use_cluster_semantic_type` | bool  | if `false`, the labels of clusters are overwritten by `UNKNOWN` before fusion    |
-| `only_allow_inside_cluster` | bool  | if `true`, the only clusters contained inside RoIs by a detector                 |
-| `roi_scale_factor`          | float | the scale factor for offset of detector RoIs if `only_allow_inside_cluster=true` |
-| `iou_threshold`             | float | the IoU threshold to overwrite a label of clusters with a label of roi           |
-| `unknown_iou_threshold`     | float | the IoU threshold to fuse cluster with unknown label of roi                      |
-| `rois_number`               | int   | the number of input rois                                                         |
-| `debug_mode`                | bool  | If `true`, subscribe and publish images for visualization.                       |
+| Name                        | Type   | Description                                                                                                                                                                                                                        |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fusion_distance`           | double | If the detected object's distance to frame_id is less than the threshold, the fusion will be processed                                                                                                                             |
+| `trust_object_distance`     | double | if the detected object's distance is less than the `trust_object_distance`, `trust_object_iou_mode` will be used, otherwise `non_trust_object_iou_mode` will be used                                                               |
+| `trust_object_iou_mode`     | string | select mode from 3 options {`iou`, `iou_x`, `iou_y`} to calculate IoU in range of [`0`, `trust_distance`]. <br> &emsp;`iou`: IoU along x-axis and y-axis <br> &emsp;`iou_x`: IoU along x-axis <br> &emsp;`iou_y`: IoU along y-axis |
+| `non_trust_object_iou_mode` | string | the IOU mode using in range of [`trust_distance`, `fusion_distance`] if `trust_distance` < `fusion_distance`                                                                                                                       |
+| `use_cluster_semantic_type` | bool   | if `false`, the labels of clusters are overwritten by `UNKNOWN` before fusion                                                                                                                                                      |
+| `only_allow_inside_cluster` | bool   | if `true`, the only clusters contained inside RoIs by a detector                                                                                                                                                                   |
+| `roi_scale_factor`          | double | the scale factor for offset of detector RoIs if `only_allow_inside_cluster=true`                                                                                                                                                   |
+| `iou_threshold`             | double | the IoU threshold to overwrite a label of clusters with a label of roi                                                                                                                                                             |
+| `unknown_iou_threshold`     | double | the IoU threshold to fuse cluster with unknown label of roi                                                                                                                                                                        |
+| `remove_unknown`            | bool   | if `true`, remove all `UNKNOWN` labeled objects from output                                                                                                                                                                        |
+| `rois_number`               | int    | the number of input rois                                                                                                                                                                                                           |
+| `debug_mode`                | bool   | If `true`, subscribe and publish images for visualization.                                                                                                                                                                         |
 
 ## Assumptions / Known limits
 
