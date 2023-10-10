@@ -236,6 +236,9 @@ lanelet::BasicPolygon2d getTargetNeighborLanesPolygon(
 {
   const auto target_neighbor_lanelets =
     utils::lane_change::getTargetNeighborLanes(route_handler, current_lanes, type);
+  if (target_neighbor_lanelets.empty()) {
+    return {};
+  }
   const auto target_neighbor_preferred_lane_poly = lanelet::utils::getPolygonFromArcLength(
     target_neighbor_lanelets, 0, std::numeric_limits<double>::max());
 

@@ -946,6 +946,9 @@ bool NormalLaneChange::getLaneChangePaths(
 
   const auto target_neighbor_preferred_lane_poly_2d =
     utils::lane_change::getTargetNeighborLanesPolygon(route_handler, current_lanes, type_);
+  if (target_neighbor_preferred_lane_poly_2d.empty()) {
+    return false;
+  }
 
   const auto target_objects = getTargetObjects(current_lanes, target_lanes);
   debug_filtered_objects_ = target_objects;
