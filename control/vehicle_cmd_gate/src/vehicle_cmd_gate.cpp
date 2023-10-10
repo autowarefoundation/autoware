@@ -555,9 +555,7 @@ AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannCont
   // set prev value for both to keep consistency over switching:
   // Actual steer, vel, acc should be considered in manual mode to prevent sudden motion when
   // switching from manual to autonomous
-  const auto in_autonomous =
-    (mode.mode == OperationModeState::AUTONOMOUS && mode.is_autoware_control_enabled);
-  auto prev_values = in_autonomous ? out : current_status_cmd;
+  auto prev_values = mode.is_autoware_control_enabled ? out : current_status_cmd;
 
   if (ego_is_stopped) {
     prev_values.longitudinal = out.longitudinal;
