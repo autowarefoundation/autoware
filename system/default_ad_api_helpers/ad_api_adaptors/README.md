@@ -21,9 +21,11 @@ The clear API is called automatically before setting the route.
 
 | Interface    | Local Name         | Global Name                           | Description                                        |
 | ------------ | ------------------ | ------------------------------------- | -------------------------------------------------- |
+| Subscription | -                  | /api/routing/state                    | The state of the routing API.                      |
 | Subscription | ~/input/fixed_goal | /planning/mission_planning/goal       | The goal pose of route. Disable goal modification. |
 | Subscription | ~/input/rough_goal | /rviz/routing/rough_goal              | The goal pose of route. Enable goal modification.  |
 | Subscription | ~/input/reroute    | /rviz/routing/reroute                 | The goal pose of reroute.                          |
 | Subscription | ~/input/waypoint   | /planning/mission_planning/checkpoint | The waypoint pose of route.                        |
 | Client       | -                  | /api/routing/clear_route              | The route clear API.                               |
 | Client       | -                  | /api/routing/set_route_points         | The route points set API.                          |
+| Client       | -                  | /api/routing/change_route_points      | The route points change API.                       |
