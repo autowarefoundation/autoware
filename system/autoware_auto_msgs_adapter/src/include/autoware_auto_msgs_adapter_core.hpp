@@ -15,6 +15,7 @@
 #define AUTOWARE_AUTO_MSGS_ADAPTER_CORE_HPP_
 
 #include "adapter_control.hpp"
+#include "adapter_map.hpp"
 #include "adapter_perception.hpp"
 
 #include <rclcpp/rclcpp.hpp>

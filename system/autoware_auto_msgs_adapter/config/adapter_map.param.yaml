@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    msg_type_target: "autoware_auto_mapping_msgs/msg/HADMapBin"
+    topic_name_source: "/map/vector_map"
+    topic_name_target: "/map/vector_map_auto"

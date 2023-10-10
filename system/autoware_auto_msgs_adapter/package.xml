@@ -10,8 +10,6 @@
 
   <license>Apache License 2.0</license>
 
-  <author email="mfc@leodrive.ai">M. Fatih Cırıt</author>
-
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
@@ -22,8 +20,10 @@
   <test_depend>autoware_lint_common</test_depend>
 
   <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_control_msgs</depend>
+  <depend>autoware_map_msgs</depend>
   <depend>autoware_perception_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

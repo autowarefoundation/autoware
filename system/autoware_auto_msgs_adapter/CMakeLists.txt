@@ -12,6 +12,7 @@ ament_auto_add_library(${NODE_NAME}
   src/include/adapter_base.hpp
   src/include/adapter_base_interface.hpp
   src/include/adapter_control.hpp
+  src/include/adapter_map.hpp
   src/include/adapter_perception.hpp
   src/include/autoware_auto_msgs_adapter_core.hpp
   src/autoware_auto_msgs_adapter_core.cpp)
