@@ -1213,6 +1213,11 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
 bool IntersectionModule::checkStuckVehicle(
   const std::shared_ptr<const PlannerData> & planner_data, const util::PathLanelets & path_lanelets)
 {
+  // NOTE: No need to stop for stuck vehicle when the ego will turn left.
+  if (turn_direction_ == std::string("left")) {
+    return false;
+  }
+
   const auto & objects_ptr = planner_data->predicted_objects;
 
   // considering lane change in the intersection, these lanelets are generated from the path
