@@ -25,6 +25,7 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
+#include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersection.hpp>
 
@@ -42,6 +43,32 @@
 namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
+
+namespace
+{
+Polygon2d createOneStepPolygon(
+  const geometry_msgs::msg::Pose & prev_pose, const geometry_msgs::msg::Pose & next_pose,
+  const autoware_auto_perception_msgs::msg::Shape & shape)
+{
+  const auto prev_poly = tier4_autoware_utils::toPolygon2d(prev_pose, shape);
+  const auto next_poly = tier4_autoware_utils::toPolygon2d(next_pose, shape);
+
+  Polygon2d one_step_poly;
+  for (const auto & point : prev_poly.outer()) {
+    one_step_poly.outer().push_back(point);
+  }
+  for (const auto & point : next_poly.outer()) {
+    one_step_poly.outer().push_back(point);
+  }
+
+  bg::correct(one_step_poly);
+
+  Polygon2d convex_one_step_poly;
+  bg::convex_hull(one_step_poly, convex_one_step_poly);
+
+  return convex_one_step_poly;
+}
+}  // namespace
 
 static bool isTargetCollisionVehicleType(
   const autoware_auto_perception_msgs::msg::PredictedObject & object)
@@ -1313,14 +1340,14 @@ bool IntersectionModule::checkCollision(
       // collision point
       const auto first_itr = std::adjacent_find(
         predicted_path.path.cbegin(), predicted_path.path.cend(),
-        [&ego_poly](const auto & a, const auto & b) {
-          return bg::intersects(ego_poly, LineString2d{to_bg2d(a), to_bg2d(b)});
+        [&ego_poly, &object](const auto & a, const auto & b) {
+          return bg::intersects(ego_poly, createOneStepPolygon(a, b, object.shape));
         });
       if (first_itr == predicted_path.path.cend()) continue;
       const auto last_itr = std::adjacent_find(
         predicted_path.path.crbegin(), predicted_path.path.crend(),
-        [&ego_poly](const auto & a, const auto & b) {
-          return bg::intersects(ego_poly, LineString2d{to_bg2d(a), to_bg2d(b)});
+        [&ego_poly, &object](const auto & a, const auto & b) {
+          return bg::intersects(ego_poly, createOneStepPolygon(a, b, object.shape));
         });
       if (last_itr == predicted_path.path.crend()) continue;
 
