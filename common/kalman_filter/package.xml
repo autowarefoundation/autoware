@@ -18,7 +18,9 @@
   <build_depend>eigen3_cmake_module</build_depend>
 
   <test_depend>ament_cmake_cppcheck</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
