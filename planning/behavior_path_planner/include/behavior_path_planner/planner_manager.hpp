@@ -243,6 +243,11 @@ public:
   void print() const;
 
   /**
+   * @brief publish processing time of each module.
+   */
+  void publishProcessingTime() const;
+
+  /**
    * @brief visit each module and get debug information.
    */
   std::shared_ptr<SceneModuleVisitor> getDebugMsg();

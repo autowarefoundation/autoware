@@ -579,6 +579,7 @@ void BehaviorPathPlannerNode::run()
   lk_pd.unlock();  // release planner_data_
 
   planner_manager_->print();
+  planner_manager_->publishProcessingTime();
   planner_manager_->publishMarker();
   planner_manager_->publishVirtualWall();
   lk_manager.unlock();  // release planner_manager_

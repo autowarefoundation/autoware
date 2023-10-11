@@ -886,11 +886,17 @@ void PlannerManager::print() const
     string_stream << std::right << "[" << std::setw(max_string_num + 1) << std::left << t.first
                   << ":" << std::setw(4) << std::right << t.second << "ms]\n"
                   << std::setw(21);
-    std::string name = std::string("processing_time/") + t.first;
-    debug_publisher_ptr_->publish<DebugDoubleMsg>(name, t.second);
   }
 
   RCLCPP_INFO_STREAM(logger_, string_stream.str());
+}
+
+void PlannerManager::publishProcessingTime() const
+{
+  for (const auto & t : processing_time_) {
+    std::string name = std::string("processing_time/") + t.first;
+    debug_publisher_ptr_->publish<DebugDoubleMsg>(name, t.second);
+  }
 }
 
 std::shared_ptr<SceneModuleVisitor> PlannerManager::getDebugMsg()
