@@ -25,7 +25,7 @@ sample-map-rosbag
 
 ```yaml
 # map_projector_info.yaml
-type: "local"
+projector_type: local
 ```
 
 ### Using MGRS
