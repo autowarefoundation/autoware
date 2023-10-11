@@ -68,7 +68,8 @@ ObstacleVelocityLimiterNode::ObstacleVelocityLimiterNode(const rclcpp::NodeOptio
   pub_trajectory_ = create_publisher<Trajectory>("~/output/trajectory", 1);
   pub_debug_markers_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/output/debug_markers", 1);
-  pub_runtime_ = create_publisher<std_msgs::msg::Int64>("~/output/runtime_microseconds", 1);
+  pub_runtime_ =
+    create_publisher<tier4_debug_msgs::msg::Float64Stamped>("~/output/runtime_microseconds", 1);
 
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   vehicle_lateral_offset_ = static_cast<Float>(vehicle_info.max_lateral_offset_m);
@@ -223,7 +224,8 @@ void ObstacleVelocityLimiterNode::onTrajectory(const Trajectory::ConstSharedPtr 
 
   const auto t_end = std::chrono::system_clock::now();
   const auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
-  pub_runtime_->publish(std_msgs::msg::Int64().set__data(runtime.count()));
+  pub_runtime_->publish(tier4_debug_msgs::msg::Float64Stamped().set__stamp(now()).set__data(
+    static_cast<double>(runtime.count())));
 
   if (pub_debug_markers_->get_subscription_count() > 0) {
     const auto safe_projected_linestrings =
