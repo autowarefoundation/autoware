@@ -94,8 +94,10 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
       planner_param_.attention_area_length, planner_param_.occlusion_attention_area_length,
       planner_param_.consider_wrong_direction_vehicle);
   }
-  intersection_lanelets_.value().update(false, interpolated_path_info);
-  const auto & first_conflicting_area = intersection_lanelets_.value().first_conflicting_area();
+  auto & intersection_lanelets = intersection_lanelets_.value();
+  const auto local_footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
+  intersection_lanelets.update(false, interpolated_path_info, local_footprint);
+  const auto & first_conflicting_area = intersection_lanelets.first_conflicting_area();
   if (!first_conflicting_area) {
     return false;
   }

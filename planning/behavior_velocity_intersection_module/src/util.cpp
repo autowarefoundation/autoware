@@ -220,6 +220,50 @@ static std::optional<size_t> getStopLineIndexFromMap(
   return stop_idx_ip_opt.get();
 }
 
+static std::optional<size_t> getFirstPointInsidePolygonByFootprint(
+  const lanelet::CompoundPolygon3d & polygon, const InterpolatedPathInfo & interpolated_path_info,
+  const tier4_autoware_utils::LinearRing2d & footprint)
+{
+  const auto & path_ip = interpolated_path_info.path;
+  const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
+
+  const auto area_2d = lanelet::utils::to2D(polygon).basicPolygon();
+  for (auto i = lane_start; i <= lane_end; ++i) {
+    const auto & base_pose = path_ip.points.at(i).point.pose;
+    const auto path_footprint = tier4_autoware_utils::transformVector(
+      footprint, tier4_autoware_utils::pose2transform(base_pose));
+    if (bg::intersects(path_footprint, area_2d)) {
+      return std::make_optional<size_t>(i);
+    }
+  }
+  return std::nullopt;
+}
+
+static std::optional<std::pair<size_t, const lanelet::CompoundPolygon3d &>>
+getFirstPointInsidePolygonsByFootprint(
+  const std::vector<lanelet::CompoundPolygon3d> & polygons,
+  const InterpolatedPathInfo & interpolated_path_info,
+  const tier4_autoware_utils::LinearRing2d & footprint)
+{
+  const auto & path_ip = interpolated_path_info.path;
+  const auto [lane_start, lane_end] = interpolated_path_info.lane_id_interval.value();
+
+  for (size_t i = lane_start; i <= lane_end; ++i) {
+    const auto & pose = path_ip.points.at(i).point.pose;
+    const auto path_footprint =
+      tier4_autoware_utils::transformVector(footprint, tier4_autoware_utils::pose2transform(pose));
+    for (const auto & polygon : polygons) {
+      const auto area_2d = lanelet::utils::to2D(polygon).basicPolygon();
+      const bool is_in_polygon = bg::intersects(area_2d, path_footprint);
+      if (is_in_polygon) {
+        return std::make_optional<std::pair<size_t, const lanelet::CompoundPolygon3d &>>(
+          i, polygon);
+      }
+    }
+  }
+  return std::nullopt;
+}
+
 std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const lanelet::CompoundPolygon3d & first_conflicting_area,
   const lanelet::CompoundPolygon3d & first_detection_area,
@@ -236,6 +280,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const int base2front_idx_dist =
     std::ceil(planner_data->vehicle_info_.max_longitudinal_offset_m / ds);
 
+  /*
   // find the index of the first point that intersects with detection_areas
   const auto first_inside_detection_idx_ip_opt =
     getFirstPointInsidePolygon(path_ip, lane_interval_ip, first_detection_area);
@@ -244,6 +289,16 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     return std::nullopt;
   }
   const auto first_inside_detection_ip = first_inside_detection_idx_ip_opt.value();
+  */
+  // find the index of the first point whose vehicle footprint on it intersects with detection_area
+  const auto local_footprint = planner_data->vehicle_info_.createFootprint(0.0, 0.0);
+  std::optional<size_t> first_footprint_inside_detection_ip_opt =
+    getFirstPointInsidePolygonByFootprint(
+      first_detection_area, interpolated_path_info, local_footprint);
+  if (!first_footprint_inside_detection_ip_opt) {
+    return std::nullopt;
+  }
+  const auto first_footprint_inside_detection_ip = first_footprint_inside_detection_ip_opt.value();
 
   // (1) default stop line position on interpolated path
   bool default_stop_line_valid = true;
@@ -254,8 +309,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     stop_idx_ip_int = static_cast<int>(map_stop_idx_ip.value()) - base2front_idx_dist;
   }
   if (stop_idx_ip_int < 0) {
-    stop_idx_ip_int = static_cast<size_t>(first_inside_detection_ip) - stop_line_margin_idx_dist -
-                      base2front_idx_dist;
+    stop_idx_ip_int = first_footprint_inside_detection_ip - stop_line_margin_idx_dist;
   }
   if (stop_idx_ip_int < 0) {
     default_stop_line_valid = false;
@@ -272,8 +326,6 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const auto closest_idx_ip = closest_idx_ip_opt.value();
 
   // (3) occlusion peeking stop line position on interpolated path
-  const auto local_footprint = planner_data->vehicle_info_.createFootprint(0.0, 0.0);
-  const auto area_2d = lanelet::utils::to2D(first_detection_area).basicPolygon();
   int occlusion_peeking_line_ip_int = static_cast<int>(default_stop_line_ip);
   bool occlusion_peeking_line_valid = true;
   {
@@ -281,20 +333,13 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     const auto & base_pose0 = path_ip.points.at(default_stop_line_ip).point.pose;
     const auto path_footprint0 = tier4_autoware_utils::transformVector(
       local_footprint, tier4_autoware_utils::pose2transform(base_pose0));
-    if (bg::intersects(path_footprint0, area_2d)) {
+    if (bg::intersects(
+          path_footprint0, lanelet::utils::to2D(first_detection_area).basicPolygon())) {
       occlusion_peeking_line_valid = false;
     }
   }
   if (occlusion_peeking_line_valid) {
-    for (size_t i = default_stop_line_ip + 1; i <= std::get<1>(lane_interval_ip); ++i) {
-      const auto & base_pose = path_ip.points.at(i).point.pose;
-      const auto path_footprint = tier4_autoware_utils::transformVector(
-        local_footprint, tier4_autoware_utils::pose2transform(base_pose));
-      if (bg::intersects(path_footprint, area_2d)) {
-        occlusion_peeking_line_ip_int = i;
-        break;
-      }
-    }
+    occlusion_peeking_line_ip_int = first_footprint_inside_detection_ip;
   }
   const auto first_attention_stop_line_ip = static_cast<size_t>(occlusion_peeking_line_ip_int);
   const bool first_attention_stop_line_valid = occlusion_peeking_line_valid;
@@ -310,8 +355,8 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const double delay_response_time = planner_data->delay_response_time;
   const double braking_dist = planning_utils::calcJudgeLineDistWithJerkLimit(
     velocity, acceleration, max_stop_acceleration, max_stop_jerk, delay_response_time);
-  int pass_judge_ip_int = static_cast<int>(first_inside_detection_ip) - base2front_idx_dist -
-                          std::ceil(braking_dist / ds);
+  int pass_judge_ip_int =
+    static_cast<int>(first_footprint_inside_detection_ip) - std::ceil(braking_dist / ds);
   const auto pass_judge_line_ip = static_cast<size_t>(
     std::clamp<int>(pass_judge_ip_int, 0, static_cast<int>(path_ip.points.size()) - 1));
 
@@ -321,18 +366,18 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   if (use_stuck_stopline) {
     // NOTE: when ego vehicle is approaching detection area and already passed
     // first_conflicting_area, this could be null.
-    const auto stuck_stop_line_idx_ip_opt =
-      getFirstPointInsidePolygon(path_ip, lane_interval_ip, first_conflicting_area);
+    const auto stuck_stop_line_idx_ip_opt = getFirstPointInsidePolygonByFootprint(
+      first_conflicting_area, interpolated_path_info, local_footprint);
     if (!stuck_stop_line_idx_ip_opt) {
       stuck_stop_line_valid = false;
       stuck_stop_line_ip_int = 0;
     } else {
-      stuck_stop_line_ip_int = stuck_stop_line_idx_ip_opt.value();
+      stuck_stop_line_ip_int = stuck_stop_line_idx_ip_opt.value() - stop_line_margin_idx_dist;
     }
   } else {
-    stuck_stop_line_ip_int = std::get<0>(lane_interval_ip);
+    stuck_stop_line_ip_int =
+      std::get<0>(lane_interval_ip) - (stop_line_margin_idx_dist + base2front_idx_dist);
   }
-  stuck_stop_line_ip_int -= (stop_line_margin_idx_dist + base2front_idx_dist);
   if (stuck_stop_line_ip_int < 0) {
     stuck_stop_line_valid = false;
   }
@@ -1243,21 +1288,22 @@ double calcDistanceUntilIntersectionLanelet(
 }
 
 void IntersectionLanelets::update(
-  const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info)
+  const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info,
+  const tier4_autoware_utils::LinearRing2d & footprint)
 {
   is_prioritized_ = is_prioritized;
   // find the first conflicting/detection area polygon intersecting the path
-  const auto & path = interpolated_path_info.path;
-  const auto & lane_interval = interpolated_path_info.lane_id_interval.value();
-  {
-    auto first = getFirstPointInsidePolygons(path, lane_interval, conflicting_area_);
-    if (first && !first_conflicting_area_) {
+  if (!first_conflicting_area_) {
+    auto first =
+      getFirstPointInsidePolygonsByFootprint(conflicting_area_, interpolated_path_info, footprint);
+    if (first) {
       first_conflicting_area_ = first.value().second;
     }
   }
-  {
-    auto first = getFirstPointInsidePolygons(path, lane_interval, attention_area_);
-    if (first && !first_attention_area_) {
+  if (!first_attention_area_) {
+    auto first =
+      getFirstPointInsidePolygonsByFootprint(attention_area_, interpolated_path_info, footprint);
+    if (first) {
       first_attention_area_ = first.value().second;
     }
   }
