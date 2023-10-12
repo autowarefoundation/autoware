@@ -209,6 +209,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   pub_collision_pointcloud_debug_ =
     this->create_publisher<PointCloud2>("~/debug/collision_pointcloud", 1);
 
+  pub_processing_time_ms_ = this->create_publisher<Float64Stamped>("~/debug/processing_time_ms", 1);
+
   // Subscribers
   if (!node_param_.use_predicted_objects) {
     // No need to point cloud while using predicted objects
@@ -274,6 +276,8 @@ void ObstacleStopPlannerNode::onPointCloud(const PointCloud2::ConstSharedPtr inp
 
 void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_msg)
 {
+  stop_watch_.tic(__func__);
+
   mutex_.lock();
   // NOTE: these variables must not be referenced for multithreading
   const auto vehicle_info = vehicle_info_;
@@ -376,6 +380,11 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
 
   trajectory.header = input_msg->header;
   pub_trajectory_->publish(trajectory);
+
+  Float64Stamped processing_time_ms;
+  processing_time_ms.stamp = now();
+  processing_time_ms.data = stop_watch_.toc(__func__);
+  pub_processing_time_ms_->publish(processing_time_ms);
 }
 
 void ObstacleStopPlannerNode::searchObstacle(
