@@ -218,6 +218,10 @@ void GoalPlannerModule::onFreespaceParkingTimer()
     return;
   }
 
+  if (isOnModifiedGoal()) {
+    return;
+  }
+
   const bool is_new_costmap =
     (clock_->now() - planner_data_->costmap->header.stamp).seconds() < 1.0;
   constexpr double path_update_duration = 1.0;
@@ -1210,6 +1214,10 @@ bool GoalPlannerModule::isStopped()
 
 bool GoalPlannerModule::isStuck()
 {
+  if (isOnModifiedGoal()) {
+    return false;
+  }
+
   constexpr double stuck_time = 5.0;
   if (!isStopped(odometry_buffer_stuck_, stuck_time)) {
     return false;
