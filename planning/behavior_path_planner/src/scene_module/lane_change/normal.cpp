@@ -572,6 +572,37 @@ int NormalLaneChange::getNumToPreferredLane(const lanelet::ConstLanelet & lane) 
   return std::abs(getRouteHandler()->getNumLaneToPreferredLane(lane, get_opposite_direction));
 }
 
+std::pair<double, double> NormalLaneChange::calcCurrentMinMaxAcceleration() const
+{
+  const auto & p = getCommonParam();
+
+  const auto vehicle_min_acc = std::max(p.min_acc, lane_change_parameters_->min_longitudinal_acc);
+  const auto vehicle_max_acc = std::min(p.max_acc, lane_change_parameters_->max_longitudinal_acc);
+
+  const auto ego_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    prev_module_path_.points, getEgoPose(), p.ego_nearest_dist_threshold,
+    p.ego_nearest_yaw_threshold);
+  const auto max_path_velocity =
+    prev_module_path_.points.at(ego_seg_idx).point.longitudinal_velocity_mps;
+
+  // calculate minimum and maximum acceleration
+  const auto min_acc =
+    utils::lane_change::calcMinimumAcceleration(getEgoVelocity(), vehicle_min_acc, p);
+  const auto max_acc = utils::lane_change::calcMaximumAcceleration(
+    getEgoVelocity(), max_path_velocity, vehicle_max_acc, p);
+
+  return {min_acc, max_acc};
+}
+
+double NormalLaneChange::calcMaximumLaneChangeLength(
+  const lanelet::ConstLanelet & current_terminal_lanelet, const double max_acc) const
+{
+  const auto shift_intervals =
+    getRouteHandler()->getLateralIntervalsToPreferredLane(current_terminal_lanelet);
+  return utils::lane_change::calcMaximumLaneChangeLength(
+    getEgoVelocity(), getCommonParam(), shift_intervals, max_acc);
+}
+
 std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes) const
 {
@@ -579,29 +610,11 @@ std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
     return {};
   }
 
-  const auto & common_parameters = planner_data_->parameters;
   const auto & route_handler = *getRouteHandler();
   const auto current_pose = getEgoPose();
-  const auto current_velocity = getEgoVelocity();
-
   const auto longitudinal_acc_sampling_num = lane_change_parameters_->longitudinal_acc_sampling_num;
-  const auto vehicle_min_acc =
-    std::max(common_parameters.min_acc, lane_change_parameters_->min_longitudinal_acc);
-  const auto vehicle_max_acc =
-    std::min(common_parameters.max_acc, lane_change_parameters_->max_longitudinal_acc);
-  const double nearest_dist_threshold = common_parameters.ego_nearest_dist_threshold;
-  const double nearest_yaw_threshold = common_parameters.ego_nearest_yaw_threshold;
 
-  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
-    prev_module_path_.points, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
-  const double & max_path_velocity =
-    prev_module_path_.points.at(current_seg_idx).point.longitudinal_velocity_mps;
-
-  // calculate minimum and maximum acceleration
-  const auto min_acc = utils::lane_change::calcMinimumAcceleration(
-    current_velocity, vehicle_min_acc, common_parameters);
-  const auto max_acc = utils::lane_change::calcMaximumAcceleration(
-    current_velocity, max_path_velocity, vehicle_max_acc, common_parameters);
+  const auto [min_acc, max_acc] = calcCurrentMinMaxAcceleration();
 
   // if max acc is not positive, then we do the normal sampling
   if (max_acc <= 0.0) {
@@ -610,11 +623,18 @@ std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
   }
 
   // calculate maximum lane change length
-  const double max_lane_change_length = utils::lane_change::calcMaximumLaneChangeLength(
-    current_velocity, common_parameters,
-    route_handler.getLateralIntervalsToPreferredLane(current_lanes.back()), max_acc);
+  const double max_lane_change_length = calcMaximumLaneChangeLength(current_lanes.back(), max_acc);
 
   if (max_lane_change_length > utils::getDistanceToEndOfLane(current_pose, current_lanes)) {
+    return utils::lane_change::getAccelerationValues(
+      min_acc, max_acc, longitudinal_acc_sampling_num);
+  }
+
+  // If the ego is in stuck, sampling all possible accelerations to find avoiding path.
+  if (isVehicleStuckByObstacle(current_lanes, max_lane_change_length)) {
+    auto clock = rclcpp::Clock(RCL_ROS_TIME);
+    RCLCPP_INFO_THROTTLE(
+      logger_, clock, 1000, "Vehicle is stuck. sample all longitudinal acceleration.");
     return utils::lane_change::getAccelerationValues(
       min_acc, max_acc, longitudinal_acc_sampling_num);
   }
@@ -1185,8 +1205,9 @@ bool NormalLaneChange::getLaneChangePaths(
           if (getStopTime() < lane_change_parameters_->stop_time_threshold) {
             continue;
           }
-          RCLCPP_WARN_STREAM(
-            logger_, "Stop time is over threshold. Allow lane change in crosswalk.");
+          auto clock{rclcpp::Clock{RCL_ROS_TIME}};
+          RCLCPP_WARN_THROTTLE(
+            logger_, clock, 1000, "Stop time is over threshold. Allow lane change in crosswalk.");
         }
 
         if (
@@ -1515,8 +1536,10 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
     utils::path_safety_checker::convertToPredictedPath(ego_predicted_path, time_resolution);
 
   auto collision_check_objects = target_objects.target_lane;
+  const auto current_lanes = getCurrentLanes();
+  const auto is_stuck = isVehicleStuckByObstacle(current_lanes);
 
-  if (lane_change_parameters_->check_objects_on_current_lanes) {
+  if (lane_change_parameters_->check_objects_on_current_lanes || is_stuck) {
     collision_check_objects.insert(
       collision_check_objects.end(), target_objects.current_lane.begin(),
       target_objects.current_lane.end());
@@ -1569,6 +1592,53 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
   }
 
   return path_safety_status;
+}
+
+// Check if the ego vehicle is in stuck by a stationary obstacle.
+bool NormalLaneChange::isVehicleStuckByObstacle(
+  const lanelet::ConstLanelets & current_lanes, const double obstacle_check_distance) const
+{
+  // Ego is still moving, not in stuck
+  if (std::abs(getEgoVelocity()) > lane_change_parameters_->stop_velocity_threshold) {
+    return false;
+  }
+
+  // Ego is just stopped, not sure it is in stuck yet.
+  if (getStopTime() < lane_change_parameters_->stop_time_threshold) {
+    return false;
+  }
+
+  // Check if any stationary object exist in obstacle_check_distance
+  using lanelet::utils::getArcCoordinates;
+  const auto base_distance = getArcCoordinates(current_lanes, getEgoPose()).length;
+
+  for (const auto & object : debug_filtered_objects_.current_lane) {
+    const auto & p = object.initial_pose.pose;  // TODO(Horibe): consider footprint point
+
+    // Note: it needs chattering prevention.
+    if (std::abs(object.initial_twist.twist.linear.x) > 0.3) {  // check if stationary
+      continue;
+    }
+
+    const auto ego_to_obj_dist = getArcCoordinates(current_lanes, p).length - base_distance;
+    if (0 < ego_to_obj_dist && ego_to_obj_dist < obstacle_check_distance) {
+      return true;  // Stationary object is in front of ego.
+    }
+  }
+
+  // No stationary objects found in obstacle_check_distance
+  return false;
+}
+
+bool NormalLaneChange::isVehicleStuckByObstacle(const lanelet::ConstLanelets & current_lanes) const
+{
+  if (current_lanes.empty()) {
+    return false;  // can not check
+  }
+
+  const auto [min_acc, max_acc] = calcCurrentMinMaxAcceleration();
+  const auto max_lane_change_length = calcMaximumLaneChangeLength(current_lanes.back(), max_acc);
+  return isVehicleStuckByObstacle(current_lanes, max_lane_change_length);
 }
 
 void NormalLaneChange::setStopPose(const Pose & stop_pose)
