@@ -29,9 +29,12 @@
 
 #include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
 
+#include <boost/geometry.hpp>
 #include <boost/geometry/algorithms/convex_hull.hpp>
 #include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/union.hpp>
+#include <boost/geometry/geometries/geometries.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/strategies/convex_hull.hpp>
 
 #include <lanelet2_routing/RoutingGraphContainer.h>
@@ -1602,7 +1605,7 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
 std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
   const AvoidancePlanningData & data, const std::shared_ptr<AvoidanceParameters> & parameters,
-  DebugData & debug)
+  const bool is_running, DebugData & debug)
 {
   PredictedObjects target_objects;
   PredictedObjects other_objects;
@@ -1636,6 +1639,25 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
     if (!unions.empty()) {
       attention_area = unions.front();
       boost::geometry::correct(attention_area);
+    }
+  }
+
+  // expand detection area width only when the module is running.
+  if (is_running) {
+    constexpr int PER_CIRCLE = 36;
+    constexpr double MARGIN = 1.0;  // [m]
+    boost::geometry::strategy::buffer::distance_symmetric<double> distance_strategy(MARGIN);
+    boost::geometry::strategy::buffer::join_round join_strategy(PER_CIRCLE);
+    boost::geometry::strategy::buffer::end_round end_strategy(PER_CIRCLE);
+    boost::geometry::strategy::buffer::point_circle circle_strategy(PER_CIRCLE);
+    boost::geometry::strategy::buffer::side_straight side_strategy;
+    boost::geometry::model::multi_polygon<Polygon2d> result;
+    // Create the buffer of a multi polygon
+    boost::geometry::buffer(
+      attention_area, result, distance_strategy, side_strategy, join_strategy, end_strategy,
+      circle_strategy);
+    if (!result.empty()) {
+      attention_area = result.front();
     }
   }
 
