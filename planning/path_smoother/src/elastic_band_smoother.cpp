@@ -43,6 +43,14 @@ StringStamped createStringStamped(const rclcpp::Time & now, const std::string & 
   return msg;
 }
 
+Float64Stamped createFloat64Stamped(const rclcpp::Time & now, const float & data)
+{
+  Float64Stamped msg;
+  msg.stamp = now;
+  msg.data = data;
+  return msg;
+}
+
 void setZeroVelocityAfterStopPoint(std::vector<TrajectoryPoint> & traj_points)
 {
   const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(traj_points);
@@ -75,7 +83,9 @@ ElasticBandSmoother::ElasticBandSmoother(const rclcpp::NodeOptions & node_option
 
   // debug publisher
   debug_extended_traj_pub_ = create_publisher<Trajectory>("~/debug/extended_traj", 1);
-  debug_calculation_time_pub_ = create_publisher<StringStamped>("~/debug/calculation_time", 1);
+  debug_calculation_time_str_pub_ = create_publisher<StringStamped>("~/debug/calculation_time", 1);
+  debug_calculation_time_float_pub_ =
+    create_publisher<Float64Stamped>("~/debug/processing_time_ms", 1);
 
   {  // parameters
     // parameters for ego nearest search
@@ -205,7 +215,9 @@ void ElasticBandSmoother::onPath(const Path::ConstSharedPtr path_ptr)
   // publish calculation_time
   // NOTE: This function must be called after measuring onPath calculation time
   const auto calculation_time_msg = createStringStamped(now(), time_keeper_ptr_->getLog());
-  debug_calculation_time_pub_->publish(calculation_time_msg);
+  debug_calculation_time_str_pub_->publish(calculation_time_msg);
+  debug_calculation_time_float_pub_->publish(
+    createFloat64Stamped(now(), time_keeper_ptr_->getAccumulatedTime()));
 
   const auto output_traj_msg =
     trajectory_utils::createTrajectory(path_ptr->header, full_traj_points);
