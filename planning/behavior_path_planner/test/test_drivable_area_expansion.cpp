@@ -270,7 +270,6 @@ TEST(DrivableAreaExpansionProjection, expandDrivableArea)
   }
   behavior_path_planner::PlannerData planner_data;
   planner_data.drivable_area_expansion_parameters = params;
-  planner_data.reference_path = std::make_shared<drivable_area_expansion::PathWithLaneId>(path);
   planner_data.dynamic_object =
     std::make_shared<drivable_area_expansion::PredictedObjects>(dynamic_objects);
   planner_data.route_handler = std::make_shared<route_handler::RouteHandler>(route_handler);
