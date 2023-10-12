@@ -1213,8 +1213,12 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
 bool IntersectionModule::checkStuckVehicle(
   const std::shared_ptr<const PlannerData> & planner_data, const util::PathLanelets & path_lanelets)
 {
-  // NOTE: No need to stop for stuck vehicle when the ego will turn left.
-  if (turn_direction_ == std::string("left")) {
+  const bool stuck_detection_direction = [&]() {
+    return (turn_direction_ == "left" && planner_param_.stuck_vehicle.turn_direction.left) ||
+           (turn_direction_ == "right" && planner_param_.stuck_vehicle.turn_direction.right) ||
+           (turn_direction_ == "straight" && planner_param_.stuck_vehicle.turn_direction.straight);
+  }();
+  if (!stuck_detection_direction) {
     return false;
   }
 

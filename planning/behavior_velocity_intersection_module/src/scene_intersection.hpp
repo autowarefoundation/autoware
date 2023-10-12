@@ -61,6 +61,12 @@ public:
     } common;
     struct StuckVehicle
     {
+      struct TurnDirection
+      {
+        bool left;
+        bool right;
+        bool straight;
+      } turn_direction;
       bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
       double stuck_vehicle_detect_dist;  //! distance from end point to finish stuck vehicle check
       double stuck_vehicle_vel_thr;      //! Threshold of the speed to be recognized as stopped

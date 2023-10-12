@@ -63,6 +63,12 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.common.consider_wrong_direction_vehicle =
     getOrDeclareParameter<bool>(node, ns + ".common.consider_wrong_direction_vehicle");
 
+  ip.stuck_vehicle.turn_direction.left =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.turn_direction.left");
+  ip.stuck_vehicle.turn_direction.right =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.turn_direction.right");
+  ip.stuck_vehicle.turn_direction.straight =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.turn_direction.straight");
   ip.stuck_vehicle.use_stuck_stopline =
     getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.use_stuck_stopline");
   ip.stuck_vehicle.stuck_vehicle_detect_dist =

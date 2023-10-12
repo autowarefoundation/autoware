@@ -13,6 +13,10 @@
         path_interpolation_ds: 0.1 # [m]
         consider_wrong_direction_vehicle: false
       stuck_vehicle:
+        turn_direction:
+          left: true
+          right: true
+          straight: true
         use_stuck_stopline: true # stopline generated before the first conflicting area
         stuck_vehicle_detect_dist: 5.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
         stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
