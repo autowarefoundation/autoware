@@ -475,6 +475,9 @@ std::optional<size_t> getFirstPointInsidePolygon(
       if (is_in_lanelet) {
         return std::make_optional<size_t>(i);
       }
+      if (i == 0) {
+        break;
+      }
     }
   }
   return std::nullopt;
@@ -515,6 +518,9 @@ getFirstPointInsidePolygons(
         }
       }
       if (is_in_lanelet) {
+        break;
+      }
+      if (i == 0) {
         break;
       }
     }
