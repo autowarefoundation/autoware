@@ -37,6 +37,8 @@
 
 namespace behavior_path_planner
 {
+using motion_utils::calcSignedArcLength;
+
 NormalLaneChange::NormalLaneChange(
   const std::shared_ptr<LaneChangeParameters> & parameters, LaneChangeModuleType type,
   Direction direction)
@@ -139,7 +141,7 @@ BehaviorModuleOutput NormalLaneChange::generateOutput()
 
   if (isStopState()) {
     const auto current_velocity = getEgoVelocity();
-    const auto current_dist = motion_utils::calcSignedArcLength(
+    const auto current_dist = calcSignedArcLength(
       output.path->points, output.path->points.front().point.pose.position, getEgoPosition());
     const auto stop_dist =
       -(current_velocity * current_velocity / (2.0 * planner_data_->parameters.min_acc));
@@ -202,7 +204,70 @@ void NormalLaneChange::insertStopPoint(
   }
 
   const double stop_point_buffer = getCommonParam().backward_length_buffer_for_end_of_lane;
-  const double stopping_distance = distance_to_terminal - lane_change_buffer - stop_point_buffer;
+  const auto target_objects = getTargetObjects(status_.current_lanes, status_.target_lanes);
+  const bool is_in_terminal_section = lanelet::utils::isInLanelet(getEgoPose(), lanelets.back()) ||
+                                      distance_to_terminal < lane_change_buffer;
+  const bool has_blocking_target_lane_obj = std::any_of(
+    target_objects.target_lane.begin(), target_objects.target_lane.end(), [&](const auto & o) {
+      if (o.initial_twist.twist.linear.x > lane_change_parameters_->stop_velocity_threshold) {
+        return false;
+      }
+      const double distance_to_target_lane_obj = utils::getSignedDistance(
+        path.points.front().point.pose, o.initial_pose.pose, status_.target_lanes);
+      return distance_to_target_lane_obj < distance_to_terminal;
+    });
+
+  // auto stopping_distance = raw_stopping_distance;
+  double stopping_distance = distance_to_terminal - lane_change_buffer - stop_point_buffer;
+  if (is_in_terminal_section || !has_blocking_target_lane_obj) {
+    // calculate minimum distance from path front to the stationary object on the ego lane.
+    const auto distance_to_ego_lane_obj = [&]() -> double {
+      double distance_to_obj = distance_to_terminal;
+      const double distance_to_ego =
+        utils::getSignedDistance(path.points.front().point.pose, getEgoPose(), lanelets);
+
+      for (const auto & object : target_objects.current_lane) {
+        // check if stationary
+        const auto obj_v = std::abs(object.initial_twist.twist.linear.x);
+        if (obj_v > lane_change_parameters_->stop_velocity_threshold) {
+          continue;
+        }
+
+        // calculate distance from path front to the stationary object polygon on the ego lane.
+        const auto polygon =
+          tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape).outer();
+        for (const auto & polygon_p : polygon) {
+          const auto p_fp = tier4_autoware_utils::toMsg(polygon_p.to_3d());
+          const auto lateral_fp = motion_utils::calcLateralOffset(path.points, p_fp);
+
+          // ignore if the point is around the ego path
+          if (std::abs(lateral_fp) > planner_data_->parameters.vehicle_width) {
+            continue;
+          }
+
+          const double current_distance_to_obj = calcSignedArcLength(path.points, 0, p_fp);
+
+          // ignore backward object
+          if (current_distance_to_obj < distance_to_ego) {
+            continue;
+          }
+          distance_to_obj = std::min(distance_to_obj, current_distance_to_obj);
+        }
+      }
+      return distance_to_obj;
+    }();
+
+    // If the lane change space is occupied by a stationary obstacle, move the stop line closer.
+    // TODO(Horibe): We need to loop this process because the new space could be occupied as well.
+    stopping_distance = std::min(
+      distance_to_ego_lane_obj - lane_change_buffer - stop_point_buffer -
+        getCommonParam().base_link2front -
+        calcRssDistance(
+          0.0, planner_data_->parameters.minimum_lane_changing_velocity,
+          lane_change_parameters_->rss_params),
+      stopping_distance);
+  }
+
   if (stopping_distance > 0.0) {
     const auto stop_point = utils::insertStopPoint(stopping_distance, path);
     setStopPose(stop_point.point.pose);
@@ -220,8 +285,7 @@ std::optional<PathWithLaneId> NormalLaneChange::extendPath()
   const auto path = status_.lane_change_path.path;
   const auto lc_start_point = status_.lane_change_path.info.lane_changing_start.position;
 
-  const auto dist =
-    motion_utils::calcSignedArcLength(path.points, lc_start_point, getEgoPosition());
+  const auto dist = calcSignedArcLength(path.points, lc_start_point, getEgoPosition());
 
   if (dist < 0.0) {
     return std::nullopt;
@@ -423,7 +487,7 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
 
   double dist = 0.0;
   for (size_t idx = nearest_idx; idx < status_.lane_change_path.path.points.size() - 1; ++idx) {
-    dist += motion_utils::calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
+    dist += calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
     if (dist > estimated_travel_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
       return utils::isEgoWithinOriginalLane(
@@ -439,7 +503,7 @@ bool NormalLaneChange::isEgoOnPreparePhase() const
 {
   const auto & start_position = status_.lane_change_path.info.shift_line.start.position;
   const auto & path_points = status_.lane_change_path.path.points;
-  return motion_utils::calcSignedArcLength(path_points, start_position, getEgoPosition()) < 0.0;
+  return calcSignedArcLength(path_points, start_position, getEgoPosition()) < 0.0;
 }
 
 bool NormalLaneChange::isAbleToStopSafely() const
@@ -459,7 +523,7 @@ bool NormalLaneChange::isAbleToStopSafely() const
 
   double dist = 0.0;
   for (size_t idx = nearest_idx; idx < status_.lane_change_path.path.points.size() - 1; ++idx) {
-    dist += motion_utils::calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
+    dist += calcSignedArcLength(status_.lane_change_path.path.points, idx, idx + 1);
     if (dist > stop_dist) {
       const auto & estimated_pose = status_.lane_change_path.path.points.at(idx + 1).point.pose;
       return utils::isEgoWithinOriginalLane(
@@ -475,7 +539,7 @@ bool NormalLaneChange::hasFinishedAbort() const
     return true;
   }
 
-  const auto distance_to_finish = motion_utils::calcSignedArcLength(
+  const auto distance_to_finish = calcSignedArcLength(
     abort_path_->path.points, getEgoPosition(), abort_path_->info.shift_line.end.position);
 
   if (distance_to_finish < 0.0) {
@@ -720,8 +784,7 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
     double min_dist_ego_to_obj = std::numeric_limits<double>::max();
     for (const auto & polygon_p : obj_polygon.outer()) {
       const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
-      const double dist_ego_to_obj =
-        motion_utils::calcSignedArcLength(path.points, current_pose.position, obj_p);
+      const double dist_ego_to_obj = calcSignedArcLength(path.points, current_pose.position, obj_p);
       max_dist_ego_to_obj = std::max(dist_ego_to_obj, max_dist_ego_to_obj);
       min_dist_ego_to_obj = std::min(dist_ego_to_obj, min_dist_ego_to_obj);
     }
