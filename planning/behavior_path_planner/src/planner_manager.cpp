@@ -35,7 +35,7 @@ PlannerManager::PlannerManager(rclcpp::Node & node, const bool verbose)
   verbose_{verbose}
 {
   processing_time_.emplace("total_time", 0.0);
-  debug_publisher_ptr_ = std::make_unique<DebugPublisher>(&node, "behavior_planner_manager/debug");
+  debug_publisher_ptr_ = std::make_unique<DebugPublisher>(&node, "~/debug");
 }
 
 BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & data)
@@ -894,7 +894,7 @@ void PlannerManager::print() const
 void PlannerManager::publishProcessingTime() const
 {
   for (const auto & t : processing_time_) {
-    std::string name = std::string("processing_time/") + t.first;
+    std::string name = t.first + std::string("/processing_time_ms");
     debug_publisher_ptr_->publish<DebugDoubleMsg>(name, t.second);
   }
 }
