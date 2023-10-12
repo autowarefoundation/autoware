@@ -171,7 +171,10 @@ bool AvoidanceModule::isExecutionRequested() const
     return false;
   }
 
-  return !avoid_data_.target_objects.empty();
+  return std::any_of(
+    avoid_data_.target_objects.begin(), avoid_data_.target_objects.end(), [](const auto & o) {
+      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+    });
 }
 
 bool AvoidanceModule::isExecutionReady() const
