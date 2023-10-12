@@ -50,6 +50,7 @@
 #include <QPainter>
 #include <rviz_common/uniform_string_stream.hpp>
 
+#include <autoware_auto_system_msgs/msg/hazard_status_stamped.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 
 #include <X11/Xlib.h>
@@ -126,6 +127,7 @@ MrmSummaryOverlayDisplay::~MrmSummaryOverlayDisplay()
 void MrmSummaryOverlayDisplay::onInitialize()
 {
   RTDClass::onInitialize();
+
   static int count = 0;
   rviz_common::UniformStringStream ss;
   ss << "MrmSummaryOverlayDisplayObject" << count++;
@@ -160,9 +162,11 @@ void MrmSummaryOverlayDisplay::update(float wall_dt, float ros_dt)
   // MRM summary
   std::vector<std::string> mrm_comfortable_stop_summary_list = {};
   std::vector<std::string> mrm_emergency_stop_summary_list = {};
+  int hazard_level = autoware_auto_system_msgs::msg::HazardStatus::NO_FAULT;
   {
     std::lock_guard<std::mutex> message_lock(mutex_);
     if (last_msg_ptr_) {
+      hazard_level = last_msg_ptr_->status.level;
       for (const auto & diag_status : last_msg_ptr_->status.diag_latent_fault) {
         const std::optional<std::string> msg = generateMrmMessage(diag_status);
         if (msg != std::nullopt) {
@@ -201,16 +205,32 @@ void MrmSummaryOverlayDisplay::update(float wall_dt, float ros_dt)
   painter.setFont(font);
 
   std::ostringstream output_text;
-  output_text << std::fixed
-              << "Comfortable Stop MRM Summary: " << int(mrm_comfortable_stop_summary_list.size())
-              << std::endl;
-  for (const auto & mrm_element : mrm_comfortable_stop_summary_list) {
-    output_text << mrm_element << std::endl;
-  }
-  output_text << "Emergency Stop MRM Summary: " << int(mrm_emergency_stop_summary_list.size())
-              << std::endl;
-  for (const auto & mrm_element : mrm_emergency_stop_summary_list) {
-    output_text << mrm_element << std::endl;
+
+  // Display the MRM Summary only when there is a fault
+  if (hazard_level != autoware_auto_system_msgs::msg::HazardStatus::NO_FAULT) {
+    // Broadcasting the Basic Error Infos
+    int number_of_comfortable_stop_messages =
+      static_cast<int>(mrm_comfortable_stop_summary_list.size());
+    if (number_of_comfortable_stop_messages > 0)  // Only Display when there are errors
+    {
+      output_text << std::fixed
+                  << "Comfortable Stop MRM Summary: " << number_of_comfortable_stop_messages
+                  << std::endl;
+      for (const auto & mrm_element : mrm_comfortable_stop_summary_list) {
+        output_text << mrm_element << std::endl;
+      }
+    }
+
+    int number_of_emergency_stop_messages =
+      static_cast<int>(mrm_emergency_stop_summary_list.size());
+    if (number_of_emergency_stop_messages > 0)  // Only Display when there are some errors
+    {
+      output_text << "Emergency Stop MRM Summary: " << int(mrm_emergency_stop_summary_list.size())
+                  << std::endl;
+      for (const auto & mrm_element : mrm_emergency_stop_summary_list) {
+        output_text << mrm_element << std::endl;
+      }
+    }
   }
 
   // same as above, but align on right side
