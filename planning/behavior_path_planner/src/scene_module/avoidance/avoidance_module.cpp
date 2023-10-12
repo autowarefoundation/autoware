@@ -143,6 +143,14 @@ AvoidLineArray toArray(const AvoidOutlines & outlines)
   }
   return ret;
 }
+
+lanelet::BasicLineString3d toLineString3d(const std::vector<Point> & bound)
+{
+  lanelet::BasicLineString3d ret{};
+  std::for_each(
+    bound.begin(), bound.end(), [&](const auto & p) { ret.emplace_back(p.x, p.y, p.z); });
+  return ret;
+}
 }  // namespace
 
 AvoidanceModule::AvoidanceModule(
@@ -247,6 +255,23 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
   // lanelet info
   data.current_lanelets = utils::avoidance::getCurrentLanesFromPath(
     *getPreviousModuleOutput().reference_path, planner_data_);
+
+  // expand drivable lanes
+  std::for_each(
+    data.current_lanelets.begin(), data.current_lanelets.end(), [&](const auto & lanelet) {
+      data.drivable_lanes.push_back(
+        utils::avoidance::generateExpandDrivableLanes(lanelet, planner_data_, parameters_));
+    });
+
+  // calc drivable bound
+  const auto shorten_lanes =
+    utils::cutOverlappedLanes(*getPreviousModuleOutput().path, data.drivable_lanes);
+  data.left_bound = toLineString3d(utils::calcBound(
+    planner_data_->route_handler, shorten_lanes, parameters_->use_hatched_road_markings,
+    parameters_->use_intersection_areas, true));
+  data.right_bound = toLineString3d(utils::calcBound(
+    planner_data_->route_handler, shorten_lanes, parameters_->use_hatched_road_markings,
+    parameters_->use_intersection_areas, false));
 
   // reference path
   if (isDrivingSameLane(helper_.getPreviousDrivingLanes(), data.current_lanelets)) {
@@ -447,13 +472,21 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
    * STEP3: Create candidate shift lines.
    * Merge rough shift lines, and extract new shift lines.
    */
-  data.new_shift_line = generateCandidateShiftLine(data.raw_shift_line, path_shifter, debug);
+  const auto processed_shift_lines = generateCandidateShiftLine(data.raw_shift_line, debug);
+
+  /**
+   * Step4: Validate new shift lines.
+   * Output new shift lines only when the avoidance path which is generated from them doesn't have
+   * huge offset from ego.
+   */
+  data.valid = isValidShiftLine(processed_shift_lines, path_shifter);
+  data.new_shift_line = data.valid ? processed_shift_lines : AvoidLineArray{};
   const auto found_new_sl = data.new_shift_line.size() > 0;
   const auto registered = path_shifter.getShiftLines().size() > 0;
   data.found_avoidance_path = found_new_sl || registered;
 
   /**
-   * STEP4: Set new shift lines.
+   * STEP5: Set new shift lines.
    * If there are new shift points, these shift points are registered in path_shifter in order to
    * generate candidate avoidance path.
    */
@@ -462,7 +495,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
   }
 
   /**
-   * STEP5: Generate avoidance path.
+   * STEP6: Generate avoidance path.
    */
   ShiftedPath spline_shift_path = utils::avoidance::toShiftedPath(data.reference_path);
   const auto success_spline_path_generation =
@@ -472,7 +505,7 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
                           : utils::avoidance::toShiftedPath(data.reference_path);
 
   /**
-   * STEP6: Check avoidance path safety.
+   * STEP7: Check avoidance path safety.
    * For each target objects and the objects in adjacent lanes,
    * check that there is a certain amount of margin in the lateral and longitudinal direction.
    */
@@ -483,6 +516,17 @@ void AvoidanceModule::fillShiftLine(AvoidancePlanningData & data, DebugData & de
 void AvoidanceModule::fillEgoStatus(
   AvoidancePlanningData & data, [[maybe_unused]] DebugData & debug) const
 {
+  /**
+   * TODO(someone): prevent meaningless stop point insertion in other way.
+   * If the candidate shift line is invalid, manage all objects as unavoidable.
+   */
+  if (!data.valid) {
+    std::for_each(data.target_objects.begin(), data.target_objects.end(), [](auto & o) {
+      o.is_avoidable = false;
+      o.reason = "InvalidShiftLine";
+    });
+  }
+
   /**
    * Find the nearest object that should be avoid. When the ego follows reference path,
    * if the both of following two conditions are satisfied, the module surely avoid the object.
@@ -769,7 +813,7 @@ AvoidLineArray AvoidanceModule::applyPreProcess(
 }
 
 AvoidLineArray AvoidanceModule::generateCandidateShiftLine(
-  const AvoidLineArray & shift_lines, const PathShifter & path_shifter, DebugData & debug) const
+  const AvoidLineArray & shift_lines, DebugData & debug) const
 {
   AvoidLineArray processed_shift_lines = shift_lines;
 
@@ -789,15 +833,7 @@ AvoidLineArray AvoidanceModule::generateCandidateShiftLine(
    * Step3: Extract new shift lines.
    * Compare processed shift lines and registered shift lines in order to find new shift lines.
    */
-  processed_shift_lines = findNewShiftLine(processed_shift_lines, debug);
-
-  /**
-   * Step4: Validate new shift lines.
-   * Output new shift lines only when the avoidance path which is generated from them doesn't have
-   * huge offset from ego.
-   */
-  return isValidShiftLine(processed_shift_lines, path_shifter) ? processed_shift_lines
-                                                               : AvoidLineArray{};
+  return findNewShiftLine(processed_shift_lines, debug);
 }
 
 void AvoidanceModule::registerRawShiftLines(const AvoidLineArray & future)
@@ -1921,34 +1957,6 @@ bool AvoidanceModule::isSafePath(
   return safe_ || safe_count_ > parameters_->hysteresis_factor_safe_count;
 }
 
-void AvoidanceModule::generateExpandDrivableLanes(BehaviorModuleOutput & output) const
-{
-  std::vector<DrivableLanes> drivable_lanes;
-  for (const auto & lanelet : avoid_data_.current_lanelets) {
-    drivable_lanes.push_back(
-      utils::avoidance::generateExpandDrivableLanes(lanelet, planner_data_, parameters_));
-  }
-
-  {  // for new architecture
-    DrivableAreaInfo current_drivable_area_info;
-    // generate drivable lanes
-    current_drivable_area_info.drivable_lanes = drivable_lanes;
-    // generate obstacle polygons
-    current_drivable_area_info.obstacles =
-      utils::avoidance::generateObstaclePolygonsForDrivableArea(
-        avoid_data_.target_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
-    // expand hatched road markings
-    current_drivable_area_info.enable_expanding_hatched_road_markings =
-      parameters_->use_hatched_road_markings;
-    // expand intersection areas
-    current_drivable_area_info.enable_expanding_intersection_areas =
-      parameters_->use_intersection_areas;
-
-    output.drivable_area_info = utils::combineDrivableAreaInfo(
-      current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
-  }
-}
-
 PathWithLaneId AvoidanceModule::extendBackwardLength(const PathWithLaneId & original_path) const
 {
   const auto previous_path = helper_.getPreviousReferencePath();
@@ -2082,8 +2090,26 @@ BehaviorModuleOutput AvoidanceModule::plan()
   utils::clipPathLength(*output.path, ego_idx, planner_data_->parameters);
 
   // Drivable area generation.
-  generateExpandDrivableLanes(output);
-  setDrivableLanes(output.drivable_area_info.drivable_lanes);
+  {
+    DrivableAreaInfo current_drivable_area_info;
+    // generate drivable lanes
+    current_drivable_area_info.drivable_lanes = avoid_data_.drivable_lanes;
+    // generate obstacle polygons
+    current_drivable_area_info.obstacles =
+      utils::avoidance::generateObstaclePolygonsForDrivableArea(
+        avoid_data_.target_objects, parameters_, planner_data_->parameters.vehicle_width / 2.0);
+    // expand hatched road markings
+    current_drivable_area_info.enable_expanding_hatched_road_markings =
+      parameters_->use_hatched_road_markings;
+    // expand intersection areas
+    current_drivable_area_info.enable_expanding_intersection_areas =
+      parameters_->use_intersection_areas;
+
+    output.drivable_area_info = utils::combineDrivableAreaInfo(
+      current_drivable_area_info, getPreviousModuleOutput().drivable_area_info);
+
+    setDrivableLanes(output.drivable_area_info.drivable_lanes);
+  }
 
   return output;
 }
@@ -2338,7 +2364,7 @@ bool AvoidanceModule::isValidShiftLine(
   const AvoidLineArray & shift_lines, const PathShifter & shifter) const
 {
   if (shift_lines.empty()) {
-    return false;
+    return true;
   }
 
   auto shifter_for_validate = shifter;
@@ -2361,6 +2387,32 @@ bool AvoidanceModule::isValidShiftLine(
       RCLCPP_DEBUG_THROTTLE(
         getLogger(), *clock_, 1000, "new shift line is invalid. [HUGE OFFSET (%.2f)]", offset);
       return false;
+    }
+  }
+
+  // check if the vehicle is in road. (yaw angle is not considered)
+  {
+    const auto minimum_distance = 0.5 * planner_data_->parameters.vehicle_width +
+                                  parameters_->hard_road_shoulder_margin -
+                                  parameters_->max_deviation_from_lane;
+
+    const size_t start_idx = shift_lines.front().start_idx;
+    const size_t end_idx = shift_lines.back().end_idx;
+
+    for (size_t i = start_idx; i <= end_idx; ++i) {
+      const auto p = getPoint(shifter_for_validate.getReferencePath().points.at(i));
+      lanelet::BasicPoint2d basic_point{p.x, p.y};
+
+      const auto shift_length = proposed_shift_path.shift_length.at(i);
+      const auto bound = shift_length > 0.0 ? avoid_data_.left_bound : avoid_data_.right_bound;
+      const auto THRESHOLD = minimum_distance + std::abs(shift_length);
+
+      if (boost::geometry::distance(basic_point, lanelet::utils::to2D(bound)) < THRESHOLD) {
+        RCLCPP_DEBUG_THROTTLE(
+          getLogger(), *clock_, 1000,
+          "following latest new shift line may cause deviation from drivable area.");
+        return false;
+      }
     }
   }
 

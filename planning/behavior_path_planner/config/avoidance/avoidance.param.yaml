@@ -169,6 +169,7 @@
           hard_road_shoulder_margin: 0.3                # [m]
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
+          max_deviation_from_lane: 0.5                  # [m]
         # avoidance distance parameters
         longitudinal:
           prepare_time: 2.0                             # [s]
