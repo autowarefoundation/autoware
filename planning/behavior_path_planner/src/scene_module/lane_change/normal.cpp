@@ -89,6 +89,7 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
 
   if (valid_paths.empty()) {
     safe_path.info.current_lanes = current_lanes;
+    safe_path.info.target_lanes = target_lanes;
     return {false, false};
   }
 
