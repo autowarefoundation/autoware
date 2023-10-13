@@ -1,0 +1,7 @@
+<launch>
+  <arg name="config_file" default="$(find-pkg-share duplicated_node_checker)/config/duplicated_node_checker.param.yaml"/>
+
+  <node pkg="duplicated_node_checker" exec="duplicated_node_checker_node" name="duplicated_node_checker" output="screen">
+    <param from="$(var config_file)"/>
+  </node>
+</launch>

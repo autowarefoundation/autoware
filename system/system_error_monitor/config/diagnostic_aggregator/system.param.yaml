@@ -26,6 +26,12 @@
           contains: ["service_log_checker"]
           timeout: 5.0
 
+        duplicated_node_checker:
+          type: diagnostic_aggregator/GenericAnalyzer
+          path: duplicated_node_checker
+          contains: ["duplicated_node_checker"]
+          timeout: 5.0
+
         resource_monitoring:
           type: diagnostic_aggregator/AnalyzerGroup
           path: resource_monitoring

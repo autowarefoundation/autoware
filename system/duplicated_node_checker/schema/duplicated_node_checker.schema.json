@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Duplicated Node Checker",
+  "type": "object",
+  "definitions": {
+    "duplicated_node_checker": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "number",
+          "default": 10,
+          "exclusiveMinimum": 2,
+          "description": "The scanning and update frequency of the checker."
+        }
+      },
+      "required": ["update_rate"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/duplicated_node_checker"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
