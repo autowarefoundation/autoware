@@ -10,7 +10,7 @@ This package has two clustering methods: `euclidean_cluster` and `voxel_grid_bas
 
 ### euclidean_cluster
 
-`pcl::EuclideanClusterExtraction` is applied to points. See [official document](https://pcl.readthedocs.io/en/latest/cluster_extraction.html) for details.
+`pcl::EuclideanClusterExtraction` is applied to points. See [official document](https://pcl.readthedocs.io/projects/tutorials/en/master/cluster_extraction.html) for details.
 
 ### voxel_grid_based_euclidean_cluster
 
