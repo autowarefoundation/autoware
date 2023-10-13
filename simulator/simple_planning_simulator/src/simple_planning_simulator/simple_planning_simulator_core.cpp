@@ -638,6 +638,7 @@ void SimplePlanningSimulator::publish_acceleration()
   msg.header.frame_id = "/base_link";
   msg.header.stamp = get_clock()->now();
   msg.accel.accel.linear.x = vehicle_model_ptr_->getAx();
+  msg.accel.accel.linear.y = vehicle_model_ptr_->getWz() * vehicle_model_ptr_->getVx();
 
   using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   constexpr auto COV = 0.001;
@@ -658,6 +659,7 @@ void SimplePlanningSimulator::publish_imu()
   imu.header.frame_id = "base_link";
   imu.header.stamp = now();
   imu.linear_acceleration.x = vehicle_model_ptr_->getAx();
+  imu.linear_acceleration.y = vehicle_model_ptr_->getWz() * vehicle_model_ptr_->getVx();
   constexpr auto COV = 0.001;
   imu.linear_acceleration_covariance.at(COV_IDX::X_X) = COV;
   imu.linear_acceleration_covariance.at(COV_IDX::Y_Y) = COV;
