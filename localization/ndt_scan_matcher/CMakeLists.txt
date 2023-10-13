@@ -34,10 +34,21 @@ ament_auto_add_executable(ndt_scan_matcher
   src/tf2_listener_module.cpp
   src/map_module.cpp
   src/map_update_module.cpp
+  src/tree_structured_parzen_estimator.cpp
 )
 
 link_directories(${PCL_LIBRARY_DIRS})
 target_link_libraries(ndt_scan_matcher ${PCL_LIBRARIES})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_tpe
+    test/test_tpe.cpp
+    src/tree_structured_parzen_estimator.cpp
+  )
+  target_include_directories(test_tpe PRIVATE include)
+  target_link_libraries(test_tpe)
+endif()
 
 ament_auto_package(
   INSTALL_TO_SHARE

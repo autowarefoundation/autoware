@@ -43,6 +43,11 @@
     # The number of particles to estimate initial pose
     initial_estimate_particles_num: 200
 
+    # The number of initial random trials in the TPE (Tree-Structured Parzen Estimator).
+    # This value should be equal to or less than 'initial_estimate_particles_num' and more than 0.
+    # If it is equal to 'initial_estimate_particles_num', the search will be the same as a full random search.
+    n_startup_trials: 20
+
     # Tolerance of timestamp difference between current time and sensor pointcloud. [sec]
     lidar_topic_timeout_sec: 1.0
 

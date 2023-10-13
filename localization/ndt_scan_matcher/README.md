@@ -68,6 +68,7 @@ One optional function is regularization. Please see the regularization chapter i
 | `converged_param_transform_probability`                   | double                 | TP threshold for deciding whether to trust the estimation result (when converged_param_type = 0)   |
 | `converged_param_nearest_voxel_transformation_likelihood` | double                 | NVTL threshold for deciding whether to trust the estimation result (when converged_param_type = 1) |
 | `initial_estimate_particles_num`                          | int                    | The number of particles to estimate initial pose                                                   |
+| `n_startup_trials`                                        | int                    | The number of initial random trials in the TPE (Tree-Structured Parzen Estimator).                 |
 | `lidar_topic_timeout_sec`                                 | double                 | Tolerance of timestamp difference between current time and sensor pointcloud                       |
 | `initial_pose_timeout_sec`                                | int                    | Tolerance of timestamp difference between initial_pose and sensor pointcloud. [sec]                |
 | `initial_pose_distance_tolerance_m`                       | double                 | Tolerance of distance difference between two initial poses used for linear interpolation. [m]      |

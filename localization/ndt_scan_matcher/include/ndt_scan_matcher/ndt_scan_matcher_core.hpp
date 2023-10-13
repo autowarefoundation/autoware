@@ -179,6 +179,7 @@ private:
   double converged_param_nearest_voxel_transformation_likelihood_;
 
   int initial_estimate_particles_num_;
+  int n_startup_trials_;
   double lidar_topic_timeout_sec_;
   double initial_pose_timeout_sec_;
   double initial_pose_distance_tolerance_m_;
