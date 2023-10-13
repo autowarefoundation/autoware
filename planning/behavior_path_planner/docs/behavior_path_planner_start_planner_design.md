@@ -62,7 +62,7 @@ PullOutPath --o PullOutPlannerBase
 | Name                                                        | Unit  | Type   | Description                                                                 | Default value |
 | :---------------------------------------------------------- | :---- | :----- | :-------------------------------------------------------------------------- | :------------ |
 | th_arrived_distance_m                                       | [m]   | double | distance threshold for arrival of path termination                          | 1.0           |
-| th_distance_to_middle_of_the_road                           | [m]   | double | distance threshold to determine if the vehicle is on the middle of the road |
+| th_distance_to_middle_of_the_road                           | [m]   | double | distance threshold to determine if the vehicle is on the middle of the road | 0.1           |
 | th_stopped_velocity_mps                                     | [m/s] | double | velocity threshold for arrival of path termination                          | 0.01          |
 | th_stopped_time_sec                                         | [s]   | double | time threshold for arrival of path termination                              | 1.0           |
 | th_turn_signal_on_lateral_offset                            | [m]   | double | lateral distance threshold for turning on blinker                           | 1.0           |
@@ -82,7 +82,107 @@ PullOutPath --o PullOutPlannerBase
 
 ## Safety check with dynamic obstacles
 
+### **Basic concept of safety check against dynamic obstacles**
+
+This is based on the concept of RSS. For the logic used, refer to the link below.
+See [safety check feature explanation](../docs/behavior_path_planner_safety_check.md)
+
+### **Collision check performed range**
+
+A collision check with dynamic objects is primarily performed between the shift start point and end point. The range for safety check varies depending on the type of path generated, so it will be explained for each pattern.
+
+#### **Shift pull out**
+
+For the "shift pull out", safety verification starts at the beginning of the shift and ends at the shift's conclusion.
+
+#### **Geometric pull out**
+
+Since there's a stop at the midpoint during the shift, this becomes the endpoint for safety verification. After stopping, safety verification resumes.
+
+#### **Backward pull out start point search**
+
+During backward movement, no safety check is performed. Safety check begins at the point where the backward movement ends.
+
+![collision_check_range](../image/start_planner/collision_check_range.drawio.svg)
+
+### **Ego vehicle's velocity planning**
+
 WIP
+
+### **Safety check in free space area**
+
+WIP
+
+## Parameters for safety check
+
+### Stop Condition Parameters
+
+Parameters under `stop_condition` define the criteria for stopping conditions.
+
+| Name                          | Unit    | Type   | Description                             | Default value |
+| :---------------------------- | :------ | :----- | :-------------------------------------- | :------------ |
+| maximum_deceleration_for_stop | [m/s^2] | double | Maximum deceleration allowed for a stop | 1.0           |
+| maximum_jerk_for_stop         | [m/s^3] | double | Maximum jerk allowed for a stop         | 1.0           |
+
+### Ego Predicted Path Parameters
+
+Parameters under `path_safety_check.ego_predicted_path` specify the ego vehicle's predicted path characteristics.
+
+| Name                          | Unit    | Type   | Description                                          | Default value |
+| :---------------------------- | :------ | :----- | :--------------------------------------------------- | :------------ |
+| min_velocity                  | [m/s]   | double | Minimum velocity of the ego vehicle's predicted path | 0.0           |
+| acceleration                  | [m/s^2] | double | Acceleration for the ego vehicle's predicted path    | 1.0           |
+| max_velocity                  | [m/s]   | double | Maximum velocity of the ego vehicle's predicted path | 1.0           |
+| time_horizon_for_front_object | [s]     | double | Time horizon for predicting front objects            | 10.0          |
+| time_horizon_for_rear_object  | [s]     | double | Time horizon for predicting rear objects             | 10.0          |
+| time_resolution               | [s]     | double | Time resolution for the ego vehicle's predicted path | 0.5           |
+| delay_until_departure         | [s]     | double | Delay until the ego vehicle departs                  | 1.0           |
+
+### Target Object Filtering Parameters
+
+Parameters under `target_filtering` are related to filtering target objects for safety check.
+
+| Name                                            | Unit  | Type   | Description                                        | Default value |
+| :---------------------------------------------- | :---- | :----- | :------------------------------------------------- | :------------ |
+| safety_check_time_horizon                       | [s]   | double | Time horizon for safety check                      | 5.0           |
+| safety_check_time_resolution                    | [s]   | double | Time resolution for safety check                   | 1.0           |
+| object_check_forward_distance                   | [m]   | double | Forward distance for object detection              | 10.0          |
+| object_check_backward_distance                  | [m]   | double | Backward distance for object detection             | 100.0         |
+| ignore_object_velocity_threshold                | [m/s] | double | Velocity threshold below which objects are ignored | 1.0           |
+| object_types_to_check.check_car                 | -     | bool   | Flag to check cars                                 | true          |
+| object_types_to_check.check_truck               | -     | bool   | Flag to check trucks                               | true          |
+| object_types_to_check.check_bus                 | -     | bool   | Flag to check buses                                | true          |
+| object_types_to_check.check_trailer             | -     | bool   | Flag to check trailers                             | true          |
+| object_types_to_check.check_bicycle             | -     | bool   | Flag to check bicycles                             | true          |
+| object_types_to_check.check_motorcycle          | -     | bool   | Flag to check motorcycles                          | true          |
+| object_types_to_check.check_pedestrian          | -     | bool   | Flag to check pedestrians                          | true          |
+| object_types_to_check.check_unknown             | -     | bool   | Flag to check unknown object types                 | false         |
+| object_lane_configuration.check_current_lane    | -     | bool   | Flag to check the current lane                     | true          |
+| object_lane_configuration.check_right_side_lane | -     | bool   | Flag to check the right side lane                  | true          |
+| object_lane_configuration.check_left_side_lane  | -     | bool   | Flag to check the left side lane                   | true          |
+| object_lane_configuration.check_shoulder_lane   | -     | bool   | Flag to check the shoulder lane                    | true          |
+| object_lane_configuration.check_other_lane      | -     | bool   | Flag to check other lanes                          | false         |
+| include_opposite_lane                           | -     | bool   | Flag to include the opposite lane in check         | false         |
+| invert_opposite_lane                            | -     | bool   | Flag to invert the opposite lane check             | false         |
+| check_all_predicted_path                        | -     | bool   | Flag to check all predicted paths                  | true          |
+| use_all_predicted_path                          | -     | bool   | Flag to use all predicted paths                    | true          |
+| use_predicted_path_outside_lanelet              | -     | bool   | Flag to use predicted paths outside of lanelets    | false         |
+
+### Safety Check Parameters
+
+Parameters under `safety_check_params` define the configuration for safety check.
+
+| Name                                           | Unit | Type   | Description                                 | Default value |
+| :--------------------------------------------- | :--- | :----- | :------------------------------------------ | :------------ |
+| enable_safety_check                            | -    | bool   | Flag to enable safety check                 | true          |
+| check_all_predicted_path                       | -    | bool   | Flag to check all predicted paths           | true          |
+| publish_debug_marker                           | -    | bool   | Flag to publish debug markers               | false         |
+| rss_params.rear_vehicle_reaction_time          | [s]  | double | Reaction time for rear vehicles             | 2.0           |
+| rss_params.rear_vehicle_safety_time_margin     | [s]  | double | Safety time margin for rear vehicles        | 1.0           |
+| rss_params.lateral_distance_max_threshold      | [m]  | double | Maximum lateral distance threshold          | 2.0           |
+| rss_params.longitudinal_distance_min_threshold | [m]  | double | Minimum longitudinal distance threshold     | 3.0           |
+| rss_params.longitudinal_velocity_delta_time    | [s]  | double | Delta time for longitudinal velocity        | 0.8           |
+| hysteresis_factor_expand_rate                  | -    | double | Rate to expand/shrink the hysteresis factor | 1.0           |
 
 ## **Path Generation**
 
@@ -113,9 +213,7 @@ Pull out distance is calculated by the speed, lateral deviation, and the lateral
 | maximum_lateral_jerk            | [m/s3] | double | maximum lateral jerk                                                                                                 | 2.0           |
 | minimum_lateral_jerk            | [m/s3] | double | minimum lateral jerk                                                                                                 | 0.1           |
 | minimum_shift_pull_out_distance | [m]    | double | minimum shift pull out distance. if calculated pull out distance is shorter than this, use this for path generation. | 0.0           |
-| maximum_curvature               | [m]    | double | maximum curvature. The pull out distance is calculated so that the curvature is smaller than this value.             |
-
-| 0.07 |
+| maximum_curvature               | [m]    | double | maximum curvature. The pull out distance is calculated so that the curvature is smaller than this value.             | 0.07          |
 
 ### **geometric pull out**
 
@@ -128,14 +226,14 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 #### parameters for geometric pull out
 
-| Name                        | Unit  | Type   | Description                                                                                                                                                | Default value |
-| :-------------------------- | :---- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| enable_geometric_pull_out   | [-]   | bool   | flag whether to enable geometric pull out                                                                                                                  | true          |
-| divide_pull_out_path        | [-]   | bool   | flag whether to divide arc paths.　The path is assumed to be divided because the curvature is not continuous. But it requires a stop during the departure. | false         |
-| geometric_pull_out_velocity | [m/s] | double | velocity of geometric pull out                                                                                                                             | 1.0           |
-| arc_path_interval           | [m]   | double | path points interval of arc paths of geometric pull out                                                                                                    | 1.0           |
-| lane_departure_margin       | [m]   | double | margin of deviation to lane right                                                                                                                          | 0.2           |
-| pull_out_max_steer_angle    | [rad] | double | maximum steer angle for path generation                                                                                                                    | 0.26          |
+| Name                        | Unit  | Type   | Description                                                                                                                                               | Default value |
+| :-------------------------- | :---- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| enable_geometric_pull_out   | [-]   | bool   | flag whether to enable geometric pull out                                                                                                                 | true          |
+| divide_pull_out_path        | [-]   | bool   | flag whether to divide arc paths. The path is assumed to be divided because the curvature is not continuous. But it requires a stop during the departure. | false         |
+| geometric_pull_out_velocity | [m/s] | double | velocity of geometric pull out                                                                                                                            | 1.0           |
+| arc_path_interval           | [m]   | double | path points interval of arc paths of geometric pull out                                                                                                   | 1.0           |
+| lane_departure_margin       | [m]   | double | margin of deviation to lane right                                                                                                                         | 0.2           |
+| pull_out_max_steer_angle    | [rad] | double | maximum steer angle for path generation                                                                                                                   | 0.26          |
 
 ## **backward pull out start point search**
 
