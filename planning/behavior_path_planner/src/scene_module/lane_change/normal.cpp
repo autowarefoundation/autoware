@@ -1222,12 +1222,12 @@ bool NormalLaneChange::getLaneChangePaths(
             logger_, "Stop time is over threshold. Allow lane change in intersection.");
         }
 
+        candidate_paths->push_back(*candidate_path);
         if (utils::lane_change::passParkedObject(
               route_handler, *candidate_path, target_objects.target_lane, lane_change_buffer,
               is_goal_in_route, *lane_change_parameters_)) {
           return false;
         }
-        candidate_paths->push_back(*candidate_path);
 
         if (!check_safety) {
           return false;
