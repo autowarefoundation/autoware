@@ -16,7 +16,6 @@
   <depend>component_interface_utils</depend>
   <depend>lanelet2_extension</depend>
   <depend>rclcpp</depend>
-  <depend>rclcpp_components</depend>
   <depend>tier4_map_msgs</depend>
   <depend>yaml-cpp</depend>
 

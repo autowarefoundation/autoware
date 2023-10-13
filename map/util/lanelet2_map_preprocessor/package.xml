@@ -11,7 +11,7 @@
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
   <depend>lanelet2_extension</depend>
-  <depend>pcl_ros</depend>
+  <depend>libpcl-all-dev</depend>
   <depend>rclcpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>
