@@ -197,6 +197,21 @@ void prepareRTCByDecisionResult(
 
 template <>
 void prepareRTCByDecisionResult(
+  const IntersectionModule::YieldStuckStop & result,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, bool * default_safety,
+  double * default_distance, bool * occlusion_safety, [[maybe_unused]] double * occlusion_distance)
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("prepareRTCByDecisionResult"), "YieldStuckStop");
+  const auto closest_idx = result.closest_idx;
+  const auto stop_line_idx = result.stuck_stop_line_idx;
+  *default_safety = false;
+  *default_distance = motion_utils::calcSignedArcLength(path.points, closest_idx, stop_line_idx);
+  *occlusion_safety = true;
+  return;
+}
+
+template <>
+void prepareRTCByDecisionResult(
   const IntersectionModule::NonOccludedCollisionStop & result,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, bool * default_safety,
   double * default_distance, bool * occlusion_safety, double * occlusion_distance)
@@ -414,6 +429,38 @@ void reactRTCApprovalByDecisionResult(
       velocity_factor->set(
         path->points, path->points.at(closest_idx).point.pose,
         path->points.at(occlusion_stop_line_idx).point.pose, VelocityFactor::INTERSECTION);
+    }
+  }
+  return;
+}
+
+template <>
+void reactRTCApprovalByDecisionResult(
+  const bool rtc_default_approved, const bool rtc_occlusion_approved,
+  const IntersectionModule::YieldStuckStop & decision_result,
+  [[maybe_unused]] const IntersectionModule::PlannerParam & planner_param,
+  const double baselink2front, autoware_auto_planning_msgs::msg::PathWithLaneId * path,
+  StopReason * stop_reason, VelocityFactorInterface * velocity_factor, util::DebugData * debug_data)
+{
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("reactRTCApprovalByDecisionResult"),
+    "YieldStuckStop, approval = (default: %d, occlusion: %d)", rtc_default_approved,
+    rtc_occlusion_approved);
+  const auto closest_idx = decision_result.closest_idx;
+  if (!rtc_default_approved) {
+    // use default_rtc uuid for stuck vehicle detection
+    const auto stop_line_idx = decision_result.stuck_stop_line_idx;
+    planning_utils::setVelocityFromIndex(stop_line_idx, 0.0, path);
+    debug_data->collision_stop_wall_pose =
+      planning_utils::getAheadPose(stop_line_idx, baselink2front, *path);
+    {
+      tier4_planning_msgs::msg::StopFactor stop_factor;
+      stop_factor.stop_pose = path->points.at(stop_line_idx).point.pose;
+      stop_factor.stop_factor_points = planning_utils::toRosPoints(debug_data->conflicting_targets);
+      planning_utils::appendStopReason(stop_factor, stop_reason);
+      velocity_factor->set(
+        path->points, path->points.at(closest_idx).point.pose,
+        path->points.at(stop_line_idx).point.pose, VelocityFactor::INTERSECTION);
     }
   }
   return;
@@ -780,6 +827,9 @@ static std::string formatDecisionResult(const IntersectionModule::DecisionResult
   if (std::holds_alternative<IntersectionModule::StuckStop>(decision_result)) {
     return "StuckStop";
   }
+  if (std::holds_alternative<IntersectionModule::YieldStuckStop>(decision_result)) {
+    return "YieldStuckStop";
+  }
   if (std::holds_alternative<IntersectionModule::NonOccludedCollisionStop>(decision_result)) {
     return "NonOccludedCollisionStop";
   }
@@ -982,6 +1032,23 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     } else {
       return IntersectionModule::StuckStop{
         closest_idx, stuck_stop_line_idx, occlusion_peeking_stop_line_idx_opt};
+    }
+  }
+
+  // yield stuck vehicle detection is viable even if attention area is empty
+  // so this needs to be checked before attention area validation
+  const bool yield_stuck_detected = checkYieldStuckVehicle(
+    planner_data_, path_lanelets, intersection_lanelets.first_attention_area());
+  if (yield_stuck_detected && stuck_stop_line_idx_opt) {
+    auto stuck_stop_line_idx = stuck_stop_line_idx_opt.value();
+    if (is_private_area_ && planner_param_.stuck_vehicle.enable_private_area_stuck_disregard) {
+      if (
+        default_stop_line_idx_opt &&
+        fromEgoDist(stuck_stop_line_idx) < -planner_param_.common.stop_overshoot_margin) {
+        stuck_stop_line_idx = default_stop_line_idx_opt.value();
+      }
+    } else {
+      return IntersectionModule::YieldStuckStop{closest_idx, stuck_stop_line_idx};
     }
   }
 
@@ -1232,6 +1299,37 @@ bool IntersectionModule::checkStuckVehicle(
   return util::checkStuckVehicleInIntersection(
     objects_ptr, stuck_vehicle_detect_area, planner_param_.stuck_vehicle.stuck_vehicle_vel_thr,
     &debug_data_);
+}
+
+bool IntersectionModule::checkYieldStuckVehicle(
+  const std::shared_ptr<const PlannerData> & planner_data, const util::PathLanelets & path_lanelets,
+  const std::optional<lanelet::CompoundPolygon3d> & first_attention_area)
+{
+  if (!first_attention_area) {
+    return false;
+  }
+
+  const bool yield_stuck_detection_direction = [&]() {
+    return (turn_direction_ == "left" &&
+            planner_param_.stuck_vehicle.yield_stuck_turn_direction.left) ||
+           (turn_direction_ == "right" &&
+            planner_param_.stuck_vehicle.yield_stuck_turn_direction.right) ||
+           (turn_direction_ == "straight" &&
+            planner_param_.stuck_vehicle.yield_stuck_turn_direction.straight);
+  }();
+  if (!yield_stuck_detection_direction) {
+    return false;
+  }
+
+  const auto & objects_ptr = planner_data->predicted_objects;
+
+  const auto & ego_lane = path_lanelets.ego_or_entry2exit;
+  const auto ego_poly = ego_lane.polygon2d().basicPolygon();
+
+  return util::checkYieldStuckVehicleInIntersection(
+    objects_ptr, ego_poly, first_attention_area.value(),
+    planner_param_.stuck_vehicle.stuck_vehicle_vel_thr,
+    planner_param_.stuck_vehicle.yield_stuck_distance_thr, &debug_data_);
 }
 
 autoware_auto_perception_msgs::msg::PredictedObjects IntersectionModule::filterTargetObjects(

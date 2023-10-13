@@ -85,6 +85,14 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.timeout_private_area");
   ip.stuck_vehicle.enable_private_area_stuck_disregard =
     getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.enable_private_area_stuck_disregard");
+  ip.stuck_vehicle.yield_stuck_turn_direction.left =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.yield_stuck.turn_direction.left");
+  ip.stuck_vehicle.yield_stuck_turn_direction.right =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.yield_stuck.turn_direction.right");
+  ip.stuck_vehicle.yield_stuck_turn_direction.straight =
+    getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.yield_stuck.turn_direction.straight");
+  ip.stuck_vehicle.yield_stuck_distance_thr =
+    getOrDeclareParameter<double>(node, ns + ".stuck_vehicle.yield_stuck.distance_thr");
 
   ip.collision_detection.min_predicted_path_confidence =
     getOrDeclareParameter<double>(node, ns + ".collision_detection.min_predicted_path_confidence");

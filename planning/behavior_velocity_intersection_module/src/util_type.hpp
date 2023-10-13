@@ -50,6 +50,7 @@ struct DebugData
   std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
   autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
   autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
+  autoware_auto_perception_msgs::msg::PredictedObjects yield_stuck_targets;
   std::vector<geometry_msgs::msg::Polygon> occlusion_polygons;
   std::optional<std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>>
     nearest_occlusion_projection{std::nullopt};

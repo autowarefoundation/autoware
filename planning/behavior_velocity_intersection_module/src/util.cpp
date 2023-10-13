@@ -1108,6 +1108,45 @@ bool checkStuckVehicleInIntersection(
   return false;
 }
 
+bool checkYieldStuckVehicleInIntersection(
+  const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
+  const lanelet::BasicPolygon2d & ego_poly, const lanelet::CompoundPolygon3d & first_attention_area,
+  const double stuck_vehicle_vel_thr, const double yield_stuck_distance_thr, DebugData * debug_data)
+{
+  const auto first_attention_area_2d = lanelet::utils::to2D(first_attention_area);
+  Polygon2d first_attention_area_poly;
+  for (const auto & p : first_attention_area_2d) {
+    first_attention_area_poly.outer().emplace_back(p.x(), p.y());
+  }
+
+  for (const auto & object : objects_ptr->objects) {
+    if (!isTargetStuckVehicleType(object)) {
+      continue;  // not target vehicle type
+    }
+    const auto obj_v_norm = std::hypot(
+      object.kinematics.initial_twist_with_covariance.twist.linear.x,
+      object.kinematics.initial_twist_with_covariance.twist.linear.y);
+    if (obj_v_norm > stuck_vehicle_vel_thr) {
+      continue;  // not stop vehicle
+    }
+
+    const auto obj_footprint = tier4_autoware_utils::toPolygon2d(object);
+
+    // check if the object is too close to the ego path
+    if (yield_stuck_distance_thr < bg::distance(ego_poly, obj_footprint)) {
+      continue;
+    }
+
+    // check if the footprint is in the stuck detect area
+    const bool is_in_stuck_area = bg::within(obj_footprint, first_attention_area_poly);
+    if (is_in_stuck_area && debug_data) {
+      debug_data->yield_stuck_targets.objects.push_back(object);
+      return true;
+    }
+  }
+  return false;
+}
+
 Polygon2d generateStuckVehicleDetectAreaPolygon(
   const util::PathLanelets & path_lanelets, const double stuck_vehicle_detect_dist)
 {

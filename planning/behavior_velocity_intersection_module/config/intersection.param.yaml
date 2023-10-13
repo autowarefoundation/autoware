@@ -24,6 +24,12 @@
         # assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
         timeout_private_area: 3.0 # [s] cancel stuck vehicle stop in private area
         enable_private_area_stuck_disregard: false #In the intersections which labeled as "private area", the obstacle vehicles judged as "stuck" are neglected if this param is set as true.
+        yield_stuck:
+          turn_direction:
+            left: true
+            right: false
+            straight: false
+          distance_thr: 1.0 # [m]
 
       collision_detection:
         state_transit_margin_time: 1.0
@@ -42,9 +48,9 @@
         use_upstream_velocity: true # flag to use the planned velocity profile from the upstream module
         minimum_upstream_velocity: 0.01 # [m/s] minimum velocity to avoid null division for the stop line from the upstream velocity
         yield_on_green_traffic_light:
-          distance_to_assigned_lanelet_start: 5.0
-          duration: 2.0
-          range: 30.0 # [m]
+          distance_to_assigned_lanelet_start: 10.0
+          duration: 3.0
+          range: 50.0 # [m]
 
       occlusion:
         enable: false
