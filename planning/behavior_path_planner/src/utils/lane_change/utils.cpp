@@ -939,7 +939,8 @@ bool isParkedObject(
 bool passParkedObject(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
-  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters)
+  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters,
+  CollisionCheckDebugMap & object_debug)
 {
   const auto & object_check_min_road_shoulder_width =
     lane_change_parameters.object_check_min_road_shoulder_width;
@@ -962,6 +963,7 @@ bool passParkedObject(
   }
 
   const auto & leading_obj = objects.at(*leading_obj_idx);
+  auto debug = marker_utils::createObjectDebug(leading_obj);
   const auto leading_obj_poly =
     tier4_autoware_utils::toPolygon2d(leading_obj.initial_pose.pose, leading_obj.shape);
   if (leading_obj_poly.outer().empty()) {
@@ -985,6 +987,8 @@ bool passParkedObject(
 
   // If there are still enough length after the target object, we delay the lane change
   if (min_dist_to_end_of_current_lane > minimum_lane_change_length) {
+    debug.second.unsafe_reason = "delay lane change";
+    marker_utils::updateCollisionCheckDebugMap(object_debug, debug, false);
     return true;
   }
 

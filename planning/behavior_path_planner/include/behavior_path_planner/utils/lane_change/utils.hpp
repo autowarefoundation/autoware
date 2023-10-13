@@ -52,6 +52,7 @@ using data::lane_change::PathSafetyStatus;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using path_safety_checker::CollisionCheckDebugMap;
 using route_handler::Direction;
 using tier4_autoware_utils::Polygon2d;
 
@@ -170,7 +171,8 @@ bool isParkedObject(
 bool passParkedObject(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,
   const std::vector<ExtendedPredictedObject> & objects, const double minimum_lane_change_length,
-  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters);
+  const bool is_goal_in_route, const LaneChangeParameters & lane_change_parameters,
+  CollisionCheckDebugMap & object_debug);
 
 boost::optional<size_t> getLeadingStaticObjectIdx(
   const RouteHandler & route_handler, const LaneChangePath & lane_change_path,

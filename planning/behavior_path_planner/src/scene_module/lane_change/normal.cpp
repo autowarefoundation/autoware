@@ -1225,7 +1225,7 @@ bool NormalLaneChange::getLaneChangePaths(
         candidate_paths->push_back(*candidate_path);
         if (utils::lane_change::passParkedObject(
               route_handler, *candidate_path, target_objects.target_lane, lane_change_buffer,
-              is_goal_in_route, *lane_change_parameters_)) {
+              is_goal_in_route, *lane_change_parameters_, object_debug_)) {
           return false;
         }
 
