@@ -261,7 +261,7 @@ inline void setOrientation(const geometry_msgs::msg::Quaternion & orientation, T
 }
 
 template <class T>
-void setLongitudinalVelocity([[maybe_unused]] const double velocity, [[maybe_unused]] T & p)
+void setLongitudinalVelocity([[maybe_unused]] const float velocity, [[maybe_unused]] T & p)
 {
   static_assert(sizeof(T) == 0, "Only specializations of getLongitudinalVelocity can be used.");
   throw std::logic_error("Only specializations of getLongitudinalVelocity can be used.");
@@ -269,21 +269,21 @@ void setLongitudinalVelocity([[maybe_unused]] const double velocity, [[maybe_unu
 
 template <>
 inline void setLongitudinalVelocity(
-  const double velocity, autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+  const float velocity, autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
 {
   p.longitudinal_velocity_mps = velocity;
 }
 
 template <>
 inline void setLongitudinalVelocity(
-  const double velocity, autoware_auto_planning_msgs::msg::PathPoint & p)
+  const float velocity, autoware_auto_planning_msgs::msg::PathPoint & p)
 {
   p.longitudinal_velocity_mps = velocity;
 }
 
 template <>
 inline void setLongitudinalVelocity(
-  const double velocity, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+  const float velocity, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
 {
   p.point.longitudinal_velocity_mps = velocity;
 }
