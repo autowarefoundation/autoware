@@ -1,0 +1,16 @@
+# Merger policy for decorative tracker merger node
+# decorative tracker merger works by merging the sub-object trackers into a main object tracker result
+# There are 3 merger policy:
+# 1. "skip": skip the sub-object tracker result
+# 2. "overwrite": overwrite the main object tracker result with sub-object tracker result
+# 3. "fusion": merge the main object tracker result with sub-object tracker result by using covariance based fusion
+/**:
+  ros__parameters:
+    kinematics_to_be_merged: "velocity" # currently only support "velocity"
+
+    # choose the merger policy for each object type
+    #  : "skip", "overwrite", "fusion"
+    kinematics_merge_policy: "overwrite"
+    classification_merge_policy: "skip"
+    existence_prob_merge_policy: "skip"
+    shape_merge_policy: "skip"

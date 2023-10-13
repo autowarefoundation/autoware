@@ -1,0 +1,26 @@
+# Node parameters
+/**:
+  ros__parameters:
+    base_link_frame_id: "base_link"
+    time_sync_threshold: 0.999
+    sub_object_timeout_sec: 0.8
+    publish_interpolated_sub_objects: true #for debug
+
+    # choose the input sensor type for each object type
+    # "lidar", "radar", "camera" are available
+    main_sensor_type: "lidar"
+    sub_sensor_type: "radar"
+
+    # tracker settings
+    tracker_state_parameter:
+      remove_probability_threshold: 0.3
+      publish_probability_threshold: 0.5
+      default_lidar_existence_probability: 0.7
+      default_radar_existence_probability: 0.6
+      default_camera_existence_probability: 0.5
+      decay_rate: 0.1
+      max_dt: 1.0
+
+    # logging settings
+    enable_logging: false
+    log_file_path: "/tmp/decorative_tracker_merger.log"

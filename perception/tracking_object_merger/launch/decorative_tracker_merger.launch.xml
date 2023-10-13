@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input/main_object" default="main_object"/>
+  <arg name="input/sub_object" default="sub_object"/>
+  <arg name="output" default="merged_object"/>
+  <arg name="data_association_matrix_path" default="$(find-pkg-share tracking_object_merger)/config/data_association_matrix.param.yaml"/>
+  <arg name="merge_options_path" default="$(find-pkg-share tracking_object_merger)/config/decorative_tracker_merger_policy.param.yaml"/>
+  <arg name="enable_logging" default="true"/>
+  <arg name="logging_file_path" default="association_log.json"/>
+  <arg name="node_param_file_path" default="$(find-pkg-share tracking_object_merger)/config/decorative_tracker_merger.param.yaml"/>
+
+  <node pkg="tracking_object_merger" exec="decorative_tracker_merger" name="$(anon decorative_tracker_merger)" output="screen">
+    <remap from="input/main_object" to="$(var input/main_object)"/>
+    <remap from="input/sub_object" to="$(var input/sub_object)"/>
+    <remap from="output/object" to="$(var output)"/>
+    <param from="$(var data_association_matrix_path)"/>
+    <param from="$(var node_param_file_path)"/>
+    <param name="enable_logging" value="$(var enable_logging)"/>
+    <param name="logging_file_path" value="$(var logging_file_path)"/>
+  </node>
+</launch>
