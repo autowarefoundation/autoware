@@ -226,7 +226,7 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
   const double max_time = std::numeric_limits<double>::max();
   const double max_distance = std::numeric_limits<double>::max();
-  if (path.shift_length.empty()) {
+  if (path.shift_length.size() < shift_line.end_idx + 1) {
     return std::make_pair(turn_signal, max_distance);
   }
   const auto base_link2front = common_parameter.base_link2front;

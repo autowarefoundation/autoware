@@ -301,6 +301,15 @@ std::optional<LaneChangePath> constructCandidatePath(
       "failed to generate shifted path.");
   }
 
+  // TODO(Zulfaqar Azmi): have to think of a more feasible solution for points being remove by path
+  // shifter.
+  if (shifted_path.path.points.size() < shift_line.end_idx + 1) {
+    RCLCPP_DEBUG(
+      rclcpp::get_logger("behavior_path_planner").get_child("utils").get_child(__func__),
+      "path points are removed by PathShifter.");
+    return std::nullopt;
+  }
+
   const auto & prepare_length = lane_change_length.prepare;
   const auto & lane_changing_length = lane_change_length.lane_changing;
 
