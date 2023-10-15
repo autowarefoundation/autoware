@@ -182,18 +182,19 @@ struct SafetyCheckParams
 
 struct CollisionCheckDebug
 {
-  std::string unsafe_reason;                ///< Reason indicating unsafe situation.
-  Twist current_twist{};                    ///< Ego vehicle's current velocity and rotation.
-  Pose expected_ego_pose{};                 ///< Predicted future pose of ego vehicle.
-  Pose current_obj_pose{};                  ///< Detected object's current pose.
-  Twist object_twist{};                     ///< Detected object's velocity and rotation.
-  Pose expected_obj_pose{};                 ///< Predicted future pose of object.
-  double rss_longitudinal{0.0};             ///< Longitudinal RSS measure.
-  double inter_vehicle_distance{0.0};       ///< Distance between ego vehicle and object.
-  double extended_polygon_lon_offset{0.0};  ///< Longitudinal offset for extended polygon.
-  double extended_polygon_lat_offset{0.0};  ///< Lateral offset for extended polygon.
-  bool is_front{false};                     ///< True if object is in front of ego vehicle.
-  bool is_safe{false};                      ///< True if situation is deemed safe.
+  std::string unsafe_reason;           ///< Reason indicating unsafe situation.
+  Twist current_twist{};               ///< Ego vehicle's current velocity and rotation.
+  Pose expected_ego_pose{};            ///< Predicted future pose of ego vehicle.
+  Pose current_obj_pose{};             ///< Detected object's current pose.
+  Twist object_twist{};                ///< Detected object's velocity and rotation.
+  Pose expected_obj_pose{};            ///< Predicted future pose of object.
+  double rss_longitudinal{0.0};        ///< Longitudinal RSS measure.
+  double inter_vehicle_distance{0.0};  ///< Distance between ego vehicle and object.
+  double forward_lon_offset{0.0};      ///< Forward longitudinal offset for extended polygon.
+  double backward_lon_offset{0.0};     ///< Backward longitudinal offset for extended polygon.
+  double lat_offset{0.0};              ///< Lateral offset for extended polygon.
+  bool is_front{false};                ///< True if object is in front of ego vehicle.
+  bool is_safe{false};                 ///< True if situation is deemed safe.
   std::vector<PoseWithVelocityStamped> ego_predicted_path;  ///< ego vehicle's predicted path.
   std::vector<PoseWithVelocityAndPolygonStamped> obj_predicted_path;  ///< object's predicted path.
   Polygon2d extended_ego_polygon{};  ///< Ego vehicle's extended collision polygon.

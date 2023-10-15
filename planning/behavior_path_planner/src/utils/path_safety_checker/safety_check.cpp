@@ -82,28 +82,33 @@ bool isTargetObjectFront(
 
 Polygon2d createExtendedPolygon(
   const Pose & base_link_pose, const vehicle_info_util::VehicleInfo & vehicle_info,
-  const double lon_length, const double lat_margin, CollisionCheckDebug & debug)
+  const double lon_length, const double lat_margin, const double is_stopped_obj,
+  CollisionCheckDebug & debug)
 {
   const double & base_to_front = vehicle_info.max_longitudinal_offset_m;
   const double & width = vehicle_info.vehicle_width_m;
   const double & base_to_rear = vehicle_info.rear_overhang_m;
 
-  const double lon_offset = std::max(lon_length + base_to_front, base_to_front);
-
+  // if stationary object, extend forward and backward by the half of lon length
+  const double forward_lon_offset = base_to_front + (is_stopped_obj ? lon_length / 2 : lon_length);
+  const double backward_lon_offset =
+    -base_to_rear - (is_stopped_obj ? lon_length / 2 : 0);  // minus value
   const double lat_offset = width / 2.0 + lat_margin;
 
   {
-    debug.extended_polygon_lon_offset = lon_offset;
-    debug.extended_polygon_lat_offset = lat_offset;
+    debug.forward_lon_offset = forward_lon_offset;
+    debug.backward_lon_offset = backward_lon_offset;
+    debug.lat_offset = lat_offset;
   }
 
-  const auto p1 = tier4_autoware_utils::calcOffsetPose(base_link_pose, lon_offset, lat_offset, 0.0);
+  const auto p1 =
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, forward_lon_offset, lat_offset, 0.0);
   const auto p2 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, lon_offset, -lat_offset, 0.0);
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, forward_lon_offset, -lat_offset, 0.0);
   const auto p3 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, -base_to_rear, -lat_offset, 0.0);
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, -lat_offset, 0.0);
   const auto p4 =
-    tier4_autoware_utils::calcOffsetPose(base_link_pose, -base_to_rear, lat_offset, 0.0);
+    tier4_autoware_utils::calcOffsetPose(base_link_pose, backward_lon_offset, lat_offset, 0.0);
 
   Polygon2d polygon;
   appendPointToPolygon(polygon, p1.position);
@@ -118,7 +123,7 @@ Polygon2d createExtendedPolygon(
 
 Polygon2d createExtendedPolygon(
   const Pose & obj_pose, const Shape & shape, const double lon_length, const double lat_margin,
-  CollisionCheckDebug & debug)
+  const double is_stopped_obj, CollisionCheckDebug & debug)
 {
   const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, shape);
   if (obj_polygon.outer().empty()) {
@@ -139,19 +144,27 @@ Polygon2d createExtendedPolygon(
     min_y = std::min(transformed_p.y, min_y);
   }
 
-  const double lon_offset = max_x + lon_length;
+  // if stationary object, extend forward and backward by the half of lon length
+  const double forward_lon_offset = max_x + (is_stopped_obj ? lon_length / 2 : lon_length);
+  const double backward_lon_offset = min_x - (is_stopped_obj ? lon_length / 2 : 0);  // minus value
+
   const double left_lat_offset = max_y + lat_margin;
   const double right_lat_offset = min_y - lat_margin;
 
   {
-    debug.extended_polygon_lon_offset = lon_offset;
-    debug.extended_polygon_lat_offset = (left_lat_offset + right_lat_offset) / 2;
+    debug.forward_lon_offset = forward_lon_offset;
+    debug.backward_lon_offset = backward_lon_offset;
+    debug.lat_offset = (left_lat_offset + right_lat_offset) / 2;
   }
 
-  const auto p1 = tier4_autoware_utils::calcOffsetPose(obj_pose, lon_offset, left_lat_offset, 0.0);
-  const auto p2 = tier4_autoware_utils::calcOffsetPose(obj_pose, lon_offset, right_lat_offset, 0.0);
-  const auto p3 = tier4_autoware_utils::calcOffsetPose(obj_pose, min_x, right_lat_offset, 0.0);
-  const auto p4 = tier4_autoware_utils::calcOffsetPose(obj_pose, min_x, left_lat_offset, 0.0);
+  const auto p1 =
+    tier4_autoware_utils::calcOffsetPose(obj_pose, forward_lon_offset, left_lat_offset, 0.0);
+  const auto p2 =
+    tier4_autoware_utils::calcOffsetPose(obj_pose, forward_lon_offset, right_lat_offset, 0.0);
+  const auto p3 =
+    tier4_autoware_utils::calcOffsetPose(obj_pose, backward_lon_offset, right_lat_offset, 0.0);
+  const auto p4 =
+    tier4_autoware_utils::calcOffsetPose(obj_pose, backward_lon_offset, left_lat_offset, 0.0);
 
   Polygon2d polygon;
   appendPointToPolygon(polygon, p1.position);
@@ -338,14 +351,17 @@ std::vector<Polygon2d> getCollidedPolygons(
 
     const auto & lon_offset = std::max(rss_dist, min_lon_length) * hysteresis_factor;
     const auto & lat_margin = rss_parameters.lateral_distance_max_threshold * hysteresis_factor;
-    const auto & extended_ego_polygon =
-      is_object_front
-        ? createExtendedPolygon(ego_pose, ego_vehicle_info, lon_offset, lat_margin, debug)
-        : ego_polygon;
+    // TODO(watanabe) fix hard coding value
+    const bool is_stopped_object = object_velocity < 0.3;
+    const auto & extended_ego_polygon = is_object_front ? createExtendedPolygon(
+                                                            ego_pose, ego_vehicle_info, lon_offset,
+                                                            lat_margin, is_stopped_object, debug)
+                                                        : ego_polygon;
     const auto & extended_obj_polygon =
       is_object_front
         ? obj_polygon
-        : createExtendedPolygon(obj_pose, target_object.shape, lon_offset, lat_margin, debug);
+        : createExtendedPolygon(
+            obj_pose, target_object.shape, lon_offset, lat_margin, is_stopped_object, debug);
 
     {
       debug.rss_longitudinal = rss_dist;

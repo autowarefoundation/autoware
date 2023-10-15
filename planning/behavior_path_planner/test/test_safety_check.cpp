@@ -52,9 +52,10 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
+    const bool is_stopped_object = false;
 
-    const auto polygon =
-      createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin, debug);
+    const auto polygon = createExtendedPolygon(
+      ego_pose, vehicle_info, lon_length, lat_margin, is_stopped_object, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
@@ -79,9 +80,10 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
+    const bool is_stopped_object = false;
 
-    const auto polygon =
-      createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin, debug);
+    const auto polygon = createExtendedPolygon(
+      ego_pose, vehicle_info, lon_length, lat_margin, is_stopped_object, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
@@ -107,9 +109,10 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedEgoPolygon)
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
+    const bool is_stopped_object = false;
 
-    const auto polygon =
-      createExtendedPolygon(ego_pose, vehicle_info, lon_length, lat_margin, debug);
+    const auto polygon = createExtendedPolygon(
+      ego_pose, vehicle_info, lon_length, lat_margin, is_stopped_object, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
@@ -155,9 +158,11 @@ TEST(BehaviorPathPlanningSafetyUtilsTest, createExtendedObjPolygon)
 
     const double lon_length = 10.0;
     const double lat_margin = 2.0;
+    const bool is_stopped_object = false;
 
     CollisionCheckDebug debug;
-    const auto polygon = createExtendedPolygon(obj_pose, shape, lon_length, lat_margin, debug);
+    const auto polygon =
+      createExtendedPolygon(obj_pose, shape, lon_length, lat_margin, is_stopped_object, debug);
 
     EXPECT_EQ(polygon.outer().size(), static_cast<unsigned int>(5));
 
