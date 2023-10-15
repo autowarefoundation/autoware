@@ -49,6 +49,7 @@ struct DebugData
   std::optional<geometry_msgs::msg::Polygon> candidate_collision_ego_lane_polygon{std::nullopt};
   std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
   autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
+  autoware_auto_perception_msgs::msg::PredictedObjects amber_ignore_targets;
   autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
   autoware_auto_perception_msgs::msg::PredictedObjects yield_stuck_targets;
   std::vector<geometry_msgs::msg::Polygon> occlusion_polygons;
@@ -77,6 +78,10 @@ public:
   {
     return is_prioritized_ ? attention_non_preceding_ : attention_;
   }
+  const std::vector<std::optional<lanelet::ConstLineString3d>> & attention_stop_lines() const
+  {
+    return is_prioritized_ ? attention_non_preceding_stop_lines_ : attention_stop_lines_;
+  }
   const lanelet::ConstLanelets & conflicting() const { return conflicting_; }
   const lanelet::ConstLanelets & adjacent() const { return adjacent_; }
   const lanelet::ConstLanelets & occlusion_attention() const
@@ -96,38 +101,48 @@ public:
   {
     return occlusion_attention_area_;
   }
+  const std::optional<lanelet::ConstLanelet> & first_conflicting_lane() const
+  {
+    return first_conflicting_lane_;
+  }
   const std::optional<lanelet::CompoundPolygon3d> & first_conflicting_area() const
   {
     return first_conflicting_area_;
+  }
+  const std::optional<lanelet::ConstLanelet> & first_attention_lane() const
+  {
+    return first_attention_lane_;
   }
   const std::optional<lanelet::CompoundPolygon3d> & first_attention_area() const
   {
     return first_attention_area_;
   }
 
-  lanelet::ConstLanelets attention_;
+  lanelet::ConstLanelets attention_;  // topologically merged lanelets
+  std::vector<std::optional<lanelet::ConstLineString3d>>
+    attention_stop_lines_;  // the stop lines for each attention_ lanelets
   lanelet::ConstLanelets attention_non_preceding_;
+  std::vector<std::optional<lanelet::ConstLineString3d>>
+    attention_non_preceding_stop_lines_;  // the stop lines for each attention_non_preceding_
+                                          // lanelets
   lanelet::ConstLanelets conflicting_;
   lanelet::ConstLanelets adjacent_;
-  lanelet::ConstLanelets occlusion_attention_;  // for occlusion detection
-  std::vector<lanelet::CompoundPolygon3d> attention_area_;
+  lanelet::ConstLanelets occlusion_attention_;    // topologically merged lanelets
+  std::vector<double> occlusion_attention_size_;  // the area() of each occlusion attention lanelets
+  std::vector<lanelet::CompoundPolygon3d> attention_area_;  // topologically merged lanelets
   std::vector<lanelet::CompoundPolygon3d> attention_non_preceding_area_;
   std::vector<lanelet::CompoundPolygon3d> conflicting_area_;
   std::vector<lanelet::CompoundPolygon3d> adjacent_area_;
-  std::vector<lanelet::CompoundPolygon3d> occlusion_attention_area_;
+  std::vector<lanelet::CompoundPolygon3d>
+    occlusion_attention_area_;  // topologically merged lanelets
   // the first area intersecting with the path
   // even if lane change/re-routing happened on the intersection, these areas area are supposed to
   // be invariant under the 'associative' lanes.
+  std::optional<lanelet::ConstLanelet> first_conflicting_lane_{std::nullopt};
+  std::optional<lanelet::CompoundPolygon3d> first_conflicting_area_{std::nullopt};
+  std::optional<lanelet::ConstLanelet> first_attention_lane_{std::nullopt};
+  std::optional<lanelet::CompoundPolygon3d> first_attention_area_{std::nullopt};
   bool is_prioritized_ = false;
-  std::optional<lanelet::CompoundPolygon3d> first_conflicting_area_ = std::nullopt;
-  std::optional<lanelet::CompoundPolygon3d> first_attention_area_ = std::nullopt;
-};
-
-struct DiscretizedLane
-{
-  int lane_id{0};
-  // discrete fine lines from left to right
-  std::vector<lanelet::ConstLineString2d> divisions{};
 };
 
 struct IntersectionStopLines
@@ -159,6 +174,24 @@ struct PathLanelets
   lanelet::ConstLanelets
     conflicting_interval_and_remaining;  // the left/right-most interval of path conflicting with
                                          // conflicting lanelets plus the next lane part of the path
+};
+
+struct TargetObject
+{
+  autoware_auto_perception_msgs::msg::PredictedObject object;
+  std::optional<lanelet::ConstLanelet> attention_lanelet{std::nullopt};
+  std::optional<lanelet::ConstLineString3d> stop_line{std::nullopt};
+  std::optional<double> dist_to_stop_line{std::nullopt};
+  void calc_dist_to_stop_line();
+};
+
+struct TargetObjects
+{
+  std_msgs::msg::Header header;
+  std::vector<TargetObject> attention_objects;
+  std::vector<TargetObject> parked_attention_objects;
+  std::vector<TargetObject> intersection_area_objects;
+  std::vector<TargetObject> all;  // TODO(Mamoru Sobue): avoid copy
 };
 
 enum class TrafficPrioritizedLevel {

@@ -109,8 +109,12 @@ public:
       {
         double distance_to_assigned_lanelet_start;
         double duration;
-        double range;
+        double object_dist_to_stopline;
       } yield_on_green_traffic_light;
+      struct IgnoreOnAmberTrafficLight
+      {
+        double object_expected_deceleration;
+      } ignore_on_amber_traffic_light;
     } collision_detection;
     struct Occlusion
     {
@@ -266,7 +270,8 @@ private:
 
   // for occlusion detection
   const bool enable_occlusion_detection_;
-  std::optional<std::vector<util::DiscretizedLane>> occlusion_attention_divisions_{std::nullopt};
+  std::optional<std::vector<lanelet::ConstLineString3d>> occlusion_attention_divisions_{
+    std::nullopt};
   StateMachine collision_state_machine_;     //! for stable collision checking
   StateMachine before_creep_state_machine_;  //! for two phase stop
   StateMachine occlusion_stop_state_machine_;
@@ -302,17 +307,15 @@ private:
     const util::PathLanelets & path_lanelets,
     const std::optional<lanelet::CompoundPolygon3d> & first_attention_area);
 
-  autoware_auto_perception_msgs::msg::PredictedObjects filterTargetObjects(
-    const lanelet::ConstLanelets & attention_area_lanelets,
-    const lanelet::ConstLanelets & adjacent_lanelets,
+  util::TargetObjects generateTargetObjects(
+    const util::IntersectionLanelets & intersection_lanelets,
     const std::optional<Polygon2d> & intersection_area) const;
 
   bool checkCollision(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-    const autoware_auto_perception_msgs::msg::PredictedObjects & target_objects,
-    const util::PathLanelets & path_lanelets, const size_t closest_idx,
-    const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
-    const util::TrafficPrioritizedLevel & traffic_prioritized_level);
+    util::TargetObjects * target_objects, const util::PathLanelets & path_lanelets,
+    const size_t closest_idx, const size_t last_intersection_stop_line_candidate_idx,
+    const double time_delay, const util::TrafficPrioritizedLevel & traffic_prioritized_level);
 
   bool isOcclusionCleared(
     const nav_msgs::msg::OccupancyGrid & occ_grid,
@@ -320,9 +323,8 @@ private:
     const lanelet::ConstLanelets & adjacent_lanelets,
     const lanelet::CompoundPolygon3d & first_attention_area,
     const util::InterpolatedPathInfo & interpolated_path_info,
-    const std::vector<util::DiscretizedLane> & lane_divisions,
-    const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> &
-      parked_attention_objects,
+    const std::vector<lanelet::ConstLineString3d> & lane_divisions,
+    const std::vector<util::TargetObject> & blocking_attention_objects,
     const double occlusion_dist_thr);
 
   /*

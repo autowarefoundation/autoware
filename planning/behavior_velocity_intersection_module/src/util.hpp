@@ -107,7 +107,7 @@ bool hasAssociatedTrafficLight(lanelet::ConstLanelet lane);
 TrafficPrioritizedLevel getTrafficPrioritizedLevel(
   lanelet::ConstLanelet lane, const std::map<int, TrafficSignalStamped> & tl_infos);
 
-std::vector<DiscretizedLane> generateDetectionLaneDivisions(
+std::vector<lanelet::ConstLineString3d> generateDetectionLaneDivisions(
   lanelet::ConstLanelets detection_lanelets,
   const lanelet::routing::RoutingGraphPtr routing_graph_ptr, const double resolution,
   const double curvature_threshold, const double curvature_calculation_ds);
@@ -134,15 +134,14 @@ bool checkYieldStuckVehicleInIntersection(
 Polygon2d generateStuckVehicleDetectAreaPolygon(
   const util::PathLanelets & path_lanelets, const double stuck_vehicle_detect_dist);
 
-bool checkAngleForTargetLanelets(
-  const geometry_msgs::msg::Pose & pose, const double longitudinal_velocity,
-  const lanelet::ConstLanelets & target_lanelets, const double detection_area_angle_thr,
-  const bool consider_wrong_direction_vehicle, const double dist_margin,
-  const double parked_vehicle_speed_threshold);
+std::optional<size_t> checkAngleForTargetLanelets(
+  const geometry_msgs::msg::Pose & pose, const lanelet::ConstLanelets & target_lanelets,
+  const double detection_area_angle_thr, const bool consider_wrong_direction_vehicle,
+  const double dist_margin, const bool is_parked_vehicle);
 
 void cutPredictPathWithDuration(
-  autoware_auto_perception_msgs::msg::PredictedObjects * objects_ptr,
-  const rclcpp::Clock::SharedPtr clock, const double time_thr);
+  util::TargetObjects * target_objects, const rclcpp::Clock::SharedPtr clock,
+  const double time_thr);
 
 TimeDistanceArray calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,

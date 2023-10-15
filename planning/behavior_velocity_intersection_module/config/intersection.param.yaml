@@ -48,9 +48,11 @@
         use_upstream_velocity: true # flag to use the planned velocity profile from the upstream module
         minimum_upstream_velocity: 0.01 # [m/s] minimum velocity to avoid null division for the stop line from the upstream velocity
         yield_on_green_traffic_light:
-          distance_to_assigned_lanelet_start: 10.0
-          duration: 3.0
-          range: 50.0 # [m]
+          distance_to_assigned_lanelet_start: 5.0
+          duration: 2.0
+          object_dist_to_stopline: 10.0 # [m]
+        ignore_on_amber_traffic_light:
+          object_expected_deceleration: 2.0 # [m/ss]
 
       occlusion:
         enable: false

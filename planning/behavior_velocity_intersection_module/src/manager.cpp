@@ -129,8 +129,12 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
       ns + ".collision_detection.yield_on_green_traffic_light.distance_to_assigned_lanelet_start");
   ip.collision_detection.yield_on_green_traffic_light.duration = getOrDeclareParameter<double>(
     node, ns + ".collision_detection.yield_on_green_traffic_light.duration");
-  ip.collision_detection.yield_on_green_traffic_light.range = getOrDeclareParameter<double>(
-    node, ns + ".collision_detection.yield_on_green_traffic_light.range");
+  ip.collision_detection.yield_on_green_traffic_light.object_dist_to_stopline =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.yield_on_green_traffic_light.object_dist_to_stopline");
+  ip.collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration =
+    getOrDeclareParameter<double>(
+      node, ns + ".collision_detection.ignore_on_amber_traffic_light.object_expected_deceleration");
 
   ip.occlusion.enable = getOrDeclareParameter<bool>(node, ns + ".occlusion.enable");
   ip.occlusion.occlusion_attention_area_length =
