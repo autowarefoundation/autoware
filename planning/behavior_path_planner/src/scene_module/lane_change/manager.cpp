@@ -128,6 +128,21 @@ LaneChangeModuleManager::LaneChangeModuleManager(
   p.rss_params_for_abort.lateral_distance_max_threshold = getOrDeclareParameter<double>(
     *node, parameter("safety_check.cancel.lateral_distance_max_threshold"));
 
+  p.rss_params_for_stuck.longitudinal_distance_min_threshold = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.longitudinal_distance_min_threshold"));
+  p.rss_params_for_stuck.longitudinal_velocity_delta_time = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.longitudinal_velocity_delta_time"));
+  p.rss_params_for_stuck.front_vehicle_deceleration = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.expected_front_deceleration"));
+  p.rss_params_for_stuck.rear_vehicle_deceleration = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.expected_rear_deceleration"));
+  p.rss_params_for_stuck.rear_vehicle_reaction_time = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.rear_vehicle_reaction_time"));
+  p.rss_params_for_stuck.rear_vehicle_safety_time_margin = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.rear_vehicle_safety_time_margin"));
+  p.rss_params_for_stuck.lateral_distance_max_threshold = getOrDeclareParameter<double>(
+    *node, parameter("safety_check.stuck.lateral_distance_max_threshold"));
+
   // target object
   {
     std::string ns = "lane_change.target_object.";

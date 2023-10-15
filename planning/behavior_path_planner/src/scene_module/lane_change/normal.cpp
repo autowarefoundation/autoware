@@ -83,8 +83,17 @@ std::pair<bool, bool> NormalLaneChange::getSafePath(LaneChangePath & safe_path) 
 
   // find candidate paths
   LaneChangePaths valid_paths{};
-  const auto found_safe_path =
-    getLaneChangePaths(current_lanes, target_lanes, direction_, &valid_paths);
+  const bool is_stuck = isVehicleStuckByObstacle(current_lanes);
+  bool found_safe_path = getLaneChangePaths(
+    current_lanes, target_lanes, direction_, &valid_paths, lane_change_parameters_->rss_params,
+    is_stuck);
+  // if no safe path is found and ego is stuck, try to find a path with a small margin
+  if (!found_safe_path && is_stuck) {
+    found_safe_path = getLaneChangePaths(
+      current_lanes, target_lanes, direction_, &valid_paths,
+      lane_change_parameters_->rss_params_for_stuck, is_stuck);
+  }
+
   debug_valid_path_ = valid_paths;
 
   if (valid_paths.empty()) {
@@ -1006,7 +1015,9 @@ bool NormalLaneChange::hasEnoughLengthToIntersection(
 
 bool NormalLaneChange::getLaneChangePaths(
   const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
-  Direction direction, LaneChangePaths * candidate_paths, const bool check_safety) const
+  Direction direction, LaneChangePaths * candidate_paths,
+  const utils::path_safety_checker::RSSparams rss_params, const bool is_stuck,
+  const bool check_safety) const
 {
   object_debug_.clear();
   if (current_lanes.empty() || target_lanes.empty()) {
@@ -1237,9 +1248,11 @@ bool NormalLaneChange::getLaneChangePaths(
         }
 
         candidate_paths->push_back(*candidate_path);
-        if (utils::lane_change::passParkedObject(
-              route_handler, *candidate_path, target_objects.target_lane, lane_change_buffer,
-              is_goal_in_route, *lane_change_parameters_, object_debug_)) {
+        if (
+          !is_stuck &&
+          utils::lane_change::passParkedObject(
+            route_handler, *candidate_path, target_objects.target_lane, lane_change_buffer,
+            is_goal_in_route, *lane_change_parameters_, object_debug_)) {
           return false;
         }
 
@@ -1248,7 +1261,7 @@ bool NormalLaneChange::getLaneChangePaths(
         }
 
         const auto [is_safe, is_object_coming_from_rear] = isLaneChangePathSafe(
-          *candidate_path, target_objects, lane_change_parameters_->rss_params, object_debug_);
+          *candidate_path, target_objects, rss_params, is_stuck, object_debug_);
 
         if (is_safe) {
           return true;
@@ -1270,8 +1283,9 @@ PathSafetyStatus NormalLaneChange::isApprovedPathSafe() const
   debug_filtered_objects_ = target_objects;
 
   CollisionCheckDebugMap debug_data;
+  const bool is_stuck = isVehicleStuckByObstacle(current_lanes);
   const auto safety_status = isLaneChangePathSafe(
-    path, target_objects, lane_change_parameters_->rss_params_for_abort, debug_data);
+    path, target_objects, lane_change_parameters_->rss_params_for_abort, is_stuck, debug_data);
   {
     // only for debug purpose
     object_debug_.clear();
@@ -1528,7 +1542,7 @@ bool NormalLaneChange::getAbortPath()
 
 PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
   const LaneChangePath & lane_change_path, const LaneChangeTargetObjects & target_objects,
-  const utils::path_safety_checker::RSSparams & rss_params,
+  const utils::path_safety_checker::RSSparams & rss_params, const bool is_stuck,
   CollisionCheckDebugMap & debug_data) const
 {
   PathSafetyStatus path_safety_status;
@@ -1552,7 +1566,6 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
 
   auto collision_check_objects = target_objects.target_lane;
   const auto current_lanes = getCurrentLanes();
-  const auto is_stuck = isVehicleStuckByObstacle(current_lanes);
 
   if (lane_change_parameters_->check_objects_on_current_lanes || is_stuck) {
     collision_check_objects.insert(
