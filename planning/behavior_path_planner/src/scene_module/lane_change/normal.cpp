@@ -655,7 +655,7 @@ std::vector<double> NormalLaneChange::sampleLongitudinalAccValues(
   }
 
   // If the ego is in stuck, sampling all possible accelerations to find avoiding path.
-  if (isVehicleStuckByObstacle(current_lanes, max_lane_change_length)) {
+  if (isVehicleStuckByObstacle(current_lanes)) {
     auto clock = rclcpp::Clock(RCL_ROS_TIME);
     RCLCPP_INFO_THROTTLE(
       logger_, clock, 1000, "Vehicle is stuck. sample all longitudinal acceleration.");
@@ -1668,7 +1668,21 @@ bool NormalLaneChange::isVehicleStuckByObstacle(const lanelet::ConstLanelets & c
 
   const auto [min_acc, max_acc] = calcCurrentMinMaxAcceleration();
   const auto max_lane_change_length = calcMaximumLaneChangeLength(current_lanes.back(), max_acc);
-  return isVehicleStuckByObstacle(current_lanes, max_lane_change_length);
+  const auto rss_dist = calcRssDistance(
+    0.0, planner_data_->parameters.minimum_lane_changing_velocity,
+    lane_change_parameters_->rss_params);
+
+  // It is difficult to define the detection range. If it is too short, the stuck will not be
+  // determined, even though you are stuck by an obstacle. If it is too long,
+  // the ego will be judged to be stuck by a distant vehicle, even though the ego is only
+  // stopped at a traffic light. Essentially, the calculation should be based on the information of
+  // the stop reason, but this is outside the scope of one module. I keep it as a TODO.
+  constexpr double DETECTION_DISTANCE_MARGIN = 10.0;
+  const auto detection_distance = max_lane_change_length + rss_dist +
+                                  getCommonParam().base_link2front + DETECTION_DISTANCE_MARGIN;
+  RCLCPP_INFO(logger_, "max_lane_change_length: %f, max_acc: %f", max_lane_change_length, max_acc);
+
+  return isVehicleStuckByObstacle(current_lanes, detection_distance);
 }
 
 void NormalLaneChange::setStopPose(const Pose & stop_pose)
