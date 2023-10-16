@@ -835,7 +835,8 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
     // calc distance from the current ego position
     double max_dist_ego_to_obj = std::numeric_limits<double>::lowest();
     double min_dist_ego_to_obj = std::numeric_limits<double>::max();
-    for (const auto & polygon_p : obj_polygon.outer()) {
+    const auto obj_polygon_outer = obj_polygon.outer();
+    for (const auto & polygon_p : obj_polygon_outer) {
       const auto obj_p = tier4_autoware_utils::createPoint(polygon_p.x(), polygon_p.y(), 0.0);
       const double dist_ego_to_obj = calcSignedArcLength(path.points, current_pose.position, obj_p);
       max_dist_ego_to_obj = std::max(dist_ego_to_obj, max_dist_ego_to_obj);
