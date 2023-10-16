@@ -732,7 +732,9 @@ LaneChangeTargetObjects NormalLaneChange::getTargetObjects(
   const auto current_pose = getEgoPose();
   const auto & route_handler = *getRouteHandler();
   const auto & common_parameters = planner_data_->parameters;
-  const auto & objects = *planner_data_->dynamic_object;
+  auto objects = *planner_data_->dynamic_object;
+  utils::path_safety_checker::filterObjectsByClass(
+    objects, lane_change_parameters_->object_types_to_check);
 
   // get backward lanes
   const auto backward_length = lane_change_parameters_->backward_lane_length;
@@ -740,7 +742,8 @@ LaneChangeTargetObjects NormalLaneChange::getTargetObjects(
     route_handler, target_lanes, current_pose, backward_length);
 
   // filter objects to get target object index
-  const auto target_obj_index = filterObject(current_lanes, target_lanes, target_backward_lanes);
+  const auto target_obj_index =
+    filterObject(objects, current_lanes, target_lanes, target_backward_lanes);
 
   LaneChangeTargetObjects target_objects;
   target_objects.current_lane.reserve(target_obj_index.current_lane.size());
@@ -772,13 +775,13 @@ LaneChangeTargetObjects NormalLaneChange::getTargetObjects(
 }
 
 LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
-  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
+  const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
+  const lanelet::ConstLanelets & target_lanes,
   const lanelet::ConstLanelets & target_backward_lanes) const
 {
   const auto current_pose = getEgoPose();
   const auto & route_handler = *getRouteHandler();
   const auto & common_parameters = planner_data_->parameters;
-  const auto & objects = *planner_data_->dynamic_object;
 
   // Guard
   if (objects.objects.empty()) {
@@ -818,15 +821,10 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
     target_backward_polygons.push_back(lane_polygon);
   }
 
-  auto filtered_objects = objects;
-
-  utils::path_safety_checker::filterObjectsByClass(
-    filtered_objects, lane_change_parameters_->object_types_to_check);
-
   LaneChangeTargetObjectIndices filtered_obj_indices;
-  for (size_t i = 0; i < filtered_objects.objects.size(); ++i) {
-    const auto & object = filtered_objects.objects.at(i);
-    const auto & obj_velocity_norm = std::hypot(
+  for (size_t i = 0; i < objects.objects.size(); ++i) {
+    const auto & object = objects.objects.at(i);
+    const auto obj_velocity_norm = std::hypot(
       object.kinematics.initial_twist_with_covariance.twist.linear.x,
       object.kinematics.initial_twist_with_covariance.twist.linear.y);
     const auto extended_object =

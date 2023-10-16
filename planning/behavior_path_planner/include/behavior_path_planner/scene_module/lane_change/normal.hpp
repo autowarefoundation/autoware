@@ -151,7 +151,8 @@ protected:
     CollisionCheckDebugMap & debug_data) const;
 
   LaneChangeTargetObjectIndices filterObject(
-    const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
+    const PredictedObjects & objects, const lanelet::ConstLanelets & current_lanes,
+    const lanelet::ConstLanelets & target_lanes,
     const lanelet::ConstLanelets & target_backward_lanes) const;
 
   //! @brief Check if the ego vehicle is in stuck by a stationary obstacle.
