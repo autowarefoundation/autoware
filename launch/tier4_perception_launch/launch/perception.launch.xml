@@ -96,6 +96,13 @@
   <arg name="fusion_distance" default="100.0"/>
   <arg name="trust_object_distance" default="100.0"/>
 
+  <!-- Radar long range integration methods -->
+  <arg
+    name="use_radar_tracking_fusion"
+    default="false"
+    description="if use_radar_tracking_fusion:=true, radar information is merged in tracking launch. Otherwise, radar information is merged in detection launch."
+  />
+
   <!-- Perception module -->
   <group>
     <push-ros-namespace namespace="perception"/>
@@ -181,6 +188,14 @@
         <push-ros-namespace namespace="tracking"/>
         <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
           <arg name="mode" value="$(var mode)"/>
+          <arg
+            name="object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path"
+            value="$(var object_recognition_tracking_radar_object_tracker_data_association_matrix_param_path)"
+          />
+          <arg name="object_recognition_tracking_radar_object_tracker_tracking_setting_param_path" value="$(var object_recognition_tracking_radar_object_tracker_tracking_setting_param_path)"/>
+          <arg name="object_recognition_tracking_radar_object_tracker_node_param_path" value="$(var object_recognition_tracking_radar_object_tracker_node_param_path)"/>
+          <arg name="object_recognition_tracking_object_merger_data_association_matrix_param_path" value="$(var object_recognition_tracking_object_merger_data_association_matrix_param_path)"/>
+          <arg name="object_recognition_tracking_object_merger_node_param_path" value="$(var object_recognition_tracking_object_merger_node_param_path)"/>
         </include>
       </group>
 

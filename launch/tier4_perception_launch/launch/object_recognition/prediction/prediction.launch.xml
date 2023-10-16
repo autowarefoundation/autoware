@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="use_vector_map" default="false" description="use vector map in prediction"/>
-  <arg name="param_path" default="$(find-pkg-share map_based_prediction)/config/map_based_prediction.param.yaml"/>
+  <arg name="input/objects" default="/perception/object_recognition/tracking/objects"/>
 
   <group if="$(var use_vector_map)">
     <set_remap from="objects" to="/perception/object_recognition/objects"/>
     <include file="$(find-pkg-share map_based_prediction)/launch/map_based_prediction.launch.xml">
       <arg name="output_topic" value="/perception/object_recognition/objects"/>
+      <arg name="input_topic" value="$(var input/objects)"/>
       <arg name="param_path" value="$(var object_recognition_prediction_map_based_prediction_param_path)"/>
     </include>
   </group>
