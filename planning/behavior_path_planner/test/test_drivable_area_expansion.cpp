@@ -14,7 +14,6 @@
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/drivable_area_expansion.hpp"
-#include "behavior_path_planner/utils/drivable_area_expansion/expansion.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/path_projection.hpp"
 #include "behavior_path_planner/utils/drivable_area_expansion/types.hpp"
 #include "lanelet2_extension/utility/message_conversion.hpp"
@@ -22,9 +21,9 @@
 #include <gtest/gtest.h>
 #include <lanelet2_core/LaneletMap.h>
 
-using drivable_area_expansion::linestring_t;
-using drivable_area_expansion::point_t;
-using drivable_area_expansion::segment_t;
+using drivable_area_expansion::LineString2d;
+using drivable_area_expansion::Point2d;
+using drivable_area_expansion::Segment2d;
 constexpr auto eps = 1e-9;
 
 TEST(DrivableAreaExpansionProjection, PointToSegment)
@@ -32,56 +31,56 @@ TEST(DrivableAreaExpansionProjection, PointToSegment)
   using drivable_area_expansion::point_to_segment_projection;
 
   {
-    point_t query(1.0, 1.0);
-    segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
+    Point2d query(1.0, 1.0);
+    Segment2d segment(Point2d(0.0, 0.0), Point2d(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, 1.0, eps);
     EXPECT_NEAR(projection.point.x(), 1.0, eps);
     EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
-    point_t query(-1.0, 1.0);
-    segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
+    Point2d query(-1.0, 1.0);
+    Segment2d segment(Point2d(0.0, 0.0), Point2d(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, std::sqrt(2), eps);
     EXPECT_NEAR(projection.point.x(), 0.0, eps);
     EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
-    point_t query(11.0, 1.0);
-    segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
+    Point2d query(11.0, 1.0);
+    Segment2d segment(Point2d(0.0, 0.0), Point2d(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, std::sqrt(2), eps);
     EXPECT_NEAR(projection.point.x(), 10.0, eps);
     EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
-    point_t query(5.0, -5.0);
-    segment_t segment(point_t(0.0, 0.0), point_t(10.0, 0.0));
+    Point2d query(5.0, -5.0);
+    Segment2d segment(Point2d(0.0, 0.0), Point2d(10.0, 0.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, -5.0, eps);
     EXPECT_NEAR(projection.point.x(), 5.0, eps);
     EXPECT_NEAR(projection.point.y(), 0.0, eps);
   }
   {
-    point_t query(5.0, -5.0);
-    segment_t segment(point_t(0.0, 0.0), point_t(0.0, -10.0));
+    Point2d query(5.0, -5.0);
+    Segment2d segment(Point2d(0.0, 0.0), Point2d(0.0, -10.0));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, 5.0, eps);
     EXPECT_NEAR(projection.point.x(), 0.0, eps);
     EXPECT_NEAR(projection.point.y(), -5.0, eps);
   }
   {
-    point_t query(5.0, 5.0);
-    segment_t segment(point_t(2.5, 7.5), point_t(7.5, 2.5));
+    Point2d query(5.0, 5.0);
+    Segment2d segment(Point2d(2.5, 7.5), Point2d(7.5, 2.5));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, 0.0, eps);
     EXPECT_NEAR(projection.point.x(), 5.0, eps);
     EXPECT_NEAR(projection.point.y(), 5.0, eps);
   }
   {
-    point_t query(0.0, 0.0);
-    segment_t segment(point_t(2.5, 7.5), point_t(7.5, 2.5));
+    Point2d query(0.0, 0.0);
+    Segment2d segment(Point2d(2.5, 7.5), Point2d(7.5, 2.5));
     const auto projection = point_to_segment_projection(query, segment.first, segment.second);
     EXPECT_NEAR(projection.distance, -std::sqrt(50), eps);
     EXPECT_NEAR(projection.point.x(), 5.0, eps);
@@ -93,11 +92,11 @@ TEST(DrivableAreaExpansionProjection, PointToLinestring)
 {
   using drivable_area_expansion::point_to_linestring_projection;
 
-  linestring_t ls = {
-    point_t(0.0, 0.0), point_t(10.0, 0.0), point_t(10.0, 10.0), point_t(0.0, 10.0),
-    point_t(5.0, 5.0)};
+  LineString2d ls = {
+    Point2d(0.0, 0.0), Point2d(10.0, 0.0), Point2d(10.0, 10.0), Point2d(0.0, 10.0),
+    Point2d(5.0, 5.0)};
   {
-    point_t query(0.0, 0.0);
+    Point2d query(0.0, 0.0);
     const auto projection = point_to_linestring_projection(query, ls);
     EXPECT_NEAR(projection.arc_length, 0.0, eps);
     EXPECT_NEAR(projection.distance, 0.0, eps);
@@ -105,7 +104,7 @@ TEST(DrivableAreaExpansionProjection, PointToLinestring)
     EXPECT_NEAR(projection.projected_point.y(), 0.0, eps);
   }
   {
-    point_t query(2.0, 1.0);
+    Point2d query(2.0, 1.0);
     const auto projection = point_to_linestring_projection(query, ls);
     EXPECT_NEAR(projection.arc_length, 2.0, eps);
     EXPECT_NEAR(projection.distance, 1.0, eps);
@@ -113,7 +112,7 @@ TEST(DrivableAreaExpansionProjection, PointToLinestring)
     EXPECT_NEAR(projection.projected_point.y(), 0.0, eps);
   }
   {
-    point_t query(0.0, 5.0);
+    Point2d query(0.0, 5.0);
     const auto projection = point_to_linestring_projection(query, ls);
     EXPECT_NEAR(projection.arc_length, 30.0 + std::sqrt(2.5 * 2.5 * 2), eps);
     EXPECT_NEAR(projection.distance, -std::sqrt(2.5 * 2.5 * 2), eps);
@@ -126,9 +125,9 @@ TEST(DrivableAreaExpansionProjection, LinestringToPoint)
 {
   using drivable_area_expansion::linestring_to_point_projection;
 
-  linestring_t ls = {
-    point_t(0.0, 0.0), point_t(10.0, 0.0), point_t(10.0, 10.0), point_t(0.0, 10.0),
-    point_t(5.0, 5.0)};
+  LineString2d ls = {
+    Point2d(0.0, 0.0), Point2d(10.0, 0.0), Point2d(10.0, 10.0), Point2d(0.0, 10.0),
+    Point2d(5.0, 5.0)};
   for (auto arc_length = 0.0; arc_length <= 10.0; arc_length += 1.0) {
     const auto projection = linestring_to_point_projection(ls, arc_length, 0.0);
     EXPECT_NEAR(projection.first.x(), arc_length, eps);
@@ -152,58 +151,18 @@ TEST(DrivableAreaExpansionProjection, LinestringToPoint)
   }
 }
 
-TEST(DrivableAreaExpansionProjection, SubLinestring)
-{
-  using drivable_area_expansion::sub_linestring;
-
-  const linestring_t ls = {
-    point_t{0.0, 0.0}, point_t{1.0, 0.0}, point_t{2.0, 0.0}, point_t{3.0, 0.0},
-    point_t{4.0, 0.0}, point_t{5.0, 0.0}, point_t{6.0, 0.0},
-  };
-  {
-    // arc lengths equal to the original range: same linestring is returned
-    const auto sub = sub_linestring(ls, 0.0, 6.0);
-    ASSERT_EQ(ls.size(), sub.size());
-    for (auto i = 0lu; i < ls.size(); ++i) EXPECT_TRUE(boost::geometry::equals(ls[i], sub[i]));
-  }
-  {
-    // arc lengths equal to existing point: sub-linestring with same points
-    const auto sub = sub_linestring(ls, 1.0, 5.0);
-    ASSERT_EQ(ls.size() - 2lu, sub.size());
-    for (auto i = 0lu; i < sub.size(); ++i) EXPECT_TRUE(boost::geometry::equals(ls[i + 1], sub[i]));
-  }
-  {
-    // arc lengths inside the original: sub-linestring with some interpolated points
-    const auto sub = sub_linestring(ls, 1.5, 2.5);
-    ASSERT_EQ(sub.size(), 3lu);
-    EXPECT_NEAR(sub[0].x(), 1.5, eps);
-    EXPECT_NEAR(sub[1].x(), 2.0, eps);
-    EXPECT_NEAR(sub[2].x(), 2.5, eps);
-    for (const auto & p : sub) EXPECT_NEAR(p.y(), 0.0, eps);
-  }
-  {
-    // arc length outside of the original range: first & last point are replaced by interpolations
-    const auto sub = sub_linestring(ls, -0.5, 8.5);
-    ASSERT_EQ(sub.size(), ls.size());
-    EXPECT_NEAR(sub.front().x(), -0.5, eps);
-    for (auto i = 1lu; i + 1 < ls.size(); ++i) EXPECT_TRUE(boost::geometry::equals(ls[i], sub[i]));
-    EXPECT_NEAR(sub.back().x(), 8.5, eps);
-    for (const auto & p : sub) EXPECT_NEAR(p.y(), 0.0, eps);
-  }
-}
-
 TEST(DrivableAreaExpansionProjection, InverseProjection)
 {
   using drivable_area_expansion::linestring_to_point_projection;
   using drivable_area_expansion::point_to_linestring_projection;
 
-  linestring_t ls = {
-    point_t(0.0, 0.0), point_t(10.0, 0.0), point_t(10.0, 10.0), point_t(0.0, 10.0),
-    point_t(5.0, 5.0)};
+  LineString2d ls = {
+    Point2d(0.0, 0.0), Point2d(10.0, 0.0), Point2d(10.0, 10.0), Point2d(0.0, 10.0),
+    Point2d(5.0, 5.0)};
 
   for (auto x = 0.0; x < 10.0; x += 0.1) {
     for (auto y = 0.0; x < 10.0; x += 0.1) {
-      point_t p(x, y);
+      Point2d p(x, y);
       const auto projection = point_to_linestring_projection(p, ls);
       const auto inverse =
         linestring_to_point_projection(ls, projection.arc_length, projection.distance);
@@ -213,7 +172,7 @@ TEST(DrivableAreaExpansionProjection, InverseProjection)
   }
 }
 
-TEST(DrivableAreaExpansionProjection, expandDrivableArea)
+TEST(DrivableAreaExpansionProjection, expand_drivable_area)
 {
   drivable_area_expansion::DrivableAreaExpansionParameters params;
   drivable_area_expansion::PredictedObjects dynamic_objects;
@@ -256,121 +215,59 @@ TEST(DrivableAreaExpansionProjection, expandDrivableArea)
     params.avoid_dynamic_objects = false;
     params.avoid_linestring_dist = 0.0;
     params.avoid_linestring_types = {};
-    params.compensate_extra_dist = false;
     params.max_expansion_distance = 0.0;  // means no limit
     params.max_path_arc_length = 0.0;     // means no limit
     params.resample_interval = 1.0;
-    params.extra_arc_length = 1.0;
-    params.expansion_method = "polygon";
     // 2m x 4m ego footprint
-    params.ego_front_offset = 1.0;
-    params.ego_rear_offset = -1.0;
-    params.ego_left_offset = 2.0;
-    params.ego_right_offset = -2.0;
+    params.vehicle_info.front_overhang_m = 0.0;
+    params.vehicle_info.wheel_base_m = 2.0;
+    params.vehicle_info.vehicle_width_m = 2.0;
   }
   behavior_path_planner::PlannerData planner_data;
   planner_data.drivable_area_expansion_parameters = params;
   planner_data.dynamic_object =
     std::make_shared<drivable_area_expansion::PredictedObjects>(dynamic_objects);
+  planner_data.self_odometry = std::make_shared<nav_msgs::msg::Odometry>();
   planner_data.route_handler = std::make_shared<route_handler::RouteHandler>(route_handler);
-  // we expect the drivable area to be expanded by 1m on each side
-  drivable_area_expansion::expandDrivableArea(
-    path, std::make_shared<behavior_path_planner::PlannerData>(planner_data), path_lanes);
+  drivable_area_expansion::expand_drivable_area(
+    path, std::make_shared<behavior_path_planner::PlannerData>(planner_data));
   // unchanged path points
   ASSERT_EQ(path.points.size(), 3ul);
   for (auto i = 0.0; i < path.points.size(); ++i) {
     EXPECT_NEAR(path.points[i].point.pose.position.x, i, eps);
     EXPECT_NEAR(path.points[i].point.pose.position.y, 0.0, eps);
   }
-
+  // straight path: no expansion
   // expanded left bound
-  ASSERT_EQ(path.left_bound.size(), 4ul);
+  ASSERT_EQ(path.left_bound.size(), 3ul);
   EXPECT_NEAR(path.left_bound[0].x, 0.0, eps);
   EXPECT_NEAR(path.left_bound[0].y, 1.0, eps);
-  EXPECT_NEAR(path.left_bound[1].x, 0.0, eps);
-  EXPECT_NEAR(path.left_bound[1].y, 2.0, eps);
+  EXPECT_NEAR(path.left_bound[1].x, 1.0, eps);
+  EXPECT_NEAR(path.left_bound[1].y, 1.0, eps);
   EXPECT_NEAR(path.left_bound[2].x, 2.0, eps);
-  EXPECT_NEAR(path.left_bound[2].y, 2.0, eps);
-  EXPECT_NEAR(path.left_bound[3].x, 2.0, eps);
-  EXPECT_NEAR(path.left_bound[3].y, 1.0, eps);
+  EXPECT_NEAR(path.left_bound[2].y, 1.0, eps);
   // expanded right bound
   ASSERT_EQ(path.right_bound.size(), 3ul);
   EXPECT_NEAR(path.right_bound[0].x, 0.0, eps);
-  EXPECT_NEAR(path.right_bound[0].y, -2.0, eps);
-  EXPECT_NEAR(path.right_bound[1].x, 2.0, eps);
-  EXPECT_NEAR(path.right_bound[1].y, -2.0, eps);
+  EXPECT_NEAR(path.right_bound[0].y, -1.0, eps);
+  EXPECT_NEAR(path.right_bound[1].x, 1.0, eps);
+  EXPECT_NEAR(path.right_bound[1].y, -1.0, eps);
   EXPECT_NEAR(path.right_bound[2].x, 2.0, eps);
   EXPECT_NEAR(path.right_bound[2].y, -1.0, eps);
-}
 
-TEST(DrivableAreaExpansion, calculateDistanceLimit)
-{
-  using drivable_area_expansion::calculateDistanceLimit;
-  using drivable_area_expansion::linestring_t;
-  using drivable_area_expansion::multi_linestring_t;
-  using drivable_area_expansion::polygon_t;
+  // add some curvature
+  path.points[1].point.pose.position.y = 0.5;
 
-  {
-    const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
-    const multi_linestring_t uncrossable_lines = {};
-    const polygon_t expansion_polygon = {
-      {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {0.0, -4.0}}, {}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, uncrossable_lines);
-    EXPECT_NEAR(limit_distance, std::numeric_limits<double>::max(), 1e-9);
-  }
-  {
-    const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
-    const linestring_t uncrossable_line = {{0.0, 2.0}, {10.0, 2.0}};
-    const polygon_t expansion_polygon = {
-      {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {0.0, -4.0}}, {}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, {uncrossable_line});
-    EXPECT_NEAR(limit_distance, 2.0, 1e-9);
-  }
-  {
-    const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
-    const multi_linestring_t uncrossable_lines = {
-      {{0.0, 2.0}, {10.0, 2.0}}, {{0.0, 1.5}, {10.0, 1.0}}};
-    const polygon_t expansion_polygon = {
-      {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {0.0, -4.0}}, {}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, uncrossable_lines);
-    EXPECT_NEAR(limit_distance, 1.0, 1e-9);
-  }
-}
-
-TEST(DrivableAreaExpansion, calculateDistanceLimitEdgeCases)
-{
-  using drivable_area_expansion::calculateDistanceLimit;
-  using drivable_area_expansion::linestring_t;
-  using drivable_area_expansion::polygon_t;
-
-  const linestring_t base_ls = {{0.0, 0.0}, {10.0, 0.0}};
-  const polygon_t expansion_polygon = {
-    {{0.0, -4.0}, {0.0, 4.0}, {10.0, 4.0}, {10.0, -4.0}, {0.0, -4.0}}, {}};
-  {  // intersection points further than the line point inside the expansion polygon
-    const linestring_t uncrossable_lines = {{4.0, 5.0}, {6.0, 3.0}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, {uncrossable_lines});
-    EXPECT_NEAR(limit_distance, 3.0, 1e-9);
-  }
-  {  // intersection points further than the line point inside the expansion polygon
-    const linestring_t uncrossable_lines = {{4.0, 5.0}, {5.0, 2.0}, {6.0, 4.5}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, {uncrossable_lines});
-    EXPECT_NEAR(limit_distance, 2.0, 1e-9);
-  }
-  {  // line completely inside the expansion polygon
-    const linestring_t uncrossable_lines = {{4.0, 2.0}, {6.0, 3.0}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, {uncrossable_lines});
-    EXPECT_NEAR(limit_distance, 2.0, 1e-9);
-  }
-  {  // line completely inside the expansion polygon
-    const linestring_t uncrossable_lines = {{4.0, 3.5}, {6.0, 3.0}};
-    const auto limit_distance =
-      calculateDistanceLimit(base_ls, expansion_polygon, {uncrossable_lines});
-    EXPECT_NEAR(limit_distance, 3.0, 1e-9);
-  }
+  drivable_area_expansion::expand_drivable_area(
+    path, std::make_shared<behavior_path_planner::PlannerData>(planner_data));
+  // expanded left bound
+  ASSERT_EQ(path.left_bound.size(), 3ul);
+  EXPECT_GT(path.left_bound[0].y, 1.0);
+  EXPECT_GT(path.left_bound[1].y, 1.0);
+  EXPECT_GT(path.left_bound[2].y, 1.0);
+  // expanded right bound
+  ASSERT_EQ(path.right_bound.size(), 3ul);
+  EXPECT_LT(path.right_bound[0].y, -1.0);
+  EXPECT_LT(path.right_bound[1].y, -1.0);
+  EXPECT_LT(path.right_bound[2].y, -1.0);
 }

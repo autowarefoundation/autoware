@@ -43,27 +43,20 @@ namespace drivable_area_expansion
 /// @param[in] x translation distance on the x axis
 /// @param[in] y translation distance on the y axis
 /// @return translated polygon
-polygon_t translatePolygon(const polygon_t & polygon, const double x, const double y);
+Polygon2d translate_polygon(const Polygon2d & polygon, const double x, const double y);
 
 /// @brief create the footprint of a pose and its base footprint
 /// @param[in] pose the origin pose of the footprint
 /// @param[in] base_footprint the base axis-aligned footprint
 /// @return footprint polygon
-polygon_t createFootprint(const geometry_msgs::msg::Pose & pose, const polygon_t base_footprint);
+Polygon2d create_footprint(const geometry_msgs::msg::Pose & pose, const Polygon2d base_footprint);
 
 /// @brief create footprints of the predicted paths of an object
 /// @param [in] objects objects from which to create polygons
 /// @param[in] params expansion parameters containing extra offsets to add to the dynamic objects
 /// @return footprint polygons of the object's predicted paths
-multi_polygon_t createObjectFootprints(
+MultiPolygon2d create_object_footprints(
   const autoware_auto_perception_msgs::msg::PredictedObjects & objects,
   const DrivableAreaExpansionParameters & params);
-
-/// @brief create the footprint polygon from a path
-/// @param[in] path the path for which to create a footprint
-/// @param[in] params expansion parameters defining how to create the footprint
-/// @return footprint polygons of the path
-multi_polygon_t createPathFootprints(
-  const std::vector<PathPointWithLaneId> & path, const DrivableAreaExpansionParameters & params);
 }  // namespace drivable_area_expansion
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__DRIVABLE_AREA_EXPANSION__FOOTPRINTS_HPP_

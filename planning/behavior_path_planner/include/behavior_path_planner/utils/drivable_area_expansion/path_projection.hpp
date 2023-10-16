@@ -33,10 +33,10 @@ namespace drivable_area_expansion
 /// @param p2 second segment point
 /// @return projected point and corresponding distance
 inline PointDistance point_to_segment_projection(
-  const point_t & p, const point_t & p1, const point_t & p2)
+  const Point2d & p, const Point2d & p1, const Point2d & p2)
 {
-  const point_t p2_vec = {p2.x() - p1.x(), p2.y() - p1.y()};
-  const point_t p_vec = {p.x() - p1.x(), p.y() - p1.y()};
+  const Point2d p2_vec = {p2.x() - p1.x(), p2.y() - p1.y()};
+  const Point2d p_vec = {p.x() - p1.x(), p.y() - p1.y()};
 
   const auto cross = p2_vec.x() * p_vec.y() - p2_vec.y() * p_vec.x();
   const auto dist_sign = cross < 0.0 ? -1.0 : 1.0;
@@ -48,7 +48,7 @@ inline PointDistance point_to_segment_projection(
   if (c2 <= c1) return {p2, boost::geometry::distance(p, p2) * dist_sign};
 
   const auto projection = p1 + (p2_vec * c1 / c2);
-  const auto projection_point = point_t{projection.x(), projection.y()};
+  const auto projection_point = Point2d{projection.x(), projection.y()};
   return {projection_point, boost::geometry::distance(p, projection_point) * dist_sign};
 }
 
@@ -59,10 +59,10 @@ inline PointDistance point_to_segment_projection(
 /// @param p2 second line point
 /// @return projected point and corresponding distance
 inline PointDistance point_to_line_projection(
-  const point_t & p, const point_t & p1, const point_t & p2)
+  const Point2d & p, const Point2d & p1, const Point2d & p2)
 {
-  const point_t p2_vec = {p2.x() - p1.x(), p2.y() - p1.y()};
-  const point_t p_vec = {p.x() - p1.x(), p.y() - p1.y()};
+  const Point2d p2_vec = {p2.x() - p1.x(), p2.y() - p1.y()};
+  const Point2d p_vec = {p.x() - p1.x(), p.y() - p1.y()};
 
   const auto cross = p2_vec.x() * p_vec.y() - p2_vec.y() * p_vec.x();
   const auto dist_sign = cross < 0.0 ? -1.0 : 1.0;
@@ -70,7 +70,7 @@ inline PointDistance point_to_line_projection(
   const auto c1 = boost::geometry::dot_product(p_vec, p2_vec);
   const auto c2 = boost::geometry::dot_product(p2_vec, p2_vec);
   const auto projection = p1 + (p2_vec * c1 / c2);
-  const auto projection_point = point_t{projection.x(), projection.y()};
+  const auto projection_point = Point2d{projection.x(), projection.y()};
   return {projection_point, boost::geometry::distance(p, projection_point) * dist_sign};
 }
 
@@ -78,7 +78,7 @@ inline PointDistance point_to_line_projection(
 /// @param p point to project
 /// @param ls linestring
 /// @return projected point, corresponding distance, and arc length along the linestring
-inline Projection point_to_linestring_projection(const point_t & p, const linestring_t & ls)
+inline Projection point_to_linestring_projection(const Point2d & p, const LineString2d & ls)
 {
   Projection closest;
   closest.distance = std::numeric_limits<double>::max();
@@ -100,14 +100,14 @@ inline Projection point_to_linestring_projection(const point_t & p, const linest
 /// @param p2 second vector point
 /// @param dist distance
 /// @return point p such that (p1,p) is orthogonal to (p1,p2) at the given distance
-inline point_t normal_at_distance(const point_t & p1, const point_t & p2, const double dist)
+inline Point2d normal_at_distance(const Point2d & p1, const Point2d & p2, const double dist)
 {
   auto base = p1;
   auto normal_vector = p2;
   boost::geometry::subtract_point(normal_vector, base);
   boost::geometry::detail::vec_normalize(normal_vector);
   boost::geometry::multiply_value(normal_vector, dist);
-  return point_t{base.x() - normal_vector.y(), base.y() + normal_vector.x()};
+  return Point2d{base.x() - normal_vector.y(), base.y() + normal_vector.x()};
 }
 
 /// @brief interpolate between two points
@@ -115,7 +115,7 @@ inline point_t normal_at_distance(const point_t & p1, const point_t & p2, const 
 /// @param b second point
 /// @param ratio interpolation ratio such that 0 yields a, and 1 yields b
 /// @return point interpolated between a and b as per the given ratio
-inline point_t lerp_point(const point_t & a, const point_t & b, const double ratio)
+inline Point2d lerp_point(const Point2d & a, const Point2d & b, const double ratio)
 {
   return {interpolation::lerp(a.x(), b.x(), ratio), interpolation::lerp(a.y(), b.y(), ratio)};
 }
@@ -125,10 +125,10 @@ inline point_t lerp_point(const point_t & a, const point_t & b, const double rat
 /// @param arc_length arc length along the reference linestring of the resulting point
 /// @param distance distance from the reference linestring of the resulting point
 /// @return point at the distance and arc length relative to the reference linestring
-inline segment_t linestring_to_point_projection(
-  const linestring_t & ls, const double arc_length, const double distance)
+inline Segment2d linestring_to_point_projection(
+  const LineString2d & ls, const double arc_length, const double distance)
 {
-  if (ls.empty()) return segment_t{};
+  if (ls.empty()) return Segment2d{};
   if (ls.size() == 1lu) return {ls.front(), ls.front()};
   auto ls_iterator = ls.begin();
   auto prev_arc_length = 0.0;
@@ -156,10 +156,10 @@ inline segment_t linestring_to_point_projection(
 /// @param from_arc_length arc length of the first point of the sub linestring
 /// @param to_arc_length arc length of the last point of the sub linestring
 /// @return sub linestring
-inline linestring_t sub_linestring(
-  const linestring_t & ls, const double from_arc_length, const double to_arc_length)
+inline LineString2d sub_linestring(
+  const LineString2d & ls, const double from_arc_length, const double to_arc_length)
 {
-  linestring_t sub_ls;
+  LineString2d sub_ls;
   if (from_arc_length >= to_arc_length || ls.empty())
     throw(std::runtime_error("sub_linestring: bad inputs"));
 

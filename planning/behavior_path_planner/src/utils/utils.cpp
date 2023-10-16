@@ -1539,7 +1539,7 @@ void generateDrivableArea(
   }
   const auto & expansion_params = planner_data->drivable_area_expansion_parameters;
   if (expansion_params.enabled) {
-    drivable_area_expansion::expandDrivableArea(path, planner_data, transformed_lanes);
+    drivable_area_expansion::expand_drivable_area(path, planner_data);
   }
 
   // make bound longitudinally monotonic

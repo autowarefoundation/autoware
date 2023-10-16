@@ -148,7 +148,8 @@ struct PlannerData
   BehaviorPathPlannerParameters parameters{};
   drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
 
-  mutable std::optional<geometry_msgs::msg::Pose> drivable_area_expansion_prev_crop_pose;
+  mutable std::vector<geometry_msgs::msg::Pose> drivable_area_expansion_prev_path_poses{};
+  mutable std::vector<double> drivable_area_expansion_prev_curvatures{};
   mutable TurnSignalDecider turn_signal_decider;
 
   TurnIndicatorsCommand getTurnSignal(
