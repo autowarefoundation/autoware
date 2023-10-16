@@ -1725,7 +1725,7 @@ bool NormalLaneChange::isVehicleStuckByObstacle(const lanelet::ConstLanelets & c
   constexpr double DETECTION_DISTANCE_MARGIN = 10.0;
   const auto detection_distance = max_lane_change_length + rss_dist +
                                   getCommonParam().base_link2front + DETECTION_DISTANCE_MARGIN;
-  RCLCPP_INFO(logger_, "max_lane_change_length: %f, max_acc: %f", max_lane_change_length, max_acc);
+  RCLCPP_DEBUG(logger_, "max_lane_change_length: %f, max_acc: %f", max_lane_change_length, max_acc);
 
   return isVehicleStuckByObstacle(current_lanes, detection_distance);
 }
