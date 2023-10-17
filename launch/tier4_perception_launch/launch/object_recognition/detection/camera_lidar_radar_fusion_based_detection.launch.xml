@@ -411,7 +411,7 @@
 
   <!-- Merge far_objects and near_objects in detection stage.
       Control parameter 'use_radar_tracking_fusion' should defined in perception.launch.xml -->
-  <group if="$(var use_radar_tracking_fusion)">
+  <group unless="$(var use_radar_tracking_fusion)">
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="near_objects"/>
       <arg name="input/object1" value="radar/far_objects"/>
