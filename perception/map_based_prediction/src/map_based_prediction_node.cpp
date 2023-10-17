@@ -23,6 +23,7 @@
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/constants.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
@@ -369,17 +370,13 @@ bool withinLanelet(
   boost::geometry::correct(polygon);
   bool with_in_polygon = boost::geometry::within(p_object, polygon);
 
-  if (!use_yaw_information) {
-    return with_in_polygon;
-  } else {
-    // use yaw angle to compare
-    const double abs_yaw_diff = calcAbsYawDiffBetweenLaneletAndObject(object, lanelet);
-    if (abs_yaw_diff < yaw_threshold) {
-      return with_in_polygon;
-    } else {
-      return false;
-    }
-  }
+  if (!use_yaw_information) return with_in_polygon;
+
+  // use yaw angle to compare
+  const double abs_yaw_diff = calcAbsYawDiffBetweenLaneletAndObject(object, lanelet);
+  if (abs_yaw_diff < yaw_threshold) return with_in_polygon;
+
+  return false;
 }
 
 bool withinRoadLanelet(
@@ -594,53 +591,53 @@ ObjectClassification::_label_type changeLabelForPrediction(
   const lanelet::LaneletMapPtr & lanelet_map_ptr_)
 {
   // for car like vehicle do not change labels
-  if (
-    label == ObjectClassification::CAR || label == ObjectClassification::BUS ||
-    label == ObjectClassification::TRUCK || label == ObjectClassification::TRAILER ||
-    label == ObjectClassification::UNKNOWN) {
-    return label;
-  } else if (  // for bicycle and motorcycle
-    label == ObjectClassification::MOTORCYCLE || label == ObjectClassification::BICYCLE) {
-    // if object is within road lanelet and satisfies yaw constraints
-    const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
-    const float high_speed_threshold = 25.0 / 18.0 * 5.0;  // High speed bicycle 25 km/h
-    // calc abs speed from x and y velocity
-    const double abs_speed = std::hypot(
-      object.kinematics.twist_with_covariance.twist.linear.x,
-      object.kinematics.twist_with_covariance.twist.linear.y);
-    const bool high_speed_object = abs_speed > high_speed_threshold;
+  switch (label) {
+    case ObjectClassification::CAR:
+    case ObjectClassification::BUS:
+    case ObjectClassification::TRUCK:
+    case ObjectClassification::TRAILER:
+    case ObjectClassification::UNKNOWN:
+      return label;
 
-    // if the object is within lanelet, do the same estimation with vehicle
-    if (within_road_lanelet) {
-      return ObjectClassification::MOTORCYCLE;
-    } else if (high_speed_object) {
+    case ObjectClassification::MOTORCYCLE:
+    case ObjectClassification::BICYCLE: {  // if object is within road lanelet and satisfies yaw
+                                           // constraints
+      const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
+      const float high_speed_threshold =
+        tier4_autoware_utils::kmph2mps(25.0);  // High speed bicycle 25 km/h
+      // calc abs speed from x and y velocity
+      const double abs_speed = std::hypot(
+        object.kinematics.twist_with_covariance.twist.linear.x,
+        object.kinematics.twist_with_covariance.twist.linear.y);
+      const bool high_speed_object = abs_speed > high_speed_threshold;
+
+      // if the object is within lanelet, do the same estimation with vehicle
+      if (within_road_lanelet) return ObjectClassification::MOTORCYCLE;
       // high speed object outside road lanelet will move like unknown object
       // return ObjectClassification::UNKNOWN; // temporary disabled
-      return label;
-    } else {
+      if (high_speed_object) return label;  // Do nothing for now
       return ObjectClassification::BICYCLE;
     }
-  } else if (label == ObjectClassification::PEDESTRIAN) {
-    const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
-    const float max_velocity_for_human_mps =
-      25.0 / 18.0 * 5.0;  // Max human being motion speed is 25km/h
-    const double abs_speed = std::hypot(
-      object.kinematics.twist_with_covariance.twist.linear.x,
-      object.kinematics.twist_with_covariance.twist.linear.y);
-    const bool high_speed_object = abs_speed > max_velocity_for_human_mps;
-    // fast, human-like object: like segway
-    if (within_road_lanelet && high_speed_object) {
-      return label;  // currently do nothing
+
+    case ObjectClassification::PEDESTRIAN: {
+      const bool within_road_lanelet = withinRoadLanelet(object, lanelet_map_ptr_, true);
+      const float max_velocity_for_human_mps =
+        tier4_autoware_utils::kmph2mps(25.0);  // Max human being motion speed is 25km/h
+      const double abs_speed = std::hypot(
+        object.kinematics.twist_with_covariance.twist.linear.x,
+        object.kinematics.twist_with_covariance.twist.linear.y);
+      const bool high_speed_object = abs_speed > max_velocity_for_human_mps;
+      // fast, human-like object: like segway
+      if (within_road_lanelet && high_speed_object) return label;  // currently do nothing
       // return ObjectClassification::MOTORCYCLE;
-    } else if (high_speed_object) {
-      return label;  // currently do nothing
+      if (high_speed_object) return label;  // currently do nothing
       // fast human outside road lanelet will move like unknown object
       // return ObjectClassification::UNKNOWN;
-    } else {
       return label;
     }
-  } else {
-    return label;
+
+    default:
+      return label;
   }
 }
 
@@ -850,102 +847,99 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
     const auto & label_ = transformed_object.classification.front().label;
     const auto label = changeLabelForPrediction(label_, object, lanelet_map_ptr_);
 
-    // For crosswalk user
-    if (label == ObjectClassification::PEDESTRIAN || label == ObjectClassification::BICYCLE) {
-      const auto predicted_object = getPredictedObjectAsCrosswalkUser(transformed_object);
-      output.objects.push_back(predicted_object);
-      // For road user
-    } else if (
-      label == ObjectClassification::CAR || label == ObjectClassification::BUS ||
-      label == ObjectClassification::TRAILER || label == ObjectClassification::MOTORCYCLE ||
-      label == ObjectClassification::TRUCK) {
-      // Update object yaw and velocity
-      updateObjectData(transformed_object);
+    switch (label) {
+      case ObjectClassification::PEDESTRIAN:
+      case ObjectClassification::BICYCLE: {
+        const auto predicted_object_crosswalk =
+          getPredictedObjectAsCrosswalkUser(transformed_object);
+        output.objects.push_back(predicted_object_crosswalk);
+        break;
+      }
+      case ObjectClassification::CAR:
+      case ObjectClassification::BUS:
+      case ObjectClassification::TRAILER:
+      case ObjectClassification::MOTORCYCLE:
+      case ObjectClassification::TRUCK: {
+        // Update object yaw and velocity
+        updateObjectData(transformed_object);
 
-      // Get Closest Lanelet
-      const auto current_lanelets = getCurrentLanelets(transformed_object);
+        // Get Closest Lanelet
+        const auto current_lanelets = getCurrentLanelets(transformed_object);
 
-      // Update Objects History
-      updateObjectsHistory(output.header, transformed_object, current_lanelets);
+        // Update Objects History
+        updateObjectsHistory(output.header, transformed_object, current_lanelets);
 
-      // For off lane obstacles
-      if (current_lanelets.empty()) {
-        PredictedPath predicted_path =
-          path_generator_->generatePathForOffLaneVehicle(transformed_object);
-        predicted_path.confidence = 1.0;
-        if (predicted_path.path.empty()) {
-          continue;
+        // For off lane obstacles
+        if (current_lanelets.empty()) {
+          PredictedPath predicted_path =
+            path_generator_->generatePathForOffLaneVehicle(transformed_object);
+          predicted_path.confidence = 1.0;
+          if (predicted_path.path.empty()) break;
+
+          auto predicted_object_vehicle = convertToPredictedObject(transformed_object);
+          predicted_object_vehicle.kinematics.predicted_paths.push_back(predicted_path);
+          output.objects.push_back(predicted_object_vehicle);
+          break;
         }
 
-        auto predicted_object = convertToPredictedObject(transformed_object);
-        predicted_object.kinematics.predicted_paths.push_back(predicted_path);
-        output.objects.push_back(predicted_object);
-        continue;
-      }
+        // For too-slow vehicle
+        const double abs_obj_speed = std::hypot(
+          transformed_object.kinematics.twist_with_covariance.twist.linear.x,
+          transformed_object.kinematics.twist_with_covariance.twist.linear.y);
+        if (std::fabs(abs_obj_speed) < min_velocity_for_map_based_prediction_) {
+          PredictedPath predicted_path =
+            path_generator_->generatePathForLowSpeedVehicle(transformed_object);
+          predicted_path.confidence = 1.0;
+          if (predicted_path.path.empty()) break;
 
-      // For too-slow vehicle
-      const double abs_obj_speed = std::hypot(
-        transformed_object.kinematics.twist_with_covariance.twist.linear.x,
-        transformed_object.kinematics.twist_with_covariance.twist.linear.y);
-      if (std::fabs(abs_obj_speed) < min_velocity_for_map_based_prediction_) {
-        PredictedPath predicted_path =
-          path_generator_->generatePathForLowSpeedVehicle(transformed_object);
-        predicted_path.confidence = 1.0;
-        if (predicted_path.path.empty()) {
-          continue;
+          auto predicted_slow_object = convertToPredictedObject(transformed_object);
+          predicted_slow_object.kinematics.predicted_paths.push_back(predicted_path);
+          output.objects.push_back(predicted_slow_object);
+          break;
         }
 
-        auto predicted_object = convertToPredictedObject(transformed_object);
-        predicted_object.kinematics.predicted_paths.push_back(predicted_path);
-        output.objects.push_back(predicted_object);
-        continue;
-      }
+        // Get Predicted Reference Path for Each Maneuver and current lanelets
+        // return: <probability, paths>
+        const auto ref_paths =
+          getPredictedReferencePath(transformed_object, current_lanelets, objects_detected_time);
 
-      // Get Predicted Reference Path for Each Maneuver and current lanelets
-      // return: <probability, paths>
-      const auto ref_paths =
-        getPredictedReferencePath(transformed_object, current_lanelets, objects_detected_time);
+        // If predicted reference path is empty, assume this object is out of the lane
+        if (ref_paths.empty()) {
+          PredictedPath predicted_path =
+            path_generator_->generatePathForLowSpeedVehicle(transformed_object);
+          predicted_path.confidence = 1.0;
+          if (predicted_path.path.empty()) break;
 
-      // If predicted reference path is empty, assume this object is out of the lane
-      if (ref_paths.empty()) {
-        PredictedPath predicted_path =
-          path_generator_->generatePathForLowSpeedVehicle(transformed_object);
-        predicted_path.confidence = 1.0;
-        if (predicted_path.path.empty()) {
-          continue;
+          auto predicted_object_out_of_lane = convertToPredictedObject(transformed_object);
+          predicted_object_out_of_lane.kinematics.predicted_paths.push_back(predicted_path);
+          output.objects.push_back(predicted_object_out_of_lane);
+          break;
         }
 
-        auto predicted_object = convertToPredictedObject(transformed_object);
-        predicted_object.kinematics.predicted_paths.push_back(predicted_path);
-        output.objects.push_back(predicted_object);
-        continue;
-      }
+        // Get Debug Marker for On Lane Vehicles
+        const auto max_prob_path = std::max_element(
+          ref_paths.begin(), ref_paths.end(),
+          [](const PredictedRefPath & a, const PredictedRefPath & b) {
+            return a.probability < b.probability;
+          });
+        const auto debug_marker =
+          getDebugMarker(object, max_prob_path->maneuver, debug_markers.markers.size());
+        debug_markers.markers.push_back(debug_marker);
 
-      // Get Debug Marker for On Lane Vehicles
-      const auto max_prob_path = std::max_element(
-        ref_paths.begin(), ref_paths.end(),
-        [](const PredictedRefPath & a, const PredictedRefPath & b) {
-          return a.probability < b.probability;
-        });
-      const auto debug_marker =
-        getDebugMarker(object, max_prob_path->maneuver, debug_markers.markers.size());
-      debug_markers.markers.push_back(debug_marker);
-
-      // Generate Predicted Path
-      std::vector<PredictedPath> predicted_paths;
-      for (const auto & ref_path : ref_paths) {
-        PredictedPath predicted_path =
-          path_generator_->generatePathForOnLaneVehicle(transformed_object, ref_path.path);
-        if (predicted_path.path.empty()) {
-          continue;
+        // Generate Predicted Path
+        std::vector<PredictedPath> predicted_paths;
+        for (const auto & ref_path : ref_paths) {
+          PredictedPath predicted_path =
+            path_generator_->generatePathForOnLaneVehicle(transformed_object, ref_path.path);
+          if (predicted_path.path.empty()) {
+            continue;
+          }
+          predicted_path.confidence = ref_path.probability;
+          predicted_paths.push_back(predicted_path);
         }
-        predicted_path.confidence = ref_path.probability;
 
-        predicted_paths.push_back(predicted_path);
-      }
+        // Normalize Path Confidence and output the predicted object
 
-      // Normalize Path Confidence and output the predicted object
-      {
         float sum_confidence = 0.0;
         for (const auto & predicted_path : predicted_paths) {
           sum_confidence += predicted_path.confidence;
@@ -953,25 +947,25 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
         const float min_sum_confidence_value = 1e-3;
         sum_confidence = std::max(sum_confidence, min_sum_confidence_value);
 
+        auto predicted_object = convertToPredictedObject(transformed_object);
+
         for (auto & predicted_path : predicted_paths) {
           predicted_path.confidence = predicted_path.confidence / sum_confidence;
-        }
-
-        auto predicted_object = convertToPredictedObject(transformed_object);
-        for (const auto & predicted_path : predicted_paths) {
           predicted_object.kinematics.predicted_paths.push_back(predicted_path);
         }
         output.objects.push_back(predicted_object);
+        break;
       }
-      // For unknown object
-    } else {
-      auto predicted_object = convertToPredictedObject(transformed_object);
-      PredictedPath predicted_path =
-        path_generator_->generatePathForNonVehicleObject(transformed_object);
-      predicted_path.confidence = 1.0;
+      default: {
+        auto predicted_unknown_object = convertToPredictedObject(transformed_object);
+        PredictedPath predicted_path =
+          path_generator_->generatePathForNonVehicleObject(transformed_object);
+        predicted_path.confidence = 1.0;
 
-      predicted_object.kinematics.predicted_paths.push_back(predicted_path);
-      output.objects.push_back(predicted_object);
+        predicted_unknown_object.kinematics.predicted_paths.push_back(predicted_path);
+        output.objects.push_back(predicted_unknown_object);
+        break;
+      }
     }
   }
 
@@ -1114,26 +1108,28 @@ void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
     object_pose, object_twist.linear.x * 0.1, object_twist.linear.y * 0.1, 0.0);
 
   // assumption: the object vx is much larger than vy
-  if (object.kinematics.twist_with_covariance.twist.linear.x < 0.0) {
-    if (
-      object.kinematics.orientation_availability ==
-      autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN) {
+  if (object.kinematics.twist_with_covariance.twist.linear.x >= 0.0) return;
+
+  switch (object.kinematics.orientation_availability) {
+    case autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN: {
       const auto original_yaw =
         tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
       // flip the angle
       object.kinematics.pose_with_covariance.pose.orientation =
         tier4_autoware_utils::createQuaternionFromYaw(tier4_autoware_utils::pi + original_yaw);
-    } else {
+      break;
+    }
+    default: {
       const auto updated_object_yaw =
         tier4_autoware_utils::calcAzimuthAngle(object_pose.position, future_object_pose.position);
 
       object.kinematics.pose_with_covariance.pose.orientation =
         tier4_autoware_utils::createQuaternionFromYaw(updated_object_yaw);
+      break;
     }
-
-    object.kinematics.twist_with_covariance.twist.linear.x *= -1.0;
-    object.kinematics.twist_with_covariance.twist.linear.y *= -1.0;
   }
+  object.kinematics.twist_with_covariance.twist.linear.x *= -1.0;
+  object.kinematics.twist_with_covariance.twist.linear.y *= -1.0;
 
   return;
 }
@@ -1864,16 +1860,10 @@ ManeuverProbability MapBasedPredictionNode::calculateManeuverProbability(
     constexpr float LC_PROB = 1.0;  // probability for left lane change
     constexpr float RC_PROB = 1.0;  // probability for right lane change
     lane_follow_probability = 0.0;
-    if (!left_paths.empty() && right_paths.empty()) {
-      left_lane_change_probability = LC_PROB;
-      right_lane_change_probability = 0.0;
-    } else if (left_paths.empty() && !right_paths.empty()) {
-      left_lane_change_probability = 0.0;
-      right_lane_change_probability = RC_PROB;
-    } else {
-      left_lane_change_probability = LC_PROB;
-      right_lane_change_probability = RC_PROB;
-    }
+
+    // If the given lane is empty, the probability goes to 0
+    left_lane_change_probability = left_paths.empty() ? 0.0 : LC_PROB;
+    right_lane_change_probability = right_paths.empty() ? 0.0 : RC_PROB;
   }
 
   const float MIN_PROBABILITY = 1e-3;
