@@ -81,6 +81,9 @@ void setStartData(
   const size_t start_idx, const double start_dist);
 
 Polygon2d createEnvelopePolygon(
+  const Polygon2d & object_polygon, const Pose & closest_pose, const double envelope_buffer);
+
+Polygon2d createEnvelopePolygon(
   const ObjectData & object_data, const Pose & closest_pose, const double envelope_buffer);
 
 std::vector<DrivableAreaInfo::Obstacle> generateObstaclePolygonsForDrivableArea(
