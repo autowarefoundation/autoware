@@ -282,6 +282,16 @@ void NormalLaneChange::insertStopPoint(
         if (v > lane_change_parameters_->stop_velocity_threshold) {
           return false;
         }
+
+        // target_objects includes objects out of target lanes, so filter them out
+        if (!boost::geometry::intersects(
+              tier4_autoware_utils::toPolygon2d(o.initial_pose.pose, o.shape).outer(),
+              lanelet::utils::combineLaneletsShape(status_.target_lanes)
+                .polygon2d()
+                .basicPolygon())) {
+          return false;
+        }
+
         const double distance_to_target_lane_obj = getDistanceAlongLanelet(o.initial_pose.pose);
         return stopping_distance_for_obj < distance_to_target_lane_obj &&
                distance_to_target_lane_obj < distance_to_ego_lane_obj;
