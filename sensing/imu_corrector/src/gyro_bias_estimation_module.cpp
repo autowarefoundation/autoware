@@ -14,58 +14,106 @@
 
 #include "gyro_bias_estimation_module.hpp"
 
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+
+#include <rclcpp/rclcpp.hpp>
+
 namespace imu_corrector
 {
-GyroBiasEstimationModule::GyroBiasEstimationModule(
-  const double velocity_threshold, const double timestamp_threshold,
-  const size_t data_num_threshold)
-: velocity_threshold_(velocity_threshold),
-  timestamp_threshold_(timestamp_threshold),
-  data_num_threshold_(data_num_threshold),
-  is_stopped_(false)
+
+/**
+ * @brief perform dead reckoning based on "gyro_list" and return a relative pose (in RPY)
+ */
+geometry_msgs::msg::Vector3 integrate_orientation(
+  const std::vector<geometry_msgs::msg::Vector3Stamped> & gyro_list,
+  const geometry_msgs::msg::Vector3 & gyro_bias)
 {
+  geometry_msgs::msg::Vector3 d_rpy{};
+  double t_prev = rclcpp::Time(gyro_list.front().header.stamp).seconds();
+  for (std::size_t i = 0; i < gyro_list.size() - 1; ++i) {
+    double t_cur = rclcpp::Time(gyro_list[i + 1].header.stamp).seconds();
+
+    d_rpy.x += (t_cur - t_prev) * (gyro_list[i].vector.x - gyro_bias.x);
+    d_rpy.y += (t_cur - t_prev) * (gyro_list[i].vector.y - gyro_bias.y);
+    d_rpy.z += (t_cur - t_prev) * (gyro_list[i].vector.z - gyro_bias.z);
+
+    t_prev = t_cur;
+  }
+  return d_rpy;
 }
 
-void GyroBiasEstimationModule::update_gyro(
-  const double time, const geometry_msgs::msg::Vector3 & gyro)
+/**
+ * @brief calculate RPY error on dead-reckoning (calculated from "gyro_list") compared to the
+ * ground-truth pose from "pose_list".
+ */
+geometry_msgs::msg::Vector3 calculate_error_rpy(
+  const std::vector<geometry_msgs::msg::PoseStamped> & pose_list,
+  const std::vector<geometry_msgs::msg::Vector3Stamped> & gyro_list,
+  const geometry_msgs::msg::Vector3 & gyro_bias)
 {
-  if (time - last_velocity_time_ > timestamp_threshold_) {
-    return;
-  }
-  if (!is_stopped_) {
-    return;
-  }
-  gyro_buffer_.push_back(gyro);
-  if (gyro_buffer_.size() > data_num_threshold_) {
-    gyro_buffer_.pop_front();
-  }
+  const geometry_msgs::msg::Vector3 rpy_0 =
+    tier4_autoware_utils::getRPY(pose_list.front().pose.orientation);
+  const geometry_msgs::msg::Vector3 rpy_1 =
+    tier4_autoware_utils::getRPY(pose_list.back().pose.orientation);
+  const geometry_msgs::msg::Vector3 d_rpy = integrate_orientation(gyro_list, gyro_bias);
+
+  geometry_msgs::msg::Vector3 error_rpy;
+  error_rpy.x = tier4_autoware_utils::normalizeRadian(-rpy_1.x + rpy_0.x + d_rpy.x);
+  error_rpy.y = tier4_autoware_utils::normalizeRadian(-rpy_1.y + rpy_0.y + d_rpy.y);
+  error_rpy.z = tier4_autoware_utils::normalizeRadian(-rpy_1.z + rpy_0.z + d_rpy.z);
+  return error_rpy;
 }
 
-void GyroBiasEstimationModule::update_velocity(const double time, const double velocity)
+/**
+ * @brief update gyroscope bias based on a given trajectory data
+ */
+void GyroBiasEstimationModule::update_bias(
+  const std::vector<geometry_msgs::msg::PoseStamped> & pose_list,
+  const std::vector<geometry_msgs::msg::Vector3Stamped> & gyro_list)
 {
-  is_stopped_ = velocity <= velocity_threshold_;
-  last_velocity_time_ = time;
+  const double dt_pose =
+    (rclcpp::Time(pose_list.back().header.stamp) - rclcpp::Time(pose_list.front().header.stamp))
+      .seconds();
+  const double dt_gyro =
+    (rclcpp::Time(gyro_list.back().header.stamp) - rclcpp::Time(gyro_list.front().header.stamp))
+      .seconds();
+  if (dt_pose == 0 || dt_gyro == 0) {
+    throw std::runtime_error("dt_pose or dt_gyro is zero");
+  }
+
+  auto error_rpy = calculate_error_rpy(pose_list, gyro_list, geometry_msgs::msg::Vector3{});
+  error_rpy.x *= dt_pose / dt_gyro;
+  error_rpy.y *= dt_pose / dt_gyro;
+  error_rpy.z *= dt_pose / dt_gyro;
+
+  gyro_bias_pair_.first.x += dt_pose * error_rpy.x;
+  gyro_bias_pair_.first.y += dt_pose * error_rpy.y;
+  gyro_bias_pair_.first.z += dt_pose * error_rpy.z;
+  gyro_bias_pair_.second.x += dt_pose * dt_pose;
+  gyro_bias_pair_.second.y += dt_pose * dt_pose;
+  gyro_bias_pair_.second.z += dt_pose * dt_pose;
+
+  geometry_msgs::msg::Vector3 gyro_bias;
+  gyro_bias.x = error_rpy.x / dt_pose;
+  gyro_bias.y = error_rpy.y / dt_pose;
+  gyro_bias.z = error_rpy.z / dt_pose;
 }
 
-geometry_msgs::msg::Vector3 GyroBiasEstimationModule::get_bias() const
+/**
+ * @brief getter function for current estimated bias
+ */
+geometry_msgs::msg::Vector3 GyroBiasEstimationModule::get_bias_base_link() const
 {
-  if (gyro_buffer_.size() < data_num_threshold_) {
-    throw std::runtime_error("Bias estimation is not yet ready because of insufficient data.");
+  geometry_msgs::msg::Vector3 gyro_bias_base;
+  if (
+    gyro_bias_pair_.second.x == 0 || gyro_bias_pair_.second.y == 0 ||
+    gyro_bias_pair_.second.z == 0) {
+    throw std::runtime_error("gyro_bias_pair_.second is zero");
   }
-
-  geometry_msgs::msg::Vector3 bias;
-  bias.x = 0.0;
-  bias.y = 0.0;
-  bias.z = 0.0;
-  for (const auto & gyro : gyro_buffer_) {
-    bias.x += gyro.x;
-    bias.y += gyro.y;
-    bias.z += gyro.z;
-  }
-  bias.x /= gyro_buffer_.size();
-  bias.y /= gyro_buffer_.size();
-  bias.z /= gyro_buffer_.size();
-  return bias;
+  gyro_bias_base.x = gyro_bias_pair_.first.x / gyro_bias_pair_.second.x;
+  gyro_bias_base.y = gyro_bias_pair_.first.y / gyro_bias_pair_.second.y;
+  gyro_bias_base.z = gyro_bias_pair_.first.z / gyro_bias_pair_.second.z;
+  return gyro_bias_base;
 }
 
 }  // namespace imu_corrector

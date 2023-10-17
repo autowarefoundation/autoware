@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="input_imu_raw" default="imu_raw"/>
-  <arg name="input_twist" default="twist"/>
+  <arg name="input_pose" default="pose"/>
   <arg name="output_gyro_bias" default="gyro_bias"/>
   <arg name="gyro_bias_estimator_param_file" default="$(find-pkg-share imu_corrector)/config/gyro_bias_estimator.param.yaml"/>
   <arg name="imu_corrector_param_file" default="$(find-pkg-share imu_corrector)/config/imu_corrector.param.yaml"/>
 
   <node pkg="imu_corrector" exec="gyro_bias_estimator" name="gyro_bias_estimator" output="screen">
     <remap from="~/input/imu_raw" to="$(var input_imu_raw)"/>
-    <remap from="~/input/twist" to="$(var input_twist)"/>
+    <remap from="~/input/pose" to="$(var input_pose)"/>
     <remap from="~/output/gyro_bias" to="$(var output_gyro_bias)"/>
     <param from="$(var gyro_bias_estimator_param_file)"/>
     <param from="$(var imu_corrector_param_file)"/>

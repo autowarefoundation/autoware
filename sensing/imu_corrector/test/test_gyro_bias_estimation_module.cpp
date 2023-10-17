@@ -14,6 +14,8 @@
 
 #include "../src/gyro_bias_estimation_module.hpp"
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <gtest/gtest.h>
 
 namespace imu_corrector
@@ -21,45 +23,67 @@ namespace imu_corrector
 class GyroBiasEstimationModuleTest : public ::testing::Test
 {
 protected:
-  double velocity_threshold = 1.0;
-  double timestamp_threshold = 5.0;
-  size_t data_num_threshold = 10;
-  GyroBiasEstimationModule module =
-    GyroBiasEstimationModule(velocity_threshold, timestamp_threshold, data_num_threshold);
+  GyroBiasEstimationModule module;
 };
 
 TEST_F(GyroBiasEstimationModuleTest, GetBiasEstimationWhenVehicleStopped)
 {
-  geometry_msgs::msg::Vector3 gyro;
-  gyro.x = 0.1;
-  gyro.y = 0.2;
-  gyro.z = 0.3;
-  for (size_t i = 0; i < data_num_threshold + 1; ++i) {
-    module.update_velocity(
-      i * 0.1 * timestamp_threshold, 0.0);  // velocity = 0.0 < 1.0 = velocity_threshold
-    module.update_gyro(i * 0.1 * timestamp_threshold, gyro);
+  std::vector<geometry_msgs::msg::PoseStamped> pose_list;
+  std::vector<geometry_msgs::msg::Vector3Stamped> gyro_list;
+  geometry_msgs::msg::PoseStamped pose1;
+  pose1.header.stamp = rclcpp::Time(0);
+  pose1.pose.orientation.w = 1.0;
+  pose_list.push_back(pose1);
+  geometry_msgs::msg::PoseStamped pose2;
+  pose2.header.stamp = rclcpp::Time(1e9);
+  pose2.pose.orientation.w = 1.0;
+  pose_list.push_back(pose2);
+
+  geometry_msgs::msg::Vector3Stamped gyro1;
+  gyro1.header.stamp = rclcpp::Time(0.25 * 1e9);
+  gyro1.vector.x = 0.1;
+  gyro1.vector.y = 0.2;
+  gyro1.vector.z = 0.3;
+  gyro_list.push_back(gyro1);
+  geometry_msgs::msg::Vector3Stamped gyro2;
+  gyro2.header.stamp = rclcpp::Time(0.5 * 1e9);
+  gyro2.vector.x = 0.1;
+  gyro2.vector.y = 0.2;
+  gyro2.vector.z = 0.3;
+  gyro_list.push_back(gyro2);
+
+  for (size_t i = 0; i < 10; ++i) {
+    module.update_bias(pose_list, gyro_list);
   }
-  ASSERT_NEAR(module.get_bias().x, gyro.x, 0.0001);
-  ASSERT_NEAR(module.get_bias().y, gyro.y, 0.0001);
-  ASSERT_NEAR(module.get_bias().z, gyro.z, 0.0001);
+  const geometry_msgs::msg::Vector3 result = module.get_bias_base_link();
+  ASSERT_DOUBLE_EQ(result.x, 0.1);
+  ASSERT_DOUBLE_EQ(result.y, 0.2);
+  ASSERT_DOUBLE_EQ(result.z, 0.3);
 }
 
 TEST_F(GyroBiasEstimationModuleTest, GetInsufficientDataException)
 {
-  ASSERT_THROW(module.get_bias(), std::runtime_error);
+  ASSERT_THROW(module.get_bias_base_link(), std::runtime_error);
 }
 
 TEST_F(GyroBiasEstimationModuleTest, GetInsufficientDataExceptionWhenVehicleMoving)
 {
-  geometry_msgs::msg::Vector3 gyro;
-  gyro.x = 0.1;
-  gyro.y = 0.2;
-  gyro.z = 0.3;
-  for (size_t i = 0; i < data_num_threshold + 1; ++i) {
-    module.update_velocity(
-      i * 0.1 * timestamp_threshold, 5.0);  // velocity = 5.0 > 1.0 = velocity_threshold
-    module.update_gyro(i * 0.1 * timestamp_threshold, gyro);
+  std::vector<geometry_msgs::msg::PoseStamped> pose_list;
+  std::vector<geometry_msgs::msg::Vector3Stamped> gyro_list;
+  geometry_msgs::msg::PoseStamped pose1;
+  pose1.header.stamp = rclcpp::Time(0);
+  pose1.pose.orientation.w = 1.0;
+  pose_list.push_back(pose1);
+
+  geometry_msgs::msg::Vector3Stamped gyro1;
+  gyro1.header.stamp = rclcpp::Time(0);
+  gyro1.vector.x = 0.1;
+  gyro1.vector.y = 0.2;
+  gyro1.vector.z = 0.3;
+  gyro_list.push_back(gyro1);
+
+  for (size_t i = 0; i < 10; ++i) {
+    ASSERT_THROW(module.update_bias(pose_list, gyro_list), std::runtime_error);
   }
-  ASSERT_THROW(module.get_bias(), std::runtime_error);
 }
 }  // namespace imu_corrector

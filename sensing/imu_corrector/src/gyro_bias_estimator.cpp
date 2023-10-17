@@ -14,6 +14,13 @@
 
 #include "gyro_bias_estimator.hpp"
 
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#include <utility>
+
 namespace imu_corrector
 {
 GyroBiasEstimator::GyroBiasEstimator()
@@ -22,59 +29,146 @@ GyroBiasEstimator::GyroBiasEstimator()
   angular_velocity_offset_x_(declare_parameter<double>("angular_velocity_offset_x")),
   angular_velocity_offset_y_(declare_parameter<double>("angular_velocity_offset_y")),
   angular_velocity_offset_z_(declare_parameter<double>("angular_velocity_offset_z")),
+  timer_callback_interval_sec_(declare_parameter<double>("timer_callback_interval_sec")),
+  straight_motion_ang_vel_upper_limit_(
+    declare_parameter<double>("straight_motion_ang_vel_upper_limit")),
   updater_(this),
   gyro_bias_(std::nullopt)
 {
   updater_.setHardwareID(get_name());
   updater_.add("gyro_bias_validator", this, &GyroBiasEstimator::update_diagnostics);
 
-  const double velocity_threshold = declare_parameter<double>("velocity_threshold");
-  const double timestamp_threshold = declare_parameter<double>("timestamp_threshold");
-  const size_t data_num_threshold =
-    static_cast<size_t>(declare_parameter<int>("data_num_threshold"));
-  gyro_bias_estimation_module_ = std::make_unique<GyroBiasEstimationModule>(
-    velocity_threshold, timestamp_threshold, data_num_threshold);
+  gyro_bias_estimation_module_ = std::make_unique<GyroBiasEstimationModule>();
 
   imu_sub_ = create_subscription<Imu>(
     "~/input/imu_raw", rclcpp::SensorDataQoS(),
     [this](const Imu::ConstSharedPtr msg) { callback_imu(msg); });
-  twist_sub_ = create_subscription<TwistWithCovarianceStamped>(
-    "~/input/twist", rclcpp::SensorDataQoS(),
-    [this](const TwistWithCovarianceStamped::ConstSharedPtr msg) { callback_twist(msg); });
-
+  pose_sub_ = create_subscription<PoseWithCovarianceStamped>(
+    "~/input/pose", rclcpp::SensorDataQoS(),
+    [this](const PoseWithCovarianceStamped::ConstSharedPtr msg) { callback_pose(msg); });
   gyro_bias_pub_ = create_publisher<Vector3Stamped>("~/output/gyro_bias", rclcpp::SensorDataQoS());
+
+  auto timer_callback = std::bind(&GyroBiasEstimator::timer_callback, this);
+  auto period_control = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double>(timer_callback_interval_sec_));
+  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
+    this->get_clock(), period_control, std::move(timer_callback),
+    this->get_node_base_interface()->get_context());
+  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+
+  transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
 }
 
 void GyroBiasEstimator::callback_imu(const Imu::ConstSharedPtr imu_msg_ptr)
 {
-  // Update gyro data
-  gyro_bias_estimation_module_->update_gyro(
-    rclcpp::Time(imu_msg_ptr->header.stamp).seconds(), imu_msg_ptr->angular_velocity);
-
-  // Estimate gyro bias
-  try {
-    gyro_bias_ = gyro_bias_estimation_module_->get_bias();
-  } catch (const std::runtime_error & e) {
-    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *(this->get_clock()), 1000, e.what());
+  imu_frame_ = imu_msg_ptr->header.frame_id;
+  geometry_msgs::msg::TransformStamped::ConstSharedPtr tf_imu2base_ptr =
+    transform_listener_->getLatestTransform(imu_frame_, output_frame_);
+  if (!tf_imu2base_ptr) {
+    RCLCPP_ERROR(
+      this->get_logger(), "Please publish TF %s to %s", output_frame_.c_str(),
+      (imu_frame_).c_str());
+    return;
   }
+
+  geometry_msgs::msg::Vector3Stamped gyro;
+  gyro.header.stamp = imu_msg_ptr->header.stamp;
+  gyro.vector = transform_vector3(imu_msg_ptr->angular_velocity, *tf_imu2base_ptr);
+
+  gyro_all_.push_back(gyro);
 
   // Publish results for debugging
   if (gyro_bias_ != std::nullopt) {
     Vector3Stamped gyro_bias_msg;
+
     gyro_bias_msg.header.stamp = this->now();
     gyro_bias_msg.vector = gyro_bias_.value();
+
     gyro_bias_pub_->publish(gyro_bias_msg);
   }
+}
 
-  // Update diagnostics
+void GyroBiasEstimator::callback_pose(const PoseWithCovarianceStamped::ConstSharedPtr pose_msg_ptr)
+{
+  // push pose_msg to queue
+  geometry_msgs::msg::PoseStamped pose;
+  pose.header = pose_msg_ptr->header;
+  pose.pose = pose_msg_ptr->pose.pose;
+  pose_buf_.push_back(pose);
+}
+
+void GyroBiasEstimator::timer_callback()
+{
+  if (pose_buf_.empty()) {
+    return;
+  }
+
+  // Copy data
+  const std::vector<geometry_msgs::msg::PoseStamped> pose_buf = pose_buf_;
+  const std::vector<geometry_msgs::msg::Vector3Stamped> gyro_all = gyro_all_;
+  pose_buf_.clear();
+  gyro_all_.clear();
+
+  // Check time
+  const rclcpp::Time t0_rclcpp_time = rclcpp::Time(pose_buf.front().header.stamp);
+  const rclcpp::Time t1_rclcpp_time = rclcpp::Time(pose_buf.back().header.stamp);
+  if (t1_rclcpp_time <= t0_rclcpp_time) {
+    return;
+  }
+
+  // Filter gyro data
+  std::vector<geometry_msgs::msg::Vector3Stamped> gyro_filtered;
+  for (const auto & gyro : gyro_all) {
+    const rclcpp::Time t = rclcpp::Time(gyro.header.stamp);
+    if (t0_rclcpp_time <= t && t < t1_rclcpp_time) {
+      gyro_filtered.push_back(gyro);
+    }
+  }
+
+  // Check gyro data size
+  // Data size must be greater than or equal to 2 since the time difference will be taken later
+  if (gyro_filtered.size() <= 1) {
+    return;
+  }
+
+  // Check if the vehicle is moving straight
+  const geometry_msgs::msg::Vector3 rpy_0 =
+    tier4_autoware_utils::getRPY(pose_buf.front().pose.orientation);
+  const geometry_msgs::msg::Vector3 rpy_1 =
+    tier4_autoware_utils::getRPY(pose_buf.back().pose.orientation);
+  const double yaw_diff = std::abs(tier4_autoware_utils::normalizeRadian(rpy_1.z - rpy_0.z));
+  const double time_diff = (t1_rclcpp_time - t0_rclcpp_time).seconds();
+  const double yaw_vel = yaw_diff / time_diff;
+  const bool is_straight = (yaw_vel < straight_motion_ang_vel_upper_limit_);
+  if (!is_straight) {
+    return;
+  }
+
+  // Calculate gyro bias
+  gyro_bias_estimation_module_->update_bias(pose_buf, gyro_filtered);
+
+  geometry_msgs::msg::TransformStamped::ConstSharedPtr tf_base2imu_ptr =
+    transform_listener_->getLatestTransform(output_frame_, imu_frame_);
+  if (!tf_base2imu_ptr) {
+    RCLCPP_ERROR(
+      this->get_logger(), "Please publish TF %s to %s", imu_frame_.c_str(), output_frame_.c_str());
+    return;
+  }
+  gyro_bias_ =
+    transform_vector3(gyro_bias_estimation_module_->get_bias_base_link(), *tf_base2imu_ptr);
+
   updater_.force_update();
 }
 
-void GyroBiasEstimator::callback_twist(
-  const TwistWithCovarianceStamped::ConstSharedPtr twist_msg_ptr)
+geometry_msgs::msg::Vector3 GyroBiasEstimator::transform_vector3(
+  const geometry_msgs::msg::Vector3 & vec, const geometry_msgs::msg::TransformStamped & transform)
 {
-  gyro_bias_estimation_module_->update_velocity(
-    rclcpp::Time(twist_msg_ptr->header.stamp).seconds(), twist_msg_ptr->twist.twist.linear.x);
+  geometry_msgs::msg::Vector3Stamped vec_stamped;
+  vec_stamped.vector = vec;
+
+  geometry_msgs::msg::Vector3Stamped vec_stamped_transformed;
+  tf2::doTransform(vec_stamped, vec_stamped_transformed, transform);
+  return vec_stamped_transformed.vector;
 }
 
 void GyroBiasEstimator::update_diagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
