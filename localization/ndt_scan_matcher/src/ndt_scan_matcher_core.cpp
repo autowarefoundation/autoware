@@ -205,6 +205,8 @@ NDTScanMatcher::NDTScanMatcher()
       "no_ground_nearest_voxel_transformation_likelihood", 10);
   iteration_num_pub_ =
     this->create_publisher<tier4_debug_msgs::msg::Int32Stamped>("iteration_num", 10);
+  initial_to_result_relative_pose_pub_ =
+    this->create_publisher<geometry_msgs::msg::PoseStamped>("initial_to_result_relative_pose", 10);
   initial_to_result_distance_pub_ =
     this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>("initial_to_result_distance", 10);
   initial_to_result_distance_old_pub_ =
@@ -487,7 +489,7 @@ void NDTScanMatcher::callback_sensor_points(
   publish_tf(sensor_ros_time, result_pose_msg);
   publish_pose(sensor_ros_time, result_pose_msg, is_converged);
   publish_marker(sensor_ros_time, transformation_msg_array);
-  publish_initial_to_result_distances(
+  publish_initial_to_result(
     sensor_ros_time, result_pose_msg, interpolator.get_current_pose(), interpolator.get_old_pose(),
     interpolator.get_new_pose());
 
@@ -628,12 +630,19 @@ void NDTScanMatcher::publish_marker(
   ndt_marker_pub_->publish(marker_array);
 }
 
-void NDTScanMatcher::publish_initial_to_result_distances(
+void NDTScanMatcher::publish_initial_to_result(
   const rclcpp::Time & sensor_ros_time, const geometry_msgs::msg::Pose & result_pose_msg,
   const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_cov_msg,
   const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_old_msg,
   const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_new_msg)
 {
+  geometry_msgs::msg::PoseStamped initial_to_result_relative_pose_stamped;
+  initial_to_result_relative_pose_stamped.pose =
+    tier4_autoware_utils::inverseTransformPose(result_pose_msg, initial_pose_cov_msg.pose.pose);
+  initial_to_result_relative_pose_stamped.header.stamp = sensor_ros_time;
+  initial_to_result_relative_pose_stamped.header.frame_id = map_frame_;
+  initial_to_result_relative_pose_pub_->publish(initial_to_result_relative_pose_stamped);
+
   const auto initial_to_result_distance =
     static_cast<float>(norm(initial_pose_cov_msg.pose.pose.position, result_pose_msg.position));
   initial_to_result_distance_pub_->publish(
