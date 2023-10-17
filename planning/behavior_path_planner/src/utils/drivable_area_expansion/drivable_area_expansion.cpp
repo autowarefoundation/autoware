@@ -126,30 +126,19 @@ std::vector<double> calculate_minimum_expansions(
         minimum_expansions[bound_idx] = std::max(minimum_expansions[bound_idx], dist);
         minimum_expansions[bound_idx + 1] = std::max(minimum_expansions[bound_idx + 1], dist);
         // apply the expansion to all bound points within the extra arc length
-        if (bound_idx + 2 < bound.size()) {
-          auto up_arc_length =
-            tier4_autoware_utils::calcDistance2d(*intersection_point, bound[bound_idx + 1]) +
-            tier4_autoware_utils::calcDistance2d(bound[bound_idx + 1], bound[bound_idx + 2]);
-          for (auto up_bound_idx = bound_idx + 2;
-               bound_idx < bound.size() && up_arc_length <= params.extra_arc_length;
-               ++up_bound_idx) {
-            minimum_expansions[up_bound_idx] = std::max(minimum_expansions[up_bound_idx], dist);
-            if (up_bound_idx + 1 < bound.size())
-              up_arc_length +=
-                tier4_autoware_utils::calcDistance2d(bound[up_bound_idx], bound[up_bound_idx + 1]);
-          }
+        auto arc_length =
+          tier4_autoware_utils::calcDistance2d(*intersection_point, bound[bound_idx + 1]);
+        for (auto up_bound_idx = bound_idx + 2; up_bound_idx < bound.size(); ++up_bound_idx) {
+          tier4_autoware_utils::calcDistance2d(bound[bound_idx - 1], bound[bound_idx]);
+          if (arc_length > params.extra_arc_length) break;
+          minimum_expansions[up_bound_idx] = std::max(minimum_expansions[up_bound_idx], dist);
         }
-        if (bound_idx > 0) {
-          auto down_arc_length =
-            tier4_autoware_utils::calcDistance2d(*intersection_point, bound[bound_idx]) +
-            tier4_autoware_utils::calcDistance2d(bound[bound_idx - 1], bound[bound_idx]);
-          for (auto down_bound_idx = bound_idx - 1;
-               down_bound_idx > 0 && down_arc_length <= params.extra_arc_length; --down_bound_idx) {
-            minimum_expansions[down_bound_idx] = std::max(minimum_expansions[down_bound_idx], dist);
-            if (down_bound_idx > 1)
-              down_arc_length += tier4_autoware_utils::calcDistance2d(
-                bound[down_bound_idx], bound[down_bound_idx - 1]);
-          }
+        arc_length = tier4_autoware_utils::calcDistance2d(*intersection_point, bound[bound_idx]);
+        for (auto down_offset_idx = 1LU; down_offset_idx < bound_idx; ++down_offset_idx) {
+          const auto idx = bound_idx - down_offset_idx;
+          arc_length += tier4_autoware_utils::calcDistance2d(bound[idx - 1], bound[idx]);
+          if (arc_length > params.extra_arc_length) break;
+          minimum_expansions[idx] = std::max(minimum_expansions[idx], dist);
         }
         break;
       }
