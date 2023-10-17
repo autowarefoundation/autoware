@@ -118,8 +118,6 @@
         object_ignore_section_crosswalk_in_front_distance: 30.0     # [m]
         object_ignore_section_crosswalk_behind_distance: 30.0       # [m]
         # detection range
-        object_check_forward_distance: 150.0            # [m]
-        object_check_backward_distance: 2.0             # [m]
         object_check_goal_distance: 20.0                # [m]
         # filtering parking objects
         threshold_distance_object_is_on_center: 1.0     # [m]
@@ -127,6 +125,13 @@
         object_check_min_road_shoulder_width: 0.5       # [m]
         # lost object compensation
         object_last_seen_threshold: 2.0
+
+        # detection area generation parameters
+        detection_area:
+          static: true                                   # [-]
+          min_forward_distance: 50.0                     # [m]
+          max_forward_distance: 150.0                    # [m]
+          backward_distance: 10.0                        # [m]
 
       # For safety check
       safety_check:

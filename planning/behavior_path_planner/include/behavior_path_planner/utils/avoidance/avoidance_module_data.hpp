@@ -145,9 +145,9 @@ struct AvoidanceParameters
   double object_ignore_section_crosswalk_behind_distance{0.0};
 
   // distance to avoid object detection
-  double object_check_forward_distance{0.0};
-
-  // continue to detect backward vehicles as avoidance targets until they are this distance away
+  bool use_static_detection_area{true};
+  double object_check_min_forward_distance{0.0};
+  double object_check_max_forward_distance{0.0};
   double object_check_backward_distance{0.0};
 
   // if the distance between object and goal position is less than this parameter, the module ignore

@@ -173,6 +173,22 @@ public:
                        : std::max(shift_length, getRightShiftBound());
   }
 
+  double getForwardDetectionRange() const
+  {
+    if (parameters_->use_static_detection_area) {
+      return parameters_->object_check_max_forward_distance;
+    }
+
+    const auto max_shift_length = std::max(
+      std::abs(parameters_->max_right_shift_length), std::abs(parameters_->max_left_shift_length));
+    const auto dynamic_distance = PathShifter::calcLongitudinalDistFromJerk(
+      max_shift_length, getLateralMinJerkLimit(), getEgoSpeed());
+
+    return std::clamp(
+      1.5 * dynamic_distance, parameters_->object_check_min_forward_distance,
+      parameters_->object_check_max_forward_distance);
+  }
+
   void alignShiftLinesOrder(AvoidLineArray & lines, const bool align_shift_length = true) const
   {
     if (lines.empty()) {
