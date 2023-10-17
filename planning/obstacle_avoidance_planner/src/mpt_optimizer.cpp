@@ -36,9 +36,11 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByUniform
   const vehicle_info_util::VehicleInfo & vehicle_info, const size_t circle_num,
   const double radius_ratio)
 {
+  const double lateral_offset =
+    abs(vehicle_info.right_overhang_m - vehicle_info.left_overhang_m) / 2.0;
   const double radius = std::hypot(
                           vehicle_info.vehicle_length_m / static_cast<double>(circle_num) / 2.0,
-                          vehicle_info.vehicle_width_m / 2.0) *
+                          vehicle_info.vehicle_width_m / 2.0 + lateral_offset) *
                         radius_ratio;
   const std::vector<double> radiuses(circle_num, radius);
 
@@ -59,16 +61,18 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByBicycle
   if (circle_num < 2) {
     throw std::invalid_argument("circle_num is less than 2.");
   }
-
+  const double lateral_offset =
+    abs(vehicle_info.right_overhang_m - vehicle_info.left_overhang_m) / 2.0;
   // 1st circle (rear wheel)
-  const double rear_radius = vehicle_info.vehicle_width_m / 2.0 * rear_radius_ratio;
+  const double rear_radius =
+    vehicle_info.vehicle_width_m / 2.0 + lateral_offset * rear_radius_ratio;
   const double rear_lon_offset = 0.0;
 
   // 2nd circle (front wheel)
   const double front_radius =
     std::hypot(
       vehicle_info.vehicle_length_m / static_cast<double>(circle_num) / 2.0,
-      vehicle_info.vehicle_width_m / 2.0) *
+      vehicle_info.vehicle_width_m / 2.0 + lateral_offset) *
     front_radius_ratio;
 
   const double unit_lon_length = vehicle_info.vehicle_length_m / static_cast<double>(circle_num);
@@ -84,8 +88,9 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesByFitting
   if (circle_num < 2) {
     throw std::invalid_argument("circle_num is less than 2.");
   }
-
-  const double radius = vehicle_info.vehicle_width_m / 2.0;
+  const double lateral_offset =
+    abs(vehicle_info.right_overhang_m - vehicle_info.left_overhang_m) / 2.0;
+  const double radius = vehicle_info.vehicle_width_m / 2.0 + lateral_offset;
   std::vector<double> radiuses(circle_num, radius);
 
   const double unit_lon_length =
