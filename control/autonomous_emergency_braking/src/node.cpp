@@ -432,6 +432,10 @@ void AEB::generateEgoPath(
   const Trajectory & predicted_traj, Path & path,
   std::vector<tier4_autoware_utils::Polygon2d> & polygons)
 {
+  if (predicted_traj.points.empty()) {
+    return;
+  }
+
   geometry_msgs::msg::TransformStamped transform_stamped{};
   try {
     transform_stamped = tf_buffer_.lookupTransform(
