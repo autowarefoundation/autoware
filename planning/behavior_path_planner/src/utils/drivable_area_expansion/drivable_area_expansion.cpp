@@ -74,14 +74,21 @@ void reuse_previous_poses(
   if (cropped_poses.empty()) {
     const auto resampled_path_points =
       motion_utils::resamplePath(path, params.resample_interval, true, true, false).points;
-    for (const auto & p : resampled_path_points) cropped_poses.push_back(p.point.pose);
-  } else if (!path.points.empty()) {
+    const auto cropped_path =
+      params.max_path_arc_length <= 0.0
+        ? resampled_path_points
+        : motion_utils::cropForwardPoints(
+            resampled_path_points, resampled_path_points.front().point.pose.position, 0,
+            params.max_path_arc_length);
+    for (const auto & p : cropped_path) cropped_poses.push_back(p.point.pose);
+  } else {
     const auto initial_arc_length = motion_utils::calcArcLength(cropped_poses);
     const auto max_path_arc_length = motion_utils::calcArcLength(path.points);
     const auto first_arc_length = motion_utils::calcSignedArcLength(
       path.points, path.points.front().point.pose.position, cropped_poses.back().position);
     for (auto arc_length = first_arc_length + params.resample_interval;
-         initial_arc_length + (arc_length - first_arc_length) <= params.max_path_arc_length &&
+         (params.max_path_arc_length <= 0.0 ||
+          initial_arc_length + (arc_length - first_arc_length) <= params.max_path_arc_length) &&
          arc_length <= max_path_arc_length;
          arc_length += params.resample_interval)
       cropped_poses.push_back(motion_utils::calcInterpolatedPose(path.points, arc_length));
@@ -129,7 +136,8 @@ std::vector<double> calculate_minimum_expansions(
         auto arc_length =
           tier4_autoware_utils::calcDistance2d(*intersection_point, bound[bound_idx + 1]);
         for (auto up_bound_idx = bound_idx + 2; up_bound_idx < bound.size(); ++up_bound_idx) {
-          tier4_autoware_utils::calcDistance2d(bound[bound_idx - 1], bound[bound_idx]);
+          arc_length +=
+            tier4_autoware_utils::calcDistance2d(bound[up_bound_idx - 1], bound[up_bound_idx]);
           if (arc_length > params.extra_arc_length) break;
           minimum_expansions[up_bound_idx] = std::max(minimum_expansions[up_bound_idx], dist);
         }
@@ -200,11 +208,11 @@ void expand_bound(
   LineString2d path_ls;
   for (const auto & p : path_poses) path_ls.push_back(convert_point(p.position));
   for (auto idx = 0LU; idx < bound.size(); ++idx) {
-    const auto bound_p = convert_point(bound[idx]);
-    const auto projection = point_to_linestring_projection(bound_p, path_ls);
-    const auto expansion_ratio =
-      (expansions[idx] + std::abs(projection.distance)) / std::abs(projection.distance);
-    if (expansion_ratio > 1.0) {
+    if (expansions[idx] > 0.0) {
+      const auto bound_p = convert_point(bound[idx]);
+      const auto projection = point_to_linestring_projection(bound_p, path_ls);
+      const auto expansion_ratio =
+        (expansions[idx] + std::abs(projection.distance)) / std::abs(projection.distance);
       const auto & path_p = projection.projected_point;
       const auto expanded_p = lerp_point(path_p, bound_p, expansion_ratio);
       bound[idx].x = expanded_p.x();
@@ -267,6 +275,7 @@ void expand_drivable_area(
   stop_watch.tic("crop");
   std::vector<Pose> path_poses = planner_data->drivable_area_expansion_prev_path_poses;
   std::vector<double> curvatures = planner_data->drivable_area_expansion_prev_curvatures;
+
   reuse_previous_poses(
     path, path_poses, curvatures, planner_data->self_odometry->pose.pose.position, params);
   const auto crop_ms = stop_watch.toc("crop");
@@ -299,6 +308,7 @@ void expand_drivable_area(
   apply_bound_change_rate_limit(left_expansions, path.left_bound, params.max_bound_rate);
   apply_bound_change_rate_limit(right_expansions, path.right_bound, params.max_bound_rate);
   const auto smooth_ms = stop_watch.toc("smooth");
+
   // TODO(Maxime): limit the distances based on the total width (left + right < min_lane_width)
   stop_watch.tic("expand");
   expand_bound(path.left_bound, path_poses, left_expansions);
@@ -312,7 +322,6 @@ void expand_drivable_area(
       "%2.2f\n\tMaximum expansion: %2.2f\n\tSmoothing: %2.2f\n\tExpansion: %2.2f\n\n",
       total_ms, preprocessing_ms, crop_ms, curvature_expansion_ms, max_dist_ms, smooth_ms,
       expand_ms);
-
   planner_data->drivable_area_expansion_prev_path_poses = path_poses;
   planner_data->drivable_area_expansion_prev_curvatures = curvatures;
 }
