@@ -1327,6 +1327,19 @@ TimeDistanceArray calcIntersectionPassingTime(
   dist_sum = 0.0;
   double passing_time = time_delay;
   time_distance_array.emplace_back(passing_time, dist_sum);
+
+  // NOTE: `reference_path` is resampled in `reference_smoothed_path`, so
+  // `last_intersection_stop_line_candidate_idx` makes no sense
+  const auto last_intersection_stop_line_candidate_point_orig =
+    path.points.at(last_intersection_stop_line_candidate_idx).point.pose;
+  const auto last_intersection_stop_line_candidate_nearest_ind_opt = motion_utils::findNearestIndex(
+    smoothed_reference_path.points, last_intersection_stop_line_candidate_point_orig, 3.0, M_PI_4);
+  if (!last_intersection_stop_line_candidate_nearest_ind_opt) {
+    return time_distance_array;
+  }
+  const auto last_intersection_stop_line_candidate_nearest_ind =
+    last_intersection_stop_line_candidate_nearest_ind_opt.value();
+
   for (size_t i = 1; i < smoothed_reference_path.points.size(); ++i) {
     const auto & p1 = smoothed_reference_path.points.at(i - 1);
     const auto & p2 = smoothed_reference_path.points.at(i);
@@ -1338,7 +1351,7 @@ TimeDistanceArray calcIntersectionPassingTime(
     const double average_velocity =
       (p1.point.longitudinal_velocity_mps + p2.point.longitudinal_velocity_mps) / 2.0;
     const double minimum_ego_velocity_division =
-      (use_upstream_velocity && i > last_intersection_stop_line_candidate_idx)
+      (use_upstream_velocity && i > last_intersection_stop_line_candidate_nearest_ind)
         ? minimum_upstream_velocity /* to avoid null division */
         : minimum_ego_velocity;
     const double passing_velocity =
