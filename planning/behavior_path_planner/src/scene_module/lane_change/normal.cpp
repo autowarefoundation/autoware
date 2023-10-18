@@ -510,6 +510,12 @@ bool NormalLaneChange::isAbleToReturnCurrentLane() const
     return false;
   }
 
+  if (!utils::isEgoWithinOriginalLane(
+        status_.current_lanes, getEgoPose(), planner_data_->parameters,
+        lane_change_parameters_->cancel.overhang_tolerance)) {
+    return false;
+  }
+
   const auto nearest_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
     status_.lane_change_path.path.points, getEgoPose(),
     planner_data_->parameters.ego_nearest_dist_threshold,
