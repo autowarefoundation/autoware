@@ -132,6 +132,12 @@ public:
   virtual void updateData() {}
 
   /**
+   * @brief After executing run(), update the module-specific status and/or data used for internal
+   *        processing that are not defined in ModuleStatus.
+   */
+  virtual void postProcess() {}
+
+  /**
    * @brief Execute module. Once this function is executed,
    *        it will continue to run as long as it is in the RUNNING state.
    */
