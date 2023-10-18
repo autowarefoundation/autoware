@@ -2,7 +2,6 @@
 
 The Autoware perception stack uses models for inference. These models are automatically downloaded if using `ansible`, but they can also be downloaded manually.
 
-
 ## Download instructions
 
 The artifacts files are stored in a common location, hosted by Web.Auto
@@ -144,7 +143,7 @@ $ tar -xf ~/autoware_data/yabloc_pose_initializer/resources.tar.gz \
 # tvm_utility
 
 $ tar -xf ~/autoware_data/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz \
-       -C ~/autoware_data/tvm_utility/models/yolo_v2_tiny/ 
+       -C ~/autoware_data/tvm_utility/models/yolo_v2_tiny/
 
 
 # lidar_centerpoint_tvm

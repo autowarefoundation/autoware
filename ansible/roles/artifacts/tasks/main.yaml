@@ -362,7 +362,7 @@
     mode: "644"
     checksum: sha256:a41e6e3324e32c30b3b2fe38908eaf3471e2bfdaeb9e14ca0c1c3bc0275119c6
 
-# tvm_utility 
+# tvm_utility
 - name: Create tvm_utility/models directory inside {{ data_dir }}
   ansible.builtin.file:
     path: "{{ data_dir }}/tvm_utility/models"
