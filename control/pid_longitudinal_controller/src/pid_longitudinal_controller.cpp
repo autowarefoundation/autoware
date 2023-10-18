@@ -501,9 +501,26 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     m_enable_keep_stopped_until_steer_convergence && !lateral_sync_data_.is_steer_converged;
 
   const bool stopping_condition = stop_dist < p.stopping_state_stop_dist;
-  if (
-    std::fabs(current_vel) > p.stopped_state_entry_vel ||
-    std::fabs(current_acc) > p.stopped_state_entry_acc) {
+
+  const bool is_stopped = std::abs(current_vel) < p.stopped_state_entry_vel &&
+                          std::abs(current_acc) < p.stopped_state_entry_acc;
+  // Case where the ego slips in the opposite direction of the gear due to e.g. a slope is also
+  // considered as a stop
+  const bool is_not_running = [&]() {
+    if (control_data.shift == Shift::Forward) {
+      if (is_stopped || current_vel < 0.0) {
+        // NOTE: Stopped or moving backward
+        return true;
+      }
+    } else {
+      if (is_stopped || 0.0 < current_vel) {
+        // NOTE: Stopped or moving forward
+        return true;
+      }
+    }
+    return false;
+  }();
+  if (!is_not_running) {
     m_last_running_time = std::make_shared<rclcpp::Time>(clock_->now());
   }
   const bool stopped_condition =
