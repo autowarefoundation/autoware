@@ -24,22 +24,26 @@
 
 namespace drivable_area_expansion
 {
-MultiLineString2d extract_uncrossable_lines(
+SegmentRtree extract_uncrossable_segments(
   const lanelet::LaneletMap & lanelet_map, const Point & ego_point,
   const DrivableAreaExpansionParameters & params)
 {
-  MultiLineString2d uncrossable_lines_in_range;
+  SegmentRtree uncrossable_segments_in_range;
   LineString2d line;
   const auto ego_p = Point2d{ego_point.x, ego_point.y};
   for (const auto & ls : lanelet_map.lineStringLayer) {
     if (has_types(ls, params.avoid_linestring_types)) {
       line.clear();
       for (const auto & p : ls) line.push_back(Point2d{p.x(), p.y()});
-      if (boost::geometry::distance(line, ego_p) < params.max_path_arc_length)
-        uncrossable_lines_in_range.push_back(line);
+      for (auto segment_idx = 0LU; segment_idx + 1 < line.size(); ++segment_idx) {
+        Segment2d segment = {line[segment_idx], line[segment_idx + 1]};
+        if (boost::geometry::distance(segment, ego_p) < params.max_path_arc_length) {
+          uncrossable_segments_in_range.insert(segment);
+        }
+      }
     }
   }
-  return uncrossable_lines_in_range;
+  return uncrossable_segments_in_range;
 }
 
 bool has_types(const lanelet::ConstLineString3d & ls, const std::vector<std::string> & types)

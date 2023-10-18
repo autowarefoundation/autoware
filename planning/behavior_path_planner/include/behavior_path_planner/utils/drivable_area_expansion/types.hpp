@@ -22,6 +22,8 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/point.hpp>
 
+#include <boost/geometry/index/rtree.hpp>
+
 namespace drivable_area_expansion
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
@@ -38,6 +40,8 @@ using tier4_autoware_utils::MultiPolygon2d;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 using tier4_autoware_utils::Segment2d;
+
+typedef boost::geometry::index::rtree<Segment2d, boost::geometry::index::rstar<16>> SegmentRtree;
 
 struct PointDistance
 {

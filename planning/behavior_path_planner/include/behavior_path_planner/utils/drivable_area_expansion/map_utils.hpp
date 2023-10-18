@@ -25,12 +25,12 @@
 
 namespace drivable_area_expansion
 {
-/// @brief Extract uncrossable linestrings from the lanelet map that are in range of ego
+/// @brief Extract uncrossable segments from the lanelet map that are in range of ego
 /// @param[in] lanelet_map lanelet map
 /// @param[in] ego_point point of the current ego position
 /// @param[in] params parameters with linestring types that cannot be crossed and maximum range
-/// @return the uncrossable linestrings
-MultiLineString2d extract_uncrossable_lines(
+/// @return the uncrossable segments stored in a rtree
+SegmentRtree extract_uncrossable_segments(
   const lanelet::LaneletMap & lanelet_map, const Point & ego_point,
   const DrivableAreaExpansionParameters & params);
 

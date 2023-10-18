@@ -36,12 +36,10 @@ namespace drivable_area_expansion
 
 namespace
 {
-
 Point2d convert_point(const Point & p)
 {
   return Point2d{p.x, p.y};
 }
-
 }  // namespace
 
 void reuse_previous_poses(
@@ -61,11 +59,17 @@ void reuse_previous_poses(
     const auto deviation =
       motion_utils::calcLateralOffset(prev_poses, path.points.front().point.pose.position);
     if (first_idx && deviation < params.max_reuse_deviation) {
+      LineString2d path_ls;
+      for (const auto & p : path.points) path_ls.push_back(convert_point(p.point.pose.position));
       for (auto idx = *first_idx; idx < prev_poses.size(); ++idx) {
-        if (
-          motion_utils::calcLateralOffset(path.points, prev_poses[idx].position) >
-          params.max_reuse_deviation)
-          break;
+        double lateral_offset = std::numeric_limits<double>::max();
+        for (auto segment_idx = 0LU; segment_idx + 1 < path_ls.size(); ++segment_idx) {
+          const auto projection = point_to_line_projection(
+            convert_point(prev_poses[idx].position), path_ls[segment_idx],
+            path_ls[segment_idx + 1]);
+          lateral_offset = std::min(projection.distance, lateral_offset);
+        }
+        if (lateral_offset > params.max_reuse_deviation) break;
         cropped_poses.push_back(prev_poses[idx]);
         cropped_curvatures.push_back(prev_curvatures[idx]);
       }
@@ -172,8 +176,7 @@ void apply_bound_change_rate_limit(
 
 std::vector<double> calculate_maximum_distance(
   const std::vector<Pose> & path_poses, const std::vector<Point> bound,
-  const std::vector<LineString2d> & uncrossable_lines,
-  const std::vector<Polygon2d> & uncrossable_polygons,
+  const SegmentRtree & uncrossable_segments, const std::vector<Polygon2d> & uncrossable_polygons,
   const DrivableAreaExpansionParameters & params)
 {
   // TODO(Maxime): improve performances (dont use bg::distance ? use rtree ?)
@@ -183,9 +186,13 @@ std::vector<double> calculate_maximum_distance(
   for (const auto & p : bound) bound_ls.push_back(convert_point(p));
   for (const auto & p : path_poses) path_ls.push_back(convert_point(p.position));
   for (auto i = 0UL; i + 1 < bound_ls.size(); ++i) {
-    const LineString2d segment_ls = {bound_ls[i], bound_ls[i + 1]};
-    for (const auto & uncrossable_line : uncrossable_lines) {
-      const auto bound_to_line_dist = boost::geometry::distance(segment_ls, uncrossable_line);
+    const Segment2d segment_ls = {bound_ls[i], bound_ls[i + 1]};
+    std::vector<Segment2d> query_result;
+    boost::geometry::index::query(
+      uncrossable_segments, boost::geometry::index::nearest(segment_ls, 1),
+      std::back_inserter(query_result));
+    if (!query_result.empty()) {
+      const auto bound_to_line_dist = boost::geometry::distance(segment_ls, query_result.front());
       const auto dist_limit = std::max(0.0, bound_to_line_dist - params.avoid_linestring_dist);
       maximum_distances[i] = std::min(maximum_distances[i], dist_limit);
       maximum_distances[i + 1] = std::min(maximum_distances[i + 1], dist_limit);
@@ -267,7 +274,7 @@ void expand_drivable_area(
   // crop first/last non deviating path_poses
   const auto & params = planner_data->drivable_area_expansion_parameters;
   const auto & route_handler = *planner_data->route_handler;
-  const auto uncrossable_lines = extract_uncrossable_lines(
+  const auto uncrossable_segments = extract_uncrossable_segments(
     *route_handler.getLaneletMapPtr(), planner_data->self_odometry->pose.pose.position, params);
   const auto uncrossable_polygons = create_object_footprints(*planner_data->dynamic_object, params);
   const auto preprocessing_ms = stop_watch.toc("preprocessing");
@@ -295,9 +302,9 @@ void expand_drivable_area(
 
   stop_watch.tic("max_dist");
   const auto max_left_expansions = calculate_maximum_distance(
-    path_poses, path.left_bound, uncrossable_lines, uncrossable_polygons, params);
+    path_poses, path.left_bound, uncrossable_segments, uncrossable_polygons, params);
   const auto max_right_expansions = calculate_maximum_distance(
-    path_poses, path.right_bound, uncrossable_lines, uncrossable_polygons, params);
+    path_poses, path.right_bound, uncrossable_segments, uncrossable_polygons, params);
   for (auto i = 0LU; i < left_expansions.size(); ++i)
     left_expansions[i] = std::min(left_expansions[i], max_left_expansions[i]);
   for (auto i = 0LU; i < right_expansions.size(); ++i)
