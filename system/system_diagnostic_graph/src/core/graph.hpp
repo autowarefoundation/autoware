@@ -17,29 +17,36 @@
 
 #include "types.hpp"
 
-#include <map>
+#include <rclcpp/rclcpp.hpp>
+
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace system_diagnostic_graph
 {
 
-class Graph
+class Graph final
 {
 public:
-  UnitNode * make_unit(const std::string & name);
-  UnitNode * find_unit(const std::string & name);
-  DiagNode * make_diag(const std::string & name, const std::string & hardware);
-  DiagNode * find_diag(const std::string & name, const std::string & hardware);
-  void topological_sort();
-  const std::vector<std::unique_ptr<BaseNode>> & nodes() { return nodes_; }
+  Graph();
+  ~Graph();
+
+  void init(const std::string & file, const std::string & mode);
+  void callback(const DiagnosticArray & array, const rclcpp::Time & stamp);
+  void update(const rclcpp::Time & stamp);
+  DiagnosticGraph message() const;
+  std::vector<BaseNode *> nodes() const;
+
+  void debug();
 
 private:
   std::vector<std::unique_ptr<BaseNode>> nodes_;
-  std::map<std::string, UnitNode *> units_;
-  std::map<std::pair<std::string, std::string>, DiagNode *> diags_;
+  std::unordered_map<std::string, DiagNode *> diags_;
+  UnknownNode * unknown_;
+  rclcpp::Time stamp_;
 };
 
 }  // namespace system_diagnostic_graph

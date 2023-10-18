@@ -12,47 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CORE__UPDATE_HPP_
-#define CORE__UPDATE_HPP_
+#ifndef CORE__MODES_HPP_
+#define CORE__MODES_HPP_
 
-#include "graph.hpp"
-#include "node.hpp"
 #include "types.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <string>
+#include <tier4_system_msgs/msg/operation_mode_availability.hpp>
+
 #include <vector>
 
 namespace system_diagnostic_graph
 {
 
-struct Summary
-{
-  UnitNode * stop_mode;
-  UnitNode * autonomous_mode;
-  UnitNode * local_mode;
-  UnitNode * remote_mode;
-  UnitNode * emergency_stop_mrm;
-  UnitNode * comfortable_stop_mrm;
-  UnitNode * pull_over_mrm;
-};
-
-class DiagGraph
+class OperationModes
 {
 public:
-  void create(const std::string & file);
-  void callback(const DiagnosticArray & array);
-  DiagnosticGraph report(const rclcpp::Time & stamp);
-  OperationModeAvailability summary(const rclcpp::Time & stamp);
-
-  void debug();
+  explicit OperationModes(rclcpp::Node & node, const std::vector<BaseNode *> & graph);
+  void update(const rclcpp::Time & stamp) const;
 
 private:
-  Graph graph_;
-  Summary summary_;
+  using Availability = tier4_system_msgs::msg::OperationModeAvailability;
+  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Publisher<Availability>::SharedPtr pub_;
+
+  BaseNode * stop_mode_;
+  BaseNode * autonomous_mode_;
+  BaseNode * local_mode_;
+  BaseNode * remote_mode_;
+  BaseNode * emergency_stop_mrm_;
+  BaseNode * comfortable_stop_mrm_;
+  BaseNode * pull_over_mrm_;
 };
 
 }  // namespace system_diagnostic_graph
 
-#endif  // CORE__UPDATE_HPP_
+#endif  // CORE__MODES_HPP_

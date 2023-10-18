@@ -1,5 +1,7 @@
 /**:
   ros__parameters:
+    mode_availability: true
+    mode: psim
     rate: 1.0
     input_qos_depth: 1000
     graph_qos_depth: 1

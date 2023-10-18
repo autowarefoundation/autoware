@@ -15,7 +15,6 @@
 #ifndef TOOL_HPP_
 #define TOOL_HPP_
 
-#include "core/graph.hpp"
 #include "core/types.hpp"
 
 #include <rclcpp/rclcpp.hpp>

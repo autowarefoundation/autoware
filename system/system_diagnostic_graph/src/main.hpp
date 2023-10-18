@@ -15,10 +15,13 @@
 #ifndef MAIN_HPP_
 #define MAIN_HPP_
 
+#include "core/graph.hpp"
+#include "core/modes.hpp"
 #include "core/types.hpp"
-#include "core/update.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+
+#include <memory>
 
 namespace system_diagnostic_graph
 {
@@ -27,13 +30,14 @@ class MainNode : public rclcpp::Node
 {
 public:
   MainNode();
+  ~MainNode();
 
 private:
-  DiagGraph graph_;
+  Graph graph_;
+  std::unique_ptr<OperationModes> modes_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<DiagnosticArray>::SharedPtr sub_input_;
   rclcpp::Publisher<DiagnosticGraph>::SharedPtr pub_graph_;
-  rclcpp::Publisher<OperationModeAvailability>::SharedPtr pub_modes_;
   void on_timer();
   void on_diag(const DiagnosticArray::ConstSharedPtr msg);
 };

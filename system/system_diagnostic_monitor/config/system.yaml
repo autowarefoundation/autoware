@@ -1,7 +1,0 @@
-nodes:
-  - name: /autoware/system
-    type: and
-    list:
-      - type: diag
-        name: "topic_state_monitor_system_emergency_control_cmd: system_topic_status"
-        hardware: topic_state_monitor

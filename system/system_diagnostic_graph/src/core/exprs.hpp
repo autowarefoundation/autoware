@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CORE__EXPR_HPP_
-#define CORE__EXPR_HPP_
+#ifndef CORE__EXPRS_HPP_
+#define CORE__EXPRS_HPP_
 
+#include "config.hpp"
 #include "types.hpp"
-
-#include <yaml-cpp/yaml.h>
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -36,7 +36,6 @@ struct ExprStatus
 class BaseExpr
 {
 public:
-  static std::unique_ptr<BaseExpr> create(Graph & graph, YAML::Node yaml);
   virtual ~BaseExpr() = default;
   virtual ExprStatus eval() const = 0;
   virtual std::vector<BaseNode *> get_dependency() const = 0;
@@ -53,43 +52,34 @@ private:
   DiagnosticLevel level_;
 };
 
-class UnitExpr : public BaseExpr
+class LinkExpr : public BaseExpr
 {
 public:
-  UnitExpr(Graph & graph, YAML::Node yaml);
+  LinkExpr(ExprInit & exprs, ConfigObject & config);
+  void init(ConfigObject & config, std::unordered_map<std::string, BaseNode *> nodes);
   ExprStatus eval() const override;
   std::vector<BaseNode *> get_dependency() const override;
 
 private:
-  UnitNode * node_;
-};
-
-class DiagExpr : public BaseExpr
-{
-public:
-  DiagExpr(Graph & graph, YAML::Node yaml);
-  ExprStatus eval() const override;
-  std::vector<BaseNode *> get_dependency() const override;
-
-private:
-  DiagNode * node_;
+  BaseNode * node_;
 };
 
 class AndExpr : public BaseExpr
 {
 public:
-  AndExpr(Graph & graph, YAML::Node yaml);
+  AndExpr(ExprInit & exprs, ConfigObject & config, bool short_circuit);
   ExprStatus eval() const override;
   std::vector<BaseNode *> get_dependency() const override;
 
 private:
+  bool short_circuit_;
   std::vector<std::unique_ptr<BaseExpr>> list_;
 };
 
 class OrExpr : public BaseExpr
 {
 public:
-  OrExpr(Graph & graph, YAML::Node yaml);
+  OrExpr(ExprInit & exprs, ConfigObject & config);
   ExprStatus eval() const override;
   std::vector<BaseNode *> get_dependency() const override;
 
@@ -97,18 +87,18 @@ private:
   std::vector<std::unique_ptr<BaseExpr>> list_;
 };
 
-class IfExpr : public BaseExpr
+class ExprInit
 {
 public:
-  IfExpr(Graph & graph, YAML::Node yaml);
-  ExprStatus eval() const override;
-  std::vector<BaseNode *> get_dependency() const override;
+  explicit ExprInit(const std::string & mode);
+  std::unique_ptr<BaseExpr> create(ExprConfig config);
+  auto get() const { return links_; }
 
 private:
-  std::unique_ptr<BaseExpr> cond_;
-  std::unique_ptr<BaseExpr> then_;
+  std::string mode_;
+  std::vector<std::pair<LinkExpr *, ConfigObject>> links_;
 };
 
 }  // namespace system_diagnostic_graph
 
-#endif  // CORE__EXPR_HPP_
+#endif  // CORE__EXPRS_HPP_

@@ -1,5 +1,0 @@
-nodes:
-  - name: /autoware/localization
-    type: and
-    list:
-      - { type: diag, name: "component_state_diagnostics: localization_state" }
