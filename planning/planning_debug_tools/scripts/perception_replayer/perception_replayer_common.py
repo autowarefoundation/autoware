@@ -180,10 +180,4 @@ class PerceptionReplayerCommon(Node):
         return objects_data, traffic_signals_data
 
     def find_ego_odom_by_timestamp(self, timestamp):
-        ego_odom_data = None
-        for data in self.rosbag_ego_odom_data:
-            if timestamp < data[0]:
-                ego_odom_data = data[1]
-                break
-
-        return ego_odom_data
+        return self.binary_search(self.rosbag_ego_odom_data, timestamp)
