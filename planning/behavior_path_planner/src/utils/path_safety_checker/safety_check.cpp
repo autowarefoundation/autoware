@@ -157,7 +157,7 @@ Polygon2d createExtendedPolygon(
   {
     debug.forward_lon_offset = forward_lon_offset;
     debug.backward_lon_offset = backward_lon_offset;
-    debug.lat_offset = (left_lat_offset + right_lat_offset) / 2;
+    debug.lat_offset = std::max(std::abs(left_lat_offset), std::abs(right_lat_offset));
   }
 
   const auto p1 =
@@ -324,17 +324,15 @@ std::vector<Polygon2d> getCollidedPolygons(
     const auto & ego_polygon = interpolated_data->poly;
     const auto & ego_velocity = interpolated_data->velocity;
 
-    {
-      debug.expected_ego_pose = ego_pose;
-      debug.expected_obj_pose = obj_pose;
-      debug.extended_ego_polygon = ego_polygon;
-      debug.extended_obj_polygon = obj_polygon;
-    }
-
     // check overlap
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {
       debug.unsafe_reason = "overlap_polygon";
       collided_polygons.push_back(obj_polygon);
+
+      debug.expected_ego_pose = ego_pose;
+      debug.expected_obj_pose = obj_pose;
+      debug.extended_ego_polygon = ego_polygon;
+      debug.extended_obj_polygon = obj_polygon;
       continue;
     }
 
@@ -366,18 +364,16 @@ std::vector<Polygon2d> getCollidedPolygons(
         : createExtendedPolygon(
             obj_pose, target_object.shape, lon_offset, lat_margin, is_stopped_object, debug);
 
-    {
+    // check overlap with extended polygon
+    if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
+      debug.unsafe_reason = "overlap_extended_polygon";
+      collided_polygons.push_back(obj_polygon);
+
       debug.rss_longitudinal = rss_dist;
       debug.inter_vehicle_distance = min_lon_length;
       debug.extended_ego_polygon = extended_ego_polygon;
       debug.extended_obj_polygon = extended_obj_polygon;
       debug.is_front = is_object_front;
-    }
-
-    // check overlap with extended polygon
-    if (boost::geometry::overlaps(extended_ego_polygon, extended_obj_polygon)) {
-      debug.unsafe_reason = "overlap_extended_polygon";
-      collided_polygons.push_back(obj_polygon);
     }
   }
 
