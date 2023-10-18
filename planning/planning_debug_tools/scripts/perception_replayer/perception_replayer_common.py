@@ -153,6 +153,11 @@ class PerceptionReplayerCommon(Node):
                 pass
 
     def binary_search(self, data, timestamp):
+        if data[-1][0] < timestamp:
+            return data[-1][1]
+        elif data[0][0] > timestamp:
+            return data[0][1]
+
         low, high = 0, len(data) - 1
 
         while low <= high:
