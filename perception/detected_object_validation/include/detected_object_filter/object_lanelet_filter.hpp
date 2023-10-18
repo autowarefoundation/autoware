@@ -51,6 +51,7 @@ private:
 
   lanelet::LaneletMapPtr lanelet_map_ptr_;
   lanelet::ConstLanelets road_lanelets_;
+  lanelet::ConstLanelets shoulder_lanelets_;
   std::string lanelet_frame_id_;
 
   tf2_ros::Buffer tf_buffer_;
