@@ -171,7 +171,7 @@ MarkerArray createNumObjectsToAvoidTextsMarkerArray(
 }
 
 MarkerArray createGoalCandidatesMarkerArray(
-  GoalCandidates & goal_candidates, const std_msgs::msg::ColorRGBA & color)
+  const GoalCandidates & goal_candidates, const std_msgs::msg::ColorRGBA & color)
 {
   GoalCandidates safe_goal_candidates{};
   std::copy_if(
