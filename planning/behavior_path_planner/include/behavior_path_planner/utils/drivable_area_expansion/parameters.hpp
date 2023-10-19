@@ -15,8 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__DRIVABLE_AREA_EXPANSION__PARAMETERS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__DRIVABLE_AREA_EXPANSION__PARAMETERS_HPP_
 
-#include "behavior_path_planner/utils/drivable_area_expansion/types.hpp"
-
 #include <rclcpp/node.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 

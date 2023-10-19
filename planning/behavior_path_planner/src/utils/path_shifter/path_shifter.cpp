@@ -15,13 +15,11 @@
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
 
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 
-#include <limits>
 #include <string>
 #include <utility>
 #include <vector>

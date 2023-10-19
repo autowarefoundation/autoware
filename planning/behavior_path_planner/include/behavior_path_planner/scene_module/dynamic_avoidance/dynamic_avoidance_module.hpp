@@ -18,8 +18,10 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
@@ -35,6 +37,9 @@
 
 namespace behavior_path_planner
 {
+using autoware_auto_perception_msgs::msg::PredictedPath;
+using tier4_autoware_utils::Polygon2d;
+
 struct MinMaxValue
 {
   double min_value{0.0};

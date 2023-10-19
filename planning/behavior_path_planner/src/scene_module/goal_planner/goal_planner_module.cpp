@@ -17,11 +17,11 @@
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
-#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -38,7 +38,6 @@
 #include <vector>
 
 using behavior_path_planner::utils::start_goal_planner_common::calcFeasibleDecelDistance;
-using motion_utils::calcDecelDistWithJerkAndAccConstraints;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;

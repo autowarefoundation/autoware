@@ -21,7 +21,6 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 
 #include <memory>
-#include <vector>
 
 namespace behavior_path_planner
 {

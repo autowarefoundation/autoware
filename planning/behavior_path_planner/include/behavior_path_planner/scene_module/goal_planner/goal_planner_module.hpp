@@ -32,6 +32,7 @@
 #include <freespace_planning_algorithms/rrtstar.hpp>
 #include <lane_departure_checker/lane_departure_checker.hpp>
 #include <motion_utils/distance/distance.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
@@ -65,6 +66,7 @@ using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
+using tier4_autoware_utils::Polygon2d;
 
 enum class PathType {
   NONE = 0,

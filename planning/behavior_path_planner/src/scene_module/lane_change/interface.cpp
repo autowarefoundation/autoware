@@ -19,12 +19,10 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <string>
 #include <utility>

@@ -20,7 +20,6 @@
 #include "lanelet2_extension/regulatory_elements/no_parking_area.hpp"
 #include "lanelet2_extension/regulatory_elements/no_stopping_area.hpp"
 #include "lanelet2_extension/utility/utilities.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <boost/geometry/algorithms/union.hpp>
@@ -37,7 +36,6 @@ using lane_departure_checker::LaneDepartureChecker;
 using lanelet::autoware::NoParkingArea;
 using lanelet::autoware::NoStoppingArea;
 using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::inverseTransformPose;
 
 // Sort with smaller longitudinal distances taking precedence over smaller lateral distances.
 struct SortByLongitudinalDistance

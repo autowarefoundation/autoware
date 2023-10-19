@@ -17,13 +17,7 @@
 
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/planner_manager.hpp"
-#include "behavior_path_planner/scene_module/avoidance/manager.hpp"
-#include "behavior_path_planner/scene_module/dynamic_avoidance/manager.hpp"
-#include "behavior_path_planner/scene_module/goal_planner/manager.hpp"
-#include "behavior_path_planner/scene_module/lane_change/manager.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
-#include "behavior_path_planner/scene_module/side_shift/manager.hpp"
-#include "behavior_path_planner/scene_module/start_planner/manager.hpp"
 #include "behavior_path_planner/steering_factor_interface.hpp"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
 
@@ -66,7 +60,6 @@ using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::PoseWithUuidStamped;
-using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using rcl_interfaces::msg::SetParametersResult;

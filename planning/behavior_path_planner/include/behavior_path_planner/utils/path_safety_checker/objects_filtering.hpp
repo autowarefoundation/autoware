@@ -27,7 +27,6 @@
 #include <tf2/utils.h>
 
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 

@@ -14,11 +14,8 @@
 
 #include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 
-#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "interpolation/linear_interpolation.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
-#include "object_recognition_utils/predicted_path_utils.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <boost/geometry/algorithms/distance.hpp>
@@ -27,6 +24,9 @@
 
 namespace behavior_path_planner::utils::path_safety_checker
 {
+
+namespace bg = boost::geometry;
+
 void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point & geom_point)
 {
   Point2d point;

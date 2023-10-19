@@ -30,9 +30,7 @@
 
 #include <lanelet2_core/Forward.h>
 
-#include <algorithm>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 

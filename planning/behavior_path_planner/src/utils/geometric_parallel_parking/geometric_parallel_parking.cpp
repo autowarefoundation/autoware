@@ -17,7 +17,6 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_planner/util.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
@@ -37,8 +36,6 @@
 
 #include <boost/geometry/algorithms/within.hpp>
 
-#include <limits>
-#include <string>
 #include <utility>
 #include <vector>
 

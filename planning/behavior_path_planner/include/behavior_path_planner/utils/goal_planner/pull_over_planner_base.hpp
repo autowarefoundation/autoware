@@ -16,7 +16,6 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__PULL_OVER_PLANNER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
 

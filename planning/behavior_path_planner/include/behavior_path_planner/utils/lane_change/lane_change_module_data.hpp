@@ -16,17 +16,9 @@
 
 #include "behavior_path_planner/utils/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
-#include "lanelet2_core/geometry/Lanelet.h"
-
-#include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
 
 #include <lanelet2_core/primitives/Lanelet.h>
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace behavior_path_planner

@@ -15,9 +15,9 @@
 #include "behavior_path_planner/scene_module/lane_change/normal.hpp"
 
 #include "behavior_path_planner/marker_utils/utils.hpp"
-#include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/lane_change/utils.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
+#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 

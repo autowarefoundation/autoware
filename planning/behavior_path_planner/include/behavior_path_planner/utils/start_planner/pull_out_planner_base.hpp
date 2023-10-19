@@ -16,7 +16,6 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__PULL_OUT_PLANNER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utils/start_planner/pull_out_path.hpp"
 #include "behavior_path_planner/utils/start_planner/start_planner_parameters.hpp"
@@ -27,14 +26,13 @@
 #include <boost/optional.hpp>
 
 #include <memory>
-#include <vector>
 
+namespace behavior_path_planner
+{
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using tier4_autoware_utils::LinearRing2d;
 
-namespace behavior_path_planner
-{
 enum class PlannerType {
   NONE = 0,
   SHIFT = 1,

@@ -15,9 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__LANE_FOLLOWING__MODULE_DATA_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_FOLLOWING__MODULE_DATA_HPP_
 
-#include <string>
-#include <vector>
-
 namespace behavior_path_planner
 {
 

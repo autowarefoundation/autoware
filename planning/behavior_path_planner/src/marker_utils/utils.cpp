@@ -17,7 +17,6 @@
 #include "behavior_path_planner/marker_utils/colors.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
-#include "behavior_path_planner/utils/utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <tier4_autoware_utils/ros/uuid_helper.hpp>

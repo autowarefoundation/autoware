@@ -18,7 +18,6 @@
 #include <interpolation/linear_interpolation.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <string>
 #include <utility>
 #include <vector>
 

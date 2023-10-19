@@ -15,8 +15,6 @@
 #include "behavior_path_planner/utils/goal_planner/geometric_pull_over.hpp"
 
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>

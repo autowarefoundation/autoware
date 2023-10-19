@@ -15,15 +15,13 @@
 #ifndef BEHAVIOR_PATH_PLANNER__STEERING_FACTOR_INTERFACE_HPP_
 #define BEHAVIOR_PATH_PLANNER__STEERING_FACTOR_INTERFACE_HPP_
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 
-#include "autoware_adapi_v1_msgs/msg/steering_factor_array.hpp"
-#include "geometry_msgs/msg/pose.hpp"
-#include "unique_identifier_msgs/msg/uuid.hpp"
+#include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 #include <mutex>
 #include <string>
-#include <vector>
 
 namespace steering_factor_interface
 {

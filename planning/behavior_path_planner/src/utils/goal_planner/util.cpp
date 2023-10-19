@@ -14,9 +14,6 @@
 
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
 
-#include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
-#include "behavior_path_planner/utils/path_utils.hpp"
-
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -29,7 +26,6 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <string>
 #include <vector>

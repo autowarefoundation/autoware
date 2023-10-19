@@ -15,6 +15,7 @@
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 
 #include "behavior_path_planner/utils/utils.hpp"
+#include "object_recognition_utils/predicted_path_utils.hpp"
 
 #include <motion_utils/trajectory/interpolation.hpp>
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>

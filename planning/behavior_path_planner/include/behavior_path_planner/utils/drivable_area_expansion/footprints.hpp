@@ -20,7 +20,6 @@
 
 #include <tier4_autoware_utils/ros/transform_listener.hpp>
 
-#include "autoware_auto_planning_msgs/msg/detail/path_point__struct.hpp"
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
@@ -30,11 +29,6 @@
 #include <boost/geometry/algorithms/overlaps.hpp>
 #include <boost/geometry/index/predicates.hpp>
 #include <boost/geometry/index/rtree.hpp>
-
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace drivable_area_expansion
 {

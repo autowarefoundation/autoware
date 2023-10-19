@@ -18,14 +18,11 @@
 #include "behavior_path_planner/utils/goal_planner/goal_searcher_base.hpp"
 #include "behavior_path_planner/utils/occupancy_grid_based_collision_detector/occupancy_grid_based_collision_detector.hpp"
 
-#include "autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp"
-
 #include <memory>
 #include <vector>
 
 namespace behavior_path_planner
 {
-using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using tier4_autoware_utils::LinearRing2d;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 

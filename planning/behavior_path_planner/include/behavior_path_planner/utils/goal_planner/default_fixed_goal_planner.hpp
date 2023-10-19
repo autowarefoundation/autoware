@@ -20,7 +20,6 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <memory>
-#include <vector>
 
 namespace behavior_path_planner
 {

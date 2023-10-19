@@ -18,20 +18,17 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_manager_interface.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
-#include "behavior_path_planner/utils/lane_following/module_data.hpp"
 #include "tier4_autoware_utils/ros/debug_publisher.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "tier4_debug_msgs/msg/float64_stamped.hpp"
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
 
 #include <lanelet2_core/primitives/Lanelet.h>
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>

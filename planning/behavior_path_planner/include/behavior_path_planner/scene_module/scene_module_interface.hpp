@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_INTERFACE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/scene_module/scene_module_visitor.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 

@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__START_GOAL_PLANNER_COMMON__COMMON_MODULE_DATA_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__START_GOAL_PLANNER_COMMON__COMMON_MODULE_DATA_HPP_
 
-#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 
 #include <rclcpp/rclcpp.hpp>

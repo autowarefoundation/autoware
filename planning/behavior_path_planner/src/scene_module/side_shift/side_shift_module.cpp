@@ -32,7 +32,6 @@ using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
 using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::getPoint;
 
 SideShiftModule::SideShiftModule(

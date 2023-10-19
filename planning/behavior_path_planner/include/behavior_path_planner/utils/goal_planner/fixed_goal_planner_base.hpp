@@ -16,13 +16,11 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__FIXED_GOAL_PLANNER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/parameters.hpp"
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <memory>
-#include <vector>
 
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;

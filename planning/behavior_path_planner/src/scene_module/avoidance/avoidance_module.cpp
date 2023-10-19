@@ -52,17 +52,12 @@
 namespace behavior_path_planner
 {
 
-using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
-using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcInterpolatedPose;
 using tier4_autoware_utils::calcLateralDeviation;
-using tier4_autoware_utils::calcLongitudinalDeviation;
-using tier4_autoware_utils::calcYawDeviation;
 using tier4_autoware_utils::getPoint;
 using tier4_autoware_utils::getPose;
 using tier4_autoware_utils::toHexString;

@@ -16,12 +16,10 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__GOAL_SEARCHER_BASE_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
-#include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/goal_planner/goal_planner_parameters.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include <limits>
 #include <memory>
 #include <vector>
 

@@ -14,9 +14,7 @@
 
 #include "behavior_path_planner/marker_utils/avoidance/debug.hpp"
 
-#include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
 
 #include <magic_enum.hpp>
 
@@ -29,7 +27,6 @@
 namespace marker_utils::avoidance_marker
 {
 
-using behavior_path_planner::AvoidLine;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;

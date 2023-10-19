@@ -15,7 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__AVOIDANCE_MODULE_DATA_HPP_
 
-#include "behavior_path_planner/marker_utils/utils.hpp"
+#include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_shifter/path_shifter.hpp"
 

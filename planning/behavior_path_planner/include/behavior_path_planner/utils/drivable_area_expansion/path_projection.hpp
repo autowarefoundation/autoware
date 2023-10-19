@@ -21,7 +21,6 @@
 
 #include <boost/geometry.hpp>
 
-#include <iostream>
 #include <limits>
 
 namespace drivable_area_expansion

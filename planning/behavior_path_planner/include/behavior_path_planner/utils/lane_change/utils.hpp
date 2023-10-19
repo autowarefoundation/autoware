@@ -15,12 +15,10 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__LANE_CHANGE__UTILS_HPP_
 
-#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
 #include "behavior_path_planner/parameters.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
-#include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <route_handler/route_handler.hpp>
@@ -32,10 +30,7 @@
 
 #include <lanelet2_core/Forward.h>
 
-#include <memory>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace behavior_path_planner::utils::lane_change
