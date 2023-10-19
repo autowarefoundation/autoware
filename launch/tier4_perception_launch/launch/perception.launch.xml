@@ -96,6 +96,9 @@
   <arg name="fusion_distance" default="100.0"/>
   <arg name="trust_object_distance" default="100.0"/>
 
+  <!-- Whether to use detection by tracker -->
+  <arg name="use_detection_by_tracker" default="true"/>
+
   <!-- Radar long range integration methods -->
   <arg
     name="use_radar_tracking_fusion"
