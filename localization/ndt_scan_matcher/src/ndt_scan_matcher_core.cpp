@@ -764,38 +764,33 @@ void NDTScanMatcher::service_ndt_align(
     map_update_module_->update_map(initial_pose_msg_in_map_frame.pose.pose.position);
   }
 
+  // mutex Map
+  std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);
+
   if (ndt_ptr_->getInputTarget() == nullptr) {
     res->success = false;
-    RCLCPP_WARN(get_logger(), "No InputTarget");
+    RCLCPP_WARN(
+      get_logger(), "No InputTarget. Please check the map file and the map_loader service");
     return;
   }
 
   if (ndt_ptr_->getInputSource() == nullptr) {
     res->success = false;
-    RCLCPP_WARN(get_logger(), "No InputSource");
+    RCLCPP_WARN(get_logger(), "No InputSource. Please check the input lidar topic");
     return;
   }
 
-  // mutex Map
-  std::lock_guard<std::mutex> lock(ndt_ptr_mtx_);
-
   (*state_ptr_)["state"] = "Aligning";
-  res->pose_with_covariance = align_using_monte_carlo(ndt_ptr_, initial_pose_msg_in_map_frame);
+  res->pose_with_covariance = align_pose(initial_pose_msg_in_map_frame);
   (*state_ptr_)["state"] = "Sleeping";
   res->success = true;
   res->pose_with_covariance.pose.covariance = req->pose_with_covariance.pose.covariance;
 }
 
-geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_carlo(
-  const std::shared_ptr<NormalDistributionsTransform> & ndt_ptr,
+geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
   const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_with_cov)
 {
-  if (ndt_ptr->getInputTarget() == nullptr || ndt_ptr->getInputSource() == nullptr) {
-    RCLCPP_WARN(get_logger(), "No Map or Sensor PointCloud");
-    return geometry_msgs::msg::PoseWithCovarianceStamped();
-  }
-
-  output_pose_with_cov_to_log(get_logger(), "align_using_monte_carlo_input", initial_pose_with_cov);
+  output_pose_with_cov_to_log(get_logger(), "align_pose_input", initial_pose_with_cov);
 
   const auto base_rpy = get_rpy(initial_pose_with_cov);
   const Eigen::Map<const RowMatrixXd> covariance = {
@@ -856,8 +851,8 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_
     initial_pose.orientation = tf2::toMsg(tf_quaternion);
 
     const Eigen::Matrix4f initial_pose_matrix = pose_to_matrix4f(initial_pose);
-    ndt_ptr->align(*output_cloud, initial_pose_matrix);
-    const pclomp::NdtResult ndt_result = ndt_ptr->getResult();
+    ndt_ptr_->align(*output_cloud, initial_pose_matrix);
+    const pclomp::NdtResult ndt_result = ndt_ptr_->getResult();
 
     Particle particle(
       initial_pose, matrix4f_to_pose(ndt_result.pose), ndt_result.transform_probability,
@@ -891,7 +886,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_
 
     auto sensor_points_in_map_ptr = std::make_shared<pcl::PointCloud<PointSource>>();
     tier4_autoware_utils::transformPointCloud(
-      *ndt_ptr->getInputSource(), *sensor_points_in_map_ptr, ndt_result.pose);
+      *ndt_ptr_->getInputSource(), *sensor_points_in_map_ptr, ndt_result.pose);
     publish_point_cloud(initial_pose_with_cov.header.stamp, map_frame_, sensor_points_in_map_ptr);
   }
 
@@ -904,8 +899,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_using_monte_
   result_pose_with_cov_msg.header.frame_id = map_frame_;
   result_pose_with_cov_msg.pose.pose = best_particle_ptr->result_pose;
 
-  output_pose_with_cov_to_log(
-    get_logger(), "align_using_monte_carlo_output", result_pose_with_cov_msg);
+  output_pose_with_cov_to_log(get_logger(), "align_pose_output", result_pose_with_cov_msg);
   RCLCPP_INFO_STREAM(get_logger(), "best_score," << best_particle_ptr->score);
 
   return result_pose_with_cov_msg;
