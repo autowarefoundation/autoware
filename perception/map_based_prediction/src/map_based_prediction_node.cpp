@@ -976,6 +976,46 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
   pub_calculation_time_->publish(calculation_time_msg);
 }
 
+bool MapBasedPredictionNode::doesPathCrossAnyFence(const PredictedPath & predicted_path)
+{
+  const lanelet::ConstLineStrings3d & all_fences =
+    lanelet::utils::query::getAllFences(lanelet_map_ptr_);
+  for (const auto & fence_line : all_fences) {
+    if (doesPathCrossFence(predicted_path, fence_line)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool MapBasedPredictionNode::doesPathCrossFence(
+  const PredictedPath & predicted_path, const lanelet::ConstLineString3d & fence_line)
+{
+  // check whether the predicted path cross with fence
+  for (size_t i = 0; i < predicted_path.path.size(); ++i) {
+    for (size_t j = 0; j < fence_line.size() - 1; ++j) {
+      if (isIntersecting(
+            predicted_path.path[i].position, predicted_path.path[i + 1].position, fence_line[j],
+            fence_line[j + 1])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool MapBasedPredictionNode::isIntersecting(
+  const geometry_msgs::msg::Point & point1, const geometry_msgs::msg::Point & point2,
+  const lanelet::ConstPoint3d & point3, const lanelet::ConstPoint3d & point4)
+{
+  const auto p1 = tier4_autoware_utils::createPoint(point1.x, point1.y, 0.0);
+  const auto p2 = tier4_autoware_utils::createPoint(point2.x, point2.y, 0.0);
+  const auto p3 = tier4_autoware_utils::createPoint(point3.x(), point3.y(), 0.0);
+  const auto p4 = tier4_autoware_utils::createPoint(point4.x(), point4.y(), 0.0);
+  const auto intersection = tier4_autoware_utils::intersect(p1, p2, p3, p4);
+  return intersection.has_value();
+}
+
 PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
   const TrackedObject & object)
 {
@@ -995,6 +1035,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
     }
   }
 
+  // If the object is in the crosswalk, generate path to the crosswalk edge
   if (crossing_crosswalk) {
     const auto edge_points = getCrosswalkEdgePoints(crossing_crosswalk.get());
 
@@ -1018,6 +1059,8 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       predicted_object.kinematics.predicted_paths.push_back(predicted_path);
     }
 
+    // If the object is not crossing the crosswalk, in the road lanelets, try to find the closest
+    // crosswalk and generate path to the crosswalk edge
   } else if (withinRoadLanelet(object, lanelet_map_ptr_)) {
     lanelet::ConstLanelet closest_crosswalk{};
     const auto & obj_pose = object.kinematics.pose_with_covariance.pose;
@@ -1048,6 +1091,8 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       }
     }
 
+    // If the object is not crossing the crosswalk, not in the road lanelets, try to find the edge
+    // points for all crosswalks and generate path to the crosswalk edge
   } else {
     for (const auto & crosswalk : crosswalks_) {
       const auto edge_points = getCrosswalkEdgePoints(crosswalk);
@@ -1078,6 +1123,10 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       predicted_path.confidence = 1.0;
 
       if (predicted_path.path.empty()) {
+        continue;
+      }
+      // If the predicted path to the crosswalk is crossing the fence, don't use it
+      if (doesPathCrossAnyFence(predicted_path)) {
         continue;
       }
 
