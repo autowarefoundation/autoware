@@ -76,6 +76,7 @@ struct LateralAccelerationMap
 struct BehaviorPathPlannerParameters
 {
   bool verbose;
+  size_t max_iteration_num{100};
 
   ModuleConfigParameters config_avoidance;
   ModuleConfigParameters config_avoidance_by_lc;

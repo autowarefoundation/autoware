@@ -136,7 +136,7 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     const std::lock_guard<std::mutex> lock(mutex_manager_);  // for planner_manager_
 
     const auto & p = planner_data_->parameters;
-    planner_manager_ = std::make_shared<PlannerManager>(*this, p.verbose);
+    planner_manager_ = std::make_shared<PlannerManager>(*this, p.max_iteration_num, p.verbose);
 
     const auto register_and_create_publisher =
       [&](const auto & manager, const bool create_publishers) {
@@ -276,6 +276,7 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   BehaviorPathPlannerParameters p{};
 
   p.verbose = declare_parameter<bool>("verbose");
+  p.max_iteration_num = declare_parameter<int>("max_iteration_num");
 
   const auto get_scene_module_manager_param = [&](std::string && ns) {
     ModuleConfigParameters config;

@@ -28,9 +28,11 @@
 
 namespace behavior_path_planner
 {
-PlannerManager::PlannerManager(rclcpp::Node & node, const bool verbose)
+PlannerManager::PlannerManager(
+  rclcpp::Node & node, const size_t max_iteration_num, const bool verbose)
 : logger_(node.get_logger().get_child("planner_manager")),
   clock_(*node.get_clock()),
+  max_iteration_num_{max_iteration_num},
   verbose_{verbose}
 {
   processing_time_.emplace("total_time", 0.0);
@@ -81,7 +83,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       return output;
     }
 
-    while (rclcpp::ok()) {
+    for (size_t itr_num = 0;; ++itr_num) {
       /**
        * STEP1: get approved modules' output
        */
@@ -127,8 +129,17 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       addApprovedModule(highest_priority_module);
       clearCandidateModules();
       debug_info_.emplace_back(highest_priority_module, Action::ADD, "To Approval");
+
+      if (itr_num >= max_iteration_num_) {
+        RCLCPP_WARN_THROTTLE(
+          logger_, clock_, 1000, "Reach iteration limit (max: %ld). Output current result.",
+          max_iteration_num_);
+        processing_time_.at("total_time") = stop_watch_.toc("total_time", true);
+        return candidate_modules_output;
+      }
     }
-    return BehaviorModuleOutput{};
+
+    return BehaviorModuleOutput{};  // something wrong.
   }();
 
   std::for_each(

@@ -1,6 +1,7 @@
 /**:
   ros__parameters:
     verbose: false
+    max_iteration_num: 100
     planning_hz: 10.0
     backward_path_length: 5.0
     forward_path_length: 300.0
