@@ -448,20 +448,8 @@ void NDTScanMatcher::callback_sensor_points(
   }
 
   // perform several validations
-  /*****************************************************************************
-  The reason the add 2 to the ndt_ptr_->getMaximumIterations() is that there are bugs in
-  implementation of ndt.
-  1. gradient descent method ends when the iteration is greater than max_iteration if it does not
-  converge (be careful it's 'greater than' instead of 'greater equal than'.)
-     https://github.com/tier4/autoware.iv/blob/2323e5baa0b680d43a9219f5fb3b7a11dd9edc82/localization/pose_estimator/ndt_scan_matcher/ndt_omp/include/ndt_omp/ndt_omp_impl.hpp#L212
-  2. iterate iteration count when end of gradient descent function.
-     https://github.com/tier4/autoware.iv/blob/2323e5baa0b680d43a9219f5fb3b7a11dd9edc82/localization/pose_estimator/ndt_scan_matcher/ndt_omp/include/ndt_omp/ndt_omp_impl.hpp#L217
-
-  These bugs are now resolved in original pcl implementation.
-  https://github.com/PointCloudLibrary/pcl/blob/424c1c6a0ca97d94ca63e5daff4b183a4db8aae4/registration/include/pcl/registration/impl/ndt.hpp#L73-L180
-  *****************************************************************************/
   bool is_ok_iteration_num =
-    validate_num_iteration(ndt_result.iteration_num, ndt_ptr_->getMaximumIterations() + 2);
+    validate_num_iteration(ndt_result.iteration_num, ndt_ptr_->getMaximumIterations());
   bool is_local_optimal_solution_oscillation = false;
   if (!is_ok_iteration_num) {
     is_local_optimal_solution_oscillation = validate_local_optimal_solution_oscillation(
