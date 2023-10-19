@@ -41,6 +41,11 @@ link_directories(${PCL_LIBRARY_DIRS})
 target_link_libraries(ndt_scan_matcher ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
+  add_ros_test(
+    test/test_ndt_scan_matcher_launch.py
+    TIMEOUT "30"
+  )
+
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_tpe
     test/test_tpe.cpp
