@@ -188,14 +188,6 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       &debug_marker_array);
   }
 
-  if (debug_data_.intersection_area) {
-    appendMarkerArray(
-      debug::createPolygonMarkerArray(
-        debug_data_.intersection_area.value(), "intersection_area", lane_id_, now, 0.3, 0.0, 0.0,
-        0.0, 1.0, 0.0),
-      &debug_marker_array);
-  }
-
   if (debug_data_.stuck_vehicle_detect_area) {
     appendMarkerArray(
       debug::createPolygonMarkerArray(
@@ -309,6 +301,12 @@ motion_utils::VirtualWalls IntersectionModule::createVirtualWalls()
   if (debug_data_.occlusion_stop_wall_pose) {
     wall.style = motion_utils::VirtualWallType::stop;
     wall.text = "intersection_occlusion";
+    if (debug_data_.static_occlusion_with_traffic_light_timeout) {
+      std::stringstream timeout;
+      timeout << std::setprecision(2)
+              << debug_data_.static_occlusion_with_traffic_light_timeout.value();
+      wall.text += "(" + timeout.str() + ")";
+    }
     wall.ns = "intersection_occlusion" + std::to_string(module_id_) + "_";
     wall.pose = debug_data_.occlusion_stop_wall_pose.value();
     virtual_walls.push_back(wall);

@@ -172,6 +172,8 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".occlusion.attention_lane_crop_curvature_threshold");
   ip.occlusion.attention_lane_curvature_calculation_ds =
     getOrDeclareParameter<double>(node, ns + ".occlusion.attention_lane_curvature_calculation_ds");
+  ip.occlusion.static_occlusion_with_traffic_light_timeout = getOrDeclareParameter<double>(
+    node, ns + ".occlusion.static_occlusion_with_traffic_light_timeout");
 }
 
 void IntersectionModuleManager::launchNewModules(

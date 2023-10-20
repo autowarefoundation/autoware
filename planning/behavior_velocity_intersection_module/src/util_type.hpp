@@ -42,7 +42,6 @@ struct DebugData
   std::optional<geometry_msgs::msg::Pose> pass_judge_wall_pose{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> attention_area{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> occlusion_attention_area{std::nullopt};
-  std::optional<geometry_msgs::msg::Polygon> intersection_area{std::nullopt};
   std::optional<lanelet::CompoundPolygon3d> ego_lane{std::nullopt};
   std::optional<std::vector<lanelet::CompoundPolygon3d>> adjacent_area{std::nullopt};
   std::optional<geometry_msgs::msg::Polygon> stuck_vehicle_detect_area{std::nullopt};
@@ -57,6 +56,7 @@ struct DebugData
     nearest_occlusion_projection{std::nullopt};
   autoware_auto_perception_msgs::msg::PredictedObjects blocking_attention_objects;
   std::optional<geometry_msgs::msg::Pose> absence_traffic_light_creep_wall{std::nullopt};
+  std::optional<double> static_occlusion_with_traffic_light_timeout{std::nullopt};
 };
 
 struct InterpolatedPathInfo
@@ -191,7 +191,7 @@ struct TargetObjects
   std::vector<TargetObject> attention_objects;
   std::vector<TargetObject> parked_attention_objects;
   std::vector<TargetObject> intersection_area_objects;
-  std::vector<TargetObject> all;  // TODO(Mamoru Sobue): avoid copy
+  std::vector<TargetObject> all_attention_objects;  // TODO(Mamoru Sobue): avoid copy
 };
 
 enum class TrafficPrioritizedLevel {

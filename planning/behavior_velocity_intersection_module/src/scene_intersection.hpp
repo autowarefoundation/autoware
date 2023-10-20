@@ -141,7 +141,15 @@ public:
       } absence_traffic_light;
       double attention_lane_crop_curvature_threshold;
       double attention_lane_curvature_calculation_ds;
+      double static_occlusion_with_traffic_light_timeout;
     } occlusion;
+  };
+
+  enum OcclusionType {
+    NOT_OCCLUDED,
+    STATICALLY_OCCLUDED,
+    DYNAMICALLY_OCCLUDED,
+    RTC_OCCLUDED,  // actual occlusion does not exist, only disapproved by RTC
   };
 
   struct Indecisive
@@ -172,6 +180,7 @@ public:
     size_t first_stop_line_idx{0};
     size_t occlusion_stop_line_idx{0};
   };
+  // A state peeking to occlusion limit line in the presence of traffic light
   struct PeekingTowardOcclusion
   {
     // NOTE: if intersection_occlusion is disapproved externally through RTC,
@@ -182,7 +191,12 @@ public:
     size_t collision_stop_line_idx{0};
     size_t first_attention_stop_line_idx{0};
     size_t occlusion_stop_line_idx{0};
+    // if null, it is dynamic occlusion and shows up intersection_occlusion(dyn)
+    // if valid, it contains the remaining time to release the static occlusion stuck and shows up
+    // intersection_occlusion(x.y)
+    std::optional<double> static_occlusion_timeout{std::nullopt};
   };
+  // A state detecting both collision and occlusion in the presence of traffic light
   struct OccludedCollisionStop
   {
     bool is_actually_occlusion_cleared{false};
@@ -191,6 +205,9 @@ public:
     size_t collision_stop_line_idx{0};
     size_t first_attention_stop_line_idx{0};
     size_t occlusion_stop_line_idx{0};
+    // if null, it is dynamic occlusion and shows up intersection_occlusion(dyn)
+    // if valid, it contains the remaining time to release the static occlusion stuck
+    std::optional<double> static_occlusion_timeout{std::nullopt};
   };
   struct OccludedAbsenceTrafficLight
   {
@@ -262,6 +279,7 @@ private:
   bool is_go_out_{false};
   bool is_permanent_go_{false};
   DecisionResult prev_decision_result_{Indecisive{""}};
+  OcclusionType prev_occlusion_status_;
 
   // Parameter
   PlannerParam planner_param_;
@@ -276,6 +294,7 @@ private:
   StateMachine before_creep_state_machine_;  //! for two phase stop
   StateMachine occlusion_stop_state_machine_;
   StateMachine temporal_stop_before_attention_state_machine_;
+  StateMachine static_occlusion_timeout_state_machine_;
 
   // for pseudo-collision detection when ego just entered intersection on green light and upcoming
   // vehicles are very slow
@@ -317,14 +336,14 @@ private:
     const size_t closest_idx, const size_t last_intersection_stop_line_candidate_idx,
     const double time_delay, const util::TrafficPrioritizedLevel & traffic_prioritized_level);
 
-  bool isOcclusionCleared(
+  OcclusionType getOcclusionStatus(
     const nav_msgs::msg::OccupancyGrid & occ_grid,
     const std::vector<lanelet::CompoundPolygon3d> & attention_areas,
     const lanelet::ConstLanelets & adjacent_lanelets,
     const lanelet::CompoundPolygon3d & first_attention_area,
     const util::InterpolatedPathInfo & interpolated_path_info,
     const std::vector<lanelet::ConstLineString3d> & lane_divisions,
-    const std::vector<util::TargetObject> & blocking_attention_objects,
+    const util::TargetObjects & target_objects, const geometry_msgs::msg::Pose & current_pose,
     const double occlusion_dist_thr);
 
   /*

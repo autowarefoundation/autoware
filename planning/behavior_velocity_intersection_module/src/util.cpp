@@ -1279,7 +1279,7 @@ void cutPredictPathWithDuration(
   util::TargetObjects * target_objects, const rclcpp::Clock::SharedPtr clock, const double time_thr)
 {
   const rclcpp::Time current_time = clock->now();
-  for (auto & target_object : target_objects->all) {  // each objects
+  for (auto & target_object : target_objects->all_attention_objects) {  // each objects
     for (auto & predicted_path :
          target_object.object.kinematics.predicted_paths) {  // each predicted paths
       const auto origin_path = predicted_path;
