@@ -23,9 +23,10 @@
 namespace map_based_prediction
 {
 PathGenerator::PathGenerator(
-  const double time_horizon, const double sampling_time_interval,
+  const double time_horizon, const double lateral_time_horizon, const double sampling_time_interval,
   const double min_crosswalk_user_velocity)
 : time_horizon_(time_horizon),
+  lateral_time_horizon_(lateral_time_horizon),
   sampling_time_interval_(sampling_time_interval),
   min_crosswalk_user_velocity_(min_crosswalk_user_velocity)
 {
@@ -213,18 +214,25 @@ FrenetPath PathGenerator::generateFrenetPath(
 {
   FrenetPath path;
   const double duration = time_horizon_;
+  const double lateral_duration = lateral_time_horizon_;
 
   // Compute Lateral and Longitudinal Coefficients to generate the trajectory
-  const Eigen::Vector3d lat_coeff = calcLatCoefficients(current_point, target_point, duration);
+  const Eigen::Vector3d lat_coeff =
+    calcLatCoefficients(current_point, target_point, lateral_duration);
   const Eigen::Vector2d lon_coeff = calcLonCoefficients(current_point, target_point, duration);
 
   path.reserve(static_cast<size_t>(duration / sampling_time_interval_));
   for (double t = 0.0; t <= duration; t += sampling_time_interval_) {
-    const double d_next = current_point.d + current_point.d_vel * t + 0 * 2 * std::pow(t, 2) +
-                          lat_coeff(0) * std::pow(t, 3) + lat_coeff(1) * std::pow(t, 4) +
-                          lat_coeff(2) * std::pow(t, 5);
-    const double s_next = current_point.s + current_point.s_vel * t + 2 * 0 * std::pow(t, 2) +
-                          lon_coeff(0) * std::pow(t, 3) + lon_coeff(1) * std::pow(t, 4);
+    const double current_acc =
+      0.0;  // Currently we assume the object is traveling at a constant speed
+    const double d_next_ = current_point.d + current_point.d_vel * t +
+                           current_acc * 2.0 * std::pow(t, 2) + lat_coeff(0) * std::pow(t, 3) +
+                           lat_coeff(1) * std::pow(t, 4) + lat_coeff(2) * std::pow(t, 5);
+    // t > lateral_duration: 0.0, else d_next_
+    const double d_next = t > lateral_duration ? 0.0 : d_next_;
+    const double s_next = current_point.s + current_point.s_vel * t +
+                          2.0 * current_acc * std::pow(t, 2) + lon_coeff(0) * std::pow(t, 3) +
+                          lon_coeff(1) * std::pow(t, 4);
     if (s_next > max_length) {
       break;
     }

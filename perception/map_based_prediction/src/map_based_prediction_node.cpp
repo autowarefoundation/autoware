@@ -694,6 +694,8 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
 {
   enable_delay_compensation_ = declare_parameter<bool>("enable_delay_compensation");
   prediction_time_horizon_ = declare_parameter<double>("prediction_time_horizon");
+  lateral_control_time_horizon_ =
+    declare_parameter<double>("lateral_control_time_horizon");  // [s] for lateral control point
   prediction_sampling_time_interval_ = declare_parameter<double>("prediction_sampling_delta_time");
   min_velocity_for_map_based_prediction_ =
     declare_parameter<double>("min_velocity_for_map_based_prediction");
@@ -740,7 +742,8 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
     declare_parameter<double>("prediction_time_horizon_rate_for_validate_shoulder_lane_length");
 
   path_generator_ = std::make_shared<PathGenerator>(
-    prediction_time_horizon_, prediction_sampling_time_interval_, min_crosswalk_user_velocity_);
+    prediction_time_horizon_, lateral_control_time_horizon_, prediction_sampling_time_interval_,
+    min_crosswalk_user_velocity_);
 
   sub_objects_ = this->create_subscription<TrackedObjects>(
     "~/input/objects", 1,
