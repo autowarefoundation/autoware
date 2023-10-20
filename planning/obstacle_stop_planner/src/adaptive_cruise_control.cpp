@@ -427,9 +427,12 @@ bool AdaptiveCruiseController::estimatePointVelocityFromObject(
       obj_vel_norm = std::hypot(
         obj.kinematics.initial_twist_with_covariance.twist.linear.x,
         obj.kinematics.initial_twist_with_covariance.twist.linear.y);
-      obj_vel_yaw = std::atan2(
-        obj.kinematics.initial_twist_with_covariance.twist.linear.y,
-        obj.kinematics.initial_twist_with_covariance.twist.linear.x);
+
+      const double obj_yaw =
+        tf2::getYaw(obj.kinematics.initial_pose_with_covariance.pose.orientation);
+      obj_vel_yaw = obj_yaw + std::atan2(
+                                obj.kinematics.initial_twist_with_covariance.twist.linear.y,
+                                obj.kinematics.initial_twist_with_covariance.twist.linear.x);
       get_obj = true;
       break;
     }
@@ -451,9 +454,13 @@ void AdaptiveCruiseController::calculateProjectedVelocityFromObject(
   double obj_vel_norm = std::hypot(
     object.kinematics.initial_twist_with_covariance.twist.linear.x,
     object.kinematics.initial_twist_with_covariance.twist.linear.y);
-  double obj_vel_yaw = std::atan2(
-    object.kinematics.initial_twist_with_covariance.twist.linear.y,
-    object.kinematics.initial_twist_with_covariance.twist.linear.x);
+
+  const double obj_yaw =
+    tf2::getYaw(object.kinematics.initial_pose_with_covariance.pose.orientation);
+  const double obj_vel_yaw =
+    obj_yaw + std::atan2(
+                object.kinematics.initial_twist_with_covariance.twist.linear.y,
+                object.kinematics.initial_twist_with_covariance.twist.linear.x);
 
   *velocity =
     obj_vel_norm * std::cos(tier4_autoware_utils::normalizeRadian(obj_vel_yaw - traj_yaw));

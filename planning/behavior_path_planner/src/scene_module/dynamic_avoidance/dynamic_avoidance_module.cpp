@@ -32,6 +32,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 namespace behavior_path_planner
 {
 namespace
@@ -105,21 +106,17 @@ std::pair<double, double> projectObstacleVelocityToTrajectory(
   const std::vector<PathPointWithLaneId> & path_points, const PredictedObject & object)
 {
   const auto & obj_pose = object.kinematics.initial_pose_with_covariance.pose;
-  const double obj_vel_norm = std::hypot(
-    object.kinematics.initial_twist_with_covariance.twist.linear.x,
-    object.kinematics.initial_twist_with_covariance.twist.linear.y);
-
-  const size_t obj_idx = motion_utils::findNearestIndex(path_points, obj_pose.position);
-
   const double obj_yaw = tf2::getYaw(obj_pose.orientation);
-  const double obj_vel_yaw =
-    obj_yaw + std::atan2(
-                object.kinematics.initial_twist_with_covariance.twist.linear.y,
-                object.kinematics.initial_twist_with_covariance.twist.linear.x);
+  const size_t obj_idx = motion_utils::findNearestIndex(path_points, obj_pose.position);
   const double path_yaw = tf2::getYaw(path_points.at(obj_idx).point.pose.orientation);
 
-  const double diff_yaw = tier4_autoware_utils::normalizeRadian(obj_vel_yaw - path_yaw);
-  return std::make_pair(obj_vel_norm * std::cos(diff_yaw), obj_vel_norm * std::sin(diff_yaw));
+  const Eigen::Rotation2Dd R_ego_to_obstacle(obj_yaw - path_yaw);
+  const Eigen::Vector2d obstacle_velocity(
+    object.kinematics.initial_twist_with_covariance.twist.linear.x,
+    object.kinematics.initial_twist_with_covariance.twist.linear.y);
+  const Eigen::Vector2d projected_velocity = R_ego_to_obstacle * obstacle_velocity;
+
+  return std::make_pair(projected_velocity[0], projected_velocity[1]);
 }
 
 double calcObstacleMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
