@@ -177,8 +177,7 @@ T removeOverlapPoints(const T & points, const size_t start_idx = 0)
   for (size_t i = start_idx + 1; i < points.size(); ++i) {
     const auto prev_p = tier4_autoware_utils::getPoint(dst.back());
     const auto curr_p = tier4_autoware_utils::getPoint(points.at(i));
-    const double dist = tier4_autoware_utils::calcDistance2d(prev_p, curr_p);
-    if (dist < eps) {
+    if (std::abs(prev_p.x - curr_p.x) < eps && std::abs(prev_p.y - curr_p.y) < eps) {
       continue;
     }
     dst.push_back(points.at(i));
