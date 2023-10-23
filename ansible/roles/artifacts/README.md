@@ -2,11 +2,9 @@
 
 The Autoware perception stack uses models for inference. These models are automatically downloaded if using `ansible`, but they can also be downloaded manually.
 
-## ONNX model files
+## Download instructions
 
-### Download instructions
-
-The ONNX model files are stored in a common location, hosted by Web.Auto
+The artifacts files are stored in a common location, hosted by Web.Auto
 
 Any tool that can download files from the web (e.g. `wget` or `curl`) is the only requirement for downloading these files:
 
@@ -100,11 +98,64 @@ $ mkdir -p ~/autoware_data/traffic_light_ssd_fine_detector/
 $ wget -P ~/autoware_data/traffic_light_ssd_fine_detector/ \
        https://awf.ml.dev.web.auto/perception/models/mb2-ssd-lite-tlr.onnx \
        https://awf.ml.dev.web.auto/perception/models/voc_labels_tl.txt
+
+
+# tvm_utility
+
+$ mkdir -p ~/autoware_data/tvm_utility/models/yolo_v2_tiny
+$ wget -P ~/autoware_data/tvm_utility/ \
+       https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz
+
+
+# lidar_centerpoint_tvm
+
+$ mkdir -p ~/autoware_data/lidar_centerpoint_tvm/models/centerpoint_encoder
+$ mkdir -p ~/autoware_data/lidar_centerpoint_tvm/models/centerpoint_backbone
+$ wget -P ~/autoware_data/lidar_centerpoint_tvm/ \
+       https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz \
+       https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz
+
+
+# lidar_apollo_segmentation_tvm
+
+$ mkdir -p ~/autoware_data/lidar_apollo_segmentation_tvm/models/baidu_cnn
+$ wget -P ~/autoware_data/lidar_apollo_segmentation_tvm/ \
+      https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
 ```
 
 After downloading you can check integrity of the files with `sha256sum`:
 
 ```console
-cd ~/autoware_data/
-wget -q -O - https://raw.githubusercontent.com/autowarefoundation/autoware/main/ansible/roles/artifacts/SHA256SUMS | sha256sum -c
+#
+$ cd ~/autoware_data/
+$ wget -q -O - https://raw.githubusercontent.com/autowarefoundation/autoware/main/ansible/roles/artifacts/SHA256SUMS | sha256sum -c
+```
+
+Extracting files:
+
+```console
+# yabloc_pose_initializer
+
+$ tar -xf ~/autoware_data/yabloc_pose_initializer/resources.tar.gz \
+       -C ~/autoware_data/yabloc_pose_initializer/
+
+
+# tvm_utility
+
+$ tar -xf ~/autoware_data/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz \
+       -C ~/autoware_data/tvm_utility/models/yolo_v2_tiny/
+
+
+# lidar_centerpoint_tvm
+
+$ tar -xf ~/autoware_data/lidar_centerpoint_tvm/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz \
+       -C ~/autoware_data/lidar_centerpoint_tvm/models/centerpoint_encoder
+$ tar -xf ~/autoware_data/lidar_centerpoint_tvm/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz \
+       -C ~/autoware_data/lidar_centerpoint_tvm/models/centerpoint_backbone
+
+
+# lidar_apollo_segmentation_tvm
+
+$ tar -xf ~/autoware_data/lidar_apollo_segmentation_tvm/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz \
+       -C ~/autoware_data/lidar_apollo_segmentation_tvm/models/baidu_cnn
 ```
