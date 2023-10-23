@@ -28,6 +28,7 @@ DuplicatedNodeChecker::DuplicatedNodeChecker(const rclcpp::NodeOptions & node_op
 : Node("duplicated_node_checker", node_options)
 {
   double update_rate = declare_parameter<double>("update_rate");
+  add_duplicated_node_names_to_msg_ = declare_parameter<bool>("add_duplicated_node_names_to_msg");
   updater_.setHardwareID("duplicated_node_checker");
   updater_.add("duplicated_node_checker", this, &DuplicatedNodeChecker::produceDiagnostics);
 
@@ -63,8 +64,14 @@ void DuplicatedNodeChecker::produceDiagnostics(diagnostic_updater::DiagnosticSta
   std::string msg;
   int level;
   if (identical_names.size() > 0) {
-    msg = "Error";
     level = DiagnosticStatus::ERROR;
+    msg = "Error: Duplicated nodes detected";
+    if (add_duplicated_node_names_to_msg_) {
+      std::set<std::string> unique_identical_names(identical_names.begin(), identical_names.end());
+      for (const auto & name : unique_identical_names) {
+        msg += " " + name;
+      }
+    }
     for (auto name : identical_names) {
       stat.add("Duplicated Node Name", name);
     }

@@ -48,6 +48,7 @@ private:
 
   diagnostic_updater::Updater updater_{this};
   rclcpp::TimerBase::SharedPtr timer_;
+  bool add_duplicated_node_names_to_msg_;
 };
 }  // namespace duplicated_node_checker
 

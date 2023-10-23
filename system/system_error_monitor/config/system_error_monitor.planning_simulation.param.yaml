@@ -40,6 +40,7 @@
         /autoware/system/service_log_checker: { sf_at: "warn", lf_at: "none", spf_at: "none" }
         /autoware/system/duplicated_node_checker: default
         # /autoware/system/resource_monitoring: { sf_at: "warn", lf_at: "error", spf_at: "none" }
+        # /autoware/system/duplicated_node_checker: default
 
         /autoware/vehicle/node_alive_monitoring: default
 
