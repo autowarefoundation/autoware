@@ -4,6 +4,8 @@ This package contains several planning-related debug tools.
 
 - **Trajectory analyzer**: visualizes the information (speed, curvature, yaw, etc) along the trajectory
 - **Closest velocity checker**: prints the velocity information indicated by each modules
+- **Perception reproducer**: generates detected objects from rosbag data in planning simulator environment
+- **processing time checker**: displays processing_time of modules on the terminal
 
 ## Trajectory analyzer
 
@@ -241,3 +243,24 @@ ros2 run planning_debug_tools perception_replayer.py -b <dir-to-bag-files>
 ```
 
 Instead of publishing predicted objects, you can publish detected/tracked objects by designating `-d` or `-t`, respectively.
+
+## Processing time checker
+
+The purpose of the Processing Time Subscriber is to monitor and visualize the processing times of various ROS 2 topics in a system. By providing a real-time terminal-based visualization, users can easily confirm the processing time performance as in the picture below.
+
+![processing_time_checker](image/processing_time_checker.png)
+
+You can run the program by the following command.
+
+```bash
+ros2 run planning_debug_tools processing_time_checker.py -f <update-hz> -m <max-bar-time>
+```
+
+This program subscribes to ROS 2 topics that have a suffix of `processing_time_ms`.
+
+The program allows users to customize two parameters via command-line arguments:
+
+- --max_display_time (or -m): This sets the maximum display time in milliseconds. The default value is 150ms.
+- --display_frequency (or -f): This sets the frequency at which the terminal UI updates. The default value is 5Hz.
+
+By adjusting these parameters, users can tailor the display to their specific monitoring needs.

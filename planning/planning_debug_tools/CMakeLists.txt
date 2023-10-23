@@ -48,6 +48,7 @@ ament_auto_package(
 )
 
 install(PROGRAMS
+  scripts/processing_time_checker.py
   scripts/trajectory_visualizer.py
   scripts/closest_velocity_checker.py
   scripts/perception_replayer/perception_reproducer.py
