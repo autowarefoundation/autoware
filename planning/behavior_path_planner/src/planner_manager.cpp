@@ -83,7 +83,7 @@ BehaviorModuleOutput PlannerManager::run(const std::shared_ptr<PlannerData> & da
       return output;
     }
 
-    for (size_t itr_num = 0;; ++itr_num) {
+    for (size_t itr_num = 1;; ++itr_num) {
       /**
        * STEP1: get approved modules' output
        */
