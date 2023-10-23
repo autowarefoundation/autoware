@@ -639,9 +639,7 @@ lanelet::ConstLanelets StartPlannerModule::getPathRoadLanes(const PathWithLaneId
   lanelet::ConstLanelets path_lanes;
   path_lanes.reserve(lane_ids.size());
   for (const auto & id : lane_ids) {
-    if (id != lanelet::InvalId) {
-      path_lanes.push_back(lanelet_layer.get(id));
-    }
+    path_lanes.push_back(lanelet_layer.get(id));
   }
 
   return path_lanes;
