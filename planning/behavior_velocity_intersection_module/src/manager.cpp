@@ -62,6 +62,10 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".common.path_interpolation_ds");
   ip.common.consider_wrong_direction_vehicle =
     getOrDeclareParameter<bool>(node, ns + ".common.consider_wrong_direction_vehicle");
+  ip.common.max_accel = getOrDeclareParameter<double>(node, ns + ".common.max_accel");
+  ip.common.max_jerk = getOrDeclareParameter<double>(node, ns + ".common.max_jerk");
+  ip.common.delay_response_time =
+    getOrDeclareParameter<double>(node, ns + ".common.delay_response_time");
 
   ip.stuck_vehicle.turn_direction.left =
     getOrDeclareParameter<bool>(node, ns + ".stuck_vehicle.turn_direction.left");

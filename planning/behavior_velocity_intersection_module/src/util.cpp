@@ -269,7 +269,8 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const lanelet::CompoundPolygon3d & first_detection_area,
   const std::shared_ptr<const PlannerData> & planner_data,
   const InterpolatedPathInfo & interpolated_path_info, const bool use_stuck_stopline,
-  const double stop_line_margin, const double peeking_offset,
+  const double stop_line_margin, const double peeking_offset, const double max_accel,
+  const double max_jerk, const double delay_response_time,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path)
 {
   const auto & path_ip = interpolated_path_info.path;
@@ -350,11 +351,8 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   // (4) pass judge line position on interpolated path
   const double velocity = planner_data->current_velocity->twist.linear.x;
   const double acceleration = planner_data->current_acceleration->accel.accel.linear.x;
-  const double max_stop_acceleration = planner_data->max_stop_acceleration_threshold;
-  const double max_stop_jerk = planner_data->max_stop_jerk_threshold;
-  const double delay_response_time = planner_data->delay_response_time;
   const double braking_dist = planning_utils::calcJudgeLineDistWithJerkLimit(
-    velocity, acceleration, max_stop_acceleration, max_stop_jerk, delay_response_time);
+    velocity, acceleration, max_accel, max_jerk, delay_response_time);
   int pass_judge_ip_int =
     static_cast<int>(first_footprint_inside_detection_ip) - std::ceil(braking_dist / ds);
   const auto pass_judge_line_ip = static_cast<size_t>(
