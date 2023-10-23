@@ -374,6 +374,7 @@
   ansible.builtin.get_url:
     url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz
     dest: "{{ data_dir }}/tvm_utility/yolo_v2_tiny-x86_64-llvm-3.0.0-20221221.tar.gz"
+    mode: "644"
     checksum: sha256:66b3ca668e577393b657fbe1ed626538d89ca3adccd5862de6c7fa190238dbca
 
 - name: Create yolo_v2_tiny folder in tvm_utility/models of {{ data_dir }}
@@ -399,6 +400,7 @@
   ansible.builtin.get_url:
     url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz
     dest: "{{ data_dir }}/lidar_centerpoint_tvm/centerpoint_encoder-x86_64-llvm-3.0.0-20221221.tar.gz"
+    mode: "644"
     checksum: sha256:41e19de43f30549c325968aee06b4ad0d9701220be819e79d37efdfa86b918d0
 
 - name: Create centerpoint_encoder folder in lidar_centerpoint_tvm/models of {{ data_dir }}
@@ -417,6 +419,7 @@
   ansible.builtin.get_url:
     url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz
     dest: "{{ data_dir }}/lidar_centerpoint_tvm/centerpoint_backbone-x86_64-llvm-3.0.0-20221221.tar.gz"
+    mode: "644"
     checksum: sha256:3840b6b3590984e8115d66b12061aea3a2cfaed70b4e8d59457f04b0d6f6a1fc
 
 - name: Create centerpoint_backbone folder in lidar_centerpoint_tvm/models of {{ data_dir }}
@@ -442,6 +445,7 @@
   ansible.builtin.get_url:
     url: https://autoware-modelzoo.s3.us-east-2.amazonaws.com/models/3.0.0-20221221/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz
     dest: "{{ data_dir }}/lidar_apollo_segmentation_tvm/baidu_cnn-x86_64-llvm-3.0.0-20221221.tar.gz"
+    mode: "644"
     checksum: sha256:4293e6196ec937d2cd5ec658e5ce70933647d2d38633a1805febb36cafd684e3
 
 - name: Create baidu_cnn folder in lidar_apollo_segmentation_tvm/models of {{ data_dir }}
