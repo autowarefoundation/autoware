@@ -560,7 +560,9 @@ void GoalPlannerModule::generateGoalCandidates()
     GoalCandidate goal_candidate{};
     goal_candidate.goal_pose = goal_pose;
     goal_candidate.distance_from_original_goal = 0.0;
-    status_.push_goal_candidate(goal_candidate);
+    GoalCandidates goal_candidates{};
+    goal_candidates.push_back(goal_candidate);
+    status_.set_goal_candidates(goal_candidates);
   }
 }
 

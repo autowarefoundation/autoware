@@ -166,12 +166,6 @@ public:
   DEFINE_SETTER_GETTER(std::vector<PullOverPath>, pull_over_path_candidates)
   DEFINE_SETTER_GETTER(std::optional<Pose>, closest_start_pose)
 
-  void push_goal_candidate(const GoalCandidate & goal_candidate)
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    goal_candidates_.push_back(goal_candidate);
-  }
-
 private:
   std::shared_ptr<PullOverPath> pull_over_path_{nullptr};
   std::shared_ptr<PullOverPath> lane_parking_pull_over_path_{nullptr};
