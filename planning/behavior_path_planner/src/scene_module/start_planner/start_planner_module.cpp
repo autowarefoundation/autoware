@@ -624,6 +624,9 @@ lanelet::ConstLanelets StartPlannerModule::getPathRoadLanes(const PathWithLaneId
   std::vector<lanelet::Id> lane_ids;
   for (const auto & p : path.points) {
     for (const auto & id : p.lane_ids) {
+      if (id == lanelet::InvalId) {
+        continue;
+      }
       if (route_handler->isShoulderLanelet(lanelet_layer.get(id))) {
         continue;
       }
