@@ -2011,6 +2011,11 @@ void makeBoundLongitudinallyMonotonic(
     std::vector<Point> ret = bound;
     auto itr = std::next(ret.begin());
     while (std::next(itr) != ret.end()) {
+      if (itr == ret.begin()) {
+        itr++;
+        continue;
+      }
+
       const auto p1 = *std::prev(itr);
       const auto p2 = *itr;
       const auto p3 = *std::next(itr);
@@ -2024,11 +2029,20 @@ void makeBoundLongitudinallyMonotonic(
       const auto dist_3to2 = tier4_autoware_utils::calcDistance3d(p3, p2);
 
       constexpr double epsilon = 1e-3;
-      if (std::cos(M_PI_4) < product / dist_1to2 / dist_3to2 + epsilon) {
-        itr = ret.erase(itr);
-      } else {
-        itr++;
+
+      // Remove overlapped point.
+      if (dist_1to2 < epsilon || dist_3to2 < epsilon) {
+        itr = std::prev(ret.erase(itr));
+        continue;
       }
+
+      // If the angle between the points is sharper than 45 degrees, remove the middle point.
+      if (std::cos(M_PI_4) < product / dist_1to2 / dist_3to2 + epsilon) {
+        itr = std::prev(ret.erase(itr));
+        continue;
+      }
+
+      itr++;
     }
 
     return ret;
