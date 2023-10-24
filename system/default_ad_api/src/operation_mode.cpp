@@ -46,12 +46,11 @@ OperationModeNode::OperationModeNode(const rclcpp::NodeOptions & options)
   for (size_t i = 0; i < module_names.size(); ++i) {
     const auto name = "/system/component_state_monitor/component/autonomous/" + module_names[i];
     const auto qos = rclcpp::QoS(1).transient_local();
-    const auto callback = [this, i](const ModeChangeAvailable::ConstSharedPtr msg) {
-      module_states_[i] = msg->available;
+    const auto callback = [this, i, module_names](const ModeChangeAvailable::ConstSharedPtr msg) {
+      module_states_[module_names[i]] = msg->available;
     };
     sub_module_states_.push_back(create_subscription<ModeChangeAvailable>(name, qos, callback));
   }
-  module_states_.resize(module_names.size());
 
   timer_ = rclcpp::create_timer(
     this, get_clock(), rclcpp::Rate(5.0).period(), std::bind(&OperationModeNode::on_timer, this));
@@ -137,10 +136,21 @@ void OperationModeNode::on_state(const OperationModeState::Message::ConstSharedP
 void OperationModeNode::on_timer()
 {
   bool autonomous_available = true;
+  std::string unhealthy_components = "";
   for (const auto & state : module_states_) {
-    autonomous_available &= state;
+    if (!state.second) {
+      unhealthy_components += unhealthy_components.empty() ? state.first : ", " + state.first;
+    }
+    autonomous_available &= state.second;
   }
   mode_available_[OperationModeState::Message::AUTONOMOUS] = autonomous_available;
+
+  if (!unhealthy_components.empty()) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), *get_clock(), 3000,
+      "%s component state is unhealthy. Autonomous is not available.",
+      unhealthy_components.c_str());
+  }
 
   update_state();
 }
