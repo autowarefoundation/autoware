@@ -14,7 +14,7 @@
 
 #include "ndt_scan_matcher/debug.hpp"
 
-#include "ndt_scan_matcher/util_func.hpp"
+#include "localization_util/util_func.hpp"
 
 visualization_msgs::msg::MarkerArray make_debug_markers(
   const builtin_interfaces::msg::Time & stamp, const std::string & map_frame_,

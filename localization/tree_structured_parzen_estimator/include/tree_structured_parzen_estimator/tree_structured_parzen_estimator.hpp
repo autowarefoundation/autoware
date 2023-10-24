@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NDT_SCAN_MATCHER__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
-#define NDT_SCAN_MATCHER__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
+#ifndef TREE_STRUCTURED_PARZEN_ESTIMATOR__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
+#define TREE_STRUCTURED_PARZEN_ESTIMATOR__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
 
 /*
 A implementation of tree-structured parzen estimator (TPE)
@@ -77,4 +77,4 @@ private:
   const Input base_stddev_;
 };
 
-#endif  // NDT_SCAN_MATCHER__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_
+#endif  // TREE_STRUCTURED_PARZEN_ESTIMATOR__TREE_STRUCTURED_PARZEN_ESTIMATOR_HPP_

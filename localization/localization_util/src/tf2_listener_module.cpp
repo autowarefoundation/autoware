@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ndt_scan_matcher/tf2_listener_module.hpp"
+#include "localization_util/tf2_listener_module.hpp"
 
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 

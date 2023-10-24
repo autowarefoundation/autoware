@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ndt_scan_matcher/util_func.hpp"
+#include "localization_util/util_func.hpp"
 
-#include "ndt_scan_matcher/matrix_type.hpp"
+#include "localization_util/matrix_type.hpp"
 
 static std::random_device seed_gen;
 

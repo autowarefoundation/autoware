@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NDT_SCAN_MATCHER__UTIL_FUNC_HPP_
-#define NDT_SCAN_MATCHER__UTIL_FUNC_HPP_
+#ifndef LOCALIZATION_UTIL__UTIL_FUNC_HPP_
+#define LOCALIZATION_UTIL__UTIL_FUNC_HPP_
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
@@ -91,4 +91,4 @@ void output_pose_with_cov_to_log(
   const rclcpp::Logger logger, const std::string & prefix,
   const geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_cov);
 
-#endif  // NDT_SCAN_MATCHER__UTIL_FUNC_HPP_
+#endif  // LOCALIZATION_UTIL__UTIL_FUNC_HPP_

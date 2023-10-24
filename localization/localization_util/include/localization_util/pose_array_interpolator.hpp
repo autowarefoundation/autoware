@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NDT_SCAN_MATCHER__POSE_ARRAY_INTERPOLATOR_HPP_
-#define NDT_SCAN_MATCHER__POSE_ARRAY_INTERPOLATOR_HPP_
+#ifndef LOCALIZATION_UTIL__POSE_ARRAY_INTERPOLATOR_HPP_
+#define LOCALIZATION_UTIL__POSE_ARRAY_INTERPOLATOR_HPP_
 
-#include "ndt_scan_matcher/util_func.hpp"
+#include "localization_util/util_func.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -59,4 +59,4 @@ private:
     const geometry_msgs::msg::Point & reference_point, const double distance_tolerance_m_) const;
 };
 
-#endif  // NDT_SCAN_MATCHER__POSE_ARRAY_INTERPOLATOR_HPP_
+#endif  // LOCALIZATION_UTIL__POSE_ARRAY_INTERPOLATOR_HPP_

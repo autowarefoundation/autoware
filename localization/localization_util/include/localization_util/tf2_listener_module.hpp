@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NDT_SCAN_MATCHER__TF2_LISTENER_MODULE_HPP_
-#define NDT_SCAN_MATCHER__TF2_LISTENER_MODULE_HPP_
+#ifndef LOCALIZATION_UTIL__TF2_LISTENER_MODULE_HPP_
+#define LOCALIZATION_UTIL__TF2_LISTENER_MODULE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -40,4 +40,4 @@ private:
   tf2_ros::TransformListener tf2_listener_;
 };
 
-#endif  // NDT_SCAN_MATCHER__TF2_LISTENER_MODULE_HPP_
+#endif  // LOCALIZATION_UTIL__TF2_LISTENER_MODULE_HPP_
