@@ -48,3 +48,8 @@
         enable: true
         max_jerk: -0.7  # [m/s^3] minimum jerk deceleration for safe brake.
         max_acc : -2.0  # [m/s^2] minimum accel deceleration for safe brake.
+
+      # prevent abrupt stops caused by false positives in perception
+      ignore_momentary_detection:
+        enable: true
+        time_threshold: 0.15  # [sec] ignores detections that persist for less than this duration

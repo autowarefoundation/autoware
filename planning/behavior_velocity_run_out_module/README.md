@@ -217,6 +217,11 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 | `max_jerk`                 | double | [m/s^3] minimum jerk deceleration for safe brake.             |
 | `max_acc`                  | double | [m/s^2] minimum accel deceleration for safe brake.            |
 
+| Parameter /ignore_momentary_detection | Type   | Description                                                       |
+| ------------------------------------- | ------ | ----------------------------------------------------------------- |
+| `enable`                              | bool   | [-] whether to ignore momentary detection                         |
+| `time_threshold`                      | double | [sec] ignores detections that persist for less than this duration |
+
 ### Future extensions / Unimplemented parts
 
 - Calculate obstacle's min velocity and max velocity from covariance

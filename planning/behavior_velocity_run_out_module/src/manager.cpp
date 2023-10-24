@@ -119,6 +119,13 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.max_acc = getOrDeclareParameter<double>(node, ns_m + ".max_acc");
   }
 
+  {
+    auto & p = planner_param_.ignore_momentary_detection;
+    const std::string ns_param = ns + ".ignore_momentary_detection";
+    p.enable = getOrDeclareParameter<bool>(node, ns_param + ".enable");
+    p.time_threshold = getOrDeclareParameter<double>(node, ns_param + ".time_threshold");
+  }
+
   debug_ptr_ = std::make_shared<RunOutDebug>(node);
   setDynamicObstacleCreator(node, debug_ptr_);
 }

@@ -62,13 +62,13 @@ private:
   std::unique_ptr<DynamicObstacleCreator> dynamic_obstacle_creator_;
   std::shared_ptr<RunOutDebug> debug_ptr_;
   std::unique_ptr<run_out_utils::StateMachine> state_machine_;
+  std::shared_ptr<rclcpp::Time> first_detected_time_;
 
   // Function
   Polygons2d createDetectionAreaPolygon(const PathWithLaneId & smoothed_path) const;
 
   boost::optional<DynamicObstacle> detectCollision(
-    const std::vector<DynamicObstacle> & dynamic_obstacles,
-    const PathWithLaneId & path_points) const;
+    const std::vector<DynamicObstacle> & dynamic_obstacles, const PathWithLaneId & path_points);
 
   float calcCollisionPositionOfVehicleSide(
     const geometry_msgs::msg::Point & point, const geometry_msgs::msg::Pose & base_pose) const;
@@ -141,6 +141,8 @@ private:
     const PathWithLaneId & path, const std::vector<DynamicObstacle> extracted_obstacles,
     const boost::optional<DynamicObstacle> & dynamic_obstacle,
     const geometry_msgs::msg::Pose & current_pose) const;
+
+  bool isMomentaryDetection();
 };
 }  // namespace behavior_velocity_planner
 
