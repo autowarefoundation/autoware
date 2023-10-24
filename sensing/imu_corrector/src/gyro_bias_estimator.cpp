@@ -43,9 +43,9 @@ GyroBiasEstimator::GyroBiasEstimator()
   imu_sub_ = create_subscription<Imu>(
     "~/input/imu_raw", rclcpp::SensorDataQoS(),
     [this](const Imu::ConstSharedPtr msg) { callback_imu(msg); });
-  pose_sub_ = create_subscription<PoseWithCovarianceStamped>(
-    "~/input/pose", rclcpp::SensorDataQoS(),
-    [this](const PoseWithCovarianceStamped::ConstSharedPtr msg) { callback_pose(msg); });
+  odom_sub_ = create_subscription<Odometry>(
+    "~/input/odom", rclcpp::SensorDataQoS(),
+    [this](const Odometry::ConstSharedPtr msg) { callback_odom(msg); });
   gyro_bias_pub_ = create_publisher<Vector3Stamped>("~/output/gyro_bias", rclcpp::SensorDataQoS());
 
   auto timer_callback = std::bind(&GyroBiasEstimator::timer_callback, this);
@@ -88,12 +88,11 @@ void GyroBiasEstimator::callback_imu(const Imu::ConstSharedPtr imu_msg_ptr)
   }
 }
 
-void GyroBiasEstimator::callback_pose(const PoseWithCovarianceStamped::ConstSharedPtr pose_msg_ptr)
+void GyroBiasEstimator::callback_odom(const Odometry::ConstSharedPtr odom_msg_ptr)
 {
-  // push pose_msg to queue
   geometry_msgs::msg::PoseStamped pose;
-  pose.header = pose_msg_ptr->header;
-  pose.pose = pose_msg_ptr->pose.pose;
+  pose.header = odom_msg_ptr->header;
+  pose.pose = odom_msg_ptr->pose.pose;
   pose_buf_.push_back(pose);
 }
 

@@ -22,6 +22,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/vector3_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 
 #include <memory>
@@ -38,6 +39,7 @@ private:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
   using Vector3Stamped = geometry_msgs::msg::Vector3Stamped;
   using Vector3 = geometry_msgs::msg::Vector3;
+  using Odometry = nav_msgs::msg::Odometry;
 
 public:
   GyroBiasEstimator();
@@ -45,7 +47,7 @@ public:
 private:
   void update_diagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
   void callback_imu(const Imu::ConstSharedPtr imu_msg_ptr);
-  void callback_pose(const PoseWithCovarianceStamped::ConstSharedPtr pose_msg_ptr);
+  void callback_odom(const Odometry::ConstSharedPtr odom_msg_ptr);
   void timer_callback();
 
   static geometry_msgs::msg::Vector3 transform_vector3(
@@ -55,7 +57,7 @@ private:
   const std::string output_frame_ = "base_link";
 
   rclcpp::Subscription<Imu>::SharedPtr imu_sub_;
-  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr pose_sub_;
+  rclcpp::Subscription<Odometry>::SharedPtr odom_sub_;
   rclcpp::Publisher<Vector3Stamped>::SharedPtr gyro_bias_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
