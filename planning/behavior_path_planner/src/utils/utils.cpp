@@ -3104,6 +3104,8 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
 lanelet::ConstLanelets extendNextLane(
   const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes)
 {
+  if (lanes.empty()) return lanes;
+
   auto extended_lanes = lanes;
 
   // Add next lane
@@ -3125,6 +3127,8 @@ lanelet::ConstLanelets extendNextLane(
 lanelet::ConstLanelets extendPrevLane(
   const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes)
 {
+  if (lanes.empty()) return lanes;
+
   auto extended_lanes = lanes;
 
   // Add previous lane
