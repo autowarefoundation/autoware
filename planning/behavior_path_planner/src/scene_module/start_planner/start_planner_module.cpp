@@ -492,99 +492,109 @@ void StartPlannerModule::planWithPriority(
   const std::vector<Pose> & start_pose_candidates, const Pose & refined_start_pose,
   const Pose & goal_pose, const std::string search_priority)
 {
-  // check if start pose candidates are valid
-  if (start_pose_candidates.empty()) {
-    return;
+  if (start_pose_candidates.empty()) return;
+
+  const PriorityOrder order_priority =
+    determinePriorityOrder(search_priority, start_pose_candidates.size());
+
+  for (const auto & [index, planner] : order_priority) {
+    if (findPullOutPath(start_pose_candidates, index, planner, refined_start_pose, goal_pose))
+      return;
   }
 
-  const auto is_safe_with_pose_planner = [&](const size_t i, const auto & planner) {
-    // Get the pull_out_start_pose for the current index
-    const auto & pull_out_start_pose = start_pose_candidates.at(i);
+  updateStatusIfNoSafePathFound();
+}
 
-    // Set back_finished to true if the current start pose is same to refined_start_pose
-    status_.driving_forward =
-      tier4_autoware_utils::calcDistance2d(pull_out_start_pose, refined_start_pose) < 0.01;
-
-    planner->setPlannerData(planner_data_);
-    const auto pull_out_path = planner->plan(pull_out_start_pose, goal_pose);
-    // not found safe path
-    if (!pull_out_path) {
-      return false;
-    }
-    // use current path if back is not needed
-    if (status_.driving_forward) {
-      const std::lock_guard<std::mutex> lock(mutex_);
-      status_.found_pull_out_path = true;
-      status_.pull_out_path = *pull_out_path;
-      status_.pull_out_start_pose = pull_out_start_pose;
-      status_.planner_type = planner->getPlannerType();
-      return true;
-    }
-
-    // If this is the last start pose candidate, return false
-    if (i == start_pose_candidates.size() - 1) return false;
-
-    // check next path if back is needed
-    const auto & pull_out_start_pose_next = start_pose_candidates.at(i + 1);
-    const auto pull_out_path_next = planner->plan(pull_out_start_pose_next, goal_pose);
-    // not found safe path
-    if (!pull_out_path_next) {
-      return false;
-    }
-
-    // Update status variables with the next path information
-    {
-      const std::lock_guard<std::mutex> lock(mutex_);
-      status_.found_pull_out_path = true;
-      status_.pull_out_path = *pull_out_path_next;
-      status_.pull_out_start_pose = pull_out_start_pose_next;
-      status_.planner_type = planner->getPlannerType();
-    }
-    return true;
-  };
-
-  using PriorityOrder = std::vector<std::pair<size_t, std::shared_ptr<PullOutPlannerBase>>>;
-  const auto make_loop_order_planner_first = [&]() {
-    PriorityOrder order_priority;
+PriorityOrder StartPlannerModule::determinePriorityOrder(
+  const std::string & search_priority, const size_t candidates_size)
+{
+  PriorityOrder order_priority;
+  if (search_priority == "efficient_path") {
     for (const auto & planner : start_planners_) {
-      for (size_t i = 0; i < start_pose_candidates.size(); i++) {
+      for (size_t i = 0; i < candidates_size; i++) {
         order_priority.emplace_back(i, planner);
       }
     }
-    return order_priority;
-  };
-
-  const auto make_loop_order_pose_first = [&]() {
-    PriorityOrder order_priority;
-    for (size_t i = 0; i < start_pose_candidates.size(); i++) {
+  } else if (search_priority == "short_back_distance") {
+    for (size_t i = 0; i < candidates_size; i++) {
       for (const auto & planner : start_planners_) {
         order_priority.emplace_back(i, planner);
       }
     }
-    return order_priority;
-  };
-
-  // Choose loop order based on priority_on_efficient_path
-  PriorityOrder order_priority;
-  if (search_priority == "efficient_path") {
-    order_priority = make_loop_order_planner_first();
-  } else if (search_priority == "short_back_distance") {
-    order_priority = make_loop_order_pose_first();
   } else {
-    RCLCPP_ERROR(
-      getLogger(),
-      "search_priority should be efficient_path or short_back_distance, but %s is given.",
-      search_priority.c_str());
+    RCLCPP_ERROR(getLogger(), "Invalid search_priority: %s", search_priority.c_str());
     throw std::domain_error("[start_planner] invalid search_priority");
   }
+  return order_priority;
+}
 
-  for (const auto & p : order_priority) {
-    if (is_safe_with_pose_planner(p.first, p.second)) {
-      return;
-    }
+bool StartPlannerModule::findPullOutPath(
+  const std::vector<Pose> & start_pose_candidates, const size_t index,
+  const std::shared_ptr<PullOutPlannerBase> & planner, const Pose & refined_start_pose,
+  const Pose & goal_pose)
+{
+  // Ensure the index is within the bounds of the start_pose_candidates vector
+  if (index >= start_pose_candidates.size()) return false;
+
+  const Pose & pull_out_start_pose = start_pose_candidates.at(index);
+  const bool is_driving_forward =
+    tier4_autoware_utils::calcDistance2d(pull_out_start_pose, refined_start_pose) < 0.01;
+
+  planner->setPlannerData(planner_data_);
+  const auto pull_out_path = planner->plan(pull_out_start_pose, goal_pose);
+
+  // If no path is found, return false
+  if (!pull_out_path) {
+    return false;
   }
 
-  // not found safe path
+  // If driving forward, update status with the current path and return true
+  if (is_driving_forward) {
+    updateStatusWithCurrentPath(*pull_out_path, pull_out_start_pose, planner->getPlannerType());
+    return true;
+  }
+
+  // If this is the last start pose candidate, return false
+  if (index == start_pose_candidates.size() - 1) return false;
+
+  const Pose & next_pull_out_start_pose = start_pose_candidates.at(index + 1);
+  const auto next_pull_out_path = planner->plan(next_pull_out_start_pose, goal_pose);
+
+  // If no next path is found, return false
+  if (!next_pull_out_path) return false;
+
+  // Update status with the next path and return true
+  updateStatusWithNextPath(
+    *next_pull_out_path, next_pull_out_start_pose, planner->getPlannerType());
+  return true;
+}
+
+void StartPlannerModule::updateStatusWithCurrentPath(
+  const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
+  const behavior_path_planner::PlannerType & planner_type)
+{
+  const std::lock_guard<std::mutex> lock(mutex_);
+  status_.driving_forward = true;
+  status_.found_pull_out_path = true;
+  status_.pull_out_path = path;
+  status_.pull_out_start_pose = start_pose;
+  status_.planner_type = planner_type;
+}
+
+void StartPlannerModule::updateStatusWithNextPath(
+  const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
+  const behavior_path_planner::PlannerType & planner_type)
+{
+  const std::lock_guard<std::mutex> lock(mutex_);
+  status_.driving_forward = false;
+  status_.found_pull_out_path = true;
+  status_.pull_out_path = path;
+  status_.pull_out_start_pose = start_pose;
+  status_.planner_type = planner_type;
+}
+
+void StartPlannerModule::updateStatusIfNoSafePathFound()
+{
   if (status_.planner_type != PlannerType::FREESPACE) {
     const std::lock_guard<std::mutex> lock(mutex_);
     status_.found_pull_out_path = false;

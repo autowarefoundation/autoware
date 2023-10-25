@@ -51,6 +51,7 @@ using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using geometry_msgs::msg::PoseArray;
 using lane_departure_checker::LaneDepartureChecker;
+using PriorityOrder = std::vector<std::pair<size_t, std::shared_ptr<PullOutPlannerBase>>>;
 
 struct PullOutStatus
 {
@@ -130,6 +131,20 @@ private:
   bool canTransitIdleToRunningState() override { return false; }
 
   void initializeSafetyCheckParameters();
+
+  PriorityOrder determinePriorityOrder(
+    const std::string & search_priority, const size_t candidates_size);
+  bool findPullOutPath(
+    const std::vector<Pose> & start_pose_candidates, const size_t index,
+    const std::shared_ptr<PullOutPlannerBase> & planner, const Pose & refined_start_pose,
+    const Pose & goal_pose);
+  void updateStatusWithCurrentPath(
+    const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
+    const behavior_path_planner::PlannerType & planner_type);
+  void updateStatusWithNextPath(
+    const behavior_path_planner::PullOutPath & path, const Pose & start_pose,
+    const behavior_path_planner::PlannerType & planner_type);
+  void updateStatusIfNoSafePathFound();
 
   std::shared_ptr<StartPlannerParameters> parameters_;
   mutable std::shared_ptr<EgoPredictedPathParams> ego_predicted_path_params_;
