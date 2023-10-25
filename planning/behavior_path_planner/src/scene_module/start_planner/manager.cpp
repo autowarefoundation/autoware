@@ -320,7 +320,7 @@ bool StartPlannerModuleManager::isSimultaneousExecutableAsApprovedModule() const
     const auto start_planner_ptr = std::dynamic_pointer_cast<StartPlannerModule>(observer.lock());
 
     // Currently simultaneous execution with other modules is not supported while backward driving
-    if (!start_planner_ptr->isBackFinished()) {
+    if (!start_planner_ptr->isDrivingForward()) {
       return false;
     }
 
@@ -349,7 +349,7 @@ bool StartPlannerModuleManager::isSimultaneousExecutableAsCandidateModule() cons
     const auto start_planner_ptr = std::dynamic_pointer_cast<StartPlannerModule>(observer.lock());
 
     // Currently simultaneous execution with other modules is not supported while backward driving
-    if (!start_planner_ptr->isBackFinished()) {
+    if (start_planner_ptr->isDrivingForward()) {
       return false;
     }
 

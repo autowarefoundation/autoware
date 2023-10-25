@@ -135,8 +135,8 @@ void StartPlannerModule::updateData()
   if (has_received_new_route) {
     status_ = PullOutStatus();
   }
-  // check safety status after back finished
-  if (parameters_->safety_check_params.enable_safety_check && status_.back_finished) {
+  // check safety status when driving forward
+  if (parameters_->safety_check_params.enable_safety_check && status_.driving_forward) {
     status_.is_safe_dynamic_objects = isSafePath();
   } else {
     status_.is_safe_dynamic_objects = true;
@@ -184,15 +184,15 @@ bool StartPlannerModule::isExecutionRequested() const
 
 bool StartPlannerModule::isExecutionReady() const
 {
-  // when is_safe_static_objects is false,the path is not generated and approval shouldn't be
+  // when found_pull_out_path is false,the path is not generated and approval shouldn't be
   // allowed
-  if (!status_.is_safe_static_objects) {
-    RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against static objects");
+  if (!status_.found_pull_out_path) {
+    RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Pull over path is not found");
     return false;
   }
 
   if (
-    parameters_->safety_check_params.enable_safety_check && status_.back_finished &&
+    parameters_->safety_check_params.enable_safety_check && status_.driving_forward &&
     isWaitingApproval()) {
     if (!isSafePath()) {
       RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
@@ -250,7 +250,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
   }
 
   BehaviorModuleOutput output;
-  if (!status_.is_safe_static_objects) {
+  if (!status_.found_pull_out_path) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
     const auto output = generateStopOutput();
@@ -262,7 +262,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
   PathWithLaneId path;
 
   // Check if backward motion is finished
-  if (status_.back_finished) {
+  if (status_.driving_forward) {
     // Increment path index if the current path is finished
     if (hasFinishedCurrentPath()) {
       RCLCPP_INFO(getLogger(), "Increment path index");
@@ -317,7 +317,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
     return SteeringFactor::STRAIGHT;
   });
 
-  if (status_.back_finished) {
+  if (status_.driving_forward) {
     const double start_distance = motion_utils::calcSignedArcLength(
       path.points, planner_data_->self_odometry->pose.pose.position,
       status_.pull_out_path.start_pose.position);
@@ -369,7 +369,7 @@ PathWithLaneId StartPlannerModule::getFullPath() const
       pull_out_path.points.end(), partial_path.points.begin(), partial_path.points.end());
   }
 
-  if (status_.back_finished) {
+  if (status_.driving_forward) {
     // not need backward path or finish it
     return pull_out_path;
   }
@@ -396,7 +396,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
   }
 
   BehaviorModuleOutput output;
-  if (!status_.is_safe_static_objects) {
+  if (!status_.found_pull_out_path) {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull out path, publish stop path");
     clearWaitingApproval();
@@ -414,7 +414,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
     planner_data_, backward_path_length, std::numeric_limits<double>::max(),
     /*forward_only_in_route*/ true);
 
-  auto stop_path = status_.back_finished ? getCurrentPath() : status_.backward_path;
+  auto stop_path = status_.driving_forward ? getCurrentPath() : status_.backward_path;
   const auto drivable_lanes = generateDrivableLanes(stop_path);
   const auto & dp = planner_data_->drivable_area_expansion_parameters;
   const auto expanded_lanes = utils::expandLanelets(
@@ -441,7 +441,7 @@ BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
     return SteeringFactor::STRAIGHT;
   });
 
-  if (status_.back_finished) {
+  if (status_.driving_forward) {
     const double start_distance = motion_utils::calcSignedArcLength(
       stop_path.points, planner_data_->self_odometry->pose.pose.position,
       status_.pull_out_path.start_pose.position);
@@ -502,7 +502,7 @@ void StartPlannerModule::planWithPriority(
     const auto & pull_out_start_pose = start_pose_candidates.at(i);
 
     // Set back_finished to true if the current start pose is same to refined_start_pose
-    status_.back_finished =
+    status_.driving_forward =
       tier4_autoware_utils::calcDistance2d(pull_out_start_pose, refined_start_pose) < 0.01;
 
     planner->setPlannerData(planner_data_);
@@ -512,9 +512,9 @@ void StartPlannerModule::planWithPriority(
       return false;
     }
     // use current path if back is not needed
-    if (status_.back_finished) {
+    if (status_.driving_forward) {
       const std::lock_guard<std::mutex> lock(mutex_);
-      status_.is_safe_static_objects = true;
+      status_.found_pull_out_path = true;
       status_.pull_out_path = *pull_out_path;
       status_.pull_out_start_pose = pull_out_start_pose;
       status_.planner_type = planner->getPlannerType();
@@ -535,7 +535,7 @@ void StartPlannerModule::planWithPriority(
     // Update status variables with the next path information
     {
       const std::lock_guard<std::mutex> lock(mutex_);
-      status_.is_safe_static_objects = true;
+      status_.found_pull_out_path = true;
       status_.pull_out_path = *pull_out_path_next;
       status_.pull_out_start_pose = pull_out_start_pose_next;
       status_.planner_type = planner->getPlannerType();
@@ -587,7 +587,7 @@ void StartPlannerModule::planWithPriority(
   // not found safe path
   if (status_.planner_type != PlannerType::FREESPACE) {
     const std::lock_guard<std::mutex> lock(mutex_);
-    status_.is_safe_static_objects = false;
+    status_.found_pull_out_path = false;
     status_.planner_type = PlannerType::NONE;
   }
 }
@@ -730,7 +730,7 @@ void StartPlannerModule::updatePullOutStatus()
 
 void StartPlannerModule::updateStatusAfterBackwardDriving()
 {
-  status_.back_finished = true;
+  status_.driving_forward = true;
   status_.backward_driving_complete = true;
   // request start_planner approval
   waitApproval();
@@ -835,7 +835,7 @@ bool StartPlannerModule::isOverlappedWithLane(
 
 bool StartPlannerModule::hasFinishedPullOut() const
 {
-  if (!status_.back_finished || !status_.is_safe_static_objects) {
+  if (!status_.driving_forward || !status_.found_pull_out_path) {
     return false;
   }
 
@@ -874,7 +874,7 @@ bool StartPlannerModule::isBackwardDrivingComplete() const
   const double ego_vel = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear);
   const bool is_stopped = ego_vel < parameters_->th_stopped_velocity;
 
-  const bool back_finished = !status_.back_finished && is_near && is_stopped;
+  const bool back_finished = !status_.driving_forward && is_near && is_stopped;
   if (back_finished) {
     RCLCPP_INFO(getLogger(), "back finished");
   }
@@ -916,7 +916,7 @@ bool StartPlannerModule::isStuck()
   }
 
   // not found safe path
-  if (!status_.is_safe_static_objects) {
+  if (!status_.found_pull_out_path) {
     return true;
   }
 
@@ -943,7 +943,7 @@ TurnSignalInfo StartPlannerModule::calcTurnSignalInfo() const
   const Pose & end_pose = status_.pull_out_path.end_pose;
 
   // turn on hazard light when backward driving
-  if (!status_.back_finished) {
+  if (!status_.driving_forward) {
     turn_signal.hazard_signal.command = HazardLightsCommand::ENABLE;
     const auto back_start_pose = planner_data_->route_handler->getOriginalStartPose();
     turn_signal.desired_start_point = back_start_pose;
@@ -1157,7 +1157,7 @@ BehaviorModuleOutput StartPlannerModule::generateStopOutput()
 
   {
     const std::lock_guard<std::mutex> lock(mutex_);
-    status_.back_finished = true;
+    status_.driving_forward = true;
     status_.planner_type = PlannerType::STOP;
     status_.pull_out_path.partial_paths.clear();
     status_.pull_out_path.partial_paths.push_back(stop_path);
@@ -1209,8 +1209,8 @@ bool StartPlannerModule::planFreespacePath()
     status_.pull_out_path = *freespace_path;
     status_.pull_out_start_pose = current_pose;
     status_.planner_type = freespace_planner_->getPlannerType();
-    status_.is_safe_static_objects = true;
-    status_.back_finished = true;
+    status_.found_pull_out_path = true;
+    status_.driving_forward = true;
     return true;
   }
 
@@ -1231,7 +1231,7 @@ void StartPlannerModule::setDrivableAreaInfo(BehaviorModuleOutput & output) cons
     DrivableAreaInfo current_drivable_area_info;
     current_drivable_area_info.drivable_lanes = target_drivable_lanes;
     output.drivable_area_info =
-      status_.back_finished
+      status_.driving_forward
         ? utils::combineDrivableAreaInfo(
             current_drivable_area_info, getPreviousModuleOutput().drivable_area_info)
         : current_drivable_area_info;
@@ -1291,13 +1291,13 @@ void StartPlannerModule::setDebugData() const
   const auto header = planner_data_->route_handler->getRouteHeader();
   {
     visualization_msgs::msg::MarkerArray planner_type_marker_array{};
-    const auto color = status_.is_safe_static_objects ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
-                                                      : createMarkerColor(1.0, 0.0, 0.0, 0.99);
+    const auto color = status_.found_pull_out_path ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
+                                                   : createMarkerColor(1.0, 0.0, 0.0, 0.99);
     auto marker = createDefaultMarker(
       header.frame_id, header.stamp, "planner_type", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0), color);
     marker.pose = status_.pull_out_start_pose;
-    if (!status_.back_finished) {
+    if (!status_.driving_forward) {
       marker.text = "BACK -> ";
     }
     marker.text += magic_enum::enum_name(status_.planner_type);

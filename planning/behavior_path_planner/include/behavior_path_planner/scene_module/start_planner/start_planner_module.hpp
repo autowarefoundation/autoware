@@ -59,10 +59,9 @@ struct PullOutStatus
   PlannerType planner_type{PlannerType::NONE};
   PathWithLaneId backward_path{};
   lanelet::ConstLanelets pull_out_lanes{};
-  bool is_safe_static_objects{false};   // current path is safe against static objects
+  bool found_pull_out_path{false};      // current path is safe against static objects
   bool is_safe_dynamic_objects{false};  // current path is safe against dynamic objects
-  bool back_finished{false};  // if backward driving is not required, this is also set to true
-                              // todo: rename to clear variable name.
+  bool driving_forward{false};          // if ego is driving on backward path, this is set to false
   bool backward_driving_complete{
     false};  // after backward driving is complete, this is set to true (warning: this is set to
              // false at next cycle after backward driving is complete)
@@ -120,7 +119,7 @@ public:
   }
 
   // Condition to disable simultaneous execution
-  bool isBackFinished() const { return status_.back_finished; }
+  bool isDrivingForward() const { return status_.driving_forward; }
   bool isFreespacePlanning() const { return status_.planner_type == PlannerType::FREESPACE; }
 
 private:
