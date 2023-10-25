@@ -49,6 +49,7 @@ struct DebugData
   std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
   autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
   autoware_auto_perception_msgs::msg::PredictedObjects amber_ignore_targets;
+  autoware_auto_perception_msgs::msg::PredictedObjects red_overshoot_ignore_targets;
   autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
   autoware_auto_perception_msgs::msg::PredictedObjects yield_stuck_targets;
   std::vector<geometry_msgs::msg::Polygon> occlusion_polygons;

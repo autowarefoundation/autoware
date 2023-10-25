@@ -30,6 +30,7 @@
 #include <boost/geometry/algorithms/intersection.hpp>
 
 #include <lanelet2_core/geometry/LineString.h>
+#include <lanelet2_core/geometry/Point.h>
 #include <lanelet2_core/geometry/Polygon.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
 #include <lanelet2_core/primitives/LineString.h>
@@ -1519,16 +1520,62 @@ bool IntersectionModule::checkCollision(
                          .object_expected_deceleration));
     return dist_to_stop_line > braking_distance;
   };
-
+  const auto isTolerableOvershoot = [&](const util::TargetObject & target_object) {
+    if (
+      !target_object.attention_lanelet || !target_object.dist_to_stop_line ||
+      !target_object.stop_line) {
+      return false;
+    }
+    const double dist_to_stop_line = target_object.dist_to_stop_line.value();
+    const double v = target_object.object.kinematics.initial_twist_with_covariance.twist.linear.x;
+    const double braking_distance =
+      v * v /
+      (2.0 * std::fabs(planner_param_.collision_detection.ignore_on_amber_traffic_light
+                         .object_expected_deceleration));
+    if (dist_to_stop_line > braking_distance) {
+      return false;
+    }
+    const auto stopline_front = target_object.stop_line.value().front();
+    const auto stopline_back = target_object.stop_line.value().back();
+    tier4_autoware_utils::LineString2d object_line;
+    object_line.emplace_back(
+      (stopline_front.x() + stopline_back.x()) / 2.0,
+      (stopline_front.y() + stopline_back.y()) / 2.0);
+    const auto stopline_mid = object_line.front();
+    const auto endpoint = target_object.attention_lanelet.value().centerline().back();
+    object_line.emplace_back(endpoint.x(), endpoint.y());
+    std::vector<tier4_autoware_utils::Point2d> intersections;
+    bg::intersection(object_line, ego_lane.centerline2d().basicLineString(), intersections);
+    if (intersections.empty()) {
+      return false;
+    }
+    const auto collision_point = intersections.front();
+    // distance from object expected stop position to collision point
+    const double stopline_to_object = -1.0 * dist_to_stop_line + braking_distance;
+    const double stopline_to_collision =
+      std::hypot(collision_point.x() - stopline_mid.x(), collision_point.y() - stopline_mid.y());
+    const double object2collision = stopline_to_collision - stopline_to_object;
+    const double margin =
+      planner_param_.collision_detection.ignore_on_red_traffic_light.object_margin_to_path;
+    return (object2collision > margin) || (object2collision < 0);
+  };
   // check collision between predicted_path and ego_area
   bool collision_detected = false;
   for (const auto & target_object : target_objects->all_attention_objects) {
     const auto & object = target_object.object;
     // If the vehicle is expected to stop before their stopline, ignore
+    const bool expected_to_stop_before_stopline = expectedToStopBeforeStopLine(target_object);
     if (
       traffic_prioritized_level == util::TrafficPrioritizedLevel::PARTIALLY_PRIORITIZED &&
-      expectedToStopBeforeStopLine(target_object)) {
+      expected_to_stop_before_stopline) {
       debug_data_.amber_ignore_targets.objects.push_back(object);
+      continue;
+    }
+    const bool is_tolerable_overshoot = isTolerableOvershoot(target_object);
+    if (
+      traffic_prioritized_level == util::TrafficPrioritizedLevel::FULLY_PRIORITIZED &&
+      !expected_to_stop_before_stopline && is_tolerable_overshoot) {
+      debug_data_.red_overshoot_ignore_targets.objects.push_back(object);
       continue;
     }
     for (const auto & predicted_path : object.kinematics.predicted_paths) {

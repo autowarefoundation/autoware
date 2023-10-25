@@ -56,6 +56,8 @@
           object_dist_to_stopline: 10.0 # [m]
         ignore_on_amber_traffic_light:
           object_expected_deceleration: 2.0 # [m/ss]
+        ignore_on_red_traffic_light:
+          object_margin_to_path: 2.0
 
       occlusion:
         enable: false
