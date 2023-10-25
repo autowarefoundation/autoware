@@ -37,6 +37,7 @@
           avoid_margin_lateral: 1.0                    # [m]
           safety_buffer_lateral: 0.7                   # [m]
           safety_buffer_longitudinal: 0.0              # [m]
+          use_conservative_buffer_longitudinal: true   # [-] When set to true, the base_link2front is added to the longitudinal buffer before avoidance.
         truck:
           is_target: true
           execute_num: 1
@@ -47,6 +48,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
+          use_conservative_buffer_longitudinal: true
         bus:
           is_target: true
           execute_num: 1
@@ -57,6 +59,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
+          use_conservative_buffer_longitudinal: true
         trailer:
           is_target: true
           execute_num: 1
@@ -67,6 +70,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
+          use_conservative_buffer_longitudinal: true
         unknown:
           is_target: false
           execute_num: 1
@@ -77,6 +81,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 0.7
           safety_buffer_longitudinal: 0.0
+          use_conservative_buffer_longitudinal: true
         bicycle:
           is_target: false
           execute_num: 1
@@ -87,6 +92,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
+          use_conservative_buffer_longitudinal: true
         motorcycle:
           is_target: false
           execute_num: 1
@@ -97,6 +103,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
+          use_conservative_buffer_longitudinal: true
         pedestrian:
           is_target: false
           execute_num: 1
@@ -107,6 +114,7 @@
           avoid_margin_lateral: 1.0
           safety_buffer_lateral: 1.0
           safety_buffer_longitudinal: 1.0
+          use_conservative_buffer_longitudinal: true
         lower_distance_for_polygon_expansion: 30.0      # [m]
         upper_distance_for_polygon_expansion: 100.0     # [m]
 

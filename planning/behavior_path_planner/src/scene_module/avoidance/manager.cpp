@@ -82,6 +82,8 @@ AvoidanceModuleManager::AvoidanceModuleManager(
         getOrDeclareParameter<double>(*node, ns + "safety_buffer_lateral");
       param.safety_buffer_longitudinal =
         getOrDeclareParameter<double>(*node, ns + "safety_buffer_longitudinal");
+      param.use_conservative_buffer_longitudinal =
+        getOrDeclareParameter<bool>(*node, ns + "use_conservative_buffer_longitudinal");
       return param;
     };
 
@@ -336,6 +338,9 @@ void AvoidanceModuleManager::updateModuleParams(const std::vector<rclcpp::Parame
     updateParam<double>(parameters, ns + "safety_buffer_lateral", config.safety_buffer_lateral);
     updateParam<double>(
       parameters, ns + "safety_buffer_longitudinal", config.safety_buffer_longitudinal);
+    updateParam<bool>(
+      parameters, ns + "use_conservative_buffer_longitudinal",
+      config.use_conservative_buffer_longitudinal);
   };
 
   {
