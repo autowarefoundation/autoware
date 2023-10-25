@@ -1064,16 +1064,8 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const bool yield_stuck_detected = checkYieldStuckVehicle(
     planner_data_, path_lanelets, intersection_lanelets.first_attention_area());
   if (yield_stuck_detected && stuck_stop_line_idx_opt) {
-    auto stuck_stop_line_idx = stuck_stop_line_idx_opt.value();
-    if (is_private_area_ && planner_param_.stuck_vehicle.enable_private_area_stuck_disregard) {
-      if (
-        default_stop_line_idx_opt &&
-        fromEgoDist(stuck_stop_line_idx) < -planner_param_.common.stop_overshoot_margin) {
-        stuck_stop_line_idx = default_stop_line_idx_opt.value();
-      }
-    } else {
-      return IntersectionModule::YieldStuckStop{closest_idx, stuck_stop_line_idx};
-    }
+    const auto stuck_stop_line_idx = stuck_stop_line_idx_opt.value();
+    return IntersectionModule::YieldStuckStop{closest_idx, stuck_stop_line_idx};
   }
 
   // if attention area is empty, collision/occlusion detection is impossible
