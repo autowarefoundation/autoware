@@ -114,13 +114,6 @@ GoalPlannerModule::GoalPlannerModule(
       freespace_parking_timer_cb_group_);
   }
 
-  // Initialize safety checker
-  if (parameters_->safety_check_params.enable_safety_check) {
-    initializeSafetyCheckParameters();
-    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
-      goal_planner_data_.collision_check);
-  }
-
   status_.reset();
 }
 
@@ -227,18 +220,16 @@ void GoalPlannerModule::onFreespaceParkingTimer()
   }
 }
 
-void GoalPlannerModule::updateData()
+BehaviorModuleOutput GoalPlannerModule::run()
 {
-  // Initialize Occupancy Grid Map
-  // This operation requires waiting for `planner_data_`, hence it is executed here instead of in
-  // the constructor. Ideally, this operation should only need to be performed once.
-  if (
-    parameters_->use_occupancy_grid_for_goal_search ||
-    parameters_->use_occupancy_grid_for_path_collision_check) {
-    initializeOccupancyGridMap();
+  current_state_ = ModuleStatus::RUNNING;
+  updateOccupancyGrid();
+
+  if (!isActivated()) {
+    return planWaitingApproval();
   }
 
-  updateOccupancyGrid();
+  return plan();
 }
 
 void GoalPlannerModule::initializeOccupancyGridMap()
@@ -263,6 +254,22 @@ void GoalPlannerModule::initializeSafetyCheckParameters()
   utils::start_goal_planner_common::updateSafetyCheckParams(safety_check_params_, parameters_);
   utils::start_goal_planner_common::updateObjectsFilteringParams(
     objects_filtering_params_, parameters_);
+}
+
+void GoalPlannerModule::processOnEntry()
+{
+  // Initialize occupancy grid map
+  if (
+    parameters_->use_occupancy_grid_for_goal_search ||
+    parameters_->use_occupancy_grid_for_path_collision_check) {
+    initializeOccupancyGridMap();
+  }
+  // Initialize safety checker
+  if (parameters_->safety_check_params.enable_safety_check) {
+    initializeSafetyCheckParameters();
+    utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
+      goal_planner_data_.collision_check);
+  }
 }
 
 void GoalPlannerModule::processOnExit()
@@ -429,6 +436,13 @@ Pose GoalPlannerModule::calcRefinedGoal(const Pose & goal_pose) const
   const auto refined_goal_pose = calcOffsetPose(center_pose, 0, -offset_from_center_line, 0);
 
   return refined_goal_pose;
+}
+
+ModuleStatus GoalPlannerModule::updateState()
+{
+  // start_planner module will be run when setting new goal, so not need finishing pull_over module.
+  // Finishing it causes wrong lane_following path generation.
+  return current_state_;
 }
 
 bool GoalPlannerModule::planFreespacePath()
@@ -884,12 +898,6 @@ void GoalPlannerModule::decideVelocity()
   status_.set_has_decided_velocity(true);
 }
 
-CandidateOutput GoalPlannerModule::planCandidate() const
-{
-  return CandidateOutput(
-    status_.get_pull_over_path() ? status_.get_pull_over_path()->getFullPath() : PathWithLaneId());
-}
-
 BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 {
   constexpr double path_update_duration = 1.0;
@@ -928,7 +936,7 @@ BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
   // set output and status
   BehaviorModuleOutput output{};
   setOutput(output);
-  path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
+  path_candidate_ = std::make_shared<PathWithLaneId>(status_.get_pull_over_path()->getFullPath());
   path_reference_ = getPreviousModuleOutput().reference_path;
 
   // return to lane parking if it is possible
@@ -981,7 +989,10 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
   out.modified_goal = plan().modified_goal;  // update status_
   out.path = std::make_shared<PathWithLaneId>(generateStopPath());
   out.reference_path = getPreviousModuleOutput().reference_path;
-  path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
+  path_candidate_ =
+    status_.get_is_safe_static_objects()
+      ? std::make_shared<PathWithLaneId>(status_.get_pull_over_path()->getFullPath())
+      : out.path;
   path_reference_ = getPreviousModuleOutput().reference_path;
   const auto distance_to_path_change = calcDistanceToPathChange();
 

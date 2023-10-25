@@ -217,28 +217,31 @@ public:
     }
   }
 
-  CandidateOutput planCandidate() const override;
-  BehaviorModuleOutput plan() override;
-  BehaviorModuleOutput planWaitingApproval() override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] BehaviorModuleOutput run() override;
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
+  // TODO(someone): remove this, and use base class function
+  [[deprecated]] ModuleStatus updateState() override;
+  BehaviorModuleOutput plan() override;
+  BehaviorModuleOutput planWaitingApproval() override;
+  void processOnEntry() override;
   void processOnExit() override;
-  void updateData() override;
   void setParameters(const std::shared_ptr<GoalPlannerParameters> & parameters);
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
   {
   }
 
+  // not used, but need to override
+  CandidateOutput planCandidate() const override { return CandidateOutput{}; };
+
 private:
-  // The start_planner activates when it receives a new route,
-  // so there is no need to terminate the goal planner.
-  // If terminating it, it may switch to lane following and could generate an inappropriate path.
   bool canTransitSuccessState() override { return false; }
 
   bool canTransitFailureState() override { return false; }
 
-  bool canTransitIdleToRunningState() override { return true; }
+  bool canTransitIdleToRunningState() override { return false; }
 
   mutable StartGoalPlannerData goal_planner_data_;
 
