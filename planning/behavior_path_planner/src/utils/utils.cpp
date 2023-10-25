@@ -3081,9 +3081,24 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
 
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(reference_lanes, current_pose, &current_lane);
-
-  return route_handler->getLaneletSequence(
+  auto current_lanes = route_handler->getLaneletSequence(
     current_lane, current_pose, p.backward_path_length, p.forward_path_length);
+
+  // Extend the 'current_lanes' with previous lanes until it contains 'front_lane_ids'.
+  const auto front_lane_ids = path.points.front().lane_ids;
+  auto have_front_lanes = [front_lane_ids](const auto & lanes) {
+    return std::any_of(lanes.begin(), lanes.end(), [&](const auto & lane) {
+      return std::find(front_lane_ids.begin(), front_lane_ids.end(), lane.id()) !=
+             front_lane_ids.end();
+    });
+  };
+  while (!have_front_lanes(current_lanes)) {
+    const auto extended_lanes = extendPrevLane(route_handler, current_lanes);
+    if (extended_lanes.size() == current_lanes.size()) break;
+    current_lanes = extended_lanes;
+  }
+
+  return current_lanes;
 }
 
 lanelet::ConstLanelets extendNextLane(
