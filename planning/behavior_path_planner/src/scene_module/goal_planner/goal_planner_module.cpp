@@ -22,6 +22,7 @@
 #include "behavior_path_planner/utils/path_utils.hpp"
 #include "behavior_path_planner/utils/start_goal_planner_common/utils.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
+#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -1314,7 +1315,6 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
       return true;
     }
   }
-
   if (!parameters_->use_object_recognition) {
     return false;
   }
@@ -1328,20 +1328,41 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
       utils::path_safety_checker::isPolygonOverlapLanelet);
   const auto pull_over_lane_stop_objects = utils::path_safety_checker::filterObjectsByVelocity(
     pull_over_lane_objects, parameters_->th_moving_object_velocity);
-  const auto common_parameters = planner_data_->parameters;
-  const double base_link2front = common_parameters.base_link2front;
-  const double base_link2rear = common_parameters.base_link2rear;
-  const double vehicle_width = common_parameters.vehicle_width;
+  std::vector<Polygon2d> obj_polygons;
+  for (const auto & object : pull_over_lane_stop_objects.objects) {
+    obj_polygons.push_back(tier4_autoware_utils::toPolygon2d(object));
+  }
 
-  const auto ego_polygons_expanded =
-    utils::path_safety_checker::generatePolygonsWithStoppingAndInertialMargin(
-      path, base_link2front, base_link2rear, vehicle_width, parameters_->maximum_deceleration,
+  std::vector<Polygon2d> ego_polygons_expanded;
+  const auto curvatures = motion_utils::calcCurvature(path.points);
+  for (size_t i = 0; i < path.points.size(); ++i) {
+    const auto p = path.points.at(i);
+
+    const double extra_stopping_margin = std::min(
+      std::pow(p.point.longitudinal_velocity_mps, 2) * 0.5 / parameters_->maximum_deceleration,
       parameters_->object_recognition_collision_check_max_extra_stopping_margin);
+
+    double extra_lateral_margin = (-1) * curvatures.at(i) * p.point.longitudinal_velocity_mps *
+                                  std::abs(p.point.longitudinal_velocity_mps);
+    extra_lateral_margin =
+      std::clamp(extra_lateral_margin, -extra_stopping_margin, extra_stopping_margin);
+
+    const auto lateral_offset_pose =
+      tier4_autoware_utils::calcOffsetPose(p.point.pose, 0.0, extra_lateral_margin / 2.0, 0.0);
+    const auto ego_polygon = tier4_autoware_utils::toFootprint(
+      lateral_offset_pose,
+      planner_data_->parameters.base_link2front +
+        parameters_->object_recognition_collision_check_margin + extra_stopping_margin,
+      planner_data_->parameters.base_link2rear +
+        parameters_->object_recognition_collision_check_margin,
+      planner_data_->parameters.vehicle_width +
+        parameters_->object_recognition_collision_check_margin * 2.0 +
+        std::abs(extra_lateral_margin));
+    ego_polygons_expanded.push_back(ego_polygon);
+  }
   debug_data_.ego_polygons_expanded = ego_polygons_expanded;
 
-  return utils::path_safety_checker::checkCollisionWithMargin(
-    ego_polygons_expanded, pull_over_lane_stop_objects,
-    parameters_->object_recognition_collision_check_margin);
+  return utils::path_safety_checker::checkPolygonsIntersects(ego_polygons_expanded, obj_polygons);
 }
 
 bool GoalPlannerModule::hasEnoughDistance(const PullOverPath & pull_over_path) const
