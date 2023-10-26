@@ -1037,25 +1037,38 @@ void filterTargetObjects(
       };
 
       // current lanelet
-      update_road_to_shoulder_distance(overhang_lanelet);
-      // previous lanelet
-      lanelet::ConstLanelets previous_lanelet{};
-      if (rh->getPreviousLaneletsWithinRoute(overhang_lanelet, &previous_lanelet)) {
-        update_road_to_shoulder_distance(previous_lanelet.front());
-      }
-      // next lanelet
-      lanelet::ConstLanelet next_lanelet{};
-      if (rh->getNextLaneletWithinRoute(overhang_lanelet, &next_lanelet)) {
-        update_road_to_shoulder_distance(next_lanelet);
-      }
-      debug.bounds.push_back(target_line);
-
       {
+        update_road_to_shoulder_distance(overhang_lanelet);
+
         o.to_road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
           rh, target_line, o.to_road_shoulder_distance, overhang_lanelet, o.overhang_pose.position,
           overhang_basic_pose, parameters->use_hatched_road_markings,
           parameters->use_intersection_areas);
       }
+
+      // previous lanelet
+      lanelet::ConstLanelets previous_lanelet{};
+      if (rh->getPreviousLaneletsWithinRoute(overhang_lanelet, &previous_lanelet)) {
+        update_road_to_shoulder_distance(previous_lanelet.front());
+
+        o.to_road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
+          rh, target_line, o.to_road_shoulder_distance, previous_lanelet.front(),
+          o.overhang_pose.position, overhang_basic_pose, parameters->use_hatched_road_markings,
+          parameters->use_intersection_areas);
+      }
+
+      // next lanelet
+      lanelet::ConstLanelet next_lanelet{};
+      if (rh->getNextLaneletWithinRoute(overhang_lanelet, &next_lanelet)) {
+        update_road_to_shoulder_distance(next_lanelet);
+
+        o.to_road_shoulder_distance = extendToRoadShoulderDistanceWithPolygon(
+          rh, target_line, o.to_road_shoulder_distance, next_lanelet, o.overhang_pose.position,
+          overhang_basic_pose, parameters->use_hatched_road_markings,
+          parameters->use_intersection_areas);
+      }
+
+      debug.bounds.push_back(target_line);
     }
 
     // calculate avoid_margin dynamically
