@@ -365,10 +365,12 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data);
 
 lanelet::ConstLanelets extendNextLane(
-  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes,
+  const bool only_in_route = false);
 
 lanelet::ConstLanelets extendPrevLane(
-  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes,
+  const bool only_in_route = false);
 
 lanelet::ConstLanelets extendLanes(
   const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes);

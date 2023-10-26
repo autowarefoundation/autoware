@@ -3084,7 +3084,8 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
   auto current_lanes = route_handler->getLaneletSequence(
     current_lane, current_pose, p.backward_path_length, p.forward_path_length);
 
-  // Extend the 'current_lanes' with previous lanes until it contains 'front_lane_ids'.
+  // Extend the 'current_lanes' with previous lanes until it contains 'front_lane_ids'
+  // if the extended prior lanes is in same lane sequence with current lanes
   const auto front_lane_ids = path.points.front().lane_ids;
   auto have_front_lanes = [front_lane_ids](const auto & lanes) {
     return std::any_of(lanes.begin(), lanes.end(), [&](const auto & lane) {
@@ -3092,17 +3093,23 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
              front_lane_ids.end();
     });
   };
-  while (!have_front_lanes(current_lanes)) {
-    const auto extended_lanes = extendPrevLane(route_handler, current_lanes);
-    if (extended_lanes.size() == current_lanes.size()) break;
-    current_lanes = extended_lanes;
+  auto extended_lanes = current_lanes;
+  while (rclcpp::ok()) {
+    const size_t pre_extension_size = extended_lanes.size();  // Get existing size before extension
+    extended_lanes = extendPrevLane(route_handler, extended_lanes, true);
+    if (extended_lanes.size() == pre_extension_size) break;
+    if (have_front_lanes(extended_lanes)) {
+      current_lanes = extended_lanes;
+      break;
+    }
   }
 
   return current_lanes;
 }
 
 lanelet::ConstLanelets extendNextLane(
-  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes)
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes,
+  const bool only_in_route)
 {
   if (lanes.empty()) return lanes;
 
@@ -3111,21 +3118,27 @@ lanelet::ConstLanelets extendNextLane(
   // Add next lane
   const auto next_lanes = route_handler->getNextLanelets(extended_lanes.back());
   if (!next_lanes.empty()) {
+    boost::optional<lanelet::ConstLanelet> target_next_lane;
+    if (!only_in_route) {
+      target_next_lane = next_lanes.front();
+    }
     // use the next lane in route if it exists
-    auto target_next_lane = next_lanes.front();
     for (const auto & next_lane : next_lanes) {
       if (route_handler->isRouteLanelet(next_lane)) {
         target_next_lane = next_lane;
       }
     }
-    extended_lanes.push_back(target_next_lane);
+    if (target_next_lane) {
+      extended_lanes.push_back(*target_next_lane);
+    }
   }
 
   return extended_lanes;
 }
 
 lanelet::ConstLanelets extendPrevLane(
-  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes)
+  const std::shared_ptr<RouteHandler> route_handler, const lanelet::ConstLanelets & lanes,
+  const bool only_in_route)
 {
   if (lanes.empty()) return lanes;
 
@@ -3134,14 +3147,19 @@ lanelet::ConstLanelets extendPrevLane(
   // Add previous lane
   const auto prev_lanes = route_handler->getPreviousLanelets(extended_lanes.front());
   if (!prev_lanes.empty()) {
+    boost::optional<lanelet::ConstLanelet> target_prev_lane;
+    if (!only_in_route) {
+      target_prev_lane = prev_lanes.front();
+    }
     // use the previous lane in route if it exists
-    auto target_prev_lane = prev_lanes.front();
     for (const auto & prev_lane : prev_lanes) {
       if (route_handler->isRouteLanelet(prev_lane)) {
         target_prev_lane = prev_lane;
       }
     }
-    extended_lanes.insert(extended_lanes.begin(), target_prev_lane);
+    if (target_prev_lane) {
+      extended_lanes.insert(extended_lanes.begin(), *target_prev_lane);
+    }
   }
   return extended_lanes;
 }
