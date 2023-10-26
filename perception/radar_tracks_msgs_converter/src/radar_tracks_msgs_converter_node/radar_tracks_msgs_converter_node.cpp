@@ -244,6 +244,11 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
       std::atan2(compensated_velocity.y, compensated_velocity.x));
 
     geometry_msgs::msg::PoseStamped transformed_pose_stamped{};
+    if (transform_ == nullptr) {
+      RCLCPP_ERROR_THROTTLE(
+        get_logger(), *get_clock(), 5000, "getTransform failed. radar output will be empty.");
+      return tracked_objects;
+    }
     tf2::doTransform(radar_pose_stamped, transformed_pose_stamped, *transform_);
     kinematics.pose_with_covariance.pose = transformed_pose_stamped.pose;
     kinematics.pose_with_covariance.pose.orientation =
