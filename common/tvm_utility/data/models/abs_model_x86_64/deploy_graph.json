@@ -1,0 +1,36 @@
+{
+  "nodes": [
+    {
+      "op": "null",
+      "name": "a",
+      "inputs": []
+    },
+    {
+      "op": "tvm_op",
+      "name": "tvmgen_default_fused_abs",
+      "attrs": {
+        "num_outputs": "1",
+        "num_inputs": "1",
+        "flatten_data": "0",
+        "func_name": "tvmgen_default_fused_abs",
+        "hash": "1be44995aa501758"
+      },
+      "inputs": [[0, 0, 0]]
+    }
+  ],
+  "arg_nodes": [0],
+  "heads": [[1, 0, 0]],
+  "attrs": {
+    "dltype": ["list_str", ["float32", "float32"]],
+    "device_index": ["list_int", [1, 1]],
+    "storage_id": ["list_int", [0, 1]],
+    "shape": [
+      "list_shape",
+      [
+        [2, 2],
+        [2, 2]
+      ]
+    ]
+  },
+  "node_row_ptr": [0, 1, 2]
+}

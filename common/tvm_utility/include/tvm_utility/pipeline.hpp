@@ -224,12 +224,19 @@ typedef struct
 class InferenceEngineTVM : public InferenceEngine
 {
 public:
-  explicit InferenceEngineTVM(const InferenceEngineTVMConfig & config, const std::string & pkg_name)
+  explicit InferenceEngineTVM(
+    const InferenceEngineTVMConfig & config, const std::string & pkg_name,
+    const std::string & autoware_data_path = "")
   : config_(config)
   {
     // Get full network path
-    std::string network_prefix = ament_index_cpp::get_package_share_directory(pkg_name) +
-                                 "/models/" + config.network_name + "/";
+    std::string network_prefix;
+    if (autoware_data_path == "") {
+      network_prefix = ament_index_cpp::get_package_share_directory(pkg_name) + "/models/" +
+                       config.network_name + "/";
+    } else {
+      network_prefix = autoware_data_path + "/" + pkg_name + "/models/" + config.network_name + "/";
+    }
     std::string network_module_path = network_prefix + config.network_module_path;
     std::string network_graph_path = network_prefix + config.network_graph_path;
     std::string network_params_path = network_prefix + config.network_params_path;

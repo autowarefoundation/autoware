@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for yolo_v2_tiny_example of tvm_utility",
+  "type": "object",
+  "definitions": {
+    "yolo_v2_tiny_example": {
+      "type": "object",
+      "properties": {
+        "image_filename": {
+          "type": "string",
+          "default": "$(find-pkg-share tvm_utility)/artifacts/yolo_v2_tiny/test_image_0.jpg",
+          "description": "Filename of the image on which to run the inference."
+        },
+        "label_filename": {
+          "type": "string",
+          "default": "$(find-pkg-share tvm_utility)/artifacts/yolo_v2_tiny/labels.txt",
+          "description": "Name of file containing the human readable names of the classes. One class on each line."
+        },
+        "anchor_filename": {
+          "type": "string",
+          "default": "$(find-pkg-share tvm_utility)/artifacts/yolo_v2_tiny/anchors.csv",
+          "description": "Name of file containing the anchor values for the network. Each line is one anchor. each anchor has 2 comma separated floating point values."
+        },
+        "data_path": {
+          "type": "string",
+          "default": "$(env HOME)/autoware_data",
+          "description": "Packages data and artifacts directory path."
+        }
+      },
+      "required": ["image_filename", "label_filename", "anchor_filename", "data_path"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/yolo_v2_tiny_example"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

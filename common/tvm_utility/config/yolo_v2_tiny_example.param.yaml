@@ -1,0 +1,6 @@
+/**:
+  ros__parameters:
+    image_filename: $(find-pkg-share tvm_utility)/artifacts/yolo_v2_tiny/test_image_0.jpg
+    label_filename: $(find-pkg-share tvm_utility)/artifacts/yolo_v2_tiny/labels.txt
+    anchor_filename: $(find-pkg-share tvm_utility)/artifacts/yolo_v2_tiny/anchors.csv
+    data_path: $(env HOME)/autoware_data
