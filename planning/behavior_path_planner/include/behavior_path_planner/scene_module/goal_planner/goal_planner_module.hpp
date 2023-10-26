@@ -142,6 +142,7 @@ public:
   DEFINE_SETTER_GETTER(std::optional<GoalCandidate>, modified_goal_pose)
   DEFINE_SETTER_GETTER(Pose, refined_goal_pose)
   DEFINE_SETTER_GETTER(GoalCandidates, goal_candidates)
+  DEFINE_SETTER_GETTER(Pose, closest_goal_candidate_pose)
   DEFINE_SETTER_GETTER(std::vector<PullOverPath>, pull_over_path_candidates)
   DEFINE_SETTER_GETTER(std::optional<Pose>, closest_start_pose)
 
@@ -174,6 +175,7 @@ private:
   std::optional<GoalCandidate> modified_goal_pose_;
   Pose refined_goal_pose_{};
   GoalCandidates goal_candidates_{};
+  Pose closest_goal_candidate_pose_{};
 
   //  pull over path
   std::vector<PullOverPath> pull_over_path_candidates_;

@@ -557,6 +557,11 @@ void GoalPlannerModule::generateGoalCandidates()
     goal_searcher_->setPlannerData(planner_data_);
     goal_searcher_->setReferenceGoal(status_.get_refined_goal_pose());
     status_.set_goal_candidates(goal_searcher_->search());
+    const auto current_lanes = utils::getExtendedCurrentLanes(
+      planner_data_, parameters_->backward_goal_search_length,
+      parameters_->forward_goal_search_length, false);
+    status_.set_closest_goal_candidate_pose(
+      goal_searcher_->getClosetGoalCandidateAlongLanes(status_.get_goal_candidates()).goal_pose);
   } else {
     GoalCandidate goal_candidate{};
     goal_candidate.goal_pose = goal_pose;
@@ -564,6 +569,7 @@ void GoalPlannerModule::generateGoalCandidates()
     GoalCandidates goal_candidates{};
     goal_candidates.push_back(goal_candidate);
     status_.set_goal_candidates(goal_candidates);
+    status_.set_closest_goal_candidate_pose(goal_pose);
   }
 }
 
@@ -1089,20 +1095,23 @@ PathWithLaneId GoalPlannerModule::generateStopPath()
   //     difference between the outer and inner sides)
   // 4. feasible stop
   const auto search_start_offset_pose = calcLongitudinalOffsetPose(
-    reference_path.points, status_.get_refined_goal_pose().position,
-    -parameters_->backward_goal_search_length - common_parameters.base_link2front -
-      approximate_pull_over_distance_);
+    reference_path.points, status_.get_closest_goal_candidate_pose().position,
+    -approximate_pull_over_distance_);
   if (
     !status_.get_is_safe_static_objects() && !status_.get_closest_start_pose() &&
     !search_start_offset_pose) {
     return generateFeasibleStopPath();
   }
 
-  const Pose stop_pose =
-    status_.get_is_safe_static_objects()
-      ? status_.get_pull_over_path()->start_pose
-      : (status_.get_closest_start_pose() ? status_.get_closest_start_pose().value()
-                                          : *search_start_offset_pose);
+  const Pose stop_pose = [&]() -> Pose {
+    if (status_.get_is_safe_static_objects()) {
+      return status_.get_pull_over_path()->start_pose;
+    }
+    if (status_.get_closest_start_pose()) {
+      return status_.get_closest_start_pose().value();
+    }
+    return *search_start_offset_pose;
+  }();
 
   // if stop pose is closer than min_stop_distance, stop as soon as possible
   const double ego_to_stop_distance = calcSignedArcLengthFromEgo(reference_path, stop_pose);

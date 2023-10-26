@@ -35,6 +35,8 @@ public:
 
   GoalCandidates search() override;
   void update(GoalCandidates & goal_candidates) const override;
+  GoalCandidate getClosetGoalCandidateAlongLanes(
+    const GoalCandidates & goal_candidates) const override;
 
 private:
   void countObjectsToAvoid(

@@ -58,6 +58,8 @@ public:
   MultiPolygon2d getAreaPolygons() { return area_polygons_; }
   virtual GoalCandidates search() = 0;
   virtual void update([[maybe_unused]] GoalCandidates & goal_candidates) const { return; }
+  virtual GoalCandidate getClosetGoalCandidateAlongLanes(
+    const GoalCandidates & goal_candidates) const = 0;
 
 protected:
   GoalPlannerParameters parameters_{};
