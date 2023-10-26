@@ -125,6 +125,7 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   updater_.add("aeb_emergency_stop", this, &AEB::onCheckCollision);
 
   // parameter
+  publish_debug_pointcloud_ = declare_parameter<bool>("publish_debug_pointcloud");
   use_predicted_trajectory_ = declare_parameter<bool>("use_predicted_trajectory");
   use_imu_path_ = declare_parameter<bool>("use_imu_path");
   voxel_grid_x_ = declare_parameter<double>("voxel_grid_x");
@@ -136,8 +137,10 @@ AEB::AEB(const rclcpp::NodeOptions & node_options)
   t_response_ = declare_parameter<double>("t_response");
   a_ego_min_ = declare_parameter<double>("a_ego_min");
   a_obj_min_ = declare_parameter<double>("a_obj_min");
-  prediction_time_horizon_ = declare_parameter<double>("prediction_time_horizon");
-  prediction_time_interval_ = declare_parameter<double>("prediction_time_interval");
+  imu_prediction_time_horizon_ = declare_parameter<double>("imu_prediction_time_horizon");
+  imu_prediction_time_interval_ = declare_parameter<double>("imu_prediction_time_interval");
+  mpc_prediction_time_horizon_ = declare_parameter<double>("mpc_prediction_time_horizon");
+  mpc_prediction_time_interval_ = declare_parameter<double>("mpc_prediction_time_interval");
 
   const auto collision_keeping_sec = declare_parameter<double>("collision_keeping_sec");
   collision_data_keeper_.setTimeout(collision_keeping_sec);
@@ -227,7 +230,9 @@ void AEB::onPointCloud(const PointCloud2::ConstSharedPtr input_msg)
   obstacle_ros_pointcloud_ptr_ = std::make_shared<PointCloud2>();
   pcl::toROSMsg(*no_height_filtered_pointcloud_ptr, *obstacle_ros_pointcloud_ptr_);
   obstacle_ros_pointcloud_ptr_->header = input_msg->header;
-  pub_obstacle_pointcloud_->publish(*obstacle_ros_pointcloud_ptr_);
+  if (publish_debug_pointcloud_) {
+    pub_obstacle_pointcloud_->publish(*obstacle_ros_pointcloud_ptr_);
+  }
 }
 
 bool AEB::isDataReady()
@@ -392,8 +397,8 @@ void AEB::generateEgoPath(
   }
 
   constexpr double epsilon = 1e-6;
-  const double & dt = prediction_time_interval_;
-  const double & horizon = prediction_time_horizon_;
+  const double & dt = imu_prediction_time_interval_;
+  const double & horizon = imu_prediction_time_horizon_;
   for (double t = 0.0; t < horizon + epsilon; t += dt) {
     curr_x = curr_x + curr_v * std::cos(curr_yaw) * dt;
     curr_y = curr_y + curr_v * std::sin(curr_yaw) * dt;
@@ -452,8 +457,11 @@ void AEB::generateEgoPath(
     geometry_msgs::msg::Pose map_pose;
     tf2::doTransform(predicted_traj.points.at(i).pose, map_pose, transform_stamped);
     path.at(i) = map_pose;
-  }
 
+    if (i * mpc_prediction_time_interval_ > mpc_prediction_time_horizon_) {
+      break;
+    }
+  }
   // create polygon
   polygons.resize(path.size());
   for (size_t i = 0; i < path.size() - 1; ++i) {

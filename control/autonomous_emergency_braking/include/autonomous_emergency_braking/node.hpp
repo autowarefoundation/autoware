@@ -172,6 +172,7 @@ public:
   Updater updater_{this};
 
   // member variables
+  bool publish_debug_pointcloud_;
   bool use_predicted_trajectory_;
   bool use_imu_path_;
   double voxel_grid_x_;
@@ -183,8 +184,10 @@ public:
   double t_response_;
   double a_ego_min_;
   double a_obj_min_;
-  double prediction_time_horizon_;
-  double prediction_time_interval_;
+  double imu_prediction_time_horizon_;
+  double imu_prediction_time_interval_;
+  double mpc_prediction_time_horizon_;
+  double mpc_prediction_time_interval_;
   CollisionDataKeeper collision_data_keeper_;
 };
 }  // namespace autoware::motion::control::autonomous_emergency_braking
