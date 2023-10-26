@@ -1,4 +1,0 @@
-/**:
-  ros__parameters:
-    # Tags with a volume greater than this value will not cast their pose
-    volume_threshold: 1e-5  # [m^3]

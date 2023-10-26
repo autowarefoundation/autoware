@@ -110,6 +110,9 @@ bool ArTagBasedLocalizer::setup()
   /*
     Subscribers
   */
+  map_bin_sub_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+    "~/input/lanelet2_map", rclcpp::QoS(10).durability(rclcpp::DurabilityPolicy::TransientLocal),
+    std::bind(&ArTagBasedLocalizer::map_bin_callback, this, std::placeholders::_1));
   rclcpp::QoS qos_sub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
   qos_sub.best_effort();
   image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
@@ -125,6 +128,11 @@ bool ArTagBasedLocalizer::setup()
   /*
     Publishers
   */
+  rclcpp::QoS qos_marker = rclcpp::QoS(rclcpp::KeepLast(10));
+  qos_marker.transient_local();
+  qos_marker.reliable();
+  marker_pub_ =
+    this->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", qos_marker);
   rclcpp::QoS qos_pub(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
   image_pub_ = it_->advertise("~/debug/result", 1);
   pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
@@ -134,6 +142,15 @@ bool ArTagBasedLocalizer::setup()
 
   RCLCPP_INFO(this->get_logger(), "Setup of ar_tag_based_localizer node is successful!");
   return true;
+}
+
+void ArTagBasedLocalizer::map_bin_callback(
+  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg)
+{
+  landmark_map_ = parse_landmark(msg, "apriltag_16h5", this->get_logger());
+  const visualization_msgs::msg::MarkerArray marker_msg =
+    convert_to_marker_array_msg(landmark_map_);
+  marker_pub_->publish(marker_msg);
 }
 
 void ArTagBasedLocalizer::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
@@ -290,16 +307,20 @@ void ArTagBasedLocalizer::publish_pose_as_base_link(
   }
 
   // Transform map to tag
-  geometry_msgs::msg::TransformStamped map_to_tag_tf;
-  try {
-    map_to_tag_tf =
-      tf_buffer_->lookupTransform("map", "tag_" + msg.header.frame_id, tf2::TimePointZero);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_INFO(
-      this->get_logger(), "Could not transform map to tag_%s: %s", msg.header.frame_id.c_str(),
-      ex.what());
+  if (landmark_map_.count(msg.header.frame_id) == 0) {
+    RCLCPP_INFO_STREAM(
+      this->get_logger(), "frame_id(" << msg.header.frame_id << ") is not in landmark_map_");
     return;
   }
+  const geometry_msgs::msg::Pose & tag_pose = landmark_map_.at(msg.header.frame_id);
+  geometry_msgs::msg::TransformStamped map_to_tag_tf;
+  map_to_tag_tf.header.stamp = msg.header.stamp;
+  map_to_tag_tf.header.frame_id = "map";
+  map_to_tag_tf.child_frame_id = msg.header.frame_id;
+  map_to_tag_tf.transform.translation.x = tag_pose.position.x;
+  map_to_tag_tf.transform.translation.y = tag_pose.position.y;
+  map_to_tag_tf.transform.translation.z = tag_pose.position.z;
+  map_to_tag_tf.transform.rotation = tag_pose.orientation;
 
   // Transform camera to base_link
   geometry_msgs::msg::TransformStamped camera_to_base_link_tf;

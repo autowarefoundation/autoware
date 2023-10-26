@@ -1,22 +1,24 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>landmark_tf_caster</name>
+  <name>landmark_parser</name>
   <version>0.0.0</version>
-  <description>The landmark_tf_caster package</description>
+  <description>The landmark_parser package</description>
   <maintainer email="shintaro.sakoda@tier4.jp">Shintaro Sakoda</maintainer>
   <maintainer email="masahiro.sakamoto@tier4.jp">Masahiro Sakamoto</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
+  <maintainer email="kento.yabuuchi.2@tier4.jp">Kento Yabuuchi</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_cmake</buildtool_depend>
 
+  <build_depend>eigen</build_depend>
+
   <depend>autoware_auto_mapping_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
   <depend>rclcpp</depend>
-  <depend>tf2_eigen</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2_ros</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

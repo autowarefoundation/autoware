@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(landmark_tf_caster)
+project(landmark_parser)
 
 find_package(autoware_cmake REQUIRED)
 autoware_package()
@@ -12,13 +12,10 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_executable(landmark_tf_caster
-  src/landmark_tf_caster_node.cpp
-  src/landmark_tf_caster_core.cpp
+ament_auto_add_library(landmark_parser
+  src/landmark_parser_core.cpp
 )
 
 ament_auto_package(
   INSTALL_TO_SHARE
-  launch
-  config
 )
