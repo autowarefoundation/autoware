@@ -155,6 +155,9 @@ protected:
     const lanelet::ConstLanelets & target_lanes,
     const lanelet::ConstLanelets & target_backward_lanes) const;
 
+  std::vector<ExtendedPredictedObject> filterObjectsInTargetLane(
+    const LaneChangeTargetObjects & objects, const lanelet::ConstLanelets & target_lanes) const;
+
   //! @brief Check if the ego vehicle is in stuck by a stationary obstacle.
   //! @param obstacle_check_distance Distance to check ahead for any objects that might be
   //! obstructing ego path. It makes sense to use values like the maximum lane change distance.

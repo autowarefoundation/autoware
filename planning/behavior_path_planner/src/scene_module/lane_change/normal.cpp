@@ -918,6 +918,24 @@ LaneChangeTargetObjectIndices NormalLaneChange::filterObject(
   return filtered_obj_indices;
 }
 
+std::vector<ExtendedPredictedObject> NormalLaneChange::filterObjectsInTargetLane(
+  const LaneChangeTargetObjects & objects, const lanelet::ConstLanelets & target_lanes) const
+{
+  const auto target_polygon =
+    utils::lane_change::createPolygon(target_lanes, 0.0, std::numeric_limits<double>::max());
+  std::vector<ExtendedPredictedObject> filtered_objects{};
+  if (target_polygon) {
+    for (auto & obj : objects.target_lane) {
+      const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj.initial_pose.pose, obj.shape);
+      if (boost::geometry::intersects(target_polygon.value(), obj_polygon)) {
+        filtered_objects.push_back(obj);
+      }
+    }
+  }
+
+  return filtered_objects;
+}
+
 PathWithLaneId NormalLaneChange::getTargetSegment(
   const lanelet::ConstLanelets & target_lanes, const Pose & lane_changing_start_pose,
   const double target_lane_length, const double lane_changing_length,
@@ -1296,11 +1314,13 @@ bool NormalLaneChange::getLaneChangePaths(
         }
 
         candidate_paths->push_back(*candidate_path);
+
+        std::vector<ExtendedPredictedObject> filtered_objects =
+          filterObjectsInTargetLane(target_objects, target_lanes);
         if (
-          !is_stuck &&
-          utils::lane_change::passParkedObject(
-            route_handler, *candidate_path, target_objects.target_lane, lane_change_buffer,
-            is_goal_in_route, *lane_change_parameters_, object_debug_)) {
+          !is_stuck && utils::lane_change::passParkedObject(
+                         route_handler, *candidate_path, filtered_objects, lane_change_buffer,
+                         is_goal_in_route, *lane_change_parameters_, object_debug_)) {
           debug_print(
             "Reject: parking vehicle exists in the target lane, and the ego is not in stuck. Skip "
             "lane change.");
