@@ -914,13 +914,15 @@ void GoalPlannerModule::decideVelocity()
 
 BehaviorModuleOutput GoalPlannerModule::planWithGoalModification()
 {
+  // if pull over path candidates generation is not finished, use previous module output
+  if (status_.get_pull_over_path_candidates().empty()) {
+    return getPreviousModuleOutput();
+  }
+
   constexpr double path_update_duration = 1.0;
 
   resetPathCandidate();
   resetPathReference();
-
-  // set current road lanes, pull over lanes, and drivable lane
-  setLanes();
 
   // Check if it needs to decide path
   status_.set_has_decided_path(hasDecidedPath());
@@ -996,6 +998,11 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
 
 BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification()
 {
+  // if pull over path candidates generation is not finished, use previous module output
+  if (status_.get_pull_over_path_candidates().empty()) {
+    return getPreviousModuleOutput();
+  }
+
   waitApproval();
 
   BehaviorModuleOutput out;
@@ -1038,7 +1045,7 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
 
 std::pair<double, double> GoalPlannerModule::calcDistanceToPathChange() const
 {
-  const auto & full_path = status_.get_pull_over_path()->getFullPath();
+  const auto full_path = status_.get_pull_over_path()->getFullPath();
 
   const auto ego_segment_idx = motion_utils::findNearestSegmentIndex(
     full_path.points, planner_data_->self_odometry->pose.pose, std::numeric_limits<double>::max(),
