@@ -19,8 +19,6 @@
 #ifndef TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
 #define TRACKING_OBJECT_MERGER__DATA_ASSOCIATION__DATA_ASSOCIATION_HPP_
 
-// #include <nlohmann/json.hpp>  // for debug json library
-
 #include <list>
 #include <memory>
 #include <unordered_map>
