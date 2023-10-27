@@ -94,7 +94,7 @@ protected:
    * @param [out] command output command line
    * @return true if success to get command line name
    */
-  bool getCommandLineFromPiD(const std::string & pid, std::string * command);
+  bool getCommandLineFromPiD(const std::string & pid, std::string & command);
 
   /**
    * @brief get top-rated processes

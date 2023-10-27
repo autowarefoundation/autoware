@@ -414,14 +414,22 @@ void ProcessMonitor::getHighMemoryProcesses(const std::string & output)
   getTopratedProcesses(&memory_tasks_, &p2);
 }
 
-bool ProcessMonitor::getCommandLineFromPiD(const std::string & pid, std::string * command)
+bool ProcessMonitor::getCommandLineFromPiD(const std::string & pid, std::string & command)
 {
   std::string commandLineFilePath = "/proc/" + pid + "/cmdline";
-  std::ifstream commandFile(commandLineFilePath);
+  std::ifstream commandFile(commandLineFilePath, std::ios::in | std::ios::binary);
+
   if (commandFile.is_open()) {
-    std::getline(commandFile, *command);
+    std::vector<uint8_t> buffer;
+    std::copy(
+      std::istream_iterator<uint8_t>(commandFile), std::istream_iterator<uint8_t>(),
+      std::back_inserter(buffer));
     commandFile.close();
-    return true;
+    std::replace(
+      buffer.begin(), buffer.end(), '\0',
+      ' ');  // 0x00 is used as delimiter in /cmdline instead of 0x20 (space)
+    command = std::string(buffer.begin(), buffer.end());
+    return (buffer.size() > 0) ? true : false;  // cmdline is empty if it is kernel process
   } else {
     return false;
   }
@@ -478,7 +486,7 @@ void ProcessMonitor::getTopratedProcesses(
     std::string program_name;
     std::getline(stream, program_name);
 
-    bool flag_find_command_line = getCommandLineFromPiD(info.processId, &info.commandName);
+    bool flag_find_command_line = getCommandLineFromPiD(info.processId, info.commandName);
 
     if (!flag_find_command_line) {
       info.commandName = program_name;  // if command line is not found, use program name instead
