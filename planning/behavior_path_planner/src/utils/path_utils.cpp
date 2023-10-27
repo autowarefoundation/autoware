@@ -580,4 +580,13 @@ PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & 
   return filtered_path;
 }
 
+boost::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path)
+{
+  for (const auto & p : path.points) {
+    if (std::abs(p.point.longitudinal_velocity_mps) < 0.01) {
+      return p.point.pose;
+    }
+  }
+  return boost::none;
+}
 }  // namespace behavior_path_planner::utils

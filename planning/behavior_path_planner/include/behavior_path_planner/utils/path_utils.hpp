@@ -104,6 +104,8 @@ PathWithLaneId calcCenterLinePath(
   const std::optional<PathWithLaneId> & prev_module_path = std::nullopt);
 
 PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
+
+boost::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path);
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_UTILS_HPP_

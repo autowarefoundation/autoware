@@ -775,6 +775,7 @@ void GoalPlannerModule::setStopPath(BehaviorModuleOutput & output)
   } else {
     // not_safe -> not_safe: use previous stop path
     output.path = status_.get_prev_stop_path();
+    stop_pose_ = utils::getFirstStopPoseFromPath(*output.path);
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull_over path, use previous stop path");
   }
@@ -804,6 +805,7 @@ void GoalPlannerModule::setStopPathFromCurrentPath(BehaviorModuleOutput & output
   } else {
     // not_safe safe(no feasible stop path found) -> not_safe: use previous stop path
     output.path = status_.get_prev_stop_path_after_approval();
+    stop_pose_ = utils::getFirstStopPoseFromPath(*output.path);
     RCLCPP_WARN_THROTTLE(getLogger(), *clock_, 5000, "Collision detected, use previous stop path");
   }
   output.reference_path = getPreviousModuleOutput().reference_path;
