@@ -135,10 +135,8 @@ public:
   DEFINE_SETTER_GETTER(bool, has_decided_velocity)
   DEFINE_SETTER_GETTER(bool, has_requested_approval)
   DEFINE_SETTER_GETTER(bool, is_ready)
-  DEFINE_SETTER_GETTER(std::shared_ptr<rclcpp::Time>, last_approved_time)
   DEFINE_SETTER_GETTER(std::shared_ptr<rclcpp::Time>, last_increment_time)
   DEFINE_SETTER_GETTER(std::shared_ptr<rclcpp::Time>, last_path_update_time)
-  DEFINE_SETTER_GETTER(std::shared_ptr<Pose>, last_approved_pose)
   DEFINE_SETTER_GETTER(std::optional<GoalCandidate>, modified_goal_pose)
   DEFINE_SETTER_GETTER(Pose, refined_goal_pose)
   DEFINE_SETTER_GETTER(GoalCandidates, goal_candidates)
@@ -166,10 +164,8 @@ private:
   bool is_ready_{false};
 
   // save last time and pose
-  std::shared_ptr<rclcpp::Time> last_approved_time_;
   std::shared_ptr<rclcpp::Time> last_increment_time_;
   std::shared_ptr<rclcpp::Time> last_path_update_time_;
-  std::shared_ptr<Pose> last_approved_pose_;
 
   // goal modification
   std::optional<GoalCandidate> modified_goal_pose_;
@@ -199,6 +195,14 @@ struct GoalPlannerDebugData
   std::vector<Polygon2d> ego_polygons_expanded{};
 };
 
+struct LastApprovalData
+{
+  LastApprovalData(rclcpp::Time time, Pose pose) : time(time), pose(pose) {}
+
+  rclcpp::Time time{};
+  Pose pose{};
+};
+
 class GoalPlannerModule : public SceneModuleInterface
 {
 public:
@@ -219,14 +223,11 @@ public:
     }
   }
 
-  // TODO(someone): remove this, and use base class function
-  [[deprecated]] BehaviorModuleOutput run() override;
-  bool isExecutionRequested() const override;
-  bool isExecutionReady() const override;
-  // TODO(someone): remove this, and use base class function
-  [[deprecated]] ModuleStatus updateState() override;
+  CandidateOutput planCandidate() const override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
+  bool isExecutionRequested() const override;
+  bool isExecutionReady() const override;
   void processOnExit() override;
   void updateData() override;
   void setParameters(const std::shared_ptr<GoalPlannerParameters> & parameters);
@@ -235,15 +236,15 @@ public:
   {
   }
 
-  // not used, but need to override
-  CandidateOutput planCandidate() const override { return CandidateOutput{}; };
-
 private:
+  // The start_planner activates when it receives a new route,
+  // so there is no need to terminate the goal planner.
+  // If terminating it, it may switch to lane following and could generate an inappropriate path.
   bool canTransitSuccessState() override { return false; }
 
   bool canTransitFailureState() override { return false; }
 
-  bool canTransitIdleToRunningState() override { return false; }
+  bool canTransitIdleToRunningState() override { return true; }
 
   mutable StartGoalPlannerData goal_planner_data_;
 
@@ -275,6 +276,8 @@ private:
 
   std::recursive_mutex mutex_;
   PullOverStatus status_;
+
+  std::unique_ptr<LastApprovalData> last_approval_data_{nullptr};
 
   // approximate distance from the start point to the end point of pull_over.
   // this is used as an assumed value to decelerate, etc., before generating the actual path.
