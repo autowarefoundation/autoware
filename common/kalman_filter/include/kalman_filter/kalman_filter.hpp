@@ -109,20 +109,20 @@ public:
    * @brief get current kalman filter state
    * @param x kalman filter state
    */
-  void getX(Eigen::MatrixXd & x);
+  void getX(Eigen::MatrixXd & x) const;
 
   /**
    * @brief get current kalman filter covariance
    * @param P kalman filter covariance
    */
-  void getP(Eigen::MatrixXd & P);
+  void getP(Eigen::MatrixXd & P) const;
 
   /**
    * @brief get component of current kalman filter state
    * @param i index of kalman filter state
    * @return value of i's component of the kalman filter state x[i]
    */
-  double getXelement(unsigned int i);
+  double getXelement(unsigned int i) const;
 
   /**
    * @brief calculate kalman filter state and covariance by prediction model with A, B, Q matrix.

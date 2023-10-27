@@ -77,15 +77,15 @@ void KalmanFilter::setR(const Eigen::MatrixXd & R)
 {
   R_ = R;
 }
-void KalmanFilter::getX(Eigen::MatrixXd & x)
+void KalmanFilter::getX(Eigen::MatrixXd & x) const
 {
   x = x_;
 }
-void KalmanFilter::getP(Eigen::MatrixXd & P)
+void KalmanFilter::getP(Eigen::MatrixXd & P) const
 {
   P = P_;
 }
-double KalmanFilter::getXelement(unsigned int i)
+double KalmanFilter::getXelement(unsigned int i) const
 {
   return x_(i);
 }
