@@ -146,6 +146,17 @@ void GoalPlannerModule::onTimer()
   if (status_.get_goal_candidates().empty()) {
     return;
   }
+
+  if (!isExecutionRequested()) {
+    return;
+  }
+
+  if (
+    !planner_data_ ||
+    !goal_planner_utils::isAllowedGoalModification(planner_data_->route_handler)) {
+    return;
+  }
+
   const auto goal_candidates = status_.get_goal_candidates();
 
   // generate valid pull over path candidates and calculate closest start pose
@@ -229,6 +240,10 @@ void GoalPlannerModule::onFreespaceParkingTimer()
 
 void GoalPlannerModule::updateData()
 {
+  if (getCurrentStatus() == ModuleStatus::IDLE) {
+    return;
+  }
+
   // Initialize Occupancy Grid Map
   // This operation requires waiting for `planner_data_`, hence it is executed here instead of in
   // the constructor. Ideally, this operation should only need to be performed once.
@@ -990,7 +1005,7 @@ BehaviorModuleOutput GoalPlannerModule::planWaitingApprovalWithGoalModification(
   }
 
   BehaviorModuleOutput out;
-  out.modified_goal = plan().modified_goal;  // update status_
+  out.modified_goal = planWithGoalModification().modified_goal;  // update status_
   out.path = std::make_shared<PathWithLaneId>(generateStopPath());
   out.reference_path = getPreviousModuleOutput().reference_path;
   path_candidate_ = std::make_shared<PathWithLaneId>(planCandidate().path_candidate);
