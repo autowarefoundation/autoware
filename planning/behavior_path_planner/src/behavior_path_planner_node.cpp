@@ -340,6 +340,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   // lane change parameters
   p.backward_length_buffer_for_end_of_lane =
     declare_parameter<double>("lane_change.backward_length_buffer_for_end_of_lane");
+  p.backward_length_buffer_for_blocking_object =
+    declare_parameter<double>("lane_change.backward_length_buffer_for_blocking_object");
   p.lane_changing_lateral_jerk =
     declare_parameter<double>("lane_change.lane_changing_lateral_jerk");
   p.lane_change_prepare_duration = declare_parameter<double>("lane_change.prepare_duration");

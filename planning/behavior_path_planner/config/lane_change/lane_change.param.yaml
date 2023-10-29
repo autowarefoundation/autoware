@@ -5,6 +5,7 @@
       prepare_duration: 4.0         # [s]
 
       backward_length_buffer_for_end_of_lane: 3.0 # [m]
+      backward_length_buffer_for_blocking_object: 3.0 # [m]
       lane_change_finish_judge_buffer: 2.0      # [m]
 
       lane_changing_lateral_jerk: 0.5              # [m/s3]

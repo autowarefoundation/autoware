@@ -3310,7 +3310,7 @@ bool checkPathRelativeAngle(const PathWithLaneId & path, const double angle_thre
 
 double calcMinimumLaneChangeLength(
   const BehaviorPathPlannerParameters & common_param, const std::vector<double> & shift_intervals,
-  const double length_to_intersection)
+  const double backward_buffer, const double length_to_intersection)
 {
   if (shift_intervals.empty()) {
     return 0.0;
@@ -3328,8 +3328,7 @@ double calcMinimumLaneChangeLength(
       PathShifter::calcShiftTimeFromJerk(shift_interval, lateral_jerk, max_lateral_acc);
     accumulated_length += vel * t + finish_judge_buffer;
   }
-  accumulated_length +=
-    common_param.backward_length_buffer_for_end_of_lane * (shift_intervals.size() - 1.0);
+  accumulated_length += backward_buffer * (shift_intervals.size() - 1.0);
 
   return accumulated_length;
 }

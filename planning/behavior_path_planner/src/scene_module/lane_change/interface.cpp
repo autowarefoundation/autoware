@@ -453,8 +453,8 @@ TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
   const auto & common_parameter = module_type_->getCommonParam();
   const auto shift_intervals =
     route_handler->getLateralIntervalsToPreferredLane(current_lanes.back());
-  const double next_lane_change_buffer =
-    utils::calcMinimumLaneChangeLength(common_parameter, shift_intervals);
+  const double next_lane_change_buffer = utils::calcMinimumLaneChangeLength(
+    common_parameter, shift_intervals, common_parameter.backward_length_buffer_for_end_of_lane);
   const double & nearest_dist_threshold = common_parameter.ego_nearest_dist_threshold;
   const double & nearest_yaw_threshold = common_parameter.ego_nearest_yaw_threshold;
   const double & base_to_front = common_parameter.base_link2front;

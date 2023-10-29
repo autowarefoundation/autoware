@@ -92,6 +92,7 @@ struct BehaviorPathPlannerParameters
   double backward_path_length;
   double forward_path_length;
   double backward_length_buffer_for_end_of_lane;
+  double backward_length_buffer_for_blocking_object;
   double backward_length_buffer_for_end_of_pull_over;
   double backward_length_buffer_for_end_of_pull_out;
 
