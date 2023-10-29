@@ -15,14 +15,27 @@ ament_auto_find_build_dependencies()
 find_package(OpenCV REQUIRED)
 
 ament_auto_add_executable(ar_tag_based_localizer
-  src/ar_tag_based_localizer_node.cpp
-  src/ar_tag_based_localizer_core.cpp
+  src/main.cpp
+  src/ar_tag_based_localizer.cpp
 )
 target_include_directories(ar_tag_based_localizer
   SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(ar_tag_based_localizer ${OpenCV_LIBRARIES})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_auto_add_gtest(test_ar_tag_based_localizer
+    test/test.cpp
+    src/ar_tag_based_localizer.cpp
+  )
+  target_include_directories(test_ar_tag_based_localizer
+    SYSTEM PUBLIC
+    ${OpenCV_INCLUDE_DIRS}
+  )
+  target_link_libraries(test_ar_tag_based_localizer ${OpenCV_LIBRARIES})
+endif()
 
 ament_auto_package(
   INSTALL_TO_SHARE

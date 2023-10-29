@@ -42,8 +42,8 @@
  or implied, of Rafael Muñoz Salinas.
  ********************************/
 
-#ifndef AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_
-#define AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_
+#ifndef AR_TAG_BASED_LOCALIZER_HPP_
+#define AR_TAG_BASED_LOCALIZER_HPP_
 
 #include "landmark_parser/landmark_parser_core.hpp"
 
@@ -67,7 +67,7 @@
 class ArTagBasedLocalizer : public rclcpp::Node
 {
 public:
-  ArTagBasedLocalizer();
+  explicit ArTagBasedLocalizer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   bool setup();
 
 private:
@@ -115,4 +115,4 @@ private:
   std::map<std::string, geometry_msgs::msg::Pose> landmark_map_;
 };
 
-#endif  // AR_TAG_BASED_LOCALIZER__AR_TAG_BASED_LOCALIZER_CORE_HPP_
+#endif  // AR_TAG_BASED_LOCALIZER_HPP_

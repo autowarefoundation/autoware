@@ -42,7 +42,7 @@
  or implied, of Rafael Muñoz Salinas.
  ********************************/
 
-#include "ar_tag_based_localizer/ar_tag_based_localizer_core.hpp"
+#include "ar_tag_based_localizer.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -51,14 +51,15 @@
 #include <cv_bridge/cv_bridge.h>
 #include <tf2/LinearMath/Transform.h>
 
+#include <algorithm>
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #else
 #include <tf2_eigen/tf2_eigen.hpp>
 #endif
 
-ArTagBasedLocalizer::ArTagBasedLocalizer()
-: Node("ar_tag_based_localizer"), cam_info_received_(false)
+ArTagBasedLocalizer::ArTagBasedLocalizer(const rclcpp::NodeOptions & options)
+: Node("ar_tag_based_localizer", options), cam_info_received_(false)
 {
 }
 
@@ -219,7 +220,7 @@ void ArTagBasedLocalizer::image_callback(const sensor_msgs::msg::Image::ConstSha
     image_pub_.publish(out_msg.toImageMsg());
   }
 
-  const int detected_tags = markers.size();
+  const int detected_tags = static_cast<int>(markers.size());
 
   diagnostic_msgs::msg::DiagnosticStatus diag_status;
 
