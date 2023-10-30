@@ -330,6 +330,8 @@ std::optional<double> getSignedDistanceFromBoundary(
 
 Polygon2d toPolygon2d(const lanelet::ConstLanelet & lanelet);
 
+Polygon2d toPolygon2d(const lanelet::BasicPolygon2d & polygon);
+
 std::vector<Polygon2d> getTargetLaneletPolygons(
   const lanelet::ConstLanelets & lanelets, const Pose & pose, const double check_length,
   const std::string & target_type);

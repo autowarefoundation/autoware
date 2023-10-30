@@ -2708,6 +2708,17 @@ Polygon2d toPolygon2d(const lanelet::ConstLanelet & lanelet)
            : tier4_autoware_utils::inverseClockwise(polygon);
 }
 
+Polygon2d toPolygon2d(const lanelet::BasicPolygon2d & polygon)
+{
+  Polygon2d ret;
+  for (const auto & p : polygon) {
+    ret.outer().emplace_back(p.x(), p.y());
+  }
+  ret.outer().push_back(ret.outer().front());
+
+  return tier4_autoware_utils::isClockwise(ret) ? ret : tier4_autoware_utils::inverseClockwise(ret);
+}
+
 std::vector<Polygon2d> getTargetLaneletPolygons(
   const lanelet::PolygonLayer & map_polygons, lanelet::ConstLanelets & lanelets, const Pose & pose,
   const double check_length, const std::string & target_type)

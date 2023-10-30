@@ -381,6 +381,9 @@ struct ObjectData  // avoidance target
   // is stoppable under the constraints
   bool is_stoppable{false};
 
+  // is within intersection area
+  bool is_within_intersection{false};
+
   // unavoidable reason
   std::string reason{""};
 

@@ -292,6 +292,81 @@ bool isWithinCrosswalk(
   return false;
 }
 
+bool isWithinIntersection(
+  const ObjectData & object, const std::shared_ptr<RouteHandler> & route_handler)
+{
+  const std::string id = object.overhang_lanelet.attributeOr("intersection_area", "else");
+  if (id == "else") {
+    return false;
+  }
+
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object.object);
+
+  const auto polygon = route_handler->getLaneletMapPtr()->polygonLayer.get(std::atoi(id.c_str()));
+
+  return boost::geometry::within(
+    object_polygon, utils::toPolygon2d(lanelet::utils::to2D(polygon.basicPolygon())));
+}
+
+bool isForceAvoidanceTarget(
+  ObjectData & object, const lanelet::ConstLanelets & extend_lanelets,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters)
+{
+  if (!parameters->enable_force_avoidance_for_stopped_vehicle) {
+    return false;
+  }
+
+  const auto stop_time_longer_than_threshold =
+    object.stop_time > parameters->threshold_time_force_avoidance_for_stopped_vehicle;
+
+  if (!stop_time_longer_than_threshold) {
+    return false;
+  }
+
+  if (object.is_within_intersection) {
+    RCLCPP_DEBUG(rclcpp::get_logger(__func__), "object is in the intersection area.");
+    return false;
+  }
+
+  const auto rh = planner_data->route_handler;
+
+  if (
+    !!rh->getRoutingGraphPtr()->right(object.overhang_lanelet) &&
+    !!rh->getRoutingGraphPtr()->left(object.overhang_lanelet)) {
+    RCLCPP_DEBUG(rclcpp::get_logger(__func__), "object isn't on the edge lane.");
+    return false;
+  }
+
+  const auto & ego_pose = planner_data->self_odometry->pose.pose;
+  const auto & object_pose = object.object.kinematics.initial_pose_with_covariance.pose;
+
+  // force avoidance for stopped vehicle
+  bool not_parked_object = true;
+
+  // check traffic light
+  const auto to_traffic_light = utils::getDistanceToNextTrafficLight(object_pose, extend_lanelets);
+  {
+    not_parked_object =
+      to_traffic_light < parameters->object_ignore_section_traffic_light_in_front_distance;
+  }
+
+  // check crosswalk
+  const auto to_crosswalk =
+    utils::getDistanceToCrosswalk(ego_pose, extend_lanelets, *rh->getOverallGraphPtr()) -
+    object.longitudinal;
+  {
+    const auto stop_for_crosswalk =
+      to_crosswalk < parameters->object_ignore_section_crosswalk_in_front_distance &&
+      to_crosswalk > -1.0 * parameters->object_ignore_section_crosswalk_behind_distance;
+    not_parked_object = not_parked_object || stop_for_crosswalk;
+  }
+
+  object.to_stop_factor_distance = std::min(to_traffic_light, to_crosswalk);
+
+  return !not_parked_object;
+}
+
 double calcShiftLength(
   const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin)
 {
@@ -1127,42 +1202,14 @@ void filterTargetObjects(
       continue;
     }
 
+    o.is_within_intersection = isWithinIntersection(o, rh);
+
     // from here condition check for vehicle type objects.
-
-    const auto stop_time_longer_than_threshold =
-      o.stop_time > parameters->threshold_time_force_avoidance_for_stopped_vehicle;
-
-    if (stop_time_longer_than_threshold && parameters->enable_force_avoidance_for_stopped_vehicle) {
-      // force avoidance for stopped vehicle
-      bool not_parked_object = true;
-
-      // check traffic light
-      const auto to_traffic_light =
-        utils::getDistanceToNextTrafficLight(object_pose, extend_lanelets);
-      {
-        not_parked_object =
-          to_traffic_light < parameters->object_ignore_section_traffic_light_in_front_distance;
-      }
-
-      // check crosswalk
-      const auto to_crosswalk =
-        utils::getDistanceToCrosswalk(ego_pose, extend_lanelets, *rh->getOverallGraphPtr()) -
-        o.longitudinal;
-      {
-        const auto stop_for_crosswalk =
-          to_crosswalk < parameters->object_ignore_section_crosswalk_in_front_distance &&
-          to_crosswalk > -1.0 * parameters->object_ignore_section_crosswalk_behind_distance;
-        not_parked_object = not_parked_object || stop_for_crosswalk;
-      }
-
-      o.to_stop_factor_distance = std::min(to_traffic_light, to_crosswalk);
-
-      if (!not_parked_object) {
-        o.last_seen = now;
-        o.avoid_margin = avoid_margin;
-        data.target_objects.push_back(o);
-        continue;
-      }
+    if (isForceAvoidanceTarget(o, extend_lanelets, planner_data, parameters)) {
+      o.last_seen = now;
+      o.avoid_margin = avoid_margin;
+      data.target_objects.push_back(o);
+      continue;
     }
 
     // Object is on center line -> ignore.

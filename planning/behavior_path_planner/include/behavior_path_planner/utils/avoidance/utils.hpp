@@ -39,6 +39,9 @@ bool isWithinCrosswalk(
   const ObjectData & object,
   const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs);
 
+bool isWithinIntersection(
+  const ObjectData & object, const std::shared_ptr<RouteHandler> & route_handler);
+
 bool isTargetObjectType(
   const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters);
 
