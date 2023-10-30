@@ -58,6 +58,7 @@ using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using autoware_perception_msgs::msg::TrafficSignalArray;
 using autoware_planning_msgs::msg::LaneletRoute;
 using autoware_planning_msgs::msg::PoseWithUuidStamped;
 using nav_msgs::msg::OccupancyGrid;
@@ -93,6 +94,7 @@ private:
   rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr costmap_subscriber_;
+  rclcpp::Subscription<TrafficSignalArray>::SharedPtr traffic_signals_subscriber_;
   rclcpp::Subscription<LateralOffset>::SharedPtr lateral_offset_subscriber_;
   rclcpp::Subscription<OperationModeState>::SharedPtr operation_mode_subscriber_;
   rclcpp::Publisher<PathWithLaneId>::SharedPtr path_publisher_;
@@ -136,6 +138,7 @@ private:
   void onPerception(const PredictedObjects::ConstSharedPtr msg);
   void onOccupancyGrid(const OccupancyGrid::ConstSharedPtr msg);
   void onCostMap(const OccupancyGrid::ConstSharedPtr msg);
+  void onTrafficSignals(const TrafficSignalArray::ConstSharedPtr msg);
   void onMap(const HADMapBin::ConstSharedPtr map_msg);
   void onRoute(const LaneletRoute::ConstSharedPtr route_msg);
   void onOperationMode(const OperationModeState::ConstSharedPtr msg);
