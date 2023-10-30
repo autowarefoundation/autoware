@@ -4,12 +4,11 @@
     # basic settings
     world_frame_id: "map"
     tracker_lifetime: 1.0  # [sec]
-    # if empty, use default config declared in this package
-    tracking_config_directory: ""
+    measurement_count_threshold: 3 # object will be published if it is tracked more than this threshold
 
     # delay compensate parameters
     publish_rate: 10.0
-    enable_delay_compensation: false
+    enable_delay_compensation: true
 
     # logging
     enable_logging: false
@@ -18,10 +17,10 @@
     # filtering
     ## 1. distance based filtering: remove closer objects than this threshold
     use_distance_based_noise_filtering: true
-    minimum_range_threshold: 70.0 # [m]
+    minimum_range_threshold: 60.0 # [m]
 
     ## 2. lanelet map based filtering
     use_map_based_noise_filtering: true
     max_distance_from_lane: 5.0 # [m]
     max_angle_diff_from_lane: 0.785398 # [rad] (45 deg)
-    max_lateral_velocity: 5.0 # [m/s]
+    max_lateral_velocity: 7.0 # [m/s]

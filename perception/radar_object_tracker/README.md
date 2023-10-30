@@ -46,7 +46,7 @@ See more details in the [models.md](models.md).
 | `publish_rate`                       | double | 10.0                        | The rate at which to publish the output messages                                                                |
 | `world_frame_id`                     | string | "map"                       | The frame ID of the world coordinate system                                                                     |
 | `enable_delay_compensation`          | bool   | false                       | Whether to enable delay compensation. If set to `true`, output topic is published by timer with `publish_rate`. |
-| `tracking_config_directory`          | string | ""                          | The directory containing the tracking configuration files                                                       |
+| `tracking_config_directory`          | string | "./config/tracking/"        | The directory containing the tracking configuration files                                                       |
 | `enable_logging`                     | bool   | false                       | Whether to enable logging                                                                                       |
 | `logging_file_path`                  | string | "/tmp/association_log.json" | The path to the file where logs should be written                                                               |
 | `tracker_lifetime`                   | double | 1.0                         | The lifetime of the tracker in seconds                                                                          |
@@ -64,6 +64,15 @@ See more details in the [models.md](models.md).
 | `min_iou_matrix`                     | array  |                             | An array of doubles used in the data association algorithm                                                      |
 
 See more details in the [models.md](models.md).
+
+### Tracker parameters
+
+Currently, this package supports the following trackers:
+
+- `linear_motion_tracker`
+- `constant_turn_rate_motion_tracker`
+
+Default settings for each tracker are defined in the [./config/tracking/](./config/tracking/), and described in [models.md](models.md).
 
 ## Assumptions / Known limits
 

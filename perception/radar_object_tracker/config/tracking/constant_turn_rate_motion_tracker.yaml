@@ -5,30 +5,28 @@ default:
   ekf_params:
     # random walk noise is used to model the acceleration noise
     process_noise_std: # [m/s^2]
-      ax: 0.98 # assume 0.1G acceleration noise
-      ay: 0.98
+      x: 0.5
+      y: 0.5
+      yaw: 0.1
       vx: 1.0 # assume 1m/s velocity noise
-      vy: 1.0
-      x: 1.0 # assume 1m position noise
-      y: 1.0
+      wz: 0.4
     measurement_noise_std:
-      x: 0.6 # [m]
-      # y: 4.0 # [m]
-      y: 0.01 # rad/m if use_polar_coordinate_in_measurement_noise is true
+      x: 4.0 # [m]
+      y: 4.0 # [m]
+      # y: 0.02 # rad/m if use_polar_coordinate_in_measurement_noise is true
+      yaw: 0.2 # [rad]
       vx: 10 # [m/s]
-      vy: 100 # [m/s]
     initial_covariance_std:
       x: 3.0 # [m]
       y: 6.0 # [m]
-      vx: 1000.0 # [m/s]
-      vy: 1000.0 # [m/s]
-      ax: 1000.0 # [m/s^2]
-      ay: 1000.0 # [m/s^2]
-    estimate_acc: false # set true if you want to estimate the acceleration
+      yaw: 10.0 # [rad]
+      vx: 100.0 # [m/s]
+      wz: 10.0 # [rad/s]
   # input flag
   trust_yaw_input: false # set true if yaw input of sensor is reliable
   trust_twist_input: false # set true if twist input of sensor is reliable
-  use_polar_coordinate_in_measurement_noise: true # set true if you want to define the measurement noise in polar coordinate
+  use_polar_coordinate_in_measurement_noise: false # set true if you want to define the measurement noise in polar coordinate
+  assume_zero_yaw_rate: false # set true if you want to assume zero yaw rate
   # output limitation
   limit:
     max_speed: 80.0 # [m/s]

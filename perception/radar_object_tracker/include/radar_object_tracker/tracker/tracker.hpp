@@ -15,6 +15,7 @@
 #ifndef RADAR_OBJECT_TRACKER__TRACKER__TRACKER_HPP_
 #define RADAR_OBJECT_TRACKER__TRACKER__TRACKER_HPP_
 
+#include "model/constant_turn_rate_motion_tracker.hpp"
 #include "model/linear_motion_tracker.hpp"
 #include "model/tracker_base.hpp"
 

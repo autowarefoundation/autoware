@@ -76,6 +76,8 @@ private:
   float tracker_lifetime_;
   std::map<std::uint8_t, std::string> tracker_map_;
 
+  int measurement_count_threshold_;
+
   void onMeasurement(
     const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg);
   void onTimer();

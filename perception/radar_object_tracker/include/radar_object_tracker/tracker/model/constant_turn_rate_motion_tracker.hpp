@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RADAR_OBJECT_TRACKER__TRACKER__MODEL__LINEAR_MOTION_TRACKER_HPP_
-#define RADAR_OBJECT_TRACKER__TRACKER__MODEL__LINEAR_MOTION_TRACKER_HPP_
+#ifndef RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
+#define RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_
 
 #include "radar_object_tracker/tracker/model/tracker_base.hpp"
 
@@ -22,7 +22,7 @@
 #include <string>
 
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
-class LinearMotionTracker : public Tracker
+class ConstantTurnRateMotionTracker : public Tracker  // means constant turn rate motion tracker
 {
 private:
   autoware_auto_perception_msgs::msg::DetectedObject object_;
@@ -31,50 +31,47 @@ private:
 private:
   KalmanFilter ekf_;
   rclcpp::Time last_update_time_;
-  enum IDX { X = 0, Y = 1, VX = 2, VY = 3, AX = 4, AY = 5 };
+  enum IDX { X = 0, Y = 1, YAW = 2, VX = 3, WZ = 4 };
 
   struct EkfParams
   {
     // dimension
-    char dim_x = 6;
+    char dim_x = 5;
     // system noise
-    double q_cov_ax;
-    double q_cov_ay;
-    double q_cov_vx;
-    double q_cov_vy;
     double q_cov_x;
     double q_cov_y;
+    double q_cov_yaw;
+    double q_cov_vx;
+    double q_cov_wz;
     // measurement noise
     double r_cov_x;
     double r_cov_y;
+    double r_cov_yaw;
     double r_cov_vx;
-    double r_cov_vy;
     // initial state covariance
     double p0_cov_x;
     double p0_cov_y;
+    double p0_cov_yaw;
     double p0_cov_vx;
-    double p0_cov_vy;
-    double p0_cov_ax;
-    double p0_cov_ay;
+    double p0_cov_wz;
   };
   static EkfParams ekf_params_;
 
   // limitation
   static double max_vx_;
-  static double max_vy_;
   // rough tracking parameters
   float z_;
-  float yaw_;
 
   // lpf parameter
   static double filter_tau_;  // time constant of 1st order low pass filter
   static double filter_dt_;   // sampling time of 1st order low pass filter
 
+  // static flags
   static bool is_initialized_;
-  static bool estimate_acc_;
   static bool trust_yaw_input_;
   static bool trust_twist_input_;
   static bool use_polar_coordinate_in_measurement_noise_;
+  static bool assume_zero_yaw_rate_;
 
 private:
   struct BoundingBox
@@ -92,7 +89,7 @@ private:
   Cylinder cylinder_;
 
 public:
-  LinearMotionTracker(
+  ConstantTurnRateMotionTracker(
     const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object,
     const std::string & tracker_param_file, const std::uint8_t & label);
 
@@ -109,7 +106,7 @@ public:
   bool getTrackedObject(
     const rclcpp::Time & time,
     autoware_auto_perception_msgs::msg::TrackedObject & object) const override;
-  virtual ~LinearMotionTracker() {}
+  virtual ~ConstantTurnRateMotionTracker() {}
 };
 
-#endif  // RADAR_OBJECT_TRACKER__TRACKER__MODEL__LINEAR_MOTION_TRACKER_HPP_
+#endif  // RADAR_OBJECT_TRACKER__TRACKER__MODEL__CONSTANT_TURN_RATE_MOTION_TRACKER_HPP_

@@ -27,6 +27,7 @@ ament_auto_add_library(radar_object_tracker_node SHARED
   src/radar_object_tracker_node/radar_object_tracker_node.cpp
   src/tracker/model/tracker_base.cpp
   src/tracker/model/linear_motion_tracker.cpp
+  src/tracker/model/constant_turn_rate_motion_tracker.cpp
   src/utils/utils.cpp
   src/data_association/data_association.cpp
 )
