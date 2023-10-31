@@ -288,6 +288,12 @@ void AvoidanceModule::fillFundamentalData(AvoidancePlanningData & data, DebugDat
     data.reference_path, 0, data.reference_path.points.size(),
     calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
 
+  data.to_return_point = utils::avoidance::calcDistanceToReturnDeadLine(
+    data.current_lanelets, data.reference_path_rough, planner_data_, parameters_);
+
+  data.to_start_point = utils::avoidance::calcDistanceToAvoidStartLine(
+    data.current_lanelets, data.reference_path_rough, planner_data_, parameters_);
+
   // target objects for avoidance
   fillAvoidanceTargetObjects(data, debug);
 
@@ -1066,18 +1072,35 @@ AvoidOutlines AvoidanceModule::generateAvoidOutline(
           : 0.0;
       const auto offset =
         object_parameter.safety_buffer_longitudinal + additional_buffer_longitudinal;
+      const auto to_shift_end = o.longitudinal - offset;
       const auto path_front_to_ego =
         avoid_data_.arclength_from_ego.at(avoid_data_.ego_closest_path_index);
 
-      al_avoid.start_longitudinal =
-        std::max(o.longitudinal - offset - feasible_avoid_distance, 1e-3);
+      // start point (use previous linear shift length as start shift length.)
+      al_avoid.start_longitudinal = [&]() {
+        const auto nearest_avoid_distance = std::max(to_shift_end - feasible_avoid_distance, 1e-3);
+
+        if (data.to_start_point > to_shift_end) {
+          return nearest_avoid_distance;
+        }
+
+        const auto minimum_avoid_distance =
+          helper_.getMinAvoidanceDistance(feasible_shift_length.get() - current_ego_shift);
+        const auto furthest_avoid_distance = std::max(to_shift_end - minimum_avoid_distance, 1e-3);
+
+        return std::clamp(data.to_start_point, nearest_avoid_distance, furthest_avoid_distance);
+      }();
+
       al_avoid.start_idx = utils::avoidance::findPathIndexFromArclength(
         avoid_data_.arclength_from_ego, al_avoid.start_longitudinal + path_front_to_ego);
       al_avoid.start = avoid_data_.reference_path.points.at(al_avoid.start_idx).point.pose;
       al_avoid.start_shift_length = helper_.getLinearShift(al_avoid.start.position);
 
+      // end point
       al_avoid.end_shift_length = feasible_shift_length.get();
-      al_avoid.end_longitudinal = o.longitudinal - offset;
+      al_avoid.end_longitudinal = to_shift_end;
+
+      // misc
       al_avoid.id = getOriginalShiftLineUniqueId();
       al_avoid.object = o;
       al_avoid.object_on_right = utils::avoidance::isOnRight(o);
@@ -1086,18 +1109,24 @@ AvoidOutlines AvoidanceModule::generateAvoidOutline(
     AvoidLine al_return;
     {
       const auto offset = object_parameter.safety_buffer_longitudinal + base_link2rear + o.length;
-      // The end_margin also has the purpose of preventing the return path from NOT being
-      // triggered at the end point.
-      const auto return_remaining_distance = std::max(
-        data.arclength_from_ego.back() - o.longitudinal - offset -
-          parameters_->remain_buffer_distance,
-        0.0);
+      const auto to_shift_start = o.longitudinal + offset;
 
+      // start point
       al_return.start_shift_length = feasible_shift_length.get();
+      al_return.start_longitudinal = to_shift_start;
+
+      // end point
+      al_return.end_longitudinal = [&]() {
+        if (data.to_return_point > to_shift_start) {
+          return std::clamp(
+            data.to_return_point, to_shift_start, feasible_return_distance + to_shift_start);
+        }
+
+        return to_shift_start + feasible_return_distance;
+      }();
       al_return.end_shift_length = 0.0;
-      al_return.start_longitudinal = o.longitudinal + offset;
-      al_return.end_longitudinal =
-        o.longitudinal + offset + std::min(feasible_return_distance, return_remaining_distance);
+
+      // misc
       al_return.id = getOriginalShiftLineUniqueId();
       al_return.object = o;
       al_return.object_on_right = utils::avoidance::isOnRight(o);
@@ -1795,7 +1824,9 @@ AvoidLineArray AvoidanceModule::addReturnShiftLine(
     return ret;
   }
 
-  const auto remaining_distance = arclength_from_ego.back() - parameters_->remain_buffer_distance;
+  const auto remaining_distance = std::min(
+    arclength_from_ego.back() - parameters_->dead_line_buffer_for_goal,
+    avoid_data_.to_return_point);
 
   // If the avoidance point has already been set, the return shift must be set after the point.
   const auto last_sl_distance = avoid_data_.arclength_from_ego.at(last_sl.end_idx);
@@ -2859,8 +2890,8 @@ void AvoidanceModule::insertReturnDeadLine(
 {
   const auto & data = avoid_data_;
 
-  if (!planner_data_->route_handler->isInGoalRouteSection(data.current_lanelets.back())) {
-    RCLCPP_DEBUG(getLogger(), "goal is far enough.");
+  if (data.to_return_point > planner_data_->parameters.forward_path_length) {
+    RCLCPP_DEBUG(getLogger(), "return dead line is far enough.");
     return;
   }
 
@@ -2872,10 +2903,7 @@ void AvoidanceModule::insertReturnDeadLine(
   }
 
   const auto min_return_distance = helper_.getMinAvoidanceDistance(shift_length);
-
-  const auto to_goal = calcSignedArcLength(
-    shifted_path.path.points, getEgoPosition(), shifted_path.path.points.size() - 1);
-  const auto to_stop_line = to_goal - min_return_distance - parameters_->remain_buffer_distance;
+  const auto to_stop_line = data.to_return_point - min_return_distance;
 
   // If we don't need to consider deceleration constraints, insert a deceleration point
   // and return immediately

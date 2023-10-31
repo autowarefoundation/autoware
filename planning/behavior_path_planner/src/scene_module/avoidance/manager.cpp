@@ -223,11 +223,21 @@ AvoidanceModuleManager::AvoidanceModuleManager(
     std::string ns = "avoidance.avoidance.longitudinal.";
     p.prepare_time = getOrDeclareParameter<double>(*node, ns + "prepare_time");
     p.min_prepare_distance = getOrDeclareParameter<double>(*node, ns + "min_prepare_distance");
-    p.remain_buffer_distance = getOrDeclareParameter<double>(*node, ns + "remain_buffer_distance");
     p.min_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "min_slow_down_speed");
     p.buf_slow_down_speed = getOrDeclareParameter<double>(*node, ns + "buf_slow_down_speed");
     p.nominal_avoidance_speed =
       getOrDeclareParameter<double>(*node, ns + "nominal_avoidance_speed");
+  }
+
+  // avoidance maneuver (return shift dead line)
+  {
+    std::string ns = "avoidance.avoidance.return_dead_line.";
+    p.enable_dead_line_for_goal = getOrDeclareParameter<bool>(*node, ns + "goal.enable");
+    p.enable_dead_line_for_traffic_light =
+      getOrDeclareParameter<bool>(*node, ns + "traffic_light.enable");
+    p.dead_line_buffer_for_goal = getOrDeclareParameter<double>(*node, ns + "goal.buffer");
+    p.dead_line_buffer_for_traffic_light =
+      getOrDeclareParameter<double>(*node, ns + "traffic_light.buffer");
   }
 
   // yield

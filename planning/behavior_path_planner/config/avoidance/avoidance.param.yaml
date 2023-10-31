@@ -191,11 +191,18 @@
         # avoidance distance parameters
         longitudinal:
           prepare_time: 2.0                             # [s]
-          remain_buffer_distance: 30.0                  # [m]
           min_prepare_distance: 1.0                     # [m]
           min_slow_down_speed: 1.38                     # [m/s]
           buf_slow_down_speed: 0.56                     # [m/s]
           nominal_avoidance_speed: 8.33                 # [m/s]
+        # return dead line
+        return_dead_line:
+          goal:
+            enable: true                                # [-]
+            buffer: 30.0                                # [m]
+          traffic_light:
+            enable: true                                # [-]
+            buffer: 3.0                                 # [m]
 
       # For yield maneuver
       yield:

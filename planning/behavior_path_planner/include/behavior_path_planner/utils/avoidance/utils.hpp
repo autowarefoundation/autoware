@@ -172,6 +172,16 @@ std::pair<PredictedObjects, PredictedObjects> separateObjectsByPath(
 DrivableLanes generateExpandDrivableLanes(
   const lanelet::ConstLanelet & lanelet, const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
+
+double calcDistanceToReturnDeadLine(
+  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
+
+double calcDistanceToAvoidStartLine(
+  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
 }  // namespace behavior_path_planner::utils::avoidance
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__UTILS_HPP_
