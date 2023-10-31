@@ -687,6 +687,32 @@ lanelet::Lanelets getLeftOppositeLanelets(
 
   return opposite_lanelets;
 }
+
+void replaceObjectYawWithLaneletsYaw(
+  const LaneletsData & current_lanelets, TrackedObject & transformed_object)
+{
+  // return if no lanelet is found
+  if (current_lanelets.empty()) return;
+  auto & pose_with_cov = transformed_object.kinematics.pose_with_covariance;
+  // for each lanelet, calc lanelet angle and calculate mean angle
+  double sum_x = 0.0;
+  double sum_y = 0.0;
+  for (const auto & current_lanelet : current_lanelets) {
+    const auto lanelet_angle =
+      lanelet::utils::getLaneletAngle(current_lanelet.lanelet, pose_with_cov.pose.position);
+    sum_x += std::cos(lanelet_angle);
+    sum_y += std::sin(lanelet_angle);
+  }
+  const double mean_yaw_angle = std::atan2(sum_y, sum_x);
+  double roll, pitch, yaw;
+  tf2::Quaternion original_quaternion;
+  tf2::fromMsg(pose_with_cov.pose.orientation, original_quaternion);
+  tf2::Matrix3x3(original_quaternion).getRPY(roll, pitch, yaw);
+  tf2::Quaternion filtered_quaternion;
+  filtered_quaternion.setRPY(roll, pitch, mean_yaw_angle);
+  pose_with_cov.pose.orientation = tf2::toMsg(filtered_quaternion);
+}
+
 }  // namespace
 
 MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_options)
@@ -929,11 +955,19 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
           getDebugMarker(object, max_prob_path->maneuver, debug_markers.markers.size());
         debug_markers.markers.push_back(debug_marker);
 
+        // Fix object angle if its orientation unreliable (e.g. far object by radar sensor)
+        // This prevent bending predicted path
+        TrackedObject yaw_fixed_transformed_object = transformed_object;
+        if (
+          transformed_object.kinematics.orientation_availability ==
+          autoware_auto_perception_msgs::msg::TrackedObjectKinematics::UNAVAILABLE) {
+          replaceObjectYawWithLaneletsYaw(current_lanelets, yaw_fixed_transformed_object);
+        }
         // Generate Predicted Path
         std::vector<PredictedPath> predicted_paths;
         for (const auto & ref_path : ref_paths) {
-          PredictedPath predicted_path =
-            path_generator_->generatePathForOnLaneVehicle(transformed_object, ref_path.path);
+          PredictedPath predicted_path = path_generator_->generatePathForOnLaneVehicle(
+            yaw_fixed_transformed_object, ref_path.path);
           if (predicted_path.path.empty()) {
             continue;
           }
