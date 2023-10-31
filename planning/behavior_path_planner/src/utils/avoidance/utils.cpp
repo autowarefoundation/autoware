@@ -754,26 +754,41 @@ void fillObjectEnvelopePolygon(
     return;
   }
 
-  const auto envelope_poly =
+  const auto one_shot_envelope_poly =
     createEnvelopePolygon(object_data, closest_pose, envelope_buffer_margin);
 
-  if (boost::geometry::within(envelope_poly, same_id_obj->envelope_poly)) {
+  // If the one_shot_envelope_poly is within the registered envelope, use the registered one
+  if (boost::geometry::within(one_shot_envelope_poly, same_id_obj->envelope_poly)) {
     object_data.envelope_poly = same_id_obj->envelope_poly;
     return;
   }
 
   std::vector<Polygon2d> unions;
-  boost::geometry::union_(envelope_poly, same_id_obj->envelope_poly, unions);
+  boost::geometry::union_(one_shot_envelope_poly, same_id_obj->envelope_poly, unions);
 
+  // If union fails, use the current envelope
   if (unions.empty()) {
-    object_data.envelope_poly =
-      createEnvelopePolygon(object_data, closest_pose, envelope_buffer_margin);
+    object_data.envelope_poly = one_shot_envelope_poly;
     return;
   }
 
   boost::geometry::correct(unions.front());
 
-  object_data.envelope_poly = createEnvelopePolygon(unions.front(), closest_pose, 0.0);
+  const auto multi_step_envelope_poly = createEnvelopePolygon(unions.front(), closest_pose, 0.0);
+
+  const auto object_polygon = tier4_autoware_utils::toPolygon2d(object_data.object);
+  const auto object_polygon_area = boost::geometry::area(object_polygon);
+  const auto envelope_polygon_area = boost::geometry::area(multi_step_envelope_poly);
+
+  // keep multi-step envelope polygon.
+  constexpr double THRESHOLD = 5.0;
+  if (envelope_polygon_area < object_polygon_area * THRESHOLD) {
+    object_data.envelope_poly = multi_step_envelope_poly;
+    return;
+  }
+
+  // use latest one-shot envelope polygon.
+  object_data.envelope_poly = one_shot_envelope_poly;
 }
 
 void fillObjectMovingTime(
