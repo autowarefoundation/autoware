@@ -181,6 +181,7 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
     getOrDeclareParameter<double>(node, ns + ".occlusion.attention_lane_curvature_calculation_ds");
   ip.occlusion.static_occlusion_with_traffic_light_timeout = getOrDeclareParameter<double>(
     node, ns + ".occlusion.static_occlusion_with_traffic_light_timeout");
+  ip.debug.ttc = getOrDeclareParameter<std::vector<int64_t>>(node, ns + ".debug.ttc");
 }
 
 void IntersectionModuleManager::launchNewModules(

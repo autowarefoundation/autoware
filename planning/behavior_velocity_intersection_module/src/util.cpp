@@ -1305,10 +1305,12 @@ void cutPredictPathWithDuration(
 
 TimeDistanceArray calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const std::shared_ptr<const PlannerData> & planner_data, const std::set<int> & associative_ids,
-  const size_t closest_idx, const size_t last_intersection_stop_line_candidate_idx,
-  const double time_delay, const double intersection_velocity, const double minimum_ego_velocity,
-  const bool use_upstream_velocity, const double minimum_upstream_velocity)
+  const std::shared_ptr<const PlannerData> & planner_data, const lanelet::Id lane_id,
+  const std::set<int> & associative_ids, const size_t closest_idx,
+  const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
+  const double intersection_velocity, const double minimum_ego_velocity,
+  const bool use_upstream_velocity, const double minimum_upstream_velocity,
+  tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array)
 {
   double dist_sum = 0.0;
   int assigned_lane_found = false;
@@ -1374,7 +1376,26 @@ TimeDistanceArray calcIntersectionPassingTime(
 
     time_distance_array.emplace_back(passing_time, dist_sum);
   }
-
+  debug_ttc_array->layout.dim.resize(3);
+  debug_ttc_array->layout.dim.at(0).label = "lane_id_@[0][0], ttc_time, ttc_dist, path_x, path_y";
+  debug_ttc_array->layout.dim.at(0).size = 5;
+  debug_ttc_array->layout.dim.at(1).label = "values";
+  debug_ttc_array->layout.dim.at(1).size = time_distance_array.size();
+  for (unsigned i = 0; i < time_distance_array.size(); ++i) {
+    debug_ttc_array->data.push_back(lane_id);
+  }
+  for (const auto & [t, d] : time_distance_array) {
+    debug_ttc_array->data.push_back(t);
+  }
+  for (const auto & [t, d] : time_distance_array) {
+    debug_ttc_array->data.push_back(d);
+  }
+  for (const auto & p : smoothed_reference_path.points) {
+    debug_ttc_array->data.push_back(p.point.pose.position.x);
+  }
+  for (const auto & p : smoothed_reference_path.points) {
+    debug_ttc_array->data.push_back(p.point.pose.position.y);
+  }
   return time_distance_array;
 }
 

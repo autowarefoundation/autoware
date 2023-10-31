@@ -138,6 +138,10 @@ IntersectionModule::IntersectionModule(
 
   decision_state_pub_ =
     node_.create_publisher<std_msgs::msg::String>("~/debug/intersection/decision_state", 1);
+  ego_ttc_pub_ = node_.create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
+    "~/debug/intersection/ego_ttc", 1);
+  object_ttc_pub_ = node_.create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>(
+    "~/debug/intersection/object_ttc", 1);
 }
 
 void IntersectionModule::initializeRTCStatus()
@@ -1465,12 +1469,22 @@ bool IntersectionModule::checkCollision(
 
   // check collision between target_objects predicted path and ego lane
   // cut the predicted path at passing_time
+  tier4_debug_msgs::msg::Float64MultiArrayStamped ego_ttc_time_array;
   const auto time_distance_array = util::calcIntersectionPassingTime(
-    path, planner_data_, associative_ids_, closest_idx, last_intersection_stop_line_candidate_idx,
-    time_delay, planner_param_.common.intersection_velocity,
+    path, planner_data_, lane_id_, associative_ids_, closest_idx,
+    last_intersection_stop_line_candidate_idx, time_delay,
+    planner_param_.common.intersection_velocity,
     planner_param_.collision_detection.minimum_ego_predicted_velocity,
     planner_param_.collision_detection.use_upstream_velocity,
-    planner_param_.collision_detection.minimum_upstream_velocity);
+    planner_param_.collision_detection.minimum_upstream_velocity, &ego_ttc_time_array);
+
+  if (
+    std::find(planner_param_.debug.ttc.begin(), planner_param_.debug.ttc.end(), lane_id_) !=
+    planner_param_.debug.ttc.end()) {
+    ego_ttc_time_array.stamp = path.header.stamp;
+    ego_ttc_pub_->publish(ego_ttc_time_array);
+  }
+
   const double passing_time = time_distance_array.back().first;
   util::cutPredictPathWithDuration(target_objects, clock_, passing_time);
 
@@ -1552,6 +1566,19 @@ bool IntersectionModule::checkCollision(
     return (object2collision > margin) || (object2collision < 0);
   };
   // check collision between predicted_path and ego_area
+  tier4_debug_msgs::msg::Float64MultiArrayStamped object_ttc_time_array;
+  object_ttc_time_array.layout.dim.resize(3);
+  object_ttc_time_array.layout.dim.at(0).label = "objects";
+  object_ttc_time_array.layout.dim.at(0).size = 1;  // incremented in the loop, first row is lane_id
+  object_ttc_time_array.layout.dim.at(1).label =
+    "[x, y, th, length, width, speed, dangerous, ref_obj_enter_time, ref_obj_exit_time, "
+    "start_time, start_dist, "
+    "end_time, end_dist, first_collision_x, first_collision_y, last_collision_x, last_collision_y, "
+    "prd_x[0], ... pred_x[19], pred_y[0], ... pred_y[19]]";
+  object_ttc_time_array.layout.dim.at(1).size = 57;
+  for (unsigned i = 0; i < object_ttc_time_array.layout.dim.at(1).size; ++i) {
+    object_ttc_time_array.data.push_back(lane_id_);
+  }
   bool collision_detected = false;
   for (const auto & target_object : target_objects->all_attention_objects) {
     const auto & object = target_object.object;
@@ -1650,11 +1677,36 @@ bool IntersectionModule::checkCollision(
           break;
         }
       }
+      object_ttc_time_array.layout.dim.at(0).size++;
+      const auto & pos = object.kinematics.initial_pose_with_covariance.pose.position;
+      const auto & shape = object.shape;
+      object_ttc_time_array.data.insert(
+        object_ttc_time_array.data.end(),
+        {pos.x, pos.y, tf2::getYaw(object.kinematics.initial_pose_with_covariance.pose.orientation),
+         shape.dimensions.x, shape.dimensions.y,
+         object.kinematics.initial_twist_with_covariance.twist.linear.x,
+         1.0 * static_cast<int>(collision_detected), ref_object_enter_time, ref_object_exit_time,
+         start_time_distance_itr->first, start_time_distance_itr->second,
+         end_time_distance_itr->first, end_time_distance_itr->second, first_itr->position.x,
+         first_itr->position.y, last_itr->position.x, last_itr->position.y});
+      for (unsigned i = 0; i < 20; i++) {
+        const auto & pos =
+          predicted_path.path.at(std::min<size_t>(i, predicted_path.path.size() - 1)).position;
+        object_ttc_time_array.data.push_back(pos.x);
+        object_ttc_time_array.data.push_back(pos.y);
+      }
       if (collision_detected) {
         debug_data_.conflicting_targets.objects.push_back(object);
         break;
       }
     }
+  }
+
+  if (
+    std::find(planner_param_.debug.ttc.begin(), planner_param_.debug.ttc.end(), lane_id_) !=
+    planner_param_.debug.ttc.end()) {
+    object_ttc_time_array.stamp = path.header.stamp;
+    object_ttc_pub_->publish(object_ttc_time_array);
   }
 
   return collision_detected;

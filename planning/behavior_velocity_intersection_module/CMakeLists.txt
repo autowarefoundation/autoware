@@ -20,3 +20,8 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ament_auto_package(INSTALL_TO_SHARE config)
+
+install(PROGRAMS
+  scripts/ttc.py
+  DESTINATION lib/${PROJECT_NAME}
+)

@@ -83,6 +83,9 @@
         attention_lane_curvature_calculation_ds: 0.5
         static_occlusion_with_traffic_light_timeout: 3.5
 
+      debug:
+        ttc: [0]
+
       enable_rtc:
         intersection: false # If set to true, the scene modules require approval from the rtc (request to cooperate) function. If set to false, the modules can be executed without requiring rtc approval
         intersection_to_occlusion: false
