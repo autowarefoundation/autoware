@@ -1,8 +1,8 @@
 nodes:
   - path: /external/joystick_command
     type: diag
-    name: "external_command_checker: joystick_command"
+    diag: "external_command_checker: joystick_command"
 
   - path: /external/remote_command
     type: diag
-    name: "external_command_checker: remote_command"
+    diag: "external_command_checker: remote_command"

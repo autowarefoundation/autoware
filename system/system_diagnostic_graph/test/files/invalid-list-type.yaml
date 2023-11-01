@@ -1,0 +1,3 @@
+nodes:
+  - type: and
+    list: test-list

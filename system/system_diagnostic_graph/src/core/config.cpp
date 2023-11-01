@@ -14,11 +14,15 @@
 
 #include "config.hpp"
 
+#include "error.hpp"
+
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <filesystem>
 #include <memory>
+#include <regex>
 #include <string>
+#include <utility>
 #include <vector>
 
 // DEBUG
@@ -27,235 +31,265 @@
 namespace system_diagnostic_graph
 {
 
-ErrorMarker::ErrorMarker(const std::string & file)
+template <class T>
+void extend(std::vector<T> & u, const std::vector<T> & v)
 {
-  file_ = file;
+  u.insert(u.end(), v.begin(), v.end());
 }
 
-std::string ErrorMarker::str() const
+template <class T>
+auto enumerate(const std::vector<T> & v)
 {
-  if (type_.empty()) {
-    return file_;
+  std::vector<std::pair<size_t, T>> result;
+  for (size_t i = 0; i < v.size(); ++i) {
+    result.push_back(std::make_pair(i, v[i]));
   }
-
-  std::string result = type_;
-  for (const auto & index : indices_) {
-    result += "-" + std::to_string(index);
-  }
-  return result + " in " + file_;
+  return result;
 }
 
-ErrorMarker ErrorMarker::type(const std::string & type) const
+ConfigData::ConfigData(const std::string & path)
 {
-  ErrorMarker mark = *this;
-  mark.type_ = type;
-  return mark;
+  file = path;
 }
 
-ErrorMarker ErrorMarker::index(size_t index) const
-{
-  ErrorMarker mark = *this;
-  mark.indices_.push_back(index);
-  return mark;
-}
-
-ConfigObject::ConfigObject(const ErrorMarker & mark, YAML::Node yaml, const std::string & type)
+ConfigData ConfigData::load(YAML::Node yaml)
 {
   if (!yaml.IsMap()) {
-    throw create_error(mark, type + " is not a dict type");
+    throw error<InvalidType>("object is not a dict type", *this);
   }
   for (const auto & kv : yaml) {
-    dict_[kv.first.as<std::string>()] = kv.second;
+    object[kv.first.as<std::string>()] = kv.second;
   }
-  mark_ = mark;
-  type_ = type;
+  return *this;
 }
 
-ErrorMarker ConfigObject::mark() const
+ConfigData ConfigData::type(const std::string & name) const
 {
-  return mark_;
+  ConfigData data(file);
+  data.mark = name;
+  return data;
 }
 
-std::optional<YAML::Node> ConfigObject::take_yaml(const std::string & name)
+ConfigData ConfigData::node(const size_t index) const
 {
-  if (!dict_.count(name)) {
-    return std::nullopt;
-  }
-  const auto yaml = dict_.at(name);
-  dict_.erase(name);
-  return yaml;
+  ConfigData data(file);
+  data.mark = mark + "-" + std::to_string(index);
+  return data;
 }
 
-std::string ConfigObject::take_text(const std::string & name)
+std::string ConfigData::take_text(const std::string & name)
 {
-  if (!dict_.count(name)) {
-    throw create_error(mark_, "object has no '" + name + "' field");
+  if (!object.count(name)) {
+    throw error<FieldNotFound>("required field is not found", name, *this);
   }
 
-  const auto yaml = dict_.at(name);
-  dict_.erase(name);
+  const auto yaml = object.at(name);
+  object.erase(name);
   return yaml.as<std::string>();
 }
 
-std::string ConfigObject::take_text(const std::string & name, const std::string & fail)
+std::string ConfigData::take_text(const std::string & name, const std::string & fail)
 {
-  if (!dict_.count(name)) {
+  if (!object.count(name)) {
     return fail;
   }
 
-  const auto yaml = dict_.at(name);
-  dict_.erase(name);
+  const auto yaml = object.at(name);
+  object.erase(name);
   return yaml.as<std::string>();
 }
 
-std::vector<YAML::Node> ConfigObject::take_list(const std::string & name)
+std::vector<YAML::Node> ConfigData::take_list(const std::string & name)
 {
-  if (!dict_.count(name)) {
+  if (!object.count(name)) {
     return std::vector<YAML::Node>();
   }
 
-  const auto yaml = dict_.at(name);
-  dict_.erase(name);
+  const auto yaml = object.at(name);
+  object.erase(name);
 
   if (!yaml.IsSequence()) {
-    throw ConfigError("the '" + name + "' field is not a list type");
+    throw error<InvalidType>("field is not a list type", name, *this);
   }
   return std::vector<YAML::Node>(yaml.begin(), yaml.end());
 }
 
-bool ConfigFilter::check(const std::string & mode) const
+void check_config_nodes(const std::vector<UnitConfig::SharedPtr> & nodes)
 {
-  if (!excludes.empty() && excludes.count(mode) != 0) return false;
-  if (!includes.empty() && includes.count(mode) == 0) return false;
-  return true;
-}
+  std::unordered_map<std::string, size_t> path_count;
+  for (const auto & node : nodes) {
+    path_count[node->path] += 1;
+  }
 
-ConfigError create_error(const ErrorMarker & mark, const std::string & message)
-{
-  (void)mark;
-  return ConfigError(message);
-}
-
-ConfigFilter parse_mode_filter(const ErrorMarker & mark, std::optional<YAML::Node> yaml)
-{
-  std::unordered_set<std::string> excludes;
-  std::unordered_set<std::string> includes;
-  if (yaml) {
-    ConfigObject dict(mark, yaml.value(), "mode filter");
-
-    for (const auto & mode : dict.take_list("except")) {
-      excludes.emplace(mode.as<std::string>());
-    }
-    for (const auto & mode : dict.take_list("only")) {
-      includes.emplace(mode.as<std::string>());
+  path_count.erase("");
+  for (const auto & [path, count] : path_count) {
+    if (1 < count) {
+      throw error<PathConflict>("object path is not unique", path);
     }
   }
-  return ConfigFilter{excludes, includes};
 }
 
-FileConfig parse_file_config(const ErrorMarker & mark, YAML::Node yaml)
+void resolve_link_nodes(std::vector<UnitConfig::SharedPtr> & nodes)
 {
-  ConfigObject dict(mark, yaml, "file object");
-  const auto relative_path = dict.take_text("path");
-  const auto package_name = dict.take_text("package");
-  const auto package_path = ament_index_cpp::get_package_share_directory(package_name);
-  return FileConfig{mark, package_path + "/" + relative_path};
-}
+  std::vector<UnitConfig::SharedPtr> filtered;
+  std::unordered_map<UnitConfig::SharedPtr, UnitConfig::SharedPtr> links;
+  std::unordered_map<std::string, UnitConfig::SharedPtr> paths;
 
-NodeConfig parse_node_config(const ErrorMarker & mark, YAML::Node yaml)
-{
-  ConfigObject dict(mark, yaml, "node object");
-  const auto path = dict.take_text("path");
-  const auto mode = parse_mode_filter(dict.mark(), dict.take_yaml("mode"));
-  return NodeConfig{path, mode, dict};
-}
-
-ExprConfig parse_expr_config(const ErrorMarker & mark, YAML::Node yaml)
-{
-  ConfigObject dict(mark, yaml, "expr object");
-  return parse_expr_config(dict);
-}
-
-ExprConfig parse_expr_config(ConfigObject & dict)
-{
-  const auto type = dict.take_text("type");
-  const auto mode = parse_mode_filter(dict.mark(), dict.take_yaml("mode"));
-  return ExprConfig{type, mode, dict};
-}
-
-void dump(const ConfigFile & config)
-{
-  std::cout << "=================================================================" << std::endl;
-  std::cout << config.mark.str() << std::endl;
-  for (const auto & file : config.files) {
-    std::cout << " - f: " << file.path << " (" << file.mark.str() << ")" << std::endl;
+  for (const auto & node : nodes) {
+    links[node] = node;
+    paths[node->path] = node;
   }
-  for (const auto & unit : config.units) {
-    std::cout << " - u: " << unit.path << " (" << unit.dict.mark().str() << ")" << std::endl;
+
+  for (const auto & node : nodes) {
+    if (node->type == "link" && node->path == "") {
+      const auto link = node->data.take_text("link");
+      if (!paths.count(link)) {
+        throw error<PathNotFound>("link path is not found", link, node->data);
+      }
+      links[node] = paths.at(link);
+    } else {
+      filtered.push_back(node);
+    }
   }
-  for (const auto & diag : config.diags) {
-    std::cout << " - d: " << diag.path << " (" << diag.dict.mark().str() << ")" << std::endl;
+  nodes = filtered;
+
+  for (const auto & node : nodes) {
+    for (auto & child : node->children) {
+      child = links.at(child);
+    }
   }
 }
 
-template <class T, class F>
-auto apply(const ErrorMarker & mark, F & func, const std::vector<YAML::Node> & list)
+std::string complement_node_type(ConfigData & data)
 {
-  std::vector<T> result;
-  for (size_t i = 0; i < list.size(); ++i) {
-    result.push_back(func(mark.index(i), list[i]));
+  if (data.object.count("diag")) {
+    return "diag";
+  }
+  return data.take_text("type");
+}
+
+std::string resolve_substitution(const std::string & substitution, const ConfigData & data)
+{
+  std::stringstream ss(substitution);
+  std::string word;
+  std::vector<std::string> words;
+  while (getline(ss, word, ' ')) {
+    words.push_back(word);
+  }
+
+  if (words.size() == 2 && words[0] == "find-pkg-share") {
+    return ament_index_cpp::get_package_share_directory(words[1]);
+  }
+  if (words.size() == 1 && words[0] == "dirname") {
+    return std::filesystem::path(data.file).parent_path();
+  }
+  throw error<UnknownType>("unknown substitution", substitution, data);
+}
+
+std::string resolve_file_path(const std::string & path, const ConfigData & data)
+{
+  static const std::regex pattern(R"(\$\(([^()]*)\))");
+  std::smatch m;
+  std::string result = path;
+  while (std::regex_search(result, m, pattern)) {
+    const std::string prefix = m.prefix();
+    const std::string suffix = m.suffix();
+    result = prefix + resolve_substitution(m.str(1), data) + suffix;
   }
   return result;
 }
 
-ConfigFile load_config_file(const FileConfig & file)
+PathConfig::SharedPtr parse_path_config(const ConfigData & data)
 {
-  if (!std::filesystem::exists(file.path)) {
-    throw create_error(file.mark, "config file '" + file.path + "' does not exist");
+  const auto path = std::make_shared<PathConfig>(data);
+  path->original = path->data.take_text("path");
+  path->resolved = resolve_file_path(path->original, path->data);
+  return path;
+}
+
+UnitConfig::SharedPtr parse_node_config(const ConfigData & data)
+{
+  const auto node = std::make_shared<UnitConfig>(data);
+  node->path = node->data.take_text("path", "");
+  node->type = node->data.take_text("type", "");
+
+  if (node->type.empty()) {
+    node->type = complement_node_type(node->data);
   }
 
-  const auto yaml = YAML::LoadFile(file.path);
-  const auto mark = ErrorMarker(file.path);
-  auto dict = ConfigObject(mark, yaml, "config file");
+  for (const auto & [index, yaml] : enumerate(node->data.take_list("list"))) {
+    const auto child = data.node(index).load(yaml);
+    node->children.push_back(parse_node_config(child));
+  }
+  return node;
+}
 
-  std::vector<YAML::Node> units;
-  std::vector<YAML::Node> diags;
-  for (const auto & node : dict.take_list("nodes")) {
-    const auto type = node["type"].as<std::string>();
-    if (type == "diag") {
-      diags.push_back(node);
-    } else {
-      units.push_back(node);
-    }
+FileConfig::SharedPtr parse_file_config(const ConfigData & data)
+{
+  const auto file = std::make_shared<FileConfig>(data);
+  const auto path_data = data.type("file");
+  const auto node_data = data.type("node");
+  const auto paths = file->data.take_list("files");
+  const auto nodes = file->data.take_list("nodes");
+
+  for (const auto & [index, yaml] : enumerate(paths)) {
+    const auto path = path_data.node(index).load(yaml);
+    file->paths.push_back(parse_path_config(path));
+  }
+  for (const auto & [index, yaml] : enumerate(nodes)) {
+    const auto node = node_data.node(index).load(yaml);
+    file->nodes.push_back(parse_node_config(node));
+  }
+  return file;
+}
+
+FileConfig::SharedPtr load_file_config(PathConfig & config)
+{
+  const auto path = std::filesystem::path(config.resolved);
+  if (!std::filesystem::exists(path)) {
+    throw error<FileNotFound>("file is not found", path, config.data);
+  }
+  const auto file = ConfigData(path).load(YAML::LoadFile(path));
+  return parse_file_config(file);
+}
+
+RootConfig load_root_config(const PathConfig::SharedPtr root)
+{
+  std::vector<PathConfig::SharedPtr> paths;
+  paths.push_back(root);
+
+  std::vector<FileConfig::SharedPtr> files;
+  for (size_t i = 0; i < paths.size(); ++i) {
+    const auto path = paths[i];
+    const auto file = load_file_config(*path);
+    files.push_back(file);
+    extend(paths, file->paths);
   }
 
-  ConfigFile config(mark);
-  config.files = apply<FileConfig>(mark.type("file"), parse_file_config, dict.take_list("files"));
-  config.units = apply<NodeConfig>(mark.type("unit"), parse_node_config, units);
-  config.diags = apply<NodeConfig>(mark.type("diag"), parse_node_config, diags);
+  std::vector<UnitConfig::SharedPtr> nodes;
+  for (const auto & file : files) {
+    extend(nodes, file->nodes);
+  }
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    const auto node = nodes[i];
+    extend(nodes, node->children);
+  }
+
+  check_config_nodes(nodes);
+  resolve_link_nodes(nodes);
+
+  RootConfig config;
+  config.files = files;
+  config.nodes = nodes;
   return config;
 }
 
-ConfigFile load_config_root(const std::string & path)
+RootConfig load_root_config(const std::string & path)
 {
-  const auto mark = ErrorMarker("root file");
-  std::vector<ConfigFile> configs;
-  configs.push_back(load_config_file(FileConfig{mark, path}));
-
-  // Use an index because updating the vector invalidates the iterator.
-  for (size_t i = 0; i < configs.size(); ++i) {
-    for (const auto & file : configs[i].files) {
-      configs.push_back(load_config_file(file));
-    }
-  }
-
-  ConfigFile result(mark);
-  for (const auto & config : configs) {
-    result.files.insert(result.files.end(), config.files.begin(), config.files.end());
-    result.units.insert(result.units.end(), config.units.begin(), config.units.end());
-    result.diags.insert(result.diags.end(), config.diags.begin(), config.diags.end());
-  }
-  return result;
+  const auto root = std::make_shared<PathConfig>(ConfigData("root-file"));
+  root->original = path;
+  root->resolved = path;
+  return load_root_config(root);
 }
 
 }  // namespace system_diagnostic_graph

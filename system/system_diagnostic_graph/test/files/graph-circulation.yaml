@@ -1,0 +1,9 @@
+nodes:
+  - path: /foo/bar
+    type: and
+    list:
+      - { type: link, link: /foo/baz }
+  - path: /foo/baz
+    type: and
+    list:
+      - { type: link, link: /foo/bar }

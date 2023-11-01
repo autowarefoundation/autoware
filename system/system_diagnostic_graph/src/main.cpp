@@ -58,16 +58,14 @@ MainNode::~MainNode()
 void MainNode::on_timer()
 {
   const auto stamp = now();
-  graph_.update(stamp);
+  pub_graph_->publish(graph_.report(stamp));
   graph_.debug();
-  pub_graph_->publish(graph_.message());
-
   if (modes_) modes_->update(stamp);
 }
 
 void MainNode::on_diag(const DiagnosticArray::ConstSharedPtr msg)
 {
-  graph_.callback(*msg, now());
+  graph_.callback(now(), *msg);
 }
 
 }  // namespace system_diagnostic_graph

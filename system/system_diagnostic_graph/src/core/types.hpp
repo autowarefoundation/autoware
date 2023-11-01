@@ -31,13 +31,8 @@ using tier4_system_msgs::msg::DiagnosticLink;
 using tier4_system_msgs::msg::DiagnosticNode;
 using DiagnosticLevel = DiagnosticStatus::_level_type;
 
-class BaseNode;
-class UnitNode;
-class DiagNode;
-class UnknownNode;
-
-class BaseExpr;
-class ExprInit;
+class BaseUnit;
+class DiagUnit;
 
 }  // namespace system_diagnostic_graph
 

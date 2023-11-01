@@ -1,32 +1,37 @@
 files:
-  - { package: system_diagnostic_graph, path: example/example_1.yaml }
-  - { package: system_diagnostic_graph, path: example/example_2.yaml }
+  - { path: $(find-pkg-share system_diagnostic_graph)/example/example_1.yaml }
+  - { path: $(find-pkg-share system_diagnostic_graph)/example/example_2.yaml }
 
 nodes:
   - path: /autoware/modes/stop
-    type: debug-ok
+    type: ok
 
   - path: /autoware/modes/autonomous
     type: and
     list:
-      - { type: link, path: /functions/pose_estimation }
-      - { type: link, path: /functions/obstacle_detection }
+      - { type: link, link: /functions/pose_estimation }
+      - { type: link, link: /functions/obstacle_detection }
 
   - path: /autoware/modes/local
     type: and
     list:
-      - { type: link, path: /external/joystick_command }
+      - { type: link, link: /external/joystick_command }
 
   - path: /autoware/modes/remote
     type: and
     list:
-      - { type: link, path: /external/remote_command }
+      - { type: link, link: /external/remote_command }
 
   - path: /autoware/modes/emergency-stop
-    type: debug-ok
+    type: ok
 
   - path: /autoware/modes/comfortable-stop
-    type: debug-ok
+    type: and
+    list:
+      - { type: link, link: /functions/obstacle_detection }
 
   - path: /autoware/modes/pull-over
-    type: debug-ok
+    type: and
+    list:
+      - { type: link, link: /functions/pose_estimation }
+      - { type: link, link: /functions/obstacle_detection }

@@ -29,7 +29,7 @@ namespace system_diagnostic_graph
 class OperationModes
 {
 public:
-  explicit OperationModes(rclcpp::Node & node, const std::vector<BaseNode *> & graph);
+  OperationModes(rclcpp::Node & node, const std::vector<BaseUnit *> & graph);
   void update(const rclcpp::Time & stamp) const;
 
 private:
@@ -37,13 +37,13 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<Availability>::SharedPtr pub_;
 
-  BaseNode * stop_mode_;
-  BaseNode * autonomous_mode_;
-  BaseNode * local_mode_;
-  BaseNode * remote_mode_;
-  BaseNode * emergency_stop_mrm_;
-  BaseNode * comfortable_stop_mrm_;
-  BaseNode * pull_over_mrm_;
+  BaseUnit * stop_mode_;
+  BaseUnit * autonomous_mode_;
+  BaseUnit * local_mode_;
+  BaseUnit * remote_mode_;
+  BaseUnit * emergency_stop_mrm_;
+  BaseUnit * comfortable_stop_mrm_;
+  BaseUnit * pull_over_mrm_;
 };
 
 }  // namespace system_diagnostic_graph

@@ -15,8 +15,8 @@
 #include "debug.hpp"
 
 #include "graph.hpp"
-#include "nodes.hpp"
 #include "types.hpp"
+#include "units.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -36,7 +36,9 @@ void Graph::debug()
 {
   std::vector<DiagDebugData> lines;
   for (const auto & node : nodes_) {
-    lines.push_back(node->debug());
+    const auto level_name = level_names.at(node->level());
+    const auto index_name = std::to_string(node->index());
+    lines.push_back({"unit", index_name, level_name, node->path(), "-----"});
   }
 
   std::array<size_t, diag_debug_size> widths = {};
@@ -55,27 +57,6 @@ void Graph::debug()
     }
     std::cout << "|" << std::endl;
   }
-}
-
-DiagDebugData UnitNode::debug() const
-{
-  const auto level_name = level_names.at(level());
-  const auto index_name = std::to_string(index());
-  return {"unit", index_name, level_name, path_, "-----"};
-}
-
-DiagDebugData DiagNode::debug() const
-{
-  const auto level_name = level_names.at(level());
-  const auto index_name = std::to_string(index());
-  return {"diag", index_name, level_name, path_, name_};
-}
-
-DiagDebugData UnknownNode::debug() const
-{
-  const auto level_name = level_names.at(level());
-  const auto index_name = std::to_string(index());
-  return {"test", index_name, level_name, path_, "-----"};
 }
 
 }  // namespace system_diagnostic_graph
