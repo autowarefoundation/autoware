@@ -497,8 +497,13 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
     stop_dist > p.drive_state_stop_dist + p.drive_state_offset_stop_dist;
   const bool departure_condition_from_stopped = stop_dist > p.drive_state_stop_dist;
 
-  const bool keep_stopped_condition =
-    m_enable_keep_stopped_until_steer_convergence && !lateral_sync_data_.is_steer_converged;
+  // NOTE: the same velocity threshold as motion_utils::searchZeroVelocity
+  static constexpr double vel_epsilon = 1e-3;
+
+  // Let vehicle start after the steering is converged for control accuracy
+  const bool keep_stopped_condition = std::fabs(current_vel) < vel_epsilon &&
+                                      m_enable_keep_stopped_until_steer_convergence &&
+                                      !lateral_sync_data_.is_steer_converged;
 
   const bool stopping_condition = stop_dist < p.stopping_state_stop_dist;
 
@@ -528,8 +533,6 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
       ? (clock_->now() - *m_last_running_time).seconds() > p.stopped_state_entry_duration_time
       : false;
 
-  static constexpr double vel_epsilon =
-    1e-3;  // NOTE: the same velocity threshold as motion_utils::searchZeroVelocity
   const double current_vel_cmd =
     std::fabs(m_trajectory.points.at(control_data.nearest_idx).longitudinal_velocity_mps);
   const bool emergency_condition = m_enable_overshoot_emergency &&
