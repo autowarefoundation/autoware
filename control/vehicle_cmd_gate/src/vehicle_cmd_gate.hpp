@@ -62,6 +62,7 @@ using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
 using geometry_msgs::msg::AccelWithCovarianceStamped;
 using std_srvs::srv::Trigger;
 using tier4_control_msgs::msg::GateMode;
+using tier4_debug_msgs::msg::BoolStamped;
 using tier4_external_api_msgs::msg::Emergency;
 using tier4_external_api_msgs::msg::Heartbeat;
 using tier4_external_api_msgs::srv::SetEmergency;
@@ -106,6 +107,8 @@ private:
   rclcpp::Publisher<OperationModeState>::SharedPtr operation_mode_pub_;
   rclcpp::Publisher<IsFilterActivated>::SharedPtr is_filter_activated_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr filter_activated_marker_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr filter_activated_marker_raw_pub_;
+  rclcpp::Publisher<BoolStamped>::SharedPtr filter_activated_flag_pub_;
 
   // Subscription
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
@@ -123,11 +126,13 @@ private:
   bool is_engaged_;
   bool is_system_emergency_ = false;
   bool is_external_emergency_stop_ = false;
+  bool is_filtered_marker_published_ = false;
   double current_steer_ = 0;
   GateMode current_gate_mode_;
   MrmState current_mrm_state_;
   Odometry current_kinematics_;
   double current_acceleration_ = 0.0;
+  int filter_activated_count_ = 0;
 
   // Heartbeat
   std::shared_ptr<rclcpp::Time> emergency_state_heartbeat_received_time_;
@@ -172,6 +177,8 @@ private:
   double emergency_acceleration_;
   double moderate_stop_service_acceleration_;
   bool enable_cmd_limit_filter_;
+  int filter_activated_count_threshold_;
+  double filter_activated_velocity_threshold_;
 
   // Service
   rclcpp::Service<EngageSrv>::SharedPtr srv_engage_;
@@ -236,6 +243,7 @@ private:
 
   // debug
   MarkerArray createMarkerArray(const IsFilterActivated & filter_activated);
+  void publishMarkers(const IsFilterActivated & filter_activated);
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };

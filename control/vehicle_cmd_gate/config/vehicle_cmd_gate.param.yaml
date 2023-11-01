@@ -6,6 +6,8 @@
     check_external_emergency_heartbeat: false
     use_start_request: false
     enable_cmd_limit_filter: true
+    filter_activated_count_threshold: 5
+    filter_activated_velocity_threshold: 1.0
     external_emergency_stop_heartbeat_timeout: 0.0
     stop_hold_acceleration: -1.5
     emergency_acceleration: -2.4
