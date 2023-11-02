@@ -1,31 +1,147 @@
 <launch>
   <arg name="input_route_topic_name" default="/planning/mission_planning/route"/>
-  <arg name="map_topic_name" default="/map/vector_map"/>
-  <arg name="vehicle_param_file"/>
+  <arg name="input_traffic_light_topic_name" default="/perception/traffic_light_recognition/traffic_signals"/>
+  <arg name="input_virtual_traffic_light_topic_name" default="/awapi/tmp/virtual_traffic_light_states"/>
+  <arg name="input_vector_map_topic_name" default="/map/vector_map"/>
+  <arg name="input_pointcloud_map_topic_name" default="/map/pointcloud_map"/>
 
-  <node pkg="behavior_path_planner" exec="behavior_path_planner" name="behavior_path_planner" output="screen">
-    <remap from="~/input/route" to="$(var input_route_topic_name)"/>
-    <remap from="~/input/vector_map" to="$(var map_topic_name)"/>
-    <remap from="~/input/perception" to="/perception/object_recognition/objects"/>
-    <remap from="~/input/occupancy_grid_map" to="/perception/occupancy_grid_map/map"/>
-    <remap from="~/input/traffic_signals" to="/perception/traffic_light_recognition/traffic_signals"/>
-    <remap from="~/input/odometry" to="/localization/kinematic_state"/>
-    <remap from="~/input/accel" to="/localization/acceleration"/>
-    <remap from="~/output/path" to="path_with_lane_id"/>
-    <remap from="~/output/turn_indicators_cmd" to="/planning/turn_signal_cmd"/>
-    <remap from="~/output/hazard_lights_cmd" to="/planning/hazard_signal_cmd"/>
-    <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
-    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/common.param.yaml"/>
-    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/side_shift/side_shift.param.yaml"/>
-    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml"/>
-    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml"/>
-    <param from="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/behavior_path_planner.param.yaml"/>
-    <param from="$(var vehicle_param_file)"/>
-  </node>
+  <node_container pkg="rclcpp_components" exec="$(var container_type)" name="behavior_planning_container" namespace="" args="">
+    <composable_node pkg="behavior_path_planner" plugin="behavior_path_planner::BehaviorPathPlannerNode" name="behavior_path_planner" namespace="">
+      <!-- topic remap -->
+      <remap from="~/input/route" to="$(var input_route_topic_name)"/>
+      <remap from="~/input/vector_map" to="$(var input_vector_map_topic_name)"/>
+      <remap from="~/input/perception" to="/perception/object_recognition/objects"/>
+      <remap from="~/input/occupancy_grid_map" to="/perception/occupancy_grid_map/map"/>
+      <remap from="~/input/costmap" to="/planning/scenario_planning/parking/costmap_generator/occupancy_grid"/>
+      <remap from="~/input/traffic_signals" to="$(var input_traffic_light_topic_name)"/>
+      <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+      <remap from="~/input/accel" to="/localization/acceleration"/>
+      <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
+      <remap from="~/output/path" to="path_with_lane_id"/>
+      <remap from="~/output/turn_indicators_cmd" to="/planning/turn_indicators_cmd"/>
+      <remap from="~/output/hazard_lights_cmd" to="/planning/hazard_lights_cmd"/>
+      <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
+      <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+      <!-- params -->
+      <param from="$(var common_param_path)"/>
+      <param from="$(var vehicle_param_file)"/>
+      <param from="$(var nearest_search_param_path)"/>
+      <param from="$(var behavior_path_planner_side_shift_module_param_path)"/>
+      <param from="$(var behavior_path_planner_avoidance_module_param_path)"/>
+      <param from="$(var behavior_path_planner_avoidance_by_lc_module_param_path)"/>
+      <param from="$(var behavior_path_planner_dynamic_avoidance_module_param_path)"/>
+      <param from="$(var behavior_path_planner_lane_change_module_param_path)"/>
+      <param from="$(var behavior_path_planner_goal_planner_module_param_path)"/>
+      <param from="$(var behavior_path_planner_start_planner_module_param_path)"/>
+      <param from="$(var behavior_path_planner_drivable_area_expansion_param_path)"/>
+      <param from="$(var behavior_path_planner_scene_module_manager_param_path)"/>
+      <param from="$(var behavior_path_planner_common_param_path)"/>
+      <param name="use_experimental_lane_change_function" value="$(var use_experimental_lane_change_function)"/>
+      <!-- composable node config -->
+      <extra_arg name="use_intra_process_comms" value="false"/>
+    </composable_node>
 
-  <group>
-    <include file="$(find-pkg-share behavior_velocity_planner)/launch/behavior_velocity_planner.launch.xml">
-      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-    </include>
+    <composable_node pkg="behavior_velocity_planner" plugin="behavior_velocity_planner::BehaviorVelocityPlannerNode" name="behavior_velocity_planner" namespace="">
+      <!-- topic remap -->
+      <remap from="~/input/path_with_lane_id" to="path_with_lane_id"/>
+      <remap from="~/input/vector_map" to="$(var input_vector_map_topic_name)"/>
+      <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state"/>
+      <remap from="~/input/accel" to="/localization/acceleration"/>
+      <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects"/>
+      <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+      <remap from="~/input/compare_map_filtered_pointcloud" to="compare_map_filtered/pointcloud"/>
+      <remap from="~/input/vector_map_inside_area_filtered_pointcloud" to="vector_map_inside_area_filtered/pointcloud"/>
+      <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity_default"/>
+      <remap from="~/input/traffic_signals" to="$(var input_traffic_light_topic_name)"/>
+      <remap from="~/input/virtual_traffic_light_states" to="$(var input_virtual_traffic_light_topic_name)"/>
+      <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>
+      <remap from="~/output/path" to="path"/>
+      <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+      <remap from="~/output/infrastructure_commands" to="/planning/scenario_planning/status/infrastructure_commands"/>
+      <remap from="~/output/traffic_signal" to="debug/traffic_signal"/>
+      <!-- params -->
+      <param from="$(var common_param_path)"/>
+      <param from="$(var vehicle_param_file)"/>
+      <param from="$(var nearest_search_param_path)"/>
+      <param from="$(var motion_velocity_smoother_param_path)"/>
+      <param from="$(var behavior_velocity_smoother_type_param_path)"/>
+      <param from="$(var behavior_velocity_planner_common_param_path)"/>
+      <!-- <param from="$(var template_param_path)"/> -->
+      <param from="$(var behavior_velocity_planner_blind_spot_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_crosswalk_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_walkway_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_detection_area_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_intersection_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_stop_line_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_traffic_light_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_virtual_traffic_light_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_occlusion_spot_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_no_stopping_area_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_run_out_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_speed_bump_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_out_of_lane_module_param_path)"/>
+      <param from="$(var behavior_velocity_planner_no_drivable_lane_module_param_path)"/>
+      <!-- composable node config -->
+      <extra_arg name="use_intra_process_comms" value="false"/>
+    </composable_node>
+
+    <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
+  </node_container>
+
+  <group if="$(var launch_compare_map_pipeline)">
+    <group if="$(var use_pointcloud_container)">
+      <!-- use pointcloud container -->
+      <load_composable_node target="$(var pointcloud_container_name)">
+        <composable_node pkg="compare_map_segmentation" plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent" name="voxel_distance_based_compare_map_filter_node" namespace="">
+          <!-- topic remap -->
+          <remap from="map" to="$(var input_pointcloud_map_topic_name)"/>
+          <remap from="kinematic_state" to="/localization/kinematic_state"/>
+          <remap from="map_loader_service" to="/map/get_differential_pointcloud_map"/>
+          <remap from="input" to="/perception/obstacle_segmentation/pointcloud"/>
+          <remap from="output" to="compare_map_filtered/pointcloud"/>
+          <!-- params -->
+          <param from="$(var compare_map_filter_param_path)"/>
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+
+        <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::VectorMapInsideAreaFilterComponent" name="vector_map_inside_area_filter_node" namespace="">
+          <!-- topic remap -->
+          <remap from="input/vector_map" to="$(var input_vector_map_topic_name)"/>
+          <remap from="input" to="compare_map_filtered/pointcloud"/>
+          <remap from="output" to="vector_map_inside_area_filtered/pointcloud"/>
+          <param name="polygon_type" value="no_obstacle_segmentation_area_for_run_out"/>
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+    <group unless="$(var use_pointcloud_container)">
+      <!-- launch new container -->
+      <node_container pkg="rclcpp_components" exec="$(var container_type)" name="compare_map_container" namespace="" args="">
+        <composable_node pkg="compare_map_segmentation" plugin="compare_map_segmentation::VoxelDistanceBasedCompareMapFilterComponent" name="voxel_distance_based_compare_map_filter_node" namespace="">
+          <!-- topic remap -->
+          <remap from="map" to="$(var input_pointcloud_map_topic_name)"/>
+          <remap from="kinematic_state" to="/localization/kinematic_state"/>
+          <remap from="map_loader_service" to="/map/get_differential_pointcloud_map"/>
+          <remap from="input" to="/perception/obstacle_segmentation/pointcloud"/>
+          <remap from="output" to="compare_map_filtered/pointcloud"/>
+          <!-- params -->
+          <param from="$(var compare_map_filter_param_path)"/>
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+
+        <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::VectorMapInsideAreaFilterComponent" name="vector_map_inside_area_filter_node" namespace="">
+          <!-- topic remap -->
+          <remap from="input/vector_map" to="$(var input_vector_map_topic_name)"/>
+          <remap from="input" to="compare_map_filtered/pointcloud"/>
+          <remap from="output" to="vector_map_inside_area_filtered/pointcloud"/>
+          <!-- params -->
+          <param name="polygon_type" value="no_obstacle_segmentation_area_for_run_out"/>
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+
+        <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
+      </node_container>
+    </group>
   </group>
 </launch>
