@@ -47,10 +47,6 @@ PlanningValidator::PlanningValidator(const rclcpp::NodeOptions & options)
 
   setupParameters();
 
-  if (publish_diag_) {
-    setupDiag();
-  }
-
   logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
@@ -112,39 +108,40 @@ void PlanningValidator::setStatus(
 
 void PlanningValidator::setupDiag()
 {
+  diag_updater_ = std::make_shared<Updater>(this);
   auto & d = diag_updater_;
-  d.setHardwareID("planning_validator");
+  d->setHardwareID("planning_validator");
 
   std::string ns = "trajectory_validation_";
-  d.add(ns + "finite", [&](auto & stat) {
+  d->add(ns + "finite", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_finite_value, "infinite value is found");
   });
-  d.add(ns + "interval", [&](auto & stat) {
+  d->add(ns + "interval", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_interval, "points interval is too long");
   });
-  d.add(ns + "relative_angle", [&](auto & stat) {
+  d->add(ns + "relative_angle", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_relative_angle, "relative angle is too large");
   });
-  d.add(ns + "curvature", [&](auto & stat) {
+  d->add(ns + "curvature", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_curvature, "curvature is too large");
   });
-  d.add(ns + "lateral_acceleration", [&](auto & stat) {
+  d->add(ns + "lateral_acceleration", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_lateral_acc, "lateral acceleration is too large");
   });
-  d.add(ns + "acceleration", [&](auto & stat) {
+  d->add(ns + "acceleration", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_longitudinal_max_acc, "acceleration is too large");
   });
-  d.add(ns + "deceleration", [&](auto & stat) {
+  d->add(ns + "deceleration", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_longitudinal_min_acc, "deceleration is too large");
   });
-  d.add(ns + "steering", [&](auto & stat) {
+  d->add(ns + "steering", [&](auto & stat) {
     setStatus(stat, validation_status_.is_valid_steering, "expected steering is too large");
   });
-  d.add(ns + "steering_rate", [&](auto & stat) {
+  d->add(ns + "steering_rate", [&](auto & stat) {
     setStatus(
       stat, validation_status_.is_valid_steering_rate, "expected steering rate is too large");
   });
-  d.add(ns + "velocity_deviation", [&](auto & stat) {
+  d->add(ns + "velocity_deviation", [&](auto & stat) {
     setStatus(
       stat, validation_status_.is_valid_velocity_deviation, "velocity deviation is too large");
   });
@@ -174,11 +171,15 @@ void PlanningValidator::onTrajectory(const Trajectory::ConstSharedPtr msg)
 
   if (!isDataReady()) return;
 
+  if (publish_diag_ && !diag_updater_) {
+    setupDiag();  // run setup after all data is ready.
+  }
+
   debug_pose_publisher_->clearMarkers();
 
   validate(*current_trajectory_);
 
-  diag_updater_.force_update();
+  diag_updater_->force_update();
 
   publishTrajectory();
 

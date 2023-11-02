@@ -109,7 +109,7 @@ private:
   int diag_error_count_threshold_ = 0;
   bool display_on_terminal_ = true;
 
-  Updater diag_updater_{this};
+  std::shared_ptr<Updater> diag_updater_ = nullptr;
 
   PlanningValidatorStatus validation_status_;
   ValidationParams validation_params_;  // for thresholds
