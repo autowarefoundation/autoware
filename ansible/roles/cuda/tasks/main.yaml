@@ -52,7 +52,7 @@
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
-    line: export PATH="/usr/local/cuda-12.3/bin:$PATH"
+    line: export PATH="/usr/local/cuda/bin:$PATH"
     state: present
     create: true
     mode: 0644
@@ -60,7 +60,7 @@
 - name: Add LD_LIBRARY_PATH to bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
-    line: export LD_LIBRARY_PATH="/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH"
+    line: export LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
     state: present
     create: true
     mode: 0644
