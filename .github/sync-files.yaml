@@ -84,4 +84,8 @@
         sd "/edit/main/docs/" "/edit/main/" {source}
         sd "docs_dir: .*" "docs_dir: ." {source}
         sd "assets/(\w+)" "docs/assets/\$1" {source}
+        sd -- \
+        "  - macros" \
+        "  - macros:
+               module_name: mkdocs_macros" {source}
     - source: docs/assets/js/mathjax.js
