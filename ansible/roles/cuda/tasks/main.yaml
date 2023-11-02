@@ -8,22 +8,6 @@
   register: cuda_architecture
   changed_when: false
 
-- name: (tmp for Ubuntu 22.04) Add liburcu6 repository into sources.list for amd64
-  become: true
-  ansible.builtin.apt_repository:
-    repo: deb http://archive.ubuntu.com/ubuntu focal main restricted
-    filename: focal
-    state: present
-  when: cuda_architecture.stdout == "x86_64"
-
-- name: (tmp for Ubuntu 22.04) Add liburcu6 repository into sources.list for arm64
-  become: true
-  ansible.builtin.apt_repository:
-    repo: deb http://ports.ubuntu.com/ubuntu-ports focal main restricted
-    filename: focal
-    state: present
-  when: cuda_architecture.stdout == "aarch64"
-
 - name: Remove old /etc/apt/sources.list.d/cuda.list
   become: true
   ansible.builtin.file:
@@ -33,7 +17,7 @@
 - name: Install CUDA keyring
   become: true
   ansible.builtin.apt:
-    deb: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/cuda-keyring_1.0-1_all.deb
+    deb: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/{{ cuda_architecture.stdout }}/cuda-keyring_1.1-1_all.deb
     update_cache: true
 
 - name: Get dash-case name of cuda_version
@@ -68,7 +52,7 @@
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
-    line: export PATH="/usr/local/cuda/bin:$PATH"
+    line: export PATH="/usr/local/cuda-12.3/bin:$PATH"
     state: present
     create: true
     mode: 0644
@@ -76,7 +60,7 @@
 - name: Add LD_LIBRARY_PATH to bashrc
   ansible.builtin.lineinfile:
     dest: ~/.bashrc
-    line: export LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
+    line: export LD_LIBRARY_PATH="/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH"
     state: present
     create: true
     mode: 0644
