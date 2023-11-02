@@ -26,7 +26,7 @@ wget https://developer.download.nvidia.com/compute/cuda/repos/$os/$(uname -m)/cu
 sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
 cuda_version_dashed=$(eval sed -e "s/[.]/-/g" <<< "${cuda_version}")
-sudo apt-get -y install cuda-${cuda_version_dashed} tensorrt-dev libcuddn8-dev
+sudo apt-get -y install cuda-${cuda_version_dashed}
 ```
 
 Perform the post installation actions:
