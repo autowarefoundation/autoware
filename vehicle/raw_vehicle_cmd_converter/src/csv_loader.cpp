@@ -85,6 +85,10 @@ bool CSVLoader::validateMap(const Map & map, const bool is_col_decent)
 
 bool CSVLoader::validateData(const Table & table, const std::string & csv_path)
 {
+  if (table.empty()) {
+    std::cerr << "The table is empty." << std::endl;
+    return false;
+  }
   if (table[0].size() < 2) {
     std::cerr << "Cannot read " << csv_path.c_str() << " CSV file should have at least 2 column"
               << std::endl;
