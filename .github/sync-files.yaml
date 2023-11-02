@@ -12,6 +12,8 @@
     - source: .github/PULL_REQUEST_TEMPLATE/standard-change.md
     - source: .github/dependabot.yaml
     - source: .github/stale.yml
+      pre-commands: |
+        sd "staleLabel: stale" "staleLabel: type:stale" {source}
     - source: .github/workflows/cancel-previous-workflows.yaml
     - source: .github/workflows/github-release.yaml
     - source: .github/workflows/pre-commit.yaml
@@ -87,5 +89,5 @@
         sd -- \
         "  - macros" \
         "  - macros:
-               module_name: mkdocs_macros" {source}
+              module_name: mkdocs_macros" {source}
     - source: docs/assets/js/mathjax.js
