@@ -14,6 +14,8 @@ Currently, it supports the following two types:
 - Send partial pointcloud map loading via ROS 2 service
 - Send differential pointcloud map loading via ROS 2 service
 
+NOTE: **We strongly recommend to use divided maps when using large pointcloud map to enable the latter two features (partial and differential load). Please go through the prerequisites section for more details, and follow the instruction for dividing the map and preparing the metadata.**
+
 ### Prerequisites
 
 #### Prerequisites on pointcloud map file(s)
