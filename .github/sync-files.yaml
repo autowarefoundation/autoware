@@ -13,7 +13,7 @@
     - source: .github/dependabot.yaml
     - source: .github/stale.yml
       pre-commands: |
-        sd "staleLabel: stale" "staleLabel: type:stale" {source}
+        sd "staleLabel: stale" "staleLabel: status:stale" {source}
     - source: .github/workflows/cancel-previous-workflows.yaml
     - source: .github/workflows/github-release.yaml
     - source: .github/workflows/pre-commit.yaml
