@@ -34,12 +34,19 @@
       - cuda-minimal-build-{{ cuda__dash_case_cuda_version.stdout }}
       - cuda-libraries-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - cuda-nvml-dev-{{ cuda__dash_case_cuda_version.stdout }}
-      - cuda-nvprof-{{ cuda__dash_case_cuda_version.stdout }}
       - libnpp-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - libcusparse-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - libcublas-dev-{{ cuda__dash_case_cuda_version.stdout }}
       - libnccl-dev
     update_cache: true
+
+- name: Install extra CUDA libraries for x86_64
+  become: true
+  ansible.builtin.apt:
+    name:
+      - cuda-nvprof-{{ cuda__dash_case_cuda_version.stdout }}
+    update_cache: true
+  when: cuda_architecture.stdout == "x86_64"
 
 - name: Install cuda-drivers
   become: true
