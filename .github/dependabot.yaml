@@ -6,5 +6,5 @@ updates:
       interval: daily
     open-pull-requests-limit: 1
     labels:
-      - bot
-      - github-actions
+      - tag:bot
+      - type:github-actions
