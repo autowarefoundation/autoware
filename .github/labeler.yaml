@@ -1,4 +1,4 @@
-"component:ci":
+"type:ci":
   - .github/**/*
   - "*.json"
   - "*.yaml"
@@ -6,7 +6,7 @@
   - .clang-format
   - .gitignore
   - .prettierignore
-"component:documentation":
+"type:documentation":
   - docs/**/*
   - "**/*.md"
   - "**/*.rst"
