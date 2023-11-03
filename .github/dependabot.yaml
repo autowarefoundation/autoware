@@ -7,4 +7,4 @@ updates:
     open-pull-requests-limit: 1
     labels:
       - tag:bot
-      - tag:github-actions
+      - type:github-actions
