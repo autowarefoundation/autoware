@@ -28,6 +28,6 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           pr-labels: |
-            bot
-            update-codeowners-from-packages
+            tag:bot
+            tag:update-codeowners-from-packages
           auto-merge-method: squash
