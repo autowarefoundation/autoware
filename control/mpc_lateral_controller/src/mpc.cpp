@@ -147,6 +147,9 @@ Float32MultiArrayStamped MPC::generateDiagData(
   const double wz_predicted = current_velocity * std::tan(mpc_data.predicted_steer) / wb;
   const double wz_measured = current_velocity * std::tan(mpc_data.steer) / wb;
   const double wz_command = current_velocity * std::tan(ctrl_cmd.steering_tire_angle) / wb;
+  const int iteration_num = m_qpsolver_ptr->getTakenIter();
+  const double runtime = m_qpsolver_ptr->getRunTime();
+  const double objective_value = m_qpsolver_ptr->getObjVal();
 
   typedef decltype(diagnostic.data)::value_type DiagnosticValueType;
   const auto append_diag = [&](const auto & val) -> void {
@@ -170,6 +173,9 @@ Float32MultiArrayStamped MPC::generateDiagData(
   append_diag(nearest_k);                 // [15] nearest path curvature (not smoothed)
   append_diag(mpc_data.predicted_steer);  // [16] predicted steer
   append_diag(wz_predicted);              // [17] angular velocity from predicted steer
+  append_diag(iteration_num);             // [18] iteration number
+  append_diag(runtime);                   // [19] runtime of the latest problem solved
+  append_diag(objective_value);           // [20] objective value of the latest problem solved
 
   return diagnostic;
 }

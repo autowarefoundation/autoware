@@ -53,6 +53,10 @@ public:
     const Eigen::VectorXd & lb, const Eigen::VectorXd & ub, const Eigen::VectorXd & lb_a,
     const Eigen::VectorXd & ub_a, Eigen::VectorXd & u) override;
 
+  int64_t getTakenIter() const override { return osqpsolver_.getTakenIter(); }
+  double getRunTime() const override { return osqpsolver_.getRunTime(); }
+  double getObjVal() const override { return osqpsolver_.getObjVal(); }
+
 private:
   autoware::common::osqp::OSQPInterface osqpsolver_;
   rclcpp::Logger logger_;
