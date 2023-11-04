@@ -74,6 +74,7 @@ The table below shows which models correspond to what parameters. The model name
 | vel_time_delay      | double | dead time for the velocity input                     | x      | x      | x        | o      | x      | x        | 0.25          | [s]     |
 | acc_time_constant   | double | time constant of the 1st-order acceleration dynamics | x      | x      | x        | x      | o      | o        | 0.1           | [s]     |
 | steer_time_constant | double | time constant of the 1st-order steering dynamics     | x      | x      | x        | o      | o      | o        | 0.27          | [s]     |
+| steer_dead_band     | double | dead band for steering angle                         | x      | x      | x        | o      | o      | o        | 0.0           | [rad]   |
 | vel_time_constant   | double | time constant of the 1st-order velocity dynamics     | x      | x      | x        | o      | x      | x        | 0.5           | [s]     |
 | vel_lim             | double | limit of velocity                                    | x      | x      | x        | o      | o      | o        | 50.0          | [m/s]   |
 | vel_rate_lim        | double | limit of acceleration                                | x      | x      | x        | o      | o      | o        | 7.0           | [m/ss]  |
