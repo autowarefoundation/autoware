@@ -14,6 +14,7 @@
 
 #include "yaml-cpp/yaml.h"
 
+#include <QGroupBox>
 #include <QLabel>
 #include <QScrollArea>
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -36,56 +37,72 @@ void LoggingLevelConfigureRvizPlugin::onInitialize()
 
   setLoggerNodeMap();
 
-  QVBoxLayout * layout = new QVBoxLayout;
+  QVBoxLayout * mainLayout = new QVBoxLayout;
 
   QStringList levels = {"DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
   constexpr int height = 20;
-  for (const auto & item : node_logger_map_) {
-    const auto & target_node_name = item.first;
 
-    QHBoxLayout * hLayout = new QHBoxLayout;
+  // Iterate over the namespaces
+  for (const auto & ns_group_info : display_info_vec_) {
+    // Create a group box for each namespace
+    QGroupBox * groupBox = new QGroupBox(ns_group_info.ns);
+    QVBoxLayout * groupLayout = new QVBoxLayout;
 
-    // Create a QLabel to display the node name.
-    QLabel * label = new QLabel(target_node_name);
-    label->setFixedHeight(height);  // Set fixed height for the button
-    label->setFixedWidth(getMaxModuleNameWidth(label));
+    // Iterate over the node/logger pairs within this namespace
+    for (const auto & button_info : ns_group_info.button_info_vec) {
+      const auto & button_name = button_info.button_name;
 
-    hLayout->addWidget(label);  // Add the QLabel to the hLayout.
+      QHBoxLayout * hLayout = new QHBoxLayout;
 
-    QButtonGroup * group = new QButtonGroup(this);
-    for (const QString & level : levels) {
-      QPushButton * btn = new QPushButton(level);
-      btn->setFixedHeight(height);  // Set fixed height for the button
-      hLayout->addWidget(btn);      // Add each QPushButton to the hLayout.
-      group->addButton(btn);
-      button_map_[target_node_name][level] = btn;
-      connect(btn, &QPushButton::clicked, this, [this, btn, target_node_name, level]() {
-        this->onButtonClick(btn, target_node_name, level);
-      });
+      // Create a QLabel to display the node name
+      QLabel * label = new QLabel(button_name);
+      label->setFixedHeight(height);
+      label->setFixedWidth(getMaxModuleNameWidth(label));
+
+      hLayout->addWidget(label);
+
+      // Create a button group for each node
+      QButtonGroup * buttonGroup = new QButtonGroup(this);
+
+      // Create buttons for each logging level
+      for (const QString & level : levels) {
+        QPushButton * button = new QPushButton(level);
+        button->setFixedHeight(height);
+        hLayout->addWidget(button);
+        buttonGroup->addButton(button);
+        button_map_[button_name][level] = button;
+        connect(button, &QPushButton::clicked, this, [this, button, button_name, level]() {
+          this->onButtonClick(button, button_name, level);
+        });
+      }
+
+      // Set the "INFO" button as checked by default and change its color
+      updateButtonColors(button_name, button_map_[button_name]["INFO"], "INFO");
+
+      buttonGroups_[button_name] = buttonGroup;
+      groupLayout->addLayout(hLayout);  // Add the horizontal layout to the group layout
     }
-    // Set the "INFO" button as checked by default and change its color.
-    updateButtonColors(target_node_name, button_map_[target_node_name]["INFO"], "INFO");
 
-    buttonGroups_[target_node_name] = group;
-    layout->addLayout(hLayout);
+    groupBox->setLayout(groupLayout);  // Set the group layout to the group box
+    mainLayout->addWidget(groupBox);   // Add the group box to the main layout
   }
 
-  // Create a QWidget to hold the layout.
+  // Create a QWidget to hold the main layout
   QWidget * containerWidget = new QWidget;
-  containerWidget->setLayout(layout);
+  containerWidget->setLayout(mainLayout);
 
-  // Create a QScrollArea to make the layout scrollable.
+  // Create a QScrollArea to make the layout scrollable
   QScrollArea * scrollArea = new QScrollArea;
   scrollArea->setWidget(containerWidget);
   scrollArea->setWidgetResizable(true);
 
-  // Set the QScrollArea as the layout of the main widget.
-  QVBoxLayout * mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(scrollArea);
-  setLayout(mainLayout);
+  // Set the QScrollArea as the layout of the main widget
+  QVBoxLayout * scrollLayout = new QVBoxLayout;
+  scrollLayout->addWidget(scrollArea);
+  setLayout(scrollLayout);
 
-  // set up service clients
+  // Setup service clients
   const auto & nodes = getNodeList();
   for (const QString & node : nodes) {
     const auto client = raw_node_->create_client<logging_demo::srv::ConfigLogger>(
@@ -99,9 +116,10 @@ int LoggingLevelConfigureRvizPlugin::getMaxModuleNameWidth(QLabel * label)
 {
   int max_width = 0;
   QFontMetrics metrics(label->font());
-  for (const auto & item : node_logger_map_) {
-    const auto & target_module_name = item.first;
-    max_width = std::max(metrics.horizontalAdvance(target_module_name), max_width);
+  for (const auto & ns_info : display_info_vec_) {
+    for (const auto & b : ns_info.button_info_vec) {
+      max_width = std::max(metrics.horizontalAdvance(b.button_name), max_width);
+    }
   }
   return max_width;
 }
@@ -110,11 +128,12 @@ int LoggingLevelConfigureRvizPlugin::getMaxModuleNameWidth(QLabel * label)
 QStringList LoggingLevelConfigureRvizPlugin::getNodeList()
 {
   QStringList nodes;
-  for (const auto & item : node_logger_map_) {
-    const auto & node_logger_vec = item.second;
-    for (const auto & node_logger_pair : node_logger_vec) {
-      if (!nodes.contains(node_logger_pair.first)) {
-        nodes.append(node_logger_pair.first);
+  for (const auto & d : display_info_vec_) {
+    for (const auto & b : d.button_info_vec) {
+      for (const auto & info : b.logger_info_vec) {
+        if (!nodes.contains(info.node_name)) {
+          nodes.append(info.node_name);
+        }
       }
     }
   }
@@ -132,16 +151,15 @@ void LoggingLevelConfigureRvizPlugin::onButtonClick(
                   << std::string(future.get()->success ? "success!" : "failed...") << std::endl;
       };
 
-    for (const auto & node_logger_map : node_logger_map_[target_module_name]) {
-      const auto node_name = node_logger_map.first;
-      const auto logger_name = node_logger_map.second;
+    const auto node_logger_vec = getNodeLoggerNameFromButtonName(target_module_name);
+    for (const auto & data : node_logger_vec) {
       const auto req = std::make_shared<logging_demo::srv::ConfigLogger::Request>();
 
-      req->logger_name = logger_name.toStdString();
+      req->logger_name = data.logger_name.toStdString();
       req->level = level.toStdString();
       std::cerr << "logger level of " << req->logger_name << " is set to " << req->level
                 << std::endl;
-      client_map_[node_name]->async_send_request(req, callback);
+      client_map_[data.node_name]->async_send_request(req, callback);
     }
 
     updateButtonColors(
@@ -197,14 +215,42 @@ void LoggingLevelConfigureRvizPlugin::setLoggerNodeMap()
   YAML::Node config = YAML::LoadFile(filename);
 
   for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
-    const auto key = QString::fromStdString(it->first.as<std::string>());
-    const YAML::Node values = it->second;
-    for (size_t i = 0; i < values.size(); i++) {
-      const auto node_name = QString::fromStdString(values[i]["node_name"].as<std::string>());
-      const auto logger_name = QString::fromStdString(values[i]["logger_name"].as<std::string>());
-      node_logger_map_[key].push_back({node_name, logger_name});
+    const auto ns = QString::fromStdString(it->first.as<std::string>());
+    const YAML::Node ns_config = it->second;
+
+    LoggerNamespaceInfo display_data;
+    display_data.ns = ns;
+
+    for (YAML::const_iterator ns_it = ns_config.begin(); ns_it != ns_config.end(); ++ns_it) {
+      const auto key = QString::fromStdString(ns_it->first.as<std::string>());
+      ButtonInfo button_data;
+      button_data.button_name = key;
+      const YAML::Node values = ns_it->second;
+      for (size_t i = 0; i < values.size(); i++) {
+        LoggerInfo data;
+        data.node_name = QString::fromStdString(values[i]["node_name"].as<std::string>());
+        data.logger_name = QString::fromStdString(values[i]["logger_name"].as<std::string>());
+        button_data.logger_info_vec.push_back(data);
+      }
+      display_data.button_info_vec.push_back(button_data);
+    }
+    display_info_vec_.push_back(display_data);
+  }
+}
+
+std::vector<LoggerInfo> LoggingLevelConfigureRvizPlugin::getNodeLoggerNameFromButtonName(
+  const QString button_name)
+{
+  for (const auto & ns_level : display_info_vec_) {
+    for (const auto & button : ns_level.button_info_vec) {
+      if (button.button_name == button_name) {
+        return button.logger_info_vec;
+      }
     }
   }
+  RCLCPP_ERROR(
+    raw_node_->get_logger(), "Failed to find target name: %s", button_name.toStdString().c_str());
+  return {};
 }
 
 }  // namespace rviz_plugin

@@ -3,85 +3,85 @@
 # ============================================================
 # localization
 # ============================================================
+Localization:
+  ndt_scan_matcher:
+    - node_name: /localization/pose_estimator/ndt_scan_matcher
+      logger_name: localization.pose_estimator.ndt_scan_matcher
 
-ndt_scan_matcher:
-  - node_name: /localization/pose_estimator/ndt_scan_matcher
-    logger_name: localization.pose_estimator.ndt_scan_matcher
+  gyro_odometer:
+    - node_name: /localization/twist_estimator/gyro_odometer
+      logger_name: localization.twist_estimator.gyro_odometer
 
-gyro_odometer:
-  - node_name: /localization/twist_estimator/gyro_odometer
-    logger_name: localization.twist_estimator.gyro_odometer
+  pose_initializer:
+    - node_name: /localization/util/pose_initializer_node
+      logger_name: localization.util.pose_initializer_node
 
-pose_initializer:
-  - node_name: /localization/util/pose_initializer_node
-    logger_name: localization.util.pose_initializer_node
+  ekf_localizer:
+    - node_name: /localization/pose_twist_fusion_filter/ekf_localizer
+      logger_name: localization.pose_twist_fusion_filter.ekf_localizer
 
-ekf_localizer:
-  - node_name: /localization/pose_twist_fusion_filter/ekf_localizer
-    logger_name: localization.pose_twist_fusion_filter.ekf_localizer
-
-localization_error_monitor:
-  - node_name: /localization/localization_error_monitor
-    logger_name: localization.localization_error_monitor
+  localization_error_monitor:
+    - node_name: /localization/localization_error_monitor
+      logger_name: localization.localization_error_monitor
 
 # ============================================================
 # planning
 # ============================================================
+Planning:
+  behavior_path_planner:
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: tier4_autoware_utils
 
-behavior_path_planner:
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
-    logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
-    logger_name: tier4_autoware_utils
+  behavior_path_planner_avoidance:
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance
 
-behavior_path_planner_avoidance:
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
-    logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_path_planner.avoidance
+  behavior_path_planner_lane_change:
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
+      logger_name: lane_change
 
-behavior_path_planner_lane_change:
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner
-    logger_name: lane_change
+  behavior_velocity_planner:
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
+      logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_velocity_planner
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
+      logger_name: tier4_autoware_utils
 
-behavior_velocity_planner:
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
-    logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_velocity_planner
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
-    logger_name: tier4_autoware_utils
+  behavior_velocity_planner_intersection:
+    - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
+      logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_velocity_planner.intersection
 
-behavior_velocity_planner_intersection:
-  - node_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner
-    logger_name: planning.scenario_planning.lane_driving.behavior_planning.behavior_velocity_planner.intersection
+  motion_obstacle_avoidance:
+    - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
+      logger_name: planning.scenario_planning.lane_driving.motion_planning.obstacle_avoidance_planner
+    - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
+      logger_name: tier4_autoware_utils
 
-motion_obstacle_avoidance:
-  - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
-    logger_name: planning.scenario_planning.lane_driving.motion_planning.obstacle_avoidance_planner
-  - node_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner
-    logger_name: tier4_autoware_utils
-
-motion_velocity_smoother:
-  - node_name: /planning/scenario_planning/motion_velocity_smoother
-    logger_name: planning.scenario_planning.motion_velocity_smoother
-  - node_name: /planning/scenario_planning/motion_velocity_smoother
-    logger_name: tier4_autoware_utils
+  motion_velocity_smoother:
+    - node_name: /planning/scenario_planning/motion_velocity_smoother
+      logger_name: planning.scenario_planning.motion_velocity_smoother
+    - node_name: /planning/scenario_planning/motion_velocity_smoother
+      logger_name: tier4_autoware_utils
 
 # ============================================================
 # control
 # ============================================================
+Control:
+  lateral_controller:
+    - node_name: /control/trajectory_follower/controller_node_exe
+      logger_name: control.trajectory_follower.controller_node_exe.lateral_controller
+    - node_name: /control/trajectory_follower/controller_node_exe
+      logger_name: tier4_autoware_utils
 
-lateral_controller:
-  - node_name: /control/trajectory_follower/controller_node_exe
-    logger_name: control.trajectory_follower.controller_node_exe.lateral_controller
-  - node_name: /control/trajectory_follower/controller_node_exe
-    logger_name: tier4_autoware_utils
+  longitudinal_controller:
+    - node_name: /control/trajectory_follower/controller_node_exe
+      logger_name: control.trajectory_follower.controller_node_exe.longitudinal_controller
+    - node_name: /control/trajectory_follower/controller_node_exe
+      logger_name: tier4_autoware_utils
 
-longitudinal_controller:
-  - node_name: /control/trajectory_follower/controller_node_exe
-    logger_name: control.trajectory_follower.controller_node_exe.longitudinal_controller
-  - node_name: /control/trajectory_follower/controller_node_exe
-    logger_name: tier4_autoware_utils
-
-vehicle_cmd_gate:
-  - node_name: /control/vehicle_cmd_gate
-    logger_name: control.vehicle_cmd_gate
-  - node_name: /control/vehicle_cmd_gate
-    logger_name: tier4_autoware_utils
+  vehicle_cmd_gate:
+    - node_name: /control/vehicle_cmd_gate
+      logger_name: control.vehicle_cmd_gate
+    - node_name: /control/vehicle_cmd_gate
+      logger_name: tier4_autoware_utils
