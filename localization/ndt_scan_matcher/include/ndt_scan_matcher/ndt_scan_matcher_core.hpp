@@ -22,6 +22,7 @@
 #include "ndt_scan_matcher/map_update_module.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -204,6 +205,7 @@ private:
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
   std::unique_ptr<MapModule> map_module_;
   std::unique_ptr<MapUpdateModule> map_update_module_;
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 
   // cspell: ignore degrounded
   bool estimate_scores_for_degrounded_scan_;

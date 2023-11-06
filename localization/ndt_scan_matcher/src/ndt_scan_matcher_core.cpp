@@ -246,6 +246,8 @@ NDTScanMatcher::NDTScanMatcher()
   } else {
     map_module_ = std::make_unique<MapModule>(this, &ndt_ptr_mtx_, ndt_ptr_, main_callback_group);
   }
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 void NDTScanMatcher::timer_diagnostic()

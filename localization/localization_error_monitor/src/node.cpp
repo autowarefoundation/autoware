@@ -53,6 +53,8 @@ LocalizationErrorMonitor::LocalizationErrorMonitor() : Node("localization_error_
     this->create_publisher<visualization_msgs::msg::Marker>("debug/ellipse_marker", durable_qos);
 
   diag_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 }
 
 visualization_msgs::msg::Marker LocalizationErrorMonitor::createEllipseMarker(

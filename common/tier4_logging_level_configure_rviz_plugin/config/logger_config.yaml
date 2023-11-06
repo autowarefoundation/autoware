@@ -1,6 +1,30 @@
 # logger_config.yaml
 
 # ============================================================
+# localization
+# ============================================================
+
+ndt_scan_matcher:
+  - node_name: /localization/pose_estimator/ndt_scan_matcher
+    logger_name: localization.pose_estimator.ndt_scan_matcher
+
+gyro_odometer:
+  - node_name: /localization/twist_estimator/gyro_odometer
+    logger_name: localization.twist_estimator.gyro_odometer
+
+pose_initializer:
+  - node_name: /localization/util/pose_initializer_node
+    logger_name: localization.util.pose_initializer_node
+
+ekf_localizer:
+  - node_name: /localization/pose_twist_fusion_filter/ekf_localizer
+    logger_name: localization.pose_twist_fusion_filter.ekf_localizer
+
+localization_error_monitor:
+  - node_name: /localization/localization_error_monitor
+    logger_name: localization.localization_error_monitor
+
+# ============================================================
 # planning
 # ============================================================
 

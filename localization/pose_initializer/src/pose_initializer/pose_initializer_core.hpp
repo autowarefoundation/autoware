@@ -18,6 +18,7 @@
 #include <component_interface_specs/localization.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/logger_level_configure.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
@@ -55,6 +56,7 @@ private:
   std::unique_ptr<StopCheckModule> stop_check_;
   std::unique_ptr<EkfLocalizationTriggerModule> ekf_localization_trigger_;
   std::unique_ptr<NdtLocalizationTriggerModule> ndt_localization_trigger_;
+  std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
   double stop_check_duration_;
   void change_state(State::Message::_state_type state);
   void on_initialize(

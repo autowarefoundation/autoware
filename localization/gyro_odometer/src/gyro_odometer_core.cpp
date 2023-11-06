@@ -108,6 +108,7 @@ GyroOdometer::GyroOdometer(const rclcpp::NodeOptions & options)
   imu_arrived_(false)
 {
   transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
+  logger_configure_ = std::make_unique<tier4_autoware_utils::LoggerLevelConfigure>(this);
 
   vehicle_twist_sub_ = create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
     "vehicle/twist_with_covariance", rclcpp::QoS{100},
