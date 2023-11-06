@@ -1,0 +1,24 @@
+<library path="tier4_camera_view_rviz_plugin">
+
+  <class name="tier4_camera_view_rviz_plugin/BirdEyeView" type="tier4_camera_view_rviz_plugin::BirdEyeViewController" base_class_type="rviz_common::ViewController">
+    <description>
+      Control the camera for bird-eye view.
+    </description>
+  </class>
+  <class name="tier4_camera_view_rviz_plugin/BirdEyeViewTool" type="tier4_camera_view_rviz_plugin::BirdEyeViewTool" base_class_type="rviz_common::Tool">
+    <description>
+      Bird-eye-view Tool. This tool requires the corresponding BirdEyeViewController.
+    </description>
+  </class>
+  <class name="tier4_camera_view_rviz_plugin/ThirdPersonView" type="tier4_camera_view_rviz_plugin::ThirdPersonViewController" base_class_type="rviz_common::ViewController">
+    <description>
+      Control the camera for third-person view.
+    </description>
+  </class>
+  <class name="tier4_camera_view_rviz_plugin/ThirdPersonViewTool" type="tier4_camera_view_rviz_plugin::ThirdPersonViewTool" base_class_type="rviz_common::Tool">
+    <description>
+      Third-person-view Tool. This tool requires the corresponding ThirdPersonViewController.
+    </description>
+  </class>
+
+</library>
