@@ -26,7 +26,7 @@
     <group>
       <node_container pkg="rclcpp_components" exec="component_container" name="motion_velocity_smoother_container" namespace="">
         <composable_node pkg="motion_velocity_smoother" plugin="motion_velocity_smoother::MotionVelocitySmootherNode" name="motion_velocity_smoother" namespace="">
-          <param name="algorithm_type" value="$(var velocity_smoother_type)"/>
+          <param name="algorithm_type" value="$(var motion_velocity_smoother_type)"/>
           <param from="$(var common_param_path)"/>
           <param from="$(var nearest_search_param_path)"/>
           <param from="$(var motion_velocity_smoother_param_path)"/>

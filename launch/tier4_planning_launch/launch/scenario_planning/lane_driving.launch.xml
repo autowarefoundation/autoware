@@ -17,12 +17,11 @@
     <!-- motion planning module -->
     <group>
       <push-ros-namespace namespace="motion_planning"/>
-      <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving/motion_planning/motion_planning.launch.py">
-        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-        <arg name="use_multithread" value="true"/>
-        <arg name="use_surround_obstacle_check" value="$(var use_surround_obstacle_check)"/>
-        <arg name="cruise_planner_type" value="$(var cruise_planner_type)"/>
-      </include>
+      <group>
+        <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving/motion_planning/motion_planning.launch.xml">
+          <arg name="container_type" value="component_container_mt"/>
+        </include>
+      </group>
     </group>
   </group>
 </launch>

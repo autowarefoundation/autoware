@@ -1,42 +1,204 @@
 <launch>
-  <!-- common param -->
-  <arg name="common_param_path"/>
-  <arg name="vehicle_param_file"/>
+  <arg name="interface_input_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
+  <arg name="interface_output_topic" default="/planning/scenario_planning/lane_driving/trajectory"/>
 
-  <arg name="input_path_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path"/>
-  <arg name="use_surround_obstacle_check" default="true"/>
+  <node_container pkg="rclcpp_components" exec="$(var container_type)" name="motion_planning_container" namespace="" args="">
+    <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
+  </node_container>
 
-  <!-- path planning for avoiding obstacle with dynamic object info -->
+  <!-- path smoothing -->
   <group>
-    <include file="$(find-pkg-share obstacle_avoidance_planner)/launch/obstacle_avoidance_planner.launch.xml">
-      <arg name="param_path" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/obstacle_avoidance_planner.param.yaml"/>
-      <arg name="input_path_topic" value="$(var input_path_topic)"/>
-      <arg name="output_path_topic" value="obstacle_avoidance_planner/trajectory"/>
-      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-    </include>
+    <group if="$(eval &quot;'$(var motion_path_smoother_type)' == 'elastic_band'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="path_smoother" plugin="path_smoother::ElasticBandSmoother" name="elastic_band_smoother" namespace="">
+          <!-- topic remap -->
+          <remap from="~/input/path" to="$(var interface_input_topic)"/>
+          <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <remap from="~/output/path" to="path_smoother/path"/>
+          <!-- params -->
+          <param from="$(var common_param_path)"/>
+          <param from="$(var vehicle_param_file)"/>
+          <param from="$(var nearest_search_param_path)"/>
+          <param from="$(var elastic_band_smoother_param_path)"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+    <group if="$(eval &quot;'$(var motion_path_smoother_type)' == 'none'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="topic_tools" plugin="topic_tools::RelayNode" name="path_smoother_relay" namespace="">
+          <!-- params -->
+          <param name="input_topic" value="$(var interface_input_topic)"/>
+          <param name="output_topic" value="path_smoother/path"/>
+          <param name="type" value="autoware_auto_planning_msgs/msg/Trajectory"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
   </group>
 
-  <!-- surround obstacle checker (Do not start if there are pedestrian/bicycles around ego-car) -->
-  <group if="$(var use_surround_obstacle_check)">
-    <include file="$(find-pkg-share surround_obstacle_checker)/launch/surround_obstacle_checker.launch.xml">
-      <arg name="param_path" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/surround_obstacle_checker.param.yaml"/>
-      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-    </include>
+  <!-- generate kinematic-feasible path -->
+  <group>
+    <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'obstacle_avoidance_planner'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="obstacle_avoidance_planner" plugin="obstacle_avoidance_planner::ObstacleAvoidancePlanner" name="obstacle_avoidance_planner" namespace="">
+          <!-- topic remap -->
+          <remap from="~/input/path" to="path_smoother/path"/>
+          <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <remap from="~/output/path" to="obstacle_avoidance_planner/trajectory"/>
+          <!-- params -->
+          <param from="$(var common_param_path)"/>
+          <param from="$(var vehicle_param_file)"/>
+          <param from="$(var nearest_search_param_path)"/>
+          <param from="$(var obstacle_avoidance_planner_param_path)"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+    <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'path_sampler'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="path_sampler" plugin="path_sampler::PathSampler" name="path_sampler" namespace="">
+          <!-- topic remap -->
+          <remap from="~/input/path" to="path_smoother/path"/>
+          <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <remap from="~/output/path" to="obstacle_avoidance_planner/trajectory"/>
+          <!-- params -->
+          <param from="$(var common_param_path)"/>
+          <param from="$(var vehicle_param_file)"/>
+          <param from="$(var nearest_search_param_path)"/>
+          <param from="$(var path_sampler_param_path)"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+    <group if="$(eval &quot;'$(var motion_path_planner_type)' == 'none'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="planning_topic_converter" plugin="planning_topic_converter::PathToTrajectory" name="path_to_trajectory_converter" namespace="">
+          <!-- params -->
+          <param name="input_topic" value="path_smoother/path"/>
+          <param name="output_topic" value="obstacle_avoidance_planner/trajectory"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
   </group>
 
-  <!-- stop velocity planning with obstacle pointcloud info -->
+  <!-- velocity limiter -->
   <group>
-    <include file="$(find-pkg-share obstacle_stop_planner)/launch/obstacle_stop_planner.launch.xml">
-      <!-- load config files -->
-      <arg name="common_param_path" value="$(var common_param_path)"/>
-      <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-      <arg name="adaptive_cruise_control_param_path" value="$(find-pkg-share tier4_planning_launch)/config/obstacle_stop_planner/adaptive_cruise_control.param.yaml"/>
-      <arg name="obstacle_stop_planner_param_path" value="$(find-pkg-share tier4_planning_launch)/config/obstacle_stop_planner/obstacle_stop_planner.param.yaml"/>
-      <arg name="enable_slow_down" value="false"/>
-      <!-- remap topic name -->
-      <arg name="input_trajectory" value="obstacle_avoidance_planner/trajectory"/>
-      <arg name="input_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
-      <arg name="output_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
-    </include>
+    <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+      <composable_node pkg="obstacle_velocity_limiter" plugin="obstacle_velocity_limiter::ObstacleVelocityLimiterNode" name="obstacle_velocity_limiter" namespace="">
+        <!-- topic remap -->
+        <remap from="~/input/trajectory" to="obstacle_avoidance_planner/trajectory"/>
+        <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+        <remap from="~/input/dynamic_obstacles" to="/perception/object_recognition/objects"/>
+        <remap from="~/input/occupancy_grid" to="/perception/occupancy_grid_map/map"/>
+        <remap from="~/input/obstacle_pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+        <remap from="~/input/map" to="/map/vector_map"/>
+        <remap from="~/output/trajectory" to="obstacle_velocity_limiter/trajectory"/>
+        <remap from="~/output/debug_markers" to="debug_markers"/>
+        <!-- params -->
+        <param from="$(var common_param_path)"/>
+        <param from="$(var vehicle_param_file)"/>
+        <param from="$(var nearest_search_param_path)"/>
+        <param from="$(var obstacle_velocity_limiter_param_path)"/>
+        <!-- composable node config -->
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
+    </load_composable_node>
+  </group>
+
+  <!-- obstacle stop, adaptive cruise -->
+  <group>
+    <group if="$(eval &quot;'$(var motion_stop_planner_type)' == 'obstacle_cruise_planner'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="obstacle_cruise_planner" plugin="motion_planning::ObstacleCruisePlannerNode" name="obstacle_cruise_planner" namespace="">
+          <!-- topic remap -->
+          <remap from="~/input/trajectory" to="obstacle_velocity_limiter/trajectory"/>
+          <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <remap from="~/input/acceleration" to="/localization/acceleration"/>
+          <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
+          <remap from="~/output/trajectory" to="$(var interface_output_topic)"/>
+          <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+          <remap from="~/output/max_velocity" to="/planning/scenario_planning/max_velocity_candidates"/>
+          <remap from="~/output/velocity_limit_clear_command" to="/planning/scenario_planning/clear_velocity_limit"/>
+          <!-- params -->
+          <param from="$(var common_param_path)"/>
+          <param from="$(var vehicle_param_file)"/>
+          <param from="$(var nearest_search_param_path)"/>
+          <param from="$(var obstacle_cruise_planner_param_path)"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+    <group if="$(eval &quot;'$(var motion_stop_planner_type)' == 'obstacle_stop_planner'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="obstacle_stop_planner" plugin="motion_planning::ObstacleStopPlannerNode" name="obstacle_stop_planner" namespace="">
+          <!-- topic remap -->
+          <remap from="~/input/trajectory" to="obstacle_velocity_limiter/trajectory"/>
+          <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+          <remap from="~/input/acceleration" to="/localization/acceleration"/>
+          <remap from="~/input/pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+          <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
+          <remap from="~/output/trajectory" to="$(var interface_output_topic)"/>
+          <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+          <remap from="~/output/max_velocity" to="/planning/scenario_planning/max_velocity_candidates"/>
+          <remap from="~/output/velocity_limit_clear_command" to="/planning/scenario_planning/clear_velocity_limit"/>
+          <!-- params -->
+          <param from="$(var common_param_path)"/>
+          <param from="$(var vehicle_param_file)"/>
+          <param from="$(var nearest_search_param_path)"/>
+          <param from="$(var obstacle_stop_planner_param_path)"/>
+          <param from="$(var obstacle_stop_planner_acc_param_path)"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+    <group if="$(eval &quot;'$(var motion_stop_planner_type)' == 'none'&quot;)">
+      <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+        <composable_node pkg="topic_tools" plugin="topic_tools::RelayNode" name="obstacle_stop_relay" namespace="">
+          <!-- params -->
+          <param name="input_topic" value="obstacle_velocity_limiter/trajectory"/>
+          <param name="output_topic" value="$(var interface_output_topic)"/>
+          <param name="type" value="autoware_auto_planning_msgs/msg/Trajectory"/>
+          <!-- composable node config -->
+          <extra_arg name="use_intra_process_comms" value="false"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+  </group>
+
+  <!-- surround obstacle check -->
+  <group if="$(var enable_surround_check)">
+    <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
+      <composable_node pkg="surround_obstacle_checker" plugin="surround_obstacle_checker::SurroundObstacleCheckerNode" name="surround_obstacle_checker" namespace="">
+        <!-- topic remap -->
+        <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+        <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
+        <remap from="~/input/pointcloud" to="/perception/obstacle_segmentation/pointcloud"/>
+        <remap from="~/output/max_velocity" to="/planning/scenario_planning/max_velocity_candidates"/>
+        <remap from="~/output/velocity_limit_clear_command" to="/planning/scenario_planning/clear_velocity_limit"/>
+        <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
+        <remap from="~/output/no_start_reason" to="/planning/scenario_planning/status/no_start_reason"/>
+        <!-- params -->
+        <param from="$(var common_param_path)"/>
+        <param from="$(var vehicle_param_file)"/>
+        <param from="$(var nearest_search_param_path)"/>
+        <param from="$(var surround_obstacle_checker_param_path)"/>
+        <!-- composable node config -->
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
+    </load_composable_node>
   </group>
 </launch>

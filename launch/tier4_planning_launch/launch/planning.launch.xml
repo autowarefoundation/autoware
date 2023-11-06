@@ -5,14 +5,6 @@
   <arg name="mission_planner_param_path"/>
   <!-- parking -->
   <arg name="freespace_planner_param_path"/>
-  <!-- motion -->
-  <arg name="obstacle_avoidance_planner_param_path"/>
-  <arg name="path_sampler_param_path"/>
-  <arg name="obstacle_velocity_limiter_param_path"/>
-  <arg name="surround_obstacle_checker_param_path"/>
-  <arg name="obstacle_stop_planner_param_path"/>
-  <arg name="obstacle_stop_planner_acc_param_path"/>
-  <arg name="obstacle_cruise_planner_param_path"/>
   <!-- planning validator -->
   <arg name="planning_validator_param_path"/>
 
