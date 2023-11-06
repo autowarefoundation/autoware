@@ -21,6 +21,7 @@ ament_auto_add_library(ekf_localizer_lib SHARED
   src/measurement.cpp
   src/state_transition.cpp
   src/warning_message.cpp
+  src/ekf_module.cpp
 )
 
 target_link_libraries(ekf_localizer_lib Eigen3::Eigen)
