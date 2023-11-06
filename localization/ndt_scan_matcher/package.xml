@@ -18,6 +18,7 @@
   <depend>diagnostic_msgs</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
+  <depend>libgoogle-glog-dev</depend>
   <depend>libpcl-all-dev</depend>
   <depend>localization_util</depend>
   <depend>nav_msgs</depend>
