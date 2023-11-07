@@ -356,32 +356,6 @@ Polygon2d generatePathPolygon(
   return ego_area;
 }
 
-lanelet::ConstLanelet generatePathLanelet(
-  const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width)
-{
-  lanelet::Points3d lefts;
-  for (size_t i = start_idx; i <= end_idx; ++i) {
-    const double yaw = tf2::getYaw(path.points.at(i).point.pose.orientation);
-    const double x = path.points.at(i).point.pose.position.x + width / 2 * std::sin(yaw);
-    const double y = path.points.at(i).point.pose.position.y - width / 2 * std::cos(yaw);
-    const lanelet::Point3d p(lanelet::InvalId, x, y, path.points.at(i).point.pose.position.z);
-    lefts.emplace_back(p);
-  }
-  lanelet::LineString3d left = lanelet::LineString3d(lanelet::InvalId, lefts);
-
-  lanelet::Points3d rights;
-  for (size_t i = start_idx; i <= end_idx; ++i) {
-    const double yaw = tf2::getYaw(path.points.at(i).point.pose.orientation);
-    const double x = path.points.at(i).point.pose.position.x - width / 2 * std::sin(yaw);
-    const double y = path.points.at(i).point.pose.position.y + width / 2 * std::cos(yaw);
-    const lanelet::Point3d p(lanelet::InvalId, x, y, path.points.at(i).point.pose.position.z);
-    rights.emplace_back(p);
-  }
-  lanelet::LineString3d right = lanelet::LineString3d(lanelet::InvalId, rights);
-
-  return lanelet::Lanelet(lanelet::InvalId, left, right);
-}
-
 double calcJudgeLineDistWithAccLimit(
   const double velocity, const double max_stop_acceleration, const double delay_response_time)
 {

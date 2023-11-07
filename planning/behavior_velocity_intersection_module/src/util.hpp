@@ -159,6 +159,10 @@ double calcDistanceUntilIntersectionLanelet(
   const lanelet::ConstLanelet & assigned_lanelet,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx);
 
+lanelet::ConstLanelet generatePathLanelet(
+  const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width,
+  const double interval);
+
 std::optional<PathLanelets> generatePathLanelets(
   const lanelet::ConstLanelets & lanelets_on_path,
   const util::InterpolatedPathInfo & interpolated_path_info, const std::set<int> & associative_ids,

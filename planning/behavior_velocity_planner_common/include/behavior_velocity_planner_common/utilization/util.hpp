@@ -100,8 +100,6 @@ geometry_msgs::msg::Pose getAheadPose(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 Polygon2d generatePathPolygon(
   const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width);
-lanelet::ConstLanelet generatePathLanelet(
-  const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width);
 double calcJudgeLineDistWithAccLimit(
   const double velocity, const double max_stop_acceleration, const double delay_response_time);
 
