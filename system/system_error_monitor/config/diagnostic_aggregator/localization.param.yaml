@@ -29,3 +29,13 @@
               path: localization_accuracy
               contains: ["localization: localization_error_monitor"]
               timeout: 1.0
+
+            # This diagnostic should ideally be avoided in terms of Fault Tree Analysis (FTA) compatibility.
+            # However, we may need this since the localization accuracy is still not reliable enough and may produce
+            # false positives. Thus, NOTE that this diagnostic should be removed in the future when the localization accuracy
+            # is reliable enough.
+            sensor_fusion_status:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: sensor_fusion_status
+              contains: ["localization: ekf_localizer"]
+              timeout: 1.0
