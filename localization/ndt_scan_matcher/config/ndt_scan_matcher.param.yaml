@@ -72,6 +72,14 @@
         0.0,   0.0,   0.0,   0.0,      0.0,      0.000625,
       ]
 
+    # 2D Real-time covariance estimation with multiple searches (output_pose_covariance is the minimum value)
+    use_covariance_estimation: false
+
+    # Offset arrangement in covariance estimation [m]
+    # initial_pose_offset_model_x & initial_pose_offset_model_y must have the same number of elements.
+    initial_pose_offset_model_x: [0.0, 0.0, 0.5, -0.5, 1.0, -1.0]
+    initial_pose_offset_model_y: [0.5, -0.5, 0.0, 0.0, 0.0, 0.0]
+
     # Regularization switch
     regularization_enabled: false
 
