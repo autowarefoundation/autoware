@@ -289,7 +289,7 @@ public:
     return calcOffsetPose(dead_pose_.get(), base_link2front, 0.0, 0.0);
   }
 
-  void resetWallPoses()
+  void resetWallPoses() const
   {
     stop_pose_ = boost::none;
     slow_pose_ = boost::none;
@@ -477,7 +477,7 @@ protected:
    * @brief Return true if the activation command is received from the RTC interface.
    *        If no RTC interface is registered, return true.
    */
-  bool isActivated()
+  bool isActivated() const
   {
     if (rtc_interface_ptr_map_.empty()) {
       return true;
