@@ -1,32 +1,38 @@
 <launch>
-  <arg name="vehicle_param_file"/>
-
   <!-- parking scenario -->
-  <group>
+  <group if="$(var launch_parking_module)">
     <push-ros-namespace namespace="parking"/>
-    <group>
-      <include file="$(find-pkg-share costmap_generator)/launch/costmap_generator.launch.xml">
-        <arg name="input_objects" value="/perception/object_recognition/objects"/>
-        <arg name="input_points_no_ground" value="/perception/obstacle_segmentation/pointcloud"/>
-        <arg name="input_lanelet_map" value="/map/vector_map"/>
-        <arg name="input_scenario" value="/planning/scenario_planning/scenario"/>
-        <arg name="output_grid_map" value="costmap_generator/grid_map"/>
-        <arg name="output_occupancy_grid" value="costmap_generator/occupancy_grid"/>
-        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-      </include>
-    </group>
 
-    <group>
-      <include file="$(find-pkg-share freespace_planner)/launch/freespace_planner.launch.xml">
-        <arg name="input_route" value="/planning/mission_planning/route"/>
-        <arg name="input_occupancy_grid" value="costmap_generator/occupancy_grid"/>
-        <arg name="input_scenario" value="/planning/scenario_planning/scenario"/>
-        <arg name="input_odometry" value="/localization/kinematic_state"/>
-        <arg name="output_trajectory" value="/planning/scenario_planning/parking/trajectory"/>
-        <arg name="is_completed" value="/planning/scenario_planning/parking/is_completed"/>
-        <arg name="param_file" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/parking/freespace_planner/freespace_planner.param.yaml"/>
-        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
-      </include>
-    </group>
+    <node_container pkg="rclcpp_components" exec="$(var container_type)" name="parking_container" namespace="" output="screen">
+      <composable_node pkg="costmap_generator" plugin="CostmapGenerator" name="costmap_generator" namespace="">
+        <!-- topic remap -->
+        <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
+        <remap from="~/input/points_no_ground" to="/perception/obstacle_segmentation/pointcloud"/>
+        <remap from="~/input/vector_map" to="/map/vector_map"/>
+        <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
+        <remap from="~/output/grid_map" to="costmap_generator/grid_map"/>
+        <remap from="~/output/occupancy_grid" to="costmap_generator/occupancy_grid"/>
+        <!-- params -->
+        <param from="$(var vehicle_param_file)"/>
+        <param from="$(var costmap_generator_param_path)"/>
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
+
+      <composable_node pkg="freespace_planner" plugin="freespace_planner::FreespacePlannerNode" name="freespace_planner" namespace="">
+        <!-- topic remap -->
+        <remap from="~/input/route" to="/planning/mission_planning/route"/>
+        <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
+        <remap from="~/input/occupancy_grid" to="costmap_generator/occupancy_grid"/>
+        <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+        <remap from="~/output/trajectory" to="/planning/scenario_planning/parking/trajectory"/>
+        <remap from="is_completed" to="/planning/scenario_planning/parking/is_completed"/>
+        <!-- params -->
+        <param from="$(var vehicle_param_file)"/>
+        <param from="$(var freespace_planner_param_path)"/>
+        <extra_arg name="use_intra_process_comms" value="false"/>
+      </composable_node>
+
+      <composable_node pkg="glog_component" plugin="GlogComponent" name="glog_component" namespace=""/>
+    </node_container>
   </group>
 </launch>

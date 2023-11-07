@@ -54,8 +54,8 @@
     </group>
     <!-- parking -->
     <group>
-      <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/parking.launch.py">
-        <arg name="vehicle_param_file" value="$(var vehicle_param_file)"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/parking.launch.xml">
+        <arg name="container_type" value="component_container_mt"/>
       </include>
     </group>
   </group>
