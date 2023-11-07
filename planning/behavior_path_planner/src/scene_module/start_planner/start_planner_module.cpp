@@ -145,41 +145,66 @@ void StartPlannerModule::updateData()
 
 bool StartPlannerModule::isExecutionRequested() const
 {
+  if (isModuleRunning()) {
+    return true;
+  }
+
+  // Return false and do not request execution if any of the following conditions are true:
+  // - The start pose is on the middle of the road.
+  // - The vehicle has already arrived at the start position planner.
+  // - The vehicle has reached the goal position.
+  // - The vehicle is still moving.
+  if (
+    isCurrentPoseOnMiddleOfTheRoad() || isCloseToOriginalStartPose() || hasArrivedAtGoal() ||
+    isMoving()) {
+    return false;
+  }
+
+  // Check if the goal is behind the ego vehicle within the same route segment.
+  if (IsGoalBehindOfEgoInSameRouteSegment()) {
+    RCLCPP_WARN_THROTTLE(
+      getLogger(), *clock_, 5000, "Start plan for a backward goal is not supported now");
+    return false;
+  }
+
+  return true;
+}
+
+bool StartPlannerModule::isModuleRunning() const
+{
+  return current_state_ == ModuleStatus::RUNNING;
+}
+
+bool StartPlannerModule::isCurrentPoseOnMiddleOfTheRoad() const
+{
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   const lanelet::ConstLanelets current_lanes = utils::getCurrentLanes(planner_data_);
   const double lateral_distance_to_center_lane =
     lanelet::utils::getArcCoordinates(current_lanes, current_pose).distance;
 
-  if (std::abs(lateral_distance_to_center_lane) < parameters_->th_distance_to_middle_of_the_road) {
-    return false;
-  }
+  return std::abs(lateral_distance_to_center_lane) < parameters_->th_distance_to_middle_of_the_road;
+}
 
+bool StartPlannerModule::isCloseToOriginalStartPose() const
+{
   const Pose start_pose = planner_data_->route_handler->getOriginalStartPose();
-  if (
-    tier4_autoware_utils::calcDistance2d(start_pose.position, current_pose.position) >
-    parameters_->th_arrived_distance) {
-    return false;
-  }
+  return tier4_autoware_utils::calcDistance2d(
+           start_pose.position, planner_data_->self_odometry->pose.pose.position) >
+         parameters_->th_arrived_distance;
+}
 
-  // Check if ego arrives at goal
+bool StartPlannerModule::hasArrivedAtGoal() const
+{
   const Pose goal_pose = planner_data_->route_handler->getGoalPose();
-  if (
-    tier4_autoware_utils::calcDistance2d(goal_pose.position, current_pose.position) <
-    parameters_->th_arrived_distance) {
-    return false;
-  }
+  return tier4_autoware_utils::calcDistance2d(
+           goal_pose.position, planner_data_->self_odometry->pose.pose.position) <
+         parameters_->th_arrived_distance;
+}
 
-  if (current_state_ == ModuleStatus::RUNNING) {
-    return true;
-  }
-
-  const bool is_stopped = utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
-                          parameters_->th_stopped_velocity;
-  if (!is_stopped) {
-    return false;
-  }
-
-  return true;
+bool StartPlannerModule::isMoving() const
+{
+  return utils::l2Norm(planner_data_->self_odometry->twist.twist.linear) >=
+         parameters_->th_stopped_velocity;
 }
 
 bool StartPlannerModule::isExecutionReady() const
@@ -234,15 +259,6 @@ void StartPlannerModule::updateCurrentState()
 
 BehaviorModuleOutput StartPlannerModule::plan()
 {
-  if (IsGoalBehindOfEgoInSameRouteSegment()) {
-    RCLCPP_WARN_THROTTLE(
-      getLogger(), *clock_, 5000, "Start plan for a backward goal is not supported now");
-    const auto output = generateStopOutput();
-    setDebugData();  // use status updated in generateStopOutput()
-    updateRTCStatus(0, 0);
-    return output;
-  }
-
   if (isWaitingApproval()) {
     clearWaitingApproval();
     resetPathCandidate();
@@ -384,16 +400,6 @@ PathWithLaneId StartPlannerModule::getFullPath() const
 BehaviorModuleOutput StartPlannerModule::planWaitingApproval()
 {
   updatePullOutStatus();
-
-  if (IsGoalBehindOfEgoInSameRouteSegment()) {
-    RCLCPP_WARN_THROTTLE(
-      getLogger(), *clock_, 5000, "Start plan for a backward goal is not supported now");
-    clearWaitingApproval();
-    const auto output = generateStopOutput();
-    setDebugData();  // use status updated in generateStopOutput()
-    updateRTCStatus(0, 0);
-    return output;
-  }
 
   BehaviorModuleOutput output;
   if (!status_.found_pull_out_path) {

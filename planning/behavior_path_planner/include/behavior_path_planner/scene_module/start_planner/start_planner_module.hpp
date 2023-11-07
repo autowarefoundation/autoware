@@ -132,6 +132,12 @@ private:
 
   void initializeSafetyCheckParameters();
 
+  bool isModuleRunning() const;
+  bool isCurrentPoseOnMiddleOfTheRoad() const;
+  bool isCloseToOriginalStartPose() const;
+  bool hasArrivedAtGoal() const;
+  bool isMoving() const;
+
   PriorityOrder determinePriorityOrder(
     const std::string & search_priority, const size_t candidates_size);
   bool findPullOutPath(

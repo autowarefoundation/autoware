@@ -300,6 +300,8 @@ bool GoalPlannerModule::isExecutionRequested() const
     return true;
   }
 
+  // TODO(someone): if goal is behind of ego, do not execute goal_planner
+
   const auto & route_handler = planner_data_->route_handler;
   const Pose & current_pose = planner_data_->self_odometry->pose.pose;
   const Pose goal_pose = route_handler->getOriginalGoalPose();
