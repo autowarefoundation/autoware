@@ -160,7 +160,7 @@ ModuleStatus LaneChangeInterface::updateState()
     return ModuleStatus::RUNNING;
   }
 
-  const auto found_abort_path = module_type_->getAbortPath();
+  const auto found_abort_path = module_type_->calcAbortPath();
   if (!found_abort_path) {
     log_warn_throttled(
       "Lane change path is unsafe but not found abort path. Continue lane change.");
@@ -195,7 +195,6 @@ BehaviorModuleOutput LaneChangeInterface::plan()
   auto output = module_type_->generateOutput();
   path_reference_ = output.reference_path;
   *prev_approved_path_ = *getPreviousModuleOutput().path;
-  module_type_->insertStopPoint(module_type_->getLaneChangeStatus().target_lanes, *output.path);
 
   stop_pose_ = module_type_->getStopPose();
 

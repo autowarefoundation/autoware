@@ -72,7 +72,7 @@ public:
 
   TurnSignalInfo updateOutputTurnSignal() override;
 
-  bool getAbortPath() override;
+  bool calcAbortPath() override;
 
   PathSafetyStatus isApprovedPathSafe() const override;
 
