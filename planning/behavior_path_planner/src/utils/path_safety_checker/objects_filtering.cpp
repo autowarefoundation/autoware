@@ -285,6 +285,7 @@ ExtendedPredictedObject transform(
   extended_object.initial_twist = object.kinematics.initial_twist_with_covariance;
   extended_object.initial_acceleration = object.kinematics.initial_acceleration_with_covariance;
   extended_object.shape = object.shape;
+  extended_object.classification = object.classification;
 
   const auto obj_velocity = extended_object.initial_twist.twist.linear.x;
 

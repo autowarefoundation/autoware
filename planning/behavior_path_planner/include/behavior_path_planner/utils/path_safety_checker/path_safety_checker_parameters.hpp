@@ -75,6 +75,7 @@ struct ExtendedPredictedObject
   geometry_msgs::msg::TwistWithCovariance initial_twist;
   geometry_msgs::msg::AccelWithCovariance initial_acceleration;
   autoware_auto_perception_msgs::msg::Shape shape;
+  std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> classification;
   std::vector<PredictedPathWithPolygon> predicted_paths;
 };
 using ExtendedPredictedObjects = std::vector<ExtendedPredictedObject>;

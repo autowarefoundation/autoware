@@ -1967,7 +1967,14 @@ bool AvoidanceModule::isSafePath(
     const auto is_object_front =
       utils::path_safety_checker::isTargetObjectFront(getEgoPose(), obj_polygon, p.vehicle_info);
 
+    const auto & object_twist = object.initial_twist.twist;
+    const auto v_norm = std::hypot(object_twist.linear.x, object_twist.linear.y);
+    const auto object_type = utils::getHighestProbLabel(object.classification);
+    const auto object_parameter = parameters_->object_parameters.at(object_type);
+    const auto is_object_moving = v_norm > object_parameter.moving_speed_threshold;
+
     const auto is_object_oncoming =
+      is_object_moving &&
       utils::path_safety_checker::isTargetObjectOncoming(getEgoPose(), object.initial_pose.pose);
 
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
