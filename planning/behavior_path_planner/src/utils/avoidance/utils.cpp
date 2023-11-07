@@ -18,6 +18,7 @@
 #include "behavior_path_planner/utils/avoidance/utils.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/traffic_light_utils.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
@@ -49,6 +50,8 @@ namespace behavior_path_planner::utils::avoidance
 {
 
 using autoware_perception_msgs::msg::TrafficSignalElement;
+using behavior_path_planner::utils::traffic_light::calcDistanceToRedTrafficLight;
+using behavior_path_planner::utils::traffic_light::getDistanceToNextTrafficLight;
 using motion_utils::calcLongitudinalOffsetPoint;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
@@ -227,85 +230,6 @@ void pushUniqueVector(T & base_vector, const T & additional_vector)
   base_vector.insert(base_vector.end(), additional_vector.begin(), additional_vector.end());
 }
 
-bool hasTrafficLightCircleColor(const TrafficSignal & tl_state, const uint8_t & lamp_color)
-{
-  const auto it_lamp =
-    std::find_if(tl_state.elements.begin(), tl_state.elements.end(), [&lamp_color](const auto & x) {
-      return x.shape == TrafficSignalElement::CIRCLE && x.color == lamp_color;
-    });
-
-  return it_lamp != tl_state.elements.end();
-}
-
-bool hasTrafficLightShape(const TrafficSignal & tl_state, const uint8_t & lamp_shape)
-{
-  const auto it_lamp = std::find_if(
-    tl_state.elements.begin(), tl_state.elements.end(),
-    [&lamp_shape](const auto & x) { return x.shape == lamp_shape; });
-
-  return it_lamp != tl_state.elements.end();
-}
-
-bool isTrafficSignalStop(const lanelet::ConstLanelet & lanelet, const TrafficSignal & tl_state)
-{
-  if (hasTrafficLightCircleColor(tl_state, TrafficSignalElement::GREEN)) {
-    return false;
-  }
-
-  if (hasTrafficLightCircleColor(tl_state, TrafficSignalElement::UNKNOWN)) {
-    return false;
-  }
-
-  const std::string turn_direction = lanelet.attributeOr("turn_direction", "else");
-
-  if (turn_direction == "else") {
-    return true;
-  }
-  if (
-    turn_direction == "right" &&
-    hasTrafficLightShape(tl_state, TrafficSignalElement::RIGHT_ARROW)) {
-    return false;
-  }
-  if (
-    turn_direction == "left" && hasTrafficLightShape(tl_state, TrafficSignalElement::LEFT_ARROW)) {
-    return false;
-  }
-  if (
-    turn_direction == "straight" &&
-    hasTrafficLightShape(tl_state, TrafficSignalElement::UP_ARROW)) {
-    return false;
-  }
-
-  return true;
-}
-
-std::optional<double> calcDistanceToRedTrafficLight(
-  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
-  const std::shared_ptr<const PlannerData> & planner_data)
-{
-  for (const auto & lanelet : lanelets) {
-    for (const auto & element : lanelet.regulatoryElementsAs<TrafficLight>()) {
-      const auto traffic_signal_stamped = planner_data->getTrafficSignal(element->id());
-      if (!traffic_signal_stamped.has_value()) {
-        continue;
-      }
-
-      if (!isTrafficSignalStop(lanelet, traffic_signal_stamped.value().signal)) {
-        continue;
-      }
-
-      const auto & ego_pos = planner_data->self_odometry->pose.pose.position;
-      lanelet::ConstLineString3d stop_line = *(element->stopLine());
-      const auto x = 0.5 * (stop_line.front().x() + stop_line.back().x());
-      const auto y = 0.5 * (stop_line.front().y() + stop_line.back().y());
-      const auto z = 0.5 * (stop_line.front().z() + stop_line.back().z());
-
-      return calcSignedArcLength(path.points, ego_pos, tier4_autoware_utils::createPoint(x, y, z));
-    }
-  }
-
-  return std::nullopt;
-}
 }  // namespace
 
 bool isOnRight(const ObjectData & obj)
@@ -426,7 +350,7 @@ bool isForceAvoidanceTarget(
   bool not_parked_object = true;
 
   // check traffic light
-  const auto to_traffic_light = utils::getDistanceToNextTrafficLight(object_pose, extend_lanelets);
+  const auto to_traffic_light = getDistanceToNextTrafficLight(object_pose, extend_lanelets);
   {
     not_parked_object =
       to_traffic_light < parameters->object_ignore_section_traffic_light_in_front_distance;

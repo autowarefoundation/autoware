@@ -130,9 +130,6 @@ double l2Norm(const Vector3 vector);
 
 double getDistanceToEndOfLane(const Pose & current_pose, const lanelet::ConstLanelets & lanelets);
 
-double getDistanceToNextTrafficLight(
-  const Pose & current_pose, const lanelet::ConstLanelets & lanelets);
-
 double getDistanceToNextIntersection(
   const Pose & current_pose, const lanelet::ConstLanelets & lanelets);
 

@@ -30,6 +30,7 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/turn_signal_decider.cpp
   src/utils/utils.cpp
   src/utils/path_utils.cpp
+  src/utils/traffic_light_utils.cpp
   src/utils/path_safety_checker/safety_check.cpp
   src/utils/path_safety_checker/objects_filtering.cpp
   src/utils/start_goal_planner_common/utils.cpp
