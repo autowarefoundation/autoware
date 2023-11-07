@@ -4,7 +4,6 @@
   <name>autonomous_emergency_braking</name>
   <version>0.1.0</version>
   <description>Autonomous Emergency Braking package as a ROS 2 node</description>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
 

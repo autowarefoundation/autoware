@@ -4,7 +4,6 @@
   <name>map_based_prediction</name>
   <version>0.1.0</version>
   <description>This package implements a map_based_prediction</description>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
   <maintainer email="shunsuke.miura@tier4.jp">Shunsuke Miura</maintainer>
   <maintainer email="yoshi.ri@tier4.jp">Yoshi Ri</maintainer>

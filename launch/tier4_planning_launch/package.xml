@@ -17,7 +17,9 @@
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <!-- turn signal decider -->
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+  <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <maintainer email="mamoru.sobue@tier4.jp">Mamoru Sobue</maintainer>
   <!-- drivable area generation-->
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
 
@@ -37,7 +39,8 @@
   <!-- blind spot module -->
   <maintainer email="mamoru.sobue@tier4.jp">Mamoru Sobue</maintainer>
   <!-- stop line module -->
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="zhe.shen@tier4.jp">Zhe Shen</maintainer>
   <!-- virtual traffic light module -->
   <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
   <!-- run out module -->

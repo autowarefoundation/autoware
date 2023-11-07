@@ -5,7 +5,6 @@
   <version>0.1.0</version>
   <description>The tier4_planning_rviz_plugin package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <license>Apache License 2.0</license>
 

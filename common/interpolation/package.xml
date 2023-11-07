@@ -6,7 +6,6 @@
   <description>The spline interpolation package</description>
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

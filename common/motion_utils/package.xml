@@ -4,7 +4,6 @@
   <name>motion_utils</name>
   <version>0.1.0</version>
   <description>The motion_utils package</description>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <!-- reviewer-->
@@ -16,7 +15,6 @@
   <maintainer email="mamoru.sobue@tier4.jp">Mamoru Sobue</maintainer>
   <license>Apache License 2.0</license>
 
-  <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
   <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
   <author email="satoshi.ota@tier4.jp">Satoshi Ota</author>
 
