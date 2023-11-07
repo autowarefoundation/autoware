@@ -16,7 +16,8 @@
 
   <exec_depend>ar_tag_based_localizer</exec_depend>
   <exec_depend>automatic_pose_initializer</exec_depend>
-  <exec_depend>eagleye_fix2pose</exec_depend>
+  <exec_depend>eagleye_geo_pose_converter</exec_depend>
+  <exec_depend>eagleye_geo_pose_fusion</exec_depend>
   <exec_depend>eagleye_gnss_converter</exec_depend>
   <exec_depend>eagleye_rt</exec_depend>
   <exec_depend>ekf_localizer</exec_depend>

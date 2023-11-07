@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="output_pose_with_cov_name" default="/localization/pose_estimator/pose_with_covariance"/>
-  <node pkg="eagleye_fix2pose" name="fix2pose_node" exec="fix2pose">
-    <!-- /eagleye/fix or  /GNSS/fix(GNSS pose only mode)-->
-    <remap from="eagleye/fix" to="eagleye/fix"/>
+
+  <node pkg="eagleye_geo_pose_converter" name="geo_pose_converter_node" exec="geo_pose_converter" output="screen">
     <remap from="eagleye/pose_with_covariance" to="$(var output_pose_with_cov_name)"/>
+
     <!-- plane rectangular coordinate number -->
     <param name="plane" value="7"/>
     <!-- 1 : plane rectangular coordinate  2 : MGRS -->
     <param name="tf_num" value="2"/>
     <!-- 0 : No convert  1 : ellipsoid -> altitude  2 : altitude -> ellipsoid -->
     <param name="convert_height_num" value="0"/>
-    <!-- 0 : EGM2008-1  1 : Japanese Geoid 2011 Ver2.1 -->
+    <!-- cspell:ignore GSIGEO2011 -->
+    <!-- 0 : EGM2008-1  1 : GSIGEO2011 Ver2.1 -->
     <param name="geoid_type" value="1"/>
 
     <param name="parent_frame_id" value="map"/>
     <param name="child_frame_id" value="eagleye_base_link"/>
     <param name="base_link_frame_id" value="base_link"/>
     <param name="gnss_frame_id" value="gnss_link"/>
-
-    <param name="fix_only_publish" value="false"/>
-    <!-- 0:fix.status 1:fix.position_covariance[0] (if fix_only_publish==true)-->
-    <param name="fix_judgement_type" value="0"/>
-    <!--Fix status(if fix_judgement_type is 0)-->
-    <param name="fix_gnss_status" value="0"/>
-    <!-- Minimum covariance of the pose topics to be published(if fix_judgement_type is 0)-->
-    <param name="fix_std_pos_thres" value="0.1"/>
   </node>
 </launch>
