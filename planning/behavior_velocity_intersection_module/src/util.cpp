@@ -1459,14 +1459,14 @@ lanelet::ConstLanelet generatePathLanelet(
 {
   lanelet::Points3d lefts;
   lanelet::Points3d rights;
+  size_t prev_idx = start_idx;
   for (size_t i = start_idx; i <= end_idx; ++i) {
     const auto & p = path.points.at(i).point.pose;
-    if (start_idx < i && i != end_idx) {
-      const auto & p_prev = path.points.at(i - 1).point.pose;
-      if (tier4_autoware_utils::calcDistance2d(p_prev, p) < interval) {
-        continue;
-      }
+    const auto & p_prev = path.points.at(prev_idx).point.pose;
+    if (i != start_idx && tier4_autoware_utils::calcDistance2d(p_prev, p) < interval) {
+      continue;
     }
+    prev_idx = i;
     const double yaw = tf2::getYaw(p.orientation);
     const double x = p.position.x;
     const double y = p.position.y;
