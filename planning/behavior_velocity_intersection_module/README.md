@@ -86,6 +86,14 @@ The parameters `collision_detection.collision_start_margin_time` and `collision_
 
 If collision is detected, the state transits to "STOP" immediately. On the other hand, the state does not transit to "GO" unless safe judgement continues for a certain period `collision_detection.state_transit_margin` to prevent the chattering of decisions.
 
+Currently, the intersection module uses `motion_velocity_smoother` feature to precisely calculate ego vehicle velocity profile along the intersection lane under longitudinal/lateral constraints. If the flag `collision_detection.use_upstream_velocity` is true, the target velocity profile of the original path is used. Otherwise the target velocity is set to `common.intersection_velocity`. In the trajectory smoothing process the target velocity at/before ego trajectory points are set to ego current velocity. The smoothed trajectory is then converted to an array of (time, distance) which indicates the arrival time to each trajectory point on the path from current ego position. You can visualize this array by adding the lane id to `debug.ttc` and running
+
+```bash
+ros2 run behavior_velocity_intersection_module ttc.py --lane_id <lane_id>
+```
+
+![ego ttc profile](./docs/ttc.gif)
+
 #### Stop Line Automatic Generation
 
 If a stopline is associated with the intersection lane on the map, that line is used as the stopline for collision detection. Otherwise the path is interpolated at a certain intervals (=`common.path_interpolation_ds`), and the point which is `stop_line_margin` meters behind the attention area is defined as the position of the stop line for the vehicle front.

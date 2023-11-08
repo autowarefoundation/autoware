@@ -35,24 +35,24 @@
           distance_thr: 1.0 # [m]
 
       collision_detection:
-        state_transit_margin_time: 1.0
+        state_transit_margin_time: 0.5
         min_predicted_path_confidence: 0.05
         minimum_ego_predicted_velocity: 1.388 # [m/s]
         fully_prioritized:
           collision_start_margin_time: 2.0
           collision_end_margin_time: 0.0
         partially_prioritized:
-          collision_start_margin_time: 2.0
+          collision_start_margin_time: 3.0
           collision_end_margin_time: 2.0
         not_prioritized:
-          collision_start_margin_time: 4.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
-          collision_end_margin_time: 6.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
+          collision_start_margin_time: 3.0 # [s] this + state_transit_margin_time should be higher to account for collision with fast/accelerating object
+          collision_end_margin_time: 2.0 # [s] this + state_transit_margin_time should be higher to account for collision with slow/decelerating object
         keep_detection_vel_thr: 0.833 # == 3.0km/h. keep detection if ego is ego.vel < keep_detection_vel_thr
         use_upstream_velocity: true # flag to use the planned velocity profile from the upstream module
         minimum_upstream_velocity: 0.01 # [m/s] minimum velocity to avoid null division for the stop line from the upstream velocity
         yield_on_green_traffic_light:
-          distance_to_assigned_lanelet_start: 5.0
-          duration: 2.0
+          distance_to_assigned_lanelet_start: 10.0
+          duration: 3.0
           object_dist_to_stopline: 10.0 # [m]
         ignore_on_amber_traffic_light:
           object_expected_deceleration: 2.0 # [m/ss]
@@ -81,7 +81,7 @@
           maximum_peeking_distance: 6.0 # [m]
         attention_lane_crop_curvature_threshold: 0.25
         attention_lane_curvature_calculation_ds: 0.5
-        static_occlusion_with_traffic_light_timeout: 3.5
+        static_occlusion_with_traffic_light_timeout: 0.5
 
       debug:
         ttc: [0]

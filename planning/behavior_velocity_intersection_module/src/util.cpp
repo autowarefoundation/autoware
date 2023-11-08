@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <list>
 #include <memory>
 #include <set>
@@ -1304,14 +1305,27 @@ TimeDistanceArray calcIntersectionPassingTime(
   const bool use_upstream_velocity, const double minimum_upstream_velocity,
   tier4_debug_msgs::msg::Float64MultiArrayStamped * debug_ttc_array)
 {
-  double dist_sum = 0.0;
+  const double current_velocity = planner_data->current_velocity->twist.linear.x;
+
   int assigned_lane_found = false;
 
   // crop intersection part of the path, and set the reference velocity to intersection_velocity
   // for ego's ttc
   PathWithLaneId reference_path;
-  for (size_t i = closest_idx; i < path.points.size(); ++i) {
+  std::optional<size_t> upstream_stop_line{std::nullopt};
+  for (size_t i = 0; i < path.points.size() - 1; ++i) {
     auto reference_point = path.points.at(i);
+    // assume backward velocity is current ego velocity
+    if (i < closest_idx) {
+      reference_point.point.longitudinal_velocity_mps = current_velocity;
+    }
+    if (
+      i > last_intersection_stop_line_candidate_idx &&
+      std::fabs(reference_point.point.longitudinal_velocity_mps) <
+        std::numeric_limits<double>::epsilon() &&
+      !upstream_stop_line) {
+      upstream_stop_line = i;
+    }
     if (!use_upstream_velocity) {
       reference_point.point.longitudinal_velocity_mps = intersection_velocity;
     }
@@ -1326,28 +1340,46 @@ TimeDistanceArray calcIntersectionPassingTime(
     return {{0.0, 0.0}};  // has already passed the intersection.
   }
 
+  std::vector<std::pair<double, double>> original_path_xy;
+  for (size_t i = 0; i < reference_path.points.size(); ++i) {
+    const auto & p = reference_path.points.at(i).point.pose.position;
+    original_path_xy.emplace_back(p.x, p.y);
+  }
+
   // apply smoother to reference velocity
   PathWithLaneId smoothed_reference_path = reference_path;
-  smoothPath(reference_path, smoothed_reference_path, planner_data);
+  if (!smoothPath(reference_path, smoothed_reference_path, planner_data)) {
+    smoothed_reference_path = reference_path;
+  }
 
   // calculate when ego is going to reach each (interpolated) points on the path
   TimeDistanceArray time_distance_array{};
-  dist_sum = 0.0;
+  double dist_sum = 0.0;
   double passing_time = time_delay;
   time_distance_array.emplace_back(passing_time, dist_sum);
 
   // NOTE: `reference_path` is resampled in `reference_smoothed_path`, so
   // `last_intersection_stop_line_candidate_idx` makes no sense
-  const auto last_intersection_stop_line_candidate_point_orig =
-    path.points.at(last_intersection_stop_line_candidate_idx).point.pose;
-  const auto last_intersection_stop_line_candidate_nearest_ind =
-    motion_utils::findFirstNearestIndexWithSoftConstraints(
-      smoothed_reference_path.points, last_intersection_stop_line_candidate_point_orig,
-      planner_data->ego_nearest_dist_threshold, planner_data->ego_nearest_yaw_threshold);
+  const auto smoothed_path_closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    smoothed_reference_path.points, path.points.at(closest_idx).point.pose,
+    planner_data->ego_nearest_dist_threshold, planner_data->ego_nearest_yaw_threshold);
 
-  for (size_t i = 1; i < smoothed_reference_path.points.size(); ++i) {
-    const auto & p1 = smoothed_reference_path.points.at(i - 1);
-    const auto & p2 = smoothed_reference_path.points.at(i);
+  const std::optional<size_t> upstream_stop_line_idx_opt = [&]() -> std::optional<size_t> {
+    if (upstream_stop_line) {
+      const auto upstream_stop_line_point = path.points.at(upstream_stop_line.value()).point.pose;
+      return motion_utils::findFirstNearestIndexWithSoftConstraints(
+        smoothed_reference_path.points, upstream_stop_line_point,
+        planner_data->ego_nearest_dist_threshold, planner_data->ego_nearest_yaw_threshold);
+    } else {
+      return std::nullopt;
+    }
+  }();
+  const bool has_upstream_stopline = upstream_stop_line_idx_opt.has_value();
+  const size_t upstream_stopline_ind = upstream_stop_line_idx_opt.value_or(0);
+
+  for (size_t i = smoothed_path_closest_idx; i < smoothed_reference_path.points.size() - 1; ++i) {
+    const auto & p1 = smoothed_reference_path.points.at(i);
+    const auto & p2 = smoothed_reference_path.points.at(i + 1);
 
     const double dist = tier4_autoware_utils::calcDistance2d(p1, p2);
     dist_sum += dist;
@@ -1355,12 +1387,16 @@ TimeDistanceArray calcIntersectionPassingTime(
     // use average velocity between p1 and p2
     const double average_velocity =
       (p1.point.longitudinal_velocity_mps + p2.point.longitudinal_velocity_mps) / 2.0;
-    const double minimum_ego_velocity_division =
-      (use_upstream_velocity && i > last_intersection_stop_line_candidate_nearest_ind)
-        ? minimum_upstream_velocity /* to avoid null division */
-        : minimum_ego_velocity;
-    const double passing_velocity =
-      std::max<double>(minimum_ego_velocity_division, average_velocity);
+    const double passing_velocity = [=]() {
+      if (use_upstream_velocity) {
+        if (has_upstream_stopline && i > upstream_stopline_ind) {
+          return minimum_upstream_velocity;
+        }
+        return std::max<double>(average_velocity, minimum_ego_velocity);
+      } else {
+        return std::max<double>(average_velocity, minimum_ego_velocity);
+      }
+    }();
     passing_time += (dist / passing_velocity);
 
     time_distance_array.emplace_back(passing_time, dist_sum);
@@ -1370,6 +1406,8 @@ TimeDistanceArray calcIntersectionPassingTime(
   debug_ttc_array->layout.dim.at(0).size = 5;
   debug_ttc_array->layout.dim.at(1).label = "values";
   debug_ttc_array->layout.dim.at(1).size = time_distance_array.size();
+  debug_ttc_array->data.reserve(
+    time_distance_array.size() * debug_ttc_array->layout.dim.at(0).size);
   for (unsigned i = 0; i < time_distance_array.size(); ++i) {
     debug_ttc_array->data.push_back(lane_id);
   }
@@ -1379,11 +1417,13 @@ TimeDistanceArray calcIntersectionPassingTime(
   for (const auto & [t, d] : time_distance_array) {
     debug_ttc_array->data.push_back(d);
   }
-  for (const auto & p : smoothed_reference_path.points) {
-    debug_ttc_array->data.push_back(p.point.pose.position.x);
+  for (size_t i = smoothed_path_closest_idx; i < smoothed_reference_path.points.size(); ++i) {
+    const auto & p = smoothed_reference_path.points.at(i).point.pose.position;
+    debug_ttc_array->data.push_back(p.x);
   }
-  for (const auto & p : smoothed_reference_path.points) {
-    debug_ttc_array->data.push_back(p.point.pose.position.y);
+  for (size_t i = smoothed_path_closest_idx; i < smoothed_reference_path.points.size(); ++i) {
+    const auto & p = smoothed_reference_path.points.at(i).point.pose.position;
+    debug_ttc_array->data.push_back(p.y);
   }
   return time_distance_array;
 }

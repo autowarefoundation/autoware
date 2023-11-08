@@ -88,15 +88,14 @@ bool smoothPath(
   const auto & smoother = planner_data->velocity_smoother_;
 
   auto trajectory = convertPathToTrajectoryPoints(in_path);
-  if (external_v_limit) {
-    motion_velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
-      0, trajectory.size(), external_v_limit->max_velocity, trajectory);
-  }
   const auto traj_lateral_acc_filtered = smoother->applyLateralAccelerationFilter(trajectory);
+
+  const auto traj_steering_rate_limited =
+    smoother->applySteeringRateLimit(traj_lateral_acc_filtered, false);
 
   // Resample trajectory with ego-velocity based interval distances
   auto traj_resampled = smoother->resampleTrajectory(
-    traj_lateral_acc_filtered, v0, current_pose, planner_data->ego_nearest_dist_threshold,
+    traj_steering_rate_limited, v0, current_pose, planner_data->ego_nearest_dist_threshold,
     planner_data->ego_nearest_yaw_threshold);
   const size_t traj_resampled_closest = motion_utils::findFirstNearestIndexWithSoftConstraints(
     traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
@@ -114,6 +113,10 @@ bool smoothPath(
   traj_smoothed.insert(
     traj_smoothed.begin(), traj_resampled.begin(), traj_resampled.begin() + traj_resampled_closest);
 
+  if (external_v_limit) {
+    motion_velocity_smoother::trajectory_utils::applyMaximumVelocityLimit(
+      traj_resampled_closest, traj_smoothed.size(), external_v_limit->max_velocity, traj_smoothed);
+  }
   out_path = convertTrajectoryPointsToPath(traj_smoothed);
   return true;
 }

@@ -126,8 +126,11 @@ class TTCVisualizer(Node):
         self.ttc_ax.set_xlabel("ego time")
         self.ttc_ax.set_ylabel("ego dist")
         time_dist_plot = self.ttc_ax.plot(ego_ttc_time, ego_ttc_dist, label="time-dist", c="orange")
-        self.ttc_ax.set_xlim(min(ego_ttc_time) - 2.0, max(ego_ttc_time) + 3.0)
-        self.ttc_ax.set_ylim(min(ego_ttc_dist) - 2.0, max(ego_ttc_dist) + 3.0)
+        self.ttc_ax.set_xlim(
+            min(ego_ttc_time) - 2.0,
+            min(max(ego_ttc_time) + 3.0, self.args.max_time),
+        )
+        # self.ttc_ax.set_ylim(min(ego_ttc_dist) - 2.0, max(ego_ttc_dist) + 3.0)
         for npc, color in zip(self.npc_vehicles, cycle(self.color_list)):
             t0, t1 = npc.collision_start_time, npc.collision_end_time
             d0, d1 = npc.collision_start_dist, npc.collision_end_dist
@@ -137,15 +140,13 @@ class TTCVisualizer(Node):
                 c=color,
                 alpha=0.2,
             )
-
         dd = [d1 - d0 for d0, d1 in zip(ego_ttc_dist, ego_ttc_dist[1:])]
         dt = [t1 - t0 for t0, t1 in zip(ego_ttc_time, ego_ttc_time[1:])]
         v = [d / t for d, t in zip(dd, dt)]
         self.ttc_vel_ax.yaxis.set_label_position("right")
         self.ttc_vel_ax.set_ylabel("ego velocity")
-        self.ttc_vel_ax.set_ylim(0.0, max(v) + 1.0)
+        # self.ttc_vel_ax.set_ylim(0.0, max(v) + 1.0)
         time_velocity_plot = self.ttc_vel_ax.plot(ego_ttc_time[1:], v, label="time-v", c="red")
-
         lines = time_dist_plot + time_velocity_plot
         labels = [line.get_label() for line in lines]
         self.ttc_ax.legend(lines, labels, loc="upper left")
@@ -218,6 +219,7 @@ class TTCVisualizer(Node):
         if self.args.save:
             kwargs_write = {"fps": self.args.fps, "quantizer": "nq"}
             imageio.mimsave("./" + self.args.gif + ".gif", self.images, **kwargs_write)
+        rclpy.shutdown()
 
     def on_plot_timer(self):
         with self.lock:
@@ -277,6 +279,7 @@ if __name__ == "__main__":
         default=60,
         help="detect range for drawing",
     )
+    parser.add_argument("--max_time", type=float, default=100, help="max plot limit for time")
     parser.add_argument("-s", "--save", action="store_true", help="flag to save gif")
     parser.add_argument("--gif", type=str, default="ttc", help="filename of gif file")
     parser.add_argument("--fps", type=float, default=5, help="fps of gif")
