@@ -48,6 +48,19 @@ std::shared_ptr<BehaviorPathPlannerNode> generateNode()
   const auto behavior_path_planner_dir =
     ament_index_cpp::get_package_share_directory("behavior_path_planner");
 
+  std::vector<rclcpp::Parameter> params;
+  params.emplace_back("avoidance.enable_module", true);
+  params.emplace_back("avoidance_by_lc.enable_module", true);
+  params.emplace_back("dynamic_avoidance.enable_module", true);
+  params.emplace_back("lane_change_right.enable_module", true);
+  params.emplace_back("lane_change_left.enable_module", true);
+  params.emplace_back("external_request_lane_change_right.enable_module", true);
+  params.emplace_back("external_request_lane_change_left.enable_module", true);
+  params.emplace_back("goal_planner.enable_module", true);
+  params.emplace_back("start_planner.enable_module", true);
+  params.emplace_back("side_shift.enable_module", true);
+  node_options.parameter_overrides(params);
+
   test_utils::updateNodeOptions(
     node_options,
     {planning_test_utils_dir + "/config/test_common.param.yaml",

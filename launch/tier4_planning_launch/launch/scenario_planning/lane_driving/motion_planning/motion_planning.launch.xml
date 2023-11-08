@@ -180,7 +180,7 @@
   </group>
 
   <!-- surround obstacle check -->
-  <group if="$(var enable_surround_check)">
+  <group if="$(var launch_surround_obstacle_checker)">
     <load_composable_node target="/planning/scenario_planning/lane_driving/motion_planning/motion_planning_container">
       <composable_node pkg="surround_obstacle_checker" plugin="surround_obstacle_checker::SurroundObstacleCheckerNode" name="surround_obstacle_checker" namespace="">
         <!-- topic remap -->

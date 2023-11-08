@@ -5,6 +5,112 @@
   <arg name="input_vector_map_topic_name" default="/map/vector_map"/>
   <arg name="input_pointcloud_map_topic_name" default="/map/pointcloud_map"/>
 
+  <arg name="launch_avoidance_module" default="true"/>
+  <arg name="launch_avoidance_by_lane_change_module" default="true"/>
+  <arg name="launch_dynamic_avoidance_module" default="true"/>
+  <arg name="launch_lane_change_right_module" default="true"/>
+  <arg name="launch_lane_change_left_module" default="true"/>
+  <arg name="launch_external_request_lane_change_right_module" default="true"/>
+  <arg name="launch_external_request_lane_change_left_module" default="true"/>
+  <arg name="launch_goal_planner_module" default="true"/>
+  <arg name="launch_start_planner_module" default="true"/>
+  <arg name="launch_side_shift_module" default="true"/>
+
+  <arg name="launch_crosswalk_module" default="true"/>
+  <arg name="launch_walkway_module" default="true"/>
+  <arg name="launch_traffic_light_module" default="true"/>
+  <arg name="launch_intersection_module" default="true"/>
+  <arg name="launch_merge_from_private_module" default="true"/>
+  <arg name="launch_blind_spot_module" default="true"/>
+  <arg name="launch_detection_area_module" default="true"/>
+  <arg name="launch_virtual_traffic_light_module" default="true"/>
+  <arg name="launch_no_stopping_area_module" default="true"/>
+  <arg name="launch_stop_line_module" default="true"/>
+  <arg name="launch_occlusion_spot_module" default="true"/>
+  <arg name="launch_run_out_module" default="true"/>
+  <arg name="launch_speed_bump_module" default="true"/>
+  <arg name="launch_out_of_lane_module" default="true"/>
+  <arg name="launch_no_drivable_lane_module" default="true"/>
+
+  <!-- assemble launch config for behavior velocity planner -->
+  <arg name="behavior_velocity_planner_launch_modules" default="["/>
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::CrosswalkModulePlugin, '&quot;)"
+    if="$(var launch_crosswalk_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::WalkwayModulePlugin, '&quot;)"
+    if="$(var launch_walkway_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::TrafficLightModulePlugin, '&quot;)"
+    if="$(var launch_traffic_light_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::IntersectionModulePlugin, '&quot;)"
+    if="$(var launch_intersection_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::MergeFromPrivateModulePlugin, '&quot;)"
+    if="$(var launch_merge_from_private_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::BlindSpotModulePlugin, '&quot;)"
+    if="$(var launch_blind_spot_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::DetectionAreaModulePlugin, '&quot;)"
+    if="$(var launch_detection_area_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::VirtualTrafficLightModulePlugin, '&quot;)"
+    if="$(var launch_virtual_traffic_light_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::NoStoppingAreaModulePlugin, '&quot;)"
+    if="$(var launch_no_stopping_area_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::StopLineModulePlugin, '&quot;)"
+    if="$(var launch_stop_line_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::OcclusionSpotModulePlugin, '&quot;)"
+    if="$(var launch_occlusion_spot_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::RunOutModulePlugin, '&quot;)"
+    if="$(var launch_run_out_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::SpeedBumpModulePlugin, '&quot;)"
+    if="$(var launch_speed_bump_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::OutOfLaneModulePlugin, '&quot;)"
+    if="$(var launch_out_of_lane_module)"
+  />
+  <let
+    name="behavior_velocity_planner_launch_modules"
+    value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + 'behavior_velocity_planner::NoDrivableLaneModulePlugin, '&quot;)"
+    if="$(var launch_no_drivable_lane_module)"
+  />
+  <let name="behavior_velocity_planner_launch_modules" value="$(eval &quot;'$(var behavior_velocity_planner_launch_modules)' + ']'&quot;)"/>
+
   <node_container pkg="rclcpp_components" exec="$(var container_type)" name="behavior_planning_container" namespace="" args="" output="screen">
     <composable_node pkg="behavior_path_planner" plugin="behavior_path_planner::BehaviorPathPlannerNode" name="behavior_path_planner" namespace="">
       <!-- topic remap -->
@@ -23,6 +129,16 @@
       <remap from="~/output/modified_goal" to="/planning/scenario_planning/modified_goal"/>
       <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
       <!-- params -->
+      <param name="avoidance.enable_module" value="$(var launch_avoidance_module)"/>
+      <param name="avoidance_by_lc.enable_module" value="$(var launch_avoidance_by_lane_change_module)"/>
+      <param name="dynamic_avoidance.enable_module" value="$(var launch_dynamic_avoidance_module)"/>
+      <param name="lane_change_right.enable_module" value="$(var launch_lane_change_right_module)"/>
+      <param name="lane_change_left.enable_module" value="$(var launch_lane_change_left_module)"/>
+      <param name="external_request_lane_change_left.enable_module" value="$(var launch_external_request_lane_change_left_module)"/>
+      <param name="external_request_lane_change_right.enable_module" value="$(var launch_external_request_lane_change_right_module)"/>
+      <param name="goal_planner.enable_module" value="$(var launch_goal_planner_module)"/>
+      <param name="start_planner.enable_module" value="$(var launch_start_planner_module)"/>
+      <param name="side_shift.enable_module" value="$(var launch_side_shift_module)"/>
       <param from="$(var common_param_path)"/>
       <param from="$(var vehicle_param_file)"/>
       <param from="$(var nearest_search_param_path)"/>
@@ -66,6 +182,7 @@
       <param from="$(var motion_velocity_smoother_param_path)"/>
       <param from="$(var behavior_velocity_smoother_type_param_path)"/>
       <param from="$(var behavior_velocity_planner_common_param_path)"/>
+      <param name="launch_modules" value="$(var behavior_velocity_planner_launch_modules)"/>
       <!-- <param from="$(var template_param_path)"/> -->
       <param from="$(var behavior_velocity_planner_blind_spot_module_param_path)"/>
       <param from="$(var behavior_velocity_planner_crosswalk_module_param_path)"/>

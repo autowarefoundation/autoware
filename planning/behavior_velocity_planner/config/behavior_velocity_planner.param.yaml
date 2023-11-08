@@ -8,20 +8,3 @@
     system_delay: 0.5
     delay_response_time: 0.5
     is_publish_debug_path: false # publish all debug path with lane id in each module
-    launch_modules:
-      - behavior_velocity_planner::CrosswalkModulePlugin
-      - behavior_velocity_planner::WalkwayModulePlugin
-      - behavior_velocity_planner::TrafficLightModulePlugin
-      - behavior_velocity_planner::IntersectionModulePlugin      # Intersection module should be before merge from private to declare intersection parameters.
-      - behavior_velocity_planner::MergeFromPrivateModulePlugin
-      - behavior_velocity_planner::BlindSpotModulePlugin
-      - behavior_velocity_planner::DetectionAreaModulePlugin
-      # behavior_velocity_planner::VirtualTrafficLightModulePlugin
-      - behavior_velocity_planner::NoStoppingAreaModulePlugin     # No stopping area module requires all the stop line. Therefore this modules should be placed at the bottom.
-      - behavior_velocity_planner::StopLineModulePlugin           # Permanent stop line module should be after no stopping area
-      # behavior_velocity_planner::OcclusionSpotModulePlugin
-      # behavior_velocity_planner::RunOutModulePlugin
-      # behavior_velocity_planner::SpeedBumpModulePlugin
-      # behavior_velocity_planner::TemplateModulePlugin
-      - behavior_velocity_planner::OutOfLaneModulePlugin
-      - behavior_velocity_planner::NoDrivableLaneModulePlugin
