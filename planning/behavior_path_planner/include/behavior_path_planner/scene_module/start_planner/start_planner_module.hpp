@@ -59,7 +59,6 @@ struct PullOutStatus
   size_t current_path_idx{0};
   PlannerType planner_type{PlannerType::NONE};
   PathWithLaneId backward_path{};
-  lanelet::ConstLanelets pull_out_lanes{};
   bool found_pull_out_path{false};      // current path is safe against static objects
   bool is_safe_dynamic_objects{false};  // current path is safe against dynamic objects
   bool driving_forward{false};          // if ego is driving on backward path, this is set to false
