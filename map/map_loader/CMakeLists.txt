@@ -46,7 +46,7 @@ rclcpp_components_register_node(lanelet2_map_visualization_node
 )
 
 if(BUILD_TESTING)
-  add_ros_test(
+  add_launch_test(
     test/lanelet2_map_loader_launch.test.py
     TIMEOUT "30"
   )

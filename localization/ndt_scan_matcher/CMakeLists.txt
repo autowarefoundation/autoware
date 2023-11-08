@@ -38,7 +38,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 target_link_libraries(ndt_scan_matcher ${PCL_LIBRARIES} glog::glog)
 
 if(BUILD_TESTING)
-  add_ros_test(
+  add_launch_test(
     test/test_ndt_scan_matcher_launch.py
     TIMEOUT "30"
   )

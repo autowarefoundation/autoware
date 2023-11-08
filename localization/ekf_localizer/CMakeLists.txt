@@ -43,11 +43,11 @@ function(add_testcase filepath)
 endfunction()
 
 if(BUILD_TESTING)
-  add_ros_test(
+  add_launch_test(
     test/test_ekf_localizer_launch.py
     TIMEOUT "30"
   )
-  add_ros_test(
+  add_launch_test(
     test/test_ekf_localizer_mahalanobis.py
     TIMEOUT "30"
   )
