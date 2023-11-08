@@ -28,7 +28,7 @@ See the design of the algorithm in the core (lidar_apollo_segmentation_tvm) pack
 
 ### Usage
 
-`lidar_apollo_segmentation_tvm` and `lidar_apollo_segmentation_tvm_nodes` will not build without a neural network.
+`lidar_apollo_segmentation_tvm` and `lidar_apollo_segmentation_tvm_nodes` will not work without a neural network.
 See the lidar_apollo_segmentation_tvm usage for more information.
 
 ### Assumptions / Known limits

@@ -23,6 +23,7 @@
     <remap from="points_in" to="$(var input/pointcloud)"/>
     <remap from="objects_out" to="$(var output/objects)"/>
     <param name="z_offset" value="$(var z_offset)"/>
-    <param from="$(var param_file)"/>
+    <!-- cspell: ignore substs -->
+    <param from="$(var param_file)" allow_substs="true"/>
   </node>
 </launch>

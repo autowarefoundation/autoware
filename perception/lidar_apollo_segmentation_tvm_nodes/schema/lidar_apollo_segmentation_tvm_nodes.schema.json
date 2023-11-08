@@ -61,6 +61,11 @@
           "type": "number",
           "default": 0.5,
           "description": "If it is non-negative, the points that are higher than the predicted object height by height_thresh are filtered out in the post-processing step."
+        },
+        "data_path": {
+          "type": "string",
+          "default": "$(env HOME)/autoware_data",
+          "description": "Packages data and artifacts directory path."
         }
       },
       "required": [
@@ -73,7 +78,8 @@
         "max_height",
         "objectness_thresh",
         "min_pts_num",
-        "height_thresh"
+        "height_thresh",
+        "data_path"
       ]
     }
   },

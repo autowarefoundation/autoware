@@ -21,7 +21,7 @@ import launch
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-import yaml
+import launch_ros.parameter_descriptions
 
 
 def generate_launch_description():
@@ -29,12 +29,17 @@ def generate_launch_description():
         get_package_share_directory("lidar_apollo_segmentation_tvm_nodes"),
         "config/lidar_apollo_segmentation_tvm_nodes.param.yaml",
     )
-    with open(param_file, "r") as f:
-        lidar_apollo_segmentation_tvm_node_params = yaml.safe_load(f)["/**"]["ros__parameters"]
+
+    lidar_apollo_segmentation_tvm_node_params = launch_ros.parameter_descriptions.ParameterFile(
+        param_file=param_file, allow_substs=True
+    )
 
     arguments = [
         DeclareLaunchArgument("input/pointcloud", default_value="/sensing/lidar/pointcloud"),
         DeclareLaunchArgument("output/objects", default_value="labeled_clusters"),
+        DeclareLaunchArgument(
+            "data_path", default_value=os.path.join(os.environ["HOME"], "autoware_data")
+        ),
     ]
 
     # lidar segmentation node execution definition.

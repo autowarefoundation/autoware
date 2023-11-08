@@ -41,7 +41,7 @@ ApolloLidarSegmentationNode::ApolloLidarSegmentationNode(const rclcpp::NodeOptio
     declare_parameter<bool>("use_constant_feature"), declare_parameter<double>("z_offset"),
     declare_parameter<double>("min_height"), declare_parameter<double>("max_height"),
     declare_parameter<double>("objectness_thresh"), declare_parameter<int64_t>("min_pts_num"),
-    declare_parameter<double>("height_thresh"))}
+    declare_parameter<double>("height_thresh"), declare_parameter<std::string>("data_path"))}
 {
   // Log unexpected versions of the neural network.
   auto version_status = m_detector_ptr->version_check();

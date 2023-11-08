@@ -141,10 +141,11 @@ public:
   /// \param[in] height_thresh If it is non-negative, the points that are higher than the predicted
   ///                          object height by height_thresh are filtered out in the
   ///                          post-processing step.
+  /// \param[in] data_path The path to autoware data and artifacts folder
   explicit ApolloLidarSegmentation(
     int32_t range, float score_threshold, bool use_intensity_feature, bool use_constant_feature,
     float z_offset, float min_height, float max_height, float objectness_thresh,
-    int32_t min_pts_num, float height_thresh);
+    int32_t min_pts_num, float height_thresh, const std::string & data_path);
 
   /// \brief Detect obstacles.
   /// \param[in] input Input pointcloud.

@@ -17,14 +17,18 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <memory>
 #include <random>
 #include <string>
 #include <vector>
 
 using autoware::perception::lidar_apollo_segmentation_tvm::ApolloLidarSegmentation;
+namespace fs = std::filesystem;
 
-void test_segmentation(bool use_intensity_feature, bool use_constant_feature, bool expect_throw)
+void test_segmentation(
+  const std::string & data_path, bool use_intensity_feature, bool use_constant_feature,
+  bool expect_throw)
 {
   // Instantiate the pipeline
   const int width = 1;
@@ -37,9 +41,10 @@ void test_segmentation(bool use_intensity_feature, bool use_constant_feature, bo
   const float objectness_thresh = 0.5f;
   const int32_t min_pts_num = 3;
   const float height_thresh = 0.5f;
+
   ApolloLidarSegmentation segmentation(
     range, score_threshold, use_intensity_feature, use_constant_feature, z_offset, min_height,
-    max_height, objectness_thresh, min_pts_num, height_thresh);
+    max_height, objectness_thresh, min_pts_num, height_thresh, data_path);
 
   auto version_status = segmentation.version_check();
   EXPECT_NE(version_status, tvm_utility::Version::Unsupported);
@@ -85,8 +90,31 @@ void test_segmentation(bool use_intensity_feature, bool use_constant_feature, bo
 // Other test configurations to increase code coverage.
 TEST(lidar_apollo_segmentation_tvm, others)
 {
-  test_segmentation(false, true, false);
-  test_segmentation(true, true, false);
-  test_segmentation(false, false, false);
-  test_segmentation(true, false, false);
+  std::string home = std::getenv("HOME");
+  fs::path data_path(home);
+  data_path /= "autoware_data";
+  fs::path apollo_data_path(data_path);
+  apollo_data_path /= "lidar_apollo_segmentation_tvm";
+  fs::path deploy_path(apollo_data_path);
+  deploy_path /= "models/baidu_cnn";
+
+  fs::path deploy_graph("deploy_graph.json");
+  fs::path deploy_lib("deploy_lib.so");
+  fs::path deploy_param("deploy_param.params");
+
+  fs::path deploy_graph_path = deploy_path / deploy_graph;
+  fs::path deploy_lib_path = deploy_path / deploy_lib;
+  fs::path deploy_param_path = deploy_path / deploy_param;
+
+  if (
+    !fs::exists(deploy_graph_path) || !fs::exists(deploy_lib_path) ||
+    !fs::exists(deploy_param_path)) {
+    printf("Model deploy files not found. Skip test.\n");
+    GTEST_SKIP();
+    return;
+  }
+  test_segmentation(data_path, false, true, false);
+  test_segmentation(data_path, true, true, false);
+  test_segmentation(data_path, false, false, false);
+  test_segmentation(data_path, true, false, false);
 }
