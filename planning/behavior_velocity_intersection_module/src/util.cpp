@@ -84,21 +84,16 @@ static std::optional<size_t> getDuplicatedPointIdx(
 
 static std::optional<size_t> insertPointIndex(
   const geometry_msgs::msg::Pose & in_pose,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path)
+  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path,
+  const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold)
 {
   const auto duplicate_idx_opt = getDuplicatedPointIdx(*inout_path, in_pose.position);
   if (duplicate_idx_opt) {
     return duplicate_idx_opt.value();
   }
 
-  static constexpr double dist_thr = 10.0;
-  static constexpr double angle_thr = M_PI / 1.5;
-  const auto closest_idx_opt =
-    motion_utils::findNearestIndex(inout_path->points, in_pose, dist_thr, angle_thr);
-  if (!closest_idx_opt) {
-    return std::nullopt;
-  }
-  const size_t closest_idx = closest_idx_opt.get();
+  const size_t closest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    inout_path->points, in_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
   // vector.insert(i) inserts element on the left side of v[i]
   // the velocity need to be zero order hold(from prior point)
   int insert_idx = closest_idx;
@@ -165,7 +160,7 @@ std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
  */
 static std::optional<size_t> getStopLineIndexFromMap(
   const InterpolatedPathInfo & interpolated_path_info,
-  const std::shared_ptr<const PlannerData> & planner_data, const double dist_thr)
+  const std::shared_ptr<const PlannerData> & planner_data)
 {
   const auto & path = interpolated_path_info.path;
   const auto & lane_interval = interpolated_path_info.lane_id_interval.value();
@@ -212,12 +207,9 @@ static std::optional<size_t> getStopLineIndexFromMap(
   stop_point_from_map.position.y = 0.5 * (p_start.y() + p_end.y());
   stop_point_from_map.position.z = 0.5 * (p_start.z() + p_end.z());
 
-  const auto stop_idx_ip_opt =
-    motion_utils::findNearestIndex(path.points, stop_point_from_map, static_cast<double>(dist_thr));
-  if (!stop_idx_ip_opt) {
-    return std::nullopt;
-  }
-  return stop_idx_ip_opt.get();
+  return motion_utils::findFirstNearestIndexWithSoftConstraints(
+    path.points, stop_point_from_map, planner_data->ego_nearest_dist_threshold,
+    planner_data->ego_nearest_yaw_threshold);
 }
 
 static std::optional<size_t> getFirstPointInsidePolygonByFootprint(
@@ -304,8 +296,7 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
   // (1) default stop line position on interpolated path
   bool default_stop_line_valid = true;
   int stop_idx_ip_int = -1;
-  if (const auto map_stop_idx_ip =
-        getStopLineIndexFromMap(interpolated_path_info, planner_data, 10.0);
+  if (const auto map_stop_idx_ip = getStopLineIndexFromMap(interpolated_path_info, planner_data);
       map_stop_idx_ip) {
     stop_idx_ip_int = static_cast<int>(map_stop_idx_ip.value()) - base2front_idx_dist;
   }
@@ -319,12 +310,9 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
 
   // (2) ego front stop line position on interpolated path
   const geometry_msgs::msg::Pose & current_pose = planner_data->current_odometry->pose;
-  const auto closest_idx_ip_opt =
-    motion_utils::findNearestIndex(path_ip.points, current_pose, 3.0, M_PI_4);
-  if (!closest_idx_ip_opt) {
-    return std::nullopt;
-  }
-  const auto closest_idx_ip = closest_idx_ip_opt.value();
+  const auto closest_idx_ip = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    path_ip.points, current_pose, planner_data->ego_nearest_dist_threshold,
+    planner_data->ego_nearest_yaw_threshold);
 
   // (3) occlusion peeking stop line position on interpolated path
   int occlusion_peeking_line_ip_int = static_cast<int>(default_stop_line_ip);
@@ -404,7 +392,9 @@ std::optional<IntersectionStopLines> generateIntersectionStopLines(
     [](const auto & it1, const auto & it2) { return *(std::get<0>(it1)) < *(std::get<0>(it2)); });
   for (const auto & [stop_idx_ip, stop_idx] : stop_lines) {
     const auto & insert_point = path_ip.points.at(*stop_idx_ip).point.pose;
-    const auto insert_idx = insertPointIndex(insert_point, original_path);
+    const auto insert_idx = insertPointIndex(
+      insert_point, original_path, planner_data->ego_nearest_dist_threshold,
+      planner_data->ego_nearest_yaw_threshold);
     if (!insert_idx) {
       return std::nullopt;
     }
@@ -555,7 +545,9 @@ std::optional<size_t> generateStuckStopLine(
     static_cast<int>(stuck_stop_line_idx_ip) - 1 - stop_line_margin_idx_dist - base2front_idx_dist,
     0));
   const auto & insert_point = path_ip.points.at(insert_idx_ip).point.pose;
-  return insertPointIndex(insert_point, original_path);
+  return insertPointIndex(
+    insert_point, original_path, planner_data->ego_nearest_dist_threshold,
+    planner_data->ego_nearest_yaw_threshold);
 }
 
 static std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
@@ -1348,13 +1340,10 @@ TimeDistanceArray calcIntersectionPassingTime(
   // `last_intersection_stop_line_candidate_idx` makes no sense
   const auto last_intersection_stop_line_candidate_point_orig =
     path.points.at(last_intersection_stop_line_candidate_idx).point.pose;
-  const auto last_intersection_stop_line_candidate_nearest_ind_opt = motion_utils::findNearestIndex(
-    smoothed_reference_path.points, last_intersection_stop_line_candidate_point_orig, 3.0, M_PI_4);
-  if (!last_intersection_stop_line_candidate_nearest_ind_opt) {
-    return time_distance_array;
-  }
   const auto last_intersection_stop_line_candidate_nearest_ind =
-    last_intersection_stop_line_candidate_nearest_ind_opt.value();
+    motion_utils::findFirstNearestIndexWithSoftConstraints(
+      smoothed_reference_path.points, last_intersection_stop_line_candidate_point_orig,
+      planner_data->ego_nearest_dist_threshold, planner_data->ego_nearest_yaw_threshold);
 
   for (size_t i = 1; i < smoothed_reference_path.points.size(); ++i) {
     const auto & p1 = smoothed_reference_path.points.at(i - 1);
