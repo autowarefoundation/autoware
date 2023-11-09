@@ -66,17 +66,26 @@
 
 class ArTagBasedLocalizer : public rclcpp::Node
 {
+  using HADMapBin = autoware_auto_mapping_msgs::msg::HADMapBin;
+  using Image = sensor_msgs::msg::Image;
+  using CameraInfo = sensor_msgs::msg::CameraInfo;
+  using Pose = geometry_msgs::msg::Pose;
+  using PoseStamped = geometry_msgs::msg::PoseStamped;
+  using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using TransformStamped = geometry_msgs::msg::TransformStamped;
+  using MarkerArray = visualization_msgs::msg::MarkerArray;
+  using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;
+
 public:
   explicit ArTagBasedLocalizer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   bool setup();
 
 private:
-  void map_bin_callback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg);
-  void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & msg);
-  void cam_info_callback(const sensor_msgs::msg::CameraInfo & msg);
-  void ekf_pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped & msg);
-  void publish_pose_as_base_link(
-    const geometry_msgs::msg::PoseStamped & msg, const std::string & camera_frame_id);
+  void map_bin_callback(const HADMapBin::ConstSharedPtr & msg);
+  void image_callback(const Image::ConstSharedPtr & msg);
+  void cam_info_callback(const CameraInfo & msg);
+  void ekf_pose_callback(const PoseWithCovarianceStamped & msg);
+  void publish_pose_as_base_link(const PoseStamped & sensor_to_tag, const std::string & tag_id);
   static tf2::Transform aruco_marker_to_tf2(const aruco::Marker & marker);
 
   // Parameters
@@ -96,23 +105,23 @@ private:
   std::unique_ptr<image_transport::ImageTransport> it_;
 
   // Subscribers
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_bin_sub_;
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
-  rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ekf_pose_sub_;
+  rclcpp::Subscription<HADMapBin>::SharedPtr map_bin_sub_;
+  rclcpp::Subscription<Image>::SharedPtr image_sub_;
+  rclcpp::Subscription<CameraInfo>::SharedPtr cam_info_sub_;
+  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr ekf_pose_sub_;
 
   // Publishers
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr marker_pub_;
   image_transport::Publisher image_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_pub_;
-  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diag_pub_;
+  rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr pose_pub_;
+  rclcpp::Publisher<DiagnosticArray>::SharedPtr diag_pub_;
 
   // Others
   aruco::MarkerDetector detector_;
   aruco::CameraParameters cam_param_;
   bool cam_info_received_;
-  geometry_msgs::msg::PoseWithCovarianceStamped latest_ekf_pose_{};
-  std::map<std::string, geometry_msgs::msg::Pose> landmark_map_;
+  PoseWithCovarianceStamped latest_ekf_pose_{};
+  std::map<std::string, Pose> landmark_map_;
 };
 
 #endif  // AR_TAG_BASED_LOCALIZER_HPP_
