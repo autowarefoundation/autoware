@@ -132,7 +132,7 @@ private:
     const rclcpp::Time & sensor_ros_time);
   void add_regularization_pose(const rclcpp::Time & sensor_ros_time);
 
-  void timer_diagnostic();
+  void publish_diagnostic();
 
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sensor_points_sub_;
@@ -202,8 +202,6 @@ private:
     initial_pose_msg_ptr_array_;
   std::mutex ndt_ptr_mtx_;
   std::mutex initial_pose_array_mtx_;
-
-  std::thread diagnostic_thread_;
 
   // variables for regularization
   const bool regularization_enabled_;

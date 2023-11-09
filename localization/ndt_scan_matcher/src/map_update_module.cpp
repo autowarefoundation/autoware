@@ -26,15 +26,13 @@ MapUpdateModule::MapUpdateModule(
   rclcpp::Node * node, std::mutex * ndt_ptr_mutex,
   std::shared_ptr<NormalDistributionsTransform> ndt_ptr,
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module, std::string map_frame,
-  rclcpp::CallbackGroup::SharedPtr main_callback_group,
-  std::shared_ptr<std::map<std::string, std::string>> state_ptr)
+  rclcpp::CallbackGroup::SharedPtr main_callback_group)
 : ndt_ptr_(std::move(ndt_ptr)),
   ndt_ptr_mutex_(ndt_ptr_mutex),
   map_frame_(std::move(map_frame)),
   logger_(node->get_logger()),
   clock_(node->get_clock()),
   tf2_listener_module_(std::move(tf2_listener_module)),
-  state_ptr_(std::move(state_ptr)),
   dynamic_map_loading_update_distance_(
     node->declare_parameter<double>("dynamic_map_loading_update_distance")),
   dynamic_map_loading_map_radius_(

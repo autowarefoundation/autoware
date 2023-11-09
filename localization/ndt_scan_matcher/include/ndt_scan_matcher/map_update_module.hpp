@@ -51,8 +51,7 @@ public:
     rclcpp::Node * node, std::mutex * ndt_ptr_mutex,
     std::shared_ptr<NormalDistributionsTransform> ndt_ptr,
     std::shared_ptr<Tf2ListenerModule> tf2_listener_module, std::string map_frame,
-    rclcpp::CallbackGroup::SharedPtr main_callback_group,
-    std::shared_ptr<std::map<std::string, std::string>> state_ptr);
+    rclcpp::CallbackGroup::SharedPtr main_callback_group);
 
 private:
   friend class NDTScanMatcher;
@@ -82,7 +81,6 @@ private:
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
   std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
-  std::shared_ptr<std::map<std::string, std::string>> state_ptr_;
 
   std::optional<geometry_msgs::msg::Point> last_update_position_ = std::nullopt;
   std::optional<geometry_msgs::msg::Point> current_position_ = std::nullopt;
