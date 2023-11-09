@@ -140,17 +140,9 @@ diagnostic_msgs::msg::DiagnosticArray convertHazardStatusToDiagnosticArray(
     diag_array.status.push_back(decorateDiag(hazard_diag, "[Safe Fault]"));
   }
   for (const auto & hazard_diag : hazard_status.diag_latent_fault) {
-    const std::string logger_name = "system_error_monitor " + hazard_diag.name;
-    logThrottledNamed<DebugLevel::WARN>(
-      logger_name, clock, 5000, "[Latent Fault]: " + hazard_diag.message);
-
     diag_array.status.push_back(decorateDiag(hazard_diag, "[Latent Fault]"));
   }
   for (const auto & hazard_diag : hazard_status.diag_single_point_fault) {
-    const std::string logger_name = "system_error_monitor " + hazard_diag.name;
-    logThrottledNamed<DebugLevel::ERROR>(
-      logger_name, clock, 5000, "[Single Point Fault]: " + hazard_diag.message);
-
     diag_array.status.push_back(decorateDiag(hazard_diag, "[Single Point Fault]"));
   }
 
@@ -688,6 +680,9 @@ void AutowareErrorMonitor::publishHazardStatus(
   hazard_status_stamped.stamp = this->now();
   hazard_status_stamped.status = hazard_status;
   pub_hazard_status_->publish(hazard_status_stamped);
+
+  loggingErrors(hazard_status_stamped.status);
+
   pub_diagnostics_err_->publish(
     convertHazardStatusToDiagnosticArray(this->get_clock(), hazard_status_stamped.status));
 }
@@ -702,4 +697,24 @@ bool AutowareErrorMonitor::onClearEmergencyService(
   response->message = "Emergency Holding state was cleared.";
 
   return true;
+}
+
+void AutowareErrorMonitor::loggingErrors(
+  const autoware_auto_system_msgs::msg::HazardStatus & hazard_status)
+{
+  if (isInNoFaultCondition(*autoware_state_, *current_gate_mode_)) {
+    RCLCPP_DEBUG(get_logger(), "Autoware is in no-fault condition.");
+    return;
+  }
+
+  for (const auto & hazard_diag : hazard_status.diag_latent_fault) {
+    const std::string logger_name = "system_error_monitor " + hazard_diag.name;
+    logThrottledNamed<DebugLevel::WARN>(
+      logger_name, get_clock(), 5000, "[Latent Fault]: " + hazard_diag.message);
+  }
+  for (const auto & hazard_diag : hazard_status.diag_single_point_fault) {
+    const std::string logger_name = "system_error_monitor " + hazard_diag.name;
+    logThrottledNamed<DebugLevel::ERROR>(
+      logger_name, get_clock(), 5000, "[Single Point Fault]: " + hazard_diag.message);
+  }
 }

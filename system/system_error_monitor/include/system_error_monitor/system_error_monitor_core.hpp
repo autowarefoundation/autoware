@@ -148,6 +148,8 @@ private:
   bool canAutoRecovery() const;
   bool isEmergencyHoldingRequired() const;
 
+  void loggingErrors(const autoware_auto_system_msgs::msg::HazardStatus & diag_array);
+
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
 };
 
