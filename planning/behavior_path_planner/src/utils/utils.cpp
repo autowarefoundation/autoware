@@ -974,9 +974,11 @@ BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerDat
     shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
     dp.drivable_area_types_to_skip);
 
-  // TODO(someone): insert 0 velocity on the path
-  // assumption: this function is called when any of the scene module is running and ego is outside
-  // of the route
+  // Insert zero velocity to each point in the path.
+  for (auto & point : reference_path.points) {
+    point.point.longitudinal_velocity_mps = 0.0;
+  }
+
   output.path = std::make_shared<PathWithLaneId>(reference_path);
   output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
   output.drivable_area_info.drivable_lanes = drivable_lanes;
