@@ -251,7 +251,7 @@ bool DynamicAvoidanceModule::isExecutionRequested() const
   }
 
   // check if the planner is already running
-  if (current_state_ == ModuleStatus::RUNNING) {
+  if (getCurrentStatus() == ModuleStatus::RUNNING) {
     return true;
   }
 
@@ -279,15 +279,9 @@ void DynamicAvoidanceModule::updateData()
   }
 }
 
-ModuleStatus DynamicAvoidanceModule::updateState()
+bool DynamicAvoidanceModule::canTransitSuccessState()
 {
-  const bool has_avoidance_target = !target_objects_.empty();
-
-  if (!has_avoidance_target) {
-    return ModuleStatus::SUCCESS;
-  }
-
-  return ModuleStatus::RUNNING;
+  return target_objects_.empty();
 }
 
 BehaviorModuleOutput DynamicAvoidanceModule::plan()
