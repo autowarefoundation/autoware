@@ -54,39 +54,6 @@ void insert_marker_array(
   a1->markers.insert(a1->markers.end(), a2.markers.begin(), a2.markers.end());
 }
 
-lanelet::ConstLanelet combine_lanelets(const lanelet::ConstLanelets & lanelets)
-{
-  lanelet::Points3d lefts;
-  lanelet::Points3d rights;
-  lanelet::Points3d centers;
-  std::vector<uint64_t> left_bound_ids;
-  std::vector<uint64_t> right_bound_ids;
-
-  for (const auto & llt : lanelets) {
-    if (llt.id() != 0) {
-      left_bound_ids.push_back(llt.leftBound().id());
-      right_bound_ids.push_back(llt.rightBound().id());
-    }
-  }
-
-  for (const auto & llt : lanelets) {
-    if (std::count(right_bound_ids.begin(), right_bound_ids.end(), llt.leftBound().id()) < 1) {
-      for (const auto & pt : llt.leftBound()) {
-        lefts.push_back(lanelet::Point3d(pt));
-      }
-    }
-    if (std::count(left_bound_ids.begin(), left_bound_ids.end(), llt.rightBound().id()) < 1) {
-      for (const auto & pt : llt.rightBound()) {
-        rights.push_back(lanelet::Point3d(pt));
-      }
-    }
-  }
-  const auto left_bound = lanelet::LineString3d(lanelet::InvalId, lefts);
-  const auto right_bound = lanelet::LineString3d(lanelet::InvalId, rights);
-  auto combined_lanelet = lanelet::Lanelet(lanelet::InvalId, left_bound, right_bound);
-  return std::move(combined_lanelet);
-}
-
 std::vector<geometry_msgs::msg::Point> convertCenterlineToPoints(const lanelet::Lanelet & lanelet)
 {
   std::vector<geometry_msgs::msg::Point> centerline_points;
