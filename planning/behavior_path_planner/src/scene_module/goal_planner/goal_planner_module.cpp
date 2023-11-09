@@ -296,7 +296,7 @@ void GoalPlannerModule::processOnExit()
 
 bool GoalPlannerModule::isExecutionRequested() const
 {
-  if (current_state_ == ModuleStatus::RUNNING) {
+  if (getCurrentStatus() == ModuleStatus::RUNNING) {
     return true;
   }
 
