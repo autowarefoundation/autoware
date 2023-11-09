@@ -326,9 +326,9 @@ void SimplePlanningSimulator::on_timer()
   }
 
   // calculate longitudinal acceleration by slope
-  const double ego_pitch_angle = calculate_ego_pitch();
-  const double acc_by_slope =
-    enable_road_slope_simulation_ ? -9.81 * std::sin(ego_pitch_angle) : 0.0;
+  constexpr double gravity_acceleration = -9.81;
+  const double ego_pitch_angle = enable_road_slope_simulation_ ? calculate_ego_pitch() : 0.0;
+  const double acc_by_slope = gravity_acceleration * std::sin(ego_pitch_angle);
 
   // update vehicle dynamics
   {
