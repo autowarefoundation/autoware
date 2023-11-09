@@ -1251,7 +1251,7 @@ calcLongitudinalOffsetPose<std::vector<autoware_auto_planning_msgs::msg::Traject
  * @param offset length of offset from source point
  * @param set_orientation_from_position_direction set orientation by spherical interpolation if
  * false
- * @return offset pase
+ * @return offset pose
  */
 template <class T>
 boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
