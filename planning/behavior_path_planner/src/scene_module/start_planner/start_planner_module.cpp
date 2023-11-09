@@ -172,7 +172,7 @@ bool StartPlannerModule::isExecutionRequested() const
 
 bool StartPlannerModule::isModuleRunning() const
 {
-  return current_state_ == ModuleStatus::RUNNING;
+  return getCurrentStatus() == ModuleStatus::RUNNING;
 }
 
 bool StartPlannerModule::isCurrentPoseOnMiddleOfTheRoad() const
