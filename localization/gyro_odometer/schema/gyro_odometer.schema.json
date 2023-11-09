@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for gyro odometer",
+  "type": "object",
+  "definitions": {
+    "gyro_odometer": {
+      "type": "object",
+      "properties": {
+        "output_frame": {
+          "type": "string",
+          "description": "output's frame id",
+          "default": "base_link"
+        },
+        "message_timeout_sec": {
+          "type": "number",
+          "description": "delay tolerance time for message",
+          "default": 0.2
+        }
+      },
+      "required": ["output_frame", "message_timeout_sec"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/gyro_odometer"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

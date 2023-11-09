@@ -21,10 +21,7 @@
 
 ## Parameters
 
-| Parameter             | Type   | Description                      |
-| --------------------- | ------ | -------------------------------- |
-| `output_frame`        | String | output's frame id                |
-| `message_timeout_sec` | Double | delay tolerance time for message |
+{{ json_to_markdown("localization/gyro_odometer/schema/gyro_odometer.schema.json") }}
 
 ## Assumptions / Known limits
 
