@@ -20,6 +20,7 @@
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 #include "tier4_autoware_utils/ros/logger_level_configure.hpp"
+#include "tier4_autoware_utils/system/stop_watch.hpp"
 #include "trajectory_follower_base/lateral_controller_base.hpp"
 #include "trajectory_follower_base/longitudinal_controller_base.hpp"
 #include "trajectory_follower_node/visibility_control.hpp"
@@ -38,6 +39,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
 #include <memory>
 #include <string>
@@ -52,6 +54,8 @@ namespace trajectory_follower_node
 {
 
 using autoware_adapi_v1_msgs::msg::OperationModeState;
+using tier4_autoware_utils::StopWatch;
+using tier4_debug_msgs::msg::Float64Stamped;
 
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
@@ -78,6 +82,8 @@ private:
   rclcpp::Subscription<OperationModeState>::SharedPtr sub_operation_mode_;
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
     control_cmd_pub_;
+  rclcpp::Publisher<Float64Stamped>::SharedPtr pub_processing_time_lat_ms_;
+  rclcpp::Publisher<Float64Stamped>::SharedPtr pub_processing_time_lon_ms_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_marker_pub_;
 
   autoware_auto_planning_msgs::msg::Trajectory::SharedPtr current_trajectory_ptr_;
@@ -114,6 +120,10 @@ private:
     const trajectory_follower::LateralOutput & lat_out) const;
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+
+  void publishProcessingTime(
+    const double t_ms, const rclcpp::Publisher<Float64Stamped>::SharedPtr pub);
+  StopWatch<std::chrono::milliseconds> stop_watch_;
 };
 }  // namespace trajectory_follower_node
 }  // namespace autoware::motion::control

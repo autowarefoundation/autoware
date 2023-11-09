@@ -75,6 +75,10 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ptr_ = msg; });
   control_cmd_pub_ = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
     "~/output/control_cmd", rclcpp::QoS{1}.transient_local());
+  pub_processing_time_lat_ms_ =
+    create_publisher<Float64Stamped>("~/lateral/debug/processing_time_ms", 1);
+  pub_processing_time_lon_ms_ =
+    create_publisher<Float64Stamped>("~/longitudinal/debug/processing_time_ms", 1);
   debug_marker_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/output/debug_marker", rclcpp::QoS{1});
 
@@ -205,8 +209,13 @@ void Controller::callbackTimerControl()
   }
 
   // 3. run controllers
+  stop_watch_.tic("lateral");
   const auto lat_out = lateral_controller_->run(*input_data);
+  publishProcessingTime(stop_watch_.toc("lateral"), pub_processing_time_lat_ms_);
+
+  stop_watch_.tic("longitudinal");
   const auto lon_out = longitudinal_controller_->run(*input_data);
+  publishProcessingTime(stop_watch_.toc("longitudinal"), pub_processing_time_lon_ms_);
 
   // 4. sync with each other controllers
   longitudinal_controller_->sync(lat_out.sync_data);
@@ -252,6 +261,15 @@ void Controller::publishDebugMarker(
   }
 
   debug_marker_pub_->publish(debug_marker_array);
+}
+
+void Controller::publishProcessingTime(
+  const double t_ms, const rclcpp::Publisher<Float64Stamped>::SharedPtr pub)
+{
+  Float64Stamped msg{};
+  msg.stamp = this->now();
+  msg.data = t_ms;
+  pub->publish(msg);
 }
 
 }  // namespace autoware::motion::control::trajectory_follower_node
