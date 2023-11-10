@@ -146,6 +146,10 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     EXECUTABLE pointpainting_fusion_node
   )
 
+  install(
+    TARGETS pointpainting_cuda_lib
+    DESTINATION lib
+  )
 else()
   message("Skipping build of some nodes due to missing dependencies")
 endif()
