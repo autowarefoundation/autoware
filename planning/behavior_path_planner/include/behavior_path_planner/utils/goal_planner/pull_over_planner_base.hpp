@@ -46,6 +46,7 @@ struct PullOverPath
 {
   PullOverPlannerType type{PullOverPlannerType::NONE};
   std::vector<PathWithLaneId> partial_paths{};
+  size_t path_idx{0};
   // accelerate with constant acceleration to the target velocity
   std::vector<std::pair<double, double>> pairs_terminal_velocity_and_accel{};
   Pose start_pose{};
@@ -84,6 +85,27 @@ struct PullOverPath
 
     return parking_path;
   }
+
+  PathWithLaneId getCurrentPath() const
+  {
+    if (partial_paths.empty()) {
+      return PathWithLaneId{};
+    } else if (partial_paths.size() <= path_idx) {
+      return partial_paths.back();
+    }
+    return partial_paths.at(path_idx);
+  }
+
+  bool incrementPathIndex()
+  {
+    if (partial_paths.size() - 1 <= path_idx) {
+      return false;
+    }
+    path_idx += 1;
+    return true;
+  }
+
+  bool isValidPath() const { return type != PullOverPlannerType::NONE; }
 };
 
 class PullOverPlannerBase

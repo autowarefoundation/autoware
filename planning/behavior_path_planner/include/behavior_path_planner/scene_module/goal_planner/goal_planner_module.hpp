@@ -68,38 +68,30 @@ using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using tier4_autoware_utils::Polygon2d;
 
-enum class PathType {
-  NONE = 0,
-  SHIFT,
-  ARC_FORWARD,
-  ARC_BACKWARD,
-  FREESPACE,
-};
-
-#define DEFINE_SETTER_GETTER(TYPE, NAME)                      \
-public:                                                       \
-  void set_##NAME(const TYPE & value)                         \
-  {                                                           \
-    const std::lock_guard<std::recursive_mutex> lock(mutex_); \
-    NAME##_ = value;                                          \
-  }                                                           \
-                                                              \
-  TYPE get_##NAME() const                                     \
-  {                                                           \
-    const std::lock_guard<std::recursive_mutex> lock(mutex_); \
-    return NAME##_;                                           \
+#define DEFINE_SETTER(TYPE, NAME)     \
+public:                               \
+  void set_##NAME(const TYPE & value) \
+  {                                   \
+    NAME##_ = value;                  \
   }
+
+#define DEFINE_GETTER(TYPE, NAME) \
+public:                           \
+  TYPE get_##NAME() const         \
+  {                               \
+    return NAME##_;               \
+  }
+
+#define DEFINE_SETTER_GETTER(TYPE, NAME) \
+  DEFINE_SETTER(TYPE, NAME)              \
+  DEFINE_GETTER(TYPE, NAME)
 
 class PullOverStatus
 {
 public:
-  explicit PullOverStatus(std::recursive_mutex & mutex) : mutex_(mutex) {}
-
   // Reset all data members to their initial states
   void reset()
   {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    pull_over_path_ = nullptr;
     lane_parking_pull_over_path_ = nullptr;
     current_path_idx_ = 0;
     require_increment_ = true;
@@ -109,16 +101,12 @@ public:
     pull_over_lanes_.clear();
     lanes_.clear();
     has_decided_path_ = false;
-    is_safe_static_objects_ = false;
     is_safe_dynamic_objects_ = false;
-    prev_is_safe_ = false;
+    prev_found_path_ = false;
     prev_is_safe_dynamic_objects_ = false;
     has_decided_velocity_ = false;
-    has_requested_approval_ = false;
-    is_ready_ = false;
   }
 
-  DEFINE_SETTER_GETTER(std::shared_ptr<PullOverPath>, pull_over_path)
   DEFINE_SETTER_GETTER(std::shared_ptr<PullOverPath>, lane_parking_pull_over_path)
   DEFINE_SETTER_GETTER(size_t, current_path_idx)
   DEFINE_SETTER_GETTER(bool, require_increment)
@@ -128,24 +116,14 @@ public:
   DEFINE_SETTER_GETTER(lanelet::ConstLanelets, pull_over_lanes)
   DEFINE_SETTER_GETTER(std::vector<DrivableLanes>, lanes)
   DEFINE_SETTER_GETTER(bool, has_decided_path)
-  DEFINE_SETTER_GETTER(bool, is_safe_static_objects)
   DEFINE_SETTER_GETTER(bool, is_safe_dynamic_objects)
-  DEFINE_SETTER_GETTER(bool, prev_is_safe)
+  DEFINE_SETTER_GETTER(bool, prev_found_path)
   DEFINE_SETTER_GETTER(bool, prev_is_safe_dynamic_objects)
   DEFINE_SETTER_GETTER(bool, has_decided_velocity)
-  DEFINE_SETTER_GETTER(bool, has_requested_approval)
-  DEFINE_SETTER_GETTER(bool, is_ready)
-  DEFINE_SETTER_GETTER(std::shared_ptr<rclcpp::Time>, last_increment_time)
-  DEFINE_SETTER_GETTER(std::shared_ptr<rclcpp::Time>, last_path_update_time)
-  DEFINE_SETTER_GETTER(std::optional<GoalCandidate>, modified_goal_pose)
   DEFINE_SETTER_GETTER(Pose, refined_goal_pose)
-  DEFINE_SETTER_GETTER(GoalCandidates, goal_candidates)
   DEFINE_SETTER_GETTER(Pose, closest_goal_candidate_pose)
-  DEFINE_SETTER_GETTER(std::vector<PullOverPath>, pull_over_path_candidates)
-  DEFINE_SETTER_GETTER(std::optional<Pose>, closest_start_pose)
 
 private:
-  std::shared_ptr<PullOverPath> pull_over_path_{nullptr};
   std::shared_ptr<PullOverPath> lane_parking_pull_over_path_{nullptr};
   size_t current_path_idx_{0};
   bool require_increment_{true};
@@ -155,32 +133,134 @@ private:
   lanelet::ConstLanelets pull_over_lanes_{};
   std::vector<DrivableLanes> lanes_{};
   bool has_decided_path_{false};
-  bool is_safe_static_objects_{false};
   bool is_safe_dynamic_objects_{false};
-  bool prev_is_safe_{false};
+  bool prev_found_path_{false};
   bool prev_is_safe_dynamic_objects_{false};
   bool has_decided_velocity_{false};
-  bool has_requested_approval_{false};
-  bool is_ready_{false};
 
-  // save last time and pose
-  std::shared_ptr<rclcpp::Time> last_increment_time_;
-  std::shared_ptr<rclcpp::Time> last_path_update_time_;
-
-  // goal modification
-  std::optional<GoalCandidate> modified_goal_pose_;
   Pose refined_goal_pose_{};
-  GoalCandidates goal_candidates_{};
   Pose closest_goal_candidate_pose_{};
-
-  //  pull over path
-  std::vector<PullOverPath> pull_over_path_candidates_;
-  std::optional<Pose> closest_start_pose_;
-
-  std::recursive_mutex & mutex_;
 };
 
+#undef DEFINE_SETTER
+#undef DEFINE_GETTER
 #undef DEFINE_SETTER_GETTER
+
+#define DEFINE_SETTER_WITH_MUTEX(TYPE, NAME)                  \
+public:                                                       \
+  void set_##NAME(const TYPE & value)                         \
+  {                                                           \
+    const std::lock_guard<std::recursive_mutex> lock(mutex_); \
+    NAME##_ = value;                                          \
+  }
+
+#define DEFINE_GETTER_WITH_MUTEX(TYPE, NAME)                  \
+public:                                                       \
+  TYPE get_##NAME() const                                     \
+  {                                                           \
+    const std::lock_guard<std::recursive_mutex> lock(mutex_); \
+    return NAME##_;                                           \
+  }
+
+#define DEFINE_SETTER_GETTER_WITH_MUTEX(TYPE, NAME) \
+  DEFINE_SETTER_WITH_MUTEX(TYPE, NAME)              \
+  DEFINE_GETTER_WITH_MUTEX(TYPE, NAME)
+
+class ThreadSafeData
+{
+public:
+  ThreadSafeData(std::recursive_mutex & mutex, rclcpp::Clock::SharedPtr clock)
+  : mutex_(mutex), clock_(clock)
+  {
+  }
+
+  bool incrementPathIndex()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (pull_over_path_->incrementPathIndex()) {
+      last_path_idx_increment_time_ = clock_->now();
+      return true;
+    }
+    return false;
+  }
+
+  void set_pull_over_path(const PullOverPath & value)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    pull_over_path_ = std::make_shared<PullOverPath>(value);
+    last_path_update_time_ = clock_->now();
+  }
+
+  void set_pull_over_path(const std::shared_ptr<PullOverPath> & value)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    pull_over_path_ = value;
+    last_path_update_time_ = clock_->now();
+  }
+
+  void clearPullOverPath()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    pull_over_path_ = nullptr;
+  }
+
+  bool foundPullOverPath() const
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (!pull_over_path_) {
+      return false;
+    }
+
+    return pull_over_path_->isValidPath();
+  }
+
+  PullOverPlannerType getPullOverPlannerType() const
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (!pull_over_path_) {
+      return PullOverPlannerType::NONE;
+    }
+
+    return pull_over_path_->type;
+  };
+
+  void reset()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    pull_over_path_ = nullptr;
+    pull_over_path_candidates_.clear();
+    goal_candidates_.clear();
+    modified_goal_pose_ = std::nullopt;
+    last_path_update_time_ = std::nullopt;
+    last_path_idx_increment_time_ = std::nullopt;
+    closest_start_pose_ = std::nullopt;
+  }
+
+  DEFINE_GETTER_WITH_MUTEX(std::shared_ptr<PullOverPath>, pull_over_path)
+  DEFINE_GETTER_WITH_MUTEX(std::optional<rclcpp::Time>, last_path_update_time)
+  DEFINE_GETTER_WITH_MUTEX(std::optional<rclcpp::Time>, last_path_idx_increment_time)
+
+  DEFINE_SETTER_GETTER_WITH_MUTEX(std::vector<PullOverPath>, pull_over_path_candidates)
+  DEFINE_SETTER_GETTER_WITH_MUTEX(GoalCandidates, goal_candidates)
+  DEFINE_SETTER_GETTER_WITH_MUTEX(std::optional<GoalCandidate>, modified_goal_pose)
+  DEFINE_SETTER_GETTER_WITH_MUTEX(std::optional<Pose>, closest_start_pose)
+
+private:
+  std::shared_ptr<PullOverPath> pull_over_path_{nullptr};
+  std::vector<PullOverPath> pull_over_path_candidates_;
+  GoalCandidates goal_candidates_{};
+  std::optional<GoalCandidate> modified_goal_pose_;
+  std::optional<rclcpp::Time> last_path_update_time_;
+  std::optional<rclcpp::Time> last_path_idx_increment_time_;
+  std::optional<Pose> closest_start_pose_{};
+
+  std::recursive_mutex & mutex_;
+  rclcpp::Clock::SharedPtr clock_;
+};
+
+#undef DEFINE_SETTER_WITH_MUTEX
+#undef DEFINE_GETTER_WITH_MUTEX
+#undef DEFINE_SETTER_GETTER_WITH_MUTEX
 
 struct FreespacePlannerDebugData
 {
@@ -276,6 +356,7 @@ private:
 
   std::recursive_mutex mutex_;
   PullOverStatus status_;
+  ThreadSafeData thread_safe_data_;
 
   std::unique_ptr<LastApprovalData> last_approval_data_{nullptr};
 
@@ -329,6 +410,7 @@ private:
   bool isStuck();
   bool hasDecidedPath() const;
   void decideVelocity();
+  bool foundPullOverPath() const;
 
   // validation
   bool hasEnoughDistance(const PullOverPath & pull_over_path) const;
@@ -352,8 +434,6 @@ private:
     const GoalCandidates & goal_candidates) const;
 
   // deal with pull over partial paths
-  PathWithLaneId getCurrentPath() const;
-  bool incrementPathIndex();
   void transitionToNextPathIfFinishingCurrentPath();
 
   // lanes and drivable area
