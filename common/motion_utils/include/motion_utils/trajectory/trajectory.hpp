@@ -168,6 +168,7 @@ T removeOverlapPoints(const T & points, const size_t start_idx = 0)
   }
 
   T dst;
+  dst.reserve(points.size());
 
   for (size_t i = 0; i <= start_idx; ++i) {
     dst.push_back(points.at(i));
