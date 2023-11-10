@@ -70,7 +70,7 @@ SingleInferenceLidarCenterPointNode::SingleInferenceLidarCenterPointNode(
     static_cast<std::size_t>(this->declare_parameter<std::int64_t>("encoder_in_feature_size"));
   const auto pcd_path = this->declare_parameter<std::string>("pcd_path");
   const auto detections_path = this->declare_parameter<std::string>("detections_path");
-
+  const auto data_path = this->declare_parameter<std::string>("data_path");
   DensificationParam densification_param(
     densification_world_frame_id, densification_num_past_frames);
 
@@ -88,7 +88,7 @@ SingleInferenceLidarCenterPointNode::SingleInferenceLidarCenterPointNode(
     class_names_.size(), point_feature_size, max_voxel_size, point_cloud_range, voxel_size,
     downsample_factor, encoder_in_feature_size, score_threshold, circle_nms_dist_threshold,
     yaw_norm_threshold);
-  detector_ptr_ = std::make_unique<CenterPointTVM>(densification_param, config);
+  detector_ptr_ = std::make_unique<CenterPointTVM>(densification_param, config, data_path);
 
   detect(pcd_path, detections_path);
   exit(0);

@@ -43,11 +43,10 @@ namespace lidar_centerpoint_tvm
 
 TVMScatterIE::TVMScatterIE(
   tvm_utility::pipeline::InferenceEngineTVMConfig config, const std::string & pkg_name,
-  const std::string & function_name)
+  const std::string & data_path, const std::string & function_name)
 : config_(config)
 {
-  std::string network_prefix =
-    ament_index_cpp::get_package_share_directory(pkg_name) + "/models/" + config.network_name + "/";
+  std::string network_prefix = data_path + "/" + pkg_name + "/models/" + config.network_name + "/";
   std::string network_module_path = network_prefix + config.network_module_path;
 
   std::ifstream module(network_module_path);
@@ -159,14 +158,15 @@ std::vector<Box3D> BackboneNeckHeadPostProcessor::schedule(const TVMArrayContain
 }
 
 CenterPointTVM::CenterPointTVM(
-  const DensificationParam & densification_param, const CenterPointConfig & config)
+  const DensificationParam & densification_param, const CenterPointConfig & config,
+  const std::string & data_path)
 : config_ve(config_en),
   config_bnh(config_bk),
   VE_PreP(std::make_shared<VE_PrePT>(config_en, config)),
-  VE_IE(std::make_shared<IET>(config_en, "lidar_centerpoint_tvm")),
-  BNH_IE(std::make_shared<IET>(config_bk, "lidar_centerpoint_tvm")),
+  VE_IE(std::make_shared<IET>(config_en, "lidar_centerpoint_tvm", data_path)),
+  BNH_IE(std::make_shared<IET>(config_bk, "lidar_centerpoint_tvm", data_path)),
   BNH_PostP(std::make_shared<BNH_PostPT>(config_bk, config)),
-  scatter_ie(std::make_shared<TSE>(config_scatter, "lidar_centerpoint_tvm", "scatter")),
+  scatter_ie(std::make_shared<TSE>(config_scatter, "lidar_centerpoint_tvm", data_path, "scatter")),
   TSP_pipeline(std::make_shared<TSP>(VE_PreP, VE_IE, scatter_ie, BNH_IE, BNH_PostP)),
   config_(config)
 {

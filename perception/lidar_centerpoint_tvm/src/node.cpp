@@ -65,6 +65,7 @@ LidarCenterPointTVMNode::LidarCenterPointTVMNode(const rclcpp::NodeOptions & nod
     static_cast<std::size_t>(this->declare_parameter<std::int64_t>("downsample_factor"));
   const std::size_t encoder_in_feature_size =
     static_cast<std::size_t>(this->declare_parameter<std::int64_t>("encoder_in_feature_size"));
+  const auto data_path = this->declare_parameter<std::string>("data_path");
 
   DensificationParam densification_param(
     densification_world_frame_id, densification_num_past_frames);
@@ -83,7 +84,7 @@ LidarCenterPointTVMNode::LidarCenterPointTVMNode(const rclcpp::NodeOptions & nod
     class_names_.size(), point_feature_size, max_voxel_size, point_cloud_range, voxel_size,
     downsample_factor, encoder_in_feature_size, score_threshold, circle_nms_dist_threshold,
     yaw_norm_threshold);
-  detector_ptr_ = std::make_unique<CenterPointTVM>(densification_param, config);
+  detector_ptr_ = std::make_unique<CenterPointTVM>(densification_param, config, data_path);
 
   pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),

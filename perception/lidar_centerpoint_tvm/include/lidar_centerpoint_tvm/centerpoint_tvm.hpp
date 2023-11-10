@@ -60,7 +60,7 @@ class LIDAR_CENTERPOINT_TVM_LOCAL TVMScatterIE : public tvm_utility::pipeline::I
 public:
   explicit TVMScatterIE(
     tvm_utility::pipeline::InferenceEngineTVMConfig config, const std::string & pkg_name,
-    const std::string & function_name);
+    const std::string & data_path, const std::string & function_name);
   TVMArrayContainerVector schedule(const TVMArrayContainerVector & input);
   void set_coords(TVMArrayContainer coords) { coords_ = coords; }
 
@@ -132,7 +132,8 @@ public:
   /// \param[in] dense_param The densification parameter used to constructing vg_ptr.
   /// \param[in] config The CenterPoint model configuration.
   explicit CenterPointTVM(
-    const DensificationParam & densification_param, const CenterPointConfig & config);
+    const DensificationParam & densification_param, const CenterPointConfig & config,
+    const std::string & data_path);
 
   ~CenterPointTVM();
 

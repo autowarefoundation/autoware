@@ -12,6 +12,7 @@
   <arg name="has_twist" default="false"/>
   <arg name="pcd_path" default="test.pcd"/>
   <arg name="detections_path" default="test.ply"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data"/>
 
   <node pkg="lidar_centerpoint_tvm" exec="single_inference_lidar_centerpoint_tvm_node" name="lidar_centerpoint_tvm" output="screen">
     <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
@@ -22,6 +23,7 @@
 
     <param name="pcd_path" value="$(var pcd_path)"/>
     <param name="detections_path" value="$(var detections_path)"/>
+    <param name="data_path" value="$(var data_path)"/>
   </node>
 
   <node pkg="lidar_centerpoint_tvm" exec="lidar_centerpoint_visualizer.py" name="lidar_centerpoint_visualizer" output="screen">
