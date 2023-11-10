@@ -127,8 +127,8 @@
           <remap from="~/input/objects" to="/perception/object_recognition/objects"/>
           <remap from="~/output/trajectory" to="$(var interface_output_topic)"/>
           <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons"/>
-          <remap from="~/output/max_velocity" to="/planning/scenario_planning/max_velocity_candidates"/>
-          <remap from="~/output/velocity_limit_clear_command" to="/planning/scenario_planning/clear_velocity_limit"/>
+          <remap from="~/output/velocity_limit" to="/planning/scenario_planning/max_velocity_candidates"/>
+          <remap from="~/output/clear_velocity_limit" to="/planning/scenario_planning/clear_velocity_limit"/>
           <!-- params -->
           <param from="$(var common_param_path)"/>
           <param from="$(var vehicle_param_file)"/>
