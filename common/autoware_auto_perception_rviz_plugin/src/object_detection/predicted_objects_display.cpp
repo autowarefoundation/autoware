@@ -25,27 +25,44 @@ namespace object_detection
 {
 PredictedObjectsDisplay::PredictedObjectsDisplay() : ObjectPolygonDisplayBase("tracks")
 {
-  std::thread worker(&PredictedObjectsDisplay::workerThread, this);
-  worker.detach();
+  max_num_threads = 1;  // hard code the number of threads to be created
+
+  for (int ii = 0; ii < max_num_threads; ++ii) {
+    threads.emplace_back(std::thread(&PredictedObjectsDisplay::workerThread, this));
+  }
 }
 
 void PredictedObjectsDisplay::workerThread()
-{
+{  // A standard working thread that waiting for jobs
   while (true) {
-    std::unique_lock<std::mutex> lock(mutex);
-    condition.wait(lock, [this] { return this->msg; });
-
-    auto tmp_msg = this->msg;
-    this->msg.reset();
-
-    lock.unlock();
-
-    auto tmp_markers = createMarkers(tmp_msg);
-    lock.lock();
-    markers = tmp_markers;
-
-    consumed = true;
+    std::function<void()> job;
+    {
+      std::unique_lock<std::mutex> lock(queue_mutex);
+      condition.wait(lock, [this] { return !jobs.empty() || should_terminate; });
+      if (should_terminate) {
+        return;
+      }
+      job = jobs.front();
+      jobs.pop();
+    }
+    job();
   }
+}
+
+void PredictedObjectsDisplay::messageProcessorThreadJob()
+{
+  // Receiving
+  std::unique_lock<std::mutex> lock(mutex);
+  auto tmp_msg = this->msg;
+  this->msg.reset();
+  lock.unlock();
+
+  auto tmp_markers = createMarkers(tmp_msg);
+
+  lock.lock();
+  markers = tmp_markers;
+
+  consumed = true;
 }
 
 std::vector<visualization_msgs::msg::Marker::SharedPtr> PredictedObjectsDisplay::createMarkers(
@@ -188,7 +205,7 @@ void PredictedObjectsDisplay::processMessage(PredictedObjects::ConstSharedPtr ms
   std::unique_lock<std::mutex> lock(mutex);
 
   this->msg = msg;
-  condition.notify_one();
+  queueJob(std::bind(&PredictedObjectsDisplay::messageProcessorThreadJob, this));
 }
 
 void PredictedObjectsDisplay::update(float wall_dt, float ros_dt)
