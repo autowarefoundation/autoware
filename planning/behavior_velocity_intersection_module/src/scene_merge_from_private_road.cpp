@@ -96,7 +96,9 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(PathWithLaneId * path, StopR
   }
   auto & intersection_lanelets = intersection_lanelets_.value();
   const auto local_footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
-  intersection_lanelets.update(false, interpolated_path_info, local_footprint);
+  intersection_lanelets.update(
+    false, interpolated_path_info, local_footprint,
+    planner_data_->vehicle_info_.max_longitudinal_offset_m);
   const auto & first_conflicting_area = intersection_lanelets.first_conflicting_area();
   if (!first_conflicting_area) {
     return false;

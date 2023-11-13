@@ -193,6 +193,7 @@ void IntersectionModuleManager::launchNewModules(
   const auto lanelets =
     planning_utils::getLaneletsOnPath(path, lanelet_map, planner_data_->current_odometry->pose);
   // run occlusion detection only in the first intersection
+  // TODO(Mamoru Sobue): remove `enable_occlusion_detection` variable
   const bool enable_occlusion_detection = intersection_param_.occlusion.enable;
   for (size_t i = 0; i < lanelets.size(); i++) {
     const auto ll = lanelets.at(i);

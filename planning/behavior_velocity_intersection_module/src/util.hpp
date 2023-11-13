@@ -69,7 +69,8 @@ std::optional<size_t> generateStuckStopLine(
 
 std::optional<IntersectionStopLines> generateIntersectionStopLines(
   const lanelet::CompoundPolygon3d & first_conflicting_area,
-  const lanelet::CompoundPolygon3d & first_detection_area,
+  const lanelet::CompoundPolygon3d & first_attention_area,
+  const lanelet::ConstLineString2d & first_attention_lane_centerline,
   const std::shared_ptr<const PlannerData> & planner_data,
   const InterpolatedPathInfo & interpolated_path_info, const bool use_stuck_stopline,
   const double stop_line_margin, const double max_accel, const double max_jerk,

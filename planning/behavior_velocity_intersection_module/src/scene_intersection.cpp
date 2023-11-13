@@ -936,6 +936,7 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
   const auto & assigned_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id_);
   const std::string turn_direction = assigned_lanelet.attributeOr("turn_direction", "else");
+  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
   // spline interpolation
   const auto interpolated_path_info_opt = util::generateInterpolatedPath(
@@ -969,15 +970,17 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   const bool is_prioritized =
     traffic_prioritized_level == util::TrafficPrioritizedLevel::FULLY_PRIORITIZED;
   const auto footprint = planner_data_->vehicle_info_.createFootprint(0.0, 0.0);
-  intersection_lanelets.update(is_prioritized, interpolated_path_info, footprint);
+  intersection_lanelets.update(is_prioritized, interpolated_path_info, footprint, baselink2front);
 
   // this is abnormal
   const auto & conflicting_lanelets = intersection_lanelets.conflicting();
   const auto & first_conflicting_area_opt = intersection_lanelets.first_conflicting_area();
-  if (conflicting_lanelets.empty() || !first_conflicting_area_opt) {
+  const auto & first_conflicting_lane_opt = intersection_lanelets.first_conflicting_lane();
+  if (conflicting_lanelets.empty() || !first_conflicting_area_opt || !first_conflicting_lane_opt) {
     return IntersectionModule::Indecisive{"conflicting area is empty"};
   }
-  const auto first_conflicting_area = first_conflicting_area_opt.value();
+  const auto & first_conflicting_lane = first_conflicting_lane_opt.value();
+  const auto & first_conflicting_area = first_conflicting_area_opt.value();
 
   // generate all stop line candidates
   // see the doc for struct IntersectionStopLines
@@ -986,22 +989,24 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   /// conflicting lanes
   const auto & dummy_first_attention_area =
     first_attention_area_opt ? first_attention_area_opt.value() : first_conflicting_area;
-  const double peeking_offset =
-    has_traffic_light_ ? planner_param_.occlusion.peeking_offset
-                       : planner_param_.occlusion.absence_traffic_light.maximum_peeking_distance;
+  const auto & dummy_first_attention_lane_centerline =
+    intersection_lanelets.first_attention_lane()
+      ? intersection_lanelets.first_attention_lane().value().centerline2d()
+      : first_conflicting_lane.centerline2d();
   const auto intersection_stop_lines_opt = util::generateIntersectionStopLines(
-    first_conflicting_area, dummy_first_attention_area, planner_data_, interpolated_path_info,
-    planner_param_.stuck_vehicle.use_stuck_stopline, planner_param_.common.stop_line_margin,
-    planner_param_.common.max_accel, planner_param_.common.max_jerk,
-    planner_param_.common.delay_response_time, peeking_offset, path);
+    first_conflicting_area, dummy_first_attention_area, dummy_first_attention_lane_centerline,
+    planner_data_, interpolated_path_info, planner_param_.stuck_vehicle.use_stuck_stopline,
+    planner_param_.common.stop_line_margin, planner_param_.common.max_accel,
+    planner_param_.common.max_jerk, planner_param_.common.delay_response_time,
+    planner_param_.occlusion.peeking_offset, path);
   if (!intersection_stop_lines_opt) {
     return IntersectionModule::Indecisive{"failed to generate intersection_stop_lines"};
   }
   const auto & intersection_stop_lines = intersection_stop_lines_opt.value();
   const auto
     [closest_idx, stuck_stop_line_idx_opt, default_stop_line_idx_opt,
-     first_attention_stop_line_idx_opt, occlusion_peeking_stop_line_idx_opt, pass_judge_line_idx] =
-      intersection_stop_lines;
+     first_attention_stop_line_idx_opt, occlusion_peeking_stop_line_idx_opt,
+     default_pass_judge_line_idx, occlusion_wo_tl_pass_judge_line_idx] = intersection_stop_lines;
 
   // see the doc for struct PathLanelets
   const auto & conflicting_area = intersection_lanelets.conflicting_area();
@@ -1083,16 +1088,91 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
   if (!default_stop_line_idx_opt) {
     return IntersectionModule::Indecisive{"default stop line is null"};
   }
+  // occlusion stop line is generated from the intersection of ego footprint along the path with the
+  // attention area, so if this is null, eog has already passed the intersection
+  if (!first_attention_stop_line_idx_opt || !occlusion_peeking_stop_line_idx_opt) {
+    return IntersectionModule::Indecisive{"occlusion stop line is null"};
+  }
   const auto default_stop_line_idx = default_stop_line_idx_opt.value();
+  const bool is_over_default_stop_line =
+    util::isOverTargetIndex(*path, closest_idx, current_pose, default_stop_line_idx);
+  const auto collision_stop_line_idx =
+    is_over_default_stop_line ? closest_idx : default_stop_line_idx;
+  const auto first_attention_stop_line_idx = first_attention_stop_line_idx_opt.value();
+  const auto occlusion_stop_line_idx = occlusion_peeking_stop_line_idx_opt.value();
+
+  const auto & adjacent_lanelets = intersection_lanelets.adjacent();
+  const auto & occlusion_attention_lanelets = intersection_lanelets.occlusion_attention();
+  const auto & occlusion_attention_area = intersection_lanelets.occlusion_attention_area();
+  debug_data_.attention_area = intersection_lanelets.attention_area();
+  debug_data_.occlusion_attention_area = occlusion_attention_area;
+  debug_data_.adjacent_area = intersection_lanelets.adjacent_area();
+
+  // check occlusion on detection lane
+  if (!occlusion_attention_divisions_) {
+    occlusion_attention_divisions_ = util::generateDetectionLaneDivisions(
+      occlusion_attention_lanelets, routing_graph_ptr,
+      planner_data_->occupancy_grid->info.resolution,
+      planner_param_.occlusion.attention_lane_crop_curvature_threshold,
+      planner_param_.occlusion.attention_lane_curvature_calculation_ds);
+  }
+  const auto & occlusion_attention_divisions = occlusion_attention_divisions_.value();
+
+  // get intersection area
+  const auto intersection_area = util::getIntersectionArea(assigned_lanelet, lanelet_map_ptr);
+  // filter objects
+  auto target_objects = generateTargetObjects(intersection_lanelets, intersection_area);
+
+  const double occlusion_dist_thr = std::fabs(
+    std::pow(planner_param_.occlusion.max_vehicle_velocity_for_rss, 2) /
+    (2 * planner_param_.occlusion.min_vehicle_brake_for_rss));
+  auto occlusion_status =
+    (enable_occlusion_detection_ && !occlusion_attention_lanelets.empty() && !is_prioritized)
+      ? getOcclusionStatus(
+          *planner_data_->occupancy_grid, occlusion_attention_area, adjacent_lanelets,
+          first_attention_area, interpolated_path_info, occlusion_attention_divisions,
+          target_objects, current_pose, occlusion_dist_thr)
+      : OcclusionType::NOT_OCCLUDED;
+  occlusion_stop_state_machine_.setStateWithMarginTime(
+    occlusion_status == OcclusionType::NOT_OCCLUDED ? StateMachine::State::GO : StateMachine::STOP,
+    logger_.get_child("occlusion_stop"), *clock_);
+  const bool is_occlusion_cleared_with_margin =
+    (occlusion_stop_state_machine_.getState() == StateMachine::State::GO);
+  // distinguish if ego detected occlusion or RTC detects occlusion
+  const bool ext_occlusion_requested = (is_occlusion_cleared_with_margin && !occlusion_activated_);
+  if (ext_occlusion_requested) {
+    occlusion_status = OcclusionType::RTC_OCCLUDED;
+  }
+  const bool is_occlusion_state = (!is_occlusion_cleared_with_margin || ext_occlusion_requested);
+  if (is_occlusion_state && occlusion_status == OcclusionType::NOT_OCCLUDED) {
+    occlusion_status = prev_occlusion_status_;
+  } else {
+    prev_occlusion_status_ = occlusion_status;
+  }
 
   // TODO(Mamoru Sobue): this part needs more formal handling
-  const double baselink2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+  const size_t pass_judge_line_idx = [=]() {
+    if (enable_occlusion_detection_) {
+      // if occlusion detection is enabled, pass_judge position is beyond the boundary of first
+      // attention area
+      if (has_traffic_light_) {
+        return occlusion_stop_line_idx;
+      } else if (is_occlusion_state) {
+        // if there is no traffic light and occlusion is detected, pass_judge position is beyond
+        // the boundary of first attention area
+        return occlusion_wo_tl_pass_judge_line_idx;
+      } else {
+        // if there is no traffic light and occlusion is not detected, pass_judge position is
+        // default
+        return default_pass_judge_line_idx;
+      }
+    }
+    return default_pass_judge_line_idx;
+  }();
   debug_data_.pass_judge_wall_pose =
     planning_utils::getAheadPose(pass_judge_line_idx, baselink2front, *path);
   const bool is_over_pass_judge_line =
     util::isOverTargetIndex(*path, closest_idx, current_pose, pass_judge_line_idx);
-  const bool is_over_default_stop_line =
-    util::isOverTargetIndex(*path, closest_idx, current_pose, default_stop_line_idx);
   const double vel_norm = std::hypot(
     planner_data_->current_velocity->twist.linear.x,
     planner_data_->current_velocity->twist.linear.y);
@@ -1112,28 +1192,6 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
     is_permanent_go_ = true;
     return IntersectionModule::Indecisive{"over the pass judge line. no plan needed"};
   }
-
-  // occlusion stop line is generated from the intersection of ego footprint along the path with the
-  // attention area, so if this is null, eog has already passed the intersection
-  if (!first_attention_stop_line_idx_opt || !occlusion_peeking_stop_line_idx_opt) {
-    return IntersectionModule::Indecisive{"occlusion stop line is null"};
-  }
-  const auto collision_stop_line_idx =
-    is_over_default_stop_line ? closest_idx : default_stop_line_idx;
-  const auto first_attention_stop_line_idx = first_attention_stop_line_idx_opt.value();
-  const auto occlusion_stop_line_idx = occlusion_peeking_stop_line_idx_opt.value();
-
-  const auto & adjacent_lanelets = intersection_lanelets.adjacent();
-  const auto & occlusion_attention_lanelets = intersection_lanelets.occlusion_attention();
-  const auto & occlusion_attention_area = intersection_lanelets.occlusion_attention_area();
-  debug_data_.attention_area = intersection_lanelets.attention_area();
-  debug_data_.occlusion_attention_area = occlusion_attention_area;
-  debug_data_.adjacent_area = intersection_lanelets.adjacent_area();
-
-  // get intersection area
-  const auto intersection_area = util::getIntersectionArea(assigned_lanelet, lanelet_map_ptr);
-
-  auto target_objects = generateTargetObjects(intersection_lanelets, intersection_area);
 
   // If there are any vehicles on the attention area when ego entered the intersection on green
   // light, do pseudo collision detection because the vehicles are very slow and no collisions may
@@ -1196,43 +1254,6 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
       has_collision_with_margin, closest_idx, collision_stop_line_idx, occlusion_stop_line_idx};
   }
 
-  // check occlusion on detection lane
-  if (!occlusion_attention_divisions_) {
-    occlusion_attention_divisions_ = util::generateDetectionLaneDivisions(
-      occlusion_attention_lanelets, routing_graph_ptr,
-      planner_data_->occupancy_grid->info.resolution,
-      planner_param_.occlusion.attention_lane_crop_curvature_threshold,
-      planner_param_.occlusion.attention_lane_curvature_calculation_ds);
-  }
-  const auto & occlusion_attention_divisions = occlusion_attention_divisions_.value();
-
-  const double occlusion_dist_thr = std::fabs(
-    std::pow(planner_param_.occlusion.max_vehicle_velocity_for_rss, 2) /
-    (2 * planner_param_.occlusion.min_vehicle_brake_for_rss));
-  auto occlusion_status =
-    (enable_occlusion_detection_ && !occlusion_attention_lanelets.empty() && !is_prioritized)
-      ? getOcclusionStatus(
-          *planner_data_->occupancy_grid, occlusion_attention_area, adjacent_lanelets,
-          first_attention_area, interpolated_path_info, occlusion_attention_divisions,
-          target_objects, current_pose, occlusion_dist_thr)
-      : OcclusionType::NOT_OCCLUDED;
-  occlusion_stop_state_machine_.setStateWithMarginTime(
-    occlusion_status == OcclusionType::NOT_OCCLUDED ? StateMachine::State::GO : StateMachine::STOP,
-    logger_.get_child("occlusion_stop"), *clock_);
-  const bool is_occlusion_cleared_with_margin =
-    (occlusion_stop_state_machine_.getState() == StateMachine::State::GO);
-  // distinguish if ego detected occlusion or RTC detects occlusion
-  const bool ext_occlusion_requested = (is_occlusion_cleared_with_margin && !occlusion_activated_);
-  if (ext_occlusion_requested) {
-    occlusion_status = OcclusionType::RTC_OCCLUDED;
-  }
-  const bool is_occlusion_state = (!is_occlusion_cleared_with_margin || ext_occlusion_requested);
-  if (is_occlusion_state && occlusion_status == OcclusionType::NOT_OCCLUDED) {
-    occlusion_status = prev_occlusion_status_;
-  } else {
-    prev_occlusion_status_ = occlusion_status;
-  }
-
   // Safe
   if (!is_occlusion_state && !has_collision_with_margin) {
     return IntersectionModule::Safe{closest_idx, collision_stop_line_idx, occlusion_stop_line_idx};
@@ -1257,14 +1278,14 @@ IntersectionModule::DecisionResult IntersectionModule::modifyPathVelocityDetail(
             temporal_stop_before_attention_state_machine_)
         : false;
     if (!has_traffic_light_) {
-      if (fromEgoDist(first_attention_stop_line_idx) <= -peeking_offset) {
+      if (fromEgoDist(occlusion_wo_tl_pass_judge_line_idx) < 0) {
         return IntersectionModule::Indecisive{
           "already passed maximum peeking line in the absence of traffic light"};
       }
       return IntersectionModule::OccludedAbsenceTrafficLight{
         is_occlusion_cleared_with_margin,        has_collision_with_margin,
         temporal_stop_before_attention_required, closest_idx,
-        first_attention_stop_line_idx,           occlusion_stop_line_idx};
+        first_attention_stop_line_idx,           occlusion_wo_tl_pass_judge_line_idx};
     }
     // following remaining block is "has_traffic_light_"
     // if ego is stuck by static occlusion in the presence of traffic light, start timeout count

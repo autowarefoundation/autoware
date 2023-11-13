@@ -74,7 +74,7 @@ struct IntersectionLanelets
 public:
   void update(
     const bool is_prioritized, const InterpolatedPathInfo & interpolated_path_info,
-    const tier4_autoware_utils::LinearRing2d & footprint);
+    const tier4_autoware_utils::LinearRing2d & footprint, const double vehicle_length);
   const lanelet::ConstLanelets & attention() const
   {
     return is_prioritized_ ? attention_non_preceding_ : attention_;
@@ -160,6 +160,7 @@ struct IntersectionStopLines
   std::optional<size_t> occlusion_peeking_stop_line{std::nullopt};
   // if the value is calculated negative, its value is 0
   size_t pass_judge_line{0};
+  size_t occlusion_wo_tl_pass_judge_line{0};
 };
 
 struct PathLanelets
