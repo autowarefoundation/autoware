@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="input_geo_pose" default="/geo_pose_with_covariance"/>
+  <arg name="output_pose" default="/pose_with_covariance"/>
+  <arg name="param_path" default="$(find-pkg-share geo_pose_projector)/config/geo_pose_projector.param.yaml"/>
+
+  <node pkg="geo_pose_projector" exec="geo_pose_projector" name="geo_pose_projector" output="screen">
+    <remap from="input_geo_pose" to="$(var input_geo_pose)"/>
+    <remap from="output_pose" to="$(var output_pose)"/>
+
+    <param from="$(var param_path)"/>
+  </node>
+</launch>

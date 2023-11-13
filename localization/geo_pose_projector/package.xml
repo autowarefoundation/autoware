@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>geo_pose_projector</name>
+  <version>0.1.0</version>
+  <description>The geo_pose_projector package</description>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
+  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
+  <license>Apache License 2.0</license>
+  <author email="koji.minoda@tier4.jp">Koji Minoda</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+
+  <depend>component_interface_specs</depend>
+  <depend>component_interface_utils</depend>
+  <depend>geographic_msgs</depend>
+  <depend>geography_utils</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

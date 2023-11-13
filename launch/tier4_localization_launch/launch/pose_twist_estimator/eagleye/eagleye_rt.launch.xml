@@ -145,9 +145,13 @@
   </group>
 
   <group if="$(var use_eagleye_pose)">
-    <include file="$(find-pkg-share eagleye_geo_pose_fusion)/launch/geo_pose_fusion.launch.xml"/>
-    <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_estimator/eagleye/geo_pose_converter.launch.xml">
-      <arg name="output_pose_with_cov_name" value="$(var output_pose_with_cov_name)"/>
+    <arg name="geo_pose_topic_name" default="eagleye/geo_pose_with_covariance"/>
+    <include file="$(find-pkg-share eagleye_geo_pose_fusion)/launch/geo_pose_fusion.launch.xml">
+      <arg name="output_geo_pose" value="$(var geo_pose_topic_name)"/>
+    </include>
+    <include file="$(find-pkg-share geo_pose_projector)/launch/geo_pose_projector.launch.xml">
+      <arg name="input_geo_pose" value="$(var geo_pose_topic_name)"/>
+      <arg name="output_pose" value="$(var output_pose_with_cov_name)"/>
     </include>
   </group>
 </launch>
