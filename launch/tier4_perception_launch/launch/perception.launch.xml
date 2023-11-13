@@ -18,6 +18,7 @@
   <arg name="obstacle_segmentation_ground_segmentation_param_path"/>
   <arg name="obstacle_segmentation_ground_segmentation_elevation_map_param_path"/>
   <arg name="object_recognition_detection_obstacle_pointcloud_based_validator_param_path"/>
+  <arg name="object_recognition_detection_detection_by_tracker_param"/>
   <arg name="occupancy_grid_map_method"/>
   <arg name="occupancy_grid_map_param_path"/>
   <arg name="occupancy_grid_map_updater"/>
@@ -174,6 +175,7 @@
           <arg name="outlier_param_path" value="$(var object_recognition_detection_outlier_param_path)"/>
           <arg name="voxel_grid_based_euclidean_param_path" value="$(var object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path)"/>
           <arg name="radar_lanelet_filtering_range_param" value="$(var object_recognition_detection_radar_lanelet_filtering_range_param)"/>
+          <arg name="detection_by_tracker_param_path" value="$(var object_recognition_detection_detection_by_tracker_param)"/>
           <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)"/>
           <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
           <arg name="use_object_filter" value="$(var use_object_filter)"/>

@@ -160,7 +160,15 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
   objects_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "~/output", rclcpp::QoS{1});
 
-  ignore_unknown_tracker_ = declare_parameter<bool>("ignore_unknown_tracker", true);
+  // Set parameters
+  tracker_ignore_.UNKNOWN = declare_parameter<bool>("tracker_ignore_label.UNKNOWN");
+  tracker_ignore_.CAR = declare_parameter<bool>("tracker_ignore_label.CAR");
+  tracker_ignore_.TRUCK = declare_parameter<bool>("tracker_ignore_label.TRUCK");
+  tracker_ignore_.BUS = declare_parameter<bool>("tracker_ignore_label.BUS");
+  tracker_ignore_.TRAILER = declare_parameter<bool>("tracker_ignore_label.TRAILER");
+  tracker_ignore_.MOTORCYCLE = declare_parameter<bool>("tracker_ignore_label.MOTORCYCLE");
+  tracker_ignore_.BICYCLE = declare_parameter<bool>("tracker_ignore_label.BICYCLE");
+  tracker_ignore_.PEDESTRIAN = declare_parameter<bool>("tracker_ignore_label.PEDESTRIAN");
 
   // set maximum search setting for merger/divider
   setMaxSearchRange();
@@ -259,7 +267,7 @@ void DetectionByTracker::divideUnderSegmentedObjects(
 
   for (const auto & tracked_object : tracked_objects.objects) {
     const auto & label = tracked_object.classification.front().label;
-    if (ignore_unknown_tracker_ && (label == Label::UNKNOWN)) continue;
+    if (tracker_ignore_.isIgnore(label)) continue;
 
     // change search range according to label type
     const float max_search_range = max_search_distance_for_divider_[label];
@@ -395,7 +403,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
 
   for (const auto & tracked_object : tracked_objects.objects) {
     const auto & label = tracked_object.classification.front().label;
-    if (ignore_unknown_tracker_ && (label == Label::UNKNOWN)) continue;
+    if (tracker_ignore_.isIgnore(label)) continue;
 
     // change search range according to label type
     const float max_search_range = max_search_distance_for_merger_[label];

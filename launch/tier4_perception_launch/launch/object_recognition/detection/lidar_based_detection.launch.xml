@@ -61,6 +61,7 @@
   <group if="$(var use_detection_by_tracker)">
     <push-ros-namespace namespace="detection_by_tracker"/>
     <include file="$(find-pkg-share detection_by_tracker)/launch/detection_by_tracker.launch.xml"/>
+    <arg name="detection_by_tracker_param_path" default="$(find-pkg-share detection_by_tracker)/config/detection_by_tracker.param.yaml"/>
   </group>
 
   <!-- CenterPoint -->
