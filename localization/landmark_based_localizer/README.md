@@ -23,11 +23,11 @@ This calculated ego pose is passed to the EKF, where it is fused with the twist 
 
 ![node diagram](./doc_image/node_diagram.drawio.svg)
 
-### `landmark_parser`
+### `landmark_manager`
 
 The definitions of the landmarks written to the map are introduced in the next section. See `Map Specifications`.
 
-The `landmark_parser` is a utility package to load landmarks from the map.
+The `landmark_manager` is a utility package to load landmarks from the map.
 
 - Translation : The center of the four vertices of the landmark
 - Rotation : Let the vertex numbers be 1, 2, 3, 4 counterclockwise as shown in the next section. Direction is defined as the cross product of the vector from 1 to 2 and the vector from 2 to 3.
@@ -43,7 +43,7 @@ So, if the 4 vertices are considered as forming a tetrahedron and its volume exc
 
 ## Map specifications
 
-For this package to work correctly, the poses of the landmarks must be specified in the Lanelet2 map format that `map_loader` and `landmark_parser` can interpret.
+For this package to work correctly, the poses of the landmarks must be specified in the Lanelet2 map format that `map_loader` and `landmark_manager` can interpret.
 
 The four vertices of a landmark are defined counterclockwise.
 

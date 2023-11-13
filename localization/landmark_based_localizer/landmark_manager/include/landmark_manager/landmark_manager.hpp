@@ -12,23 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LANDMARK_PARSER__LANDMARK_PARSER_CORE_HPP_
-#define LANDMARK_PARSER__LANDMARK_PARSER_CORE_HPP_
+#ifndef LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
+#define LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
 #include "autoware_auto_mapping_msgs/msg/had_map_bin.hpp"
 #include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <map>
 #include <string>
+#include <vector>
 
-std::map<std::string, geometry_msgs::msg::Pose> parse_landmark(
+namespace landmark_manager
+{
+
+struct Landmark
+{
+  std::string id;
+  geometry_msgs::msg::Pose pose;
+};
+
+std::vector<Landmark> parse_landmarks(
   const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
   const std::string & target_subtype, const rclcpp::Logger & logger);
 
-visualization_msgs::msg::MarkerArray convert_to_marker_array_msg(
-  const std::map<std::string, geometry_msgs::msg::Pose> & landmarks);
+visualization_msgs::msg::MarkerArray convert_landmarks_to_marker_array_msg(
+  const std::vector<Landmark> & landmarks);
 
-#endif  // LANDMARK_PARSER__LANDMARK_PARSER_CORE_HPP_
+}  // namespace landmark_manager
+
+#endif  // LANDMARK_MANAGER__LANDMARK_MANAGER_HPP_

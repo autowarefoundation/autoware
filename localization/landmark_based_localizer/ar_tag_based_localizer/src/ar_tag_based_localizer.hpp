@@ -45,7 +45,7 @@
 #ifndef AR_TAG_BASED_LOCALIZER_HPP_
 #define AR_TAG_BASED_LOCALIZER_HPP_
 
-#include "landmark_parser/landmark_parser_core.hpp"
+#include "landmark_manager/landmark_manager.hpp"
 
 #include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>

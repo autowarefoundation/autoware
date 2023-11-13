@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "landmark_parser/landmark_parser_core.hpp"
+#include "landmark_manager/landmark_manager.hpp"
 
 #include "lanelet2_extension/utility/message_conversion.hpp"
 
 #include <Eigen/Core>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/primitives/Polygon.h>
 
-std::map<std::string, geometry_msgs::msg::Pose> parse_landmark(
+namespace landmark_manager
+{
+
+std::vector<Landmark> parse_landmarks(
   const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr & msg,
   const std::string & target_subtype, const rclcpp::Logger & logger)
 {
@@ -32,7 +36,7 @@ std::map<std::string, geometry_msgs::msg::Pose> parse_landmark(
   lanelet::LaneletMapPtr lanelet_map_ptr{std::make_shared<lanelet::LaneletMap>()};
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_ptr);
 
-  std::map<std::string, geometry_msgs::msg::Pose> landmark_map;
+  std::vector<Landmark> landmarks;
 
   for (const auto & poly : lanelet_map_ptr->polygonLayer) {
     const std::string type{poly.attributeOr(lanelet::AttributeName::Type, "none")};
@@ -93,8 +97,8 @@ std::map<std::string, geometry_msgs::msg::Pose> parse_landmark(
     pose.orientation.z = q.z();
     pose.orientation.w = q.w();
 
-    // Add to map
-    landmark_map[marker_id] = pose;
+    // Add
+    landmarks.push_back(Landmark{marker_id, pose});
     RCLCPP_INFO_STREAM(logger, "id: " << marker_id);
     RCLCPP_INFO_STREAM(
       logger,
@@ -104,11 +108,11 @@ std::map<std::string, geometry_msgs::msg::Pose> parse_landmark(
                      << pose.orientation.z << ", " << pose.orientation.w);
   }
 
-  return landmark_map;
+  return landmarks;
 }
 
-visualization_msgs::msg::MarkerArray convert_to_marker_array_msg(
-  const std::map<std::string, geometry_msgs::msg::Pose> & landmarks)
+visualization_msgs::msg::MarkerArray convert_landmarks_to_marker_array_msg(
+  const std::vector<Landmark> & landmarks)
 {
   int32_t id = 0;
   visualization_msgs::msg::MarkerArray marker_array;
@@ -152,3 +156,5 @@ visualization_msgs::msg::MarkerArray convert_to_marker_array_msg(
   }
   return marker_array;
 }
+
+}  // namespace landmark_manager
