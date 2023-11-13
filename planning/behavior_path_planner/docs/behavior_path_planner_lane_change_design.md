@@ -186,6 +186,46 @@ The following figure illustrates when the lane is blocked in multiple lane chang
 
 ![multiple-lane-changes](../image/lane_change/lane_change-when_cannot_change_lanes.png)
 
+#### Stopping position when an object exists ahead
+
+When an obstacle is in front of the ego vehicle, stop with keeping a distance for lane change.
+The position to be stopped depends on the situation, such as when the lane change is blocked by the target lane obstacle, or when the lane change is not needed immediately.The following shows the division in that case.
+
+##### When the ego vehicle is near the end of the lane change
+
+Regardless of the presence or absence of objects in the lane change target lane, stop by keeping the distance necessary for lane change to the object ahead.
+
+![stop_at_terminal_no_block](../image/lane_change/lane_change-stop_at_terminal_no_block.drawio.svg)
+
+![stop_at_terminal](../image/lane_change/lane_change-stop_at_terminal.drawio.svg)
+
+##### When the ego vehicle is not near the end of the lane change
+
+If there are NO objects in the lane change section of the target lane, stop by keeping the distance necessary for lane change to the object ahead.
+
+![stop_not_at_terminal_no_blocking_object](../image/lane_change/lane_change-stop_not_at_terminal_no_blocking_object.drawio.svg)
+
+If there are objects in the lane change section of the target lane, stop WITHOUT keeping the distance necessary for lane change to the object ahead.
+
+![stop_not_at_terminal](../image/lane_change/lane_change-stop_not_at_terminal.drawio.svg)
+
+##### When the target lane is far away
+
+When the target lane for lane change is far away and not next to the current lane, do not keep the distance necessary for lane change to the object ahead.
+
+![stop_far_from_target_lane](../image/lane_change/lane_change-stop_far_from_target_lane.drawio.svg)
+
+### Lane Change When Stuck
+
+The ego vehicle is considered stuck if it is stopped and meets any of the following conditions:
+
+- There is an obstacle in front of the current lane
+- The ego vehicle is at the end of the current lane
+
+In this case, the safety check for lane change is relaxed compared to normal times.
+Please refer to the 'stuck' section under the 'Collision checks during lane change' for more details.
+The function to stop by keeping a margin against forward obstacle in the previous section is being performed to achieve this feature.
+
 ### Lane change regulations
 
 If you want to regulate lane change on crosswalks or intersections, the lane change module finds a lane change path excluding it includes crosswalks or intersections.
@@ -272,35 +312,36 @@ The last behavior will also occur if the ego vehicle has departed from the curre
 
 The following parameters are configurable in `lane_change.param.yaml`.
 
-| Name                                        | Unit   | Type    | Description                                                                                                     | Default value      |
-| :------------------------------------------ | ------ | ------- | --------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `backward_lane_length`                      | [m]    | double  | The backward length to check incoming objects in lane change target lane.                                       | 200.0              |
-| `prepare_duration`                          | [m]    | double  | The preparation time for the ego vehicle to be ready to perform lane change.                                    | 4.0                |
-| `backward_length_buffer_for_end_of_lane`    | [m]    | double  | The end of lane buffer to ensure ego vehicle has enough distance to start lane change                           | 2.0                |
-| `lane_change_finish_judge_buffer`           | [m]    | double  | The additional buffer used to confirm lane change process completion                                            | 3.0                |
-| `finish_judge_lateral_threshold`            | [m]    | double  | Lateral distance threshold to confirm lane change process completion                                            | 0.2                |
-| `lane_changing_lateral_jerk`                | [m/s3] | double  | Lateral jerk value for lane change path generation                                                              | 0.5                |
-| `minimum_lane_changing_velocity`            | [m/s]  | double  | Minimum speed during lane changing process.                                                                     | 2.78               |
-| `prediction_time_resolution`                | [s]    | double  | Time resolution for object's path interpolation and collision check.                                            | 0.5                |
-| `longitudinal_acceleration_sampling_num`    | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by longitudinal acceleration            | 5                  |
-| `lateral_acceleration_sampling_num`         | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by lateral acceleration                 | 3                  |
-| `object_check_min_road_shoulder_width`      | [m]    | double  | Width considered as a road shoulder if the lane does not have a road shoulder                                   | 0.5                |
-| `object_shiftable_ratio_threshold`          | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                | 0.6                |
-| `min_length_for_turn_signal_activation`     | [m]    | double  | Turn signal will be activated if the ego vehicle approaches to this length from minimum lane change length      | 10.0               |
-| `length_ratio_for_turn_signal_deactivation` | [-]    | double  | Turn signal will be deactivated if the ego vehicle approaches to this length ratio for lane change finish point | 0.8                |
-| `max_longitudinal_acc`                      | [-]    | double  | maximum longitudinal acceleration for lane change                                                               | 1.0                |
-| `min_longitudinal_acc`                      | [-]    | double  | maximum longitudinal deceleration for lane change                                                               | -1.0               |
-| `lateral_acceleration.velocity`             | [m/s]  | double  | Reference velocity for lateral acceleration calculation (look up table)                                         | [0.0, 4.0, 10.0]   |
-| `lateral_acceleration.min_values`           | [m/ss] | double  | Min lateral acceleration values corresponding to velocity (look up table)                                       | [0.15, 0.15, 0.15] |
-| `lateral_acceleration.max_values`           | [m/ss] | double  | Max lateral acceleration values corresponding to velocity (look up table)                                       | [0.5, 0.5, 0.5]    |
-| `target_object.car`                         | [-]    | boolean | Include car objects for safety check                                                                            | true               |
-| `target_object.truck`                       | [-]    | boolean | Include truck objects for safety check                                                                          | true               |
-| `target_object.bus`                         | [-]    | boolean | Include bus objects for safety check                                                                            | true               |
-| `target_object.trailer`                     | [-]    | boolean | Include trailer objects for safety check                                                                        | true               |
-| `target_object.unknown`                     | [-]    | boolean | Include unknown objects for safety check                                                                        | true               |
-| `target_object.bicycle`                     | [-]    | boolean | Include bicycle objects for safety check                                                                        | true               |
-| `target_object.motorcycle`                  | [-]    | boolean | Include motorcycle objects for safety check                                                                     | true               |
-| `target_object.pedestrian`                  | [-]    | boolean | Include pedestrian objects for safety check                                                                     | true               |
+| Name                                         | Unit   | Type    | Description                                                                                                            | Default value      |
+| :------------------------------------------- | ------ | ------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `backward_lane_length`                       | [m]    | double  | The backward length to check incoming objects in lane change target lane.                                              | 200.0              |
+| `prepare_duration`                           | [m]    | double  | The preparation time for the ego vehicle to be ready to perform lane change.                                           | 4.0                |
+| `backward_length_buffer_for_end_of_lane`     | [m]    | double  | The end of lane buffer to ensure ego vehicle has enough distance to start lane change                                  | 3.0                |
+| `backward_length_buffer_for_blocking_object` | [m]    | double  | The end of lane buffer to ensure ego vehicle has enough distance to start lane change when there is an object in front | 3.0                |
+| `lane_change_finish_judge_buffer`            | [m]    | double  | The additional buffer used to confirm lane change process completion                                                   | 3.0                |
+| `finish_judge_lateral_threshold`             | [m]    | double  | Lateral distance threshold to confirm lane change process completion                                                   | 0.2                |
+| `lane_changing_lateral_jerk`                 | [m/s3] | double  | Lateral jerk value for lane change path generation                                                                     | 0.5                |
+| `minimum_lane_changing_velocity`             | [m/s]  | double  | Minimum speed during lane changing process.                                                                            | 2.78               |
+| `prediction_time_resolution`                 | [s]    | double  | Time resolution for object's path interpolation and collision check.                                                   | 0.5                |
+| `longitudinal_acceleration_sampling_num`     | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by longitudinal acceleration                   | 5                  |
+| `lateral_acceleration_sampling_num`          | [-]    | int     | Number of possible lane-changing trajectories that are being influenced by lateral acceleration                        | 3                  |
+| `object_check_min_road_shoulder_width`       | [m]    | double  | Width considered as a road shoulder if the lane does not have a road shoulder                                          | 0.5                |
+| `object_shiftable_ratio_threshold`           | [-]    | double  | Vehicles around the center line within this distance ratio will be excluded from parking objects                       | 0.6                |
+| `min_length_for_turn_signal_activation`      | [m]    | double  | Turn signal will be activated if the ego vehicle approaches to this length from minimum lane change length             | 10.0               |
+| `length_ratio_for_turn_signal_deactivation`  | [-]    | double  | Turn signal will be deactivated if the ego vehicle approaches to this length ratio for lane change finish point        | 0.8                |
+| `max_longitudinal_acc`                       | [-]    | double  | maximum longitudinal acceleration for lane change                                                                      | 1.0                |
+| `min_longitudinal_acc`                       | [-]    | double  | maximum longitudinal deceleration for lane change                                                                      | -1.0               |
+| `lateral_acceleration.velocity`              | [m/s]  | double  | Reference velocity for lateral acceleration calculation (look up table)                                                | [0.0, 4.0, 10.0]   |
+| `lateral_acceleration.min_values`            | [m/ss] | double  | Min lateral acceleration values corresponding to velocity (look up table)                                              | [0.15, 0.15, 0.15] |
+| `lateral_acceleration.max_values`            | [m/ss] | double  | Max lateral acceleration values corresponding to velocity (look up table)                                              | [0.5, 0.5, 0.5]    |
+| `target_object.car`                          | [-]    | boolean | Include car objects for safety check                                                                                   | true               |
+| `target_object.truck`                        | [-]    | boolean | Include truck objects for safety check                                                                                 | true               |
+| `target_object.bus`                          | [-]    | boolean | Include bus objects for safety check                                                                                   | true               |
+| `target_object.trailer`                      | [-]    | boolean | Include trailer objects for safety check                                                                               | true               |
+| `target_object.unknown`                      | [-]    | boolean | Include unknown objects for safety check                                                                               | true               |
+| `target_object.bicycle`                      | [-]    | boolean | Include bicycle objects for safety check                                                                               | true               |
+| `target_object.motorcycle`                   | [-]    | boolean | Include motorcycle objects for safety check                                                                            | true               |
+| `target_object.pedestrian`                   | [-]    | boolean | Include pedestrian objects for safety check                                                                            | true               |
 
 ### Lane change regulations
 
@@ -320,19 +361,53 @@ The following parameters are configurable in `lane_change.param.yaml`.
 
 The following parameters are configurable in `behavior_path_planner.param.yaml` and `lane_change.param.yaml`.
 
-| Name                                       | Unit    | Type    | Description                                                                                                                                                    | Default value |
-| :----------------------------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `lateral_distance_max_threshold`           | [m]     | double  | The lateral distance threshold that is used to determine whether lateral distance between two object is enough and whether lane change is safe.                | 2.0           |
-| `longitudinal_distance_min_threshold`      | [m]     | double  | The longitudinal distance threshold that is used to determine whether longitudinal distance between two object is enough and whether lane change is safe.      | 3.0           |
-| `expected_front_deceleration`              | [m/s^2] | double  | The front object's maximum deceleration when the front vehicle perform sudden braking. (\*1)                                                                   | -1.0          |
-| `expected_rear_deceleration`               | [m/s^2] | double  | The rear object's maximum deceleration when the rear vehicle perform sudden braking. (\*1)                                                                     | -1.0          |
-| `rear_vehicle_reaction_time`               | [s]     | double  | The reaction time of the rear vehicle driver which starts from the driver noticing the sudden braking of the front vehicle until the driver step on the brake. | 2.0           |
-| `rear_vehicle_safety_time_margin`          | [s]     | double  | The time buffer for the rear vehicle to come into complete stop when its driver perform sudden braking.                                                        | 2.0           |
-| `enable_collision_check_at_prepare_phase`  | [-]     | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                       | true          |
-| `prepare_phase_ignore_target_speed_thresh` | [m/s]   | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true`     | 0.1           |
-| `check_objects_on_current_lanes`           | [-]     | boolean | If true, the lane change module include objects on current lanes.                                                                                              | true          |
-| `check_objects_on_other_lanes`             | [-]     | boolean | If true, the lane change module include objects on other lanes.                                                                                                | true          |
-| `use_all_predicted_path`                   | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                         | true          |
+#### execution
+
+| Name                                                              | Unit    | Type    | Description                                                                                                                                                    | Default value |
+| :---------------------------------------------------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `safety_check.execution.lateral_distance_max_threshold`           | [m]     | double  | The lateral distance threshold that is used to determine whether lateral distance between two object is enough and whether lane change is safe.                | 2.0           |
+| `safety_check.execution.longitudinal_distance_min_threshold`      | [m]     | double  | The longitudinal distance threshold that is used to determine whether longitudinal distance between two object is enough and whether lane change is safe.      | 3.0           |
+| `safety_check.execution.expected_front_deceleration`              | [m/s^2] | double  | The front object's maximum deceleration when the front vehicle perform sudden braking. (\*1)                                                                   | -1.0          |
+| `safety_check.execution.expected_rear_deceleration`               | [m/s^2] | double  | The rear object's maximum deceleration when the rear vehicle perform sudden braking. (\*1)                                                                     | -1.0          |
+| `safety_check.execution.rear_vehicle_reaction_time`               | [s]     | double  | The reaction time of the rear vehicle driver which starts from the driver noticing the sudden braking of the front vehicle until the driver step on the brake. | 2.0           |
+| `safety_check.execution.rear_vehicle_safety_time_margin`          | [s]     | double  | The time buffer for the rear vehicle to come into complete stop when its driver perform sudden braking.                                                        | 2.0           |
+| `safety_check.execution.enable_collision_check_at_prepare_phase`  | [-]     | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                       | true          |
+| `safety_check.execution.prepare_phase_ignore_target_speed_thresh` | [m/s]   | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true`     | 0.1           |
+| `safety_check.execution.check_objects_on_current_lanes`           | [-]     | boolean | If true, the lane change module include objects on current lanes.                                                                                              | true          |
+| `safety_check.execution.check_objects_on_other_lanes`             | [-]     | boolean | If true, the lane change module include objects on other lanes.                                                                                                | true          |
+| `safety_check.execution.use_all_predicted_path`                   | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                         | true          |
+
+##### cancel
+
+| Name                                                           | Unit    | Type    | Description                                                                                                                                                    | Default value |
+| :------------------------------------------------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `safety_check.cancel.lateral_distance_max_threshold`           | [m]     | double  | The lateral distance threshold that is used to determine whether lateral distance between two object is enough and whether lane change is safe.                | 1.5           |
+| `safety_check.cancel.longitudinal_distance_min_threshold`      | [m]     | double  | The longitudinal distance threshold that is used to determine whether longitudinal distance between two object is enough and whether lane change is safe.      | 3.0           |
+| `safety_check.cancel.expected_front_deceleration`              | [m/s^2] | double  | The front object's maximum deceleration when the front vehicle perform sudden braking. (\*1)                                                                   | -1.5          |
+| `safety_check.cancel.expected_rear_deceleration`               | [m/s^2] | double  | The rear object's maximum deceleration when the rear vehicle perform sudden braking. (\*1)                                                                     | -2.5          |
+| `safety_check.cancel.rear_vehicle_reaction_time`               | [s]     | double  | The reaction time of the rear vehicle driver which starts from the driver noticing the sudden braking of the front vehicle until the driver step on the brake. | 2.0           |
+| `safety_check.cancel.rear_vehicle_safety_time_margin`          | [s]     | double  | The time buffer for the rear vehicle to come into complete stop when its driver perform sudden braking.                                                        | 2.5           |
+| `safety_check.cancel.enable_collision_check_at_prepare_phase`  | [-]     | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                       | false         |
+| `safety_check.cancel.prepare_phase_ignore_target_speed_thresh` | [m/s]   | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true`     | 0.2           |
+| `safety_check.cancel.check_objects_on_current_lanes`           | [-]     | boolean | If true, the lane change module include objects on current lanes.                                                                                              | false         |
+| `safety_check.cancel.check_objects_on_other_lanes`             | [-]     | boolean | If true, the lane change module include objects on other lanes.                                                                                                | false         |
+| `safety_check.cancel.use_all_predicted_path`                   | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                         | false         |
+
+##### stuck
+
+| Name                                                          | Unit    | Type    | Description                                                                                                                                                    | Default value |
+| :------------------------------------------------------------ | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `safety_check.stuck.lateral_distance_max_threshold`           | [m]     | double  | The lateral distance threshold that is used to determine whether lateral distance between two object is enough and whether lane change is safe.                | 2.0           |
+| `safety_check.stuck.longitudinal_distance_min_threshold`      | [m]     | double  | The longitudinal distance threshold that is used to determine whether longitudinal distance between two object is enough and whether lane change is safe.      | 3.0           |
+| `safety_check.stuck.expected_front_deceleration`              | [m/s^2] | double  | The front object's maximum deceleration when the front vehicle perform sudden braking. (\*1)                                                                   | -1.0          |
+| `safety_check.stuck.expected_rear_deceleration`               | [m/s^2] | double  | The rear object's maximum deceleration when the rear vehicle perform sudden braking. (\*1)                                                                     | -1.0          |
+| `safety_check.stuck.rear_vehicle_reaction_time`               | [s]     | double  | The reaction time of the rear vehicle driver which starts from the driver noticing the sudden braking of the front vehicle until the driver step on the brake. | 2.0           |
+| `safety_check.stuck.rear_vehicle_safety_time_margin`          | [s]     | double  | The time buffer for the rear vehicle to come into complete stop when its driver perform sudden braking.                                                        | 2.0           |
+| `safety_check.stuck.enable_collision_check_at_prepare_phase`  | [-]     | boolean | Perform collision check starting from prepare phase. If `false`, collision check only evaluated for lane changing phase.                                       | true          |
+| `safety_check.stuck.prepare_phase_ignore_target_speed_thresh` | [m/s]   | double  | Ignore collision check in prepare phase of object speed that is lesser that the configured value. `enable_collision_check_at_prepare_phase` must be `true`     | 0.1           |
+| `safety_check.stuck.check_objects_on_current_lanes`           | [-]     | boolean | If true, the lane change module include objects on current lanes.                                                                                              | true          |
+| `safety_check.stuck.check_objects_on_other_lanes`             | [-]     | boolean | If true, the lane change module include objects on other lanes.                                                                                                | true          |
+| `safety_check.stuck.use_all_predicted_path`                   | [-]     | boolean | If false, use only the predicted path that has the maximum confidence.                                                                                         | true          |
 
 (\*1) the value must be negative.
 
