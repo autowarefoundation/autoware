@@ -203,6 +203,7 @@ void FusionNode<Msg, Obj>::subCallback(const typename Msg::ConstSharedPtr input_
     (*output_msg).header.stamp.sec * (int64_t)1e9 + (*output_msg).header.stamp.nanosec;
 
   // if matching rois exist, fuseOnSingle
+  // please ask maintainers before parallelize this loop because debugger is not thread safe
   for (std::size_t roi_i = 0; roi_i < rois_number_; ++roi_i) {
     if (camera_info_map_.find(roi_i) == camera_info_map_.end()) {
       RCLCPP_WARN_THROTTLE(

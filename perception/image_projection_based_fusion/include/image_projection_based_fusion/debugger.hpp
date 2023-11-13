@@ -50,6 +50,7 @@ public:
   std::vector<RegionOfInterest> image_rois_;
   std::vector<RegionOfInterest> obstacle_rois_;
   std::vector<Eigen::Vector2d> obstacle_points_;
+  std::vector<double> max_iou_for_image_rois_;
 
 private:
   void imageCallback(
