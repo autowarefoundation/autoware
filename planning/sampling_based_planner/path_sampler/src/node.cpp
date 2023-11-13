@@ -298,7 +298,8 @@ PlannerData PathSampler::createPlannerData(const Path & path) const
   return planner_data;
 }
 
-void copyZ(const std::vector<TrajectoryPoint> & from_traj, std::vector<TrajectoryPoint> & to_traj)
+void PathSampler::copyZ(
+  const std::vector<TrajectoryPoint> & from_traj, std::vector<TrajectoryPoint> & to_traj)
 {
   if (from_traj.empty() || to_traj.empty()) return;
   to_traj.front().pose.position.z = from_traj.front().pose.position.z;
@@ -320,7 +321,7 @@ void copyZ(const std::vector<TrajectoryPoint> & from_traj, std::vector<Trajector
   to_traj.back().pose.position.z = from->pose.position.z;
 }
 
-void copyVelocity(
+void PathSampler::copyVelocity(
   const std::vector<TrajectoryPoint> & from_traj, std::vector<TrajectoryPoint> & to_traj,
   const geometry_msgs::msg::Pose & ego_pose)
 {

@@ -17,6 +17,7 @@
 
 #include <bezier_sampler/bezier.hpp>
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 #include <sampler_common/structures.hpp>
 
 #include <vector>
