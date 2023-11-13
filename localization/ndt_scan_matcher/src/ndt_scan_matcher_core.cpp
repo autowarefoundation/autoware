@@ -219,10 +219,20 @@ NDTScanMatcher::NDTScanMatcher()
   sensor_points_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "points_raw", rclcpp::SensorDataQoS().keep_last(points_queue_size),
     std::bind(&NDTScanMatcher::callback_sensor_points, this, std::placeholders::_1), main_sub_opt);
-  regularization_pose_sub_ =
-    this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-      "regularization_pose_with_covariance", 100,
-      std::bind(&NDTScanMatcher::callback_regularization_pose, this, std::placeholders::_1));
+
+  // Only if regularization is enabled, subscribe to the regularization base pose
+  if (regularization_enabled_) {
+    // NOTE: The reason that the regularization subscriber does not belong to the
+    // main_callback_group is to ensure that the regularization callback is called even if
+    // sensor_callback takes long time to process.
+    // Both callback_initial_pose and callback_regularization_pose must not miss receiving data for
+    // proper interpolation.
+    regularization_pose_sub_ =
+      this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+        "regularization_pose_with_covariance", 10,
+        std::bind(&NDTScanMatcher::callback_regularization_pose, this, std::placeholders::_1),
+        initial_pose_sub_opt);
+  }
 
   sensor_aligned_pose_pub_ =
     this->create_publisher<sensor_msgs::msg::PointCloud2>("points_aligned", 10);
@@ -397,7 +407,10 @@ void NDTScanMatcher::callback_initial_pose(
 void NDTScanMatcher::callback_regularization_pose(
   geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr)
 {
+  // Get lock for regularization_pose_msg_ptr_array_
+  std::lock_guard<std::mutex> lock(regularization_mutex_);
   regularization_pose_msg_ptr_array_.push_back(pose_conv_msg_ptr);
+  // Release lock for regularization_pose_msg_ptr_array_
 }
 
 void NDTScanMatcher::callback_sensor_points(
@@ -459,7 +472,9 @@ void NDTScanMatcher::callback_sensor_points(
   initial_pose_array_lock.unlock();
 
   // if regularization is enabled and available, set pose to NDT for regularization
-  if (regularization_enabled_) add_regularization_pose(sensor_ros_time);
+  if (regularization_enabled_) {
+    add_regularization_pose(sensor_ros_time);
+  }
 
   if (ndt_ptr_->getInputTarget() == nullptr) {
     RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1, "No MAP!");
@@ -816,21 +831,29 @@ std::array<double, 36> NDTScanMatcher::estimate_covariance(
 std::optional<Eigen::Matrix4f> NDTScanMatcher::interpolate_regularization_pose(
   const rclcpp::Time & sensor_ros_time)
 {
-  if (regularization_pose_msg_ptr_array_.empty()) {
+  std::shared_ptr<PoseArrayInterpolator> interpolator = nullptr;
+  {
+    // Get lock for regularization_pose_msg_ptr_array_
+    std::lock_guard<std::mutex> lock(regularization_mutex_);
+
+    if (regularization_pose_msg_ptr_array_.empty()) {
+      return std::nullopt;
+    }
+
+    interpolator = std::make_shared<PoseArrayInterpolator>(
+      this, sensor_ros_time, regularization_pose_msg_ptr_array_);
+
+    // Remove old poses to make next interpolation more efficient
+    pop_old_pose(regularization_pose_msg_ptr_array_, sensor_ros_time);
+
+    // Release lock for regularization_pose_msg_ptr_array_
+  }
+
+  if (!interpolator || !interpolator->is_success()) {
     return std::nullopt;
   }
 
-  // synchronization
-  PoseArrayInterpolator interpolator(this, sensor_ros_time, regularization_pose_msg_ptr_array_);
-
-  pop_old_pose(regularization_pose_msg_ptr_array_, sensor_ros_time);
-
-  // if the interpolate_pose fails, 0.0 is stored in the stamp
-  if (rclcpp::Time(interpolator.get_current_pose().header.stamp).seconds() == 0.0) {
-    return std::nullopt;
-  }
-
-  return pose_to_matrix4f(interpolator.get_current_pose().pose.pose);
+  return pose_to_matrix4f(interpolator->get_current_pose().pose.pose);
 }
 
 void NDTScanMatcher::add_regularization_pose(const rclcpp::Time & sensor_ros_time)
