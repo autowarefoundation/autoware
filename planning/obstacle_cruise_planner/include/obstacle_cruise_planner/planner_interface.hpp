@@ -49,6 +49,11 @@ public:
       node.create_publisher<VelocityFactorArray>("/planning/velocity_factors/obstacle_cruise", 1);
     stop_speed_exceeded_pub_ =
       node.create_publisher<StopSpeedExceeded>("~/output/stop_speed_exceeded", 1);
+
+    moving_object_speed_threshold =
+      node.declare_parameter<double>("slow_down.moving_object_speed_threshold");
+    moving_object_hysteresis_range =
+      node.declare_parameter<double>("slow_down.moving_object_hysteresis_range");
   }
 
   PlannerInterface() = default;
@@ -183,11 +188,12 @@ private:
       const std::string & arg_uuid, const std::vector<TrajectoryPoint> & traj_points,
       const std::optional<size_t> & start_idx, const std::optional<size_t> & end_idx,
       const double arg_target_vel, const double arg_feasible_target_vel,
-      const double arg_precise_lat_dist)
+      const double arg_precise_lat_dist, const bool is_moving)
     : uuid(arg_uuid),
       target_vel(arg_target_vel),
       feasible_target_vel(arg_feasible_target_vel),
-      precise_lat_dist(arg_precise_lat_dist)
+      precise_lat_dist(arg_precise_lat_dist),
+      is_moving(is_moving)
     {
       if (start_idx) {
         start_point = traj_points.at(*start_idx).pose;
@@ -203,15 +209,17 @@ private:
     double precise_lat_dist;
     std::optional<geometry_msgs::msg::Pose> start_point{std::nullopt};
     std::optional<geometry_msgs::msg::Pose> end_point{std::nullopt};
+    bool is_moving;
   };
   double calculateMarginFromObstacleOnCurve(
     const PlannerData & planner_data, const StopObstacle & stop_obstacle) const;
   double calculateSlowDownVelocity(
-    const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output) const;
+    const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
+    const bool is_obstacle_moving) const;
   std::optional<std::tuple<double, double, double>> calculateDistanceToSlowDownWithConstraints(
     const PlannerData & planner_data, const std::vector<TrajectoryPoint> & traj_points,
     const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
-    const double dist_to_ego) const;
+    const double dist_to_ego, const bool is_obstacle_moving) const;
 
   struct SlowDownInfo
   {
@@ -223,6 +231,7 @@ private:
   struct SlowDownParam
   {
     std::vector<std::string> obstacle_labels{"default"};
+    std::vector<std::string> obstacle_moving_classification{"static", "moving"};
     std::unordered_map<uint8_t, std::string> types_map;
     struct ObstacleSpecificParams
     {
@@ -233,28 +242,23 @@ private:
     };
     explicit SlowDownParam(rclcpp::Node & node)
     {
-      types_map = {{ObjectClassification::UNKNOWN, "unknown"},
-                   {ObjectClassification::CAR, "car"},
-                   {ObjectClassification::TRUCK, "truck"},
-                   {ObjectClassification::BUS, "bus"},
-                   {ObjectClassification::TRAILER, "trailer"},
-                   {ObjectClassification::MOTORCYCLE, "motorcycle"},
-                   {ObjectClassification::BICYCLE, "bicycle"},
-                   {ObjectClassification::PEDESTRIAN, "pedestrian"}};
       obstacle_labels =
         node.declare_parameter<std::vector<std::string>>("slow_down.labels", obstacle_labels);
       // obstacle label dependant parameters
       for (const auto & label : obstacle_labels) {
-        ObstacleSpecificParams params;
-        params.max_lat_margin =
-          node.declare_parameter<double>("slow_down." + label + ".max_lat_margin");
-        params.min_lat_margin =
-          node.declare_parameter<double>("slow_down." + label + ".min_lat_margin");
-        params.max_ego_velocity =
-          node.declare_parameter<double>("slow_down." + label + ".max_ego_velocity");
-        params.min_ego_velocity =
-          node.declare_parameter<double>("slow_down." + label + ".min_ego_velocity");
-        obstacle_to_param_struct_map.emplace(std::make_pair(label, params));
+        for (const auto & movement_postfix : obstacle_moving_classification) {
+          ObstacleSpecificParams params;
+          params.max_lat_margin = node.declare_parameter<double>(
+            "slow_down." + label + "." + movement_postfix + ".max_lat_margin");
+          params.min_lat_margin = node.declare_parameter<double>(
+            "slow_down." + label + "." + movement_postfix + ".min_lat_margin");
+          params.max_ego_velocity = node.declare_parameter<double>(
+            "slow_down." + label + "." + movement_postfix + ".max_ego_velocity");
+          params.min_ego_velocity = node.declare_parameter<double>(
+            "slow_down." + label + "." + movement_postfix + ".min_ego_velocity");
+          obstacle_to_param_struct_map.emplace(
+            std::make_pair(label + "." + movement_postfix, params));
+        }
       }
 
       // common parameters
@@ -264,34 +268,49 @@ private:
       lpf_gain_lat_dist = node.declare_parameter<double>("slow_down.lpf_gain_lat_dist");
       lpf_gain_dist_to_slow_down =
         node.declare_parameter<double>("slow_down.lpf_gain_dist_to_slow_down");
+
+      types_map = {{ObjectClassification::UNKNOWN, "unknown"},
+                   {ObjectClassification::CAR, "car"},
+                   {ObjectClassification::TRUCK, "truck"},
+                   {ObjectClassification::BUS, "bus"},
+                   {ObjectClassification::TRAILER, "trailer"},
+                   {ObjectClassification::MOTORCYCLE, "motorcycle"},
+                   {ObjectClassification::BICYCLE, "bicycle"},
+                   {ObjectClassification::PEDESTRIAN, "pedestrian"}};
     }
 
-    ObstacleSpecificParams getObstacleParamByLabel(const ObjectClassification & label_id) const
+    ObstacleSpecificParams getObstacleParamByLabel(
+      const ObjectClassification & label_id, const bool is_obstacle_moving) const
     {
-      const std::string label = types_map.at(label_id.label);
-      if (obstacle_to_param_struct_map.count(label) > 0) {
-        return obstacle_to_param_struct_map.at(label);
-      }
-      return obstacle_to_param_struct_map.at("default");
+      const std::string label =
+        (types_map.count(label_id.label) > 0) ? types_map.at(label_id.label) : "default";
+      const std::string movement_postfix = (is_obstacle_moving) ? "moving" : "static";
+      return (obstacle_to_param_struct_map.count(label + "." + movement_postfix) > 0)
+               ? obstacle_to_param_struct_map.at(label + "." + movement_postfix)
+               : obstacle_to_param_struct_map.at("default." + movement_postfix);
     }
 
     void onParam(const std::vector<rclcpp::Parameter> & parameters)
     {
       // obstacle type dependant parameters
       for (const auto & label : obstacle_labels) {
-        auto & param_by_obstacle_label = obstacle_to_param_struct_map[label];
-        tier4_autoware_utils::updateParam<double>(
-          parameters, "slow_down." + label + ".max_lat_margin",
-          param_by_obstacle_label.max_lat_margin);
-        tier4_autoware_utils::updateParam<double>(
-          parameters, "slow_down." + label + ".min_lat_margin",
-          param_by_obstacle_label.min_lat_margin);
-        tier4_autoware_utils::updateParam<double>(
-          parameters, "slow_down." + label + ".max_ego_velocity",
-          param_by_obstacle_label.max_ego_velocity);
-        tier4_autoware_utils::updateParam<double>(
-          parameters, "slow_down." + label + ".min_ego_velocity",
-          param_by_obstacle_label.min_ego_velocity);
+        for (const auto & movement_postfix : obstacle_moving_classification) {
+          if (obstacle_to_param_struct_map.count(label + "." + movement_postfix) < 1) continue;
+          auto & param_by_obstacle_label =
+            obstacle_to_param_struct_map.at(label + "." + movement_postfix);
+          tier4_autoware_utils::updateParam<double>(
+            parameters, "slow_down." + label + "." + movement_postfix + ".max_lat_margin",
+            param_by_obstacle_label.max_lat_margin);
+          tier4_autoware_utils::updateParam<double>(
+            parameters, "slow_down." + label + "." + movement_postfix + ".min_lat_margin",
+            param_by_obstacle_label.min_lat_margin);
+          tier4_autoware_utils::updateParam<double>(
+            parameters, "slow_down." + label + "." + movement_postfix + ".max_ego_velocity",
+            param_by_obstacle_label.max_ego_velocity);
+          tier4_autoware_utils::updateParam<double>(
+            parameters, "slow_down." + label + "." + movement_postfix + ".min_ego_velocity",
+            param_by_obstacle_label.min_ego_velocity);
+        }
       }
 
       // common parameters
@@ -313,7 +332,8 @@ private:
     double lpf_gain_dist_to_slow_down;
   };
   SlowDownParam slow_down_param_;
-
+  double moving_object_speed_threshold;
+  double moving_object_hysteresis_range;
   std::vector<SlowDownOutput> prev_slow_down_output_;
   // previous trajectory and distance to stop
   // NOTE: Previous trajectory is memorized to deal with nearest index search for overlapping or

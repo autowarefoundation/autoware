@@ -561,9 +561,17 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     const auto & obstacle = obstacles.at(i);
     const auto prev_output = getObjectFromUuid(prev_slow_down_output_, obstacle.uuid);
 
+    const bool is_obstacle_moving = [&]() -> bool {
+      const auto object_vel_norm = std::hypot(obstacle.velocity, obstacle.lat_velocity);
+      if (!prev_output) return object_vel_norm > moving_object_speed_threshold;
+      if (prev_output->is_moving)
+        return object_vel_norm > moving_object_speed_threshold - moving_object_hysteresis_range;
+      return object_vel_norm > moving_object_speed_threshold + moving_object_hysteresis_range;
+    }();
+
     // calculate slow down start distance, and insert slow down velocity
     const auto dist_vec_to_slow_down = calculateDistanceToSlowDownWithConstraints(
-      planner_data, slow_down_traj_points, obstacle, prev_output, dist_to_ego);
+      planner_data, slow_down_traj_points, obstacle, prev_output, dist_to_ego, is_obstacle_moving);
     if (!dist_vec_to_slow_down) {
       RCLCPP_INFO_EXPRESSION(
         rclcpp::get_logger("ObstacleCruisePlanner::PlannerInterface"), enable_debug_info_,
@@ -648,7 +656,7 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
     // update prev_slow_down_output_
     new_prev_slow_down_output.push_back(SlowDownOutput{
       obstacle.uuid, slow_down_traj_points, slow_down_start_idx, slow_down_end_idx,
-      stable_slow_down_vel, feasible_slow_down_vel, obstacle.precise_lat_dist});
+      stable_slow_down_vel, feasible_slow_down_vel, obstacle.precise_lat_dist, is_obstacle_moving});
   }
 
   // update prev_slow_down_output_
@@ -663,10 +671,11 @@ std::vector<TrajectoryPoint> PlannerInterface::generateSlowDownTrajectory(
 }
 
 double PlannerInterface::calculateSlowDownVelocity(
-  const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output) const
+  const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
+  const bool is_obstacle_moving) const
 {
-  const auto & p = slow_down_param_.getObstacleParamByLabel(obstacle.classification);
-
+  const auto & p =
+    slow_down_param_.getObstacleParamByLabel(obstacle.classification, is_obstacle_moving);
   const double stable_precise_lat_dist = [&]() {
     if (prev_output) {
       return signal_processing::lowpassFilter(
@@ -689,15 +698,14 @@ std::optional<std::tuple<double, double, double>>
 PlannerInterface::calculateDistanceToSlowDownWithConstraints(
   const PlannerData & planner_data, const std::vector<TrajectoryPoint> & traj_points,
   const SlowDownObstacle & obstacle, const std::optional<SlowDownOutput> & prev_output,
-  const double dist_to_ego) const
+  const double dist_to_ego, const bool is_obstacle_moving) const
 {
   const double abs_ego_offset = planner_data.is_driving_forward
                                   ? std::abs(vehicle_info_.max_longitudinal_offset_m)
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
   const double obstacle_vel = obstacle.velocity;
-
   // calculate slow down velocity
-  const double slow_down_vel = calculateSlowDownVelocity(obstacle, prev_output);
+  const double slow_down_vel = calculateSlowDownVelocity(obstacle, prev_output, is_obstacle_moving);
 
   // calculate distance to collision points
   const double dist_to_front_collision =

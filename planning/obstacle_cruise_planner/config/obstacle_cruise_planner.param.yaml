@@ -183,15 +183,30 @@
         - "default"
         - "pedestrian"
       default:
-        min_lat_margin: 0.2
-        max_lat_margin: 1.0
-        min_ego_velocity: 2.0
-        max_ego_velocity: 8.0
+        moving:
+          min_lat_margin: 0.8
+          max_lat_margin: 1.3
+          min_ego_velocity: 0.5
+          max_ego_velocity: 1.5
+        static:
+          min_lat_margin: 0.2
+          max_lat_margin: 1.0
+          min_ego_velocity: 2.0
+          max_ego_velocity: 8.0
       pedestrian:
-        min_lat_margin: 0.5
-        max_lat_margin: 1.5
-        min_ego_velocity: 1.0
-        max_ego_velocity: 2.0
+        moving:
+          min_lat_margin: 0.8
+          max_lat_margin: 1.3
+          min_ego_velocity: 0.5
+          max_ego_velocity: 0.8
+        static:
+          min_lat_margin: 0.8
+          max_lat_margin: 1.3
+          min_ego_velocity: 1.0
+          max_ego_velocity: 2.0
+
+      moving_object_speed_threshold: 0.5 # [m/s] how fast the object needs to move to be considered as "moving"
+      moving_object_hysteresis_range: 0.1 # [m/s] hysteresis range used to prevent chattering when obstacle moves close to moving_object_speed_threshold
 
       time_margin_on_target_velocity: 1.5 # [s]
 
