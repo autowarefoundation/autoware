@@ -93,50 +93,30 @@ public:
   void reset()
   {
     lane_parking_pull_over_path_ = nullptr;
-    current_path_idx_ = 0;
-    require_increment_ = true;
     prev_stop_path_ = nullptr;
     prev_stop_path_after_approval_ = nullptr;
-    current_lanes_.clear();
-    pull_over_lanes_.clear();
-    lanes_.clear();
-    has_decided_path_ = false;
-    is_safe_dynamic_objects_ = false;
+
+    is_safe_ = false;
     prev_found_path_ = false;
-    prev_is_safe_dynamic_objects_ = false;
-    has_decided_velocity_ = false;
+    prev_is_safe_ = false;
   }
 
   DEFINE_SETTER_GETTER(std::shared_ptr<PullOverPath>, lane_parking_pull_over_path)
-  DEFINE_SETTER_GETTER(size_t, current_path_idx)
-  DEFINE_SETTER_GETTER(bool, require_increment)
   DEFINE_SETTER_GETTER(std::shared_ptr<PathWithLaneId>, prev_stop_path)
   DEFINE_SETTER_GETTER(std::shared_ptr<PathWithLaneId>, prev_stop_path_after_approval)
-  DEFINE_SETTER_GETTER(lanelet::ConstLanelets, current_lanes)
-  DEFINE_SETTER_GETTER(lanelet::ConstLanelets, pull_over_lanes)
-  DEFINE_SETTER_GETTER(std::vector<DrivableLanes>, lanes)
-  DEFINE_SETTER_GETTER(bool, has_decided_path)
-  DEFINE_SETTER_GETTER(bool, is_safe_dynamic_objects)
+  DEFINE_SETTER_GETTER(bool, is_safe)
   DEFINE_SETTER_GETTER(bool, prev_found_path)
-  DEFINE_SETTER_GETTER(bool, prev_is_safe_dynamic_objects)
-  DEFINE_SETTER_GETTER(bool, has_decided_velocity)
+  DEFINE_SETTER_GETTER(bool, prev_is_safe)
   DEFINE_SETTER_GETTER(Pose, refined_goal_pose)
   DEFINE_SETTER_GETTER(Pose, closest_goal_candidate_pose)
 
 private:
   std::shared_ptr<PullOverPath> lane_parking_pull_over_path_{nullptr};
-  size_t current_path_idx_{0};
-  bool require_increment_{true};
   std::shared_ptr<PathWithLaneId> prev_stop_path_{nullptr};
   std::shared_ptr<PathWithLaneId> prev_stop_path_after_approval_{nullptr};
-  lanelet::ConstLanelets current_lanes_{};
-  lanelet::ConstLanelets pull_over_lanes_{};
-  std::vector<DrivableLanes> lanes_{};
-  bool has_decided_path_{false};
-  bool is_safe_dynamic_objects_{false};
+  bool is_safe_{false};
   bool prev_found_path_{false};
-  bool prev_is_safe_dynamic_objects_{false};
-  bool has_decided_velocity_{false};
+  bool prev_is_safe_{false};
 
   Pose refined_goal_pose_{};
   Pose closest_goal_candidate_pose_{};
@@ -177,6 +157,10 @@ public:
   bool incrementPathIndex()
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (!pull_over_path_) {
+      return false;
+    }
+
     if (pull_over_path_->incrementPathIndex()) {
       last_path_idx_increment_time_ = clock_->now();
       return true;
@@ -393,10 +377,10 @@ private:
   void decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const;
   void decelerateBeforeSearchStart(
     const Pose & search_start_offset_pose, PathWithLaneId & path) const;
-  PathWithLaneId generateStopPath();
-  PathWithLaneId generateFeasibleStopPath();
+  PathWithLaneId generateStopPath() const;
+  PathWithLaneId generateFeasibleStopPath() const;
 
-  void keepStoppedWithCurrentPath(PathWithLaneId & path);
+  void keepStoppedWithCurrentPath(PathWithLaneId & path) const;
   double calcSignedArcLengthFromEgo(const PathWithLaneId & path, const Pose & pose) const;
 
   // status
@@ -411,6 +395,7 @@ private:
   bool hasDecidedPath() const;
   void decideVelocity();
   bool foundPullOverPath() const;
+  void updateStatus(const BehaviorModuleOutput & output);
 
   // validation
   bool hasEnoughDistance(const PullOverPath & pull_over_path) const;
@@ -433,16 +418,13 @@ private:
     const std::vector<PullOverPath> & pull_over_path_candidates,
     const GoalCandidates & goal_candidates) const;
 
-  // deal with pull over partial paths
-  void transitionToNextPathIfFinishingCurrentPath();
-
   // lanes and drivable area
-  void setLanes();
+  std::vector<DrivableLanes> generateDrivableLanes() const;
   void setDrivableAreaInfo(BehaviorModuleOutput & output) const;
 
   // output setter
-  void setOutput(BehaviorModuleOutput & output);
-  void setStopPath(BehaviorModuleOutput & output);
+  void setOutput(BehaviorModuleOutput & output) const;
+  void setStopPath(BehaviorModuleOutput & output) const;
 
   /**
    * @brief Sets a stop path in the current path based on safety conditions and previous paths.
@@ -453,7 +435,7 @@ private:
    *
    * @param output BehaviorModuleOutput
    */
-  void setStopPathFromCurrentPath(BehaviorModuleOutput & output);
+  void setStopPathFromCurrentPath(BehaviorModuleOutput & output) const;
   void setModifiedGoal(BehaviorModuleOutput & output) const;
   void setTurnSignalInfo(BehaviorModuleOutput & output) const;
 
