@@ -49,8 +49,8 @@ jobs:
           commit-message: "chore: update tool versions"
           body: ""
           labels: |
-            bot
-            update-tool-versions
+            tag:bot
+            tag:update-tool-versions
           signoff: true
           delete-branch: true
 
