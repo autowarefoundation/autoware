@@ -40,8 +40,6 @@ SideShiftModule::SideShiftModule(
   const std::unordered_map<std::string, std::shared_ptr<RTCInterface> > & rtc_interface_ptr_map)
 : SceneModuleInterface{name, node, rtc_interface_ptr_map}, parameters_{parameters}
 {
-  // If lateral offset is subscribed, it approves side shift module automatically
-  clearWaitingApproval();
 }
 
 void SideShiftModule::initVariables()
@@ -80,7 +78,7 @@ void SideShiftModule::setParameters(const std::shared_ptr<SideShiftParameters> &
 
 bool SideShiftModule::isExecutionRequested() const
 {
-  if (current_state_ == ModuleStatus::RUNNING) {
+  if (getCurrentStatus() == ModuleStatus::RUNNING) {
     return true;
   }
 
@@ -112,7 +110,7 @@ bool SideShiftModule::isReadyForNextRequest(
   return false;
 }
 
-ModuleStatus SideShiftModule::updateState()
+bool SideShiftModule::canTransitSuccessState()
 {
   // Never return the FAILURE. When the desired offset is zero and the vehicle is in the original
   // drivable area,this module can stop the computation and return SUCCESS.
@@ -150,7 +148,7 @@ ModuleStatus SideShiftModule::updateState()
     no_shifted_plan);
 
   if (no_request && no_shifted_plan && no_offset_diff) {
-    return ModuleStatus::SUCCESS;
+    return true;
   }
 
   const auto & current_lanes = utils::getCurrentLanes(planner_data_);
@@ -169,7 +167,7 @@ ModuleStatus SideShiftModule::updateState()
   } else {
     shift_status_ = SideShiftStatus::AFTER_SHIFT;
   }
-  return ModuleStatus::RUNNING;
+  return false;
 }
 
 void SideShiftModule::updateData()
@@ -184,7 +182,7 @@ void SideShiftModule::updateData()
     }
   }
 
-  if (current_state_ != ModuleStatus::RUNNING && current_state_ != ModuleStatus::IDLE) {
+  if (getCurrentStatus() != ModuleStatus::RUNNING && getCurrentStatus() != ModuleStatus::IDLE) {
     return;
   }
 
@@ -330,8 +328,6 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
   path_reference_ = getPreviousModuleOutput().reference_path;
 
   prev_output_ = shifted_path;
-
-  waitApproval();
 
   return output;
 }
