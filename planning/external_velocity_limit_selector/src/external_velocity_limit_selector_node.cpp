@@ -46,6 +46,7 @@ VelocityLimit getHardestLimit(
     // find hardest max velocity
     if (max_velocity < hardest_max_velocity) {
       hardest_limit.stamp = limit.second.stamp;
+      hardest_limit.sender = limit.first;
       hardest_limit.max_velocity = max_velocity;
       hardest_max_velocity = max_velocity;
     }

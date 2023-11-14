@@ -42,6 +42,7 @@
 #include "tier4_debug_msgs/msg/float32_stamped.hpp"         // temporary
 #include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"  // temporary
 #include "tier4_planning_msgs/msg/velocity_limit.hpp"       // temporary
+#include "visualization_msgs/msg/marker_array.hpp"
 
 #include <iostream>
 #include <memory>
@@ -63,6 +64,7 @@ using nav_msgs::msg::Odometry;
 using tier4_debug_msgs::msg::Float32Stamped;        // temporary
 using tier4_planning_msgs::msg::StopSpeedExceeded;  // temporary
 using tier4_planning_msgs::msg::VelocityLimit;      // temporary
+using visualization_msgs::msg::MarkerArray;
 
 struct Motion
 {
@@ -80,6 +82,7 @@ public:
 
 private:
   rclcpp::Publisher<Trajectory>::SharedPtr pub_trajectory_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_virtual_wall_;
   rclcpp::Publisher<StopSpeedExceeded>::SharedPtr pub_over_stop_velocity_;
   rclcpp::Subscription<Odometry>::SharedPtr sub_current_odometry_;
   rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr sub_current_acceleration_;
@@ -95,6 +98,7 @@ private:
   double max_velocity_with_deceleration_;         // maximum velocity with deceleration
                                                   // for external velocity limit
   double wheelbase_;                              // wheelbase
+  double base_link2front_;                        // base_link to front
 
   TrajectoryPoints prev_output_;  // previously published trajectory
 
@@ -153,6 +157,7 @@ private:
   {
     double velocity{0.0};  // current external_velocity_limit
     double dist{0.0};      // distance to set external velocity limit
+    std::string sender{""};
   };
   ExternalVelocityLimit
     external_velocity_limit_;  // velocity and distance constraint  of external velocity limit

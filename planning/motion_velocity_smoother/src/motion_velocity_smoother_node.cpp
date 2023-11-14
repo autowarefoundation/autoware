@@ -14,6 +14,7 @@
 
 #include "motion_velocity_smoother/motion_velocity_smoother_node.hpp"
 
+#include "motion_utils/marker/marker_helper.hpp"
 #include "motion_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
 #include "motion_velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
 #include "motion_velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
@@ -41,6 +42,7 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   // set common params
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   wheelbase_ = vehicle_info.wheel_base_m;
+  base_link2front_ = vehicle_info.max_longitudinal_offset_m;
   initCommonParam();
   over_stop_velocity_warn_thr_ = declare_parameter<double>("over_stop_velocity_warn_thr");
 
@@ -49,6 +51,7 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
 
   // publishers, subscribers
   pub_trajectory_ = create_publisher<Trajectory>("~/output/trajectory", 1);
+  pub_virtual_wall_ = create_publisher<MarkerArray>("~/virtual_wall", 1);
   pub_velocity_limit_ = create_publisher<VelocityLimit>(
     "~/output/current_velocity_limit_mps", rclcpp::QoS{1}.transient_local());
   pub_dist_to_stopline_ = create_publisher<Float32Stamped>("~/distance_to_stopline", 1);
@@ -328,6 +331,9 @@ void MotionVelocitySmootherNode::calcExternalVelocityLimit()
   if (!external_velocity_limit_ptr_) {
     return;
   }
+
+  // sender
+  external_velocity_limit_.sender = external_velocity_limit_ptr_->sender;
 
   // on the first time, apply directly
   if (prev_output_.empty() || !current_closest_point_from_prev_output_) {
@@ -889,6 +895,14 @@ void MotionVelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & t
   // apply external velocity limit from the inserted point
   trajectory_utils::applyMaximumVelocityLimit(
     *inserted_index, traj.size(), external_velocity_limit_.velocity, traj);
+
+  // create virtual wall
+  if (std::abs(external_velocity_limit_.velocity) < 1e-3) {
+    const auto virtual_wall_marker = motion_utils::createStopVirtualWallMarker(
+      traj.at(*inserted_index).pose, external_velocity_limit_.sender, this->now(), 0,
+      base_link2front_);
+    pub_virtual_wall_->publish(virtual_wall_marker);
+  }
 
   RCLCPP_DEBUG(
     get_logger(), "externalVelocityLimit : limit_vel = %.3f", external_velocity_limit_.velocity);
