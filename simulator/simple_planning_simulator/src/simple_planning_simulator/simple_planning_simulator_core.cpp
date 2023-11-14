@@ -210,7 +210,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
 
   // control mode
   current_control_mode_.mode = ControlModeReport::AUTONOMOUS;
-  current_manual_gear_cmd_.command = GearCommand::DRIVE;
+  current_manual_gear_cmd_.command = GearCommand::PARK;
 }
 
 void SimplePlanningSimulator::initialize_vehicle_model()
