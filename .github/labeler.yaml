@@ -31,7 +31,7 @@
   - planning/**/*
 "component:sensing":
   - sensing/**/*
-"component:simulator":
+"component:simulation":
   - simulator/**/*
 "component:system":
   - system/**/*
