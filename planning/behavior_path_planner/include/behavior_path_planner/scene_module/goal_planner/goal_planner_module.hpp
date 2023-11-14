@@ -287,27 +287,47 @@ public:
     }
   }
 
-  CandidateOutput planCandidate() const override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
   void processOnExit() override;
   void updateData() override;
+  void postProcess() override;
   void setParameters(const std::shared_ptr<GoalPlannerParameters> & parameters);
   void acceptVisitor(
     [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
   {
   }
+  CandidateOutput planCandidate() const override { return CandidateOutput{}; }
 
 private:
+  /*　
+   * state transitions and plan function used in each state
+   *
+   * +--------------------------+
+   * | RUNNING                  |
+   * | planPullOverAsCandidate()|
+   * +------------+-------------+
+   *              | hasDecidedPath()
+   *  2           v
+   * +--------------------------+
+   * | WAITING_APPROVAL         |
+   * | planPullOverAsCandidate()|
+   * +------------+-------------+
+   *              | isActivated()
+   *  3           v
+   * +--------------------------+
+   * | RUNNING                  |
+   * | planPullOverAsOutput()   |
+   * +--------------------------+
+   */
+
   // The start_planner activates when it receives a new route,
   // so there is no need to terminate the goal planner.
   // If terminating it, it may switch to lane following and could generate an inappropriate path.
   bool canTransitSuccessState() override { return false; }
-
   bool canTransitFailureState() override { return false; }
-
   bool canTransitIdleToRunningState() override { return true; }
 
   mutable StartGoalPlannerData goal_planner_data_;
@@ -411,8 +431,9 @@ private:
   void returnToLaneParking();
 
   // plan pull over path
-  BehaviorModuleOutput planWithGoalModification();
-  BehaviorModuleOutput planWaitingApprovalWithGoalModification();
+  BehaviorModuleOutput planPullOver();
+  BehaviorModuleOutput planPullOverAsOutput();
+  BehaviorModuleOutput planPullOverAsCandidate();
   void selectSafePullOverPath();
   std::vector<PullOverPath> sortPullOverPathCandidatesByGoalPriority(
     const std::vector<PullOverPath> & pull_over_path_candidates,
