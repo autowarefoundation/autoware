@@ -14,7 +14,7 @@ jobs:
     container: ros:${{ needs.load-env.outputs.rosdistro }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install pip for rosdep
         run: |
