@@ -4,7 +4,7 @@
 daysUntilClose: false
 
 # Label to use when marking as stale
-staleLabel: stale
+staleLabel: status:stale
 
 # Comment to post when marking as stale
 markComment: >
