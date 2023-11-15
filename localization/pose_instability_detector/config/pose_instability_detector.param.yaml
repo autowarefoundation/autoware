@@ -1,0 +1,9 @@
+/**:
+  ros__parameters:
+    interval_sec: 1.0  # [sec]
+    threshold_diff_position_x: 1.0  # [m]
+    threshold_diff_position_y: 1.0  # [m]
+    threshold_diff_position_z: 1.0  # [m]
+    threshold_diff_angle_x: 1.0  # [rad]
+    threshold_diff_angle_y: 1.0  # [rad]
+    threshold_diff_angle_z: 1.0  # [rad]

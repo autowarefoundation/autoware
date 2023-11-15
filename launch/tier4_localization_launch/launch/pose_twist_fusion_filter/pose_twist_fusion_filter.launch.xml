@@ -33,4 +33,12 @@
       <arg name="out_accel" value="/localization/acceleration"/>
     </include>
   </group>
+
+  <group>
+    <include file="$(find-pkg-share pose_instability_detector)/launch/pose_instability_detector.launch.xml">
+      <arg name="input_odometry" value="/localization/kinematic_state"/>
+      <arg name="input_twist" value="/localization/twist_estimator/twist_with_covariance"/>
+      <arg name="param_file" value="$(find-pkg-share pose_instability_detector)/config/pose_instability_detector.param.yaml"/>
+    </include>
+  </group>
 </launch>

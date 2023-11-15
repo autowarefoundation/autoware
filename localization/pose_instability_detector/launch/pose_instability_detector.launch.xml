@@ -1,0 +1,14 @@
+<launch>
+  <arg name="node_name" default="pose_instability_detector"/>
+  <arg name="param_file" default="$(find-pkg-share pose_instability_detector)/config/pose_instability_detector.param.yaml"/>
+
+  <!-- Topics -->
+  <arg name="input_odometry" default="~/input/odometry"/>
+  <arg name="input_twist" default="~/input/twist"/>
+
+  <node pkg="pose_instability_detector" exec="pose_instability_detector" name="$(var node_name)" output="log">
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/twist" to="$(var input_twist)"/>
+    <param from="$(var param_file)"/>
+  </node>
+</launch>

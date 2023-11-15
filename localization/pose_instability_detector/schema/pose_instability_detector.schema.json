@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Pose Instability Detector Nodes",
+  "type": "object",
+  "definitions": {
+    "pose_instability_detector_node": {
+      "type": "object",
+      "properties": {
+        "interval_sec": {
+          "type": "number",
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "description": "The interval of timer_callback in seconds."
+        },
+        "threshold_diff_position_x": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.0,
+          "description": "The threshold of diff_position x (m)."
+        },
+        "threshold_diff_position_y": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.0,
+          "description": "The threshold of diff_position y (m)."
+        },
+        "threshold_diff_position_z": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.0,
+          "description": "The threshold of diff_position z (m)."
+        },
+        "threshold_diff_angle_x": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.0,
+          "description": "The threshold of diff_angle x (rad)."
+        },
+        "threshold_diff_angle_y": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.0,
+          "description": "The threshold of diff_angle y (rad)."
+        },
+        "threshold_diff_angle_z": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0.0,
+          "description": "The threshold of diff_angle z (rad)."
+        }
+      },
+      "required": [
+        "interval_sec",
+        "threshold_diff_position_x",
+        "threshold_diff_position_y",
+        "threshold_diff_position_z",
+        "threshold_diff_angle_x",
+        "threshold_diff_angle_y",
+        "threshold_diff_angle_z"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/pose_instability_detector_node"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
