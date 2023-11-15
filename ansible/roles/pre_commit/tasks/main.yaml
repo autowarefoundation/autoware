@@ -7,7 +7,7 @@
 - name: Install clang-format
   ansible.builtin.pip:
     name: clang-format
-    version: "{{ clang_format_version }}"
+    version: "{{ pre_commit_clang_format_version }}"
     executable: pip3
 
 - name: Install Go

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Set up development environment for Autoware Core/Universe.
-# Usage: setup-dev-env.sh <installation_type('core' or 'universe')> [-y] [-v] [--no-nvidia]
+# Usage: setup-dev-env.sh <ros2_installation_type('core' or 'universe')> [-y] [-v] [--no-nvidia]
 # Note: -y option is only for CI.
 
 set -e
@@ -90,11 +90,11 @@ fi
 
 # Check installation of dev package
 if [ "$option_runtime" = "true" ]; then
-    ansible_args+=("--extra-vars" "install_devel=false")
+    ansible_args+=("--extra-vars" "tensorrt_install_devel=false")
     # ROS installation type, default "desktop"
-    ansible_args+=("--extra-vars" "installation_type=ros-base")
+    ansible_args+=("--extra-vars" "ros2_installation_type=ros-base")
 else
-    ansible_args+=("--extra-vars" "install_devel=true")
+    ansible_args+=("--extra-vars" "tensorrt_install_devel=true")
 fi
 
 ansible_args+=("--extra-vars" "data_dir=$option_data_dir")

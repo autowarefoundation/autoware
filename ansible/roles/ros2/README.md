@@ -19,11 +19,11 @@ $ apt-cache policy | grep universe
 | Name              | Required | Description                                      |
 | ----------------- | -------- | ------------------------------------------------ |
 | rosdistro         | true     | The ROS distro.                                  |
-| installation_type | false    | The installation type (`desktop` or `ros-base`). |
+| ros2_installation_type | false    | The installation type (`desktop` or `ros-base`). |
 
 ## Manual Installation
 
-The `installation_type` variable can also be found in:
+The `ros2_installation_type` variable can also be found in:
 [./defaults/main.yaml](./defaults/main.yaml)
 
 For Universe, the `rosdistro` variable can also be found in:
@@ -57,8 +57,8 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo apt update
 
 # Desktop Install
-installation_type=desktop
-sudo apt install ros-${rosdistro}-${installation_type}
+ros2_installation_type=desktop
+sudo apt install ros-${rosdistro}-${ros2_installation_type}
 
 # Environment setup
 # (Optional) You can source ros2 in the ~/.bashrc file.
