@@ -11,3 +11,5 @@
     min_points_and_distance_ratio:
     #UNKNOWN,  CAR,    TRUCK,     BUS,    TRAILER, MOTORBIKE, BICYCLE,      PEDESTRIAN
       [800.0,  800.0,  800.0,    800.0,   800.0,      800.0,    800.0,         800.0]
+
+    using_2d_validator: false
