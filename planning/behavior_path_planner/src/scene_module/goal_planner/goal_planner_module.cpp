@@ -1064,9 +1064,10 @@ PathWithLaneId GoalPlannerModule::generateStopPath() const
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
   const double pull_over_velocity = parameters_->pull_over_velocity;
 
-  const auto current_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, common_parameters.backward_path_length, std::numeric_limits<double>::max(),
-    /*forward_only_in_route*/ true);
+  const lanelet::ConstLanelets current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, parameters_->backward_goal_search_length,
+    parameters_->forward_goal_search_length,
+    /*forward_only_in_route*/ false);
 
   if (current_lanes.empty()) {
     return PathWithLaneId{};
@@ -1152,9 +1153,10 @@ PathWithLaneId GoalPlannerModule::generateFeasibleStopPath() const
   const auto & common_parameters = planner_data_->parameters;
 
   // generate stop reference path
-  const auto current_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, common_parameters.backward_path_length, std::numeric_limits<double>::max(),
-    /*forward_only_in_route*/ true);
+  const lanelet::ConstLanelets current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, parameters_->backward_goal_search_length,
+    parameters_->forward_goal_search_length,
+    /*forward_only_in_route*/ false);
   const auto s_current = lanelet::utils::getArcCoordinates(current_lanes, current_pose).length;
   const double s_start = std::max(0.0, s_current - common_parameters.backward_path_length);
   const double s_end = s_current + common_parameters.forward_path_length;
@@ -1621,10 +1623,10 @@ bool GoalPlannerModule::isSafePath() const
     planner_data_->self_odometry->twist.twist.linear.y);
   const auto & dynamic_object = planner_data_->dynamic_object;
   const auto & route_handler = planner_data_->route_handler;
-  const double backward_path_length = planner_data_->parameters.backward_path_length;
-  const auto current_lanes = utils::getExtendedCurrentLanes(
-    planner_data_, backward_path_length, std::numeric_limits<double>::max(),
-    /*forward_only_in_route*/ true);
+  const lanelet::ConstLanelets current_lanes = utils::getExtendedCurrentLanes(
+    planner_data_, parameters_->backward_goal_search_length,
+    parameters_->forward_goal_search_length,
+    /*forward_only_in_route*/ false);
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *route_handler, left_side_parking_, parameters_->backward_goal_search_length,
     parameters_->forward_goal_search_length);
