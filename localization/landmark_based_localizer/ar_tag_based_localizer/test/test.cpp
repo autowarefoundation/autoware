@@ -14,6 +14,7 @@
 
 #include "../src/ar_tag_based_localizer.hpp"
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <gtest/gtest.h>
@@ -29,8 +30,8 @@ protected:
   void SetUp() override
   {
     const std::string yaml_path =
-      "../../install/ar_tag_based_localizer/share/ar_tag_based_localizer/config/"
-      "ar_tag_based_localizer.param.yaml";
+      ament_index_cpp::get_package_share_directory("ar_tag_based_localizer") +
+      "/config/ar_tag_based_localizer.param.yaml";
 
     rcl_params_t * params_st = rcl_yaml_node_struct_init(rcl_get_default_allocator());
     if (!rcl_parse_yaml_file(yaml_path.c_str(), params_st)) {
