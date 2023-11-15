@@ -53,7 +53,17 @@ void reuse_previous_poses(
                                                         prev_poses, 0, ego_point) < 0.0;
   const auto ego_is_far = !prev_poses.empty() &&
                           tier4_autoware_utils::calcDistance2d(ego_point, prev_poses.front()) < 0.0;
-  if (!ego_is_behind && !ego_is_far && prev_poses.size() > 1) {
+  // make sure the reused points are not behind the current original drivable area
+  LineString2d left_bound;
+  LineString2d right_bound;
+  for (const auto & p : path.left_bound) left_bound.push_back(convert_point(p));
+  for (const auto & p : path.right_bound) right_bound.push_back(convert_point(p));
+  LineString2d prev_poses_ls;
+  for (const auto & p : prev_poses) prev_poses_ls.push_back(convert_point(p.position));
+  auto prev_poses_across_bounds = boost::geometry::intersects(left_bound, prev_poses_ls) ||
+                                  boost::geometry::intersects(right_bound, prev_poses_ls);
+
+  if (!ego_is_behind && !ego_is_far && prev_poses.size() > 1 && !prev_poses_across_bounds) {
     const auto first_idx =
       motion_utils::findNearestSegmentIndex(prev_poses, path.points.front().point.pose);
     const auto deviation =
