@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up sd
-        uses: kenji-miyake/setup-sd@v1
+        uses: kenji-miyake/setup-sd@v2
 
       - name: Get clang-format version
         id: get-clang-format-version
