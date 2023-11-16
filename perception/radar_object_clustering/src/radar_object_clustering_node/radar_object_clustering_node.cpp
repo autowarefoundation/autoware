@@ -71,15 +71,15 @@ RadarObjectClusteringNode::RadarObjectClusteringNode(const rclcpp::NodeOptions &
     std::bind(&RadarObjectClusteringNode::onSetParam, this, std::placeholders::_1));
 
   // Node Parameter
-  node_param_.angle_threshold = declare_parameter<double>("angle_threshold", 0.174);
-  node_param_.distance_threshold = declare_parameter<double>("distance_threshold", 4.0);
-  node_param_.velocity_threshold = declare_parameter<double>("velocity_threshold", 2.0);
-  node_param_.is_fixed_label = declare_parameter<bool>("is_fixed_label", false);
-  node_param_.fixed_label = declare_parameter<std::string>("fixed_label", "UNKNOWN");
-  node_param_.is_fixed_size = declare_parameter<bool>("is_fixed_size", false);
-  node_param_.size_x = declare_parameter<double>("size_x", 4.0);
-  node_param_.size_y = declare_parameter<double>("size_y", 1.5);
-  node_param_.size_z = declare_parameter<double>("size_z", 1.5);
+  node_param_.angle_threshold = declare_parameter<double>("angle_threshold");
+  node_param_.distance_threshold = declare_parameter<double>("distance_threshold");
+  node_param_.velocity_threshold = declare_parameter<double>("velocity_threshold");
+  node_param_.is_fixed_label = declare_parameter<bool>("is_fixed_label");
+  node_param_.fixed_label = declare_parameter<std::string>("fixed_label");
+  node_param_.is_fixed_size = declare_parameter<bool>("is_fixed_size");
+  node_param_.size_x = declare_parameter<double>("size_x");
+  node_param_.size_y = declare_parameter<double>("size_y");
+  node_param_.size_z = declare_parameter<double>("size_z");
 
   // Subscriber
   sub_objects_ = create_subscription<DetectedObjects>(

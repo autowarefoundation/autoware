@@ -4,28 +4,12 @@
   <!-- Output -->
   <arg name="output/objects" default="~/output/objects"/>
   <!-- Parameter -->
-  <arg name="angle_threshold" default="0.174"/>
-  <arg name="distance_threshold" default="10.0"/>
-  <arg name="velocity_threshold" default="4.0"/>
-  <arg name="is_fixed_label" default="false"/>
-  <arg name="fixed_label" default="UNKNOWN"/>
-  <arg name="is_fixed_size" default="false"/>
-  <arg name="size_x" default="4.0"/>
-  <arg name="size_y" default="1.5"/>
-  <arg name="size_z" default="1.5"/>
+  <arg name="radar_object_clustering_param_path" default="$(find-pkg-share radar_object_clustering)/config/radar_object_clustering.param.yaml"/>
 
   <!-- Node -->
   <node pkg="radar_object_clustering" exec="radar_object_clustering_node" name="radar_object_clustering" output="screen">
     <remap from="~/input/objects" to="$(var input/objects)"/>
     <remap from="~/output/objects" to="$(var output/objects)"/>
-    <param name="angle_threshold" value="$(var angle_threshold)"/>
-    <param name="distance_threshold" value="$(var distance_threshold)"/>
-    <param name="velocity_threshold" value="$(var velocity_threshold)"/>
-    <param name="is_fixed_label" value="$(var is_fixed_label)"/>
-    <param name="fixed_label" value="$(var fixed_label)"/>
-    <param name="is_fixed_size" value="$(var is_fixed_size)"/>
-    <param name="size_x" value="$(var size_x)"/>
-    <param name="size_y" value="$(var size_y)"/>
-    <param name="size_z" value="$(var size_z)"/>
+    <param from="$(var radar_object_clustering_param_path)"/>
   </node>
 </launch>

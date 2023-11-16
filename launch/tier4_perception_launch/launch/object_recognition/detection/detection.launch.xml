@@ -32,6 +32,7 @@
   <!-- Radar parameters -->
   <arg name="input/radar" default="/sensing/radar/detected_objects"/>
   <arg name="radar_lanelet_filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
+  <arg name="radar_object_clustering_param_path" default="$(find-pkg-share radar_object_clustering)/config/radar_object_clustering.param.yaml"/>
 
   <!-- Camera-LiDAR fusion parameters -->
   <arg name="remove_unknown" default="true"/>
@@ -145,6 +146,7 @@
       <arg name="input/radar" value="$(var input/radar)"/>
       <arg name="output/objects" value="objects"/>
       <arg name="radar_lanelet_filtering_range_param" value="$(var radar_lanelet_filtering_range_param)"/>
+      <arg name="radar_object_clustering_param_path" value="$(var radar_object_clustering_param_path)"/>
     </include>
   </group>
 </launch>
