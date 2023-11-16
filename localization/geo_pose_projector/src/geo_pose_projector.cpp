@@ -36,7 +36,8 @@ GeoPoseProjector::GeoPoseProjector()
 
   // Subscribe to geo_pose topic
   geo_pose_sub_ = create_subscription<GeoPoseWithCovariance>(
-    "input_geo_pose", 10, [this](const GeoPoseWithCovariance::SharedPtr msg) { on_geo_pose(msg); });
+    "input_geo_pose", 10,
+    [this](const GeoPoseWithCovariance::ConstSharedPtr msg) { on_geo_pose(msg); });
 
   // Publish pose topic
   pose_pub_ = create_publisher<PoseWithCovariance>("output_pose", 10);
@@ -49,7 +50,7 @@ GeoPoseProjector::GeoPoseProjector()
   }
 }
 
-void GeoPoseProjector::on_geo_pose(const GeoPoseWithCovariance::SharedPtr msg)
+void GeoPoseProjector::on_geo_pose(const GeoPoseWithCovariance::ConstSharedPtr msg)
 {
   if (!projector_info_) {
     RCLCPP_WARN_THROTTLE(

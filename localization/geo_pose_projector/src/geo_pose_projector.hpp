@@ -39,7 +39,7 @@ public:
   GeoPoseProjector();
 
 private:
-  void on_geo_pose(const GeoPoseWithCovariance::SharedPtr msg);
+  void on_geo_pose(const GeoPoseWithCovariance::ConstSharedPtr msg);
 
   component_interface_utils::Subscription<MapProjectorInfo>::SharedPtr sub_map_projector_info_;
   rclcpp::Subscription<GeoPoseWithCovariance>::SharedPtr geo_pose_sub_;
