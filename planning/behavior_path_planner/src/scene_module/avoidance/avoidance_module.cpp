@@ -1010,13 +1010,13 @@ AvoidOutlines AvoidanceModule::generateAvoidOutline(
       desire_shift_length > 0.0 ? feasible_relative_shift_length + current_ego_shift
                                 : -1.0 * feasible_relative_shift_length + current_ego_shift;
 
-    const auto feasible =
+    const auto infeasible =
       std::abs(feasible_shift_length - object.overhang_dist) <
       0.5 * planner_data_->parameters.vehicle_width + object_parameter.safety_buffer_lateral;
-    if (feasible) {
+    if (infeasible) {
       RCLCPP_WARN_THROTTLE(
         getLogger(), *clock_, 1000, "feasible shift length is not enough to avoid. ");
-      object.reason = AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN;
+      object.reason = AvoidanceDebugFactor::TOO_LARGE_JERK;
       return boost::none;
     }
 
