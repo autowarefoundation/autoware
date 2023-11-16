@@ -168,19 +168,38 @@ public:
     return false;
   }
 
-  void set_pull_over_path(const PullOverPath & value)
+  void set_pull_over_path(const PullOverPath & path)
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex_);
-    pull_over_path_ = std::make_shared<PullOverPath>(value);
+    pull_over_path_ = std::make_shared<PullOverPath>(path);
+    if (path.type != PullOverPlannerType::NONE && path.type != PullOverPlannerType::FREESPACE) {
+      lane_parking_pull_over_path_ = std::make_shared<PullOverPath>(path);
+    }
+
     last_path_update_time_ = clock_->now();
   }
 
-  void set_pull_over_path(const std::shared_ptr<PullOverPath> & value)
+  void set_pull_over_path(const std::shared_ptr<PullOverPath> & path)
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex_);
-    pull_over_path_ = value;
+    pull_over_path_ = path;
+    if (path->type != PullOverPlannerType::NONE && path->type != PullOverPlannerType::FREESPACE) {
+      lane_parking_pull_over_path_ = path;
+    }
     last_path_update_time_ = clock_->now();
   }
+
+  template <typename... Args>
+  void set(Args... args)
+  {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    (..., set(args));
+  }
+  void set(const GoalCandidates & arg) { set_goal_candidates(arg); }
+  void set(const std::vector<PullOverPath> & arg) { set_pull_over_path_candidates(arg); }
+  void set(const std::shared_ptr<PullOverPath> & arg) { set_pull_over_path(arg); }
+  void set(const PullOverPath & arg) { set_pull_over_path(arg); }
+  void set(const GoalCandidate & arg) { set_modified_goal_pose(arg); }
 
   void clearPullOverPath()
   {
@@ -221,6 +240,7 @@ public:
   }
 
   DEFINE_GETTER_WITH_MUTEX(std::shared_ptr<PullOverPath>, pull_over_path)
+  DEFINE_GETTER_WITH_MUTEX(std::shared_ptr<PullOverPath>, lane_parking_pull_over_path)
   DEFINE_GETTER_WITH_MUTEX(std::optional<rclcpp::Time>, last_path_update_time)
   DEFINE_GETTER_WITH_MUTEX(std::optional<rclcpp::Time>, last_path_idx_increment_time)
 
@@ -231,6 +251,7 @@ public:
 
 private:
   std::shared_ptr<PullOverPath> pull_over_path_{nullptr};
+  std::shared_ptr<PullOverPath> lane_parking_pull_over_path_{nullptr};
   std::vector<PullOverPath> pull_over_path_candidates_;
   GoalCandidates goal_candidates_{};
   std::optional<GoalCandidate> modified_goal_pose_;
@@ -394,6 +415,7 @@ private:
   void generateGoalCandidates();
 
   // stop or decelerate
+  void deceleratePath(PullOverPath & pull_over_path) const;
   void decelerateForTurnSignal(const Pose & stop_pose, PathWithLaneId & path) const;
   void decelerateBeforeSearchStart(
     const Pose & search_start_offset_pose, PathWithLaneId & path) const;
@@ -428,13 +450,15 @@ private:
 
   // freespace parking
   bool planFreespacePath();
-  void returnToLaneParking();
+  bool canReturnToLaneParking();
 
   // plan pull over path
   BehaviorModuleOutput planPullOver();
   BehaviorModuleOutput planPullOverAsOutput();
   BehaviorModuleOutput planPullOverAsCandidate();
-  void selectSafePullOverPath();
+  std::optional<std::pair<PullOverPath, GoalCandidate>> selectPullOverPath(
+    const std::vector<PullOverPath> & pull_over_path_candidates,
+    const GoalCandidates & goal_candidates) const;
   std::vector<PullOverPath> sortPullOverPathCandidatesByGoalPriority(
     const std::vector<PullOverPath> & pull_over_path_candidates,
     const GoalCandidates & goal_candidates) const;
