@@ -4,18 +4,18 @@ This role installs dependent tools for [pre-commit](https://pre-commit.com/).
 
 ## Inputs
 
-| Name                 | Required | Description                 |
-| -------------------- | -------- | --------------------------- |
-| clang_format_version | false    | The version of ClangFormat. |
+| Name                            | Required | Description                 |
+| ------------------------------- | -------- | --------------------------- |
+| pre_commit_clang_format_version | false    | The version of ClangFormat. |
 
 ## Manual Installation
 
-The `clang_format_version` variable can also be found in:
+The `pre_commit_clang_format_version` variable can also be found in:
 [./defaults/main.yaml](./defaults/main.yaml)
 
 ```bash
-clang_format_version=17.0.4
-pip3 install pre-commit clang-format==${clang_format_version}
+pre_commit_clang_format_version=17.0.4
+pip3 install pre-commit clang-format==${pre_commit_clang_format_version}
 
 sudo apt install golang
 ```

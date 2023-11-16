@@ -35,8 +35,8 @@ jobs:
 
       - name: Update clang-format version
         run: |
-          sd '(clang_format_version): .*' '$1: ${{ steps.get-clang-format-version.outputs.version }}' ansible/roles/pre_commit/defaults/main.yaml
-          sd '(clang_format_version)=.*' '$1=${{ steps.get-clang-format-version.outputs.version }}' ansible/roles/pre_commit/README.md
+          sd '(pre_commit_clang_format_version): .*' '$1: ${{ steps.get-clang-format-version.outputs.version }}' ansible/roles/pre_commit/defaults/main.yaml
+          sd '(pre_commit_clang_format_version)=.*' '$1=${{ steps.get-clang-format-version.outputs.version }}' ansible/roles/pre_commit/README.md
 
       - name: Create PR
         id: create-pr

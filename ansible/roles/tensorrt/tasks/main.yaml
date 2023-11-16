@@ -23,7 +23,7 @@
     allow_change_held_packages: true
     allow_downgrade: true
     update_cache: true
-  when: install_devel | bool
+  when: tensorrt_install_devel | bool
 
 # apt-mark hold
 - name: Prevent CUDA-related packages from upgrading
@@ -49,4 +49,4 @@
     - libnvinfer-plugin-dev
     - libnvparsers-dev
     - libnvonnxparsers-dev
-  when: install_devel | bool
+  when: tensorrt_install_devel | bool
