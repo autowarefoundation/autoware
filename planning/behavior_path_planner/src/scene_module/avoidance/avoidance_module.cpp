@@ -222,6 +222,19 @@ bool AvoidanceModule::canTransitSuccessState()
   const bool has_base_offset =
     std::abs(path_shifter_.getBaseOffset()) > parameters_->lateral_avoid_check_threshold;
 
+  // If the vehicle is on the shift line, keep RUNNING.
+  {
+    const size_t idx = planner_data_->findEgoIndex(path_shifter_.getReferencePath().points);
+    const auto within = [](const auto & line, const size_t idx) {
+      return line.start_idx < idx && idx < line.end_idx;
+    };
+    for (const auto & shift_line : path_shifter_.getShiftLines()) {
+      if (within(shift_line, idx)) {
+        return false;
+      }
+    }
+  }
+
   // Nothing to do. -> EXIT.
   if (!has_avoidance_target) {
     if (!has_shift_point && !has_base_offset) {
