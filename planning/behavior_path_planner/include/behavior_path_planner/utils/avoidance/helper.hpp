@@ -185,7 +185,8 @@ public:
       max_shift_length, getLateralMinJerkLimit(), getEgoSpeed());
 
     return std::clamp(
-      1.5 * dynamic_distance, parameters_->object_check_min_forward_distance,
+      1.5 * dynamic_distance + getNominalPrepareDistance(),
+      parameters_->object_check_min_forward_distance,
       parameters_->object_check_max_forward_distance);
   }
 
