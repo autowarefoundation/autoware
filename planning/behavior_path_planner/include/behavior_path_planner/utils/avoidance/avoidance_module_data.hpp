@@ -211,7 +211,8 @@ struct AvoidanceParameters
   double stop_buffer{0.0};
 
   // start avoidance after this time to avoid sudden path change
-  double prepare_time{0.0};
+  double min_prepare_time{0.0};
+  double max_prepare_time{0.0};
 
   // Even if the vehicle speed is zero, avoidance will start after a distance of this much.
   double min_prepare_distance{0.0};

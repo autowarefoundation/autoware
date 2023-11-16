@@ -91,10 +91,16 @@ public:
     return std::max(getEgoSpeed(), values.at(idx));
   }
 
+  double getMinimumPrepareDistance() const
+  {
+    const auto & p = parameters_;
+    return std::max(getEgoSpeed() * p->min_prepare_time, p->min_prepare_distance);
+  }
+
   double getNominalPrepareDistance() const
   {
     const auto & p = parameters_;
-    return std::max(getEgoSpeed() * p->prepare_time, p->min_prepare_distance);
+    return std::max(getEgoSpeed() * p->max_prepare_time, p->min_prepare_distance);
   }
 
   double getNominalAvoidanceDistance(const double shift_length) const
