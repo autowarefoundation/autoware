@@ -55,8 +55,7 @@ OutOfLaneModule::OutOfLaneModule(
   velocity_factor_.init(VelocityFactor::UNKNOWN);
 }
 
-bool OutOfLaneModule::modifyPathVelocity(
-  PathWithLaneId * path, [[maybe_unused]] StopReason * stop_reason)
+bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
 {
   debug_data_.reset_data();
   *stop_reason = planning_utils::initializeStopReason(StopReason::OUT_OF_LANE);
@@ -68,6 +67,19 @@ bool OutOfLaneModule::modifyPathVelocity(
   ego_data.path.points = path->points;
   ego_data.first_path_idx =
     motion_utils::findNearestSegmentIndex(ego_data.path.points, ego_data.pose.position);
+  for (const auto & p : prev_overlapping_path_points_) {
+    const auto nearest_idx =
+      motion_utils::findNearestIndex(ego_data.path.points, p.point.pose, 1.0);
+    const auto insert_idx =
+      motion_utils::findNearestSegmentIndex(ego_data.path.points, p.point.pose, 1.0);
+    if (nearest_idx && insert_idx && *insert_idx > ego_data.first_path_idx) {
+      if (
+        tier4_autoware_utils::calcDistance2d(
+          ego_data.path.points[*nearest_idx].point.pose, p.point.pose) > 0.5)
+        ego_data.path.points.insert(std::next(ego_data.path.points.begin(), *insert_idx), p);
+    }
+  }
+  motion_utils::removeOverlapPoints(ego_data.path.points);
   ego_data.velocity = planner_data_->current_velocity->twist.linear.x;
   ego_data.max_decel = -planner_data_->max_stop_acceleration_threshold;
   stopwatch.tic("calculate_path_footprints");
@@ -87,6 +99,8 @@ bool OutOfLaneModule::modifyPathVelocity(
   debug_data_.path_lanelets = path_lanelets;
   debug_data_.ignored_lanelets = ignored_lanelets;
   debug_data_.other_lanelets = other_lanelets;
+  debug_data_.path = ego_data.path;
+  debug_data_.first_path_idx = ego_data.first_path_idx;
 
   if (params_.skip_if_already_overlapping) {
     debug_data_.current_footprint = current_ego_footprint;
@@ -104,6 +118,10 @@ bool OutOfLaneModule::modifyPathVelocity(
   stopwatch.tic("calculate_overlapping_ranges");
   const auto ranges =
     calculate_overlapping_ranges(path_footprints, path_lanelets, other_lanelets, params_);
+  prev_overlapping_path_points_.clear();
+  for (const auto & range : ranges)
+    prev_overlapping_path_points_.push_back(
+      ego_data.path.points[ego_data.first_path_idx + range.entering_path_idx]);
   const auto calculate_overlapping_ranges_us = stopwatch.toc("calculate_overlapping_ranges");
   // Calculate stop and slowdown points
   stopwatch.tic("calculate_decisions");
@@ -113,14 +131,27 @@ bool OutOfLaneModule::modifyPathVelocity(
   inputs.objects = filter_predicted_objects(*planner_data_->predicted_objects, ego_data, params_);
   inputs.route_handler = planner_data_->route_handler_;
   inputs.lanelets = other_lanelets;
-  auto decisions = calculate_decisions(inputs, params_, logger_);
+  const auto decisions = calculate_decisions(inputs, params_, logger_);
   const auto calculate_decisions_us = stopwatch.toc("calculate_decisions");
   stopwatch.tic("calc_slowdown_points");
-  const auto point_to_insert = calculate_slowdown_point(ego_data, decisions, params_);
+  if (  // reset the previous inserted point if the timer expired
+    prev_inserted_point_ &&
+    (clock_->now() - prev_inserted_point_time_).seconds() > params_.min_decision_duration)
+    prev_inserted_point_.reset();
+  auto point_to_insert =
+    calculate_slowdown_point(ego_data, decisions, prev_inserted_point_, params_);
   const auto calc_slowdown_points_us = stopwatch.toc("calc_slowdown_points");
   stopwatch.tic("insert_slowdown_points");
   debug_data_.slowdowns.clear();
+  if (  // reset the timer if there is no previous inserted point or if we avoid the same lane
+    point_to_insert &&
+    (!prev_inserted_point_ || prev_inserted_point_->slowdown.lane_to_avoid.id() ==
+                                point_to_insert->slowdown.lane_to_avoid.id()))
+    prev_inserted_point_time_ = clock_->now();
+  if (!point_to_insert && prev_inserted_point_) point_to_insert = prev_inserted_point_;
   if (point_to_insert) {
+    prev_inserted_point_ = point_to_insert;
+    RCLCPP_INFO(logger_, "Avoiding lane %lu", point_to_insert->slowdown.lane_to_avoid.id());
     debug_data_.slowdowns = {*point_to_insert};
     auto path_idx = motion_utils::findNearestSegmentIndex(
                       path->points, point_to_insert->point.point.pose.position) +
@@ -132,14 +163,17 @@ bool OutOfLaneModule::modifyPathVelocity(
       tier4_planning_msgs::msg::StopFactor stop_factor;
       stop_factor.stop_pose = point_to_insert->point.point.pose;
       stop_factor.dist_to_stop_pose = motion_utils::calcSignedArcLength(
-        ego_data.path.points, ego_data.pose.position, point_to_insert->point.point.pose.position);
+        path->points, ego_data.pose.position, point_to_insert->point.point.pose.position);
       planning_utils::appendStopReason(stop_factor, stop_reason);
     }
     velocity_factor_.set(
       path->points, planner_data_->current_odometry->pose, point_to_insert->point.point.pose,
       VelocityFactor::UNKNOWN);
+  } else if (!decisions.empty()) {
+    RCLCPP_WARN(logger_, "Could not insert stop point (would violate max deceleration limits)");
   }
   const auto insert_slowdown_points_us = stopwatch.toc("insert_slowdown_points");
+  debug_data_.ranges = inputs.ranges;
 
   const auto total_time_us = stopwatch.toc();
   RCLCPP_DEBUG(
@@ -160,18 +194,23 @@ MarkerArray OutOfLaneModule::createDebugMarkerArray()
   constexpr auto z = 0.0;
   MarkerArray debug_marker_array;
 
-  debug::add_footprint_markers(debug_marker_array, debug_data_.footprints, z);
+  debug::add_footprint_markers(
+    debug_marker_array, debug_data_.footprints, z, debug_data_.prev_footprints);
   debug::add_current_overlap_marker(
-    debug_marker_array, debug_data_.current_footprint, debug_data_.current_overlapped_lanelets, z);
+    debug_marker_array, debug_data_.current_footprint, debug_data_.current_overlapped_lanelets, z,
+    debug_data_.prev_current_overlapped_lanelets);
   debug::add_lanelet_markers(
     debug_marker_array, debug_data_.path_lanelets, "path_lanelets",
-    tier4_autoware_utils::createMarkerColor(0.1, 0.1, 1.0, 0.5));
+    tier4_autoware_utils::createMarkerColor(0.1, 0.1, 1.0, 0.5), debug_data_.prev_path_lanelets);
   debug::add_lanelet_markers(
     debug_marker_array, debug_data_.ignored_lanelets, "ignored_lanelets",
-    tier4_autoware_utils::createMarkerColor(0.7, 0.7, 0.2, 0.5));
+    tier4_autoware_utils::createMarkerColor(0.7, 0.7, 0.2, 0.5), debug_data_.prev_ignored_lanelets);
   debug::add_lanelet_markers(
     debug_marker_array, debug_data_.other_lanelets, "other_lanelets",
-    tier4_autoware_utils::createMarkerColor(0.4, 0.4, 0.7, 0.5));
+    tier4_autoware_utils::createMarkerColor(0.4, 0.4, 0.7, 0.5), debug_data_.prev_other_lanelets);
+  debug::add_range_markers(
+    debug_marker_array, debug_data_.ranges, debug_data_.path, debug_data_.first_path_idx, z,
+    debug_data_.prev_ranges);
   return debug_marker_array;
 }
 

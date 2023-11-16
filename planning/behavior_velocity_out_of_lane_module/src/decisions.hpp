@@ -31,16 +31,6 @@
 
 namespace behavior_velocity_planner::out_of_lane
 {
-struct EnterExitTimes
-{
-  double enter_time;
-  double exit_time;
-};
-struct RangeTimes
-{
-  EnterExitTimes ego;
-  EnterExitTimes object;
-};
 /// @brief calculate the distance along the ego path between ego and some target path index
 /// @param [in] ego_data data related to the ego vehicle
 /// @param [in] target_idx target ego path index
@@ -64,13 +54,15 @@ double time_along_path(const EgoData & ego_data, const size_t target_idx);
 /// the opposite direction, time at enter > time at exit
 std::optional<std::pair<double, double>> object_time_to_range(
   const autoware_auto_perception_msgs::msg::PredictedObject & object, const OverlapRange & range,
-  const std::shared_ptr<route_handler::RouteHandler> route_handler, const rclcpp::Logger & logger);
+  const std::shared_ptr<route_handler::RouteHandler> route_handler, const double dist_buffer,
+  const rclcpp::Logger & logger);
 /// @brief use the lanelet map to estimate the times when an object will reach the enter and exit
 /// points of an overlapping range
 /// @param [in] object dynamic object
 /// @param [in] range overlapping range
 /// @param [in] inputs information used to take decisions (ranges, ego and objects data, route
 /// handler, lanelets)
+/// @param [in] dist_buffer extra distance used to estimate if a collision will occur on the range
 /// @param [in] logger ros logger
 /// @return an optional pair (time at enter [s], time at exit [s]). If the dynamic object drives in
 /// the opposite direction, time at enter > time at exit.
@@ -94,14 +86,6 @@ bool will_collide_on_range(
 bool should_not_enter(
   const OverlapRange & range, const DecisionInputs & inputs, const PlannerParam & params,
   const rclcpp::Logger & logger);
-/// @brief find the most preceding range
-/// @details the most preceding range is the first range in a succession of ranges with overlapping
-/// enter/exit indexes.
-/// @param [in] range range
-/// @param [in] inputs information used to take decisions (ranges, ego and objects data, route
-/// handler, lanelets)
-/// @return most preceding range
-OverlapRange find_most_preceding_range(const OverlapRange & range, const DecisionInputs & inputs);
 /// @brief set the velocity of a decision (or unset it) based on the distance away from the range
 /// @param [out] decision decision to update (either set its velocity or unset the decision)
 /// @param [in] distance distance between ego and the range corresponding to the decision

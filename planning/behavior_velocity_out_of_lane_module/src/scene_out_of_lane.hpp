@@ -22,6 +22,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -48,8 +49,12 @@ public:
   motion_utils::VirtualWalls createVirtualWalls() override;
 
 private:
-  // Parameter
   PlannerParam params_;
+
+  std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId>
+    prev_overlapping_path_points_{};
+  std::optional<SlowdownToInsert> prev_inserted_point_{};
+  rclcpp::Time prev_inserted_point_time_{};
 
 protected:
   int64_t module_id_{};

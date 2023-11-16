@@ -21,21 +21,11 @@
 
 #include <lanelet2_core/LaneletMap.h>
 
-#include <limits>
 #include <vector>
 
 namespace behavior_velocity_planner::out_of_lane
 {
 
-/// @brief representation of an overlap between the ego footprint and some other lane
-struct Overlap
-{
-  double inside_distance = 0.0;  ///!< distance inside the overlap
-  double min_arc_length = std::numeric_limits<double>::infinity();
-  double max_arc_length = 0.0;
-  lanelet::BasicPoint2d min_overlap_point{};  ///!< point with min arc length
-  lanelet::BasicPoint2d max_overlap_point{};  ///!< point with max arc length
-};
 /// @brief calculate the overlap between the given footprint and lanelet
 /// @param [in] path_footprint footprint used to calculate the overlap
 /// @param [in] path_lanelets path lanelets used to calculate arc length along the ego path

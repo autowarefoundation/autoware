@@ -23,7 +23,6 @@
 #include <tf2/utils.h>
 
 #include <algorithm>
-#include <limits>
 
 namespace behavior_velocity_planner::out_of_lane
 {
@@ -76,10 +75,12 @@ OverlapRanges calculate_overlapping_ranges(
 {
   OverlapRanges ranges;
   OtherLane other_lane(lanelet);
+  std::vector<Overlap> overlaps;
   for (auto i = 0UL; i < path_footprints.size(); ++i) {
     const auto overlap = calculate_overlap(path_footprints[i], path_lanelets, lanelet);
     const auto has_overlap = overlap.inside_distance > params.overlap_min_dist;
     if (has_overlap) {  // open/update the range
+      overlaps.push_back(overlap);
       if (!other_lane.range_is_open) {
         other_lane.first_range_bound.index = i;
         other_lane.first_range_bound.point = overlap.min_overlap_point;
@@ -94,10 +95,16 @@ OverlapRanges calculate_overlapping_ranges(
       other_lane.last_range_bound.inside_distance = overlap.inside_distance;
     } else if (other_lane.range_is_open) {  // !has_overlap: close the range if it is open
       ranges.push_back(other_lane.close_range());
+      ranges.back().debug.overlaps = overlaps;
+      overlaps.clear();
     }
   }
   // close the range if it is still open
-  if (other_lane.range_is_open) ranges.push_back(other_lane.close_range());
+  if (other_lane.range_is_open) {
+    ranges.push_back(other_lane.close_range());
+    ranges.back().debug.overlaps = overlaps;
+    overlaps.clear();
+  }
   return ranges;
 }
 

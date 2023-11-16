@@ -26,7 +26,6 @@
 #include <lanelet2_routing/RoutingGraph.h>
 
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -63,7 +62,8 @@ bool object_is_incoming(
 
 std::optional<std::pair<double, double>> object_time_to_range(
   const autoware_auto_perception_msgs::msg::PredictedObject & object, const OverlapRange & range,
-  const std::shared_ptr<route_handler::RouteHandler> route_handler, const rclcpp::Logger & logger)
+  const std::shared_ptr<route_handler::RouteHandler> route_handler, const double dist_buffer,
+  const rclcpp::Logger & logger)
 {
   // skip the dynamic object if it is not in a lane preceding the overlapped lane
   // lane changes are intentionally not considered
@@ -72,8 +72,7 @@ std::optional<std::pair<double, double>> object_time_to_range(
     object.kinematics.initial_pose_with_covariance.pose.position.y);
   if (!object_is_incoming(object_point, route_handler, range.lane)) return {};
 
-  const auto max_deviation = object.shape.dimensions.y + range.inside_distance;
-
+  const auto max_deviation = object.shape.dimensions.y + range.inside_distance + dist_buffer;
   auto worst_enter_time = std::optional<double>();
   auto worst_exit_time = std::optional<double>();
 
@@ -308,7 +307,8 @@ bool should_not_enter(
     // skip objects that are already on the interval
     const auto enter_exit_time =
       params.objects_use_predicted_paths
-        ? object_time_to_range(object, range, inputs.route_handler, logger)
+        ? object_time_to_range(
+            object, range, inputs.route_handler, params.objects_dist_buffer, logger)
         : object_time_to_range(object, range, inputs, logger);
     if (!enter_exit_time) {
       RCLCPP_DEBUG(logger, " SKIP (no enter/exit times found)\n");
@@ -317,27 +317,14 @@ bool should_not_enter(
 
     range_times.object.enter_time = enter_exit_time->first;
     range_times.object.exit_time = enter_exit_time->second;
-    if (will_collide_on_range(range_times, params, logger)) return true;
-  }
-  return false;
-}
-
-OverlapRange find_most_preceding_range(const OverlapRange & range, const DecisionInputs & inputs)
-{
-  OverlapRange preceding_range = range;
-  bool found_preceding_range = true;
-  while (found_preceding_range) {
-    found_preceding_range = false;
-    for (const auto & other_range : inputs.ranges) {
-      if (
-        other_range.entering_path_idx < preceding_range.entering_path_idx &&
-        other_range.exiting_path_idx >= preceding_range.entering_path_idx) {
-        preceding_range = other_range;
-        found_preceding_range = true;
-      }
+    if (will_collide_on_range(range_times, params, logger)) {
+      range.debug.times = range_times;
+      range.debug.object = object;
+      return true;
     }
   }
-  return preceding_range;
+  range.debug.times = range_times;
+  return false;
 }
 
 void set_decision_velocity(
@@ -375,6 +362,7 @@ std::vector<Slowdown> calculate_decisions(
   for (const auto & range : inputs.ranges) {
     if (range.entering_path_idx == 0UL) continue;  // skip if we already entered the range
     const auto optional_decision = calculate_decision(range, inputs, params, logger);
+    range.debug.decision = optional_decision;
     if (optional_decision) decisions.push_back(*optional_decision);
   }
   return decisions;
