@@ -51,8 +51,6 @@ public:
 private:
   PlannerParam params_;
 
-  std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId>
-    prev_overlapping_path_points_{};
   std::optional<SlowdownToInsert> prev_inserted_point_{};
   rclcpp::Time prev_inserted_point_time_{};
 

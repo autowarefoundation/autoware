@@ -49,7 +49,8 @@ OverlapRanges calculate_overlapping_ranges(
 /// @param [in] path_lanelets path lanelets used to calculate arc length along the ego path
 /// @param [in] lanelets lanelets used to calculate the overlaps
 /// @param [in] params parameters
-/// @return the overlapping ranges found between the footprints and the lanelets
+/// @return the overlapping ranges found between the footprints and the lanelets, sorted by
+/// increasing arc length along the path
 OverlapRanges calculate_overlapping_ranges(
   const std::vector<lanelet::BasicPolygon2d> & path_footprints,
   const lanelet::ConstLanelets & path_lanelets, const lanelet::ConstLanelets & lanelets,

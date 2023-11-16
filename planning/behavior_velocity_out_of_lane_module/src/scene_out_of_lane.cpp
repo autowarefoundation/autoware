@@ -67,18 +67,6 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   ego_data.path.points = path->points;
   ego_data.first_path_idx =
     motion_utils::findNearestSegmentIndex(ego_data.path.points, ego_data.pose.position);
-  for (const auto & p : prev_overlapping_path_points_) {
-    const auto nearest_idx =
-      motion_utils::findNearestIndex(ego_data.path.points, p.point.pose, 1.0);
-    const auto insert_idx =
-      motion_utils::findNearestSegmentIndex(ego_data.path.points, p.point.pose, 1.0);
-    if (nearest_idx && insert_idx && *insert_idx > ego_data.first_path_idx) {
-      if (
-        tier4_autoware_utils::calcDistance2d(
-          ego_data.path.points[*nearest_idx].point.pose, p.point.pose) > 0.5)
-        ego_data.path.points.insert(std::next(ego_data.path.points.begin(), *insert_idx), p);
-    }
-  }
   motion_utils::removeOverlapPoints(ego_data.path.points);
   ego_data.velocity = planner_data_->current_velocity->twist.linear.x;
   ego_data.max_decel = -planner_data_->max_stop_acceleration_threshold;
@@ -118,10 +106,6 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   stopwatch.tic("calculate_overlapping_ranges");
   const auto ranges =
     calculate_overlapping_ranges(path_footprints, path_lanelets, other_lanelets, params_);
-  prev_overlapping_path_points_.clear();
-  for (const auto & range : ranges)
-    prev_overlapping_path_points_.push_back(
-      ego_data.path.points[ego_data.first_path_idx + range.entering_path_idx]);
   const auto calculate_overlapping_ranges_us = stopwatch.toc("calculate_overlapping_ranges");
   // Calculate stop and slowdown points
   stopwatch.tic("calculate_decisions");
@@ -148,7 +132,28 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     (!prev_inserted_point_ || prev_inserted_point_->slowdown.lane_to_avoid.id() ==
                                 point_to_insert->slowdown.lane_to_avoid.id()))
     prev_inserted_point_time_ = clock_->now();
-  if (!point_to_insert && prev_inserted_point_) point_to_insert = prev_inserted_point_;
+  // reuse previous stop point if there is no new one or if its velocity is not higher than the new
+  // one and its arc length is lower
+  const auto should_use_prev_inserted_point = [&]() {
+    if (
+      point_to_insert && prev_inserted_point_ &&
+      prev_inserted_point_->slowdown.velocity <= point_to_insert->slowdown.velocity) {
+      const auto arc_length = motion_utils::calcSignedArcLength(
+        path->points, 0LU, point_to_insert->point.point.pose.position);
+      const auto prev_arc_length = motion_utils::calcSignedArcLength(
+        path->points, 0LU, prev_inserted_point_->point.point.pose.position);
+      return prev_arc_length < arc_length;
+    }
+    return !point_to_insert && prev_inserted_point_;
+  }();
+  if (should_use_prev_inserted_point) {
+    // if the path changed the prev point is no longer on the path so we project it
+    const auto insert_arc_length = motion_utils::calcSignedArcLength(
+      path->points, 0LU, prev_inserted_point_->point.point.pose.position);
+    prev_inserted_point_->point.point.pose =
+      motion_utils::calcInterpolatedPose(path->points, insert_arc_length);
+    point_to_insert = prev_inserted_point_;
+  }
   if (point_to_insert) {
     prev_inserted_point_ = point_to_insert;
     RCLCPP_INFO(logger_, "Avoiding lane %lu", point_to_insert->slowdown.lane_to_avoid.id());
@@ -157,8 +162,7 @@ bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
                       path->points, point_to_insert->point.point.pose.position) +
                     1;
     planning_utils::insertVelocity(
-      *path, point_to_insert->point, point_to_insert->slowdown.velocity, path_idx,
-      params_.precision);
+      *path, point_to_insert->point, point_to_insert->slowdown.velocity, path_idx);
     if (point_to_insert->slowdown.velocity == 0.0) {
       tier4_planning_msgs::msg::StopFactor stop_factor;
       stop_factor.stop_pose = point_to_insert->point.point.pose;
