@@ -53,6 +53,7 @@ struct PullOverPath
   Pose end_pose{};
   std::vector<Pose> debug_poses{};
   size_t goal_id{};
+  size_t id{};
   bool decided_velocity{false};
 
   PathWithLaneId getFullPath() const

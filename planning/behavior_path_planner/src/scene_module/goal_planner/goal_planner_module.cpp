@@ -174,6 +174,7 @@ void GoalPlannerModule::onTimer()
     auto pull_over_path = planner->plan(goal_candidate.goal_pose);
     if (pull_over_path && isCrossingPossible(*pull_over_path)) {
       pull_over_path->goal_id = goal_candidate.id;
+      pull_over_path->id = path_candidates.size();
       path_candidates.push_back(*pull_over_path);
       // calculate closest pull over start pose for stop path
       const double start_arc_length =
@@ -533,7 +534,15 @@ bool GoalPlannerModule::canReturnToLaneParking()
   }
 
   const PathWithLaneId path = thread_safe_data_.get_lane_parking_pull_over_path()->getFullPath();
-  if (checkCollision(path)) {
+
+  if (
+    parameters_->use_object_recognition &&
+    checkObjectsCollision(path, parameters_->object_recognition_collision_check_margin)) {
+    return false;
+  }
+
+  if (
+    parameters_->use_occupancy_grid_for_path_collision_check && checkOccupancyGridCollision(path)) {
     return false;
   }
 
@@ -597,6 +606,48 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
       return goal_id_to_index[a.goal_id] < goal_id_to_index[b.goal_id];
     });
 
+  if (parameters_->use_object_recognition) {
+    // Create a map of PullOverPath pointer to largest collision check margin
+    auto calcLargestMargin = [&](const PullOverPath & pull_over_path) {
+      // check has safe goal
+      const auto goal_candidate_it = std::find_if(
+        goal_candidates.begin(), goal_candidates.end(),
+        [pull_over_path](const auto & goal_candidate) {
+          return goal_candidate.id == pull_over_path.goal_id;
+        });
+      if (goal_candidate_it != goal_candidates.end() && !goal_candidate_it->is_safe) {
+        return 0.0;
+      }
+      // calc largest margin
+      std::vector<double> scale_factors{3.0, 2.0, 1.0};
+      const double margin = parameters_->object_recognition_collision_check_margin;
+      const auto resampled_path =
+        utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
+      for (const auto & scale_factor : scale_factors) {
+        if (!checkObjectsCollision(resampled_path, margin * scale_factor)) {
+          return margin * scale_factor;
+        }
+      }
+      return 0.0;
+    };
+
+    // Create a map of PullOverPath pointer to largest collision check margin
+    std::map<size_t, double> path_id_to_margin_map;
+    for (const auto & path : sorted_pull_over_path_candidates) {
+      path_id_to_margin_map[path.id] = calcLargestMargin(path);
+    }
+
+    // sorts in descending order so the item with larger margin comes first
+    std::stable_sort(
+      sorted_pull_over_path_candidates.begin(), sorted_pull_over_path_candidates.end(),
+      [&path_id_to_margin_map](const PullOverPath & a, const PullOverPath & b) {
+        if (std::abs(path_id_to_margin_map[a.id] - path_id_to_margin_map[b.id]) < 0.01) {
+          return false;
+        }
+        return path_id_to_margin_map[a.id] > path_id_to_margin_map[b.id];
+      });
+  }
+
   // Sort pull_over_path_candidates based on the order in efficient_path_order
   if (parameters_->path_priority == "efficient_path") {
     std::stable_sort(
@@ -614,7 +665,7 @@ std::vector<PullOverPath> GoalPlannerModule::sortPullOverPathCandidatesByGoalPri
 
 std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectPullOverPath(
   const std::vector<PullOverPath> & pull_over_path_candidates,
-  const GoalCandidates & goal_candidates) const
+  const GoalCandidates & goal_candidates, const double collision_check_margin) const
 {
   for (const auto & pull_over_path : pull_over_path_candidates) {
     // check if goal is safe
@@ -627,10 +678,20 @@ std::optional<std::pair<PullOverPath, GoalCandidate>> GoalPlannerModule::selectP
       continue;
     }
 
-    // check if path is valid and safe
+    if (!hasEnoughDistance(pull_over_path)) {
+      continue;
+    }
+
+    const auto resampled_path = utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5);
     if (
-      !hasEnoughDistance(pull_over_path) ||
-      checkCollision(utils::resamplePathWithSpline(pull_over_path.getParkingPath(), 0.5))) {
+      parameters_->use_object_recognition &&
+      checkObjectsCollision(resampled_path, collision_check_margin, true /*update_debug_data*/)) {
+      continue;
+    }
+
+    if (
+      parameters_->use_occupancy_grid_for_path_collision_check &&
+      checkOccupancyGridCollision(resampled_path)) {
       continue;
     }
 
@@ -888,7 +949,9 @@ BehaviorModuleOutput GoalPlannerModule::planPullOverAsOutput()
       thread_safe_data_.get_pull_over_path_candidates(), goal_candidates);
 
     // select pull over path which is safe against static objects and get it's goal
-    const auto path_and_goal_opt = selectPullOverPath(pull_over_path_candidates, goal_candidates);
+    const auto path_and_goal_opt = selectPullOverPath(
+      pull_over_path_candidates, goal_candidates,
+      parameters_->object_recognition_collision_check_margin);
 
     // update thread_safe_data_
     if (path_and_goal_opt) {
@@ -1205,7 +1268,21 @@ bool GoalPlannerModule::isStuck()
     return false;
   }
 
-  return checkCollision(thread_safe_data_.get_pull_over_path()->getCurrentPath());
+  if (
+    parameters_->use_object_recognition &&
+    checkObjectsCollision(
+      thread_safe_data_.get_pull_over_path()->getCurrentPath(),
+      parameters_->object_recognition_collision_check_margin)) {
+    return true;
+  }
+
+  if (
+    parameters_->use_occupancy_grid_for_path_collision_check &&
+    checkOccupancyGridCollision(thread_safe_data_.get_pull_over_path()->getCurrentPath())) {
+    return true;
+  }
+
+  return false;
 }
 
 bool GoalPlannerModule::hasFinishedCurrentPath()
@@ -1297,18 +1374,19 @@ TurnSignalInfo GoalPlannerModule::calcTurnSignalInfo() const
   return turn_signal;
 }
 
-bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
+bool GoalPlannerModule::checkOccupancyGridCollision(const PathWithLaneId & path) const
 {
-  if (parameters_->use_occupancy_grid_for_path_collision_check && occupancy_grid_map_) {
-    const bool check_out_of_range = false;
-    if (occupancy_grid_map_->hasObstacleOnPath(path, check_out_of_range)) {
-      return true;
-    }
-  }
-  if (!parameters_->use_object_recognition) {
+  if (!occupancy_grid_map_) {
     return false;
   }
+  const bool check_out_of_range = false;
+  return occupancy_grid_map_->hasObstacleOnPath(path, check_out_of_range);
+}
 
+bool GoalPlannerModule::checkObjectsCollision(
+  const PathWithLaneId & path, const double collision_check_margin,
+  const bool update_debug_data) const
+{
   const auto pull_over_lanes = goal_planner_utils::getPullOverLanes(
     *(planner_data_->route_handler), left_side_parking_, parameters_->backward_goal_search_length,
     parameters_->forward_goal_search_length);
@@ -1323,7 +1401,30 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
     obj_polygons.push_back(tier4_autoware_utils::toPolygon2d(object));
   }
 
-  std::vector<Polygon2d> ego_polygons_expanded;
+  /* Expand ego collision check polygon
+   *   - `collision_check_margin` in all directions
+   *   - `extra_stopping_margin` in the moving direction
+   *   - `extra_lateral_margin` in external direction of path curve
+   *
+   *
+   *                                        ^ moving direction
+   *                                        x
+   *                                        x
+   *                                        x
+   *          +----------------------+------x--+
+   *          |                      |      x  |
+   *          |   +---------------+  |    xx   |
+   *          |   |               |  |  xx     |
+   *          |   | ego footprint |xxxxx       |
+   *          |   |               |  |         |
+   *          |   +---------------+  | extra_stopping_margin
+   *          |       margin         |         |
+   *          +----------------------+         |
+   *          |       extra_lateral_margin     |
+   *          +--------------------------------+
+   *
+   */
+  std::vector<Polygon2d> ego_polygons_expanded{};
   const auto curvatures = motion_utils::calcCurvature(path.points);
   for (size_t i = 0; i < path.points.size(); ++i) {
     const auto p = path.points.at(i);
@@ -1341,16 +1442,16 @@ bool GoalPlannerModule::checkCollision(const PathWithLaneId & path) const
       tier4_autoware_utils::calcOffsetPose(p.point.pose, 0.0, extra_lateral_margin / 2.0, 0.0);
     const auto ego_polygon = tier4_autoware_utils::toFootprint(
       lateral_offset_pose,
-      planner_data_->parameters.base_link2front +
-        parameters_->object_recognition_collision_check_margin + extra_stopping_margin,
-      planner_data_->parameters.base_link2rear +
-        parameters_->object_recognition_collision_check_margin,
-      planner_data_->parameters.vehicle_width +
-        parameters_->object_recognition_collision_check_margin * 2.0 +
+      planner_data_->parameters.base_link2front + collision_check_margin + extra_stopping_margin,
+      planner_data_->parameters.base_link2rear + collision_check_margin,
+      planner_data_->parameters.vehicle_width + collision_check_margin * 2.0 +
         std::abs(extra_lateral_margin));
     ego_polygons_expanded.push_back(ego_polygon);
   }
-  debug_data_.ego_polygons_expanded = ego_polygons_expanded;
+
+  if (update_debug_data) {
+    debug_data_.ego_polygons_expanded = ego_polygons_expanded;
+  }
 
   return utils::path_safety_checker::checkPolygonsIntersects(ego_polygons_expanded, obj_polygons);
 }

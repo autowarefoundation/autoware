@@ -366,7 +366,10 @@ private:
   // collision check
   void initializeOccupancyGridMap();
   void updateOccupancyGrid();
-  bool checkCollision(const PathWithLaneId & path) const;
+  bool checkOccupancyGridCollision(const PathWithLaneId & path) const;
+  bool checkObjectsCollision(
+    const PathWithLaneId & path, const double collision_check_margin,
+    const bool update_debug_data = false) const;
 
   // goal seach
   Pose calcRefinedGoal(const Pose & goal_pose) const;
@@ -416,7 +419,7 @@ private:
   BehaviorModuleOutput planPullOverAsCandidate();
   std::optional<std::pair<PullOverPath, GoalCandidate>> selectPullOverPath(
     const std::vector<PullOverPath> & pull_over_path_candidates,
-    const GoalCandidates & goal_candidates) const;
+    const GoalCandidates & goal_candidates, const double collision_check_margin) const;
   std::vector<PullOverPath> sortPullOverPathCandidatesByGoalPriority(
     const std::vector<PullOverPath> & pull_over_path_candidates,
     const GoalCandidates & goal_candidates) const;
