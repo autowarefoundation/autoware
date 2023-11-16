@@ -68,64 +68,6 @@ using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
 using behavior_path_planner::utils::path_safety_checker::TargetObjectsOnLane;
 using tier4_autoware_utils::Polygon2d;
 
-#define DEFINE_SETTER(TYPE, NAME)     \
-public:                               \
-  void set_##NAME(const TYPE & value) \
-  {                                   \
-    NAME##_ = value;                  \
-  }
-
-#define DEFINE_GETTER(TYPE, NAME) \
-public:                           \
-  TYPE get_##NAME() const         \
-  {                               \
-    return NAME##_;               \
-  }
-
-#define DEFINE_SETTER_GETTER(TYPE, NAME) \
-  DEFINE_SETTER(TYPE, NAME)              \
-  DEFINE_GETTER(TYPE, NAME)
-
-class PullOverStatus
-{
-public:
-  // Reset all data members to their initial states
-  void reset()
-  {
-    lane_parking_pull_over_path_ = nullptr;
-    prev_stop_path_ = nullptr;
-    prev_stop_path_after_approval_ = nullptr;
-
-    is_safe_ = false;
-    prev_found_path_ = false;
-    prev_is_safe_ = false;
-  }
-
-  DEFINE_SETTER_GETTER(std::shared_ptr<PullOverPath>, lane_parking_pull_over_path)
-  DEFINE_SETTER_GETTER(std::shared_ptr<PathWithLaneId>, prev_stop_path)
-  DEFINE_SETTER_GETTER(std::shared_ptr<PathWithLaneId>, prev_stop_path_after_approval)
-  DEFINE_SETTER_GETTER(bool, is_safe)
-  DEFINE_SETTER_GETTER(bool, prev_found_path)
-  DEFINE_SETTER_GETTER(bool, prev_is_safe)
-  DEFINE_SETTER_GETTER(Pose, refined_goal_pose)
-  DEFINE_SETTER_GETTER(Pose, closest_goal_candidate_pose)
-
-private:
-  std::shared_ptr<PullOverPath> lane_parking_pull_over_path_{nullptr};
-  std::shared_ptr<PathWithLaneId> prev_stop_path_{nullptr};
-  std::shared_ptr<PathWithLaneId> prev_stop_path_after_approval_{nullptr};
-  bool is_safe_{false};
-  bool prev_found_path_{false};
-  bool prev_is_safe_{false};
-
-  Pose refined_goal_pose_{};
-  Pose closest_goal_candidate_pose_{};
-};
-
-#undef DEFINE_SETTER
-#undef DEFINE_GETTER
-#undef DEFINE_SETTER_GETTER
-
 #define DEFINE_SETTER_WITH_MUTEX(TYPE, NAME)                  \
 public:                                                       \
   void set_##NAME(const TYPE & value)                         \
@@ -288,6 +230,22 @@ struct LastApprovalData
   Pose pose{};
 };
 
+struct PreviousPullOverData
+{
+  void reset()
+  {
+    stop_path = nullptr;
+    stop_path_after_approval = nullptr;
+    found_path = false;
+    is_safe = false;
+  }
+
+  std::shared_ptr<PathWithLaneId> stop_path{nullptr};
+  std::shared_ptr<PathWithLaneId> stop_path_after_approval{nullptr};
+  bool found_path{false};
+  bool is_safe{false};
+};
+
 class GoalPlannerModule : public SceneModuleInterface
 {
 public:
@@ -380,10 +338,10 @@ private:
   tier4_autoware_utils::LinearRing2d vehicle_footprint_;
 
   std::recursive_mutex mutex_;
-  PullOverStatus status_;
   ThreadSafeData thread_safe_data_;
 
   std::unique_ptr<LastApprovalData> last_approval_data_{nullptr};
+  PreviousPullOverData prev_data_{nullptr};
 
   // approximate distance from the start point to the end point of pull_over.
   // this is used as an assumed value to decelerate, etc., before generating the actual path.
@@ -412,7 +370,7 @@ private:
 
   // goal seach
   Pose calcRefinedGoal(const Pose & goal_pose) const;
-  void generateGoalCandidates();
+  GoalCandidates generateGoalCandidates() const;
 
   // stop or decelerate
   void deceleratePath(PullOverPath & pull_over_path) const;
@@ -470,6 +428,7 @@ private:
   // output setter
   void setOutput(BehaviorModuleOutput & output) const;
   void setStopPath(BehaviorModuleOutput & output) const;
+  void updatePreviousData(const BehaviorModuleOutput & output);
 
   /**
    * @brief Sets a stop path in the current path based on safety conditions and previous paths.
