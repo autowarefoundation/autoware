@@ -104,7 +104,7 @@
   <!-- Radar long range integration methods -->
   <arg
     name="use_radar_tracking_fusion"
-    default="false"
+    default="true"
     description="if use_radar_tracking_fusion:=true, radar information is merged in tracking launch. Otherwise, radar information is merged in detection launch."
   />
 
