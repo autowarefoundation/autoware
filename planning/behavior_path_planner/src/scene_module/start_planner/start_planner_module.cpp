@@ -742,7 +742,7 @@ void StartPlannerModule::updateStatusAfterBackwardDriving()
 
 PathWithLaneId StartPlannerModule::calcBackwardPathFromStartPose() const
 {
-  const Pose & start_pose = planner_data_->route_handler->getOriginalStartPose();
+  const Pose start_pose = planner_data_->route_handler->getOriginalStartPose();
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
 
@@ -770,7 +770,7 @@ std::vector<Pose> StartPlannerModule::searchPullOutStartPoseCandidates(
   const PathWithLaneId & back_path_from_start_pose) const
 {
   std::vector<Pose> pull_out_start_pose_candidates{};
-  const auto & start_pose = planner_data_->route_handler->getOriginalStartPose();
+  const auto start_pose = planner_data_->route_handler->getOriginalStartPose();
   const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
   const auto pull_out_lanes = start_planner_utils::getPullOutLanes(
     planner_data_, planner_data_->parameters.backward_path_length + parameters_->max_back_distance);
@@ -1074,11 +1074,11 @@ bool StartPlannerModule::isSafePath() const
       is_object_front, limit_to_max_velocity);
 
   // filtering objects with velocity, position and class
-  const auto & filtered_objects = utils::path_safety_checker::filterObjects(
+  const auto filtered_objects = utils::path_safety_checker::filterObjects(
     dynamic_object, route_handler, current_lanes, current_pose.position, objects_filtering_params_);
 
   // filtering objects based on the current position's lane
-  const auto & target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
+  const auto target_objects_on_lane = utils::path_safety_checker::createTargetObjectsOnLane(
     current_lanes, route_handler, filtered_objects, objects_filtering_params_);
 
   const double hysteresis_factor =

@@ -89,7 +89,7 @@ lanelet::ConstLanelets getPullOutLanes(
 {
   const double & vehicle_width = planner_data->parameters.vehicle_width;
   const auto & route_handler = planner_data->route_handler;
-  const auto & start_pose = planner_data->route_handler->getOriginalStartPose();
+  const auto start_pose = planner_data->route_handler->getOriginalStartPose();
 
   lanelet::ConstLanelet current_shoulder_lane;
   lanelet::ConstLanelets shoulder_lanes;
