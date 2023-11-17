@@ -135,6 +135,9 @@ protected:
   bool hasEnoughLengthToIntersection(
     const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes) const;
 
+  bool hasEnoughLengthToTrafficLight(
+    const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes) const;
+
   bool getLaneChangePaths(
     const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & target_lanes,
     Direction direction, LaneChangePaths * candidate_paths,

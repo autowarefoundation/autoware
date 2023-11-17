@@ -84,6 +84,8 @@ LaneChangeModuleManager::LaneChangeModuleManager(
   p.regulate_on_crosswalk = getOrDeclareParameter<bool>(*node, parameter("regulation.crosswalk"));
   p.regulate_on_intersection =
     getOrDeclareParameter<bool>(*node, parameter("regulation.intersection"));
+  p.regulate_on_traffic_light =
+    getOrDeclareParameter<bool>(*node, parameter("regulation.traffic_light"));
 
   // ego vehicle stuck detection
   p.stop_velocity_threshold =

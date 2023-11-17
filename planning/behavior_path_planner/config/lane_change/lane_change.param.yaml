@@ -81,6 +81,7 @@
       regulation:
         crosswalk: false
         intersection: false
+        traffic_light: true
 
       # ego vehicle stuck detection
       stuck_detection:

@@ -65,6 +65,7 @@ struct LaneChangeParameters
   // regulatory elements
   bool regulate_on_crosswalk{false};
   bool regulate_on_intersection{false};
+  bool regulate_on_traffic_light{false};
 
   // ego vehicle stuck detection
   double stop_velocity_threshold{0.1};
