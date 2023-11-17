@@ -91,8 +91,6 @@ public:
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
-  // TODO(someone): remove this, and use base class function
-  [[deprecated]] void updateCurrentState() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   CandidateOutput planCandidate() const override;
@@ -123,11 +121,11 @@ public:
   bool isFreespacePlanning() const { return status_.planner_type == PlannerType::FREESPACE; }
 
 private:
-  bool canTransitSuccessState() override { return false; }
+  bool canTransitSuccessState() override;
 
   bool canTransitFailureState() override { return false; }
 
-  bool canTransitIdleToRunningState() override { return false; }
+  bool canTransitIdleToRunningState() override;
 
   void initializeSafetyCheckParameters();
 

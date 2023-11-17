@@ -228,33 +228,14 @@ bool StartPlannerModule::isExecutionReady() const
   return true;
 }
 
-void StartPlannerModule::updateCurrentState()
+bool StartPlannerModule::canTransitSuccessState()
 {
-  RCLCPP_DEBUG(getLogger(), "START_PLANNER updateCurrentState");
+  return hasFinishedPullOut();
+}
 
-  const auto print = [this](const auto & from, const auto & to) {
-    RCLCPP_DEBUG(getLogger(), "[start_planner] Transit from %s to %s.", from.data(), to.data());
-  };
-
-  const auto & from = current_state_;
-  // current_state_ = updateState();
-
-  if (isActivated() && !isWaitingApproval()) {
-    current_state_ = ModuleStatus::RUNNING;
-  } else {
-    current_state_ = ModuleStatus::IDLE;
-  }
-
-  // TODO(someone): move to canTransitSuccessState
-  if (hasFinishedPullOut()) {
-    current_state_ = ModuleStatus::SUCCESS;
-  }
-  // TODO(someone): move to canTransitSuccessState
-  if (status_.backward_driving_complete) {
-    current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
-  }
-
-  print(magic_enum::enum_name(from), magic_enum::enum_name(current_state_));
+bool StartPlannerModule::canTransitIdleToRunningState()
+{
+  return isActivated() && !isWaitingApproval();
 }
 
 BehaviorModuleOutput StartPlannerModule::plan()
@@ -278,7 +259,7 @@ BehaviorModuleOutput StartPlannerModule::plan()
   PathWithLaneId path;
 
   // Check if backward motion is finished
-  if (status_.driving_forward) {
+  if (status_.driving_forward || status_.backward_driving_complete) {
     // Increment path index if the current path is finished
     if (hasFinishedCurrentPath()) {
       RCLCPP_INFO(getLogger(), "Increment path index");
@@ -739,8 +720,6 @@ void StartPlannerModule::updatePullOutStatus()
 
   if (isBackwardDrivingComplete()) {
     updateStatusAfterBackwardDriving();
-    // should be moved to transition state
-    current_state_ = ModuleStatus::SUCCESS;  // for breaking loop
   } else {
     status_.backward_path = start_planner_utils::getBackwardPath(
       *route_handler, pull_out_lanes, current_pose, status_.pull_out_start_pose,
