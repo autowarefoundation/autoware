@@ -50,6 +50,19 @@
     error_rate: 1.0
     timeout: 1.0
 
+- module: localization
+  mode: [online, logging_simulation]
+  type: autonomous
+  args:
+    node_name_suffix: pose_estimator_pose
+    topic: /localization/pose_estimator/pose_with_covariance
+    topic_type: geometry_msgs/msg/PoseWithCovarianceStamped
+    best_effort: false
+    transient_local: false
+    warn_rate: 5.0
+    error_rate: 1.0
+    timeout: 1.0
+
 - module: perception
   mode: [online, logging_simulation]
   type: launch
