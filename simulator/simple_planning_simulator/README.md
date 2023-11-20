@@ -98,6 +98,8 @@ Ego vehicle pitch angle is calculated in the following manner.
 
 ![pitch calculation](./media/pitch-calculation.drawio.svg)
 
+NOTE: driving against the line direction (as depicted in image's bottom row) is not supported and only shown for illustration purposes.
+
 ## Error detection and handling
 
 The only validation on inputs being done is testing for a valid vehicle model type.
