@@ -862,6 +862,12 @@ bool GoalPlannerModule::hasDecidedPath() const
     return false;
   }
 
+  // If it is dangerous before approval, do not determine the path.
+  // This eliminates a unsafe path to be approved
+  if (!isSafePath() && !isActivated()) {
+    return false;
+  }
+
   // if ego is sufficiently close to the start of the nearest candidate path, the path is decided
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
   const size_t ego_segment_idx = motion_utils::findNearestSegmentIndex(
