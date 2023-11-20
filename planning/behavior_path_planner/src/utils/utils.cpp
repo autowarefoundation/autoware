@@ -1933,21 +1933,32 @@ void makeBoundLongitudinallyMonotonic(
     return ret;
   };
 
-  const auto is_monotonic =
-    [&](const auto & p1, const auto & p2, const auto & p3, const auto is_points_left) {
-      const auto p1_to_p2 = calcAzimuthAngle(p1, p2);
-      const auto p2_to_p3 = calcAzimuthAngle(p2, p3);
+  const auto is_non_monotonic = [&](
+                                  const auto & base_pose, const auto & point,
+                                  const auto is_points_left, const auto is_reverse) {
+    const auto p_transformed = tier4_autoware_utils::inverseTransformPoint(point, base_pose);
+    if (p_transformed.x < 0.0 && p_transformed.y > 0.0) {
+      return is_points_left && !is_reverse;
+    }
 
-      const auto theta = normalizeRadian(p1_to_p2 - p2_to_p3);
+    if (p_transformed.x < 0.0 && p_transformed.y < 0.0) {
+      return !is_points_left && !is_reverse;
+    }
 
-      return (is_points_left && 0 < theta) || (!is_points_left && theta < 0);
-    };
+    if (p_transformed.x > 0.0 && p_transformed.y > 0.0) {
+      return is_points_left && is_reverse;
+    }
+
+    if (p_transformed.x > 0.0 && p_transformed.y < 0.0) {
+      return !is_points_left && is_reverse;
+    }
+
+    return false;
+  };
 
   // define a function to remove non monotonic point on bound
   const auto remove_non_monotonic_point = [&](const auto & bound_with_pose, const bool is_reverse) {
     std::vector<Pose> monotonic_bound;
-
-    const bool is_points_left = is_reverse ? !is_bound_left : is_bound_left;
 
     size_t bound_idx = 0;
     while (true) {
@@ -1961,13 +1972,12 @@ void makeBoundLongitudinallyMonotonic(
       // opposite.
       const double lat_offset = is_bound_left ? 100.0 : -100.0;
 
-      const auto p_bound_1 = getPoint(bound_with_pose.at(bound_idx));
-      const auto p_bound_2 = getPoint(bound_with_pose.at(bound_idx + 1));
+      const auto p_bound_1 = getPose(bound_with_pose.at(bound_idx));
+      const auto p_bound_2 = getPose(bound_with_pose.at(bound_idx + 1));
 
-      const auto p_bound_offset =
-        calcOffsetPose(getPose(bound_with_pose.at(bound_idx)), 0.0, lat_offset, 0.0);
+      const auto p_bound_offset = calcOffsetPose(p_bound_1, 0.0, lat_offset, 0.0);
 
-      if (!is_monotonic(p_bound_1, p_bound_2, p_bound_offset.position, is_points_left)) {
+      if (!is_non_monotonic(p_bound_1, p_bound_2.position, is_bound_left, is_reverse)) {
         bound_idx++;
         continue;
       }
@@ -1975,7 +1985,7 @@ void makeBoundLongitudinallyMonotonic(
       // skip non monotonic points
       for (size_t i = bound_idx + 1; i < bound_with_pose.size() - 1; ++i) {
         const auto intersect_point = intersect(
-          p_bound_1, p_bound_offset.position, bound_with_pose.at(i).position,
+          p_bound_1.position, p_bound_offset.position, bound_with_pose.at(i).position,
           bound_with_pose.at(i + 1).position);
 
         if (intersect_point) {
