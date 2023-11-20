@@ -62,6 +62,7 @@ using freespace_planning_algorithms::RRTStar;
 using freespace_planning_algorithms::RRTStarParam;
 
 using behavior_path_planner::utils::path_safety_checker::EgoPredictedPathParams;
+using behavior_path_planner::utils::path_safety_checker::ExtendedPredictedObject;
 using behavior_path_planner::utils::path_safety_checker::ObjectsFilteringParams;
 using behavior_path_planner::utils::path_safety_checker::PoseWithVelocityStamped;
 using behavior_path_planner::utils::path_safety_checker::SafetyCheckParams;
@@ -471,6 +472,10 @@ private:
     const PredictedObjects & filtered_objects, const TargetObjectsOnLane & target_objects_on_lane,
     const std::vector<PoseWithVelocityStamped> & ego_predicted_path) const;
   bool isSafePath() const;
+  bool checkSafetyWithRSS(
+    const PathWithLaneId & planned_path,
+    const std::vector<PoseWithVelocityStamped> & ego_predicted_path,
+    const std::vector<ExtendedPredictedObject> & objects, const double hysteresis_factor) const;
 
   // debug
   void setDebugData();
