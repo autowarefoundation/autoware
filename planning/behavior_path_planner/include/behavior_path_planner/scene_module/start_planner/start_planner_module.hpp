@@ -129,6 +129,8 @@ private:
 
   void initializeSafetyCheckParameters();
 
+  bool receivedNewRoute() const;
+
   bool isModuleRunning() const;
   bool isCurrentPoseOnMiddleOfTheRoad() const;
   bool isCloseToOriginalStartPose() const;
@@ -207,7 +209,7 @@ private:
   void setDrivableAreaInfo(BehaviorModuleOutput & output) const;
 
   // check if the goal is located behind the ego in the same route segment.
-  bool IsGoalBehindOfEgoInSameRouteSegment() const;
+  bool isGoalBehindOfEgoInSameRouteSegment() const;
 
   // generate BehaviorPathOutput with stopping path and update status
   BehaviorModuleOutput generateStopOutput();
@@ -218,6 +220,7 @@ private:
   bool planFreespacePath();
 
   void setDebugData() const;
+  void logPullOutStatus(rclcpp::Logger::Level log_level = rclcpp::Logger::Level::Info) const;
 };
 }  // namespace behavior_path_planner
 

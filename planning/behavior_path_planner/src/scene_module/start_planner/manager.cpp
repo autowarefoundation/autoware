@@ -33,6 +33,7 @@ StartPlannerModuleManager::StartPlannerModuleManager(
 
   std::string ns = "start_planner.";
 
+  p.verbose = node->declare_parameter<bool>(ns + "verbose");
   p.th_arrived_distance = node->declare_parameter<double>(ns + "th_arrived_distance");
   p.th_stopped_velocity = node->declare_parameter<double>(ns + "th_stopped_velocity");
   p.th_stopped_time = node->declare_parameter<double>(ns + "th_stopped_time");
