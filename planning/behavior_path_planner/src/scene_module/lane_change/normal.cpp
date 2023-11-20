@@ -1636,7 +1636,9 @@ bool NormalLaneChange::calcAbortPath()
     const double s_start = arc_position.length;
     double s_end = std::max(lanelet::utils::getLaneletLength2d(reference_lanelets), s_start);
 
-    if (route_handler->isInGoalRouteSection(selected_path.info.target_lanes.back())) {
+    if (
+      !reference_lanelets.empty() &&
+      route_handler->isInGoalRouteSection(reference_lanelets.back())) {
       const auto goal_arc_coordinates =
         lanelet::utils::getArcCoordinates(reference_lanelets, route_handler->getGoalPose());
       const double forward_length = std::max(goal_arc_coordinates.length, s_start);
