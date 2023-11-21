@@ -17,6 +17,7 @@
   <depend>rclcpp_components</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_sensor_msgs</depend>
   <depend>tier4_autoware_utils</depend>
   <depend>tvm_utility</depend>
   <depend>tvm_vendor</depend>
