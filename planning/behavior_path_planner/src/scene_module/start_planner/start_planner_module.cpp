@@ -1366,7 +1366,8 @@ void StartPlannerModule::logPullOutStatus(rclcpp::Logger::Level log_level) const
   logFunc("[Module State]");
   logFunc("  isActivated: %s", isActivated() ? "true" : "false");
   logFunc("  isWaitingForApproval: %s", isWaitingApproval() ? "true" : "false");
-  logFunc("  ModuleStatus: %s", magic_enum::enum_name(getCurrentStatus()));
+  const std::string current_status = magic_enum::enum_name(getCurrentStatus()).data();
+  logFunc("  ModuleStatus: %s", current_status.c_str());
 
   logFunc("=======================================");
 }
