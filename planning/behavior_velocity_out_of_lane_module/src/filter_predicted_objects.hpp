@@ -44,8 +44,10 @@ autoware_auto_perception_msgs::msg::PredictedObjects filter_predicted_objects(
     auto filtered_object = object;
     const auto is_invalid_predicted_path = [&](const auto & predicted_path) {
       const auto is_low_confidence = predicted_path.confidence < params.objects_min_confidence;
+      const auto no_overlap_path = motion_utils::removeOverlapPoints(predicted_path.path);
+      if (no_overlap_path.size() <= 1) return true;
       const auto lat_offset_to_current_ego =
-        std::abs(motion_utils::calcLateralOffset(predicted_path.path, ego_data.pose.position));
+        std::abs(motion_utils::calcLateralOffset(no_overlap_path, ego_data.pose.position));
       const auto is_crossing_ego =
         lat_offset_to_current_ego <=
         object.shape.dimensions.y / 2.0 + std::max(
