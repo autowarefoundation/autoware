@@ -14,9 +14,11 @@
 
 #include "behavior_path_planner/utils/path_utils.hpp"
 
+#include "behavior_path_planner/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <interpolation/spline_interpolation.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/resample/resample.hpp>
 #include <motion_utils/trajectory/interpolation.hpp>
@@ -589,4 +591,107 @@ boost::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path)
   }
   return boost::none;
 }
+
+BehaviorModuleOutput getReferencePath(
+  const lanelet::ConstLanelet & current_lane,
+  const std::shared_ptr<const PlannerData> & planner_data)
+{
+  PathWithLaneId reference_path{};
+
+  const auto & route_handler = planner_data->route_handler;
+  const auto current_pose = planner_data->self_odometry->pose.pose;
+  const auto p = planner_data->parameters;
+
+  // Set header
+  reference_path.header = route_handler->getRouteHeader();
+
+  // calculate path with backward margin to avoid end points' instability by spline interpolation
+  constexpr double extra_margin = 10.0;
+  const double backward_length = p.backward_path_length + extra_margin;
+  const auto current_lanes_with_backward_margin =
+    route_handler->getLaneletSequence(current_lane, backward_length, p.forward_path_length);
+  const auto no_shift_pose =
+    lanelet::utils::getClosestCenterPose(current_lane, current_pose.position);
+  reference_path = getCenterLinePath(
+    *route_handler, current_lanes_with_backward_margin, no_shift_pose, backward_length,
+    p.forward_path_length, p);
+
+  // clip backward length
+  // NOTE: In order to keep backward_path_length at least, resampling interval is added to the
+  // backward.
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    reference_path.points, no_shift_pose, p.ego_nearest_dist_threshold,
+    p.ego_nearest_yaw_threshold);
+  reference_path.points = motion_utils::cropPoints(
+    reference_path.points, no_shift_pose.position, current_seg_idx, p.forward_path_length,
+    p.backward_path_length + p.input_path_interval);
+
+  const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
+  const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
+
+  const auto & dp = planner_data->drivable_area_expansion_parameters;
+
+  const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
+  const auto expanded_lanes = expandLanelets(
+    shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
+
+  BehaviorModuleOutput output;
+  output.path = std::make_shared<PathWithLaneId>(reference_path);
+  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.drivable_area_info.drivable_lanes = drivable_lanes;
+
+  return output;
+}
+
+BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerData> & planner_data)
+{
+  BehaviorModuleOutput output;
+
+  const auto & route_handler = planner_data->route_handler;
+  const auto & modified_goal = planner_data->prev_modified_goal;
+
+  const Pose goal_pose = modified_goal ? modified_goal->pose : route_handler->getGoalPose();
+  const auto shoulder_lanes = route_handler->getShoulderLanelets();
+
+  lanelet::ConstLanelet goal_lane;
+  const bool is_failed_getting_lanelet = std::invoke([&]() {
+    if (isInLanelets(goal_pose, shoulder_lanes)) {
+      return !lanelet::utils::query::getClosestLanelet(shoulder_lanes, goal_pose, &goal_lane);
+    }
+    return !route_handler->getGoalLanelet(&goal_lane);
+  });
+  if (is_failed_getting_lanelet) {
+    return output;
+  }
+
+  constexpr double backward_length = 1.0;
+  const auto arc_coord = lanelet::utils::getArcCoordinates({goal_lane}, goal_pose);
+  const double s_start = std::max(arc_coord.length - backward_length, 0.0);
+  const double s_end = arc_coord.length;
+
+  auto reference_path = route_handler->getCenterLinePath({goal_lane}, s_start, s_end);
+
+  const auto drivable_lanelets = getLaneletsFromPath(reference_path, route_handler);
+  const auto drivable_lanes = generateDrivableLanes(drivable_lanelets);
+
+  const auto & dp = planner_data->drivable_area_expansion_parameters;
+
+  const auto shorten_lanes = cutOverlappedLanes(reference_path, drivable_lanes);
+  const auto expanded_lanes = expandLanelets(
+    shorten_lanes, dp.drivable_area_left_bound_offset, dp.drivable_area_right_bound_offset,
+    dp.drivable_area_types_to_skip);
+
+  // Insert zero velocity to each point in the path.
+  for (auto & point : reference_path.points) {
+    point.point.longitudinal_velocity_mps = 0.0;
+  }
+
+  output.path = std::make_shared<PathWithLaneId>(reference_path);
+  output.reference_path = std::make_shared<PathWithLaneId>(reference_path);
+  output.drivable_area_info.drivable_lanes = drivable_lanes;
+
+  return output;
+}
+
 }  // namespace behavior_path_planner::utils

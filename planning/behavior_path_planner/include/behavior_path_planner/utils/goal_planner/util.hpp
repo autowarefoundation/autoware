@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__UTIL_HPP_
 #define BEHAVIOR_PATH_PLANNER__UTILS__GOAL_PLANNER__UTIL_HPP_
 
+#include "behavior_path_planner/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner/utils/goal_planner/goal_searcher_base.hpp"
 #include "behavior_path_planner/utils/utils.hpp"
 

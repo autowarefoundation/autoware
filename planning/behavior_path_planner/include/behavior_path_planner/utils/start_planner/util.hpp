@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__UTILS__START_PLANNER__UTIL_HPP_
 
 #include "behavior_path_planner/data_manager.hpp"
+#include "behavior_path_planner/utils/drivable_area_expansion/static_drivable_area.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/path_safety_checker_parameters.hpp"
 #include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 

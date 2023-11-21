@@ -59,7 +59,6 @@ using autoware_auto_perception_msgs::msg::Shape;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using drivable_area_expansion::DrivableAreaExpansionParameters;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
@@ -209,56 +208,6 @@ boost::optional<lanelet::ConstLanelet> getRightLanelet(
   const lanelet::ConstLanelet & current_lane, const lanelet::ConstLanelets & shoulder_lanes);
 boost::optional<lanelet::ConstLanelet> getLeftLanelet(
   const lanelet::ConstLanelet & current_lane, const lanelet::ConstLanelets & shoulder_lanes);
-std::vector<DrivableLanes> generateDrivableLanes(const lanelet::ConstLanelets & current_lanes);
-std::vector<DrivableLanes> generateDrivableLanesWithShoulderLanes(
-  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelets & shoulder_lanes);
-std::vector<DrivableLanes> getNonOverlappingExpandedLanes(
-  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
-  const DrivableAreaExpansionParameters & parameters);
-std::vector<geometry_msgs::msg::Point> calcBound(
-  const std::shared_ptr<RouteHandler> route_handler,
-  const std::vector<DrivableLanes> & drivable_lanes,
-  const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
-  const bool is_left);
-
-std::vector<lanelet::ConstPoint3d> getBoundWithHatchedRoadMarkings(
-  const std::vector<lanelet::ConstPoint3d> & original_bound,
-  const std::shared_ptr<RouteHandler> & route_handler);
-
-std::vector<lanelet::ConstPoint3d> getBoundWithIntersectionAreas(
-  const std::vector<lanelet::ConstPoint3d> & original_bound,
-  const std::shared_ptr<RouteHandler> & route_handler,
-  const std::vector<DrivableLanes> & drivable_lanes, const bool is_left);
-
-boost::optional<size_t> getOverlappedLaneletId(const std::vector<DrivableLanes> & lanes);
-std::vector<DrivableLanes> cutOverlappedLanes(
-  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes);
-
-void generateDrivableArea(
-  PathWithLaneId & path, const std::vector<DrivableLanes> & lanes,
-  const bool enable_expanding_hatched_road_markings, const bool enable_expanding_intersection_areas,
-  const double vehicle_length, const std::shared_ptr<const PlannerData> planner_data,
-  const bool is_driving_forward = true);
-
-void generateDrivableArea(
-  PathWithLaneId & path, const double vehicle_length, const double offset,
-  const bool is_driving_forward = true);
-
-lanelet::ConstLineStrings3d getMaximumDrivableArea(
-  const std::shared_ptr<const PlannerData> & planner_data);
-
-/**
- * @brief Expand the borders of the given lanelets
- * @param [in] drivable_lanes lanelets to expand
- * @param [in] left_bound_offset [m] expansion distance of the left bound
- * @param [in] right_bound_offset [m] expansion distance of the right bound
- * @param [in] types_to_skip linestring types that will not be expanded
- * @return expanded lanelets
- */
-std::vector<DrivableLanes> expandLanelets(
-  const std::vector<DrivableLanes> & drivable_lanes, const double left_bound_offset,
-  const double right_bound_offset, const std::vector<std::string> & types_to_skip = {});
-
 // goal management
 
 /**
@@ -293,8 +242,6 @@ PathWithLaneId refinePathForGoal(
   const Pose & goal, const int64_t goal_lane_id);
 
 bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal_id);
-
-BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerData> & planner_data);
 
 bool isInLanelets(const Pose & pose, const lanelet::ConstLanelets & lanes);
 
@@ -349,10 +296,6 @@ PathWithLaneId setDecelerationVelocity(
   const lanelet::ConstLanelets & lanelet_sequence, const double lane_change_prepare_duration,
   const double lane_change_buffer);
 
-BehaviorModuleOutput getReferencePath(
-  const lanelet::ConstLanelet & current_lane,
-  const std::shared_ptr<const PlannerData> & planner_data);
-
 // object label
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);
 
@@ -399,26 +342,23 @@ lanelet::ConstLanelets getLaneletsFromPath(
 
 std::string convertToSnakeCase(const std::string & input_str);
 
-std::vector<DrivableLanes> combineDrivableLanes(
-  const std::vector<DrivableLanes> & original_drivable_lanes_vec,
-  const std::vector<DrivableLanes> & new_drivable_lanes_vec);
-
-DrivableAreaInfo combineDrivableAreaInfo(
-  const DrivableAreaInfo & drivable_area_info1, const DrivableAreaInfo & drivable_area_info2);
-
-void extractObstaclesFromDrivableArea(
-  PathWithLaneId & path, const std::vector<DrivableAreaInfo::Obstacle> & obstacles);
-
-void makeBoundLongitudinallyMonotonic(
-  PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data,
-  const bool is_bound_left);
-
 std::optional<lanelet::Polygon3d> getPolygonByPoint(
   const std::shared_ptr<RouteHandler> & route_handler, const lanelet::ConstPoint3d & point,
   const std::string & polygon_name);
 
-lanelet::ConstLanelets combineLanelets(
-  const lanelet::ConstLanelets & base_lanes, const lanelet::ConstLanelets & added_lanes);
+template <class T>
+size_t findNearestSegmentIndex(
+  const std::vector<T> & points, const geometry_msgs::msg::Pose & pose, const double dist_threshold,
+  const double yaw_threshold)
+{
+  const auto nearest_idx =
+    motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
+  if (nearest_idx) {
+    return nearest_idx.get();
+  }
+
+  return motion_utils::findNearestSegmentIndex(points, pose.position);
+}
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__UTILS_HPP_

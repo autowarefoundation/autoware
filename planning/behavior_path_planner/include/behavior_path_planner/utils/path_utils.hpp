@@ -106,6 +106,13 @@ PathWithLaneId calcCenterLinePath(
 PathWithLaneId combinePath(const PathWithLaneId & path1, const PathWithLaneId & path2);
 
 boost::optional<Pose> getFirstStopPoseFromPath(const PathWithLaneId & path);
+
+BehaviorModuleOutput getReferencePath(
+  const lanelet::ConstLanelet & current_lane,
+  const std::shared_ptr<const PlannerData> & planner_data);
+
+BehaviorModuleOutput createGoalAroundPath(const std::shared_ptr<const PlannerData> & planner_data);
+
 }  // namespace behavior_path_planner::utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_UTILS_HPP_
