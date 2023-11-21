@@ -864,7 +864,7 @@ bool GoalPlannerModule::hasDecidedPath() const
 
   // If it is dangerous before approval, do not determine the path.
   // This eliminates a unsafe path to be approved
-  if (!isSafePath() && !isActivated()) {
+  if (parameters_->safety_check_params.enable_safety_check && !isSafePath() && !isActivated()) {
     return false;
   }
 
