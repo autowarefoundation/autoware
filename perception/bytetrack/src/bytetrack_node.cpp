@@ -83,10 +83,18 @@ void ByteTrackNode::on_rect(
   bytetrack::ObjectArray objects = bytetrack_->update_tracker(object_array);
   for (const auto & tracked_object : objects) {
     tier4_perception_msgs::msg::DetectedObjectWithFeature object;
-    object.feature.roi.x_offset = tracked_object.x_offset;
-    object.feature.roi.y_offset = tracked_object.y_offset;
-    object.feature.roi.width = tracked_object.width;
-    object.feature.roi.height = tracked_object.height;
+    // fit xy offset to 0 if roi is outside of image
+    const int outside_x = std::max(-tracked_object.x_offset, 0);
+    const int outside_y = std::max(-tracked_object.y_offset, 0);
+    const int32_t output_x = std::max(tracked_object.x_offset, 0);
+    const int32_t output_y = std::max(tracked_object.y_offset, 0);
+    const int32_t output_width = tracked_object.width - outside_x;
+    const int32_t output_height = tracked_object.height - outside_y;
+    // convert int32 to uint32
+    object.feature.roi.x_offset = static_cast<uint32_t>(output_x);
+    object.feature.roi.y_offset = static_cast<uint32_t>(output_y);
+    object.feature.roi.width = static_cast<uint32_t>(output_width);
+    object.feature.roi.height = static_cast<uint32_t>(output_height);
     object.object.existence_probability = tracked_object.score;
     object.object.classification.emplace_back(
       autoware_auto_perception_msgs::build<Label>().label(tracked_object.type).probability(1.0f));
