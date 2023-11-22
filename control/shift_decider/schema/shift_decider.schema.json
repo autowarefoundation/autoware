@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Shift Decider Node",
+  "type": "object",
+  "definitions": {
+    "shift_decider": {
+      "type": "object",
+      "properties": {
+        "park_on_goal": {
+          "type": "boolean",
+          "description": "Setting true to part on goal.",
+          "default": "true"
+        }
+      },
+      "required": ["park_on_goal"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/shift_decider"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
