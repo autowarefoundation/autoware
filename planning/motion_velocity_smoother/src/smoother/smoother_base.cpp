@@ -29,6 +29,37 @@
 namespace motion_velocity_smoother
 {
 
+namespace
+{
+TrajectoryPoints applyPreProcess(
+  const TrajectoryPoints & input, const double interval, const bool use_resampling)
+{
+  using motion_utils::calcArcLength;
+  using motion_utils::convertToTrajectory;
+  using motion_utils::convertToTrajectoryPointArray;
+  using motion_utils::resampleTrajectory;
+
+  if (!use_resampling) {
+    return input;
+  }
+
+  TrajectoryPoints output;
+  std::vector<double> arc_length;
+
+  // since the resampling takes a long time, omit the resampling when it is not requested
+  const auto traj_length = calcArcLength(input);
+  for (double s = 0; s < traj_length; s += interval) {
+    arc_length.push_back(s);
+  }
+
+  const auto points = resampleTrajectory(convertToTrajectory(input), arc_length);
+  output = convertToTrajectoryPointArray(points);
+  output.back() = input.back();  // keep the final speed.
+
+  return output;
+}
+}  // namespace
+
 SmootherBase::SmootherBase(rclcpp::Node & node)
 {
   auto & p = base_param_;
@@ -173,61 +204,67 @@ TrajectoryPoints SmootherBase::applySteeringRateLimit(
 
   // Interpolate with constant interval distance for lateral acceleration calculation.
   const double points_interval = use_resampling ? base_param_.sample_ds : input_points_interval;
-  TrajectoryPoints output;
-  // since the resampling takes a long time, omit the resampling when it is not requested
-  if (use_resampling) {
-    std::vector<double> out_arclength;
-    const auto traj_length = motion_utils::calcArcLength(input);
-    for (double s = 0; s < traj_length; s += points_interval) {
-      out_arclength.push_back(s);
-    }
-    const auto output_traj =
-      motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
-    output = motion_utils::convertToTrajectoryPointArray(output_traj);
-    output.back() = input.back();  // keep the final speed.
-  } else {
-    output = input;
-  }
+
+  auto output = applyPreProcess(input, points_interval, use_resampling);
 
   const size_t idx_dist = static_cast<size_t>(
     std::max(static_cast<int>((base_param_.curvature_calculation_distance) / points_interval), 1));
 
-  // Calculate curvature assuming the trajectory points interval is constant
+  // Step1. Calculate curvature assuming the trajectory points interval is constant.
   const auto curvature_v = trajectory_utils::calcTrajectoryCurvatureFrom3Points(output, idx_dist);
 
-  for (size_t i = 0; i + 1 < output.size(); i++) {
-    if (fabs(curvature_v.at(i)) > base_param_.curvature_threshold) {
-      // calculate the just 2 steering angle
-      output.at(i).front_wheel_angle_rad = std::atan(base_param_.wheel_base * curvature_v.at(i));
-      output.at(i + 1).front_wheel_angle_rad =
-        std::atan(base_param_.wheel_base * curvature_v.at(i + 1));
+  // Step2. Calculate steer rate for each trajectory point.
+  std::vector<double> steer_rate_arr(output.size(), 0.0);
+  for (size_t i = 1; i < output.size() - 1; i++) {
+    // velocity
+    const auto & v_front = output.at(i + 1).longitudinal_velocity_mps;
+    const auto & v_back = output.at(i).longitudinal_velocity_mps;
+    // steer
+    auto & steer_front = output.at(i + 1).front_wheel_angle_rad;
+    auto & steer_back = output.at(i).front_wheel_angle_rad;
 
-      const double mean_vel =
-        (output.at(i).longitudinal_velocity_mps + output.at(i + 1).longitudinal_velocity_mps) / 2.0;
-      const double dt =
-        std::max(points_interval / mean_vel, std::numeric_limits<double>::epsilon());
-      const double steering_diff =
-        fabs(output.at(i).front_wheel_angle_rad - output.at(i + 1).front_wheel_angle_rad);
-      const double dt_steering =
-        steering_diff / tier4_autoware_utils::deg2rad(base_param_.max_steering_angle_rate);
+    // calculate the just 2 steering angle
+    steer_front = std::atan(base_param_.wheel_base * curvature_v.at(i));
+    steer_back = std::atan(base_param_.wheel_base * curvature_v.at(i + 1));
 
-      if (dt_steering > dt) {
-        const double target_mean_vel = (points_interval / dt_steering);
-        for (size_t k = 0; k < 2; k++) {
-          const double temp_vel =
-            output.at(i + k).longitudinal_velocity_mps * (target_mean_vel / mean_vel);
-          if (temp_vel < output.at(i + k).longitudinal_velocity_mps) {
-            output.at(i + k).longitudinal_velocity_mps = temp_vel;
-          } else {
-            if (target_mean_vel < output.at(i + k).longitudinal_velocity_mps) {
-              output.at(i + k).longitudinal_velocity_mps = target_mean_vel;
-            }
-          }
-          if (output.at(i + k).longitudinal_velocity_mps < base_param_.min_curve_velocity) {
-            output.at(i + k).longitudinal_velocity_mps = base_param_.min_curve_velocity;
-          }
-        }
-      }
+    const auto mean_vel = 0.5 * (v_front + v_back);
+    const auto dt = std::max(points_interval / mean_vel, std::numeric_limits<double>::epsilon());
+    const auto steering_diff = std::fabs(steer_front - steer_back);
+
+    steer_rate_arr.at(i) = steering_diff / dt;
+  }
+
+  steer_rate_arr.at(0) = steer_rate_arr.at(1);
+  steer_rate_arr.back() = steer_rate_arr.at((output.size() - 2));
+
+  // Step3. Remove noise by mean filter.
+  for (size_t i = 1; i < steer_rate_arr.size() - 1; i++) {
+    steer_rate_arr.at(i) =
+      (steer_rate_arr.at(i - 1) + steer_rate_arr.at(i) + steer_rate_arr.at(i + 1)) / 3.0;
+  }
+
+  // Step4. Limit velocity by steer rate.
+  for (size_t i = 0; i < output.size() - 1; i++) {
+    if (fabs(curvature_v.at(i)) < base_param_.curvature_threshold) {
+      continue;
+    }
+
+    const auto steer_rate = steer_rate_arr.at(i);
+    if (steer_rate < tier4_autoware_utils::deg2rad(base_param_.max_steering_angle_rate)) {
+      continue;
+    }
+
+    const auto mean_vel =
+      (output.at(i).longitudinal_velocity_mps + output.at(i + 1).longitudinal_velocity_mps) / 2.0;
+    const auto target_mean_vel =
+      mean_vel * (tier4_autoware_utils::deg2rad(base_param_.max_steering_angle_rate) / steer_rate);
+
+    for (size_t k = 0; k < 2; k++) {
+      auto & velocity = output.at(i + k).longitudinal_velocity_mps;
+      const float target_velocity = std::max(
+        base_param_.min_curve_velocity,
+        std::min(target_mean_vel, velocity * (target_mean_vel / mean_vel)));
+      velocity = std::min(velocity, target_velocity);
     }
   }
 
