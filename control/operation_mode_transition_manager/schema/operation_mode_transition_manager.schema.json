@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Operation Mode Transition Manager Node",
+  "type": "object",
+  "definitions": {
+    "operation_mode_transition_manager": {
+      "type": "object",
+      "properties": {
+        "transition_timeout": {
+          "type": "number",
+          "description": "If the state transition is not completed within this time, it is considered a transition failure.",
+          "default": "10.0",
+          "minimum": 0.0
+        },
+        "frequency_hz": {
+          "type": "number",
+          "description": "running hz",
+          "default": "10.0",
+          "minimum": 0.0
+        },
+        "enable_engage_on_driving": {
+          "type": "boolean",
+          "description": "Set true if you want to engage the autonomous driving mode while the vehicle is driving. If set to false, it will deny Engage in any situation where the vehicle speed is not zero. Note that if you use this feature without adjusting the parameters, it may cause issues like sudden deceleration. Before using, please ensure the engage condition and the vehicle_cmd_gate transition filter are appropriately adjusted.",
+          "default": "false"
+        },
+        "check_engage_condition": {
+          "type": "boolean",
+          "description": "If false, autonomous transition is always available.",
+          "default": "false"
+        },
+        "nearest_dist_deviation_threshold": {
+          "type": "number",
+          "description": "distance threshold used to find nearest trajectory point [m]",
+          "default": "3.0",
+          "minimum": 0.0
+        },
+        "nearest_yaw_deviation_threshold": {
+          "type": "number",
+          "description": "angle threshold used to find nearest trajectory point [rad]",
+          "default": "1.57",
+          "minimum": -3.142
+        },
+        "engage_acceptable_limits": {
+          "type": "object",
+          "properties": {
+            "allow_autonomous_in_stopped": {
+              "type": "boolean",
+              "description": "If true, autonomous transition is available when the vehicle is stopped even if other checks fail.",
+              "default": "true"
+            },
+            "dist_threshold": {
+              "type": "number",
+              "description": "The distance between the trajectory and ego vehicle must be within this distance for Autonomous transition.",
+              "default": "1.5",
+              "minimum": 0.0
+            },
+            "yaw_threshold": {
+              "type": "number",
+              "description": "The yaw angle between trajectory and ego vehicle must be within this threshold for Autonomous transition.",
+              "default": "0.524",
+              "minimum": -3.142
+            },
+            "speed_upper_threshold": {
+              "type": "number",
+              "description": "The velocity deviation between control command and ego vehicle must be within this threshold for Autonomous transition.",
+              "default": "10.0"
+            },
+            "speed_lower_threshold": {
+              "type": "number",
+              "description": "The velocity deviation between control command and ego vehicle must be within this threshold for Autonomous transition.",
+              "default": "-10.0"
+            },
+            "acc_threshold": {
+              "type": "number",
+              "description": "The control command acceleration must be less than this threshold for Autonomous transition.",
+              "default": "1.5",
+              "minimum": 0.0
+            },
+            "lateral_acc_threshold": {
+              "type": "number",
+              "description": "The control command lateral acceleration must be less than this threshold for Autonomous transition.",
+              "default": "1.0",
+              "minimum": 0.0
+            },
+            "lateral_acc_diff_threshold": {
+              "type": "number",
+              "description": "The lateral acceleration deviation between the control command must be less than this threshold for Autonomous transition.",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "allow_autonomous_in_stopped",
+            "dist_threshold",
+            "yaw_threshold",
+            "speed_upper_threshold",
+            "speed_lower_threshold",
+            "acc_threshold",
+            "lateral_acc_threshold",
+            "lateral_acc_diff_threshold"
+          ]
+        },
+        "stable_check": {
+          "type": "object",
+          "properties": {
+            "duration": {
+              "type": "number",
+              "description": "The stable condition must be satisfied for this duration to complete the transition.",
+              "default": "0.1",
+              "minimum": 0.0
+            },
+            "dist_threshold": {
+              "type": "number",
+              "description": "The distance between the trajectory and ego vehicle must be within this distance to complete Autonomous transition.",
+              "default": "1.5",
+              "minimum": 0.0
+            },
+            "speed_upper_threshold": {
+              "type": "number",
+              "description": "The velocity deviation between control command and ego vehicle must be within this threshold to complete Autonomous transition.",
+              "default": "2.0"
+            },
+            "speed_lower_threshold": {
+              "type": "number",
+              "description": "The velocity deviation between control command and ego vehicle must be within this threshold to complete Autonomous transition.",
+              "default": "-2.0"
+            },
+            "yaw_threshold": {
+              "type": "number",
+              "description": "The yaw angle between trajectory and ego vehicle must be within this threshold to complete Autonomous transition.",
+              "default": "0,262",
+              "minimum": -3.142
+            }
+          },
+          "required": [
+            "duration",
+            "dist_threshold",
+            "speed_upper_threshold",
+            "speed_lower_threshold",
+            "yaw_threshold"
+          ]
+        }
+      },
+      "required": [
+        "transition_timeout",
+        "frequency_hz",
+        "enable_engage_on_driving",
+        "check_engage_condition",
+        "nearest_dist_deviation_threshold",
+        "nearest_yaw_deviation_threshold",
+        "engage_acceptable_limits",
+        "stable_check"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/operation_mode_transition_manager"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

@@ -83,6 +83,8 @@ For the backward compatibility (to be removed):
 
 ## Parameters
 
+{{ json_to_markdown("control/operation_mode_transition_manager/schema/operation_mode_transition_manager.schema.json") }}
+
 | Name                               | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Default value |
 | :--------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
 | `transition_timeout`               | `double` | If the state transition is not completed within this time, it is considered a transition failure.                                                                                                                                                                                                                                                                                                                             | 10.0          |
