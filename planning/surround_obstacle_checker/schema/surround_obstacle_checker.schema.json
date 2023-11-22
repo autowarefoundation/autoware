@@ -1,0 +1,397 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Surround Obstacle Checker Node",
+  "type": "object",
+  "definitions": {
+    "surround_obstacle_checker": {
+      "type": "object",
+      "properties": {
+        "pointcloud": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding pointcloud",
+              "default": "false"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "unknown": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding unknown objects",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "car": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding car",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "truck": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding truck",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "bus": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding bus",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "trailer": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding trailer",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "motorcycle": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding motorcycle",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "bicycle": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding bicycle",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "f objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "pedestrian": {
+          "type": "object",
+          "properties": {
+            "enable_check": {
+              "type": "boolean",
+              "description": "enable to check surrounding pedestrian",
+              "default": "true"
+            },
+            "surround_check_front_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_side_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            },
+            "surround_check_back_distance": {
+              "type": "number",
+              "description": "If objects exist in this distance, transit to \"exist-surrounding-obstacle\" status. [m]",
+              "default": "0.5",
+              "minimum": 0.0
+            }
+          },
+          "required": [
+            "enable_check",
+            "surround_check_front_distance",
+            "surround_check_side_distance",
+            "surround_check_back_distance"
+          ],
+          "additionalProperties": false
+        },
+        "surround_check_hysteresis_distance": {
+          "type": "number",
+          "description": "If no object exists in this hysteresis distance added to the above distance, transit to \"non-surrounding-obstacle\" status [m]",
+          "default": "0.3",
+          "minimum": 0.0
+        },
+        "state_clear_time": {
+          "type": "number",
+          "description": "Threshold to clear stop state [s]",
+          "default": "2.0",
+          "minimum": 0.0
+        },
+        "stop_state_ego_speed": {
+          "type": "number",
+          "description": "Threshold to check ego vehicle stopped [m/s]",
+          "default": "0.1",
+          "minimum": 0.0
+        },
+        "publish_debug_footprints": {
+          "type": "boolean",
+          "description": "Publish vehicle footprint & footprints with surround_check_distance and surround_check_recover_distance offsets.",
+          "default": "true"
+        },
+        "debug_footprint_label": {
+          "type": "string",
+          "description": "select the label for debug footprint",
+          "default": "car",
+          "enum": [
+            "pointcloud",
+            "unknown",
+            "car",
+            "truck",
+            "bus",
+            "trailer",
+            "motorcycle",
+            "bicycle",
+            "pedestrian"
+          ]
+        }
+      },
+      "required": [
+        "pointcloud",
+        "unknown",
+        "car",
+        "truck",
+        "bus",
+        "trailer",
+        "motorcycle",
+        "bicycle",
+        "pedestrian",
+        "surround_check_hysteresis_distance",
+        "state_clear_time",
+        "stop_state_ego_speed",
+        "publish_debug_footprints",
+        "debug_footprint_label"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/surround_obstacle_checker"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

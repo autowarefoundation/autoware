@@ -101,6 +101,8 @@ As mentioned in stop condition section, it prevents chattering by changing thres
 
 ## Parameters
 
+{{ json_to_markdown("planning/surround_obstacle_checker/schema/surround_obstacle_checker.schema.json") }}
+
 | Name                              | Type     | Description                                                                            | Default value |
 | :-------------------------------- | :------- | :------------------------------------------------------------------------------------- | :------------ |
 | `use_pointcloud`                  | `bool`   | Use pointcloud as obstacle check                                                       | `true`        |
