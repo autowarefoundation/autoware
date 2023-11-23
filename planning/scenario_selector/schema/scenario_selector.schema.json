@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Scenario Selector Node",
+  "type": "object",
+  "definitions": {
+    "scenario_selector": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "number",
+          "description": "timer's update rate",
+          "default": "10.0",
+          "minimum": 0.0
+        },
+        "th_max_message_delay_sec": {
+          "type": "number",
+          "description": "threshold time of input messages' maximum delay",
+          "default": "1.0",
+          "minimum": 0.0
+        },
+        "th_arrived_distance_m": {
+          "type": "number",
+          "description": "threshold distance to check if vehicle has arrived at the trajectory's endpoint",
+          "default": "1.0",
+          "minimum": 0.0
+        },
+        "th_stopped_time_sec": {
+          "type": "number",
+          "description": "threshold time to check if vehicle is stopped",
+          "default": "1.0",
+          "minimum": 0.0
+        },
+        "th_stopped_velocity_mps": {
+          "type": "number",
+          "description": "threshold velocity to check if vehicle is stopped",
+          "default": "0.01",
+          "minimum": 0.0
+        }
+      },
+      "required": [
+        "update_rate",
+        "th_max_message_delay_sec",
+        "th_arrived_distance_m",
+        "th_stopped_time_sec",
+        "th_stopped_velocity_mps"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/scenario_selector"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
