@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for obstacle collision checker",
+  "type": "object",
+  "definitions": {
+    "vehicle_cmd_gate": {
+      "type": "object",
+      "properties": {
+        "delay_time": {
+          "type": "number",
+          "default": 0.3,
+          "description": "Delay time of vehicles."
+        },
+        "update_rate": {
+          "type": "number"
+        },
+        "footprint_margin": {
+          "type": "number",
+          "default": 0.0,
+          "description": "Foot print margin."
+        },
+        "max_deceleration": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Max deceleration for ego vehicle to stop."
+        },
+        "resample_interval": {
+          "type": "number",
+          "default": 0.3,
+          "description": "Interval for resampling trajectory."
+        },
+        "search_radius": {
+          "type": "number",
+          "default": 5.0,
+          "description": "Search distance from trajectory to point cloud"
+        }
+      },
+      "required": [
+        "delay_time",
+        "footprint_margin",
+        "max_deceleration",
+        "resample_interval",
+        "search_radius",
+        "update_rate"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/obstacle_collision_checker"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
