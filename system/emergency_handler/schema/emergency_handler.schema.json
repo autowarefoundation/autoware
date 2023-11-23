@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for emergency handler",
+  "type": "object",
+  "definitions": {
+    "emergency_handler": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "integer",
+          "description": "Timer callback period.",
+          "default": 10
+        },
+        "timeout_hazard_status": {
+          "type": "number",
+          "description": "If the input `hazard_status` topic cannot be received for more than `timeout_hazard_status`, vehicle will make an emergency stop.",
+          "default": 0.5
+        },
+        "timeout_takeover_request": {
+          "type": "number",
+          "description": "Transition to MRR_OPERATING if the time from the last takeover request exceeds `timeout_takeover_request`.",
+          "default": 10.0
+        },
+        "use_takeover_request": {
+          "type": "boolean",
+          "description": "If this parameter is true, the handler will record the time and make take over request to the driver when emergency state occurs.",
+          "default": "false"
+        },
+        "use_parking_after_stopped": {
+          "type": "boolean",
+          "description": "If this parameter is true, it will publish PARKING shift command.",
+          "default": "false"
+        },
+        "use_comfortable_stop": {
+          "type": "boolean",
+          "description": "If this parameter is true, operate comfortable stop when latent faults occur.",
+          "default": "false"
+        },
+        "turning_hazard_on": {
+          "type": "object",
+          "properties": {
+            "emergency": {
+              "type": "boolean",
+              "description": "If this parameter is true, hazard lamps will be turned on during emergency state.",
+              "default": "true"
+            }
+          },
+          "required": ["emergency"]
+        }
+      },
+      "required": [
+        "update_rate",
+        "timeout_hazard_status",
+        "timeout_takeover_request",
+        "use_takeover_request",
+        "use_parking_after_stopped",
+        "use_comfortable_stop",
+        "turning_hazard_on"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/emergency_handler"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
