@@ -96,7 +96,9 @@ class ProcessingTimeSubscriber(Node):
         print("-" * len(header_str))
 
         # Print each topic's data
-        for topic, data in self.data_map.items():
+        for topic in sorted(self.data_map.keys()):
+            # Fetch the data for the current topic
+            data = self.data_map[topic]
             # Round the data to the third decimal place for display
             data_rounded = round(data, 3)
             # Calculate the number of bars to be displayed (clamped to max_display_time)
