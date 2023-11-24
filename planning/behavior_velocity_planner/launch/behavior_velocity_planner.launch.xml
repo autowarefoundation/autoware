@@ -27,6 +27,7 @@
   <arg name="behavior_velocity_planner_out_of_lane_module_param_path"/>
   <arg name="behavior_velocity_planner_no_drivable_lane_module_param_path"/>
   <!-- <arg name="behavior_velocity_planner_template_module_param_path"/> -->
+  <arg name="behavior_velocity_planner_param_file" default="$(find-pkg-share behavior_velocity_planner)/config/behavior_velocity_planner.param.yaml"/>
 
   <node pkg="behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
     <!-- topic remap -->
@@ -69,5 +70,7 @@
     <param from="$(var behavior_velocity_planner_out_of_lane_module_param_path)"/>
     <param from="$(var behavior_velocity_planner_no_drivable_lane_module_param_path)"/>
     <!-- <param from="$(var behavior_velocity_planner_template_param_path)"/> -->
+
+    <param from="$(var behavior_velocity_planner_param_file)"/>
   </node>
 </launch>

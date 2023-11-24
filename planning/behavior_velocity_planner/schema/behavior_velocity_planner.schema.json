@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Behavior Velocity Planner",
+  "type": "object",
+  "definitions": {
+    "behavior_velocity_planner": {
+      "type": "object",
+      "properties": {
+        "forward_path_length": {
+          "type": "number",
+          "default": "1000.0",
+          "description": "forward path"
+        },
+        "backward_path_length": {
+          "type": "number",
+          "default": "5.0",
+          "description": "backward path"
+        },
+        "max_accel": {
+          "type": "number",
+          "default": "-2.8",
+          "description": "(to be a global parameter) max acceleration of the vehicle"
+        },
+        "system_delay": {
+          "type": "number",
+          "default": "0.5",
+          "description": "(to be a global parameter) delay time until output control command"
+        },
+        "delay_response_time": {
+          "type": "number",
+          "default": "0.5",
+          "description": "(to be a global parameter) delay time of the vehicle's response to control commands"
+        },
+        "stop_line_extend_length": {
+          "type": "number",
+          "default": "5.0",
+          "description": "extend length of stop line"
+        },
+        "max_jerk": {
+          "type": "number",
+          "default": "-5.0",
+          "description": "max jerk of the vehicle"
+        },
+        "is_publish_debug_path": {
+          "type": "number",
+          "default": "false",
+          "description": "is publish debug path?"
+        }
+      },
+      "required": [
+        "forward_path_length",
+        "backward_path_length",
+        "max_accel",
+        "system_delay",
+        "delay_response_time",
+        "stop_line_extend_length",
+        "max_jerk",
+        "is_publish_debug_path"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/behavior_velocity_planner"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}

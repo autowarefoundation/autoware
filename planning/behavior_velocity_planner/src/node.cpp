@@ -136,16 +136,14 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   debug_viz_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/path", 1);
 
   // Parameters
-  forward_path_length_ = this->declare_parameter<double>("forward_path_length");
-  backward_path_length_ = this->declare_parameter<double>("backward_path_length");
-  planner_data_.stop_line_extend_length =
-    this->declare_parameter<double>("stop_line_extend_length");
+  forward_path_length_ = declare_parameter<double>("forward_path_length");
+  backward_path_length_ = declare_parameter<double>("backward_path_length");
+  planner_data_.stop_line_extend_length = declare_parameter<double>("stop_line_extend_length");
 
   // nearest search
   planner_data_.ego_nearest_dist_threshold =
-    this->declare_parameter<double>("ego_nearest_dist_threshold");
-  planner_data_.ego_nearest_yaw_threshold =
-    this->declare_parameter<double>("ego_nearest_yaw_threshold");
+    declare_parameter<double>("ego_nearest_dist_threshold");
+  planner_data_.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
   // Initialize PlannerManager
   for (const auto & name : declare_parameter<std::vector<std::string>>("launch_modules")) {
