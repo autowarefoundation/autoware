@@ -32,14 +32,14 @@
 
 VelodyneMonitor::VelodyneMonitor() : Node("velodyne_monitor"), updater_(this)
 {
-  timeout_ = declare_parameter("timeout", 0.5);
-  ip_address_ = declare_parameter("ip_address", "192.168.1.201");
-  temp_cold_warn_ = declare_parameter("temp_cold_warn", -5.0);
-  temp_cold_error_ = declare_parameter("temp_cold_error", -10.0);
-  temp_hot_warn_ = declare_parameter("temp_hot_warn", 75.0);
-  temp_hot_error_ = declare_parameter("temp_hot_error", 80.0);
-  rpm_ratio_warn_ = declare_parameter("rpm_ratio_warn", 0.80);
-  rpm_ratio_error_ = declare_parameter("rpm_ratio_error", 0.70);
+  timeout_ = declare_parameter<double>("timeout");
+  ip_address_ = declare_parameter<std::string>("ip_address");
+  temp_cold_warn_ = declare_parameter<double>("temp_cold_warn");
+  temp_cold_error_ = declare_parameter<double>("temp_cold_error");
+  temp_hot_warn_ = declare_parameter<double>("temp_hot_warn");
+  temp_hot_error_ = declare_parameter<double>("temp_hot_error");
+  rpm_ratio_warn_ = declare_parameter<double>("rpm_ratio_warn");
+  rpm_ratio_error_ = declare_parameter<double>("rpm_ratio_error");
 
   updater_.add("velodyne_connection", this, &VelodyneMonitor::checkConnection);
   updater_.add("velodyne_temperature", this, &VelodyneMonitor::checkTemperature);

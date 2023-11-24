@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for velodyne_monitor",
+  "type": "object",
+  "definitions": {
+    "velodyne_monitor": {
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "number",
+          "default": 0.5,
+          "description": " Timeout for HTTP request to get Velodyne LiDAR status."
+        },
+        "ip_address": {
+          "type": "string",
+          "description": "IP address of target Velodyne LiDAR."
+        },
+        "temp_cold_warn": {
+          "type": "boolean",
+          "default": "false",
+          "description": "true when external emergency stop information is used."
+        },
+        "temp_cold_error": {
+          "type": "number",
+          "default": 0.5,
+          "description": "timeout for system emergency."
+        },
+        "temp_hot_warn": {
+          "type": "number",
+          "default": 0.5,
+          "description": "timeout for external emergency."
+        },
+        "temp_hot_error": {
+          "type": "number",
+          "default": -1.5,
+          "description": "longitudinal acceleration cmd when vehicle should stop"
+        },
+        "rpm_ratio_warn": {
+          "type": "number",
+          "default": -2.4,
+          "description": "longitudinal acceleration cmd when vehicle stop with emergency."
+        },
+        "rpm_ratio_error": {
+          "type": "number",
+          "default": 25.0,
+          "description": "limit of longitudinal velocity (activated in AUTONOMOUS operation mode)."
+        }
+      },
+      "required": [
+        "timeout",
+        "ip_address",
+        "temp_cold_warn",
+        "temp_cold_error",
+        "temp_hot_warn",
+        "temp_hot_error",
+        "rpm_ratio_warn",
+        "rpm_ratio_error"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/velodyne_monitor"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
