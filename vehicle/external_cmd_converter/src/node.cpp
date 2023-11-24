@@ -42,13 +42,13 @@ ExternalCmdConverterNode::ExternalCmdConverterNode(const rclcpp::NodeOptions & n
     std::bind(&ExternalCmdConverterNode::onEmergencyStopHeartbeat, this, _1));
 
   // Parameter
-  ref_vel_gain_ = declare_parameter("ref_vel_gain", 3.0);
+  ref_vel_gain_ = declare_parameter<double>("ref_vel_gain");
 
   // Parameter for Hz check
-  const double timer_rate = declare_parameter("timer_rate", 10.0);
-  wait_for_first_topic_ = declare_parameter("wait_for_first_topic", true);
-  control_command_timeout_ = declare_parameter("control_command_timeout", 1.0);
-  emergency_stop_timeout_ = declare_parameter("emergency_stop_timeout", 3.0);
+  const double timer_rate = declare_parameter<double>("timer_rate");
+  wait_for_first_topic_ = declare_parameter<bool>("wait_for_first_topic");
+  control_command_timeout_ = declare_parameter<double>("control_command_timeout");
+  emergency_stop_timeout_ = declare_parameter<double>("emergency_stop_timeout");
 
   const auto period_ns = rclcpp::Rate(timer_rate).period();
   rate_check_timer_ = rclcpp::create_timer(

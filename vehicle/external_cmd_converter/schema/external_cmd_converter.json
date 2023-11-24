@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for external_cmd_converter",
+  "type": "object",
+  "definitions": {
+    "velodyne_monitor": {
+      "type": "object",
+      "properties": {
+        "ref_vel_gain": {
+          "type": "number",
+          "default": 3.0
+        },
+        "timer_rate": {
+          "type": "number",
+          "default": 10.0,
+          "description": "timer's update rate."
+        },
+        "wait_for_first_topic": {
+          "type": "boolean",
+          "default": "true",
+          "description": "if time out check is done after receiving first topic."
+        },
+        "control_command_timeout": {
+          "type": "number",
+          "default": 1.0,
+          "description": "time out check for control command."
+        },
+        "emergency_stop_timeout": {
+          "type": "number",
+          "default": 3.0,
+          "description": "time out check for emergency stop command."
+        }
+      },
+      "required": [
+        "ref_vel_gain",
+        "timer_rate",
+        "wait_for_first_topic",
+        "control_command_timeout",
+        "emergency_stop_timeout"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/external_cmd_converter"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
