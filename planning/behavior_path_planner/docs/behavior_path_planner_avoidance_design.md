@@ -209,6 +209,149 @@ The closer the object is to the shoulder, the larger the value of $ratio$ (theor
 
 In order to prevent chattering of recognition results, once an obstacle is targeted, it is hold for a while even if it disappears. This is effective when recognition is unstable. However, since it will result in over-detection (increase a number of false-positive), it is necessary to adjust parameters according to the recognition accuracy (if `object_last_seen_threshold = 0.0`, the recognition result is 100% trusted).
 
+### Flowchart
+
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+skinparam noteTextAlignment left
+
+title object filtering flowchart
+start
+
+if(object is satisfied with common target condition ?) then (yes)
+if(vehicle can pass by the object without avoidance ?) then (yes)
+:return false;
+stop
+else (\n no)
+endif
+else (\n no)
+:return false;
+stop
+endif
+
+if(object is vehicle type ?) then (yes)
+if(object is satisfied with vehicle type target condition ?) then (yes)
+else (\n no)
+:return false;
+stop
+endif
+else (\n no)
+if(object is satisfied with non-vehicle type target condition ?) then (yes)
+else (\n no)
+:return false;
+stop
+endif
+endif
+
+#FF006C :return true;
+stop
+@enduml
+```
+
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+skinparam noteTextAlignment left
+
+title filtering flow for all types object
+start
+
+partition isSatisfiedWithCommonCondition() {
+if(object is avoidance target type ?) then (yes)
+if(object is moving more than threshold time ?) then (yes)
+:return false;
+stop
+else (\n no)
+if(object is farther than forward distance threshold ?) then (yes)
+:return false;
+stop
+else (\n no)
+If(object is farther than backward distance threshold ?) then (yes)
+:return false;
+stop
+else (\n no)
+endif
+endif
+endif
+else (\n no)
+:return false;
+stop
+endif
+#FF006C :return true;
+stop
+}
+
+@enduml
+```
+
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+skinparam noteTextAlignment left
+
+title filtering flow for vehicle type objects
+start
+
+partition isSatisfiedWithVehicleCodition() {
+if(object is force avoidance target ?) then (yes)
+#FF006C :return true;
+stop
+else (\n no)
+if(object is nearer lane centerline than threshold ?) then (yes)
+:return false;
+stop
+else (\n no)
+if(object is on same lane for ego ?) then (yes)
+if(object is shifting right or left side road shoulder more than threshold ?) then (yes)
+#FF006C :return true;
+stop
+else (\n no)
+:return false;
+stop
+endif
+else (\n no)
+if(object is in intersection ?) then (no)
+#FF006C :return true;
+stop
+else (\n yes)
+if(object pose is paralell to ego lane ?) then (no)
+#FF006C :return true;
+stop
+else (\n yes)
+:return false;
+stop
+endif
+endif
+endif
+endif
+endif
+}
+
+@enduml
+```
+
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+skinparam noteTextAlignment left
+
+title filtering flow for non-vehicle type objects
+start
+
+partition isSatisfiedWithNonVehicleCodition() {
+if(object is nearer crosswalk than threshold ?) then (yes)
+:return false;
+stop
+else (\n no)
+endif
+#FF006C :return true;
+stop
+}
+
+@enduml
+```
+
 ## Overview of algorithm for avoidance path generation
 
 ### How to prevent shift line chattering that is caused by perception noise

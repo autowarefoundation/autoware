@@ -114,6 +114,8 @@ AvoidanceModuleManager::AvoidanceModuleManager(
       getOrDeclareParameter<double>(*node, ns + "object_check_shiftable_ratio");
     p.object_check_min_road_shoulder_width =
       getOrDeclareParameter<double>(*node, ns + "object_check_min_road_shoulder_width");
+    p.object_check_yaw_deviation =
+      getOrDeclareParameter<double>(*node, ns + "intersection.yaw_deviation");
     p.object_last_seen_threshold =
       getOrDeclareParameter<double>(*node, ns + "object_last_seen_threshold");
   }

@@ -33,18 +33,6 @@ using behavior_path_planner::utils::path_safety_checker::PredictedPathWithPolygo
 
 bool isOnRight(const ObjectData & obj);
 
-bool isVehicleTypeObject(const ObjectData & object);
-
-bool isWithinCrosswalk(
-  const ObjectData & object,
-  const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs);
-
-bool isWithinIntersection(
-  const ObjectData & object, const std::shared_ptr<RouteHandler> & route_handler);
-
-bool isTargetObjectType(
-  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters);
-
 double calcShiftLength(
   const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin);
 
@@ -106,6 +94,10 @@ lanelet::ConstLanelets getTargetLanelets(
 lanelet::ConstLanelets getCurrentLanesFromPath(
   const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data);
 
+lanelet::ConstLanelets getExtendLanes(
+  const lanelet::ConstLanelets & lanelets, const Pose & ego_pose,
+  const std::shared_ptr<const PlannerData> & planner_data);
+
 void insertDecelPoint(
   const Point & p_src, const double offset, const double velocity, PathWithLaneId & path,
   boost::optional<Pose> & p_out);
@@ -136,6 +128,11 @@ void compensateDetectionLost(
 
 void filterTargetObjects(
   ObjectDataArray & objects, AvoidancePlanningData & data, DebugData & debug,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const std::shared_ptr<AvoidanceParameters> & parameters);
+
+double getRoadShoulderDistance(
+  ObjectData & object, const AvoidancePlanningData & data,
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
 

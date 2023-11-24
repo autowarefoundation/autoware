@@ -146,6 +146,10 @@
               front_distance: 30.0                       # [m]
               behind_distance: 30.0                      # [m]
 
+        # params for filtering objects that are in intersection
+        intersection:
+          yaw_deviation: 0.175                           # [rad] (default: 10.0deg)
+
       # For safety check
       safety_check:
         # safety check configuration
