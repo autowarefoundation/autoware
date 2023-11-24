@@ -177,17 +177,18 @@ void RoiClusterFusionNode::fuseOnSingleImage(
       double iou(0.0);
       bool is_use_non_trust_object_iou_mode = is_far_enough(
         input_cluster_msg.feature_objects.at(cluster_map.first), trust_object_distance_);
+      auto image_roi = feature_obj.feature.roi;
+      auto cluster_roi = cluster_map.second;
+      sanitizeROI(image_roi, camera_info.width, camera_info.height);
+      sanitizeROI(cluster_roi, camera_info.width, camera_info.height);
       if (is_use_non_trust_object_iou_mode || is_roi_label_known) {
-        iou =
-          cal_iou_by_mode(cluster_map.second, feature_obj.feature.roi, non_trust_object_iou_mode_);
+        iou = cal_iou_by_mode(cluster_roi, image_roi, non_trust_object_iou_mode_);
       } else {
-        iou = cal_iou_by_mode(cluster_map.second, feature_obj.feature.roi, trust_object_iou_mode_);
+        iou = cal_iou_by_mode(cluster_roi, image_roi, trust_object_iou_mode_);
       }
 
       const bool passed_inside_cluster_gate =
-        only_allow_inside_cluster_
-          ? is_inside(feature_obj.feature.roi, cluster_map.second, roi_scale_factor_)
-          : true;
+        only_allow_inside_cluster_ ? is_inside(image_roi, cluster_roi, roi_scale_factor_) : true;
       if (max_iou < iou && passed_inside_cluster_gate) {
         index = cluster_map.first;
         max_iou = iou;

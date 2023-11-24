@@ -166,11 +166,42 @@ bool is_inside(
   const sensor_msgs::msg::RegionOfInterest & outer,
   const sensor_msgs::msg::RegionOfInterest & inner, const double outer_offset_scale)
 {
-  const double lower_scale = 1.0 - std::abs(outer_offset_scale - 1.0);
-  return outer.x_offset * lower_scale <= inner.x_offset &&
-         outer.y_offset * lower_scale <= inner.y_offset &&
-         inner.x_offset + inner.width <= (outer.x_offset + outer.width) * outer_offset_scale &&
-         inner.y_offset + inner.height <= (outer.y_offset + outer.height) * outer_offset_scale;
+  const auto scaled_width = static_cast<double>(outer.width) * outer_offset_scale;
+  const auto scaled_height = static_cast<double>(outer.height) * outer_offset_scale;
+  const auto scaled_x_offset =
+    static_cast<double>(outer.x_offset) - (scaled_width - outer.width) / 2.0;
+  const auto scaled_y_offset =
+    static_cast<double>(outer.y_offset) - (scaled_height - outer.height) / 2.0;
+
+  // 1. check left-top corner
+  if (scaled_x_offset > inner.x_offset || scaled_y_offset > inner.y_offset) {
+    return false;
+  }
+  // 2. check right-bottom corner
+  if (
+    scaled_x_offset + scaled_width < inner.x_offset + inner.width ||
+    scaled_y_offset + scaled_height < inner.y_offset + inner.height) {
+    return false;
+  }
+  return true;
+}
+
+void sanitizeROI(sensor_msgs::msg::RegionOfInterest & roi, const int width_, const int height_)
+{
+  const unsigned int width = static_cast<unsigned int>(width_);
+  const unsigned int height = static_cast<unsigned int>(height_);
+  if (roi.x_offset >= width || roi.y_offset >= height) {
+    roi.width = 0;
+    roi.height = 0;
+    return;
+  }
+
+  if (roi.x_offset + roi.width > width) {
+    roi.width = width - roi.x_offset;
+  }
+  if (roi.y_offset + roi.height > height) {
+    roi.height = height - roi.y_offset;
+  }
 }
 
 }  // namespace image_projection_based_fusion
