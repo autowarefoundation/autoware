@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for external velocity limit selector node",
+  "type": "object",
+  "definitions": {
+    "external_velocity_limit_selector": {
+      "type": "object",
+      "properties": {
+        "max_velocity": {
+          "type": "number",
+          "description": "max velocity limit [m/s]",
+          "default": 20.0
+        },
+        "normal": {
+          "type": "object",
+          "properties": {
+            "min_acc": {
+              "type": "number",
+              "description": "min deceleration [m/ss]",
+              "default": -0.5
+            },
+            "max_acc": {
+              "type": "number",
+              "description": "max acceleration [m/ss]",
+              "default": 1.0
+            },
+            "min_jerk": {
+              "type": "number",
+              "description": "min jerk [m/sss]",
+              "default": -0.5
+            },
+            "max_jerk": {
+              "type": "number",
+              "description": "max jerk [m/sss]",
+              "default": 1.0
+            }
+          },
+          "required": ["min_acc", "max_acc", "min_jerk", "max_jerk"]
+        },
+        "limit": {
+          "type": "object",
+          "properties": {
+            "min_acc": {
+              "type": "number",
+              "description": "min deceleration to be observed [m/ss]",
+              "default": -2.5
+            },
+            "max_acc": {
+              "type": "number",
+              "description": "max acceleration to be observed [m/ss]",
+              "default": 1.0
+            },
+            "min_jerk": {
+              "type": "number",
+              "description": "min jerk to be observed [m/sss]",
+              "default": -1.5
+            },
+            "max_jerk": {
+              "type": "number",
+              "description": "max jerk to be observed [m/sss]",
+              "default": 1.5
+            }
+          },
+          "required": ["min_acc", "max_acc", "min_jerk", "max_jerk"]
+        }
+      },
+      "required": ["max_velocity", "normal", "limit"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/external_velocity_limit_selector"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
