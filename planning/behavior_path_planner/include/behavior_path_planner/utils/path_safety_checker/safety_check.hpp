@@ -134,6 +134,8 @@ bool checkPolygonsIntersects(
 
 // debug
 CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj);
+void updateCollisionCheckDebugMap(
+  CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe);
 
 }  // namespace behavior_path_planner::utils::path_safety_checker
 

@@ -56,9 +56,6 @@ inline int64_t bitShift(int64_t original_id)
   return original_id << (sizeof(int32_t) * 8 / 2);
 }
 
-void updateCollisionCheckDebugMap(
-  CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe);
-
 MarkerArray createPoseMarkerArray(
   const Pose & pose, std::string && ns, const int32_t & id, const float & r, const float & g,
   const float & b);

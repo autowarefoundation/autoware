@@ -1753,7 +1753,7 @@ bool GoalPlannerModule::checkSafetyWithRSS(
           planned_path, ego_predicted_path, object, obj_path, planner_data_->parameters,
           safety_check_params_->rss_params, hysteresis_factor, current_debug_data.second);
 
-        marker_utils::updateCollisionCheckDebugMap(
+        utils::path_safety_checker::updateCollisionCheckDebugMap(
           goal_planner_data_.collision_check, current_debug_data, !has_collision);
 
         return has_collision;

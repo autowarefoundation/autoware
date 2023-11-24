@@ -406,4 +406,17 @@ CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj)
   return {tier4_autoware_utils::toHexString(obj.uuid), debug};
 }
 
+void updateCollisionCheckDebugMap(
+  CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe)
+{
+  auto & [key, element] = object_debug;
+  element.is_safe = is_safe;
+  if (debug_map.find(key) != debug_map.end()) {
+    debug_map[key] = element;
+    return;
+  }
+
+  debug_map.insert(object_debug);
+}
+
 }  // namespace behavior_path_planner::utils::path_safety_checker

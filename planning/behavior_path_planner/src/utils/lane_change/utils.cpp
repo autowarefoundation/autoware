@@ -989,7 +989,7 @@ bool passParkedObject(
   // If there are still enough length after the target object, we delay the lane change
   if (min_dist_to_end_of_current_lane > minimum_lane_change_length) {
     debug.second.unsafe_reason = "delay lane change";
-    marker_utils::updateCollisionCheckDebugMap(object_debug, debug, false);
+    utils::path_safety_checker::updateCollisionCheckDebugMap(object_debug, debug, false);
     return true;
   }
 

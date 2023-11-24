@@ -1728,7 +1728,8 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
         current_debug_data.second);
 
       if (collided_polygons.empty()) {
-        marker_utils::updateCollisionCheckDebugMap(debug_data, current_debug_data, is_safe);
+        utils::path_safety_checker::updateCollisionCheckDebugMap(
+          debug_data, current_debug_data, is_safe);
         continue;
       }
 
@@ -1738,20 +1739,23 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
         utils::lane_change::isCollidedPolygonsInLanelet(collided_polygons, expanded_target_lanes);
 
       if (!collision_in_current_lanes && !collision_in_target_lanes) {
-        marker_utils::updateCollisionCheckDebugMap(debug_data, current_debug_data, is_safe);
+        utils::path_safety_checker::updateCollisionCheckDebugMap(
+          debug_data, current_debug_data, is_safe);
         continue;
       }
 
       is_safe = false;
       path_safety_status.is_safe = false;
-      marker_utils::updateCollisionCheckDebugMap(debug_data, current_debug_data, is_safe);
+      utils::path_safety_checker::updateCollisionCheckDebugMap(
+        debug_data, current_debug_data, is_safe);
       const auto & obj_pose = obj.initial_pose.pose;
       const auto obj_polygon = tier4_autoware_utils::toPolygon2d(obj_pose, obj.shape);
       path_safety_status.is_object_coming_from_rear |=
         !utils::path_safety_checker::isTargetObjectFront(
           path, current_pose, common_parameters.vehicle_info, obj_polygon);
     }
-    marker_utils::updateCollisionCheckDebugMap(debug_data, current_debug_data, is_safe);
+    utils::path_safety_checker::updateCollisionCheckDebugMap(
+      debug_data, current_debug_data, is_safe);
   }
 
   return path_safety_status;

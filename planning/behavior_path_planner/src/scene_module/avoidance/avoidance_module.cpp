@@ -2028,14 +2028,15 @@ bool AvoidanceModule::isSafePath(
       if (!utils::path_safety_checker::checkCollision(
             shifted_path.path, ego_predicted_path, object, obj_path, p, parameters_->rss_params,
             hysteresis_factor, current_debug_data.second)) {
-        marker_utils::updateCollisionCheckDebugMap(
+        utils::path_safety_checker::updateCollisionCheckDebugMap(
           debug.collision_check, current_debug_data, false);
 
         safe_count_ = 0;
         return false;
       }
     }
-    marker_utils::updateCollisionCheckDebugMap(debug.collision_check, current_debug_data, true);
+    utils::path_safety_checker::updateCollisionCheckDebugMap(
+      debug.collision_check, current_debug_data, true);
   }
 
   safe_count_++;
