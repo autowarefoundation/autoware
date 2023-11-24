@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for vehicle cmd gate",
+  "type": "object",
+  "definitions": {
+    "vehicle_cmd_gate": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "number",
+          "default": 10.0,
+          "description": "To update period"
+        },
+        "use_emergency_handling": {
+          "type": "boolean",
+          "default": "false",
+          "description": "true when emergency handler is used."
+        },
+        "use_external_emergency_stop": {
+          "type": "boolean",
+          "default": "false",
+          "description": "true when external emergency stop information is used."
+        },
+        "system_emergency_heartbeat_timeout": {
+          "type": "number",
+          "default": 0.5,
+          "description": "timeout for system emergency."
+        },
+        "external_emergency_stop_heartbeat_timeout": {
+          "type": "number",
+          "default": 0.5,
+          "description": "timeout for external emergency."
+        },
+        "stop_hold_acceleration": {
+          "type": "number",
+          "default": -1.5,
+          "description": "longitudinal acceleration cmd when vehicle should stop"
+        },
+        "emergency_acceleration": {
+          "type": "number",
+          "default": -2.4,
+          "description": "longitudinal acceleration cmd when vehicle stop with emergency."
+        },
+        "nominal.vel_lim": {
+          "type": "number",
+          "default": 25.0,
+          "description": "limit of longitudinal velocity (activated in AUTONOMOUS operation mode)."
+        },
+        "nominal.lon_acc_lim": {
+          "type": "number",
+          "default": 5.0,
+          "description": "limit of longitudinal acceleration (activated in AUTONOMOUS operation mode)."
+        },
+        "nominal.lon_jerk_lim": {
+          "type": "number",
+          "default": 5.0,
+          "description": "limit of longitudinal jerk (activated in AUTONOMOUS operation mode)."
+        },
+        "nominal.lat_acc_lim": {
+          "type": "number",
+          "default": 5.0,
+          "description": "limit of lateral acceleration (activated in AUTONOMOUS operation mode)."
+        },
+        "nominal.lat_jerk_lim": {
+          "type": "number",
+          "default": 5.0,
+          "description": "limit of lateral jerk (activated in AUTONOMOUS operation mode)."
+        },
+        "nominal.actual_steer_diff_lim": {
+          "type": "number",
+          "default": 1.0,
+          "description": "limit of actual steer diff (activated in AUTONOMOUS operation mode)."
+        }
+      },
+      "required": [
+        "update_rate",
+        "use_emergency_handling",
+        "use_external_emergency_stop",
+        "system_emergency_heartbeat_timeout",
+        "external_emergency_stop_heartbeat_timeout",
+        "stop_hold_acceleration",
+        "emergency_acceleration",
+        "nominal.vel_lim",
+        "nominal.lon_acc_lim",
+        "nominal.lon_jerk_lim",
+        "nominal.lat_acc_lim",
+        "nominal.lat_jerk_lim",
+        "nominal.actual_steer_diff_lim"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/vehicle_cmd_gate"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
