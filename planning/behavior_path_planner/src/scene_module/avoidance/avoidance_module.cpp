@@ -1996,7 +1996,7 @@ bool AvoidanceModule::isSafePath(
     avoid_data_, planner_data_, parameters_, is_right_shift.value());
 
   for (const auto & object : safety_check_target_objects) {
-    auto current_debug_data = marker_utils::createObjectDebug(object);
+    auto current_debug_data = utils::path_safety_checker::createObjectDebug(object);
 
     const auto obj_polygon =
       tier4_autoware_utils::toPolygon2d(object.initial_pose.pose, object.shape);

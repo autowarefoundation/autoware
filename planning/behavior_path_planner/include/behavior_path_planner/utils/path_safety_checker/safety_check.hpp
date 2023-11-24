@@ -132,6 +132,9 @@ std::vector<Polygon2d> getCollidedPolygons(
 bool checkPolygonsIntersects(
   const std::vector<Polygon2d> & polys_1, const std::vector<Polygon2d> & polys_2);
 
+// debug
+CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj);
+
 }  // namespace behavior_path_planner::utils::path_safety_checker
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_SAFETY_CHECKER__SAFETY_CHECK_HPP_

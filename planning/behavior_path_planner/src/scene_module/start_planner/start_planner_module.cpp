@@ -1092,7 +1092,7 @@ bool StartPlannerModule::isSafePath() const
   bool is_safe_dynamic_objects = true;
   // Check for collisions with each predicted path of the object
   for (const auto & object : target_objects_on_lane.on_current_lane) {
-    auto current_debug_data = marker_utils::createObjectDebug(object);
+    auto current_debug_data = utils::path_safety_checker::createObjectDebug(object);
 
     bool is_safe_dynamic_object = true;
 

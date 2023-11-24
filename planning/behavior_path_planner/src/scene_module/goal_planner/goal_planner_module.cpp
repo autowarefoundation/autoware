@@ -1729,7 +1729,7 @@ bool GoalPlannerModule::checkSafetyWithRSS(
 {
   // Check for collisions with each predicted path of the object
   const bool is_safe = !std::any_of(objects.begin(), objects.end(), [&](const auto & object) {
-    auto current_debug_data = marker_utils::createObjectDebug(object);
+    auto current_debug_data = utils::path_safety_checker::createObjectDebug(object);
 
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       object, objects_filtering_params_->check_all_predicted_path);

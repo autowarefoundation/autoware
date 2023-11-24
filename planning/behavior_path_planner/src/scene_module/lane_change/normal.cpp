@@ -1718,7 +1718,7 @@ PathSafetyStatus NormalLaneChange::isLaneChangePathSafe(
     lane_change_parameters_->lane_expansion_right_offset);
 
   for (const auto & obj : collision_check_objects) {
-    auto current_debug_data = marker_utils::createObjectDebug(obj);
+    auto current_debug_data = utils::path_safety_checker::createObjectDebug(obj);
     const auto obj_predicted_paths = utils::path_safety_checker::getPredictedPathFromObj(
       obj, lane_change_parameters_->use_all_predicted_path);
     auto is_safe = true;

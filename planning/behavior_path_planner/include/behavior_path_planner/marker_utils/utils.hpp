@@ -56,8 +56,6 @@ inline int64_t bitShift(int64_t original_id)
   return original_id << (sizeof(int32_t) * 8 / 2);
 }
 
-CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj);
-
 void updateCollisionCheckDebugMap(
   CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe);
 
