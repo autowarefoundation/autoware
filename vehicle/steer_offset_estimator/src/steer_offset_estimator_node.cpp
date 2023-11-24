@@ -28,13 +28,13 @@ SteerOffsetEstimatorNode::SteerOffsetEstimatorNode(const rclcpp::NodeOptions & n
   // get parameter
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   wheel_base_ = vehicle_info.wheel_base_m;
-  covariance_ = this->declare_parameter("initial_covariance", 1000.0);
-  forgetting_factor_ = this->declare_parameter("forgetting_factor", 0.999);
-  update_hz_ = this->declare_parameter<double>("steer_update_hz", 10.0);
-  valid_min_velocity_ = this->declare_parameter<double>("valid_min_velocity", 1.0);
-  valid_max_steer_ = this->declare_parameter<double>("valid_max_steer", 0.1);
+  covariance_ = this->declare_parameter<double>("initial_covariance");
+  forgetting_factor_ = this->declare_parameter<double>("forgetting_factor");
+  update_hz_ = this->declare_parameter<double>("steer_update_hz");
+  valid_min_velocity_ = this->declare_parameter<double>("valid_min_velocity");
+  valid_max_steer_ = this->declare_parameter<double>("valid_max_steer");
   warn_steer_offset_abs_error_ =
-    this->declare_parameter<double>("warn_steer_offset_deg", 2.5) * M_PI / 180.0;
+    this->declare_parameter<double>("warn_steer_offset_deg") * M_PI / 180.0;
 
   // publisher
   pub_steer_offset_ = this->create_publisher<Float32Stamped>("~/output/steering_offset", 1);

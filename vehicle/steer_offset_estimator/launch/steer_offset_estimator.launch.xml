@@ -1,10 +1,6 @@
 <launch>
-  <arg name="steer_update_hz" default="10.0"/>
-  <arg name="initial_covariance" default="1000.0"/>
-  <arg name="forgetting_factor" default="0.999"/>
-  <arg name="valid_min_velocity" default="5.0"/>
-  <arg name="valid_max_steer" default="0.05"/>
-  <arg name="warn_steer_offset_deg" default="2.5" description="if absolute estimated offset is larger than 2.5[deg] => warning"/>
+  <!-- Parameter -->
+  <arg name="config_file" default="$(find-pkg-share steer_offset_estimator)/config/steer_offset_estimator.param.yaml"/>
 
   <!-- get wheel base from vehicle info -->
   <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py"/>
@@ -17,12 +13,7 @@
 
   <!-- steer offset estimator -->
   <node pkg="steer_offset_estimator" exec="steer_offset_estimator" name="steer_offset_estimator" output="screen">
-    <param name="steer_update_hz" value="$(var steer_update_hz)"/>
-    <param name="initial_covariance" value="$(var initial_covariance)"/>
-    <param name="forgetting_factor" value="$(var forgetting_factor)"/>
-    <param name="valid_min_velocity" value="$(var valid_min_velocity)"/>
-    <param name="valid_max_steer" value="$(var valid_max_steer)"/>
-    <param name="warn_steer_offset_deg" value="$(var warn_steer_offset_deg)"/>
+    <param from="$(var config_file)"/>
     <remap from="~/input/twist" to="$(var output_twist_topic)"/>
     <remap from="~/input/steer" to="/vehicle/status/steering_status"/>
     <remap from="~/output/steering_offset" to="/vehicle/status/steering_offset"/>

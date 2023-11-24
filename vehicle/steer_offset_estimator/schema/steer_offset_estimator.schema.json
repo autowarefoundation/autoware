@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Steer Offset Estimator Node",
+  "type": "object",
+  "definitions": {
+    "steer_offset_estimator": {
+      "type": "object",
+      "properties": {
+        "initial_covariance": {
+          "type": "number",
+          "description": "steer offset is larger than tolerance",
+          "default": "1000.0"
+        },
+        "steer_update_hz": {
+          "type": "number",
+          "description": "update hz of steer data",
+          "default": "10.0",
+          "minimum": 0.0
+        },
+        "forgetting_factor": {
+          "type": "number",
+          "description": "weight of using previous value",
+          "default": "0.999",
+          "minimum": 0.0
+        },
+        "valid_min_velocity": {
+          "type": "number",
+          "description": "velocity below this value is not used",
+          "default": "5.0",
+          "minimum": 0.0
+        },
+        "valid_max_steer": {
+          "type": "number",
+          "description": "steer above this value is not used",
+          "default": "0.05"
+        },
+        "warn_steer_offset_deg": {
+          "type": "number",
+          "description": "Warn if offset is above this value. ex. if absolute estimated offset is larger than 2.5[deg] => warning",
+          "default": "2.5"
+        }
+      },
+      "required": [
+        "initial_covariance",
+        "steer_update_hz",
+        "forgetting_factor",
+        "valid_min_velocity",
+        "valid_max_steer",
+        "warn_steer_offset_deg"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/steer_offset_estimator"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
