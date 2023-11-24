@@ -233,18 +233,26 @@ struct LastApprovalData
 
 struct PreviousPullOverData
 {
+  struct SafetyStatus
+  {
+    std::optional<rclcpp::Time> safe_start_time{};
+    bool is_safe{false};
+  };
+
   void reset()
   {
     stop_path = nullptr;
     stop_path_after_approval = nullptr;
     found_path = false;
     is_safe = false;
+    safety_status = SafetyStatus{};
   }
 
   std::shared_ptr<PathWithLaneId> stop_path{nullptr};
   std::shared_ptr<PathWithLaneId> stop_path_after_approval{nullptr};
   bool found_path{false};
   bool is_safe{false};
+  SafetyStatus safety_status{};
 };
 
 class GoalPlannerModule : public SceneModuleInterface
@@ -471,7 +479,14 @@ private:
   void updateSafetyCheckTargetObjectsData(
     const PredictedObjects & filtered_objects, const TargetObjectsOnLane & target_objects_on_lane,
     const std::vector<PoseWithVelocityStamped> & ego_predicted_path) const;
-  bool isSafePath() const;
+  /**
+   * @brief Checks if the current path is safe.
+   * @return std::pair<bool, bool>
+   *         first: If the path is safe for a certain period of time, true.
+   *         second: If the path is safe in the current state, true.
+   */
+  std::pair<bool, bool> isSafePath() const;
+
   bool checkSafetyWithRSS(
     const PathWithLaneId & planned_path,
     const std::vector<PoseWithVelocityStamped> & ego_predicted_path,

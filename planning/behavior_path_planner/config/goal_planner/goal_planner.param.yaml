@@ -160,6 +160,7 @@
         safety_check_params:
           # safety check configuration
           enable_safety_check: true
+          keep_unsafe_time: 3.0
           # collision check parameters
           check_all_predicted_path: true
           publish_debug_marker: false

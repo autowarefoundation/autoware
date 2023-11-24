@@ -334,6 +334,8 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
   {
     p.safety_check_params.enable_safety_check =
       node->declare_parameter<bool>(safety_check_ns + "enable_safety_check");
+    p.safety_check_params.keep_unsafe_time =
+      node->declare_parameter<double>(safety_check_ns + "keep_unsafe_time");
     p.safety_check_params.hysteresis_factor_expand_rate =
       node->declare_parameter<double>(safety_check_ns + "hysteresis_factor_expand_rate");
     p.safety_check_params.backward_path_length =

@@ -173,6 +173,7 @@ struct ObjectsFilteringParams
 struct SafetyCheckParams
 {
   bool enable_safety_check{false};  ///< Enable safety checks.
+  double keep_unsafe_time{0.0};     ///< Time to keep unsafe before changing to safe.
   double hysteresis_factor_expand_rate{
     0.0};                            ///< Hysteresis factor to expand/shrink polygon with the value.
   double backward_path_length{0.0};  ///< Length of the backward lane for path generation.

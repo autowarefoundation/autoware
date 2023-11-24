@@ -400,7 +400,7 @@ bool GoalPlannerModule::isExecutionRequested() const
 bool GoalPlannerModule::isExecutionReady() const
 {
   if (parameters_->safety_check_params.enable_safety_check && isWaitingApproval()) {
-    if (!isSafePath()) {
+    if (!isSafePath().first) {
       RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "Path is not safe against dynamic objects");
       return false;
     }
@@ -724,7 +724,8 @@ void GoalPlannerModule::setOutput(BehaviorModuleOutput & output) const
     return;
   }
 
-  if (parameters_->safety_check_params.enable_safety_check && !isSafePath() && isActivated()) {
+  if (
+    parameters_->safety_check_params.enable_safety_check && !isSafePath().first && isActivated()) {
     // situation : not safe against dynamic objects after approval
     // insert stop point in current path if ego is able to stop with acceleration and jerk
     // constraints
@@ -864,7 +865,8 @@ bool GoalPlannerModule::hasDecidedPath() const
 
   // If it is dangerous before approval, do not determine the path.
   // This eliminates a unsafe path to be approved
-  if (parameters_->safety_check_params.enable_safety_check && !isSafePath() && !isActivated()) {
+  if (
+    parameters_->safety_check_params.enable_safety_check && !isSafePath().first && !isActivated()) {
     return false;
   }
 
@@ -1031,24 +1033,35 @@ void GoalPlannerModule::updatePreviousData(const BehaviorModuleOutput & output)
   // for the next loop setOutput().
   // this is used to determine whether to generate a new stop path or keep the current stop path.
   prev_data_.found_path = thread_safe_data_.foundPullOverPath();
-  prev_data_.is_safe = parameters_->safety_check_params.enable_safety_check ? isSafePath() : true;
 
-  if (!isActivated()) {
+  // This is related to safety check, so if it is disabled, return here.
+  if (!parameters_->safety_check_params.enable_safety_check) {
+    prev_data_.safety_status.is_safe = true;
     return;
   }
 
-  if (
-    !parameters_->safety_check_params.enable_safety_check || isSafePath() ||
-    (!prev_data_.is_safe && prev_data_.stop_path_after_approval)) {
+  // Even if the current path is safe, it will not be safe unless it stands for a certain period of
+  // time. Record the time when the current path has become safe
+  const auto [is_safe, current_is_safe] = isSafePath();
+  if (current_is_safe) {
+    if (!prev_data_.safety_status.safe_start_time) {
+      prev_data_.safety_status.safe_start_time = clock_->now();
+    }
+  } else {
+    prev_data_.safety_status.safe_start_time = std::nullopt;
+  }
+  prev_data_.safety_status.is_safe = is_safe;
+
+  // If safety check is enabled, save current path as stop_path_after_approval
+  // This path is set only once after approval.
+  if (!isActivated() || (!is_safe && prev_data_.stop_path_after_approval)) {
     return;
   }
-  prev_data_.is_safe = false;
-  const bool is_stop_path = std::any_of(
-    output.path->points.begin(), output.path->points.end(),
-    [](const auto & point) { return point.point.longitudinal_velocity_mps == 0.0; });
-  if (is_stop_path) {
-    prev_data_.stop_path_after_approval = output.path;
+  auto stop_path = std::make_shared<PathWithLaneId>(*output.path);
+  for (auto & point : stop_path->points) {
+    point.point.longitudinal_velocity_mps = 0.0;
   }
+  prev_data_.stop_path_after_approval = stop_path;
 }
 
 BehaviorModuleOutput GoalPlannerModule::planWaitingApproval()
@@ -1750,7 +1763,7 @@ bool GoalPlannerModule::checkSafetyWithRSS(
   return is_safe;
 }
 
-bool GoalPlannerModule::isSafePath() const
+std::pair<bool, bool> GoalPlannerModule::isSafePath() const
 {
   const auto pull_over_path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
   const auto & current_pose = planner_data_->self_odometry->pose.pose;
@@ -1797,9 +1810,34 @@ bool GoalPlannerModule::isSafePath() const
     goal_planner_data_, filtered_objects, target_objects_on_lane, ego_predicted_path);
 
   const double hysteresis_factor =
-    prev_data_.is_safe ? 1.0 : parameters_->hysteresis_factor_expand_rate;
-  return checkSafetyWithRSS(
+    prev_data_.safety_status.is_safe ? 1.0 : parameters_->hysteresis_factor_expand_rate;
+
+  const bool current_is_safe = checkSafetyWithRSS(
     pull_over_path, ego_predicted_path, target_objects_on_lane.on_current_lane, hysteresis_factor);
+
+  /*　　
+   *　　                    ==== is_safe
+   *　　                    ---- current_is_safe
+   *　　  is_safe
+   *　　   |
+   *　　   |                   time
+   *　　 1 +--+    +---+       +---=========   +--+
+   *　　   |  |    |   |       |           |   |  |
+   *　　   |  |    |   |       |           |   |  |
+   *　　   |  |    |   |       |           |   |  |
+   *　　   |  |    |   |       |           |   |  |
+   *　　 0 =========================-------==========-- t
+   */
+  if (current_is_safe) {
+    if (
+      prev_data_.safety_status.safe_start_time &&
+      (clock_->now() - prev_data_.safety_status.safe_start_time.value()).seconds() >
+        parameters_->safety_check_params.keep_unsafe_time) {
+      return {true /*is_safe*/, true /*current_is_safe*/};
+    }
+  }
+
+  return {false /*is_safe*/, current_is_safe};
 }
 
 void GoalPlannerModule::setDebugData()
