@@ -201,6 +201,7 @@ struct CollisionCheckDebug
   std::vector<PoseWithVelocityAndPolygonStamped> obj_predicted_path;  ///< object's predicted path.
   Polygon2d extended_ego_polygon{};  ///< Ego vehicle's extended collision polygon.
   Polygon2d extended_obj_polygon{};  ///< Detected object's extended collision polygon.
+  autoware_auto_perception_msgs::msg::Shape obj_shape;  ///< object's shape.
 };
 using CollisionCheckDebugPair = std::pair<std::string, CollisionCheckDebug>;
 using CollisionCheckDebugMap =
