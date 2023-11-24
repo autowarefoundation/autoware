@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Gnss Poser Node",
+  "type": "object",
+  "definitions": {
+    "gnss_poser": {
+      "type": "object",
+      "properties": {
+        "base_frame": {
+          "type": "string",
+          "default": "base_link",
+          "description": "frame id for base_frame"
+        },
+        "gnss_frame": {
+          "type": "string",
+          "default": "gnss",
+          "description": "frame id for gnss_frame"
+        },
+        "gnss_base_frame": {
+          "type": "string",
+          "default": "gnss_base_link",
+          "description": "frame id for gnss_base_frame"
+        },
+        "map_frame": {
+          "type": "string",
+          "default": "map",
+          "description": "frame id for map_frame"
+        },
+        "use_gnss_ins_orientation": {
+          "type": "boolean",
+          "default": "true",
+          "description": "use Gnss-Ins orientation"
+        },
+        "gnss_pose_pub_method": {
+          "type": "integer",
+          "default": "0",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "0: Instant Value 1: Average Value 2: Median Value. If 0 is chosen buffer_epoch parameter loses affect."
+        },
+        "buff_epoch": {
+          "type": "integer",
+          "default": "1",
+          "minimum": 0,
+          "description": "Buffer epoch"
+        }
+      },
+      "required": [
+        "base_frame",
+        "gnss_frame",
+        "gnss_base_frame",
+        "map_frame",
+        "use_gnss_ins_orientation",
+        "gnss_pose_pub_method",
+        "buff_epoch"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/gnss_poser"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
