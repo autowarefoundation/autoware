@@ -760,6 +760,9 @@ MapBasedPredictionNode::MapBasedPredictionNode(const rclcpp::NodeOptions & node_
 
     num_continuous_state_transition_ =
       declare_parameter<int>("lane_change_detection.num_continuous_state_transition");
+
+    consider_only_routable_neighbours_ =
+      declare_parameter<bool>("lane_change_detection.consider_only_routable_neighbours");
   }
   reference_path_resolution_ = declare_parameter<double>("reference_path_resolution");
   /* prediction path will disabled when the estimated path length exceeds lanelet length. This
@@ -1514,19 +1517,22 @@ std::vector<PredictedRefPath> MapBasedPredictionNode::getPredictedReferencePath(
       if (!!opt) {
         return *opt;
       }
-      const auto adjacent = get_left ? routing_graph_ptr_->adjacentLeft(lanelet)
-                                     : routing_graph_ptr_->adjacentRight(lanelet);
-      if (!!adjacent) {
-        return *adjacent;
+      if (!consider_only_routable_neighbours_) {
+        const auto adjacent = get_left ? routing_graph_ptr_->adjacentLeft(lanelet)
+                                       : routing_graph_ptr_->adjacentRight(lanelet);
+        if (!!adjacent) {
+          return *adjacent;
+        }
+        // search for unconnected lanelet
+        const auto unconnected_lanelets =
+          get_left ? getLeftLineSharingLanelets(lanelet, lanelet_map_ptr_)
+                   : getRightLineSharingLanelets(lanelet, lanelet_map_ptr_);
+        // just return first candidate of unconnected lanelet for now
+        if (!unconnected_lanelets.empty()) {
+          return unconnected_lanelets.front();
+        }
       }
-      // search for unconnected lanelet
-      const auto unconnected_lanelets = get_left
-                                          ? getLeftLineSharingLanelets(lanelet, lanelet_map_ptr_)
-                                          : getRightLineSharingLanelets(lanelet, lanelet_map_ptr_);
-      // just return first candidate of unconnected lanelet for now
-      if (!unconnected_lanelets.empty()) {
-        return unconnected_lanelets.front();
-      }
+
       // if no candidate lanelet found, return empty
       return std::nullopt;
     };

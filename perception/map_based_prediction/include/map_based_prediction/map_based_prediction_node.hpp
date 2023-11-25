@@ -157,6 +157,7 @@ private:
   double diff_dist_threshold_to_left_bound_;
   double diff_dist_threshold_to_right_bound_;
   int num_continuous_state_transition_;
+  bool consider_only_routable_neighbours_;
   double reference_path_resolution_;
 
   // Stop watch
