@@ -42,7 +42,7 @@
           "description": "max jerk of the vehicle"
         },
         "is_publish_debug_path": {
-          "type": "number",
+          "type": "boolean",
           "default": "false",
           "description": "is publish debug path?"
         }
