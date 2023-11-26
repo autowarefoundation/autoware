@@ -33,6 +33,12 @@ public:
 protected:
   PathWithLaneId modifyPathForSmoothGoalConnection(
     const PathWithLaneId & path, const std::shared_ptr<const PlannerData> & planner_data) const;
+  bool isPathValid(
+    const PathWithLaneId & refined_path,
+    const std::shared_ptr<const PlannerData> & planner_data) const;
+  lanelet::ConstLanelets extractLaneletsFromPath(
+    const PathWithLaneId & refined_path,
+    const std::shared_ptr<const PlannerData> & planner_data) const;
 };
 }  // namespace behavior_path_planner
 

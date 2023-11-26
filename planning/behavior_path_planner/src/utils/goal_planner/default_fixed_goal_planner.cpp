@@ -16,6 +16,7 @@
 
 #include "behavior_path_planner/utils/goal_planner/util.hpp"
 #include "behavior_path_planner/utils/path_utils.hpp"
+#include "behavior_path_planner/utils/utils.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
@@ -24,7 +25,8 @@
 
 namespace behavior_path_planner
 {
-
+using Point2d = tier4_autoware_utils::Point2d;
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 BehaviorModuleOutput DefaultFixedGoalPlanner::plan(
   const std::shared_ptr<const PlannerData> & planner_data) const
 {
@@ -36,6 +38,40 @@ BehaviorModuleOutput DefaultFixedGoalPlanner::plan(
   output.path = std::make_shared<PathWithLaneId>(smoothed_path);
   output.reference_path = getPreviousModuleOutput().reference_path;
   return output;
+}
+
+lanelet::ConstLanelets DefaultFixedGoalPlanner::extractLaneletsFromPath(
+  const PathWithLaneId & refined_path,
+  const std::shared_ptr<const PlannerData> & planner_data) const
+{
+  const auto & rh = planner_data->route_handler;
+  lanelet::ConstLanelets refined_path_lanelets;
+  for (size_t i = 0; i < refined_path.points.size(); ++i) {
+    const auto & path_point = refined_path.points.at(i);
+    int64_t lane_id = path_point.lane_ids.at(0);
+    lanelet::ConstLanelet lanelet = rh->getLaneletsFromId(lane_id);
+    bool is_unique =
+      std::find(refined_path_lanelets.begin(), refined_path_lanelets.end(), lanelet) ==
+      refined_path_lanelets.end();
+    if (is_unique) {
+      refined_path_lanelets.push_back(lanelet);
+    }
+  }
+  return refined_path_lanelets;
+}
+
+bool DefaultFixedGoalPlanner::isPathValid(
+  const PathWithLaneId & refined_path,
+  const std::shared_ptr<const PlannerData> & planner_data) const
+{
+  const auto lanelets = extractLaneletsFromPath(refined_path, planner_data);
+  // std::any_of detects whether any point lies outside lanelets
+  bool has_points_outside_lanelet = std::any_of(
+    refined_path.points.begin(), refined_path.points.end(),
+    [&lanelets](const auto & refined_path_point) {
+      return !utils::isInLanelets(refined_path_point.point.pose, lanelets);
+    });
+  return !has_points_outside_lanelet;
 }
 
 PathWithLaneId DefaultFixedGoalPlanner::modifyPathForSmoothGoalConnection(
@@ -53,11 +89,20 @@ PathWithLaneId DefaultFixedGoalPlanner::modifyPathForSmoothGoalConnection(
       refined_goal = goal;
     }
   }
-
-  auto refined_path = utils::refinePathForGoal(
-    planner_data->parameters.refine_goal_search_radius_range, M_PI * 0.5, path, refined_goal,
-    goal_lane_id);
-
+  double goal_search_radius{planner_data->parameters.refine_goal_search_radius_range};
+  // TODO(shen): define in the parameter
+  constexpr double range_reduce_by{1.0};  // set a reasonable value, 10% - 20% of the
+                                          // refine_goal_search_radius_range is recommended
+  bool is_valid_path{false};
+  autoware_auto_planning_msgs::msg::PathWithLaneId refined_path;
+  while (goal_search_radius >= 0 && !is_valid_path) {
+    refined_path =
+      utils::refinePathForGoal(goal_search_radius, M_PI * 0.5, path, refined_goal, goal_lane_id);
+    if (isPathValid(refined_path, planner_data)) {
+      is_valid_path = true;
+    }
+    goal_search_radius -= range_reduce_by;
+  }
   return refined_path;
 }
 
