@@ -134,6 +134,14 @@ struct RSSparams
   double rear_vehicle_deceleration{0.0};         ///< brake parameter
 };
 
+struct IntegralPredictedPolygonParams
+{
+  double forward_margin{0.0};   ///< Forward margin for extended ego polygon for collision check.
+  double backward_margin{0.0};  ///< Backward margin for extended ego polygon for collision check.
+  double lat_margin{0.0};       ///< Lateral margin for extended ego polygon for collision check.
+  double time_horizon{0.0};     ///< Time horizon for object's prediction.
+};
+
 /**
  * @brief Parameters for generating the ego vehicle's predicted path.
  */
@@ -173,12 +181,15 @@ struct ObjectsFilteringParams
 struct SafetyCheckParams
 {
   bool enable_safety_check{false};  ///< Enable safety checks.
-  double keep_unsafe_time{0.0};     ///< Time to keep unsafe before changing to safe.
+  std::string method{"RSS"};        /// Method to use for safety checks.
+  /// possible values: ["RSS", "integral_predicted_polygon"]
+  double keep_unsafe_time{0.0};  ///< Time to keep unsafe before changing to safe.
   double hysteresis_factor_expand_rate{
     0.0};                            ///< Hysteresis factor to expand/shrink polygon with the value.
   double backward_path_length{0.0};  ///< Length of the backward lane for path generation.
   double forward_path_length{0.0};   ///< Length of the forward path lane for path generation.
   RSSparams rss_params{};            ///< Parameters related to the RSS model.
+  IntegralPredictedPolygonParams integral_predicted_polygon_params{};  ///< Parameters for polygon.
   bool publish_debug_marker{false};  ///< Option to publish debug markers.
 };
 

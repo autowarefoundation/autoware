@@ -769,7 +769,7 @@ void GoalPlannerModule::setStopPath(BehaviorModuleOutput & output) const
 void GoalPlannerModule::setStopPathFromCurrentPath(BehaviorModuleOutput & output) const
 {
   // safe or not safe(no feasible stop_path found) -> not_safe: try to find new feasible stop_path
-  if (prev_data_.is_safe || !prev_data_.stop_path_after_approval) {
+  if (prev_data_.safety_status.is_safe || !prev_data_.stop_path_after_approval) {
     auto current_path = thread_safe_data_.get_pull_over_path()->getCurrentPath();
     const auto stop_path =
       behavior_path_planner::utils::start_goal_planner_common::generateFeasibleStopPath(
@@ -1817,8 +1817,23 @@ std::pair<bool, bool> GoalPlannerModule::isSafePath() const
   const double hysteresis_factor =
     prev_data_.safety_status.is_safe ? 1.0 : parameters_->hysteresis_factor_expand_rate;
 
-  const bool current_is_safe = checkSafetyWithRSS(
-    pull_over_path, ego_predicted_path, target_objects_on_lane.on_current_lane, hysteresis_factor);
+  const bool current_is_safe = std::invoke([&]() {
+    if (parameters_->safety_check_params.method == "RSS") {
+      return checkSafetyWithRSS(
+        pull_over_path, ego_predicted_path, target_objects_on_lane.on_current_lane,
+        hysteresis_factor);
+    } else if (parameters_->safety_check_params.method == "integral_predicted_polygon") {
+      return utils::path_safety_checker::checkSafetyWithIntegralPredictedPolygon(
+        ego_predicted_path, vehicle_info_, target_objects_on_lane.on_current_lane,
+        objects_filtering_params_->check_all_predicted_path,
+        parameters_->safety_check_params.integral_predicted_polygon_params,
+        goal_planner_data_.collision_check);
+    }
+    RCLCPP_ERROR(
+      getLogger(), " [pull_over] invalid safety check method: %s",
+      parameters_->safety_check_params.method.c_str());
+    throw std::domain_error("[pull_over] invalid safety check method");
+  });
 
   /*　　
    *　　                    ==== is_safe
@@ -1940,11 +1955,34 @@ void GoalPlannerModule::setDebugData()
         goal_planner_data_.filtered_objects, "filtered_objects", 0, 0.0, 0.5, 0.9));
     }
 
-    add(showSafetyCheckInfo(goal_planner_data_.collision_check, "object_debug_info"));
+    if (parameters_->safety_check_params.method == "RSS") {
+      add(showSafetyCheckInfo(goal_planner_data_.collision_check, "object_debug_info"));
+    }
     add(showPredictedPath(goal_planner_data_.collision_check, "ego_predicted_path"));
     add(showPolygon(goal_planner_data_.collision_check, "ego_and_target_polygon_relation"));
     utils::start_goal_planner_common::initializeCollisionCheckDebugMap(
       goal_planner_data_.collision_check);
+
+    // visualize safety status maker
+    {
+      visualization_msgs::msg::MarkerArray marker_array{};
+      const auto color = prev_data_.safety_status.is_safe ? createMarkerColor(1.0, 1.0, 1.0, 0.99)
+                                                          : createMarkerColor(1.0, 0.0, 0.0, 0.99);
+      auto marker = createDefaultMarker(
+        header.frame_id, header.stamp, "safety_status", 0,
+        visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0), color);
+
+      marker.pose = planner_data_->self_odometry->pose.pose;
+      marker.text += "is_safe: " + std::to_string(prev_data_.safety_status.is_safe) + "\n";
+      if (prev_data_.safety_status.safe_start_time) {
+        const double elapsed_time_from_safe_start =
+          (clock_->now() - prev_data_.safety_status.safe_start_time.value()).seconds();
+        marker.text +=
+          "elapsed_time_from_safe_start: " + std::to_string(elapsed_time_from_safe_start) + "\n";
+      }
+      marker_array.markers.push_back(marker);
+      add(marker_array);
+    }
   }
 
   // Visualize planner type text

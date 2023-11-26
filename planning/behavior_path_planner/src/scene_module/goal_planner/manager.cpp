@@ -336,6 +336,7 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
       node->declare_parameter<bool>(safety_check_ns + "enable_safety_check");
     p.safety_check_params.keep_unsafe_time =
       node->declare_parameter<double>(safety_check_ns + "keep_unsafe_time");
+    p.safety_check_params.method = node->declare_parameter<std::string>(safety_check_ns + "method");
     p.safety_check_params.hysteresis_factor_expand_rate =
       node->declare_parameter<double>(safety_check_ns + "hysteresis_factor_expand_rate");
     p.safety_check_params.backward_path_length =
@@ -359,6 +360,19 @@ GoalPlannerModuleManager::GoalPlannerModuleManager(
       node->declare_parameter<double>(rss_ns + "longitudinal_distance_min_threshold");
     p.safety_check_params.rss_params.longitudinal_velocity_delta_time =
       node->declare_parameter<double>(rss_ns + "longitudinal_velocity_delta_time");
+  }
+
+  // IntegralPredictedPolygonParams
+  std::string integral_ns = safety_check_ns + "integral_predicted_polygon_params.";
+  {
+    p.safety_check_params.integral_predicted_polygon_params.forward_margin =
+      node->declare_parameter<double>(integral_ns + "forward_margin");
+    p.safety_check_params.integral_predicted_polygon_params.backward_margin =
+      node->declare_parameter<double>(integral_ns + "backward_margin");
+    p.safety_check_params.integral_predicted_polygon_params.lat_margin =
+      node->declare_parameter<double>(integral_ns + "lat_margin");
+    p.safety_check_params.integral_predicted_polygon_params.time_horizon =
+      node->declare_parameter<double>(integral_ns + "time_horizon");
   }
 
   // debug

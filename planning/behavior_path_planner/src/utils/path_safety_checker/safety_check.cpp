@@ -14,13 +14,16 @@
 
 #include "behavior_path_planner/utils/path_safety_checker/safety_check.hpp"
 
+#include "behavior_path_planner/utils/path_safety_checker/objects_filtering.hpp"
 #include "interpolation/linear_interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 #include "tier4_autoware_utils/ros/uuid_helper.hpp"
 
+#include <boost/geometry/algorithms/correct.hpp>
 #include <boost/geometry/algorithms/intersects.hpp>
 #include <boost/geometry/algorithms/overlaps.hpp>
+#include <boost/geometry/algorithms/union.hpp>
 #include <boost/geometry/strategies/strategies.hpp>
 
 namespace behavior_path_planner::utils::path_safety_checker
@@ -181,6 +184,27 @@ Polygon2d createExtendedPolygon(
            : tier4_autoware_utils::inverseClockwise(polygon);
 }
 
+std::vector<Polygon2d> createExtendedPolygonsFromPoseWithVelocityStamped(
+  const std::vector<PoseWithVelocityStamped> & predicted_path, const VehicleInfo & vehicle_info,
+  const double forward_margin, const double backward_margin, const double lat_margin)
+{
+  std::vector<Polygon2d> polygons{};
+  polygons.reserve(predicted_path.size());
+
+  for (const auto & elem : predicted_path) {
+    const auto & pose = elem.pose;
+    const double base_to_front = vehicle_info.max_longitudinal_offset_m + forward_margin;
+    const double base_to_rear = vehicle_info.rear_overhang_m + backward_margin;
+    const double width = vehicle_info.vehicle_width_m + lat_margin * 2;
+
+    const auto polygon =
+      tier4_autoware_utils::toFootprint(pose, base_to_front, base_to_rear, width);
+    polygons.push_back(polygon);
+  }
+
+  return polygons;
+}
+
 PredictedPath convertToPredictedPath(
   const std::vector<PoseWithVelocityStamped> & path, const double time_resolution)
 {
@@ -272,6 +296,147 @@ boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVeloci
     tier4_autoware_utils::toFootprint(pose, base_to_front, base_to_rear, width);
 
   return PoseWithVelocityAndPolygonStamped{current_time, pose, velocity, ego_polygon};
+}
+
+boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+  const std::vector<PoseWithVelocityAndPolygonStamped> & pred_path, const double current_time,
+  const Shape & shape)
+{
+  auto toPoseWithVelocityStampedVector = [](const auto & pred_path) {
+    std::vector<PoseWithVelocityStamped> path;
+    path.reserve(pred_path.size());
+    for (const auto & elem : pred_path) {
+      path.push_back(PoseWithVelocityStamped{elem.time, elem.pose, elem.velocity});
+    }
+    return path;
+  };
+
+  const auto interpolation_result =
+    calcInterpolatedPoseWithVelocity(toPoseWithVelocityStampedVector(pred_path), current_time);
+
+  if (!interpolation_result) {
+    return {};
+  }
+
+  const auto & pose = interpolation_result->pose;
+  const auto & velocity = interpolation_result->velocity;
+
+  const auto obj_polygon = tier4_autoware_utils::toPolygon2d(pose, shape);
+
+  return PoseWithVelocityAndPolygonStamped{current_time, pose, velocity, obj_polygon};
+}
+
+template <typename T, typename F>
+std::vector<T> filterPredictedPathByTimeHorizon(
+  const std::vector<T> & path, const double time_horizon, const F & interpolateFunc)
+{
+  std::vector<T> filtered_path;
+
+  for (const auto & elem : path) {
+    if (elem.time < time_horizon) {
+      filtered_path.push_back(elem);
+    } else {
+      break;
+    }
+  }
+
+  const auto interpolated_opt = interpolateFunc(path, time_horizon);
+  if (interpolated_opt) {
+    filtered_path.push_back(*interpolated_opt);
+  }
+
+  return filtered_path;
+};
+
+std::vector<PoseWithVelocityStamped> filterPredictedPathByTimeHorizon(
+  const std::vector<PoseWithVelocityStamped> & path, const double time_horizon)
+{
+  return filterPredictedPathByTimeHorizon(
+    path, time_horizon, [](const auto & path, const auto & time) {
+      return calcInterpolatedPoseWithVelocity(path, time);
+    });
+}
+
+ExtendedPredictedObject filterObjectPredictedPathByTimeHorizon(
+  const ExtendedPredictedObject & object, const double time_horizon,
+  const bool check_all_predicted_path)
+{
+  auto filtered_object = object;
+  auto filtered_predicted_paths = getPredictedPathFromObj(object, check_all_predicted_path);
+
+  for (auto & predicted_path : filtered_predicted_paths) {
+    // path is vector of polygon
+    const auto filtered_path = filterPredictedPathByTimeHorizon(
+      predicted_path.path, time_horizon, [&object](const auto & poses, double t) {
+        return getInterpolatedPoseWithVelocityAndPolygonStamped(poses, t, object.shape);
+      });
+    predicted_path.path = filtered_path;
+  }
+
+  filtered_object.predicted_paths = filtered_predicted_paths;
+  return filtered_object;
+}
+
+ExtendedPredictedObjects filterObjectPredictedPathByTimeHorizon(
+  const ExtendedPredictedObjects & objects, const double time_horizon,
+  const bool check_all_predicted_path)
+{
+  ExtendedPredictedObjects filtered_objects;
+  filtered_objects.reserve(objects.size());
+
+  for (const auto & object : objects) {
+    filtered_objects.push_back(
+      filterObjectPredictedPathByTimeHorizon(object, time_horizon, check_all_predicted_path));
+  }
+
+  return filtered_objects;
+}
+
+bool checkSafetyWithIntegralPredictedPolygon(
+  const std::vector<PoseWithVelocityStamped> & ego_predicted_path, const VehicleInfo & vehicle_info,
+  const ExtendedPredictedObjects & objects, const bool check_all_predicted_path,
+  const IntegralPredictedPolygonParams & params, CollisionCheckDebugMap & debug_map)
+{
+  const std::vector<PoseWithVelocityStamped> filtered_ego_path = filterPredictedPathByTimeHorizon(
+    ego_predicted_path, params.time_horizon);  // path is vector of pose
+  const std::vector<Polygon2d> extended_ego_polygons =
+    createExtendedPolygonsFromPoseWithVelocityStamped(
+      filtered_ego_path, vehicle_info, params.forward_margin, params.backward_margin,
+      params.lat_margin);
+
+  const ExtendedPredictedObjects filtered_path_objects = filterObjectPredictedPathByTimeHorizon(
+    objects, params.time_horizon, check_all_predicted_path);  // path is vector of polygon
+
+  Polygon2d ego_integral_polygon{};
+  for (const auto & ego_polygon : extended_ego_polygons) {
+    std::vector<Polygon2d> unions{};
+    boost::geometry::union_(ego_integral_polygon, ego_polygon, unions);
+    if (!unions.empty()) {
+      ego_integral_polygon = unions.front();
+      boost::geometry::correct(ego_integral_polygon);
+    }
+  }
+
+  // check collision
+  for (const auto & object : filtered_path_objects) {
+    CollisionCheckDebugPair debug_pair = createObjectDebug(object);
+    for (const auto & path : object.predicted_paths) {
+      for (const auto & pose_with_poly : path.path) {
+        if (boost::geometry::overlaps(ego_integral_polygon, pose_with_poly.poly)) {
+          {
+            debug_pair.second.ego_predicted_path = ego_predicted_path;  // raw path
+            debug_pair.second.obj_predicted_path = path.path;           // raw path
+            debug_pair.second.extended_obj_polygon = pose_with_poly.poly;
+            debug_pair.second.extended_ego_polygon =
+              ego_integral_polygon;  // time filtered extended polygon
+            updateCollisionCheckDebugMap(debug_map, debug_pair, false);
+          }
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 bool checkCollision(

@@ -85,6 +85,20 @@ boost::optional<PoseWithVelocityStamped> calcInterpolatedPoseWithVelocity(
 boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
   const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
   const VehicleInfo & ego_info);
+boost::optional<PoseWithVelocityAndPolygonStamped> getInterpolatedPoseWithVelocityAndPolygonStamped(
+  const std::vector<PoseWithVelocityStamped> & pred_path, const double current_time,
+  const Shape & shape);
+template <typename T, typename F>
+std::vector<T> filterPredictedPathByTimeHorizon(
+  const std::vector<T> & path, const double time_horizon, const F & interpolateFunc);
+std::vector<PoseWithVelocityStamped> filterPredictedPathByTimeHorizon(
+  const std::vector<PoseWithVelocityStamped> & path, const double time_horizon);
+ExtendedPredictedObject filterObjectPredictedPathByTimeHorizon(
+  const ExtendedPredictedObject & object, const double time_horizon,
+  const bool check_all_predicted_path);
+ExtendedPredictedObjects filterObjectPredictedPathByTimeHorizon(
+  const ExtendedPredictedObjects & objects, const double time_horizon,
+  const bool check_all_predicted_path);
 /**
  * @brief Iterate the points in the ego and target's predicted path and
  *        perform safety check for each of the iterated points.
@@ -131,12 +145,15 @@ std::vector<Polygon2d> getCollidedPolygons(
 
 bool checkPolygonsIntersects(
   const std::vector<Polygon2d> & polys_1, const std::vector<Polygon2d> & polys_2);
+bool checkSafetyWithIntegralPredictedPolygon(
+  const std::vector<PoseWithVelocityStamped> & ego_predicted_path, const VehicleInfo & vehicle_info,
+  const ExtendedPredictedObjects & objects, const bool check_all_predicted_path,
+  const IntegralPredictedPolygonParams & params, CollisionCheckDebugMap & debug_map);
 
 // debug
 CollisionCheckDebugPair createObjectDebug(const ExtendedPredictedObject & obj);
 void updateCollisionCheckDebugMap(
   CollisionCheckDebugMap & debug_map, CollisionCheckDebugPair & object_debug, bool is_safe);
-
 }  // namespace behavior_path_planner::utils::path_safety_checker
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__PATH_SAFETY_CHECKER__SAFETY_CHECK_HPP_
