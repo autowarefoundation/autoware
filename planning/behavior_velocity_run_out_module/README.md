@@ -188,15 +188,17 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 | `margin_ahead`            | double | [m] ahead margin for detection area polygon  |
 | `margin_behind`           | double | [m] behind margin for detection area polygon |
 
-| Parameter /dynamic_obstacle | Type   | Description                                                                                                                   |
-| --------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `min_vel_kmph`              | double | [km/h] minimum velocity for dynamic obstacles                                                                                 |
-| `max_vel_kmph`              | double | [km/h] maximum velocity for dynamic obstacles                                                                                 |
-| `diameter`                  | double | [m] diameter of obstacles. used for creating dynamic obstacles from points                                                    |
-| `height`                    | double | [m] height of obstacles. used for creating dynamic obstacles from points                                                      |
-| `max_prediction_time`       | double | [sec] create predicted path until this time                                                                                   |
-| `time_step`                 | double | [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path                   |
-| `points_interval`           | double | [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method |
+| Parameter /dynamic_obstacle          | Type   | Description                                                                                                                   |
+| ------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `use_mandatory_area`                 | double | [-] whether to use mandatory detection area                                                                                   |
+| `assume_fixed_velocity.enable`       | double | [-] If enabled, the obstacle's velocity is assumed to be within the minimum and maximum velocity values specified below       |
+| `assume_fixed_velocity.min_vel_kmph` | double | [km/h] minimum velocity for dynamic obstacles                                                                                 |
+| `assume_fixed_velocity.max_vel_kmph` | double | [km/h] maximum velocity for dynamic obstacles                                                                                 |
+| `diameter`                           | double | [m] diameter of obstacles. used for creating dynamic obstacles from points                                                    |
+| `height`                             | double | [m] height of obstacles. used for creating dynamic obstacles from points                                                      |
+| `max_prediction_time`                | double | [sec] create predicted path until this time                                                                                   |
+| `time_step`                          | double | [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path                   |
+| `points_interval`                    | double | [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method |
 
 | Parameter /approaching | Type   | Description                                           |
 | ---------------------- | ------ | ----------------------------------------------------- |

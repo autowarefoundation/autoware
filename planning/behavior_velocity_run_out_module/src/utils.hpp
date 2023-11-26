@@ -114,11 +114,13 @@ struct Smoother
 struct DynamicObstacleParam
 {
   bool use_mandatory_area;
+  bool assume_fixed_velocity;
 
   float min_vel_kmph;
   float max_vel_kmph;
 
   // parameter to convert points to dynamic obstacle
+  float std_dev_multiplier;
   float diameter;             // [m]
   float height;               // [m]
   float max_prediction_time;  // [sec]

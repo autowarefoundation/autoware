@@ -21,14 +21,17 @@
 
       # parameter to create abstracted dynamic obstacles
       dynamic_obstacle:
-        use_mandatory_area: false  # [-] whether to use mandatory detection area
-        min_vel_kmph: 0.0          # [km/h] minimum velocity for dynamic obstacles
-        max_vel_kmph: 5.0          # [km/h] maximum velocity for dynamic obstacles
-        diameter: 0.1              # [m] diameter of obstacles. used for creating dynamic obstacles from points
-        height: 2.0                # [m] height of obstacles. used for creating dynamic obstacles from points
-        max_prediction_time: 10.0  # [sec] create predicted path until this time
-        time_step: 0.5             # [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path
-        points_interval: 0.1       # [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method
+        use_mandatory_area: false # [-] whether to use mandatory detection area
+        assume_fixed_velocity:
+          enable: false           # [-] If enabled, the obstacle's velocity is assumed to be within the minimum and maximum velocity values specified below
+          min_vel_kmph: 0.0       # [km/h] minimum velocity for dynamic obstacles
+          max_vel_kmph: 5.0       # [km/h] maximum velocity for dynamic obstacles
+        std_dev_multiplier: 1.96  # [-] min and max velocity of the obstacles are calculated from this value and covariance
+        diameter: 0.1             # [m] diameter of obstacles. used for creating dynamic obstacles from points
+        height: 2.0               # [m] height of obstacles. used for creating dynamic obstacles from points
+        max_prediction_time: 10.0 # [sec] create predicted path until this time
+        time_step: 0.5            # [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path
+        points_interval: 0.1      # [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method
 
       # approach if ego has stopped in the front of the obstacle for a certain amount of time
       approaching:

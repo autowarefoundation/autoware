@@ -287,6 +287,31 @@ PointCloud2 concatPointCloud(
   return concat_points;
 }
 
+void calculateMinAndMaxVelFromCovariance(
+  const geometry_msgs::msg::TwistWithCovariance & twist_with_covariance,
+  const double std_dev_multiplier, run_out_utils::DynamicObstacle & dynamic_obstacle)
+{
+  const double x_velocity = std::abs(twist_with_covariance.twist.linear.x);
+  const double y_velocity = std::abs(twist_with_covariance.twist.linear.y);
+  const double x_variance = twist_with_covariance.covariance.at(0);
+  const double y_variance = twist_with_covariance.covariance.at(7);
+  const double x_std_dev = std::sqrt(x_variance);
+  const double y_std_dev = std::sqrt(y_variance);
+
+  // calculate the min and max velocity using the standard deviation of twist
+  // note that this assumes the covariance of x and y is zero
+  const double min_x = std::max(0.0, x_velocity - std_dev_multiplier * x_std_dev);
+  const double min_y = std::max(0.0, y_velocity - std_dev_multiplier * y_std_dev);
+  const double min_velocity = std::hypot(min_x, min_y);
+
+  const double max_x = x_velocity + std_dev_multiplier * x_std_dev;
+  const double max_y = y_velocity + std_dev_multiplier * y_std_dev;
+  const double max_velocity = std::hypot(max_x, max_y);
+
+  dynamic_obstacle.min_velocity_mps = min_velocity;
+  dynamic_obstacle.max_velocity_mps = max_velocity;
+}
+
 }  // namespace
 
 DynamicObstacleCreatorForObject::DynamicObstacleCreatorForObject(
@@ -303,9 +328,14 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForObject::createDynamicObsta
     DynamicObstacle dynamic_obstacle;
     dynamic_obstacle.pose = predicted_object.kinematics.initial_pose_with_covariance.pose;
 
-    // TODO(Tomohito Ando): calculate velocity from covariance of predicted_object
-    dynamic_obstacle.min_velocity_mps = tier4_autoware_utils::kmph2mps(param_.min_vel_kmph);
-    dynamic_obstacle.max_velocity_mps = tier4_autoware_utils::kmph2mps(param_.max_vel_kmph);
+    if (param_.assume_fixed_velocity) {
+      dynamic_obstacle.min_velocity_mps = tier4_autoware_utils::kmph2mps(param_.min_vel_kmph);
+      dynamic_obstacle.max_velocity_mps = tier4_autoware_utils::kmph2mps(param_.max_vel_kmph);
+    } else {
+      calculateMinAndMaxVelFromCovariance(
+        predicted_object.kinematics.initial_twist_with_covariance, param_.std_dev_multiplier,
+        dynamic_obstacle);
+    }
     dynamic_obstacle.classifications = predicted_object.classification;
     dynamic_obstacle.shape = predicted_object.shape;
 
