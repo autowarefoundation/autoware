@@ -320,9 +320,14 @@ private:
   LatLonOffset getLateralLongitudinalOffset(
     const std::vector<PathPointWithLaneId> & ego_path, const geometry_msgs::msg::Pose & obj_pose,
     const autoware_auto_perception_msgs::msg::Shape & obj_shape) const;
+  double calcValidStartLengthToAvoid(
+    const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
+    const size_t obj_seg_idx, const PredictedPath & obj_path,
+    const autoware_auto_perception_msgs::msg::Shape & obj_shape) const;
   MinMaxValue calcMinMaxLongitudinalOffsetToAvoid(
     const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
     const geometry_msgs::msg::Pose & obj_pose, const Polygon2d & obj_points, const double obj_vel,
+    const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape,
     const double time_to_collision) const;
   MinMaxValue calcMinMaxLateralOffsetToAvoid(
     const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,

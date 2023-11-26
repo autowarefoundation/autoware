@@ -222,6 +222,27 @@ std::optional<T> getObstacleFromUuid(
   }
   return *itr;
 }
+
+double calcDistanceToSegment(
+  const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2_first,
+  const geometry_msgs::msg::Point & p2_second)
+{
+  const Eigen::Vector2d first_to_target(p1.x - p2_first.x, p1.y - p2_first.y);
+  const Eigen::Vector2d second_to_target(p1.x - p2_second.x, p1.y - p2_second.y);
+  const Eigen::Vector2d first_to_second(p2_second.x - p2_first.x, p2_second.y - p2_first.y);
+
+  if (first_to_target.dot(first_to_second) < 0) {
+    return first_to_target.norm();
+  }
+  if (second_to_target.dot(-first_to_second) < 0) {
+    return second_to_target.norm();
+  }
+
+  const Eigen::Vector2d p2_nearest =
+    Eigen::Vector2d{p2_first.x, p2_first.y} +
+    first_to_second * first_to_target.dot(first_to_second) / std::pow(first_to_second.norm(), 2);
+  return (Eigen::Vector2d{p1.x, p1.y} - p2_nearest).norm();
+}
 }  // namespace
 
 DynamicAvoidanceModule::DynamicAvoidanceModule(
@@ -564,10 +585,11 @@ void DynamicAvoidanceModule::updateTargetObjects()
     }
 
     // 2.h. calculate longitudinal and lateral offset to avoid to generate object polygon by
-    // "object_path_base"
+    // "ego_path_base"
     const auto obj_points = tier4_autoware_utils::toPolygon2d(object.pose, object.shape);
     const auto lon_offset_to_avoid = calcMinMaxLongitudinalOffsetToAvoid(
-      path_points_for_object_polygon, object.pose, obj_points, object.vel, time_to_collision);
+      path_points_for_object_polygon, object.pose, obj_points, object.vel, obj_path, object.shape,
+      time_to_collision);
     const auto lat_offset_to_avoid = calcMinMaxLateralOffsetToAvoid(
       path_points_for_object_polygon, obj_points, is_collision_left, object.lat_vel, prev_object);
 
@@ -805,6 +827,7 @@ DynamicAvoidanceModule::LatLonOffset DynamicAvoidanceModule::getLateralLongitudi
 MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
   const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
   const geometry_msgs::msg::Pose & obj_pose, const Polygon2d & obj_points, const double obj_vel,
+  const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape,
   const double time_to_collision) const
 {
   const size_t obj_seg_idx =
@@ -844,9 +867,47 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLongitudinalOffsetToAvoid(
     std::abs(obj_vel) * (is_object_overtaking ? parameters_->end_duration_to_avoid_overtaking_object
                                               : parameters_->end_duration_to_avoid_oncoming_object);
 
+  if (obj_vel < 0) {
+    const double valid_start_length_to_avoid =
+      calcValidStartLengthToAvoid(path_points_for_object_polygon, obj_seg_idx, obj_path, obj_shape);
+    return MinMaxValue{
+      std::max(obj_lon_offset.min_value - start_length_to_avoid, valid_start_length_to_avoid),
+      obj_lon_offset.max_value + end_length_to_avoid};
+  }
   return MinMaxValue{
     obj_lon_offset.min_value - start_length_to_avoid,
     obj_lon_offset.max_value + end_length_to_avoid};
+}
+
+double DynamicAvoidanceModule::calcValidStartLengthToAvoid(
+  const std::vector<PathPointWithLaneId> & path_points_for_object_polygon, const size_t obj_seg_idx,
+  const PredictedPath & obj_path, const autoware_auto_perception_msgs::msg::Shape & obj_shape) const
+{
+  const size_t valid_obj_path_end_idx = [&]() {
+    int ego_path_idx = obj_seg_idx + 1;
+    for (size_t obj_path_idx = 0; obj_path_idx < obj_path.path.size(); ++obj_path_idx) {
+      bool are_paths_close{false};
+      for (; 0 < ego_path_idx; --ego_path_idx) {
+        const double dist_to_segment = calcDistanceToSegment(
+          obj_path.path.at(obj_path_idx).position,
+          path_points_for_object_polygon.at(ego_path_idx).point.pose.position,
+          path_points_for_object_polygon.at(ego_path_idx - 1).point.pose.position);
+        if (
+          dist_to_segment < planner_data_->parameters.vehicle_width / 2.0 +
+                              parameters_->lat_offset_from_obstacle +
+                              calcObstacleMaxLength(obj_shape)) {
+          are_paths_close = true;
+          break;
+        }
+      }
+
+      if (!are_paths_close) {
+        return obj_path_idx;
+      }
+    }
+    return obj_path.path.size() - 1;
+  }();
+  return -motion_utils::calcSignedArcLength(obj_path.path, 0, valid_obj_path_end_idx);
 }
 
 MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
