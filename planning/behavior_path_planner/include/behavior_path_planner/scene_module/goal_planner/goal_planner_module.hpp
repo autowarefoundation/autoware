@@ -246,6 +246,7 @@ struct PreviousPullOverData
     found_path = false;
     is_safe = false;
     safety_status = SafetyStatus{};
+    has_decided_path = false;
   }
 
   std::shared_ptr<PathWithLaneId> stop_path{nullptr};
@@ -253,6 +254,7 @@ struct PreviousPullOverData
   bool found_path{false};
   bool is_safe{false};
   SafetyStatus safety_status{};
+  bool has_decided_path{false};
 };
 
 class GoalPlannerModule : public SceneModuleInterface

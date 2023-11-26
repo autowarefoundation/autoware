@@ -854,10 +854,13 @@ void GoalPlannerModule::updateSteeringFactor(
     pose, distance, SteeringFactor::GOAL_PLANNER, steering_factor_direction, type, "");
 }
 
-// NOTE: Once this function returns true, it will continue to return true thereafter. Because
-// selectPullOverPath() will not select new path.
 bool GoalPlannerModule::hasDecidedPath() const
 {
+  // Once this function returns true, it will continue to return true thereafter
+  if (prev_data_.has_decided_path) {
+    return true;
+  }
+
   // if path is not safe, not decided
   if (!thread_safe_data_.foundPullOverPath()) {
     return false;
@@ -1033,6 +1036,8 @@ void GoalPlannerModule::updatePreviousData(const BehaviorModuleOutput & output)
   // for the next loop setOutput().
   // this is used to determine whether to generate a new stop path or keep the current stop path.
   prev_data_.found_path = thread_safe_data_.foundPullOverPath();
+
+  prev_data_.has_decided_path = hasDecidedPath();
 
   // This is related to safety check, so if it is disabled, return here.
   if (!parameters_->safety_check_params.enable_safety_check) {
