@@ -35,7 +35,7 @@ Marker createArrowMarker(
   const double head_height = 0.5 * arrow_length;
 
   Marker marker = createDefaultMarker(
-    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), name, id, Marker::ARROW,
+    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), name + "_arrow", id, Marker::ARROW,
     createMarkerScale(line_width, head_width, head_height), data.color);
 
   const double height = 0.5 * data.shape.dimensions.z;
@@ -77,19 +77,37 @@ Marker createCircleMarker(
   return marker;
 }
 
+visualization_msgs::msg::Marker createNameTextMarker(
+  const size_t id, const ObjectMarkerData & data, const std::string & name,
+  const double height_offset, const double text_size)
+{
+  Marker marker = createDefaultMarker(
+    "map", rclcpp::Clock{RCL_ROS_TIME}.now(), name + "_name_text", id, Marker::TEXT_VIEW_FACING,
+    createMarkerScale(0.0, 0.0, text_size), coloring::getGray(data.color.a));
+
+  marker.text = name;
+
+  const double height = 0.5 * data.shape.dimensions.z;
+  marker.pose = data.pose;
+  marker.pose.position.z += height + height_offset;
+
+  return marker;
+}
+
 MarkerArray createTargetMarker(
   const size_t id, const ObjectMarkerData & data, const std::string & name,
   const double height_offset, const double arrow_length, const double line_width)
 {
   MarkerArray marker_array;
-  marker_array.markers.push_back(
-    createArrowMarker(id, data, name + "_arrow", height_offset, arrow_length));
+  marker_array.markers.push_back(createArrowMarker(id, data, name, height_offset, arrow_length));
   marker_array.markers.push_back(createCircleMarker(
     id, data, name + "_circle1", 0.5 * arrow_length, height_offset + 0.75 * arrow_length,
     line_width));
   marker_array.markers.push_back(createCircleMarker(
     id, data, name + "_circle2", 0.75 * arrow_length, height_offset + 0.75 * arrow_length,
     line_width));
+  marker_array.markers.push_back(
+    createNameTextMarker(id, data, name, height_offset + 1.5 * arrow_length, 0.5 * arrow_length));
 
   return marker_array;
 }

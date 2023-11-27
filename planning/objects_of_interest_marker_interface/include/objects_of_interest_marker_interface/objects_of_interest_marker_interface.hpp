@@ -78,6 +78,16 @@ public:
    */
   static std_msgs::msg::ColorRGBA getColor(const ColorName & color_name, const float alpha = 0.99f);
 
+  /**
+   * @brief Get module name including this interface
+   */
+  std::string getName() const { return name_; }
+
+  /**
+   * @brief Get height offset
+   */
+  double getHeightOffset() const { return height_offset_; }
+
 private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_marker_;
 

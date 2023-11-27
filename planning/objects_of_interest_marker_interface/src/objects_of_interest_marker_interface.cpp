@@ -57,7 +57,7 @@ void ObjectsOfInterestMarkerInterface::publishMarkerArray()
   for (size_t i = 0; i < obj_marker_data_array_.size(); ++i) {
     const auto data = obj_marker_data_array_.at(i);
     const MarkerArray target_marker =
-      marker_utils::createTargetMarker(i, data, name_, height_offset_);
+      marker_utils::createTargetMarker(i, data, getName(), getHeightOffset());
     marker_array.markers.insert(
       marker_array.markers.end(), target_marker.markers.begin(), target_marker.markers.end());
   }

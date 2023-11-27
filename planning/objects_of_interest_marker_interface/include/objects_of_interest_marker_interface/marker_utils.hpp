@@ -14,6 +14,7 @@
 
 #ifndef OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
 #define OBJECTS_OF_INTEREST_MARKER_INTERFACE__MARKER_UTILS_HPP_
+#include "objects_of_interest_marker_interface/coloring.hpp"
 #include "objects_of_interest_marker_interface/marker_data.hpp"
 
 #include <tier4_autoware_utils/geometry/boost_polygon_utils.hpp>
@@ -55,6 +56,18 @@ visualization_msgs::msg::Marker createArrowMarker(
 visualization_msgs::msg::Marker createCircleMarker(
   const size_t id, const ObjectMarkerData & data, const std::string & name, const double radius,
   const double height_offset, const double line_width = 0.1);
+
+/**
+ * @brief Create text marker visualizing module name
+ * @param id Marker id
+ * @param data Object marker data
+ * @param name Module name
+ * @param height_offset Height offset of target marker
+ * @param text_size Text size
+ */
+visualization_msgs::msg::Marker createNameTextMarker(
+  const size_t id, const ObjectMarkerData & data, const std::string & name,
+  const double height_offset, const double text_size = 0.5);
 
 /**
  * @brief Create target marker from object marker data
