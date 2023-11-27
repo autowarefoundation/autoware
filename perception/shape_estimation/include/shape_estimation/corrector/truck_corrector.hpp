@@ -26,11 +26,11 @@ public:
   {
     corrector_utils::CorrectionBBParameters params;
     params.min_width = 1.5;
-    params.max_width = 3.2;
+    params.max_width = 3.5;
     params.default_width = (params.min_width + params.max_width) * 0.5;
     params.min_length = 4.0;
-    params.max_length = 7.9;
-    params.default_length = (params.min_length + params.max_length) * 0.5;
+    params.max_length = 18.0;
+    params.default_length = 7.0;  // 7m is the most common length of a truck in Japan
     setParams(params);
   }
 
