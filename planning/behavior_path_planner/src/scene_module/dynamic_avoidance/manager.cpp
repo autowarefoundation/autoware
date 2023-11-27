@@ -71,6 +71,9 @@ DynamicAvoidanceModuleManager::DynamicAvoidanceModuleManager(
 
     p.max_front_object_angle =
       node->declare_parameter<double>(ns + "front_object.max_object_angle");
+    p.min_front_object_vel = node->declare_parameter<double>(ns + "front_object.min_vel");
+    p.max_front_object_ego_path_lat_cover_ratio =
+      node->declare_parameter<double>(ns + "front_object.max_ego_path_lat_cover_ratio");
 
     p.min_overtaking_crossing_object_vel =
       node->declare_parameter<double>(ns + "crossing_object.min_overtaking_object_vel");
@@ -166,6 +169,10 @@ void DynamicAvoidanceModuleManager::updateModuleParams(
 
     updateParam<double>(
       parameters, ns + "front_object.max_object_angle", p->max_front_object_angle);
+    updateParam<double>(parameters, ns + "front_object.min_vel", p->min_front_object_vel);
+    updateParam<double>(
+      parameters, ns + "front_object.max_ego_path_lat_cover_ratio",
+      p->max_front_object_ego_path_lat_cover_ratio);
 
     updateParam<double>(
       parameters, ns + "crossing_object.min_overtaking_object_vel",

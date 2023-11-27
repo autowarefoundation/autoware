@@ -591,11 +591,20 @@ void DynamicAvoidanceModule::updateTargetObjects()
       path_points_for_object_polygon, object.pose, obj_points, object.vel, obj_path, object.shape,
       time_to_collision);
     const auto lat_offset_to_avoid = calcMinMaxLateralOffsetToAvoid(
-      path_points_for_object_polygon, obj_points, is_collision_left, object.lat_vel, prev_object);
+      path_points_for_object_polygon, obj_points, object.vel, is_collision_left, object.lat_vel,
+      prev_object);
+    if (!lat_offset_to_avoid) {
+      RCLCPP_INFO_EXPRESSION(
+        getLogger(), parameters_->enable_debug_info,
+        "[DynamicAvoidance] Ignore obstacle (%s) since the object laterally covers the ego's path "
+        "enough",
+        obj_uuid.c_str());
+      continue;
+    }
 
     const bool should_be_avoided = true;
     target_objects_manager_.updateObject(
-      obj_uuid, lon_offset_to_avoid, lat_offset_to_avoid, is_collision_left, should_be_avoided,
+      obj_uuid, lon_offset_to_avoid, *lat_offset_to_avoid, is_collision_left, should_be_avoided,
       polygon_generation_method);
   }
 }
@@ -910,10 +919,10 @@ double DynamicAvoidanceModule::calcValidStartLengthToAvoid(
   return -motion_utils::calcSignedArcLength(obj_path.path, 0, valid_obj_path_end_idx);
 }
 
-MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
+std::optional<MinMaxValue> DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
   const std::vector<PathPointWithLaneId> & path_points_for_object_polygon,
-  const Polygon2d & obj_points, const bool is_collision_left, const double obj_normal_vel,
-  const std::optional<DynamicAvoidanceObject> & prev_object) const
+  const Polygon2d & obj_points, const double obj_vel, const bool is_collision_left,
+  const double obj_normal_vel, const std::optional<DynamicAvoidanceObject> & prev_object) const
 {
   // calculate min/max lateral offset from object to path
   const auto obj_lat_abs_offset = [&]() {
@@ -924,12 +933,24 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
         motion_utils::findNearestSegmentIndex(path_points_for_object_polygon, geom_obj_point);
       const double obj_point_lat_offset = motion_utils::calcLateralOffset(
         path_points_for_object_polygon, geom_obj_point, obj_point_seg_idx);
-      obj_lat_abs_offset_vec.push_back(std::abs(obj_point_lat_offset));
+      obj_lat_abs_offset_vec.push_back(obj_point_lat_offset);
     }
     return getMinMaxValues(obj_lat_abs_offset_vec);
   }();
   const double min_obj_lat_abs_offset = obj_lat_abs_offset.min_value;
   const double max_obj_lat_abs_offset = obj_lat_abs_offset.max_value;
+
+  if (parameters_->min_front_object_vel < obj_vel) {
+    const double obj_width_on_ego_path =
+      std::min(max_obj_lat_abs_offset, planner_data_->parameters.vehicle_width / 2.0) -
+      std::max(min_obj_lat_abs_offset, -planner_data_->parameters.vehicle_width / 2.0);
+    if (
+      planner_data_->parameters.vehicle_width *
+        parameters_->max_front_object_ego_path_lat_cover_ratio <
+      obj_width_on_ego_path) {
+      return std::nullopt;
+    }
+  }
 
   // calculate bound min and max lateral offset
   const double min_bound_lat_offset = [&]() {
@@ -937,15 +958,20 @@ MinMaxValue DynamicAvoidanceModule::calcMinMaxLateralOffsetToAvoid(
       std::max(0.0, obj_normal_vel * (is_collision_left ? -1.0 : 1.0)) *
       parameters_->max_time_for_lat_shift;
     const double raw_min_bound_lat_offset =
-      min_obj_lat_abs_offset - parameters_->lat_offset_from_obstacle - lat_abs_offset_to_shift;
+      (is_collision_left ? min_obj_lat_abs_offset : max_obj_lat_abs_offset) -
+      (parameters_->lat_offset_from_obstacle + lat_abs_offset_to_shift) *
+        (is_collision_left ? 1.0 : -1.0);
     const double min_bound_lat_abs_offset_limit =
       planner_data_->parameters.vehicle_width / 2.0 - parameters_->max_lat_offset_to_avoid;
-    return std::max(raw_min_bound_lat_offset, min_bound_lat_abs_offset_limit) *
-           (is_collision_left ? 1.0 : -1.0);
+
+    if (is_collision_left) {
+      return std::max(raw_min_bound_lat_offset, min_bound_lat_abs_offset_limit);
+    }
+    return std::min(raw_min_bound_lat_offset, -min_bound_lat_abs_offset_limit);
   }();
   const double max_bound_lat_offset =
-    (max_obj_lat_abs_offset + parameters_->lat_offset_from_obstacle) *
-    (is_collision_left ? 1.0 : -1.0);
+    (is_collision_left ? max_obj_lat_abs_offset : min_obj_lat_abs_offset) +
+    (is_collision_left ? 1.0 : -1.0) * parameters_->lat_offset_from_obstacle;
 
   // filter min_bound_lat_offset
   const auto prev_min_lat_avoid_to_offset = [&]() -> std::optional<double> {
