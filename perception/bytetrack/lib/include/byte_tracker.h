@@ -96,5 +96,5 @@ private:
   std::vector<STrack> tracked_stracks;
   std::vector<STrack> lost_stracks;
   std::vector<STrack> removed_stracks;
-  byte_kalman::KalmanFilter kalman_filter;
+  KalmanFilter kalman_filter;
 };

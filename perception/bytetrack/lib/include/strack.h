@@ -38,16 +38,18 @@
 
 #pragma once
 
-#include "kalman_filter.h"
-
+// #include "kalman_filter.h"
+#include <kalman_filter/kalman_filter.hpp>
 #include <opencv2/opencv.hpp>
 
 #include <boost/uuid/uuid.hpp>
 
+#include <string>
 #include <vector>
 
 enum TrackState { New = 0, Tracked, Lost, Removed };
 
+/** manage one tracklet*/
 class STrack
 {
 public:
@@ -55,8 +57,7 @@ public:
   ~STrack();
 
   std::vector<float> static tlbr_to_tlwh(std::vector<float> & tlbr);
-  static void multi_predict(
-    std::vector<STrack *> & stracks, byte_kalman::KalmanFilter & kalman_filter);
+  static void multi_predict(std::vector<STrack *> & stracks);
   void static_tlwh();
   void static_tlbr();
   std::vector<float> tlwh_to_xyah(std::vector<float> tlwh_tmp);
@@ -65,10 +66,16 @@ public:
   void mark_removed();
   int next_id();
   int end_frame();
+  void init_kalman_filter();
+  void update_kalman_filter(const Eigen::MatrixXd & measurement);
+  void reflect_state();
 
-  void activate(byte_kalman::KalmanFilter & kalman_filter, int frame_id);
+  void activate(int frame_id);
   void re_activate(STrack & new_track, int frame_id, bool new_id = false);
   void update(STrack & new_track, int frame_id);
+  void predict(const int frame_id);
+
+  void load_parameters(const std::string & filename);
 
 public:
   bool is_activated;
@@ -76,19 +83,41 @@ public:
   boost::uuids::uuid unique_id;
   int state;
 
-  std::vector<float> _tlwh;
-  std::vector<float> tlwh;
-  std::vector<float> tlbr;
+  std::vector<float> original_tlwh;  // top left width height
+  std::vector<float> tlwh;           // top left width height
+  std::vector<float> tlbr;           // top left bottom right
   int frame_id;
   int tracklet_len;
   int start_frame;
 
-  KAL_MEAN mean;
-  KAL_COVA covariance;
   float score;
 
   int label;
 
 private:
-  byte_kalman::KalmanFilter kalman_filter;
+  KalmanFilter kalman_filter_;
+  struct KfParams
+  {
+    // dimension
+    char dim_x = 8;
+    char dim_z = 4;
+    // system noise
+    float q_cov_x;
+    float q_cov_y;
+    float q_cov_vx;
+    float q_cov_vy;
+    // measurement noise
+    float r_cov_x;
+    float r_cov_y;
+    // initial state covariance
+    float p0_cov_x;
+    float p0_cov_y;
+    float p0_cov_vx;
+    float p0_cov_vy;
+    // other parameters
+    float dt;  // sampling time
+  };
+  static KfParams _kf_parameters;
+  static bool _parameters_loaded;
+  enum IDX { X1 = 0, Y1 = 1, X2 = 2, Y2 = 3, VX1 = 4, VY1 = 5, VX2 = 6, VY2 = 7 };
 };

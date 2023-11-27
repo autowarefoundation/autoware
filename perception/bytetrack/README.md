@@ -6,7 +6,7 @@ The core algorithm, named `ByteTrack`, mainly aims to perform multi-object track
 Because the algorithm associates almost every detection box including ones with low detection scores,
 the number of false negatives is expected to decrease by using it.
 
-[demo video](https://user-images.githubusercontent.com/3022416/225920856-745a3bb7-6b35-403d-87b0-6e5085952d70.mp4)
+[demo video](https://github.com/YoshiRi/autoware.universe/assets/3022416/40f4c158-657e-48e1-81c2-8ac39152892d)
 
 ## Inner-workings / Algorithms
 
@@ -19,6 +19,16 @@ the number of false negatives is expected to decrease by using it.
   2022, [[ref](https://arxiv.org/abs/2110.06864)]
 - This package is ported version toward Autoware from [this repository](https://github.com/ifzhang/ByteTrack/tree/main/deploy/TensorRT/cpp)
   (The C++ implementation by the ByteTrack's authors)
+
+### 2d tracking modification from original codes
+
+The paper just says that the 2d tracking algorithm is a simple Kalman filter.
+Original codes use the `top-left-corner` and `aspect ratio` and `size` as the state vector.
+
+This is sometimes unstable because the aspectratio can be changed by the occlusion.
+So, we use the `top-left` and `size` as the state vector.
+
+Kalman filter settings can be controlled by the parameters in `config/bytetrack_node.param.yaml`.
 
 ## Inputs / Outputs
 

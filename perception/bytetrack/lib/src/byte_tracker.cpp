@@ -106,7 +106,10 @@ std::vector<STrack> ByteTracker::update(const std::vector<ByteTrackObject> & obj
 
   ////////////////// Step 2: First association, with IoU //////////////////
   strack_pool = joint_stracks(tracked_stracks, this->lost_stracks);
-  STrack::multi_predict(strack_pool, this->kalman_filter);
+  // do prediction for each stracks
+  for (size_t i = 0; i < strack_pool.size(); i++) {
+    strack_pool[i]->predict(this->frame_id);
+  }
 
   std::vector<std::vector<float> > dists;
   int dist_size = 0, dist_size_size = 0;
@@ -196,7 +199,7 @@ std::vector<STrack> ByteTracker::update(const std::vector<ByteTrackObject> & obj
   for (size_t i = 0; i < u_detection.size(); i++) {
     STrack * track = &detections[u_detection[i]];
     if (track->score < this->high_thresh) continue;
-    track->activate(this->kalman_filter, this->frame_id);
+    track->activate(this->frame_id);
     activated_stracks.push_back(*track);
   }
 

@@ -1,0 +1,14 @@
+# Kalman filter parameters for 2d tracking
+dt: 0.1           # time step[s]
+dim_x: 8          # tlbr + velocity
+dim_z: 4          # tlbr
+q_cov_x: 0.1
+q_cov_y: 0.1
+q_cov_vx: 0.1
+q_cov_vy: 0.1
+r_cov_x: 0.1
+r_cov_y: 0.1
+p0_cov_x: 100.0
+p0_cov_y: 100.0
+p0_cov_vx: 100.0
+p0_cov_vy: 100.0

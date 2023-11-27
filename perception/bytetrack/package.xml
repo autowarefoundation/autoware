@@ -19,6 +19,7 @@
   <depend>cv_bridge</depend>
   <depend>eigen</depend>
   <depend>image_transport</depend>
+  <depend>kalman_filter</depend>
   <depend>libboost-system-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>rclcpp</depend>
@@ -26,6 +27,7 @@
   <depend>sensor_msgs</depend>
   <depend>tensorrt_common</depend>
   <depend>tier4_perception_msgs</depend>
+  <depend>yaml-cpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
