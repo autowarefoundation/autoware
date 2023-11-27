@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Goal Distance Calculator Node",
+  "type": "object",
+  "definitions": {
+    "goal_distance_calculator": {
+      "type": "object",
+      "properties": {
+        "update_rate": {
+          "type": "number",
+          "default": "10.0",
+          "exclusiveMinimum": 0,
+          "description": "Timer callback period. [Hz]"
+        },
+        "oneshot": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Publish deviations just once or repeatedly."
+        }
+      },
+      "required": ["update_rate", "oneshot"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/goal_distance_calculator"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

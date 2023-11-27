@@ -40,8 +40,8 @@ GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions
   durable_qos.transient_local();
 
   // Node Parameter
-  node_param_.update_rate = declare_parameter("update_rate", 10.0);
-  node_param_.oneshot = declare_parameter("oneshot", true);
+  node_param_.update_rate = declare_parameter<double>("update_rate");
+  node_param_.oneshot = declare_parameter<bool>("oneshot");
 
   // Core
   goal_distance_calculator_ = std::make_unique<GoalDistanceCalculator>();
