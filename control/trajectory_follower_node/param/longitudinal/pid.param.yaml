@@ -32,7 +32,9 @@
     max_d_effort: 0.0
     min_d_effort: 0.0
     lpf_vel_error_gain: 0.9
+    enable_integration_at_low_speed: false
     current_vel_threshold_pid_integration: 0.5
+    time_threshold_before_pid_integration: 2.0
     enable_brake_keeping_before_stop: false
     brake_keeping_acc: -0.2
 

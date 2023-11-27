@@ -100,8 +100,13 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node)
     const double lpf_vel_error_gain{node.declare_parameter<double>("lpf_vel_error_gain")};
     m_lpf_vel_error = std::make_shared<LowpassFilter1d>(0.0, lpf_vel_error_gain);
 
+    m_enable_integration_at_low_speed =
+      node.declare_parameter<bool>("enable_integration_at_low_speed");
     m_current_vel_threshold_pid_integrate =
       node.declare_parameter<double>("current_vel_threshold_pid_integration");  // [m/s]
+
+    m_time_threshold_before_pid_integrate =
+      node.declare_parameter<double>("time_threshold_before_pid_integration");  // [s]
 
     m_enable_brake_keeping_before_stop =
       node.declare_parameter<bool>("enable_brake_keeping_before_stop");         // [-]
@@ -284,6 +289,7 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
     m_pid_vel.setLimits(max_pid, min_pid, max_p, min_p, max_i, min_i, max_d, min_d);
 
     update_param("current_vel_threshold_pid_integration", m_current_vel_threshold_pid_integrate);
+    update_param("time_threshold_before_pid_integration", m_time_threshold_before_pid_integrate);
   }
 
   // stopping state
@@ -556,6 +562,11 @@ void PidLongitudinalController::updateControlState(const ControlData & control_d
   const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
                                 m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
 
+  if (is_under_control != m_prev_vehicle_is_under_control) {
+    m_prev_vehicle_is_under_control = is_under_control;
+    m_under_control_starting_time =
+      is_under_control ? std::make_shared<rclcpp::Time>(clock_->now()) : nullptr;
+  }
   // transit state
   // in DRIVE state
   if (m_control_state == ControlState::DRIVE) {
@@ -959,8 +970,15 @@ double PidLongitudinalController::applyVelocityFeedback(
   const double diff_vel = (target_motion.vel - current_vel) * vel_sign;
   const bool is_under_control = m_current_operation_mode.is_autoware_control_enabled &&
                                 m_current_operation_mode.mode == OperationModeState::AUTONOMOUS;
+
+  const bool vehicle_is_moving = std::abs(current_vel) > m_current_vel_threshold_pid_integrate;
+  const double time_under_control = getTimeUnderControl();
+  const bool vehicle_is_stuck =
+    !vehicle_is_moving && time_under_control > m_time_threshold_before_pid_integrate;
+
   const bool enable_integration =
-    (std::abs(current_vel) > m_current_vel_threshold_pid_integrate) && is_under_control;
+    (vehicle_is_moving || (m_enable_integration_at_low_speed && vehicle_is_stuck)) &&
+    is_under_control;
   const double error_vel_filtered = m_lpf_vel_error->filter(diff_vel);
 
   std::vector<double> pid_contributions(3);
@@ -1057,6 +1075,12 @@ void PidLongitudinalController::checkControlState(
     "rotation deviation threshold", "%lf", m_state_transition_params.emergency_state_traj_rot_dev);
   stat.addf("rotation deviation", "%lf", m_diagnostic_data.rot_deviation);
   stat.summary(level, msg);
+}
+
+double PidLongitudinalController::getTimeUnderControl()
+{
+  if (!m_under_control_starting_time) return 0.0;
+  return (clock_->now() - *m_under_control_starting_time).seconds();
 }
 
 }  // namespace autoware::motion::control::pid_longitudinal_controller
