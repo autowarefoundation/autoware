@@ -51,6 +51,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
@@ -59,6 +60,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -72,6 +74,7 @@ class ArTagBasedLocalizer : public rclcpp::Node
   using Pose = geometry_msgs::msg::Pose;
   using PoseStamped = geometry_msgs::msg::PoseStamped;
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
+  using PoseArray = geometry_msgs::msg::PoseArray;
   using TransformStamped = geometry_msgs::msg::TransformStamped;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
   using DiagnosticArray = diagnostic_msgs::msg::DiagnosticArray;
@@ -83,23 +86,23 @@ public:
 private:
   void map_bin_callback(const HADMapBin::ConstSharedPtr & msg);
   void image_callback(const Image::ConstSharedPtr & msg);
-  void cam_info_callback(const CameraInfo & msg);
-  void ekf_pose_callback(const PoseWithCovarianceStamped & msg);
-  void publish_pose_as_base_link(const PoseStamped & sensor_to_tag, const std::string & tag_id);
-  static tf2::Transform aruco_marker_to_tf2(const aruco::Marker & marker);
+  void cam_info_callback(const CameraInfo::ConstSharedPtr & msg);
+  void ekf_pose_callback(const PoseWithCovarianceStamped::ConstSharedPtr & msg);
+  std::vector<landmark_manager::Landmark> detect_landmarks(const Image::ConstSharedPtr & msg);
+  Pose calculate_new_self_pose(
+    const std::vector<landmark_manager::Landmark> & detected_landmarks, const Pose & self_pose);
 
   // Parameters
   float marker_size_{};
   std::vector<std::string> target_tag_ids_;
   std::vector<double> base_covariance_;
-  double distance_threshold_squared_{};
+  double distance_threshold_{};
   double ekf_time_tolerance_{};
   double ekf_position_tolerance_{};
 
   // tf
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
   // image transport
   std::unique_ptr<image_transport::ImageTransport> it_;
@@ -112,6 +115,7 @@ private:
 
   // Publishers
   rclcpp::Publisher<MarkerArray>::SharedPtr marker_pub_;
+  rclcpp::Publisher<PoseArray>::SharedPtr pose_array_pub_;
   image_transport::Publisher image_pub_;
   rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr pose_pub_;
   rclcpp::Publisher<DiagnosticArray>::SharedPtr diag_pub_;
@@ -120,7 +124,8 @@ private:
   aruco::MarkerDetector detector_;
   aruco::CameraParameters cam_param_;
   bool cam_info_received_;
-  PoseWithCovarianceStamped latest_ekf_pose_{};
+  std::mutex self_pose_array_mtx_;
+  std::deque<PoseWithCovarianceStamped::ConstSharedPtr> self_pose_msg_ptr_array_;
   std::map<std::string, Pose> landmark_map_;
 };
 
