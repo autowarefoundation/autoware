@@ -275,6 +275,8 @@ private:
 
     module_ptr->publishRTCStatus();
 
+    module_ptr->publishObjectsOfInterestMarker();
+
     processing_time_.at(module_ptr->name()) += stop_watch_.toc(module_ptr->name(), true);
 
     return result;
@@ -298,6 +300,7 @@ private:
   {
     module_ptr->onExit();
     module_ptr->publishRTCStatus();
+    module_ptr->publishObjectsOfInterestMarker();
     module_ptr.reset();
   }
 

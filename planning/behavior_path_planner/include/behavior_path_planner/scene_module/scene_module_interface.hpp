@@ -26,6 +26,7 @@
 #include <motion_utils/marker/marker_helper.hpp>
 #include <motion_utils/trajectory/path_with_lane_id.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
+#include <objects_of_interest_marker_interface/objects_of_interest_marker_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
 #include <rtc_interface/rtc_interface.hpp>
@@ -56,6 +57,8 @@ namespace behavior_path_planner
 {
 using autoware_adapi_v1_msgs::msg::SteeringFactor;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using objects_of_interest_marker_interface::ColorName;
+using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 using rtc_interface::RTCInterface;
 using steering_factor_interface::SteeringFactorInterface;
 using tier4_autoware_utils::calcOffsetPose;
@@ -81,11 +84,15 @@ class SceneModuleInterface
 public:
   SceneModuleInterface(
     const std::string & name, rclcpp::Node & node,
-    std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map)
+    std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map,
+    std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>>
+      objects_of_interest_marker_interface_ptr_map)
   : name_{name},
     logger_{node.get_logger().get_child(name)},
     clock_{node.get_clock()},
     rtc_interface_ptr_map_(std::move(rtc_interface_ptr_map)),
+    objects_of_interest_marker_interface_ptr_map_(
+      std::move(objects_of_interest_marker_interface_ptr_map)),
     steering_factor_interface_ptr_(
       std::make_unique<SteeringFactorInterface>(&node, utils::convertToSnakeCase(name)))
   {
@@ -187,6 +194,15 @@ public:
     for (const auto & [module_name, ptr] : rtc_interface_ptr_map_) {
       if (ptr) {
         ptr->publishCooperateStatus(clock_->now());
+      }
+    }
+  }
+
+  void publishObjectsOfInterestMarker()
+  {
+    for (const auto & [module_name, ptr] : objects_of_interest_marker_interface_ptr_map_) {
+      if (ptr) {
+        ptr->publishMarkerArray();
       }
     }
   }
@@ -415,6 +431,17 @@ protected:
     }
   }
 
+  void setObjectsOfInterestData(
+    const geometry_msgs::msg::Pose & obj_pose,
+    const autoware_auto_perception_msgs::msg::Shape & obj_shape, const ColorName & color_name)
+  {
+    for (const auto & [module_name, ptr] : objects_of_interest_marker_interface_ptr_map_) {
+      if (ptr) {
+        ptr->insertObjectData(obj_pose, obj_shape, color_name);
+      }
+    }
+  }
+
   /**
    * @brief Return SUCCESS if plan is not needed or plan is successfully finished,
    *        FAILURE if plan has failed, RUNNING if plan is on going.
@@ -568,6 +595,9 @@ protected:
   ModuleStatus current_state_{ModuleStatus::IDLE};
 
   std::unordered_map<std::string, std::shared_ptr<RTCInterface>> rtc_interface_ptr_map_;
+
+  std::unordered_map<std::string, std::shared_ptr<ObjectsOfInterestMarkerInterface>>
+    objects_of_interest_marker_interface_ptr_map_;
 
   std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
 

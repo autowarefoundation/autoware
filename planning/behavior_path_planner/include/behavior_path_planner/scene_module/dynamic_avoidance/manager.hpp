@@ -37,7 +37,8 @@ public:
   std::unique_ptr<SceneModuleInterface> createNewSceneModuleInstance() override
   {
     return std::make_unique<DynamicAvoidanceModule>(
-      name_, *node_, parameters_, rtc_interface_ptr_map_);
+      name_, *node_, parameters_, rtc_interface_ptr_map_,
+      objects_of_interest_marker_interface_ptr_map_);
   }
 
   void updateModuleParams(const std::vector<rclcpp::Parameter> & parameters) override;
