@@ -11,14 +11,14 @@
       enable_bound_clipping: false
       enable_yield_maneuver: true
       enable_yield_maneuver_during_shifting: false
-      enable_cancel_maneuver: false
+      enable_cancel_maneuver: true
       disable_path_update: false
 
       # drivable area setting
       use_adjacent_lane: true
       use_opposite_lane: true
-      use_intersection_areas: false
-      use_hatched_road_markings: false
+      use_intersection_areas: true
+      use_hatched_road_markings: true
 
       # for debug
       publish_debug_marker: false
@@ -40,7 +40,7 @@
         truck:
           is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
@@ -51,7 +51,7 @@
         bus:
           is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
@@ -62,7 +62,7 @@
         trailer:
           is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
@@ -71,9 +71,9 @@
           safety_buffer_longitudinal: 0.0
           use_conservative_buffer_longitudinal: true
         unknown:
-          is_target: false
+          is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 0.28                 # 1.0km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.3
@@ -82,9 +82,9 @@
           safety_buffer_longitudinal: 0.0
           use_conservative_buffer_longitudinal: true
         bicycle:
-          is_target: false
+          is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 0.28                 # 1.0km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
@@ -93,9 +93,9 @@
           safety_buffer_longitudinal: 1.0
           use_conservative_buffer_longitudinal: true
         motorcycle:
-          is_target: false
+          is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 1.0                  # 3.6km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
@@ -104,9 +104,9 @@
           safety_buffer_longitudinal: 1.0
           use_conservative_buffer_longitudinal: true
         pedestrian:
-          is_target: false
+          is_target: true
           execute_num: 1
-          moving_speed_threshold: 1.0
+          moving_speed_threshold: 0.28                 # 1.0km/h
           moving_time_threshold: 1.0
           max_expand_ratio: 0.0
           envelope_buffer_margin: 0.8
@@ -130,7 +130,7 @@
 
         # detection area generation parameters
         detection_area:
-          static: true                                   # [-]
+          static: false                                  # [-]
           min_forward_distance: 50.0                     # [m]
           max_forward_distance: 150.0                    # [m]
           backward_distance: 10.0                        # [m]
@@ -148,7 +148,7 @@
 
         # params for filtering objects that are in intersection
         intersection:
-          yaw_deviation: 0.175                           # [rad] (default: 10.0deg)
+          yaw_deviation: 0.349                           # [rad] (default 20.0deg)
 
       # For safety check
       safety_check:
@@ -162,13 +162,13 @@
         # collision check parameters
         check_all_predicted_path: false                  # [-]
         safety_check_backward_distance: 100.0            # [m]
-        hysteresis_factor_expand_rate: 2.0               # [-]
+        hysteresis_factor_expand_rate: 1.5               # [-]
         hysteresis_factor_safe_count: 10                 # [-]
         # predicted path parameters
         min_velocity: 1.38                               # [m/s]
         max_velocity: 50.0                               # [m/s]
         time_resolution: 0.5                             # [s]
-        time_horizon_for_front_object: 10.0              # [s]
+        time_horizon_for_front_object: 3.0               # [s]
         time_horizon_for_rear_object: 10.0               # [s]
         delay_until_departure: 0.0                       # [s]
         # rss parameters
@@ -176,7 +176,7 @@
         expected_rear_deceleration: -1.0                 # [m/ss]
         rear_vehicle_reaction_time: 2.0                  # [s]
         rear_vehicle_safety_time_margin: 1.0             # [s]
-        lateral_distance_max_threshold: 2.0              # [m]
+        lateral_distance_max_threshold: 0.75             # [m]
         longitudinal_distance_min_threshold: 3.0         # [m]
         longitudinal_velocity_delta_time: 0.8            # [s]
 
@@ -184,10 +184,10 @@
       avoidance:
         # avoidance lateral parameters
         lateral:
-          lateral_execution_threshold: 0.499            # [m]
+          lateral_execution_threshold: 0.09             # [m]
           lateral_small_shift_threshold: 0.101          # [m]
           lateral_avoid_check_threshold: 0.1            # [m]
-          soft_road_shoulder_margin: 0.8                # [m]
+          soft_road_shoulder_margin: 0.3                # [m]
           hard_road_shoulder_margin: 0.3                # [m]
           max_right_shift_length: 5.0
           max_left_shift_length: 5.0
@@ -246,13 +246,13 @@
         longitudinal:
           nominal_deceleration: -1.0                    # [m/ss]
           nominal_jerk: 0.5                             # [m/sss]
-          max_deceleration: -2.0                        # [m/ss]
+          max_deceleration: -1.5                        # [m/ss]
           max_jerk: 1.0                                 # [m/sss]
           max_acceleration: 1.0                         # [m/ss]
 
       shift_line_pipeline:
         trim:
-          quantize_filter_threshold: 0.2
+          quantize_filter_threshold: 0.1
           same_grad_filter_1_threshold: 0.1
           same_grad_filter_2_threshold: 0.2
           same_grad_filter_3_threshold: 0.5
