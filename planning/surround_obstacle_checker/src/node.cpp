@@ -149,19 +149,22 @@ Polygon2d createSelfPolygon(
 SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptions & node_options)
 : Node("surround_obstacle_checker_node", node_options)
 {
+  label_map_ = {
+    {"unknown", ObjectClassification::UNKNOWN}, {"car", ObjectClassification::CAR},
+    {"truck", ObjectClassification::TRUCK},     {"bus", ObjectClassification::BUS},
+    {"trailer", ObjectClassification::TRAILER}, {"motorcycle", ObjectClassification::MOTORCYCLE},
+    {"bicycle", ObjectClassification::BICYCLE}, {"pedestrian", ObjectClassification::PEDESTRIAN}};
   // Parameters
   {
     auto & p = node_param_;
 
     // for object label
-    std::unordered_map<std::string, int> label_map{
-      {"unknown", ObjectClassification::UNKNOWN}, {"car", ObjectClassification::CAR},
-      {"truck", ObjectClassification::TRUCK},     {"bus", ObjectClassification::BUS},
-      {"trailer", ObjectClassification::TRAILER}, {"motorcycle", ObjectClassification::MOTORCYCLE},
-      {"bicycle", ObjectClassification::BICYCLE}, {"pedestrian", ObjectClassification::PEDESTRIAN}};
-    for (const auto & label_pair : label_map) {
-      p.enable_check_map.emplace(
-        label_pair.second, this->declare_parameter<bool>(label_pair.first + ".enable_check"));
+    use_dynamic_object_ = false;
+    for (const auto & label_pair : label_map_) {
+      const bool check_current_label =
+        this->declare_parameter<bool>(label_pair.first + ".enable_check");
+      p.enable_check_map.emplace(label_pair.second, check_current_label);
+      use_dynamic_object_ = use_dynamic_object_ || check_current_label;
       p.surround_check_front_distance_map.emplace(
         label_pair.second,
         this->declare_parameter<double>(label_pair.first + ".surround_check_front_distance"));
@@ -245,13 +248,7 @@ std::array<double, 3> SurroundObstacleCheckerNode::getCheckDistances(
       node_param_.pointcloud_surround_check_back_distance};
   }
 
-  std::unordered_map<std::string, int> label_map{
-    {"unknown", ObjectClassification::UNKNOWN}, {"car", ObjectClassification::CAR},
-    {"truck", ObjectClassification::TRUCK},     {"bus", ObjectClassification::BUS},
-    {"trailer", ObjectClassification::TRAILER}, {"motorcycle", ObjectClassification::MOTORCYCLE},
-    {"bicycle", ObjectClassification::BICYCLE}, {"pedestrian", ObjectClassification::PEDESTRIAN}};
-
-  const int int_label = label_map.at(str_label);
+  const int int_label = label_map_.at(str_label);
   return {
     node_param_.surround_check_front_distance_map.at(int_label),
     node_param_.surround_check_side_distance_map.at(int_label),
@@ -261,6 +258,14 @@ std::array<double, 3> SurroundObstacleCheckerNode::getCheckDistances(
 rcl_interfaces::msg::SetParametersResult SurroundObstacleCheckerNode::onParam(
   const std::vector<rclcpp::Parameter> & parameters)
 {
+  use_dynamic_object_ = false;
+  for (const auto & label_pair : label_map_) {
+    bool & check_current_label = node_param_.enable_check_map.at(label_pair.second);
+    tier4_autoware_utils::updateParam<bool>(
+      parameters, label_pair.first + ".enable_check", check_current_label);
+    use_dynamic_object_ = use_dynamic_object_ || check_current_label;
+  }
+
   tier4_autoware_utils::updateParam<std::string>(
     parameters, "debug_footprint_label", node_param_.debug_footprint_label);
   const auto check_distances = getCheckDistances(node_param_.debug_footprint_label);
@@ -289,22 +294,17 @@ void SurroundObstacleCheckerNode::onTimer()
   if (node_param_.pointcloud_enable_check && !pointcloud_ptr_) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), 5000 /* ms */, "waiting for pointcloud info...");
-    return;
   }
 
-  const bool use_dynamic_object =
-    node_param_.enable_check_map.at(ObjectClassification::UNKNOWN) ||
-    node_param_.enable_check_map.at(ObjectClassification::CAR) ||
-    node_param_.enable_check_map.at(ObjectClassification::TRUCK) ||
-    node_param_.enable_check_map.at(ObjectClassification::BUS) ||
-    node_param_.enable_check_map.at(ObjectClassification::TRAILER) ||
-    node_param_.enable_check_map.at(ObjectClassification::MOTORCYCLE) ||
-    node_param_.enable_check_map.at(ObjectClassification::BICYCLE) ||
-    node_param_.enable_check_map.at(ObjectClassification::PEDESTRIAN);
-  if (use_dynamic_object && !object_ptr_) {
+  if (use_dynamic_object_ && !object_ptr_) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), 5000 /* ms */, "waiting for dynamic object info...");
-    return;
+  }
+
+  if (!node_param_.pointcloud_enable_check && !use_dynamic_object_) {
+    RCLCPP_INFO_THROTTLE(
+      this->get_logger(), *this->get_clock(), 5000 /* ms */,
+      "Surround obstacle check is disabled for all dynamic object types and for pointcloud check.");
   }
 
   const auto nearest_obstacle = getNearestObstacle();
@@ -414,7 +414,11 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacle() cons
 
 boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPointCloud() const
 {
-  if (!node_param_.pointcloud_enable_check || pointcloud_ptr_->data.empty()) {
+  if (!node_param_.pointcloud_enable_check || !pointcloud_ptr_) {
+    return boost::none;
+  }
+
+  if (pointcloud_ptr_->data.empty()) {
     return boost::none;
   }
 
@@ -422,7 +426,7 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPoint
     getTransform("base_link", pointcloud_ptr_->header.frame_id, pointcloud_ptr_->header.stamp, 0.5);
 
   if (!transform_stamped) {
-    return {};
+    return boost::none;
   }
 
   Eigen::Affine3f isometry = tf2::transformToEigen(transform_stamped.get().transform).cast<float>();
@@ -459,11 +463,13 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByPoint
 
 boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByDynamicObject() const
 {
+  if (!object_ptr_ || !use_dynamic_object_) return boost::none;
+
   const auto transform_stamped =
     getTransform(object_ptr_->header.frame_id, "base_link", object_ptr_->header.stamp, 0.5);
 
   if (!transform_stamped) {
-    return {};
+    return boost::none;
   }
 
   tf2::Transform tf_src2target;
@@ -480,7 +486,6 @@ boost::optional<Obstacle> SurroundObstacleCheckerNode::getNearestObstacleByDynam
     if (!node_param_.enable_check_map.at(label)) {
       continue;
     }
-
     const double front_margin = node_param_.surround_check_front_distance_map.at(label);
     const double side_margin = node_param_.surround_check_side_distance_map.at(label);
     const double back_margin = node_param_.surround_check_back_distance_map.at(label);

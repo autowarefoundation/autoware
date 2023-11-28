@@ -141,6 +141,10 @@ private:
   std::shared_ptr<const rclcpp::Time> last_obstacle_found_time_;
 
   std::unique_ptr<tier4_autoware_utils::LoggerLevelConfigure> logger_configure_;
+
+  bool use_dynamic_object_;
+
+  std::unordered_map<std::string, int> label_map_;
 };
 }  // namespace surround_obstacle_checker
 
