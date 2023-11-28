@@ -17,10 +17,10 @@
 VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_converter")
 {
   // set covariance value for twist with covariance msg
-  stddev_vx_ = declare_parameter("velocity_stddev_xx", 0.2);
-  stddev_wz_ = declare_parameter("angular_velocity_stddev_zz", 0.1);
-  frame_id_ = declare_parameter("frame_id", "base_link");
-  speed_scale_factor_ = declare_parameter("speed_scale_factor", 1.0);
+  stddev_vx_ = declare_parameter<double>("velocity_stddev_xx");
+  stddev_wz_ = declare_parameter<double>("angular_velocity_stddev_zz");
+  frame_id_ = declare_parameter<std::string>("frame_id");
+  speed_scale_factor_ = declare_parameter<double>("speed_scale_factor");
 
   vehicle_report_sub_ = create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>(
     "velocity_status", rclcpp::QoS{100},

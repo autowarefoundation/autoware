@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for vehicle_velocity_converter",
+  "type": "object",
+  "definitions": {
+    "vehicle_velocity_converter": {
+      "type": "object",
+      "properties": {
+        "stddev_vx": {
+          "type": "number",
+          "default": 0.2,
+          "description": "speed scale factor (ideal value is 1.0)"
+        },
+        "frame_id": {
+          "type": "string",
+          "description": "frame id for output message."
+        },
+        "stddev_wz": {
+          "type": "number",
+          "default": 0.1,
+          "description": "standard deviation for vx."
+        },
+        "speed_scale_factor": {
+          "type": "number",
+          "default": 1.0,
+          "description": "standard deviation for yaw rate."
+        }
+      },
+      "required": ["stddev_vx", "frame_id", "stddev_wz", "speed_scale_factor"]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/vehicle_velocity_converter"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
