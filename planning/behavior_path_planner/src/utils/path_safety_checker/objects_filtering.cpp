@@ -22,9 +22,32 @@
 
 #include <boost/geometry/algorithms/distance.hpp>
 
+#include <algorithm>
+
+namespace behavior_path_planner::utils::path_safety_checker::filter
+{
+bool velocity_filter(const PredictedObject & object, double velocity_threshold, double max_velocity)
+{
+  const auto v_norm = std::hypot(
+    object.kinematics.initial_twist_with_covariance.twist.linear.x,
+    object.kinematics.initial_twist_with_covariance.twist.linear.y);
+  return (velocity_threshold < v_norm && v_norm < max_velocity);
+}
+
+bool position_filter(
+  const PredictedObject & object, const std::vector<PathPointWithLaneId> & path_points,
+  const geometry_msgs::msg::Point & current_pose, const double forward_distance,
+  const double backward_distance)
+{
+  const auto dist_ego_to_obj = motion_utils::calcSignedArcLength(
+    path_points, current_pose, object.kinematics.initial_pose_with_covariance.pose.position);
+
+  return (backward_distance < dist_ego_to_obj && dist_ego_to_obj < forward_distance);
+}
+}  // namespace behavior_path_planner::utils::path_safety_checker::filter
+
 namespace behavior_path_planner::utils::path_safety_checker
 {
-
 bool isCentroidWithinLanelet(const PredictedObject & object, const lanelet::ConstLanelet & lanelet)
 {
   const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
@@ -55,9 +78,8 @@ PredictedObjects filterObjects(
   const double object_check_backward_distance = params->object_check_backward_distance;
   const ObjectTypesToCheck & target_object_types = params->object_types_to_check;
 
-  PredictedObjects filtered_objects;
-
-  filtered_objects = filterObjectsByVelocity(*objects, ignore_object_velocity_threshold, false);
+  PredictedObjects filtered_objects =
+    filterObjectsByVelocity(*objects, ignore_object_velocity_threshold, false);
 
   filterObjectsByClass(filtered_objects, target_object_types);
 
@@ -77,24 +99,19 @@ PredictedObjects filterObjectsByVelocity(
 {
   if (remove_above_threshold) {
     return filterObjectsByVelocity(objects, -velocity_threshold, velocity_threshold);
-  } else {
-    return filterObjectsByVelocity(objects, velocity_threshold, std::numeric_limits<double>::max());
   }
+  return filterObjectsByVelocity(objects, velocity_threshold, std::numeric_limits<double>::max());
 }
 
 PredictedObjects filterObjectsByVelocity(
   const PredictedObjects & objects, double velocity_threshold, double max_velocity)
 {
-  PredictedObjects filtered;
-  filtered.header = objects.header;
-  for (const auto & obj : objects.objects) {
-    const auto v_norm = std::hypot(
-      obj.kinematics.initial_twist_with_covariance.twist.linear.x,
-      obj.kinematics.initial_twist_with_covariance.twist.linear.y);
-    if (velocity_threshold < v_norm && v_norm < max_velocity) {
-      filtered.objects.push_back(obj);
-    }
-  }
+  const auto filter = [&](const auto & object) {
+    return filter::velocity_filter(object, velocity_threshold, max_velocity);
+  };
+
+  auto filtered = objects;
+  filterObjects(filtered, filter);
   return filtered;
 }
 
@@ -103,43 +120,22 @@ void filterObjectsByPosition(
   const geometry_msgs::msg::Point & current_pose, const double forward_distance,
   const double backward_distance)
 {
-  // Create a new container to hold the filtered objects
-  PredictedObjects filtered;
-  filtered.header = objects.header;
+  const auto filter = [&](const auto & object) {
+    return filter::position_filter(
+      object, path_points, current_pose, forward_distance, -backward_distance);
+  };
 
-  // Reserve space in the vector to avoid reallocations
-  filtered.objects.reserve(objects.objects.size());
-
-  for (const auto & obj : objects.objects) {
-    const double dist_ego_to_obj = motion_utils::calcSignedArcLength(
-      path_points, current_pose, obj.kinematics.initial_pose_with_covariance.pose.position);
-
-    if (-backward_distance < dist_ego_to_obj && dist_ego_to_obj < forward_distance) {
-      filtered.objects.push_back(obj);
-    }
-  }
-
-  // Replace the original objects with the filtered list
-  objects.objects = std::move(filtered.objects);
-  return;
+  filterObjects(objects, filter);
 }
 
 void filterObjectsByClass(
   PredictedObjects & objects, const ObjectTypesToCheck & target_object_types)
 {
-  PredictedObjects filtered_objects;
+  const auto filter = [&](const auto & object) {
+    return isTargetObjectType(object, target_object_types);
+  };
 
-  for (auto & object : objects.objects) {
-    const auto is_object_type = isTargetObjectType(object, target_object_types);
-
-    // If the object type matches any of the target types, add it to the filtered list
-    if (is_object_type) {
-      filtered_objects.objects.push_back(object);
-    }
-  }
-
-  // Replace the original objects with the filtered list
-  objects = std::move(filtered_objects);
+  filterObjects(objects, filter);
 }
 
 std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanelets(
@@ -154,16 +150,11 @@ std::pair<std::vector<size_t>, std::vector<size_t>> separateObjectIndicesByLanel
   std::vector<size_t> other_indices;
 
   for (size_t i = 0; i < objects.objects.size(); i++) {
-    bool is_filtered_object = false;
-    for (const auto & llt : target_lanelets) {
-      if (condition(objects.objects.at(i), llt)) {
-        target_indices.push_back(i);
-        is_filtered_object = true;
-        break;
-      }
-    }
-
-    if (!is_filtered_object) {
+    const auto filter = [&](const auto & llt) { return condition(objects.objects.at(i), llt); };
+    const auto found = std::find_if(target_lanelets.begin(), target_lanelets.end(), filter);
+    if (found != target_lanelets.end()) {
+      target_indices.push_back(i);
+    } else {
       other_indices.push_back(i);
     }
   }
@@ -266,13 +257,11 @@ bool isCentroidWithinLanelets(
   const auto & object_pos = object.kinematics.initial_pose_with_covariance.pose.position;
   lanelet::BasicPoint2d object_centroid(object_pos.x, object_pos.y);
 
-  for (const auto & llt : target_lanelets) {
-    if (boost::geometry::within(object_centroid, llt.polygon2d().basicPolygon())) {
-      return true;
-    }
-  }
+  const auto is_within = [&](const auto & llt) {
+    return boost::geometry::within(object_centroid, llt.polygon2d().basicPolygon());
+  };
 
-  return false;
+  return std::any_of(target_lanelets.begin(), target_lanelets.end(), is_within);
 }
 
 ExtendedPredictedObject transform(
