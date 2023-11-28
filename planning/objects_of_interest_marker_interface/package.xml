@@ -5,6 +5,8 @@
   <description>The objects_of_interest_marker_interface package</description>
 
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
 
   <license>Apache License 2.0</license>
 
