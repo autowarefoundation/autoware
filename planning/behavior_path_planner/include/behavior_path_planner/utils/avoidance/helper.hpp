@@ -247,6 +247,15 @@ public:
     return std::numeric_limits<double>::max();
   }
 
+  bool isComfortable(const AvoidLineArray & shift_lines) const
+  {
+    return std::all_of(shift_lines.begin(), shift_lines.end(), [&](const auto & line) {
+      return PathShifter::calcJerkFromLatLonDistance(
+               line.getRelativeLength(), line.getRelativeLongitudinal(), getAvoidanceEgoSpeed()) <
+             getLateralMaxJerkLimit();
+    });
+  }
+
   bool isShifted() const
   {
     return std::abs(getEgoShift()) > parameters_->lateral_avoid_check_threshold;

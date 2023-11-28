@@ -47,10 +47,9 @@ ShiftedPath toShiftedPath(const PathWithLaneId & path);
 
 ShiftLineArray toShiftLineArray(const AvoidLineArray & avoid_points);
 
-std::vector<size_t> concatParentIds(
-  const std::vector<size_t> & ids1, const std::vector<size_t> & ids2);
+std::vector<UUID> concatParentIds(const std::vector<UUID> & ids1, const std::vector<UUID> & ids2);
 
-std::vector<size_t> calcParentIds(const AvoidLineArray & lines1, const AvoidLine & lines2);
+std::vector<UUID> calcParentIds(const AvoidLineArray & lines1, const AvoidLine & lines2);
 
 double lerpShiftLengthOnArc(double arc, const AvoidLine & al);
 

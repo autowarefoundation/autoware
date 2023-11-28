@@ -34,6 +34,7 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/utils/path_safety_checker/safety_check.cpp
   src/utils/path_safety_checker/objects_filtering.cpp
   src/utils/start_goal_planner_common/utils.cpp
+  src/utils/avoidance/shift_line_generator.cpp
   src/utils/avoidance/utils.cpp
   src/utils/lane_change/utils.cpp
   src/utils/side_shift/util.cpp

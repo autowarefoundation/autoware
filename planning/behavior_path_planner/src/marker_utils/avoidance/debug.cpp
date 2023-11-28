@@ -17,6 +17,9 @@
 #include "behavior_path_planner/utils/utils.hpp"
 
 #include <magic_enum.hpp>
+#include <tier4_autoware_utils/ros/uuid_helper.hpp>
+
+#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
 
 #include <lanelet2_core/primitives/LineString.h>
 #include <tf2/utils.h>
@@ -471,6 +474,131 @@ MarkerArray createOverhangFurthestLineStringMarkerArray(
 
   return msg;
 }
+
+MarkerArray createDebugMarkerArray(
+  const AvoidancePlanningData & data, const PathShifter & shifter, const DebugData & debug)
+{
+  using marker_utils::createLaneletsAreaMarkerArray;
+  using marker_utils::createObjectsMarkerArray;
+  using marker_utils::createPathMarkerArray;
+  using marker_utils::createPolygonMarkerArray;
+  using marker_utils::createPoseMarkerArray;
+  using marker_utils::createShiftGradMarkerArray;
+  using marker_utils::createShiftLengthMarkerArray;
+  using marker_utils::createShiftLineMarkerArray;
+  using marker_utils::showPolygon;
+  using marker_utils::showPredictedPath;
+  using marker_utils::showSafetyCheckInfo;
+  using tier4_planning_msgs::msg::AvoidanceDebugFactor;
+
+  const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
+  MarkerArray msg;
+
+  const auto & path = data.reference_path;
+
+  const auto add = [&msg](const MarkerArray & added) { appendMarkerArray(added, &msg); };
+
+  const auto addAvoidLine =
+    [&](const AvoidLineArray & al_arr, const auto & ns, auto r, auto g, auto b, double w = 0.05) {
+      add(createAvoidLineMarkerArray(al_arr, ns, r, g, b, w));
+    };
+
+  const auto addShiftLine =
+    [&](const ShiftLineArray & sl_arr, const auto & ns, auto r, auto g, auto b, double w = 0.1) {
+      add(createShiftLineMarkerArray(sl_arr, shifter.getBaseOffset(), ns, r, g, b, w));
+    };
+
+  const auto addObjects = [&](const ObjectDataArray & objects, const auto & ns) {
+    add(createOtherObjectsMarkerArray(objects, ns));
+  };
+
+  const auto addShiftLength =
+    [&](const auto & shift_length, const auto & ns, auto r, auto g, auto b) {
+      add(createShiftLengthMarkerArray(shift_length, path, ns, r, g, b));
+    };
+
+  const auto addShiftGrad = [&](
+                              const auto & shift_grad, const auto & shift_length, const auto & ns,
+                              auto r, auto g, auto b) {
+    add(createShiftGradMarkerArray(shift_grad, shift_length, path, ns, r, g, b));
+  };
+
+  // ignore objects
+  {
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_BEHIND_THRESHOLD);
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_IN_FRONT_THRESHOLD);
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE);
+    addObjects(data.other_objects, AvoidanceDebugFactor::OBJECT_BEHIND_PATH_GOAL);
+    addObjects(data.other_objects, AvoidanceDebugFactor::TOO_NEAR_TO_CENTERLINE);
+    addObjects(data.other_objects, AvoidanceDebugFactor::NOT_PARKING_OBJECT);
+    addObjects(data.other_objects, std::string("MovingObject"));
+    addObjects(data.other_objects, std::string("CrosswalkUser"));
+    addObjects(data.other_objects, std::string("OutOfTargetArea"));
+    addObjects(data.other_objects, std::string("NotNeedAvoidance"));
+    addObjects(data.other_objects, std::string("LessThanExecutionThreshold"));
+    addObjects(data.other_objects, std::string("TooNearToGoal"));
+  }
+
+  // shift line pre-process
+  {
+    addAvoidLine(debug.step1_registered_shift_line, "step1_registered_shift_line", 0.2, 0.2, 1.0);
+    addAvoidLine(debug.step1_current_shift_line, "step1_current_shift_line", 0.2, 0.4, 0.8, 0.3);
+    addAvoidLine(debug.step1_merged_shift_line, "step1_merged_shift_line", 0.2, 0.6, 0.6, 0.3);
+    addAvoidLine(debug.step1_filled_shift_line, "step1_filled_shift_line", 0.2, 0.8, 0.4, 0.3);
+    addAvoidLine(debug.step1_return_shift_line, "step1_return_shift_line", 0.2, 1.0, 0.2, 0.3);
+  }
+
+  // merge process
+  {
+    addAvoidLine(debug.step2_merged_shift_line, "step2_merged_shift_line", 0.2, 1.0, 0.0, 0.3);
+  }
+
+  // trimming process
+  {
+    addAvoidLine(debug.step3_grad_filtered_1st, "step3_grad_filtered_1st", 0.2, 0.8, 0.0, 0.3);
+    addAvoidLine(debug.step3_grad_filtered_2nd, "step3_grad_filtered_2nd", 0.4, 0.6, 0.0, 0.3);
+    addAvoidLine(debug.step3_grad_filtered_3rd, "step3_grad_filtered_3rd", 0.6, 0.4, 0.0, 0.3);
+  }
+
+  // registering process
+  {
+    addShiftLine(shifter.getShiftLines(), "step4_old_shift_line", 1.0, 1.0, 0.0, 0.3);
+    addAvoidLine(data.new_shift_line, "step4_new_shift_line", 1.0, 0.0, 0.0, 0.3);
+  }
+
+  // safety check
+  {
+    add(showSafetyCheckInfo(debug.collision_check, "object_debug_info"));
+    add(showPredictedPath(debug.collision_check, "ego_predicted_path"));
+    add(showPolygon(debug.collision_check, "ego_and_target_polygon_relation"));
+  }
+
+  // shift length
+  {
+    addShiftLength(debug.pos_shift, "merged_length_pos", 0.0, 0.7, 0.5);
+    addShiftLength(debug.neg_shift, "merged_length_neg", 0.0, 0.5, 0.7);
+    addShiftLength(debug.total_shift, "merged_length_total", 0.99, 0.4, 0.2);
+  }
+
+  // shift grad
+  {
+    addShiftGrad(debug.pos_shift_grad, debug.pos_shift, "merged_grad_pos", 0.0, 0.7, 0.5);
+    addShiftGrad(debug.neg_shift_grad, debug.neg_shift, "merged_grad_neg", 0.0, 0.5, 0.7);
+    addShiftGrad(debug.total_forward_grad, debug.total_shift, "grad_forward", 0.99, 0.4, 0.2);
+    addShiftGrad(debug.total_backward_grad, debug.total_shift, "grad_backward", 0.4, 0.2, 0.9);
+  }
+
+  // misc
+  {
+    add(createPathMarkerArray(path, "centerline_resampled", 0, 0.0, 0.9, 0.5));
+    add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
+    add(createPolygonMarkerArray(debug.detection_area, "detection_area", 0L, 0.16, 1.0, 0.69, 0.1));
+    add(makeOverhangToRoadShoulderMarkerArray(data.target_objects, "overhang"));
+    add(createOverhangFurthestLineStringMarkerArray(debug.bounds, "bounds", 1.0, 0.0, 1.0));
+  }
+
+  return msg;
+}
 }  // namespace marker_utils::avoidance_marker
 
 std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sl_arr)
@@ -509,14 +637,16 @@ std::string toStrInfo(const behavior_path_planner::AvoidLineArray & ap_arr)
 }
 std::string toStrInfo(const behavior_path_planner::AvoidLine & ap)
 {
+  using tier4_autoware_utils::toHexString;
+
   std::stringstream pids;
   for (const auto pid : ap.parent_ids) {
-    pids << pid << ", ";
+    pids << toHexString(pid) << ", ";
   }
   const auto & ps = ap.start.position;
   const auto & pe = ap.end.position;
   std::stringstream ss;
-  ss << "id = " << ap.id << ", shift length: " << ap.end_shift_length
+  ss << "id = " << toHexString(ap.id) << ", shift length: " << ap.end_shift_length
      << ", start_idx: " << ap.start_idx << ", end_idx: " << ap.end_idx
      << ", start_dist = " << ap.start_longitudinal << ", end_dist = " << ap.end_longitudinal
      << ", start_shift_length: " << ap.start_shift_length << ", start: (" << ps.x << ", " << ps.y

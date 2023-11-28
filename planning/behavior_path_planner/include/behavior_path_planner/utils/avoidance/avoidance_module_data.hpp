@@ -414,10 +414,10 @@ struct AvoidLine : public ShiftLine
   double end_longitudinal = 0.0;
 
   // for unique_id
-  uint64_t id = 0;
+  UUID id{};
 
   // for the case the point is created by merge other points
-  std::vector<uint64_t> parent_ids{};
+  std::vector<UUID> parent_ids{};
 
   // corresponding object
   ObjectData object{};
@@ -495,9 +495,6 @@ struct AvoidancePlanningData
 
   // nearest object that should be avoid
   boost::optional<ObjectData> stop_target_object{boost::none};
-
-  // raw shift point
-  AvoidLineArray raw_shift_line{};
 
   // new shift point
   AvoidLineArray new_shift_line{};
