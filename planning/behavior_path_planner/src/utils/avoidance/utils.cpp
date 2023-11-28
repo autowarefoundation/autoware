@@ -235,7 +235,7 @@ void pushUniqueVector(T & base_vector, const T & additional_vector)
 
 namespace filtering_utils
 {
-bool isTargetObjectType(
+bool isAvoidanceTargetObjectType(
   const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   const auto object_type = utils::getHighestProbLabel(object.classification);
@@ -244,7 +244,19 @@ bool isTargetObjectType(
     return false;
   }
 
-  return parameters->object_parameters.at(object_type).is_target;
+  return parameters->object_parameters.at(object_type).is_avoidance_target;
+}
+
+bool isSafetyCheckTargetObjectType(
+  const PredictedObject & object, const std::shared_ptr<AvoidanceParameters> & parameters)
+{
+  const auto object_type = utils::getHighestProbLabel(object.classification);
+
+  if (parameters->object_parameters.count(object_type) == 0) {
+    return false;
+  }
+
+  return parameters->object_parameters.at(object_type).is_safety_check_target;
 }
 
 bool isVehicleTypeObject(const ObjectData & object)
@@ -500,7 +512,7 @@ bool isSatisfiedWithCommonCondition(
   const std::shared_ptr<AvoidanceParameters> & parameters)
 {
   // Step1. filtered by target object type.
-  if (!isTargetObjectType(object.object, parameters)) {
+  if (!isAvoidanceTargetObjectType(object.object, parameters)) {
     object.reason = AvoidanceDebugFactor::OBJECT_IS_NOT_TYPE;
     return false;
   }
@@ -1705,10 +1717,12 @@ std::vector<ExtendedPredictedObject> getSafetyCheckTargetObjects(
     });
   };
 
-  const auto to_predicted_objects = [&p](const auto & objects) {
+  const auto to_predicted_objects = [&p, &parameters](const auto & objects) {
     PredictedObjects ret{};
-    std::for_each(objects.begin(), objects.end(), [&p, &ret](const auto & object) {
-      ret.objects.push_back(object.object);
+    std::for_each(objects.begin(), objects.end(), [&p, &ret, &parameters](const auto & object) {
+      if (filtering_utils::isSafetyCheckTargetObjectType(object.object, parameters)) {
+        ret.objects.push_back(object.object);
+      }
     });
     return ret;
   };

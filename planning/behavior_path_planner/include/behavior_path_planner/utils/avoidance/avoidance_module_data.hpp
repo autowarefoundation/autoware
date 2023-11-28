@@ -54,7 +54,9 @@ using behavior_path_planner::utils::path_safety_checker::CollisionCheckDebug;
 
 struct ObjectParameter
 {
-  bool is_target{false};
+  bool is_avoidance_target{false};
+
+  bool is_safety_check_target{false};
 
   size_t execute_num{1};
 

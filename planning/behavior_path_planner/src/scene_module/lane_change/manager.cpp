@@ -285,7 +285,6 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
   {
     const auto get_object_param = [&](std::string && ns) {
       ObjectParameter param{};
-      param.is_target = getOrDeclareParameter<bool>(*node, ns + "is_target");
       param.execute_num = getOrDeclareParameter<int>(*node, ns + "execute_num");
       param.moving_speed_threshold =
         getOrDeclareParameter<double>(*node, ns + "moving_speed_threshold");
@@ -321,7 +320,24 @@ AvoidanceByLaneChangeModuleManager::AvoidanceByLaneChangeModuleManager(
 
   // target filtering
   {
+    const auto set_target_flag = [&](const uint8_t & object_type, const std::string & ns) {
+      if (p.object_parameters.count(object_type) == 0) {
+        return;
+      }
+      p.object_parameters.at(object_type).is_avoidance_target =
+        getOrDeclareParameter<bool>(*node, ns);
+    };
+
     std::string ns = "avoidance.target_filtering.";
+    set_target_flag(ObjectClassification::CAR, ns + "target_type.car");
+    set_target_flag(ObjectClassification::TRUCK, ns + "target_type.truck");
+    set_target_flag(ObjectClassification::TRAILER, ns + "target_type.trailer");
+    set_target_flag(ObjectClassification::BUS, ns + "target_type.bus");
+    set_target_flag(ObjectClassification::PEDESTRIAN, ns + "target_type.pedestrian");
+    set_target_flag(ObjectClassification::BICYCLE, ns + "target_type.bicycle");
+    set_target_flag(ObjectClassification::MOTORCYCLE, ns + "target_type.motorcycle");
+    set_target_flag(ObjectClassification::UNKNOWN, ns + "target_type.unknown");
+
     p.object_check_goal_distance =
       getOrDeclareParameter<double>(*node, ns + "object_check_goal_distance");
     p.threshold_distance_object_is_on_center =
