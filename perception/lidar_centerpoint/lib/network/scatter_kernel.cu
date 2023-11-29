@@ -24,7 +24,7 @@ const std::size_t THREADS_PER_BLOCK = 32;
 namespace centerpoint
 {
 __global__ void scatterFeatures_kernel(
-  const float * pillar_features, const int * coords, const std::size_t num_pillars,
+  const float * pillar_features, const int * coords, const unsigned int * num_pillars,
   const std::size_t pillar_feature_size, const std::size_t grid_size_x,
   const std::size_t grid_size_y, float * scattered_features)
 {
@@ -34,7 +34,7 @@ __global__ void scatterFeatures_kernel(
   const auto pillar_i = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
   const auto feature_i = blockIdx.y * THREADS_PER_BLOCK + threadIdx.y;
 
-  if (pillar_i >= num_pillars || feature_i >= pillar_feature_size) {
+  if (pillar_i >= num_pillars[0] || feature_i >= pillar_feature_size) {
     return;
   }
 
@@ -50,7 +50,7 @@ __global__ void scatterFeatures_kernel(
 
 // cspell: ignore divup
 cudaError_t scatterFeatures_launch(
-  const float * pillar_features, const int * coords, const std::size_t num_pillars,
+  const float * pillar_features, const int * coords, const unsigned int * num_pillars,
   const std::size_t max_voxel_size, const std::size_t encoder_out_feature_size,
   const std::size_t grid_size_x, const std::size_t grid_size_y, float * scattered_features,
   cudaStream_t stream)

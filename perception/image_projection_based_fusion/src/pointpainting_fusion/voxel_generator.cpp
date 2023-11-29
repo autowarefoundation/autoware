@@ -18,29 +18,10 @@
 
 namespace image_projection_based_fusion
 {
-std::size_t VoxelGenerator::pointsToVoxels(
-  std::vector<float> & voxels, std::vector<int> & coordinates,
-  std::vector<float> & num_points_per_voxel)
+size_t VoxelGenerator::generateSweepPoints(std::vector<float> & points)
 {
-  // voxels (float): (max_num_voxels * max_num_points_per_voxel * point_feature_size)
-  // coordinates (int): (max_num_voxels * point_dim_size)
-  // num_points_per_voxel (float): (max_num_voxels)
-
-  const std::size_t grid_size = config_.grid_size_z_ * config_.grid_size_y_ * config_.grid_size_x_;
-  std::vector<std::optional<int>> coord_to_voxel_idx(grid_size, -1);
-
-  std::size_t voxel_cnt = 0;  // @return
-  // std::array<float, config_.point_feature_size> point;
-  // std::array<float, config_.point_dim_size> coord_zyx;
-  std::vector<float> point;
-  point.resize(config_.point_feature_size_);
-  std::vector<float> coord_zyx;
-  coord_zyx.resize(config_.point_dim_size_);
-  bool out_of_range;
-  std::size_t point_cnt;
-  int c, coord_idx, voxel_idx;
   Eigen::Vector3f point_current, point_past;
-
+  size_t point_counter{};
   for (auto pc_cache_iter = pd_ptr_->getPointCloudCacheIter(); !pd_ptr_->isCacheEnd(pc_cache_iter);
        pc_cache_iter++) {
     auto pc_msg = pc_cache_iter->pointcloud_msg;
@@ -55,62 +36,25 @@ std::size_t VoxelGenerator::pointsToVoxels(
       point_past << *x_iter, *y_iter, *z_iter;
       point_current = affine_past2current * point_past;
 
-      point[0] = point_current.x();
-      point[1] = point_current.y();
-      point[2] = point_current.z();
-      point[3] = time_lag;
+      points.at(point_counter * config_.point_feature_size_) = point_current.x();
+      points.at(point_counter * config_.point_feature_size_ + 1) = point_current.y();
+      points.at(point_counter * config_.point_feature_size_ + 2) = point_current.z();
+      points.at(point_counter * config_.point_feature_size_ + 3) = time_lag;
       // decode the class value back to one-hot binary and assign it to point
-      std::fill(point.begin() + 4, point.end(), 0);
+      for (size_t i = 0; i < config_.class_size_; ++i) {
+        points.at(point_counter * config_.point_feature_size_ + 4 + i) = 0.f;
+      }
       auto class_value = static_cast<int>(*class_iter);
-      auto iter = point.begin() + 4;
+      auto iter = points.begin() + point_counter * config_.point_feature_size_ + 4;
       while (class_value > 0) {
         *iter = class_value % 2;
         class_value /= 2;
         ++iter;
       }
-
-      out_of_range = false;
-      for (std::size_t di = 0; di < config_.point_dim_size_; di++) {
-        c = static_cast<int>((point[di] - range_[di]) * recip_voxel_size_[di]);
-        if (c < 0 || c >= grid_size_[di]) {
-          out_of_range = true;
-          break;
-        }
-        coord_zyx[config_.point_dim_size_ - di - 1] = c;
-      }
-      if (out_of_range) {
-        continue;
-      }
-
-      coord_idx = coord_zyx[0] * config_.grid_size_y_ * config_.grid_size_x_ +
-                  coord_zyx[1] * config_.grid_size_x_ + coord_zyx[2];
-      voxel_idx = coord_to_voxel_idx[coord_idx].value();
-      if (voxel_idx == -1) {
-        voxel_idx = voxel_cnt;
-        if (voxel_cnt >= config_.max_voxel_size_) {
-          continue;
-        }
-
-        voxel_cnt++;
-        coord_to_voxel_idx[coord_idx] = voxel_idx;
-        for (std::size_t di = 0; di < config_.point_dim_size_; di++) {
-          coordinates[voxel_idx * config_.point_dim_size_ + di] = coord_zyx[di];
-        }
-      }
-
-      point_cnt = num_points_per_voxel[voxel_idx];
-      if (point_cnt < config_.max_point_in_voxel_size_) {
-        for (std::size_t fi = 0; fi < config_.point_feature_size_; fi++) {
-          voxels
-            [voxel_idx * config_.max_point_in_voxel_size_ * config_.point_feature_size_ +
-             point_cnt * config_.point_feature_size_ + fi] = point[fi];
-        }
-        num_points_per_voxel[voxel_idx]++;
-      }
+      ++point_counter;
     }
   }
-
-  return voxel_cnt;
+  return point_counter;
 }
 
 }  // namespace image_projection_based_fusion

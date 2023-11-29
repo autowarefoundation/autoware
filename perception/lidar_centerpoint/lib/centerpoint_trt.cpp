@@ -69,9 +69,9 @@ CenterPointTRT::~CenterPointTRT()
 
 void CenterPointTRT::initPtr()
 {
-  const auto voxels_size =
+  voxels_size_ =
     config_.max_voxel_size_ * config_.max_point_in_voxel_size_ * config_.point_feature_size_;
-  const auto coordinates_size = config_.max_voxel_size_ * config_.point_dim_size_;
+  coordinates_size_ = config_.max_voxel_size_ * config_.point_dim_size_;
   encoder_in_feature_size_ =
     config_.max_voxel_size_ * config_.max_point_in_voxel_size_ * config_.encoder_in_feature_size_;
   const auto pillar_features_size = config_.max_voxel_size_ * config_.encoder_out_feature_size_;
@@ -79,14 +79,16 @@ void CenterPointTRT::initPtr()
     config_.grid_size_x_ * config_.grid_size_y_ * config_.encoder_out_feature_size_;
   const auto grid_xy_size = config_.down_grid_size_x_ * config_.down_grid_size_y_;
 
+  voxels_buffer_size_ = config_.grid_size_x_ * config_.grid_size_y_ *
+                        config_.max_point_in_voxel_size_ * config_.point_feature_size_;
+  mask_size_ = config_.grid_size_x_ * config_.grid_size_y_;
+
   // host
-  voxels_.resize(voxels_size);
-  coordinates_.resize(coordinates_size);
-  num_points_per_voxel_.resize(config_.max_voxel_size_);
+  points_.resize(CAPACITY_POINT * config_.point_feature_size_);
 
   // device
-  voxels_d_ = cuda::make_unique<float[]>(voxels_size);
-  coordinates_d_ = cuda::make_unique<int[]>(coordinates_size);
+  voxels_d_ = cuda::make_unique<float[]>(voxels_size_);
+  coordinates_d_ = cuda::make_unique<int[]>(coordinates_size_);
   num_points_per_voxel_d_ = cuda::make_unique<float[]>(config_.max_voxel_size_);
   encoder_in_features_d_ = cuda::make_unique<float[]>(encoder_in_feature_size_);
   pillar_features_d_ = cuda::make_unique<float[]>(pillar_features_size);
@@ -97,15 +99,16 @@ void CenterPointTRT::initPtr()
   head_out_dim_d_ = cuda::make_unique<float[]>(grid_xy_size * config_.head_out_dim_size_);
   head_out_rot_d_ = cuda::make_unique<float[]>(grid_xy_size * config_.head_out_rot_size_);
   head_out_vel_d_ = cuda::make_unique<float[]>(grid_xy_size * config_.head_out_vel_size_);
+  points_d_ = cuda::make_unique<float[]>(CAPACITY_POINT * config_.point_feature_size_);
+  voxels_buffer_d_ = cuda::make_unique<float[]>(voxels_buffer_size_);
+  mask_d_ = cuda::make_unique<unsigned int[]>(mask_size_);
+  num_voxels_d_ = cuda::make_unique<unsigned int[]>(1);
 }
 
 bool CenterPointTRT::detect(
   const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer,
   std::vector<Box3D> & det_boxes3d)
 {
-  std::fill(voxels_.begin(), voxels_.end(), 0);
-  std::fill(coordinates_.begin(), coordinates_.end(), -1);
-  std::fill(num_points_per_voxel_.begin(), num_points_per_voxel_.end(), 0);
   CHECK_CUDA_ERROR(cudaMemsetAsync(
     encoder_in_features_d_.get(), 0, encoder_in_feature_size_ * sizeof(float), stream_));
   CHECK_CUDA_ERROR(
@@ -131,27 +134,33 @@ bool CenterPointTRT::preprocess(
   if (!is_success) {
     return false;
   }
-  num_voxels_ = vg_ptr_->pointsToVoxels(voxels_, coordinates_, num_points_per_voxel_);
-  if (num_voxels_ == 0) {
-    return false;
-  }
+  const auto count = vg_ptr_->generateSweepPoints(points_);
+  CHECK_CUDA_ERROR(cudaMemcpyAsync(
+    points_d_.get(), points_.data(), count * config_.point_feature_size_ * sizeof(float),
+    cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(cudaMemsetAsync(num_voxels_d_.get(), 0, sizeof(unsigned int), stream_));
+  CHECK_CUDA_ERROR(
+    cudaMemsetAsync(voxels_buffer_d_.get(), 0, voxels_buffer_size_ * sizeof(float), stream_));
+  CHECK_CUDA_ERROR(cudaMemsetAsync(mask_d_.get(), 0, mask_size_ * sizeof(int), stream_));
+  CHECK_CUDA_ERROR(cudaMemsetAsync(voxels_d_.get(), 0, voxels_size_ * sizeof(float), stream_));
+  CHECK_CUDA_ERROR(
+    cudaMemsetAsync(coordinates_d_.get(), 0, coordinates_size_ * sizeof(int), stream_));
+  CHECK_CUDA_ERROR(cudaMemsetAsync(
+    num_points_per_voxel_d_.get(), 0, config_.max_voxel_size_ * sizeof(float), stream_));
 
-  const auto voxels_size =
-    num_voxels_ * config_.max_point_in_voxel_size_ * config_.point_feature_size_;
-  const auto coordinates_size = num_voxels_ * config_.point_dim_size_;
-  // memcpy from host to device (not copy empty voxels)
-  CHECK_CUDA_ERROR(cudaMemcpyAsync(
-    voxels_d_.get(), voxels_.data(), voxels_size * sizeof(float), cudaMemcpyHostToDevice));
-  CHECK_CUDA_ERROR(cudaMemcpyAsync(
-    coordinates_d_.get(), coordinates_.data(), coordinates_size * sizeof(int),
-    cudaMemcpyHostToDevice));
-  CHECK_CUDA_ERROR(cudaMemcpyAsync(
-    num_points_per_voxel_d_.get(), num_points_per_voxel_.data(), num_voxels_ * sizeof(float),
-    cudaMemcpyHostToDevice));
-  CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
+  CHECK_CUDA_ERROR(generateVoxels_random_launch(
+    points_d_.get(), count, config_.range_min_x_, config_.range_max_x_, config_.range_min_y_,
+    config_.range_max_y_, config_.range_min_z_, config_.range_max_z_, config_.voxel_size_x_,
+    config_.voxel_size_y_, config_.voxel_size_z_, config_.grid_size_y_, config_.grid_size_x_,
+    mask_d_.get(), voxels_buffer_d_.get(), stream_));
+
+  CHECK_CUDA_ERROR(generateBaseFeatures_launch(
+    mask_d_.get(), voxels_buffer_d_.get(), config_.grid_size_y_, config_.grid_size_x_,
+    num_voxels_d_.get(), voxels_d_.get(), num_points_per_voxel_d_.get(), coordinates_d_.get(),
+    stream_));
 
   CHECK_CUDA_ERROR(generateFeatures_launch(
-    voxels_d_.get(), num_points_per_voxel_d_.get(), coordinates_d_.get(), num_voxels_,
+    voxels_d_.get(), num_points_per_voxel_d_.get(), coordinates_d_.get(), num_voxels_d_.get(),
     config_.max_voxel_size_, config_.voxel_size_x_, config_.voxel_size_y_, config_.voxel_size_z_,
     config_.range_min_x_, config_.range_min_y_, config_.range_min_z_, encoder_in_features_d_.get(),
     stream_));
@@ -171,7 +180,7 @@ void CenterPointTRT::inference()
 
   // scatter
   CHECK_CUDA_ERROR(scatterFeatures_launch(
-    pillar_features_d_.get(), coordinates_d_.get(), num_voxels_, config_.max_voxel_size_,
+    pillar_features_d_.get(), coordinates_d_.get(), num_voxels_d_.get(), config_.max_voxel_size_,
     config_.encoder_out_feature_size_, config_.grid_size_x_, config_.grid_size_y_,
     spatial_features_d_.get(), stream_));
 

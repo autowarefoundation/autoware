@@ -27,9 +27,7 @@ class VoxelGenerator : public centerpoint::VoxelGenerator
 public:
   using centerpoint::VoxelGenerator::VoxelGenerator;
 
-  std::size_t pointsToVoxels(
-    std::vector<float> & voxels, std::vector<int> & coordinates,
-    std::vector<float> & num_points_per_voxel) override;
+  std::size_t generateSweepPoints(std::vector<float> & points) override;
 };
 }  // namespace image_projection_based_fusion
 

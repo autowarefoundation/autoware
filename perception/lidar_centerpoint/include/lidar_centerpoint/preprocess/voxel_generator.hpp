@@ -31,9 +31,7 @@ public:
   explicit VoxelGeneratorTemplate(
     const DensificationParam & param, const CenterPointConfig & config);
 
-  virtual std::size_t pointsToVoxels(
-    std::vector<float> & voxels, std::vector<int> & coordinates,
-    std::vector<float> & num_points_per_voxel) = 0;
+  virtual std::size_t generateSweepPoints(std::vector<float> & points) = 0;
 
   bool enqueuePointCloud(
     const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
@@ -52,9 +50,7 @@ class VoxelGenerator : public VoxelGeneratorTemplate
 public:
   using VoxelGeneratorTemplate::VoxelGeneratorTemplate;
 
-  std::size_t pointsToVoxels(
-    std::vector<float> & voxels, std::vector<int> & coordinates,
-    std::vector<float> & num_points_per_voxel) override;
+  std::size_t generateSweepPoints(std::vector<float> & points) override;
 };
 
 }  // namespace centerpoint

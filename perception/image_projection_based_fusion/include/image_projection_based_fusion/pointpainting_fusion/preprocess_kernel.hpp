@@ -20,9 +20,19 @@
 
 namespace image_projection_based_fusion
 {
+cudaError_t generateVoxels_random_launch(
+  const float * points, size_t points_size, float min_x_range, float max_x_range, float min_y_range,
+  float max_y_range, float min_z_range, float max_z_range, float pillar_x_size, float pillar_y_size,
+  float pillar_z_size, int grid_y_size, int grid_x_size, unsigned int * mask, float * voxels,
+  cudaStream_t stream);
+
+cudaError_t generateBaseFeatures_launch(
+  unsigned int * mask, float * voxels, int grid_y_size, int grid_x_size, unsigned int * pillar_num,
+  float * voxel_features, float * voxel_num, int * voxel_idxs, cudaStream_t stream);
+
 cudaError_t generateFeatures_launch(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
-  const std::size_t num_voxels, const std::size_t max_voxel_size, const float voxel_size_x,
+  const unsigned int * num_voxels, const std::size_t max_voxel_size, const float voxel_size_x,
   const float voxel_size_y, const float voxel_size_z, const float range_min_x,
   const float range_min_y, const float range_min_z, float * features,
   const std::size_t encoder_in_feature_size, cudaStream_t stream);

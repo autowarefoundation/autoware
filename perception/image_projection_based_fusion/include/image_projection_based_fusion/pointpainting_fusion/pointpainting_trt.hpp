@@ -23,6 +23,7 @@
 
 namespace image_projection_based_fusion
 {
+static constexpr size_t CAPACITY_POINT = 1000000;
 class PointPaintingTRT : public centerpoint::CenterPointTRT
 {
 public:
@@ -32,8 +33,6 @@ public:
     const centerpoint::NetworkParam & encoder_param, const centerpoint::NetworkParam & head_param,
     const centerpoint::DensificationParam & densification_param,
     const centerpoint::CenterPointConfig & config);
-
-  ~PointPaintingTRT();
 
 protected:
   bool preprocess(
