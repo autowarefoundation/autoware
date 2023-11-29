@@ -27,20 +27,20 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
 {
   using std::placeholders::_1;
   /* parameters for accel/brake map */
-  const auto csv_path_accel_map = declare_parameter("csv_path_accel_map", std::string("empty"));
-  const auto csv_path_brake_map = declare_parameter("csv_path_brake_map", std::string("empty"));
-  const auto csv_path_steer_map = declare_parameter("csv_path_steer_map", std::string("empty"));
-  convert_accel_cmd_ = declare_parameter("convert_accel_cmd", true);
-  convert_brake_cmd_ = declare_parameter("convert_brake_cmd", true);
-  convert_steer_cmd_ = declare_parameter("convert_steer_cmd", true);
-  max_accel_cmd_ = declare_parameter("max_throttle", 0.2);
-  max_brake_cmd_ = declare_parameter("max_brake", 0.8);
-  max_steer_cmd_ = declare_parameter("max_steer", 10.0);
-  min_steer_cmd_ = declare_parameter("min_steer", -10.0);
-  is_debugging_ = declare_parameter("is_debugging", false);
+  const auto csv_path_accel_map = declare_parameter<std::string>("csv_path_accel_map");
+  const auto csv_path_brake_map = declare_parameter<std::string>("csv_path_brake_map");
+  const auto csv_path_steer_map = declare_parameter<std::string>("csv_path_steer_map");
+  convert_accel_cmd_ = declare_parameter<bool>("convert_accel_cmd");
+  convert_brake_cmd_ = declare_parameter<bool>("convert_brake_cmd");
+  convert_steer_cmd_ = declare_parameter<bool>("convert_steer_cmd");
+  max_accel_cmd_ = declare_parameter<double>("max_throttle");
+  max_brake_cmd_ = declare_parameter<double>("max_brake");
+  max_steer_cmd_ = declare_parameter<double>("max_steer");
+  min_steer_cmd_ = declare_parameter<double>("min_steer");
+  is_debugging_ = declare_parameter<bool>("is_debugging");
   // for steering steer controller
-  use_steer_ff_ = declare_parameter("use_steer_ff", true);
-  use_steer_fb_ = declare_parameter("use_steer_fb", true);
+  use_steer_ff_ = declare_parameter<bool>("use_steer_ff");
+  use_steer_fb_ = declare_parameter<bool>("use_steer_fb");
   if (convert_accel_cmd_) {
     if (!accel_map_.readAccelMapFromCSV(csv_path_accel_map, true)) {
       throw std::invalid_argument("Accel map is invalid.");
@@ -55,19 +55,19 @@ RawVehicleCommandConverterNode::RawVehicleCommandConverterNode(
     if (!steer_map_.readSteerMapFromCSV(csv_path_steer_map, true)) {
       throw std::invalid_argument("Steer map is invalid.");
     }
-    const auto kp_steer{declare_parameter("steer_pid.kp", 150.0)};
-    const auto ki_steer{declare_parameter("steer_pid.ki", 15.0)};
-    const auto kd_steer{declare_parameter("steer_pid.kd", 0.0)};
-    const auto max_ret_steer{declare_parameter("steer_pid.max", 8.0)};
-    const auto min_ret_steer{declare_parameter("steer_pid.min", -8.0)};
-    const auto max_ret_p_steer{declare_parameter("steer_pid.max_p", 8.0)};
-    const auto min_ret_p_steer{declare_parameter("steer_pid.min_p", -8.0)};
-    const auto max_ret_i_steer{declare_parameter("steer_pid.max_i", 8.0)};
-    const auto min_ret_i_steer{declare_parameter("steer_pid.min_i", -8.0)};
-    const auto max_ret_d_steer{declare_parameter("steer_pid.max_d", 0.0)};
-    const auto min_ret_d_steer{declare_parameter("steer_pid.min_d", 0.0)};
+    const auto kp_steer{declare_parameter<double>("steer_pid.kp")};
+    const auto ki_steer{declare_parameter<double>("steer_pid.ki")};
+    const auto kd_steer{declare_parameter<double>("steer_pid.kd")};
+    const auto max_ret_steer{declare_parameter<double>("steer_pid.max")};
+    const auto min_ret_steer{declare_parameter<double>("steer_pid.min")};
+    const auto max_ret_p_steer{declare_parameter<double>("steer_pid.max_p")};
+    const auto min_ret_p_steer{declare_parameter<double>("steer_pid.min_p")};
+    const auto max_ret_i_steer{declare_parameter<double>("steer_pid.max_i")};
+    const auto min_ret_i_steer{declare_parameter<double>("steer_pid.min_i")};
+    const auto max_ret_d_steer{declare_parameter<double>("steer_pid.max_d")};
+    const auto min_ret_d_steer{declare_parameter<double>("steer_pid.min_d")};
     const auto invalid_integration_decay{
-      declare_parameter("steer_pid.invalid_integration_decay", 0.97)};
+      declare_parameter<double>("steer_pid.invalid_integration_decay")};
     steer_pid_.setDecay(invalid_integration_decay);
     steer_pid_.setGains(kp_steer, ki_steer, kd_steer);
     steer_pid_.setLimits(

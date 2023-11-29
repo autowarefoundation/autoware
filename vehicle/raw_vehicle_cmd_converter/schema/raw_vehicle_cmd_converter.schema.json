@@ -1,0 +1,188 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Raw Vehicle Cmd Converter",
+  "type": "object",
+  "definitions": {
+    "raw_vehicle_cmd_converter": {
+      "type": "object",
+      "properties": {
+        "csv_path_accel_map": {
+          "type": "string",
+          "description": "path for acceleration map csv file",
+          "default": "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"
+        },
+        "csv_path_brake_map": {
+          "type": "string",
+          "description": "path for brake map csv file",
+          "default": "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"
+        },
+        "csv_path_steer_map": {
+          "type": "string",
+          "description": "path for steer map csv file",
+          "default": "$(find-pkg-share raw_vehicle_cmd_converter)/data/default/steer_map.csv"
+        },
+        "convert_accel_cmd": {
+          "type": "boolean",
+          "description": "use accel or not",
+          "default": "true"
+        },
+        "convert_brake_cmd": {
+          "type": "boolean",
+          "description": "use brake or not",
+          "default": "true"
+        },
+        "convert_steer_cmd": {
+          "type": "boolean",
+          "description": "use steer or not",
+          "default": "true"
+        },
+        "use_steer_ff": {
+          "type": "boolean",
+          "description": "steering steer controller using steer feed forward or not",
+          "default": "true"
+        },
+        "use_steer_fb": {
+          "type": "boolean",
+          "description": "steering steer controller using steer feed back or not",
+          "default": "true"
+        },
+        "is_debugging": {
+          "type": "boolean",
+          "description": "debugging mode or not",
+          "default": "false"
+        },
+        "max_throttle": {
+          "type": "number",
+          "description": "maximum value of throttle",
+          "default": "0.4",
+          "minimum": 0.0
+        },
+        "max_brake": {
+          "type": "number",
+          "description": "maximum value of brake",
+          "default": "0.8",
+          "minimum": 0.0
+        },
+        "max_steer": {
+          "type": "number",
+          "description": "maximum value of steer",
+          "default": "10.0"
+        },
+        "min_steer": {
+          "type": "number",
+          "description": "minimum value of steer",
+          "default": "-10.0"
+        },
+        "steer_pid": {
+          "type": "object",
+          "properties": {
+            "kp": {
+              "type": "number",
+              "description": "proportional coefficient value in PID control",
+              "default": "150.0"
+            },
+            "ki": {
+              "type": "number",
+              "description": "integral coefficient value in PID control",
+              "default": "15.0",
+              "exclusiveMinimum": 0.0
+            },
+            "kd": {
+              "type": "number",
+              "description": "derivative coefficient value in PID control",
+              "default": "0.0"
+            },
+            "max": {
+              "type": "number",
+              "description": "maximum value of PID",
+              "default": "8.0"
+            },
+            "min": {
+              "type": "number",
+              "description": "minimum value of PID",
+              "default": "-8.0."
+            },
+            "max_p": {
+              "type": "number",
+              "description": "maximum value of Proportional in PID",
+              "default": "8.0"
+            },
+            "min_p": {
+              "type": "number",
+              "description": "minimum value of Proportional in PID",
+              "default": "-8.0"
+            },
+            "max_i": {
+              "type": "number",
+              "description": "maximum value of Integral in PID",
+              "default": "8.0"
+            },
+            "min_i": {
+              "type": "number",
+              "description": "minimum value of Integral in PID",
+              "default": "-8.0"
+            },
+            "max_d": {
+              "type": "number",
+              "description": "maximum value of Derivative in PID",
+              "default": "0.0"
+            },
+            "min_d": {
+              "type": "number",
+              "description": "minimum value of Derivative in PID",
+              "default": "0.0"
+            },
+            "invalid_integration_decay": {
+              "type": "number",
+              "description": "invalid integration decay value in PID control",
+              "default": "0.97",
+              "Maximum": 1.0,
+              "exclusiveMinimum": 0.0
+            }
+          },
+          "required": [
+            "kp",
+            "ki",
+            "kd",
+            "max",
+            "min",
+            "max_p",
+            "min_p",
+            "max_i",
+            "min_i",
+            "max_d",
+            "min_d",
+            "invalid_integration_decay"
+          ]
+        }
+      },
+      "required": [
+        "csv_path_accel_map",
+        "csv_path_brake_map",
+        "csv_path_steer_map",
+        "convert_accel_cmd",
+        "convert_brake_cmd",
+        "convert_steer_cmd",
+        "use_steer_ff",
+        "use_steer_fb",
+        "is_debugging",
+        "max_throttle",
+        "max_brake",
+        "max_steer",
+        "steer_pid"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/raw_vehicle_cmd_converter"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}
