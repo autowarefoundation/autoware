@@ -44,7 +44,8 @@ rclcpp_components_register_node(detection_by_tracker_node
   EXECUTABLE detection_by_tracker
 )
 
-ament_auto_package(INSTALL_TO_SHARE
+ament_auto_package(
+  INSTALL_TO_SHARE
   launch
   config
 )

@@ -1,11 +1,10 @@
 /**:
   ros__parameters:
-    tracker_ignore_label:
-      UNKNOWN : true
-      CAR : false
-      TRUCK : false
-      BUS : false
-      TRAILER : false
-      MOTORCYCLE : false
-      BICYCLE : false
-      PEDESTRIAN : false
+    tracker_ignore_label.UNKNOWN : true
+    tracker_ignore_label.CAR : false
+    tracker_ignore_label.TRUCK : false
+    tracker_ignore_label.BUS : false
+    tracker_ignore_label.TRAILER : false
+    tracker_ignore_label.MOTORCYCLE : false
+    tracker_ignore_label.BICYCLE : false
+    tracker_ignore_label.PEDESTRIAN : false

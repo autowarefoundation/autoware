@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Detection By Tracker Node",
+  "type": "object",
+  "definitions": {
+    "detection_by_tracker": {
+      "type": "object",
+      "properties": {
+        "tracker_ignore_label.UNKNOWN": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, the node will ignore the tracker if its label is unknown."
+        },
+        "tracker_ignore_label.CAR": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is CAR."
+        },
+        "tracker_ignore_label.PEDESTRIAN": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is pedestrian."
+        },
+        "tracker_ignore_label.BICYCLE": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is bicycle."
+        },
+        "tracker_ignore_label.MOTORCYCLE": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is motorcycle."
+        },
+        "tracker_ignore_label.BUS": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is bus."
+        },
+        "tracker_ignore_label.TRUCK": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is truck."
+        },
+        "tracker_ignore_label.TRAILER": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the node will ignore the tracker if its label is TRAILER."
+        }
+      },
+      "required": [
+        "tracker_ignore_label.UNKNOWN",
+        "tracker_ignore_label.CAR",
+        "tracker_ignore_label.PEDESTRIAN",
+        "tracker_ignore_label.BICYCLE",
+        "tracker_ignore_label.MOTORCYCLE",
+        "tracker_ignore_label.BUS",
+        "tracker_ignore_label.TRUCK",
+        "tracker_ignore_label.TRAILER"
+      ]
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/detection_by_tracker"
+        }
+      },
+      "required": ["ros__parameters"]
+    }
+  },
+  "required": ["/**"]
+}

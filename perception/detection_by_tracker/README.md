@@ -46,6 +46,17 @@ Simply looking at the overlap between the unknown object and the tracker does no
 
 ## Parameters
 
+| Name                              | Type   | Description                                                           | Default value |
+| --------------------------------- | ------ | --------------------------------------------------------------------- | ------------- |
+| `tracker_ignore_label.UNKNOWN`    | `bool` | If true, the node will ignore the tracker if its label is unknown.    | `true`        |
+| `tracker_ignore_label.CAR`        | `bool` | If true, the node will ignore the tracker if its label is CAR.        | `false`       |
+| `tracker_ignore_label.PEDESTRIAN` | `bool` | If true, the node will ignore the tracker if its label is pedestrian. | `false`       |
+| `tracker_ignore_label.BICYCLE`    | `bool` | If true, the node will ignore the tracker if its label is bicycle.    | `false`       |
+| `tracker_ignore_label.MOTORCYCLE` | `bool` | If true, the node will ignore the tracker if its label is MOTORCYCLE. | `false`       |
+| `tracker_ignore_label.BUS`        | `bool` | If true, the node will ignore the tracker if its label is bus.        | `false`       |
+| `tracker_ignore_label.TRUCK`      | `bool` | If true, the node will ignore the tracker if its label is truck.      | `false`       |
+| `tracker_ignore_label.TRAILER`    | `bool` | If true, the node will ignore the tracker if its label is TRAILER.    | `false`       |
+
 ## Assumptions / Known limits
 
 ## (Optional) Error detection and handling
