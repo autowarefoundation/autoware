@@ -62,26 +62,57 @@ The purpose of this simulator is for the integration test of planning and contro
 - `DELAY_STEER_VEL`
 - `DELAY_STEER_ACC`
 - `DELAY_STEER_ACC_GEARED`
+- `DELAY_STEER_MAP_ACC_GEARED`: applies 1D dynamics and time delay to the steering and acceleration commands. The simulated acceleration is determined by a value converted through the provided acceleration map. This model is valuable for an accurate simulation with acceleration deviations in a real vehicle.
 
 The `IDEAL` model moves ideally as commanded, while the `DELAY` model moves based on a 1st-order with time delay model. The `STEER` means the model receives the steer command. The `VEL` means the model receives the target velocity command, while the `ACC` model receives the target acceleration command. The `GEARED` suffix means that the motion will consider the gear command: the vehicle moves only one direction following the gear.
 
 The table below shows which models correspond to what parameters. The model names are written in abbreviated form (e.g. IDEAL_STEER_VEL = I_ST_V).
 
-| Name                       | Type   | Description                                          | I_ST_V | I_ST_A | I_ST_A_G | D_ST_V | D_ST_A | D_ST_A_G | Default value | unit    |
-| :------------------------- | :----- | :--------------------------------------------------- | :----- | :----- | :------- | :----- | :----- | :------- | :------------ | :------ |
-| acc_time_delay             | double | dead time for the acceleration input                 | x      | x      | x        | x      | o      | o        | 0.1           | [s]     |
-| steer_time_delay           | double | dead time for the steering input                     | x      | x      | x        | o      | o      | o        | 0.24          | [s]     |
-| vel_time_delay             | double | dead time for the velocity input                     | x      | x      | x        | o      | x      | x        | 0.25          | [s]     |
-| acc_time_constant          | double | time constant of the 1st-order acceleration dynamics | x      | x      | x        | x      | o      | o        | 0.1           | [s]     |
-| steer_time_constant        | double | time constant of the 1st-order steering dynamics     | x      | x      | x        | o      | o      | o        | 0.27          | [s]     |
-| steer_dead_band            | double | dead band for steering angle                         | x      | x      | x        | o      | o      | o        | 0.0           | [rad]   |
-| vel_time_constant          | double | time constant of the 1st-order velocity dynamics     | x      | x      | x        | o      | x      | x        | 0.5           | [s]     |
-| vel_lim                    | double | limit of velocity                                    | x      | x      | x        | o      | o      | o        | 50.0          | [m/s]   |
-| vel_rate_lim               | double | limit of acceleration                                | x      | x      | x        | o      | o      | o        | 7.0           | [m/ss]  |
-| steer_lim                  | double | limit of steering angle                              | x      | x      | x        | o      | o      | o        | 1.0           | [rad]   |
-| steer_rate_lim             | double | limit of steering angle change rate                  | x      | x      | x        | o      | o      | o        | 5.0           | [rad/s] |
-| debug_acc_scaling_factor   | double | scaling factor for accel command                     | x      | x      | x        | x      | o      | o        | 1.0           | [-]     |
-| debug_steer_scaling_factor | double | scaling factor for steer command                     | x      | x      | x        | x      | o      | o        | 1.0           | [-]     |
+| Name                       | Type   | Description                                                                                                 | I_ST_V | I_ST_A | I_ST_A_G | D_ST_V | D_ST_A | D_ST_A_G | D_ST_M_ACC_G | Default value | unit    |
+| :------------------------- | :----- | :---------------------------------------------------------------------------------------------------------- | :----- | :----- | :------- | :----- | :----- | :------- | :----------- | :------------ | :------ |
+| acc_time_delay             | double | dead time for the acceleration input                                                                        | x      | x      | x        | x      | o      | o        | o            | 0.1           | [s]     |
+| steer_time_delay           | double | dead time for the steering input                                                                            | x      | x      | x        | o      | o      | o        | o            | 0.24          | [s]     |
+| vel_time_delay             | double | dead time for the velocity input                                                                            | x      | x      | x        | o      | x      | x        | x            | 0.25          | [s]     |
+| acc_time_constant          | double | time constant of the 1st-order acceleration dynamics                                                        | x      | x      | x        | x      | o      | o        | o            | 0.1           | [s]     |
+| steer_time_constant        | double | time constant of the 1st-order steering dynamics                                                            | x      | x      | x        | o      | o      | o        | o            | 0.27          | [s]     |
+| steer_dead_band            | double | dead band for steering angle                                                                                | x      | x      | x        | o      | o      | o        | x            | 0.0           | [rad]   |
+| vel_time_constant          | double | time constant of the 1st-order velocity dynamics                                                            | x      | x      | x        | o      | x      | x        | x            | 0.5           | [s]     |
+| vel_lim                    | double | limit of velocity                                                                                           | x      | x      | x        | o      | o      | o        | o            | 50.0          | [m/s]   |
+| vel_rate_lim               | double | limit of acceleration                                                                                       | x      | x      | x        | o      | o      | o        | o            | 7.0           | [m/ss]  |
+| steer_lim                  | double | limit of steering angle                                                                                     | x      | x      | x        | o      | o      | o        | o            | 1.0           | [rad]   |
+| steer_rate_lim             | double | limit of steering angle change rate                                                                         | x      | x      | x        | o      | o      | o        | o            | 5.0           | [rad/s] |
+| debug_acc_scaling_factor   | double | scaling factor for accel command                                                                            | x      | x      | x        | x      | o      | o        | x            | 1.0           | [-]     |
+| debug_steer_scaling_factor | double | scaling factor for steer command                                                                            | x      | x      | x        | x      | o      | o        | x            | 1.0           | [-]     |
+| acceleration_map_path      | string | path to csv file for acceleration map which converts velocity and ideal acceleration to actual acceleration | x      | x      | x        | x      | x      | x        | o            | -             | [-]     |
+
+The `acceleration_map` is used only for `DELAY_STEER_MAP_ACC_GEARED` and it shows the acceleration command on the vertical axis and the current velocity on the horizontal axis, with each cell representing the converted acceleration command that is actually used in the simulator's motion calculation. Values in between are linearly interpolated.
+
+Example of `acceleration_map.csv`
+
+```csv
+default,  0.00,  1.39,  2.78,  4.17,  5.56,  6.94,  8.33,  9.72, 11.11, 12.50, 13.89, 15.28, 16.67
+-4.0,    -4.40, -4.36, -4.38, -4.12, -4.20, -3.94, -3.98, -3.80, -3.77, -3.76, -3.59, -3.50, -3.40
+-3.5,    -4.00, -3.91, -3.85, -3.64, -3.68, -3.55, -3.42, -3.24, -3.25, -3.00, -3.04, -2.93, -2.80
+-3.0,    -3.40, -3.37, -3.33, -3.00, -3.00, -2.90, -2.88, -2.65, -2.43, -2.44, -2.43, -2.39, -2.30
+-2.5,    -2.80, -2.72, -2.72, -2.62, -2.41, -2.43, -2.26, -2.18, -2.11, -2.03, -1.96, -1.91, -1.85
+-2.0,    -2.30, -2.24, -2.12, -2.02, -1.92, -1.81, -1.67, -1.58, -1.51, -1.49, -1.40, -1.35, -1.30
+-1.5,    -1.70, -1.61, -1.47, -1.46, -1.40, -1.37, -1.29, -1.24, -1.10, -0.99, -0.83, -0.80, -0.78
+-1.0,    -1.30, -1.28, -1.10, -1.09, -1.04, -1.02, -0.98, -0.89, -0.82, -0.61, -0.52, -0.54, -0.56
+-0.8,    -0.96, -0.90, -0.82, -0.74, -0.70, -0.65, -0.63, -0.59, -0.55, -0.44, -0.39, -0.39, -0.35
+-0.6,    -0.77, -0.71, -0.67, -0.65, -0.58, -0.52, -0.51, -0.50, -0.40, -0.33, -0.30, -0.31, -0.30
+-0.4,    -0.45, -0.40, -0.45, -0.44, -0.38, -0.35, -0.31, -0.30, -0.26, -0.30, -0.29, -0.31, -0.25
+-0.2,    -0.24, -0.24, -0.25, -0.22, -0.23, -0.25, -0.27, -0.29, -0.24, -0.22, -0.17, -0.18, -0.12
+ 0.0,     0.00,  0.00, -0.05, -0.05, -0.05, -0.05, -0.08, -0.08, -0.08, -0.08, -0.10, -0.10, -0.10
+ 0.2,     0.16,  0.12,  0.02,  0.02,  0.00,  0.00, -0.05, -0.05, -0.05, -0.05, -0.08, -0.08, -0.08
+ 0.4,     0.38,  0.30,  0.22,  0.25,  0.24,  0.23,  0.20,  0.16,  0.16,  0.14,  0.10,  0.05,  0.05
+ 0.6,     0.52,  0.52,  0.51,  0.49,  0.43,  0.40,  0.35,  0.33,  0.33,  0.33,  0.32,  0.34,  0.34
+ 0.8,     0.82,  0.81,  0.78,  0.68,  0.63,  0.56,  0.53,  0.48,  0.43,  0.41,  0.37,  0.38,  0.40
+ 1.0,     1.00,  1.08,  1.01,  0.88,  0.76,  0.69,  0.66,  0.58,  0.54,  0.49,  0.45,  0.40,  0.40
+ 1.5,     1.52,  1.50,  1.38,  1.26,  1.14,  1.03,  0.91,  0.82,  0.67,  0.61,  0.51,  0.41,  0.41
+ 2.0,     1.80,  1.80,  1.64,  1.43,  1.25,  1.11,  0.96,  0.81,  0.70,  0.59,  0.51,  0.42,  0.42
+```
+
+![acceleration_map](./media/acceleration_map.svg)
 
 <!-- deadzone_delta_steer | double | dead zone for the steering dynamics                  | x      | x      | x        | o      | o      | 0.0      | [rad]         |         | -->
 
