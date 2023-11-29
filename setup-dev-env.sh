@@ -101,8 +101,8 @@ else
     ansible_args+=("--extra-vars" "tensorrt_install_devel=true")
 fi
 
-# Check downloading artifacts 
-if [ "$option_yes" = "true" ]  || [ "$option_download_artifacts" = "true" ]; then
+# Check downloading artifacts
+if [ "$option_yes" = "true" ] || [ "$option_download_artifacts" = "true" ]; then
     echo -e "\e[36mArtifacts will be downloaded to $option_data_dir\e[m"
     ansible_args+=("--extra-vars" "prompt_download_artifacts=y")
 fi
