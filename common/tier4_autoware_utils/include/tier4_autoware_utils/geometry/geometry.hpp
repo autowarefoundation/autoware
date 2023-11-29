@@ -462,7 +462,8 @@ bool isDrivingForward(const Pose1 & src_pose, const Pose2 & dst_pose)
  * pose.
  */
 geometry_msgs::msg::Pose calcOffsetPose(
-  const geometry_msgs::msg::Pose & p, const double x, const double y, const double z);
+  const geometry_msgs::msg::Pose & p, const double x, const double y, const double z,
+  const double yaw = 0.0);
 
 /**
  * @brief Calculate a point by linear interpolation.

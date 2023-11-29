@@ -327,12 +327,13 @@ double calcCurvature(
  * pose.
  */
 geometry_msgs::msg::Pose calcOffsetPose(
-  const geometry_msgs::msg::Pose & p, const double x, const double y, const double z)
+  const geometry_msgs::msg::Pose & p, const double x, const double y, const double z,
+  const double yaw)
 {
   geometry_msgs::msg::Pose pose;
   geometry_msgs::msg::Transform transform;
   transform.translation = createTranslation(x, y, z);
-  transform.rotation = createQuaternion(0.0, 0.0, 0.0, 1.0);
+  transform.rotation = createQuaternionFromYaw(yaw);
   tf2::Transform tf_pose;
   tf2::Transform tf_offset;
   tf2::fromMsg(transform, tf_offset);

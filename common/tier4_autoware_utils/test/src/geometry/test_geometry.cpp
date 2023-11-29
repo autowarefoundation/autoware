@@ -1138,6 +1138,7 @@ TEST(geometry, calcOffsetPose)
   using tier4_autoware_utils::createQuaternionFromRPY;
   using tier4_autoware_utils::deg2rad;
 
+  // Only translation
   {
     geometry_msgs::msg::Pose p_in;
     p_in.position = createPoint(1.0, 2.0, 3.0);
@@ -1184,6 +1185,40 @@ TEST(geometry, calcOffsetPose)
     EXPECT_DOUBLE_EQ(p_out.orientation.y, 0.0);
     EXPECT_DOUBLE_EQ(p_out.orientation.z, 0.25881904510252068);
     EXPECT_DOUBLE_EQ(p_out.orientation.w, 0.96592582628906831);
+  }
+
+  // Only rotation
+  {
+    geometry_msgs::msg::Pose p_in;
+    p_in.position = createPoint(2.0, 1.0, 1.0);
+    p_in.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(30));
+
+    const auto p_out = calcOffsetPose(p_in, 0.0, 0.0, 0.0, deg2rad(20));
+
+    EXPECT_DOUBLE_EQ(p_out.position.x, 2.0);
+    EXPECT_DOUBLE_EQ(p_out.position.y, 1.0);
+    EXPECT_DOUBLE_EQ(p_out.position.z, 1.0);
+    EXPECT_DOUBLE_EQ(p_out.orientation.x, 0.0);
+    EXPECT_DOUBLE_EQ(p_out.orientation.y, 0.0);
+    EXPECT_NEAR(p_out.orientation.z, 0.42261826174069944, epsilon);
+    EXPECT_NEAR(p_out.orientation.w, 0.9063077870366499, epsilon);
+  }
+
+  // Both translation and rotation
+  {
+    geometry_msgs::msg::Pose p_in;
+    p_in.position = createPoint(2.0, 1.0, 1.0);
+    p_in.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(30));
+
+    const auto p_out = calcOffsetPose(p_in, 2.0, 0.0, -1.0, deg2rad(20));
+
+    EXPECT_DOUBLE_EQ(p_out.position.x, 3.73205080756887729);
+    EXPECT_DOUBLE_EQ(p_out.position.y, 2.0);
+    EXPECT_DOUBLE_EQ(p_out.position.z, 0.0);
+    EXPECT_DOUBLE_EQ(p_out.orientation.x, 0.0);
+    EXPECT_DOUBLE_EQ(p_out.orientation.y, 0.0);
+    EXPECT_NEAR(p_out.orientation.z, 0.42261826174069944, epsilon);
+    EXPECT_NEAR(p_out.orientation.w, 0.9063077870366499, epsilon);
   }
 }
 
