@@ -18,11 +18,6 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-# Targets
-ament_auto_add_library(mu_successive_shortest_path SHARED
-  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
-)
-
 ament_auto_add_library(radar_object_tracker_node SHARED
   src/radar_object_tracker_node/radar_object_tracker_node.cpp
   src/tracker/model/tracker_base.cpp
@@ -30,10 +25,10 @@ ament_auto_add_library(radar_object_tracker_node SHARED
   src/tracker/model/constant_turn_rate_motion_tracker.cpp
   src/utils/utils.cpp
   src/data_association/data_association.cpp
+  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
 )
 
 target_link_libraries(radar_object_tracker_node
-  mu_successive_shortest_path
   Eigen3::Eigen
   yaml-cpp
   nlohmann_json::nlohmann_json # for debug

@@ -18,17 +18,13 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(mu_successive_shortest_path SHARED
-  src/object_association_merger/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
-)
-
 ament_auto_add_library(object_association_merger SHARED
   src/object_association_merger/data_association/data_association.cpp
+  src/object_association_merger/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
   src/object_association_merger/node.cpp
 )
 
 target_link_libraries(object_association_merger
-  mu_successive_shortest_path
   Eigen3::Eigen
 )
 

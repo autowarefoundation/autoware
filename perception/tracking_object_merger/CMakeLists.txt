@@ -21,19 +21,15 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
 )
 
-ament_auto_add_library(mu_successive_shortest_path SHARED
-  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
-)
-
 ament_auto_add_library(decorative_tracker_merger_node SHARED
   src/data_association/data_association.cpp
+  src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
   src/decorative_tracker_merger.cpp
   src/utils/utils.cpp
   src/utils/tracker_state.cpp
 )
 
 target_link_libraries(decorative_tracker_merger_node
-  mu_successive_shortest_path
   Eigen3::Eigen
 )
 

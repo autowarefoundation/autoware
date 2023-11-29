@@ -31,9 +31,6 @@ set(MULTI_OBJECT_TRACKER_SRC
   src/tracker/model/unknown_tracker.cpp
   src/tracker/model/pass_through_tracker.cpp
   src/data_association/data_association.cpp
-)
-
-ament_auto_add_library(mu_successive_shortest_path SHARED
   src/data_association/mu_successive_shortest_path/mu_successive_shortest_path_wrapper.cpp
 )
 
@@ -42,7 +39,6 @@ ament_auto_add_library(multi_object_tracker_node SHARED
 )
 
 target_link_libraries(multi_object_tracker_node
-  mu_successive_shortest_path
   Eigen3::Eigen
 )
 
