@@ -218,6 +218,7 @@ void SceneModuleManagerInterfaceWithRTC::setActivation()
   for (const auto & scene_module : scene_modules_) {
     const UUID uuid = getUUID(scene_module->getModuleId());
     scene_module->setActivation(rtc_interface_.isActivated(uuid));
+    scene_module->setRTCEnabled(rtc_interface_.isRTCEnabled(uuid));
   }
 }
 

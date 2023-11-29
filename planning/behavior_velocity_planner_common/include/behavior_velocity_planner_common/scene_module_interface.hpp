@@ -87,6 +87,7 @@ public:
   boost::optional<int> getFirstStopPathPointIndex() { return first_stop_path_point_index_; }
 
   void setActivation(const bool activated) { activated_ = activated; }
+  void setRTCEnabled(const bool enable_rtc) { rtc_enabled_ = enable_rtc; }
   bool isActivated() const { return activated_; }
   bool isSafe() const { return safe_; }
   double getDistance() const { return distance_; }
@@ -98,6 +99,7 @@ protected:
   const int64_t module_id_;
   bool activated_;
   bool safe_;
+  bool rtc_enabled_;
   double distance_;
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
@@ -106,8 +108,15 @@ protected:
   boost::optional<int> first_stop_path_point_index_;
   VelocityFactorInterface velocity_factor_;
 
-  void setSafe(const bool safe) { safe_ = safe; }
+  void setSafe(const bool safe)
+  {
+    safe_ = safe;
+    if (!rtc_enabled_) {
+      syncActivation();
+    }
+  }
   void setDistance(const double distance) { distance_ = distance; }
+  void syncActivation() { setActivation(isSafe()); }
 
   size_t findEgoSegmentIndex(
     const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points) const;
