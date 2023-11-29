@@ -25,7 +25,4 @@ This node aims to:
 
 ## Parameters
 
-| Name           | Type   | Description                                                                                   |
-| -------------- | ------ | --------------------------------------------------------------------------------------------- |
-| `vx_threshold` | double | longitudinal velocity threshold to determine if the vehicle is stopping [m/s] (default: 0.01) |
-| `wz_threshold` | double | yaw velocity threshold to determine if the vehicle is stopping [rad/s] (default: 0.01)        |
+{{ json_to_markdown("localization/stop_filter/schema/stop_filter.schema.json") }}

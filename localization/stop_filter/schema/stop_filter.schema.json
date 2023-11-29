@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parameters for Stop Filter Node",
+  "type": "object",
+  "definitions": {
+    "stop_filter": {
+      "type": "object",
+      "properties": {
+        "vx_threshold": {
+          "type": "number",
+          "description": "Longitudinal velocity threshold to determine if the vehicle is stopping. [m/s]",
+          "default": "0.01",
+          "minimum": 0.0
+        },
+        "wz_threshold": {
+          "type": "number",
+          "description": "Yaw velocity threshold to determine if the vehicle is stopping. [rad/s]",
+          "default": "0.01",
+          "minimum": 0.0
+        }
+      },
+      "required": ["vx_threshold", "wz_threshold"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "/**": {
+      "type": "object",
+      "properties": {
+        "ros__parameters": {
+          "$ref": "#/definitions/stop_filter"
+        }
+      },
+      "required": ["ros__parameters"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["/**"],
+  "additionalProperties": false
+}
