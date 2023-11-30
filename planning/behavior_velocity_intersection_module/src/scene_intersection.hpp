@@ -259,7 +259,7 @@ public:
 
   IntersectionModule(
     const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
-    const PlannerParam & planner_param, const std::set<int> & associative_ids,
+    const PlannerParam & planner_param, const std::set<lanelet::Id> & associative_ids,
     const std::string & turn_direction, const bool has_traffic_light,
     const bool enable_occlusion_detection, const bool is_private_area, rclcpp::Node & node,
     const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock);
@@ -273,7 +273,7 @@ public:
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
   motion_utils::VirtualWalls createVirtualWalls() override;
 
-  const std::set<int> & getAssociativeIds() const { return associative_ids_; }
+  const std::set<lanelet::Id> & getAssociativeIds() const { return associative_ids_; }
 
   UUID getOcclusionUUID() const { return occlusion_uuid_; }
   bool getOcclusionSafety() const { return occlusion_safety_; }
@@ -284,7 +284,7 @@ public:
 private:
   rclcpp::Node & node_;
   const int64_t lane_id_;
-  const std::set<int> associative_ids_;
+  const std::set<lanelet::Id> associative_ids_;
   const std::string turn_direction_;
   const bool has_traffic_light_;
 

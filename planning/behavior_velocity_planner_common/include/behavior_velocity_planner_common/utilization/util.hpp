@@ -224,13 +224,13 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   @brief return 'associative' lanes in the intersection. 'associative' means that a lane shares same
   or lane-changeable parent lanes with `lane` and has same turn_direction value.
  */
-std::set<int> getAssociativeIntersectionLanelets(
+std::set<lanelet::Id> getAssociativeIntersectionLanelets(
   lanelet::ConstLanelet lane, const lanelet::LaneletMapPtr lanelet_map,
   const lanelet::routing::RoutingGraphPtr routing_graph);
 
 template <template <class> class Container>
 lanelet::ConstLanelets getConstLaneletsFromIds(
-  lanelet::LaneletMapConstPtr map, const Container<int> & ids)
+  lanelet::LaneletMapConstPtr map, const Container<lanelet::Id> & ids)
 {
   lanelet::ConstLanelets ret{};
   for (const auto & id : ids) {

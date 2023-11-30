@@ -778,9 +778,9 @@ double getSignedDistance(
   return arc_goal.length - arc_current.length;
 }
 
-std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets)
+std::vector<lanelet::Id> getIds(const lanelet::ConstLanelets & lanelets)
 {
-  std::vector<uint64_t> ids;
+  std::vector<lanelet::Id> ids;
   ids.reserve(lanelets.size());
   for (const auto & llt : lanelets) {
     ids.push_back(llt.id());
@@ -1274,7 +1274,7 @@ lanelet::ConstLanelets getCurrentLanesFromPath(
   const auto & current_pose = planner_data->self_odometry->pose.pose;
   const auto & p = planner_data->parameters;
 
-  std::set<uint64_t> lane_ids;
+  std::set<lanelet::Id> lane_ids;
   for (const auto & p : path.points) {
     for (const auto & id : p.lane_ids) {
       lane_ids.insert(id);

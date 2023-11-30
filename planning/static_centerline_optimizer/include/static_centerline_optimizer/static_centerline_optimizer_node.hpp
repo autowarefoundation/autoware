@@ -45,20 +45,21 @@ private:
     const LoadMap::Request::SharedPtr request, const LoadMap::Response::SharedPtr response);
 
   // plan route
-  std::vector<unsigned int> plan_route(const int start_lanelet_id, const int end_lanelet_id);
+  std::vector<lanelet::Id> plan_route(
+    const lanelet::Id start_lanelet_id, const lanelet::Id end_lanelet_id);
   void on_plan_route(
     const PlanRoute::Request::SharedPtr request, const PlanRoute::Response::SharedPtr response);
 
   // plan path
-  std::vector<TrajectoryPoint> plan_path(const std::vector<unsigned int> & route_lane_ids);
+  std::vector<TrajectoryPoint> plan_path(const std::vector<lanelet::Id> & route_lane_ids);
   void on_plan_path(
     const PlanPath::Request::SharedPtr request, const PlanPath::Response::SharedPtr response);
 
   void evaluate(
-    const std::vector<unsigned int> & route_lane_ids,
+    const std::vector<lanelet::Id> & route_lane_ids,
     const std::vector<TrajectoryPoint> & optimized_traj_points);
   void save_map(
-    const std::string & lanelet2_output_file_path, const std::vector<unsigned int> & route_lane_ids,
+    const std::string & lanelet2_output_file_path, const std::vector<lanelet::Id> & route_lane_ids,
     const std::vector<TrajectoryPoint> & optimized_traj_points);
 
   HADMapBin::ConstSharedPtr map_bin_ptr_{nullptr};

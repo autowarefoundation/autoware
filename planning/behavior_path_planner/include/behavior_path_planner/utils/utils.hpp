@@ -122,7 +122,7 @@ FrenetPoint convertToFrenetPoint(
   return frenet_point;
 }
 
-std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets);
+std::vector<lanelet::Id> getIds(const lanelet::ConstLanelets & lanelets);
 
 // distance (arclength) calculation
 

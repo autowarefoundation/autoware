@@ -663,7 +663,7 @@ boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
 }
 
-std::set<int> getAssociativeIntersectionLanelets(
+std::set<lanelet::Id> getAssociativeIntersectionLanelets(
   lanelet::ConstLanelet lane, const lanelet::LaneletMapPtr lanelet_map,
   const lanelet::routing::RoutingGraphPtr routing_graph)
 {
@@ -673,12 +673,12 @@ std::set<int> getAssociativeIntersectionLanelets(
   }
 
   const auto parents = routing_graph->previous(lane);
-  std::set<int> parent_neighbors;
+  std::set<lanelet::Id> parent_neighbors;
   for (const auto & parent : parents) {
     const auto neighbors = routing_graph->besides(parent);
     for (const auto & neighbor : neighbors) parent_neighbors.insert(neighbor.id());
   }
-  std::set<int> associative_intersection_lanelets;
+  std::set<lanelet::Id> associative_intersection_lanelets;
   associative_intersection_lanelets.insert(lane.id());
   for (const auto & parent_neighbor_id : parent_neighbors) {
     const auto parent_neighbor = lanelet_map->laneletLayer.get(parent_neighbor_id);

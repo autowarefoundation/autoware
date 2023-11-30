@@ -40,9 +40,10 @@ std::optional<size_t> insertPoint(
   autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path);
 
 bool hasLaneIds(
-  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p, const std::set<int> & ids);
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p,
+  const std::set<lanelet::Id> & ids);
 std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & p, const std::set<int> & ids);
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & p, const std::set<lanelet::Id> & ids);
 
 /**
  * @brief get objective polygons for detection area
@@ -50,7 +51,7 @@ std::optional<std::pair<size_t, size_t>> findLaneIdsInterval(
 IntersectionLanelets getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const lanelet::ConstLanelet assigned_lanelet, const lanelet::ConstLanelets & lanelets_on_path,
-  const std::set<int> & associative_ids, const double detection_area_length,
+  const std::set<lanelet::Id> & associative_ids, const double detection_area_length,
   const double occlusion_detection_area_length, const bool consider_wrong_direction_vehicle);
 
 /**
@@ -117,7 +118,7 @@ std::vector<lanelet::ConstLineString3d> generateDetectionLaneDivisions(
   const double curvature_threshold, const double curvature_calculation_ds);
 
 std::optional<InterpolatedPathInfo> generateInterpolatedPath(
-  const int lane_id, const std::set<int> & associative_lane_ids,
+  const lanelet::Id lane_id, const std::set<lanelet::Id> & associative_lane_ids,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path, const double ds,
   const rclcpp::Logger logger);
 
@@ -150,7 +151,7 @@ void cutPredictPathWithDuration(
 TimeDistanceArray calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data, const lanelet::Id lane_id,
-  const std::set<int> & associative_ids, const size_t closest_idx,
+  const std::set<lanelet::Id> & associative_ids, const size_t closest_idx,
   const size_t last_intersection_stop_line_candidate_idx, const double time_delay,
   const double intersection_velocity, const double minimum_ego_velocity,
   const bool use_upstream_velocity, const double minimum_upstream_velocity,
@@ -166,7 +167,8 @@ lanelet::ConstLanelet generatePathLanelet(
 
 std::optional<PathLanelets> generatePathLanelets(
   const lanelet::ConstLanelets & lanelets_on_path,
-  const util::InterpolatedPathInfo & interpolated_path_info, const std::set<int> & associative_ids,
+  const util::InterpolatedPathInfo & interpolated_path_info,
+  const std::set<lanelet::Id> & associative_ids,
   const lanelet::CompoundPolygon3d & first_conflicting_area,
   const std::vector<lanelet::CompoundPolygon3d> & conflicting_areas,
   const std::optional<lanelet::CompoundPolygon3d> & first_attention_area,

@@ -66,7 +66,7 @@ public:
 
   MergeFromPrivateRoadModule(
     const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
-    const PlannerParam & planner_param, const std::set<int> & associative_ids,
+    const PlannerParam & planner_param, const std::set<lanelet::Id> & associative_ids,
     const rclcpp::Logger logger, const rclcpp::Clock::SharedPtr clock);
 
   /**
@@ -78,11 +78,11 @@ public:
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
   motion_utils::VirtualWalls createVirtualWalls() override;
 
-  const std::set<int> & getAssociativeIds() const { return associative_ids_; }
+  const std::set<lanelet::Id> & getAssociativeIds() const { return associative_ids_; }
 
 private:
   const int64_t lane_id_;
-  const std::set<int> associative_ids_;
+  const std::set<lanelet::Id> associative_ids_;
 
   autoware_auto_planning_msgs::msg::PathWithLaneId extractPathNearExitOfPrivateRoad(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const double extend_length);

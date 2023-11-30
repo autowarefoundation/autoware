@@ -629,7 +629,7 @@ bool BlindSpotModule::isTargetObjectType(
 }
 
 boost::optional<geometry_msgs::msg::Pose> BlindSpotModule::getStartPointFromLaneLet(
-  const int lane_id) const
+  const lanelet::Id lane_id) const
 {
   lanelet::ConstLanelet lanelet =
     planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
@@ -653,7 +653,7 @@ boost::optional<geometry_msgs::msg::Pose> BlindSpotModule::getStartPointFromLane
 
 lanelet::ConstLanelets BlindSpotModule::getStraightLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id)
+  const lanelet::Id lane_id)
 {
   lanelet::ConstLanelets straight_lanelets;
   const auto intersection_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);

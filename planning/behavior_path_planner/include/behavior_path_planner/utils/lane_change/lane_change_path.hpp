@@ -42,8 +42,8 @@ struct LaneChangeStatus
   LaneChangePath lane_change_path{};
   lanelet::ConstLanelets current_lanes{};
   lanelet::ConstLanelets target_lanes{};
-  std::vector<uint64_t> lane_follow_lane_ids{};
-  std::vector<uint64_t> lane_change_lane_ids{};
+  std::vector<lanelet::Id> lane_follow_lane_ids{};
+  std::vector<lanelet::Id> lane_change_lane_ids{};
   bool is_safe{false};
   bool is_valid_path{true};
   double start_distance{0.0};

@@ -201,14 +201,15 @@ private:
    * @param lane_id lane id of objective lanelet
    * @return end point of lanelet
    */
-  boost::optional<geometry_msgs::msg::Pose> getStartPointFromLaneLet(const int lane_id) const;
+  boost::optional<geometry_msgs::msg::Pose> getStartPointFromLaneLet(
+    const lanelet::Id lane_id) const;
 
   /**
    * @brief get straight lanelets in intersection
    */
   lanelet::ConstLanelets getStraightLanelets(
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
-    lanelet::routing::RoutingGraphPtr routing_graph_ptr, const int lane_id);
+    lanelet::routing::RoutingGraphPtr routing_graph_ptr, const lanelet::Id lane_id);
 
   /**
    * @brief Modify objects predicted path. remove path point if the time exceeds timer_thr.

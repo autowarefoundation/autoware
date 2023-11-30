@@ -268,7 +268,7 @@ Scenario makeScenarioMsg(const std::string scenario)
   return scenario_msg;
 }
 
-Pose createPoseFromLaneID(const int & lane_id)
+Pose createPoseFromLaneID(const lanelet::Id & lane_id)
 {
   auto map_bin_msg = makeMapBinMsg();
   // create route_handler
@@ -299,7 +299,7 @@ Pose createPoseFromLaneID(const int & lane_id)
   return middle_pose;
 }
 
-Odometry makeInitialPoseFromLaneId(const int & lane_id)
+Odometry makeInitialPoseFromLaneId(const lanelet::Id & lane_id)
 {
   Odometry current_odometry;
   current_odometry.pose.pose = createPoseFromLaneID(lane_id);

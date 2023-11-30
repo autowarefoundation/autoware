@@ -105,7 +105,7 @@ std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
   const geometry_msgs::msg::Point & ego_pos, const size_t max_num);
 
 std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
-  const int lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const lanelet::Id lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const std::string & attribute_name);
 }  // namespace behavior_velocity_planner
 

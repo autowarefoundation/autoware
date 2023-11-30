@@ -209,7 +209,7 @@ std::vector<geometry_msgs::msg::Point> getLinestringIntersects(
 }
 
 std::optional<lanelet::ConstLineString3d> getStopLineFromMap(
-  const int lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const lanelet::Id lane_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
   const std::string & attribute_name)
 {
   lanelet::ConstLanelet lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);

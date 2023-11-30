@@ -64,8 +64,8 @@ struct InterpolatedPathInfo
 {
   autoware_auto_planning_msgs::msg::PathWithLaneId path;
   double ds{0.0};
-  int lane_id{0};
-  std::set<int> associative_lane_ids{};
+  lanelet::Id lane_id{0};
+  std::set<lanelet::Id> associative_lane_ids{};
   std::optional<std::pair<size_t, size_t>> lane_id_interval{std::nullopt};
 };
 
@@ -175,7 +175,8 @@ struct PathLanelets
   lanelet::ConstLanelets all;
   lanelet::ConstLanelets
     conflicting_interval_and_remaining;  // the left/right-most interval of path conflicting with
-                                         // conflicting lanelets plus the next lane part of the path
+                                         // conflicting lanelets plus the next lane part of the
+                                         // path
 };
 
 struct TargetObject

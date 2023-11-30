@@ -75,9 +75,9 @@ Path convert_to_path(const PathWithLaneId & path_with_lane_id)
   return lanelets;
 }
 
-std::vector<unsigned int> get_lane_ids_from_route(const LaneletRoute & route)
+std::vector<lanelet::Id> get_lane_ids_from_route(const LaneletRoute & route)
 {
-  std::vector<unsigned int> lane_ids;
+  std::vector<lanelet::Id> lane_ids;
   for (const auto & segment : route.segments) {
     const auto & target_lanelet_id = segment.preferred_primitive.id;
     lane_ids.push_back(target_lanelet_id);
@@ -87,10 +87,10 @@ std::vector<unsigned int> get_lane_ids_from_route(const LaneletRoute & route)
 }
 
 lanelet::ConstLanelets get_lanelets_from_ids(
-  const RouteHandler & route_handler, const std::vector<unsigned int> & lane_ids)
+  const RouteHandler & route_handler, const std::vector<lanelet::Id> & lane_ids)
 {
   lanelet::ConstLanelets lanelets;
-  for (const int lane_id : lane_ids) {
+  for (const lanelet::Id lane_id : lane_ids) {
     const auto lanelet = route_handler.getLaneletsFromId(lane_id);
     lanelets.push_back(lanelet);
   }
@@ -166,10 +166,10 @@ std::array<double, 3> convertHexStringToDecimal(const std::string & hex_str_colo
   return std::array<double, 3>{r / 255.0, g / 255.0, b / 255.0};
 }
 
-std::vector<unsigned int> check_lanelet_connection(
+std::vector<lanelet::Id> check_lanelet_connection(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & route_lanelets)
 {
-  std::vector<unsigned int> unconnected_lane_ids;
+  std::vector<lanelet::Id> unconnected_lane_ids;
 
   for (size_t i = 0; i < route_lanelets.size() - 1; ++i) {
     const auto next_lanelets = route_handler.getNextLanelets(route_lanelets.at(i));
@@ -234,8 +234,8 @@ void StaticCenterlineOptimizerNode::run()
   const auto lanelet2_input_file_path = declare_parameter<std::string>("lanelet2_input_file_path");
   const auto lanelet2_output_file_path =
     declare_parameter<std::string>("lanelet2_output_file_path");
-  const int start_lanelet_id = declare_parameter<int>("start_lanelet_id");
-  const int end_lanelet_id = declare_parameter<int>("end_lanelet_id");
+  const lanelet::Id start_lanelet_id = declare_parameter<int64_t>("start_lanelet_id");
+  const lanelet::Id end_lanelet_id = declare_parameter<int64_t>("end_lanelet_id");
 
   // process
   load_map(lanelet2_input_file_path);
@@ -301,12 +301,12 @@ void StaticCenterlineOptimizerNode::on_load_map(
   response->message = "InvalidMapFormat";
 }
 
-std::vector<unsigned int> StaticCenterlineOptimizerNode::plan_route(
-  const int start_lanelet_id, const int end_lanelet_id)
+std::vector<lanelet::Id> StaticCenterlineOptimizerNode::plan_route(
+  const lanelet::Id start_lanelet_id, const lanelet::Id end_lanelet_id)
 {
   if (!map_bin_ptr_ || !route_handler_ptr_) {
     RCLCPP_ERROR(get_logger(), "Map or route handler is not ready. Return empty lane ids.");
-    return std::vector<unsigned int>{};
+    return std::vector<lanelet::Id>{};
   }
 
   // calculate check points (= start and goal pose)
@@ -350,15 +350,15 @@ void StaticCenterlineOptimizerNode::on_plan_route(
     return;
   }
 
-  const int start_lanelet_id = request->start_lane_id;
-  const int end_lanelet_id = request->end_lane_id;
+  const lanelet::Id start_lanelet_id = request->start_lane_id;
+  const lanelet::Id end_lanelet_id = request->end_lane_id;
 
   // plan route
   const auto route_lane_ids = plan_route(start_lanelet_id, end_lanelet_id);
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
 
   // extract lane ids
-  std::vector<unsigned int> lane_ids;
+  std::vector<lanelet::Id> lane_ids;
   for (const auto & lanelet : route_lanelets) {
     lane_ids.push_back(lanelet.id());
   }
@@ -375,7 +375,7 @@ void StaticCenterlineOptimizerNode::on_plan_route(
 }
 
 std::vector<TrajectoryPoint> StaticCenterlineOptimizerNode::plan_path(
-  const std::vector<unsigned int> & route_lane_ids)
+  const std::vector<lanelet::Id> & route_lane_ids)
 {
   if (!route_handler_ptr_) {
     RCLCPP_ERROR(get_logger(), "Route handler is not ready. Return empty trajectory.");
@@ -494,7 +494,7 @@ void StaticCenterlineOptimizerNode::on_plan_path(
 }
 
 void StaticCenterlineOptimizerNode::evaluate(
-  const std::vector<unsigned int> & route_lane_ids,
+  const std::vector<lanelet::Id> & route_lane_ids,
   const std::vector<TrajectoryPoint> & optimized_traj_points)
 {
   const auto route_lanelets = get_lanelets_from_ids(*route_handler_ptr_, route_lane_ids);
@@ -567,7 +567,7 @@ void StaticCenterlineOptimizerNode::evaluate(
 }
 
 void StaticCenterlineOptimizerNode::save_map(
-  const std::string & lanelet2_output_file_path, const std::vector<unsigned int> & route_lane_ids,
+  const std::string & lanelet2_output_file_path, const std::vector<lanelet::Id> & route_lane_ids,
   const std::vector<TrajectoryPoint> & optimized_traj_points)
 {
   if (!route_handler_ptr_) {
