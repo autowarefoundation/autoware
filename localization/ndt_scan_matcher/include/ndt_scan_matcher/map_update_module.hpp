@@ -17,7 +17,6 @@
 
 #include "localization_util/tf2_listener_module.hpp"
 #include "localization_util/util_func.hpp"
-#include "ndt_scan_matcher/debug.hpp"
 #include "ndt_scan_matcher/particle.hpp"
 
 #include <rclcpp/rclcpp.hpp>

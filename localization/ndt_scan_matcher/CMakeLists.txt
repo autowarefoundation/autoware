@@ -27,7 +27,7 @@ find_package(PCL REQUIRED COMPONENTS common io registration)
 include_directories(${PCL_INCLUDE_DIRS})
 
 ament_auto_add_executable(ndt_scan_matcher
-  src/debug.cpp
+  src/particle.cpp
   src/ndt_scan_matcher_node.cpp
   src/ndt_scan_matcher_core.cpp
   src/map_module.cpp

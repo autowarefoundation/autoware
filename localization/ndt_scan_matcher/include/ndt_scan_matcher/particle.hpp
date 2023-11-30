@@ -16,6 +16,9 @@
 #define NDT_SCAN_MATCHER__PARTICLE_HPP_
 
 #include <geometry_msgs/msg/pose.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+
+#include <string>
 
 struct Particle
 {
@@ -30,5 +33,9 @@ struct Particle
   double score;
   int iteration;
 };
+
+void push_debug_markers(
+  visualization_msgs::msg::MarkerArray & marker_array, const builtin_interfaces::msg::Time & stamp,
+  const std::string & map_frame_, const Particle & particle, const size_t i);
 
 #endif  // NDT_SCAN_MATCHER__PARTICLE_HPP_

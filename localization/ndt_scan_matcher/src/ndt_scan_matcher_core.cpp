@@ -919,6 +919,11 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
   std::vector<Particle> particle_array;
   auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();
 
+  // publish the estimated poses in 20 times to see the progress and to avoid dropping data
+  visualization_msgs::msg::MarkerArray marker_array;
+  constexpr int publish_num = 20;
+  const int publish_interval = initial_estimate_particles_num_ / publish_num;
+
   for (int i = 0; i < initial_estimate_particles_num_; i++) {
     const TreeStructuredParzenEstimator::Input input = tpe.get_next_input();
 
@@ -945,10 +950,11 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::align_pose(
       initial_pose, matrix4f_to_pose(ndt_result.pose), ndt_result.transform_probability,
       ndt_result.iteration_num);
     particle_array.push_back(particle);
-    const auto marker_array = make_debug_markers(
-      get_clock()->now(), map_frame_, tier4_autoware_utils::createMarkerScale(0.3, 0.1, 0.1),
-      particle, i);
-    ndt_monte_carlo_initial_pose_marker_pub_->publish(marker_array);
+    push_debug_markers(marker_array, get_clock()->now(), map_frame_, particle, i);
+    if ((i + 1) % publish_interval == 0 || (i + 1) == initial_estimate_particles_num_) {
+      ndt_monte_carlo_initial_pose_marker_pub_->publish(marker_array);
+      marker_array.markers.clear();
+    }
 
     const geometry_msgs::msg::Pose pose = matrix4f_to_pose(ndt_result.pose);
     const geometry_msgs::msg::Vector3 rpy = get_rpy(pose);

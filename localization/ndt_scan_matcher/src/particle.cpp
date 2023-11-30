@@ -12,24 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ndt_scan_matcher/debug.hpp"
+#include "ndt_scan_matcher/particle.hpp"
 
 #include "localization_util/util_func.hpp"
 
-visualization_msgs::msg::MarkerArray make_debug_markers(
-  const builtin_interfaces::msg::Time & stamp, const std::string & map_frame_,
-  const geometry_msgs::msg::Vector3 & scale, const Particle & particle, const size_t i)
+void push_debug_markers(
+  visualization_msgs::msg::MarkerArray & marker_array, const builtin_interfaces::msg::Time & stamp,
+  const std::string & map_frame_, const Particle & particle, const size_t i)
 {
-  // TODO(Tier IV): getNumSubscribers
-  // TODO(Tier IV): clear old object
-  visualization_msgs::msg::MarkerArray marker_array;
-
   visualization_msgs::msg::Marker marker;
   marker.header.stamp = stamp;
   marker.header.frame_id = map_frame_;
   marker.type = visualization_msgs::msg::Marker::ARROW;
   marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.scale = scale;
+  marker.scale.x = 0.3;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.1;
   marker.id = static_cast<int32_t>(i);
   marker.lifetime = rclcpp::Duration::from_seconds(10.0);  // 10.0 is the lifetime in seconds.
 
@@ -62,6 +60,4 @@ visualization_msgs::msg::MarkerArray make_debug_markers(
   marker.pose = particle.result_pose;
   marker.color = exchange_color_crc(static_cast<double>(i) / 100.0);
   marker_array.markers.push_back(marker);
-
-  return marker_array;
 }
