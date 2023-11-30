@@ -128,6 +128,13 @@ bool NormalLaneChange::isLaneChangeRequired() const
   return !target_lanes.empty();
 }
 
+bool NormalLaneChange::isStoppedAtRedTrafficLight() const
+{
+  return utils::traffic_light::isStoppedAtRedTrafficLightWithinDistance(
+    status_.current_lanes, status_.lane_change_path.path, planner_data_,
+    status_.lane_change_path.info.length.sum());
+}
+
 LaneChangePath NormalLaneChange::getLaneChangePath() const
 {
   return status_.lane_change_path;
@@ -1364,9 +1371,16 @@ bool NormalLaneChange::getLaneChangePaths(
         if (
           lane_change_parameters_->regulate_on_traffic_light &&
           !hasEnoughLengthToTrafficLight(*candidate_path, current_lanes)) {
+          debug_print("Reject: regulate on traffic light!!");
           continue;
         }
 
+        if (utils::traffic_light::isStoppedAtRedTrafficLightWithinDistance(
+              lane_change_info.current_lanes, candidate_path.value().path, planner_data_,
+              lane_change_info.length.sum())) {
+          debug_print("Ego is stopping near traffic light. Do not allow lane change");
+          continue;
+        }
         candidate_paths->push_back(*candidate_path);
 
         std::vector<ExtendedPredictedObject> filtered_objects =

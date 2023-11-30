@@ -27,6 +27,7 @@
 #include <lanelet2_core/geometry/Point.h>
 #include <lanelet2_core/geometry/Polygon.h>
 
+#include <limits>
 #include <memory>
 
 namespace behavior_path_planner::utils::traffic_light
@@ -107,6 +108,27 @@ double getDistanceToNextTrafficLight(
 std::optional<double> calcDistanceToRedTrafficLight(
   const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data);
+
+/**
+ * @brief Checks if the vehicle is stationary within a specified distance from a red traffic light.
+ *
+ * This function first checks if the vehicle's velocity is below a minimum threshold, indicating it
+ * is stopped. It then calculates the distance to the nearest red traffic light using the
+ * calcDistanceToRedTrafficLight function. If the vehicle is within the specified distance threshold
+ * from the red traffic light, the function returns true, otherwise false.
+ *
+ * @param lanelets The lanelets to search for traffic lights.
+ * @param path The path along which to measure the distance to the traffic light.
+ * @param planner_data Shared pointer to the planner data containing vehicle state information.
+ * @param distance_threshold The maximum allowable distance from a red traffic light to consider the
+ * vehicle stopped.
+ * @return True if the vehicle is stopped within the distance threshold from a red traffic light,
+ * false otherwise.
+ */
+bool isStoppedAtRedTrafficLightWithinDistance(
+  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const double distance_threshold = std::numeric_limits<double>::infinity());
 }  // namespace behavior_path_planner::utils::traffic_light
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__TRAFFIC_LIGHT_UTILS_HPP_

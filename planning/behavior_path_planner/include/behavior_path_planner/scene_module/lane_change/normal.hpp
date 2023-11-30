@@ -96,6 +96,8 @@ public:
 
   bool isLaneChangeRequired() const override;
 
+  bool isStoppedAtRedTrafficLight() const override;
+
 protected:
   lanelet::ConstLanelets getCurrentLanes() const override;
 

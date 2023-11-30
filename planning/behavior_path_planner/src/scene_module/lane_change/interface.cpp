@@ -110,6 +110,14 @@ ModuleStatus LaneChangeInterface::updateState()
     return ModuleStatus::SUCCESS;
   }
 
+  if (module_type_->isEgoOnPreparePhase() && module_type_->isStoppedAtRedTrafficLight()) {
+    RCLCPP_WARN_STREAM_THROTTLE(
+      getLogger().get_child(module_type_->getModuleTypeStr()), *clock_, 5000,
+      "Ego stopped at traffic light. Canceling lane change");
+    module_type_->toCancelState();
+    return isWaitingApproval() ? ModuleStatus::RUNNING : ModuleStatus::SUCCESS;
+  }
+
   const auto [is_safe, is_object_coming_from_rear] = module_type_->isApprovedPathSafe();
 
   setObjectDebugVisualization();

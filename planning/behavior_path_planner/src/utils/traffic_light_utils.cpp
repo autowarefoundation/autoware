@@ -154,4 +154,27 @@ std::optional<double> calcDistanceToRedTrafficLight(
 
   return std::nullopt;
 }
+
+bool isStoppedAtRedTrafficLightWithinDistance(
+  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
+  const std::shared_ptr<const PlannerData> & planner_data, const double distance_threshold)
+{
+  const auto ego_velocity = std::hypot(
+    planner_data->self_odometry->twist.twist.linear.x,
+    planner_data->self_odometry->twist.twist.linear.y);
+  constexpr double minimum_speed = 0.1;
+  if (ego_velocity > minimum_speed) {
+    return false;
+  }
+
+  const auto distance_to_red_traffic_light =
+    calcDistanceToRedTrafficLight(lanelets, path, planner_data);
+
+  if (!distance_to_red_traffic_light) {
+    return false;
+  }
+
+  return (distance_to_red_traffic_light < distance_threshold);
+}
+
 }  // namespace behavior_path_planner::utils::traffic_light

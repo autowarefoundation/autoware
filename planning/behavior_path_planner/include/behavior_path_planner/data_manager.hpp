@@ -156,7 +156,7 @@ struct PlannerData
   std::optional<PoseWithUuidStamped> prev_modified_goal{};
   std::optional<UUID> prev_route_id{};
   std::shared_ptr<RouteHandler> route_handler{std::make_shared<RouteHandler>()};
-  std::map<int, TrafficSignalStamped> traffic_light_id_map;
+  std::map<int64_t, TrafficSignalStamped> traffic_light_id_map;
   BehaviorPathPlannerParameters parameters{};
   drivable_area_expansion::DrivableAreaExpansionParameters drivable_area_expansion_parameters{};
 
@@ -174,7 +174,7 @@ struct PlannerData
       route_handler, path, turn_signal_info, current_pose, current_vel, parameters, debug_data);
   }
 
-  std::optional<TrafficSignalStamped> getTrafficSignal(const int id) const
+  std::optional<TrafficSignalStamped> getTrafficSignal(const int64_t id) const
   {
     if (traffic_light_id_map.count(id) == 0) {
       return std::nullopt;
