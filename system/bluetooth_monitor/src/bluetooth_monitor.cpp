@@ -32,16 +32,16 @@ BluetoothMonitor::BluetoothMonitor(const rclcpp::NodeOptions & options)
 : Node("bluetooth_monitor", options),
   updater_(this),
   socket_(-1),
-  port_(declare_parameter("port", DEFAULT_PORT))
+  port_(declare_parameter<int64_t>("port"))
 {
   // Get host name
   char host_name[HOST_NAME_MAX + 1];
   gethostname(host_name, sizeof(host_name));
 
   // Build L2ping configuration
-  config_.l2ping.timeout = declare_parameter("timeout", DEFAULT_TIMEOUT);
-  config_.l2ping.rtt_warn = declare_parameter("rtt_warn", RTT_NO_WARN);
-  config_.addresses = declare_parameter("addresses", std::vector<std::string>());
+  config_.l2ping.timeout = declare_parameter<int64_t>("timeout");
+  config_.l2ping.rtt_warn = declare_parameter<double>("rtt_warn");
+  config_.addresses = declare_parameter<std::vector<std::string>>("addresses");
 
   updater_.add("bluetooth_connection", this, &BluetoothMonitor::checkConnection);
   updater_.setHardwareID(host_name);

@@ -46,12 +46,7 @@ L2ping is only allowed for root by default, so this package provides the followi
 
 ## Parameters
 
-| Name        | Type   | Default Value | Explanation                                               |
-| ----------- | ------ | ------------- | --------------------------------------------------------- |
-| `port`      | int    | 7640          | Port number to connect to L2ping service.                 |
-| `timeout`   | int    | 5             | Wait timeout seconds for the response.                    |
-| `rtt_warn`  | float  | 0.00          | RTT(Round-Trip Time) to generate warn.                    |
-| `addresses` | string | \*            | List of bluetooth address of wireless devices to monitor. |
+{{ json_to_markdown("system/bluetooth_monitor/schema/bluetooth_monitor.schema.json") }}
 
 - `rtt_warn`
 
