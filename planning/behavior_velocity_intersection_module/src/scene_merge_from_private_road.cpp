@@ -45,7 +45,7 @@ MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
   lane_id_(lane_id),
   associative_ids_(associative_ids)
 {
-  velocity_factor_.init(VelocityFactor::MERGE);
+  velocity_factor_.init(PlanningBehavior::MERGE);
   planner_param_ = planner_param;
   state_machine_.setState(StateMachine::State::STOP);
 }

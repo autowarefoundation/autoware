@@ -14,6 +14,7 @@
 
 #include <behavior_velocity_planner_common/velocity_factor_interface.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
+
 namespace behavior_velocity_planner
 {
 void VelocityFactorInterface::set(
@@ -23,7 +24,7 @@ void VelocityFactorInterface::set(
 {
   const auto & curr_point = curr_pose.position;
   const auto & stop_point = stop_pose.position;
-  velocity_factor_.type = type_;
+  velocity_factor_.behavior = behavior_;
   velocity_factor_.pose = stop_pose;
   velocity_factor_.distance = motion_utils::calcSignedArcLength(points, curr_point, stop_point);
   velocity_factor_.status = status;

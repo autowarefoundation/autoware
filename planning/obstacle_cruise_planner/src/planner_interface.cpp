@@ -91,7 +91,7 @@ VelocityFactorArray makeVelocityFactorArray(
   if (pose) {
     using distance_type = VelocityFactor::_distance_type;
     VelocityFactor velocity_factor;
-    velocity_factor.type = VelocityFactor::ROUTE_OBSTACLE;
+    velocity_factor.behavior = PlanningBehavior::ROUTE_OBSTACLE;
     velocity_factor.pose = pose.value();
     velocity_factor.distance = std::numeric_limits<distance_type>::quiet_NaN();
     velocity_factor.status = VelocityFactor::UNKNOWN;

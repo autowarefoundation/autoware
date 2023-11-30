@@ -34,7 +34,7 @@ StopLineModule::StopLineModule(
   stop_line_(stop_line),
   state_(State::APPROACH)
 {
-  velocity_factor_.init(VelocityFactor::STOP_SIGN);
+  velocity_factor_.init(PlanningBehavior::STOP_SIGN);
   planner_param_ = planner_param;
 }
 

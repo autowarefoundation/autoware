@@ -16,6 +16,7 @@
 #ifndef BEHAVIOR_VELOCITY_PLANNER_COMMON__VELOCITY_FACTOR_INTERFACE_HPP_
 #define BEHAVIOR_VELOCITY_PLANNER_COMMON__VELOCITY_FACTOR_INTERFACE_HPP_
 
+#include <autoware_adapi_v1_msgs/msg/planning_behavior.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
 #include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
@@ -27,20 +28,21 @@
 namespace behavior_velocity_planner
 {
 
+using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
 using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
 using geometry_msgs::msg::Pose;
-using VelocityFactorType = VelocityFactor::_type_type;
+using VelocityFactorBehavior = VelocityFactor::_behavior_type;
 using VelocityFactorStatus = VelocityFactor::_status_type;
 
 class VelocityFactorInterface
 {
 public:
-  VelocityFactorInterface() { type_ = VelocityFactor::UNKNOWN; }
+  VelocityFactorInterface() { behavior_ = VelocityFactor::UNKNOWN; }
 
   VelocityFactor get() const { return velocity_factor_; }
-  void init(const VelocityFactorType type) { type_ = type; }
-  void reset() { velocity_factor_.type = VelocityFactor::UNKNOWN; }
+  void init(const VelocityFactorBehavior behavior) { behavior_ = behavior; }
+  void reset() { velocity_factor_.behavior = PlanningBehavior::UNKNOWN; }
 
   void set(
     const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
@@ -48,7 +50,7 @@ public:
     const std::string detail = "");
 
 private:
-  VelocityFactorType type_;
+  VelocityFactorBehavior behavior_;
   VelocityFactor velocity_factor_;
 };
 

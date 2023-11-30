@@ -69,7 +69,7 @@ BlindSpotModule::BlindSpotModule(
   turn_direction_(TurnDirection::INVALID),
   is_over_pass_judge_line_(false)
 {
-  velocity_factor_.init(VelocityFactor::REAR_CHECK);
+  velocity_factor_.init(PlanningBehavior::REAR_CHECK);
   planner_param_ = planner_param;
 
   const auto & assigned_lanelet =

@@ -73,7 +73,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
 
     // The velocity factor must be called after modifyPathVelocity.
     const auto velocity_factor = traffic_light_scene_module->getVelocityFactor();
-    if (velocity_factor.type != VelocityFactor::UNKNOWN) {
+    if (velocity_factor.behavior != PlanningBehavior::UNKNOWN) {
       velocity_factor_array.factors.emplace_back(velocity_factor);
     }
     if (stop_reason.reason != "") {

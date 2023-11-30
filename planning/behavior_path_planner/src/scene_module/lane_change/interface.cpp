@@ -388,7 +388,7 @@ void LaneChangeInterface::updateSteeringFactorPtr(const BehaviorModuleOutput & o
   // TODO(tkhmy) add handle status TRYING
   steering_factor_interface_ptr_->updateSteeringFactor(
     {status.lane_change_path.info.shift_line.start, status.lane_change_path.info.shift_line.end},
-    {start_distance, finish_distance}, SteeringFactor::LANE_CHANGE, steering_factor_direction,
+    {start_distance, finish_distance}, PlanningBehavior::LANE_CHANGE, steering_factor_direction,
     SteeringFactor::TURNING, "");
 }
 
@@ -405,7 +405,7 @@ void LaneChangeInterface::updateSteeringFactorPtr(
   steering_factor_interface_ptr_->updateSteeringFactor(
     {selected_path.info.shift_line.start, selected_path.info.shift_line.end},
     {output.start_distance_to_path_change, output.finish_distance_to_path_change},
-    SteeringFactor::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
+    PlanningBehavior::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
 }
 void LaneChangeInterface::acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const
 {

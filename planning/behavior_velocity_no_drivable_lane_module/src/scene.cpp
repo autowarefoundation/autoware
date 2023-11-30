@@ -33,7 +33,7 @@ NoDrivableLaneModule::NoDrivableLaneModule(
   planner_param_(planner_param),
   state_(State::INIT)
 {
-  velocity_factor_.init(VelocityFactor::NO_DRIVABLE_LANE);
+  velocity_factor_.init(PlanningBehavior::NO_DRIVABLE_LANE);
 }
 
 bool NoDrivableLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -220,8 +220,7 @@ void NoDrivableLaneModule::handle_inside_no_drivable_lane_state(
     stop_factor.stop_factor_points.push_back(current_point);
     planning_utils::appendStopReason(stop_factor, stop_reason);
     velocity_factor_.set(
-      path->points, planner_data_->current_odometry->pose, stop_pose,
-      VelocityFactor::NO_DRIVABLE_LANE);
+      path->points, planner_data_->current_odometry->pose, stop_pose, VelocityFactor::APPROACHING);
 
     const auto & virtual_wall_pose = motion_utils::calcLongitudinalOffsetPose(
       path->points, stop_pose.position, debug_data_.base_link2front);

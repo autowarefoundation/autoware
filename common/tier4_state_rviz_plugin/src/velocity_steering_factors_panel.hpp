@@ -26,6 +26,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 
+#include <autoware_adapi_v1_msgs/msg/planning_behavior.hpp>
 #include <autoware_adapi_v1_msgs/msg/steering_factor_array.hpp>
 #include <autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp>
 
@@ -35,6 +36,7 @@ namespace rviz_plugins
 {
 class VelocitySteeringFactorsPanel : public rviz_common::Panel
 {
+  using PlanningBehavior = autoware_adapi_v1_msgs::msg::PlanningBehavior;
   using VelocityFactorArray = autoware_adapi_v1_msgs::msg::VelocityFactorArray;
   using VelocityFactor = autoware_adapi_v1_msgs::msg::VelocityFactor;
   using SteeringFactorArray = autoware_adapi_v1_msgs::msg::SteeringFactorArray;

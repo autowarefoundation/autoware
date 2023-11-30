@@ -195,7 +195,7 @@ VirtualTrafficLightModule::VirtualTrafficLightModule(
   lane_(lane),
   planner_param_(planner_param)
 {
-  velocity_factor_.init(VelocityFactor::V2I_GATE_CONTROL_ENTER);
+  velocity_factor_.init(PlanningBehavior::VIRTUAL_TRAFFIC_LIGHT);
 
   // Get map data
   const auto instrument = reg_elem_.getVirtualTrafficLight();

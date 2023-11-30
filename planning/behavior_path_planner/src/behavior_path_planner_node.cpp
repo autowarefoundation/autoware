@@ -647,7 +647,7 @@ void BehaviorPathPlannerNode::publish_steering_factor(
 
     steering_factor_interface_ptr_->updateSteeringFactor(
       {intersection_pose, intersection_pose}, {intersection_distance, intersection_distance},
-      SteeringFactor::INTERSECTION, steering_factor_direction, steering_factor_state, "");
+      PlanningBehavior::INTERSECTION, steering_factor_direction, steering_factor_state, "");
   } else {
     steering_factor_interface_ptr_->clearSteeringFactors();
   }

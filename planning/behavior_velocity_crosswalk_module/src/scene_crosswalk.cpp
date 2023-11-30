@@ -184,7 +184,7 @@ CrosswalkModule::CrosswalkModule(
   planner_param_(planner_param),
   use_regulatory_element_(reg_elem_id)
 {
-  velocity_factor_.init(VelocityFactor::CROSSWALK);
+  velocity_factor_.init(PlanningBehavior::CROSSWALK);
   passed_safety_slow_point_ = false;
 
   if (use_regulatory_element_) {

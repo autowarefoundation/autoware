@@ -52,7 +52,7 @@ OutOfLaneModule::OutOfLaneModule(
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock), params_(std::move(planner_param))
 {
-  velocity_factor_.init(VelocityFactor::UNKNOWN);
+  velocity_factor_.init(PlanningBehavior::UNKNOWN);
 }
 
 bool OutOfLaneModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)

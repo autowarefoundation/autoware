@@ -532,7 +532,7 @@ VelocityFactorArray ObstacleStopPlannerDebugNode::makeVelocityFactorArray()
   if (stop_pose_ptr_) {
     using distance_type = VelocityFactor::_distance_type;
     VelocityFactor velocity_factor;
-    velocity_factor.type = VelocityFactor::ROUTE_OBSTACLE;
+    velocity_factor.behavior = PlanningBehavior::ROUTE_OBSTACLE;
     velocity_factor.pose = *stop_pose_ptr_;
     velocity_factor.distance = std::numeric_limits<distance_type>::quiet_NaN();
     velocity_factor.status = VelocityFactor::UNKNOWN;

@@ -17,6 +17,7 @@
 
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
+#include "autoware_adapi_v1_msgs/msg/planning_behavior.hpp"
 #include "autoware_adapi_v1_msgs/msg/velocity_factor_array.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
@@ -34,6 +35,7 @@
 #include "tier4_planning_msgs/msg/velocity_limit_clear_command.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
+using autoware_adapi_v1_msgs::msg::PlanningBehavior;
 using autoware_adapi_v1_msgs::msg::VelocityFactor;
 using autoware_adapi_v1_msgs::msg::VelocityFactorArray;
 using autoware_auto_perception_msgs::msg::ObjectClassification;

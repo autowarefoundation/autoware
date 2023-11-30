@@ -38,7 +38,7 @@ WalkwayModule::WalkwayModule(
   planner_param_(planner_param),
   use_regulatory_element_(use_regulatory_element)
 {
-  velocity_factor_.init(VelocityFactor::SIDEWALK);
+  velocity_factor_.init(PlanningBehavior::SIDEWALK);
 
   if (use_regulatory_element_) {
     const auto reg_elem_ptr = std::dynamic_pointer_cast<const lanelet::autoware::Crosswalk>(

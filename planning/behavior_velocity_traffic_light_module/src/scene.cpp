@@ -175,7 +175,7 @@ TrafficLightModule::TrafficLightModule(
   state_(State::APPROACH),
   is_prev_state_stop_(false)
 {
-  velocity_factor_.init(VelocityFactor::TRAFFIC_SIGNAL);
+  velocity_factor_.init(PlanningBehavior::TRAFFIC_SIGNAL);
   planner_param_ = planner_param;
 }
 

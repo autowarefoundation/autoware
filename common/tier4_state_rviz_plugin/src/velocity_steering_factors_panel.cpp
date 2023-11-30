@@ -107,62 +107,9 @@ void VelocitySteeringFactorsPanel::onVelocityFactors(const VelocityFactorArray::
   for (std::size_t i = 0; i < msg->factors.size(); i++) {
     const auto & e = msg->factors.at(i);
 
-    // type
+    // behavior
     {
-      auto label = new QLabel();
-      switch (e.type) {
-        case VelocityFactor::SURROUNDING_OBSTACLE:
-          label->setText("SURROUNDING_OBSTACLE");
-          break;
-        case VelocityFactor::ROUTE_OBSTACLE:
-          label->setText("ROUTE_OBSTACLE");
-          break;
-        case VelocityFactor::INTERSECTION:
-          label->setText("INTERSECTION");
-          break;
-        case VelocityFactor::CROSSWALK:
-          label->setText("CROSSWALK");
-          break;
-        case VelocityFactor::REAR_CHECK:
-          label->setText("REAR_CHECK");
-          break;
-        case VelocityFactor::USER_DEFINED_DETECTION_AREA:
-          label->setText("USER_DEFINED_DETECTION_AREA");
-          break;
-        case VelocityFactor::NO_STOPPING_AREA:
-          label->setText("NO_STOPPING_AREA");
-          break;
-        case VelocityFactor::STOP_SIGN:
-          label->setText("STOP_SIGN");
-          break;
-        case VelocityFactor::TRAFFIC_SIGNAL:
-          label->setText("TRAFFIC_SIGNAL");
-          break;
-        case VelocityFactor::V2I_GATE_CONTROL_ENTER:
-          label->setText("V2I_GATE_CONTROL_ENTER");
-          break;
-        case VelocityFactor::V2I_GATE_CONTROL_LEAVE:
-          label->setText("V2I_GATE_CONTROL_LEAVE");
-          break;
-        case VelocityFactor::MERGE:
-          label->setText("MERGE");
-          break;
-        case VelocityFactor::SIDEWALK:
-          label->setText("SIDEWALK");
-          break;
-        case VelocityFactor::LANE_CHANGE:
-          label->setText("LANE_CHANGE");
-          break;
-        case VelocityFactor::AVOIDANCE:
-          label->setText("AVOIDANCE");
-          break;
-        case VelocityFactor::EMERGENCY_STOP_OPERATION:
-          label->setText("EMERGENCY_STOP_OPERATION");
-          break;
-        default:
-          label->setText("UNKNOWN");
-          break;
-      }
+      auto label = new QLabel(e.behavior.empty() ? "UNKNOWN" : e.behavior.c_str());
       label->setAlignment(Qt::AlignCenter);
       velocity_factors_table_->setCellWidget(i, 0, label);
     }
@@ -213,38 +160,9 @@ void VelocitySteeringFactorsPanel::onSteeringFactors(const SteeringFactorArray::
   for (std::size_t i = 0; i < msg->factors.size(); i++) {
     const auto & e = msg->factors.at(i);
 
-    // type
+    // behavior
     {
-      auto label = new QLabel();
-      switch (e.type) {
-        case SteeringFactor::INTERSECTION:
-          label->setText("INTERSECTION");
-          break;
-        case SteeringFactor::LANE_CHANGE:
-          label->setText("LANE_CHANGE");
-          break;
-        case SteeringFactor::AVOIDANCE_PATH_CHANGE:
-          label->setText("AVOIDANCE_PATH_CHANGE");
-          break;
-        case SteeringFactor::AVOIDANCE_PATH_RETURN:
-          label->setText("AVOIDANCE_PATH_RETURN");
-          break;
-        case SteeringFactor::STATION:
-          label->setText("STATION");
-          break;
-        case SteeringFactor::START_PLANNER:
-          label->setText("START_PLANNER");
-          break;
-        case SteeringFactor::GOAL_PLANNER:
-          label->setText("GOAL_PLANNER");
-          break;
-        case SteeringFactor::EMERGENCY_OPERATION:
-          label->setText("EMERGENCY_OPERATION");
-          break;
-        default:
-          label->setText("UNKNOWN");
-          break;
-      }
+      auto label = new QLabel(e.behavior.empty() ? "UNKNOWN" : e.behavior.c_str());
       label->setAlignment(Qt::AlignCenter);
       steering_factors_table_->setCellWidget(i, 0, label);
     }

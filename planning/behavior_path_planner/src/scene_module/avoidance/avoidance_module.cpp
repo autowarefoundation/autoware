@@ -982,8 +982,7 @@ CandidateOutput AvoidanceModule::planCandidate() const
   steering_factor_interface_ptr_->updateSteeringFactor(
     {sl_front.start, sl_back.end},
     {output.start_distance_to_path_change, output.finish_distance_to_path_change},
-    SteeringFactor::AVOIDANCE_PATH_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING,
-    "");
+    PlanningBehavior::AVOIDANCE, steering_factor_direction, SteeringFactor::APPROACHING, "");
 
   output.path_candidate = shifted_path.path;
   return output;

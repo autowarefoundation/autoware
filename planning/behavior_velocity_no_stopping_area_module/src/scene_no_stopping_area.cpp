@@ -50,7 +50,7 @@ NoStoppingAreaModule::NoStoppingAreaModule(
   no_stopping_area_reg_elem_(no_stopping_area_reg_elem),
   planner_param_(planner_param)
 {
-  velocity_factor_.init(VelocityFactor::NO_STOPPING_AREA);
+  velocity_factor_.init(PlanningBehavior::NO_STOPPING_AREA);
   state_machine_.setState(StateMachine::State::GO);
   state_machine_.setMarginTime(planner_param_.state_clear_time);
 }

@@ -32,8 +32,9 @@ void SteeringFactorInterface::publishSteeringFactor(const rclcpp::Time & stamp)
 }
 
 void SteeringFactorInterface::updateSteeringFactor(
-  const std::array<Pose, 2> & pose, const std::array<double, 2> distance, const uint16_t type,
-  const uint16_t direction, const uint16_t status, const std::string detail)
+  const std::array<Pose, 2> & pose, const std::array<double, 2> distance,
+  const std::string & behavior, const uint16_t direction, const uint16_t status,
+  const std::string detail)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   SteeringFactor factor;
@@ -41,7 +42,7 @@ void SteeringFactorInterface::updateSteeringFactor(
   std::array<float, 2> converted_distance;
   for (int i = 0; i < 2; ++i) converted_distance[i] = static_cast<float>(distance[i]);
   factor.distance = converted_distance;
-  factor.type = type;
+  factor.behavior = behavior;
   factor.direction = direction;
   factor.status = status;
   factor.detail = detail;
