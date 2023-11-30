@@ -5,6 +5,7 @@
   <version>0.1.0</version>
   <description>The MRM emergency stop operator package</description>
   <maintainer email="makoto.kurihara@tier4.jp">Makoto Kurihara</maintainer>
+  <maintainer email="tomohito.ando@tier4.jp">Tomohito Ando</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
