@@ -46,15 +46,13 @@ geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::Pose & pose);
 geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::PoseStamped & pose);
 geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
 
+geometry_msgs::msg::Quaternion rpy_rad_to_quaternion(
+  const double r_rad, const double p_rad, const double y_rad);
+geometry_msgs::msg::Quaternion rpy_deg_to_quaternion(
+  const double r_deg, const double p_deg, const double y_deg);
+
 geometry_msgs::msg::Twist calc_twist(
   const geometry_msgs::msg::PoseStamped & pose_a, const geometry_msgs::msg::PoseStamped & pose_b);
-
-void get_nearest_timestamp_pose(
-  const std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr> &
-    pose_cov_msg_ptr_array,
-  const rclcpp::Time & time_stamp,
-  geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr & output_old_pose_cov_msg_ptr,
-  geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr & output_new_pose_cov_msg_ptr);
 
 geometry_msgs::msg::PoseStamped interpolate_pose(
   const geometry_msgs::msg::PoseStamped & pose_a, const geometry_msgs::msg::PoseStamped & pose_b,
@@ -64,18 +62,10 @@ geometry_msgs::msg::PoseStamped interpolate_pose(
   const geometry_msgs::msg::PoseWithCovarianceStamped & pose_a,
   const geometry_msgs::msg::PoseWithCovarianceStamped & pose_b, const rclcpp::Time & time_stamp);
 
-void pop_old_pose(
-  std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr> &
-    pose_cov_msg_ptr_array,
-  const rclcpp::Time & time_stamp);
-
 Eigen::Affine3d pose_to_affine3d(const geometry_msgs::msg::Pose & ros_pose);
 Eigen::Matrix4f pose_to_matrix4f(const geometry_msgs::msg::Pose & ros_pose);
 geometry_msgs::msg::Pose matrix4f_to_pose(const Eigen::Matrix4f & eigen_pose_matrix);
 Eigen::Vector3d point_to_vector3d(const geometry_msgs::msg::Point & ros_pos);
-
-std::vector<geometry_msgs::msg::Pose> create_random_pose_array(
-  const geometry_msgs::msg::PoseWithCovarianceStamped & base_pose_with_cov, const int particle_num);
 
 template <class T>
 T transform(const T & input, const geometry_msgs::msg::TransformStamped & transform)
@@ -88,7 +78,7 @@ T transform(const T & input, const geometry_msgs::msg::TransformStamped & transf
 double norm(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2);
 
 void output_pose_with_cov_to_log(
-  const rclcpp::Logger logger, const std::string & prefix,
+  const rclcpp::Logger & logger, const std::string & prefix,
   const geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_cov);
 
 #endif  // LOCALIZATION_UTIL__UTIL_FUNC_HPP_

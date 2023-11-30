@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LOCALIZATION_UTIL__POSE_ARRAY_INTERPOLATOR_HPP_
-#define LOCALIZATION_UTIL__POSE_ARRAY_INTERPOLATOR_HPP_
+#ifndef LOCALIZATION_UTIL__SMART_POSE_BUFFER_HPP_
+#define LOCALIZATION_UTIL__SMART_POSE_BUFFER_HPP_
 
 #include "localization_util/util_func.hpp"
 
@@ -23,33 +23,39 @@
 
 #include <deque>
 
-class PoseArrayInterpolator
+class SmartPoseBuffer
 {
 private:
   using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 
 public:
-  PoseArrayInterpolator(
-    rclcpp::Node * node, const rclcpp::Time & target_ros_time,
-    const std::deque<PoseWithCovarianceStamped::ConstSharedPtr> & pose_msg_ptr_array,
-    const double & pose_timeout_sec, const double & pose_distance_tolerance_meters);
+  struct InterpolateResult
+  {
+    PoseWithCovarianceStamped old_pose;
+    PoseWithCovarianceStamped new_pose;
+    PoseWithCovarianceStamped interpolated_pose;
+  };
 
-  PoseArrayInterpolator(
-    rclcpp::Node * node, const rclcpp::Time & target_ros_time,
-    const std::deque<PoseWithCovarianceStamped::ConstSharedPtr> & pose_msg_ptr_array);
+  SmartPoseBuffer() = delete;
+  SmartPoseBuffer(
+    const rclcpp::Logger & logger, const double & pose_timeout_sec,
+    const double & pose_distance_tolerance_meters);
 
-  PoseWithCovarianceStamped get_current_pose();
-  PoseWithCovarianceStamped get_old_pose();
-  PoseWithCovarianceStamped get_new_pose();
-  [[nodiscard]] bool is_success() const;
+  std::optional<InterpolateResult> interpolate(const rclcpp::Time & target_ros_time);
+
+  void push_back(const PoseWithCovarianceStamped::ConstSharedPtr & pose_msg_ptr);
+
+  void pop_old(const rclcpp::Time & target_ros_time);
+
+  void clear();
 
 private:
   rclcpp::Logger logger_;
-  rclcpp::Clock clock_;
-  const PoseWithCovarianceStamped::SharedPtr current_pose_ptr_;
-  PoseWithCovarianceStamped::SharedPtr old_pose_ptr_;
-  PoseWithCovarianceStamped::SharedPtr new_pose_ptr_;
-  bool success_;
+  std::deque<PoseWithCovarianceStamped::ConstSharedPtr> pose_buffer_;
+  std::mutex mutex_;  // This mutex is for pose_buffer_
+
+  const double pose_timeout_sec_;
+  const double pose_distance_tolerance_meters_;
 
   [[nodiscard]] bool validate_time_stamp_difference(
     const rclcpp::Time & target_time, const rclcpp::Time & reference_time,
@@ -59,4 +65,4 @@ private:
     const geometry_msgs::msg::Point & reference_point, const double distance_tolerance_m_) const;
 };
 
-#endif  // LOCALIZATION_UTIL__POSE_ARRAY_INTERPOLATOR_HPP_
+#endif  // LOCALIZATION_UTIL__SMART_POSE_BUFFER_HPP_

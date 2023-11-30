@@ -46,6 +46,7 @@
 #define AR_TAG_BASED_LOCALIZER_HPP_
 
 #include "landmark_manager/landmark_manager.hpp"
+#include "localization_util/smart_pose_buffer.hpp"
 
 #include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -124,8 +125,7 @@ private:
   aruco::MarkerDetector detector_;
   aruco::CameraParameters cam_param_;
   bool cam_info_received_;
-  std::mutex self_pose_array_mtx_;
-  std::deque<PoseWithCovarianceStamped::ConstSharedPtr> self_pose_msg_ptr_array_;
+  std::unique_ptr<SmartPoseBuffer> ekf_pose_buffer_;
   std::map<std::string, Pose> landmark_map_;
 };
 

@@ -15,7 +15,6 @@
 #include "ndt_scan_matcher/ndt_scan_matcher_core.hpp"
 
 #include "localization_util/matrix_type.hpp"
-#include "localization_util/pose_array_interpolator.hpp"
 #include "localization_util/util_func.hpp"
 #include "ndt_scan_matcher/particle.hpp"
 #include "tree_structured_parzen_estimator/tree_structured_parzen_estimator.hpp"
@@ -167,6 +166,9 @@ NDTScanMatcher::NDTScanMatcher()
   initial_pose_distance_tolerance_m_ =
     this->declare_parameter<double>("initial_pose_distance_tolerance_m");
 
+  initial_pose_buffer_ = std::make_unique<SmartPoseBuffer>(
+    this->get_logger(), initial_pose_timeout_sec_, initial_pose_distance_tolerance_m_);
+
   use_cov_estimation_ = this->declare_parameter<bool>("use_covariance_estimation");
   if (use_cov_estimation_) {
     std::vector<double> initial_pose_offset_model_x =
@@ -232,6 +234,9 @@ NDTScanMatcher::NDTScanMatcher()
         "regularization_pose_with_covariance", 10,
         std::bind(&NDTScanMatcher::callback_regularization_pose, this, std::placeholders::_1),
         initial_pose_sub_opt);
+    const double value_as_unlimited = 1000.0;
+    regularization_pose_buffer_ =
+      std::make_unique<SmartPoseBuffer>(this->get_logger(), value_as_unlimited, value_as_unlimited);
   }
 
   sensor_aligned_pose_pub_ =
@@ -375,42 +380,21 @@ void NDTScanMatcher::callback_initial_pose(
 {
   if (!is_activated_) return;
 
-  // lock mutex for initial pose
-  std::lock_guard<std::mutex> initial_pose_array_lock(initial_pose_array_mtx_);
-  // if rosbag restart, clear buffer
-  if (!initial_pose_msg_ptr_array_.empty()) {
-    const builtin_interfaces::msg::Time & t_front =
-      initial_pose_msg_ptr_array_.front()->header.stamp;
-    const builtin_interfaces::msg::Time & t_msg = initial_pose_msg_ptr->header.stamp;
-    if (t_front.sec > t_msg.sec || (t_front.sec == t_msg.sec && t_front.nanosec > t_msg.nanosec)) {
-      initial_pose_msg_ptr_array_.clear();
-    }
-  }
-
   if (initial_pose_msg_ptr->header.frame_id == map_frame_) {
-    initial_pose_msg_ptr_array_.push_back(initial_pose_msg_ptr);
+    initial_pose_buffer_->push_back(initial_pose_msg_ptr);
   } else {
-    // get TF from pose_frame to map_frame
-    auto tf_pose_to_map_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
-    tf2_listener_module_->get_transform(
-      this->now(), map_frame_, initial_pose_msg_ptr->header.frame_id, tf_pose_to_map_ptr);
-
-    // transform pose_frame to map_frame
-    auto initial_pose_msg_in_map_ptr =
-      std::make_shared<geometry_msgs::msg::PoseWithCovarianceStamped>();
-    *initial_pose_msg_in_map_ptr = transform(*initial_pose_msg_ptr, *tf_pose_to_map_ptr);
-    initial_pose_msg_in_map_ptr->header.stamp = initial_pose_msg_ptr->header.stamp;
-    initial_pose_msg_ptr_array_.push_back(initial_pose_msg_in_map_ptr);
+    RCLCPP_ERROR_STREAM_THROTTLE(
+      get_logger(), *this->get_clock(), 1000,
+      "Received initial pose message with frame_id "
+        << initial_pose_msg_ptr->header.frame_id << ", but expected " << map_frame_
+        << ". Please check the frame_id in the input topic and ensure it is correct.");
   }
 }
 
 void NDTScanMatcher::callback_regularization_pose(
   geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr)
 {
-  // Get lock for regularization_pose_msg_ptr_array_
-  std::lock_guard<std::mutex> lock(regularization_mutex_);
-  regularization_pose_msg_ptr_array_.push_back(pose_conv_msg_ptr);
-  // Release lock for regularization_pose_msg_ptr_array_
+  regularization_pose_buffer_->push_back(pose_conv_msg_ptr);
 }
 
 void NDTScanMatcher::callback_sensor_points(
@@ -459,17 +443,15 @@ void NDTScanMatcher::callback_sensor_points(
   if (!is_activated_) return;
 
   // calculate initial pose
-  std::unique_lock<std::mutex> initial_pose_array_lock(initial_pose_array_mtx_);
-  if (initial_pose_msg_ptr_array_.size() <= 1) {
-    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1, "No Pose!");
+  std::optional<SmartPoseBuffer::InterpolateResult> interpolation_result_opt =
+    initial_pose_buffer_->interpolate(sensor_ros_time);
+  if (!interpolation_result_opt) {
+    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1, "No interpolated pose!");
     return;
   }
-  PoseArrayInterpolator interpolator(
-    this, sensor_ros_time, initial_pose_msg_ptr_array_, initial_pose_timeout_sec_,
-    initial_pose_distance_tolerance_m_);
-  if (!interpolator.is_success()) return;
-  pop_old_pose(initial_pose_msg_ptr_array_, sensor_ros_time);
-  initial_pose_array_lock.unlock();
+  initial_pose_buffer_->pop_old(sensor_ros_time);
+  const SmartPoseBuffer::InterpolateResult & interpolation_result =
+    interpolation_result_opt.value();
 
   // if regularization is enabled and available, set pose to NDT for regularization
   if (regularization_enabled_) {
@@ -483,7 +465,7 @@ void NDTScanMatcher::callback_sensor_points(
 
   // perform ndt scan matching
   const Eigen::Matrix4f initial_pose_matrix =
-    pose_to_matrix4f(interpolator.get_current_pose().pose.pose);
+    pose_to_matrix4f(interpolation_result.interpolated_pose.pose.pose);
   auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();
   ndt_ptr_->align(*output_cloud, initial_pose_matrix);
   const pclomp::NdtResult ndt_result = ndt_ptr_->getResult();
@@ -528,7 +510,7 @@ void NDTScanMatcher::callback_sensor_points(
   const auto exe_time = static_cast<float>(duration_micro_sec) / 1000.0f;
 
   // publish
-  initial_pose_with_covariance_pub_->publish(interpolator.get_current_pose());
+  initial_pose_with_covariance_pub_->publish(interpolation_result.interpolated_pose);
   exe_time_pub_->publish(make_float32_stamped(sensor_ros_time, exe_time));
   transform_probability_pub_->publish(
     make_float32_stamped(sensor_ros_time, ndt_result.transform_probability));
@@ -539,8 +521,8 @@ void NDTScanMatcher::callback_sensor_points(
   publish_pose(sensor_ros_time, result_pose_msg, ndt_covariance, is_converged);
   publish_marker(sensor_ros_time, transformation_msg_array);
   publish_initial_to_result(
-    sensor_ros_time, result_pose_msg, interpolator.get_current_pose(), interpolator.get_old_pose(),
-    interpolator.get_new_pose());
+    sensor_ros_time, result_pose_msg, interpolation_result.interpolated_pose,
+    interpolation_result.old_pose, interpolation_result.new_pose);
 
   pcl::shared_ptr<pcl::PointCloud<PointSource>> sensor_points_in_map_ptr(
     new pcl::PointCloud<PointSource>);
@@ -828,42 +810,20 @@ std::array<double, 36> NDTScanMatcher::estimate_covariance(
   return ndt_covariance;
 }
 
-std::optional<Eigen::Matrix4f> NDTScanMatcher::interpolate_regularization_pose(
-  const rclcpp::Time & sensor_ros_time)
-{
-  std::shared_ptr<PoseArrayInterpolator> interpolator = nullptr;
-  {
-    // Get lock for regularization_pose_msg_ptr_array_
-    std::lock_guard<std::mutex> lock(regularization_mutex_);
-
-    if (regularization_pose_msg_ptr_array_.empty()) {
-      return std::nullopt;
-    }
-
-    interpolator = std::make_shared<PoseArrayInterpolator>(
-      this, sensor_ros_time, regularization_pose_msg_ptr_array_);
-
-    // Remove old poses to make next interpolation more efficient
-    pop_old_pose(regularization_pose_msg_ptr_array_, sensor_ros_time);
-
-    // Release lock for regularization_pose_msg_ptr_array_
-  }
-
-  if (!interpolator || !interpolator->is_success()) {
-    return std::nullopt;
-  }
-
-  return pose_to_matrix4f(interpolator->get_current_pose().pose.pose);
-}
-
 void NDTScanMatcher::add_regularization_pose(const rclcpp::Time & sensor_ros_time)
 {
   ndt_ptr_->unsetRegularizationPose();
-  std::optional<Eigen::Matrix4f> pose_opt = interpolate_regularization_pose(sensor_ros_time);
-  if (pose_opt.has_value()) {
-    ndt_ptr_->setRegularizationPose(pose_opt.value());
-    RCLCPP_DEBUG_STREAM(get_logger(), "Regularization pose is set to NDT");
+  std::optional<SmartPoseBuffer::InterpolateResult> interpolation_result_opt =
+    regularization_pose_buffer_->interpolate(sensor_ros_time);
+  if (!interpolation_result_opt) {
+    return;
   }
+  regularization_pose_buffer_->pop_old(sensor_ros_time);
+  const SmartPoseBuffer::InterpolateResult & interpolation_result =
+    interpolation_result_opt.value();
+  const Eigen::Matrix4f pose = pose_to_matrix4f(interpolation_result.interpolated_pose.pose.pose);
+  ndt_ptr_->setRegularizationPose(pose);
+  RCLCPP_DEBUG_STREAM(get_logger(), "Regularization pose is set to NDT");
 }
 
 void NDTScanMatcher::service_trigger_node(
@@ -872,8 +832,7 @@ void NDTScanMatcher::service_trigger_node(
 {
   is_activated_ = req->data;
   if (is_activated_) {
-    std::lock_guard<std::mutex> initial_pose_array_lock(initial_pose_array_mtx_);
-    initial_pose_msg_ptr_array_.clear();
+    initial_pose_buffer_->clear();
   }
   res->success = true;
 }
