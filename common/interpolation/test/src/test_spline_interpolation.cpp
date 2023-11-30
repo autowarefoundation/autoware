@@ -222,16 +222,48 @@ TEST(spline_interpolation, splineByAkima)
 
 TEST(spline_interpolation, SplineInterpolation)
 {
-  // curve: query_keys is random
-  const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
-  const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
-  const std::vector<double> query_keys{0.0, 8.0, 18.0};
-  const std::vector<double> ans{-0.075611, 0.997242, 1.573258};
+  {
+    // curve: query_keys is random
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
+    const std::vector<double> query_keys{0.0, 8.0, 18.0};
+    const std::vector<double> ans{-0.075611, 0.997242, 1.573258};
 
-  SplineInterpolation s(base_keys, base_values);
-  const std::vector<double> query_values = s.getSplineInterpolatedValues(query_keys);
+    SplineInterpolation s(base_keys, base_values);
+    const std::vector<double> query_values = s.getSplineInterpolatedValues(query_keys);
 
-  for (size_t i = 0; i < query_values.size(); ++i) {
-    EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {
+    // getSplineInterpolatedDiffValues
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
+    const std::vector<double> query_keys{0.0, 8.0, 12.0, 18.0};
+    const std::vector<double> ans{0.671301, 0.0509853, 0.209426, -0.253628};
+
+    SplineInterpolation s(base_keys, base_values);
+    const std::vector<double> query_values = s.getSplineInterpolatedDiffValues(query_keys);
+
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {
+    // getSplineInterpolatedQuadDiffValues
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
+    const std::vector<double> query_keys{0.0, 8.0, 12.0, 18.0};
+    const std::vector<double> ans{-0.156582, 0.0440771, -0.0116873, -0.0495025};
+
+    SplineInterpolation s(base_keys, base_values);
+    const std::vector<double> query_values = s.getSplineInterpolatedQuadDiffValues(query_keys);
+
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
   }
 }
