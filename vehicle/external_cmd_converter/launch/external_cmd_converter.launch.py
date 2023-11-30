@@ -53,6 +53,11 @@ def generate_launch_description():
             description="gain for external command accel",
         ),
         DeclareLaunchArgument(
+            "timer_rate",
+            default_value="10.0",
+            description="timer's update rate",
+        ),
+        DeclareLaunchArgument(
             "wait_for_first_topic",
             default_value="true",
             description="disable topic disruption detection until subscribing first topics",
@@ -118,6 +123,7 @@ def generate_launch_description():
                     _create_mapping_tuple("csv_path_accel_map"),
                     _create_mapping_tuple("csv_path_brake_map"),
                     _create_mapping_tuple("ref_vel_gain"),
+                    _create_mapping_tuple("timer_rate"),
                     _create_mapping_tuple("wait_for_first_topic"),
                     _create_mapping_tuple("control_command_timeout"),
                     _create_mapping_tuple("emergency_stop_timeout"),

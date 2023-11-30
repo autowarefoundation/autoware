@@ -6,6 +6,7 @@
 
   <!-- settings -->
   <arg name="ref_vel_gain" default="3.0"/>
+  <arg name="timer_rate" default="10.0"/>
   <arg name="wait_for_first_topic" default="true"/>
   <arg name="control_command_timeout" default="1.0"/>
   <arg name="emergency_stop_timeout" default="3.0"/>
@@ -26,6 +27,7 @@
     <param name="csv_path_accel_map" value="$(var csv_path_accel_map)"/>
     <param name="csv_path_brake_map" value="$(var csv_path_brake_map)"/>
     <param name="ref_vel_gain" value="$(var ref_vel_gain)"/>
+    <param name="timer_rate" value="$(var timer_rate)"/>
     <param name="wait_for_first_topic" value="$(var wait_for_first_topic)"/>
     <param name="control_command_timeout" value="$(var control_command_timeout)"/>
     <param name="emergency_stop_timeout" value="$(var emergency_stop_timeout)"/>
