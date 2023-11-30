@@ -18,15 +18,12 @@
 #include "behavior_path_planner/scene_module/lane_change/normal.hpp"
 
 #include <memory>
-#include <utility>
 
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using tier4_planning_msgs::msg::LaneChangeDebugMsg;
-using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 using AvoidanceDebugData = DebugData;
 
 class AvoidanceByLaneChange : public NormalLaneChange

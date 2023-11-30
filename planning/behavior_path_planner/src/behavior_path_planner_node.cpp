@@ -79,8 +79,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     create_publisher<RerouteAvailability>("~/output/is_reroute_available", 1);
   debug_avoidance_msg_array_publisher_ =
     create_publisher<AvoidanceDebugMsgArray>("~/debug/avoidance_debug_message_array", 1);
-  debug_lane_change_msg_array_publisher_ =
-    create_publisher<LaneChangeDebugMsgArray>("~/debug/lane_change_debug_message_array", 1);
 
   if (planner_data_->parameters.visualize_maximum_drivable_area) {
     debug_maximum_drivable_area_publisher_ =
@@ -784,11 +782,6 @@ void BehaviorPathPlannerNode::publishSceneModuleDebugMsg(
   const auto avoidance_debug_message = debug_messages_data_ptr->getAvoidanceModuleDebugMsg();
   if (avoidance_debug_message) {
     debug_avoidance_msg_array_publisher_->publish(*avoidance_debug_message);
-  }
-
-  const auto lane_change_debug_message = debug_messages_data_ptr->getLaneChangeModuleDebugMsg();
-  if (lane_change_debug_message) {
-    debug_lane_change_msg_array_publisher_->publish(*lane_change_debug_message);
   }
 }
 

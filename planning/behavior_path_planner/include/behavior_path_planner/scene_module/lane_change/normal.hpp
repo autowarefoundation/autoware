@@ -14,12 +14,9 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__NORMAL_HPP_
 
-#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/scene_module/lane_change/base_class.hpp"
 
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -36,8 +33,6 @@ using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using route_handler::Direction;
-using tier4_planning_msgs::msg::LaneChangeDebugMsg;
-using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
 class NormalLaneChange : public LaneChangeBase
 {

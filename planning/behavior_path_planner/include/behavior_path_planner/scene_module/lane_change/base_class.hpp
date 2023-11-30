@@ -14,8 +14,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__BASE_CLASS_HPP_
 
-#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
-#include "behavior_path_planner/marker_utils/utils.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utils/lane_change/lane_change_module_data.hpp"
@@ -27,18 +25,13 @@
 #include <magic_enum.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include "tier4_planning_msgs/msg/lane_change_debug_msg.hpp"
-#include "tier4_planning_msgs/msg/lane_change_debug_msg_array.hpp"
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
-#include <algorithm>
-#include <chrono>
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 namespace behavior_path_planner
 {
@@ -50,8 +43,6 @@ using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
 using route_handler::Direction;
 using tier4_autoware_utils::StopWatch;
-using tier4_planning_msgs::msg::LaneChangeDebugMsg;
-using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
 class LaneChangeBase
 {

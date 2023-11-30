@@ -15,7 +15,6 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__INTERFACE_HPP_
 
-#include "behavior_path_planner/marker_utils/lane_change/debug.hpp"
 #include "behavior_path_planner/scene_module/lane_change/avoidance_by_lane_change.hpp"
 #include "behavior_path_planner/scene_module/lane_change/base_class.hpp"
 #include "behavior_path_planner/scene_module/lane_change/external_request.hpp"
@@ -28,9 +27,6 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
-#include "tier4_planning_msgs/msg/lane_change_debug_msg.hpp"
-#include "tier4_planning_msgs/msg/lane_change_debug_msg_array.hpp"
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -40,16 +36,14 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
-#include <vector>
 
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
-using tier4_planning_msgs::msg::LaneChangeDebugMsg;
-using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
+using objects_of_interest_marker_interface::ColorName;
+using objects_of_interest_marker_interface::ObjectsOfInterestMarkerInterface;
 
 class LaneChangeInterface : public SceneModuleInterface
 {
@@ -86,9 +80,10 @@ public:
 
   CandidateOutput planCandidate() const override;
 
-  std::shared_ptr<LaneChangeDebugMsgArray> get_debug_msg_array() const;
-
-  void acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const override;
+  void acceptVisitor(
+    [[maybe_unused]] const std::shared_ptr<SceneModuleVisitor> & visitor) const override
+  {
+  }
 
   void updateModuleParams(const std::any & parameters) override;
 
@@ -141,7 +136,6 @@ protected:
     const CandidateOutput & output, const LaneChangePath & selected_path) const;
 
   mutable MarkerArray virtual_wall_marker_;
-  mutable LaneChangeDebugMsgArray lane_change_debug_msg_array_;
 
   std::unique_ptr<PathWithLaneId> prev_approved_path_;
 

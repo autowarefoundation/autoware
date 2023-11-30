@@ -15,12 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_VISITOR_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__SCENE_MODULE_VISITOR_HPP_
 
-#include "tier4_planning_msgs/msg/avoidance_debug_msg.hpp"
-#include "tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp"
 #include "tier4_planning_msgs/msg/detail/avoidance_debug_msg_array__struct.hpp"
-#include "tier4_planning_msgs/msg/detail/lane_change_debug_msg_array__struct.hpp"
-#include "tier4_planning_msgs/msg/lane_change_debug_msg.hpp"
-#include "tier4_planning_msgs/msg/lane_change_debug_msg_array.hpp"
 
 #include <memory>
 namespace behavior_path_planner
@@ -28,37 +23,23 @@ namespace behavior_path_planner
 // Forward Declaration
 class AvoidanceModule;
 class AvoidanceByLCModule;
-class LaneChangeModule;
 class ExternalRequestLaneChangeModule;
 class LaneChangeInterface;
-class LaneChangeBTInterface;
-class LaneFollowingModule;
 class StartPlannerModule;
 class GoalPlannerModule;
 class SideShiftModule;
 
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
-using tier4_planning_msgs::msg::LaneChangeDebugMsg;
-using tier4_planning_msgs::msg::LaneChangeDebugMsgArray;
 
 class SceneModuleVisitor
 {
 public:
-  void visitLaneChangeModule(const LaneChangeModule * module) const;
-  void visitExternalRequestLaneChangeModule(const ExternalRequestLaneChangeModule * module) const;
-  void visitLaneChangeInterface(const LaneChangeInterface * interface) const;
-  void visitLaneChangeBTInterface(const LaneChangeBTInterface * module) const;
   void visitAvoidanceModule(const AvoidanceModule * module) const;
-  void visitAvoidanceByLCModule(const AvoidanceByLCModule * module) const;
 
   std::shared_ptr<AvoidanceDebugMsgArray> getAvoidanceModuleDebugMsg() const;
-  std::shared_ptr<LaneChangeDebugMsgArray> getLaneChangeModuleDebugMsg() const;
 
 protected:
-  mutable std::shared_ptr<LaneChangeDebugMsgArray> lane_change_visitor_;
-  mutable std::shared_ptr<LaneChangeDebugMsgArray> ext_request_lane_change_visitor_;
-  mutable std::shared_ptr<LaneChangeDebugMsgArray> external_request_lane_change_bt_visitor_;
   mutable std::shared_ptr<AvoidanceDebugMsgArray> avoidance_visitor_;
 };
 }  // namespace behavior_path_planner

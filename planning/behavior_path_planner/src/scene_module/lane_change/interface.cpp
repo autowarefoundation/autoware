@@ -328,27 +328,6 @@ void LaneChangeInterface::setObjectDebugVisualization() const
   }
 }
 
-std::shared_ptr<LaneChangeDebugMsgArray> LaneChangeInterface::get_debug_msg_array() const
-{
-  const auto debug_data = module_type_->getDebugData();
-  LaneChangeDebugMsgArray debug_msg_array;
-  debug_msg_array.lane_change_info.reserve(debug_data.size());
-  for (const auto & [uuid, debug_data] : debug_data) {
-    LaneChangeDebugMsg debug_msg;
-    debug_msg.object_id = uuid;
-    debug_msg.allow_lane_change = debug_data.is_safe;
-    debug_msg.is_front = debug_data.is_front;
-    debug_msg.failed_reason = debug_data.unsafe_reason;
-    debug_msg.velocity =
-      std::hypot(debug_data.object_twist.linear.x, debug_data.object_twist.linear.y);
-    debug_msg_array.lane_change_info.push_back(debug_msg);
-  }
-  lane_change_debug_msg_array_ = debug_msg_array;
-
-  lane_change_debug_msg_array_.header.stamp = clock_->now();
-  return std::make_shared<LaneChangeDebugMsgArray>(lane_change_debug_msg_array_);
-}
-
 MarkerArray LaneChangeInterface::getModuleVirtualWall()
 {
   using marker_utils::lane_change_markers::createLaneChangingVirtualWallMarker;
@@ -414,12 +393,6 @@ void LaneChangeInterface::updateSteeringFactorPtr(
     {selected_path.info.shift_line.start, selected_path.info.shift_line.end},
     {output.start_distance_to_path_change, output.finish_distance_to_path_change},
     PlanningBehavior::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
-}
-void LaneChangeInterface::acceptVisitor(const std::shared_ptr<SceneModuleVisitor> & visitor) const
-{
-  if (visitor) {
-    visitor->visitLaneChangeInterface(this);
-  }
 }
 
 TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
@@ -500,11 +473,6 @@ TurnSignalInfo LaneChangeInterface::getCurrentTurnSignalInfo(
 
   // not in the vicinity of the end of the path. return original
   return original_turn_signal_info;
-}
-
-void SceneModuleVisitor::visitLaneChangeInterface(const LaneChangeInterface * interface) const
-{
-  lane_change_visitor_ = interface->get_debug_msg_array();
 }
 
 AvoidanceByLaneChangeInterface::AvoidanceByLaneChangeInterface(

@@ -22,9 +22,4 @@ std::shared_ptr<AvoidanceDebugMsgArray> SceneModuleVisitor::getAvoidanceModuleDe
 {
   return avoidance_visitor_;
 }
-
-std::shared_ptr<LaneChangeDebugMsgArray> SceneModuleVisitor::getLaneChangeModuleDebugMsg() const
-{
-  return lane_change_visitor_;
-}
 }  // namespace behavior_path_planner
