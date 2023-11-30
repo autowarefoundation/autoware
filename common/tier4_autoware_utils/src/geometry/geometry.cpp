@@ -379,6 +379,7 @@ std::optional<geometry_msgs::msg::Point> intersect(
   geometry_msgs::msg::Point intersect_point;
   intersect_point.x = t * p1.x + (1.0 - t) * p2.x;
   intersect_point.y = t * p1.y + (1.0 - t) * p2.y;
+  intersect_point.z = t * p1.z + (1.0 - t) * p2.z;
   return intersect_point;
 }
 
