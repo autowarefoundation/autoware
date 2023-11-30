@@ -176,9 +176,10 @@ tier4_debug_msgs::msg::StringStamped createStringStampedMessage(
 }  // namespace
 
 CrosswalkModule::CrosswalkModule(
-  rclcpp::Node & node, const int64_t module_id, const std::optional<int64_t> & reg_elem_id,
-  const lanelet::LaneletMapPtr & lanelet_map_ptr, const PlannerParam & planner_param,
-  const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock)
+  rclcpp::Node & node, const int64_t lane_id, const int64_t module_id,
+  const std::optional<int64_t> & reg_elem_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const PlannerParam & planner_param, const rclcpp::Logger & logger,
+  const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   module_id_(module_id),
   planner_param_(planner_param),
@@ -199,6 +200,8 @@ CrosswalkModule::CrosswalkModule(
     }
     crosswalk_ = lanelet_map_ptr->laneletLayer.get(module_id);
   }
+
+  road_ = lanelet_map_ptr->laneletLayer.get(lane_id);
 
   collision_info_pub_ =
     node.create_publisher<tier4_debug_msgs::msg::StringStamped>("~/debug/collision_info", 1);
@@ -801,6 +804,16 @@ std::optional<StopFactor> CrosswalkModule::checkStopForStuckVehicles(
 
   if (path_intersects.size() < 2 || !stop_pose) {
     return {};
+  }
+
+  // skip stuck vehicle checking for crosswalk which is in intersection.
+  if (!p.enable_stuck_check_in_intersection) {
+    std::string turn_direction = road_.attributeOr("turn_direction", "else");
+    if (turn_direction == "right" || turn_direction == "left" || turn_direction == "straight") {
+      if (!road_.regulatoryElementsAs<const lanelet::TrafficLight>().empty()) {
+        return {};
+      }
+    }
   }
 
   for (const auto & object : objects) {

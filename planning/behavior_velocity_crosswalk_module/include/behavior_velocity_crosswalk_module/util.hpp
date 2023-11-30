@@ -82,7 +82,7 @@ struct DebugData
   std::vector<std::vector<geometry_msgs::msg::Point>> obj_polygons;
 };
 
-std::vector<lanelet::ConstLanelet> getCrosswalksOnPath(
+std::vector<std::pair<int64_t, lanelet::ConstLanelet>> getCrosswalksOnPath(
   const geometry_msgs::msg::Pose & current_pose,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const lanelet::LaneletMapPtr lanelet_map,

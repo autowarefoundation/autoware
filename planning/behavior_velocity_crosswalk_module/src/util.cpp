@@ -53,19 +53,19 @@ using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::Line2d;
 using tier4_autoware_utils::Point2d;
 
-std::vector<lanelet::ConstLanelet> getCrosswalksOnPath(
+std::vector<std::pair<int64_t, lanelet::ConstLanelet>> getCrosswalksOnPath(
   const geometry_msgs::msg::Pose & current_pose,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const lanelet::LaneletMapPtr lanelet_map,
   const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
 {
-  std::vector<lanelet::ConstLanelet> crosswalks;
+  std::vector<std::pair<lanelet::Id, lanelet::ConstLanelet>> crosswalks;
 
   // Add current lane id
   const auto nearest_lane_id =
     behavior_velocity_planner::planning_utils::getNearestLaneId(path, lanelet_map, current_pose);
 
-  std::vector<int64_t> unique_lane_ids;
+  std::vector<lanelet::Id> unique_lane_ids;
   if (nearest_lane_id) {
     // Add subsequent lane_ids from nearest lane_id
     unique_lane_ids = behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
@@ -81,24 +81,24 @@ std::vector<lanelet::ConstLanelet> getCrosswalksOnPath(
     constexpr int PEDESTRIAN_GRAPH_ID = 1;
     const auto conflicting_crosswalks = overall_graphs->conflictingInGraph(ll, PEDESTRIAN_GRAPH_ID);
     for (const auto & crosswalk : conflicting_crosswalks) {
-      crosswalks.push_back(crosswalk);
+      crosswalks.emplace_back(lane_id, crosswalk);
     }
   }
 
   return crosswalks;
 }
 
-std::set<int64_t> getCrosswalkIdSetOnPath(
+std::set<lanelet::Id> getCrosswalkIdSetOnPath(
   const geometry_msgs::msg::Pose & current_pose,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const lanelet::LaneletMapPtr lanelet_map,
   const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
 {
-  std::set<int64_t> crosswalk_id_set;
+  std::set<lanelet::Id> crosswalk_id_set;
 
   for (const auto & crosswalk :
        getCrosswalksOnPath(current_pose, path, lanelet_map, overall_graphs)) {
-    crosswalk_id_set.insert(crosswalk.id());
+    crosswalk_id_set.insert(crosswalk.second.id());
   }
 
   return crosswalk_id_set;

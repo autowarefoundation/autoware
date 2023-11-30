@@ -121,6 +121,7 @@ public:
     double max_slow_down_accel;
     double no_relax_velocity;
     // param for stuck vehicle
+    bool enable_stuck_check_in_intersection{false};
     double stuck_vehicle_velocity;
     double max_stuck_vehicle_lateral_offset;
     double stuck_vehicle_attention_range;
@@ -299,9 +300,10 @@ public:
   };
 
   CrosswalkModule(
-    rclcpp::Node & node, const int64_t module_id, const std::optional<int64_t> & reg_elem_id,
-    const lanelet::LaneletMapPtr & lanelet_map_ptr, const PlannerParam & planner_param,
-    const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock);
+    rclcpp::Node & node, const int64_t lane_id, const int64_t module_id,
+    const std::optional<int64_t> & reg_elem_id, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+    const PlannerParam & planner_param, const rclcpp::Logger & logger,
+    const rclcpp::Clock::SharedPtr clock);
 
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
@@ -405,6 +407,8 @@ private:
   rclcpp::Publisher<tier4_debug_msgs::msg::StringStamped>::SharedPtr collision_info_pub_;
 
   lanelet::ConstLanelet crosswalk_;
+
+  lanelet::ConstLanelet road_;
 
   lanelet::ConstLineStrings3d stop_lines_;
 

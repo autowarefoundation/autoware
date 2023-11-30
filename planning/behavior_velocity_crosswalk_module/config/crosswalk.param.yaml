@@ -27,6 +27,7 @@
 
       # param for stuck vehicles
       stuck_vehicle:
+        enable_stuck_check_in_intersection: false # [-] flag to enable stuck vehicle checking for crosswalk which is in intersection
         stuck_vehicle_velocity: 1.0 # [m/s] maximum velocity threshold whether the vehicle is stuck
         max_stuck_vehicle_lateral_offset: 2.0 # [m] maximum lateral offset for stuck vehicle position should be looked
         stuck_vehicle_attention_range: 10.0 # [m] the detection area is defined as X meters behind the crosswalk

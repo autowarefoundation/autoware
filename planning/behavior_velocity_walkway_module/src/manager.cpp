@@ -75,7 +75,7 @@ void WalkwayModuleManager::launchNewModules(const PathWithLaneId & path)
     planner_data_->current_odometry->pose, path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
 
   for (const auto & crosswalk : crosswalk_lanelets) {
-    launch(crosswalk, false);
+    launch(crosswalk.second, false);
   }
 }
 
